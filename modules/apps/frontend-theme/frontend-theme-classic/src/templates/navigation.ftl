@@ -4,6 +4,11 @@
 	</button>
 
 	<div aria-expanded="false" class="collapse navbar-collapse" id="navigationCollapse">
+		<#assign preferences = freeMarkerPortletPreferences.getPreferences({
+			"portletSetupPortletDecoratorId": "barebone",
+			"displayStyle": "ddmTemplate_NAVBAR_CLASSIC-FTL"
+		}) />
+
 		<@liferay.navigation_menu default_preferences="${preferences}" />
 	</div>
 </#if>
