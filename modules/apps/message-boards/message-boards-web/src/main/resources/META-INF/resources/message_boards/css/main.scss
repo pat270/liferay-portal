@@ -164,14 +164,13 @@
 
 	@include media-breakpoint-up(sm) {
 		.message-user-display {
-			width: 50%;
+			width: calc(100% - 195px);
 		}
 
 		.social-interaction {
 			position: absolute;
 			right: 0;
-			top: 0;
-			width: 50%;
+			top: -1px;
 
 			& > div {
 				float: right;
