@@ -23,6 +23,7 @@ const LabelOptionListItem = ({onCloseButtonClicked, option, readOnly}) => (
 					onCloseButtonClicked({event, value: option.value});
 				},
 			}}
+			for={id}
 			value={option.value}
 			withClose={!readOnly}
 		>

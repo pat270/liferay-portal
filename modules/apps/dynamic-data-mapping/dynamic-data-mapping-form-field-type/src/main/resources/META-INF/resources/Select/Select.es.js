@@ -583,6 +583,7 @@ const Main = ({
 					'aria-required': otherProps.required,
 				}}
 				defaultSearch={defaultSearch}
+				id={id}
 				label={label}
 				multiple={multiple}
 				name={`${name}_field`}

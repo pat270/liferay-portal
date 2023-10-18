@@ -205,6 +205,8 @@ export function FieldBase({
 
 	const fieldDetailsId = `${id ?? name}_fieldDetails`;
 
+	const uniqueIdForInput = `${id ?? name}`;
+
 	const hiddenTranslations = useMemo(() => {
 		if (!localizedValue) {
 			return;
@@ -252,7 +254,7 @@ export function FieldBase({
 	const accessiblePropsFields = {
 		...(hasFieldDetails && {'aria-labelledby': fieldDetailsId}),
 		...(showFor && {htmlFor: id ?? name}),
-		...(readFieldDetails && {tabIndex: 0}),
+		...readFieldDetails,
 	};
 
 	const defaultRows = nestedFields?.map((field) => ({
@@ -377,6 +379,7 @@ export function FieldBase({
 									'ddm-label': showLabel || required,
 									'ddm-repeatable': repeatable,
 								})}
+								htmlFor={uniqueIdForInput}
 							>
 								{showLabel && label && (
 									<LabelProperty
@@ -416,6 +419,7 @@ export function FieldBase({
 
 			{!hideEditedFlag && (
 				<input
+					id={uniqueIdForInput}
 					name={`${name}_edited`}
 					type="hidden"
 					value={localizedValue[editingLanguageId] !== undefined}
