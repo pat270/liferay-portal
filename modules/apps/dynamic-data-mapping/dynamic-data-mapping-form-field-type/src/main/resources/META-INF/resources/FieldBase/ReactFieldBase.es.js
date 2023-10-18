@@ -205,8 +205,6 @@ export function FieldBase({
 
 	const fieldDetailsId = `${id ?? name}_fieldDetails`;
 
-	const uniqueIdForInput = `${id ?? name}`;
-
 	const hiddenTranslations = useMemo(() => {
 		if (!localizedValue) {
 			return;
@@ -243,7 +241,7 @@ export function FieldBase({
 		type === 'rich_text' ||
 		type === 'search_location' ||
 		type === 'select';
-	const readFieldDetails = !showFor || type === 'select';
+	const readFieldDetails = !showFor;
 	const hasFieldDetails = accessible && fieldDetails && readFieldDetails;
 
 	const accessiblePropsGroup = {
@@ -379,7 +377,6 @@ export function FieldBase({
 									'ddm-label': showLabel || required,
 									'ddm-repeatable': repeatable,
 								})}
-								htmlFor={uniqueIdForInput}
 							>
 								{showLabel && label && (
 									<LabelProperty
@@ -419,7 +416,6 @@ export function FieldBase({
 
 			{!hideEditedFlag && (
 				<input
-					id={uniqueIdForInput}
 					name={`${name}_edited`}
 					type="hidden"
 					value={localizedValue[editingLanguageId] !== undefined}

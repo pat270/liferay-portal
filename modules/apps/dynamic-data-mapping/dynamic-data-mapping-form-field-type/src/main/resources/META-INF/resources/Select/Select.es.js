@@ -246,6 +246,7 @@ const DropdownListWithSearch = ({
 const Trigger = forwardRef(
 	(
 		{
+			id,
 			onCloseButtonClicked,
 			onTriggerClicked,
 			onTriggerKeyDown,
@@ -261,6 +262,7 @@ const Trigger = forwardRef(
 					<HiddenSelectInput value={value} {...otherProps} />
 				)}
 				<VisibleSelectInput
+					id={id}
 					onClick={onTriggerClicked}
 					onCloseButtonClicked={onCloseButtonClicked}
 					onKeyDown={onTriggerKeyDown}
@@ -277,6 +279,7 @@ const Trigger = forwardRef(
 const Select = ({
 	accessibleProps,
 	defaultSearch,
+	id,
 	label,
 	multiple,
 	onChange,
@@ -393,6 +396,7 @@ const Select = ({
 				})}
 			>
 				<Trigger
+					id={id}
 					multiple={multiple}
 					onChange={onChange}
 					onCloseButtonClicked={({event, value}) => {
@@ -583,7 +587,7 @@ const Main = ({
 					'aria-required': otherProps.required,
 				}}
 				defaultSearch={defaultSearch}
-				id={id}
+				id={name}
 				label={label}
 				multiple={multiple}
 				name={`${name}_field`}
