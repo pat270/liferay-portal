@@ -23,6 +23,7 @@ import com.liferay.document.library.kernel.model.DLFileEntryMetadata;
 import com.liferay.document.library.kernel.model.DLFileEntryTable;
 import com.liferay.document.library.kernel.model.DLFileEntryType;
 import com.liferay.document.library.kernel.model.DLFileEntryTypeConstants;
+import com.liferay.document.library.kernel.model.DLFileEntryTypeTable;
 import com.liferay.document.library.kernel.model.DLFileVersion;
 import com.liferay.document.library.kernel.model.DLFolder;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
@@ -1305,6 +1306,52 @@ public class DLFileEntryLocalServiceImpl
 	}
 
 	@Override
+	public Map<Long, Long> getFileEntryTypeIds(
+		long companyId, long[] groupIds, String treePath) {
+
+		List<Object[]> results = dslQuery(
+			DSLQueryFactoryUtil.select(
+				DLFileEntryTable.INSTANCE.fileEntryId,
+				DLFileEntryTable.INSTANCE.fileEntryTypeId
+			).from(
+				DLFileEntryTable.INSTANCE
+			).innerJoinON(
+				DLFileEntryTypeTable.INSTANCE,
+				DLFileEntryTypeTable.INSTANCE.fileEntryTypeId.eq(
+					DLFileEntryTable.INSTANCE.fileEntryTypeId
+				).and(
+					DLFileEntryTypeTable.INSTANCE.companyId.eq(companyId)
+				).and(
+					DLFileEntryTypeTable.INSTANCE.groupId.in(
+						ArrayUtil.toLongArray(groupIds))
+				).and(
+					DLFileEntryTypeTable.INSTANCE.fileEntryTypeId.neq(
+						DLFileEntryTypeConstants.
+							FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT)
+				)
+			).where(
+				DLFileEntryTable.INSTANCE.companyId.eq(
+					companyId
+				).and(
+					DLFileEntryTable.INSTANCE.fileEntryTypeId.neq(
+						DLFileEntryTypeConstants.
+							FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT)
+				).and(
+					DLFileEntryTable.INSTANCE.treePath.like(
+						treePath.concat(StringPool.PERCENT))
+				)
+			));
+
+		Map<Long, Long> fileEntryTypeIds = new HashMap<>();
+
+		for (Object[] result : results) {
+			fileEntryTypeIds.put((Long)result[0], (Long)result[1]);
+		}
+
+		return fileEntryTypeIds;
+	}
+
+	@Override
 	public List<DLFileEntry> getGroupFileEntries(
 		long groupId, int start, int end) {
 
@@ -2151,7 +2198,7 @@ public class DLFileEntryLocalServiceImpl
 		if (_log.isDebugEnabled()) {
 			_log.debug(
 				StringBundler.concat(
-					"Expiring file entries with expiration date previous to ",
+					"Expiring file entries with expiration date prior to ",
 					expirationDate, " for companyId ", companyId));
 		}
 

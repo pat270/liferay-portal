@@ -31,11 +31,13 @@ public class CTCollectionServiceUtil {
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.change.tracking.service.impl.CTCollectionServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
 	public static CTCollection addCTCollection(
-			long companyId, long userId, String name, String description)
+			String externalReferenceCode, long companyId, long userId,
+			long ctRemoteId, String name, String description)
 		throws PortalException {
 
 		return getService().addCTCollection(
-			companyId, userId, name, description);
+			externalReferenceCode, companyId, userId, ctRemoteId, name,
+			description);
 	}
 
 	public static void deleteCTAutoResolutionInfo(long ctAutoResolutionInfoId)
@@ -90,12 +92,14 @@ public class CTCollectionServiceUtil {
 		return getService().getOSGiServiceIdentifier();
 	}
 
-	public static com.liferay.change.tracking.model.CTProcess moveCTEntries(
-			long fromCTCollectionId, long toCTCollectionId, long[] ctEntryIds)
+	public static void moveCTEntry(
+			long fromCTCollectionId, long toCTCollectionId,
+			long modelClassNameId, long modelClassPK)
 		throws PortalException {
 
-		return getService().moveCTEntries(
-			fromCTCollectionId, toCTCollectionId, ctEntryIds);
+		getService().moveCTEntry(
+			fromCTCollectionId, toCTCollectionId, modelClassNameId,
+			modelClassPK);
 	}
 
 	public static void publishCTCollection(long userId, long ctCollectionId)

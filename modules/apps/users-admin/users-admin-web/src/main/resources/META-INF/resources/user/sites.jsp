@@ -20,7 +20,7 @@ currentURLObj.setParameter("historyKey", liferayPortletResponse.getNamespace() +
 	value="sites"
 />
 
-<liferay-ui:membership-policy-error />
+<liferay-site:membership-policy-error />
 
 <clay:content-row
 	containerElement="div"
@@ -106,7 +106,7 @@ currentURLObj.setParameter("historyKey", liferayPortletResponse.getNamespace() +
 		<liferay-ui:search-container-column-text
 			cssClass="table-cell-expand"
 			name="roles"
-			value="<%= HtmlUtil.escape(UsersAdminUtil.getUserColumnText(locale, userGroupRoles, UsersAdmin.USER_GROUP_ROLE_TITLE_ACCESSOR, userGroupRolesCount)) %>"
+			value="<%= HtmlUtil.escape(UsersAdminUtil.getUserColumnText(locale, userGroupRoles, UsersAdminUtil.USER_GROUP_ROLE_TITLE_ACCESSOR, userGroupRolesCount)) %>"
 		/>
 
 		<c:if test="<%= !portletName.equals(myAccountPortletId) && (selUser != null) && !SiteMembershipPolicyUtil.isMembershipRequired(selUser.getUserId(), group.getGroupId()) && !SiteMembershipPolicyUtil.isMembershipProtected(permissionChecker, selUser.getUserId(), group.getGroupId()) %>">
@@ -331,7 +331,7 @@ currentURLObj.setParameter("historyKey", liferayPortletResponse.getNamespace() +
 			<liferay-ui:search-container-column-text
 				cssClass="table-cell-expand"
 				name="roles"
-				value="<%= HtmlUtil.escape(UsersAdminUtil.getUserColumnText(locale, inheritedRoles, UsersAdmin.USER_GROUP_ROLE_TITLE_ACCESSOR, inheritedRolesCount)) %>"
+				value="<%= HtmlUtil.escape(UsersAdminUtil.getUserColumnText(locale, inheritedRoles, UsersAdminUtil.USER_GROUP_ROLE_TITLE_ACCESSOR, inheritedRolesCount)) %>"
 			/>
 		</liferay-ui:search-container-row>
 

@@ -9,10 +9,10 @@ import com.liferay.configuration.admin.constants.ConfigurationAdminPortletKeys;
 import com.liferay.configuration.admin.display.ConfigurationFormRenderer;
 import com.liferay.frontend.taglib.servlet.taglib.util.JSPRenderer;
 import com.liferay.petra.string.CharPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.language.Language;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.CamelCaseUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
@@ -88,9 +88,9 @@ public class SemanticSearchConfigurationFormRenderer
 		throws IOException {
 
 		if (!FeatureFlagManagerUtil.isEnabled("LPS-122920")) {
-			PrintWriter writer = httpServletResponse.getWriter();
+			PrintWriter printWriter = httpServletResponse.getWriter();
 
-			writer.print(
+			printWriter.print(
 				"<div class=\"alert alert-info\">This feature is not " +
 					"available.</div>");
 

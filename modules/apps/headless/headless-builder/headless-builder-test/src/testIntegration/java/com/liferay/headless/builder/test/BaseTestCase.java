@@ -9,12 +9,19 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.batch.engine.unit.BatchEngineUnitProcessor;
 import com.liferay.batch.engine.unit.BatchEngineUnitReader;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.test.util.HTTPTestUtil;
+import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+
+import java.io.File;
 
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
+import javax.ws.rs.core.Response;
+
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -38,7 +45,7 @@ public abstract class BaseTestCase {
 	@Before
 	public void setUp() throws Exception {
 
-		// TODO Delete the bundle deployment when the FF LPS-184413 is removed
+		// TODO Delete the bundle deployment when the FF LPS-178642 is removed
 
 		Bundle testBundle = FrameworkUtil.getBundle(BaseTestCase.class);
 
@@ -49,6 +56,14 @@ public abstract class BaseTestCase {
 					bundle.getSymbolicName(),
 					"com.liferay.headless.builder.impl")) {
 
+				File processedFile = bundle.getDataFile(
+					".com.liferay.headless.builder.internal.batch.headless." +
+						"builder.batch.engine.data.json.0.processed");
+
+				if ((processedFile != null) && processedFile.exists()) {
+					processedFile.delete();
+				}
+
 				CompletableFuture<Void> completableFuture =
 					_batchEngineUnitProcessor.processBatchEngineUnits(
 						_batchEngineUnitReader.getBatchEngineUnits(bundle));
@@ -56,6 +71,16 @@ public abstract class BaseTestCase {
 				completableFuture.join();
 			}
 		}
+	}
+
+	protected void assertSuccessfulHttpCode(
+			String body, String endpoint, Http.Method httpMethod)
+		throws Exception {
+
+		Assert.assertEquals(
+			Response.Status.Family.SUCCESSFUL,
+			Response.Status.Family.familyOf(
+				HTTPTestUtil.invokeToHttpCode(body, endpoint, httpMethod)));
 	}
 
 	@Inject

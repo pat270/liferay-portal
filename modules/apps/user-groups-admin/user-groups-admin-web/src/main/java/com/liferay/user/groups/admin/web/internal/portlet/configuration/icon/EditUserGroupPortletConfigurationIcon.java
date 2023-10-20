@@ -15,10 +15,10 @@ import com.liferay.portal.kernel.portlet.configuration.icon.BasePortletConfigura
 import com.liferay.portal.kernel.portlet.configuration.icon.PortletConfigurationIcon;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.service.permission.UserGroupPermission;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.service.permission.UserGroupPermissionUtil;
 import com.liferay.user.groups.admin.constants.UserGroupsAdminPortletKeys;
 import com.liferay.user.groups.admin.web.internal.portlet.action.ActionUtil;
 
@@ -93,10 +93,10 @@ public class EditUserGroupPortletConfigurationIcon
 
 			UserGroup userGroup = ActionUtil.getUserGroup(portletRequest);
 
-			if (_userGroupPermission.contains(
+			if (UserGroupPermissionUtil.contains(
 					themeDisplay.getPermissionChecker(),
 					userGroup.getUserGroupId(), ActionKeys.UPDATE) &&
-				_userGroupPermission.contains(
+				UserGroupPermissionUtil.contains(
 					themeDisplay.getPermissionChecker(),
 					userGroup.getUserGroupId(), ActionKeys.VIEW)) {
 
@@ -122,8 +122,5 @@ public class EditUserGroupPortletConfigurationIcon
 
 	@Reference
 	private Portal _portal;
-
-	@Reference
-	private UserGroupPermission _userGroupPermission;
 
 }

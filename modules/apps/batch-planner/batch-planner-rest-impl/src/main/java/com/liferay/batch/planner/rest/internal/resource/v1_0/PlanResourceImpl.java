@@ -5,6 +5,7 @@
 
 package com.liferay.batch.planner.rest.internal.resource.v1_0;
 
+import com.liferay.batch.planner.batch.engine.task.TaskItemUtil;
 import com.liferay.batch.planner.model.BatchPlannerMapping;
 import com.liferay.batch.planner.model.BatchPlannerPlan;
 import com.liferay.batch.planner.model.BatchPlannerPolicy;
@@ -65,12 +66,14 @@ public class PlanResourceImpl extends BasePlanResourceImpl {
 	}
 
 	@Override
-	public Response getPlanTemplate(String internalClassName) throws Exception {
+	public Response getPlanTemplate(String internalClassNameKey)
+		throws Exception {
+
 		return _getResponse(
-			internalClassName.substring(
-				internalClassName.lastIndexOf(StringPool.PERIOD) + 1),
+			TaskItemUtil.getSimpleClassName(internalClassNameKey),
 			_fieldProvider.getFields(
-				contextCompany.getCompanyId(), internalClassName));
+				contextCompany.getCompanyId(), internalClassNameKey,
+				contextUriInfo));
 	}
 
 	@Override
@@ -199,6 +202,9 @@ public class PlanResourceImpl extends BasePlanResourceImpl {
 				externalURL = batchPlannerPlan.getExternalURL();
 				id = batchPlannerPlan.getBatchPlannerPlanId();
 				internalClassName = batchPlannerPlan.getInternalClassName();
+				internalClassNameKey = TaskItemUtil.getInternalClassNameKey(
+					batchPlannerPlan.getInternalClassName(),
+					batchPlannerPlan.getTaskItemDelegateName());
 				mappings = transformToArray(
 					_batchPlannerMappingService.getBatchPlannerMappings(
 						batchPlannerPlan.getBatchPlannerPlanId()),

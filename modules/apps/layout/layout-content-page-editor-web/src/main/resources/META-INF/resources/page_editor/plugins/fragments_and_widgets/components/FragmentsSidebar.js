@@ -9,10 +9,10 @@ import {
 	SearchResultsMessage,
 	isNullOrUndefined,
 } from '@liferay/layout-js-components-web';
+import {useSessionState} from 'frontend-js-components-web';
 import {sub} from 'frontend-js-web';
 import React, {useEffect, useMemo, useState} from 'react';
 
-import {ReorderSetsModal} from '../../../app/components/ReorderSetsModal';
 import {FRAGMENTS_DISPLAY_STYLES} from '../../../app/config/constants/fragmentsDisplayStyles';
 import {HIGHLIGHTED_COLLECTION_ID} from '../../../app/config/constants/highlightedCollectionId';
 import {LAYOUT_DATA_ITEM_TYPES} from '../../../app/config/constants/layoutDataItemTypes';
@@ -25,9 +25,9 @@ import {
 import selectWidgetFragmentEntryLinks from '../../../app/selectors/selectWidgetFragmentEntryLinks';
 import loadWidgets from '../../../app/thunks/loadWidgets';
 import SidebarPanelHeader from '../../../common/components/SidebarPanelHeader';
-import {useSessionState} from '../../../common/hooks/useSessionState';
 import SearchResultsPanel from './SearchResultsPanel';
 import TabsPanel from './TabsPanel';
+import {ReorderSetsModal} from './reorder_sets_modal/ReorderSetsModal';
 
 export const COLLECTION_IDS = {
 	fragments: 0,

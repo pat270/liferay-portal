@@ -701,6 +701,110 @@ java -jar ${app.server.weblogic.dir}/${app.server.weblogic.jar.name} -ignoreSysP
 		<echo file="prepare-generated-files.tstamp">${prepare-generated-files.tstamp}</echo>
 	</target>
 
+	<target name="unzip-glowroot">
+		<delete dir="${app.server.parent.dir}/glowroot" />
+
+		<if>
+			<not>
+				<available file="${app.server.parent.dir}/${glowroot.zip.name}" />
+			</not>
+			<then>
+				<mkdir dir="${app.server.parent.dir}" />
+
+				<mirrors-get
+					dest="${app.server.parent.dir}/${glowroot.zip.name}"
+					src="${glowroot.zip.url}"
+					verbose="true"
+				/>
+			</then>
+		</if>
+
+		<unzip
+			dest="${app.server.parent.dir}"
+			src="${app.server.parent.dir}/${glowroot.zip.name}"
+		/>
+
+		<var name="glowroot.agent" value="-javaagent:${CATALINA_HOME}/../glowroot/glowroot.jar" />
+
+		<if>
+			<not>
+				<resourcecontains
+					resource="${app.server.tomcat.dir}/bin/setenv.sh"
+					substring="${glowroot.agent}"
+				/>
+			</not>
+			<then>
+				<echo append="true" file="${app.server.tomcat.dir}/bin/setenv.sh">
+					<![CDATA[
+if [ "$1" = "glowroot" ]
+then
+	GLOWROOT_OPTS="${glowroot.agent}"
+
+	CATALINA_OPTS="${CATALINA_OPTS} ${GLOWROOT_OPTS}"
+
+	shift
+fi
+
+if [ "$GLOWROOT_ENABLED" = "true" ]
+then
+	GLOWROOT_OPTS="${glowroot.agent}"
+
+	CATALINA_OPTS="${CATALINA_OPTS} ${GLOWROOT_OPTS}"
+fi
+					]]>
+				</echo>
+			</then>
+		</if>
+
+		<echo file="${liferay.home}/glowroot/admin.json"><![CDATA[{
+	"roles": [
+		{
+			"name": "Administrator",
+			"permissions": [
+				"admin",
+				"agent:config",
+				"agent:error",
+				"agent:incident",
+				"agent:jvm",
+				"agent:transaction"
+			]
+		}
+	],
+	"storage": {
+		"fullQueryTextExpirationHours": 336,
+		"rollupCappedDatabaseSizesMb": [
+			500,
+			500,
+			500,
+			500
+		],
+		"rollupExpirationHours": [
+			72,
+			336,
+			2160,
+			2160
+		],
+		"traceCappedDatabaseSizeMb": 500,
+		"traceExpirationHours": 336
+	},
+	"users": [
+		{
+			"roles": [
+				"Administrator"
+			],
+			"username": "anonymous"
+		}
+	],
+	"web": {
+		"bindAddress": "127.0.0.1",
+		"contextPath": "/o/glowroot",
+		"port": 4000,
+		"sessionCookieName": "GLOWROOT_SESSION_ID",
+		"sessionTimeoutMinutes": 30
+	}
+}]]></echo>
+	</target>
+
 	<target name="unzip-jboss">
 		<delete dir="${app.server.jboss.dir}" />
 
@@ -1117,6 +1221,8 @@ org.apache.level=WARNING]]>
 				<include name="*.sh" />
 			</fileset>
 		</chmod>
+
+		<antcall target="unzip-glowroot" />
 	</target>
 
 	<target name="unzip-weblogic">

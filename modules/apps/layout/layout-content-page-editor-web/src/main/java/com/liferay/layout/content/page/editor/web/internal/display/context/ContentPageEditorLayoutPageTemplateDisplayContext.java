@@ -31,6 +31,7 @@ import com.liferay.layout.content.page.editor.web.internal.util.ContentManager;
 import com.liferay.layout.content.page.editor.web.internal.util.FragmentCollectionManager;
 import com.liferay.layout.content.page.editor.web.internal.util.FragmentEntryLinkManager;
 import com.liferay.layout.content.page.editor.web.internal.util.MappingContentUtil;
+import com.liferay.layout.manager.LayoutLockManager;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryService;
@@ -87,6 +88,7 @@ public class ContentPageEditorLayoutPageTemplateDisplayContext
 		InfoSearchClassMapperRegistry infoSearchClassMapperRegistry,
 		ItemSelector itemSelector, JSONFactory jsonFactory, Language language,
 		LayoutLocalService layoutLocalService,
+		LayoutLockManager layoutLockManager,
 		LayoutSetLocalService layoutSetLocalService,
 		LayoutPageTemplateEntryLocalService layoutPageTemplateEntryLocalService,
 		LayoutPageTemplateEntryService layoutPageTemplateEntryService,
@@ -110,9 +112,10 @@ public class ContentPageEditorLayoutPageTemplateDisplayContext
 			frontendTokenDefinitionRegistry, httpServletRequest,
 			infoItemServiceRegistry, infoSearchClassMapperRegistry,
 			itemSelector, jsonFactory, language, layoutLocalService,
-			layoutPageTemplateEntryLocalService, layoutPageTemplateEntryService,
-			layoutPermission, layoutSetLocalService, pageEditorConfiguration,
-			portal, portletRequest, portletURLFactory, renderResponse,
+			layoutLockManager, layoutPageTemplateEntryLocalService,
+			layoutPageTemplateEntryService, layoutPermission,
+			layoutSetLocalService, pageEditorConfiguration, portal,
+			portletRequest, portletURLFactory, renderResponse,
 			segmentsConfigurationProvider, segmentsExperienceManager,
 			segmentsExperienceLocalService, segmentsExperimentRelLocalService,
 			staging, stagingGroupHelper, styleBookEntryLocalService,

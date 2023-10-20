@@ -21,6 +21,8 @@ import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ParamUtil;
 
+import java.math.BigDecimal;
+
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 
@@ -61,7 +63,8 @@ public class EditCommerceOrderItemMVCActionCommand
 					commerceOrderItemId, commerceContext);
 			}
 			else if (cmd.equals(Constants.UPDATE)) {
-				int quantity = ParamUtil.getInteger(actionRequest, "quantity");
+				BigDecimal quantity = (BigDecimal)ParamUtil.getNumber(
+					actionRequest, "quantity", BigDecimal.ZERO);
 
 				CommerceOrderItem commerceOrderItem =
 					_commerceOrderItemService.getCommerceOrderItem(

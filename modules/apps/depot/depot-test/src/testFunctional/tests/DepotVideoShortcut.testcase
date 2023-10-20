@@ -110,6 +110,7 @@ definition {
 	@refactordone
 	test CannotSearchDepotVideoShortcutWhenSearchingIsDisabled {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONLayout.addWidgetToPublicLayout(
 			groupName = "Site Name",
@@ -146,7 +147,7 @@ definition {
 
 		Search.searchCP(searchTerm = "depot");
 
-		SearchResultPortlet.viewNoSearchResults(searchTerm = "depot");
+		SearchResults.viewNoSearchResults(searchTerm = "depot");
 	}
 
 	@description = "This ensures that a depot external video cannot be viewed from the disconnected site."
@@ -185,6 +186,7 @@ definition {
 	@refactordone
 	test CanSearchVideoShortcutByTag {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONLayout.addWidgetToPublicLayout(
 			groupName = "Site Name",
@@ -213,7 +215,7 @@ definition {
 
 		Search.searchCP(searchTerm = "depot");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Test YouTube Video",
 			searchAssetType = "Document");
 	}
@@ -426,6 +428,8 @@ definition {
 			groupName = "Test Depot Name",
 			site = "false");
 
+		Refresh();
+
 		KBArticle.openToKBArticleInSite(
 			groupName = "Site Name",
 			kbArticleTitle = "Knowledge Base Article Title Edit",
@@ -536,6 +540,7 @@ definition {
 	@refactordone
 	test CanViewVideoShortcutInRelatedAssets {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONLayout.addWidgetToPublicLayout(
 			groupName = "Site Name",

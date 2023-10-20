@@ -93,7 +93,7 @@ export default function useUserAccountsByAccountExternalReferenceCode(
 		searching
 	);
 
-	const search = useSearchTerm((searchTerm) => {
+	const [, onSearch] = useSearchTerm((searchTerm) => {
 		setSearching(true);
 
 		refetch({
@@ -164,8 +164,9 @@ export default function useUserAccountsByAccountExternalReferenceCode(
 			loading:
 				koroneikiAccountLoading ||
 				networkStatus === NetworkStatus.loading,
+			refetch,
 			remove,
-			search,
+			search: onSearch,
 			searching: networkStatus === NetworkStatus.setVariables,
 			update,
 			updating: updating || removing,

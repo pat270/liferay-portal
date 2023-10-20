@@ -15,7 +15,6 @@ import com.liferay.jenkins.results.parser.failure.message.generator.JSUnitTestFa
 import com.liferay.jenkins.results.parser.failure.message.generator.LocalGitMirrorFailureMessageGenerator;
 import com.liferay.jenkins.results.parser.failure.message.generator.ModulesCompilationFailureMessageGenerator;
 import com.liferay.jenkins.results.parser.failure.message.generator.PMDFailureMessageGenerator;
-import com.liferay.jenkins.results.parser.failure.message.generator.PluginFailureMessageGenerator;
 import com.liferay.jenkins.results.parser.failure.message.generator.PluginGitIDFailureMessageGenerator;
 import com.liferay.jenkins.results.parser.failure.message.generator.SemanticVersioningFailureMessageGenerator;
 import com.liferay.jenkins.results.parser.failure.message.generator.ServiceBuilderFailureMessageGenerator;
@@ -53,12 +52,8 @@ import org.dom4j.Element;
 public class AxisBuild extends BaseBuild {
 
 	@Override
-	public void addTimelineData(BaseBuild.TimelineData timelineData) {
+	public void addTimelineData(TimelineData timelineData) {
 		timelineData.addTimelineData(this);
-	}
-
-	@Override
-	public void findDownstreamBuilds() {
 	}
 
 	@Override
@@ -185,6 +180,12 @@ public class AxisBuild extends BaseBuild {
 		catch (IOException ioException) {
 			throw new RuntimeException("Unable to generate html", ioException);
 		}
+	}
+
+	@Override
+	public String getBuildName() {
+		return JenkinsResultsParserUtil.combine(
+			getJobVariant(), "/", getAxisVariable());
 	}
 
 	@Override
@@ -493,8 +494,35 @@ public class AxisBuild extends BaseBuild {
 	}
 
 	@Override
+	public boolean isApplySlaveOfflineRules() {
+		return false;
+	}
+
+	@Override
 	public void reinvoke() {
 		throw new RuntimeException("Axis builds cannot be reinvoked");
+	}
+
+	@Override
+	public void setBuildURL(String buildURL) {
+		super.setBuildURL(buildURL);
+
+		MultiPattern buildURLMultiPattern = getBuildURLMultiPattern();
+
+		Matcher matcher = buildURLMultiPattern.find(buildURL);
+
+		if (matcher == null) {
+			axisVariable = null;
+
+			return;
+		}
+
+		try {
+			axisVariable = matcher.group("axisVariable");
+		}
+		catch (IllegalArgumentException illegalArgumentException) {
+			axisVariable = null;
+		}
 	}
 
 	protected AxisBuild(String url) {
@@ -503,22 +531,6 @@ public class AxisBuild extends BaseBuild {
 
 	protected AxisBuild(String url, BatchBuild parentBatchBuild) {
 		super(JenkinsResultsParserUtil.getLocalURL(url), parentBatchBuild);
-	}
-
-	@Override
-	protected void checkForReinvocation(String consoleText) {
-	}
-
-	@Override
-	protected void extractBuildURLComponents(Matcher matcher) {
-		super.extractBuildURLComponents(matcher);
-
-		try {
-			axisVariable = matcher.group("axisVariable");
-		}
-		catch (IllegalArgumentException illegalArgumentException) {
-			axisVariable = null;
-		}
 	}
 
 	@Override
@@ -606,7 +618,6 @@ public class AxisBuild extends BaseBuild {
 			new JSUnitTestFailureMessageGenerator(),
 			new LocalGitMirrorFailureMessageGenerator(),
 			new PMDFailureMessageGenerator(),
-			new PluginFailureMessageGenerator(),
 			new PluginGitIDFailureMessageGenerator(),
 			new SemanticVersioningFailureMessageGenerator(),
 			new ServiceBuilderFailureMessageGenerator(),

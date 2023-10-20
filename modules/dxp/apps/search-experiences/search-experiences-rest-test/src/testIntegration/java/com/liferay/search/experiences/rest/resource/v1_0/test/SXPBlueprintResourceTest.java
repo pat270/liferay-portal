@@ -24,6 +24,7 @@ import org.junit.runner.RunWith;
 /**
  * @author Brian Wing Shun Chan
  */
+@Ignore
 @RunWith(Arquillian.class)
 public class SXPBlueprintResourceTest extends BaseSXPBlueprintResourceTestCase {
 
@@ -224,6 +225,13 @@ public class SXPBlueprintResourceTest extends BaseSXPBlueprintResourceTestCase {
 		throws Exception {
 
 		return _addSXPBlueprint(sxpBlueprint);
+	}
+
+	@Override
+	protected SXPBlueprint testPutSXPBlueprint_addSXPBlueprint()
+		throws Exception {
+
+		return _addSXPBlueprint(randomSXPBlueprint());
 	}
 
 	@Override

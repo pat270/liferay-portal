@@ -8,12 +8,12 @@ import {
 	API,
 	SidePanelForm,
 	SidebarCategory,
+	getLocalizableLabel,
 	openToast,
 	saveAndReload,
 } from '@liferay/object-js-components-web';
 import React, {useEffect, useState} from 'react';
 
-import {defaultLanguageId} from '../../utils/constants';
 import {BasicInfo} from './BasicInfo';
 import {Conditions} from './Conditions';
 import {
@@ -23,6 +23,7 @@ import {
 
 interface EditObjectValidationProps {
 	creationLanguageId: Liferay.Language.Locale;
+	learnResources: ObjectWebLearnResources;
 	objectDefinitionId: number;
 	objectValidationRuleElements: SidebarCategory[];
 	objectValidationRuleId: number;
@@ -63,6 +64,7 @@ const initialValues: ObjectValidation = {
 
 export default function EditObjectValidation({
 	creationLanguageId,
+	learnResources,
 	objectDefinitionId,
 	objectValidationRuleElements,
 	objectValidationRuleId,
@@ -78,10 +80,10 @@ export default function EditObjectValidation({
 		delete objectValidation.lineCount;
 
 		try {
-			await API.save(
-				`/o/object-admin/v1.0/object-validation-rules/${objectValidation.id}`,
-				objectValidation
-			);
+			await API.save({
+				item: objectValidation,
+				url: `/o/object-admin/v1.0/object-validation-rules/${objectValidation.id}`,
+			});
 			saveAndReload();
 			openToast({
 				message: Liferay.Language.get(
@@ -91,14 +93,17 @@ export default function EditObjectValidation({
 		}
 		catch (error) {
 			const {detail, message} = error as ErrorDetails;
-			const {fieldName, message: detailMessage} = JSON.parse(
-				detail as string
-			) as {
-				fieldName: keyof ObjectValidationErrors;
-				message: string;
-			};
 
-			setErrorMessage({[fieldName]: detailMessage});
+			if (detail) {
+				const {fieldName, message: detailMessage} = JSON.parse(
+					detail as string
+				) as {
+					fieldName: keyof ObjectValidationErrors;
+					message: string;
+				};
+
+				setErrorMessage({[fieldName]: detailMessage});
+			}
 
 			openToast({message, type: 'danger'});
 		}
@@ -129,54 +134,49 @@ export default function EditObjectValidation({
 				ObjectValidation
 			>(objectValidationRuleId);
 
-			if (Liferay.FeatureFlags['LPS-187846']) {
-				const newObjectValidation: ObjectValidation = {
-					...validationResponseJSON,
-					script:
-						validationResponseJSON.script === 'script_placeholder'
-							? ''
-							: validationResponseJSON.script,
-				};
+			const newObjectValidation: ObjectValidation = {
+				...validationResponseJSON,
+				script:
+					validationResponseJSON.script === 'script_placeholder'
+						? ''
+						: validationResponseJSON.script,
+			};
 
-				const fieldsResponseJSON = await API.getObjectFieldsById(
-					objectDefinitionId
-				);
+			const fieldsResponseJSON = await API.getObjectDefinitionObjectFields(
+				objectDefinitionId
+			);
 
-				setObjectFields(
-					fieldsResponseJSON.filter((field) => !field.system)
-				);
-				setValues(newObjectValidation);
-			}
-			else {
-				setValues({
-					...validationResponseJSON,
-					script:
-						validationResponseJSON.script === 'script_placeholder'
-							? ''
-							: validationResponseJSON.script,
-				});
-			}
+			setObjectFields(
+				fieldsResponseJSON.filter((field) => !field.system)
+			);
+			setValues(newObjectValidation);
 		};
 
 		makeFetch();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [objectDefinitionId, objectValidationRuleId]);
 
+	const disabled = readOnly || !!values?.system;
+
 	return (
 		<SidePanelForm
 			onSubmit={handleSubmit}
-			title={initialValues.name?.[defaultLanguageId]!}
+			title={getLocalizableLabel(creationLanguageId, values.name)}
 		>
 			<ClayTabs className="side-panel-iframe__tabs">
-				{TABS.map(({label}, index) => (
-					<ClayTabs.Item
-						active={activeIndex === index}
-						key={index}
-						onClick={() => setActiveIndex(index)}
-					>
-						{label}
-					</ClayTabs.Item>
-				))}
+				{TABS.map(({label}, index) =>
+					values.engine?.startsWith('function#') && index === 1 ? (
+						<React.Fragment key={index} />
+					) : (
+						<ClayTabs.Item
+							active={activeIndex === index}
+							key={index}
+							onClick={() => setActiveIndex(index)}
+						>
+							{label}
+						</ClayTabs.Item>
+					)
+				)}
 			</ClayTabs>
 
 			<ClayTabs.Content activeIndex={activeIndex} fade>
@@ -186,13 +186,14 @@ export default function EditObjectValidation({
 							<Component
 								componentLabel={label}
 								creationLanguageId={creationLanguageId}
-								disabled={readOnly}
+								disabled={disabled}
 								errors={
 									Object.keys(errors).length !== 0
 										? errors
 										: errorMessage
 								}
 								handleChange={handleChange}
+								learnResources={learnResources}
 								objectFields={objectFields ?? []}
 								objectValidationRuleElements={
 									objectValidationRuleElements

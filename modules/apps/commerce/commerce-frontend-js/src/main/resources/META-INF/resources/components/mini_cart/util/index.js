@@ -16,26 +16,26 @@ import {
 	PRODUCT_QUANTITY_NOT_VALID_ERROR,
 } from './constants';
 
-export function getCorrectedQuantity(product, sku, cartItems, parentProduct) {
+export function getCorrectedQuantity(
+	productConfiguration,
+	sku,
+	cartItems,
+	precision = 0
+) {
 	const {
 		allowedOrderQuantities,
 		maxOrderQuantity,
 		minOrderQuantity,
 		multipleOrderQuantity,
-	} = parentProduct
-		? parentProduct.productConfiguration
-		: product.productConfiguration;
+	} = productConfiguration;
 
 	let quantity;
 
-	if (parentProduct || !allowedOrderQuantities.length) {
+	if (!allowedOrderQuantities.length) {
 		quantity = minOrderQuantity;
 	}
 
-	const existingItem = cartItems.find(
-		(item) =>
-			item.productId === product.productId || item.sku === product.sku
-	);
+	const existingItem = cartItems.find((item) => item.sku === sku);
 
 	const lastAllowedQuantity =
 		allowedOrderQuantities[allowedOrderQuantities.length - 1];
@@ -157,6 +157,10 @@ export function getCorrectedQuantity(product, sku, cartItems, parentProduct) {
 		}
 	}
 
+	if (minOrderQuantity > maxOrderQuantity) {
+		quantity = 0;
+	}
+
 	if (multipleOrderQuantity > 1 && quantity % multipleOrderQuantity !== 0) {
 		openToast({
 			message: sub(
@@ -180,7 +184,7 @@ export function getCorrectedQuantity(product, sku, cartItems, parentProduct) {
 		});
 	}
 
-	return quantity;
+	return Number(quantity.toFixed(precision));
 }
 
 export function generateProductPageURL(

@@ -9,6 +9,7 @@ import com.liferay.headless.admin.user.dto.v1_0.Account;
 import com.liferay.headless.admin.user.dto.v1_0.AccountGroup;
 import com.liferay.headless.admin.user.dto.v1_0.AccountRole;
 import com.liferay.headless.admin.user.dto.v1_0.Organization;
+import com.liferay.headless.admin.user.dto.v1_0.PostalAddress;
 import com.liferay.headless.admin.user.dto.v1_0.UserAccount;
 import com.liferay.headless.admin.user.dto.v1_0.UserGroup;
 import com.liferay.headless.admin.user.resource.v1_0.AccountGroupResource;
@@ -1262,6 +1263,35 @@ public class Mutation {
 	}
 
 	@GraphQLField
+	public PostalAddress createAccountPostalAddress(
+			@GraphQLName("accountId") Long accountId,
+			@GraphQLName("postalAddress") PostalAddress postalAddress)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_postalAddressResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			postalAddressResource ->
+				postalAddressResource.postAccountPostalAddress(
+					accountId, postalAddress));
+	}
+
+	@GraphQLField
+	public Response createAccountPostalAddressBatch(
+			@GraphQLName("accountId") Long accountId,
+			@GraphQLName("callbackURL") String callbackURL,
+			@GraphQLName("object") Object object)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_postalAddressResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			postalAddressResource ->
+				postalAddressResource.postAccountPostalAddressBatch(
+					accountId, callbackURL, object));
+	}
+
+	@GraphQLField
 	public Response createOrganizationPostalAddressesPageExportBatch(
 			@GraphQLName("organizationId") String organizationId,
 			@GraphQLName("callbackURL") String callbackURL,
@@ -1276,6 +1306,74 @@ public class Mutation {
 				postalAddressResource.
 					postOrganizationPostalAddressesPageExportBatch(
 						organizationId, callbackURL, contentType, fieldNames));
+	}
+
+	@GraphQLField(description = "Deletes the postal address")
+	public boolean deletePostalAddress(
+			@GraphQLName("postalAddressId") Long postalAddressId)
+		throws Exception {
+
+		_applyVoidComponentServiceObjects(
+			_postalAddressResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			postalAddressResource -> postalAddressResource.deletePostalAddress(
+				postalAddressId));
+
+		return true;
+	}
+
+	@GraphQLField
+	public Response deletePostalAddressBatch(
+			@GraphQLName("callbackURL") String callbackURL,
+			@GraphQLName("object") Object object)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_postalAddressResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			postalAddressResource ->
+				postalAddressResource.deletePostalAddressBatch(
+					callbackURL, object));
+	}
+
+	@GraphQLField
+	public PostalAddress patchPostalAddress(
+			@GraphQLName("postalAddressId") Long postalAddressId,
+			@GraphQLName("postalAddress") PostalAddress postalAddress)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_postalAddressResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			postalAddressResource -> postalAddressResource.patchPostalAddress(
+				postalAddressId, postalAddress));
+	}
+
+	@GraphQLField
+	public PostalAddress updatePostalAddress(
+			@GraphQLName("postalAddressId") Long postalAddressId,
+			@GraphQLName("postalAddress") PostalAddress postalAddress)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_postalAddressResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			postalAddressResource -> postalAddressResource.putPostalAddress(
+				postalAddressId, postalAddress));
+	}
+
+	@GraphQLField
+	public Response updatePostalAddressBatch(
+			@GraphQLName("callbackURL") String callbackURL,
+			@GraphQLName("object") Object object)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_postalAddressResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			postalAddressResource ->
+				postalAddressResource.putPostalAddressBatch(
+					callbackURL, object));
 	}
 
 	@GraphQLField

@@ -17,13 +17,6 @@ export function addVariant(payload) {
 	};
 }
 
-export function archiveExperiment(payload) {
-	return {
-		payload,
-		type: 'ARCHIVE_EXPERIMENT',
-	};
-}
-
 export function closeCreationModal() {
 	return {
 		type: 'CREATE_EXPERIMENT_FINISH',
@@ -42,15 +35,6 @@ export function closeReviewAndRunExperiment() {
 	};
 }
 
-export function deleteArchivedExperiment(experimentId) {
-	return {
-		payload: {
-			experimentId,
-		},
-		type: 'DELETE_ARCHIVED_EXPERIMENT',
-	};
-}
-
 export function editSegmentsExperiment(payload) {
 	return {
 		payload,
@@ -62,6 +46,48 @@ export function openCreationModal(payload) {
 	return {
 		payload,
 		type: 'CREATE_EXPERIMENT_START',
+	};
+}
+
+export function closeDeletionModal() {
+	return {
+		payload: {active: false},
+		type: 'DELETE_EXPERIMENT',
+	};
+}
+
+export function closePublishModal() {
+	return {
+		payload: {active: false, experience: null},
+		type: 'PUBLISH_EXPERIMENT',
+	};
+}
+
+export function openPublishModal(experience) {
+	return {
+		payload: {active: true, experience},
+		type: 'PUBLISH_EXPERIMENT',
+	};
+}
+
+export function openDeletionModal() {
+	return {
+		payload: {active: true},
+		type: 'DELETE_EXPERIMENT',
+	};
+}
+
+export function closeTerminateModal() {
+	return {
+		payload: {active: false},
+		type: 'TERMINATE_EXPERIMENT',
+	};
+}
+
+export function openTerminateModal() {
+	return {
+		payload: {active: true},
+		type: 'TERMINATE_EXPERIMENT',
 	};
 }
 

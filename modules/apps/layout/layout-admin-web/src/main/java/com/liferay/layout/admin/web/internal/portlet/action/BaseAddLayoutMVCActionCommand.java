@@ -6,6 +6,7 @@
 package com.liferay.layout.admin.web.internal.portlet.action;
 
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
@@ -53,8 +54,9 @@ public abstract class BaseAddLayoutMVCActionCommand
 		String backURL = ParamUtil.getString(actionRequest, "backURL");
 
 		if (Validator.isNotNull(backURL)) {
-			layoutFullURL = HttpComponentsUtil.setParameter(
-				layoutFullURL, "p_l_back_url", backURL);
+			layoutFullURL = HttpComponentsUtil.addParameters(
+				layoutFullURL, "p_l_back_url", backURL, "p_l_back_url_title",
+				language.get(themeDisplay.getLocale(), "pages"));
 		}
 
 		return layoutFullURL;
@@ -99,6 +101,9 @@ public abstract class BaseAddLayoutMVCActionCommand
 
 		return configureLayoutURL.toString();
 	}
+
+	@Reference
+	protected Language language;
 
 	@Reference
 	protected LayoutLocalService layoutLocalService;

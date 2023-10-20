@@ -18,14 +18,16 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.HtmlEscapableObject;
 import com.liferay.portal.kernel.util.HtmlUtil;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.SubscriptionSender;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
+import java.util.ArrayList;
 import java.util.Dictionary;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
@@ -63,13 +65,10 @@ public class FlagsEntryServiceTest {
 
 	@After
 	public void tearDown() {
-		if (_serviceRegistration != null) {
-			Destination destination = _bundleContext.getService(
-				_serviceRegistration.getReference());
+		for (ServiceRegistration<?> serviceRegistration :
+				_serviceRegistrations) {
 
-			_serviceRegistration.unregister();
-
-			destination.destroy();
+			serviceRegistration.unregister();
 		}
 	}
 
@@ -123,23 +122,20 @@ public class FlagsEntryServiceTest {
 	}
 
 	private void _registerDestination(MessageListener messageListener) {
-		DestinationConfiguration destinationConfiguration =
+		Destination destination = _destinationFactory.createDestination(
 			new DestinationConfiguration(
 				DestinationConfiguration.DESTINATION_TYPE_SYNCHRONOUS,
-				DestinationNames.SUBSCRIPTION_SENDER);
+				DestinationNames.SUBSCRIPTION_SENDER));
 
-		Destination destination = _destinationFactory.createDestination(
-			destinationConfiguration);
+		Dictionary<String, Object> dictionary = MapUtil.singletonDictionary(
+			"destination.name", destination.getName());
 
-		destination.register(messageListener);
-
-		Dictionary<String, Object> properties =
-			HashMapDictionaryBuilder.<String, Object>put(
-				"destination.name", destination.getName()
-			).build();
-
-		_serviceRegistration = _bundleContext.registerService(
-			Destination.class, destination, properties);
+		_serviceRegistrations.add(
+			_bundleContext.registerService(
+				Destination.class, destination, dictionary));
+		_serviceRegistrations.add(
+			_bundleContext.registerService(
+				MessageListener.class, messageListener, dictionary));
 	}
 
 	private BundleContext _bundleContext;
@@ -150,7 +146,8 @@ public class FlagsEntryServiceTest {
 	@Inject
 	private FlagsEntryService _flagsEntryService;
 
-	private ServiceRegistration<Destination> _serviceRegistration;
+	private final List<ServiceRegistration<?>> _serviceRegistrations =
+		new ArrayList<>();
 
 	private class MockSubscriptionSenderMessageListener
 		extends BaseMessageListener {

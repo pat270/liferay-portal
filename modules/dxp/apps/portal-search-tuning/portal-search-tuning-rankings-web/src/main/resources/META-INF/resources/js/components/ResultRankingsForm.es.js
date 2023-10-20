@@ -32,16 +32,18 @@ class ResultRankingsForm extends Component {
 	static contextType = ThemeContext;
 
 	static propTypes = {
-		cancelUrl: PropTypes.string.isRequired,
-		fetchDocumentsHiddenUrl: PropTypes.string.isRequired,
-		fetchDocumentsSearchUrl: PropTypes.string.isRequired,
-		fetchDocumentsVisibleUrl: PropTypes.string.isRequired,
+		cancelURL: PropTypes.string.isRequired,
+		fetchDocumentsHiddenURL: PropTypes.string.isRequired,
+		fetchDocumentsSearchURL: PropTypes.string.isRequired,
+		fetchDocumentsVisibleURL: PropTypes.string.isRequired,
 		formName: PropTypes.string.isRequired,
 		initialAliases: PropTypes.arrayOf(String),
+		initialGroupExternalReferenceCode: PropTypes.string,
 		initialInactive: PropTypes.bool,
+		initialSXPBlueprintExternalReferenceCode: PropTypes.string,
 		resultsRankingUid: PropTypes.string,
 		searchQuery: PropTypes.string.isRequired,
-		validateFormUrl: PropTypes.string.isRequired,
+		validateFormURL: PropTypes.string.isRequired,
 	};
 
 	static defaultProps = {
@@ -139,6 +141,12 @@ class ResultRankingsForm extends Component {
 		resultIdsPinned: [],
 
 		/**
+		 * The display name of the scope (site or blueprint).
+		 * @type {string}
+		 */
+		scopeDisplayName: '',
+
+		/**
 		 * Toggles on and off the debugger form.
 		 * @type {boolean}
 		 */
@@ -177,6 +185,8 @@ class ResultRankingsForm extends Component {
 	}
 
 	componentDidMount() {
+		this._handleFetchScopeDisplayName();
+
 		this._handleFetchResultsDataVisible();
 		this._handleFetchResultsDataHidden();
 	}
@@ -223,6 +233,17 @@ class ResultRankingsForm extends Component {
 	};
 
 	/**
+	 * Handles what happens when switching the active tab under query terms.
+	 */
+	_handleActiveTabQueryValueChange = (activeTabQueryValue) => (event) => {
+		event.preventDefault();
+
+		this.setState({
+			activeTabQueryValue,
+		});
+	};
+
+	/**
 	 * Handles what happens when an item is pinned or unpinned. Updates the
 	 * dataMap and adds the id to the resultsDataPinned list.
 	 * @param {array} ids The list of ids to pin.
@@ -264,6 +285,52 @@ class ResultRankingsForm extends Component {
 	};
 
 	/**
+	 * Retrieves display name of the scope (site or blueprint) from its
+	 * externalReferenceCode, if defined.
+	 */
+	_handleFetchScopeDisplayName = () => {
+		if (
+			this.props.initialGroupExternalReferenceCode ||
+			this.props.initialSXPBlueprintExternalReferenceCode
+		) {
+			const scopeInfo = this.props.initialGroupExternalReferenceCode
+				? {
+						fetchItemByIdUrl: this.props
+							.fetchSiteByExternalReferenceCodeURL,
+						label: 'descriptiveName',
+						value: this.props.initialGroupExternalReferenceCode,
+				  }
+				: {
+						fetchItemByIdUrl: `${
+							window.location.origin
+						}${Liferay.ThemeDisplay.getPathContext()}/o/search-experiences-rest/v1.0/sxp-blueprints/by-external-reference-code/${
+							this.props.initialSXPBlueprintExternalReferenceCode
+						}`,
+						label: 'title',
+						value: this.props
+							.initialSXPBlueprintExternalReferenceCode,
+				  };
+
+			fetchResponse(scopeInfo.fetchItemByIdUrl, {
+				[`${this.context.namespace}externalReferenceCode`]: scopeInfo.value,
+			})
+				.then((response) => {
+					this.setState(() => ({
+						scopeDisplayName:
+							response.status !== 'NOT_FOUND'
+								? response[scopeInfo.label]
+								: scopeInfo.value,
+					}));
+				})
+				.catch(() => {
+					this.setState(() => ({
+						scopeDisplayName: scopeInfo.value,
+					}));
+				});
+		}
+	};
+
+	/**
 	 * Retrieves visible results data which contains pinned results. This also
 	 * handles loading more data into the results list.
 	 */
@@ -275,11 +342,15 @@ class ResultRankingsForm extends Component {
 
 		const {companyId, namespace} = this.context;
 
-		return fetchDocuments(this.props.fetchDocumentsVisibleUrl, {
+		return fetchDocuments(this.props.fetchDocumentsVisibleURL, {
 			[`${namespace}companyId`]: companyId,
 			[`${namespace}from`]: DELTA * this.state.visibleCur,
 			[`${namespace}keywords`]: this.props.searchQuery,
 			[`${namespace}size`]: DELTA,
+			[`${namespace}groupExternalReferenceCode`]: this.props
+				.initialGroupExternalReferenceCode,
+			[`${namespace}sxpBlueprintExternalReferenceCode`]: this.props
+				.initialSXPBlueprintExternalReferenceCode,
 		})
 			.then(({items, total}) => {
 				const fetchedItems = items || {};
@@ -377,11 +448,15 @@ class ResultRankingsForm extends Component {
 
 		const {companyId, namespace} = this.context;
 
-		return fetchDocuments(this.props.fetchDocumentsHiddenUrl, {
+		return fetchDocuments(this.props.fetchDocumentsHiddenURL, {
 			[`${namespace}companyId`]: companyId,
 			[`${namespace}from`]: DELTA * this.state.hiddenCur,
 			[`${namespace}keywords`]: this.props.searchQuery,
 			[`${namespace}size`]: DELTA,
+			[`${namespace}groupExternalReferenceCode`]: this.props
+				.initialGroupExternalReferenceCode,
+			[`${namespace}sxpBlueprintExternalReferenceCode`]: this.props
+				.initialSXPBlueprintExternalReferenceCode,
 		})
 			.then(({items, total}) => {
 				const fetchedItems = items || {};
@@ -474,16 +549,19 @@ class ResultRankingsForm extends Component {
 	_handlePublish = () => {
 		const {namespace} = this.context;
 
-		fetchResponse(this.props.validateFormUrl, {
+		fetchResponse(this.props.validateFormURL, {
 			[`${namespace}aliases`]: this.state.aliases,
 			[`${namespace}inactive`]: this.state.inactive,
 			[`${namespace}keywords`]: this.props.searchQuery,
-			[`${namespace}resultsRankingUid`]: this.props.resultsRankingUid,
+			[`${namespace}groupExternalReferenceCode`]: this.props
+				.initialGroupExternalReferenceCode,
+			[`${namespace}sxpBlueprintExternalReferenceCode`]: this.props
+				.initialSXPBlueprintExternalReferenceCode,
 		}).then((response) => {
 			if (response.errors.length) {
 				response.errors.forEach((message) => {
 					openToast({
-						message,
+						message: Liferay.Util.escapeHTML(message),
 						type: 'danger',
 					});
 				});
@@ -643,7 +721,13 @@ class ResultRankingsForm extends Component {
 	render() {
 		const {namespace} = this.context;
 
-		const {cancelUrl, fetchDocumentsSearchUrl, searchQuery} = this.props;
+		const {
+			cancelURL,
+			fetchDocumentsSearchURL,
+			initialGroupExternalReferenceCode,
+			initialSXPBlueprintExternalReferenceCode,
+			searchQuery,
+		} = this.props;
 
 		const {
 			activeTabKeyValue,
@@ -658,6 +742,7 @@ class ResultRankingsForm extends Component {
 			inactive,
 			resultIdsHidden,
 			resultIdsPinned,
+			scopeDisplayName,
 			showDebugger,
 			totalResultsHiddenCount,
 			totalResultsVisibleCount,
@@ -669,20 +754,22 @@ class ResultRankingsForm extends Component {
 			<div className="result-rankings-form-root">
 				<HiddenInputs
 					valueMap={{
+						addedHiddenIds: this._getHiddenAdded(),
 						aliases,
-						hiddenIdsAdded: this._getHiddenAdded(),
-						hiddenIdsRemoved: this._getHiddenRemoved(),
+						groupExternalReferenceCode: initialGroupExternalReferenceCode,
 						inactive,
 						pinnedIds: resultIdsPinned,
 						pinnedIdsEndIndex: dataLoadIndex.pinned.end,
 						pinnedIdsStartIndex: dataLoadIndex.pinned.start,
+						removedHiddenIds: this._getHiddenRemoved(),
+						sxpBlueprintExternalReferenceCode: initialSXPBlueprintExternalReferenceCode,
 						workflowAction,
 					}}
 				/>
 
 				<PageToolbar
 					inactive={inactive}
-					onCancel={cancelUrl}
+					onCancel={cancelURL}
 					onChangeActive={this._handleActive}
 					onPublish={this._handlePublish}
 				/>
@@ -694,7 +781,27 @@ class ResultRankingsForm extends Component {
 					<ClayLayout.Sheet className="form-section-header">
 						<label>{Liferay.Language.get('query')}</label>
 
-						<h2 className="sheet-title">{`${searchQuery}`}</h2>
+						<h2 className="c-mb-1 sheet-title">{`${searchQuery}`}</h2>
+
+						<div className="c-mb-3">
+							{(Liferay.FeatureFlags['LPS-157988'] ||
+								Liferay.FeatureFlags['LPS-159650']) && (
+								<span className="text-3">
+									{`${Liferay.Language.get('scope')}: ${
+										this.props
+											.initialGroupExternalReferenceCode
+											? Liferay.Language.get('site')
+											: this.props
+													.initialSXPBlueprintExternalReferenceCode
+											? Liferay.Language.get('blueprint')
+											: Liferay.Language.get('everything')
+									}`}
+
+									{!!scopeDisplayName &&
+										` (${scopeDisplayName})`}
+								</span>
+							)}
+						</div>
 
 						<ErrorBoundary
 							component={Liferay.Language.get('aliases')}
@@ -757,8 +864,8 @@ class ResultRankingsForm extends Component {
 											dataLoading={dataLoadingVisible}
 											dataMap={dataMap}
 											displayError={displayError}
-											fetchDocumentsSearchUrl={
-												fetchDocumentsSearchUrl
+											fetchDocumentsSearchURL={
+												fetchDocumentsSearchURL
 											}
 											onAddResultSubmit={
 												this._handleUpdateAddResultIds
@@ -809,16 +916,12 @@ class ResultRankingsForm extends Component {
 					<FormValueDebugger
 						values={[
 							{
-								name: `${namespace}aliases`,
-								value: aliases,
-							},
-							{
-								name: `${namespace}hiddenIdsAdded`,
+								name: `${namespace}addedHiddenIds`,
 								value: this._getHiddenAdded(),
 							},
 							{
-								name: `${namespace}hiddenIdsRemoved`,
-								value: this._getHiddenRemoved(),
+								name: `${namespace}aliases`,
+								value: aliases,
 							},
 							{
 								name: `${namespace}pinnedIds`,
@@ -833,8 +936,22 @@ class ResultRankingsForm extends Component {
 								value: dataLoadIndex.pinned.start,
 							},
 							{
+								name: `${namespace}removedHiddenIds`,
+								value: this._getHiddenRemoved(),
+							},
+							{
 								name: `${namespace}workflowAction`,
 								value: workflowAction,
+							},
+							{
+								name: `${namespace}groupExternalReferenceCode`,
+								value: this.props
+									.initialGroupExternalReferenceCode,
+							},
+							{
+								name: `${namespace}sxpBlueprintExternalReferenceCode`,
+								value: this.props
+									.initialSXPBlueprintExternalReferenceCode,
 							},
 						]}
 					/>

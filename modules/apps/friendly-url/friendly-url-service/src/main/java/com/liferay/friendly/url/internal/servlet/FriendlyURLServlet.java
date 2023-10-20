@@ -7,7 +7,6 @@ package com.liferay.friendly.url.internal.servlet;
 
 import com.liferay.friendly.url.configuration.FriendlyURLRedirectionConfiguration;
 import com.liferay.friendly.url.configuration.FriendlyURLRedirectionConfigurationProvider;
-import com.liferay.osgi.util.service.Snapshot;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
@@ -30,6 +29,7 @@ import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.LayoutFriendlyURL;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.VirtualLayoutConstants;
+import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.portlet.LayoutFriendlyURLSeparatorComposite;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -63,6 +63,7 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.util.PortalInstances;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.AsyncPortletServletRequest;
+import com.liferay.portlet.documentlibrary.constants.DLFriendlyURLConstants;
 import com.liferay.redirect.provider.RedirectProvider;
 import com.liferay.redirect.tracker.RedirectNotFoundTracker;
 import com.liferay.site.model.SiteFriendlyURL;
@@ -111,9 +112,11 @@ public class FriendlyURLServlet extends HttpServlet {
 		if (pos != -1) {
 			String friendlyURL = path.substring(pos);
 
-			if (friendlyURL.startsWith(_PATH_DOCUMENTS)) {
+			if (friendlyURL.startsWith(
+					DLFriendlyURLConstants.PATH_PREFIX_DOCUMENT)) {
+
 				String fileEntryFriendlyURL = friendlyURL.substring(
-					_PATH_DOCUMENTS.length() - 1);
+					DLFriendlyURLConstants.PATH_PREFIX_DOCUMENT.length() - 1);
 
 				groupFriendlyURL = fileEntryFriendlyURL.substring(
 					0, fileEntryFriendlyURL.indexOf(CharPool.SLASH, 1));
@@ -1005,8 +1008,6 @@ public class FriendlyURLServlet extends HttpServlet {
 
 		return groupLocale;
 	}
-
-	private static final String _PATH_DOCUMENTS = "/documents/d/";
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		FriendlyURLServlet.class);

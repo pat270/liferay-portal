@@ -55,6 +55,14 @@ public interface PostalAddressResource {
 			String fieldNames)
 		throws Exception;
 
+	public PostalAddress postAccountPostalAddress(
+			Long accountId, PostalAddress postalAddress)
+		throws Exception;
+
+	public Response postAccountPostalAddressBatch(
+			Long accountId, String callbackURL, Object object)
+		throws Exception;
+
 	public Page<PostalAddress> getOrganizationPostalAddressesPage(
 			String organizationId)
 		throws Exception;
@@ -64,7 +72,23 @@ public interface PostalAddressResource {
 			String fieldNames)
 		throws Exception;
 
+	public void deletePostalAddress(Long postalAddressId) throws Exception;
+
+	public Response deletePostalAddressBatch(String callbackURL, Object object)
+		throws Exception;
+
 	public PostalAddress getPostalAddress(Long postalAddressId)
+		throws Exception;
+
+	public PostalAddress patchPostalAddress(
+			Long postalAddressId, PostalAddress postalAddress)
+		throws Exception;
+
+	public PostalAddress putPostalAddress(
+			Long postalAddressId, PostalAddress postalAddress)
+		throws Exception;
+
+	public Response putPostalAddressBatch(String callbackURL, Object object)
 		throws Exception;
 
 	public Page<PostalAddress> getUserAccountPostalAddressesPage(

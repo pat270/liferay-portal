@@ -45,7 +45,6 @@ import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.portal.kernel.workflow.WorkflowEngineManagerUtil;
 import com.liferay.portal.kernel.workflow.WorkflowHandler;
 import com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil;
 import com.liferay.portal.util.RepositoryUtil;
@@ -97,7 +96,13 @@ public class FolderActionDisplayContext {
 							dropdownItem.setLabel(
 								LanguageUtil.get(_httpServletRequest, "edit"));
 						}
-					).add(
+					).build());
+				dropdownGroupItem.setSeparator(true);
+			}
+		).addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					DropdownItemListBuilder.add(
 						this::_isMoveFolderActionVisible,
 						dropdownItem -> {
 							dropdownItem.setHref(_getMoveFolderURL());
@@ -371,11 +376,18 @@ public class FolderActionDisplayContext {
 		return PortletURLBuilder.createRenderURL(
 			_dlRequestHelper.getLiferayPortletResponse()
 		).setMVCRenderCommandName(
-			"/document_library/copy_folder"
+			"/document_library/copy_dl_objects"
 		).setRedirect(
 			_dlRequestHelper.getCurrentURL()
 		).setParameter(
-			"sourceFolderId", _getFolderId()
+			"dlObjectIds", _getFolderId()
+		).setParameter(
+			"sourceFolderId",
+			() -> {
+				Folder folder = _getFolder();
+
+				return folder.getParentFolderId();
+			}
 		).setParameter(
 			"sourceRepositoryId", _getRepositoryId()
 		).buildString();
@@ -1032,10 +1044,6 @@ public class FolderActionDisplayContext {
 	}
 
 	private boolean _isWorkflowEnabled() {
-		if (!WorkflowEngineManagerUtil.isDeployed()) {
-			return false;
-		}
-
 		WorkflowHandler<Object> workflowHandler =
 			WorkflowHandlerRegistryUtil.getWorkflowHandler(
 				DLFileEntry.class.getName());

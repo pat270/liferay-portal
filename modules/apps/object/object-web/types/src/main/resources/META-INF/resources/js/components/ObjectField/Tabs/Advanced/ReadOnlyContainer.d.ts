@@ -8,6 +8,8 @@
 import {SidebarCategory} from '@liferay/object-js-components-web';
 interface ReadOnlyContainerProps {
 	disabled?: boolean;
+	modelBuilder?: boolean;
+	onSubmit?: (values?: Partial<ObjectField>) => void;
 	readOnlySidebarElements: SidebarCategory[];
 	requiredField: boolean;
 	setValues: (value: Partial<ObjectField>) => void;
@@ -15,6 +17,8 @@ interface ReadOnlyContainerProps {
 }
 export declare function ReadOnlyContainer({
 	disabled,
+	modelBuilder,
+	onSubmit,
 	readOnlySidebarElements,
 	requiredField,
 	setValues,

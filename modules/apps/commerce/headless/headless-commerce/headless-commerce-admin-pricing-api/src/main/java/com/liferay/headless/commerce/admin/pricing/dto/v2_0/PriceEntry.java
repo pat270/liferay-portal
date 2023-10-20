@@ -696,6 +696,35 @@ public class PriceEntry implements Serializable {
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Product product;
 
+	@Schema(example = "10.1")
+	@Valid
+	public BigDecimal getQuantity() {
+		return quantity;
+	}
+
+	public void setQuantity(BigDecimal quantity) {
+		this.quantity = quantity;
+	}
+
+	@JsonIgnore
+	public void setQuantity(
+		UnsafeSupplier<BigDecimal, Exception> quantityUnsafeSupplier) {
+
+		try {
+			quantity = quantityUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected BigDecimal quantity;
+
 	@Schema
 	@Valid
 	public Sku getSku() {
@@ -811,20 +840,20 @@ public class PriceEntry implements Serializable {
 	protected TierPrice[] tierPrices;
 
 	@Schema(example = "m")
-	public String getUnitOfMeasure() {
-		return unitOfMeasure;
+	public String getUnitOfMeasureKey() {
+		return unitOfMeasureKey;
 	}
 
-	public void setUnitOfMeasure(String unitOfMeasure) {
-		this.unitOfMeasure = unitOfMeasure;
+	public void setUnitOfMeasureKey(String unitOfMeasureKey) {
+		this.unitOfMeasureKey = unitOfMeasureKey;
 	}
 
 	@JsonIgnore
-	public void setUnitOfMeasure(
-		UnsafeSupplier<String, Exception> unitOfMeasureUnsafeSupplier) {
+	public void setUnitOfMeasureKey(
+		UnsafeSupplier<String, Exception> unitOfMeasureKeyUnsafeSupplier) {
 
 		try {
-			unitOfMeasure = unitOfMeasureUnsafeSupplier.get();
+			unitOfMeasureKey = unitOfMeasureKeyUnsafeSupplier.get();
 		}
 		catch (RuntimeException re) {
 			throw re;
@@ -836,7 +865,7 @@ public class PriceEntry implements Serializable {
 
 	@GraphQLField
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected String unitOfMeasure;
+	protected String unitOfMeasureKey;
 
 	@Override
 	public boolean equals(Object object) {
@@ -1112,6 +1141,16 @@ public class PriceEntry implements Serializable {
 			sb.append(String.valueOf(product));
 		}
 
+		if (quantity != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"quantity\": ");
+
+			sb.append(quantity);
+		}
+
 		if (sku != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -1166,16 +1205,16 @@ public class PriceEntry implements Serializable {
 			sb.append("]");
 		}
 
-		if (unitOfMeasure != null) {
+		if (unitOfMeasureKey != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"unitOfMeasure\": ");
+			sb.append("\"unitOfMeasureKey\": ");
 
 			sb.append("\"");
 
-			sb.append(_escape(unitOfMeasure));
+			sb.append(_escape(unitOfMeasureKey));
 
 			sb.append("\"");
 		}

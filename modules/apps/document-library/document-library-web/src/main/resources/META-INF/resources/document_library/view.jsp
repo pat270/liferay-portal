@@ -41,6 +41,8 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 		<clay:management-toolbar
 			additionalProps='<%=
 				HashMapBuilder.<String, Object>put(
+					"bulkCopyURL", dlViewDisplayContext.getCopyURL()
+				).put(
 					"bulkPermissionsConfiguration",
 					HashMapBuilder.<String, Object>put(
 						"defaultModelClassName", Folder.class.getSimpleName()
@@ -131,10 +133,10 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 				</liferay-frontend:sidebar-panel>
 
 				<div class="sidenav-content <%= portletTitleBasedNavigation ? "container-fluid container-fluid-max-xl container-view" : StringPool.BLANK %>">
-					<c:if test='<%= dlAdminDisplayContext.hasFilterParameters() && ListUtil.isNotEmpty(dlAdminDisplayContext.getMountFolders()) && FeatureFlagManagerUtil.isEnabled("LPS-84424") %>'>
+					<c:if test="<%= dlAdminDisplayContext.hasFilterParameters() && ListUtil.isNotEmpty(dlAdminDisplayContext.getMountFolders()) %>">
 						<clay:alert
 							displayType="info"
-							message="filters-only-apply-to-documents-in-local-repositories"
+							message="filters-only-apply-to-documents-in-the-local-repository"
 						/>
 					</c:if>
 
@@ -173,6 +175,15 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 						<liferay-ui:error exception="<%= FileEntryLockException.MustBeUnlocked.class %>" message="you-cannot-perform-this-operation-on-checked-out-documents-.please-check-it-in-or-cancel-the-checkout-first" />
 						<liferay-ui:error exception="<%= FileEntryLockException.MustOwnLock.class %>" message="you-can-only-checkin-documents-you-have-checked-out-yourself" />
 						<liferay-ui:error key="externalServiceFailed" message="you-cannot-access-external-service-because-you-are-not-allowed-to-or-it-is-unavailable" />
+
+						<liferay-ui:error exception="<%= DLObjectSizeLimitExceededException.class %>">
+
+							<%
+							DLObjectSizeLimitExceededException dlObjectSizeLimitExceededException = (DLObjectSizeLimitExceededException)errorException;
+							%>
+
+							<liferay-ui:message key="<%= dlObjectSizeLimitExceededException.getMessage() %>" />
+						</liferay-ui:error>
 
 						<c:if test='<%= SessionErrors.contains(renderRequest, "googleDriveFileMissing") %>'>
 							<aui:script>
@@ -289,7 +300,7 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 
 		<div>
 			<react:component
-				module="document_library/js/categorization/tags/EditTags.es"
+				module="document_library/js/categorization/tags/EditTags"
 				props='<%=
 					HashMapBuilder.<String, Object>put(
 						"context", Collections.singletonMap("namespace", liferayPortletResponse.getNamespace())
@@ -314,7 +325,7 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 
 		<div>
 			<react:component
-				module="document_library/js/categorization/categories/EditCategories.es"
+				module="document_library/js/categorization/categories/EditCategories"
 				props='<%=
 					HashMapBuilder.<String, Object>put(
 						"context", Collections.singletonMap("namespace", liferayPortletResponse.getNamespace())

@@ -341,6 +341,47 @@ public class JournalArticleActionDropdownItemsProvider {
 		return dropdownItems;
 	}
 
+	public List<DropdownItem> getArticleVersionTabActionDropdownItems() {
+		return DropdownItemListBuilder.addGroup(
+			dropdownGroupItem -> {
+				UnsafeConsumer<DropdownItem, Exception>
+					previewContentArticleAction =
+						_getPreviewArticleActionUnsafeConsumer();
+
+				dropdownGroupItem.setDropdownItems(
+					DropdownItemListBuilder.add(
+						() ->
+							JournalArticlePermission.contains(
+								_themeDisplay.getPermissionChecker(), _article,
+								ActionKeys.VIEW) &&
+							(previewContentArticleAction != null),
+						previewContentArticleAction
+					).build());
+
+				dropdownGroupItem.setSeparator(true);
+			}
+		).addGroup(
+			dropdownGroupItem -> {
+				String articleId =
+					_article.getArticleId() + JournalPortlet.VERSION_SEPARATOR +
+						_article.getVersion();
+
+				dropdownGroupItem.setDropdownItems(
+					DropdownItemListBuilder.add(
+						() ->
+							JournalArticlePermission.contains(
+								_themeDisplay.getPermissionChecker(), _article,
+								ActionKeys.EXPIRE) &&
+							((_article.getStatus() ==
+								WorkflowConstants.STATUS_APPROVED) ||
+							 (_article.getStatus() ==
+								 WorkflowConstants.STATUS_SCHEDULED)),
+						_getExpireArticleActionConsumer(articleId)
+					).build());
+			}
+		).build();
+	}
+
 	private UnsafeConsumer<DropdownItem, Exception>
 		_getAutoCopyArticleActionUnsafeConsumer() {
 
@@ -352,7 +393,7 @@ public class JournalArticleActionDropdownItemsProvider {
 				"version", _article.getVersion());
 			dropdownItem.setIcon("copy");
 			dropdownItem.setLabel(
-				LanguageUtil.get(_httpServletRequest, "copy"));
+				LanguageUtil.get(_httpServletRequest, "make-a-copy"));
 		};
 	}
 
@@ -420,7 +461,7 @@ public class JournalArticleActionDropdownItemsProvider {
 					).buildString());
 				dropdownItem.setIcon("copy");
 				dropdownItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "copy"));
+					LanguageUtil.get(_httpServletRequest, "make-a-copy"));
 			};
 		}
 

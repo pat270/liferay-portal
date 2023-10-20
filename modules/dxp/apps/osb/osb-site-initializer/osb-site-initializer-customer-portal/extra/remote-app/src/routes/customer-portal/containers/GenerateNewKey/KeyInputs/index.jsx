@@ -14,15 +14,18 @@ import {
 const KeyInputs = ({id}) => {
 	return (
 		<>
-			<div className="cp-input-generate-label mb-3">
+			<div className="cp-input-generate-label">
 				<Input
 					label={i18n.translate('host-name')}
 					name={`keys[${id}].hostName`}
-					required
 					type="text"
 					validations={[(value) => isValidHost(value)]}
 				/>
 			</div>
+
+			<h6 className="font-weight-normal mb-3 mx-3">
+				{i18n.translate('input-one-host-name-per-instance')}
+			</h6>
 
 			<div className="cp-input-generate-label">
 				<Input
@@ -31,7 +34,6 @@ const KeyInputs = ({id}) => {
 					label={i18n.translate('ip-address')}
 					name={`keys[${id}].ipAddresses`}
 					placeholder="1.1.1.1&#10;2.2.2.2"
-					required
 					type="text"
 					validations={[(value) => isValidIp(value)]}
 				/>
@@ -54,7 +56,9 @@ const KeyInputs = ({id}) => {
 					/>
 
 					<h6 className="font-weight-normal mb-3 mx-3">
-						{i18n.translate('add-one-mac-addresses-per-line')}
+						{i18n.translate(
+							'add-one-mac-addresses-per-line-if-available-as-a-static-value'
+						)}
 					</h6>
 				</div>
 			</div>

@@ -4,20 +4,23 @@
  */
 
 import {IFrontendDataSetProps} from '@liferay/frontend-data-set-web';
+import {Dispatch, SetStateAction} from 'react';
 
 import {baseFDSProps} from './baseFDSProps';
 import {itemMethodRenderer, itemPathRenderer} from './fdsRenderers';
 
-export function getAPIApplicationsEndpointsFDSProps(
+export function getAPIEndpointsFDSProps(
 	urlPath: string,
-	portletId: string
+	portletId: string,
+	setMainEndpointNav: Dispatch<SetStateAction<MainNav>>
 ): IFrontendDataSetProps {
 	return {
 		...baseFDSProps,
 		apiURL: urlPath,
 		customDataRenderers: {
 			itemMethodRenderer,
-			itemPathRenderer,
+			itemPathRenderer: (fdsItem: FDSItem<APIEndpointItem>) =>
+				itemPathRenderer({fdsItem, setMainEndpointNav}),
 		},
 		emptyState: {
 			description: '',
@@ -28,19 +31,26 @@ export function getAPIApplicationsEndpointsFDSProps(
 		itemsActions: [
 			{
 				data: {
-					id: 'editAPIApplicationEndpoint',
+					id: 'editAPIEndpoint',
 				},
 				icon: 'pencil',
 				label: Liferay.Language.get('edit'),
+				onClick: ({itemData}: FDSItem<APIEndpointItem>) => {
+					setMainEndpointNav({edit: itemData.id});
+				},
 			},
-			{
-				icon: 'copy',
-				id: 'copyEndpointURL',
-				label: Liferay.Language.get('copy-url'),
-			},
+			...(window.isSecureContext
+				? [
+						{
+							icon: 'copy',
+							id: 'copyEndpointURL',
+							label: Liferay.Language.get('copy-url'),
+						},
+				  ]
+				: []),
 			{
 				icon: 'trash',
-				id: 'deleteAPIApplicationEndpoint',
+				id: 'deleteAPIEndpoint',
 				label: Liferay.Language.get('delete'),
 			},
 		],
@@ -58,12 +68,13 @@ export function getAPIApplicationsEndpointsFDSProps(
 							localizeLabel: true,
 						},
 						{
-							actionId: 'editAPIApplicationEndpoint',
+							actionId: 'editAPIEndpoint',
 							contentRenderer: 'itemPathRenderer',
 							expand: false,
 							fieldName: 'path',
 							label: Liferay.Language.get('path'),
 							localizeLabel: true,
+							sortable: true,
 						},
 						{
 							fieldName: 'description',

@@ -48,16 +48,19 @@ import com.liferay.portal.kernel.security.permission.UserBag;
 import com.liferay.portal.kernel.security.permission.UserBagFactory;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.GroupLocalService;
-import com.liferay.portal.kernel.service.RoleService;
+import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.UserGroupLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
+
+import java.util.Collection;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -223,20 +226,24 @@ public class UserResourceDTOConverter
 						UserBag userBag = _userBagFactory.create(
 							user.getUserId());
 
-						return TransformUtil.transformToArray(
-							userBag.getRoles(),
-							role -> {
-								if (!_roleModelResourcePermission.contains(
-										PermissionThreadLocal.
-											getPermissionChecker(),
-										role, ActionKeys.VIEW)) {
+						return _toRoleBriefs(
+							dtoConverterContext, userBag.getRoles());
+					});
+				setStatus(
+					() -> {
+						if (user.getStatus() ==
+								WorkflowConstants.STATUS_APPROVED) {
 
-									return null;
-								}
+							return Status.ACTIVE;
+						}
 
-								return _toRoleBrief(dtoConverterContext, role);
-							},
-							RoleBrief.class);
+						if (user.getStatus() ==
+								WorkflowConstants.STATUS_INACTIVE) {
+
+							return Status.INACTIVE;
+						}
+
+						return null;
 					});
 			}
 		};
@@ -292,11 +299,10 @@ public class UserResourceDTOConverter
 			{
 				id = organization.getOrganizationId();
 				name = organization.getName();
-				roleBriefs = TransformUtil.transformToArray(
-					_roleService.getUserGroupRoles(
-						user.getUserId(), organization.getGroupId()),
-					role -> _toRoleBrief(dtoConverterContext, role),
-					RoleBrief.class);
+				roleBriefs = _toRoleBriefs(
+					dtoConverterContext,
+					_roleLocalService.getUserGroupRoles(
+						user.getUserId(), organization.getGroupId()));
 			}
 		};
 	}
@@ -332,6 +338,25 @@ public class UserResourceDTOConverter
 		};
 	}
 
+	private RoleBrief[] _toRoleBriefs(
+			DTOConverterContext dtoConverterContext, Collection<Role> roles)
+		throws Exception {
+
+		return TransformUtil.transformToArray(
+			roles,
+			role -> {
+				if (!_roleModelResourcePermission.contains(
+						PermissionThreadLocal.getPermissionChecker(), role,
+						ActionKeys.VIEW)) {
+
+					return null;
+				}
+
+				return _toRoleBrief(dtoConverterContext, role);
+			},
+			RoleBrief.class);
+	}
+
 	private SiteBrief _toSiteBrief(
 			DTOConverterContext dtoConverterContext, Group group, User user)
 		throws Exception {
@@ -348,11 +373,10 @@ public class UserResourceDTOConverter
 				name_i18n = LocalizedMapUtil.getI18nMap(
 					dtoConverterContext.isAcceptAllLanguages(),
 					group.getNameMap());
-				roleBriefs = TransformUtil.transformToArray(
-					_roleService.getUserGroupRoles(
-						user.getUserId(), group.getGroupId()),
-					role -> _toRoleBrief(dtoConverterContext, role),
-					RoleBrief.class);
+				roleBriefs = _toRoleBriefs(
+					dtoConverterContext,
+					_roleLocalService.getUserGroupRoles(
+						user.getUserId(), group.getGroupId()));
 			}
 		};
 	}
@@ -387,13 +411,13 @@ public class UserResourceDTOConverter
 	@Reference
 	private Portal _portal;
 
+	@Reference
+	private RoleLocalService _roleLocalService;
+
 	@Reference(
 		target = "(model.class.name=com.liferay.portal.kernel.model.Role)"
 	)
 	private ModelResourcePermission<Role> _roleModelResourcePermission;
-
-	@Reference
-	private RoleService _roleService;
 
 	@Reference
 	private UserBagFactory _userBagFactory;

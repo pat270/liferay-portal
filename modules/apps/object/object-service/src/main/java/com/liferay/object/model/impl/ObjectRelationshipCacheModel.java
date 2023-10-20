@@ -69,7 +69,7 @@ public class ObjectRelationshipCacheModel
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(37);
+		StringBundler sb = new StringBundler(41);
 
 		sb.append("{mvccVersion=");
 		sb.append(mvccVersion);
@@ -99,12 +99,16 @@ public class ObjectRelationshipCacheModel
 		sb.append(deletionType);
 		sb.append(", dbTableName=");
 		sb.append(dbTableName);
+		sb.append(", edge=");
+		sb.append(edge);
 		sb.append(", label=");
 		sb.append(label);
 		sb.append(", name=");
 		sb.append(name);
 		sb.append(", reverse=");
 		sb.append(reverse);
+		sb.append(", system=");
+		sb.append(system);
 		sb.append(", type=");
 		sb.append(type);
 		sb.append("}");
@@ -171,6 +175,8 @@ public class ObjectRelationshipCacheModel
 			objectRelationshipImpl.setDBTableName(dbTableName);
 		}
 
+		objectRelationshipImpl.setEdge(edge);
+
 		if (label == null) {
 			objectRelationshipImpl.setLabel("");
 		}
@@ -186,6 +192,7 @@ public class ObjectRelationshipCacheModel
 		}
 
 		objectRelationshipImpl.setReverse(reverse);
+		objectRelationshipImpl.setSystem(system);
 
 		if (type == null) {
 			objectRelationshipImpl.setType("");
@@ -222,10 +229,14 @@ public class ObjectRelationshipCacheModel
 		parameterObjectFieldId = objectInput.readLong();
 		deletionType = objectInput.readUTF();
 		dbTableName = objectInput.readUTF();
+
+		edge = objectInput.readBoolean();
 		label = objectInput.readUTF();
 		name = objectInput.readUTF();
 
 		reverse = objectInput.readBoolean();
+
+		system = objectInput.readBoolean();
 		type = objectInput.readUTF();
 	}
 
@@ -278,6 +289,8 @@ public class ObjectRelationshipCacheModel
 			objectOutput.writeUTF(dbTableName);
 		}
 
+		objectOutput.writeBoolean(edge);
+
 		if (label == null) {
 			objectOutput.writeUTF("");
 		}
@@ -293,6 +306,8 @@ public class ObjectRelationshipCacheModel
 		}
 
 		objectOutput.writeBoolean(reverse);
+
+		objectOutput.writeBoolean(system);
 
 		if (type == null) {
 			objectOutput.writeUTF("");
@@ -316,9 +331,11 @@ public class ObjectRelationshipCacheModel
 	public long parameterObjectFieldId;
 	public String deletionType;
 	public String dbTableName;
+	public boolean edge;
 	public String label;
 	public String name;
 	public boolean reverse;
+	public boolean system;
 	public String type;
 
 }

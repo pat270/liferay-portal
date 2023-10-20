@@ -20,7 +20,7 @@ import com.liferay.dynamic.data.mapping.model.Value;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
-import com.liferay.dynamic.data.mapping.storage.StorageEngine;
+import com.liferay.dynamic.data.mapping.storage.DDMStorageEngineManager;
 import com.liferay.dynamic.data.mapping.util.comparator.StructureStructureKeyComparator;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
@@ -58,24 +58,21 @@ public class AMImageValidatorImpl implements AMImageValidator {
 	public <T> boolean isProcessingRequired(
 		AdaptiveMedia<T> adaptiveMedia, FileVersion fileVersion) {
 
-		if (!isProcessingSupported(fileVersion)) {
-			return false;
-		}
-
 		String configurationUuid = adaptiveMedia.getValue(
 			AMAttribute.getConfigurationUuidAMAttribute());
 
-		if (configurationUuid == null) {
-			return true;
-		}
-
-		if (_amImageEntryLocalService.hasAMImageEntryContent(
+		if ((configurationUuid != null) &&
+			_amImageEntryLocalService.hasAMImageEntryContent(
 				configurationUuid, fileVersion)) {
 
 			return false;
 		}
 
-		return true;
+		if (isProcessingSupported(fileVersion)) {
+			return true;
+		}
+
+		return false;
 	}
 
 	@Override
@@ -167,8 +164,13 @@ public class AMImageValidatorImpl implements AMImageValidator {
 			}
 
 			try {
-				DDMFormValues ddmFormValues = _storageEngine.getDDMFormValues(
-					fileEntryMetadata.getDDMStorageId());
+				DDMFormValues ddmFormValues =
+					_ddmStorageEngineManager.getDDMFormValues(
+						fileEntryMetadata.getDDMStorageId());
+
+				if (ddmFormValues == null) {
+					continue;
+				}
 
 				Map<String, List<DDMFormFieldValue>> ddmFormFieldValuesMap =
 					ddmFormValues.getDDMFormFieldValuesMap(true);
@@ -281,6 +283,9 @@ public class AMImageValidatorImpl implements AMImageValidator {
 	private AMImageMimeTypeProvider _amImageMimeTypeProvider;
 
 	@Reference
+	private DDMStorageEngineManager _ddmStorageEngineManager;
+
+	@Reference
 	private DDMStructureLocalService _ddmStructureLocalService;
 
 	private volatile DLFileEntryConfiguration _dlFileEntryConfiguration;
@@ -290,8 +295,5 @@ public class AMImageValidatorImpl implements AMImageValidator {
 
 	@Reference
 	private Portal _portal;
-
-	@Reference
-	private StorageEngine _storageEngine;
 
 }

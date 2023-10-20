@@ -54,13 +54,13 @@ public class LayoutPageTemplateEntryServiceUtil {
 
 	public static LayoutPageTemplateEntry copyLayoutPageTemplateEntry(
 			long groupId, long layoutPageTemplateCollectionId,
-			long sourceLayoutPageTemplateEntryId,
+			long sourceLayoutPageTemplateEntryId, boolean copyPermissions,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws Exception {
 
 		return getService().copyLayoutPageTemplateEntry(
 			groupId, layoutPageTemplateCollectionId,
-			sourceLayoutPageTemplateEntryId, serviceContext);
+			sourceLayoutPageTemplateEntryId, copyPermissions, serviceContext);
 	}
 
 	public static LayoutPageTemplateEntry
@@ -120,6 +120,25 @@ public class LayoutPageTemplateEntryServiceUtil {
 
 		return getService().fetchLayoutPageTemplateEntryByUuidAndGroupId(
 			uuid, groupId);
+	}
+
+	public static List<Object>
+		getLayoutPageCollectionsAndLayoutPageTemplateEntries(
+			long groupId, long layoutPageTemplateCollectionId, int type,
+			int start, int end, OrderByComparator<Object> orderByComparator) {
+
+		return getService().
+			getLayoutPageCollectionsAndLayoutPageTemplateEntries(
+				groupId, layoutPageTemplateCollectionId, type, start, end,
+				orderByComparator);
+	}
+
+	public static int getLayoutPageCollectionsAndLayoutPageTemplateEntriesCount(
+		long groupId, long layoutPageTemplateCollectionId, int type) {
+
+		return getService().
+			getLayoutPageCollectionsAndLayoutPageTemplateEntriesCount(
+				groupId, layoutPageTemplateCollectionId, type);
 	}
 
 	public static List<LayoutPageTemplateEntry> getLayoutPageTemplateEntries(
@@ -473,6 +492,14 @@ public class LayoutPageTemplateEntryServiceUtil {
 
 		return getService().updateLayoutPageTemplateEntry(
 			layoutPageTemplateEntryId, previewFileEntryId);
+	}
+
+	public static LayoutPageTemplateEntry updateLayoutPageTemplateEntry(
+			long layoutPageTemplateEntryId, long classNameId, long classTypeId)
+		throws PortalException {
+
+		return getService().updateLayoutPageTemplateEntry(
+			layoutPageTemplateEntryId, classNameId, classTypeId);
 	}
 
 	public static LayoutPageTemplateEntry updateLayoutPageTemplateEntry(

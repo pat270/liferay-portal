@@ -504,13 +504,13 @@ public class DLAppServiceWrapper
 	@Override
 	public com.liferay.portal.kernel.repository.model.FileEntry copyFileEntry(
 			long fileEntryId, long destinationFolderId,
-			long destinationRepositoryId,
+			long destinationRepositoryId, long fileEntryTypeId, long[] groupIds,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlAppService.copyFileEntry(
 			fileEntryId, destinationFolderId, destinationRepositoryId,
-			serviceContext);
+			fileEntryTypeId, groupIds, serviceContext);
 	}
 
 	@Override
@@ -530,12 +530,14 @@ public class DLAppServiceWrapper
 	public com.liferay.portal.kernel.repository.model.Folder copyFolder(
 			long sourceRepositoryId, long sourceFolderId,
 			long destinationRepositoryId, long destinationParentFolderId,
+			java.util.Map<Long, Long> fileEntryTypeIds, long[] groupIds,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlAppService.copyFolder(
 			sourceRepositoryId, sourceFolderId, destinationRepositoryId,
-			destinationParentFolderId, serviceContext);
+			destinationParentFolderId, fileEntryTypeIds, groupIds,
+			serviceContext);
 	}
 
 	/**

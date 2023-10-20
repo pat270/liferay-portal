@@ -22,12 +22,15 @@ import com.liferay.layout.converter.AlignConverter;
 import com.liferay.layout.converter.ContentDisplayConverter;
 import com.liferay.layout.converter.FlexWrapConverter;
 import com.liferay.layout.converter.JustifyConverter;
+import com.liferay.layout.util.constants.StyledLayoutStructureConstants;
 import com.liferay.layout.util.structure.FormStyledLayoutStructureItem;
 import com.liferay.layout.util.structure.LayoutStructureItem;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+
+import java.util.Objects;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -77,6 +80,7 @@ public class FormLayoutStructureItemMapper
 						};
 						indexed = formStyledLayoutStructureItem.isIndexed();
 						layout = _toLayout(formStyledLayoutStructureItem);
+						name = formStyledLayoutStructureItem.getName();
 
 						setFragmentStyle(
 							() -> {
@@ -93,7 +97,6 @@ public class FormLayoutStructureItemMapper
 							() -> getFragmentViewPorts(
 								formStyledLayoutStructureItem.
 									getItemConfigJSONObject()));
-						setName(formStyledLayoutStructureItem::getName);
 					}
 				};
 				type = Type.FORM;
@@ -130,7 +133,9 @@ public class FormLayoutStructureItemMapper
 		JSONObject successMessageJSONObject =
 			formStyledLayoutStructureItem.getSuccessMessageJSONObject();
 
-		if (successMessageJSONObject == null) {
+		if ((!saveInlineContent && !saveMappingConfiguration) ||
+			(successMessageJSONObject == null)) {
+
 			return null;
 		}
 
@@ -139,6 +144,41 @@ public class FormLayoutStructureItemMapper
 				{
 					message = _toFragmentInlineValue(
 						successMessageJSONObject.getJSONObject("message"));
+					messageType = MessageType.EMBEDDED;
+				}
+			};
+		}
+
+		String type = successMessageJSONObject.getString("type");
+
+		if (saveInlineContent && Objects.equals(type, "none")) {
+			return new MessageFormSubmissionResult() {
+				{
+					messageType = MessageType.NONE;
+
+					setMessage(
+						() -> {
+							if (successMessageJSONObject.has(
+									"notificationText")) {
+
+								return _toFragmentInlineValue(
+									successMessageJSONObject.getJSONObject(
+										"notificationText"));
+							}
+
+							return null;
+						});
+					setShowNotification(
+						() -> {
+							if (successMessageJSONObject.has(
+									"showNotification")) {
+
+								return successMessageJSONObject.getBoolean(
+									"showNotification");
+							}
+
+							return null;
+						});
 				}
 			};
 		}
@@ -236,7 +276,11 @@ public class FormLayoutStructureItemMapper
 						String widthType =
 							formStyledLayoutStructureItem.getWidthType();
 
-						if (Validator.isNotNull(widthType)) {
+						if (Validator.isNotNull(widthType) &&
+							!Objects.equals(
+								widthType,
+								StyledLayoutStructureConstants.WIDTH_TYPE)) {
+
 							return WidthType.create(
 								StringUtil.upperCaseFirstLetter(widthType));
 						}

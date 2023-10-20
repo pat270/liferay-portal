@@ -16,6 +16,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModelListener;
 import com.liferay.portal.kernel.model.ModelListener;
+import com.liferay.portal.kernel.util.BigDecimalUtil;
 
 import java.math.BigDecimal;
 
@@ -78,26 +79,32 @@ public class CommerceOrderItemModelListener
 					_commerceOrderItemLocalService.getCommerceOrderItem(
 						customerCommerceOrderItemId);
 
-				int originalShippedQuantity =
+				BigDecimal originalShippedQuantity =
 					originalCommerceOrderItem.getShippedQuantity();
-				int newShippedQuantity = commerceOrderItem.getShippedQuantity();
+				BigDecimal newShippedQuantity =
+					commerceOrderItem.getShippedQuantity();
 
 				boolean update = false;
 
 				if (originalShippedQuantity != newShippedQuantity) {
-					int commerceShippedQuantity =
+					BigDecimal commerceShippedQuantity =
 						customerCommerceOrderItem.getShippedQuantity();
 
 					customerCommerceOrderItem.setShippedQuantity(
-						commerceShippedQuantity - originalShippedQuantity +
-							newShippedQuantity);
+						commerceShippedQuantity.subtract(
+							originalShippedQuantity
+						).add(
+							newShippedQuantity
+						));
 
 					update = true;
 				}
 
-				int newQuantity = commerceOrderItem.getQuantity();
+				BigDecimal newQuantity = commerceOrderItem.getQuantity();
 
-				if (newQuantity != originalCommerceOrderItem.getQuantity()) {
+				if (!BigDecimalUtil.eq(
+						newQuantity, originalCommerceOrderItem.getQuantity())) {
+
 					customerCommerceOrderItem.setQuantity(newQuantity);
 
 					update = true;

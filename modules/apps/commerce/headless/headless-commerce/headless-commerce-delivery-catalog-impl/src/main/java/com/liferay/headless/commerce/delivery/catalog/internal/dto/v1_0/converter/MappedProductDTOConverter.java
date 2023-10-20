@@ -42,6 +42,7 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
+import com.liferay.portal.kernel.util.BigDecimalUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
@@ -128,7 +129,8 @@ public class MappedProductDTOConverter
 				id = csDiagramEntry.getCSDiagramEntryId();
 				price = _getPrice(
 					commerceContext, cpInstance,
-					mappedProductDTOConverterContext.getLocale(), 1);
+					mappedProductDTOConverterContext.getLocale(),
+					BigDecimal.ONE, StringPool.BLANK);
 				quantity = csDiagramEntry.getQuantity();
 				sequence = csDiagramEntry.getSequence();
 
@@ -143,7 +145,7 @@ public class MappedProductDTOConverter
 							mappedProductDTOConverterContext.getCompanyId(),
 							cpInstance,
 							mappedProductDTOConverterContext.getLocale(),
-							cpInstance.getSku());
+							cpInstance.getSku(), StringPool.BLANK);
 					});
 				setFirstAvailableReplacementMappedProduct(
 					() -> {
@@ -345,8 +347,7 @@ public class MappedProductDTOConverter
 							_cpInstanceHelper.getCPDefinitionOptionValueRelsMap(
 								cpInstance.getCPDefinitionId(),
 								jsonArray.toString()),
-							_language.getLanguageId(
-								mappedProductDTOConverterContext.getLocale()));
+							_cpInstanceLocalService);
 					});
 				setThumbnail(
 					() -> {
@@ -388,7 +389,7 @@ public class MappedProductDTOConverter
 
 	private Availability _getAvailability(
 			long commerceChannelGroupId, long companyId, CPInstance cpInstance,
-			Locale locale, String sku)
+			Locale locale, String sku, String unitOfMeasureKey)
 		throws Exception {
 
 		Availability availability = new Availability();
@@ -400,7 +401,7 @@ public class MappedProductDTOConverter
 						commerceChannelGroupId,
 						_cpDefinitionInventoryEngine.getMinStockQuantity(
 							cpInstance),
-						cpInstance.getSku()),
+						cpInstance.getSku(), unitOfMeasureKey),
 					CommerceInventoryAvailabilityConstants.AVAILABLE)) {
 
 				availability.setLabel_i18n(_language.get(locale, "available"));
@@ -415,9 +416,10 @@ public class MappedProductDTOConverter
 
 		if (_cpDefinitionInventoryEngine.isDisplayStockQuantity(cpInstance)) {
 			availability.setStockQuantity(
-				_commerceInventoryEngine.getStockQuantity(
-					companyId, cpInstance.getGroupId(), commerceChannelGroupId,
-					sku));
+				BigDecimalUtil.stripTrailingZeros(
+					_commerceInventoryEngine.getStockQuantity(
+						companyId, cpInstance.getGroupId(),
+						commerceChannelGroupId, sku, unitOfMeasureKey)));
 		}
 
 		return availability;
@@ -439,7 +441,7 @@ public class MappedProductDTOConverter
 
 	private Price _getPrice(
 			CommerceContext commerceContext, CPInstance cpInstance,
-			Locale locale, int quantity)
+			Locale locale, BigDecimal quantity, String unitOfMeasureKey)
 		throws Exception {
 
 		if (cpInstance == null) {
@@ -448,7 +450,8 @@ public class MappedProductDTOConverter
 
 		CommerceProductPrice commerceProductPrice =
 			_commerceProductPriceCalculation.getCommerceProductPrice(
-				cpInstance.getCPInstanceId(), quantity, true, commerceContext);
+				cpInstance.getCPInstanceId(), quantity, true, unitOfMeasureKey,
+				commerceContext);
 
 		if (commerceProductPrice == null) {
 			return new Price();

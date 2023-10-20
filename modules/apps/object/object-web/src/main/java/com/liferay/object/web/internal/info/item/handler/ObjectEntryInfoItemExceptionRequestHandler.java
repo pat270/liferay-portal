@@ -18,10 +18,14 @@ import com.liferay.object.model.ObjectField;
 import com.liferay.object.model.ObjectFieldSetting;
 import com.liferay.object.service.ObjectFieldLocalServiceUtil;
 import com.liferay.object.service.ObjectFieldSettingLocalServiceUtil;
+import com.liferay.object.validation.rule.ObjectValidationRuleResult;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.ModelListenerException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.ListUtil;
+
+import java.util.List;
 
 /**
  * @author Eudaldo Alonso
@@ -41,8 +45,36 @@ public class ObjectEntryInfoItemExceptionRequestHandler {
 			Throwable throwable = modelListenerException.getCause();
 
 			if (throwable instanceof ObjectValidationRuleEngineException) {
-				throw new InfoFormValidationException.CustomValidation(
-					throwable.getLocalizedMessage());
+				ObjectValidationRuleEngineException
+					objectValidationRuleEngineException =
+						(ObjectValidationRuleEngineException)throwable;
+
+				List<ObjectValidationRuleResult> objectValidationRuleResults =
+					objectValidationRuleEngineException.
+						getObjectValidationRuleResults();
+
+				if (ListUtil.isEmpty(objectValidationRuleResults)) {
+					throw new InfoFormException();
+				}
+
+				InfoFormValidationException.RuleValidation
+					infoFormValidationExceptionRuleValidation =
+						new InfoFormValidationException.RuleValidation(
+							throwable.getLocalizedMessage());
+
+				for (ObjectValidationRuleResult objectValidationRuleResult :
+						objectValidationRuleResults) {
+
+					infoFormValidationExceptionRuleValidation.
+						addCustomValidation(
+							_getInfoFieldUniqueId(
+								groupId, infoItemFormProvider, objectDefinition,
+								objectValidationRuleResult.
+									getObjectFieldName()),
+							objectValidationRuleResult.getErrorMessage());
+				}
+
+				throw infoFormValidationExceptionRuleValidation;
 			}
 
 			throw new InfoFormException();
@@ -214,6 +246,25 @@ public class ObjectEntryInfoItemExceptionRequestHandler {
 
 			throw new InfoFormValidationException.RequiredInfoField(
 				infoFieldUniqueId);
+		}
+
+		if (exception instanceof
+				ObjectEntryValuesException.UniqueValueConstraintViolation) {
+
+			ObjectEntryValuesException.UniqueValueConstraintViolation
+				objectEntryValuesException =
+					(ObjectEntryValuesException.UniqueValueConstraintViolation)
+						exception;
+
+			List<Object> arguments = objectEntryValuesException.getArguments();
+
+			if (ListUtil.isEmpty(arguments) || (arguments.size() > 1)) {
+				throw new InfoFormException();
+			}
+
+			throw new InfoFormValidationException.
+				UniqueValueConstraintViolation(
+					String.valueOf(arguments.get(0)));
 		}
 
 		if (_log.isDebugEnabled()) {

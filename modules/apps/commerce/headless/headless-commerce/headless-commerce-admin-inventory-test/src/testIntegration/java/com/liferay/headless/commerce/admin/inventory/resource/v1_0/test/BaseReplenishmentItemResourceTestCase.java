@@ -177,6 +177,7 @@ public abstract class BaseReplenishmentItemResourceTestCase {
 
 		replenishmentItem.setExternalReferenceCode(regex);
 		replenishmentItem.setSku(regex);
+		replenishmentItem.setUnitOfMeasureKey(regex);
 
 		String json = ReplenishmentItemSerDes.toJSON(replenishmentItem);
 
@@ -187,6 +188,7 @@ public abstract class BaseReplenishmentItemResourceTestCase {
 		Assert.assertEquals(
 			regex, replenishmentItem.getExternalReferenceCode());
 		Assert.assertEquals(regex, replenishmentItem.getSku());
+		Assert.assertEquals(regex, replenishmentItem.getUnitOfMeasureKey());
 	}
 
 	@Test
@@ -1005,6 +1007,14 @@ public abstract class BaseReplenishmentItemResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("unitOfMeasureKey", additionalAssertFieldName)) {
+				if (replenishmentItem.getUnitOfMeasureKey() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("warehouseId", additionalAssertFieldName)) {
 				if (replenishmentItem.getWarehouseId() == null) {
 					valid = false;
@@ -1184,6 +1194,17 @@ public abstract class BaseReplenishmentItemResourceTestCase {
 				if (!Objects.deepEquals(
 						replenishmentItem1.getSku(),
 						replenishmentItem2.getSku())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("unitOfMeasureKey", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						replenishmentItem1.getUnitOfMeasureKey(),
+						replenishmentItem2.getUnitOfMeasureKey())) {
 
 					return false;
 				}
@@ -1393,13 +1414,58 @@ public abstract class BaseReplenishmentItemResourceTestCase {
 		}
 
 		if (entityFieldName.equals("quantity")) {
-			sb.append(String.valueOf(replenishmentItem.getQuantity()));
-
-			return sb.toString();
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
 		}
 
 		if (entityFieldName.equals("sku")) {
 			Object object = replenishmentItem.getSku();
+
+			String value = String.valueOf(object);
+
+			if (operator.equals("contains")) {
+				sb = new StringBundler();
+
+				sb.append("contains(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 2)) {
+					sb.append(value.substring(1, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else if (operator.equals("startswith")) {
+				sb = new StringBundler();
+
+				sb.append("startswith(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 1)) {
+					sb.append(value.substring(0, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else {
+				sb.append("'");
+				sb.append(value);
+				sb.append("'");
+			}
+
+			return sb.toString();
+		}
+
+		if (entityFieldName.equals("unitOfMeasureKey")) {
+			Object object = replenishmentItem.getUnitOfMeasureKey();
 
 			String value = String.valueOf(object);
 
@@ -1497,8 +1563,9 @@ public abstract class BaseReplenishmentItemResourceTestCase {
 				externalReferenceCode = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
 				id = RandomTestUtil.randomLong();
-				quantity = RandomTestUtil.randomInt();
 				sku = StringUtil.toLowerCase(RandomTestUtil.randomString());
+				unitOfMeasureKey = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
 				warehouseId = RandomTestUtil.randomLong();
 			}
 		};

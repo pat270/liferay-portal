@@ -64,7 +64,8 @@ public interface ObjectRelationshipLocalService
 	public ObjectRelationship addObjectRelationship(
 			long userId, long objectDefinitionId1, long objectDefinitionId2,
 			long parameterObjectFieldId, String deletionType,
-			Map<Locale, String> labelMap, String name, String type)
+			Map<Locale, String> labelMap, String name, boolean system,
+			String type)
 		throws PortalException;
 
 	/**
@@ -333,6 +334,10 @@ public interface ObjectRelationshipLocalService
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<ObjectRelationship> getObjectRelationships(
+		long objectDefinitionId1, boolean edge);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<ObjectRelationship> getObjectRelationships(
 		long objectDefinitionId1, int start, int end);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -381,7 +386,7 @@ public interface ObjectRelationshipLocalService
 	@Indexable(type = IndexableType.REINDEX)
 	public ObjectRelationship updateObjectRelationship(
 			long objectRelationshipId, long parameterObjectFieldId,
-			String deletionType, Map<Locale, String> labelMap)
+			String deletionType, boolean edge, Map<Locale, String> labelMap)
 		throws PortalException;
 
 	/**

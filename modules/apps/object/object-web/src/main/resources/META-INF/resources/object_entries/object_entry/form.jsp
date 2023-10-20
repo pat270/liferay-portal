@@ -95,6 +95,10 @@ portletDisplay.setURLBack(backURL);
 
 		function <portlet:namespace />getValues(fields) {
 			return fields.reduce((obj, field) => {
+				if (field.readOnly) {
+					return obj;
+				}
+
 				let value = field.value;
 				if (field.type === 'select' && !field.multiple) {
 					value = {key: value.length ? field.value[0] : ''};
@@ -124,6 +128,15 @@ portletDisplay.setURLBack(backURL);
 
 				const current = DDMFormInstance.reactComponentRef.current;
 
+				const loadingElement = document.createElement('span');
+
+				loadingElement.className =
+					'loading-animation loading-animation-secondary loading-animation-sm';
+
+				loadingElement.ariaHidden = 'true';
+
+				form.insertAdjacentElement('afterbegin', loadingElement);
+
 				current.validate().then((result) => {
 					if (result) {
 						const fields = current.getFields();
@@ -136,6 +149,8 @@ portletDisplay.setURLBack(backURL);
 								field.value.length > 280
 							) {
 								shouldSubmitForm = false;
+
+								loadingElement.remove();
 
 								Liferay.Util.openToast({
 									message: Liferay.Util.sub(
@@ -164,15 +179,15 @@ portletDisplay.setURLBack(backURL);
 								values = Object.assign(
 									values,
 									{
-										['categoryIds']: <portlet:namespace />getInputValues(
+										['keywords']: <portlet:namespace />getInputValues(
 											categoriesContent,
-											'input[name^="<portlet:namespace />assetCategoryIds"]'
+											'input[name^="<portlet:namespace />assetTagNames"]'
 										),
 									},
 									{
-										['tagNames']: <portlet:namespace />getInputValues(
+										['taxonomyCategoryIds']: <portlet:namespace />getInputValues(
 											categoriesContent,
-											'input[name^="<portlet:namespace />assetTagNames"]'
+											'input[name^="<portlet:namespace />assetCategoryIds"]'
 										),
 									}
 								);
@@ -231,7 +246,7 @@ portletDisplay.setURLBack(backURL);
 									}
 								})
 								.then((response) => {
-									if (Liferay.FeatureFlags['LPS-187846']) {
+									if (response && response.detail) {
 										const errorMessageArray = JSON.parse(
 											response.detail
 										);
@@ -241,6 +256,14 @@ portletDisplay.setURLBack(backURL);
 												'.portlet-body'
 											);
 
+											const existingAlert = portletBody.querySelector(
+												'.alert'
+											);
+
+											if (existingAlert) {
+												existingAlert.remove();
+											}
+
 											const alertElement = document.createElement(
 												'div'
 											);
@@ -248,8 +271,9 @@ portletDisplay.setURLBack(backURL);
 											alertElement.className =
 												'alert alert-danger';
 											alertElement.setAttribute('role', 'alert');
-											alertElement.style.width = '800px';
+											alertElement.style.bottom = '20px';
 											alertElement.style.margin = '2rem auto 0';
+											alertElement.style.width = '800px';
 
 											alertElement.insertAdjacentHTML(
 												'afterbegin',
@@ -279,37 +303,21 @@ portletDisplay.setURLBack(backURL);
 
 											alertElement.appendChild(closeButton);
 
-											const pageHeader = portletBody.querySelector(
-												'.page-header'
+											form.insertAdjacentElement(
+												'afterbegin',
+												alertElement
 											);
-
-											if (pageHeader) {
-												const firstChild =
-													portletBody.firstElementChild;
-
-												portletBody.insertBefore(
-													alertElement,
-													firstChild.nextSibling
-												);
-											}
-											else {
-												portletBody.insertAdjacentElement(
-													'afterbegin',
-													alertElement
-												);
-											}
 										}
-
 										scroll(0, 0);
 									}
-									else {
-										if (response && response.title) {
-											Liferay.Util.openToast({
-												message: response.title,
-												type: 'danger',
-											});
-										}
+									else if (response && response.title) {
+										Liferay.Util.openToast({
+											message: response.title,
+											type: 'danger',
+										});
 									}
+
+									loadingElement.remove();
 								});
 						}
 					}

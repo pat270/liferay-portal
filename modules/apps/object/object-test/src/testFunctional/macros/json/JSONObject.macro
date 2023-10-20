@@ -20,9 +20,9 @@ definition {
 						"en_US": "<p>${bodyContent}</p>\n"
 					},
 					"editorType": "richText",
-					"name": "${emailName}",
+					"name": "${templateName}",
 					"name_i18n": {
-						"en_US": "${emailName}"
+						"en_US": "${templateName}"
 					},
 					"recipientType": "email",
 					"recipients": [
@@ -32,9 +32,9 @@ definition {
 							"fromName": {
 								"en_US": "${fromName}"
 							},
-							"from": "${fromEmail}",
+							"from": "${fromAddress}",
 							"to": {
-								"en_US": "${toEmail}"
+								"en_US": "${toAddress}"
 							}
 						}
 					],
@@ -68,6 +68,10 @@ definition {
 			var scope = "company";
 		}
 
+		if (!(isSet(externalReferenceCode))) {
+			var externalReferenceCode = "";
+		}
+
 		var curl = '''
 			${portalURL}/o/object-admin/v1.0/object-definitions \
 				-H 'Content-Type: application/json' \
@@ -76,6 +80,7 @@ definition {
 					"label": {
 						"en_US": "${labelName}"
 					},
+					"externalReferenceCode": "${externalReferenceCode}",
 					"name": "${objectName}",
 					"objectFields": [],
 					"panelCategoryKey": "${panelCategoryKey}",
@@ -87,6 +92,50 @@ definition {
 		''';
 
 		JSONCurlUtil.post(${curl});
+	}
+
+	macro addObjectEntry {
+		var portalURL = JSONCompany.getPortalURL();
+
+		if (!(isSet(userEmailAddress))) {
+			var userEmailAddress = "test@liferay.com";
+		}
+
+		if (!(isSet(userPassword))) {
+			var userPassword = "test";
+		}
+
+		var objectName = StringUtil.toLowerCase(${objectName});
+		var list1 = ListUtil.newListFromString(${fieldNameList});
+		var list2 = ListUtil.newListFromString(${valueList});
+		var size = ListUtil.size(${list1});
+		var fieldName = ListUtil.get(${list1}, 0);
+		var value = ListUtil.get(${list2}, 0);
+
+		var data = "\"${fieldName}\": \"${value}\"";
+		var i = 1;
+
+		while (${i} != ${size}) {
+			var fieldName = ListUtil.get(${list1}, ${i});
+			var value = ListUtil.get(${list2}, ${i});
+
+			var data = StringUtil.add(${data}, ",\"${fieldName}\": \"${value}\"", "");
+			var i = ${i} + 1;
+		}
+
+		var curl = '''
+			${portalURL}/o/c/${objectName}s \
+				-H accept: application/json \
+				-H Content-Type: application/json \
+				-u ${userEmailAddress}:${userPassword} \
+				-d {
+					${data}
+				}
+		''';
+
+		var objectEntryId = JSONCurlUtil.post(${curl}, "$.id");
+
+		return ${objectEntryId};
 	}
 
 	macro addObjectEntryViaJSONAPI {
@@ -624,8 +673,15 @@ definition {
 			var userPassword = "test";
 		}
 
+		if (isSet(pageSize)) {
+			var url = "object-admin/v1.0/object-definitions?pageSize=${pageSize}";
+		}
+		else {
+			var url = "object-admin/v1.0/object-definitions";
+		}
+
 		var curl = '''
-			${portalURL}/o/object-admin/v1.0/object-definitions \
+			${portalURL}/o/${url} \
 				-u ${userEmailAddress}:${userPassword}
 		''';
 

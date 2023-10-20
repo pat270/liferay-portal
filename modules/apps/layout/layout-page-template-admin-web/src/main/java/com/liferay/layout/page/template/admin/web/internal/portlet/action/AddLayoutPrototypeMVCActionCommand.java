@@ -6,7 +6,7 @@
 package com.liferay.layout.page.template.admin.web.internal.portlet.action;
 
 import com.liferay.layout.page.template.admin.constants.LayoutPageTemplateAdminPortletKeys;
-import com.liferay.layout.page.template.admin.web.internal.handler.LayoutPageTemplateEntryExceptionRequestHandler;
+import com.liferay.layout.page.template.admin.web.internal.handler.LayoutPageTemplateEntryExceptionRequestHandlerUtil;
 import com.liferay.layout.page.template.exception.LayoutPageTemplateEntryNameException;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
@@ -131,8 +131,9 @@ public class AddLayoutPrototypeMVCActionCommand extends BaseMVCActionCommand {
 			String backURL = ParamUtil.getString(actionRequest, "backURL");
 
 			if (Validator.isNotNull(backURL)) {
-				redirectURL = HttpComponentsUtil.setParameter(
-					redirectURL, "p_l_back_url", backURL);
+				redirectURL = HttpComponentsUtil.addParameters(
+					redirectURL, "p_l_back_url", backURL, "p_l_back_url_title",
+					_language.get(themeDisplay.getLocale(), "page-templates"));
 			}
 
 			JSONPortletResponseUtil.writeJSON(
@@ -160,7 +161,7 @@ public class AddLayoutPrototypeMVCActionCommand extends BaseMVCActionCommand {
 					layoutPageTemplateEntryNameException =
 						(LayoutPageTemplateEntryNameException)throwable;
 
-				_layoutPageTemplateEntryExceptionRequestHandler.
+				LayoutPageTemplateEntryExceptionRequestHandlerUtil.
 					handlePortalException(
 						actionRequest, actionResponse,
 						layoutPageTemplateEntryNameException);
@@ -186,10 +187,6 @@ public class AddLayoutPrototypeMVCActionCommand extends BaseMVCActionCommand {
 
 	@Reference
 	private Language _language;
-
-	@Reference
-	private LayoutPageTemplateEntryExceptionRequestHandler
-		_layoutPageTemplateEntryExceptionRequestHandler;
 
 	@Reference
 	private LayoutPageTemplateEntryLocalService

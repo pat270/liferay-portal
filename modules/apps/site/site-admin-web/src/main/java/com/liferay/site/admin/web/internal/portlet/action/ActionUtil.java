@@ -6,9 +6,9 @@
 package com.liferay.site.admin.web.internal.portlet.action;
 
 import com.liferay.asset.kernel.model.AssetEntry;
-import com.liferay.asset.kernel.model.AssetLink;
 import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;
-import com.liferay.asset.kernel.service.AssetLinkLocalServiceUtil;
+import com.liferay.asset.link.model.AssetLink;
+import com.liferay.asset.link.service.AssetLinkLocalServiceUtil;
 import com.liferay.portal.kernel.exception.AvailableLocaleException;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -26,7 +26,7 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.sites.kernel.util.SitesUtil;
+import com.liferay.sites.kernel.util.Sites;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -161,7 +161,7 @@ public class ActionUtil {
 	}
 
 	public static void updateLayoutSetPrototypesLinks(
-			ActionRequest actionRequest, Group liveGroup)
+			ActionRequest actionRequest, Group liveGroup, Sites sites)
 		throws Exception {
 
 		long privateLayoutSetPrototypeId = ParamUtil.getLong(
@@ -223,7 +223,7 @@ public class ActionUtil {
 			group = liveGroup;
 		}
 
-		SitesUtil.updateLayoutSetPrototypesLinks(
+		sites.updateLayoutSetPrototypesLinks(
 			group, publicLayoutSetPrototypeId, privateLayoutSetPrototypeId,
 			publicLayoutSetPrototypeLinkEnabled,
 			privateLayoutSetPrototypeLinkEnabled);

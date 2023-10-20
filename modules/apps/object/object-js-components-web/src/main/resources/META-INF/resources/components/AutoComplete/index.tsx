@@ -4,9 +4,9 @@
  */
 
 import ClayDropDown from '@clayui/drop-down';
+import {FieldBase} from 'frontend-js-components-web';
 import React, {useState} from 'react';
 
-import {FieldBase} from '../FieldBase';
 import {CustomSelect} from './CustomSelect';
 
 import './index.scss';
@@ -50,6 +50,7 @@ export default function AutoComplete<T>({
 	items,
 	label,
 	onActive,
+	onBlur,
 	onChangeQuery,
 	onSelectEmptyStateItem,
 	onSelectItem,
@@ -67,6 +68,9 @@ export default function AutoComplete<T>({
 		label: Liferay.Language.get('choose-an-option'),
 	};
 
+	const element = document.querySelector(`.custom-select__content-${id}`);
+	const elementRect = element?.getBoundingClientRect();
+
 	return (
 		<FieldBase
 			className={className}
@@ -80,14 +84,18 @@ export default function AutoComplete<T>({
 		>
 			<ClayDropDown
 				active={!disabled && active}
-				menuElementAttrs={{className: 'autocomplete-expand'}}
+				menuElementAttrs={{
+					style: {maxWidth: elementRect?.width, width: '100%'},
+				}}
 				onActiveChange={(value: boolean) =>
 					!disabled ? setActive(value) : setActive(false)
 				}
+				onBlur={onBlur}
 				trigger={
 					<CustomSelect
 						contentRight={<>{value && contentRight}</>}
 						disabled={disabled}
+						id={id}
 						placeholder={
 							placeholder ??
 							Liferay.Language.get('choose-an-option')

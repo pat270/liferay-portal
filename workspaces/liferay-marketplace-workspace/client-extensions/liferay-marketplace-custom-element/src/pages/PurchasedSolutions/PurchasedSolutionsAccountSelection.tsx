@@ -30,10 +30,19 @@ type PurchasedSolutionsccountSelectionProps = {
 	setStep: React.Dispatch<Steps>;
 };
 
-const PurchasedSolutionsAccountSelection: React.FC<
-	PurchasedSolutionsccountSelectionProps
-> = ({accounts, currentUserAccount, orderInfo, setStep}) => {
-	const [radio, setRadio] = useState<RadioOption>();
+const productCustomFields = [
+	'Github Username',
+	'Project Name',
+	'Site Initializer',
+];
+
+const PurchasedSolutionsAccountSelection: React.FC<PurchasedSolutionsccountSelectionProps> = ({
+	accounts,
+	currentUserAccount,
+	orderInfo,
+	setStep,
+}) => {
+	const [radio, setRadio] = useState<RadioOption<Account>>();
 	const [orderType, setOrderType] = useState<OrderType>();
 	const [disabledButton, setDisabledButton] = useState<boolean>(false);
 	const [toastItems, setToastItems] = useState<
@@ -54,6 +63,13 @@ const PurchasedSolutionsAccountSelection: React.FC<
 		type: '',
 	});
 
+	const trialLenght =
+		orderInfo?.specifications &&
+		orderInfo?.specifications?.find(
+			(specification) =>
+				specification?.specificationKey === 'trial-length'
+		);
+
 	const renderToastMessage = () => {
 		renderToast(
 			'We are unable to start your trial. Please contact our sales team via email - sales@liferay.com',
@@ -68,10 +84,11 @@ const PurchasedSolutionsAccountSelection: React.FC<
 
 	const findOrderTypeByName = (
 		orderTypes: OrderType[],
-		nameOrderType: string
+		nameOrderType = 'SOLUTIONS7'
 	) => {
 		return orderTypes.find(
-			({name}: OrderType) => name['en_US'] === nameOrderType
+			({externalReferenceCode}: OrderType) =>
+				externalReferenceCode === nameOrderType
 		);
 	};
 
@@ -93,15 +110,35 @@ const PurchasedSolutionsAccountSelection: React.FC<
 
 		const projectOrderType = findOrderTypeByName(
 			orderTypes,
-			'Solutions - 30 day trial'
+			trialLenght?.value?.en_US as string
 		);
+
 		setOrderType(projectOrderType);
 	};
 
 	useEffect(() => {
 		fetchDataAndSetState();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	}, [trialLenght]);
+
+	const customFields =
+		orderInfo?.product?.customFields?.filter((item) =>
+			productCustomFields.find((field) => item.name === field)
+		) || [];
+
+	const getProductCustomFields = () => {
+		let data = {};
+
+		productCustomFields.forEach((fieldName) => {
+			customFields.forEach((field) => {
+				if (field.name === fieldName) {
+					data = {...data, [fieldName]: field.customValue.data};
+				}
+			});
+		});
+
+		return data;
+	};
 
 	const onsubmit = async () => {
 		const payload: Order = {
@@ -118,6 +155,7 @@ const PurchasedSolutionsAccountSelection: React.FC<
 			},
 			channelId: channel?.id,
 			currencyCode: 'USD',
+			customFields: getProductCustomFields(),
 			orderItems: [
 				{
 					id: 0,
@@ -126,12 +164,14 @@ const PurchasedSolutionsAccountSelection: React.FC<
 				},
 			],
 			orderStatus: 1,
+			orderTypeExternalReferenceCode: orderType?.externalReferenceCode,
 			orderTypeId: Number(orderType?.id),
 			shippingAmount: 0,
 			shippingWithTaxAmount: 0,
 		};
 
 		await postOrder(payload);
+
 		setStep({page: 'projectCreated'});
 	};
 
@@ -240,9 +280,13 @@ const PurchasedSolutionsAccountSelection: React.FC<
 
 									<ClayButton
 										disabled={
-											!radio?.value || disabledButton
+											!radio?.value ||
+											disabledButton ||
+											!orderInfo?.sku
 										}
-										onClick={() => onsubmit()}
+										onClick={() =>
+											orderInfo?.sku && onsubmit()
+										}
 									>
 										Continue
 									</ClayButton>

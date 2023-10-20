@@ -5,23 +5,37 @@
 	border-bottom: 1px solid rgba(180, 187, 201, 0.2);
 	display: grid;
 	font-size: 12px;
-	max-height: 200px;
 	grid-template-areas:
 		'info quantity price delete'
 		'errors errors errors errors';
-	grid-template-columns: auto 90px minmax(min-content, 100px) min-content;
+	grid-template-columns: auto 120px minmax(min-content, 100px) min-content;
 	overflow: visible;
 	position: relative;
 	transition: height 0.2s ease-in, padding 0.1s ease-in;
 	width: 100%;
 
-	.mini-cart-item-anchor {
+	.mini-cart-item-details {
 		align-items: center;
 		color: inherit;
 		display: flex;
 		grid-area: info;
-		padding: 1rem;
+		margin: 1rem;
 		text-decoration: inherit;
+	}
+
+	.mini-cart-item-anchor {
+		z-index: 10;
+	}
+
+	.mini-cart-item-alignment {
+		align-items: center;
+		display: flex;
+		min-height: 86px;
+	}
+
+	.mini-cart-item-actions {
+		font-size: 1rem;
+		padding-right: 0.3rem;
 	}
 
 	.mini-cart-item-thumbnail {
@@ -38,19 +52,18 @@
 	}
 
 	.mini-cart-item-info {
+		max-width: 250px;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
-		width: 250px;
 
 		& *:not(& .child-items-quantity) {
 			overflow: hidden;
 			text-overflow: ellipsis;
 			white-space: nowrap;
-			width: 250px;
 		}
 
-		&.has-options {
+		&.options {
 			align-items: initial;
 			display: grid;
 			height: 100%;
@@ -61,6 +74,25 @@
 
 			.item-info-extra {
 				align-self: flex-end;
+			}
+
+			.item-info-collapse {
+				border: 0;
+				position: relative;
+				z-index: 10;
+
+				.panel-header {
+					padding-left: 0;
+
+					.panel-title {
+						font-size: 0.75rem;
+						text-transform: initial;
+					}
+				}
+
+				.panel-body {
+					padding: 4px 0 0;
+				}
 			}
 		}
 
@@ -80,6 +112,12 @@
 					font-weight: 400;
 				}
 			}
+		}
+
+		.item-info-replacement {
+			align-items: center;
+			display: flex;
+			gap: 0.4em;
 		}
 
 		p,
@@ -105,12 +143,6 @@
 		}
 	}
 
-	.mini-cart-item-delete {
-		font-size: 1rem;
-		grid-area: delete;
-		padding-right: 1rem;
-	}
-
 	&.is-removed {
 		border: 0;
 		max-height: 0;
@@ -127,7 +159,7 @@
 		position: absolute;
 		right: 0;
 		top: 0;
-		z-index: 2;
+		z-index: 10;
 
 		.mini-cart-item-is-removing {
 			align-items: center;
@@ -221,5 +253,9 @@
 		span {
 			margin-left: 10px;
 		}
+	}
+
+	.quantity-selector {
+		max-width: 70px;
 	}
 }

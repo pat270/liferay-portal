@@ -120,6 +120,32 @@ public class ObjectRelationship implements Serializable {
 	protected DeletionType deletionType;
 
 	@Schema
+	public Boolean getEdge() {
+		return edge;
+	}
+
+	public void setEdge(Boolean edge) {
+		this.edge = edge;
+	}
+
+	@JsonIgnore
+	public void setEdge(UnsafeSupplier<Boolean, Exception> edgeUnsafeSupplier) {
+		try {
+			edge = edgeUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected Boolean edge;
+
+	@Schema
 	public Long getId() {
 		return id;
 	}
@@ -499,6 +525,34 @@ public class ObjectRelationship implements Serializable {
 	protected Boolean reverse;
 
 	@Schema
+	public Boolean getSystem() {
+		return system;
+	}
+
+	public void setSystem(Boolean system) {
+		this.system = system;
+	}
+
+	@JsonIgnore
+	public void setSystem(
+		UnsafeSupplier<Boolean, Exception> systemUnsafeSupplier) {
+
+		try {
+			system = systemUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected Boolean system;
+
+	@Schema
 	@Valid
 	public Type getType() {
 		return type;
@@ -583,6 +637,16 @@ public class ObjectRelationship implements Serializable {
 			sb.append(deletionType);
 
 			sb.append("\"");
+		}
+
+		if (edge != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"edge\": ");
+
+			sb.append(edge);
 		}
 
 		if (id != null) {
@@ -733,6 +797,16 @@ public class ObjectRelationship implements Serializable {
 			sb.append("\"reverse\": ");
 
 			sb.append(reverse);
+		}
+
+		if (system != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"system\": ");
+
+			sb.append(system);
 		}
 
 		if (type != null) {

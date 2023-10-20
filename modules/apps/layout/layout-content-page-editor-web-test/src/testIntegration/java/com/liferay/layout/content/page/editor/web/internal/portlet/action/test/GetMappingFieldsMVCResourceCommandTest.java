@@ -43,7 +43,7 @@ import org.junit.runner.RunWith;
 /**
  * @author Víctor Galán
  */
-@FeatureFlags("LPS-183727")
+@FeatureFlags("LPS-195205")
 @RunWith(Arquillian.class)
 public class GetMappingFieldsMVCResourceCommandTest {
 
@@ -67,9 +67,8 @@ public class GetMappingFieldsMVCResourceCommandTest {
 			_layoutPageTemplateEntryLocalService.addLayoutPageTemplateEntry(
 				TestPropsValues.getUserId(), _group.getGroupId(), 0,
 				classNameId, 0, RandomTestUtil.randomString(),
-				LayoutPageTemplateEntryTypeConstants.TYPE_DISPLAY_PAGE, 0, true,
-				0, 0, 0, WorkflowConstants.STATUS_APPROVED,
-				new ServiceContext());
+				LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE, 0, true, 0,
+				0, 0, WorkflowConstants.STATUS_APPROVED, new ServiceContext());
 
 		JSONArray jsonArray = ReflectionTestUtil.invoke(
 			_mvcResourceCommand, "_getMappingFieldsJSONArray",

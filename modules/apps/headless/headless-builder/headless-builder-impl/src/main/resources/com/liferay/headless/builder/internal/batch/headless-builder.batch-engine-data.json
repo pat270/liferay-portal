@@ -5,7 +5,7 @@
 		"parameters": {
 			"containsHeaders": "true",
 			"createStrategy": "UPSERT",
-			"featureFlag": "LPS-184413",
+			"featureFlag": "LPS-178642",
 			"importStrategy": "ON_ERROR_FAIL",
 			"taskItemDelegateName": "DEFAULT",
 			"updateStrategy": "UPDATE"
@@ -24,60 +24,28 @@
 			"name": "APISort",
 			"objectFields": [
 				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "OBJECT_FIELD_ERC",
+					"DBType": "Clob",
+					"businessType": "LongText",
+					"externalReferenceCode": "ODATA_SORT",
 					"indexed": true,
 					"indexedAsKeyword": false,
 					"label": {
-						"en_US": "Object Field ERC"
+						"en_US": "OData Sort"
 					},
-					"name": "objectFieldERC",
-					"required": true,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Picklist",
-					"defaultValue": "ascending",
-					"externalReferenceCode": "ORDER",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"label": {
-						"en_US": "Order"
-					},
-					"listTypeDefinitionExternalReferenceCode": "ORDER_PICKLIST",
-					"name": "order",
+					"name": "oDataSort",
 					"objectFieldSettings": [
 						{
-							"name": "stateFlow",
-							"value": {
-								"objectStates": [
-									{
-										"key": "ascending",
-										"objectStateTransitions": [
-											{
-												"key": "descending"
-											}
-										]
-									},
-									{
-										"key": "descending",
-										"objectStateTransitions": [
-											{
-												"key": "ascending"
-											}
-										]
-									}
-								]
-							}
+							"name": "showCounter",
+							"value": true
+						},
+						{
+							"name": "maxLength",
+							"value": 1000
 						}
 					],
 					"required": true,
-					"state": true,
-					"system": false,
+					"state": false,
+					"system": true,
 					"type": "String"
 				}
 			],
@@ -101,8 +69,8 @@
 			"name": "APIFilter",
 			"objectFields": [
 				{
-					"DBType": "String",
-					"businessType": "Text",
+					"DBType": "Clob",
+					"businessType": "LongText",
 					"externalReferenceCode": "ODATA_FILTER",
 					"indexed": true,
 					"indexedAsKeyword": false,
@@ -110,9 +78,19 @@
 						"en_US": "OData Filter"
 					},
 					"name": "oDataFilter",
+					"objectFieldSettings": [
+						{
+							"name": "showCounter",
+							"value": true
+						},
+						{
+							"name": "maxLength",
+							"value": 1000
+						}
+					],
 					"required": true,
 					"state": false,
-					"system": false,
+					"system": true,
 					"type": "String"
 				}
 			],
@@ -147,7 +125,7 @@
 					"name": "description",
 					"required": false,
 					"state": false,
-					"system": false,
+					"system": true,
 					"type": "String"
 				},
 				{
@@ -178,7 +156,7 @@
 					],
 					"required": true,
 					"state": true,
-					"system": false,
+					"system": true,
 					"type": "String"
 				},
 				{
@@ -193,7 +171,7 @@
 					"name": "name",
 					"required": true,
 					"state": false,
-					"system": false,
+					"system": true,
 					"type": "String"
 				},
 				{
@@ -208,7 +186,64 @@
 					"name": "path",
 					"required": true,
 					"state": false,
-					"system": false,
+					"system": true,
+					"type": "String"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "PATH_PARAMETER",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Path Parameter"
+					},
+					"name": "pathParameter",
+					"required": false,
+					"state": false,
+					"system": true,
+					"type": "String"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Picklist",
+					"defaultValue": "collection",
+					"externalReferenceCode": "RETRIEVE_TYPE",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Retrieve Type"
+					},
+					"listTypeDefinitionExternalReferenceCode": "RETRIEVE_TYPE_PICKLIST",
+					"name": "retrieveType",
+					"objectFieldSettings": [
+						{
+							"name": "stateFlow",
+							"value": {
+								"objectStates": [
+									{
+										"key": "collection",
+										"objectStateTransitions": [
+											{
+												"key": "singleElement"
+											}
+										]
+									},
+									{
+										"key": "singleElement",
+										"objectStateTransitions": [
+											{
+												"key": "collection"
+											}
+										]
+									}
+								]
+							}
+						}
+					],
+					"required": true,
+					"state": true,
+					"system": true,
 					"type": "String"
 				},
 				{
@@ -250,7 +285,7 @@
 					],
 					"required": true,
 					"state": true,
-					"system": false,
+					"system": true,
 					"type": "String"
 				}
 			],
@@ -318,7 +353,7 @@
 					"name": "description",
 					"required": false,
 					"state": false,
-					"system": false,
+					"system": true,
 					"type": "String"
 				},
 				{
@@ -333,7 +368,7 @@
 					"name": "name",
 					"required": true,
 					"state": false,
-					"system": false,
+					"system": true,
 					"type": "String"
 				},
 				{
@@ -348,7 +383,7 @@
 					"name": "objectFieldERC",
 					"required": true,
 					"state": false,
-					"system": false,
+					"system": true,
 					"type": "String"
 				},
 				{
@@ -363,22 +398,7 @@
 					"name": "objectRelationshipNames",
 					"required": false,
 					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "PARENT_API_PROPERTY_ERC",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"label": {
-						"en_US": "Parent API Property ERC"
-					},
-					"name": "parentAPIPropertyERC",
-					"required": false,
-					"state": false,
-					"system": false,
+					"system": true,
 					"type": "String"
 				}
 			],
@@ -431,7 +451,7 @@
 					"name": "description",
 					"required": false,
 					"state": false,
-					"system": false,
+					"system": true,
 					"type": "String"
 				},
 				{
@@ -446,7 +466,7 @@
 					"name": "mainObjectDefinitionERC",
 					"required": true,
 					"state": false,
-					"system": false,
+					"system": true,
 					"type": "String"
 				},
 				{
@@ -461,7 +481,7 @@
 					"name": "name",
 					"required": true,
 					"state": false,
-					"system": false,
+					"system": true,
 					"type": "String"
 				}
 			],
@@ -569,7 +589,7 @@
 					],
 					"required": true,
 					"state": true,
-					"system": false,
+					"system": true,
 					"type": "String"
 				},
 				{
@@ -591,7 +611,7 @@
 					],
 					"required": true,
 					"state": false,
-					"system": false,
+					"system": true,
 					"type": "String"
 				},
 				{
@@ -607,7 +627,7 @@
 					"name": "description",
 					"required": false,
 					"state": false,
-					"system": false,
+					"system": true,
 					"type": "String"
 				},
 				{
@@ -629,7 +649,7 @@
 					],
 					"required": true,
 					"state": false,
-					"system": false,
+					"system": true,
 					"type": "String"
 				},
 				{
@@ -645,7 +665,7 @@
 					"name": "version",
 					"required": false,
 					"state": false,
-					"system": false,
+					"system": true,
 					"type": "String"
 				}
 			],

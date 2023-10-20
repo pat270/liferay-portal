@@ -14,9 +14,9 @@ import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.configuration.icon.BasePortletConfigurationIcon;
 import com.liferay.portal.kernel.portlet.configuration.icon.PortletConfigurationIcon;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.service.permission.UserGroupPermission;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.service.permission.UserGroupPermissionUtil;
 import com.liferay.taglib.security.PermissionsURLTag;
 import com.liferay.user.groups.admin.constants.UserGroupsAdminPortletKeys;
 import com.liferay.user.groups.admin.web.internal.portlet.action.ActionUtil;
@@ -87,7 +87,7 @@ public class PermissionsPortletConfigurationIcon
 
 			UserGroup userGroup = ActionUtil.getUserGroup(portletRequest);
 
-			return _userGroupPermission.contains(
+			return UserGroupPermissionUtil.contains(
 				themeDisplay.getPermissionChecker(), userGroup.getUserGroupId(),
 				ActionKeys.PERMISSIONS);
 		}
@@ -110,8 +110,5 @@ public class PermissionsPortletConfigurationIcon
 
 	@Reference
 	private Language _language;
-
-	@Reference
-	private UserGroupPermission _userGroupPermission;
 
 }

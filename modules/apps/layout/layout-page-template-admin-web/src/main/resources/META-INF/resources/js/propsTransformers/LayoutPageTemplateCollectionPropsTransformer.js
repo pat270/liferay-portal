@@ -3,13 +3,14 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {openModal} from 'frontend-js-web';
+import {openModal, openSimpleInputModal} from 'frontend-js-web';
 
 import openDeletePageTemplateModal from '../modal/openDeletePageTemplateModal';
 
 const ACTIONS = {
 	deleteLayoutPageTemplateCollection({
 		deleteLayoutPageTemplateCollectionURL,
+		dialogTitle,
 	}) {
 		openDeletePageTemplateModal({
 			onDelete: () => {
@@ -18,7 +19,7 @@ const ACTIONS = {
 					deleteLayoutPageTemplateCollectionURL
 				);
 			},
-			title: Liferay.Language.get('page-template-set'),
+			title: dialogTitle,
 		});
 	},
 
@@ -30,34 +31,60 @@ const ACTIONS = {
 			url: permissionsLayoutPageTemplateCollectionURL,
 		});
 	},
+
+	updateLayoutPageTemplateCollection(
+		{
+			dialogTitle,
+			layoutPageTemplateCollectionName,
+			updateLayoutPageTemplateCollectionURL,
+		},
+		portletNamespace
+	) {
+		openSimpleInputModal({
+			dialogTitle,
+			formSubmitURL: updateLayoutPageTemplateCollectionURL,
+			mainFieldLabel: Liferay.Language.get('name'),
+			mainFieldName: 'name',
+			mainFieldPlaceholder: Liferay.Language.get('name'),
+			mainFieldValue: layoutPageTemplateCollectionName,
+			namespace: portletNamespace,
+		});
+	},
+};
+
+const updateItem = (item, portletNamespace) => {
+	const newItem = {
+		...item,
+		onClick(event) {
+			const action = item.data?.action;
+
+			if (action) {
+				event.preventDefault();
+
+				ACTIONS[action]?.(item.data, portletNamespace);
+			}
+		},
+	};
+
+	if (Array.isArray(item.items)) {
+		newItem.items = item.items.map((item) =>
+			updateItem(item, portletNamespace)
+		);
+	}
+
+	return newItem;
 };
 
 export default function LayoutPageTemplateEntryPropsTransformer({
+	actions,
 	items,
 	portletNamespace,
 	...otherProps
 }) {
 	return {
 		...otherProps,
-		items: items?.map((item) => {
-			return {
-				...item,
-				items: item.items?.map((child) => {
-					return {
-						...child,
-						onClick(event) {
-							const action = child.data?.action;
-
-							if (action) {
-								event.preventDefault();
-
-								ACTIONS[action](child.data, portletNamespace);
-							}
-						},
-					};
-				}),
-			};
-		}),
+		actions: actions?.map((item) => updateItem(item, portletNamespace)),
+		items: items?.map((item) => updateItem(item, portletNamespace)),
 		portletNamespace,
 	};
 }

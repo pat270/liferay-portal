@@ -241,7 +241,7 @@ export function FieldBase({
 		type === 'rich_text' ||
 		type === 'search_location' ||
 		type === 'select';
-	const readFieldDetails = !showFor || type === 'select';
+	const readFieldDetails = !showFor;
 	const hasFieldDetails = accessible && fieldDetails && readFieldDetails;
 
 	const accessiblePropsGroup = {
@@ -252,7 +252,7 @@ export function FieldBase({
 	const accessiblePropsFields = {
 		...(hasFieldDetails && {'aria-labelledby': fieldDetailsId}),
 		...(showFor && {htmlFor: id ?? name}),
-		...(readFieldDetails && {tabIndex: 0}),
+		...readFieldDetails,
 	};
 
 	const defaultRows = nestedFields?.map((field) => ({
@@ -264,13 +264,12 @@ export function FieldBase({
 
 		const visitor = new PagesVisitor(pages);
 
-		const newFieldName = fieldName ?? fieldReference;
 		const newParentInstanceId = parentInstanceId;
 
 		visitor.mapFields(
 			(field) => {
 				if (
-					newFieldName === field.fieldName &&
+					fieldReference === field.fieldReference &&
 					newParentInstanceId === field.parentInstanceId
 				) {
 					repetitionsCounter++;

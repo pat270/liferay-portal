@@ -11,11 +11,13 @@ import com.liferay.digital.signature.internal.web.cache.DSAccessTokenWebCacheIte
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.Http;
+import com.liferay.portal.kernel.util.Validator;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -77,8 +79,13 @@ public class DSHttp {
 
 		JSONObject jsonObject = DSAccessTokenWebCacheItem.get(
 			digitalSignatureConfiguration.apiUsername(),
+			digitalSignatureConfiguration.environment(),
 			digitalSignatureConfiguration.integrationKey(),
 			digitalSignatureConfiguration.rsaPrivateKey());
+
+		if (Validator.isNotNull(jsonObject.getString("error"))) {
+			throw new PortalException(jsonObject.getString("error"));
+		}
 
 		return jsonObject.getString("access_token");
 	}

@@ -15,6 +15,7 @@ import com.liferay.commerce.service.CommerceOrderService;
 import com.liferay.commerce.util.CommerceShippingHelper;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.util.BigDecimalUtil;
 
 import java.util.Locale;
 
@@ -109,7 +110,8 @@ public class ShippedCommerceOrderStatusImpl implements CommerceOrderStatus {
 		for (CommerceOrderItem shippedCommerceOrderItem :
 				commerceOrder.getCommerceOrderItems()) {
 
-			if ((shippedCommerceOrderItem.getShippedQuantity() <
+			if (BigDecimalUtil.lt(
+					shippedCommerceOrderItem.getShippedQuantity(),
 					shippedCommerceOrderItem.getQuantity()) &&
 				shippedCommerceOrderItem.isShippable()) {
 

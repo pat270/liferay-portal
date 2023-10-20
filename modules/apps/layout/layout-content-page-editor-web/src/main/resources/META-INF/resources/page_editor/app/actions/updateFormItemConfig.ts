@@ -5,8 +5,11 @@
 
 import {UPDATE_FORM_ITEM_CONFIG} from './types';
 
-import type {DeletedLayoutDataItem, LayoutData} from '../../types/LayoutData';
-import type {FragmentEntryLink} from './addFragmentEntryLinks';
+import type {
+	DeletedLayoutDataItem,
+	LayoutData,
+} from '../../types/layout_data/LayoutData';
+import type {FragmentEntryLinkMap} from './addFragmentEntryLinks';
 
 export default function updateFormItemConfig({
 	addedFragmentEntryLinks = null,
@@ -18,7 +21,7 @@ export default function updateFormItemConfig({
 	removedFragmentEntryLinkIds = [],
 	restoredFragmentEntryLinkIds = [],
 }: {
-	addedFragmentEntryLinks?: FragmentEntryLink[] | null;
+	addedFragmentEntryLinks?: FragmentEntryLinkMap | null;
 	deletedItems?: DeletedLayoutDataItem[];
 	isMapping: boolean;
 	itemId: string;

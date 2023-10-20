@@ -22,8 +22,6 @@ import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
-import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
-import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -50,16 +48,14 @@ import org.osgi.service.component.annotations.Reference;
 	service = MVCActionCommand.class
 )
 public class UpdateConfigurationValuesMVCActionCommand
-	extends BaseMVCActionCommand {
+	extends BaseContentPageEditorTransactionalMVCActionCommand {
 
 	@Override
-	protected void doProcessAction(
+	protected JSONObject doTransactionalCommand(
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
 
-		JSONPortletResponseUtil.writeJSON(
-			actionRequest, actionResponse,
-			_processUpdateConfigurationValues(actionRequest, actionResponse));
+		return _processUpdateConfigurationValues(actionRequest, actionResponse);
 	}
 
 	private JSONObject _mergeEditableValuesJSONObject(
@@ -76,10 +72,6 @@ public class UpdateConfigurationValuesMVCActionCommand
 				editableValuesJSONObject.getJSONObject(
 					fragmentEntryProcessorKey);
 
-			if (editableFragmentEntryProcessorJSONObject == null) {
-				continue;
-			}
-
 			JSONObject defaultEditableFragmentEntryProcessorJSONObject =
 				defaultEditableValuesJSONObject.getJSONObject(
 					fragmentEntryProcessorKey);
@@ -88,15 +80,18 @@ public class UpdateConfigurationValuesMVCActionCommand
 				continue;
 			}
 
-			Iterator<String> iterator =
-				defaultEditableFragmentEntryProcessorJSONObject.keys();
+			if (editableFragmentEntryProcessorJSONObject != null) {
+				Iterator<String> iterator =
+					defaultEditableFragmentEntryProcessorJSONObject.keys();
 
-			while (iterator.hasNext()) {
-				String key = iterator.next();
+				while (iterator.hasNext()) {
+					String key = iterator.next();
 
-				if (editableFragmentEntryProcessorJSONObject.has(key)) {
-					defaultEditableFragmentEntryProcessorJSONObject.put(
-						key, editableFragmentEntryProcessorJSONObject.get(key));
+					if (editableFragmentEntryProcessorJSONObject.has(key)) {
+						defaultEditableFragmentEntryProcessorJSONObject.put(
+							key,
+							editableFragmentEntryProcessorJSONObject.get(key));
+					}
 				}
 			}
 
@@ -151,8 +146,6 @@ public class UpdateConfigurationValuesMVCActionCommand
 			fragmentEntryLinkListener.
 				onUpdateFragmentEntryLinkConfigurationValues(fragmentEntryLink);
 		}
-
-		hideDefaultSuccessMessage(actionRequest);
 
 		LayoutStructure layoutStructure =
 			LayoutStructureUtil.getLayoutStructure(

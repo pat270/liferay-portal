@@ -5,6 +5,7 @@
 
 type LocalizedValue<T> = Liferay.Language.LocalizedValue<T>;
 interface ObjectDefinition {
+	actions: DefinitionActions;
 	active: boolean;
 	dateCreated: string;
 	dateModified: string;
@@ -32,6 +33,18 @@ interface ObjectDefinition {
 	system: boolean;
 	titleObjectFieldName: string;
 }
+
+type DefinitionAction = {
+	href: string;
+	method: string;
+};
+
+type DefinitionActions = {
+	delete: DefinitionAction;
+	get: DefinitionAction;
+	permissions: DefinitionAction;
+	update: DefinitionAction;
+};
 
 interface ObjectField {
 	DBType: string;

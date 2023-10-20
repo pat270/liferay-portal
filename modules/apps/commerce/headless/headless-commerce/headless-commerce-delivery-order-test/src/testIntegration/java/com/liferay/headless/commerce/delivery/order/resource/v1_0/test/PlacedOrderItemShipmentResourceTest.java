@@ -119,8 +119,9 @@ public class PlacedOrderItemShipmentResourceTest
 			_commerceOrderItemLocalService.addCommerceOrderItem(
 				_user.getUserId(), _commerceOrder.getCommerceOrderId(),
 				_cpInstance.getCPInstanceId(), null,
-				RandomTestUtil.randomInt(1, 10), 0,
-				RandomTestUtil.randomInt(1, 10), StringPool.BLANK,
+				BigDecimal.valueOf(RandomTestUtil.randomInt(1, 10)), 0,
+				BigDecimal.valueOf(RandomTestUtil.randomInt(1, 10)),
+				StringPool.BLANK,
 				new TestCommerceContext(
 					_accountEntry, _commerceCurrency, _commerceChannel, _user,
 					testGroup, _commerceOrder),
@@ -163,7 +164,7 @@ public class PlacedOrderItemShipmentResourceTest
 				id = RandomTestUtil.randomLong();
 				modifiedDate = RandomTestUtil.nextDate();
 				orderId = _commerceOrder.getCommerceOrderId();
-				quantity = RandomTestUtil.randomInt(1, 10);
+				quantity = BigDecimal.valueOf(RandomTestUtil.randomInt(1, 10));
 				shippingAddressId = localShippingAddress.getAddressId();
 				shippingMethodId = RandomTestUtil.randomLong();
 				shippingOptionName = StringUtil.toLowerCase(
@@ -220,7 +221,8 @@ public class PlacedOrderItemShipmentResourceTest
 				RandomTestUtil.randomString(),
 				commerceShipment.getCommerceShipmentId(),
 				_commerceOrderItem.getCommerceOrderItemId(), 0,
-				placedOrderItemShipment.getQuantity(), false, _serviceContext);
+				placedOrderItemShipment.getQuantity(), null, false,
+				_serviceContext);
 
 		_commerceShipmentItems.add(commerceShipmentItem);
 

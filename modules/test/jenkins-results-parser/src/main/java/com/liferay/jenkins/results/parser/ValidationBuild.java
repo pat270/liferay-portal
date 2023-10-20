@@ -34,7 +34,7 @@ import org.json.JSONObject;
 public class ValidationBuild extends BaseBuild {
 
 	@Override
-	public void addTimelineData(BaseBuild.TimelineData timelineData) {
+	public void addTimelineData(TimelineData timelineData) {
 		timelineData.addTimelineData(this);
 	}
 
@@ -66,6 +66,11 @@ public class ValidationBuild extends BaseBuild {
 		}
 
 		return gitRepositoryName;
+	}
+
+	@Override
+	public String getBuildName() {
+		return "default";
 	}
 
 	@Override

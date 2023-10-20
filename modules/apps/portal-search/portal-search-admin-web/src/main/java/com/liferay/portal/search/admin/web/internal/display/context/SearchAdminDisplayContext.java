@@ -6,13 +6,19 @@
 package com.liferay.portal.search.admin.web.internal.display.context;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItemList;
+import com.liferay.portal.kernel.search.Indexer;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Adam Brandizzi
  */
 public class SearchAdminDisplayContext {
+
+	public Map<String, List<Indexer<?>>> getIndexersMap() {
+		return _indexersMap;
+	}
 
 	public List<String> getIndexReindexerClassNames() {
 		return _indexReindexerClassNames;
@@ -24,6 +30,10 @@ public class SearchAdminDisplayContext {
 
 	public String getSelectedTab() {
 		return _selectedTab;
+	}
+
+	public void setIndexersMap(Map<String, List<Indexer<?>>> indexersMap) {
+		_indexersMap = indexersMap;
 	}
 
 	public void setIndexReindexerClassNames(
@@ -40,6 +50,7 @@ public class SearchAdminDisplayContext {
 		_selectedTab = selectedTab;
 	}
 
+	private Map<String, List<Indexer<?>>> _indexersMap;
 	private List<String> _indexReindexerClassNames;
 	private NavigationItemList _navigationItemList;
 	private String _selectedTab;

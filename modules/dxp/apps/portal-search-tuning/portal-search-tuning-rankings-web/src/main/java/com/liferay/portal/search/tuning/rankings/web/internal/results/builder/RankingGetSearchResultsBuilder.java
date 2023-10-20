@@ -11,6 +11,7 @@ import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.permission.ResourceActions;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.util.FastDateFormatFactory;
 import com.liferay.portal.search.document.Document;
 import com.liferay.portal.search.filter.ComplexQueryPartBuilderFactory;
@@ -33,7 +34,8 @@ public class RankingGetSearchResultsBuilder {
 	public RankingGetSearchResultsBuilder(
 		ComplexQueryPartBuilderFactory complexQueryPartBuilderFactory,
 		DLAppLocalService dlAppLocalService,
-		FastDateFormatFactory fastDateFormatFactory, Queries queries,
+		FastDateFormatFactory fastDateFormatFactory,
+		GroupLocalService groupLocalService, Queries queries,
 		ResourceActions resourceActions, ResourceRequest resourceRequest,
 		ResourceResponse resourceResponse, Searcher searcher,
 		SearchRequestBuilderFactory searchRequestBuilderFactory) {
@@ -41,6 +43,7 @@ public class RankingGetSearchResultsBuilder {
 		_complexQueryPartBuilderFactory = complexQueryPartBuilderFactory;
 		_dlAppLocalService = dlAppLocalService;
 		_fastDateFormatFactory = fastDateFormatFactory;
+		_groupLocalService = groupLocalService;
 		_queries = queries;
 		_resourceActions = resourceActions;
 		_resourceRequest = resourceRequest;
@@ -90,10 +93,12 @@ public class RankingGetSearchResultsBuilder {
 	protected SearchRequest buildSearchRequest() {
 		RankingSearchRequestBuilder rankingSearchRequestBuilder =
 			new RankingSearchRequestBuilder(
-				_complexQueryPartBuilderFactory, _queries,
+				_complexQueryPartBuilderFactory, _groupLocalService, _queries,
 				_searchRequestBuilderFactory);
 
-		return rankingSearchRequestBuilder.companyId(
+		return rankingSearchRequestBuilder.adminSearch(
+			true
+		).companyId(
 			_companyId
 		).from(
 			_from
@@ -137,6 +142,7 @@ public class RankingGetSearchResultsBuilder {
 	private final DLAppLocalService _dlAppLocalService;
 	private final FastDateFormatFactory _fastDateFormatFactory;
 	private int _from;
+	private final GroupLocalService _groupLocalService;
 	private final Queries _queries;
 	private String _queryString;
 	private final ResourceActions _resourceActions;

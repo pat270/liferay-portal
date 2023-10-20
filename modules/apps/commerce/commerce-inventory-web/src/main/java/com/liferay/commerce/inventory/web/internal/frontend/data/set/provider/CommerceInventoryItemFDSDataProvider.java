@@ -61,9 +61,10 @@ public class CommerceInventoryItemFDSDataProvider
 					fdsPagination.getEndPosition()),
 				ciWarehouseItem -> new InventoryItem(
 					ciWarehouseItem.getSkuCode(),
-					ciWarehouseItem.getStockQuantity(),
+					ciWarehouseItem.getUnitOfMeasureKey(),
 					ciWarehouseItem.getBookedQuantity(),
-					ciWarehouseItem.getReplenishmentQuantity()));
+					ciWarehouseItem.getReplenishmentQuantity(),
+					ciWarehouseItem.getStockQuantity()));
 		}
 
 		return Collections.emptyList();

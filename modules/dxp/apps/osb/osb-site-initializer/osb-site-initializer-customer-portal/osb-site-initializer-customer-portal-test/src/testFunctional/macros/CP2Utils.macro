@@ -1,5 +1,11 @@
 definition {
 
+	macro assertCardTeamMembersActivation {
+		AssertElementPresent(
+			key_title = ${title},
+			locator1 = "CP2Utils#NEWS_TITLE");
+	}
+
 	macro assertChangeRole {
 		AssertElementPresent(
 			key_email = ${email},
@@ -69,13 +75,50 @@ definition {
 	}
 
 	macro assigneToRoleViaUsersTab {
-		Account.openAccountsAdmin();
+		if (isSet(searchItem)) {
+			Account.openAccountsAdmin();
 
-		CustomerPortal.accountTableProject(title = ${testAccount});
+			CustomerPortal.accountTableProject(title = ${testAccount});
 
-		Account.addAssigneeToRoleViaUsersTab(
-			accountRoleTitle = ${accountRoleTitle},
-			accountUserName = ${accountUserName});
+			Navigator.gotoNavTab(navTab = "Users");
+
+			CustomerPortal.search(searchItem = ${searchItem});
+
+			KeyPress(
+				locator1 = "CustomerPortalSite#SEARCH",
+				value1 = "\ENTER");
+
+			Account.goToEntryMenuItem(
+				menuItem = "Assign Roles",
+				rowEntry = ${accountUserName});
+
+			SelectFrame(
+				key_title = "Assign Roles",
+				locator1 = "IFrame#MODAL_ANY");
+
+			Check(
+				key_tableEntry = ${accountRoleTitle},
+				locator1 = "LexiconTable#TABLE_ENTRY_CHECKBOX");
+
+			SelectFrameTop();
+
+			Button.click(button = "Done");
+
+			Alert.viewSuccessMessage();
+
+			Account.addAssigneeToRoleViaUsersTab(
+				accountRoleTitle = ${accountRoleTitle},
+				accountUserName = ${accountUserName});
+		}
+		else {
+			Account.openAccountsAdmin();
+
+			CustomerPortal.accountTableProject(title = ${testAccount});
+
+			Account.addAssigneeToRoleViaUsersTab(
+				accountRoleTitle = ${accountRoleTitle},
+				accountUserName = ${accountUserName});
+		}
 	}
 
 	macro changeCardStatus {
@@ -129,8 +172,26 @@ definition {
 		Click(locator1 = "CP2Utils#SVG_DROPDOWN_LIST");
 	}
 
+	macro clickInTableKeyByName {
+		Click(
+			key_text = ${keyName},
+			locator1 = "CP2ActivationKeys#RESPONSIVE_TABLE");
+	}
+
 	macro closeModal {
 		Click(locator1 = "CP2Utils#CLOSE_BUTTON");
+	}
+
+	macro deactivateExistingKey {
+		CP2ActivationKeys.selectKeyCheckboxByEnvironmentName(key_environmentName = ${environmentName});
+
+		Button.click(button = "Deactivate");
+
+		Button.click(button = "Confirm Deactivate Keys");
+
+		Button.click(button = "Continue");
+
+		Alert.viewSuccessMessage();
 	}
 
 	macro deleteActivationStatus {
@@ -169,7 +230,13 @@ definition {
 			portlet = ${portlet});
 
 		if (IsElementPresent(locator1 = "CustomerPortalSite#DND_TABLE_ELEMENT")) {
-			ObjectPortlet.deleteEntry(entry = ${entry});
+			Click(
+				key_entry = ${entry},
+				locator1 = "ObjectPortlet#ENTRY_KEBAB_MENU");
+
+			ClickNoError(locator1 = "ObjectPortlet#DELETE_ENTRY_BUTTON");
+
+			AssertElementPresent(locator1 = "CP2Utils#MODAL_DELETE_ENTRY");
 		}
 	}
 
@@ -177,6 +244,45 @@ definition {
 		Type(
 			locator1 = "CustomerPortalSite#FIELD_VALUE",
 			value1 = ${value});
+	}
+
+	macro finishActivation {
+		Button.click(button = "Finish Activation");
+
+		PortletEntry.inputText(
+			fieldLabel = "Project ID",
+			text = ${projectId});
+
+		Select(
+			key_fieldLabel = "Primary Region",
+			locator1 = "CP2Utils#LABEL_GENERIC_SELECT",
+			value1 = ${primaryRegion});
+
+		Type(
+			locator1 = "TextInput#ANY_WITH_NAME",
+			name = "lxc.admins[0].fullName",
+			value1 = ${fullName});
+
+		Type(
+			locator1 = "TextInput#ANY_WITH_NAME",
+			name = "lxc.admins[0].email",
+			value1 = ${email});
+
+		Type(
+			locator1 = "TextInput#ANY_WITH_NAME",
+			name = "lxc.incidentManagementFullName",
+			value1 = ${incidentManagementFullName});
+
+		Type(
+			locator1 = "TextInput#ANY_WITH_NAME",
+			name = "lxc.incidentManagementEmail",
+			value1 = ${incidentManagementEmail});
+
+		Button.click(button = "Submit");
+
+		if (isSet(doneButton)) {
+			Button.click(button = "Done");
+		}
 	}
 
 	macro fulfillGuestForm {
@@ -305,6 +411,18 @@ definition {
 				locator1 = "CP2Utils#PROJECT_SEARCH",
 				value1 = ${searchItem});
 		}
+	}
+
+	macro searchForKeyInTable {
+		WaitForElementPresent(locator1 = "CustomerPortalSite#SEARCH");
+
+		Type(
+			locator1 = "CustomerPortalSite#SEARCH",
+			value1 = ${environmentName});
+
+		KeyPress(
+			locator1 = "CustomerPortalSite#SEARCH",
+			value1 = "\ENTER");
 	}
 
 	macro searchKeys {

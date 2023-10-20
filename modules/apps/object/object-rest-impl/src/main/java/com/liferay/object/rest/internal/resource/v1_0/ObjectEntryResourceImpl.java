@@ -12,7 +12,7 @@ import com.liferay.object.rest.manager.v1_0.DefaultObjectEntryManager;
 import com.liferay.object.rest.manager.v1_0.DefaultObjectEntryManagerProvider;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManagerRegistry;
-import com.liferay.object.rest.odata.entity.v1_0.ObjectEntryEntityModel;
+import com.liferay.object.rest.odata.entity.v1_0.provider.EntityModelProvider;
 import com.liferay.object.scope.ObjectScopeProvider;
 import com.liferay.object.scope.ObjectScopeProviderRegistry;
 import com.liferay.object.service.ObjectDefinitionLocalService;
@@ -54,6 +54,7 @@ public class ObjectEntryResourceImpl extends BaseObjectEntryResourceImpl {
 
 	public ObjectEntryResourceImpl(
 		DTOConverterRegistry dtoConverterRegistry,
+		EntityModelProvider entityModelProvider,
 		ObjectDefinitionLocalService objectDefinitionLocalService,
 		ObjectEntryLocalService objectEntryLocalService,
 		ObjectEntryManagerRegistry objectEntryManagerRegistry,
@@ -64,6 +65,7 @@ public class ObjectEntryResourceImpl extends BaseObjectEntryResourceImpl {
 			systemObjectDefinitionManagerRegistry) {
 
 		_dtoConverterRegistry = dtoConverterRegistry;
+		_entityModelProvider = entityModelProvider;
 		_objectDefinitionLocalService = objectDefinitionLocalService;
 		_objectEntryLocalService = objectEntryLocalService;
 		_objectEntryManagerRegistry = objectEntryManagerRegistry;
@@ -195,10 +197,7 @@ public class ObjectEntryResourceImpl extends BaseObjectEntryResourceImpl {
 	public EntityModel getEntityModel(MultivaluedMap multivaluedMap)
 		throws Exception {
 
-		return new ObjectEntryEntityModel(
-			_objectDefinition.getObjectDefinitionId(),
-			_objectFieldLocalService.getObjectFields(
-				_objectDefinition.getObjectDefinitionId()));
+		return _entityModelProvider.getEntityModel(_objectDefinition);
 	}
 
 	@Override
@@ -266,6 +265,50 @@ public class ObjectEntryResourceImpl extends BaseObjectEntryResourceImpl {
 			aggregation, _getDTOConverterContext(null),
 			ParamUtil.getString(contextHttpServletRequest, "filter"),
 			pagination, search, sorts);
+	}
+
+	@Override
+	public ObjectEntry patchByExternalReferenceCode(
+			String externalReferenceCode, ObjectEntry objectEntry)
+		throws Exception {
+
+		ObjectEntryManager objectEntryManager =
+			_objectEntryManagerRegistry.getObjectEntryManager(
+				_objectDefinition.getStorageType());
+
+		return objectEntryManager.partialUpdateObjectEntry(
+			contextCompany.getCompanyId(), _getDTOConverterContext(null),
+			externalReferenceCode, _objectDefinition, objectEntry, null);
+	}
+
+	@Override
+	public ObjectEntry patchObjectEntry(
+			Long objectEntryId, ObjectEntry objectEntry)
+		throws Exception {
+
+		DefaultObjectEntryManager defaultObjectEntryManager =
+			DefaultObjectEntryManagerProvider.provide(
+				_objectEntryManagerRegistry.getObjectEntryManager(
+					_objectDefinition.getStorageType()));
+
+		return defaultObjectEntryManager.partialUpdateObjectEntry(
+			_getDTOConverterContext(objectEntryId), _objectDefinition,
+			objectEntryId, objectEntry);
+	}
+
+	@Override
+	public ObjectEntry patchScopeScopeKeyByExternalReferenceCode(
+			String scopeKey, String externalReferenceCode,
+			ObjectEntry objectEntry)
+		throws Exception {
+
+		ObjectEntryManager objectEntryManager =
+			_objectEntryManagerRegistry.getObjectEntryManager(
+				_objectDefinition.getStorageType());
+
+		return objectEntryManager.partialUpdateObjectEntry(
+			contextCompany.getCompanyId(), _getDTOConverterContext(null),
+			externalReferenceCode, _objectDefinition, objectEntry, scopeKey);
 	}
 
 	@Override
@@ -509,6 +552,15 @@ public class ObjectEntryResourceImpl extends BaseObjectEntryResourceImpl {
 			_objectDefinition.getObjectDefinitionId();
 	}
 
+	@Override
+	protected void preparePatch(
+		ObjectEntry objectEntry, ObjectEntry existingObjectEntry) {
+
+		if (objectEntry.getStatus() != null) {
+			existingObjectEntry.setStatus(objectEntry.getStatus());
+		}
+	}
+
 	private DefaultDTOConverterContext _getDTOConverterContext(
 		Long objectEntryId) {
 
@@ -615,6 +667,7 @@ public class ObjectEntryResourceImpl extends BaseObjectEntryResourceImpl {
 	}
 
 	private final DTOConverterRegistry _dtoConverterRegistry;
+	private final EntityModelProvider _entityModelProvider;
 
 	@Context
 	private ObjectDefinition _objectDefinition;

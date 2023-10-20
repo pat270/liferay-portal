@@ -5,19 +5,21 @@
 
 /// <reference types="react" />
 
-import {ObjectFieldErrors} from '../../ObjectFieldFormBase';
-interface ISearchableProps {
-	disabled?: boolean;
-	errors: ObjectFieldErrors;
+import '../../EditObjectFieldContent.scss';
+interface SearchableProps {
 	isApproved: boolean;
+	modelBuilder?: boolean;
 	objectField: Partial<ObjectField>;
+	onSubmit?: () => void;
 	readOnly: boolean;
 	setValues: (values: Partial<ObjectField>) => void;
 }
 export declare function SearchableContainer({
 	isApproved,
+	modelBuilder,
 	objectField,
+	onSubmit,
 	readOnly,
 	setValues,
-}: ISearchableProps): JSX.Element;
+}: SearchableProps): JSX.Element;
 export {};

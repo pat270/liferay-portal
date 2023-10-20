@@ -8,6 +8,9 @@ package com.liferay.headless.commerce.admin.inventory.internal.dto.v1_0.converte
 import com.liferay.commerce.inventory.model.CommerceInventoryWarehouse;
 import com.liferay.commerce.inventory.model.CommerceInventoryWarehouseItem;
 import com.liferay.commerce.inventory.service.CommerceInventoryWarehouseItemService;
+import com.liferay.commerce.product.model.CPInstanceUnitOfMeasure;
+import com.liferay.commerce.product.service.CPInstanceUnitOfMeasureLocalService;
+import com.liferay.commerce.util.CommerceQuantityFormatter;
 import com.liferay.headless.commerce.admin.inventory.dto.v1_0.WarehouseItem;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
@@ -42,6 +45,12 @@ public class WarehouseItemDTOConverter
 		CommerceInventoryWarehouse commerceInventoryWarehouse =
 			commerceInventoryWarehouseItem.getCommerceInventoryWarehouse();
 
+		CPInstanceUnitOfMeasure cpInstanceUnitOfMeasure =
+			_cpInstanceUnitOfMeasureLocalService.fetchCPInstanceUnitOfMeasure(
+				commerceInventoryWarehouseItem.getCompanyId(),
+				commerceInventoryWarehouseItem.getUnitOfMeasureKey(),
+				commerceInventoryWarehouseItem.getSku());
+
 		return new WarehouseItem() {
 			{
 				externalReferenceCode =
@@ -49,14 +58,19 @@ public class WarehouseItemDTOConverter
 				id =
 					commerceInventoryWarehouseItem.
 						getCommerceInventoryWarehouseItemId();
-				quantity = commerceInventoryWarehouseItem.getQuantity();
-				reservedQuantity =
-					commerceInventoryWarehouseItem.getReservedQuantity();
+				quantity = _commerceQuantityFormatter.format(
+					cpInstanceUnitOfMeasure,
+					commerceInventoryWarehouseItem.getQuantity());
+				reservedQuantity = _commerceQuantityFormatter.format(
+					cpInstanceUnitOfMeasure,
+					commerceInventoryWarehouseItem.getReservedQuantity());
 				sku = commerceInventoryWarehouseItem.getSku();
+				unitOfMeasureKey =
+					commerceInventoryWarehouseItem.getUnitOfMeasureKey();
 				warehouseExternalReferenceCode =
 					commerceInventoryWarehouse.getExternalReferenceCode();
 				warehouseId =
-					commerceInventoryWarehouse.
+					commerceInventoryWarehouseItem.
 						getCommerceInventoryWarehouseId();
 			}
 		};
@@ -65,5 +79,12 @@ public class WarehouseItemDTOConverter
 	@Reference
 	private CommerceInventoryWarehouseItemService
 		_commerceInventoryWarehouseItemService;
+
+	@Reference
+	private CommerceQuantityFormatter _commerceQuantityFormatter;
+
+	@Reference
+	private CPInstanceUnitOfMeasureLocalService
+		_cpInstanceUnitOfMeasureLocalService;
 
 }

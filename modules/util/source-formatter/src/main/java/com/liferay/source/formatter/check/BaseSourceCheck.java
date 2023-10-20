@@ -70,6 +70,24 @@ public abstract class BaseSourceCheck implements SourceCheck {
 		return _weight;
 	}
 
+	public boolean hasParameterTypes(
+		String fileContent, String javaMethodContent, String[] parameterList,
+		String[] parameterTypes) {
+
+		for (int i = 0; i < parameterTypes.length; i++) {
+			String variableTypeName = getVariableTypeName(
+				javaMethodContent, fileContent, parameterList[i], true);
+
+			if ((variableTypeName == null) ||
+				!parameterTypes[i].equals(variableTypeName)) {
+
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	@Override
 	public boolean isEnabled(String absolutePath) {
 		Class<?> clazz = getClass();
@@ -374,7 +392,7 @@ public abstract class BaseSourceCheck implements SourceCheck {
 			String baseDirName, String[] excludes, String[] includes)
 		throws IOException {
 
-		return SourceFormatterUtil.scanForFiles(
+		return SourceFormatterUtil.scanForFileNames(
 			baseDirName, excludes, includes, _sourceFormatterExcludes, true);
 	}
 
@@ -605,7 +623,7 @@ public abstract class BaseSourceCheck implements SourceCheck {
 			return methodCall.substring(0, methodCall.indexOf(CharPool.PERIOD));
 		}
 
-		return null;
+		return StringPool.BLANK;
 	}
 
 	protected String getVariableTypeName(
@@ -639,14 +657,16 @@ public abstract class BaseSourceCheck implements SourceCheck {
 
 		String variable = getVariableName(methodCall);
 
-		if (variable == null) {
+		if (variable.isEmpty()) {
 			return false;
 		}
 
 		String variableTypeName = getVariableTypeName(
 			content, fileContent, variable.trim(), true);
 
-		if (variableTypeName.startsWith(className)) {
+		if ((variableTypeName != null) &&
+			variableTypeName.startsWith(className)) {
+
 			return true;
 		}
 
@@ -806,7 +826,7 @@ public abstract class BaseSourceCheck implements SourceCheck {
 		boolean includeArrayOrCollectionTypes) {
 
 		Pattern pattern = Pattern.compile(
-			"\\W(\\w+)\\s+" + variableName + "\\s*[;=),]");
+			"\\W(\\w+)\\s+" + variableName + "\\s*[;=),:]");
 
 		Matcher matcher = pattern.matcher(content);
 
@@ -822,7 +842,7 @@ public abstract class BaseSourceCheck implements SourceCheck {
 			return null;
 		}
 
-		pattern = Pattern.compile("[\\]>]\\s+" + variableName + "\\s*[;=),]");
+		pattern = Pattern.compile("[\\]>]\\s+" + variableName + "\\s*[;=),:]");
 
 		matcher = pattern.matcher(content);
 

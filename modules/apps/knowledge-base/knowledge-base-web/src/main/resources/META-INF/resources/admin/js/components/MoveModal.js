@@ -15,13 +15,13 @@ import normalizeItems from '../utils/normalizeItems';
 import SearchField from './SearchField';
 
 const ITEM_TYPES_SYMBOL = {
-	article: 'document-text',
-	folder: 'folder',
+	KBArticle: 'document-text',
+	KBFolder: 'folder',
 };
 
 const SELECT_EVENT_NAME = 'selectKBMoveFolder';
 
-export default function MoveModal({itemToMoveId, items: initialItems}) {
+export default function MoveModal({items: initialItems, moveParentKBObjectId}) {
 	const items = useMemo(() => normalizeItems(initialItems), [initialItems]);
 
 	const searchItems = useMemo(() => getSearchItems(initialItems), [
@@ -37,9 +37,7 @@ export default function MoveModal({itemToMoveId, items: initialItems}) {
 		});
 	};
 
-	const onItemClick = (destinationItem, event) => {
-		event.stopPropagation();
-
+	const onItemClick = (destinationItem) => {
 		const index = {next: destinationItem.children.length};
 		getOpener().Liferay.fire(SELECT_EVENT_NAME, {destinationItem, index});
 	};
@@ -48,9 +46,28 @@ export default function MoveModal({itemToMoveId, items: initialItems}) {
 		setSearchActive(isSearchActive);
 	};
 
+	const handleSearchOnclickItem = (searchItem) => {
+		const selectedItem = items.reduce(function reducer(acc, item) {
+			if (item.id === searchItem.id) {
+				acc.push(item);
+			}
+
+			if (item.children) {
+				item.children.reduce(reducer, acc);
+			}
+
+			return acc;
+		}, []);
+
+		onItemClick(selectedItem[0]);
+	};
+
+	const [selectedItemId, setSelectedItemId] = useState();
+
 	return (
 		<div className="container-fluid p-3">
 			<SearchField
+				handleOnclickItem={handleSearchOnclickItem}
 				handleSearchChange={handleSearchChange}
 				items={searchItems}
 			/>
@@ -58,8 +75,7 @@ export default function MoveModal({itemToMoveId, items: initialItems}) {
 			{!searchActive && (
 				<ClayTreeView
 					defaultItems={items}
-					defaultSelectedKeys={new Set([itemToMoveId])}
-					dragAndDrop
+					defaultSelectedKeys={new Set([moveParentKBObjectId])}
 					nestedKey="children"
 					onItemMove={handleItemMove}
 					showExpanderOnHover={false}
@@ -69,10 +85,14 @@ export default function MoveModal({itemToMoveId, items: initialItems}) {
 							<ClayTreeView.Item
 								className={classnames({
 									'knowledge-base-navigation-item-active':
-										item.id === itemToMoveId,
+										item.id === selectedItemId,
 								})}
 								onClick={(event) => {
-									onItemClick(item, event);
+									event.stopPropagation();
+
+									setSelectedItemId(item.id);
+
+									onItemClick(item);
 								}}
 							>
 								<ClayTreeView.ItemStack>
@@ -120,6 +140,6 @@ const itemShape = {
 itemShape.children = PropTypes.arrayOf(PropTypes.shape(itemShape));
 
 MoveModal.propTypes = {
-	itemToMoveId: PropTypes.string,
 	items: PropTypes.arrayOf(PropTypes.shape(itemShape)),
+	moveParentKBObjectId: PropTypes.string.isRequired,
 };

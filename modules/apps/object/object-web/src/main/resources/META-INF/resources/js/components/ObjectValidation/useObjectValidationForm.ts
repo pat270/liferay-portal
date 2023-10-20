@@ -46,7 +46,10 @@ export function useObjectValidationForm({
 			errors.errorLabel = REQUIRED_MSG;
 		}
 
-		if (invalidateRequired(script)) {
+		if (
+			!validation.engine?.startsWith('function#') &&
+			invalidateRequired(script)
+		) {
 			errors.script = REQUIRED_MSG;
 		}
 
@@ -61,7 +64,6 @@ export function useObjectValidationForm({
 		}
 
 		if (
-			Liferay.FeatureFlags['LPS-187846'] &&
 			validation.outputType === 'partialValidation' &&
 			!validation.objectValidationRuleSettings?.length
 		) {

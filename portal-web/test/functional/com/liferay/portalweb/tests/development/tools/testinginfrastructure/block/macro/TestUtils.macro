@@ -96,6 +96,16 @@ return (element.offsetWidth < element.scrollWidth).toString();
 		}
 	}
 
+	macro changeElementValueById {
+		WaitForSPARefresh();
+
+		var javascript = '''
+document.getElementById('${elementId}').value = '${newValue}';
+		''';
+
+		var response = selenium.getEval(${javascript});
+	}
+
 	macro fail {
 		if (!(isSet(message))) {
 			var message = "FAIL";
@@ -120,6 +130,22 @@ return element.textContent;
 		var textContent = selenium.getEval(${javascript});
 
 		return ${textContent};
+	}
+
+	macro getElementWidth {
+		var javascript = '''
+		let element = document.querySelector('.content-renderer-actionLink');
+
+		let width = element.offsetWidth;
+
+		let element_width = Math.round(width).toString();
+
+		return element_width;
+		''';
+
+		var element_width = selenium.getEval(${javascript});
+
+		return ${element_width};
 	}
 
 	macro getScreenHeight {

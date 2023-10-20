@@ -41,8 +41,8 @@ public abstract class BaseTableReferenceDefinitionTestCase {
 	@Test
 	public void testDiscardCTEntry() throws Exception {
 		_ctCollection = _ctCollectionService.addCTCollection(
-			TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
-			RandomTestUtil.randomString(), RandomTestUtil.randomString());
+			null, TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
+			0, RandomTestUtil.randomString(), RandomTestUtil.randomString());
 
 		try (SafeCloseable safeCloseable =
 				CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
@@ -65,7 +65,7 @@ public abstract class BaseTableReferenceDefinitionTestCase {
 			Assert.assertNotNull(ctEntry);
 
 			Map<Long, List<CTEntry>> discardCTEntries =
-				_ctCollectionLocalService.getDiscardCTEntries(
+				_ctCollectionLocalService.getRelatedCTEntriesMap(
 					_ctCollection.getCtCollectionId(), modelClassNameId,
 					ctModel.getPrimaryKey());
 

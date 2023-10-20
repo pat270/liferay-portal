@@ -7,7 +7,6 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"
 >
-	<bean class="com.liferay.portal.kernel.internal.security.permission.resource.ModelResourcePermissionDefinitionTracker" id="com.liferay.portal.kernel.internal.security.permission.resource.ModelResourcePermissionDefinitionTracker" />
 	<bean class="com.liferay.portal.kernel.internal.security.permission.resource.PortletResourcePermissionDefinitionTracker" id="com.liferay.portal.kernel.internal.security.permission.resource.PortletResourcePermissionDefinitionTracker" />
 	<bean class="com.liferay.portal.kernel.model.ModelHintsUtil" id="com.liferay.portal.kernel.model.ModelHintsUtil">
 		<property name="modelHints">
@@ -22,15 +21,6 @@
 	<bean class="com.liferay.portal.kernel.security.auth.DefaultFullNameValidator" id="com.liferay.portal.kernel.security.auth.DefaultFullNameValidator" />
 	<bean class="com.liferay.portal.kernel.security.auth.DefaultScreenNameGenerator" id="com.liferay.portal.kernel.security.auth.DefaultScreenNameGenerator" />
 	<bean class="com.liferay.portal.kernel.security.auth.DefaultScreenNameValidator" id="com.liferay.portal.kernel.security.auth.DefaultScreenNameValidator" />
-	<bean class="com.liferay.portal.kernel.security.auth.FamilyNameFirstFullNameGenerator" id="com.liferay.portal.kernel.security.auth.FamilyNameFirstFullNameGenerator" />
-	<bean class="com.liferay.portal.kernel.security.auth.FullNameGeneratorFactory" id="com.liferay.portal.kernel.security.auth.FullNameGeneratorFactory">
-		<property name="fullNameGenerator" ref="com.liferay.portal.kernel.security.auth.DefaultFullNameGenerator" />
-	</bean>
-	<bean class="com.liferay.portal.kernel.security.auth.InterruptedPortletRequestWhitelistUtil" id="com.liferay.portal.kernel.security.auth.InterruptedPortletRequestWhitelistUtil">
-		<property name="interruptedPortletRequestWhitelist">
-			<bean class="com.liferay.portal.security.auth.InterruptedPortletRequestWhitelistImpl" />
-		</property>
-	</bean>
 	<bean class="com.liferay.portal.kernel.security.auth.LiberalEmailAddressValidator" id="com.liferay.portal.kernel.security.auth.LiberalEmailAddressValidator" />
 	<bean class="com.liferay.portal.kernel.security.auth.LiberalScreenNameValidator" id="com.liferay.portal.kernel.security.auth.LiberalScreenNameValidator" />
 	<bean class="com.liferay.portal.security.auth.http.HttpAuthManagerImpl" id="com.liferay.portal.kernel.security.auth.http.HttpAuthManager" />
@@ -55,11 +45,6 @@
 		<property name="userGroupMembershipPolicyFactory" ref="com.liferay.portal.kernel.security.membershippolicy.UserGroupMembershipPolicyFactory" />
 	</bean>
 	<bean class="com.liferay.portal.security.permission.PermissionCheckerFactoryImpl" id="com.liferay.portal.kernel.security.permission.PermissionCheckerFactory" />
-	<bean class="com.liferay.portal.kernel.security.permission.PermissionConverterUtil" id="com.liferay.portal.kernel.security.permission.PermissionConverterUtil">
-		<property name="permissionConverter">
-			<bean class="com.liferay.portal.security.permission.PermissionConverterImpl" />
-		</property>
-	</bean>
 	<bean class="com.liferay.portal.security.permission.ResourceActionsImpl" id="com.liferay.portal.kernel.security.permission.ResourceActions" />
 	<bean class="com.liferay.portal.kernel.security.permission.ResourceActionsUtil" id="com.liferay.portal.kernel.security.permission.ResourceActionsUtil">
 		<property name="resourceActions" ref="com.liferay.portal.kernel.security.permission.ResourceActions" />

@@ -39,7 +39,9 @@ import com.liferay.friendly.url.service.FriendlyURLEntryLocalService;
 import com.liferay.item.selector.criteria.InfoListItemSelectorReturnType;
 import com.liferay.layout.admin.web.internal.exportimport.data.handler.helper.LayoutPageTemplateStructureDataHandlerHelper;
 import com.liferay.layout.configuration.LayoutExportImportConfiguration;
+import com.liferay.layout.constants.LayoutTypeSettingsConstants;
 import com.liferay.layout.friendly.url.LayoutFriendlyURLEntryHelper;
+import com.liferay.layout.helper.LayoutCopyHelper;
 import com.liferay.layout.model.LayoutClassedModelUsage;
 import com.liferay.layout.model.LayoutLocalization;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
@@ -53,7 +55,6 @@ import com.liferay.layout.seo.service.LayoutSEOEntryLocalService;
 import com.liferay.layout.seo.service.LayoutSEOSiteLocalService;
 import com.liferay.layout.service.LayoutClassedModelUsageLocalService;
 import com.liferay.layout.service.LayoutLocalizationLocalService;
-import com.liferay.layout.util.LayoutCopyHelper;
 import com.liferay.layout.utility.page.model.LayoutUtilityPageEntry;
 import com.liferay.layout.utility.page.service.LayoutUtilityPageEntryLocalService;
 import com.liferay.petra.reflect.ReflectionUtil;
@@ -61,6 +62,7 @@ import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskThreadLocal;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
@@ -79,6 +81,7 @@ import com.liferay.portal.kernel.model.LayoutFriendlyURL;
 import com.liferay.portal.kernel.model.LayoutPrototype;
 import com.liferay.portal.kernel.model.LayoutRevision;
 import com.liferay.portal.kernel.model.LayoutRevisionConstants;
+import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.LayoutSetBranch;
 import com.liferay.portal.kernel.model.LayoutStagingHandler;
 import com.liferay.portal.kernel.model.LayoutTemplate;
@@ -87,7 +90,6 @@ import com.liferay.portal.kernel.model.LayoutTypePortletConstants;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.PortletPreferences;
 import com.liferay.portal.kernel.model.adapter.StagedTheme;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.GroupLocalService;
@@ -107,9 +109,9 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
+import com.liferay.portal.kernel.settings.FallbackKeysSettingsUtil;
 import com.liferay.portal.kernel.settings.PortletInstanceSettingsLocator;
 import com.liferay.portal.kernel.settings.Settings;
-import com.liferay.portal.kernel.settings.SettingsFactoryUtil;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.TransactionConfig;
 import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
@@ -558,8 +560,7 @@ public class LayoutStagedModelDataHandler
 				Layout mergeFailFriendlyURLLayout =
 					_layoutLocalService.getLayout(layoutFriendlyURL.getPlid());
 
-				_sites.addMergeFailFriendlyURLLayout(
-					mergeFailFriendlyURLLayout);
+				_addMergeFailFriendlyURLLayout(mergeFailFriendlyURLLayout);
 
 				if (!_log.isWarnEnabled()) {
 					return;
@@ -1120,6 +1121,35 @@ public class LayoutStagedModelDataHandler
 		}
 	}
 
+	private void _addMergeFailFriendlyURLLayout(Layout layout)
+		throws Exception {
+
+		LayoutSet layoutSet = layout.getLayoutSet();
+
+		layoutSet = _layoutSetLocalService.getLayoutSet(
+			layoutSet.getGroupId(), layoutSet.isPrivateLayout());
+
+		UnicodeProperties settingsUnicodeProperties =
+			layoutSet.getSettingsProperties();
+
+		String oldMergeFailFriendlyURLLayouts =
+			settingsUnicodeProperties.getProperty(
+				Sites.MERGE_FAIL_FRIENDLY_URL_LAYOUTS, StringPool.BLANK);
+
+		String newMergeFailFriendlyURLLayouts = StringUtil.add(
+			oldMergeFailFriendlyURLLayouts, layout.getUuid());
+
+		if (!oldMergeFailFriendlyURLLayouts.equals(
+				newMergeFailFriendlyURLLayouts)) {
+
+			settingsUnicodeProperties.setProperty(
+				Sites.MERGE_FAIL_FRIENDLY_URL_LAYOUTS,
+				newMergeFailFriendlyURLLayouts);
+
+			_layoutSetLocalService.updateLayoutSet(layoutSet);
+		}
+	}
+
 	private String[] _appendPortletIds(
 		String[] portletIds, String[] newPortletIds, String portletsMergeMode) {
 
@@ -1201,7 +1231,8 @@ public class LayoutStagedModelDataHandler
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		serviceContext.setAttribute("published", published);
+		serviceContext.setAttribute(
+			LayoutTypeSettingsConstants.KEY_PUBLISHED, published);
 
 		_layoutLocalService.updateStatus(
 			draftLayout.getUserId(), draftLayout.getPlid(),
@@ -1850,8 +1881,9 @@ public class LayoutStagedModelDataHandler
 		for (Portlet portlet : layoutTypePortlet.getAllPortlets(false)) {
 			String portletId = portlet.getPortletId();
 
-			Settings portletInstanceSettings = SettingsFactoryUtil.getSettings(
-				new PortletInstanceSettingsLocator(layout, portletId));
+			Settings portletInstanceSettings =
+				FallbackKeysSettingsUtil.getSettings(
+					new PortletInstanceSettingsLocator(layout, portletId));
 
 			String scopeType = portletInstanceSettings.getValue(
 				"lfrScopeType", null);
@@ -1915,8 +1947,9 @@ public class LayoutStagedModelDataHandler
 
 			long scopeGroupId = portletDataContext.getScopeGroupId();
 
-			Settings portletInstanceSettings = SettingsFactoryUtil.getSettings(
-				new PortletInstanceSettingsLocator(layout, portletId));
+			Settings portletInstanceSettings =
+				FallbackKeysSettingsUtil.getSettings(
+					new PortletInstanceSettingsLocator(layout, portletId));
 
 			String scopeType = portletInstanceSettings.getValue(
 				"lfrScopeType", null);
@@ -2681,7 +2714,7 @@ public class LayoutStagedModelDataHandler
 
 			if (layoutPageTemplateEntry != null) {
 				if (layoutPageTemplateEntry.getType() ==
-						LayoutPageTemplateEntryTypeConstants.TYPE_BASIC) {
+						LayoutPageTemplateEntryTypeConstants.BASIC) {
 
 					layoutElement.addAttribute(
 						"layout-content-page-template",
@@ -2689,8 +2722,7 @@ public class LayoutStagedModelDataHandler
 				}
 
 				if (layoutPageTemplateEntry.getType() ==
-						LayoutPageTemplateEntryTypeConstants.
-							TYPE_MASTER_LAYOUT) {
+						LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT) {
 
 					layoutElement.addAttribute(
 						"layout-master-page-template", Boolean.TRUE.toString());

@@ -175,24 +175,6 @@ public class UserImpl extends UserBaseImpl {
 	}
 
 	/**
-	 * Returns the user's digest.
-	 *
-	 * @return     the user's digest
-	 * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public String getDigest() {
-		String digest = super.getDigest();
-
-		if (Validator.isNull(digest) && !isPasswordEncrypted()) {
-			digest = getDigest(getPassword());
-		}
-
-		return digest;
-	}
-
-	/**
 	 * Returns a digest for the user, incorporating the password.
 	 *
 	 * @param      password a password to incorporate with the digest
@@ -202,44 +184,9 @@ public class UserImpl extends UserBaseImpl {
 	@Deprecated
 	@Override
 	public String getDigest(String password) {
-		if (Validator.isNull(getScreenName())) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Screen name is required to compute the digest");
-			}
-
-			return null;
-		}
-		else if (Validator.isNull(getEmailAddress())) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Email address is required to compute the digest");
-			}
-
-			return null;
-		}
-
-		StringBundler sb = new StringBundler(5);
-
-		String digest1 = DigesterUtil.digestHex(
-			Digester.MD5, getEmailAddress(), Portal.PORTAL_REALM, password);
-
-		sb.append(digest1);
-
-		sb.append(StringPool.COMMA);
-
-		String digest2 = DigesterUtil.digestHex(
-			Digester.MD5, getScreenName(), Portal.PORTAL_REALM, password);
-
-		sb.append(digest2);
-
-		sb.append(StringPool.COMMA);
-
-		String digest3 = DigesterUtil.digestHex(
+		return DigesterUtil.digestHex(
 			Digester.MD5, String.valueOf(getUserId()), Portal.PORTAL_REALM,
 			password);
-
-		sb.append(digest3);
-
-		return sb.toString();
 	}
 
 	/**
@@ -853,13 +800,22 @@ public class UserImpl extends UserBaseImpl {
 	}
 
 	@Override
+	public boolean isOnDemandUser() {
+		if (getType() == UserConstants.TYPE_ON_DEMAND_USER) {
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
 	public boolean isPasswordModified() {
 		return _passwordModified;
 	}
 
 	@Override
 	public boolean isReminderQueryComplete() {
-		if (isGuestUser()) {
+		if (isGuestUser() || isOnDemandUser()) {
 			return true;
 		}
 

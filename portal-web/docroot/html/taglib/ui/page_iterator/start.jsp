@@ -78,18 +78,20 @@ NumberFormat numberFormat = NumberFormat.getNumberInstance(locale);
 	<div class="pagination-bar" data-qa-id="paginator" id="<%= namespace + id %>">
 
 		<%
+		String ariaPagination = namespace + id + "_ariaPagination";
+		String ariaPaginationPicker = namespace + id + "_ariaPaginationPicker";
 		String ariaPaginationResults = namespace + id + "_ariaPaginationResults";
 		%>
 
 		<c:if test="<%= deltaConfigurable %>">
-			<div class="dropdown pagination-items-per-page">
-				<button aria-describedby="<%= ariaPaginationResults %>" aria-haspopup="true" class="dropdown-toggle page-link" data-toggle="liferay-dropdown">
+			<div class="dropdown pagination-items-per-page" id="<%= ariaPagination %>">
+				<button aria-describedby="<%= ariaPaginationResults %>" aria-expanded="false" aria-controls="<%= ariaPaginationPicker %>" aria-haspopup="listbox" class="dropdown-toggle page-link" data-attribute="<%= delta %>" data-toggle="liferay-dropdown" role="combobox">
 					<liferay-ui:message arguments="<%= delta %>" key="x-entries" /><span class="sr-only"><%= StringPool.NBSP %><liferay-ui:message key="per-page" /></span>
 
 					<aui:icon image="caret-double-l" markupView="lexicon" />
 				</button>
 
-				<ul class="dropdown-menu dropdown-menu-top">
+				<ul class="dropdown-menu dropdown-menu-top" id="<%= ariaPaginationPicker %>" role="listbox" tabindex="-1">
 
 					<%
 					for (int curDelta : PropsValues.SEARCH_CONTAINER_PAGE_DELTA_VALUES) {
@@ -100,8 +102,8 @@ NumberFormat numberFormat = NumberFormat.getNumberInstance(locale);
 						String curDeltaURL = HttpComponentsUtil.setParameter(url + urlAnchor, namespace + deltaParam, curDelta);
 					%>
 
-						<li>
-							<a class="dropdown-item" href="<%= HtmlUtil.escapeHREF(curDeltaURL) %>" onClick="<%= forcePost ? _getOnClick(namespace, deltaParam, curDelta) : "" %>">
+						<li role="option">
+							<a class="dropdown-item <%= (delta == curDelta) ? "active" : "" %>" href="<%= HtmlUtil.escapeHREF(curDeltaURL) %>" id="<%= String.valueOf(curDelta) %>" onClick="<%= forcePost ? _getOnClick(namespace, deltaParam, curDelta) : "" %>">
 								<%= String.valueOf(curDelta) %><span class="sr-only"><%= StringPool.NBSP %><liferay-ui:message key="entries-per-page" /></span>
 							</a>
 						</li>
@@ -112,6 +114,81 @@ NumberFormat numberFormat = NumberFormat.getNumberInstance(locale);
 
 				</ul>
 			</div>
+
+			<script data-senna-track="temporary" type="text/javascript">
+				(function() {
+					var dropdown = document.getElementById("<%= ariaPagination %>");
+
+					var button = dropdown.querySelector('.dropdown-toggle');
+					var list = dropdown.querySelector('.dropdown-menu');
+
+					var options = list.querySelectorAll('.dropdown-item');
+					var selectedItemValue = button.dataset.attribute;
+
+					function onButtonKeyDown(event) {
+						if (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Enter' || event.key === ' ') {
+							event.preventDefault();
+
+							button.setAttribute('aria-expanded', 'true');
+							list.classList.add('show');
+
+							var selectedOption = list.querySelector('.active');
+
+							if (selectedOption) {
+								selectedOption.focus();
+							}
+						}
+					}
+
+					button.addEventListener('keydown', onButtonKeyDown );
+
+					function onLeaveDropdown() {
+						button.setAttribute('aria-expanded', 'false');
+						list.classList.remove('show');
+					}
+
+					function handleKeyEvents(event) {
+						var currentIndex = Array.from(options).indexOf(document.activeElement);
+
+						if (event.key === 'ArrowDown') {
+							event.preventDefault();
+
+							if (currentIndex < options.length - 1) {
+								options[currentIndex + 1].focus();
+							}
+						}
+						else if (event.key === 'ArrowUp') {
+							event.preventDefault();
+
+							if (currentIndex > 0) {
+								options[currentIndex - 1].focus();
+							}
+						}
+						else if (event.key === 'Escape') {
+							button.focus();
+							onLeaveDropdown();
+						}
+					}
+
+					list.addEventListener('keydown', handleKeyEvents);
+
+					function dropdownFocusOut(event) {
+						if (!dropdown.contains(event.relatedTarget)) {
+							onLeaveDropdown();
+						}
+					}
+
+					document.addEventListener('focusout', dropdownFocusOut );
+
+					var destroyDropDownPagination = function () {
+						button.removeEventListener('keydown', onButtonKeyDown);
+						document.removeEventListener('focusout', dropdownFocusOut );
+						list.removeEventListener('keydown', handleKeyEvents);
+					};
+
+					Liferay.once('beforeScreenFlip', destroyDropDownPagination);
+				})();
+			</script>
 		</c:if>
 
 		<p aria-hidden="true" class="pagination-results" data-aria-hidden="true" id="<%= ariaPaginationResults %>">

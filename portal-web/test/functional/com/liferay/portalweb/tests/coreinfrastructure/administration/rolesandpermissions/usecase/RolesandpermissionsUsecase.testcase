@@ -1,4 +1,4 @@
-@component-name = "portal-security"
+@component-name = "portal-user-management"
 definition {
 
 	property portal.release = "true";
@@ -86,7 +86,7 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-157219. It ensures a user can only view the portlets he has permissions from applications menu."
-	@priority = 3
+	@priority = 4
 	test CanOnlyViewPortletsWithPermissionsGranted {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
 
@@ -181,7 +181,7 @@ definition {
 	}
 
 	@description = "This is a test for LPS-148855. The default site role shouldn't be inherited by Guest."
-	@priority = 5
+	@priority = 4
 	test DefaultSiteRoleIsNotInheritedByGuestUser {
 		task ("Assign default site to a new regular Role") {
 			JSONRole.addRegularRole(
@@ -240,6 +240,7 @@ definition {
 	@priority = 4
 	test EditTeamPermissions {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Permissions.definePermissionViaJSONAPI(
 			resourceAction = "VIEW_CONTROL_PANEL",
@@ -309,6 +310,10 @@ definition {
 		User.editPasswordCP(
 			userEmailAddress = "userea@liferay.com",
 			userScreenName = "usersn");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "site-name");
+
+		Site.manageMembershipOptions(allowManualMembershipManagement = "true");
 
 		ApplicationsMenu.gotoPortlet(
 			category = "Users",
@@ -410,7 +415,7 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-124190."
-	@priority = 3
+	@priority = 4
 	test ExportRoleWithSiteAssignee {
 		HeadlessSite.addSite(siteName = "Site Name");
 
@@ -477,6 +482,7 @@ definition {
 		property osgi.app.includes = "bookmarks";
 		property portal.release = "false";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var siteName = TestCase.getSiteName(siteName = ${siteName});
 
@@ -557,6 +563,10 @@ definition {
 			requireReset = "false",
 			userEmailAddress = "userea@liferay.com");
 
+		Site.openSiteSettingsAdmin(siteURLKey = "google.com-name");
+
+		Site.manageMembershipOptions(allowManualMembershipManagement = "true");
+
 		User.openUsersAdmin();
 
 		User.editUserSiteCP(
@@ -606,7 +616,7 @@ definition {
 			userEmailAddress = "test@liferay.com");
 	}
 
-	@priority = 3
+	@priority = 4
 	test NoGuestRolePermissionsFromPrivateLayout {
 		property custom.properties = "permissions.check.guest.enabled=false";
 		property release.feature.flags.disable.DISABLE_PRIVATE_LAYOUTS = "true";
@@ -783,6 +793,10 @@ definition {
 			User.editPasswordCP(
 				userEmailAddress = "userea${userNumber}@liferay.com",
 				userScreenName = "usersn${userNumber}");
+
+			Site.openSiteSettingsAdmin(siteURLKey = "site-name");
+
+			Site.manageMembershipOptions(allowManualMembershipManagement = "true");
 
 			ApplicationsMenu.gotoPortlet(
 				category = "Users",
@@ -965,14 +979,14 @@ definition {
 			pageName = "Search Page",
 			siteName = "Organization Name");
 
-		SearchPortlets.searchWidget(searchTerm = "Test Blog");
+		SearchPage.searchWidget(searchTerm = "Test Blog");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetSummary = "Blog Entry Content.",
 			searchAssetTitle = "Test Blog",
 			searchAssetType = "Blogs Entry");
 
-		Search.gotoResultAssetViaTitle(searchAssetTitle = "Test Blog");
+		SearchPage.gotoResultDetails(searchAssetTitle = "Test Blog");
 
 		BlogsEntry.viewPG(
 			entryContent = "Blog Entry Content.",
@@ -1004,9 +1018,9 @@ definition {
 			pageName = "Search Page",
 			siteName = "Organization Name");
 
-		SearchPortlets.searchWidget(searchTerm = "\"Test Blog\"");
+		SearchPage.searchWidget(searchTerm = "\"Test Blog\"");
 
-		SearchResultPortlet.viewNoSearchResults(searchTerm = "\"Test Blog\"");
+		SearchResults.viewNoSearchResults(searchTerm = "\"Test Blog\"");
 
 		User.logoutPG();
 
@@ -1026,14 +1040,14 @@ definition {
 			pageName = "Search Page",
 			siteName = "Organization Name");
 
-		SearchPortlets.searchWidget(searchTerm = "Test Blog");
+		SearchPage.searchWidget(searchTerm = "Test Blog");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetSummary = "Blog Entry Content.",
 			searchAssetTitle = "Test Blog",
 			searchAssetType = "Blogs Entry");
 
-		Search.gotoResultAssetViaTitle(searchAssetTitle = "Test Blog");
+		SearchPage.gotoResultDetails(searchAssetTitle = "Test Blog");
 
 		BlogsEntry.viewPG(
 			entryContent = "Blog Entry Content.",
@@ -1119,13 +1133,13 @@ definition {
 
 		Navigator.gotoPage(pageName = "Blogs Page");
 
-		SearchPortlets.searchEmbedded(searchTerm = "Test Blog");
+		SearchPage.searchEmbedded(searchTerm = "Test Blog");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Test Blog",
 			searchAssetType = "Blogs Entry");
 
-		Search.gotoResultAssetViaTitle(searchAssetTitle = "Test Blog");
+		SearchPage.gotoResultDetails(searchAssetTitle = "Test Blog");
 
 		BlogsEntry.viewPG(
 			entryContent = "Blog Entry Content.",
@@ -1151,9 +1165,9 @@ definition {
 
 		Blogs.viewNoEntryCP();
 
-		SearchPortlets.searchEmbedded(searchTerm = "Test Blog");
+		SearchPage.searchEmbedded(searchTerm = "Test Blog");
 
-		SearchResultPortlet.viewSearchResultNotPresent(
+		SearchResults.viewSearchResultNotPresent(
 			searchAssetTitle = "Test Blog",
 			searchAssetType = "Blogs Entry");
 
@@ -1169,13 +1183,13 @@ definition {
 			entryContent = "Blog Entry Content.",
 			entryTitle = "Test Blog");
 
-		SearchPortlets.searchEmbedded(searchTerm = "Test Blog");
+		SearchPage.searchEmbedded(searchTerm = "Test Blog");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Test Blog",
 			searchAssetType = "Blogs Entry");
 
-		Search.gotoResultAssetViaTitle(searchAssetTitle = "Test Blog");
+		SearchPage.gotoResultDetails(searchAssetTitle = "Test Blog");
 
 		BlogsEntry.viewPG(
 			entryContent = "Blog Entry Content.",
@@ -1327,6 +1341,7 @@ definition {
 	test ViewRegRolePermissionsDefaultView {
 		property release.feature.flags.disable.DISABLE_PRIVATE_LAYOUTS = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONRole.addRegularRole(
 			roleKey = "Roles Regrole Name",
@@ -1391,6 +1406,10 @@ definition {
 		User.editPasswordCP(
 			userEmailAddress = "userea@liferay.com",
 			userScreenName = "usersn");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "site-name");
+
+		Site.manageMembershipOptions(allowManualMembershipManagement = "true");
 
 		ApplicationsMenu.gotoPortlet(
 			category = "Users",

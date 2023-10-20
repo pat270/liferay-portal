@@ -14,8 +14,10 @@ import {
 	Input,
 	REQUIRED_MSG,
 	Select,
+	openToast,
 	useForm,
 } from '@liferay/object-js-components-web';
+import {sub} from 'frontend-js-web';
 import React, {useState} from 'react';
 
 import {defaultLanguageId} from '../../utils/constants';
@@ -24,22 +26,26 @@ import './ModalAddObjectDefinition.scss';
 import {normalizeName} from './objectDefinitionUtil';
 
 interface ModalAddObjectDefinitionProps {
-	apiURL: string;
 	handleOnClose: () => void;
-	storages: LabelTypeObject[];
+	objectDefinitionsStorageTypes: LabelValueObject[];
+	objectFolderExternalReferenceCode?: string;
+	onAfterSubmit?: (value: ObjectDefinition) => void;
+	reload?: boolean;
 }
 
 type TInitialValues = {
 	label: string;
 	name?: string;
 	pluralLabel: string;
-	storage: LabelTypeObject;
+	storageType: LabelValueObject;
 };
 
 export function ModalAddObjectDefinition({
-	apiURL,
 	handleOnClose,
-	storages,
+	objectDefinitionsStorageTypes,
+	objectFolderExternalReferenceCode,
+	onAfterSubmit,
+	reload = true,
 }: ModalAddObjectDefinitionProps) {
 	const [error, setError] = useState<string>('');
 
@@ -47,35 +53,35 @@ export function ModalAddObjectDefinition({
 		onClose: () => handleOnClose(),
 	});
 
-	const storageSortedByLabel = [...storages].sort(
-		(firstStorage, secondStorage) => {
-			const firstLabel = firstStorage.label.toLowerCase();
-			const secondLabel = secondStorage.label.toLowerCase();
+	const objectDefinitionStorageTypesSortedByLabel = [
+		...objectDefinitionsStorageTypes,
+	].sort((firstStorage, secondStorage) => {
+		const firstLabel = firstStorage.label.toLowerCase();
+		const secondLabel = secondStorage.label.toLowerCase();
 
-			if (firstLabel < secondLabel) {
-				return -1;
-			}
-			else if (firstLabel > secondLabel) {
-				return 1;
-			}
-			else {
-				return 0;
-			}
+		if (firstLabel < secondLabel) {
+			return -1;
 		}
-	);
+		else if (firstLabel > secondLabel) {
+			return 1;
+		}
+		else {
+			return 0;
+		}
+	});
 
 	const initialValues: TInitialValues = {
 		label: '',
 		name: undefined,
 		pluralLabel: '',
-		storage: storageSortedByLabel[0],
+		storageType: objectDefinitionStorageTypesSortedByLabel[0],
 	};
 
 	const onSubmit = async ({
 		label,
 		name,
 		pluralLabel,
-		storage,
+		storageType,
 	}: TInitialValues) => {
 		const objectDefinition: Partial<ObjectDefinition> = {
 			label: {
@@ -89,14 +95,38 @@ export function ModalAddObjectDefinition({
 			scope: 'company',
 		};
 
+		if (
+			Liferay.FeatureFlags['LPS-148856'] &&
+			objectFolderExternalReferenceCode
+		) {
+			objectDefinition.objectFolderExternalReferenceCode = objectFolderExternalReferenceCode;
+		}
+
 		if (Liferay.FeatureFlags['LPS-135430']) {
-			objectDefinition.storageType = storage.type;
+			objectDefinition.storageType = storageType.value;
 		}
 		try {
-			await API.save(apiURL, objectDefinition, 'POST');
+			const newObjectDefinition = (await API.postObjectDefinition(
+				objectDefinition
+			)) as ObjectDefinition;
 
 			onClose();
-			window.location.reload();
+
+			openToast({
+				message: sub(
+					Liferay.Language.get('x-was-created-successfully'),
+					`<strong>${Liferay.Util.escapeHTML(label)}</strong>`
+				),
+				type: 'success',
+			});
+
+			if (onAfterSubmit) {
+				onAfterSubmit(newObjectDefinition);
+			}
+
+			if (reload) {
+				setTimeout(() => window.location.reload(), 1000);
+			}
 		}
 		catch (error) {
 			setError((error as Error).message);
@@ -125,17 +155,21 @@ export function ModalAddObjectDefinition({
 		validate,
 	});
 
-	const selectedStorageType = (storageType: string) => {
-		const chooseStorage = storageSortedByLabel.find(
-			(currentStorage) => currentStorage.type === storageType
+	const selectedObjectDefinitionStorageTypes = (
+		objectDefinitionStorageType: string
+	) => {
+		const selectedObjectDefinitionStorageType = objectDefinitionStorageTypesSortedByLabel.find(
+			(currentObjectDefinitionStorageType) =>
+				currentObjectDefinitionStorageType.value ===
+				objectDefinitionStorageType
 		);
 
-		return chooseStorage?.type;
+		return selectedObjectDefinitionStorageType?.value;
 	};
 
 	return (
 		<ClayModalProvider>
-			<ClayModal observer={observer}>
+			<ClayModal center observer={observer}>
 				<ClayForm onSubmit={handleSubmit}>
 					<ClayModal.Header>
 						{Liferay.Language.get('new-custom-object')}
@@ -184,25 +218,27 @@ export function ModalAddObjectDefinition({
 									onChange={({target: {value}}) => {
 										setValues({
 											...values,
-											storage: storageSortedByLabel.find(
-												(storage) =>
-													storage.type === value
+											storageType: objectDefinitionStorageTypesSortedByLabel.find(
+												(storageType) =>
+													storageType.value === value
 											),
 										});
 									}}
-									options={storageSortedByLabel.map(
-										(storage) => {
+									options={objectDefinitionStorageTypesSortedByLabel.map(
+										(objectDefinitionStorageType) => {
 											return {
-												key: storage.type,
-												label: storage.label,
+												key:
+													objectDefinitionStorageType.value,
+												label:
+													objectDefinitionStorageType.label,
 											};
 										}
 									)}
 									tooltip={Liferay.Language.get(
 										'object-definition-storage-type-tooltip'
 									)}
-									value={selectedStorageType(
-										values.storage.type
+									value={selectedObjectDefinitionStorageTypes(
+										values.storageType.value
 									)}
 								/>
 

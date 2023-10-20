@@ -670,6 +670,8 @@ definition {
 		}
 		else {
 			Alert.viewSuccessMessage();
+
+			Click(locator1 = "PageEditor#EXPERIENCE_SELECTOR");
 		}
 	}
 
@@ -2084,6 +2086,8 @@ definition {
 
 				SelectFrameTop();
 
+				PageEditor.waitForAutoSave();
+
 				PageEditor.viewItemSelectorText(
 					fieldLabel = "Collection",
 					text = ${assetListName});
@@ -2093,7 +2097,9 @@ definition {
 
 				LexiconCard.clickCard(card = ${infoListProviderName});
 
-				Refresh();
+				SelectFrameTop();
+
+				PageEditor.waitForAutoSave();
 
 				PageEditor.clickConfigurableField(
 					fragmentName = ${fragmentName},
@@ -2107,6 +2113,10 @@ definition {
 				NavItem.click(navItem = "Related Items Collection Providers");
 
 				LexiconCard.clickCard(card = ${infoItemRelatedListProviderName});
+
+				SelectFrameTop();
+
+				PageEditor.waitForAutoSave();
 
 				PageEditor.viewItemSelectorText(
 					fieldLabel = "Collection",
@@ -2856,7 +2866,20 @@ definition {
 					value1 = ${subtype});
 			}
 
-			if (${successMessage} == "Embedded") {
+			if (${successMessage} == "Stay in Page") {
+				Select(
+					key_fieldLabel = "Success Interaction",
+					locator1 = "Select#GENERIC_SELECT_FIELD",
+					value1 = "Stay in Page");
+
+				AssertSelectedLabel(
+					key_fieldLabel = "Success Interaction",
+					locator1 = "Select#GENERIC_SELECT_FIELD",
+					value1 = "Stay in Page");
+
+				PageEditor.waitForAutoSave();
+			}
+			else if (${successMessage} == "Show Embedded Message") {
 				Select(
 					key_fieldLabel = "Success Interaction",
 					locator1 = "Select#GENERIC_SELECT_FIELD",
@@ -2878,15 +2901,9 @@ definition {
 						locator1 = "PageEditor#FRAGMENT_SIDEBAR_TITLE");
 				}
 
-				if (${previewSuccessState} == "true") {
-					Check.checkNotVisible(
-						checkboxName = "Preview Embedded Message",
-						locator1 = "Checkbox#ANY_CHECKBOX");
-				}
-
 				PageEditor.waitForAutoSave();
 			}
-			else if (${successMessage} == "Page") {
+			else if (${successMessage} == "Go to Page") {
 				Select(
 					key_fieldLabel = "Success Interaction",
 					locator1 = "Select#GENERIC_SELECT_FIELD",
@@ -2937,7 +2954,7 @@ definition {
 
 				PageEditor.waitForAutoSave();
 			}
-			else if (${successMessage} == "External URL") {
+			else if (${successMessage} == "Go to External URL") {
 				Select(
 					key_fieldLabel = "Success Interaction",
 					locator1 = "Select#GENERIC_SELECT_FIELD",
@@ -2961,7 +2978,7 @@ definition {
 
 				PageEditor.waitForAutoSave();
 			}
-			else if (${successMessage} == "Entry Display Page") {
+			else if (${successMessage} == "Go to Entry Display Page") {
 				Select(
 					key_fieldLabel = "Success Interaction",
 					locator1 = "Select#GENERIC_SELECT_FIELD",
@@ -2978,6 +2995,25 @@ definition {
 					value1 = ${displayPageName});
 
 				PageEditor.waitForAutoSave();
+			}
+
+			if (${showNotificationWhenFormIsSubmitted} == "true") {
+				Check.checkNotVisible(
+					checkboxName = "Show Notification when Form Is Submitted",
+					locator1 = "Checkbox#ANY_CHECKBOX");
+
+				if (isSet(successNotificationText)) {
+					Type(
+						key_text = "Success Notification Text",
+						locator1 = "TextInput#ANY",
+						value1 = ${successNotificationText});
+
+					Click(
+						key_sidebarButton = "Browser",
+						locator1 = "PageEditor#FRAGMENT_SIDEBAR_TITLE");
+
+					PageEditor.waitForAutoSave();
+				}
 			}
 		}
 	}
@@ -3002,12 +3038,10 @@ definition {
 	}
 
 	macro editFragmentImage {
-		PageEditor.clickEditableField(
+		PageEditor.gotoImageSource(
 			contributed = ${contributed},
 			fragmentName = ${fragmentName},
 			id = ${id});
-
-		Navigator.gotoNavTab(navTab = "Image Source");
 
 		if (!(IsSelectedLabel(key_fieldLabel = "Source Selection", locator1 = "Select#GENERIC_SELECT_FIELD", value1 = "Direct"))) {
 			Select(
@@ -4309,6 +4343,15 @@ return	Array.from(getWebElement("(//div[@aria-label='${fragmentName}'])[${index}
 		}
 	}
 
+	macro gotoImageSource {
+		PageEditor.clickEditableField(
+			contributed = ${contributed},
+			fragmentName = ${fragmentName},
+			id = ${id});
+
+		Navigator.gotoNavTab(navTab = "Image Source");
+	}
+
 	macro gotoSaveAsFragment {
 		var key_fragmentName = ${fragmentName};
 
@@ -4491,10 +4534,22 @@ return	Array.from(getWebElement("(//div[@aria-label='${fragmentName}'])[${index}
 			locator1 = "Button#ANY");
 	}
 
+	macro previewEmbeddedMessage {
+		Check.checkNotVisible(
+			checkboxName = "Preview Embedded Message",
+			locator1 = "Checkbox#ANY_CHECKBOX");
+	}
+
 	macro previewInANewTab {
 		LexiconEntry.gotoHeaderMenuItem(menuItem = "Preview in a New Tab");
 
 		SelectWindow.selectPopUp(locator1 = "null");
+	}
+
+	macro previewSuccessNotification {
+		Click(
+			ariaLabel = "Preview Success Notification",
+			locator1 = "Button#ANY_WITH_ARIA_LABEL");
 	}
 
 	macro prioritizeExperience {
@@ -4502,7 +4557,15 @@ return	Array.from(getWebElement("(//div[@aria-label='${fragmentName}'])[${index}
 
 		PageEditor.openExperienceMenu();
 
-		Click(locator1 = "PageEditor#EXPERIENCE_PRIORITIZE_BUTTON");
+		if (!(isSet(count))) {
+			var count = 1;
+		}
+
+		while (${count} != 0) {
+			Click(locator1 = "PageEditor#EXPERIENCE_PRIORITIZE_BUTTON");
+
+			var count = ${count} - 1;
+		}
 	}
 
 	macro publish {
@@ -4785,7 +4848,7 @@ return	Array.from(getWebElement("(//div[@aria-label='${fragmentName}'])[${index}
 			locator1 = "IFrame#MODAL_ANY");
 
 		Click(
-			key_objectLabel = ${objectLabel},
+			key_entryValue = ${entryValue},
 			locator1 = "PageEditor#PREVIEW_WITH_CUSTOM_OBJECT_ITEM");
 
 		IFrame.selectTopFrame();

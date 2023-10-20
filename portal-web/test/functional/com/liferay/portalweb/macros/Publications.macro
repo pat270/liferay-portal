@@ -130,6 +130,14 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
+	macro disableManageRemotely {
+		PublicationsNavigator.openPublicationsSettings();
+
+		Uncheck.uncheckToggleSwitch(locator1 = "Publications#ENABLE_MANAGE_REMOTELY");
+
+		Click(locator1 = "Button#SAVE");
+	}
+
 	macro disablePublications {
 		if (${gotoInstancesettings} == "true") {
 			ApplicationsMenu.gotoPortlet(
@@ -166,17 +174,24 @@ definition {
 		}
 	}
 
+	macro disablePublicationSharing {
+		Uncheck.uncheckToggleSwitchAndPause(locator1 = "PublicationsChanges#ENABLE_SHARE_LINK_TOGGLE_SWITCH");
+
+		AssertElementNotPresent(locator1 = "PublicationsChanges#COPY_URL_BUTTON");
+	}
+
 	macro enableAllowUnapprovedChanges {
-		ApplicationsMenu.gotoPortlet(
-			category = "Publications",
-			panel = "Applications",
-			portlet = "Publications");
-
-		Click.waitForMenuToggleJSClick(locator1 = "Publications#PUBLICATIONS_ELLIPSIS");
-
-		MenuItem.click(menuItem = "Settings");
+		PublicationsNavigator.openPublicationsSettings();
 
 		Check.checkToggleSwitch(locator1 = "Publications#ENABLE_ALLOW_UNAPPROVED_CHANGES");
+
+		Click(locator1 = "Button#SAVE");
+	}
+
+	macro enableManageRemotely {
+		PublicationsNavigator.openPublicationsSettings();
+
+		Check.checkToggleSwitch(locator1 = "Publications#ENABLE_MANAGE_REMOTELY");
 
 		Click(locator1 = "Button#SAVE");
 	}
@@ -221,15 +236,16 @@ definition {
 		}
 	}
 
+	macro enablePublicationSharing {
+		Click(locator1 = "PublicationsChanges#SHARE_ACCESS_BUTTON");
+
+		Check.checkToggleSwitch(locator1 = "PublicationsChanges#ENABLE_SHARE_LINK_TOGGLE_SWITCH");
+
+		Click(locator1 = "PublicationsChanges#COPY_URL_BUTTON");
+	}
+
 	macro enableSandboxOnly {
-		ApplicationsMenu.gotoPortlet(
-			category = "Publications",
-			panel = "Applications",
-			portlet = "Publications");
-
-		Click.waitForMenuToggleJSClick(locator1 = "Publications#PUBLICATIONS_ELLIPSIS");
-
-		MenuItem.click(menuItem = "Settings");
+		PublicationsNavigator.openPublicationsSettings();
 
 		Check.checkToggleSwitch(locator1 = "Publications#ENABLE_SANDBOX_ONLY_TOGGLE_SWITCH");
 
@@ -269,6 +285,14 @@ definition {
 		var publicationName = selenium.getText("//span[contains(@class,'change-tracking-indicator-title')]");
 
 		return ${publicationName};
+	}
+
+	macro getShareLinkURL {
+		WaitForElementPresent(locator1 = "PublicationsChanges#SHARE_LINK_URL");
+
+		var publicURL = selenium.getElementValue("PublicationsChanges#SHARE_LINK_URL");
+
+		return ${publicURL};
 	}
 
 	macro inviteUsers {

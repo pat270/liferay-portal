@@ -184,7 +184,8 @@ public class CommerceMediaResolverTest {
 		CommerceOrderItem commerceOrderItem =
 			_commerceOrderItemLocalService.addCommerceOrderItem(
 				_user.getUserId(), _commerceOrder.getCommerceOrderId(),
-				cpInstance.getCPInstanceId(), null, quantity, 0, quantity,
+				cpInstance.getCPInstanceId(), null,
+				BigDecimal.valueOf(quantity), 0, BigDecimal.valueOf(quantity),
 				StringPool.BLANK,
 				new TestCommerceContext(
 					_accountEntry, _commerceCurrency, _commerceChannel, _user,

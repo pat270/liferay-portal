@@ -9,6 +9,7 @@ import com.liferay.calendar.model.CalendarResource;
 import com.liferay.calendar.service.CalendarResourceLocalService;
 import com.liferay.portal.kernel.exception.ModelListenerException;
 import com.liferay.portal.kernel.model.BaseModelListener;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.ModelListener;
 import com.liferay.portal.kernel.model.User;
@@ -49,13 +50,15 @@ public class UserModelListener extends BaseModelListener<User> {
 				return;
 			}
 
+			Group group = user.getGroup();
+
 			calendarResource.setNameMap(
 				_localization.populateLocalizationMap(
 					HashMapBuilder.put(
 						LocaleUtil.getSiteDefault(), user.getFullName()
 					).build(),
 					LocaleUtil.toLanguageId(LocaleUtil.getSiteDefault()),
-					user.getGroupId()));
+					(group == null) ? 0 : group.getGroupId()));
 
 			_calendarResourceLocalService.updateCalendarResource(
 				calendarResource);

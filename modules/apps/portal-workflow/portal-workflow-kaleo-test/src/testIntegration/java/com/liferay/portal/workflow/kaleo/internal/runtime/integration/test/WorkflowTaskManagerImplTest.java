@@ -97,7 +97,6 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.portal.kernel.workflow.WorkflowDefinitionManager;
 import com.liferay.portal.kernel.workflow.WorkflowException;
 import com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil;
 import com.liferay.portal.kernel.workflow.WorkflowInstance;
@@ -109,6 +108,8 @@ import com.liferay.portal.security.permission.SimplePermissionChecker;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.util.PortalInstances;
 import com.liferay.portal.workflow.comparator.WorkflowComparatorFactory;
+import com.liferay.portal.workflow.kaleo.definition.util.WorkflowDefinitionContentUtil;
+import com.liferay.portal.workflow.manager.WorkflowDefinitionManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -155,6 +156,10 @@ public class WorkflowTaskManagerImplTest extends BaseWorkflowManagerTestCase {
 			HashMapDictionaryBuilder.<String, Object>put(
 				"company.administrator.can.publish", true
 			).build());
+
+		_originalName = PrincipalThreadLocal.getName();
+
+		PrincipalThreadLocal.setName(TestPropsValues.getUserId());
 	}
 
 	@AfterClass
@@ -162,6 +167,8 @@ public class WorkflowTaskManagerImplTest extends BaseWorkflowManagerTestCase {
 		_companyLocalService.deleteCompany(_company);
 
 		ConfigurationTestUtil.deleteConfiguration(_configuration);
+
+		PrincipalThreadLocal.setName(_originalName);
 	}
 
 	@Before
@@ -1575,7 +1582,8 @@ public class WorkflowTaskManagerImplTest extends BaseWorkflowManagerTestCase {
 				_log.debug(workflowException);
 			}
 
-			String content = _read("join-xor-workflow-definition.xml");
+			String content = _readFileToJSON(
+				"join-xor-workflow-definition.xml");
 
 			_workflowDefinitionManager.deployWorkflowDefinition(
 				_adminUser.getCompanyId(), _adminUser.getUserId(), _JOIN_XOR,
@@ -1609,7 +1617,7 @@ public class WorkflowTaskManagerImplTest extends BaseWorkflowManagerTestCase {
 				_log.debug(workflowException);
 			}
 
-			String content = _read(fileName);
+			String content = _readFileToJSON(fileName);
 
 			_workflowDefinitionManager.deployWorkflowDefinition(
 				_adminUser.getCompanyId(), _adminUser.getUserId(), name, name,
@@ -1627,7 +1635,7 @@ public class WorkflowTaskManagerImplTest extends BaseWorkflowManagerTestCase {
 				_log.debug(workflowException);
 			}
 
-			String content = _read(
+			String content = _readFileToJSON(
 				"single-approver-site-member-workflow-definition.xml");
 
 			_workflowDefinitionManager.deployWorkflowDefinition(
@@ -1804,11 +1812,11 @@ public class WorkflowTaskManagerImplTest extends BaseWorkflowManagerTestCase {
 			workflowTask.getWorkflowTaskId());
 	}
 
-	private String _read(String fileName) throws Exception {
+	private String _readFileToJSON(String fileName) throws Exception {
 		Class<?> clazz = getClass();
 
-		return StringUtil.read(
-			clazz.getClassLoader(), _getBasePath() + fileName);
+		return WorkflowDefinitionContentUtil.toJSON(
+			StringUtil.read(clazz.getClassLoader(), _getBasePath() + fileName));
 	}
 
 	private List<WorkflowTask> _searchByAssetTypesAndAssetPrimaryKeys(
@@ -1975,6 +1983,8 @@ public class WorkflowTaskManagerImplTest extends BaseWorkflowManagerTestCase {
 
 	@Inject
 	private static ConfigurationAdmin _configurationAdmin;
+
+	private static String _originalName;
 
 	private User _adminUser;
 

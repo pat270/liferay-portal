@@ -6,27 +6,36 @@
 /// <reference types="react" />
 
 import {IFDSTableProps} from '../../utils/fds';
+import './ViewObjectDefinitions.scss';
 interface ViewObjectDefinitionsProps extends IFDSTableProps {
 	baseResourceURL: string;
-	storages: LabelTypeObject[];
+	editObjectDefinitionURL: string;
+	modelBuilderURL: string;
+	objectDefinitionsAPIURL: any;
+	objectDefinitionsCreationMenu: {
+		primaryItems?: any[];
+		secondaryItems?: any[];
+	};
+	objectDefinitionsFDSActionDropdownItems: any[];
+	objectDefinitionsFDSName: any;
+	objectDefinitionsStorageTypes: LabelValueObject[];
+	objectFolderPermissionsURL: string;
 }
-export declare type ViewObjectDefinitionsModals = {
-	addObjectDefinition: boolean;
-	deleteObjectDefinition: boolean;
-	importObject: boolean;
-};
-export interface DeletedObjectDefinition extends ObjectDefinition {
+export interface DeletedObjectDefinition {
 	hasObjectRelationship: boolean;
+	id: number;
+	name: string;
 	objectEntriesCount: number;
 }
 export default function ViewObjectDefinitions({
-	apiURL,
 	baseResourceURL,
-	creationMenu,
-	id,
-	items,
-	sorting,
-	storages,
-	url,
+	editObjectDefinitionURL,
+	modelBuilderURL,
+	objectDefinitionsAPIURL,
+	objectDefinitionsCreationMenu,
+	objectDefinitionsFDSActionDropdownItems,
+	objectDefinitionsFDSName,
+	objectDefinitionsStorageTypes,
+	objectFolderPermissionsURL,
 }: ViewObjectDefinitionsProps): JSX.Element;
 export {};

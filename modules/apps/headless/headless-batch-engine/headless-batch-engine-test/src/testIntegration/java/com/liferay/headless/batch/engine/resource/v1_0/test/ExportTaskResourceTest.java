@@ -351,6 +351,7 @@ public class ExportTaskResourceTest {
 			"ProductSpecification",
 		"com.liferay.headless.commerce.admin.catalog.dto.v1_0.RelatedProduct",
 		"com.liferay.headless.commerce.admin.catalog.dto.v1_0.Sku",
+		"com.liferay.headless.commerce.admin.catalog.dto.v1_0.SkuUnitOfMeasure",
 		"com.liferay.headless.commerce.admin.catalog.dto.v1_0.Specification",
 		"com.liferay.headless.commerce.admin.channel.dto.v1_0." +
 			"PaymentMethodGroupRelOrderType",
@@ -445,6 +446,8 @@ public class ExportTaskResourceTest {
 		"com.liferay.headless.commerce.delivery.catalog.dto.v1_0.Product",
 		"com.liferay.headless.commerce.delivery.catalog.dto.v1_0.ProductOption",
 		"com.liferay.headless.commerce.delivery.catalog.dto.v1_0." +
+			"ProductOptionValue",
+		"com.liferay.headless.commerce.delivery.catalog.dto.v1_0." +
 			"ProductSpecification",
 		"com.liferay.headless.commerce.delivery.catalog.dto.v1_0." +
 			"RelatedProduct",
@@ -494,6 +497,7 @@ public class ExportTaskResourceTest {
 		"com.liferay.notification.rest.dto.v1_0.NotificationQueueEntry",
 		"com.liferay.object.admin.rest.dto.v1_0.ObjectAction",
 		"com.liferay.object.admin.rest.dto.v1_0.ObjectField",
+		"com.liferay.object.admin.rest.dto.v1_0.ObjectFolder",
 		"com.liferay.object.admin.rest.dto.v1_0.ObjectLayout",
 		"com.liferay.object.admin.rest.dto.v1_0.ObjectRelationship",
 		"com.liferay.object.admin.rest.dto.v1_0.ObjectValidationRule",
@@ -526,7 +530,6 @@ public class ExportTaskResourceTest {
 		"com.liferay.search.experiences.rest.dto.v1_0." +
 			"SearchableAssetNameDisplay",
 		"com.liferay.search.experiences.rest.dto.v1_0.SearchIndex",
-		"com.liferay.search.experiences.rest.dto.v1_0.SXPElement",
 		"com.liferay.search.experiences.rest.dto.v1_0." +
 			"SXPParameterContributorDefinition",
 		"com.liferay.segments.asah.rest.dto.v1_0.Experiment",

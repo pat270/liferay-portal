@@ -435,6 +435,23 @@ definition {
 		else {
 			CustomerPortal.customerPortalApisTearDown();
 		}
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
+
+		Refresh();
+
+		PortletEntry.selectAll();
+
+		Click(locator1 = "Icon#SITES_VERTICAL_ELLIPSIS");
+
+		MenuItem.clickNoError(menuItem = "Delete");
+
+		Click(locator1 = "Button#MODAL_DELETE");
+
+		Alert.viewSuccessMessage();
 	}
 
 	macro deactivateKoroneikiAccount {
@@ -473,7 +490,13 @@ definition {
 			panel = "Control Panel",
 			portlet = "Account Flags");
 
-		ObjectPortlet.deleteEntry(entry = ${entry});
+		Click(
+			key_entry = ${entry},
+			locator1 = "ObjectPortlet#ENTRY_KEBAB_MENU");
+
+		ClickNoError(locator1 = "ObjectPortlet#DELETE_ENTRY_BUTTON");
+
+		AssertElementPresent(locator1 = "CP2Utils#MODAL_DELETE_ENTRY");
 	}
 
 	macro enterOnProject {
@@ -513,7 +536,7 @@ definition {
 
 	macro loginOktaToUpdateCP {
 		var userEmailAddress = "dbace26d5dadb9eed597@uat.com.broken";
-		var userPassword = "q4F63ZEH3njnnA34S761";
+		var oktaUserPassword = "q4F63ZEH3njnnA34S761";
 
 		Open.openInTheNewTab(locator1 = "https://login-dev.liferay.com/");
 
@@ -523,7 +546,7 @@ definition {
 
 		Type(
 			locator1 = "CustomerPortalSite#OKTA_PASSWORD",
-			value1 = ${userPassword});
+			value1 = ${oktaUserPassword});
 
 		Click(locator1 = "CustomerPortalSite#OKTA_SUBMIT");
 
@@ -628,9 +651,9 @@ definition {
 	}
 
 	macro search {
-		if (IsElementPresent(locator1 = "CustomerPortalSite#SEARCH_BAR")) {
+		if (IsElementPresent(locator1 = "CustomerPortalSite#SEARCH")) {
 			Type(
-				locator1 = "CustomerPortalSite#SEARCH_BAR",
+				locator1 = "CustomerPortalSite#SEARCH",
 				value1 = ${searchItem});
 		}
 	}

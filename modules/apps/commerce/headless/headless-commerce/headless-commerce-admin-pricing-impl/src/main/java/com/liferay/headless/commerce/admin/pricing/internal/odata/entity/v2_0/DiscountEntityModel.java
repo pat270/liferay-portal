@@ -5,7 +5,9 @@
 
 package com.liferay.headless.commerce.admin.pricing.internal.odata.entity.v2_0;
 
+import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.odata.entity.CollectionEntityField;
+import com.liferay.portal.odata.entity.DateTimeEntityField;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.odata.entity.IntegerEntityField;
@@ -30,7 +32,11 @@ public class DiscountEntityModel implements EntityModel {
 					"channelId", locale -> "commerceChannelId")),
 			new CollectionEntityField(
 				new IntegerEntityField(
-					"orderTypeId", locale -> "commerceOrderTypeId")));
+					"orderTypeId", locale -> "commerceOrderTypeId")),
+			new DateTimeEntityField(
+				"modifiedDate",
+				locale -> Field.getSortableFieldName(Field.MODIFIED_DATE),
+				locale -> Field.MODIFIED_DATE));
 	}
 
 	@Override

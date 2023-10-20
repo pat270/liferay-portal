@@ -9,12 +9,11 @@ import {
 	// @ts-ignore
 
 } from '@liferay/frontend-data-set-web';
-import {API, getLocalizableLabel} from '@liferay/object-js-components-web';
 
 // @ts-ignore
 
 import moment from 'moment/min/moment-with-locales';
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 
 import {
 	IFDSTableProps,
@@ -22,10 +21,17 @@ import {
 	fdsItem,
 	formatActionURL,
 } from '../../utils/fds';
+import FDSSourceDataRenderer from '../FDSPropsTransformer/FDSSourceDataRenderer';
 
 interface ItemData {
 	active: boolean;
 	id: number;
+}
+
+function ObjectFieldActiveDataRenderer({itemData}: {itemData: ItemData}) {
+	return itemData.active
+		? Liferay.Language.get('yes')
+		: Liferay.Language.get('no');
 }
 
 const language = Liferay.ThemeDisplay.getBCP47LanguageId();
@@ -36,33 +42,10 @@ export default function Validations({
 	formName,
 	id,
 	items,
-	objectDefinitionExternalReferenceCode,
 	style,
 	url,
 }: IFDSTableProps) {
-	const [creationLanguageId, setCreationLanguageId] = useState<
-		Liferay.Language.Locale
-	>();
-
-	useEffect(() => {
-		const makeFetch = async () => {
-			const objectDefinition = await API.getObjectDefinitionByExternalReferenceCode(
-				objectDefinitionExternalReferenceCode
-			);
-
-			setCreationLanguageId(objectDefinition.defaultLanguageId);
-		};
-
-		makeFetch();
-	}, [objectDefinitionExternalReferenceCode]);
-
-	function objectFieldActiveDataRenderer({itemData}: {itemData: ItemData}) {
-		return itemData.active
-			? Liferay.Language.get('yes')
-			: Liferay.Language.get('no');
-	}
-
-	function objectFieldLabelDataRenderer({
+	function ObjectFieldLabelDataRenderer({
 		itemData,
 		openSidePanel,
 		value,
@@ -76,16 +59,13 @@ export default function Validations({
 		return (
 			<div className="table-list-title">
 				<a href="#" onClick={handleEditField}>
-					{getLocalizableLabel(
-						creationLanguageId as Liferay.Language.Locale,
-						value
-					)}
+					{value}
 				</a>
 			</div>
 		);
 	}
 
-	function objectFieldModifiedDateDataRenderer() {
+	function ObjectFieldModifiedDateDataRenderer() {
 		moment.locale(language);
 
 		return moment().format('MMMM D, YYYY, h:mm:ss A');
@@ -96,9 +76,10 @@ export default function Validations({
 		apiURL,
 		creationMenu,
 		customDataRenderers: {
-			objectFieldActiveDataRenderer,
-			objectFieldLabelDataRenderer,
-			objectFieldModifiedDateDataRenderer,
+			FDSSourceDataRenderer,
+			ObjectFieldActiveDataRenderer,
+			ObjectFieldLabelDataRenderer,
+			ObjectFieldModifiedDateDataRenderer,
 		},
 		formName,
 		id,
@@ -117,12 +98,12 @@ export default function Validations({
 				schema: {
 					fields: [
 						{
-							contentRenderer: 'objectFieldLabelDataRenderer',
+							contentRenderer: 'ObjectFieldLabelDataRenderer',
 							expand: false,
 							fieldName: 'name',
 							label: Liferay.Language.get('label'),
 							localizeLabel: true,
-							sortable: false,
+							sortable: true,
 						},
 						{
 							expand: false,
@@ -132,20 +113,27 @@ export default function Validations({
 							sortable: false,
 						},
 						{
-							contentRenderer: 'objectFieldActiveDataRenderer',
+							contentRenderer: 'ObjectFieldActiveDataRenderer',
 							expand: false,
 							fieldName: 'active',
 							label: Liferay.Language.get('active'),
 							localizeLabel: true,
 							sortable: false,
 						},
-
 						{
 							contentRenderer:
-								'objectFieldModifiedDateDataRenderer',
+								'ObjectFieldModifiedDateDataRenderer',
 							expand: false,
 							fieldName: 'dateModified',
 							label: Liferay.Language.get('modified-date'),
+							localizeLabel: true,
+							sortable: false,
+						},
+						{
+							contentRenderer: 'FDSSourceDataRenderer',
+							expand: false,
+							fieldName: 'system',
+							label: Liferay.Language.get('source'),
 							localizeLabel: true,
 							sortable: false,
 						},

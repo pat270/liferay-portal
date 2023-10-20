@@ -49,16 +49,17 @@ public class SXPBlueprintOptionsPortletSharedSearchContributor
 				searchContext.setAttribute(
 					"federatedSearchKey", federatedSearchKey);
 
-				String sxpBlueprintId = GetterUtil.getString(
+				String sxpBlueprintExternalReferenceCode = GetterUtil.getString(
 					searchContext.getAttribute(
-						"search.experiences.blueprint.id"));
+						"search.experiences.blueprint.external.reference." +
+							"code"));
 
-				if (Validator.isBlank(sxpBlueprintId)) {
+				if (Validator.isBlank(sxpBlueprintExternalReferenceCode)) {
 					searchContext.setAttribute(
-						"search.experiences.blueprint.id",
+						"search.experiences.blueprint.external.reference.code",
 						SXPBlueprintOptionsPortletPreferencesUtil.getValue(
 							portletSharedSearchSettings.getPortletPreferences(),
-							"sxpBlueprintId"));
+							"sxpBlueprintExternalReferenceCode"));
 				}
 
 				if (Validator.isNull(

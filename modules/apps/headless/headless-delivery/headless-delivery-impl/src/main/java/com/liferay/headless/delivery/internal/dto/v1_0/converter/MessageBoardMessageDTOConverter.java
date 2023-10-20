@@ -7,8 +7,8 @@ package com.liferay.headless.delivery.internal.dto.v1_0.converter;
 
 import com.liferay.asset.kernel.model.AssetTag;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
-import com.liferay.asset.kernel.service.AssetLinkLocalService;
 import com.liferay.asset.kernel.service.AssetTagLocalService;
+import com.liferay.asset.link.service.AssetLinkLocalService;
 import com.liferay.headless.delivery.dto.v1_0.MessageBoardMessage;
 import com.liferay.headless.delivery.dto.v1_0.util.CreatorUtil;
 import com.liferay.headless.delivery.dto.v1_0.util.CustomFieldsUtil;
@@ -114,7 +114,7 @@ public class MessageBoardMessageDTOConverter
 						}
 
 						return CreatorUtil.toCreator(
-							_portal, dtoConverterContext.getUriInfo(), user);
+							dtoConverterContext, _portal, user);
 					});
 				setCreatorStatistics(
 					() -> {

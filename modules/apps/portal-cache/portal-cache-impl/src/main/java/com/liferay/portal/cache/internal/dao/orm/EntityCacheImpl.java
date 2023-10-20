@@ -5,7 +5,6 @@
 
 package com.liferay.portal.cache.internal.dao.orm;
 
-import com.liferay.osgi.util.service.Snapshot;
 import com.liferay.petra.lang.CentralizedThreadLocal;
 import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringPool;
@@ -27,7 +26,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.model.MVCCModel;
-import com.liferay.portal.kernel.model.ShardedModel;
+import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LRUMap;
@@ -89,8 +88,6 @@ public class EntityCacheImpl
 
 	@Override
 	public void dispose() {
-		_notifyFinderCache(null, null, true);
-
 		_portalCaches.clear();
 	}
 
@@ -133,17 +130,10 @@ public class EntityCacheImpl
 			mvcc = true;
 		}
 
-		boolean sharded = false;
-
-		if (DBPartition.isPartitionEnabled() &&
-			ShardedModel.class.isAssignableFrom(clazz)) {
-
-			sharded = true;
-		}
-
 		portalCache =
 			(PortalCache<Serializable, Serializable>)
-				_multiVMPool.getPortalCache(groupKey, mvcc, sharded);
+				_multiVMPool.getPortalCache(
+					groupKey, mvcc, DBPartition.isPartitionedModel(clazz));
 
 		PortalCache<Serializable, Serializable> previousPortalCache =
 			_portalCaches.putIfAbsent(className, portalCache);
@@ -213,8 +203,6 @@ public class EntityCacheImpl
 		if (portalCacheName.startsWith(_GROUP_KEY_PREFIX)) {
 			cacheName = portalCacheName.substring(_GROUP_KEY_PREFIX.length());
 		}
-
-		_notifyFinderCache(cacheName, null, true);
 
 		_portalCaches.remove(cacheName);
 	}
@@ -319,33 +307,34 @@ public class EntityCacheImpl
 		try (SafeCloseable safeCloseable =
 				CompanyThreadLocal.setWithSafeCloseable(companyId)) {
 
-			FinderCacheImpl finderCacheImpl = _getFinderCacheImpl();
+			_notify(className, baseModel, removePortalCache);
+		}
+	}
 
-			if (finderCacheImpl == null) {
-				return;
-			}
+	private void _notify(
+		String className, BaseModel<?> baseModel, Boolean removePortalCache) {
 
-			if (removePortalCache == null) {
-				finderCacheImpl.updateByEntityCache(className, baseModel);
-			}
-			else if (baseModel != null) {
-				finderCacheImpl.removeByEntityCache(className, baseModel);
-			}
-			else if (removePortalCache) {
-				if (className == null) {
-					finderCacheImpl.dispose();
-				}
-				else {
-					finderCacheImpl.removeCacheByEntityCache(className);
-				}
+		FinderCacheImpl finderCacheImpl = _getFinderCacheImpl();
+
+		if (finderCacheImpl == null) {
+			return;
+		}
+
+		if (removePortalCache == null) {
+			finderCacheImpl.updateByEntityCache(className, baseModel);
+		}
+		else if (baseModel != null) {
+			finderCacheImpl.removeByEntityCache(className, baseModel);
+		}
+		else if (removePortalCache) {
+			finderCacheImpl.removeCacheByEntityCache(className);
+		}
+		else {
+			if (className == null) {
+				finderCacheImpl.clearCache();
 			}
 			else {
-				if (className == null) {
-					finderCacheImpl.clearCache();
-				}
-				else {
-					finderCacheImpl.clearByEntityCache(className);
-				}
+				finderCacheImpl.clearByEntityCache(className);
 			}
 		}
 	}
@@ -353,9 +342,7 @@ public class EntityCacheImpl
 	private void _notifyFinderCache(
 		String className, BaseModel<?> baseModel, Boolean removePortalCache) {
 
-		_notify(
-			CompanyThreadLocal.getCompanyId(), className, baseModel,
-			removePortalCache);
+		_notify(className, baseModel, removePortalCache);
 
 		if (!_clusterExecutor.isEnabled() ||
 			!ClusterInvokeThreadLocal.isEnabled()) {
@@ -367,8 +354,8 @@ public class EntityCacheImpl
 			MethodHandler methodHandler = new MethodHandler(
 				_notifyMethodKey,
 				new Object[] {
-					className, baseModel, removePortalCache,
-					CompanyThreadLocal.getCompanyId()
+					CompanyThreadLocal.getCompanyId(), className, baseModel,
+					removePortalCache
 				});
 
 			ClusterRequest clusterRequest =

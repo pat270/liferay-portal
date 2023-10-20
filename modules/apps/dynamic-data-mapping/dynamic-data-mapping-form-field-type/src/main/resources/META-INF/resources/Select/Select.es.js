@@ -246,6 +246,7 @@ const DropdownListWithSearch = ({
 const Trigger = forwardRef(
 	(
 		{
+			id,
 			onCloseButtonClicked,
 			onTriggerClicked,
 			onTriggerKeyDown,
@@ -261,6 +262,7 @@ const Trigger = forwardRef(
 					<HiddenSelectInput value={value} {...otherProps} />
 				)}
 				<VisibleSelectInput
+					id={id}
 					onClick={onTriggerClicked}
 					onCloseButtonClicked={onCloseButtonClicked}
 					onKeyDown={onTriggerKeyDown}
@@ -275,7 +277,9 @@ const Trigger = forwardRef(
 );
 
 const Select = ({
+	accessibleProps,
 	defaultSearch,
+	id,
 	label,
 	multiple,
 	onChange,
@@ -384,6 +388,8 @@ const Select = ({
 	return (
 		<ClayTooltipProvider>
 			<div
+				{...accessibleProps}
+				aria-expanded={expand}
 				data-tooltip-align="top"
 				{...getTooltipTitle({
 					placeholder: Liferay.Language.get('choose-an-option'),
@@ -391,6 +397,7 @@ const Select = ({
 				})}
 			>
 				<Trigger
+					id={id}
 					multiple={multiple}
 					onChange={onChange}
 					onCloseButtonClicked={({event, value}) => {
@@ -499,6 +506,7 @@ const Select = ({
 						/>
 					) : (
 						<DropdownList
+							{...accessibleProps}
 							currentValue={currentValue}
 							expand={expand}
 							handleSelect={handleSelect}
@@ -576,7 +584,11 @@ const Main = ({
 			{...otherProps}
 		>
 			<Select
+				accessibleProps={{
+					'aria-required': otherProps.required,
+				}}
 				defaultSearch={defaultSearch}
+				id={name}
 				label={label}
 				multiple={multiple}
 				name={`${name}_field`}

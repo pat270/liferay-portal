@@ -49,6 +49,12 @@ public class SXPElementServiceUtil {
 		return getService().deleteSXPElement(sxpElementId);
 	}
 
+	public static SXPElement fetchSXPElement(long sxpElementId)
+		throws PortalException {
+
+		return getService().fetchSXPElement(sxpElementId);
+	}
+
 	public static SXPElement fetchSXPElementByExternalReferenceCode(
 			String externalReferenceCode, long companyId)
 		throws PortalException {
@@ -81,15 +87,17 @@ public class SXPElementServiceUtil {
 	}
 
 	public static SXPElement updateSXPElement(
-			long sxpElementId, Map<java.util.Locale, String> descriptionMap,
+			String externalReferenceCode, long sxpElementId,
+			Map<java.util.Locale, String> descriptionMap,
 			String elementDefinitionJSON, String schemaVersion, boolean hidden,
 			Map<java.util.Locale, String> titleMap,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws PortalException {
 
 		return getService().updateSXPElement(
-			sxpElementId, descriptionMap, elementDefinitionJSON, schemaVersion,
-			hidden, titleMap, serviceContext);
+			externalReferenceCode, sxpElementId, descriptionMap,
+			elementDefinitionJSON, schemaVersion, hidden, titleMap,
+			serviceContext);
 	}
 
 	public static SXPElementService getService() {

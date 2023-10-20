@@ -141,6 +141,8 @@ public class MBCategoryPersistenceTest {
 
 		newMBCategory.setDisplayStyle(RandomTestUtil.randomString());
 
+		newMBCategory.setFriendlyURL(RandomTestUtil.randomString());
+
 		newMBCategory.setLastPublishDate(RandomTestUtil.nextDate());
 
 		newMBCategory.setStatus(RandomTestUtil.nextInt());
@@ -191,6 +193,9 @@ public class MBCategoryPersistenceTest {
 		Assert.assertEquals(
 			existingMBCategory.getDisplayStyle(),
 			newMBCategory.getDisplayStyle());
+		Assert.assertEquals(
+			existingMBCategory.getFriendlyURL(),
+			newMBCategory.getFriendlyURL());
 		Assert.assertEquals(
 			Time.getShortTimestamp(existingMBCategory.getLastPublishDate()),
 			Time.getShortTimestamp(newMBCategory.getLastPublishDate()));
@@ -261,6 +266,15 @@ public class MBCategoryPersistenceTest {
 		_persistence.countByG_P(
 			RandomTestUtil.nextLong(),
 			new long[] {RandomTestUtil.nextLong(), 0L});
+	}
+
+	@Test
+	public void testCountByG_F() throws Exception {
+		_persistence.countByG_F(RandomTestUtil.nextLong(), "");
+
+		_persistence.countByG_F(0L, "null");
+
+		_persistence.countByG_F(0L, (String)null);
 	}
 
 	@Test
@@ -383,9 +397,9 @@ public class MBCategoryPersistenceTest {
 			true, "categoryId", true, "groupId", true, "companyId", true,
 			"userId", true, "userName", true, "createDate", true,
 			"modifiedDate", true, "parentCategoryId", true, "name", true,
-			"description", true, "displayStyle", true, "lastPublishDate", true,
-			"status", true, "statusByUserId", true, "statusByUserName", true,
-			"statusDate", true);
+			"description", true, "displayStyle", true, "friendlyURL", true,
+			"lastPublishDate", true, "status", true, "statusByUserId", true,
+			"statusByUserName", true, "statusDate", true);
 	}
 
 	@Test
@@ -658,6 +672,17 @@ public class MBCategoryPersistenceTest {
 			ReflectionTestUtil.<Long>invoke(
 				mbCategory, "getColumnOriginalValue",
 				new Class<?>[] {String.class}, "groupId"));
+
+		Assert.assertEquals(
+			Long.valueOf(mbCategory.getGroupId()),
+			ReflectionTestUtil.<Long>invoke(
+				mbCategory, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
+		Assert.assertEquals(
+			mbCategory.getFriendlyURL(),
+			ReflectionTestUtil.invoke(
+				mbCategory, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "friendlyURL"));
 	}
 
 	protected MBCategory addMBCategory() throws Exception {
@@ -690,6 +715,8 @@ public class MBCategoryPersistenceTest {
 		mbCategory.setDescription(RandomTestUtil.randomString());
 
 		mbCategory.setDisplayStyle(RandomTestUtil.randomString());
+
+		mbCategory.setFriendlyURL(RandomTestUtil.randomString());
 
 		mbCategory.setLastPublishDate(RandomTestUtil.nextDate());
 

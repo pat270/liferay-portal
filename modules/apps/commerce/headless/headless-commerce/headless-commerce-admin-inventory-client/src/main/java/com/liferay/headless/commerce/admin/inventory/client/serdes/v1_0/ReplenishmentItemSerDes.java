@@ -8,6 +8,8 @@ package com.liferay.headless.commerce.admin.inventory.client.serdes.v1_0;
 import com.liferay.headless.commerce.admin.inventory.client.dto.v1_0.ReplenishmentItem;
 import com.liferay.headless.commerce.admin.inventory.client.json.BaseJSONParser;
 
+import java.math.BigDecimal;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
@@ -116,6 +118,20 @@ public class ReplenishmentItemSerDes {
 			sb.append("\"");
 		}
 
+		if (replenishmentItem.getUnitOfMeasureKey() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"unitOfMeasureKey\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(replenishmentItem.getUnitOfMeasureKey()));
+
+			sb.append("\"");
+		}
+
 		if (replenishmentItem.getWarehouseId() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -191,6 +207,15 @@ public class ReplenishmentItemSerDes {
 			map.put("sku", String.valueOf(replenishmentItem.getSku()));
 		}
 
+		if (replenishmentItem.getUnitOfMeasureKey() == null) {
+			map.put("unitOfMeasureKey", null);
+		}
+		else {
+			map.put(
+				"unitOfMeasureKey",
+				String.valueOf(replenishmentItem.getUnitOfMeasureKey()));
+		}
+
 		if (replenishmentItem.getWarehouseId() == null) {
 			map.put("warehouseId", null);
 		}
@@ -244,12 +269,18 @@ public class ReplenishmentItemSerDes {
 			else if (Objects.equals(jsonParserFieldName, "quantity")) {
 				if (jsonParserFieldValue != null) {
 					replenishmentItem.setQuantity(
-						Integer.valueOf((String)jsonParserFieldValue));
+						new BigDecimal((String)jsonParserFieldValue));
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "sku")) {
 				if (jsonParserFieldValue != null) {
 					replenishmentItem.setSku((String)jsonParserFieldValue);
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "unitOfMeasureKey")) {
+				if (jsonParserFieldValue != null) {
+					replenishmentItem.setUnitOfMeasureKey(
+						(String)jsonParserFieldValue);
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "warehouseId")) {

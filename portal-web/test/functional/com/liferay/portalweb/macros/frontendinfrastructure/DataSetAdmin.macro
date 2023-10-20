@@ -1,5 +1,68 @@
 definition {
 
+	macro addActions {
+		if (isSet(actionName)) {
+			var key_actionNameList = ${actionName};
+		}
+
+		if (isSet(icon)) {
+			var key_actionIcon = ${icon};
+		}
+
+		if (isSet(type)) {
+			var key_actionType = ${type};
+		}
+
+		if (isSet(messageType)) {
+			var key_actionMessageType = ${messageType};
+		}
+
+		for (var key_actionName : list ${key_actionNameList}) {
+			LexiconEntry.gotoAdd();
+
+			Type(
+				key_unnamedTitle = "",
+				locator1 = "TextInput#DEPOT_UNNAMED_DEFAULT_TITLE",
+				value1 = ${key_actionName});
+
+			Select(
+				key_fieldLabel = "Icon",
+				locator1 = "Select#GENERIC_SELECT_FIELD",
+				value1 = ${key_actionIcon});
+
+			Select(
+				key_fieldLabel = "Type",
+				locator1 = "Select#GENERIC_SELECT_FIELD",
+				value1 = ${key_actionType});
+
+			Select(
+				key_fieldLabel = "Message Type",
+				locator1 = "Select#GENERIC_SELECT_FIELD",
+				value1 = ${key_actionMessageType});
+
+			Type(
+				key_fieldId = "URL",
+				locator1 = "TextArea#ANY_ID",
+				value1 = ${url});
+
+			if (isSet(headlessAction)) {
+				Type(
+					key_placeholder = "Add a value here.",
+					locator1 = "FrontendDataSet#PLACEHOLDER",
+					value1 = ${headlessAction});
+			}
+
+			if (isSet(confirmationMessage)) {
+				Type(
+					key_placeholder = "Add a message here.",
+					locator1 = "FrontendDataSet#PLACEHOLDER",
+					value1 = ${confirmationMessage});
+			}
+
+			PortletEntry.save();
+		}
+	}
+
 	macro addFields {
 		LexiconEntry.gotoAdd();
 
@@ -93,6 +156,33 @@ definition {
 		}
 	}
 
+	macro createAndConfigureDataSetEntry {
+		DataSetAdmin.goToDataSetAdminPage();
+
+		DataSetAdmin.createDataSetEntryViaAPI(
+			dataSetName = ${dataSetName},
+			restApplication = ${restApplication},
+			restEndpoint = ${restEndpoint},
+			restSchema = ${restSchema});
+
+		DataSetAdmin.createFDSViewViaAPI(
+			dataSetName = ${dataSetName},
+			dataSetViewDescription = ${dataSetViewDescription},
+			defaultItemsPerPage = ${defaultItemsPerPage},
+			key_dataSetViewNameList = ${dataSetViewName},
+			listOfItemsPerPage = ${listOfItemsPerPage});
+
+		DataSetAdmin.goToSpecificViewPage(
+			dataSetName = ${dataSetName},
+			key_viewName = ${dataSetViewName});
+
+		if (isSet(key_fieldList)) {
+			DataSetAdmin.goToTab(tabName = "Fields");
+
+			DataSetAdmin.addFields(key_fieldList = ${key_fieldList});
+		}
+	}
+
 	macro createASort {
 		LexiconEntry.gotoAdd();
 
@@ -120,6 +210,10 @@ definition {
 				value1 = ${key_dataSetName});
 
 			DataSetAdmin.selectProvider(key_type = ${key_type});
+
+			WaitForVisible(
+				locator1 = "ObjectPortlet#FIELD_LABEL_NAME",
+				value1 = "REST Schema");
 
 			PortletEntry.save();
 		}
@@ -158,12 +252,98 @@ definition {
 		}
 	}
 
+	macro createDateFilter {
+		Click(locator1 = "Button#PLUS");
+
+		DropdownMenuItem.click(menuItem = "Date Range");
+
+		PortletEntry.inputName(name = ${filterName});
+
+		Click(
+			dropdownLabel = "Select",
+			locator1 = "ObjectField#ANY_DROPDOWN_LABEL");
+
+		DropdownMenuItem.click(menuItem = ${filterBy});
+
+		Click(
+			key_label = "From",
+			locator1 = "DataSet#DATE_CALENDAR");
+
+		Click(
+			key_index = 1,
+			locator1 = "DataSet#YEAR_CALENDAR_FIELD");
+
+		Click(
+			key_index = 1,
+			key_optionYear = ${valueYearFrom},
+			locator1 = "DataSet#YEAR_CALENDAR_OPTION");
+
+		Select(
+			key_number = 1,
+			locator1 = "DataSet#SELECT_MONTH",
+			value1 = ${valueMonthFrom});
+
+		Click.clickNoMouseOver(
+			key_index = 1,
+			key_valueDay = ${valueDayFrom},
+			locator1 = "DataSet#DATE_CALENDAR_DAY");
+
+		AssertTextEquals(
+			key_label = "From",
+			locator1 = "DataSet#DATE_FIELD",
+			value1 = ${fieldValueFrom});
+
+		Click(
+			key_label = "To",
+			locator1 = "DataSet#DATE_CALENDAR");
+
+		Click(
+			key_index = 2,
+			locator1 = "DataSet#YEAR_CALENDAR_FIELD");
+
+		Click(
+			key_index = 2,
+			key_optionYear = ${valueYearTo},
+			locator1 = "DataSet#YEAR_CALENDAR_OPTION");
+
+		Select(
+			key_number = 2,
+			locator1 = "DataSet#SELECT_MONTH",
+			value1 = ${valueMonthTo});
+
+		Click.clickNoMouseOver(
+			key_index = 2,
+			key_valueDay = ${valueDayTo},
+			locator1 = "DataSet#DATE_CALENDAR_DAY");
+
+		AssertTextEquals(
+			key_label = "To",
+			locator1 = "DataSet#DATE_FIELD",
+			value1 = ${fieldValueTo});
+
+		if (${button} == "Cancel") {
+			Button.clickCancel();
+		}
+		else {
+			Click(locator1 = "DataSet#MODAL_SAVE_BUTTON");
+		}
+
+		Alert.viewSuccessMessage();
+	}
+
 	macro createFDSViewViaAPI {
+		if (!(isSet(defaultItemsPerPage))) {
+			var defaultItemsPerPage = 4;
+			var listOfItemsPerPage = "4, 8, 20, 40, 60, 100";
+		}
+
 		for (var key_dataSetViewName : list ${key_dataSetViewNameList}) {
 			JSONDataSet._createFDSViewViaAPI(
 				dataSetName = ${dataSetName},
 				dataSetViewDescription = ${dataSetViewDescription},
-				dataSetViewName = ${key_dataSetViewName});
+				dataSetViewName = ${key_dataSetViewName},
+				defaultItemsPerPage = ${defaultItemsPerPage},
+				listOfItemsPerPage = ${listOfItemsPerPage});
 		}
 	}
 
@@ -276,6 +456,37 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
+	macro editField {
+		Click(
+			key_fieldName = ${key_fieldItem},
+			locator1 = "DataSet#VERTICAL_ELLIPSIS_BY_FIELDS_NAME");
+
+		MenuItem.click(menuItem = "Edit");
+
+		if (${sortable} == "Check") {
+			Check.checkNotVisible(
+				checkboxName = "Sortable",
+				locator1 = "Checkbox#ANY_CHECKBOX");
+		}
+
+		if (${sortable} == "Uncheck") {
+			Uncheck.uncheckNotVisible(
+				checkboxName = "Sortable",
+				locator1 = "Checkbox#ANY_CHECKBOX");
+		}
+
+		if (isSet(key_newLabel)) {
+			Type(
+				key_text = "Label",
+				locator1 = "TextInput#ANY",
+				value1 = ${key_newLabel});
+		}
+
+		Click(locator1 = "DataSet#MODAL_SAVE_BUTTON");
+
+		Alert.viewSuccessMessage();
+	}
+
 	macro editSorting {
 		var key_entryPosition = ${key_entryPosition};
 		var key_sortingOption = ${key_sortingOption};
@@ -302,7 +513,7 @@ definition {
 			key_name = ${key_oldName},
 			locator1 = "DataSet#DATA_SET_VIEW_ENTRY_KEBAB_MENU");
 
-		MenuItem.click(menuItem = "View");
+		MenuItem.click(menuItem = "Edit");
 
 		Type(
 			key_type = "Name",
@@ -336,7 +547,7 @@ definition {
 			key_name = ${key_viewName},
 			locator1 = "DataSet#DATA_SET_VIEW_ENTRY_KEBAB_MENU");
 
-		MenuItem.click(menuItem = "View");
+		MenuItem.click(menuItem = "Edit");
 	}
 
 	macro goToTab {

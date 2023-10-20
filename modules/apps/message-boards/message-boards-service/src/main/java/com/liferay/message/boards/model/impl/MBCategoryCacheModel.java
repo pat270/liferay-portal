@@ -68,7 +68,7 @@ public class MBCategoryCacheModel
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(39);
+		StringBundler sb = new StringBundler(41);
 
 		sb.append("{mvccVersion=");
 		sb.append(mvccVersion);
@@ -98,6 +98,8 @@ public class MBCategoryCacheModel
 		sb.append(description);
 		sb.append(", displayStyle=");
 		sb.append(displayStyle);
+		sb.append(", friendlyURL=");
+		sb.append(friendlyURL);
 		sb.append(", lastPublishDate=");
 		sb.append(lastPublishDate);
 		sb.append(", status=");
@@ -176,6 +178,13 @@ public class MBCategoryCacheModel
 			mbCategoryImpl.setDisplayStyle(displayStyle);
 		}
 
+		if (friendlyURL == null) {
+			mbCategoryImpl.setFriendlyURL("");
+		}
+		else {
+			mbCategoryImpl.setFriendlyURL(friendlyURL);
+		}
+
 		if (lastPublishDate == Long.MIN_VALUE) {
 			mbCategoryImpl.setLastPublishDate(null);
 		}
@@ -227,6 +236,7 @@ public class MBCategoryCacheModel
 		name = objectInput.readUTF();
 		description = objectInput.readUTF();
 		displayStyle = objectInput.readUTF();
+		friendlyURL = objectInput.readUTF();
 		lastPublishDate = objectInput.readLong();
 
 		status = objectInput.readInt();
@@ -290,6 +300,13 @@ public class MBCategoryCacheModel
 			objectOutput.writeUTF(displayStyle);
 		}
 
+		if (friendlyURL == null) {
+			objectOutput.writeUTF("");
+		}
+		else {
+			objectOutput.writeUTF(friendlyURL);
+		}
+
 		objectOutput.writeLong(lastPublishDate);
 
 		objectOutput.writeInt(status);
@@ -320,6 +337,7 @@ public class MBCategoryCacheModel
 	public String name;
 	public String description;
 	public String displayStyle;
+	public String friendlyURL;
 	public long lastPublishDate;
 	public int status;
 	public long statusByUserId;

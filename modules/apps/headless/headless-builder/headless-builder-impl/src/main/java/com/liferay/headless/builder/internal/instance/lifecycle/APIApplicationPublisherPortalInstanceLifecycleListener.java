@@ -20,14 +20,17 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Alejandro Tardín
  */
-@Component(service = PortalInstanceLifecycleListener.class)
+@Component(
+	property = "service.ranking:Integer=" + Integer.MIN_VALUE,
+	service = PortalInstanceLifecycleListener.class
+)
 public class APIApplicationPublisherPortalInstanceLifecycleListener
 	extends BasePortalInstanceLifecycleListener
 	implements EveryNodeEveryStartup {
 
 	@Override
 	public void portalInstanceRegistered(Company company) throws Exception {
-		if (!FeatureFlagManagerUtil.isEnabled("LPS-186757")) {
+		if (!FeatureFlagManagerUtil.isEnabled("LPS-178642")) {
 			return;
 		}
 
@@ -35,7 +38,8 @@ public class APIApplicationPublisherPortalInstanceLifecycleListener
 				_apiApplicationProvider.getPublishedAPIApplications(
 					company.getCompanyId())) {
 
-			_apiApplicationPublisher.publish(apiApplication);
+			_apiApplicationPublisher.publish(
+				apiApplication.getBaseURL(), apiApplication.getCompanyId());
 		}
 	}
 

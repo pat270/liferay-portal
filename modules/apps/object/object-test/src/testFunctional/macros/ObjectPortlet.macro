@@ -216,7 +216,7 @@ definition {
 
 		ClickNoError(locator1 = "ObjectPortlet#DELETE_ENTRY_BUTTON");
 
-		AssertConfirm(value1 = "It may affect many records. Are you sure you want to delete this entry?");
+		Button.click(button = "Delete");
 	}
 
 	macro goToCustomObjectPortletOnControlPanel {
@@ -387,7 +387,7 @@ definition {
 	}
 
 	macro viewWidgetButton {
-		AssertElementPresent(locator1 = "ObjectPortlet#VIEW_WIDGET_BUTTON");
+		AssertElementPresent(locator1 = "ObjectPortlet#VIEW_WIDGET_IN_PAGE_BUILDER_TOGGLE");
 	}
 
 }

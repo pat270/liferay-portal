@@ -47,10 +47,10 @@ public class FragmentEntryLinkEditorConfigContributor
 		ThemeDisplay themeDisplay,
 		RequestBackedPortletURLFactory requestBackedPortletURLFactory) {
 
-		PortletURL itemSelectorURL = _itemSelector.getItemSelectorURL(
+		PortletURL itemSelectorURL = itemSelector.getItemSelectorURL(
 			requestBackedPortletURLFactory, "_EDITOR_NAME_selectItem",
 			getFileItemSelectorCriterion(), getLayoutItemSelectorURL());
-		PortletURL imageSelectorURL = _itemSelector.getItemSelectorURL(
+		PortletURL imageSelectorURL = itemSelector.getItemSelectorURL(
 			requestBackedPortletURLFactory, "_EDITOR_NAME_selectImage",
 			getImageItemSelectorCriterion(), getURLItemSelectorCriterion());
 
@@ -73,7 +73,7 @@ public class FragmentEntryLinkEditorConfigContributor
 		).put(
 			"skin", "moono-lisa"
 		).put(
-			"toolbars", _jsonFactory.createJSONObject()
+			"toolbars", jsonFactory.createJSONObject()
 		);
 	}
 
@@ -109,13 +109,12 @@ public class FragmentEntryLinkEditorConfigContributor
 
 		layoutItemSelectorCriterion.setDesiredItemSelectorReturnTypes(
 			new URLItemSelectorReturnType());
-		layoutItemSelectorCriterion.setShowHiddenPages(true);
 
 		return layoutItemSelectorCriterion;
 	}
 
 	protected String getRemovePluginsLists() {
-		return "contextmenu,elementspath,floatingspace,image,link,liststyle," +
+		return "contextmenu,elementspath,floatingspace,image,liststyle," +
 			"magicline,resize,tabletools,toolbar,ae_embed";
 	}
 
@@ -130,9 +129,9 @@ public class FragmentEntryLinkEditorConfigContributor
 	}
 
 	@Reference
-	private ItemSelector _itemSelector;
+	protected ItemSelector itemSelector;
 
 	@Reference
-	private JSONFactory _jsonFactory;
+	protected JSONFactory jsonFactory;
 
 }

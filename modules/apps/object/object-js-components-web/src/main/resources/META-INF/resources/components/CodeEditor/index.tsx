@@ -5,9 +5,9 @@
 
 import classNames from 'classnames';
 import CodeMirror from 'codemirror';
+import {FieldBase} from 'frontend-js-components-web';
 import React, {ReactNode, useRef} from 'react';
 
-import {FieldBase} from '../FieldBase';
 import CodeMirrorEditor, {ICodeMirrorEditor} from './CodeMirrorEditor';
 import {Sidebar, SidebarCategory} from './Sidebar';
 
@@ -23,6 +23,7 @@ interface CodeEditorProps extends ICodeMirrorEditor {
 	className?: string;
 	error?: string;
 	sidebarElements?: SidebarCategory[];
+	sidebarElementsDisabled?: boolean;
 }
 
 const CodeEditor = React.forwardRef<CodeMirror.Editor, CodeEditorProps>(
@@ -33,6 +34,7 @@ const CodeEditor = React.forwardRef<CodeMirror.Editor, CodeEditorProps>(
 			error,
 			mode,
 			sidebarElements,
+			sidebarElementsDisabled,
 			...options
 		},
 		ref
@@ -75,6 +77,7 @@ const CodeEditor = React.forwardRef<CodeMirror.Editor, CodeEditorProps>(
 							CustomSidebarContent={CustomSidebarContent}
 							editorRef={editorRef}
 							elements={sidebarElements}
+							elementsDisabled={sidebarElementsDisabled}
 						/>
 					)}
 				</div>

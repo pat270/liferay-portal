@@ -52,12 +52,15 @@ import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.PrefsPropsUtil;
+import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.ServiceProxyFactory;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.webserver.WebServerServletTokenUtil;
 import com.liferay.portal.util.PropsValues;
+import com.liferay.sites.kernel.util.Sites;
 
 import java.io.IOException;
 
@@ -67,6 +70,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Represents either a site or a generic resource container.
@@ -876,6 +880,39 @@ public class GroupImpl extends GroupBaseImpl {
 	}
 
 	@Override
+	public boolean isContentSharingWithChildrenEnabled() {
+		int companyContentSharingEnabled = PrefsPropsUtil.getInteger(
+			getCompanyId(),
+			PropsKeys.SITES_CONTENT_SHARING_WITH_CHILDREN_ENABLED);
+
+		if (companyContentSharingEnabled ==
+				Sites.CONTENT_SHARING_WITH_CHILDREN_DISABLED) {
+
+			return false;
+		}
+
+		UnicodeProperties typeSettingsUnicodeProperties =
+			getParentLiveGroupTypeSettingsProperties();
+
+		int groupContentSharingEnabled = GetterUtil.getInteger(
+			typeSettingsUnicodeProperties.getProperty(
+				"contentSharingWithChildrenEnabled"),
+			Sites.CONTENT_SHARING_WITH_CHILDREN_DEFAULT_VALUE);
+
+		if ((groupContentSharingEnabled ==
+				Sites.CONTENT_SHARING_WITH_CHILDREN_ENABLED) ||
+			((companyContentSharingEnabled ==
+				Sites.CONTENT_SHARING_WITH_CHILDREN_ENABLED_BY_DEFAULT) &&
+			 (groupContentSharingEnabled ==
+				 Sites.CONTENT_SHARING_WITH_CHILDREN_DEFAULT_VALUE))) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
 	public boolean isControlPanel() {
 		String groupKey = getGroupKey();
 
@@ -1193,6 +1230,20 @@ public class GroupImpl extends GroupBaseImpl {
 		}
 
 		return false;
+	}
+
+	@Override
+	public void setNameMap(Map<Locale, String> nameMap, Locale defaultLocale) {
+		if (!Objects.equals(
+				LocaleUtil.toLanguageId(defaultLocale),
+				getDefaultLanguageId()) &&
+			(nameMap != null) && Validator.isNull(nameMap.get(defaultLocale)) &&
+			Validator.isNotNull(getName(getDefaultLanguageId()))) {
+
+			nameMap.put(defaultLocale, getName(getDefaultLanguageId()));
+		}
+
+		super.setNameMap(nameMap, defaultLocale);
 	}
 
 	@Override

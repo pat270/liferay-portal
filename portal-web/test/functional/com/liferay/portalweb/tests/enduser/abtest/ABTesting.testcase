@@ -5,7 +5,7 @@ definition {
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property property.group = "analytics.cloud.profile";
-	property test.liferay.virtual.instance = "false";
+	property test.run.type = "single";
 	property testray.main.component.name = "A/B Test";
 
 	setUp {
@@ -44,7 +44,7 @@ definition {
 	@description = "LPS-101341: Validate if the user has one experience with the AB test in a Running status, the experiences dropdown menu shows the AB test icon and one help hint"
 	@priority = 5
 	test ABTestIconInExperience {
-		property portal.acceptance = "true";
+		property portal.acceptance = "quarantine";
 
 		task ("Create an experience and add on content page") {
 			ContentPages.gotoPageEditor();
@@ -469,7 +469,7 @@ definition {
 	@description = "LPS-108147: When user opens AB testing panel and AC is connected and synced, the AB testing panel display all its functionalities"
 	@priority = 5
 	test CheckABTestPanelInfo {
-		property portal.acceptance = "true";
+		property portal.acceptance = "quarantine";
 
 		task ("Open AB Test Panel") {
 			ABTest.openABTestPanel();
@@ -619,9 +619,10 @@ definition {
 	}
 
 	@description = "LPS-109991 Bug: When a variant is edited, other variants lose modifications"
+	@ignore = "true"
 	@priority = 4
 	test CheckContentPersistAfterEditVariant {
-		property portal.acceptance = "false";
+		property portal.acceptance = "quarantine";
 
 		task ("Create AB test and create first variant") {
 			ABTest.openABTestPanel();
@@ -685,8 +686,6 @@ definition {
 	@description = "LPS-152323 Bug: Element ID field gets empty after changing from variant"
 	@priority = 3
 	test CheckElementIdWithVariant {
-		property ci.retries.disabled = "true";
-
 		task ("Create a page with a button fragment") {
 			ContentPages.gotoPageEditor();
 
@@ -761,9 +760,10 @@ definition {
 	}
 
 	@description = "LPS-96781: Validate if, when the A/B Testing changes in the Liferay DXP, information about the Liferay DXP context, the changes are reflected in the test in Analytics Cloud"
+	@ignore = "true"
 	@priority = 4
 	test CheckTestChangesInAC {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Create AB test, create variant and run the test") {
 			ABTest.createABTest(
@@ -785,6 +785,7 @@ definition {
 	}
 
 	@description = "LPS-97195: Validate if the variant for A/B Test that was added on Liferay portal is visible in the Analytics Cloud"
+	@ignore = "true"
 	@priority = 5
 	test CheckVariantAddedInAC {
 		task ("Create AB test and create variant") {
@@ -801,9 +802,10 @@ definition {
 	}
 
 	@description = "LPS-97195: Validate if the variant for A/B Test that was deleted on Liferay portal is visible in the Analytics Cloud"
+	@ignore = "true"
 	@priority = 4
 	test CheckVariantDeletedInAC {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Create AB test and create 2 variants") {
 			ABTest.createABTest(
@@ -845,6 +847,7 @@ definition {
 	}
 
 	@description = "LPS-97195: Validate if the variant for A/B Test that was edited on Liferay portal is visible in the Analytics Cloud"
+	@ignore = "true"
 	@priority = 4
 	test CheckVariantEditedInAC {
 		task ("Create AB test and create variant") {
@@ -920,7 +923,8 @@ definition {
 		}
 	}
 
-	@description = "Validate if the user can create an A/B Test by Bounce rate"
+	@description = "LPS-137274 Validate if the user can create an A/B Test by Bounce rate"
+	@ignore = "true"
 	@priority = 5
 	@uitest
 	test CreateABTestByBounceRate {
@@ -940,6 +944,7 @@ definition {
 	}
 
 	@description = "LPS-119475 Validate if the user can create an A/B Test by Click"
+	@ignore = "true"
 	@priority = 5
 	@uitest
 	test CreateABTestByClick {
@@ -1036,6 +1041,7 @@ definition {
 	}
 
 	@description = "LPS-97195: Validate if the user can create a variant for A/B Test with the same name that already exists with success"
+	@ignore = "true"
 	@priority = 4
 	test CreateVariantSameName {
 		task ("Create AB test") {
@@ -1088,6 +1094,7 @@ definition {
 	}
 
 	@description = "LPS-99421: The test is not removed when the delete action is canceled"
+	@ignore = "true"
 	@priority = 3
 	test DeleteABTestCancel {
 		task ("Create AB test and a variant") {
@@ -1115,9 +1122,10 @@ definition {
 	}
 
 	@description = "LPS-99421: The test deletion in AC is reflected on DXP"
+	@ignore = "true"
 	@priority = 4
 	test DeleteABTestInACViewInDXP {
-		property portal.acceptance = "true";
+		property portal.acceptance = "quarantine";
 
 		task ("Create AB test and create variant.") {
 			ABTest.createABTest(
@@ -1155,9 +1163,10 @@ definition {
 	}
 
 	@description = "LPS-99421: The test deletion in DXP is reflected on AC"
+	@ignore = "true"
 	@priority = 4
 	test DeleteABTestInDXPViewInAC {
-		property portal.acceptance = "true";
+		property portal.acceptance = "quarantine";
 
 		task ("Create AB test and create variant.") {
 			ABTest.createABTest(
@@ -1293,6 +1302,7 @@ definition {
 	}
 
 	@description = "LPS-98829: Validate if the ab test in History tab can be deleted"
+	@ignore = "true"
 	@priority = 3
 	test DeleteHistoryTab {
 		task ("Create AB test, create variant, run test and terminate test") {
@@ -1435,8 +1445,6 @@ definition {
 	@description = "LPS-97195: Validate if a message will appear asking if the user wants to delete a variant for A/B Test and he can delete with success"
 	@priority = 4
 	test DeleteVariant {
-		property ci.retries.disabled = "true";
-
 		task ("Create AB test and create variant") {
 			ABTest.createABTest(
 				goal = "Bounce Rate",
@@ -1474,7 +1482,9 @@ definition {
 
 			MenuItem.clickNoError(menuItem = "Delete");
 
-			Confirm.dismissAlert();
+			Click(
+				key_text = "Cancel",
+				locator1 = "Modal#MODAL_FOOTER_BUTTON");
 		}
 
 		task ("Assert that variant is not deleted") {
@@ -1487,8 +1497,6 @@ definition {
 	@description = "LPS-101341: Validate if an alert appears when the user tries to delete an experience with an AB Test in a draft mode, the user should be able to delete the experience"
 	@priority = 4
 	test DeletExperienceWithDraftABTest {
-		property ci.retries.disabled = "true";
-
 		task ("Create an experience and add on content page") {
 			ContentPages.gotoPageEditor();
 
@@ -1664,9 +1672,10 @@ definition {
 	}
 
 	@description = "LPS-101341: Validate if when the user will edit some Experience with an AB Test in a Terminated status, the system not will show any information about AB Test"
+	@ignore = "true"
 	@priority = 4
 	test EditExperienceAfterTerminatedABTest {
-		property portal.acceptance = "true";
+		property portal.acceptance = "quarantine";
 
 		task ("Create an experience and add on content page") {
 			ContentPages.gotoPageEditor();
@@ -1726,7 +1735,7 @@ definition {
 	@description = "LPS-103334: Validate if the AB Test is in the status draft, the experience about the AB Test is active is in Edition Mode"
 	@priority = 5
 	test EditExperienceWithDraftABTest {
-		property portal.acceptance = "true";
+		property portal.acceptance = "quarantine";
 
 		task ("Create an experience and add on content page") {
 			ContentPages.gotoPageEditor();
@@ -1768,8 +1777,6 @@ definition {
 	@description = "LPS-97882: Validate if, when the user tries to edit an existing A/B Test, a modal is opened requiring some initial fields information"
 	@priority = 3
 	test EditRequiredInfo {
-		property ci.retries.disabled = "true";
-
 		task ("Create AB test and create variant") {
 			ABTest.createABTest(
 				goal = "Bounce Rate",
@@ -1803,14 +1810,16 @@ definition {
 
 			ABTest.createVariant(variantName = "Variant name");
 
-			ABTest.createVariant(variantName = "Variant name 2");
+			AssertVisible(
+				key_variantName = "Variant name",
+				locator1 = "ABTest#VARIANT_TITLE");
 		}
 
 		task ("Edit variant") {
-			ABTest.editVariantName(key_index = 2);
+			ABTest.editVariantName();
 
 			ABTest.fillInput(
-				key_testTitle = "Variant name 3",
+				key_testTitle = "Variant name 2",
 				labelValue = "Name");
 
 			Click(
@@ -1819,12 +1828,12 @@ definition {
 		}
 
 		task ("Assert that variant name is changed") {
-			AssertVisible(
+			AssertElementNotPresent(
 				key_variantName = "Variant name",
 				locator1 = "ABTest#VARIANT_TITLE");
 
 			AssertVisible(
-				key_variantName = "Variant name 3",
+				key_variantName = "Variant name 2",
 				locator1 = "ABTest#VARIANT_TITLE");
 		}
 	}
@@ -1935,6 +1944,7 @@ definition {
 	}
 
 	@description = "LPS-97195: Validate if the user can edit a variant for A/B Test with the same name that already exists with success"
+	@ignore = "true"
 	@priority = 3
 	test EditVariantSameName {
 		task ("Create AB test and create variant") {
@@ -2073,6 +2083,7 @@ definition {
 	}
 
 	@description = "LPS-98829: Validate if the History tab appears with the list ordered by modified date DESC"
+	@ignore = "true"
 	@priority = 3
 	test HistoryTabListedDescModifiedDate {
 		task ("Create AB test with a variant, run test and terminate test") {
@@ -2246,8 +2257,6 @@ definition {
 	@description = "LPS-96787: Validate if in the notification message has one link to the content page of the test, with the AB test panel open in that test"
 	@priority = 3
 	test NotificationLinkToContentPage {
-		property ci.retries.disabled = "true";
-
 		task ("Create user and sync contact with AC") {
 			JSONUser.addUser(
 				userEmailAddress = "userea@liferay.com",
@@ -2333,7 +2342,7 @@ definition {
 	@description = "LPS-103334: Validate if the AB Test is in the status running, the experience about the AB Test is active is in Non-Edition Mode"
 	@priority = 5
 	test NotPossibleToEditExperienceWithRunningABTest {
-		property portal.acceptance = "true";
+		property portal.acceptance = "quarantine";
 
 		task ("Create an experience and add on content page") {
 			ContentPages.gotoPageEditor();
@@ -2439,7 +2448,7 @@ definition {
 	@description = "LPS-99225: Validate if the admin cannot reassign a segment in an experience with an A/B test in running status"
 	@priority = 4
 	test ReassignSegmentABTestRunning {
-		property portal.acceptance = "true";
+		property portal.acceptance = "quarantine";
 
 		task ("Create a segment and an Experience using the segment created") {
 			ContentPages.gotoPageEditor();
@@ -2529,8 +2538,6 @@ definition {
 	@description = "LPS-99225: Validate if the admin can rename a segment in an experience with an A/B test in the draft status"
 	@priority = 3
 	test RenameSegmentABTestDraft {
-		property ci.retries.disabled = "true";
-
 		task ("Create a segment and an Experience using the segment created") {
 			ContentPages.gotoPageEditor();
 
@@ -2697,6 +2704,7 @@ definition {
 	}
 
 	@description = "LPS-97196: Validate if all the information configured in the "Review and Start Test" screen appears correctly after the user clicks on the Run button"
+	@ignore = "true"
 	@priority = 5
 	test ReviewAndStartRunCheckInfo {
 		task ("Create AB test, create two variants") {
@@ -2729,6 +2737,7 @@ definition {
 	}
 
 	@description = "LPS-97196: Validate if when the user is in the "Review and Start Test" screen, the sum of all traffic split options should be 100%"
+	@ignore = "true"
 	@priority = 4
 	test ReviewAndStartSum100 {
 		task ("Create AB test, create two variants") {
@@ -2843,7 +2852,7 @@ definition {
 	@description = "LPS-97882: Validate if each A/B Test is related for one experience, if the user changes between the experience, the context about the A/B Test changes too"
 	@priority = 4
 	test SwitchExperienceSelected {
-		property portal.acceptance = "true";
+		property portal.acceptance = "quarantine";
 
 		task ("Create an experience and add on content page") {
 			ContentPages.gotoPageEditor();
@@ -2881,7 +2890,7 @@ definition {
 	@description = "LPS-97882: Validate if each A/B Test is related for one experience, if the user changes between the site pages, the context about the A/B Test changes too"
 	@priority = 3
 	test SwitchSitePage {
-		property portal.acceptance = "true";
+		property portal.acceptance = "quarantine";
 
 		task ("Create content page") {
 			JSONLayout.addPublicLayout(

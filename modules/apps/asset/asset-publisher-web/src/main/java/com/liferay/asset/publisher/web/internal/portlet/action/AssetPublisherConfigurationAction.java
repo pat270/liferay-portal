@@ -16,7 +16,6 @@ import com.liferay.asset.publisher.constants.AssetPublisherPortletKeys;
 import com.liferay.asset.publisher.constants.AssetPublisherWebKeys;
 import com.liferay.asset.publisher.util.AssetPublisherHelper;
 import com.liferay.asset.publisher.util.AssetQueryRule;
-import com.liferay.asset.publisher.web.internal.action.AssetEntryActionRegistry;
 import com.liferay.asset.publisher.web.internal.configuration.AssetPublisherPortletInstanceConfiguration;
 import com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfigurationUtil;
 import com.liferay.asset.publisher.web.internal.configuration.AssetPublisherWebConfiguration;
@@ -32,6 +31,7 @@ import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.item.selector.ItemSelector;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.Layout;
@@ -39,7 +39,6 @@ import com.liferay.portal.kernel.model.LayoutRevision;
 import com.liferay.portal.kernel.model.LayoutSetBranch;
 import com.liferay.portal.kernel.model.LayoutTypePortletConstants;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.portlet.ConfigurationAction;
 import com.liferay.portal.kernel.portlet.DefaultConfigurationAction;
 import com.liferay.portal.kernel.portlet.PortletIdCodec;
@@ -50,7 +49,6 @@ import com.liferay.portal.kernel.service.LayoutRevisionLocalService;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.settings.LocalizedValuesMap;
-import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Constants;
@@ -139,8 +137,7 @@ public class AssetPublisherConfigurationAction
 
 		AssetPublisherDisplayContext assetPublisherDisplayContext =
 			new AssetPublisherDisplayContext(
-				assetEntryActionRegistry, assetHelper,
-				assetListAssetEntryProvider,
+				assetHelper, assetListAssetEntryProvider,
 				assetListEntrySegmentsEntryRelLocalService,
 				assetPublisherCustomizer, assetPublisherHelper,
 				assetPublisherWebConfiguration, assetPublisherWebHelper,
@@ -171,7 +168,7 @@ public class AssetPublisherConfigurationAction
 
 		AssetPublisherPortletInstanceConfiguration
 			assetPublisherPortletInstanceConfiguration =
-				ConfigurationProviderUtil.getSystemConfiguration(
+				configurationProvider.getSystemConfiguration(
 					AssetPublisherPortletInstanceConfiguration.class);
 
 		String languageId = LocaleUtil.toLanguageId(
@@ -325,9 +322,6 @@ public class AssetPublisherConfigurationAction
 	}
 
 	@Reference
-	protected AssetEntryActionRegistry assetEntryActionRegistry;
-
-	@Reference
 	protected AssetHelper assetHelper;
 
 	@Reference
@@ -351,6 +345,9 @@ public class AssetPublisherConfigurationAction
 
 	@Reference
 	protected AssetTagLocalService assetTagLocalService;
+
+	@Reference
+	protected ConfigurationProvider configurationProvider;
 
 	@Reference
 	protected GroupLocalService groupLocalService;
@@ -474,14 +471,10 @@ public class AssetPublisherConfigurationAction
 				HttpServletRequest httpServletRequest)
 		throws ConfigurationException {
 
-		ThemeDisplay themeDisplay =
+		return configurationProvider.getPortletInstanceConfiguration(
+			AssetPublisherPortletInstanceConfiguration.class,
 			(ThemeDisplay)httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
-		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
-
-		return portletDisplay.getPortletInstanceConfiguration(
-			AssetPublisherPortletInstanceConfiguration.class);
+				WebKeys.THEME_DISPLAY));
 	}
 
 	private String[] _getClassTypeIds(

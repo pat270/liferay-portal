@@ -8,6 +8,8 @@
 <%@ include file="/init.jsp" %>
 
 <%
+portletDisplay.setBeta(true);
+
 BatchPlannerPlanDisplayContext batchPlannerPlanDisplayContext = (BatchPlannerPlanDisplayContext)request.getAttribute(WebKeys.PORTLET_DISPLAY_CONTEXT);
 
 SearchContainer<BatchPlannerPlanDisplay> batchPlannerPlanDisplaySearchContainer = batchPlannerPlanDisplayContext.getSearchContainer();
@@ -57,7 +59,7 @@ SearchContainer<BatchPlannerPlanDisplay> batchPlannerPlanDisplaySearchContainer 
 
 			<liferay-ui:search-container-column-text
 				name="type"
-				value="<%= batchPlannerPlanDisplayContext.getSimpleInternalClassName(batchPlannerPlanDisplay.getInternalClassName()) %>"
+				value="<%= batchPlannerPlanDisplayContext.getSimpleClassName(batchPlannerPlanDisplay.getInternalClassNameKey()) %>"
 			/>
 
 			<liferay-ui:search-container-column-text

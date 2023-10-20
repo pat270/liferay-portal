@@ -112,7 +112,7 @@ public class CPInstanceUnitOfMeasureModelImpl
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table CPInstanceUOM (mvccVersion LONG default 0 not null,ctCollectionId LONG default 0 not null,uuid_ VARCHAR(75) null,CPInstanceUOMId LONG not null,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,CPInstanceId LONG,active_ BOOLEAN,incrementalOrderQuantity DECIMAL(30, 16) null,key_ VARCHAR(75) null,name STRING null,precision_ INTEGER,primary_ BOOLEAN,priority DOUBLE,rate DECIMAL(30, 16) null,sku VARCHAR(75) null,primary key (CPInstanceUOMId, ctCollectionId))";
+		"create table CPInstanceUOM (mvccVersion LONG default 0 not null,ctCollectionId LONG default 0 not null,uuid_ VARCHAR(75) null,CPInstanceUOMId LONG not null,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,CPInstanceId LONG,active_ BOOLEAN,incrementalOrderQuantity BIGDECIMAL null,key_ VARCHAR(75) null,name STRING null,precision_ INTEGER,primary_ BOOLEAN,priority DOUBLE,rate BIGDECIMAL null,sku VARCHAR(75) null,primary key (CPInstanceUOMId, ctCollectionId))";
 
 	public static final String TABLE_SQL_DROP = "drop table CPInstanceUOM";
 
@@ -138,38 +138,44 @@ public class CPInstanceUnitOfMeasureModelImpl
 	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #getColumnBitmask(String)}
 	 */
 	@Deprecated
-	public static final long COMPANYID_COLUMN_BITMASK = 2L;
+	public static final long ACTIVE_COLUMN_BITMASK = 2L;
 
 	/**
 	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #getColumnBitmask(String)}
 	 */
 	@Deprecated
-	public static final long KEY_COLUMN_BITMASK = 4L;
+	public static final long COMPANYID_COLUMN_BITMASK = 4L;
 
 	/**
 	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #getColumnBitmask(String)}
 	 */
 	@Deprecated
-	public static final long PRIMARY_COLUMN_BITMASK = 8L;
+	public static final long KEY_COLUMN_BITMASK = 8L;
 
 	/**
 	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #getColumnBitmask(String)}
 	 */
 	@Deprecated
-	public static final long SKU_COLUMN_BITMASK = 16L;
+	public static final long PRIMARY_COLUMN_BITMASK = 16L;
 
 	/**
 	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #getColumnBitmask(String)}
 	 */
 	@Deprecated
-	public static final long UUID_COLUMN_BITMASK = 32L;
+	public static final long SKU_COLUMN_BITMASK = 32L;
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #getColumnBitmask(String)}
+	 */
+	@Deprecated
+	public static final long UUID_COLUMN_BITMASK = 64L;
 
 	/**
 	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
 	 *		#getColumnBitmask(String)}
 	 */
 	@Deprecated
-	public static final long CPINSTANCEUNITOFMEASUREID_COLUMN_BITMASK = 64L;
+	public static final long CPINSTANCEUNITOFMEASUREID_COLUMN_BITMASK = 128L;
 
 	/**
 	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
@@ -655,6 +661,16 @@ public class CPInstanceUnitOfMeasureModelImpl
 		}
 
 		_active = active;
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getColumnOriginalValue(String)}
+	 */
+	@Deprecated
+	public boolean getOriginalActive() {
+		return GetterUtil.getBoolean(
+			this.<Boolean>getColumnOriginalValue("active_"));
 	}
 
 	@JSON

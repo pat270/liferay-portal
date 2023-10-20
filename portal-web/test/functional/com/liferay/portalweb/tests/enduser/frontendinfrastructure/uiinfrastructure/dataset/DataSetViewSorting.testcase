@@ -1,7 +1,7 @@
 @component-name = "portal-frontend-infrastructure"
 definition {
 
-	property custom.properties = "feature.flag.LPS-164563=true${line.separator}feature.flag.LPS-188645=true${line.separator}feature.flag.LPS-167253=true";
+	property custom.properties = "feature.flag.LPS-164563=true${line.separator}feature.flag.LPS-167253=true${line.separator}feature.flag.LPS-188645=true";
 	property portal.acceptance = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
@@ -16,7 +16,7 @@ definition {
 		task ("When Create a DataSet ") {
 			DataSetAdmin.goToDataSetAdminPage();
 
-			JSONDataSet._createDataSetEntry(
+			DataSetAdmin.createDataSetEntryViaAPI(
 				dataSetName = "Test Data Set",
 				restApplication = "/data-set-manager/sorts",
 				restEndpoint = "/",
@@ -24,10 +24,10 @@ definition {
 		}
 
 		task ("And adding a data set view") {
-			JSONDataSet._createFDSViewViaAPI(
+			DataSetAdmin.createFDSViewViaAPI(
 				dataSetName = "Test Data Set",
 				dataSetViewDescription = "View Description",
-				dataSetViewName = "View Test");
+				key_dataSetViewNameList = "View Test");
 
 			DataSetAdmin.goToSpecificViewPage(
 				dataSetName = "Test Data Set",

@@ -46,8 +46,9 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.util.PropsValues;
+import com.liferay.portlet.usersadmin.util.UsersAdminUtil;
 import com.liferay.user.groups.admin.item.selector.UserGroupItemSelectorCriterion;
-import com.liferay.users.admin.kernel.util.UsersAdminUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -157,13 +158,18 @@ public class UserDisplayContext {
 
 	public List<Organization> getOrganizations() throws PortalException {
 		if (_selUser != null) {
+			List<Organization> organizations = _selUser.getOrganizations();
+
+			if (!PropsValues.ORGANIZATIONS_MEMBERSHIP_STRICT) {
+				organizations.addAll(_getParentOrganizations(organizations));
+			}
+
 			if (!_initDisplayContext.isFilterManageableOrganizations()) {
-				return _selUser.getOrganizations();
+				return organizations;
 			}
 
 			return UsersAdminUtil.filterOrganizations(
-				_themeDisplay.getPermissionChecker(),
-				_selUser.getOrganizations());
+				_themeDisplay.getPermissionChecker(), organizations);
 		}
 
 		String organizationIds = ParamUtil.getString(
@@ -331,6 +337,26 @@ public class UserDisplayContext {
 
 		return GroupLocalServiceUtil.getOrganizationsRelatedGroups(
 			organizations);
+	}
+
+	private List<Organization> _getParentOrganizations(
+			List<Organization> organizations)
+		throws PortalException {
+
+		List<Organization> parentOrganizations = new ArrayList<>();
+
+		for (Organization organization : organizations) {
+			Organization parentOrganization =
+				organization.getParentOrganization();
+
+			if ((parentOrganization != null) &&
+				!organizations.contains(parentOrganization)) {
+
+				parentOrganizations.add(parentOrganization);
+			}
+		}
+
+		return parentOrganizations;
 	}
 
 	private long[] _getSelectedOrganizationIds() throws PortalException {

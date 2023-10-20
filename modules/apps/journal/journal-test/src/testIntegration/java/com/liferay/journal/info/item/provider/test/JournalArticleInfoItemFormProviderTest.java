@@ -360,7 +360,7 @@ public class JournalArticleInfoItemFormProviderTest {
 			"alt text",
 			altInfoLocalizedValue.getValue(LocaleUtil.getDefault()));
 
-		Assert.assertNotNull(webImage.getUrl());
+		Assert.assertNotNull(webImage.getURL());
 
 		Assert.assertNotNull(infoItemFieldValues.getInfoFieldValue("integer"));
 

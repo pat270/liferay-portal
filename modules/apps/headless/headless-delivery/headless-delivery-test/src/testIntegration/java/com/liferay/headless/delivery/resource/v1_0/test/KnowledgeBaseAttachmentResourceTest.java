@@ -305,7 +305,7 @@ public class KnowledgeBaseAttachmentResourceTest
 			PortalUtil.getClassNameId(KBFolder.class.getName()), 0,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(), null,
-			null, null, null, null, serviceContext);
+			null, RandomTestUtil.nextDate(), null, null, null, serviceContext);
 	}
 
 	private KnowledgeBaseAttachment _addKnowledgeBaseAttachment()

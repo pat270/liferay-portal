@@ -5,6 +5,8 @@
 
 package com.liferay.object.validation.rule;
 
+import com.liferay.portal.kernel.exception.PortalException;
+
 import java.util.List;
 
 /**
@@ -13,8 +15,10 @@ import java.util.List;
 public interface ObjectValidationRuleEngineRegistry {
 
 	public ObjectValidationRuleEngine getObjectValidationRuleEngine(
-		String name);
+			long companyId, String key)
+		throws PortalException;
 
-	public List<ObjectValidationRuleEngine> getObjectValidationRuleEngines();
+	public List<ObjectValidationRuleEngine> getObjectValidationRuleEngines(
+		long companyId, String objectDefinitionName);
 
 }

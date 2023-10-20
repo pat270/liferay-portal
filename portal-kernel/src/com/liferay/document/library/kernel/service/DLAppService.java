@@ -33,6 +33,7 @@ import java.io.InputStream;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -454,7 +455,8 @@ public interface DLAppService extends BaseService {
 
 	public FileEntry copyFileEntry(
 			long fileEntryId, long destinationFolderId,
-			long destinationRepositoryId, ServiceContext serviceContext)
+			long destinationRepositoryId, long fileEntryTypeId, long[] groupIds,
+			ServiceContext serviceContext)
 		throws PortalException;
 
 	public FileShortcut copyFileShortcut(
@@ -465,6 +467,7 @@ public interface DLAppService extends BaseService {
 	public Folder copyFolder(
 			long sourceRepositoryId, long sourceFolderId,
 			long destinationRepositoryId, long destinationParentFolderId,
+			Map<Long, Long> fileEntryTypeIds, long[] groupIds,
 			ServiceContext serviceContext)
 		throws PortalException;
 
@@ -1561,6 +1564,7 @@ public interface DLAppService extends BaseService {
 	 * @see #addTempFileEntry(long, long, String, String, File, String)
 	 * @see TempFileEntryUtil
 	 */
+	@CTAware(onProduction = true)
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public String[] getTempFileNames(
 			long groupId, long folderId, String folderName)

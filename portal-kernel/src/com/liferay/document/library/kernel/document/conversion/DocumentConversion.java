@@ -19,7 +19,7 @@ public interface DocumentConversion {
 			String targetExtension)
 		throws IOException;
 
-	public void disconnect();
+	public void generatePreviews();
 
 	public String[] getConversions(String extension);
 

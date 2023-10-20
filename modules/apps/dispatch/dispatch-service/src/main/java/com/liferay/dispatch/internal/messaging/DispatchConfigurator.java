@@ -19,7 +19,6 @@ import com.liferay.portal.kernel.messaging.DestinationFactory;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 
 import java.util.Dictionary;
-import java.util.List;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -78,25 +77,13 @@ public class DispatchConfigurator {
 		_serviceRegistration = bundleContext.registerService(
 			Destination.class, destination, properties);
 
-		_scheduleMemorySchedulerJobs();
-	}
-
-	@Deactivate
-	protected void deactivate() {
-		_unscheduleMemorySchedulerJobs();
-
-		_serviceRegistration.unregister();
-	}
-
-	private void _scheduleMemorySchedulerJobs() {
 		DispatchTaskClusterMode dispatchTaskClusterMode =
 			DispatchTaskClusterMode.ALL_NODES;
 
-		List<DispatchTrigger> dispatchTriggers =
-			_dispatchTriggerLocalService.getDispatchTriggers(
-				true, dispatchTaskClusterMode);
+		for (DispatchTrigger dispatchTrigger :
+				_dispatchTriggerLocalService.getDispatchTriggers(
+					true, dispatchTaskClusterMode)) {
 
-		for (DispatchTrigger dispatchTrigger : dispatchTriggers) {
 			try {
 				_dispatchTriggerHelper.addSchedulerJob(
 					dispatchTrigger.getDispatchTriggerId(),
@@ -114,26 +101,21 @@ public class DispatchConfigurator {
 		}
 	}
 
-	private void _unscheduleMemorySchedulerJobs() {
+	@Deactivate
+	protected void deactivate() {
 		DispatchTaskClusterMode dispatchTaskClusterMode =
 			DispatchTaskClusterMode.ALL_NODES;
 
-		List<DispatchTrigger> dispatchTriggers =
-			_dispatchTriggerLocalService.getDispatchTriggers(
-				true, dispatchTaskClusterMode);
+		for (DispatchTrigger dispatchTrigger :
+				_dispatchTriggerLocalService.getDispatchTriggers(
+					true, dispatchTaskClusterMode)) {
 
-		for (DispatchTrigger dispatchTrigger : dispatchTriggers) {
-			try {
-				_dispatchTriggerHelper.unscheduleSchedulerJob(
-					dispatchTrigger.getDispatchTriggerId(),
-					dispatchTaskClusterMode.getStorageType());
-			}
-			catch (DispatchTriggerSchedulerException
-						dispatchTriggerSchedulerException) {
-
-				_log.error(dispatchTriggerSchedulerException);
-			}
+			_dispatchTriggerHelper.deleteSchedulerJob(
+				dispatchTrigger.getDispatchTriggerId(),
+				dispatchTaskClusterMode.getStorageType());
 		}
+
+		_serviceRegistration.unregister();
 	}
 
 	private static final int _MAXIMUM_QUEUE_SIZE = 100;

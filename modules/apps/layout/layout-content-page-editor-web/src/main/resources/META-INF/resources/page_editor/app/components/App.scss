@@ -5,16 +5,13 @@
 @import 'AllowedFragments';
 @import 'DisabledArea';
 @import 'DisplayPagePreviewItemSelector';
-@import 'DragPreview';
 @import 'DropZone';
-@import 'EditModeSelector';
 @import 'FormValidationModal';
 @import 'HTMLEditorModal';
 @import 'Layout';
 @import 'LayoutBreadcrumbs';
 @import 'LayoutViewport';
 @import 'NetworkstatusBar';
-@import 'ReorderSetModal';
 @import 'SaveFragmentCompositionModal';
 @import 'ShortcutModal';
 @import 'Sidebar';
@@ -59,3 +56,4 @@
 @import '../../plugins/fragments_and_widgets/components/Plugin';
 @import '../../plugins/page_content/components/Plugin';
 @import '../../plugins/page_design_options/components/Plugin';
+@import '../../plugins/page_rules/components/Plugin';

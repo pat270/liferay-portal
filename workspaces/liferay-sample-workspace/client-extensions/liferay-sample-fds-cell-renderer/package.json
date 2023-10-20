@@ -1,6 +1,6 @@
 {
 	"dependencies": {
-		"@liferay/js-api": "^0.2.0-pre.0",
+		"@liferay/js-api": "0.4.0-pre.0",
 		"serve": "^14.2.0"
 	},
 	"description": "Liferay Sample Frontend Data Set Cell Renderer",
@@ -8,7 +8,7 @@
 		"typescript": "^5.0.4"
 	},
 	"main": "./src/index.tsx",
-	"name": "liferay-sample-fds-cell-renderer",
+	"name": "@liferay/liferay-sample-fds-cell-renderer",
 	"scripts": {
 		"build": "tsc",
 		"start": "PORT=3000 serve --cors",

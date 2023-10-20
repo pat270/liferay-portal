@@ -97,7 +97,7 @@ public class BaseNotificationTypeTest {
 				null, TestPropsValues.getUserId(),
 				Collections.singletonMap(
 					LocaleUtil.US, RandomTestUtil.randomString()),
-				Collections.singletonList(listTypeEntry));
+				false, Collections.singletonList(listTypeEntry));
 
 		childObjectEntryValues = LinkedHashMapBuilder.<String, Object>put(
 			"booleanObjectField", RandomTestUtil.randomBoolean()
@@ -109,6 +109,10 @@ public class BaseNotificationTypeTest {
 
 				return simpleDateFormat.format(RandomTestUtil.nextDate());
 			}
+		).put(
+			"emailTextObjectField",
+			StringUtil.toLowerCase(RandomTestUtil.randomString()) +
+				"@liferay.com"
 		).put(
 			"integerObjectField", RandomTestUtil.nextInt()
 		).put(
@@ -155,7 +159,7 @@ public class BaseNotificationTypeTest {
 	public void setUp() throws Exception {
 		childObjectDefinition =
 			_objectDefinitionLocalService.addCustomObjectDefinition(
-				user1.getUserId(), false, false,
+				user1.getUserId(), 0, false, false, false,
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
 				"A" + RandomTestUtil.randomString(), null, null,
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
@@ -197,6 +201,13 @@ public class BaseNotificationTypeTest {
 						LocalizedMapUtil.getLocalizedMap(
 							RandomTestUtil.randomString())
 					).name(
+						"emailTextObjectField"
+					).build(),
+					new TextObjectFieldBuilder(
+					).labelMap(
+						LocalizedMapUtil.getLocalizedMap(
+							RandomTestUtil.randomString())
+					).name(
 						"textObjectField"
 					).build()));
 
@@ -207,7 +218,7 @@ public class BaseNotificationTypeTest {
 
 		parentObjectDefinition =
 			_objectDefinitionLocalService.addCustomObjectDefinition(
-				user1.getUserId(), false, false,
+				user1.getUserId(), 0, false, false, false,
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
 				"A" + RandomTestUtil.randomString(), null, null,
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
@@ -236,7 +247,7 @@ public class BaseNotificationTypeTest {
 				childObjectDefinition.getObjectDefinitionId(), 0,
 				ObjectRelationshipConstants.DELETION_TYPE_PREVENT,
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
-				StringUtil.randomId(),
+				StringUtil.randomId(), false,
 				ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
 
 		_childAuthorTermValues = HashMapBuilder.<String, Object>put(
@@ -377,6 +388,7 @@ public class BaseNotificationTypeTest {
 			Arrays.asList(
 				getTermName("booleanObjectField"),
 				getTermName("dateObjectField"),
+				getTermName("emailTextObjectField"),
 				getTermName("integerObjectField"),
 				getTermName("picklistObjectField"),
 				getTermName("textObjectField"),

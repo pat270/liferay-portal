@@ -49,10 +49,26 @@ window.addEventListener('scroll', handleWindowResizeOrScroll, {
 	passive: true,
 });
 
-const MAX_ITEMS = 10;
-
 let lastSearchAbortController = new AbortController();
-let lastSearchQuery = null;
+let lastSearchQuery = input.value ? input.value : null;
+
+valueInputElement.value = input.value ? input.value : '';
+
+if (input.value) {
+	lastSearchQuery = input.value;
+	valueInputElement.value = input.value;
+
+	const selectedOption = optionListElement.querySelector(
+		'.active.dropdown-item'
+	);
+
+	if (selectedOption) {
+		optionListElement.setAttribute(
+			'aria-activedescendant',
+			selectedOption.id
+		);
+	}
+}
 
 const KEYS = {
 	ArrowDown: 'ArrowDown',
@@ -409,11 +425,9 @@ function repositionDropdownElement() {
 function renderOptionList(options) {
 	optionListElement.innerHTML = '';
 
-	options
-		.slice(0, MAX_ITEMS)
-		.forEach((option) =>
-			optionListElement.appendChild(createOptionElement(option))
-		);
+	options.forEach((option) =>
+		optionListElement.appendChild(createOptionElement(option))
+	);
 }
 
 function debounce(fn, delay) {

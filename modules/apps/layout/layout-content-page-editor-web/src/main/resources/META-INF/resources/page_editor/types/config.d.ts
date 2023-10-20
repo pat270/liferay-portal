@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {LayoutTypes} from './LayoutTypes';
+import type {LayoutType} from '../app/config/constants/layoutTypes';
+import type {SidebarPanel} from './SidebarPanel';
 
 export interface Config {
 	actionableInfoItemSelectorURL: string;
@@ -50,6 +51,7 @@ export interface Config {
 	commonStyles: Array<{
 		label: string;
 		styles: Array<{
+			cssTemplate: string;
 			dataType: string;
 			defaultValue: string | object;
 			dependencies: Array<{
@@ -67,14 +69,15 @@ export interface Config {
 		}>;
 	}>;
 
-	commonStylesFields: {
-		[key: string]: {
+	commonStylesFields: Record<
+		string,
+		{
 			cssTemplate: string;
-			defaultValue: string;
-		};
-	};
-	contentPagePersonalizationLearnURL: string;
+			defaultValue: string | object;
+		}
+	>;
 
+	contentPagePersonalizationLearnURL: string;
 	createLayoutPageTemplateEntryURL: string;
 
 	defaultEditorConfigurations: Record<
@@ -119,7 +122,9 @@ export interface Config {
 	getCollectionItemCountURL: string;
 	getCollectionMappingFieldsURL: string;
 	getCollectionSupportedFiltersURL: string;
+	getCollectionWarningMessageURL: string;
 	getExperienceDataURL: string;
+	getFormConfigURL: string;
 	getIframeContentCssURL: string;
 	getIframeContentURL: string;
 	getInfoItemActionErrorMessageURL: string;
@@ -135,7 +140,7 @@ export interface Config {
 	isPrivateLayoutsEnabled: boolean;
 	layoutConversionWarningMessages: string[] | null;
 	layoutItemSelectorURL: String;
-	layoutType: LayoutTypes[keyof LayoutTypes];
+	layoutType: LayoutType;
 	lookAndFeelURL: string;
 	mappingFieldsURL: string;
 	markItemForDeletionURL: string;
@@ -174,16 +179,7 @@ export interface Config {
 
 	selectedSegmentsEntryId: string;
 
-	sidebarPanels: {
-		[key: string]: {
-			icon: string;
-			isLink: boolean;
-			label: string;
-			pluginEntryPoint?: string;
-			sidebarPanelId: string;
-			url?: string | null;
-		};
-	};
+	sidebarPanels: SidebarPanel[] | Record<string, SidebarPanel>;
 
 	singleSegmentsExperienceMode: boolean;
 	siteNavigationMenuItemSelectorURL: string;

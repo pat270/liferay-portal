@@ -143,11 +143,15 @@ public class ObjectRelationshipPersistenceTest {
 
 		newObjectRelationship.setDBTableName(RandomTestUtil.randomString());
 
+		newObjectRelationship.setEdge(RandomTestUtil.randomBoolean());
+
 		newObjectRelationship.setLabel(RandomTestUtil.randomString());
 
 		newObjectRelationship.setName(RandomTestUtil.randomString());
 
 		newObjectRelationship.setReverse(RandomTestUtil.randomBoolean());
+
+		newObjectRelationship.setSystem(RandomTestUtil.randomBoolean());
 
 		newObjectRelationship.setType(RandomTestUtil.randomString());
 
@@ -201,6 +205,9 @@ public class ObjectRelationshipPersistenceTest {
 			existingObjectRelationship.getDBTableName(),
 			newObjectRelationship.getDBTableName());
 		Assert.assertEquals(
+			existingObjectRelationship.isEdge(),
+			newObjectRelationship.isEdge());
+		Assert.assertEquals(
 			existingObjectRelationship.getLabel(),
 			newObjectRelationship.getLabel());
 		Assert.assertEquals(
@@ -209,6 +216,9 @@ public class ObjectRelationshipPersistenceTest {
 		Assert.assertEquals(
 			existingObjectRelationship.isReverse(),
 			newObjectRelationship.isReverse());
+		Assert.assertEquals(
+			existingObjectRelationship.isSystem(),
+			newObjectRelationship.isSystem());
 		Assert.assertEquals(
 			existingObjectRelationship.getType(),
 			newObjectRelationship.getType());
@@ -251,6 +261,21 @@ public class ObjectRelationshipPersistenceTest {
 		_persistence.countByObjectFieldId2(RandomTestUtil.nextLong());
 
 		_persistence.countByObjectFieldId2(0L);
+	}
+
+	@Test
+	public void testCountByParameterObjectFieldId() throws Exception {
+		_persistence.countByParameterObjectFieldId(RandomTestUtil.nextLong());
+
+		_persistence.countByParameterObjectFieldId(0L);
+	}
+
+	@Test
+	public void testCountByODI1_E() throws Exception {
+		_persistence.countByODI1_E(
+			RandomTestUtil.nextLong(), RandomTestUtil.randomBoolean());
+
+		_persistence.countByODI1_E(0L, RandomTestUtil.randomBoolean());
 	}
 
 	@Test
@@ -378,8 +403,8 @@ public class ObjectRelationshipPersistenceTest {
 			"userName", true, "createDate", true, "modifiedDate", true,
 			"objectDefinitionId1", true, "objectDefinitionId2", true,
 			"objectFieldId2", true, "parameterObjectFieldId", true,
-			"deletionType", true, "dbTableName", true, "label", true, "name",
-			true, "reverse", true, "type", true);
+			"deletionType", true, "dbTableName", true, "edge", true, "label",
+			true, "name", true, "reverse", true, "system", true, "type", true);
 	}
 
 	@Test
@@ -722,11 +747,15 @@ public class ObjectRelationshipPersistenceTest {
 
 		objectRelationship.setDBTableName(RandomTestUtil.randomString());
 
+		objectRelationship.setEdge(RandomTestUtil.randomBoolean());
+
 		objectRelationship.setLabel(RandomTestUtil.randomString());
 
 		objectRelationship.setName(RandomTestUtil.randomString());
 
 		objectRelationship.setReverse(RandomTestUtil.randomBoolean());
+
+		objectRelationship.setSystem(RandomTestUtil.randomBoolean());
 
 		objectRelationship.setType(RandomTestUtil.randomString());
 

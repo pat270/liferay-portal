@@ -16,6 +16,7 @@ import com.liferay.changeset.service.ChangesetCollectionLocalService;
 import com.liferay.changeset.service.ChangesetEntryLocalService;
 import com.liferay.document.library.kernel.exception.NoSuchFileException;
 import com.liferay.document.library.kernel.model.DLFileEntry;
+import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
@@ -49,6 +50,7 @@ import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.service.JournalArticleResourceLocalService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Property;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
@@ -63,7 +65,6 @@ import com.liferay.portal.kernel.model.Image;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserNotificationEvent;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.GroupLocalService;
@@ -424,7 +425,23 @@ public class JournalArticleStagedModelDataHandler
 		}
 
 		if (article.isSmallImage()) {
-			if (Validator.isNotNull(article.getSmallImageURL())) {
+			if (article.getSmallImageSource() ==
+					JournalArticleConstants.
+						SMALL_IMAGE_SOURCE_DOCUMENTS_AND_MEDIA) {
+
+				FileEntry fileEntry = _dlAppLocalService.getFileEntry(
+					article.getSmallImageId());
+
+				if (fileEntry != null) {
+					StagedModelDataHandlerUtil.exportReferenceStagedModel(
+						portletDataContext, article, fileEntry,
+						PortletDataContext.REFERENCE_TYPE_DEPENDENCY);
+				}
+			}
+			else if ((article.getSmallImageSource() ==
+						JournalArticleConstants.SMALL_IMAGE_SOURCE_URL) &&
+					 Validator.isNotNull(article.getSmallImageURL())) {
+
 				String smallImageURL =
 					_dlReferencesExportImportContentProcessor.
 						replaceExportContentReferences(
@@ -433,7 +450,10 @@ public class JournalArticleStagedModelDataHandler
 
 				article.setSmallImageURL(smallImageURL);
 			}
-			else {
+			else if (article.getSmallImageSource() ==
+						JournalArticleConstants.
+							SMALL_IMAGE_SOURCE_USER_COMPUTER) {
+
 				Image smallImage = _imageLocalService.fetchImage(
 					article.getSmallImageId());
 
@@ -756,10 +776,22 @@ public class JournalArticleStagedModelDataHandler
 				portletDataContext.getImportDataStagedModelElement(article);
 
 			if (article.isSmallImage()) {
-				String smallImagePath = articleElement.attributeValue(
-					"small-image-path");
+				if (article.getSmallImageSource() ==
+						JournalArticleConstants.
+							SMALL_IMAGE_SOURCE_DOCUMENTS_AND_MEDIA) {
 
-				if (Validator.isNotNull(article.getSmallImageURL())) {
+					Map<Long, Long> fileEntryIds =
+						(Map<Long, Long>)
+							portletDataContext.getNewPrimaryKeysMap(
+								FileEntry.class);
+
+					article.setSmallImageId(
+						fileEntryIds.get(article.getSmallImageId()));
+				}
+				else if ((article.getSmallImageSource() ==
+							JournalArticleConstants.SMALL_IMAGE_SOURCE_URL) &&
+						 Validator.isNotNull(article.getSmallImageURL())) {
+
 					String smallImageURL =
 						_dlReferencesExportImportContentProcessor.
 							replaceImportContentReferences(
@@ -768,7 +800,13 @@ public class JournalArticleStagedModelDataHandler
 
 					article.setSmallImageURL(smallImageURL);
 				}
-				else if (Validator.isNotNull(smallImagePath)) {
+				else if (article.getSmallImageSource() ==
+							JournalArticleConstants.
+								SMALL_IMAGE_SOURCE_USER_COMPUTER) {
+
+					String smallImagePath = articleElement.attributeValue(
+						"small-image-path");
+
 					byte[] bytes = portletDataContext.getZipEntryAsByteArray(
 						smallImagePath);
 
@@ -919,6 +957,8 @@ public class JournalArticleStagedModelDataHandler
 						reviewDateMonth, reviewDateDay, reviewDateYear,
 						reviewDateHour, reviewDateMinute, neverReview,
 						article.isIndexable(), article.isSmallImage(),
+						article.getSmallImageId(),
+						article.getSmallImageSource(),
 						article.getSmallImageURL(), smallFile, null, articleURL,
 						serviceContext);
 				}
@@ -936,6 +976,8 @@ public class JournalArticleStagedModelDataHandler
 						reviewDateMonth, reviewDateDay, reviewDateYear,
 						reviewDateHour, reviewDateMinute, neverReview,
 						article.isIndexable(), article.isSmallImage(),
+						article.getSmallImageId(),
+						article.getSmallImageSource(),
 						article.getSmallImageURL(), smallFile, null, articleURL,
 						serviceContext);
 
@@ -977,7 +1019,8 @@ public class JournalArticleStagedModelDataHandler
 						expirationDateHour, expirationDateMinute, neverExpire,
 						reviewDateMonth, reviewDateDay, reviewDateYear,
 						reviewDateHour, reviewDateMinute, neverReview,
-						article.isIndexable(), article.isSmallImage(),
+						article.isIndexable(), article.isSmallImage(), 0,
+						article.getSmallImageSource(),
 						article.getSmallImageURL(), smallFile, null, articleURL,
 						serviceContext);
 				}
@@ -994,6 +1037,8 @@ public class JournalArticleStagedModelDataHandler
 						reviewDateMonth, reviewDateDay, reviewDateYear,
 						reviewDateHour, reviewDateMinute, neverReview,
 						article.isIndexable(), article.isSmallImage(),
+						article.getSmallImageId(),
+						article.getSmallImageSource(),
 						article.getSmallImageURL(), smallFile, null, articleURL,
 						serviceContext);
 				}
@@ -1043,6 +1088,7 @@ public class JournalArticleStagedModelDataHandler
 					reviewDateMonth, reviewDateDay, reviewDateYear,
 					reviewDateHour, reviewDateMinute, neverReview,
 					article.isIndexable(), article.isSmallImage(),
+					article.getSmallImageId(), article.getSmallImageSource(),
 					article.getSmallImageURL(), smallFile, null, articleURL,
 					serviceContext);
 			}
@@ -1724,6 +1770,9 @@ public class JournalArticleStagedModelDataHandler
 
 	@Reference
 	private DDMTemplateLocalService _ddmTemplateLocalService;
+
+	@Reference
+	private DLAppLocalService _dlAppLocalService;
 
 	@Reference(target = "(content.processor.type=DLReferences)")
 	private ExportImportContentProcessor<String>

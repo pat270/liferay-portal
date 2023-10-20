@@ -7,7 +7,8 @@ package com.liferay.layout.page.template.admin.web.internal.portlet.action;
 
 import com.liferay.asset.kernel.NoSuchClassTypeException;
 import com.liferay.layout.page.template.admin.constants.LayoutPageTemplateAdminPortletKeys;
-import com.liferay.layout.page.template.admin.web.internal.handler.LayoutPageTemplateEntryExceptionRequestHandler;
+import com.liferay.layout.page.template.admin.web.internal.handler.LayoutPageTemplateEntryExceptionRequestHandlerUtil;
+import com.liferay.layout.page.template.constants.LayoutPageTemplateConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryService;
 import com.liferay.portal.kernel.exception.NoSuchClassNameException;
@@ -87,11 +88,8 @@ public class AddDisplayPageMVCActionCommand extends BaseMVCActionCommand {
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		String layoutFullURL = _portal.getLayoutFullURL(
-			draftLayout, themeDisplay);
-
-		layoutFullURL = HttpComponentsUtil.setParameter(
-			layoutFullURL, "p_l_back_url",
+		return HttpComponentsUtil.addParameters(
+			_portal.getLayoutFullURL(draftLayout, themeDisplay), "p_l_back_url",
 			PortletURLBuilder.create(
 				PortletURLFactoryUtil.create(
 					actionRequest,
@@ -99,10 +97,16 @@ public class AddDisplayPageMVCActionCommand extends BaseMVCActionCommand {
 					PortletRequest.RENDER_PHASE)
 			).setTabs1(
 				"display-page-templates"
-			).buildString());
-
-		return HttpComponentsUtil.setParameter(
-			layoutFullURL, "p_l_mode", Constants.EDIT);
+			).setParameter(
+				"layoutPageTemplateCollectionId",
+				ParamUtil.getLong(
+					actionRequest, "layoutPageTemplateCollectionId",
+					LayoutPageTemplateConstants.
+						PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT)
+			).buildString(),
+			"p_l_back_url_title",
+			_language.get(themeDisplay.getLocale(), "page-templates"),
+			"p_l_mode", Constants.EDIT);
 	}
 
 	private JSONObject _addDisplayPage(
@@ -149,7 +153,7 @@ public class AddDisplayPageMVCActionCommand extends BaseMVCActionCommand {
 					"name",
 					() -> {
 						JSONObject jsonObject =
-							_layoutPageTemplateEntryExceptionRequestHandler.
+							LayoutPageTemplateEntryExceptionRequestHandlerUtil.
 								createErrorJSONObject(
 									actionRequest, portalException);
 
@@ -169,10 +173,6 @@ public class AddDisplayPageMVCActionCommand extends BaseMVCActionCommand {
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;
-
-	@Reference
-	private LayoutPageTemplateEntryExceptionRequestHandler
-		_layoutPageTemplateEntryExceptionRequestHandler;
 
 	@Reference
 	private LayoutPageTemplateEntryService _layoutPageTemplateEntryService;

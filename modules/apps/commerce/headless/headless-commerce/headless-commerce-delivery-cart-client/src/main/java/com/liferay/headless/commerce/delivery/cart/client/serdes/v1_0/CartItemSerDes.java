@@ -8,6 +8,8 @@ package com.liferay.headless.commerce.delivery.cart.client.serdes.v1_0;
 import com.liferay.headless.commerce.delivery.cart.client.dto.v1_0.CartItem;
 import com.liferay.headless.commerce.delivery.cart.client.json.BaseJSONParser;
 
+import java.math.BigDecimal;
+
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
@@ -258,6 +260,16 @@ public class CartItemSerDes {
 			sb.append(cartItem.getSkuId());
 		}
 
+		if (cartItem.getSkuUnitOfMeasure() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"skuUnitOfMeasure\": ");
+
+			sb.append(String.valueOf(cartItem.getSkuUnitOfMeasure()));
+		}
+
 		if (cartItem.getSubscription() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -435,6 +447,15 @@ public class CartItemSerDes {
 			map.put("skuId", String.valueOf(cartItem.getSkuId()));
 		}
 
+		if (cartItem.getSkuUnitOfMeasure() == null) {
+			map.put("skuUnitOfMeasure", null);
+		}
+		else {
+			map.put(
+				"skuUnitOfMeasure",
+				String.valueOf(cartItem.getSkuUnitOfMeasure()));
+		}
+
 		if (cartItem.getSubscription() == null) {
 			map.put("subscription", null);
 		}
@@ -556,7 +577,7 @@ public class CartItemSerDes {
 			else if (Objects.equals(jsonParserFieldName, "quantity")) {
 				if (jsonParserFieldValue != null) {
 					cartItem.setQuantity(
-						Integer.valueOf((String)jsonParserFieldValue));
+						new BigDecimal((String)jsonParserFieldValue));
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "replacedSku")) {
@@ -585,6 +606,13 @@ public class CartItemSerDes {
 				if (jsonParserFieldValue != null) {
 					cartItem.setSkuId(
 						Long.valueOf((String)jsonParserFieldValue));
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "skuUnitOfMeasure")) {
+				if (jsonParserFieldValue != null) {
+					cartItem.setSkuUnitOfMeasure(
+						SkuUnitOfMeasureSerDes.toDTO(
+							(String)jsonParserFieldValue));
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "subscription")) {

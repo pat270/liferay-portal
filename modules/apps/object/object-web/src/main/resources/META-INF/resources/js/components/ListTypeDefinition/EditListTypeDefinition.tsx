@@ -8,11 +8,11 @@ import {
 	API,
 	Card,
 	Input,
-	InputLocalized,
 	SidePanelForm,
 	openToast,
 	saveAndReload,
 } from '@liferay/object-js-components-web';
+import {InputLocalized} from 'frontend-js-components-web';
 import React, {useEffect} from 'react';
 
 import {useListTypeForm} from './ListTypeFormBase';
@@ -23,9 +23,9 @@ export default function EditListTypeDefinition({
 	listTypeDefinitionId,
 	readOnly,
 }: IProps) {
-	const onSubmit = async (values: PickList) => {
+	const onSubmit = async (values: ListTypeDefinition) => {
 		try {
-			await API.updatePickList({
+			await API.putListTypeDefinition({
 				externalReferenceCode: values.externalReferenceCode,
 				id: parseInt(listTypeDefinitionId, 10),
 				listTypeEntries: values.listTypeEntries,
@@ -52,14 +52,18 @@ export default function EditListTypeDefinition({
 	});
 
 	useEffect(() => {
-		API.getPickList(parseInt(listTypeDefinitionId, 10)).then((response) => {
-			response.name_i18n = fixLocaleKeys(response.name_i18n);
-			response.listTypeEntries = response.listTypeEntries.map((item) => ({
-				...item,
-				name_i18n: fixLocaleKeys(item.name_i18n),
-			}));
-			setValues(response);
-		});
+		API.getListTypeDefinition(parseInt(listTypeDefinitionId, 10)).then(
+			(response) => {
+				response.name_i18n = fixLocaleKeys(response.name_i18n);
+				response.listTypeEntries = response.listTypeEntries.map(
+					(item) => ({
+						...item,
+						name_i18n: fixLocaleKeys(item.name_i18n),
+					})
+				);
+				setValues(response);
+			}
+		);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
@@ -85,6 +89,7 @@ export default function EditListTypeDefinition({
 
 						<Input
 							autoComplete="off"
+							disabled={values?.system}
 							error={errors.externalReferenceCode}
 							feedbackMessage={Liferay.Language.get(
 								'unique-key-for-referencing-the-picklist-definition'

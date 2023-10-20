@@ -7,6 +7,7 @@ package com.liferay.portal.action;
 
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.NoSuchUserException;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.UserPasswordException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -18,6 +19,7 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.auth.AuthTokenUtil;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.auth.session.AuthenticatedSessionManagerUtil;
+import com.liferay.portal.kernel.security.pwd.PasswordEncryptorUtil;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.service.TicketLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
@@ -25,6 +27,7 @@ import com.liferay.portal.kernel.servlet.HttpMethods;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -145,15 +148,20 @@ public class UpdatePasswordAction implements Action {
 		}
 	}
 
-	protected Ticket getTicket(HttpServletRequest httpServletRequest) {
+	protected Ticket getTicket(HttpServletRequest httpServletRequest)
+		throws PortalException {
+
+		String ticketId = ParamUtil.getString(httpServletRequest, "ticketId");
+
 		String ticketKey = ParamUtil.getString(httpServletRequest, "ticketKey");
 
-		if (Validator.isNull(ticketKey)) {
+		if (Validator.isNull(ticketId) || Validator.isNull(ticketKey)) {
 			return null;
 		}
 
 		try {
-			Ticket ticket = TicketLocalServiceUtil.fetchTicket(ticketKey);
+			Ticket ticket = TicketLocalServiceUtil.fetchTicket(
+				GetterUtil.getLong(ticketId));
 
 			if ((ticket == null) ||
 				(ticket.getType() != TicketConstants.TYPE_PASSWORD)) {
@@ -161,7 +169,12 @@ public class UpdatePasswordAction implements Action {
 				return null;
 			}
 
-			if (!ticket.isExpired()) {
+			String encryptedTicketKey = PasswordEncryptorUtil.encrypt(
+				ticketKey, ticket.getKey());
+
+			if (!ticket.isExpired() &&
+				encryptedTicketKey.equals(ticket.getKey())) {
+
 				return ticket;
 			}
 
@@ -244,6 +257,8 @@ public class UpdatePasswordAction implements Action {
 		AuthTokenUtil.checkCSRFToken(
 			httpServletRequest, UpdatePasswordAction.class.getName());
 
+		HttpSession httpSession = httpServletRequest.getSession();
+
 		long userId = 0;
 
 		if (ticket != null) {
@@ -278,8 +293,6 @@ public class UpdatePasswordAction implements Action {
 				user = UserLocalServiceUtil.updateUser(user);
 			}
 
-			HttpSession httpSession = httpServletRequest.getSession();
-
 			Date passwordModifiedDate = user.getPasswordModifiedDate();
 
 			httpSession.setAttribute(
@@ -305,6 +318,12 @@ public class UpdatePasswordAction implements Action {
 			if (company.isStrangersVerify()) {
 				UserLocalServiceUtil.updateEmailAddressVerified(userId, true);
 			}
+		}
+
+		if (GetterUtil.getBoolean(
+				httpSession.getAttribute(WebKeys.MFA_ENABLED))) {
+
+			return;
 		}
 
 		String login = null;

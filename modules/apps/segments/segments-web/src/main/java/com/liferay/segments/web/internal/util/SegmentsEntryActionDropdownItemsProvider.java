@@ -33,19 +33,22 @@ public class SegmentsEntryActionDropdownItemsProvider {
 
 	public List<DropdownItem> getActionDropdownItems() {
 		return DropdownItemListBuilder.addGroup(
+			dropdownGroupItem -> dropdownGroupItem.setDropdownItems(
+				DropdownItemListBuilder.add(
+					() -> _segmentsDisplayContext.isShowUpdateAction(
+						_segmentsEntry),
+					dropdownItem -> {
+						dropdownItem.setHref(
+							_segmentsDisplayContext.getEditURL(_segmentsEntry));
+						dropdownItem.setIcon("pencil");
+						dropdownItem.setLabel(
+							LanguageUtil.get(_httpServletRequest, "edit"));
+					}
+				).build())
+		).addGroup(
 			dropdownGroupItem -> {
 				dropdownGroupItem.setDropdownItems(
 					DropdownItemListBuilder.add(
-						() -> _segmentsDisplayContext.isShowUpdateAction(
-							_segmentsEntry),
-						dropdownItem -> {
-							dropdownItem.setHref(
-								_segmentsDisplayContext.getEditURL(
-									_segmentsEntry));
-							dropdownItem.setLabel(
-								LanguageUtil.get(_httpServletRequest, "edit"));
-						}
-					).add(
 						() -> _segmentsDisplayContext.isShowViewAction(
 							_segmentsEntry),
 						dropdownItem -> {
@@ -55,6 +58,7 @@ public class SegmentsEntryActionDropdownItemsProvider {
 								"viewMembersSegmentsEntryURL",
 								_segmentsDisplayContext.getPreviewMembersURL(
 									_segmentsEntry));
+							dropdownItem.setIcon("users");
 							dropdownItem.setLabel(
 								LanguageUtil.get(
 									_httpServletRequest, "view-members"));
@@ -88,7 +92,13 @@ public class SegmentsEntryActionDropdownItemsProvider {
 								LanguageUtil.get(
 									_httpServletRequest, "assign-site-roles"));
 						}
-					).add(
+					).build());
+				dropdownGroupItem.setSeparator(true);
+			}
+		).addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					DropdownItemListBuilder.add(
 						() -> _segmentsDisplayContext.isShowPermissionAction(
 							_segmentsEntry),
 						dropdownItem -> {
@@ -98,11 +108,18 @@ public class SegmentsEntryActionDropdownItemsProvider {
 								"permissionsSegmentsEntryURL",
 								_segmentsDisplayContext.getPermissionURL(
 									_segmentsEntry));
+							dropdownItem.setIcon("password-policies");
 							dropdownItem.setLabel(
 								LanguageUtil.get(
 									_httpServletRequest, "permissions"));
 						}
-					).add(
+					).build());
+				dropdownGroupItem.setSeparator(true);
+			}
+		).addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					DropdownItemListBuilder.add(
 						() -> _segmentsDisplayContext.isShowDeleteAction(
 							_segmentsEntry),
 						dropdownItem -> {
@@ -112,6 +129,7 @@ public class SegmentsEntryActionDropdownItemsProvider {
 								"deleteSegmentEntryURL",
 								_segmentsDisplayContext.getDeleteURL(
 									_segmentsEntry));
+							dropdownItem.setIcon("trash");
 							dropdownItem.setLabel(
 								LanguageUtil.get(
 									_httpServletRequest, "delete"));

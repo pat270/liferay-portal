@@ -818,6 +818,14 @@ public class DLFileEntryLocalServiceWrapper
 	}
 
 	@Override
+	public java.util.Map<Long, Long> getFileEntryTypeIds(
+		long companyId, long[] groupIds, String treePath) {
+
+		return _dlFileEntryLocalService.getFileEntryTypeIds(
+			companyId, groupIds, treePath);
+	}
+
+	@Override
 	public java.util.List<DLFileEntry> getGroupFileEntries(
 		long groupId, int start, int end) {
 

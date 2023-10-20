@@ -2104,6 +2104,11 @@ public class ServletDataImpl implements ServletData {
 							MessageBoardMessageResourceImpl.class,
 							"getSiteMessageBoardMessagePermissionsPage"));
 					put(
+						"query#userMessageBoardMessagesActivity",
+						new ObjectValuePair<>(
+							MessageBoardMessageResourceImpl.class,
+							"getSiteUserMessageBoardMessagesActivityPage"));
+					put(
 						"query#messageBoardSection",
 						new ObjectValuePair<>(
 							MessageBoardSectionResourceImpl.class,
@@ -2118,6 +2123,11 @@ public class ServletDataImpl implements ServletData {
 						new ObjectValuePair<>(
 							MessageBoardSectionResourceImpl.class,
 							"getMessageBoardSectionMessageBoardSectionsPage"));
+					put(
+						"query#messageBoardSectionByFriendlyUrlPath",
+						new ObjectValuePair<>(
+							MessageBoardSectionResourceImpl.class,
+							"getSiteMessageBoardSectionByFriendlyUrlPath"));
 					put(
 						"query#messageBoardSections",
 						new ObjectValuePair<>(
@@ -2510,11 +2520,6 @@ public class ServletDataImpl implements ServletData {
 						new ObjectValuePair<>(
 							MessageBoardMessageResourceImpl.class,
 							"getMessageBoardMessagePermissionsPage"));
-					put(
-						"query#StructuredContent.permissions",
-						new ObjectValuePair<>(
-							StructuredContentResourceImpl.class,
-							"getStructuredContentPermissionsPage"));
 					put(
 						"query#KnowledgeBaseArticle.permissions",
 						new ObjectValuePair<>(

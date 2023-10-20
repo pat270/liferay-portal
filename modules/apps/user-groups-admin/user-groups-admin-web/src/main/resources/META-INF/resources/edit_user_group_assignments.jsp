@@ -63,6 +63,7 @@ SearchContainer<User> searchContainer = editUserGroupAssignmentsManagementToolba
 	creationMenu="<%= editUserGroupAssignmentsManagementToolbarDisplayContext.getCreationMenu() %>"
 	filterDropdownItems="<%= editUserGroupAssignmentsManagementToolbarDisplayContext.getFilterDropdownItems() %>"
 	itemsTotal="<%= searchContainer.getTotal() %>"
+	orderDropdownItems="<%= editUserGroupAssignmentsManagementToolbarDisplayContext.getOrderByDropdownItems() %>"
 	propsTransformer="js/EditUserGroupAssignmentsManagementToolbarPropsTransformer"
 	searchActionURL="<%= editUserGroupAssignmentsManagementToolbarDisplayContext.getSearchActionURL() %>"
 	searchContainerId="users"
@@ -103,7 +104,7 @@ SearchContainer<User> searchContainer = editUserGroupAssignmentsManagementToolba
 			<c:choose>
 				<c:when test='<%= displayStyle.equals("descriptive") %>'>
 					<liferay-ui:search-container-column-text>
-						<liferay-ui:user-portrait
+						<liferay-user:user-portrait
 							userId="<%= user2.getUserId() %>"
 						/>
 					</liferay-ui:search-container-column-text>

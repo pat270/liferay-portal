@@ -13,6 +13,8 @@ public class CPField {
 	public static final String ACCOUNT_GROUP_FILTER_ENABLED =
 		"accountGroupFilterEnabled";
 
+	public static final String ASSET_CATEGORY_NAMES = "assetCategoryNames";
+
 	public static final String BASE_PRICE = "basePrice";
 
 	public static final String CATALOG_DEFAULT_LANGUAGE_ID =
@@ -37,6 +39,9 @@ public class CPField {
 	public static final String COMMERCE_CHANNEL_GROUP_IDS =
 		"commerceChannelGroupIds";
 
+	public static final String COMMERCE_OPTION_TYPE_KEY =
+		"commerceOptionTypeKey";
+
 	public static final String CP_DEFINITION_ID = "CPDefinitionId";
 
 	public static final String CP_DEFINITION_OPTION_REL_ID =
@@ -50,9 +55,6 @@ public class CPField {
 		"cpOptionCategoryTitle";
 
 	public static final String CP_OPTION_ID = "CPOptionId";
-
-	public static final String DDM_FORM_FIELD_TYPE_NAME =
-		"DDMFormFieldTypeName";
 
 	public static final String DEFAULT_IMAGE_FILE_ENTRY_ID =
 		"defaultImageFileEntryId";

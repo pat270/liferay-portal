@@ -9,15 +9,17 @@ import './ObjectFieldFormBase.scss';
 interface IAttachmentFormBaseProps {
 	disabled?: boolean;
 	error?: string;
+	objectDefinitionName: string;
 	objectFieldSettings: ObjectFieldSetting[];
-	objectName: string;
+	onSubmit?: () => void;
 	setValues: (values: Partial<ObjectField>) => void;
 }
 export declare function AttachmentFormBase({
 	disabled,
 	error,
+	objectDefinitionName,
 	objectFieldSettings,
-	objectName,
+	onSubmit,
 	setValues,
 }: IAttachmentFormBaseProps): JSX.Element;
 export {};

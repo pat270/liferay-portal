@@ -6,14 +6,13 @@
 package com.liferay.portal.security.content.security.policy.internal.servlet.filter;
 
 import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
-import com.liferay.portal.kernel.security.SecureRandom;
-import com.liferay.portal.kernel.util.Base64;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.security.content.security.policy.internal.ContentSecurityPolicyNonceManager;
 import com.liferay.portal.security.content.security.policy.internal.configuration.ContentSecurityPolicyConfiguration;
 import com.liferay.portal.servlet.filters.BasePortalFilter;
 
@@ -84,52 +83,51 @@ public class ContentSecurityPolicyFilter extends BasePortalFilter {
 			return;
 		}
 
-		PrintWriter printWriter = httpServletResponse.getWriter();
+		String nonce = _contentSecurityPolicyNonceManager.ensureNonce(
+			httpServletRequest);
 
-		ContentSecurityPolicyHttpServletResponse
-			contentSecurityPolicyHttpServletResponse =
-				new ContentSecurityPolicyHttpServletResponse(
-					httpServletResponse);
+		try {
+			_contentSecurityPolicyNonceManager.setTLSNonce(nonce);
 
-		filterChain.doFilter(
-			httpServletRequest, contentSecurityPolicyHttpServletResponse);
+			policy = StringUtil.replace(policy, "[$NONCE$]", "nonce-" + nonce);
 
-		String content = contentSecurityPolicyHttpServletResponse.getContent();
+			httpServletResponse.setHeader("Content-Security-Policy", policy);
 
-		String nonce = _generateNonce();
+			PrintWriter printWriter = httpServletResponse.getWriter();
 
-		content = content.replaceAll(
-			"<(?i)link ", "<link nonce=\"" + nonce + "\" ");
-		content = content.replaceAll(
-			"<(?i)link>", "<link nonce=\"" + nonce + "\">");
-		content = content.replaceAll(
-			"<(?i)script ", "<script nonce=\"" + nonce + "\" ");
-		content = content.replaceAll(
-			"<(?i)script>", "<script nonce=\"" + nonce + "\">");
-		content = content.replaceAll(
-			"<(?i)style ", "<style nonce=\"" + nonce + "\" ");
-		content = content.replaceAll(
-			"<(?i)style>", "<style nonce=\"" + nonce + "\">");
+			ContentSecurityPolicyHttpServletResponse
+				contentSecurityPolicyHttpServletResponse =
+					new ContentSecurityPolicyHttpServletResponse(
+						httpServletResponse);
 
-		printWriter.write(content);
+			filterChain.doFilter(
+				httpServletRequest, contentSecurityPolicyHttpServletResponse);
 
-		printWriter.close();
+			String content =
+				contentSecurityPolicyHttpServletResponse.getContent();
 
-		httpServletResponse.setContentLength(content.length());
+			content = content.replaceAll(
+				"<(?i)link ", "<link nonce=\"" + nonce + "\" ");
+			content = content.replaceAll(
+				"<(?i)link>", "<link nonce=\"" + nonce + "\">");
+			content = content.replaceAll(
+				"<(?i)script ", "<script nonce=\"" + nonce + "\" ");
+			content = content.replaceAll(
+				"<(?i)script>", "<script nonce=\"" + nonce + "\">");
+			content = content.replaceAll(
+				"<(?i)style ", "<style nonce=\"" + nonce + "\" ");
+			content = content.replaceAll(
+				"<(?i)style>", "<style nonce=\"" + nonce + "\">");
 
-		policy = StringUtil.replace(policy, "[$NONCE$]", "nonce-" + nonce);
+			printWriter.write(content);
 
-		httpServletResponse.setHeader("Content-Security-Policy", policy);
-	}
+			printWriter.close();
 
-	private String _generateNonce() {
-		SecureRandom secureRandom = new SecureRandom();
-
-		byte[] bytes = new byte[16];
-
-		secureRandom.nextBytes(bytes);
-
-		return Base64.encode(bytes);
+			httpServletResponse.setContentLength(content.length());
+		}
+		finally {
+			_contentSecurityPolicyNonceManager.removeTLSNonce();
+		}
 	}
 
 	private ContentSecurityPolicyConfiguration
@@ -193,6 +191,10 @@ public class ContentSecurityPolicyFilter extends BasePortalFilter {
 
 	@Reference
 	private ConfigurationProvider _configurationProvider;
+
+	@Reference
+	private ContentSecurityPolicyNonceManager
+		_contentSecurityPolicyNonceManager;
 
 	@Reference
 	private Portal _portal;

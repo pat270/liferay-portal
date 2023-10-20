@@ -5,7 +5,8 @@
 
 package com.liferay.jethr0.event.handler;
 
-import com.liferay.jethr0.jenkins.node.JenkinsNode;
+import com.liferay.jethr0.jenkins.JenkinsQueue;
+import com.liferay.jethr0.jenkins.node.JenkinsNodeEntity;
 
 import org.json.JSONObject;
 
@@ -22,9 +23,15 @@ public class ComputerUpdateEventHandler extends BaseJenkinsEventHandler {
 
 	@Override
 	public String process() throws Exception {
-		JenkinsNode jenkinsNode = updateJenkinsNode();
+		JenkinsQueue jenkinsQueue = getJenkinsQueue();
 
-		return jenkinsNode.toString();
+		if (!jenkinsQueue.isInitialized()) {
+			return "{\"message\": \"Jenkins queue is not initialized\"}";
+		}
+
+		JenkinsNodeEntity jenkinsNodeEntity = updateJenkinsNodeEntity();
+
+		return jenkinsNodeEntity.toString();
 	}
 
 }

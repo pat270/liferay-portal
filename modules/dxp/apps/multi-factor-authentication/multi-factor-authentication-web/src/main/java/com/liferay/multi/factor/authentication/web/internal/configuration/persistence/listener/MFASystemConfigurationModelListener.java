@@ -7,6 +7,7 @@ package com.liferay.multi.factor.authentication.web.internal.configuration.persi
 
 import com.liferay.configuration.admin.constants.ConfigurationAdminPortletKeys;
 import com.liferay.multi.factor.authentication.email.otp.configuration.MFAEmailOTPConfiguration;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.configuration.persistence.listener.ConfigurationModelListener;
 import com.liferay.portal.configuration.persistence.listener.ConfigurationModelListenerException;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -14,11 +15,9 @@ import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserNotificationDeliveryConstants;
 import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
@@ -95,9 +94,7 @@ public class MFASystemConfigurationModelListener
 		Role role = _roleLocalService.getRole(
 			companyId, RoleConstants.ADMINISTRATOR);
 
-		for (User user : _userLocalService.getRoleUsers(role.getRoleId())) {
-			long userId = user.getUserId();
-
+		for (long userId : _userLocalService.getRoleUserIds(role.getRoleId())) {
 			_userNotificationEventLocalService.sendUserNotificationEvents(
 				userId, ConfigurationAdminPortletKeys.INSTANCE_SETTINGS,
 				UserNotificationDeliveryConstants.TYPE_WEBSITE, false,

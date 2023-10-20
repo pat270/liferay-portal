@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayPanel from '@clayui/panel';
 import {
 	FormError,
 	SingleSelect,
 	Toggle,
 } from '@liferay/object-js-components-web';
+import {sub} from 'frontend-js-web';
 import React, {useEffect, useState} from 'react';
 
 import {defaultLanguageId} from '../../utils/constants';
@@ -16,7 +16,10 @@ import {defaultLanguageId} from '../../utils/constants';
 interface AccountRestrictionContainerProps {
 	errors: FormError<ObjectDefinition>;
 	isApproved: boolean;
+	isLinkedObjectDefinition?: boolean;
+	isRootDescendantNode: boolean;
 	objectFields: ObjectField[];
+	onSubmit?: (editedObjectDefinition?: Partial<ObjectDefinition>) => void;
 	setValues: (values: Partial<ObjectDefinition>) => void;
 	values: Partial<ObjectDefinition>;
 }
@@ -24,7 +27,10 @@ interface AccountRestrictionContainerProps {
 export function AccountRestrictionContainer({
 	errors,
 	isApproved,
+	isLinkedObjectDefinition,
+	isRootDescendantNode,
 	objectFields,
+	onSubmit,
 	setValues,
 	values,
 }: AccountRestrictionContainerProps) {
@@ -109,56 +115,70 @@ export function AccountRestrictionContainer({
 	]);
 
 	return (
-		<ClayPanel
-			collapsable
-			defaultExpanded
-			displayTitle={Liferay.Language.get('account-restriction')}
-			displayType="unstyled"
-		>
-			<ClayPanel.Body>
-				<Toggle
-					disabled={
-						!accountRelationshipFields.length ||
-						disableAccountToggle
-					}
-					label={Liferay.Language.get('active')}
-					name="accountEntryRestricted"
-					onToggle={() =>
-						setValues({
-							accountEntryRestricted: !values.accountEntryRestricted,
-							accountEntryRestrictedObjectFieldName:
-								!values.accountEntryRestricted === false
-									? ''
-									: values.accountEntryRestrictedObjectFieldName,
-						})
-					}
-					toggled={values.accountEntryRestricted}
-				/>
+		<>
+			<Toggle
+				disabled={
+					!accountRelationshipFields.length ||
+					disableAccountToggle ||
+					isLinkedObjectDefinition ||
+					isRootDescendantNode
+				}
+				label={sub(
+					Liferay.Language.get('enable-x'),
+					Liferay.Language.get('account-restriction')
+				)}
+				name="accountEntryRestricted"
+				onBlur={(event) => {
+					event.stopPropagation();
 
-				<SingleSelect<LabelValueObject>
-					disabled={
-						!accountRelationshipFields.length ||
-						!values.accountEntryRestricted ||
-						disableAccountSelect
+					if (onSubmit) {
+						onSubmit();
 					}
-					error={errors.accountEntryRestrictedObjectFieldName}
-					label={Liferay.Language.get(
-						'account-entry-restricted-object-field-id'
-					)}
-					onChange={({value}) => {
-						setValues({
-							accountEntryRestrictedObjectFieldName: value,
-						});
-					}}
-					options={accountRelationshipFields}
-					required={
-						!!accountRelationshipFields.length &&
-						values.accountEntryRestricted &&
-						!disableAccountSelect
+				}}
+				onToggle={() =>
+					setValues({
+						accountEntryRestricted: !values.accountEntryRestricted,
+						accountEntryRestrictedObjectFieldName:
+							!values.accountEntryRestricted === false
+								? ''
+								: values.accountEntryRestrictedObjectFieldName,
+					})
+				}
+				toggled={values.accountEntryRestricted}
+			/>
+
+			<SingleSelect<LabelValueObject>
+				disabled={
+					!accountRelationshipFields.length ||
+					!values.accountEntryRestricted ||
+					disableAccountSelect ||
+					isLinkedObjectDefinition ||
+					isRootDescendantNode
+				}
+				error={errors.accountEntryRestrictedObjectFieldName}
+				label={Liferay.Language.get(
+					'account-entry-restricted-object-field-id'
+				)}
+				onBlur={(event) => {
+					event.stopPropagation();
+
+					if (onSubmit) {
+						onSubmit();
 					}
-					value={selectedAccount}
-				/>
-			</ClayPanel.Body>
-		</ClayPanel>
+				}}
+				onChange={({value}) => {
+					setValues({
+						accountEntryRestrictedObjectFieldName: value,
+					});
+				}}
+				options={accountRelationshipFields}
+				required={
+					!!accountRelationshipFields.length &&
+					values.accountEntryRestricted &&
+					!disableAccountSelect
+				}
+				value={selectedAccount}
+			/>
+		</>
 	);
 }

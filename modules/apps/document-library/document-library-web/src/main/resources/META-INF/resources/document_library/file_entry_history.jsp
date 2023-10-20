@@ -18,15 +18,10 @@
 		status = WorkflowConstants.STATUS_ANY;
 	}
 
-	int start = QueryUtil.ALL_POS;
-	int end = QueryUtil.ALL_POS;
+	int start = 0;
+	int end = 10;
 
-	if (FeatureFlagManagerUtil.isEnabled("LPS-175915")) {
-		start = 0;
-		end = 10;
-	}
-
-	for (FileVersion fileVersion : fileEntry.getFileVersions(status, start, end)) {
+	for (FileVersion fileVersion : ListUtil.sort(fileEntry.getFileVersions(status, start, end), new FileVersionVersionComparator(false))) {
 	%>
 
 		<li class="list-group-item list-group-item-flex">
@@ -71,7 +66,7 @@
 	}
 	%>
 
-	<c:if test='<%= FeatureFlagManagerUtil.isEnabled("LPS-175915") && (end > 0) && (fileEntry.getFileVersionsCount(status) >= end) %>'>
+	<c:if test="<%= fileEntry.getFileVersionsCount(status) >= end %>">
 		<portlet:renderURL var="viewMoreURL">
 			<portlet:param name="mvcRenderCommandName" value="/document_library/view_file_entry_history" />
 			<portlet:param name="backURL" value="<%= currentURL %>" />

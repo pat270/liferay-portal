@@ -8,16 +8,15 @@ package com.liferay.headless.builder.internal.vulcan.openapi.contributor;
 import com.liferay.headless.builder.application.APIApplication;
 import com.liferay.headless.builder.application.provider.APIApplicationProvider;
 import com.liferay.headless.builder.constants.HeadlessBuilderConstants;
+import com.liferay.headless.builder.internal.util.OpenAPIUtil;
+import com.liferay.headless.builder.internal.util.PathUtil;
 import com.liferay.object.rest.dto.v1_0.FileEntry;
 import com.liferay.object.rest.dto.v1_0.ListEntry;
-import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
-import com.liferay.portal.kernel.util.CamelCaseUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Http;
-import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.vulcan.openapi.OpenAPIContext;
 import com.liferay.portal.vulcan.openapi.contributor.OpenAPIContributor;
 import com.liferay.portal.vulcan.pagination.Page;
@@ -45,9 +44,13 @@ import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.osgi.service.component.annotations.Component;
@@ -122,10 +125,27 @@ public class APIApplicationOpenApiContributor implements OpenAPIContributor {
 			paths.put("/openapi.{type}", oldPaths.get("/openapi.{type}"));
 		}
 
+		Set<String> schemasSet = new HashSet<>();
+
 		for (APIApplication.Endpoint endpoint : apiApplication.getEndpoints()) {
-			paths.put(
-				_formatPath(endpoint.getPath()), _toOpenAPIPathItem(endpoint));
+			paths.put(_formatPath(endpoint), _toOpenAPIPathItem(endpoint));
+
+			APIApplication.Schema responseSchema = endpoint.getResponseSchema();
+
+			if (responseSchema != null) {
+				if (Objects.equals(
+						endpoint.getRetrieveType(),
+						APIApplication.Endpoint.RetrieveType.COLLECTION)) {
+
+					schemasSet.add("Page" + responseSchema.getName());
+				}
+				else {
+					schemasSet.add(responseSchema.getName());
+				}
+			}
 		}
+
+		components.setSchemas(_removedUnusedPageSchema(schemas, schemasSet));
 
 		openAPI.setPaths(paths);
 	}
@@ -159,68 +179,143 @@ public class APIApplicationOpenApiContributor implements OpenAPIContributor {
 			path, CompanyThreadLocal.getCompanyId());
 	}
 
-	private String _formatPath(String path) {
-		if (path.startsWith(StringPool.SLASH)) {
-			return path;
+	private String _formatPath(APIApplication.Endpoint endpoint) {
+		String path = endpoint.getPath();
+
+		if (!path.startsWith(StringPool.SLASH)) {
+			path = StringPool.SLASH + path;
 		}
 
-		return StringPool.SLASH + path;
+		return PathUtil.getPathPrefix(endpoint.getScope()) + path;
 	}
 
-	private String _getOperationId(APIApplication.Endpoint endpoint) {
-		Http.Method method = endpoint.getMethod();
+	private Map<String, Schema> _removedUnusedPageSchema(
+		Map<String, Schema> schemas, Set<String> schemasSet) {
 
-		return StringUtil.toLowerCase(method.name()) +
-			_toCamelCase(endpoint.getPath()) + "Page";
-	}
+		Map<String, Schema> schemasMap = HashMapBuilder.putAll(
+			schemas
+		).build();
 
-	private String _toCamelCase(String path) {
-		path = path.replaceAll("/\\{.*\\}", StringPool.BLANK);
+		for (String pageSchemaName : schemas.keySet()) {
+			if (pageSchemaName.startsWith("Page") &&
+				!schemasSet.contains(pageSchemaName)) {
 
-		path = path.replaceAll(StringPool.MINUS, StringPool.SLASH);
+				schemasMap.remove(pageSchemaName);
+			}
+		}
 
-		return CamelCaseUtil.toCamelCase(path, CharPool.SLASH);
+		return schemasMap;
 	}
 
 	private PathItem _toOpenAPIPathItem(APIApplication.Endpoint endpoint) {
-		String operationId = _getOperationId(endpoint);
+		Operation operation = new Operation();
 
-		Operation operation = new Operation() {
-			{
-				setOperationId(operationId);
-			}
-		};
+		String schemaName = null;
 
 		APIApplication.Schema responseSchema = endpoint.getResponseSchema();
 
 		if (responseSchema != null) {
-			if (Objects.equals(endpoint.getMethod(), Http.Method.GET) &&
-				operationId.endsWith("Page")) {
+			schemaName = responseSchema.getName();
+		}
 
-				operation.setParameters(
-					ListUtil.fromArray(
-						new Parameter() {
-							{
-								setIn("query");
-								setName("page");
-								setSchema(new StringSchema());
-							}
-						},
-						new Parameter() {
-							{
-								setIn("query");
-								setName("pageSize");
-								setSchema(new StringSchema());
-							}
-						}));
+		operation.setOperationId(
+			OpenAPIUtil.getOperationId(
+				endpoint.getMethod(), _formatPath(endpoint),
+				endpoint.getRetrieveType(), schemaName));
+
+		if (Objects.equals(endpoint.getMethod(), Http.Method.GET)) {
+			List<Parameter> parameters = new ArrayList<>();
+
+			if (Objects.equals(
+					endpoint.getScope(), APIApplication.Endpoint.Scope.GROUP)) {
+
+				parameters.add(
+					new Parameter() {
+						{
+							setIn("path");
+							setName("scopeKey");
+							setRequired(true);
+							setSchema(new StringSchema());
+						}
+					});
 			}
 
+			if (Objects.equals(
+					endpoint.getRetrieveType(),
+					APIApplication.Endpoint.RetrieveType.COLLECTION)) {
+
+				parameters.add(
+					new Parameter() {
+						{
+							setIn("query");
+							setName("filter");
+							setSchema(new StringSchema());
+						}
+					});
+
+				parameters.add(
+					new Parameter() {
+						{
+							setIn("query");
+							setName("page");
+							setSchema(new StringSchema());
+						}
+					});
+				parameters.add(
+					new Parameter() {
+						{
+							setIn("query");
+							setName("pageSize");
+							setSchema(new StringSchema());
+						}
+					});
+
+				parameters.add(
+					new Parameter() {
+						{
+							setIn("query");
+							setName("sort");
+							setSchema(new StringSchema());
+						}
+					});
+			}
+
+			if (Objects.equals(
+					endpoint.getRetrieveType(),
+					APIApplication.Endpoint.RetrieveType.SINGLE_ELEMENT)) {
+
+				parameters.add(
+					new Parameter() {
+						{
+							setIn("path");
+							setName(
+								OpenAPIUtil.getPathParameter(
+									endpoint.getPath()));
+							setRequired(true);
+							setSchema(new StringSchema());
+						}
+					});
+			}
+
+			operation.setParameters(parameters);
+		}
+
+		if (responseSchema != null) {
 			MediaType mediaType = new MediaType() {
 				{
 					setSchema(
 						new Schema() {
 							{
-								set$ref("Page" + responseSchema.getName());
+								if (Objects.equals(
+										endpoint.getRetrieveType(),
+										APIApplication.Endpoint.RetrieveType.
+											COLLECTION)) {
+
+									set$ref("Page" + responseSchema.getName());
+								}
+								else {
+									set$ref(responseSchema.getName());
+								}
 							}
 						});
 				}
@@ -247,6 +342,19 @@ public class APIApplicationOpenApiContributor implements OpenAPIContributor {
 				});
 
 			operation.setTags(Arrays.asList(responseSchema.getName()));
+		}
+		else {
+			operation.setResponses(
+				new ApiResponses() {
+					{
+						setDefault(
+							new ApiResponse() {
+								{
+									setDescription("default response");
+								}
+							});
+					}
+				});
 		}
 
 		return new PathItem() {

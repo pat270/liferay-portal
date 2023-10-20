@@ -83,6 +83,7 @@ definition {
 	@priority = 4
 	test CanAccessCustomObjectWithAccessPermission {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ObjectAdmin.addObjectViaAPI(
 			labelName = "Custom Object",
@@ -408,6 +409,7 @@ definition {
 	@priority = 4
 	test CanAddObjectEntryWithAddPermission {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ObjectAdmin.addObjectViaAPI(
 			labelName = "Custom Object",
@@ -584,6 +586,7 @@ definition {
 	@priority = 4
 	test CanApplyPermissionOnlyToSpecificSiteWhenScopedBySite {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ObjectAdmin.addObjectViaAPI(
 			labelName = "Custom Object",
@@ -794,9 +797,21 @@ definition {
 
 		ObjectAdmin.goToCustomObject(objectName = "CustomObject246");
 
-		ObjectPortlet.viewEntry(entry = "Test text");
+		Click(
+			key_entry = "Test text",
+			locator1 = "ObjectPortlet#ENTRY_KEBAB_MENU");
 
-		ObjectPortlet.deleteEntry(entry = "Test text");
+		ClickNoError(locator1 = "ObjectPortlet#DELETE_ENTRY_BUTTON");
+
+		AssertTextEquals(
+			locator1 = "Modal#HEADER",
+			value1 = "Delete Entry");
+
+		AssertTextEquals(
+			locator1 = "Modal#BODY",
+			value1 = "It may affect many records. Are you sure you want to delete this entry?");
+
+		Button.clickDelete();
 
 		ObjectPortlet.assertEntryNotPresent(entry = "Test text");
 	}
@@ -805,6 +820,7 @@ definition {
 	@priority = 4
 	test CanDeleteObjectEntryWithDeletePermission {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ObjectAdmin.addObjectViaAPI(
 			labelName = "Custom Object",
@@ -1180,6 +1196,7 @@ definition {
 	test CannotAddObjectEntryWithoutAddPermission {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ObjectAdmin.addObjectViaAPI(
 			labelName = "Custom Object",
@@ -1240,6 +1257,7 @@ definition {
 	@priority = 4
 	test CannotDeleteObjectEntryWithoutDeletePermission {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ObjectAdmin.addObjectViaAPI(
 			labelName = "Custom Object",
@@ -1309,6 +1327,7 @@ definition {
 	@priority = 4
 	test CannotUpdateObjectEntryWithoutUpdatePermission {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ObjectAdmin.addObjectViaAPI(
 			labelName = "Custom Object",
@@ -1388,6 +1407,7 @@ definition {
 	test CannotViewOtherUsersEntryWithOnlyAddPermission {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ObjectAdmin.addObjectViaAPI(
 			labelName = "Custom Object",
@@ -1457,6 +1477,7 @@ definition {
 	@priority = 4
 	test CannotViewOtherUsersEntryWithoutViewPermission {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ObjectAdmin.addObjectViaAPI(
 			labelName = "Custom Object",
@@ -1683,6 +1704,7 @@ definition {
 	@priority = 4
 	test CanUpdateObjectEntryWithUpdatePermission {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ObjectAdmin.addObjectViaAPI(
 			labelName = "Custom Object",
@@ -1976,6 +1998,7 @@ definition {
 	@priority = 4
 	test CanViewOtherUsersEntryWithViewPermission {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ObjectAdmin.addObjectViaAPI(
 			labelName = "Custom Object",

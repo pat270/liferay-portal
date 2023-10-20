@@ -54,11 +54,14 @@ public class CommerceDiscountRelLocalServiceUtil {
 
 	public static CommerceDiscountRel addCommerceDiscountRel(
 			long commerceDiscountId, String className, long classPK,
+			com.liferay.portal.kernel.util.UnicodeProperties
+				typeSettingsUnicodeProperties,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws PortalException {
 
 		return getService().addCommerceDiscountRel(
-			commerceDiscountId, className, classPK, serviceContext);
+			commerceDiscountId, className, classPK,
+			typeSettingsUnicodeProperties, serviceContext);
 	}
 
 	/**
@@ -304,6 +307,19 @@ public class CommerceDiscountRelLocalServiceUtil {
 		int start, int end) {
 
 		return getService().getCommerceDiscountRels(start, end);
+	}
+
+	public static List<CommerceDiscountRel> getCommerceDiscountRels(
+		long classNameId, long classPK) {
+
+		return getService().getCommerceDiscountRels(classNameId, classPK);
+	}
+
+	public static List<CommerceDiscountRel> getCommerceDiscountRels(
+		long classNameId, long classPK, String unitOfMeasureKey) {
+
+		return getService().getCommerceDiscountRels(
+			classNameId, classPK, unitOfMeasureKey);
 	}
 
 	public static List<CommerceDiscountRel> getCommerceDiscountRels(

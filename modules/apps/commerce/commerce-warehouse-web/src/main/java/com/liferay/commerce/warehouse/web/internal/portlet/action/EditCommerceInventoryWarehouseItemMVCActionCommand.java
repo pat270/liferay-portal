@@ -17,7 +17,8 @@ import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.Portal;
+
+import java.math.BigDecimal;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -69,11 +70,15 @@ public class EditCommerceInventoryWarehouseItemMVCActionCommand
 			_updateCommerceInventoryWarehouseItem(ActionRequest actionRequest)
 		throws PortalException {
 
+		CommerceInventoryWarehouseItem commerceInventoryWarehouseItem = null;
+
 		long commerceInventoryWarehouseItemId = ParamUtil.getLong(
 			actionRequest, "commerceInventoryWarehouseItemId");
-		int quantity = ParamUtil.getInteger(actionRequest, "quantity");
 
-		CommerceInventoryWarehouseItem commerceInventoryWarehouseItem = null;
+		BigDecimal quantity = (BigDecimal)ParamUtil.getNumber(
+			actionRequest, "quantity", BigDecimal.ZERO);
+		String unitOfMeasureKey = ParamUtil.getString(
+			actionRequest, "unitOfMeasureKey");
 
 		if (commerceInventoryWarehouseItemId > 0) {
 			long mvccVersion = ParamUtil.getLong(actionRequest, "mvccVersion");
@@ -81,8 +86,8 @@ public class EditCommerceInventoryWarehouseItemMVCActionCommand
 			commerceInventoryWarehouseItem =
 				_commerceInventoryWarehouseItemService.
 					updateCommerceInventoryWarehouseItem(
-						commerceInventoryWarehouseItemId, quantity,
-						mvccVersion);
+						commerceInventoryWarehouseItemId, mvccVersion, quantity,
+						unitOfMeasureKey);
 		}
 		else {
 			long commerceInventoryWarehouseId = ParamUtil.getLong(
@@ -93,7 +98,7 @@ public class EditCommerceInventoryWarehouseItemMVCActionCommand
 				_commerceInventoryWarehouseItemService.
 					addCommerceInventoryWarehouseItem(
 						StringPool.BLANK, commerceInventoryWarehouseId,
-						quantity, sku, StringPool.BLANK);
+						quantity, sku, unitOfMeasureKey);
 		}
 
 		return commerceInventoryWarehouseItem;
@@ -102,8 +107,5 @@ public class EditCommerceInventoryWarehouseItemMVCActionCommand
 	@Reference
 	private CommerceInventoryWarehouseItemService
 		_commerceInventoryWarehouseItemService;
-
-	@Reference
-	private Portal _portal;
 
 }

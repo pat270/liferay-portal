@@ -119,10 +119,7 @@ public class RankingsDatabaseImporterImpl implements RankingsDatabaseImporter {
 						ranking.getRankingDocumentId());
 			}
 
-			rankingJSONStorageHelper.addJSONStorageEntry(
-				companyId, ranking.getAliases(), ranking.getHiddenDocumentIds(),
-				ranking.isInactive(), ranking.getIndexName(), ranking.getName(),
-				ranking.getPins(), ranking.getQueryString());
+			rankingJSONStorageHelper.addJSONStorageEntry(ranking);
 		}
 
 		if (_log.isInfoEnabled()) {
@@ -130,7 +127,7 @@ public class RankingsDatabaseImporterImpl implements RankingsDatabaseImporter {
 		}
 
 		try {
-			rankingIndexReindexer.reindex(new long[] {companyId});
+			rankingIndexReindexer.reindex(companyId);
 		}
 		catch (Exception exception) {
 			_log.error(

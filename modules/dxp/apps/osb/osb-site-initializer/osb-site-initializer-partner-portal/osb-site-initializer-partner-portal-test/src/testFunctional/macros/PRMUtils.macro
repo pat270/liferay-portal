@@ -1,12 +1,29 @@
 definition {
 
+	static var clientExtension = "";
+	static var companyWebId = "";
+
 	macro addSite {
+		var companyWebId = JSONCompany.getWebId();
+		var clientExtension = "liferay-partner-custom-element";
+
+		AntCommands.runCommand("build-test-workspace.xml", "deploy-workspace-client-extension -Dvirtual.instance.id=${companyWebId} -Dworkspace.client.extension.name=${clientExtension}");
+
+		WaitForConsoleTextPresent(value1 = "STARTED liferaypartnercustomelement");
+
 		var siteName = "Partner Portal";
 
 		HeadlessSite.addSite(
 			siteName = ${siteName},
 			templateName = ${siteName},
 			templateType = "Site Initializer");
+	}
+
+	macro assertMDFNotPresent {
+		AssertElementNotPresent(
+			key_mdfType = ${mdfType},
+			key_requestID = ${requestID},
+			locator1 = "PRMMDFRequest#MDF_ID");
 	}
 
 	macro assertPageTitle {
@@ -97,6 +114,12 @@ definition {
 		Button.clickSave();
 	}
 
+	macro deleteMDF {
+		Button.click(button = "Delete");
+
+		Confirm(value1 = "Are you sure?");
+	}
+
 	macro downloadFileViaCurl {
 		var currentURL = selenium.getCurrentUrl();
 		var testDependenciesDir = PropsUtil.get("output.dir.name");
@@ -143,6 +166,14 @@ definition {
 	}
 
 	macro tearDown {
+		var companyWebId = JSONCompany.getWebId();
+
+		if (isSet(clientExtension)) {
+			var clientExtension = "liferay-partner-custom-element";
+
+			AntCommands.runCommand("build-test-workspace.xml", "undeploy-workspace-client-extension -Dvirtual.instance.id=${companyWebId} -Dworkspace.client.extension.name=${clientExtension}");
+		}
+
 		Navigator.openURL();
 
 		User.logoutAndLoginPG(

@@ -34,6 +34,7 @@ import com.liferay.item.selector.criteria.info.item.criterion.InfoItemItemSelect
 import com.liferay.item.selector.criteria.url.criterion.URLItemSelectorCriterion;
 import com.liferay.item.selector.criteria.video.criterion.VideoItemSelectorCriterion;
 import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
+import com.liferay.layout.admin.constants.LayoutScreenNavigationEntryConstants;
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortletKeys;
 import com.liferay.layout.content.page.editor.sidebar.panel.ContentPageEditorSidebarPanel;
 import com.liferay.layout.content.page.editor.web.internal.configuration.PageEditorConfiguration;
@@ -48,6 +49,7 @@ import com.liferay.layout.content.page.editor.web.internal.util.layout.structure
 import com.liferay.layout.converter.PaddingConverter;
 import com.liferay.layout.display.page.LayoutDisplayPageObjectProvider;
 import com.liferay.layout.item.selector.criterion.LayoutItemSelectorCriterion;
+import com.liferay.layout.manager.LayoutLockManager;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.info.item.capability.EditPageInfoItemCapability;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
@@ -167,6 +169,7 @@ public class ContentPageEditorDisplayContext {
 		InfoSearchClassMapperRegistry infoSearchClassMapperRegistry,
 		ItemSelector itemSelector, JSONFactory jsonFactory, Language language,
 		LayoutLocalService layoutLocalService,
+		LayoutLockManager layoutLockManager,
 		LayoutPageTemplateEntryLocalService layoutPageTemplateEntryLocalService,
 		LayoutPageTemplateEntryService layoutPageTemplateEntryService,
 		LayoutPermission layoutPermission,
@@ -194,6 +197,7 @@ public class ContentPageEditorDisplayContext {
 		_jsonFactory = jsonFactory;
 		this.language = language;
 		_layoutLocalService = layoutLocalService;
+		this.layoutLockManager = layoutLockManager;
 		this.layoutPageTemplateEntryLocalService =
 			layoutPageTemplateEntryLocalService;
 		_layoutPageTemplateEntryService = layoutPageTemplateEntryService;
@@ -427,6 +431,11 @@ public class ContentPageEditorDisplayContext {
 				_getResourceURL(
 					"/layout_content_page_editor/get_collection_variations")
 			).put(
+				"getCollectionWarningMessageURL",
+				_getResourceURL(
+					"/layout_content_page_editor" +
+						"/get_collection_warning_message")
+			).put(
 				"getEditCollectionConfigurationURL",
 				ResourceURLBuilder.createResourceURL(
 					renderResponse
@@ -444,6 +453,9 @@ public class ContentPageEditorDisplayContext {
 				"getFileEntryURL",
 				_getResourceURL(
 					"/layout_content_page_editor/get_file_entry_url")
+			).put(
+				"getFormConfigURL",
+				_getResourceURL("/layout_content_page_editor/get_form_config")
 			).put(
 				"getFormFieldsURL",
 				_getResourceURL("/layout_content_page_editor/get_form_fields")
@@ -831,7 +843,7 @@ public class ContentPageEditorDisplayContext {
 
 	public boolean isMasterLayout() {
 		if (_getLayoutType() ==
-				LayoutPageTemplateEntryTypeConstants.TYPE_MASTER_LAYOUT) {
+				LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT) {
 
 			return true;
 		}
@@ -888,6 +900,10 @@ public class ContentPageEditorDisplayContext {
 
 					return null;
 				}
+			).setBackURL(
+				ParamUtil.getString(
+					portal.getOriginalServletRequest(httpServletRequest),
+					"p_l_back_url", themeDisplay.getURLCurrent())
 			).buildString(),
 			"p_l_mode", Constants.EDIT);
 	}
@@ -993,6 +1009,7 @@ public class ContentPageEditorDisplayContext {
 	protected final InfoItemServiceRegistry infoItemServiceRegistry;
 	protected final InfoSearchClassMapperRegistry infoSearchClassMapperRegistry;
 	protected final Language language;
+	protected final LayoutLockManager layoutLockManager;
 	protected final LayoutPageTemplateEntryLocalService
 		layoutPageTemplateEntryLocalService;
 	protected final Portal portal;
@@ -1440,8 +1457,6 @@ public class ContentPageEditorDisplayContext {
 		layoutItemSelectorCriterion.setDesiredItemSelectorReturnTypes(
 			new UUIDItemSelectorReturnType());
 		layoutItemSelectorCriterion.setMultiSelection(false);
-		layoutItemSelectorCriterion.setShowHiddenPages(true);
-		layoutItemSelectorCriterion.setShowPrivatePages(true);
 
 		return String.valueOf(
 			_itemSelector.getItemSelectorURL(
@@ -1489,41 +1504,46 @@ public class ContentPageEditorDisplayContext {
 		return _layoutType;
 	}
 
-	private Object _getLookAndFeelURL() {
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
-		Layout layout = themeDisplay.getLayout();
-
-		return PortletURLBuilder.create(
-			portal.getControlPanelPortletURL(
-				httpServletRequest, LayoutAdminPortletKeys.GROUP_PAGES,
-				PortletRequest.RENDER_PHASE)
-		).setMVCRenderCommandName(
-			"/layout_admin/edit_layout"
-		).setRedirect(
-			ParamUtil.getString(
-				portal.getOriginalServletRequest(httpServletRequest),
-				"p_l_back_url")
-		).setBackURL(
-			themeDisplay.getURLCurrent()
-		).setParameter(
-			"groupId", layout.getGroupId()
-		).setParameter(
-			"privateLayout", layout.isPrivateLayout()
-		).setParameter(
-			"screenNavigationEntryKey", "design"
-		).setParameter(
-			"selPlid",
+	private Object _getLookAndFeelURL() throws Exception {
+		return layoutLockManager.getUnlockDraftLayoutURL(
+			portal.getLiferayPortletResponse(renderResponse),
 			() -> {
-				if (layout.isDraftLayout()) {
-					return layout.getClassPK();
-				}
+				ThemeDisplay themeDisplay =
+					(ThemeDisplay)httpServletRequest.getAttribute(
+						WebKeys.THEME_DISPLAY);
 
-				return layout.getPlid();
-			}
-		).buildString();
+				Layout layout = themeDisplay.getLayout();
+
+				return PortletURLBuilder.create(
+					portal.getControlPanelPortletURL(
+						httpServletRequest, LayoutAdminPortletKeys.GROUP_PAGES,
+						PortletRequest.RENDER_PHASE)
+				).setMVCRenderCommandName(
+					"/layout_admin/edit_layout"
+				).setRedirect(
+					ParamUtil.getString(
+						portal.getOriginalServletRequest(httpServletRequest),
+						"p_l_back_url")
+				).setBackURL(
+					themeDisplay.getURLCurrent()
+				).setParameter(
+					"groupId", layout.getGroupId()
+				).setParameter(
+					"privateLayout", layout.isPrivateLayout()
+				).setParameter(
+					"screenNavigationEntryKey",
+					LayoutScreenNavigationEntryConstants.ENTRY_KEY_DESIGN
+				).setParameter(
+					"selPlid",
+					() -> {
+						if (layout.isDraftLayout()) {
+							return layout.getClassPK();
+						}
+
+						return layout.getPlid();
+					}
+				).buildString();
+			});
 	}
 
 	private JSONObject _getMappingFieldsJSONObject() throws Exception {
@@ -1624,7 +1644,7 @@ public class ContentPageEditorDisplayContext {
 		List<LayoutPageTemplateEntry> layoutPageTemplateEntries =
 			_layoutPageTemplateEntryService.getLayoutPageTemplateEntries(
 				themeDisplay.getScopeGroupId(),
-				LayoutPageTemplateEntryTypeConstants.TYPE_MASTER_LAYOUT,
+				LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT,
 				WorkflowConstants.STATUS_APPROVED, QueryUtil.ALL_POS,
 				QueryUtil.ALL_POS,
 				new LayoutPageTemplateEntryNameComparator(true));
@@ -1879,7 +1899,7 @@ public class ContentPageEditorDisplayContext {
 
 	private boolean _isMasterUsed() {
 		if (_getLayoutType() !=
-				LayoutPageTemplateEntryTypeConstants.TYPE_MASTER_LAYOUT) {
+				LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT) {
 
 			return false;
 		}

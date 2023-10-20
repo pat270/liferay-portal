@@ -15,7 +15,7 @@ function ContributorInputSetItem({index, onInputSetItemChange, value = {}}) {
 	const [touched, setTouched] = useState({
 		displayGroupName: false,
 		size: false,
-		sxpBlueprintId: false,
+		sxpBlueprintExternalReferenceCode: false,
 	});
 
 	const _handleBlur = (field) => () => {

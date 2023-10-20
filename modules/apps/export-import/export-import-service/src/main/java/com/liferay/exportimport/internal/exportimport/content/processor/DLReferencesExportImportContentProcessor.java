@@ -21,6 +21,7 @@ import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -28,7 +29,6 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.StagedModel;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.VirtualHost;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.portlet.constants.FriendlyURLResolverConstants;
 import com.liferay.portal.kernel.repository.friendly.url.resolver.FileEntryFriendlyURLResolver;
 import com.liferay.portal.kernel.repository.model.FileEntry;
@@ -365,7 +365,8 @@ public class DLReferencesExportImportContentProcessor
 
 		if (((beginPos == 0) && (endPos == content.length())) ||
 			_isCreoleReference(content, beginPos) ||
-			_isHTMLReference(content, beginPos)) {
+			_isHTMLReference(content, beginPos) ||
+			_isJSONReference(content, beginPos)) {
 
 			return false;
 		}
@@ -443,7 +444,8 @@ public class DLReferencesExportImportContentProcessor
 			if (substring.startsWith(hostName) &&
 				(((curBeginPos == 0) && (endPos == content.length())) ||
 				 _isCreoleReference(content, curBeginPos) ||
-				 _isHTMLReference(content, curBeginPos))) {
+				 _isHTMLReference(content, curBeginPos) ||
+				 _isJSONReference(content, curBeginPos))) {
 
 				return false;
 			}
@@ -477,6 +479,21 @@ public class DLReferencesExportImportContentProcessor
 		}
 
 		return false;
+	}
+
+	private boolean _isJSONReference(String content, int beginPos) {
+		String[] jsonAttributes = {"\"url\""};
+
+		int position = StringUtil.lastIndexOfAny(
+			content, jsonAttributes, beginPos);
+
+		if (position == -1) {
+			return false;
+		}
+
+		return _jsonAttributePattern.matcher(
+			content.substring(position, beginPos)
+		).matches();
 	}
 
 	private boolean _isLegacyURL(String content, int beginPos) {
@@ -932,6 +949,8 @@ public class DLReferencesExportImportContentProcessor
 	private static final Log _log = LogFactoryUtil.getLog(
 		DLReferencesExportImportContentProcessor.class);
 
+	private static final Pattern _jsonAttributePattern = Pattern.compile(
+		"\\\"[^\"\\\\\\\\]*\\\"\\s*:\\s*\\\"");
 	private static final Pattern _uuidPattern = Pattern.compile(
 		"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-" +
 			"[a-fA-F0-9]{12}(?=[&,?]|$)");

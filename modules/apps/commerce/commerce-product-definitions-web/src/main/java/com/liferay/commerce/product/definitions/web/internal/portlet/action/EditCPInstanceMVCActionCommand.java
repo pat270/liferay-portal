@@ -28,8 +28,8 @@ import com.liferay.commerce.product.service.CPDefinitionLocalService;
 import com.liferay.commerce.product.service.CPDefinitionOptionRelLocalService;
 import com.liferay.commerce.product.service.CPInstanceService;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
@@ -378,7 +378,8 @@ public class EditCPInstanceMVCActionCommand extends BaseMVCActionCommand {
 				_cpDefinitionOptionRelLocalService.
 					getCPDefinitionOptionRelCPDefinitionOptionValueRelIds(
 						cpDefinitionId,
-						ParamUtil.getString(actionRequest, "ddmFormValues")),
+						ParamUtil.getString(
+							actionRequest, "cpInstanceOptions")),
 				width, height, depth, weight, price, promoPrice, cost,
 				published, displayDateMonth, displayDateDay, displayDateYear,
 				displayDateHour, displayDateMinute, expirationDateMonth,
@@ -493,7 +494,7 @@ public class EditCPInstanceMVCActionCommand extends BaseMVCActionCommand {
 		CommercePriceEntry commercePriceEntry =
 			_commercePriceEntryLocalService.fetchCommercePriceEntry(
 				commercePriceList.getCommercePriceListId(),
-				cpInstance.getCPInstanceUuid());
+				cpInstance.getCPInstanceUuid(), StringPool.BLANK);
 
 		serviceContext.setWorkflowAction(WorkflowConstants.ACTION_PUBLISH);
 
@@ -507,9 +508,10 @@ public class EditCPInstanceMVCActionCommand extends BaseMVCActionCommand {
 				priceOnApplication, null, null, serviceContext);
 		}
 		else {
-			_commercePriceEntryLocalService.updateCommercePriceEntry(
-				commercePriceEntry.getCommercePriceEntryId(), price,
-				priceOnApplication, null, null, serviceContext);
+			_commercePriceEntryLocalService.updatePricingInfo(
+				commercePriceEntry.getCommercePriceEntryId(),
+				commercePriceEntry.isBulkPricing(), price, priceOnApplication,
+				null, null, serviceContext);
 		}
 	}
 

@@ -72,6 +72,13 @@ public class MBCategoryServiceWrapper
 	}
 
 	@Override
+	public MBCategory fetchMBCategory(long groupId, String friendlyURL)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _mbCategoryService.fetchMBCategory(groupId, friendlyURL);
+	}
+
+	@Override
 	public java.util.List<MBCategory> getCategories(long groupId) {
 		return _mbCategoryService.getCategories(groupId);
 	}
@@ -278,6 +285,13 @@ public class MBCategoryServiceWrapper
 	@Override
 	public long[] getCategoryIds(long groupId, long categoryId) {
 		return _mbCategoryService.getCategoryIds(groupId, categoryId);
+	}
+
+	@Override
+	public MBCategory getMBCategory(long groupId, String friendlyURL)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _mbCategoryService.getMBCategory(groupId, friendlyURL);
 	}
 
 	/**

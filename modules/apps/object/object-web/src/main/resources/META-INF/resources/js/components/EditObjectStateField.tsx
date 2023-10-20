@@ -17,18 +17,18 @@ import {useObjectFieldForm} from './ObjectField/useObjectFieldForm';
 import StateDefinition from './StateManager/StateDefinition';
 
 export default function EditObjectStateField({objectField, readOnly}: IProps) {
-	const [pickListItems, setPickListItems] = useState<PickListItem[]>([]);
+	const [listTypeEntries, setListTypeEntries] = useState<ListTypeEntry[]>([]);
 
 	useEffect(() => {
 		if (objectField?.listTypeDefinitionId) {
-			API.getPickListItems(objectField.listTypeDefinitionId).then(
-				setPickListItems
-			);
+			API.getListTypeDefinitionListTypeEntries(
+				objectField.listTypeDefinitionId
+			).then(setListTypeEntries);
 		}
 	}, [
 		objectField.listTypeDefinitionId,
 		objectField.listTypeDefinitionExternalReferenceCode,
-		setPickListItems,
+		setListTypeEntries,
 	]);
 
 	const isStateOptionChecked = ({
@@ -65,10 +65,10 @@ export default function EditObjectStateField({objectField, readOnly}: IProps) {
 		delete objectField.system;
 
 		try {
-			await API.save(
-				`/o/object-admin/v1.0/object-fields/${id}`,
-				objectField
-			);
+			await API.save({
+				item: objectField,
+				url: `/o/object-admin/v1.0/object-fields/${id}`,
+			});
 
 			saveAndReload();
 			openToast({
@@ -87,22 +87,24 @@ export default function EditObjectStateField({objectField, readOnly}: IProps) {
 		onSubmit,
 	});
 
+	const disabled = readOnly || !!objectField?.system;
+
 	return (
 		<SidePanelForm
 			className="lfr-objects__edit-object-state-field"
 			onSubmit={handleSubmit}
-			readOnly={readOnly}
+			readOnly={disabled}
 			title={`${
 				objectField.label[defaultLanguageId]
 			} ${Liferay.Language.get('settings')}`}
 		>
 			<Card title={Liferay.Language.get('select-the-state-flow')}>
-				{pickListItems?.map(({key, name}, index) => (
+				{listTypeEntries?.map(({key, name}, index) => (
 					<StateDefinition
 						currentKey={key}
-						disabled={readOnly}
+						disabled={disabled}
 						index={index}
-						initialValues={pickListItems
+						initialValues={listTypeEntries
 							.filter((item) => item.name !== name)
 							.map((item) => {
 								return {

@@ -1,6 +1,7 @@
 @component-name = "portal-wcm"
 definition {
 
+	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.component.names = "Master Page Templates";
@@ -37,7 +38,7 @@ definition {
 		}
 	}
 
-	@description = "This is a test for LPS-102566, LPS-109594 and LPS-119634. Add a page based on custom master."
+	@description = "This is a test for LPS-102566, LPS-109594, LPS-119634 and LPS-104629. Add a page based on custom master."
 	@priority = 5
 	test AddPageBasedOnCustomMaster {
 		property portal.acceptance = "true";
@@ -1552,6 +1553,8 @@ definition {
 				scope = "Master");
 
 			MastersPageTemplates.propagateChange();
+
+			Navigator.gotoBack();
 
 			WebContentDisplayPortlet.viewMessage();
 		}

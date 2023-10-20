@@ -8,13 +8,17 @@ package com.liferay.commerce.internal.util;
 import com.liferay.commerce.configuration.CommerceOrderItemDecimalQuantityConfiguration;
 import com.liferay.commerce.constants.CommerceOrderConstants;
 import com.liferay.commerce.model.CommerceOrderItem;
+import com.liferay.commerce.product.model.CPInstanceUnitOfMeasure;
 import com.liferay.commerce.product.model.CPMeasurementUnit;
+import com.liferay.commerce.product.service.CPInstanceUnitOfMeasureLocalService;
 import com.liferay.commerce.util.CommerceOrderItemQuantityFormatter;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
+import com.liferay.portal.kernel.exception.PortalException;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -26,6 +30,7 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Modified;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Alessio Antonio Rendina
@@ -38,33 +43,31 @@ public class CommerceOrderItemQuantityFormatterImpl
 	implements CommerceOrderItemQuantityFormatter {
 
 	@Override
-	public String format(CommerceOrderItem commerceOrderItem, Locale locale) {
+	public String format(
+			CommerceOrderItem commerceOrderItem,
+			CPInstanceUnitOfMeasure cpInstanceUnitOfMeasure, Locale locale)
+		throws PortalException {
+
 		CPMeasurementUnit cpMeasurementUnit =
 			commerceOrderItem.fetchCPMeasurementUnit();
 
-		BigDecimal decimalQuantity = commerceOrderItem.getDecimalQuantity();
+		DecimalFormat decimalFormat = _getDecimalFormat(locale);
+		BigDecimal quantity = commerceOrderItem.getQuantity();
 
-		if ((decimalQuantity == null) ||
-			decimalQuantity.equals(BigDecimal.ZERO)) {
-
-			if (cpMeasurementUnit == null) {
-				return String.valueOf(commerceOrderItem.getQuantity());
-			}
-
+		if (cpMeasurementUnit != null) {
 			return StringBundler.concat(
-				commerceOrderItem.getQuantity(), StringPool.SPACE,
+				decimalFormat.format(quantity), StringPool.SPACE,
 				cpMeasurementUnit.getName(locale));
 		}
 
-		DecimalFormat decimalFormat = _getDecimalFormat(locale);
-
-		if (cpMeasurementUnit == null) {
-			return decimalFormat.format(decimalQuantity);
+		if (cpInstanceUnitOfMeasure != null) {
+			return String.valueOf(
+				quantity.setScale(
+					cpInstanceUnitOfMeasure.getPrecision(),
+					RoundingMode.HALF_UP));
 		}
 
-		return StringBundler.concat(
-			decimalFormat.format(decimalQuantity), StringPool.SPACE,
-			cpMeasurementUnit.getName(locale));
+		return decimalFormat.format(quantity);
 	}
 
 	@Activate
@@ -100,5 +103,9 @@ public class CommerceOrderItemQuantityFormatterImpl
 
 	private volatile CommerceOrderItemDecimalQuantityConfiguration
 		_commerceOrderItemDecimalQuantityConfiguration;
+
+	@Reference
+	private CPInstanceUnitOfMeasureLocalService
+		_cpInstanceUnitOfMeasureLocalService;
 
 }

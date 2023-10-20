@@ -32,7 +32,7 @@ request.setAttribute("view.jsp-viewCategory", Boolean.TRUE.toString());
 <%@ include file="/message_boards/nav.jspf" %>
 
 <%
-MBAdminListDisplayContext mbAdminListDisplayContext = mbDisplayContextProvider.getMbAdminListDisplayContext(request, response, categoryId);
+MBAdminListDisplayContext mbAdminListDisplayContext = MBDisplayContextUtil.getMBAdminListDisplayContext(request, response, categoryId);
 
 PortletURL portletURL = mbEntriesManagementToolbarDisplayContext.getPortletURL();
 
@@ -69,6 +69,7 @@ String entriesNavigation = ParamUtil.getString(request, "entriesNavigation", "al
 	filterDropdownItems="<%= mbEntriesManagementToolbarDisplayContext.getFilterDropdownItems() %>"
 	filterLabelItems="<%= mbEntriesManagementToolbarDisplayContext.getFilterLabelItems() %>"
 	itemsTotal="<%= entriesSearchContainer.getTotal() %>"
+	orderDropdownItems="<%= mbEntriesManagementToolbarDisplayContext.getOrderByDropdownItems() %>"
 	propsTransformer="message_boards_admin/js/MBEntriesManagementToolbarPropsTransformer"
 	searchActionURL="<%= mbEntriesManagementToolbarDisplayContext.getSearchActionURL() %>"
 	searchContainerId="mbEntries"

@@ -50,8 +50,11 @@ public class LayoutPageTemplateCollectionStagedModelRepository
 		return _layoutPageTemplateCollectionLocalService.
 			addLayoutPageTemplateCollection(
 				userId, serviceContext.getScopeGroupId(),
+				layoutPageTemplateCollection.
+					getParentLayoutPageTemplateCollectionId(),
 				layoutPageTemplateCollection.getName(),
-				layoutPageTemplateCollection.getDescription(), serviceContext);
+				layoutPageTemplateCollection.getDescription(),
+				layoutPageTemplateCollection.getType(), serviceContext);
 	}
 
 	@Override

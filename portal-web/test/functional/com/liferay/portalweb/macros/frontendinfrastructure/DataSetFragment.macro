@@ -1,0 +1,47 @@
+definition {
+
+	macro addDataSetView {
+		PageEditor.gotoConfiguration(fragmentName = "Data Set");
+
+		Click.javaScriptClick(locator1 = "DataSet#SELECT_DATA_SET_VIEW");
+
+		SelectFrame(
+			key_title = "Select",
+			locator1 = "IFrame#MODAL_ANY");
+
+		Click.clickAtNotVisible(
+			key_radioOption = ${dataSetViewName},
+			locator1 = "CommerceEntry#RADIO_BUTTON");
+
+		Button.clickSave();
+	}
+
+	macro setUpDataSetPage {
+		Navigator.openURL();
+
+		ContentPages.addPage(pageName = ${pageName});
+
+		PageEditor.addFragment(
+			collectionName = "Content Display",
+			fragmentName = "Data Set");
+
+		DataSetFragment.addDataSetView(dataSetViewName = ${dataSetViewName});
+
+		SelectFrameTop();
+
+		Button.clickPublish();
+
+		Navigator.openURL();
+
+		Navigator.gotoPage(pageName = ${pageName});
+	}
+
+	macro viewColumnTitle {
+		for (var key_colunmTitle : list ${key_colunmTitleList}) {
+			AssertElementPresent(
+				key_field = ${key_colunmTitle},
+				locator1 = "FrontendDataSet#TABLE_ITEM_COLUMN");
+		}
+	}
+
+}

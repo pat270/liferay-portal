@@ -17,6 +17,8 @@ import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ParamUtil;
 
+import java.math.BigDecimal;
+
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 
@@ -82,13 +84,14 @@ public class EditCommerceInventoryWarehouseItemMVCActionCommand
 			ActionRequest actionRequest)
 		throws PortalException {
 
-		long mvccVersion = ParamUtil.getLong(actionRequest, "mvccVersion");
 		long commerceInventoryWarehouseItemId = ParamUtil.getLong(
 			actionRequest, "commerceInventoryWarehouseItemId");
 
-		int quantity = ParamUtil.getInteger(actionRequest, "quantity");
-		int reservedQuantity = ParamUtil.getInteger(
-			actionRequest, "reservedQuantity");
+		BigDecimal quantity = (BigDecimal)ParamUtil.getNumber(
+			actionRequest, "quantity", BigDecimal.ZERO);
+		BigDecimal reservedQuantity = (BigDecimal)ParamUtil.getNumber(
+			actionRequest, "reservedQuantity", BigDecimal.ZERO);
+		long mvccVersion = ParamUtil.getLong(actionRequest, "mvccVersion");
 
 		_commerceInventoryWarehouseItemService.
 			updateCommerceInventoryWarehouseItem(

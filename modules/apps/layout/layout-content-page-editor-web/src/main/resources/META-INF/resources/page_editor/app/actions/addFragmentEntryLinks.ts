@@ -5,7 +5,7 @@
 
 import {ADD_FRAGMENT_ENTRY_LINKS} from './types';
 
-import type {LayoutData} from '../../types/LayoutData';
+import type {LayoutData} from '../../types/layout_data/LayoutData';
 import type {EditableType} from '../config/constants/editableTypes';
 import type {FragmentEntryType} from '../config/constants/fragmentEntryTypes';
 import type {FragmentEntryLinkComment} from './addFragmentEntryLinkComment';
@@ -14,6 +14,7 @@ export interface FragmentEntryLink<
 	EditableId extends string = string,
 	ConfigurationFieldId extends string = string
 > {
+	collectionContent?: Record<string, string>;
 	comments: FragmentEntryLinkComment[];
 	configuration: Record<string, unknown>;
 	content: string;
@@ -25,6 +26,9 @@ export interface FragmentEntryLink<
 		[key in EditableId]: EditableType;
 	};
 	editableValues: {
+		'com.liferay.fragment.entry.processor.background.image.BackgroundImageFragmentEntryProcessor': {
+			[key in EditableId]: unknown;
+		};
 		'com.liferay.fragment.entry.processor.editable.EditableFragmentEntryProcessor': {
 			[key in EditableId]: unknown;
 		};
@@ -38,9 +42,17 @@ export interface FragmentEntryLink<
 	fragmentEntryType: FragmentEntryType;
 	groupId: string;
 	icon: string;
+	masterLayout?: boolean;
 	name: string;
+	portletId?: string;
+	removed: boolean;
 	segmentsExperienceId: string;
 }
+
+export type FragmentEntryLinkMap = Record<
+	FragmentEntryLink['fragmentEntryId'],
+	FragmentEntryLink
+>;
 
 export default function addFragmentEntryLinks({
 	addedItemId,

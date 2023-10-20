@@ -8,7 +8,7 @@ package com.liferay.headless.commerce.delivery.catalog.internal.dto.v1_0.convert
 import com.liferay.commerce.model.CPDefinitionInventory;
 import com.liferay.commerce.service.CPDefinitionInventoryLocalService;
 import com.liferay.headless.commerce.delivery.catalog.dto.v1_0.ProductConfiguration;
-import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.BigDecimalUtil;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
 
@@ -46,14 +46,16 @@ public class ProductConfigurationDTOConverter
 		return new ProductConfiguration() {
 			{
 				allowBackOrder = cpDefinitionInventory.isBackOrders();
-				allowedOrderQuantities = ArrayUtil.toArray(
-					cpDefinitionInventory.getAllowedOrderQuantitiesArray());
+				allowedOrderQuantities =
+					cpDefinitionInventory.getAllowedOrderQuantitiesArray();
 				inventoryEngine =
 					cpDefinitionInventory.getCPDefinitionInventoryEngine();
-				maxOrderQuantity = cpDefinitionInventory.getMaxOrderQuantity();
-				minOrderQuantity = cpDefinitionInventory.getMinOrderQuantity();
-				multipleOrderQuantity =
-					cpDefinitionInventory.getMultipleOrderQuantity();
+				maxOrderQuantity = BigDecimalUtil.stripTrailingZeros(
+					cpDefinitionInventory.getMaxOrderQuantity());
+				minOrderQuantity = BigDecimalUtil.stripTrailingZeros(
+					cpDefinitionInventory.getMinOrderQuantity());
+				multipleOrderQuantity = BigDecimalUtil.stripTrailingZeros(
+					cpDefinitionInventory.getMultipleOrderQuantity());
 			}
 		};
 	}

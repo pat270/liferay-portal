@@ -15,7 +15,6 @@ import com.liferay.object.constants.ObjectFieldSettingConstants;
 import com.liferay.object.service.ObjectFieldSettingLocalService;
 import com.liferay.object.service.ObjectStateFlowLocalService;
 import com.liferay.petra.function.transform.TransformUtil;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
@@ -68,11 +67,7 @@ public class ObjectFieldDTOConverter
 				label = LocalizedMapUtil.getLanguageIdMap(
 					objectField.getLabelMap());
 				listTypeDefinitionId = objectField.getListTypeDefinitionId();
-
-				if (FeatureFlagManagerUtil.isEnabled("LPS-172017")) {
-					localized = objectField.getLocalized();
-				}
-
+				localized = objectField.getLocalized();
 				name = objectField.getName();
 				objectFieldSettings = TransformUtil.transformToArray(
 					objectField.getObjectFieldSettings(),

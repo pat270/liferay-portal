@@ -6,6 +6,7 @@
 package com.liferay.portal.search.web.internal.modified.facet.display.context;
 
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.json.JSONFactoryImpl;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -15,7 +16,6 @@ import com.liferay.portal.kernel.search.facet.collector.FacetCollector;
 import com.liferay.portal.kernel.search.facet.collector.TermCollector;
 import com.liferay.portal.kernel.search.facet.config.FacetConfiguration;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
-import com.liferay.portal.kernel.util.DateFormatFactory;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
@@ -25,11 +25,10 @@ import com.liferay.portal.kernel.util.TimeZoneUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.search.web.internal.BaseFacetDisplayContextTestCase;
 import com.liferay.portal.search.web.internal.facet.display.context.BucketDisplayContext;
-import com.liferay.portal.search.web.internal.modified.facet.builder.DateRangeFactory;
 import com.liferay.portal.search.web.internal.modified.facet.configuration.ModifiedFacetPortletInstanceConfiguration;
 import com.liferay.portal.search.web.internal.modified.facet.display.context.builder.ModifiedFacetDisplayContextBuilder;
+import com.liferay.portal.search.web.internal.util.DateRangeFactoryUtil;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
-import com.liferay.portal.util.DateFormatFactoryImpl;
 
 import java.util.List;
 
@@ -55,10 +54,6 @@ public class ModifiedFacetDisplayContextBuilderTest
 	@Before
 	@Override
 	public void setUp() throws Exception {
-		_dateFormatFactory = new DateFormatFactoryImpl();
-
-		_dateRangeFactory = new DateRangeFactory(_dateFormatFactory);
-
 		_jsonFactoryImpl = new JSONFactoryImpl();
 
 		_setUpPortalUtil();
@@ -111,7 +106,7 @@ public class ModifiedFacetDisplayContextBuilderTest
 		String to = "2018-01-31";
 
 		TermCollector termCollector = _mockTermCollector(
-			_dateRangeFactory.getRangeString(from, to));
+			DateRangeFactoryUtil.getRangeString(from, to));
 
 		int frequency = RandomTestUtil.randomInt();
 
@@ -449,11 +444,15 @@ public class ModifiedFacetDisplayContextBuilderTest
 	private ModifiedFacetDisplayContextBuilder
 		_createModifiedFacetDisplayContextBuilder() {
 
+		configurationProviderUtilMockedStatic.when(
+			() -> ConfigurationProviderUtil.getPortletInstanceConfiguration(
+				Mockito.any(), Mockito.any())
+		).thenReturn(
+			Mockito.mock(ModifiedFacetPortletInstanceConfiguration.class)
+		);
+
 		try {
-			return new ModifiedFacetDisplayContextBuilder(
-				_dateFormatFactory,
-				getRenderRequest(
-					ModifiedFacetPortletInstanceConfiguration.class));
+			return new ModifiedFacetDisplayContextBuilder(getRenderRequest());
 		}
 		catch (ConfigurationException configurationException) {
 			throw new RuntimeException(configurationException);
@@ -535,8 +534,6 @@ public class ModifiedFacetDisplayContextBuilderTest
 		portalUtil.setPortal(portal);
 	}
 
-	private DateFormatFactory _dateFormatFactory;
-	private DateRangeFactory _dateRangeFactory;
 	private final Facet _facet = Mockito.mock(Facet.class);
 	private final FacetCollector _facetCollector = Mockito.mock(
 		FacetCollector.class);

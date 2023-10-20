@@ -8,11 +8,10 @@ package com.liferay.segments.internal.portlet.action.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.configuration.test.util.CompanyConfigurationTemporarySwapper;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
-import com.liferay.portal.kernel.settings.SettingsFactoryUtil;
 import com.liferay.portal.kernel.test.portlet.MockLiferayPortletActionRequest;
 import com.liferay.portal.kernel.test.portlet.MockLiferayPortletActionResponse;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
@@ -57,8 +56,7 @@ public class BindSegmentsCompanyConfigurationMVCActionCommandTest {
 					new CompanyConfigurationTemporarySwapper(
 						TestPropsValues.getCompanyId(),
 						SegmentsCompanyConfiguration.class.getName(),
-						new Hashtable<>(),
-						SettingsFactoryUtil.getSettingsFactory())) {
+						new Hashtable<>())) {
 
 			MockLiferayPortletActionRequest mockLiferayPortletActionRequest =
 				new MockLiferayPortletActionRequest();
@@ -89,8 +87,7 @@ public class BindSegmentsCompanyConfigurationMVCActionCommandTest {
 					new CompanyConfigurationTemporarySwapper(
 						TestPropsValues.getCompanyId(),
 						SegmentsCompanyConfiguration.class.getName(),
-						new Hashtable<>(),
-						SettingsFactoryUtil.getSettingsFactory())) {
+						new Hashtable<>())) {
 
 			MockLiferayPortletActionRequest mockLiferayPortletActionRequest =
 				new MockLiferayPortletActionRequest();
@@ -121,8 +118,7 @@ public class BindSegmentsCompanyConfigurationMVCActionCommandTest {
 					new CompanyConfigurationTemporarySwapper(
 						TestPropsValues.getCompanyId(),
 						SegmentsCompanyConfiguration.class.getName(),
-						new Hashtable<>(),
-						SettingsFactoryUtil.getSettingsFactory())) {
+						new Hashtable<>())) {
 
 			MockLiferayPortletActionRequest mockLiferayPortletActionRequest =
 				new MockLiferayPortletActionRequest();
@@ -152,8 +148,7 @@ public class BindSegmentsCompanyConfigurationMVCActionCommandTest {
 					new CompanyConfigurationTemporarySwapper(
 						TestPropsValues.getCompanyId(),
 						SegmentsCompanyConfiguration.class.getName(),
-						new Hashtable<>(),
-						SettingsFactoryUtil.getSettingsFactory())) {
+						new Hashtable<>())) {
 
 			MockLiferayPortletActionRequest mockLiferayPortletActionRequest =
 				new MockLiferayPortletActionRequest();

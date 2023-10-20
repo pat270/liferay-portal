@@ -10,9 +10,11 @@ import com.liferay.change.tracking.spi.display.CTDisplayRenderer;
 import com.liferay.change.tracking.spi.display.context.DisplayContext;
 import com.liferay.document.library.constants.DLPortletKeys;
 import com.liferay.document.library.kernel.model.DLFileEntry;
+import com.liferay.document.library.kernel.model.DLProcessorConstants;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.document.library.kernel.store.Store;
 import com.liferay.document.library.kernel.util.AudioProcessor;
+import com.liferay.document.library.kernel.util.DLProcessor;
 import com.liferay.document.library.kernel.util.ImageProcessor;
 import com.liferay.document.library.kernel.util.PDFProcessor;
 import com.liferay.document.library.kernel.util.VideoProcessor;
@@ -22,6 +24,7 @@ import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.TempFileEntryUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.trash.TrashHelper;
 
@@ -49,9 +52,13 @@ public class DLFileEntryCTDisplayRenderer
 			DLFileEntry dlFileEntry, String key)
 		throws PortalException {
 
+		PDFProcessor pdfProcessor = (PDFProcessor)_pdfDLProcessor;
+
+		ImageProcessor imageProcessor = (ImageProcessor)_imageDLProcessor;
+
 		return DLFileVersionCTDisplayRenderer.getDownloadInputStream(
 			_store, _audioProcessor, _dlAppLocalService,
-			dlFileEntry.getFileVersion(), _imageProcessor, key, _pdfProcessor,
+			dlFileEntry.getFileVersion(), imageProcessor, key, pdfProcessor,
 			_videoProcessor);
 	}
 
@@ -98,6 +105,13 @@ public class DLFileEntryCTDisplayRenderer
 	}
 
 	@Override
+	public boolean isHideable(DLFileEntry dlFileEntry) {
+		String title = dlFileEntry.getTitle();
+
+		return title.contains(TempFileEntryUtil.TEMP_RANDOM_SUFFIX);
+	}
+
+	@Override
 	public void render(DisplayContext<DLFileEntry> displayContext)
 		throws Exception {
 
@@ -126,11 +140,17 @@ public class DLFileEntryCTDisplayRenderer
 	@Reference
 	private GroupLocalService _groupLocalService;
 
-	@Reference(policyOption = ReferencePolicyOption.GREEDY)
-	private ImageProcessor _imageProcessor;
+	@Reference(
+		policyOption = ReferencePolicyOption.GREEDY,
+		target = "(type=" + DLProcessorConstants.IMAGE_PROCESSOR + ")"
+	)
+	private DLProcessor _imageDLProcessor;
 
-	@Reference(policyOption = ReferencePolicyOption.GREEDY)
-	private PDFProcessor _pdfProcessor;
+	@Reference(
+		policyOption = ReferencePolicyOption.GREEDY,
+		target = "(type=" + DLProcessorConstants.PDF_PROCESSOR + ")"
+	)
+	private DLProcessor _pdfDLProcessor;
 
 	@Reference
 	private Portal _portal;

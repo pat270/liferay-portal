@@ -6,10 +6,8 @@
 package com.liferay.segments.service;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.segments.model.SegmentsExperiment;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -50,6 +48,13 @@ public class SegmentsExperimentServiceUtil {
 	}
 
 	public static SegmentsExperiment deleteSegmentsExperiment(
+			SegmentsExperiment segmentsExperiment, boolean force)
+		throws PortalException {
+
+		return getService().deleteSegmentsExperiment(segmentsExperiment, force);
+	}
+
+	public static SegmentsExperiment deleteSegmentsExperiment(
 			String segmentsExperimentKey)
 		throws PortalException {
 
@@ -57,11 +62,11 @@ public class SegmentsExperimentServiceUtil {
 	}
 
 	public static SegmentsExperiment fetchSegmentsExperiment(
-			long segmentsExperienceId, long plid, int[] statuses)
+			long groupId, long segmentsExperienceId, long plid)
 		throws PortalException {
 
 		return getService().fetchSegmentsExperiment(
-			segmentsExperienceId, plid, statuses);
+			groupId, segmentsExperienceId, plid);
 	}
 
 	public static SegmentsExperiment fetchSegmentsExperiment(
@@ -81,16 +86,6 @@ public class SegmentsExperimentServiceUtil {
 		return getService().getOSGiServiceIdentifier();
 	}
 
-	public static List<SegmentsExperiment>
-			getSegmentsExperienceSegmentsExperiments(
-				long[] segmentsExperienceIds, long plid, int[] statuses,
-				int start, int end)
-		throws PortalException {
-
-		return getService().getSegmentsExperienceSegmentsExperiments(
-			segmentsExperienceIds, plid, statuses, start, end);
-	}
-
 	public static SegmentsExperiment getSegmentsExperiment(
 			long segmentsExperimentId)
 		throws PortalException {
@@ -103,20 +98,6 @@ public class SegmentsExperimentServiceUtil {
 		throws PortalException {
 
 		return getService().getSegmentsExperiment(segmentsExperimentKey);
-	}
-
-	public static List<SegmentsExperiment> getSegmentsExperiments(
-		long groupId, long plid) {
-
-		return getService().getSegmentsExperiments(groupId, plid);
-	}
-
-	public static List<SegmentsExperiment> getSegmentsExperiments(
-		long segmentsExperienceId, long plid, int[] statuses,
-		OrderByComparator<SegmentsExperiment> orderByComparator) {
-
-		return getService().getSegmentsExperiments(
-			segmentsExperienceId, plid, statuses, orderByComparator);
 	}
 
 	public static SegmentsExperiment runSegmentsExperiment(

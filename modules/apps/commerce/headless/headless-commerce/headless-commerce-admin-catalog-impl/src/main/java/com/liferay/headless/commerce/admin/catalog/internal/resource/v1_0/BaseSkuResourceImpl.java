@@ -114,7 +114,7 @@ public abstract class BaseSkuResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/by-externalReferenceCode/{externalReferenceCode}/skus' -d $'{"cost": ___, "customFields": ___, "depth": ___, "discontinued": ___, "discontinuedDate": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "gtin": ___, "height": ___, "manufacturerPartNumber": ___, "neverExpire": ___, "price": ___, "promoPrice": ___, "published": ___, "purchasable": ___, "replacementSkuExternalReferenceCode": ___, "replacementSkuId": ___, "sku": ___, "skuOptions": ___, "skuSubscriptionConfiguration": ___, "skuVirtualSettings": ___, "unspsc": ___, "weight": ___, "width": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/by-externalReferenceCode/{externalReferenceCode}/skus' -d $'{"cost": ___, "customFields": ___, "depth": ___, "discontinued": ___, "discontinuedDate": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "gtin": ___, "height": ___, "manufacturerPartNumber": ___, "neverExpire": ___, "price": ___, "promoPrice": ___, "published": ___, "purchasable": ___, "replacementSkuExternalReferenceCode": ___, "replacementSkuId": ___, "sku": ___, "skuOptions": ___, "skuSubscriptionConfiguration": ___, "skuUnitOfMeasures": ___, "skuVirtualSettings": ___, "unspsc": ___, "weight": ___, "width": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
@@ -186,7 +186,7 @@ public abstract class BaseSkuResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/{id}/skus' -d $'{"cost": ___, "customFields": ___, "depth": ___, "discontinued": ___, "discontinuedDate": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "gtin": ___, "height": ___, "manufacturerPartNumber": ___, "neverExpire": ___, "price": ___, "promoPrice": ___, "published": ___, "purchasable": ___, "replacementSkuExternalReferenceCode": ___, "replacementSkuId": ___, "sku": ___, "skuOptions": ___, "skuSubscriptionConfiguration": ___, "skuVirtualSettings": ___, "unspsc": ___, "weight": ___, "width": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/{id}/skus' -d $'{"cost": ___, "customFields": ___, "depth": ___, "discontinued": ___, "discontinuedDate": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "gtin": ___, "height": ___, "manufacturerPartNumber": ___, "neverExpire": ___, "price": ___, "promoPrice": ___, "published": ___, "purchasable": ___, "replacementSkuExternalReferenceCode": ___, "replacementSkuId": ___, "sku": ___, "skuOptions": ___, "skuSubscriptionConfiguration": ___, "skuUnitOfMeasures": ___, "skuVirtualSettings": ___, "unspsc": ___, "weight": ___, "width": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
@@ -448,7 +448,7 @@ public abstract class BaseSkuResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/skus/by-externalReferenceCode/{externalReferenceCode}' -d $'{"cost": ___, "customFields": ___, "depth": ___, "discontinued": ___, "discontinuedDate": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "gtin": ___, "height": ___, "manufacturerPartNumber": ___, "neverExpire": ___, "price": ___, "promoPrice": ___, "published": ___, "purchasable": ___, "replacementSkuExternalReferenceCode": ___, "replacementSkuId": ___, "sku": ___, "skuOptions": ___, "skuSubscriptionConfiguration": ___, "skuVirtualSettings": ___, "unspsc": ___, "weight": ___, "width": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/skus/by-externalReferenceCode/{externalReferenceCode}' -d $'{"cost": ___, "customFields": ___, "depth": ___, "discontinued": ___, "discontinuedDate": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "gtin": ___, "height": ___, "manufacturerPartNumber": ___, "neverExpire": ___, "price": ___, "promoPrice": ___, "published": ___, "purchasable": ___, "replacementSkuExternalReferenceCode": ___, "replacementSkuId": ___, "sku": ___, "skuOptions": ___, "skuSubscriptionConfiguration": ___, "skuUnitOfMeasures": ___, "skuVirtualSettings": ___, "unspsc": ___, "weight": ___, "width": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
@@ -584,7 +584,7 @@ public abstract class BaseSkuResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/skus/{id}' -d $'{"cost": ___, "customFields": ___, "depth": ___, "discontinued": ___, "discontinuedDate": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "gtin": ___, "height": ___, "manufacturerPartNumber": ___, "neverExpire": ___, "price": ___, "promoPrice": ___, "published": ___, "purchasable": ___, "replacementSkuExternalReferenceCode": ___, "replacementSkuId": ___, "sku": ___, "skuOptions": ___, "skuSubscriptionConfiguration": ___, "skuVirtualSettings": ___, "unspsc": ___, "weight": ___, "width": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/skus/{id}' -d $'{"cost": ___, "customFields": ___, "depth": ___, "discontinued": ___, "discontinuedDate": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "gtin": ___, "height": ___, "manufacturerPartNumber": ___, "neverExpire": ___, "price": ___, "promoPrice": ___, "published": ___, "purchasable": ___, "replacementSkuExternalReferenceCode": ___, "replacementSkuId": ___, "sku": ___, "skuOptions": ___, "skuSubscriptionConfiguration": ___, "skuUnitOfMeasures": ___, "skuVirtualSettings": ___, "unspsc": ___, "weight": ___, "width": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
@@ -610,6 +610,54 @@ public abstract class BaseSkuResourceImpl
 		throws Exception {
 
 		return new Sku();
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/unit-of-measure-skus'  -u 'test@liferay.com:test'
+	 */
+	@io.swagger.v3.oas.annotations.Parameters(
+		value = {
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
+				name = "filter"
+			),
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
+				name = "page"
+			),
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
+				name = "pageSize"
+			),
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
+				name = "search"
+			),
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
+				name = "sort"
+			)
+		}
+	)
+	@io.swagger.v3.oas.annotations.tags.Tags(
+		value = {@io.swagger.v3.oas.annotations.tags.Tag(name = "Sku")}
+	)
+	@javax.ws.rs.GET
+	@javax.ws.rs.Path("/unit-of-measure-skus")
+	@javax.ws.rs.Produces({"application/json", "application/xml"})
+	@Override
+	public Page<Sku> getUnitOfMeasureSkusPage(
+			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
+			@javax.ws.rs.QueryParam("search")
+			String search,
+			@javax.ws.rs.core.Context Filter filter,
+			@javax.ws.rs.core.Context Pagination pagination,
+			@javax.ws.rs.core.Context Sort[] sorts)
+		throws Exception {
+
+		return Page.of(Collections.emptyList());
 	}
 
 	@Override

@@ -219,6 +219,29 @@ definition {
 			value1 = ${uploadFileName});
 	}
 
+	macro addFeaturedImageFromDocumentsAndMedia {
+		Panel.expandPanel(panel = "Featured Image");
+
+		Select(
+			locator1 = "WCEditWebContent#SELECT_FEATURED_IMAGE_TYPE",
+			value1 = "From Documents and Media");
+
+		if (IsTextEqual(locator1 = "WCEditWebContent#SELECT_FEATURED_IMAGE_INPUT", value1 = "")) {
+			Click(
+				key_title = "Select Image",
+				locator1 = "Button#ANY_TITLE");
+		}
+		else {
+			Click(
+				key_title = "Change Image",
+				locator1 = "Button#ANY_TITLE");
+		}
+
+		ItemSelector.selectDMImage(
+			dmFolderName = ${dmFolderName},
+			imageFileName = ${imageFileName});
+	}
+
 	macro addFeaturedImageFromURL {
 		Panel.expandPanel(panel = "Featured Image");
 
@@ -613,7 +636,7 @@ definition {
 				var webContentMultipleSelectionFieldLabel = "Multiple Selection";
 			}
 
-			Check.checkNotVisible(
+			Click.javaScriptClick(
 				key_fieldFieldLabel = ${webContentMultipleSelectionFieldLabel},
 				key_optionValue = ${webContentMultipleSelection},
 				locator1 = "WCEditWebContent#SELECTION_OPTION");
@@ -925,7 +948,7 @@ definition {
 	macro copyCP {
 		WebContentNavigator.gotoEntryMenuItem(
 			entry = ${webContentTitle},
-			menuItem = "Copy");
+			menuItem = "Make a Copy");
 
 		Alert.viewSuccessMessage();
 	}
@@ -1518,22 +1541,17 @@ definition {
 	}
 
 	macro increaseDisplayDate {
-		var displayDate = selenium.getAttribute("//input[contains(@id,'displayDate')]@value");
-		var displayDateHour = selenium.getAttribute("//input[contains(@id,'displayDateHour')]@value");
-		var displayDateAmpm = selenium.getAttribute("//input[contains(@id,'displayDateAmPm')]@value");
-
-		var displayDateAmpm = StringUtil.replace(${displayDateAmpm}, 0, "AM");
-
-		var displayDateAmpm = StringUtil.replace(${displayDateAmpm}, 1, "PM");
-		var displayDateMinute = selenium.getAttribute("//input[contains(@id,'displayDateMinute')]@value");
-
-		var displayDateMinuteFuture = ${displayDateMinute} + ${minuteIncrease};
-
-		var displayTime = "${displayDateHour}:${displayDateMinuteFuture} ${displayDateAmpm}";
+		var displayDate = DateTimeSchedule.getCurrentDisplayDate(field = "display");
+		var currentTime = DateTimeSchedule.getCurrentDisplayTime(field = "display");
+		var displayTime = DateTimeSchedule.increaseDisplayTime(
+			field = "display",
+			minuteIncreaseValue = ${minuteIncrease});
 
 		WebContent.editDisplayDate(
 			displayDate = ${displayDate},
 			displayTime = ${displayTime});
+
+		echo("Web Content display time increased ${minuteIncrease} minutes, changed from ${currentTime} to ${displayTime}");
 	}
 
 	macro moveArticlesToFolderCP {
@@ -2032,6 +2050,24 @@ definition {
 				locator1 = "AssetCategorization#VOCABULARY_LIST_ITEM",
 				value1 = ${vocabularyName});
 		}
+	}
+
+	macro viewClipboardContent {
+		WebContentNavigator.openToAddBasicArticle(
+			groupName = "Guest",
+			siteURLKey = "guest");
+
+		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME_2");
+
+		Click(locator1 = "CKEditor#BODY");
+
+		Type.sendKeys(
+			locator1 = "CKEditor#BODY",
+			value1 = "keys=CONTROL,v");
+
+		WaitForElementPresent(
+			key_text = ${text},
+			locator1 = "CKEditor#BODY_TEXT");
 	}
 
 	macro viewCompareVersions {
@@ -2888,9 +2924,7 @@ definition {
 
 				var actual = TestUtils.getElementTextContent(element = "//label[normalize-space(text())='${webContentTextFieldLabel}']//..//textarea");
 
-				TestUtils.assertEquals(
-					actual = ${actual},
-					expected = ${webContentText});
+				StringUtil.assertEquals(${webContentText}, ${actual});
 			}
 			else {
 				AssertTextEquals.assertValue(

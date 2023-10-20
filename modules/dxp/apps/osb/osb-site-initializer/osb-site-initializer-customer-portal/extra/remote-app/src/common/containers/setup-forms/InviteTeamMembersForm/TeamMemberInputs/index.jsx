@@ -5,11 +5,16 @@
 
 import {ClayInput} from '@clayui/form';
 import {useEffect, useMemo} from 'react';
+import useProvisioningLicenseKeys from '~/common/hooks/useProvisioningLicenseKeys';
 import i18n from '../../../../I18n';
 import {Input, Select} from '../../../../components';
 import useBannedDomains from '../../../../hooks/useBannedDomains';
-import {ROLE_TYPES} from '../../../../utils/constants';
-import {isValidEmail} from '../../../../utils/validations.form';
+import {ROLE_TYPES} from '../../../../utils/constants/';
+import {liferayDomains} from '../../../../utils/constants/liferayDomains';
+import {
+	isLiferayDomain,
+	isValidEmail,
+} from '../../../../utils/validations.form';
 
 const FETCH_DELAY_AFTER_TYPING = 500;
 
@@ -23,10 +28,33 @@ const TeamMemberInputs = ({
 	placeholderEmail,
 	selectOnChange,
 }) => {
+	const provisioningService = useProvisioningLicenseKeys();
+
 	const bannedDomains = useBannedDomains(
 		invite?.email,
 		FETCH_DELAY_AFTER_TYPING
 	);
+
+	const validateEmail = useMemo(async () => {
+		const [, domain] = invite?.email.split('@');
+
+		if (isValidEmail(invite?.email, bannedDomains)) {
+			return isValidEmail(invite?.email, bannedDomains);
+		}
+
+		const hasLiferayDomain = liferayDomains.includes(domain);
+
+		if (hasLiferayDomain) {
+			const emailExistsInOkta = await provisioningService.getUserInOkta(
+				invite?.email
+			);
+			if (!emailExistsInOkta) {
+				return isLiferayDomain(invite?.email);
+			}
+
+			return false;
+		}
+	}, [bannedDomains, invite?.email, provisioningService]);
 
 	const isAdministratorOrRequestorRoleSelected =
 		invite?.role?.name === ROLE_TYPES.requester.name ||
@@ -97,9 +125,7 @@ const TeamMemberInputs = ({
 						placeholder={placeholderEmail}
 						required
 						type="email"
-						validations={[
-							(value) => isValidEmail(value, bannedDomains),
-						]}
+						validations={[() => validateEmail]}
 					/>
 				</ClayInput.GroupItem>
 

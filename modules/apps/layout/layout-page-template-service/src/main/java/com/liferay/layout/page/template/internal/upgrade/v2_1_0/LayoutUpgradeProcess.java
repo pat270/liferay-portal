@@ -7,6 +7,7 @@ package com.liferay.layout.page.template.internal.upgrade.v2_1_0;
 
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.service.FragmentEntryLinkLocalService;
+import com.liferay.layout.constants.LayoutTypeSettingsConstants;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.petra.string.StringBundler;
@@ -60,7 +61,7 @@ public class LayoutUpgradeProcess extends UpgradeProcess {
 			long layoutPrototypeId, ServiceContext serviceContext)
 		throws Exception {
 
-		if ((type == LayoutPageTemplateEntryTypeConstants.TYPE_WIDGET_PAGE) &&
+		if ((type == LayoutPageTemplateEntryTypeConstants.WIDGET_PAGE) &&
 			(layoutPrototypeId > 0)) {
 
 			LayoutPrototype layoutPrototype =
@@ -75,7 +76,7 @@ public class LayoutUpgradeProcess extends UpgradeProcess {
 		boolean privateLayout = false;
 		String layoutType = LayoutConstants.TYPE_ASSET_DISPLAY;
 
-		if (type == LayoutPageTemplateEntryTypeConstants.TYPE_BASIC) {
+		if (type == LayoutPageTemplateEntryTypeConstants.BASIC) {
 			layoutType = LayoutConstants.TYPE_CONTENT;
 			privateLayout = true;
 		}
@@ -90,7 +91,7 @@ public class LayoutUpgradeProcess extends UpgradeProcess {
 			PortalUtil.getValidUserId(companyId, userId), groupId,
 			privateLayout, 0, titleMap, titleMap, null, null, null, layoutType,
 			UnicodePropertiesBuilder.put(
-				"published", "true"
+				LayoutTypeSettingsConstants.KEY_PUBLISHED, "true"
 			).buildString(),
 			true, true, new HashMap<>(), serviceContext);
 

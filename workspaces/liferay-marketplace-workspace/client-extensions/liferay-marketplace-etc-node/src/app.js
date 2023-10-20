@@ -8,8 +8,23 @@ import express from 'express';
 import fetch from 'node-fetch';
 
 import config from './util/configTreePath.js';
-import {corsWithReady, liferayJWT} from './util/liferay-oauth2-resource-server.js';
+import {
+	corsWithReady,
+	liferayJWT,
+} from './util/liferay-oauth2-resource-server.js';
 import log from './util/log.js';
+
+import 'dotenv/config.js';
+
+const trialTypes = {
+	CLOUDAPP: 0,
+	CLOUDAPP30: 30,
+	DXPAPP: 0,
+	DXPAPP30: 30,
+	PROJECT60: 60,
+	SOLUTIONS7: 7,
+	SOLUTIONS30: 30,
+};
 
 const SSA_BASE_URL =
 	process.env.LIFERAY_MARKETPLACE_ETC_NODE_SSA_BASE_URL ||
@@ -22,6 +37,9 @@ const SSA_CLIENT_ID =
 const SSA_CLIENT_SECRET =
 	process.env.LIFERAY_MARKETPLACE_ETC_NODE_SSA_CLIENT_SECRET || '';
 
+const lxcDXPServerProtocol = config['com.liferay.lxc.dxp.server.protocol'];
+const lxcDXPMainDomain = config['com.liferay.lxc.dxp.mainDomain'];
+
 const app = express();
 
 let _ssaBearer;
@@ -32,7 +50,7 @@ const getSSABearer = async function () {
 		return _ssaBearer;
 	}
 
-	await fetch(SSA_BASE_URL + '/o/oauth2/token', {
+	return fetch(SSA_BASE_URL + '/o/oauth2/token', {
 		body: new URLSearchParams({
 			client_id: SSA_CLIENT_ID,
 			client_secret: SSA_CLIENT_SECRET,
@@ -68,7 +86,6 @@ app.post('/marketplace/test', async (req, res) => {
 	const {body, jwt} = req;
 
 	log.info(`post /marketplace/test: ${JSON.stringify(body, null, '\t')}`);
-
 	log.info('User %s is authorized', jwt.username);
 	log.info('User scope %s', jwt.scope);
 
@@ -172,64 +189,95 @@ app.get('/marketplace/trials/count', async (req, res) => {
 });
 
 app.post('/marketplace/trial', async (req, res) => {
-	const {body, jwt} = req;
+	try {
+		const {body} = req;
+		const bearerToken = req.headers.authorization;
+		const data = {};
+		const token = await getSSABearer();
+		const uri = SSA_BASE_URL + '/o/provisioning/trial';
 
-	const data = {};
-	const uri = SSA_BASE_URL + '/o/provisioning/trial';
+		const getUserInfoResponse = await fetch(
+			`${lxcDXPServerProtocol}://${lxcDXPMainDomain}/o/headless-admin-user/v1.0/user-accounts/${body.userId}`,
+			{
+				headers: {
+					Authorization: bearerToken,
+				},
+			}
+		);
 
-	const userAccountResponse = await fetch(
-		SSA_BASE_URL +
-			'/o/headless-admin-user/v1.0/user-accounts/' +
-			body.userId,
-		{
-			headers: {
-				Authorization: `Bearer ${jwt}`,
-			},
+		if (!getUserInfoResponse.ok) {
+			throw new Error('Failed to fetch user information');
 		}
-	);
 
-	if (userAccountResponse.ok) {
-		const userAccountJSON = await userAccountResponse.json();
+		const userInformation = await getUserInfoResponse.json();
 
-		data.emailAddress = userAccountJSON.emailAddress;
-		data.firstName = userAccountJSON.firstName;
-		data.lastName = userAccountJSON.lastName;
+		const getCustomFieldsResponse = await fetch(
+			`${lxcDXPServerProtocol}://${lxcDXPMainDomain}/o/headless-commerce-admin-order/v1.0/orders/${body.modelDTOOrder.id}?fields=customFields`,
+			{
+				headers: {
+					Authorization: bearerToken,
+				},
+			}
+		);
+
+		if (!getCustomFieldsResponse.ok) {
+			throw new Error('Failed to fetch custom fields');
+		}
+
+		const {customFields} = await getCustomFieldsResponse.json();
+		const accountId = body.modelDTOOrder.accountId;
+		const projectName = customFields['Project Name'];
+		const siteInitializer = customFields['Site Initializer'];
+
+		data.emailAddress = userInformation.emailAddress;
+		data.firstName = userInformation.givenName;
+		data.lastName = userInformation.familyName;
+
+		if (accountId !== '') {
+			data.accountId = Number(accountId);
+		}
+
+		if (projectName !== '') {
+			data.projectName = projectName;
+		}
+
+		if (siteInitializer !== '') {
+			data.siteInitializer = siteInitializer;
+		}
+
+		data.duration =
+			trialTypes[body.modelDTOOrder.orderTypeExternalReferenceCode] ||
+			Number(SSA_DURATION);
+		data.userId = Number(SSA_SERVICE_USER_ID) || body.userId;
+
+		const response = await fetch(uri, {
+			body: JSON.stringify(data),
+			headers: {
+				'Authorization': `Bearer ${token.access_token}`,
+				'Content-Type': 'application/json',
+			},
+			method: 'POST',
+		});
+
+		if (!response.ok) {
+			throw new Error(
+				`Trial request failed with status: ${response.status}`
+			);
+		}
+
+		const responseData = await response.json();
+
+		log.info(
+			'Trail request sent for order: ' + JSON.stringify(responseData)
+		);
+
+		res.status(200).send(body);
 	}
+	catch (error) {
+		log.error(error);
 
-	const accountId = body.commerceOrder.accountId;
-	const projectName = body.commerceOrder.customFields.projectName;
-	const siteInitializer = body.commerceOrder.customFields.siteInitializer;
-
-	if (accountId !== '') {
-		data.accountId = accountId;
+		res.status(500).send('Internal Server Error');
 	}
-
-	data.duration = SSA_DURATION;
-
-	if (projectName !== '') {
-		data.projectName = projectName;
-	}
-
-	data.sendEmailForTrial = true;
-
-	if (siteInitializer !== '') {
-		data.siteInitializer = siteInitializer;
-	}
-
-	data.userId = SSA_SERVICE_USER_ID;
-
-	fetch(uri, {
-		body: JSON.stringify(data),
-		headers: {
-			'Authorization': `Bearer ${getSSABearer()}`,
-			'Content-Type': 'application/json',
-		},
-		method: 'POST',
-	})
-		.then((response) => log.info('Trail request sent for order: ', response.commerceOrderId))
-		.catch((error) => log.error(error));
-
-	res.status(200).send(body);
 });
 
 app.post('/marketplace/trial/extend', async (req, res) => {

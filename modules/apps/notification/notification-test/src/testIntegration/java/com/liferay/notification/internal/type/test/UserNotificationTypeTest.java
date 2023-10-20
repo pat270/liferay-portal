@@ -207,13 +207,14 @@ public class UserNotificationTypeTest extends BaseNotificationTypeTest {
 			UnicodePropertiesBuilder.put(
 				"notificationTemplateId",
 				notificationTemplate.getNotificationTemplateId()
-			).build());
+			).build(),
+			false);
 
 		ObjectEntry objectEntry = objectEntryManager.addObjectEntry(
 			dtoConverterContext, parentObjectDefinition,
 			new ObjectEntry() {
 				{
-					setProperties(parentObjectEntryValues);
+					properties = parentObjectEntryValues;
 				}
 			},
 			ObjectDefinitionConstants.SCOPE_COMPANY);
@@ -222,13 +223,12 @@ public class UserNotificationTypeTest extends BaseNotificationTypeTest {
 			dtoConverterContext, childObjectDefinition,
 			new ObjectEntry() {
 				{
-					setProperties(
-						HashMapBuilder.putAll(
-							childObjectEntryValues
-						).put(
-							getObjectRelationshipObjectField2Name(),
-							objectEntry.getId()
-						).build());
+					properties = HashMapBuilder.putAll(
+						childObjectEntryValues
+					).put(
+						getObjectRelationshipObjectField2Name(),
+						objectEntry.getId()
+					).build();
 				}
 			},
 			ObjectDefinitionConstants.SCOPE_COMPANY);
@@ -303,13 +303,14 @@ public class UserNotificationTypeTest extends BaseNotificationTypeTest {
 			UnicodePropertiesBuilder.put(
 				"notificationTemplateId",
 				notificationTemplate.getNotificationTemplateId()
-			).build());
+			).build(),
+			false);
 
 		ObjectEntry objectEntry = objectEntryManager.addObjectEntry(
 			dtoConverterContext, parentObjectDefinition,
 			new ObjectEntry() {
 				{
-					setProperties(parentObjectEntryValues);
+					properties = parentObjectEntryValues;
 				}
 			},
 			ObjectDefinitionConstants.SCOPE_COMPANY);
@@ -318,13 +319,12 @@ public class UserNotificationTypeTest extends BaseNotificationTypeTest {
 			dtoConverterContext, childObjectDefinition,
 			new ObjectEntry() {
 				{
-					setProperties(
-						HashMapBuilder.putAll(
-							childObjectEntryValues
-						).put(
-							getObjectRelationshipObjectField2Name(),
-							objectEntry.getId()
-						).build());
+					properties = HashMapBuilder.putAll(
+						childObjectEntryValues
+					).put(
+						getObjectRelationshipObjectField2Name(),
+						objectEntry.getId()
+					).build();
 				}
 			},
 			ObjectDefinitionConstants.SCOPE_COMPANY);

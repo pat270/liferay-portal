@@ -7,6 +7,7 @@ package com.liferay.account.admin.web.internal.display.context;
 
 import com.liferay.account.admin.web.internal.display.AccountUserDisplay;
 import com.liferay.account.admin.web.internal.security.permission.resource.AccountEntryPermission;
+import com.liferay.account.constants.AccountActionKeys;
 import com.liferay.account.service.AccountEntryUserRelLocalServiceUtil;
 import com.liferay.frontend.taglib.clay.servlet.taglib.display.context.SearchContainerManagementToolbarDisplayContext;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
@@ -96,6 +97,7 @@ public class ViewAccountUsersManagementToolbarDisplayContext
 	@Override
 	public CreationMenu getCreationMenu() {
 		return CreationMenuBuilder.addDropdownItem(
+			() -> _hasManageUsersPermission(),
 			dropdownItem -> {
 				dropdownItem.putData("action", "selectAccountUsers");
 				dropdownItem.putData(
@@ -124,6 +126,7 @@ public class ViewAccountUsersManagementToolbarDisplayContext
 					LanguageUtil.get(httpServletRequest, "assign-users"));
 			}
 		).addDropdownItem(
+			() -> _hasInviteUserPermission() || _hasManageUsersPermission(),
 			dropdownItem -> {
 				dropdownItem.putData("action", "inviteAccountUsers");
 				dropdownItem.putData(
@@ -207,7 +210,7 @@ public class ViewAccountUsersManagementToolbarDisplayContext
 
 	@Override
 	public Boolean isShowCreationMenu() {
-		return _hasManageUsersPermission();
+		return _hasInviteUserPermission() || _hasManageUsersPermission();
 	}
 
 	@Override
@@ -234,6 +237,16 @@ public class ViewAccountUsersManagementToolbarDisplayContext
 
 	private long _getAccountEntryId() {
 		return ParamUtil.getLong(liferayPortletRequest, "accountEntryId");
+	}
+
+	private boolean _hasInviteUserPermission() {
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		return AccountEntryPermission.contains(
+			themeDisplay.getPermissionChecker(), _getAccountEntryId(),
+			AccountActionKeys.INVITE_USER);
 	}
 
 	private boolean _hasManageUsersPermission() {

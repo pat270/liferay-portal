@@ -131,7 +131,34 @@ const ImageSelector = ({
 	const handleFileSelect = (event) => {
 		rootNodeRef.current.classList.remove(CSS_DROP_ACTIVE);
 
-		const file = event.fileList[0];
+		const fileList = event.fileList;
+
+		if (fileList.length > 1) {
+			setErrorMessage(
+				sub(
+					Liferay.Language.get(
+						'multiple-file-upload-is-not-supported-please-enter-a-single-file'
+					)
+				)
+			);
+
+			return;
+		}
+
+		const file = fileList[0];
+
+		if (file.get('size') > maxFileSize) {
+			setErrorMessage(
+				sub(
+					Liferay.Language.get(
+						'please-enter-a-file-with-a-valid-file-size-no-larger-than-x'
+					),
+					[formatStorage(parseInt(maxFileSize, 10))]
+				)
+			);
+
+			return;
+		}
 
 		setFileName(file.get('name'));
 
@@ -144,7 +171,7 @@ const ImageSelector = ({
 			queue.startUpload();
 		}
 
-		uploader.uploadThese(event.fileList);
+		uploader.upload(file);
 	};
 
 	const handleImageCropped = (cropRegion) => {

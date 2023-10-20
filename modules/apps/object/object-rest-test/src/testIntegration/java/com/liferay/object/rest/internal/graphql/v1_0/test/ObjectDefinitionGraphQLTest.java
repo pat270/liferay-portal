@@ -74,7 +74,7 @@ public class ObjectDefinitionGraphQLTest {
 		ListTypeDefinition listTypeDefinition =
 			ListTypeDefinitionLocalServiceUtil.addListTypeDefinition(
 				null, TestPropsValues.getUserId(),
-				LocalizedMapUtil.getLocalizedMap(_listFieldName),
+				LocalizedMapUtil.getLocalizedMap(_listFieldName), false,
 				Collections.emptyList());
 
 		_addListTypeEntry(listTypeDefinition, StringUtil.randomId());
@@ -118,7 +118,8 @@ public class ObjectDefinitionGraphQLTest {
 			childObjectDefinition.getObjectDefinitionId(), 0,
 			ObjectRelationshipConstants.DELETION_TYPE_CASCADE,
 			LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
-			_RELATIONSHIP_NAME, ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
+			_RELATIONSHIP_NAME, false,
+			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
 
 		_parentObjectDefinition =
 			ObjectDefinitionLocalServiceUtil.publishCustomObjectDefinition(
@@ -468,7 +469,7 @@ public class ObjectDefinitionGraphQLTest {
 	private ObjectDefinition _addObjectDefinition() throws Exception {
 		ObjectDefinition objectDefinition =
 			ObjectDefinitionLocalServiceUtil.addCustomObjectDefinition(
-				TestPropsValues.getUserId(), false, false,
+				TestPropsValues.getUserId(), 0, false, false, false,
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
 				"A" + RandomTestUtil.randomString(), null, null,
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),

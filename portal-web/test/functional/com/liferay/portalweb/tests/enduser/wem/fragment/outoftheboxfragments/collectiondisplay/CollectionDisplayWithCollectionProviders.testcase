@@ -521,9 +521,7 @@ definition {
 			var blockWidth = selenium.getElementWidth("//div[contains(@class,'page-editor__collection__block')]");
 			var collectionDisplayWidth = selenium.getElementWidth("//div[@aria-label='Collection Display']//div[contains(@class,'page-editor__topper__content')]");
 
-			TestUtils.assertEquals(
-				actual = ${blockWidth},
-				expected = ${collectionDisplayWidth});
+			StringUtil.assertEquals(${collectionDisplayWidth}, ${blockWidth});
 		}
 
 		task ("When the page creator changes the align items to End") {
@@ -688,6 +686,7 @@ definition {
 	test FilterWebContentByTag {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var groupId = JSONGroupSetter.setGroupId(groupName = "Test Site Name");
 
@@ -907,6 +906,7 @@ definition {
 	@priority = 4
 	test FilterWebContentByTagAndTitle {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var groupId = JSONGroupSetter.setGroupId(groupName = "Test Site Name");
 
@@ -1150,6 +1150,7 @@ definition {
 	@priority = 4
 	test FilterWebContentByTitle {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var groupId = JSONGroupSetter.setGroupId(groupName = "Test Site Name");
 
@@ -2751,6 +2752,7 @@ definition {
 	test ViewPrefilterResults {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var groupId = JSONGroupSetter.setGroupId(groupName = "Test Site Name");
 

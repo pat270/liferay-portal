@@ -174,8 +174,9 @@ public class CTClosureFactoryImplTest {
 				"(childId, ctCollectionId))"));
 
 		_ctCollection = _ctCollectionLocalService.addCTCollection(
-			TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
-			CTClosureFactoryImplTest.class.getSimpleName(), StringPool.BLANK);
+			null, TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
+			0, CTClosureFactoryImplTest.class.getSimpleName(),
+			StringPool.BLANK);
 	}
 
 	@After
@@ -267,7 +268,7 @@ public class CTClosureFactoryImplTest {
 		throws Exception {
 
 		_ctEntryLocalService.addCTEntry(
-			_ctCollection.getCtCollectionId(),
+			null, _ctCollection.getCtCollectionId(),
 			_classNameLocalService.getClassNameId(ctModel.getModelClass()),
 			ctModel, TestPropsValues.getUserId(), changeType);
 	}

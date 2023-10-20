@@ -6,6 +6,7 @@
 package com.liferay.layout.page.template.admin.web.internal.servlet.taglib.util;
 
 import com.liferay.asset.display.page.service.AssetDisplayPageEntryServiceUtil;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownContextItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.item.selector.ItemSelector;
@@ -22,14 +23,17 @@ import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryServiceUtil;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
+import com.liferay.portal.kernel.portlet.url.builder.ResourceURLBuilder;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
+import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.upload.configuration.UploadServletRequestConfigurationProviderUtil;
 import com.liferay.portal.kernel.util.Constants;
@@ -45,7 +49,6 @@ import java.util.Objects;
 import javax.portlet.PortletRequest;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
-import javax.portlet.ResourceURL;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -95,6 +98,11 @@ public class DisplayPageActionDropdownItemsProvider {
 			dropdownGroupItem -> {
 				dropdownGroupItem.setDropdownItems(
 					DropdownItemListBuilder.add(
+						() ->
+							FeatureFlagManagerUtil.isEnabled("LPS-195263") &&
+							hasUpdatePermission,
+						_getChangeContentTypeActionUnsafeConsumer()
+					).add(
 						() -> hasUpdatePermission,
 						_getUpdateLayoutPageTemplateEntryPreviewActionUnsafeConsumer()
 					).add(
@@ -113,7 +121,7 @@ public class DisplayPageActionDropdownItemsProvider {
 							Objects.equals(
 								_layoutPageTemplateEntry.getType(),
 								LayoutPageTemplateEntryTypeConstants.
-									TYPE_DISPLAY_PAGE) &&
+									DISPLAY_PAGE) &&
 							(_layoutPageTemplateEntry.getClassNameId() > 0) &&
 							hasUpdatePermission,
 						_getMarkAsDefaultDisplayPageActionUnsafeConsumer()
@@ -128,7 +136,12 @@ public class DisplayPageActionDropdownItemsProvider {
 		).addGroup(
 			dropdownGroupItem -> {
 				dropdownGroupItem.setDropdownItems(
-					DropdownItemListBuilder.add(
+					DropdownItemListBuilder.addContext(
+						() ->
+							FeatureFlagManagerUtil.isEnabled("LPS-195263") &&
+							hasUpdatePermission,
+						_getCopyDisplayPageActionUnsafeConsumer()
+					).add(
 						() ->
 							_layoutPageTemplateEntry.getLayoutPrototypeId() ==
 								0,
@@ -140,6 +153,11 @@ public class DisplayPageActionDropdownItemsProvider {
 			dropdownGroupItem -> {
 				dropdownGroupItem.setDropdownItems(
 					DropdownItemListBuilder.add(
+						() ->
+							FeatureFlagManagerUtil.isEnabled("LPS-195263") &&
+							hasUpdatePermission,
+						_getConfigureDisplayPageActionUnsafeConsumer()
+					).add(
 						() -> LayoutPageTemplateEntryPermission.contains(
 							_themeDisplay.getPermissionChecker(),
 							_layoutPageTemplateEntry, ActionKeys.PERMISSIONS),
@@ -159,6 +177,95 @@ public class DisplayPageActionDropdownItemsProvider {
 				dropdownGroupItem.setSeparator(true);
 			}
 		).build();
+	}
+
+	private UnsafeConsumer<DropdownItem, Exception>
+		_getChangeContentTypeActionUnsafeConsumer() {
+
+		return dropdownItem -> {
+			dropdownItem.putData("action", "changeContentType");
+			dropdownItem.setLabel(
+				LanguageUtil.get(_httpServletRequest, "change-content-type"));
+		};
+	}
+
+	private UnsafeConsumer<DropdownItem, Exception>
+		_getConfigureDisplayPageActionUnsafeConsumer() {
+
+		String currentURL = PortalUtil.getCurrentURL(_httpServletRequest);
+
+		String configureDisplayPageURL = PortletURLBuilder.create(
+			PortalUtil.getControlPanelPortletURL(
+				_httpServletRequest, LayoutAdminPortletKeys.GROUP_PAGES,
+				PortletRequest.RENDER_PHASE)
+		).setMVCRenderCommandName(
+			"/layout_admin/edit_layout"
+		).setRedirect(
+			currentURL
+		).setBackURL(
+			currentURL
+		).setParameter(
+			"groupId", _layoutPageTemplateEntry.getGroupId()
+		).setParameter(
+			"selPlid", _draftLayout.getPlid()
+		).buildString();
+
+		return dropdownItem -> {
+			dropdownItem.setHref(configureDisplayPageURL);
+			dropdownItem.setIcon("cog");
+			dropdownItem.setLabel(
+				LanguageUtil.get(_httpServletRequest, "configure"));
+		};
+	}
+
+	private UnsafeConsumer<DropdownContextItem, Exception>
+		_getCopyDisplayPageActionUnsafeConsumer() {
+
+		return dropdownContextItem -> {
+			dropdownContextItem.setDropdownItems(
+				DropdownItemListBuilder.add(
+					dropdownItem -> {
+						dropdownItem.putData("action", "copyDisplayPage");
+						dropdownItem.putData(
+							"copyDisplayPageURL", _getCopyURL(false));
+						dropdownItem.setLabel(
+							LanguageUtil.get(
+								_httpServletRequest, "display-page"));
+					}
+				).add(
+					dropdownItem -> {
+						dropdownItem.putData("action", "copyDisplayPage");
+						dropdownItem.putData(
+							"copyDisplayPageURL", _getCopyURL(true));
+						dropdownItem.setLabel(
+							LanguageUtil.get(
+								_httpServletRequest,
+								"display-page-with-permissions"));
+					}
+				).build());
+			dropdownContextItem.setIcon("copy");
+			dropdownContextItem.setLabel(
+				LanguageUtil.get(_httpServletRequest, "make-a-copy"));
+			dropdownContextItem.setDisabled(_layoutPageTemplateEntry.isDraft());
+		};
+	}
+
+	private String _getCopyURL(boolean copyPermissions) {
+		return PortletURLBuilder.createActionURL(
+			_renderResponse
+		).setActionName(
+			"/layout_page_template_admin/copy_layout_page_template_entry"
+		).setRedirect(
+			_themeDisplay.getURLCurrent()
+		).setParameter(
+			"copyPermissions", copyPermissions
+		).setParameter(
+			"layoutPageTemplateCollectionId",
+			_layoutPageTemplateEntry.getLayoutPageTemplateCollectionId()
+		).setParameter(
+			"layoutPageTemplateEntryId",
+			_layoutPageTemplateEntry.getLayoutPageTemplateEntryId()
+		).buildString();
 	}
 
 	private UnsafeConsumer<DropdownItem, Exception>
@@ -255,17 +362,16 @@ public class DisplayPageActionDropdownItemsProvider {
 	private UnsafeConsumer<DropdownItem, Exception>
 		_getEditDisplayPageActionUnsafeConsumer() {
 
+		PortletDisplay portletDisplay = _themeDisplay.getPortletDisplay();
+
 		return dropdownItem -> {
-			String layoutFullURL = PortalUtil.getLayoutFullURL(
-				_draftLayout, _themeDisplay);
-
-			layoutFullURL = HttpComponentsUtil.setParameter(
-				layoutFullURL, "p_l_back_url", _themeDisplay.getURLCurrent());
-			layoutFullURL = HttpComponentsUtil.setParameter(
-				layoutFullURL, "p_l_mode", Constants.EDIT);
-
-			dropdownItem.setHref(layoutFullURL);
-
+			dropdownItem.setHref(
+				HttpComponentsUtil.addParameters(
+					PortalUtil.getLayoutFullURL(_draftLayout, _themeDisplay),
+					"p_l_back_url", _themeDisplay.getURLCurrent(),
+					"p_l_back_url_title",
+					portletDisplay.getPortletDisplayName(), "p_l_mode",
+					Constants.EDIT));
 			dropdownItem.setIcon("pencil");
 			dropdownItem.setLabel(
 				LanguageUtil.get(_httpServletRequest, "edit"));
@@ -275,18 +381,17 @@ public class DisplayPageActionDropdownItemsProvider {
 	private UnsafeConsumer<DropdownItem, Exception>
 		_getExportDisplayPageActionUnsafeConsumer() {
 
-		ResourceURL exportDisplayPageURL = _renderResponse.createResourceURL();
-
-		exportDisplayPageURL.setParameter(
-			"layoutPageTemplateEntryId",
-			String.valueOf(
-				_layoutPageTemplateEntry.getLayoutPageTemplateEntryId()));
-		exportDisplayPageURL.setResourceID(
-			"/layout_page_template_admin/export_display_pages");
-
 		return dropdownItem -> {
 			dropdownItem.setDisabled(_layoutPageTemplateEntry.isDraft());
-			dropdownItem.setHref(exportDisplayPageURL);
+			dropdownItem.setHref(
+				ResourceURLBuilder.createResourceURL(
+					_renderResponse
+				).setParameter(
+					"layoutPageTemplateEntryId",
+					_layoutPageTemplateEntry.getLayoutPageTemplateEntryId()
+				).setResourceID(
+					"/layout_page_template_admin/export_display_pages"
+				).buildString());
 			dropdownItem.setIcon("upload");
 			dropdownItem.setLabel(
 				LanguageUtil.get(_httpServletRequest, "export"));

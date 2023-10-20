@@ -1,7 +1,7 @@
 @component-name = "portal-commerce"
 definition {
 
-	property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false${line.separator}feature.flag.COMMERCE-10890=true${line.separator}feature.flag.COMMERCE-11026=true";
+	property custom.properties = "company.security.strangers.verify=false${line.separator}feature.flag.COMMERCE-10890=true${line.separator}feature.flag.COMMERCE-11026=true${line.separator}jsonws.web.service.paths.excludes=";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property release.feature.flags.disable.DISABLE_PRIVATE_LAYOUTS = "true";
@@ -166,7 +166,7 @@ definition {
 				CommerceOrders.viewOrdersEntry(
 					productListPrice = "5.00",
 					productName = "Simple Product",
-					productQuantity = "3.00",
+					productQuantity = 3,
 					productSku = "TESTSKU",
 					productTotalPrice = "5.00");
 			}
@@ -211,7 +211,7 @@ definition {
 			CommerceOrders.viewOrdersEntry(
 				productListPrice = "5.00",
 				productName = "Simple Product",
-				productQuantity = "6.00",
+				productQuantity = 6,
 				productSku = "TESTSKU",
 				productTotalPrice = "5.00");
 
@@ -226,7 +226,7 @@ definition {
 			CommerceOrders.viewOrdersEntry(
 				productListPrice = "5.00",
 				productName = "Simple Product",
-				productQuantity = "3.00",
+				productQuantity = 3,
 				productSku = "TESTSKU",
 				productTotalPrice = "5.00");
 		}
@@ -2169,7 +2169,7 @@ definition {
 				productListPrice = "50.00",
 				productName = "U-Joint",
 				productOptions = "value2",
-				productQuantity = "2.00 meters",
+				productQuantity = "2 meters",
 				productSku = "VALUE2",
 				productTotalPrice = "50.00");
 

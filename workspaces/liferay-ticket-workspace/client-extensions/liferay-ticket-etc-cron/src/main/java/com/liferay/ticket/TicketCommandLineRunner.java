@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.client.AuthorizedClientServiceOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -37,7 +36,7 @@ public class TicketCommandLineRunner implements CommandLineRunner {
 				_lxcDXPServerProtocol + "://" + _lxcDXPMainDomain
 			).get(
 			).uri(
-				"/o/c/tickets"
+				"/o/c/j3y7tickets"
 			).accept(
 				MediaType.APPLICATION_JSON
 			).header(
@@ -57,7 +56,14 @@ public class TicketCommandLineRunner implements CommandLineRunner {
 		for (int i = 0; i < itemsJSONArray.length(); i++) {
 			JSONObject itemJSONObject = itemsJSONArray.getJSONObject(i);
 
-			String resolution = itemJSONObject.optString("resolution");
+			JSONObject resolutionJSONObject = itemJSONObject.optJSONObject(
+				"resolution");
+
+			if (resolutionJSONObject == null) {
+				continue;
+			}
+
+			String resolution = resolutionJSONObject.optString("key");
 
 			if (!Objects.equals(resolution, "duplicate") &&
 				!Objects.equals(resolution, "done")) {
@@ -75,7 +81,7 @@ public class TicketCommandLineRunner implements CommandLineRunner {
 				_lxcDXPServerProtocol + "://" + _lxcDXPMainDomain
 			).delete(
 			).uri(
-				"/o/c/tickets/" + id
+				"/o/c/j3y7tickets/" + id
 			).accept(
 				MediaType.APPLICATION_JSON
 			).header(
@@ -90,10 +96,6 @@ public class TicketCommandLineRunner implements CommandLineRunner {
 
 	private static final Log _log = LogFactory.getLog(
 		TicketCommandLineRunner.class);
-
-	@Autowired
-	private AuthorizedClientServiceOAuth2AuthorizedClientManager
-		_authorizedClientServiceOAuth2AuthorizedClientManager;
 
 	@Value("${com.liferay.lxc.dxp.mainDomain}")
 	private String _lxcDXPMainDomain;

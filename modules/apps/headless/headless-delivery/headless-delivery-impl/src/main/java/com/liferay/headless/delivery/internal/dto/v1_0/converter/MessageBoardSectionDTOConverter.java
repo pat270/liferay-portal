@@ -46,7 +46,7 @@ public class MessageBoardSectionDTOConverter
 			{
 				actions = dtoConverterContext.getActions();
 				creator = CreatorUtil.toCreator(
-					_portal, dtoConverterContext.getUriInfo(),
+					dtoConverterContext, _portal,
 					_userLocalService.fetchUser(mbCategory.getUserId()));
 				customFields = CustomFieldsUtil.toCustomFields(
 					dtoConverterContext.isAcceptAllLanguages(),
@@ -55,6 +55,7 @@ public class MessageBoardSectionDTOConverter
 				dateCreated = mbCategory.getCreateDate();
 				dateModified = mbCategory.getModifiedDate();
 				description = mbCategory.getDescription();
+				friendlyUrlPath = mbCategory.getFriendlyURL();
 				id = mbCategory.getCategoryId();
 				numberOfMessageBoardSections =
 					_mbCategoryService.getCategoriesCount(

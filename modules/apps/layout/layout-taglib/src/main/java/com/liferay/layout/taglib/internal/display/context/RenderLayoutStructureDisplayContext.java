@@ -31,6 +31,7 @@ import com.liferay.info.item.provider.InfoItemFormProvider;
 import com.liferay.info.item.provider.InfoItemObjectProvider;
 import com.liferay.info.search.InfoSearchClassMapperRegistryUtil;
 import com.liferay.info.type.WebImage;
+import com.liferay.info.type.WebURL;
 import com.liferay.layout.taglib.internal.servlet.ServletContextUtil;
 import com.liferay.layout.util.constants.LayoutDataItemTypeConstants;
 import com.liferay.layout.util.structure.ContainerStyledLayoutStructureItem;
@@ -685,7 +686,7 @@ public class RenderLayoutStructureDisplayContext {
 		String backgroundImageURL = jsonObject.getString("url");
 
 		if (Validator.isNotNull(backgroundImageURL)) {
-			return PortalUtil.getPathContext() + backgroundImageURL;
+			return backgroundImageURL;
 		}
 
 		return StringPool.BLANK;
@@ -1055,16 +1056,24 @@ public class RenderLayoutStructureDisplayContext {
 			return (String)value;
 		}
 
-		if (!(value instanceof WebImage)) {
-			return StringPool.BLANK;
+		if (value instanceof WebImage) {
+			WebImage webImage = (WebImage)value;
+
+			String url = webImage.getURL();
+
+			if (Validator.isNotNull(url)) {
+				return url;
+			}
 		}
 
-		WebImage webImage = (WebImage)value;
+		if (value instanceof WebURL) {
+			WebURL webURL = (WebURL)value;
 
-		String url = webImage.getUrl();
+			String url = webURL.getURL();
 
-		if (Validator.isNotNull(url)) {
-			return url;
+			if (Validator.isNotNull(url)) {
+				return url;
+			}
 		}
 
 		return StringPool.BLANK;

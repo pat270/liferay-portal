@@ -54,6 +54,8 @@ public interface ObjectDefinition
 
 	public String getLocalizationDBTableName();
 
+	public String getObjectFolderExternalReferenceCode();
+
 	public String getOSGiJaxRsName();
 
 	public String getOSGiJaxRsName(String className);
@@ -69,6 +71,14 @@ public interface ObjectDefinition
 	public boolean isApproved();
 
 	public boolean isDefaultStorageType();
+
+	public boolean isLinkedToObjectFolder(long objectFolderId);
+
+	public boolean isNodeCandidate();
+
+	public boolean isRootDescendantNode();
+
+	public boolean isRootNode();
 
 	public boolean isUnmodifiableSystemObject();
 

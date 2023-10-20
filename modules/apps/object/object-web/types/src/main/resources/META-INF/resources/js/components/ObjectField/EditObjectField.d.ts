@@ -5,9 +5,9 @@
 
 /// <reference types="react" />
 
-import {SidebarCategory} from '@liferay/object-js-components-web';
 import './EditObjectField.scss';
-interface EditObjectFieldProps {
+export interface EditObjectFieldProps {
+	baseResourceURL: string;
 	creationLanguageId: Liferay.Language.Locale;
 	filterOperators: TFilterOperators;
 	forbiddenChars: string[];
@@ -15,18 +15,15 @@ interface EditObjectFieldProps {
 	forbiddenNames: string[];
 	isApproved: boolean;
 	isDefaultStorageType: boolean;
+	learnResources: ObjectWebLearnResources;
 	objectDefinitionExternalReferenceCode: string;
-	objectField: ObjectField;
 	objectFieldId: number;
-	objectFieldTypes: ObjectFieldType[];
-	objectName: string;
-	objectRelationshipId: number;
 	readOnly: boolean;
-	readOnlySidebarElements: SidebarCategory[];
-	sidebarElements: SidebarCategory[];
 	workflowStatusJSONArray: LabelValueObject[];
 }
+export declare const objectFieldInitialValues: Partial<ObjectField>;
 export default function EditObjectField({
+	baseResourceURL,
 	creationLanguageId,
 	filterOperators,
 	forbiddenChars,
@@ -34,14 +31,9 @@ export default function EditObjectField({
 	forbiddenNames,
 	isApproved,
 	isDefaultStorageType,
+	learnResources,
 	objectDefinitionExternalReferenceCode,
 	objectFieldId,
-	objectFieldTypes,
-	objectName,
-	objectRelationshipId,
 	readOnly,
-	readOnlySidebarElements,
-	sidebarElements,
 	workflowStatusJSONArray,
 }: EditObjectFieldProps): JSX.Element;
-export {};

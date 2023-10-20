@@ -26,7 +26,6 @@ import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectFieldLocalService;
 import com.liferay.object.service.ObjectRelationshipLocalService;
 import com.liferay.object.system.SystemObjectDefinitionManagerRegistry;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.SetUtil;
@@ -39,6 +38,7 @@ import com.liferay.portal.vulcan.resource.OpenAPIResource;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 
 import java.util.ArrayList;
@@ -117,6 +117,7 @@ public class ObjectEntryOpenAPIResourceImpl
 				Field.of(
 					propertySchema.getDescription(), propertyName,
 					GetterUtil.getBoolean(propertySchema.getReadOnly()),
+					_getRef(propertySchema),
 					requiredPropertySchemaNames.contains(propertyName),
 					propertySchema.getType(),
 					GetterUtil.getBoolean(propertySchema.getWriteOnly())));
@@ -167,6 +168,20 @@ public class ObjectEntryOpenAPIResourceImpl
 		}
 		else if (Objects.equals(
 					objectField.getBusinessType(),
+					ObjectFieldConstants.BUSINESS_TYPE_DATE) &&
+				 _fieldNameMappings.containsKey(objectField.getName())) {
+
+			return new DTOProperty(
+				null, _fieldNameMappings.get(objectField.getName()),
+				ObjectFieldConstants.BUSINESS_TYPE_DATE_TIME) {
+
+				{
+					setRequired(objectField.isRequired());
+				}
+			};
+		}
+		else if (Objects.equals(
+					objectField.getBusinessType(),
 					ObjectFieldConstants.BUSINESS_TYPE_DATE_TIME)) {
 
 			return new DTOProperty(
@@ -185,8 +200,32 @@ public class ObjectEntryOpenAPIResourceImpl
 				}
 			};
 		}
+		else if (Objects.equals(
+					objectField.getBusinessType(),
+					ObjectFieldConstants.BUSINESS_TYPE_ENCRYPTED) ||
+				 Objects.equals(
+					 objectField.getBusinessType(),
+					 ObjectFieldConstants.BUSINESS_TYPE_LONG_TEXT) ||
+				 Objects.equals(
+					 objectField.getBusinessType(),
+					 ObjectFieldConstants.BUSINESS_TYPE_RICH_TEXT)) {
 
-		if (objectField.getListTypeDefinitionId() != 0) {
+			return new DTOProperty(
+				Collections.singletonMap("x-parent-map", "properties"),
+				objectField.getName(), "String") {
+
+				{
+					setRequired(objectField.isRequired());
+				}
+			};
+		}
+		else if (Objects.equals(
+					objectField.getBusinessType(),
+					ObjectFieldConstants.BUSINESS_TYPE_MULTISELECT_PICKLIST) ||
+				 Objects.equals(
+					 objectField.getBusinessType(),
+					 ObjectFieldConstants.BUSINESS_TYPE_PICKLIST)) {
+
 			DTOProperty dtoProperty = new DTOProperty(
 				Collections.singletonMap("x-parent-map", "properties"),
 				objectField.getName(), ListEntry.class.getSimpleName());
@@ -265,9 +304,7 @@ public class ObjectEntryOpenAPIResourceImpl
 
 			dtoProperties.add(_getDTOProperty(objectField));
 
-			if (objectField.isLocalized() &&
-				FeatureFlagManagerUtil.isEnabled("LPS-172017")) {
-
+			if (objectField.isLocalized()) {
 				dtoProperties.add(
 					new DTOProperty(
 						Collections.singletonMap("x-parent-map", "properties"),
@@ -349,6 +386,18 @@ public class ObjectEntryOpenAPIResourceImpl
 		return openAPISchemaFilter;
 	}
 
+	private String _getRef(Schema schema) {
+		if (schema instanceof ArraySchema) {
+			ArraySchema arraySchema = (ArraySchema)schema;
+
+			Schema itemsSchema = arraySchema.getItems();
+
+			return itemsSchema.get$ref();
+		}
+
+		return schema.get$ref();
+	}
+
 	private List<String> _getRequiredPropertySchemaNames(Schema schema) {
 		List<String> requiredPropertySchemaNames = schema.getRequired();
 
@@ -407,6 +456,11 @@ public class ObjectEntryOpenAPIResourceImpl
 
 	private final BundleContext _bundleContext;
 	private final DTOConverterRegistry _dtoConverterRegistry;
+	private final Map<String, String> _fieldNameMappings = HashMapBuilder.put(
+		"createDate", "dateCreated"
+	).put(
+		"modifiedDate", "dateModified"
+	).build();
 	private final ObjectActionLocalService _objectActionLocalService;
 	private final ObjectDefinition _objectDefinition;
 	private final ObjectDefinitionLocalService _objectDefinitionLocalService;

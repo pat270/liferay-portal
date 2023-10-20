@@ -12,8 +12,9 @@ import config from './configTreePath.js';
 import log from './log.js';
 
 const domains = config['com.liferay.lxc.dxp.domains'];
-const externalReferenceCode =
-	config['liferay.oauth.application.external.reference.codes'].split(',')[0];
+const externalReferenceCode = config[
+	'liferay.oauth.application.external.reference.codes'
+].split(',')[0];
 const lxcDXPMainDomain = config['com.liferay.lxc.dxp.mainDomain'];
 
 const lxcDXPServerProtocol = config['com.liferay.lxc.dxp.server.protocol'];
@@ -37,7 +38,7 @@ const corsOptions = {
 	},
 };
 
-export async function corsWithReady(req, res, next) {
+export function corsWithReady(req, res, next) {
 	if (req.originalUrl === config.readyPath) {
 		return next();
 	}

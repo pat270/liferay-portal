@@ -1,6 +1,6 @@
 <%--
 /**
- * SPDX-FileCopyrightText: (c) 2000 Liferay, Inc. https://liferay.com
+ * SPDX-FileCopyrightText: (c) 2023 Liferay, Inc. https://liferay.com
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 --%>
@@ -16,11 +16,14 @@ taglib uri="http://liferay.com/tld/frontend-data-set" prefix="frontend-data-set"
 taglib uri="http://liferay.com/tld/portlet" prefix="liferay-portlet" %><%@
 taglib uri="http://liferay.com/tld/react" prefix="react" %><%@
 taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %><%@
-taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
+taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %><%@
+taglib uri="http://liferay.com/tld/user" prefix="liferay-user" %>
 
 <%@ page import="com.liferay.change.tracking.constants.CTActionKeys" %><%@
 page import="com.liferay.change.tracking.constants.CTConstants" %><%@
+page import="com.liferay.change.tracking.exception.CTCollectionStatusException" %><%@
 page import="com.liferay.change.tracking.exception.CTLocalizedException" %><%@
+page import="com.liferay.change.tracking.exception.CTPublishConflictException" %><%@
 page import="com.liferay.change.tracking.model.CTCollection" %><%@
 page import="com.liferay.change.tracking.model.CTCollectionTemplate" %><%@
 page import="com.liferay.change.tracking.model.CTProcess" %><%@
@@ -36,9 +39,9 @@ page import="com.liferay.change.tracking.web.internal.display.context.Reschedule
 page import="com.liferay.change.tracking.web.internal.display.context.ViewCTRemotesDisplayContext" %><%@
 page import="com.liferay.change.tracking.web.internal.display.context.ViewChangesDisplayContext" %><%@
 page import="com.liferay.change.tracking.web.internal.display.context.ViewConflictsDisplayContext" %><%@
-page import="com.liferay.change.tracking.web.internal.display.context.ViewDiscardDisplayContext" %><%@
 page import="com.liferay.change.tracking.web.internal.display.context.ViewHistoryDisplayContext" %><%@
 page import="com.liferay.change.tracking.web.internal.display.context.ViewHistoryManagementToolbarDisplayContext" %><%@
+page import="com.liferay.change.tracking.web.internal.display.context.ViewRelatedEntriesDisplayContext" %><%@
 page import="com.liferay.change.tracking.web.internal.display.context.ViewScheduledDisplayContext" %><%@
 page import="com.liferay.change.tracking.web.internal.display.context.ViewScheduledManagementToolbarDisplayContext" %><%@
 page import="com.liferay.change.tracking.web.internal.display.context.ViewTemplatesDisplayContext" %><%@
@@ -54,6 +57,7 @@ page import="com.liferay.portal.kernel.language.LanguageUtil" %><%@
 page import="com.liferay.portal.kernel.model.ModelHintsUtil" %><%@
 page import="com.liferay.portal.kernel.portlet.url.builder.ResourceURLBuilder" %><%@
 page import="com.liferay.portal.kernel.servlet.MultiSessionErrors" %><%@
+page import="com.liferay.portal.kernel.servlet.SessionErrors" %><%@
 page import="com.liferay.portal.kernel.util.FastDateFormatFactoryUtil" %><%@
 page import="com.liferay.portal.kernel.util.GetterUtil" %><%@
 page import="com.liferay.portal.kernel.util.HashMapBuilder" %><%@
@@ -65,6 +69,7 @@ page import="com.liferay.portal.kernel.util.WebKeys" %>
 <%@ page import="java.text.Format" %>
 
 <%@ page import="java.util.Date" %><%@
+page import="java.util.Map" %><%@
 page import="java.util.Objects" %>
 
 <%@ page import="javax.portlet.RenderResponse" %>

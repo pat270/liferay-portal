@@ -10,43 +10,33 @@ export default function propsTransformer({
 		deleteNotificationsURL,
 		markNotificationsAsReadURL,
 		markNotificationsAsUnreadURL,
+		searchContainerId,
 	},
 	portletNamespace,
 	...otherProps
 }) {
-	const deleteNotifications = () => {
+	let searchContainer;
+
+	Liferay.componentReady(`${portletNamespace}${searchContainerId}`).then(
+		(searchContainerComponent) => {
+			searchContainer = searchContainerComponent;
+		}
+	);
+
+	const processAction = (url) => {
 		const form = document.getElementById(`${portletNamespace}fm`);
 
 		if (form) {
 			postForm(form, {
 				data: {
-					deleteEntryIds: getCheckedCheckboxes(
+					selectAll: searchContainer.select?.get('bulkSelection'),
+					selectedEntryIds: getCheckedCheckboxes(
 						form,
 						`${portletNamespace}allRowIds`
 					),
 				},
-				url: deleteNotificationsURL,
+				url,
 			});
-		}
-	};
-
-	const markNotificationsAsRead = () => {
-		const form = document.getElementById(`${portletNamespace}fm`);
-
-		if (form) {
-			form.setAttribute('method', 'post');
-
-			submitForm(form, markNotificationsAsReadURL);
-		}
-	};
-
-	const markNotificationsAsUnread = () => {
-		const form = document.getElementById(`${portletNamespace}fm`);
-
-		if (form) {
-			form.setAttribute('method', 'post');
-
-			submitForm(form, markNotificationsAsUnreadURL);
 		}
 	};
 
@@ -56,13 +46,13 @@ export default function propsTransformer({
 			const action = item?.data?.action;
 
 			if (action === 'deleteNotifications') {
-				deleteNotifications();
+				processAction(deleteNotificationsURL);
 			}
 			else if (action === 'markNotificationsAsRead') {
-				markNotificationsAsRead();
+				processAction(markNotificationsAsReadURL);
 			}
 			else if (action === 'markNotificationsAsUnread') {
-				markNotificationsAsUnread();
+				processAction(markNotificationsAsUnreadURL);
 			}
 		},
 	};

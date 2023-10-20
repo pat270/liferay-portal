@@ -179,4 +179,23 @@ export default {
 			() => {}
 		);
 	},
+
+	/**
+	 * @param {object} options
+	 * @param {string} options.segmentsExperienceId
+	 * @param {string} options.layoutDataItemId
+	 * @returns {Promise<{warningMessage: string}>}
+	 */
+	getCollectionWarningMessage({layoutDataItemId, segmentsExperienceId}) {
+		return serviceFetch(
+			config.getCollectionWarningMessageURL,
+			{
+				body: {
+					itemId: layoutDataItemId,
+					segmentsExperienceId,
+				},
+			},
+			() => {}
+		);
+	},
 };

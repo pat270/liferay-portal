@@ -20,6 +20,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.io.Serializable;
 
+import java.math.BigDecimal;
+
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
@@ -362,18 +364,19 @@ public class CartItem implements Serializable {
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Map<String, String> productURLs;
 
-	@Schema
-	public Integer getQuantity() {
+	@Schema(example = "10.1")
+	@Valid
+	public BigDecimal getQuantity() {
 		return quantity;
 	}
 
-	public void setQuantity(Integer quantity) {
+	public void setQuantity(BigDecimal quantity) {
 		this.quantity = quantity;
 	}
 
 	@JsonIgnore
 	public void setQuantity(
-		UnsafeSupplier<Integer, Exception> quantityUnsafeSupplier) {
+		UnsafeSupplier<BigDecimal, Exception> quantityUnsafeSupplier) {
 
 		try {
 			quantity = quantityUnsafeSupplier.get();
@@ -388,7 +391,7 @@ public class CartItem implements Serializable {
 
 	@GraphQLField
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected Integer quantity;
+	protected BigDecimal quantity;
 
 	@Schema(example = "12341234")
 	public String getReplacedSku() {
@@ -527,6 +530,36 @@ public class CartItem implements Serializable {
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	@NotNull
 	protected Long skuId;
+
+	@Schema
+	@Valid
+	public SkuUnitOfMeasure getSkuUnitOfMeasure() {
+		return skuUnitOfMeasure;
+	}
+
+	public void setSkuUnitOfMeasure(SkuUnitOfMeasure skuUnitOfMeasure) {
+		this.skuUnitOfMeasure = skuUnitOfMeasure;
+	}
+
+	@JsonIgnore
+	public void setSkuUnitOfMeasure(
+		UnsafeSupplier<SkuUnitOfMeasure, Exception>
+			skuUnitOfMeasureUnsafeSupplier) {
+
+		try {
+			skuUnitOfMeasure = skuUnitOfMeasureUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected SkuUnitOfMeasure skuUnitOfMeasure;
 
 	@Schema(example = "true")
 	public Boolean getSubscription() {
@@ -851,6 +884,16 @@ public class CartItem implements Serializable {
 			sb.append("\"skuId\": ");
 
 			sb.append(skuId);
+		}
+
+		if (skuUnitOfMeasure != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"skuUnitOfMeasure\": ");
+
+			sb.append(String.valueOf(skuUnitOfMeasure));
 		}
 
 		if (subscription != null) {

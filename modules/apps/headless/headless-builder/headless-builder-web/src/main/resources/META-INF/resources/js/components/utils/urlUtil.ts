@@ -15,6 +15,36 @@ export function getCurrentURLParamValue({
 	return newURLSearchParams.get(`_${portletId}_${paramSufix}`);
 }
 
+export function getFilterRelatedItemURL({
+	apiURLPath,
+	filterQuery,
+}: {
+	apiURLPath: string;
+	filterQuery: string;
+}) {
+	return `${apiURLPath}/?filter=${filterQuery}`;
+}
+
+export function getCurrentNavFromURL({
+	portletId,
+}: {
+	portletId: string;
+}): ActiveNav {
+	const currentURLParamValue = getCurrentURLParamValue({
+		paramSufix: 'editAPIApplicationNav',
+		portletId,
+	});
+
+	if (
+		currentURLParamValue === 'endpoints' ||
+		currentURLParamValue === 'schemas'
+	) {
+		return currentURLParamValue;
+	}
+
+	return 'details';
+}
+
 export function openEditURL({
 	editURL,
 	id,

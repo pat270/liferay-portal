@@ -47,11 +47,9 @@ const getDataRecordValues = ({
 const getFieldProperties = (fieldName, pages) => {
 	const visitor = new PagesVisitor(pages);
 
-	const {
-		itemSelectorURL,
-		locale,
-		localizedValueEdited = {[locale]: true},
-	} = visitor.findField((field) => field.fieldName === fieldName);
+	const {itemSelectorURL, localizedValueEdited} = visitor.findField(
+		(field) => field.fieldName === fieldName
+	);
 
 	return {itemSelectorURL, localizedValueEdited};
 };
@@ -75,7 +73,7 @@ export default function pageLanguageUpdate({
 		});
 
 		fetch(
-			`/o/data-engine/v2.0/data-layouts/${ddmStructureLayoutId}/context?p_p_id=${getPortletId(
+			`/o/data-engine/v2.0/data-layouts/${ddmStructureLayoutId}/context?p_l_id=${themeDisplay.getPlid()}&p_p_id=${getPortletId(
 				portletNamespace
 			)}`,
 			{

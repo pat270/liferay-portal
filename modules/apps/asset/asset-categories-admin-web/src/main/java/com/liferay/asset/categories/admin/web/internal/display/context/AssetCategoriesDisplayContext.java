@@ -9,6 +9,7 @@ import com.liferay.asset.categories.admin.web.constants.AssetCategoriesAdminPort
 import com.liferay.asset.categories.admin.web.internal.configuration.AssetCategoriesAdminWebConfiguration;
 import com.liferay.asset.categories.admin.web.internal.constants.AssetCategoriesAdminDisplayStyleKeys;
 import com.liferay.asset.categories.admin.web.internal.constants.AssetCategoriesAdminWebKeys;
+import com.liferay.asset.categories.admin.web.internal.item.selector.criterion.AssetVocabularyItemSelectorCriterion;
 import com.liferay.asset.categories.admin.web.internal.util.AssetCategoryTreePathComparator;
 import com.liferay.asset.categories.configuration.AssetCategoriesCompanyConfiguration;
 import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
@@ -17,6 +18,7 @@ import com.liferay.asset.kernel.model.AssetCategoryConstants;
 import com.liferay.asset.kernel.model.AssetCategoryDisplay;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.asset.kernel.model.AssetVocabulary;
+import com.liferay.asset.kernel.model.AssetVocabularyConstants;
 import com.liferay.asset.kernel.model.AssetVocabularyDisplay;
 import com.liferay.asset.kernel.model.ClassType;
 import com.liferay.asset.kernel.model.ClassTypeReader;
@@ -29,23 +31,26 @@ import com.liferay.depot.service.DepotEntryServiceUtil;
 import com.liferay.exportimport.kernel.staging.permission.StagingPermissionUtil;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.IconItem;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.VerticalNavItemList;
 import com.liferay.item.selector.ItemSelector;
 import com.liferay.item.selector.criteria.InfoItemItemSelectorReturnType;
+import com.liferay.item.selector.criteria.UUIDItemSelectorReturnType;
 import com.liferay.item.selector.criteria.info.item.criterion.InfoItemItemSelectorCriterion;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.bean.BeanParamUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
-import com.liferay.portal.kernel.exception.NoSuchModelException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
+import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
@@ -58,6 +63,7 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
@@ -78,6 +84,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import javax.portlet.ActionRequest;
 import javax.portlet.PortletURL;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
@@ -148,9 +155,7 @@ public class AssetCategoriesDisplayContext {
 		).buildString();
 	}
 
-	public String getAssetType(AssetVocabulary vocabulary)
-		throws PortalException {
-
+	public String getAssetType(AssetVocabulary vocabulary) {
 		long[] selectedClassNameIds = vocabulary.getSelectedClassNameIds();
 		long[] selectedClassTypePKs = vocabulary.getSelectedClassTypePKs();
 
@@ -178,12 +183,12 @@ public class AssetCategoriesDisplayContext {
 
 						name = classType.getName();
 					}
-					catch (NoSuchModelException noSuchModelException) {
+					catch (PortalException portalException) {
 						if (_log.isDebugEnabled()) {
 							_log.debug(
 								"Unable to get asset type for class type " +
 									"primary key " + classTypePK,
-								noSuchModelException);
+								portalException);
 						}
 
 						continue;
@@ -380,10 +385,6 @@ public class AssetCategoriesDisplayContext {
 			(ItemSelector)_httpServletRequest.getAttribute(
 				ItemSelector.class.getName());
 
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)_httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
 		RequestBackedPortletURLFactory requestBackedPortletURLFactory =
 			RequestBackedPortletURLFactoryUtil.create(_renderRequest);
 
@@ -396,8 +397,8 @@ public class AssetCategoriesDisplayContext {
 
 		return PortletURLBuilder.create(
 			itemSelector.getItemSelectorURL(
-				requestBackedPortletURLFactory, themeDisplay.getScopeGroup(),
-				themeDisplay.getScopeGroupId(),
+				requestBackedPortletURLFactory, _themeDisplay.getScopeGroup(),
+				_themeDisplay.getScopeGroupId(),
 				_renderResponse.getNamespace() + "selectCategory",
 				itemSelectorCriterion)
 		).buildString();
@@ -479,7 +480,7 @@ public class AssetCategoriesDisplayContext {
 		return group.getDescriptiveName(_themeDisplay.getLocale());
 	}
 
-	public Map<String, List<AssetVocabulary>> getInheritedVocabularies()
+	public Map<Long, List<AssetVocabulary>> getInheritedVocabularies()
 		throws PortalException {
 
 		if (_inheritedVocabularies != null) {
@@ -494,7 +495,7 @@ public class AssetCategoriesDisplayContext {
 			Group group = company.getGroup();
 
 			_inheritedVocabularies.put(
-				group.getDescriptiveName(_themeDisplay.getLocale()),
+				group.getGroupId(),
 				AssetVocabularyServiceUtil.getGroupVocabularies(
 					company.getGroupId(), false, QueryUtil.ALL_POS,
 					QueryUtil.ALL_POS,
@@ -517,8 +518,7 @@ public class AssetCategoriesDisplayContext {
 
 			if (ListUtil.isNotEmpty(groupVocabularies)) {
 				_inheritedVocabularies.put(
-					group.getDescriptiveName(_themeDisplay.getLocale()),
-					groupVocabularies);
+					group.getGroupId(), groupVocabularies);
 			}
 		}
 
@@ -580,6 +580,59 @@ public class AssetCategoriesDisplayContext {
 		return _selectedLanguageId;
 	}
 
+	public VerticalNavItemList getVerticalNavItemList(
+		List<AssetVocabulary> vocabularies) {
+
+		VerticalNavItemList verticalNavItemList = new VerticalNavItemList();
+
+		for (AssetVocabulary vocabulary : vocabularies) {
+			verticalNavItemList.add(
+				verticalNavItem -> {
+					if (vocabulary.getGroupId() !=
+							_themeDisplay.getScopeGroupId()) {
+
+						verticalNavItem.addIcon(
+							IconItem.of(
+								"lock",
+								LanguageUtil.get(
+									_themeDisplay.getLocale(),
+									"this-vocabulary-can-only-be-edited-from-" +
+										"the-global-site")));
+					}
+
+					if (vocabulary.getVisibilityType() ==
+							AssetVocabularyConstants.VISIBILITY_TYPE_INTERNAL) {
+
+						verticalNavItem.addIcon(
+							IconItem.of(
+								"low-vision",
+								LanguageUtil.get(
+									_themeDisplay.getLocale(),
+									"for-internal-use-only")));
+					}
+
+					verticalNavItem.setActive(
+						getVocabularyId() == vocabulary.getVocabularyId());
+					verticalNavItem.setHref(
+						PortletURLBuilder.createRenderURL(
+							_renderResponse
+						).setMVCPath(
+							"/view.jsp"
+						).setParameter(
+							"vocabularyId", vocabulary.getVocabularyId()
+						).buildString());
+
+					String name = HtmlUtil.escape(
+						vocabulary.getTitle(_httpServletRequest.getLocale()));
+
+					verticalNavItem.setId(name);
+					verticalNavItem.setLabel(name);
+				});
+		}
+
+		return verticalNavItemList;
+	}
+
 	public List<AssetVocabulary> getVocabularies() throws PortalException {
 		if (_vocabularies != null) {
 			return _vocabularies;
@@ -593,9 +646,39 @@ public class AssetCategoriesDisplayContext {
 	}
 
 	public List<DropdownItem> getVocabulariesDropdownItems() {
+		LiferayPortletURL deleteVocabulariesURL =
+			_renderResponse.createActionURL();
+
+		deleteVocabulariesURL.setCopyCurrentRenderParameters(false);
+		deleteVocabulariesURL.setParameter(
+			ActionRequest.ACTION_NAME,
+			"/asset_categories_admin/delete_asset_vocabulary");
+		deleteVocabulariesURL.setParameter("redirect", getDefaultRedirect());
+
+		ItemSelector itemSelector =
+			(ItemSelector)_httpServletRequest.getAttribute(
+				ItemSelector.class.getName());
+
+		AssetVocabularyItemSelectorCriterion
+			assetVocabularyItemSelectorCriterion =
+				new AssetVocabularyItemSelectorCriterion();
+
+		assetVocabularyItemSelectorCriterion.setDesiredItemSelectorReturnTypes(
+			new UUIDItemSelectorReturnType());
+
 		return DropdownItemListBuilder.add(
 			dropdownItem -> {
 				dropdownItem.putData("action", "deleteVocabularies");
+				dropdownItem.putData(
+					"deleteVocabulariesURL", deleteVocabulariesURL.toString());
+				dropdownItem.putData(
+					"viewVocabulariesURL",
+					String.valueOf(
+						itemSelector.getItemSelectorURL(
+							RequestBackedPortletURLFactoryUtil.create(
+								_httpServletRequest),
+							_renderResponse.getNamespace() + "selectVocabulary",
+							assetVocabularyItemSelectorCriterion)));
 				dropdownItem.setIcon("trash");
 				dropdownItem.setLabel(
 					LanguageUtil.get(_httpServletRequest, "delete"));
@@ -884,11 +967,11 @@ public class AssetCategoriesDisplayContext {
 			return vocabulary.getVocabularyId();
 		}
 
-		Map<String, List<AssetVocabulary>> inheritedVocabularies =
+		Map<Long, List<AssetVocabulary>> inheritedVocabularies =
 			getInheritedVocabularies();
 
 		if (MapUtil.isNotEmpty(inheritedVocabularies)) {
-			for (Map.Entry<String, List<AssetVocabulary>> entry :
+			for (Map.Entry<Long, List<AssetVocabulary>> entry :
 					inheritedVocabularies.entrySet()) {
 
 				vocabularies = entry.getValue();
@@ -968,7 +1051,7 @@ public class AssetCategoriesDisplayContext {
 	private Long _categoryId;
 	private String _displayStyle;
 	private final HttpServletRequest _httpServletRequest;
-	private Map<String, List<AssetVocabulary>> _inheritedVocabularies;
+	private Map<Long, List<AssetVocabulary>> _inheritedVocabularies;
 	private String _keywords;
 	private String _navigation;
 	private String _orderByCol;

@@ -17,17 +17,16 @@ import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.item.selector.ItemSelector;
 import com.liferay.item.selector.ItemSelectorReturnType;
 import com.liferay.item.selector.criteria.UUIDItemSelectorReturnType;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalService;
-import com.liferay.portal.kernel.service.permission.GroupPermission;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.workflow.WorkflowDefinitionManager;
+import com.liferay.portal.workflow.manager.WorkflowDefinitionManager;
 
 import java.util.Collections;
 
@@ -50,7 +49,7 @@ public class SiteCommerceChannelTypeDisplayContext
 		ConfigurationProvider configurationProvider,
 		CPTaxCategoryLocalService cpTaxCategoryLocalService,
 		DLAppLocalService dlAppLocalService,
-		GroupLocalService groupLocalService, GroupPermission groupPermission,
+		GroupLocalService groupLocalService,
 		HttpServletRequest httpServletRequest, ItemSelector itemSelector,
 		Portal portal,
 		WorkflowDefinitionLinkLocalService workflowDefinitionLinkLocalService,
@@ -61,7 +60,7 @@ public class SiteCommerceChannelTypeDisplayContext
 			commerceChannelModelResourcePermission, commerceChannelService,
 			commerceChannelTypeRegistry, commerceCurrencyLocalService,
 			configurationProvider, cpTaxCategoryLocalService, dlAppLocalService,
-			groupPermission, httpServletRequest, itemSelector, portal,
+			httpServletRequest, itemSelector, portal,
 			workflowDefinitionLinkLocalService, workflowDefinitionManager);
 
 		_dlAppLocalService = dlAppLocalService;

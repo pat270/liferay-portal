@@ -4,9 +4,9 @@
  */
 
 import ClayLoadingIndicator from '@clayui/loading-indicator';
+import {ClientExtension} from 'frontend-js-components-web';
 import React, {useContext, useEffect, useState} from 'react';
 
-import ClientExtensionRenderer from '../../../components/ClientExtensionRenderer';
 import {getComponentByModuleURL} from '../../../utils/modules';
 import ViewsContext from '../../../views/ViewsContext';
 import {VIEWS_ACTION_TYPES} from '../../../views/viewsReducer';
@@ -46,22 +46,6 @@ const getOdataFilterString = (filter) => {
 	}
 };
 
-/**
- * @typedef {Object} Props
- * @prop {import("@liferay/js-api/data-set").FDSFilterArgs} args
- * @prop {import("@liferay/js-api/data-set").FDSFilter} renderer
- */
-
-/**
- * @param {Props} props
- */
-const ClientExtensionRendererWrapper = (props) => {
-
-	// This wrapper exists so that we can keep TS consistent
-
-	return <ClientExtensionRenderer {...props} />;
-};
-
 const Filter = ({moduleURL, type, ...otherProps}) => {
 	const [{filters}, viewsDispatch] = useContext(ViewsContext);
 
@@ -82,7 +66,7 @@ const Filter = ({moduleURL, type, ...otherProps}) => {
 
 	useEffect(() => {
 		if (moduleURL) {
-			if (type === 'client-extension') {
+			if (type === 'clientExtension') {
 				const getModule = async () => {
 					const cetModule = await import(
 						/* webpackIgnore: true */ moduleURL
@@ -113,8 +97,8 @@ const Filter = ({moduleURL, type, ...otherProps}) => {
 
 	return Component ? (
 		<div className="data-set-filter">
-			{type === 'client-extension' ? (
-				<ClientExtensionRendererWrapper
+			{type === 'clientExtension' ? (
+				<ClientExtension
 					args={{
 						filter: otherProps,
 						setFilter: (filter) =>
@@ -124,7 +108,7 @@ const Filter = ({moduleURL, type, ...otherProps}) => {
 								...filter,
 							}),
 					}}
-					renderer={Component}
+					htmlElementBuilder={Component}
 				/>
 			) : (
 				<Component setFilter={setFilter} {...otherProps} />

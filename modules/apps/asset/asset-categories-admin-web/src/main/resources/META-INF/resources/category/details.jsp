@@ -111,9 +111,10 @@ renderResponse.setTitle(title);
 											</div>
 
 											<div class="input-group-item input-group-item-shrink">
-												<button class="btn btn-secondary" type="button">
-													<liferay-ui:message key="select" />
-												</button>
+												<clay:button
+													displayType="secondary"
+													label="select"
+												/>
 											</div>
 										</div>
 									</div>
@@ -193,11 +194,32 @@ renderResponse.setTitle(title);
 	<c:choose>
 		<c:when test="<%= !assetCategoriesDisplayContext.isItemSelector() %>">
 			<liferay-frontend:edit-form-footer>
-				<aui:button disabled="<%= assetCategoriesDisplayContext.isSaveButtonDisabled() %>" type="submit" />
+				<clay:button
+					disabled="<%= assetCategoriesDisplayContext.isSaveButtonDisabled() %>"
+					label="save"
+					type="submit"
+				/>
 
-				<aui:button disabled="<%= assetCategoriesDisplayContext.isSaveAndAddNewButtonDisabled() %>" onClick='<%= liferayPortletResponse.getNamespace() + "saveAndAddNew();" %>' value="save-and-add-a-new-one" />
+				<clay:button
+					additionalProps='<%=
+						HashMapBuilder.<String, Object>put(
+							"redirect", assetCategoriesDisplayContext.getAddCategoryRedirect()
+						).build()
+					%>'
+					className="mr-3"
+					disabled="<%= assetCategoriesDisplayContext.isSaveAndAddNewButtonDisabled() %>"
+					displayType="secondary"
+					label="save-and-add-a-new-one"
+					propsTransformer="js/SaveAndAddNewPropsTransformer"
+				/>
 
-				<aui:button href="<%= redirect %>" type="cancel" />
+				<clay:link
+					borderless="<%= false %>"
+					displayType="secondary"
+					href="<%= redirect %>"
+					label="cancel"
+					type="button"
+				/>
 			</liferay-frontend:edit-form-footer>
 		</c:when>
 		<c:otherwise>
@@ -215,12 +237,3 @@ renderResponse.setTitle(title);
 		</c:otherwise>
 	</c:choose>
 </liferay-frontend:edit-form>
-
-<aui:script>
-	function <portlet:namespace />saveAndAddNew() {
-		document.querySelector('#<portlet:namespace />redirect').value =
-			'<%= assetCategoriesDisplayContext.getAddCategoryRedirect() %>';
-
-		submitForm(document.querySelector('#<portlet:namespace />fm'));
-	}
-</aui:script>

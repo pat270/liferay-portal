@@ -203,11 +203,12 @@ public class CommerceTestUtil {
 			commerceChannel.getCommerceChannelId());
 
 		CommerceInventoryTestUtil.addCommerceInventoryWarehouseItem(
-			userId, commerceInventoryWarehouse, cpInstance.getSku(), 10);
+			userId, commerceInventoryWarehouse, BigDecimal.TEN,
+			cpInstance.getSku(), StringPool.BLANK);
 
 		addCommerceOrderItem(
 			commerceOrder.getCommerceOrderId(), cpInstance.getCPInstanceId(),
-			4);
+			BigDecimal.valueOf(4));
 
 		CommerceAddress billingCommerceAddress = addUserCommerceAddress(
 			groupId, userId);
@@ -291,7 +292,7 @@ public class CommerceTestUtil {
 	}
 
 	public static CommerceOrderItem addCommerceOrderItem(
-			long commerceOrderId, long cpInstanceId, int quantity)
+			long commerceOrderId, long cpInstanceId, BigDecimal quantity)
 		throws Exception {
 
 		CommerceOrder commerceOrder =
@@ -322,7 +323,7 @@ public class CommerceTestUtil {
 	}
 
 	public static CommerceOrderItem addCommerceOrderItem(
-			long commerceOrderId, long cpInstanceId, int quantity,
+			long commerceOrderId, long cpInstanceId, BigDecimal quantity,
 			CommerceContext commerceContext)
 		throws Exception {
 
@@ -331,7 +332,55 @@ public class CommerceTestUtil {
 
 		return CommerceOrderItemLocalServiceUtil.addCommerceOrderItem(
 			commerceOrder.getUserId(), commerceOrderId, cpInstanceId, null,
-			quantity, 0, 0, StringPool.BLANK, commerceContext,
+			quantity, 0, BigDecimal.ZERO, StringPool.BLANK, commerceContext,
+			ServiceContextTestUtil.getServiceContext(
+				commerceOrder.getGroupId()));
+	}
+
+	public static CommerceOrderItem addCommerceOrderItem(
+			long commerceOrderId, long cpInstanceId, BigDecimal quantity,
+			String unitOfMeasureKey)
+		throws Exception {
+
+		CommerceOrder commerceOrder =
+			CommerceOrderLocalServiceUtil.getCommerceOrder(commerceOrderId);
+
+		if (commerceOrder.getCommerceCurrency() == null) {
+			CommerceCurrency commerceCurrency =
+				CommerceCurrencyTestUtil.addCommerceCurrency(
+					commerceOrder.getCompanyId());
+
+			commerceOrder.setCommerceCurrencyId(
+				commerceCurrency.getCommerceCurrencyId());
+
+			commerceOrder = CommerceOrderLocalServiceUtil.updateCommerceOrder(
+				commerceOrder);
+		}
+
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(
+				commerceOrder.getGroupId());
+
+		CommerceContext commerceContext = new TestCommerceContext(
+			null, commerceOrder.getCommerceCurrency(), null, null,
+			serviceContext.getScopeGroup(), commerceOrder);
+
+		return addCommerceOrderItem(
+			commerceOrderId, cpInstanceId, quantity, unitOfMeasureKey,
+			commerceContext);
+	}
+
+	public static CommerceOrderItem addCommerceOrderItem(
+			long commerceOrderId, long cpInstanceId, BigDecimal quantity,
+			String unitOfMeasureKey, CommerceContext commerceContext)
+		throws Exception {
+
+		CommerceOrder commerceOrder =
+			CommerceOrderLocalServiceUtil.getCommerceOrder(commerceOrderId);
+
+		return CommerceOrderItemLocalServiceUtil.addCommerceOrderItem(
+			commerceOrder.getUserId(), commerceOrderId, cpInstanceId, null,
+			quantity, 0, BigDecimal.ZERO, unitOfMeasureKey, commerceContext,
 			ServiceContextTestUtil.getServiceContext(
 				commerceOrder.getGroupId()));
 	}

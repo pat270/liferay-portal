@@ -57,11 +57,11 @@ import com.liferay.commerce.util.CommerceShippingHelper;
 import com.liferay.commerce.util.comparator.CommerceShippingOptionPriorityComparator;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Country;
 import com.liferay.portal.kernel.model.Region;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.settings.GroupServiceSettingsLocator;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
@@ -688,10 +688,11 @@ public class FedExCommerceShippingOptionHelper {
 
 			BigDecimal finalPrice = commerceOrderItem.getFinalPrice();
 
-			BigDecimal price = finalPrice.divide(
-				BigDecimal.valueOf(commerceOrderItem.getQuantity()));
+			BigDecimal quantity = commerceOrderItem.getQuantity();
 
-			for (int j = 0; j < commerceOrderItem.getQuantity(); j++) {
+			BigDecimal price = finalPrice.divide(quantity);
+
+			for (int j = 0; j < quantity.intValue(); j++) {
 				requestedPackageLineItems.add(
 					_getRequestedPackageLineItem(
 						fedExWidth, fedExHeight, fedExDepth, fedExWeight, price,

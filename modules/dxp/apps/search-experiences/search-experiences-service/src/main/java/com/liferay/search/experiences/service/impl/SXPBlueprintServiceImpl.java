@@ -65,6 +65,21 @@ public class SXPBlueprintServiceImpl extends SXPBlueprintServiceBaseImpl {
 	}
 
 	@Override
+	public SXPBlueprint fetchSXPBlueprint(long sxpBlueprintId)
+		throws PortalException {
+
+		SXPBlueprint sxpBlueprint = sxpBlueprintLocalService.fetchSXPBlueprint(
+			sxpBlueprintId);
+
+		if (sxpBlueprint != null) {
+			_sxpBlueprintModelResourcePermission.check(
+				getPermissionChecker(), sxpBlueprint, ActionKeys.VIEW);
+		}
+
+		return sxpBlueprint;
+	}
+
+	@Override
 	public SXPBlueprint fetchSXPBlueprintByExternalReferenceCode(
 			String externalReferenceCode, long companyId)
 		throws PortalException {
@@ -113,18 +128,19 @@ public class SXPBlueprintServiceImpl extends SXPBlueprintServiceBaseImpl {
 
 	@Override
 	public SXPBlueprint updateSXPBlueprint(
-			long sxpBlueprintId, String configurationJSON,
-			Map<Locale, String> descriptionMap, String elementInstancesJSON,
-			String schemaVersion, Map<Locale, String> titleMap,
-			ServiceContext serviceContext)
+			String externalReferenceCode, long sxpBlueprintId,
+			String configurationJSON, Map<Locale, String> descriptionMap,
+			String elementInstancesJSON, String schemaVersion,
+			Map<Locale, String> titleMap, ServiceContext serviceContext)
 		throws PortalException {
 
 		_sxpBlueprintModelResourcePermission.check(
 			getPermissionChecker(), sxpBlueprintId, ActionKeys.UPDATE);
 
 		return sxpBlueprintLocalService.updateSXPBlueprint(
-			getUserId(), sxpBlueprintId, configurationJSON, descriptionMap,
-			elementInstancesJSON, schemaVersion, titleMap, serviceContext);
+			externalReferenceCode, getUserId(), sxpBlueprintId,
+			configurationJSON, descriptionMap, elementInstancesJSON,
+			schemaVersion, titleMap, serviceContext);
 	}
 
 	@Reference(target = "(resource.name=" + SXPConstants.RESOURCE_NAME + ")")

@@ -8,18 +8,22 @@
 import {FormError} from '@liferay/object-js-components-web';
 interface EntryDisplayContainerProps {
 	errors: FormError<ObjectDefinition>;
+	isLinkedObjectDefinition?: boolean;
 	nonRelationshipObjectFieldsInfo: {
 		label: LocalizedValue<string>;
 		name: string;
 	}[];
 	objectFields: ObjectField[];
+	onSubmit?: (editedObjectDefinition?: Partial<ObjectDefinition>) => void;
 	setValues: (values: Partial<ObjectDefinition>) => void;
 	values: Partial<ObjectDefinition>;
 }
 export declare function EntryDisplayContainer({
 	errors,
+	isLinkedObjectDefinition,
 	nonRelationshipObjectFieldsInfo,
 	objectFields,
+	onSubmit,
 	setValues,
 	values,
 }: EntryDisplayContainerProps): JSX.Element;

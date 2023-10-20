@@ -36,11 +36,12 @@ page import="com.liferay.commerce.product.catalog.CPSku" %><%@
 page import="com.liferay.commerce.product.constants.CPPortletKeys" %><%@
 page import="com.liferay.commerce.product.constants.CPWebKeys" %><%@
 page import="com.liferay.commerce.product.content.constants.CPContentWebKeys" %><%@
+page import="com.liferay.commerce.product.content.helper.CPCompareContentHelper" %><%@
+page import="com.liferay.commerce.product.content.helper.CPContentHelper" %><%@
+page import="com.liferay.commerce.product.content.helper.CPContentSkuOptionsHelper" %><%@
 page import="com.liferay.commerce.product.content.render.CPContentRenderer" %><%@
 page import="com.liferay.commerce.product.content.render.list.CPContentListRenderer" %><%@
 page import="com.liferay.commerce.product.content.render.list.entry.CPContentListEntryRenderer" %><%@
-page import="com.liferay.commerce.product.content.util.CPCompareContentHelper" %><%@
-page import="com.liferay.commerce.product.content.util.CPContentHelper" %><%@
 page import="com.liferay.commerce.product.content.util.CPMedia" %><%@
 page import="com.liferay.commerce.product.content.web.internal.constants.CPCompareContentConstants" %><%@
 page import="com.liferay.commerce.product.content.web.internal.constants.CPCompareContentMiniConstants" %><%@
@@ -72,6 +73,7 @@ page import="com.liferay.petra.string.StringPool" %><%@
 page import="com.liferay.portal.kernel.dao.search.ResultRow" %><%@
 page import="com.liferay.portal.kernel.dao.search.SearchContainer" %><%@
 page import="com.liferay.portal.kernel.language.LanguageUtil" %><%@
+page import="com.liferay.portal.kernel.util.BigDecimalUtil" %><%@
 page import="com.liferay.portal.kernel.util.Constants" %><%@
 page import="com.liferay.portal.kernel.util.FastDateFormatFactoryUtil" %><%@
 page import="com.liferay.portal.kernel.util.HashMapBuilder" %><%@
@@ -81,6 +83,8 @@ page import="com.liferay.portal.kernel.util.PortalUtil" %><%@
 page import="com.liferay.portal.kernel.util.StringUtil" %><%@
 page import="com.liferay.portal.kernel.util.Validator" %><%@
 page import="com.liferay.portal.kernel.util.WebKeys" %>
+
+<%@ page import="java.math.BigDecimal" %>
 
 <%@ page import="java.text.Format" %>
 

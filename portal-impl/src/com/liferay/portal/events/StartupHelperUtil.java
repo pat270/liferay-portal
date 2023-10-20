@@ -13,7 +13,7 @@ import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogContextRegistryUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.patcher.PatcherUtil;
+import com.liferay.portal.kernel.patcher.PatcherValues;
 import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
 import com.liferay.portal.kernel.service.ResourceActionLocalServiceUtil;
 import com.liferay.portal.kernel.upgrade.UpgradeException;
@@ -43,7 +43,12 @@ import java.util.List;
 public class StartupHelperUtil {
 
 	public static void initResourceActions() {
-		ResourceActionLocalServiceUtil.checkResourceActions();
+		try {
+			ResourceActionLocalServiceUtil.checkResourceActions();
+		}
+		catch (Exception exception) {
+			ReflectionUtil.throwException(exception);
+		}
 
 		try (LoggingTimer loggingTimer = new LoggingTimer()) {
 			ResourceActionsUtil.populateModelResources(
@@ -70,7 +75,8 @@ public class StartupHelperUtil {
 	public static void printPatchLevel() {
 		if (_log.isInfoEnabled()) {
 			String installedPatches = StringUtil.merge(
-				PatcherUtil.getInstalledPatches(), StringPool.COMMA_AND_SPACE);
+				PatcherValues.INSTALLED_PATCH_NAMES,
+				StringPool.COMMA_AND_SPACE);
 
 			if (Validator.isNull(installedPatches)) {
 				_log.info("There are no patches installed");

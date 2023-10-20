@@ -5,7 +5,6 @@
 
 package com.liferay.jethr0.entity.dalo;
 
-import com.liferay.client.extension.util.spring.boot.LiferayOAuth2AccessTokenConfiguration;
 import com.liferay.jethr0.entity.Entity;
 import com.liferay.jethr0.entity.factory.EntityFactory;
 import com.liferay.jethr0.util.BaseRetryable;
@@ -24,7 +23,6 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -36,7 +34,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Configuration
 public abstract class BaseEntityRelationshipDALO
 	<T extends Entity, U extends Entity>
-		implements EntityRelationshipDALO<T, U> {
+		extends BaseDALO implements EntityRelationshipDALO<T, U> {
 
 	@Override
 	public void create(T parentEntity, U childEntity) {
@@ -180,16 +178,14 @@ public abstract class BaseEntityRelationshipDALO
 					).contentType(
 						MediaType.APPLICATION_JSON
 					).header(
-						"Authorization",
-						_liferayOAuth2AccessTokenConfiguration.
-							getAuthorization()
+						"Authorization", getAuthorization()
 					).retrieve(
 					).bodyToMono(
 						String.class
 					).block();
 				}
 				catch (Exception exception) {
-					_liferayOAuth2AccessTokenConfiguration.refresh();
+					refresh();
 
 					throw new RuntimeException(exception);
 				}
@@ -242,16 +238,14 @@ public abstract class BaseEntityRelationshipDALO
 					).accept(
 						MediaType.APPLICATION_JSON
 					).header(
-						"Authorization",
-						_liferayOAuth2AccessTokenConfiguration.
-							getAuthorization()
+						"Authorization", getAuthorization()
 					).retrieve(
 					).bodyToMono(
 						String.class
 					).block();
 				}
 				catch (Exception exception) {
-					_liferayOAuth2AccessTokenConfiguration.refresh();
+					refresh();
 
 					throw new RuntimeException(exception);
 				}
@@ -312,16 +306,14 @@ public abstract class BaseEntityRelationshipDALO
 							).accept(
 								MediaType.APPLICATION_JSON
 							).header(
-								"Authorization",
-								_liferayOAuth2AccessTokenConfiguration.
-									getAuthorization()
+								"Authorization", getAuthorization()
 							).retrieve(
 							).bodyToMono(
 								String.class
 							).block();
 						}
 						catch (Exception exception) {
-							_liferayOAuth2AccessTokenConfiguration.refresh();
+							refresh();
 
 							throw new RuntimeException(exception);
 						}
@@ -379,9 +371,19 @@ public abstract class BaseEntityRelationshipDALO
 		}
 
 		if (_log.isDebugEnabled()) {
+			EntityFactory<U> childEntityFactory = getChildEntityFactory();
+
+			int entityCount = jsonObjects.size();
+
+			String entityLabel = childEntityFactory.getEntityPluralLabel();
+
+			if (entityCount == 0) {
+				entityLabel = childEntityFactory.getEntityLabel();
+			}
+
 			_log.debug(
 				StringUtil.combine(
-					"Retrieved ", jsonObjects.size(), " objects"));
+					"Retrieved ", entityCount, " ", entityLabel));
 		}
 
 		return jsonObjects;
@@ -390,27 +392,31 @@ public abstract class BaseEntityRelationshipDALO
 	private String _getChildURLPath() {
 		EntityFactory<U> childEntityFactory = getChildEntityFactory();
 
-		return StringUtil.combine(
-			"/o/c/",
-			StringUtil.toLowerCase(childEntityFactory.getEntityPluralLabel()));
+		String entityPluralLabel = childEntityFactory.getEntityPluralLabel();
+
+		entityPluralLabel = entityPluralLabel.replaceAll("\\s+", "");
+		entityPluralLabel = StringUtil.toLowerCase(entityPluralLabel);
+
+		return StringUtil.combine("/o/c/", entityPluralLabel);
 	}
 
 	private String _getParentURLPath() {
 		EntityFactory<T> parentEntityFactory = getParentEntityFactory();
 
-		return StringUtil.combine(
-			"/o/c/",
-			StringUtil.toLowerCase(parentEntityFactory.getEntityPluralLabel()));
+		String entityPluralLabel = parentEntityFactory.getEntityPluralLabel();
+
+		entityPluralLabel = entityPluralLabel.replaceAll("\\s+", "");
+		entityPluralLabel = StringUtil.toLowerCase(entityPluralLabel);
+
+		return StringUtil.combine("/o/c/", entityPluralLabel);
 	}
 
 	private static final Log _log = LogFactory.getLog(
 		BaseEntityRelationshipDALO.class);
 
-	@Autowired
-	private LiferayOAuth2AccessTokenConfiguration
-		_liferayOAuth2AccessTokenConfiguration;
-
-	@Value("${liferay.portal.url}")
+	@Value(
+		"${com.liferay.lxc.dxp.server.protocol}://${com.liferay.lxc.dxp.main.domain}"
+	)
 	private String _liferayPortalURL;
 
 }

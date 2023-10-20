@@ -27,6 +27,7 @@ import com.liferay.source.formatter.check.configuration.SourceFormatterConfigura
 import com.liferay.source.formatter.check.configuration.SourceFormatterSuppressions;
 import com.liferay.source.formatter.check.configuration.SuppressionsLoader;
 import com.liferay.source.formatter.check.util.SourceUtil;
+import com.liferay.source.formatter.exception.SourceMismatchException;
 import com.liferay.source.formatter.processor.BNDRunSourceProcessor;
 import com.liferay.source.formatter.processor.BNDSourceProcessor;
 import com.liferay.source.formatter.processor.CETSourceProcessor;
@@ -1016,6 +1017,11 @@ public class SourceFormatter {
 				new ExcludeSyntaxPattern(
 					ExcludeSyntax.GLOB, "**/node_modules_cache/**"),
 				new ExcludeSyntaxPattern(
+					ExcludeSyntax.GLOB,
+					"**/test*/**/dependencies/*.[jlw]ar/**"),
+				new ExcludeSyntaxPattern(
+					ExcludeSyntax.GLOB, "**/test*/**/dependencies/*.zip/**"),
+				new ExcludeSyntaxPattern(
 					ExcludeSyntax.REGEX,
 					".*/frontend-theme-unstyled/.*/_unstyled/css/clay/.+"),
 				new ExcludeSyntaxPattern(
@@ -1024,12 +1030,10 @@ public class SourceFormatter {
 						"clay|lexicon)/.+"),
 				new ExcludeSyntaxPattern(
 					ExcludeSyntax.REGEX,
-					".*/tests?/.*/dependencies/.+\\.(jar|lar|war|zip)/.+"),
-				new ExcludeSyntaxPattern(
-					ExcludeSyntax.REGEX,
 					"^((?!/frontend-js-node-shims/src/).)*/node_modules/.*"),
 				new ExcludeSyntaxPattern(
-					ExcludeSyntax.REGEX, "^((?!/src/).)*/build/.*")));
+					ExcludeSyntax.REGEX,
+					".*(?<!/gradle-plugins-source-formatter)/build/.*")));
 
 		_portalSource = _containsDir("portal-impl");
 
@@ -1052,7 +1056,7 @@ public class SourceFormatter {
 			parentDirName += "../";
 		}
 
-		_allFileNames = SourceFormatterUtil.scanForFiles(
+		_allFileNames = SourceFormatterUtil.scanForFileNames(
 			_sourceFormatterArgs.getBaseDirName(), new String[0],
 			new String[] {
 				"**/*.*", "**/CODEOWNERS", "**/Dockerfile", "**/packageinfo"

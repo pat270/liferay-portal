@@ -8,12 +8,12 @@ package com.liferay.poshi.runner;
 import com.liferay.data.guard.connector.client.DataGuardClient;
 import com.liferay.poshi.core.PoshiContext;
 import com.liferay.poshi.core.PoshiGetterUtil;
+import com.liferay.poshi.core.PoshiProperties;
 import com.liferay.poshi.core.PoshiStackTrace;
 import com.liferay.poshi.core.PoshiValidation;
 import com.liferay.poshi.core.PoshiVariablesContext;
 import com.liferay.poshi.core.util.FileUtil;
 import com.liferay.poshi.core.util.GetterUtil;
-import com.liferay.poshi.core.util.PoshiProperties;
 import com.liferay.poshi.core.util.Validator;
 import com.liferay.poshi.runner.exception.PoshiRunnerWarningException;
 import com.liferay.poshi.runner.logger.PoshiLogger;
@@ -214,8 +214,6 @@ public class PoshiRunner {
 
 	@After
 	public void tearDown() throws Throwable {
-		LiferaySeleniumUtil.writePoshiWarnings();
-
 		_summaryLogger.createSummaryReport();
 
 		try {
@@ -224,12 +222,23 @@ public class PoshiRunner {
 			}
 		}
 		catch (Exception exception) {
-			_throwException(exception);
+			PoshiRunnerException poshiRunnerException =
+				new PoshiRunnerException(exception, _poshiStackTrace);
+
+			_poshiStackTrace.emptyStackTrace();
+
+			poshiRunnerException.printStackTrace();
+
+			PoshiRunnerWarningException.addException(
+				new PoshiRunnerWarningException(
+					"TEAR_DOWN_FAILURE: " + exception.getMessage(), exception));
 		}
 		finally {
 			if (_poshiProperties.proxyServerEnabled) {
 				ProxyUtil.stopBrowserMobProxy();
 			}
+
+			LiferaySeleniumUtil.writePoshiWarnings();
 
 			_poshiLogger.createPoshiReport();
 

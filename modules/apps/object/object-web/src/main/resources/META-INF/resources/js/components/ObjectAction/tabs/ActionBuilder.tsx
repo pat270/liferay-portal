@@ -7,11 +7,11 @@ import ClayAlert from '@clayui/alert';
 import {
 	Card,
 	CustomItem,
-	InputLocalized,
 	SidebarCategory,
 	SingleSelect,
 	invalidateRequired,
 } from '@liferay/object-js-components-web';
+import {InputLocalized} from 'frontend-js-components-web';
 import React, {useEffect, useMemo, useState} from 'react';
 
 import {defaultLanguageId} from '../../../utils/constants';
@@ -44,6 +44,7 @@ const triggerKeys = [
 	'onAfterAdd',
 	'onAfterAttachmentDownload',
 	'onAfterDelete',
+	'onAfterRootUpdate',
 	'onAfterUpdate',
 ];
 
@@ -243,7 +244,7 @@ export default function ActionBuilder({
 					viewMode="inline"
 				>
 					<SingleSelect
-						disabled={isApproved}
+						disabled={isApproved || values.system}
 						error={errors.objectActionTriggerKey}
 						onChange={({value}) =>
 							setValues({
@@ -322,6 +323,7 @@ export default function ActionBuilder({
 			{values.objectActionTriggerKey === 'standalone' && (
 				<Card title={Liferay.Language.get('error-message')}>
 					<InputLocalized
+						disabled={values.system}
 						error={errors.errorMessage}
 						label={Liferay.Language.get('message')}
 						name="label"

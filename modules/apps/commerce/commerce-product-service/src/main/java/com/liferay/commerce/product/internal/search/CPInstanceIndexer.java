@@ -214,7 +214,7 @@ public class CPInstanceIndexer extends BaseIndexer<CPInstance> {
 	@Override
 	protected Document doGetDocument(CPInstance cpInstance) throws Exception {
 		if (_log.isDebugEnabled()) {
-			_log.debug("Indexing definition " + cpInstance);
+			_log.debug("Indexing commerce product instance " + cpInstance);
 		}
 
 		CPDefinition cpDefinition = cpInstance.getCPDefinition();
@@ -243,6 +243,7 @@ public class CPInstanceIndexer extends BaseIndexer<CPInstance> {
 		document.addKeyword(CPField.UNSPSC, cpInstance.getUnspsc());
 		document.addText(Field.CONTENT, cpInstance.getSku());
 		document.addText(Field.NAME, cpDefinition.getName());
+		document.addKeyword(Field.STATUS, cpInstance.getStatus());
 
 		List<String> languageIds =
 			_cpDefinitionLocalService.getCPDefinitionLocalizationLanguageIds(
@@ -273,7 +274,9 @@ public class CPInstanceIndexer extends BaseIndexer<CPInstance> {
 		}
 
 		if (_log.isDebugEnabled()) {
-			_log.debug("Document " + cpInstance + " indexed successfully");
+			_log.debug(
+				"Commerce product instance " + cpInstance +
+					" indexed successfully");
 		}
 
 		return document;
@@ -323,8 +326,8 @@ public class CPInstanceIndexer extends BaseIndexer<CPInstance> {
 				catch (PortalException portalException) {
 					if (_log.isWarnEnabled()) {
 						_log.warn(
-							"Unable to index commerce product definition " +
-								cpInstance.getCPInstanceId(),
+							"Unable to index commerce product instance " +
+								cpInstance,
 							portalException);
 					}
 				}

@@ -6,8 +6,8 @@
 package com.liferay.digital.signature.configuration;
 
 import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Objects;
@@ -54,6 +54,8 @@ public class DigitalSignatureConfigurationUtil {
 						groupDigitalSignatureConfiguration.apiAccountId()) &&
 					Validator.isNotNull(
 						groupDigitalSignatureConfiguration.accountBaseURI()) &&
+					Validator.isNotNull(
+						groupDigitalSignatureConfiguration.environment()) &&
 					Validator.isNotNull(
 						groupDigitalSignatureConfiguration.integrationKey()) &&
 					Validator.isNotNull(

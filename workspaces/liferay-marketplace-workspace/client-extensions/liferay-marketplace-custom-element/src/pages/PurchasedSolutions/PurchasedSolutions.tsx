@@ -20,6 +20,7 @@ import {
 	getListTypeDefinitionByExternalReferenceCode,
 	getProductById,
 	getProductSKU,
+	getProductSpecifications,
 	getUserAccount,
 	postAccountByERCUserAccountByERC,
 } from '../../utils/api';
@@ -30,8 +31,9 @@ import ClayAlert, {DisplayType} from '@clayui/alert';
 import ClaySticker from '@clayui/sticker';
 
 import emptyPictureIcon from '../../assets/icons/avatar.svg';
-import {Footer} from '../../components/Footer/Footer';
+import {getSiteURL} from '../../components/InviteMemberModal/services';
 import Select from '../../components/Select/Select';
+import {Liferay} from '../../liferay/liferay';
 import fetcher from '../../services/fetcher';
 import CreatedProjectCard from './CreatedProjectCard';
 import PurchasedSolutionsAccountSelection from './PurchasedSolutionsAccountSelection';
@@ -67,7 +69,6 @@ type InputProps = {
 	type?: string;
 } & InputHTMLAttributes<HTMLInputElement>;
 
-const {origin} = window.location;
 const externalReferenceCode = 'INDUSTRIES';
 
 const Input: React.FC<InputProps> = ({
@@ -124,7 +125,6 @@ const PurchasedSolutions: React.FC = () => {
 		code: '+1',
 		flag: 'en-us',
 	});
-
 	const [product, setProduct] = useState<Product>();
 	const [sku, setSku] = useState<number>();
 	const [currentUserAccount, setCurrentUserAccount] = useState<UserAccount>();
@@ -135,6 +135,9 @@ const PurchasedSolutions: React.FC = () => {
 	const [toastItems, setToastItems] = useState<
 		{message: string; title?: string; type: DisplayType}[]
 	>([]);
+	const [specifications, setSpecifications] = useState<
+		ProductSpecification[]
+	>();
 
 	const renderToast = (message: string, title: string, type: DisplayType) => {
 		setToastItems([...toastItems, {message, title, type}]);
@@ -144,16 +147,21 @@ const PurchasedSolutions: React.FC = () => {
 		(async () => {
 			setCurrentUserAccount(await getUserAccount());
 
-			const insdustriesListTypeEntries =
-				await getListTypeDefinitionByExternalReferenceCode(
-					externalReferenceCode
-				);
+			const insdustriesListTypeEntries = await getListTypeDefinitionByExternalReferenceCode(
+				externalReferenceCode
+			);
 
 			setIndustries(insdustriesListTypeEntries?.listTypeEntries);
 
 			const skuProduct = await getProductSKU({
 				appProductId: Number(productId),
 			});
+
+			const specifications = await getProductSpecifications({
+				appProductId: productId,
+			});
+
+			setSpecifications(specifications);
 
 			if (!skuProduct.items[0] || productId === 1 || productId === null) {
 				setDisabledButton(true);
@@ -164,7 +172,9 @@ const PurchasedSolutions: React.FC = () => {
 				);
 			}
 			else {
-				const productById = await getProductById(Number(productId));
+				const productById = await getProductById({
+					productId: Number(productId),
+				});
 				setSku(skuProduct.items[0].id);
 				setProduct(productById);
 			}
@@ -217,17 +227,17 @@ const PurchasedSolutions: React.FC = () => {
 			};
 
 			const account = getAccountInfo();
-			setOrder({account, product, sku});
+			setOrder({account, product, sku, specifications});
 
 			const pageDefault = hasPersonAccount
 				? 'accountSelection'
 				: 'accountCreation';
 			setStep({page: pageDefault});
 		})();
-	}, [accountBriefs, product, sku]);
+	}, [accountBriefs, product, sku, specifications]);
 
 	const {
-		formState: {errors},
+		formState: {errors, isValid},
 		handleSubmit,
 		register,
 		setValue,
@@ -244,6 +254,7 @@ const PurchasedSolutions: React.FC = () => {
 			phone: {code: '+1', flag: 'en-us'},
 			phoneNumber: undefined,
 		},
+		mode: 'all',
 		resolver: zodResolver(zodSchema.accountCreator),
 	});
 
@@ -306,7 +317,7 @@ const PurchasedSolutions: React.FC = () => {
 
 		await addUserAccountInAccount(response);
 
-		setOrder({account: form, product, sku});
+		setOrder({account: form, product, sku, specifications});
 	};
 
 	const inputProps = {
@@ -316,6 +327,8 @@ const PurchasedSolutions: React.FC = () => {
 	};
 
 	const agreeToTermsAndConditions = watch('agreeToTermsAndConditions');
+
+	const hasAllValidations = agreeToTermsAndConditions && isValid;
 
 	return (
 		<>
@@ -450,7 +463,6 @@ const PurchasedSolutions: React.FC = () => {
 												<div className="col-3 pl-0">
 													<DropDown
 														closeOnClick
-														items={phonesFlags}
 														trigger={
 															<div className="align-items-center custom-select d-flex form-control p-2 rounded-xs">
 																<ClayIcon
@@ -466,35 +478,49 @@ const PurchasedSolutions: React.FC = () => {
 															</div>
 														}
 													>
-														{(item) => (
-															<DropDown.Item
-																onClick={() => {
-																	setCurrentPhonesFlags(
-																		{
-																			code: item.code,
-																			flag: item.flag,
-																		}
-																	);
+														<DropDown.ItemList
+															items={phonesFlags}
+														>
+															{(item) => {
+																const itemList = item as PhonesFlags;
 
-																	setValue(
-																		'phone',
-																		{
-																			code: item.code,
-																			flag: item.flag,
-																		}
-																	);
-																}}
-															>
-																<ClayIcon
-																	className="mr-2"
-																	symbol={
-																		item.flag
-																	}
-																/>
+																return (
+																	<DropDown.Item
+																		onClick={() => {
+																			setCurrentPhonesFlags(
+																				{
+																					code:
+																						itemList.code,
+																					flag:
+																						itemList.flag,
+																				}
+																			);
 
-																{item.code}
-															</DropDown.Item>
-														)}
+																			setValue(
+																				'phone',
+																				{
+																					code:
+																						itemList.code,
+																					flag:
+																						itemList.flag,
+																				}
+																			);
+																		}}
+																	>
+																		<ClayIcon
+																			className="mr-2"
+																			symbol={
+																				itemList.flag
+																			}
+																		/>
+
+																		{
+																			itemList.code
+																		}
+																	</DropDown.Item>
+																);
+															}}
+														</DropDown.ItemList>
 													</DropDown>
 
 													<div className="form-feedback-group">
@@ -527,30 +553,36 @@ const PurchasedSolutions: React.FC = () => {
 										</ClayForm.Group>
 
 										<ClayForm.Group>
-											<div className="d-flex flex-row-reverse justify-content-end">
-												<label
-													className="control-label ml-3 pb-1"
-													htmlFor="agreeToTermsAndConditions"
-												>
-													I agree to the
-													<ClayLink href="https://www.liferay.com/en/legal/marketplace-terms-of-service">
-														Terms & Conditions
-													</ClayLink>
-												</label>
-
-												<ClayCheckbox
-													checked={
-														agreeToTermsAndConditions
-													}
-													className="danger"
-													id="newsSubscription"
-													onChange={() =>
-														setValue(
-															'agreeToTermsAndConditions',
-															!agreeToTermsAndConditions
-														)
-													}
-												/>
+											<div className="d-flex justify-content-start">
+												<>
+													<ClayCheckbox
+														checked={
+															agreeToTermsAndConditions
+														}
+														className="danger"
+														id="newsSubscription"
+														onChange={() =>
+															setValue(
+																'agreeToTermsAndConditions',
+																!agreeToTermsAndConditions
+															)
+														}
+													/>
+													<label
+														className="ml-4"
+														htmlFor="agreeToTermsAndConditions"
+													>
+														I agree to the
+													</label>
+													<label className="ml-2">
+														<ClayLink
+															displayType="primary"
+															href="https://www.liferay.com/en/legal/marketplace-terms-of-service"
+														>
+															Terms & Conditions
+														</ClayLink>
+													</label>
+												</>
 											</div>
 										</ClayForm.Group>
 
@@ -560,8 +592,7 @@ const PurchasedSolutions: React.FC = () => {
 													<ClayButton
 														displayType="unstyled"
 														onClick={() => {
-															window.location.href =
-																origin;
+															window.location.href = `${Liferay.ThemeDisplay.getPortalURL()}${getSiteURL()}/solutions-marketplace`;
 														}}
 													>
 														Cancel
@@ -570,7 +601,7 @@ const PurchasedSolutions: React.FC = () => {
 
 												<ClayButton
 													disabled={
-														!agreeToTermsAndConditions ||
+														!hasAllValidations ||
 														disabledButton
 													}
 													onClick={handleSubmit(
@@ -599,10 +630,6 @@ const PurchasedSolutions: React.FC = () => {
 					{step?.page === 'projectCreated' && (
 						<CreatedProjectCard product={product} />
 					)}
-				</div>
-
-				<div className="footer-to-bottom">
-					<Footer />
 				</div>
 			</div>
 			<ClayAlert.ToastContainer>

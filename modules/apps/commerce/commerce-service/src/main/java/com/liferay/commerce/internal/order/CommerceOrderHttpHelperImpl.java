@@ -34,6 +34,7 @@ import com.liferay.commerce.util.CommerceCheckoutStep;
 import com.liferay.commerce.util.CommerceCheckoutStepRegistry;
 import com.liferay.petra.lang.CentralizedThreadLocal;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.cookies.CookiesManagerUtil;
 import com.liferay.portal.kernel.cookies.constants.CookiesConstants;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -43,7 +44,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletURLFactory;
@@ -59,6 +59,8 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+
+import java.math.BigDecimal;
 
 import java.util.Collections;
 import java.util.List;
@@ -365,7 +367,7 @@ public class CommerceOrderHttpHelperImpl implements CommerceOrderHttpHelper {
 	}
 
 	@Override
-	public int getCommerceOrderItemsQuantity(
+	public BigDecimal getCommerceOrderItemsQuantity(
 			HttpServletRequest httpServletRequest)
 		throws PortalException {
 
@@ -373,7 +375,7 @@ public class CommerceOrderHttpHelperImpl implements CommerceOrderHttpHelper {
 			httpServletRequest);
 
 		if (commerceOrder == null) {
-			return 0;
+			return BigDecimal.ZERO;
 		}
 
 		return _commerceOrderItemService.getCommerceOrderItemsQuantity(

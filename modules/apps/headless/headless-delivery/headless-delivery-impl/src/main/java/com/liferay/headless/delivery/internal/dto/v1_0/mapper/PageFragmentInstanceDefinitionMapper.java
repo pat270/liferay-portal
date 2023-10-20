@@ -50,7 +50,6 @@ import com.liferay.info.item.provider.InfoItemFieldValuesProvider;
 import com.liferay.info.item.provider.InfoItemObjectProvider;
 import com.liferay.layout.util.structure.FragmentStyledLayoutStructureItem;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONDeserializer;
 import com.liferay.portal.kernel.json.JSONException;
@@ -148,9 +147,8 @@ public class PageFragmentInstanceDefinitionMapper {
 				fragmentViewports =
 					pageFragmentInstanceDefinitionFragmentViewports;
 				indexed = fragmentStyledLayoutStructureItem.isIndexed();
+				name = fragmentStyledLayoutStructureItem.getName();
 				widgetInstances = _getWidgetInstances(fragmentEntryLink);
-
-				setName(fragmentStyledLayoutStructureItem::getName);
 			}
 		};
 	}
@@ -394,13 +392,12 @@ public class PageFragmentInstanceDefinitionMapper {
 
 			return new ActionExecutionResult() {
 				{
-					setType(ActionExecutionResult.Type.NONE);
-					setValue(
-						new NoneActionExecutionResult() {
-							{
-								setReload(jsonObject.getBoolean("reload"));
-							}
-						});
+					type = ActionExecutionResult.Type.NONE;
+					value = new NoneActionExecutionResult() {
+						{
+							reload = jsonObject.getBoolean("reload");
+						}
+					};
 				}
 			};
 		}
@@ -409,7 +406,8 @@ public class PageFragmentInstanceDefinitionMapper {
 
 			return new ActionExecutionResult() {
 				{
-					setType(ActionExecutionResult.Type.NOTIFICATION);
+					type = ActionExecutionResult.Type.NOTIFICATION;
+
 					setValue(
 						() -> {
 							if (!saveInlineContent || !jsonObject.has("text")) {
@@ -418,10 +416,9 @@ public class PageFragmentInstanceDefinitionMapper {
 
 							return new NotificationActionExecutionResult() {
 								{
-									setReload(jsonObject.getBoolean("reload"));
-									setText(
-										_toFragmentInlineValue(
-											jsonObject.getJSONObject("text")));
+									reload = jsonObject.getBoolean("reload");
+									text = _toFragmentInlineValue(
+										jsonObject.getJSONObject("text"));
 								}
 							};
 						});
@@ -433,7 +430,8 @@ public class PageFragmentInstanceDefinitionMapper {
 
 			return new ActionExecutionResult() {
 				{
-					setType(ActionExecutionResult.Type.PAGE);
+					type = ActionExecutionResult.Type.PAGE;
+
 					setValue(
 						() -> {
 							if (!saveMapping || !jsonObject.has("page")) {
@@ -445,10 +443,10 @@ public class PageFragmentInstanceDefinitionMapper {
 
 							return new SitePageActionExecutionResult() {
 								{
-									setItemReference(
+									itemReference =
 										FragmentMappedValueUtil.
 											toLayoutClassFieldsReference(
-												pageJSONObject));
+												pageJSONObject);
 								}
 							};
 						});
@@ -460,7 +458,8 @@ public class PageFragmentInstanceDefinitionMapper {
 
 			return new ActionExecutionResult() {
 				{
-					setType(ActionExecutionResult.Type.URL);
+					type = ActionExecutionResult.Type.URL;
+
 					setValue(
 						() -> {
 							if (!saveInlineContent || !jsonObject.has("url")) {
@@ -469,9 +468,8 @@ public class PageFragmentInstanceDefinitionMapper {
 
 							return new URLActionExecutionResult() {
 								{
-									setUrl(
-										_toFragmentInlineValue(
-											jsonObject.getJSONObject("url")));
+									url = _toFragmentInlineValue(
+										jsonObject.getJSONObject("url"));
 								}
 							};
 						});
@@ -671,10 +669,6 @@ public class PageFragmentInstanceDefinitionMapper {
 
 	private FragmentFieldAction _toFragmentFieldAction(
 		JSONObject jsonObject, boolean saveInlineContent, boolean saveMapping) {
-
-		if (!FeatureFlagManagerUtil.isEnabled("LPS-169992")) {
-			return null;
-		}
 
 		JSONObject configJSONObject = jsonObject.getJSONObject("config");
 

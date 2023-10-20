@@ -12,6 +12,7 @@ import com.liferay.message.boards.service.MBCategoryLocalService;
 import com.liferay.message.boards.service.MBMessageLocalService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.configuration.persistence.listener.ConfigurationModelListener;
+import com.liferay.portal.kernel.comment.DiscussionPermission;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.CompanyLocalService;
@@ -114,8 +115,8 @@ public class QuestionsConfigurationModelListener
 				_bundleContext.registerService(
 					AssetRendererFactory.class,
 					new MBMessageAssetRendererFactory(
-						_companyLocalService, historyRouterBasePath,
-						_mbMessageLocalService,
+						_companyLocalService, _discussionPermission,
+						historyRouterBasePath, _mbMessageLocalService,
 						_mbMessageModelResourcePermission),
 					assetRendererFactoryProperties));
 		}
@@ -161,16 +162,18 @@ public class QuestionsConfigurationModelListener
 					headlessDeliveryPackage, "MessageBoardSectionResourceImpl#",
 					"getMessageBoardSection\n", headlessDeliveryPackage,
 					"MessageBoardSectionResourceImpl#",
-					"getSiteMessageBoardSectionsPage\n",
-					headlessDeliveryPackage, "MessageBoardSectionResourceImpl#",
 					"getMessageBoardSectionMessageBoardSectionsPage\n",
+					headlessDeliveryPackage, "MessageBoardSectionResourceImpl#",
+					"getSiteMessageBoardSectionByFriendlyUrlPath\n",
+					headlessDeliveryPackage, "MessageBoardSectionResourceImpl#",
+					"getSiteMessageBoardSectionsPage\n",
 					headlessDeliveryPackage, "MessageBoardThreadResourceImpl#",
 					"getMessageBoardSectionMessageBoardThreadsPage\n",
 					headlessDeliveryPackage, "MessageBoardThreadResourceImpl#",
-					"getMessageBoardThreadsRankedPage\n",
-					headlessDeliveryPackage, "MessageBoardThreadResourceImpl#",
 					"getMessageBoardThreadMyRating\n", headlessDeliveryPackage,
 					"MessageBoardThreadResourceImpl#",
+					"getMessageBoardThreadsRankedPage\n",
+					headlessDeliveryPackage, "MessageBoardThreadResourceImpl#",
 					"getSiteMessageBoardThreadByFriendlyUrlPath\n",
 					headlessDeliveryPackage, "MessageBoardThreadResourceImpl#",
 					"getSiteMessageBoardThreadsPage\n"),
@@ -195,6 +198,9 @@ public class QuestionsConfigurationModelListener
 
 	@Reference
 	private CompanyLocalService _companyLocalService;
+
+	@Reference
+	private DiscussionPermission _discussionPermission;
 
 	@Reference
 	private MBCategoryLocalService _mbCategoryLocalService;

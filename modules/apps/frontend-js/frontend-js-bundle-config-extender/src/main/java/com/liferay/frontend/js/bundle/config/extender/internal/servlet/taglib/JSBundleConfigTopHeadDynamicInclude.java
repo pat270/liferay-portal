@@ -8,6 +8,7 @@ package com.liferay.frontend.js.bundle.config.extender.internal.servlet.taglib;
 import com.liferay.frontend.js.bundle.config.extender.internal.JSBundleConfigRegistry;
 import com.liferay.frontend.js.loader.modules.extender.npm.ModuleNameUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.content.security.policy.ContentSecurityPolicyNonceProvider;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
@@ -51,7 +52,7 @@ public class JSBundleConfigTopHeadDynamicInclude extends BaseDynamicInclude {
 			HttpServletResponse httpServletResponse, String key)
 		throws IOException {
 
-		if (!_isStale()) {
+		if (!_isStale(httpServletRequest)) {
 			_writeResponse(httpServletResponse, _objectValuePair.getValue());
 
 			return;
@@ -155,9 +156,12 @@ public class JSBundleConfigTopHeadDynamicInclude extends BaseDynamicInclude {
 		}
 	}
 
-	private boolean _isStale() {
-		if (_jsBundleConfigRegistry.getLastModified() >
-				_objectValuePair.getKey()) {
+	private boolean _isStale(HttpServletRequest httpServletRequest) {
+		if ((_jsBundleConfigRegistry.getLastModified() >
+				_objectValuePair.getKey()) ||
+			Validator.isNotNull(
+				_contentSecurityPolicyNonceProvider.getNonce(
+					httpServletRequest))) {
 
 			return true;
 		}
@@ -176,6 +180,10 @@ public class JSBundleConfigTopHeadDynamicInclude extends BaseDynamicInclude {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		JSBundleConfigTopHeadDynamicInclude.class);
+
+	@Reference
+	private ContentSecurityPolicyNonceProvider
+		_contentSecurityPolicyNonceProvider;
 
 	@Reference
 	private JSBundleConfigRegistry _jsBundleConfigRegistry;

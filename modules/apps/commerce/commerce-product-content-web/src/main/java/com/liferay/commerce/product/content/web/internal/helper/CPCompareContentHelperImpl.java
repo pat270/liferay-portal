@@ -8,7 +8,7 @@ package com.liferay.commerce.product.content.web.internal.helper;
 import com.liferay.commerce.product.catalog.CPCatalogEntry;
 import com.liferay.commerce.product.constants.CPMeasurementUnitConstants;
 import com.liferay.commerce.product.constants.CPPortletKeys;
-import com.liferay.commerce.product.content.util.CPCompareContentHelper;
+import com.liferay.commerce.product.content.helper.CPCompareContentHelper;
 import com.liferay.commerce.product.content.web.internal.configuration.CPCompareContentMiniPortletInstanceConfiguration;
 import com.liferay.commerce.product.content.web.internal.configuration.CPCompareContentPortletInstanceConfiguration;
 import com.liferay.commerce.product.data.source.CPDataSourceResult;
@@ -19,15 +19,17 @@ import com.liferay.commerce.product.model.CPDefinitionSpecificationOptionValue;
 import com.liferay.commerce.product.model.CPMeasurementUnit;
 import com.liferay.commerce.product.model.CPOptionCategory;
 import com.liferay.commerce.product.model.CPSpecificationOption;
+import com.liferay.commerce.product.option.CommerceOptionType;
+import com.liferay.commerce.product.option.CommerceOptionTypeRegistry;
 import com.liferay.commerce.product.service.CPDefinitionLocalService;
 import com.liferay.commerce.product.service.CPDefinitionSpecificationOptionValueLocalService;
 import com.liferay.commerce.product.service.CPMeasurementUnitLocalService;
 import com.liferay.commerce.product.service.CPOptionCategoryLocalService;
 import com.liferay.commerce.product.util.CPCompareHelper;
 import com.liferay.commerce.product.util.CPDefinitionHelper;
-import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTypeServicesRegistry;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.cookies.CookiesManagerUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -36,17 +38,14 @@ import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.kernel.util.Validator;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 
 import javax.portlet.RenderRequest;
@@ -272,8 +271,9 @@ public class CPCompareContentHelperImpl implements CPCompareContentHelper {
 
 			CPCompareContentMiniPortletInstanceConfiguration
 				cpCompareContentMiniPortletInstanceConfiguration =
-					portletDisplay.getPortletInstanceConfiguration(
-						CPCompareContentMiniPortletInstanceConfiguration.class);
+					_configurationProvider.getPortletInstanceConfiguration(
+						CPCompareContentMiniPortletInstanceConfiguration.class,
+						portletDisplay.getThemeDisplay());
 
 			return cpCompareContentMiniPortletInstanceConfiguration.
 				productsLimit();
@@ -283,8 +283,9 @@ public class CPCompareContentHelperImpl implements CPCompareContentHelper {
 
 			CPCompareContentPortletInstanceConfiguration
 				cpCompareContentPortletInstanceConfiguration =
-					portletDisplay.getPortletInstanceConfiguration(
-						CPCompareContentPortletInstanceConfiguration.class);
+					_configurationProvider.getPortletInstanceConfiguration(
+						CPCompareContentPortletInstanceConfiguration.class,
+						portletDisplay.getThemeDisplay());
 
 			return cpCompareContentPortletInstanceConfiguration.productsLimit();
 		}
@@ -374,15 +375,12 @@ public class CPCompareContentHelperImpl implements CPCompareContentHelper {
 		for (CPDefinitionOptionRel cpDefinitionOptionRel :
 				cpDefinition.getCPDefinitionOptionRels()) {
 
-			Map<String, Object> properties =
-				_ddmFormFieldTypeServicesRegistry.getDDMFormFieldTypeProperties(
-					cpDefinitionOptionRel.getDDMFormFieldTypeName());
+			CommerceOptionType commerceOptionType =
+				_commerceOptionTypeRegistry.getCommerceOptionType(
+					cpDefinitionOptionRel.getCommerceOptionTypeKey());
 
-			String fieldTypeDataDomain = MapUtil.getString(
-				properties, "ddm.form.field.type.data.domain");
-
-			if (Validator.isNotNull(fieldTypeDataDomain) &&
-				fieldTypeDataDomain.equals("list")) {
+			if ((commerceOptionType != null) &&
+				commerceOptionType.hasValues()) {
 
 				multiValueCPDefinitionOptionRels.add(cpDefinitionOptionRel);
 			}
@@ -390,6 +388,12 @@ public class CPCompareContentHelperImpl implements CPCompareContentHelper {
 
 		return multiValueCPDefinitionOptionRels;
 	}
+
+	@Reference
+	private CommerceOptionTypeRegistry _commerceOptionTypeRegistry;
+
+	@Reference
+	private ConfigurationProvider _configurationProvider;
 
 	@Reference
 	private CPCompareHelper _cpCompareHelper;
@@ -409,9 +413,6 @@ public class CPCompareContentHelperImpl implements CPCompareContentHelper {
 
 	@Reference
 	private CPOptionCategoryLocalService _cpOptionCategoryLocalService;
-
-	@Reference
-	private DDMFormFieldTypeServicesRegistry _ddmFormFieldTypeServicesRegistry;
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;

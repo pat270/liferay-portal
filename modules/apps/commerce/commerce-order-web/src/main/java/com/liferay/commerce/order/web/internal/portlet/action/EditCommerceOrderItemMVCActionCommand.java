@@ -13,7 +13,6 @@ import com.liferay.commerce.exception.CommerceOrderValidatorException;
 import com.liferay.commerce.model.CommerceOrder;
 import com.liferay.commerce.model.CommerceOrderItem;
 import com.liferay.commerce.service.CommerceOrderItemService;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -128,6 +127,9 @@ public class EditCommerceOrderItemMVCActionCommand
 		long commerceOrderId = ParamUtil.getLong(
 			actionRequest, "commerceOrderId");
 
+		String unitOfMeasureKey = ParamUtil.getString(
+			actionRequest, "unitOfMeasureKey");
+
 		CommerceContext commerceContext =
 			(CommerceContext)actionRequest.getAttribute(
 				CommerceWebKeys.COMMERCE_CONTEXT);
@@ -140,8 +142,9 @@ public class EditCommerceOrderItemMVCActionCommand
 
 		for (long cpInstanceId : cpInstanceIds) {
 			_commerceOrderItemService.addCommerceOrderItem(
-				commerceOrderId, cpInstanceId, null, 1, 0, 0, StringPool.BLANK,
-				commerceContext, serviceContext);
+				commerceOrderId, cpInstanceId, null, BigDecimal.ONE, 0,
+				BigDecimal.ZERO, unitOfMeasureKey, commerceContext,
+				serviceContext);
 		}
 	}
 
@@ -193,8 +196,8 @@ public class EditCommerceOrderItemMVCActionCommand
 		serviceContext.setAttribute("validateOrder", Boolean.FALSE);
 
 		commerceOrderItem = _commerceOrderItemService.updateCommerceOrderItem(
-			commerceOrderItemId, cpMeasurementUnitId,
-			decimalQuantity.intValue(), serviceContext);
+			commerceOrderItemId, cpMeasurementUnitId, decimalQuantity,
+			serviceContext);
 
 		if (!commerceOrder.isOpen()) {
 			BigDecimal price = (BigDecimal)ParamUtil.getNumber(

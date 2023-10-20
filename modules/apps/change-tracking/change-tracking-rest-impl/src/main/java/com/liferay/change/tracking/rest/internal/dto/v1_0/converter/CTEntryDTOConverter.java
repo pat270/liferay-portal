@@ -54,6 +54,21 @@ public class CTEntryDTOConverter
 		return _toCTEntry(dtoConverterContext, ctEntry);
 	}
 
+	private Long _getSiteId(BaseModel<?> model) {
+		if (model instanceof GroupedModel) {
+			GroupedModel groupedModel = (GroupedModel)model;
+
+			Group group = _groupLocalService.fetchGroup(
+				groupedModel.getGroupId());
+
+			if (group != null) {
+				return group.getGroupId();
+			}
+		}
+
+		return null;
+	}
+
 	private String _getSiteName(Locale locale, BaseModel<?> model) {
 		if (model instanceof GroupedModel) {
 			GroupedModel groupedModel = (GroupedModel)model;
@@ -61,7 +76,9 @@ public class CTEntryDTOConverter
 			Group group = _groupLocalService.fetchGroup(
 				groupedModel.getGroupId());
 
-			return group.getName(locale);
+			if (group != null) {
+				return group.getName(locale);
+			}
 		}
 
 		return null;
@@ -85,7 +102,11 @@ public class CTEntryDTOConverter
 		return new CTEntry() {
 			{
 				actions = dtoConverterContext.getActions();
-				changeType = ctEntry.getChangeType();
+				changeType = _language.get(
+					dtoConverterContext.getLocale(),
+					CTConstants.getCTChangeTypeLabel(
+						_ctDisplayRendererRegistry.getChangeType(
+							ctEntry, model)));
 				ctCollectionId = ctEntry.getCtCollectionId();
 				dateCreated = ctEntry.getCreateDate();
 				dateModified = ctEntry.getModifiedDate();
@@ -94,7 +115,9 @@ public class CTEntryDTOConverter
 				id = ctEntry.getCtEntryId();
 				modelClassNameId = ctEntry.getModelClassNameId();
 				modelClassPK = ctEntry.getModelClassPK();
+				ownerId = ctEntry.getUserId();
 				ownerName = ctEntry.getUserName();
+				siteId = _getSiteId(model);
 				siteName = _getSiteName(dtoConverterContext.getLocale(), model);
 				status = _toStatus(dtoConverterContext.getLocale(), model);
 				title = _ctDisplayRendererRegistry.getTitle(
@@ -109,6 +132,10 @@ public class CTEntryDTOConverter
 
 	private Status _toStatus(Locale locale, BaseModel<?> model)
 		throws Exception {
+
+		if (model == null) {
+			return null;
+		}
 
 		Map<String, Object> modelAttributes = model.getModelAttributes();
 

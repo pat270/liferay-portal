@@ -26,6 +26,8 @@ import com.liferay.portal.kernel.util.StringUtil;
 
 import java.math.BigDecimal;
 
+import java.util.Calendar;
+
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 
@@ -71,7 +73,8 @@ public class EditCPInstanceCommercePriceEntryMVCActionCommand
 		for (long addCommercePriceListId : addCommercePriceListIds) {
 			_commercePriceEntryService.addCommercePriceEntry(
 				null, cpInstanceId, addCommercePriceListId,
-				cpInstance.getPrice(), false, cpInstance.getPromoPrice(), null,
+				cpInstance.getPrice(), false, cpInstance.getPromoPrice(),
+				ParamUtil.getString(actionRequest, "unitOfMeasureKey"),
 				serviceContext);
 		}
 	}
@@ -156,19 +159,84 @@ public class EditCPInstanceCommercePriceEntryMVCActionCommand
 		long commercePriceEntryId = ParamUtil.getLong(
 			actionRequest, "commercePriceEntryId");
 
+		CommercePriceEntry commercePriceEntry =
+			_commercePriceEntryService.getCommercePriceEntry(
+				commercePriceEntryId);
+
+		boolean bulkPricing = ParamUtil.getBoolean(
+			actionRequest, "bulkPricing");
+		boolean overrideDiscount = ParamUtil.getBoolean(
+			actionRequest, "overrideDiscount");
+		BigDecimal discountLevel1 = (BigDecimal)ParamUtil.getNumber(
+			actionRequest, "discountLevel1", BigDecimal.ZERO);
+		BigDecimal discountLevel2 = (BigDecimal)ParamUtil.getNumber(
+			actionRequest, "discountLevel2", BigDecimal.ZERO);
+		BigDecimal discountLevel3 = (BigDecimal)ParamUtil.getNumber(
+			actionRequest, "discountLevel3", BigDecimal.ZERO);
+		BigDecimal discountLevel4 = (BigDecimal)ParamUtil.getNumber(
+			actionRequest, "discountLevel4", BigDecimal.ZERO);
+		int displayDateMonth = ParamUtil.getInteger(
+			actionRequest, "displayDateMonth");
+		int displayDateDay = ParamUtil.getInteger(
+			actionRequest, "displayDateDay");
+		int displayDateYear = ParamUtil.getInteger(
+			actionRequest, "displayDateYear");
+		int displayDateHour = ParamUtil.getInteger(
+			actionRequest, "displayDateHour");
+		int displayDateMinute = ParamUtil.getInteger(
+			actionRequest, "displayDateMinute");
+		int displayDateAmPm = ParamUtil.getInteger(
+			actionRequest, "displayDateAmPm");
+
+		if (displayDateAmPm == Calendar.PM) {
+			displayDateHour += 12;
+		}
+
+		int expirationDateMonth = ParamUtil.getInteger(
+			actionRequest, "expirationDateMonth");
+		int expirationDateDay = ParamUtil.getInteger(
+			actionRequest, "expirationDateDay");
+		int expirationDateYear = ParamUtil.getInteger(
+			actionRequest, "expirationDateYear");
+		int expirationDateHour = ParamUtil.getInteger(
+			actionRequest, "expirationDateHour");
+		int expirationDateMinute = ParamUtil.getInteger(
+			actionRequest, "expirationDateMinute");
+		int expirationDateAmPm = ParamUtil.getInteger(
+			actionRequest, "expirationDateAmPm");
+
+		if (expirationDateAmPm == Calendar.PM) {
+			expirationDateHour += 12;
+		}
+
+		boolean neverExpire = ParamUtil.getBoolean(
+			actionRequest, "neverExpire");
+
 		BigDecimal price = (BigDecimal)ParamUtil.getNumber(
 			actionRequest, "price", BigDecimal.ZERO);
-		BigDecimal promoPrice = (BigDecimal)ParamUtil.getNumber(
-			actionRequest, "promoPrice", BigDecimal.ZERO);
-		String unitOfMeasureKey = ParamUtil.getString(
-			actionRequest, "unitOfMeasureKey");
+		boolean priceOnApplication = ParamUtil.getBoolean(
+			actionRequest, "priceOnApplication");
 
-		ServiceContext serviceContext = ServiceContextFactory.getInstance(
-			CommercePriceEntry.class.getName(), actionRequest);
+		if (priceOnApplication) {
+			bulkPricing = commercePriceEntry.isBulkPricing();
+			overrideDiscount = !commercePriceEntry.isDiscountDiscovery();
+			discountLevel1 = commercePriceEntry.getDiscountLevel1();
+			discountLevel2 = commercePriceEntry.getDiscountLevel2();
+			discountLevel3 = commercePriceEntry.getDiscountLevel3();
+			discountLevel4 = commercePriceEntry.getDiscountLevel4();
+			price = commercePriceEntry.getPrice();
+		}
 
 		return _commercePriceEntryService.updateCommercePriceEntry(
-			commercePriceEntryId, price, false, promoPrice, unitOfMeasureKey,
-			serviceContext);
+			commercePriceEntryId, bulkPricing, !overrideDiscount,
+			discountLevel1, discountLevel2, discountLevel3, discountLevel4,
+			displayDateMonth, displayDateDay, displayDateYear, displayDateHour,
+			displayDateMinute, expirationDateMonth, expirationDateDay,
+			expirationDateYear, expirationDateHour, expirationDateMinute,
+			neverExpire, price, priceOnApplication,
+			commercePriceEntry.getUnitOfMeasureKey(),
+			ServiceContextFactory.getInstance(
+				CommercePriceEntry.class.getName(), actionRequest));
 	}
 
 	@Reference

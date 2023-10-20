@@ -14,13 +14,16 @@ import com.liferay.commerce.inventory.service.CommerceInventoryWarehouseItemServ
 import com.liferay.commerce.inventory.service.CommerceInventoryWarehouseLocalService;
 import com.liferay.commerce.model.CommerceOrderItem;
 import com.liferay.commerce.model.CommerceShipmentItem;
+import com.liferay.commerce.product.model.CPInstanceUnitOfMeasure;
 import com.liferay.commerce.product.model.CommerceChannel;
+import com.liferay.commerce.product.service.CPInstanceUnitOfMeasureLocalService;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.commerce.service.CommerceOrderItemService;
 import com.liferay.commerce.service.CommerceShipmentItemLocalService;
 import com.liferay.commerce.service.CommerceShipmentItemService;
 import com.liferay.commerce.shipment.web.internal.model.Warehouse;
 import com.liferay.commerce.shipment.web.internal.model.WarehouseItem;
+import com.liferay.commerce.util.CommerceQuantityFormatter;
 import com.liferay.frontend.data.set.provider.FDSDataProvider;
 import com.liferay.frontend.data.set.provider.search.FDSKeywords;
 import com.liferay.frontend.data.set.provider.search.FDSPagination;
@@ -30,8 +33,11 @@ import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
+import com.liferay.portal.kernel.util.BigDecimalUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+
+import java.math.BigDecimal;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -91,23 +97,20 @@ public class CommerceInventoryWarehouseItemFDSDataProvider
 			long commerceInventoryWarehouseId =
 				commerceInventoryWarehouse.getCommerceInventoryWarehouseId();
 
-			CommerceInventoryWarehouseItem commerceInventoryWarehouseItem =
-				_commerceInventoryWarehouseItemService.
-					fetchCommerceInventoryWarehouseItem(
-						commerceInventoryWarehouseId,
-						commerceOrderItem.getSku());
-
 			String portletNamespace = _portal.getPortletNamespace(
 				CommercePortletKeys.COMMERCE_SHIPMENT);
 
 			String inputName =
 				portletNamespace + commerceInventoryWarehouseId + "_quantity";
 
-			int maxShippableQuantity =
-				commerceOrderItem.getQuantity() -
-					commerceOrderItem.getShippedQuantity();
+			BigDecimal commerceOrderItemQuantity =
+				commerceOrderItem.getQuantity();
 
-			int shipmentItemWarehouseItemQuantity = 0;
+			BigDecimal maxShippableQuantity =
+				commerceOrderItemQuantity.subtract(
+					commerceOrderItem.getShippedQuantity());
+
+			BigDecimal shipmentItemWarehouseItemQuantity = BigDecimal.ZERO;
 
 			long commerceShipmentId = ParamUtil.getLong(
 				httpServletRequest, "commerceShipmentId");
@@ -122,25 +125,60 @@ public class CommerceInventoryWarehouseItemFDSDataProvider
 				shipmentItemWarehouseItemQuantity =
 					commerceShipmentItem.getQuantity();
 
-				maxShippableQuantity =
-					maxShippableQuantity + commerceShipmentItem.getQuantity();
+				maxShippableQuantity = maxShippableQuantity.add(
+					commerceShipmentItem.getQuantity());
 			}
 
-			if (commerceInventoryWarehouseItem != null) {
-				if (maxShippableQuantity >
-						commerceInventoryWarehouseItem.getQuantity()) {
+			CommerceInventoryWarehouseItem commerceInventoryWarehouseItem =
+				_commerceInventoryWarehouseItemService.
+					fetchCommerceInventoryWarehouseItem(
+						commerceInventoryWarehouseId,
+						commerceOrderItem.getSku(),
+						commerceOrderItem.getUnitOfMeasureKey());
 
-					maxShippableQuantity =
-						commerceInventoryWarehouseItem.getQuantity();
+			if (commerceInventoryWarehouseItem != null) {
+				CPInstanceUnitOfMeasure cpInstanceUnitOfMeasure =
+					_cpInstanceUnitOfMeasureLocalService.
+						fetchCPInstanceUnitOfMeasure(
+							commerceInventoryWarehouseItem.getCompanyId(),
+							commerceInventoryWarehouseItem.
+								getUnitOfMeasureKey(),
+							commerceInventoryWarehouseItem.getSku());
+
+				BigDecimal quantity = BigDecimal.ZERO;
+				BigDecimal commerceInventoryWarehouseItemQuantity =
+					commerceInventoryWarehouseItem.getQuantity();
+				BigDecimal incrementalOrderQuantity = BigDecimal.ONE;
+
+				if (commerceInventoryWarehouseItemQuantity != null) {
+					quantity = commerceInventoryWarehouseItemQuantity;
+				}
+
+				if (BigDecimalUtil.gt(maxShippableQuantity, quantity)) {
+					maxShippableQuantity = quantity;
+				}
+
+				if (cpInstanceUnitOfMeasure != null) {
+					incrementalOrderQuantity =
+						_commerceQuantityFormatter.format(
+							cpInstanceUnitOfMeasure,
+							cpInstanceUnitOfMeasure.
+								getIncrementalOrderQuantity());
 				}
 
 				warehouses.add(
 					new Warehouse(
 						commerceInventoryWarehouseId,
 						new WarehouseItem(
-							inputName, maxShippableQuantity, 0,
-							shipmentItemWarehouseItemQuantity),
-						commerceInventoryWarehouseItem.getQuantity(),
+							inputName,
+							_commerceQuantityFormatter.format(
+								cpInstanceUnitOfMeasure, maxShippableQuantity),
+							BigDecimal.ZERO, incrementalOrderQuantity,
+							_commerceQuantityFormatter.format(
+								cpInstanceUnitOfMeasure,
+								shipmentItemWarehouseItemQuantity)),
+						_commerceQuantityFormatter.format(
+							cpInstanceUnitOfMeasure, quantity),
 						StringPool.BLANK,
 						commerceInventoryWarehouse.getName(
 							_portal.getLocale(httpServletRequest))));
@@ -150,9 +188,10 @@ public class CommerceInventoryWarehouseItemFDSDataProvider
 					new Warehouse(
 						commerceInventoryWarehouseId,
 						new WarehouseItem(
-							inputName, shipmentItemWarehouseItemQuantity, 0,
+							inputName, shipmentItemWarehouseItemQuantity,
+							BigDecimal.ZERO, BigDecimal.ZERO,
 							shipmentItemWarehouseItemQuantity),
-						0, StringPool.BLANK,
+						BigDecimal.ZERO, StringPool.BLANK,
 						commerceInventoryWarehouse.getName(
 							_portal.getLocale(httpServletRequest))));
 			}
@@ -188,7 +227,8 @@ public class CommerceInventoryWarehouseItemFDSDataProvider
 		return _commerceInventoryWarehouseItemLocalService.
 			getCommerceInventoryWarehouseItemsCount(
 				_portal.getCompanyId(httpServletRequest),
-				commerceOrderItem.getGroupId(), commerceOrderItem.getSku());
+				commerceOrderItem.getGroupId(), commerceOrderItem.getSku(),
+				commerceOrderItem.getUnitOfMeasureKey());
 	}
 
 	@Reference
@@ -216,10 +256,17 @@ public class CommerceInventoryWarehouseItemFDSDataProvider
 	private CommerceOrderItemService _commerceOrderItemService;
 
 	@Reference
+	private CommerceQuantityFormatter _commerceQuantityFormatter;
+
+	@Reference
 	private CommerceShipmentItemLocalService _commerceShipmentItemLocalService;
 
 	@Reference
 	private CommerceShipmentItemService _commerceShipmentItemService;
+
+	@Reference
+	private CPInstanceUnitOfMeasureLocalService
+		_cpInstanceUnitOfMeasureLocalService;
 
 	@Reference
 	private Portal _portal;

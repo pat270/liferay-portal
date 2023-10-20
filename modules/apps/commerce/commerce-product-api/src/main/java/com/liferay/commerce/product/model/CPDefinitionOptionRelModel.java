@@ -465,19 +465,34 @@ public interface CPDefinitionOptionRelModel
 		Map<Locale, String> descriptionMap, Locale defaultLocale);
 
 	/**
-	 * Returns the ddm form field type name of this cp definition option rel.
+	 * Returns the commerce option type key of this cp definition option rel.
 	 *
-	 * @return the ddm form field type name of this cp definition option rel
+	 * @return the commerce option type key of this cp definition option rel
 	 */
 	@AutoEscape
-	public String getDDMFormFieldTypeName();
+	public String getCommerceOptionTypeKey();
 
 	/**
-	 * Sets the ddm form field type name of this cp definition option rel.
+	 * Sets the commerce option type key of this cp definition option rel.
 	 *
-	 * @param DDMFormFieldTypeName the ddm form field type name of this cp definition option rel
+	 * @param commerceOptionTypeKey the commerce option type key of this cp definition option rel
 	 */
-	public void setDDMFormFieldTypeName(String DDMFormFieldTypeName);
+	public void setCommerceOptionTypeKey(String commerceOptionTypeKey);
+
+	/**
+	 * Returns the info item service key of this cp definition option rel.
+	 *
+	 * @return the info item service key of this cp definition option rel
+	 */
+	@AutoEscape
+	public String getInfoItemServiceKey();
+
+	/**
+	 * Sets the info item service key of this cp definition option rel.
+	 *
+	 * @param infoItemServiceKey the info item service key of this cp definition option rel
+	 */
+	public void setInfoItemServiceKey(String infoItemServiceKey);
 
 	/**
 	 * Returns the priority of this cp definition option rel.
@@ -492,6 +507,27 @@ public interface CPDefinitionOptionRelModel
 	 * @param priority the priority of this cp definition option rel
 	 */
 	public void setPriority(double priority);
+
+	/**
+	 * Returns the defined externally of this cp definition option rel.
+	 *
+	 * @return the defined externally of this cp definition option rel
+	 */
+	public boolean getDefinedExternally();
+
+	/**
+	 * Returns <code>true</code> if this cp definition option rel is defined externally.
+	 *
+	 * @return <code>true</code> if this cp definition option rel is defined externally; <code>false</code> otherwise
+	 */
+	public boolean isDefinedExternally();
+
+	/**
+	 * Sets whether this cp definition option rel is defined externally.
+	 *
+	 * @param definedExternally the defined externally of this cp definition option rel
+	 */
+	public void setDefinedExternally(boolean definedExternally);
 
 	/**
 	 * Returns the facetable of this cp definition option rel.
@@ -585,6 +621,21 @@ public interface CPDefinitionOptionRelModel
 	 * @param priceType the price type of this cp definition option rel
 	 */
 	public void setPriceType(String priceType);
+
+	/**
+	 * Returns the type settings of this cp definition option rel.
+	 *
+	 * @return the type settings of this cp definition option rel
+	 */
+	@AutoEscape
+	public String getTypeSettings();
+
+	/**
+	 * Sets the type settings of this cp definition option rel.
+	 *
+	 * @param typeSettings the type settings of this cp definition option rel
+	 */
+	public void setTypeSettings(String typeSettings);
 
 	@Override
 	public String[] getAvailableLanguageIds();

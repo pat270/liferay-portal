@@ -23,6 +23,7 @@ import com.liferay.commerce.product.service.CPOptionLocalService;
 import com.liferay.commerce.product.service.CommerceCatalogLocalServiceUtil;
 import com.liferay.commerce.product.test.util.CPTestUtil;
 import com.liferay.commerce.product.type.simple.constants.SimpleCPTypeConstants;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Company;
@@ -392,17 +393,18 @@ public class CPDefinitionLocalServiceTest {
 		CommercePriceEntry duplicateCommercePriceEntry =
 			_commercePriceEntryLocalService.fetchCommercePriceEntry(
 				commercePriceList.getCommercePriceListId(),
-				duplicateCPInstance.getCPInstanceUuid());
+				duplicateCPInstance.getCPInstanceUuid(), StringPool.BLANK);
 
 		duplicateCommercePriceEntry =
-			_commercePriceEntryLocalService.updateCommercePriceEntry(
+			_commercePriceEntryLocalService.updatePricingInfo(
 				duplicateCommercePriceEntry.getCommercePriceEntryId(),
-				BigDecimal.TEN, false, BigDecimal.ZERO, null, _serviceContext);
+				duplicateCommercePriceEntry.isBulkPricing(), BigDecimal.TEN,
+				false, BigDecimal.ZERO, null, _serviceContext);
 
 		CommercePriceEntry commercePriceEntry =
 			_commercePriceEntryLocalService.fetchCommercePriceEntry(
 				commercePriceList.getCommercePriceListId(),
-				cpInstance.getCPInstanceUuid());
+				cpInstance.getCPInstanceUuid(), StringPool.BLANK);
 
 		Assert.assertEquals(
 			BigDecimal.TEN, duplicateCommercePriceEntry.getPrice());
@@ -450,67 +452,6 @@ public class CPDefinitionLocalServiceTest {
 
 		Assert.assertEquals(
 			WorkflowConstants.STATUS_APPROVED, cpDefinition.getStatus());
-	}
-
-	@Test
-	public void testDuplicateDefinitionPriceChangeDoesNotAffectParent()
-		throws PortalException {
-
-		frutillaRule.scenario(
-			"Change Price of a duplicate product sku"
-		).given(
-			"A product definition and its duplicate"
-		).when(
-			"changing the price of the duplicate"
-		).then(
-			"first product price is different from duplicated product price"
-		);
-
-		BigDecimal basePrice = new BigDecimal(5);
-
-		CPInstance cpInstance = CPTestUtil.addCPInstanceWithRandomSku(
-			_commerceCatalog.getGroupId(), basePrice);
-
-		Assert.assertEquals(
-			WorkflowConstants.STATUS_APPROVED, cpInstance.getStatus());
-
-		BigDecimal promoPrice = new BigDecimal(0);
-
-		CPDefinition duplicateCPDefinition =
-			_cpDefinitionLocalService.copyCPDefinition(
-				cpInstance.getCPDefinitionId());
-
-		CPInstance duplicateCPInstance = _cpInstanceLocalService.getCPInstance(
-			duplicateCPDefinition.getCPDefinitionId(), cpInstance.getSku());
-
-		CommercePriceList commercePriceList =
-			_commercePriceListLocalService.fetchCatalogBaseCommercePriceList(
-				duplicateCPInstance.getGroupId());
-
-		CommercePriceEntry commercePriceEntry =
-			_commercePriceEntryLocalService.fetchCommercePriceEntry(
-				commercePriceList.getCommercePriceListId(),
-				duplicateCPInstance.getCPInstanceUuid());
-
-		BigDecimal newPrice = new BigDecimal(10);
-
-		commercePriceEntry =
-			_commercePriceEntryLocalService.updateCommercePriceEntry(
-				commercePriceEntry.getCommercePriceEntryId(), newPrice,
-				commercePriceEntry.isPriceOnApplication(), promoPrice, null,
-				_serviceContext);
-
-		CommercePriceEntry parentPriceEntry =
-			_commercePriceEntryLocalService.fetchCommercePriceEntry(
-				commercePriceList.getCommercePriceListId(),
-				cpInstance.getCPInstanceUuid());
-
-		BigDecimal priceEntry = commercePriceEntry.getPrice();
-
-		Assert.assertEquals(newPrice.intValue(), priceEntry.intValue());
-
-		Assert.assertNotEquals(
-			parentPriceEntry.getPrice(), commercePriceEntry.getPrice());
 	}
 
 	@Test

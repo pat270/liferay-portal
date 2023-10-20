@@ -10,6 +10,7 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.VerticalCard;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemListBuilder;
+import com.liferay.layout.constants.LayoutTypeSettingsConstants;
 import com.liferay.layout.page.template.admin.web.internal.security.permission.resource.LayoutPageTemplateEntryPermission;
 import com.liferay.layout.page.template.admin.web.internal.servlet.taglib.util.MasterLayoutActionDropdownItemsProvider;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
@@ -23,6 +24,7 @@ import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
+import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -101,15 +103,14 @@ public class MasterLayoutVerticalCard
 
 			Layout layout = LayoutLocalServiceUtil.getLayout(
 				_layoutPageTemplateEntry.getPlid());
+			PortletDisplay portletDisplay = _themeDisplay.getPortletDisplay();
 
-			String layoutFullURL = PortalUtil.getLayoutFullURL(
-				layout.fetchDraftLayout(), _themeDisplay);
-
-			layoutFullURL = HttpComponentsUtil.setParameter(
-				layoutFullURL, "p_l_mode", Constants.EDIT);
-
-			return HttpComponentsUtil.setParameter(
-				layoutFullURL, "p_l_back_url", _themeDisplay.getURLCurrent());
+			return HttpComponentsUtil.addParameters(
+				PortalUtil.getLayoutFullURL(
+					layout.fetchDraftLayout(), _themeDisplay),
+				"p_l_back_url", _themeDisplay.getURLCurrent(),
+				"p_l_back_url_title", portletDisplay.getPortletDisplayName(),
+				"p_l_mode", Constants.EDIT);
 		}
 		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
@@ -153,7 +154,8 @@ public class MasterLayoutVerticalCard
 		}
 
 		if (!GetterUtil.getBoolean(
-				draftLayout.getTypeSettingsProperty("published"))) {
+				draftLayout.getTypeSettingsProperty(
+					LayoutTypeSettingsConstants.KEY_PUBLISHED))) {
 
 			return LabelItemListBuilder.add(
 				labelItem -> labelItem.setStatus(WorkflowConstants.STATUS_DRAFT)
@@ -172,7 +174,7 @@ public class MasterLayoutVerticalCard
 				LayoutPageTemplateEntryServiceUtil.
 					fetchDefaultLayoutPageTemplateEntry(
 						_themeDisplay.getScopeGroupId(),
-						LayoutPageTemplateEntryTypeConstants.TYPE_MASTER_LAYOUT,
+						LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT,
 						WorkflowConstants.STATUS_APPROVED);
 
 			if (defaultLayoutPageTemplateEntry == null) {

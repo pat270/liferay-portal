@@ -9,8 +9,7 @@ import {
 	// @ts-ignore
 
 } from '@liferay/frontend-data-set-web';
-import {API, getLocalizableLabel} from '@liferay/object-js-components-web';
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 
 import {
 	IFDSTableProps,
@@ -18,6 +17,7 @@ import {
 	fdsItem,
 	formatActionURL,
 } from '../../utils/fds';
+import FDSSourceDataRenderer from '../FDSPropsTransformer/FDSSourceDataRenderer';
 
 interface ItemData {
 	id: number;
@@ -29,26 +29,9 @@ export default function StateManager({
 	formName,
 	id,
 	items,
-	objectDefinitionExternalReferenceCode,
 	style,
 	url,
 }: IFDSTableProps) {
-	const [creationLanguageId, setCreationLanguageId] = useState<
-		Liferay.Language.Locale
-	>();
-
-	useEffect(() => {
-		const makeFetch = async () => {
-			const objectDefinition = await API.getObjectDefinitionByExternalReferenceCode(
-				objectDefinitionExternalReferenceCode
-			);
-
-			setCreationLanguageId(objectDefinition.defaultLanguageId);
-		};
-
-		makeFetch();
-	}, [objectDefinitionExternalReferenceCode]);
-
 	function objectStateManagerLabelDataRenderer({
 		itemData,
 		openSidePanel,
@@ -63,10 +46,7 @@ export default function StateManager({
 		return (
 			<div className="table-list-title">
 				<a href="#" onClick={handleEditField}>
-					{getLocalizableLabel(
-						creationLanguageId as Liferay.Language.Locale,
-						value
-					)}
+					{value}
 				</a>
 			</div>
 		);
@@ -77,6 +57,7 @@ export default function StateManager({
 		apiURL,
 		creationMenu,
 		customDataRenderers: {
+			FDSSourceDataRenderer,
 			objectStateManagerLabelDataRenderer,
 		},
 		formName,
@@ -100,6 +81,14 @@ export default function StateManager({
 							expand: false,
 							fieldName: 'label',
 							label: Liferay.Language.get('label'),
+							localizeLabel: true,
+							sortable: true,
+						},
+						{
+							contentRenderer: 'FDSSourceDataRenderer',
+							expand: false,
+							fieldName: 'system',
+							label: Liferay.Language.get('source'),
 							localizeLabel: true,
 							sortable: false,
 						},

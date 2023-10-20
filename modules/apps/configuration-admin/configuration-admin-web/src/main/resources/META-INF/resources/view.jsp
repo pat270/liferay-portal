@@ -20,7 +20,7 @@ ConfigurationScopeDisplayContext configurationScopeDisplayContext = Configuratio
 	<portlet:param name="redirect" value="<%= redirectURL %>" />
 </portlet:renderURL>
 
-<div class="sticky-top" style="top: 56px; z-index: 999;">
+<div class="sticky-top" style="top: var(--control-menu-container-height);">
 	<clay:management-toolbar
 		searchActionURL="<%= searchURL %>"
 		selectable="<%= false %>"
@@ -34,6 +34,7 @@ ConfigurationScopeDisplayContext configurationScopeDisplayContext = Configuratio
 
 <clay:container-fluid
 	cssClass="container-view"
+	fullWidth='<%= FeatureFlagManagerUtil.isEnabled("LPS-184404") %>'
 >
 	<c:if test="<%= configurationCategorySectionDisplays.isEmpty() %>">
 		<liferay-frontend:empty-result-message

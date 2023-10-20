@@ -16,7 +16,6 @@ import com.liferay.portal.internal.minifier.MinifierThreadLocal;
 import com.liferay.portal.kernel.configuration.Filter;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.servlet.BrowserSniffer;
 import com.liferay.portal.kernel.servlet.BufferCacheServletResponse;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.servlet.PortalWebResourceConstants;
@@ -37,6 +36,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.URLUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.minifier.MinifierUtil;
+import com.liferay.portal.servlet.BrowserSnifferUtil;
 import com.liferay.portal.servlet.filters.IgnoreModuleRequestFilter;
 import com.liferay.portal.servlet.filters.dynamiccss.DynamicCSSUtil;
 import com.liferay.portal.servlet.filters.util.CacheFileNameGenerator;
@@ -595,7 +595,7 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 
 		String browserId = ParamUtil.getString(httpServletRequest, "browserId");
 
-		if (!browserId.equals(BrowserSniffer.BROWSER_ID_IE)) {
+		if (!browserId.equals(BrowserSnifferUtil.BROWSER_ID_IE)) {
 			Matcher matcher = _pattern.matcher(content);
 
 			content = matcher.replaceAll(StringPool.BLANK);
@@ -776,7 +776,7 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 	private static volatile PortalExecutorManager _portalExecutorManager =
 		ServiceProxyFactory.newServiceTrackedInstance(
 			PortalExecutorManager.class, AggregateFilter.class,
-			"_portalExecutorManager", true);
+			"_portalExecutorManager", false, true);
 
 	private final Map<String, NoticeableFuture<String>> _noticeableFutures =
 		new ConcurrentHashMap<>();

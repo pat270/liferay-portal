@@ -167,7 +167,11 @@ function prepare_import {
 }
 
 function replace_tokens {
-	~/liferay-learn/docs/replace_tokens.sh
+	pushd ~/liferay-learn/docs
+
+	./replace_tokens.sh
+
+	popd
 }
 
 function send_slack_message {
@@ -182,9 +186,9 @@ function send_slack_message {
 
 	local text="$(date) *${LCP_PROJECT_ID}*->*${LCP_SERVICE_ID}* <${log_url}|${HOSTNAME}> \n>${slack_message}"
 
-	curl \
+	eval curl \
 		-X POST \
-		-d "payload={\"channel\": \"${LIFERAY_LEARN_ETC_CRON_SLACK_CHANNEL}\", \"icon_emoji\": \":robot_face:\", \"text\": \"${text}\", \"username\": \"devopsbot\"}" ${LIFERAY_LEARN_ETC_CRON_SLACK_ENDPOINT}
+		-d "'{\"channel\": \"${LIFERAY_LEARN_ETC_CRON_SLACK_CHANNEL}\", \"icon_emoji\": \":robot_face:\", \"text\": \"${text}\", \"username\": \"devopsbot\"}'" ${LIFERAY_LEARN_ETC_CRON_SLACK_ENDPOINT}
 }
 
 function update_examples {
@@ -200,7 +204,11 @@ function update_examples {
 
 	java -version
 
-	~/liferay-learn/docs/update_examples.sh prod 2> ~/update_examples.err
+	pushd ~/liferay-learn/docs
+
+	./update_examples.sh prod 2> ~/update_examples.err
+
+	popd
 
 	local exit_code=$?
 

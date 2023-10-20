@@ -150,6 +150,18 @@ public class DBInspector {
 				return false;
 			}
 
+			Integer expectedColumnDecimalDigits = _getByColumnType(
+				columnType, DB::getSQLTypeDecimalDigits);
+
+			if (expectedColumnDecimalDigits != DB.SQL_SIZE_NONE) {
+				int actualColumnDecimalDigits = resultSet.getInt(
+					"DECIMAL_DIGITS");
+
+				if (expectedColumnDecimalDigits != actualColumnDecimalDigits) {
+					return false;
+				}
+			}
+
 			boolean expectedColumnNullable = _isColumnNullable(columnType);
 
 			int actualColumnNullable = resultSet.getInt("NULLABLE");
@@ -163,11 +175,19 @@ public class DBInspector {
 			}
 
 			if (!expectedColumnNullable) {
+				String expectedColumnDefaultValue = _getColumnDefaultValue(
+					columnType);
+				String actualColumnDefaultValue = _getColumnDefaultValue(
+					resultSet.getString("COLUMN_DEF"), DB::getDefaultValue);
+
+				if (Validator.isNull(expectedColumnDefaultValue) &&
+					Validator.isNull(actualColumnDefaultValue)) {
+
+					return true;
+				}
+
 				return StringUtil.equals(
-					_getColumnDefaultValue(columnType),
-					_getColumnDefaultValue(
-						resultSet.getString("COLUMN_DEF"),
-						DB::getDefaultValue));
+					expectedColumnDefaultValue, actualColumnDefaultValue);
 			}
 
 			return true;
@@ -226,18 +246,18 @@ public class DBInspector {
 	public boolean hasTable(String tableName, boolean caseSensitive)
 		throws Exception {
 
-		if (caseSensitive) {
-			if (_hasTable(tableName)) {
-				return true;
-			}
-
-			return false;
-		}
-
 		DatabaseMetaData databaseMetaData = _connection.getMetaData();
 
-		if (_hasTable(normalizeName(tableName, databaseMetaData))) {
-			return true;
+		if (!caseSensitive) {
+			tableName = normalizeName(tableName, databaseMetaData);
+		}
+
+		try (ResultSet resultSet = databaseMetaData.getTables(
+				getCatalog(), getSchema(), tableName, new String[] {"TABLE"})) {
+
+			while (resultSet.next()) {
+				return true;
+			}
 		}
 
 		return false;
@@ -246,7 +266,8 @@ public class DBInspector {
 	public boolean isControlTable(List<Long> companyIds, String tableName)
 		throws Exception {
 
-		if (!isObjectTable(companyIds, tableName) &&
+		if (!isPartitionedControlTable(tableName) &&
+			!isObjectTable(companyIds, tableName) &&
 			(_controlTableNames.contains(StringUtil.toLowerCase(tableName)) ||
 			 !hasColumn(tableName, "companyId"))) {
 
@@ -277,6 +298,16 @@ public class DBInspector {
 
 			return false;
 		}
+	}
+
+	public boolean isPartitionedControlTable(String tableName) {
+		if (_partitionedControlTableNames.contains(
+				StringUtil.toLowerCase(tableName))) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	public String normalizeName(String name) throws SQLException {
@@ -313,7 +344,7 @@ public class DBInspector {
 		Matcher matcher = _columnDefaultClausePattern.matcher(columnType);
 
 		if (matcher.find()) {
-			return matcher.group(1);
+			return StringUtil.unquote(matcher.group(1));
 		}
 
 		return null;
@@ -351,8 +382,7 @@ public class DBInspector {
 			}
 		}
 
-		Integer dataTypeSize = _getByColumnType(
-			columnType, DB::getSQLVarcharSize);
+		Integer dataTypeSize = _getByColumnType(columnType, DB::getSQLTypeSize);
 
 		if (dataTypeSize != null) {
 			return dataTypeSize;
@@ -375,20 +405,6 @@ public class DBInspector {
 			normalizeName(tableName, databaseMetaData), columnName);
 	}
 
-	private boolean _hasTable(String tableName) throws Exception {
-		DatabaseMetaData metadata = _connection.getMetaData();
-
-		try (ResultSet resultSet = metadata.getTables(
-				getCatalog(), getSchema(), tableName, new String[] {"TABLE"})) {
-
-			while (resultSet.next()) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
 	private boolean _isColumnNullable(String typeName) {
 		typeName = typeName.trim();
 
@@ -404,13 +420,15 @@ public class DBInspector {
 	private static final Log _log = LogFactoryUtil.getLog(DBInspector.class);
 
 	private static final Pattern _columnDefaultClausePattern = Pattern.compile(
-		".*DEFAULT '?(.*[^'])'? NOT NULL", Pattern.CASE_INSENSITIVE);
+		".*DEFAULT ((?:'[^']+')|(?:\\S+)) NOT NULL", Pattern.CASE_INSENSITIVE);
 	private static final Pattern _columnSizePattern = Pattern.compile(
 		"^\\w+(?:\\((\\d+)\\))?.*", Pattern.CASE_INSENSITIVE);
 	private static final Pattern _columnTypePattern = Pattern.compile(
 		"(^\\w+)", Pattern.CASE_INSENSITIVE);
 	private static final Set<String> _controlTableNames = new HashSet<>(
 		Arrays.asList("company", "virtualhost"));
+	private static final Set<String> _partitionedControlTableNames =
+		new HashSet<>(Arrays.asList("classname_", "resourceaction"));
 
 	private final Connection _connection;
 

@@ -9,16 +9,22 @@ import com.liferay.info.collection.provider.RelatedInfoItemCollectionProvider;
 import com.liferay.object.constants.ObjectFieldConstants;
 import com.liferay.object.constants.ObjectFieldSettingConstants;
 import com.liferay.object.constants.ObjectRelationshipConstants;
+import com.liferay.object.definition.util.ObjectDefinitionUtil;
 import com.liferay.object.exception.DuplicateObjectRelationshipException;
 import com.liferay.object.exception.NoSuchObjectRelationshipException;
+import com.liferay.object.exception.ObjectRelationshipDeletionTypeException;
+import com.liferay.object.exception.ObjectRelationshipEdgeException;
 import com.liferay.object.exception.ObjectRelationshipNameException;
 import com.liferay.object.exception.ObjectRelationshipParameterObjectFieldIdException;
 import com.liferay.object.exception.ObjectRelationshipReverseException;
+import com.liferay.object.exception.ObjectRelationshipSystemException;
 import com.liferay.object.exception.ObjectRelationshipTypeException;
 import com.liferay.object.internal.dao.db.ObjectDBManagerUtil;
 import com.liferay.object.internal.info.collection.provider.RelatedInfoCollectionProviderFactory;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectField;
+import com.liferay.object.model.ObjectFieldSetting;
+import com.liferay.object.model.ObjectFolderItem;
 import com.liferay.object.model.ObjectRelationship;
 import com.liferay.object.model.ObjectRelationshipTable;
 import com.liferay.object.petra.sql.dsl.DynamicObjectDefinitionTableUtil;
@@ -28,6 +34,7 @@ import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.object.service.ObjectFieldLocalService;
 import com.liferay.object.service.ObjectFieldSettingLocalService;
+import com.liferay.object.service.ObjectFolderItemLocalService;
 import com.liferay.object.service.base.ObjectRelationshipLocalServiceBaseImpl;
 import com.liferay.object.service.persistence.ObjectDefinitionPersistence;
 import com.liferay.object.service.persistence.ObjectFieldPersistence;
@@ -48,6 +55,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.search.Indexer;
@@ -80,9 +88,6 @@ import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.service.component.annotations.ReferencePolicy;
-import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 /**
  * @author Marco Leo
@@ -100,12 +105,14 @@ public class ObjectRelationshipLocalServiceImpl
 	public ObjectRelationship addObjectRelationship(
 			long userId, long objectDefinitionId1, long objectDefinitionId2,
 			long parameterObjectFieldId, String deletionType,
-			Map<Locale, String> labelMap, String name, String type)
+			Map<Locale, String> labelMap, String name, boolean system,
+			String type)
 		throws PortalException {
 
 		return _addObjectRelationship(
 			userId, objectDefinitionId1, objectDefinitionId2,
-			parameterObjectFieldId, deletionType, labelMap, name, false, type);
+			parameterObjectFieldId, deletionType, labelMap, name, false, system,
+			type);
 	}
 
 	@Override
@@ -248,11 +255,11 @@ public class ObjectRelationshipLocalServiceImpl
 			objectRelationshipPersistence.getDataSource());
 
 		ObjectDBManagerUtil.createIndexMetadata(
-			pkObjectFieldDBColumnName1, connection,
-			objectRelationship.getDBTableName(), false);
+			connection, objectRelationship.getDBTableName(), false,
+			pkObjectFieldDBColumnName1);
 		ObjectDBManagerUtil.createIndexMetadata(
-			pkObjectFieldDBColumnName2, connection,
-			objectRelationship.getDBTableName(), false);
+			connection, objectRelationship.getDBTableName(), false,
+			pkObjectFieldDBColumnName2);
 
 		return objectRelationship;
 	}
@@ -279,13 +286,43 @@ public class ObjectRelationshipLocalServiceImpl
 
 		// TODO When should we allow an object relationship to be deleted?
 
+		if (objectRelationship.isEdge()) {
+			throw new ObjectRelationshipEdgeException(
+				"Edge object relationships cannot be deleted");
+		}
+
 		if (objectRelationship.isReverse()) {
 			throw new ObjectRelationshipReverseException(
 				"Reverse object relationships cannot be deleted");
 		}
 
+		_validateInvokerBundle(
+			"Only allowed bundles can delete system object relationships",
+			objectRelationship.isSystem());
+
 		objectRelationship = objectRelationshipPersistence.remove(
 			objectRelationship);
+
+		_deleteObjectFields(
+			objectRelationship.getObjectDefinitionId1(), objectRelationship);
+		_deleteObjectFields(
+			objectRelationship.getObjectDefinitionId2(), objectRelationship);
+
+		ObjectDefinition objectDefinition1 =
+			_objectDefinitionPersistence.findByPrimaryKey(
+				objectRelationship.getObjectDefinitionId1());
+
+		_objectFolderItemLocalService.deleteObjectFolderItem(
+			objectRelationship.getObjectDefinitionId2(),
+			objectDefinition1.getObjectFolderId());
+
+		ObjectDefinition objectDefinition2 =
+			_objectDefinitionPersistence.findByPrimaryKey(
+				objectRelationship.getObjectDefinitionId2());
+
+		_objectFolderItemLocalService.deleteObjectFolderItem(
+			objectRelationship.getObjectDefinitionId1(),
+			objectDefinition2.getObjectFolderId());
 
 		_objectLayoutTabPersistence.removeByObjectRelationshipId(
 			objectRelationship.getObjectRelationshipId());
@@ -299,6 +336,14 @@ public class ObjectRelationshipLocalServiceImpl
 
 			_objectFieldLocalService.deleteRelationshipTypeObjectField(
 				objectRelationship.getObjectFieldId2());
+
+			for (ObjectRelationship parameterObjectFieldIdObjectRelationship :
+					objectRelationshipPersistence.findByParameterObjectFieldId(
+						objectRelationship.getObjectFieldId2())) {
+
+				objectRelationshipLocalService.deleteObjectRelationship(
+					parameterObjectFieldIdObjectRelationship);
+			}
 		}
 		else if (Objects.equals(
 					objectRelationship.getType(),
@@ -593,6 +638,14 @@ public class ObjectRelationshipLocalServiceImpl
 
 	@Override
 	public List<ObjectRelationship> getObjectRelationships(
+		long objectDefinitionId1, boolean edge) {
+
+		return objectRelationshipPersistence.findByODI1_E(
+			objectDefinitionId1, edge);
+	}
+
+	@Override
+	public List<ObjectRelationship> getObjectRelationships(
 		long objectDefinitionId1, int start, int end) {
 
 		return objectRelationshipPersistence.findByObjectDefinitionId1(
@@ -683,7 +736,7 @@ public class ObjectRelationshipLocalServiceImpl
 	@Override
 	public ObjectRelationship updateObjectRelationship(
 			long objectRelationshipId, long parameterObjectFieldId,
-			String deletionType, Map<Locale, String> labelMap)
+			String deletionType, boolean edge, Map<Locale, String> labelMap)
 		throws PortalException {
 
 		if (Validator.isNull(deletionType)) {
@@ -694,17 +747,27 @@ public class ObjectRelationshipLocalServiceImpl
 			objectRelationshipPersistence.findByPrimaryKey(
 				objectRelationshipId);
 
+		if (objectRelationship.isSystem() &&
+			!ObjectDefinitionUtil.isInvokerBundleAllowed()) {
+
+			objectRelationship.setLabelMap(labelMap);
+
+			return objectRelationshipPersistence.update(objectRelationship);
+		}
+
 		if (objectRelationship.isReverse()) {
 			throw new ObjectRelationshipReverseException(
 				"Reverse object relationships cannot be updated");
 		}
 
 		_validateParameterObjectFieldId(
-			_objectDefinitionLocalService.getObjectDefinition(
+			_objectDefinitionPersistence.findByPrimaryKey(
 				objectRelationship.getObjectDefinitionId1()),
-			_objectDefinitionLocalService.getObjectDefinition(
+			_objectDefinitionPersistence.findByPrimaryKey(
 				objectRelationship.getObjectDefinitionId2()),
 			parameterObjectFieldId, objectRelationship.getType());
+		_validateDeletionType(deletionType, edge);
+		_validateEdge(edge, objectRelationship);
 
 		if (Objects.equals(
 				objectRelationship.getType(),
@@ -714,7 +777,7 @@ public class ObjectRelationshipLocalServiceImpl
 				fetchReverseObjectRelationship(objectRelationship, true);
 
 			_updateObjectRelationship(
-				parameterObjectFieldId, deletionType, labelMap,
+				parameterObjectFieldId, deletionType, false, labelMap,
 				reverseObjectRelationship);
 
 			Indexer<ObjectRelationship> indexer =
@@ -725,7 +788,8 @@ public class ObjectRelationshipLocalServiceImpl
 		}
 
 		objectRelationship = _updateObjectRelationship(
-			parameterObjectFieldId, deletionType, labelMap, objectRelationship);
+			parameterObjectFieldId, deletionType, edge, labelMap,
+			objectRelationship);
 
 		if ((objectRelationship.getObjectFieldId2() != 0) &&
 			StringUtil.equals(
@@ -746,7 +810,8 @@ public class ObjectRelationshipLocalServiceImpl
 
 	private ObjectField _addObjectField(
 			User user, Map<Locale, String> labelMap, String name,
-			long objectDefinitionId1, long objectDefinitionId2, String type)
+			ObjectDefinition objectDefinition1,
+			ObjectDefinition objectDefinition2, boolean system, String type)
 		throws PortalException {
 
 		ObjectField objectField = _objectFieldPersistence.create(
@@ -756,20 +821,16 @@ public class ObjectRelationshipLocalServiceImpl
 		objectField.setUserId(user.getUserId());
 		objectField.setUserName(user.getFullName());
 		objectField.setListTypeDefinitionId(0);
-		objectField.setObjectDefinitionId(objectDefinitionId2);
+		objectField.setObjectDefinitionId(
+			objectDefinition2.getObjectDefinitionId());
 		objectField.setBusinessType(
 			ObjectFieldConstants.BUSINESS_TYPE_RELATIONSHIP);
-
-		ObjectDefinition objectDefinition1 =
-			_objectDefinitionPersistence.findByPrimaryKey(objectDefinitionId1);
+		objectField.setSystem(system);
 
 		String dbColumnName = StringBundler.concat(
 			"r_", name, "_", objectDefinition1.getPKObjectFieldName());
 
 		objectField.setDBColumnName(dbColumnName);
-
-		ObjectDefinition objectDefinition2 =
-			_objectDefinitionPersistence.findByPrimaryKey(objectDefinitionId2);
 
 		String dbTableName = objectDefinition2.getDBTableName();
 
@@ -812,34 +873,53 @@ public class ObjectRelationshipLocalServiceImpl
 				dbTableName, objectField.getDBColumnName(), "Long"));
 
 		ObjectDBManagerUtil.createIndexMetadata(
-			objectField.getDBColumnName(),
 			_currentConnection.getConnection(
 				objectRelationshipPersistence.getDataSource()),
-			dbTableName, false);
+			dbTableName, false, objectField.getDBColumnName());
 
-		if (_objectDefinitionLocalService != null) {
-			_objectDefinitionLocalService.deployObjectDefinition(
+		ObjectDefinitionLocalService objectDefinitionLocalService =
+			_objectDefinitionLocalServiceSnapshot.get();
+
+		if (objectDefinitionLocalService != null) {
+			objectDefinitionLocalService.deployObjectDefinition(
 				objectDefinition2);
 		}
 
 		return objectField;
 	}
 
+	private void _addObjectFolderItem(
+			long userId, long objectDefinitionId, long objectFolderId)
+		throws PortalException {
+
+		ObjectFolderItem objectFolderItem =
+			_objectFolderItemLocalService.fetchObjectFolderItem(
+				objectDefinitionId, objectFolderId);
+
+		if (objectFolderItem != null) {
+			return;
+		}
+
+		_objectFolderItemLocalService.addObjectFolderItem(
+			userId, objectDefinitionId, objectFolderId, 0, 0);
+	}
+
 	private ObjectRelationship _addObjectRelationship(
 			long userId, long objectDefinitionId1, long objectDefinitionId2,
 			long parameterObjectFieldId, String deletionType,
 			Map<Locale, String> labelMap, String name, boolean reverse,
-			String type)
+			boolean system, String type)
 		throws PortalException {
 
+		ObjectDefinition objectDefinition1 =
+			_objectDefinitionPersistence.findByPrimaryKey(objectDefinitionId1);
+
+		_validateInvokerBundle(
+			"Only allowed bundles can add system object relationships", system);
 		_validateName(objectDefinitionId1, name);
 
-		ObjectDefinition objectDefinition1 =
-			_objectDefinitionLocalService.getObjectDefinition(
-				objectDefinitionId1);
 		ObjectDefinition objectDefinition2 =
-			_objectDefinitionLocalService.getObjectDefinition(
-				objectDefinitionId2);
+			_objectDefinitionPersistence.findByPrimaryKey(objectDefinitionId2);
 
 		_validateType(
 			objectDefinition1, objectDefinition2, name, parameterObjectFieldId,
@@ -865,15 +945,23 @@ public class ObjectRelationshipLocalServiceImpl
 		objectRelationship.setLabelMap(labelMap);
 		objectRelationship.setName(name);
 		objectRelationship.setReverse(reverse);
+		objectRelationship.setSystem(system);
 		objectRelationship.setType(type);
+
+		_addObjectFolderItem(
+			userId, objectDefinition1.getObjectDefinitionId(),
+			objectDefinition2.getObjectFolderId());
+		_addObjectFolderItem(
+			userId, objectDefinition2.getObjectDefinitionId(),
+			objectDefinition1.getObjectFolderId());
 
 		if (Objects.equals(type, ObjectRelationshipConstants.TYPE_ONE_TO_ONE) ||
 			Objects.equals(
 				type, ObjectRelationshipConstants.TYPE_ONE_TO_MANY)) {
 
 			ObjectField objectField = _addObjectField(
-				user, objectRelationship.getLabelMap(), name,
-				objectDefinitionId1, objectDefinitionId2, type);
+				user, objectRelationship.getLabelMap(), name, objectDefinition1,
+				objectDefinition2, system, type);
 
 			objectRelationship.setObjectFieldId2(
 				objectField.getObjectFieldId());
@@ -888,7 +976,7 @@ public class ObjectRelationshipLocalServiceImpl
 			_addObjectRelationship(
 				userId, objectDefinitionId2, objectDefinitionId1,
 				parameterObjectFieldId, deletionType, labelMap, name, true,
-				type);
+				system, type);
 
 			return objectRelationshipLocalService.
 				createManyToManyObjectRelationshipTable(
@@ -900,6 +988,29 @@ public class ObjectRelationshipLocalServiceImpl
 
 		return objectRelationshipLocalService.updateObjectRelationship(
 			objectRelationship);
+	}
+
+	private void _deleteObjectFields(
+			long objectDefinitionId, ObjectRelationship objectRelationship)
+		throws PortalException {
+
+		for (ObjectField objectField :
+				_objectFieldPersistence.findByObjectDefinitionId(
+					objectDefinitionId)) {
+
+			ObjectFieldSetting objectFieldSetting =
+				_objectFieldSettingLocalService.fetchObjectFieldSetting(
+					objectField.getObjectFieldId(), "objectRelationshipName");
+
+			if ((objectFieldSetting != null) &&
+				StringUtil.equals(
+					objectFieldSetting.getValue(),
+					objectRelationship.getName())) {
+
+				_objectFieldLocalService.deleteObjectField(
+					objectField.getObjectFieldId());
+			}
+		}
 	}
 
 	private String _getServiceRegistrationKey(
@@ -980,14 +1091,80 @@ public class ObjectRelationshipLocalServiceImpl
 	}
 
 	private ObjectRelationship _updateObjectRelationship(
-		long parameterObjectFieldId, String deletionType,
+		long parameterObjectFieldId, String deletionType, boolean edge,
 		Map<Locale, String> labelMap, ObjectRelationship objectRelationship) {
 
 		objectRelationship.setParameterObjectFieldId(parameterObjectFieldId);
 		objectRelationship.setDeletionType(deletionType);
+		objectRelationship.setEdge(edge);
 		objectRelationship.setLabelMap(labelMap);
 
 		return objectRelationshipPersistence.update(objectRelationship);
+	}
+
+	private void _validateDeletionType(String deletionType, boolean edge)
+		throws PortalException {
+
+		if (edge &&
+			!StringUtil.equals(
+				deletionType,
+				ObjectRelationshipConstants.DELETION_TYPE_CASCADE)) {
+
+			throw new ObjectRelationshipDeletionTypeException.
+				MustHaveCascadeDeletionType();
+		}
+	}
+
+	private void _validateEdge(
+			boolean edge, ObjectRelationship objectRelationship)
+		throws PortalException {
+
+		if (!edge) {
+			return;
+		}
+
+		if (!Objects.equals(
+				objectRelationship.getType(),
+				ObjectRelationshipConstants.TYPE_ONE_TO_MANY)) {
+
+			throw new ObjectRelationshipEdgeException(
+				"Object relationship must be one to many to be an edge of a " +
+					"root context");
+		}
+
+		if (objectRelationship.isSelf()) {
+			throw new ObjectRelationshipEdgeException(
+				"Object relationship must not be a self-relationship to be " +
+					"an edge of a root context");
+		}
+
+		ObjectDefinitionLocalService objectDefinitionLocalService =
+			_objectDefinitionLocalServiceSnapshot.get();
+
+		ObjectDefinition objectDefinition1 =
+			objectDefinitionLocalService.getObjectDefinition(
+				objectRelationship.getObjectDefinitionId1());
+		ObjectDefinition objectDefinition2 =
+			objectDefinitionLocalService.getObjectDefinition(
+				objectRelationship.getObjectDefinitionId2());
+
+		if (objectDefinition1.isUnmodifiableSystemObject() ||
+			objectDefinition2.isUnmodifiableSystemObject()) {
+
+			throw new ObjectRelationshipEdgeException(
+				"Object relationship must not be between unmodifiable system " +
+					"object definitions to be an edge of a root context");
+		}
+	}
+
+	private void _validateInvokerBundle(String message, boolean system)
+		throws PortalException {
+
+		if (!system || ObjectDefinitionUtil.isInvokerBundleAllowed()) {
+			return;
+		}
+
+		throw new ObjectRelationshipSystemException(message);
 	}
 
 	private void _validateName(long objectDefinitionId1, String name)
@@ -1179,17 +1356,15 @@ public class ObjectRelationshipLocalServiceImpl
 	private static final Log _log = LogFactoryUtil.getLog(
 		ObjectRelationshipLocalServiceImpl.class);
 
+	private static final Snapshot<ObjectDefinitionLocalService>
+		_objectDefinitionLocalServiceSnapshot = new Snapshot<>(
+			ObjectRelationshipLocalServiceImpl.class,
+			ObjectDefinitionLocalService.class, null, true);
+
 	private BundleContext _bundleContext;
 
 	@Reference
 	private CurrentConnection _currentConnection;
-
-	@Reference(
-		cardinality = ReferenceCardinality.OPTIONAL,
-		policy = ReferencePolicy.DYNAMIC,
-		policyOption = ReferencePolicyOption.GREEDY
-	)
-	private volatile ObjectDefinitionLocalService _objectDefinitionLocalService;
 
 	@Reference
 	private ObjectDefinitionPersistence _objectDefinitionPersistence;
@@ -1205,6 +1380,9 @@ public class ObjectRelationshipLocalServiceImpl
 
 	@Reference
 	private ObjectFieldSettingLocalService _objectFieldSettingLocalService;
+
+	@Reference
+	private ObjectFolderItemLocalService _objectFolderItemLocalService;
 
 	@Reference
 	private ObjectLayoutTabPersistence _objectLayoutTabPersistence;

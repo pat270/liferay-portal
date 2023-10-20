@@ -9,11 +9,11 @@ import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.document.library.kernel.service.DLFileEntryMetadataLocalService;
 import com.liferay.document.library.util.DLURLHelper;
 import com.liferay.dynamic.data.mapping.model.Value;
+import com.liferay.dynamic.data.mapping.service.DDMFieldLocalService;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.dynamic.data.mapping.storage.DDMStorageEngineManager;
-import com.liferay.dynamic.data.mapping.storage.StorageEngine;
 import com.liferay.info.constants.InfoDisplayWebKeys;
 import com.liferay.info.item.InfoItemDetails;
 import com.liferay.info.item.InfoItemFieldValues;
@@ -255,7 +255,7 @@ public class OpenGraphTopHeadDynamicInclude extends BaseDynamicInclude {
 
 			if (openGraphImage != null) {
 				printWriter.println(
-					_getOpenGraphTag("og:image", openGraphImage.getUrl()));
+					_getOpenGraphTag("og:image", openGraphImage.getURL()));
 
 				String alt = openGraphImage.getAlt();
 
@@ -266,7 +266,7 @@ public class OpenGraphTopHeadDynamicInclude extends BaseDynamicInclude {
 				if (themeDisplay.isSecure()) {
 					printWriter.println(
 						_getOpenGraphTag(
-							"og:image:secure_url", openGraphImage.getUrl()));
+							"og:image:secure_url", openGraphImage.getURL()));
 				}
 
 				String type = openGraphImage.getMimeType();
@@ -277,7 +277,7 @@ public class OpenGraphTopHeadDynamicInclude extends BaseDynamicInclude {
 				}
 
 				printWriter.println(
-					_getOpenGraphTag("og:image:url", openGraphImage.getUrl()));
+					_getOpenGraphTag("og:image:url", openGraphImage.getURL()));
 
 				for (KeyValuePair keyValuePair :
 						openGraphImage.getMetadataTagKeyValuePairs()) {
@@ -308,10 +308,9 @@ public class OpenGraphTopHeadDynamicInclude extends BaseDynamicInclude {
 			ConfigurableUtil.createConfigurable(
 				LayoutSEODynamicRenderingConfiguration.class, properties);
 		_openGraphImageProvider = new OpenGraphImageProvider(
-			_ddmStructureLocalService, _dlAppLocalService,
-			_dlFileEntryMetadataLocalService, _dlurlHelper,
-			_layoutSEOSiteLocalService, _layoutSEOTemplateProcessor, _portal,
-			_storageEngine);
+			_ddmFieldLocalService, _ddmStructureLocalService,
+			_dlAppLocalService, _dlFileEntryMetadataLocalService, _dlurlHelper,
+			_layoutSEOSiteLocalService, _layoutSEOTemplateProcessor, _portal);
 		_titleProvider = new TitleProvider(_layoutSEOLinkManager);
 	}
 
@@ -448,6 +447,9 @@ public class OpenGraphTopHeadDynamicInclude extends BaseDynamicInclude {
 	}
 
 	@Reference
+	private DDMFieldLocalService _ddmFieldLocalService;
+
+	@Reference
 	private DDMStorageEngineManager _ddmStorageEngineManager;
 
 	@Reference
@@ -490,9 +492,6 @@ public class OpenGraphTopHeadDynamicInclude extends BaseDynamicInclude {
 
 	@Reference
 	private Portal _portal;
-
-	@Reference
-	private StorageEngine _storageEngine;
 
 	private volatile TitleProvider _titleProvider;
 

@@ -23,6 +23,7 @@ import com.liferay.commerce.product.type.virtual.order.service.CommerceVirtualOr
 import com.liferay.commerce.product.util.CPInstanceHelper;
 import com.liferay.commerce.service.CPDefinitionInventoryLocalService;
 import com.liferay.commerce.service.CommerceOrderItemService;
+import com.liferay.commerce.util.CommerceQuantityFormatter;
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.headless.commerce.core.util.LanguageUtils;
 import com.liferay.headless.commerce.delivery.order.dto.v1_0.PlacedOrderItem;
@@ -32,7 +33,7 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.BigDecimalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.language.LanguageResources;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
@@ -96,7 +97,10 @@ public class PlacedOrderItemDTOConverter
 				productURLs = LanguageUtils.getLanguageIdMap(
 					_cpDefinitionLocalService.getUrlTitleMap(
 						commerceOrderItem.getCPDefinitionId()));
-				quantity = commerceOrderItem.getQuantity();
+				quantity = _commerceQuantityFormatter.format(
+					commerceOrderItem.getCPInstanceId(),
+					commerceOrderItem.getQuantity(),
+					commerceOrderItem.getUnitOfMeasureKey());
 				replacedSku = commerceOrderItem.getReplacedSku();
 				settings = _getSettings(commerceOrderItem.getCPInstanceId());
 				sku = commerceOrderItem.getSku();
@@ -105,6 +109,7 @@ public class PlacedOrderItemDTOConverter
 				thumbnail = _cpInstanceHelper.getCPInstanceThumbnailSrc(
 					placedOrderItemDTOConverterContext.getAccountId(),
 					commerceOrderItem.getCPInstanceId());
+				unitOfMeasureKey = commerceOrderItem.getUnitOfMeasureKey();
 
 				setVirtualItemURLs(
 					() -> {
@@ -250,11 +255,11 @@ public class PlacedOrderItemDTOConverter
 	private Settings _getSettings(long cpInstanceId) {
 		Settings settings = new Settings();
 
-		int minOrderQuantity =
+		BigDecimal minOrderQuantity =
 			CPDefinitionInventoryConstants.DEFAULT_MIN_ORDER_QUANTITY;
-		int maxOrderQuantity =
+		BigDecimal maxOrderQuantity =
 			CPDefinitionInventoryConstants.DEFAULT_MAX_ORDER_QUANTITY;
-		int multipleQuantity =
+		BigDecimal multipleQuantity =
 			CPDefinitionInventoryConstants.DEFAULT_MULTIPLE_ORDER_QUANTITY;
 
 		CPDefinitionInventory cpDefinitionInventory = null;
@@ -274,20 +279,30 @@ public class PlacedOrderItemDTOConverter
 			maxOrderQuantity = cpDefinitionInventory.getMaxOrderQuantity();
 			multipleQuantity = cpDefinitionInventory.getMultipleOrderQuantity();
 
-			int[] allowedOrderQuantitiesArray =
+			BigDecimal[] allowedOrderQuantitiesArray =
 				cpDefinitionInventory.getAllowedOrderQuantitiesArray();
 
 			if ((allowedOrderQuantitiesArray != null) &&
 				(allowedOrderQuantitiesArray.length > 0)) {
 
-				settings.setAllowedQuantities(
-					ArrayUtil.toArray(allowedOrderQuantitiesArray));
+				settings.setAllowedQuantities(allowedOrderQuantitiesArray);
 			}
 		}
 
-		settings.setMinQuantity(minOrderQuantity);
-		settings.setMaxQuantity(maxOrderQuantity);
-		settings.setMultipleQuantity(multipleQuantity);
+		if (minOrderQuantity != null) {
+			settings.setMinQuantity(
+				BigDecimalUtil.stripTrailingZeros(minOrderQuantity));
+		}
+
+		if (maxOrderQuantity != null) {
+			settings.setMaxQuantity(
+				BigDecimalUtil.stripTrailingZeros(maxOrderQuantity));
+		}
+
+		if (multipleQuantity != null) {
+			settings.setMultipleQuantity(
+				BigDecimalUtil.stripTrailingZeros(multipleQuantity));
+		}
 
 		return settings;
 	}
@@ -306,6 +321,9 @@ public class PlacedOrderItemDTOConverter
 
 	@Reference
 	private CommercePriceFormatter _commercePriceFormatter;
+
+	@Reference
+	private CommerceQuantityFormatter _commerceQuantityFormatter;
 
 	@Reference
 	private CommerceVirtualOrderItemService _commerceVirtualOrderItemService;

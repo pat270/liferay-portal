@@ -45,27 +45,39 @@ export default function EditKBArticle({kbArticle, namespace, publishAction}) {
 		event.currentTarget.dataset.customUrl = urlTitleInput.value !== '';
 	};
 
-	const publishButton = document.getElementById(`${namespace}publishButton`);
+	const openScheduleModal = () => {
+		Liferay.componentReady(`${namespace}ScheduleKBArticleComponent`).then(
+			(component) => {
+				component.open((displayDate) => {
+					const displayDateInput = document.getElementById(
+						`${namespace}displayDate`
+					);
+					displayDateInput.value = displayDate;
 
-	const publishButtonOnClick = () => {
-		const workflowActionInput = document.getElementById(
-			`${namespace}workflowAction`
-		);
-
-		if (workflowActionInput) {
-			workflowActionInput.value = publishAction;
-		}
-
-		if (!kbArticle) {
-			const customUrl = urlTitleInput.dataset.customUrl;
-
-			if (customUrl === 'false') {
-				urlTitleInput.value = '';
+					publishButtonOnClick();
+				});
 			}
-		}
+		);
 	};
 
 	const form = document.getElementById(`${namespace}fm`);
+
+	let publishButton;
+	let scheduleItem;
+	let scheduledButton;
+
+	if (Liferay.FeatureFlags['LPS-188058']) {
+		publishButton = document.getElementById(`${namespace}publishItem`);
+
+		scheduledButton = document.getElementById(
+			`${namespace}scheduledButton`
+		);
+
+		scheduleItem = document.getElementById(`${namespace}scheduleItem`);
+	}
+	else {
+		publishButton = document.getElementById(`${namespace}publishButton`);
+	}
 
 	const updateMultipleKBArticleAttachments = function () {
 		const selectedFileNameContainer = document.getElementById(
@@ -89,6 +101,37 @@ export default function EditKBArticle({kbArticle, namespace, publishAction}) {
 		selectedFileNameContainer.innerHTML = buffer.join('');
 	};
 
+	const beforeSubmit = function () {
+		document.getElementById(`${namespace}content`).value = window[
+			`${namespace}contentEditor`
+		].getHTML();
+
+		updateMultipleKBArticleAttachments();
+	};
+
+	const publishButtonOnClick = () => {
+		const workflowActionInput = document.getElementById(
+			`${namespace}workflowAction`
+		);
+
+		if (workflowActionInput) {
+			workflowActionInput.value = publishAction;
+		}
+
+		if (!kbArticle) {
+			const customUrl = urlTitleInput.dataset.customUrl;
+
+			if (customUrl === 'false') {
+				urlTitleInput.value = '';
+			}
+		}
+
+		if (Liferay.FeatureFlags['LPS-188058']) {
+			beforeSubmit();
+			submitForm(form);
+		}
+	};
+
 	const eventHandlers = [
 		attachListener(publishButton, 'click', publishButtonOnClick),
 		attachListener(
@@ -97,13 +140,18 @@ export default function EditKBArticle({kbArticle, namespace, publishAction}) {
 			contextualSidebarButtonOnClick
 		),
 		attachListener(form, 'submit', () => {
-			document.getElementById(`${namespace}content`).value = window[
-				`${namespace}contentEditor`
-			].getHTML();
-
-			updateMultipleKBArticleAttachments();
+			beforeSubmit();
 		}),
 	];
+
+	if (Liferay.FeatureFlags['LPS-188058']) {
+		eventHandlers.push(
+			attachListener(scheduleItem, 'click', openScheduleModal)
+		);
+		eventHandlers.push(
+			attachListener(scheduledButton, 'click', openScheduleModal)
+		);
+	}
 
 	if (!kbArticle) {
 		eventHandlers.push(

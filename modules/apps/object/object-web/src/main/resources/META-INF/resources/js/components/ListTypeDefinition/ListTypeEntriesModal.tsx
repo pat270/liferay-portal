@@ -9,10 +9,10 @@ import ClayModal, {useModal} from '@clayui/modal';
 import {
 	API,
 	Input,
-	InputLocalized,
 	REQUIRED_MSG,
 	invalidateRequired,
 } from '@liferay/object-js-components-web';
+import {InputLocalized} from 'frontend-js-components-web';
 import {openToast} from 'frontend-js-web';
 import React, {useEffect, useState} from 'react';
 
@@ -20,7 +20,8 @@ import {defaultLanguageId} from '../../utils/constants';
 import {specialCharactersInString, toCamelCase} from '../../utils/string';
 import {ObjectValidationErrors} from './ListTypeFormBase';
 import {fixLocaleKeys} from './utils';
-export interface IModalState extends Partial<PickListItem> {
+
+export interface IModalState extends Partial<ListTypeEntry> {
 	header?: string;
 	itemExternalReferenceCode?: string;
 	itemId?: number;
@@ -29,6 +30,7 @@ export interface IModalState extends Partial<PickListItem> {
 	pickListId?: number;
 	readOnly?: boolean;
 	reloadIframeWindow?: () => void;
+	system?: boolean;
 }
 
 function ListTypeEntriesModal() {
@@ -43,6 +45,7 @@ function ListTypeEntriesModal() {
 			pickListId,
 			readOnly,
 			reloadIframeWindow,
+			system,
 		},
 		setState,
 	] = useState<IModalState>({});
@@ -133,7 +136,9 @@ function ListTypeEntriesModal() {
 		setAPIError('');
 	}, [APIError]);
 
-	const validate = (entry: Partial<PickListItem>): ObjectValidationErrors => {
+	const validate = (
+		entry: Partial<ListTypeEntry>
+	): ObjectValidationErrors => {
 		const errors: ObjectValidationErrors = {};
 		const externalReferenceCode = entry.externalReferenceCode;
 		const key = entry.key;
@@ -174,9 +179,9 @@ function ListTypeEntriesModal() {
 			setErrors({});
 			try {
 				if (modalType === 'add') {
-					await API.addPickListItem({
-						id: pickListId,
+					await API.postListTypeEntry({
 						key: itemKey,
+						listTypeDefinitionId: pickListId,
 						name_i18n,
 					});
 					openToast({
@@ -187,7 +192,7 @@ function ListTypeEntriesModal() {
 					});
 				}
 				else if (modalType === 'edit') {
-					await API.updatePickListItem({
+					await API.putListTypeEntry({
 						externalReferenceCode: itemExternalReferenceCode,
 						id: itemId,
 						name_i18n,
@@ -241,6 +246,7 @@ function ListTypeEntriesModal() {
 
 				{modalType === 'edit' && (
 					<Input
+						disabled={system}
 						error={errors.externalReferenceCode}
 						label={Liferay.Language.get('external-reference-code')}
 						name="externalReferenceCode"

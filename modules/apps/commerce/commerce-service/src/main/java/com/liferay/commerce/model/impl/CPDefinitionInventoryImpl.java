@@ -5,9 +5,12 @@
 
 package com.liferay.commerce.model.impl;
 
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+
+import java.math.BigDecimal;
 
 import java.util.Arrays;
 
@@ -17,11 +20,11 @@ import java.util.Arrays;
 public class CPDefinitionInventoryImpl extends CPDefinitionInventoryBaseImpl {
 
 	@Override
-	public int[] getAllowedOrderQuantitiesArray() {
+	public BigDecimal[] getAllowedOrderQuantitiesArray() {
 		String allowedOrderQuantitiesString = getAllowedOrderQuantities();
 
 		if (Validator.isNull(allowedOrderQuantitiesString)) {
-			return new int[0];
+			return new BigDecimal[0];
 		}
 
 		allowedOrderQuantitiesString = allowedOrderQuantitiesString.replaceAll(
@@ -32,7 +35,8 @@ public class CPDefinitionInventoryImpl extends CPDefinitionInventoryBaseImpl {
 
 		Arrays.sort(allowedOrderQuantities);
 
-		return allowedOrderQuantities;
+		return TransformUtil.transform(
+			allowedOrderQuantities, BigDecimal::valueOf, BigDecimal.class);
 	}
 
 }

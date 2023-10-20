@@ -548,6 +548,9 @@ public interface PropsKeys {
 	public static final String DATABASE_INDEXES_UPDATE_ON_STARTUP =
 		"database.indexes.update.on.startup";
 
+	public static final String DATABASE_MAX_PARAMETERS =
+		"database.max.parameters";
+
 	public static final String DATABASE_MYSQL_ENGINE = "database.mysql.engine";
 
 	public static final String DATABASE_ORDER_BY_MAX_COLUMNS =
@@ -675,9 +678,6 @@ public interface PropsKeys {
 	public static final String DISCUSSION_COMMENTS_ALLOWED_CONTENT =
 		"discussion.comments.allowed.content";
 
-	public static final String DISCUSSION_COMMENTS_ALWAYS_EDITABLE_BY_OWNER =
-		"discussion.comments.always.editable.by.owner";
-
 	public static final String DISCUSSION_COMMENTS_DELTA_VALUE =
 		"discussion.comments.delta.value";
 
@@ -686,8 +686,6 @@ public interface PropsKeys {
 
 	public static final String DISCUSSION_MAX_COMMENTS =
 		"discussion.max.comments";
-
-	public static final String DISCUSSION_SUBSCRIBE = "discussion.subscribe";
 
 	public static final String DL_ACTIONS_VISIBLE = "dl.actions.visible";
 
@@ -2571,9 +2569,6 @@ public interface PropsKeys {
 		SQL_DATA_COM_LIFERAY_PORTAL_MODEL_REGION_REGION_ID =
 			"sql.data.com.liferay.portal.kernel.model.Region.region.id";
 
-	public static final String SQL_DATA_MAX_PARAMETERS =
-		"sql.data.max.parameters";
-
 	public static final String
 		STAGING_DRAFT_EXPORT_IMPORT_CONFIGURATION_CHECK_INTERVAL =
 			"staging.draft.export.import.configuration.check.interval";
@@ -2710,7 +2705,7 @@ public interface PropsKeys {
 		"upgrade.concurrent.fetch.size";
 
 	public static final String UPGRADE_CONCURRENT_PROCESS_FUTURE_LIST_MAX_SIZE =
-		"upgrade.concurrent.process.list.max.size";
+		"upgrade.concurrent.process.future.list.max.size";
 
 	public static final String UPGRADE_DATABASE_AUTO_RUN =
 		"upgrade.database.auto.run";
@@ -2720,6 +2715,8 @@ public interface PropsKeys {
 
 	public static final String UPGRADE_LOG_CONTEXT_ENABLED =
 		"upgrade.log.context.enabled";
+
+	public static final String UPGRADE_REPORT_DIR = "upgrade.report.dir";
 
 	public static final String UPGRADE_REPORT_DL_STORAGE_SIZE_TIMEOUT =
 		"upgrade.report.dl.storage.size.timeout";

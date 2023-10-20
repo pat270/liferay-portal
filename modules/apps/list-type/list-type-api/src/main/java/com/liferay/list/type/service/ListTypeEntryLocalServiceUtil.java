@@ -90,9 +90,10 @@ public class ListTypeEntryLocalServiceUtil {
 	 *
 	 * @param listTypeEntry the list type entry
 	 * @return the list type entry that was removed
+	 * @throws PortalException
 	 */
-	public static ListTypeEntry deleteListTypeEntry(
-		ListTypeEntry listTypeEntry) {
+	public static ListTypeEntry deleteListTypeEntry(ListTypeEntry listTypeEntry)
+		throws PortalException {
 
 		return getService().deleteListTypeEntry(listTypeEntry);
 	}
@@ -115,7 +116,8 @@ public class ListTypeEntryLocalServiceUtil {
 	}
 
 	public static void deleteListTypeEntryByListTypeDefinitionId(
-		long listTypeDefinitionId) {
+			long listTypeDefinitionId)
+		throws PortalException {
 
 		getService().deleteListTypeEntryByListTypeDefinitionId(
 			listTypeDefinitionId);
@@ -295,6 +297,14 @@ public class ListTypeEntryLocalServiceUtil {
 
 		return getService().getListTypeEntries(
 			listTypeDefinitionId, start, end);
+	}
+
+	public static List<ListTypeEntry> getListTypeEntries(
+		long listTypeDefinitionId, int start, int end,
+		OrderByComparator<ListTypeEntry> orderByComparator) {
+
+		return getService().getListTypeEntries(
+			listTypeDefinitionId, start, end, orderByComparator);
 	}
 
 	/**

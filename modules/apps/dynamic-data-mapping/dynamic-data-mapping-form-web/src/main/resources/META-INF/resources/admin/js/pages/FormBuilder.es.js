@@ -372,6 +372,7 @@ export default function FormBuilder() {
 							autocompleteUserURL={autocompleteUserURL}
 							emailContent={emailContentRef}
 							localizedName={localizedName}
+							portletNamespace={portletNamespace}
 							url={url}
 						/>
 					),
@@ -534,7 +535,7 @@ export default function FormBuilder() {
 								)
 							}
 						>
-							{Liferay.Language.get('Save')}
+							{Liferay.Language.get('save')}
 						</ClayButton>
 
 						<ClayLink button displayType="link" href={redirectURL}>

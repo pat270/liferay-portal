@@ -40,6 +40,7 @@ import com.liferay.layout.list.retriever.LayoutListRetrieverRegistry;
 import com.liferay.layout.list.retriever.ListObjectReference;
 import com.liferay.layout.list.retriever.ListObjectReferenceFactory;
 import com.liferay.layout.list.retriever.ListObjectReferenceFactoryRegistry;
+import com.liferay.layout.manager.LayoutLockManager;
 import com.liferay.layout.model.LayoutClassedModelUsage;
 import com.liferay.layout.service.LayoutClassedModelUsageLocalService;
 import com.liferay.layout.util.structure.CollectionStyledLayoutStructureItem;
@@ -438,9 +439,15 @@ public class ContentManager {
 					return null;
 				}
 
-				return infoEditURLProvider.getURL(
-					layoutDisplayPageObjectProvider.getDisplayObject(),
-					httpServletRequest);
+				PortletResponse portletResponse =
+					(PortletResponse)httpServletRequest.getAttribute(
+						JavaConstants.JAVAX_PORTLET_RESPONSE);
+
+				return _layoutLockManager.getUnlockDraftLayoutURL(
+					_portal.getLiferayPortletResponse(portletResponse),
+					() -> infoEditURLProvider.getURL(
+						layoutDisplayPageObjectProvider.getDisplayObject(),
+						httpServletRequest));
 			}
 		).put(
 			"permissionsURL",
@@ -550,7 +557,7 @@ public class ContentManager {
 						uniqueLayoutClassedModelUsageKeys);
 
 					JSONObject mappedActionJSONObject =
-						editableJSONObject.getJSONObject("mappedAction");
+						configJSONObject.getJSONObject("mappedAction");
 
 					if ((mappedActionJSONObject != null) &&
 						(mappedActionJSONObject.length() > 0)) {
@@ -727,6 +734,13 @@ public class ContentManager {
 				_layoutDisplayPageProviderRegistry.
 					getLayoutDisplayPageProviderByClassName(
 						layoutClassedModelUsage.getClassName());
+
+			if (layoutDisplayPageProvider == null) {
+				_layoutClassedModelUsageLocalService.
+					deleteLayoutClassedModelUsage(layoutClassedModelUsage);
+
+				continue;
+			}
 
 			LayoutDisplayPageObjectProvider<?> layoutDisplayPageObjectProvider =
 				layoutDisplayPageProvider.getLayoutDisplayPageObjectProvider(
@@ -1204,6 +1218,9 @@ public class ContentManager {
 
 	@Reference
 	private LayoutListRetrieverRegistry _layoutListRetrieverRegistry;
+
+	@Reference
+	private LayoutLockManager _layoutLockManager;
 
 	@Reference
 	private ListObjectReferenceFactoryRegistry

@@ -5,8 +5,6 @@
 
 package com.liferay.headless.builder.internal.model.listener;
 
-import com.liferay.headless.builder.application.APIApplication;
-import com.liferay.headless.builder.application.provider.APIApplicationProvider;
 import com.liferay.headless.builder.application.publisher.APIApplicationPublisher;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectEntry;
@@ -142,6 +140,27 @@ public class APIApplicationPublisherObjectEntryModelListener
 				apiEndpointObjectEntryValues.get(
 					"r_apiApplicationToAPIEndpoints_c_apiApplicationId"));
 		}
+		else if (StringUtil.equals(externalReferenceCode, "L_API_PROPERTY")) {
+			Map<String, Serializable> apiPropertyObjectEntryValues =
+				objectEntry.getValues();
+
+			ObjectEntry apiSchemaObjectEntry =
+				_objectEntryLocalService.fetchObjectEntry(
+					GetterUtil.getLong(
+						apiPropertyObjectEntryValues.get(
+							"r_apiSchemaToAPIProperties_c_apiSchemaId")));
+
+			if (apiSchemaObjectEntry == null) {
+				return 0;
+			}
+
+			Map<String, Serializable> apiSchemaObjectEntryValues =
+				apiSchemaObjectEntry.getValues();
+
+			return GetterUtil.getLong(
+				apiSchemaObjectEntryValues.get(
+					"r_apiApplicationToAPISchemas_c_apiApplicationId"));
+		}
 		else if (StringUtil.equals(externalReferenceCode, "L_API_SCHEMA")) {
 			Map<String, Serializable> values = objectEntry.getValues();
 
@@ -210,16 +229,9 @@ public class APIApplicationPublisherObjectEntryModelListener
 							apiApplicationObjectEntry.getCompanyId());
 					}
 					else {
-						APIApplication apiApplication =
-							_apiApplicationProvider.fetchAPIApplication(
-								(String)values.get("baseURL"),
-								apiApplicationObjectEntry.getCompanyId());
-
-						if (apiApplication == null) {
-							return null;
-						}
-
-						_apiApplicationPublisher.publish(apiApplication);
+						_apiApplicationPublisher.publish(
+							(String)values.get("baseURL"),
+							apiApplicationObjectEntry.getCompanyId());
 					}
 				}
 
@@ -229,9 +241,6 @@ public class APIApplicationPublisherObjectEntryModelListener
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		APIApplicationPublisherObjectEntryModelListener.class);
-
-	@Reference
-	private APIApplicationProvider _apiApplicationProvider;
 
 	@Reference
 	private APIApplicationPublisher _apiApplicationPublisher;

@@ -70,6 +70,10 @@ public interface MBCategoryService extends BaseService {
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public MBCategory fetchMBCategory(long groupId, String friendlyURL)
+		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<MBCategory> getCategories(long groupId);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -175,6 +179,10 @@ public interface MBCategoryService extends BaseService {
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public long[] getCategoryIds(long groupId, long categoryId);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public MBCategory getMBCategory(long groupId, String friendlyURL)
+		throws PortalException;
 
 	/**
 	 * Returns the OSGi service identifier.

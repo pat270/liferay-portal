@@ -102,6 +102,22 @@ public class MBCategoryServiceImpl extends MBCategoryServiceBaseImpl {
 		mbCategoryLocalService.deleteCategory(categoryId);
 	}
 
+	public MBCategory fetchMBCategory(long groupId, String friendlyURL)
+		throws PortalException {
+
+		MBCategory mbCategory = mbCategoryLocalService.fetchMBCategory(
+			groupId, friendlyURL);
+
+		if (mbCategory == null) {
+			return null;
+		}
+
+		_categoryModelResourcePermission.check(
+			getPermissionChecker(), mbCategory, ActionKeys.VIEW);
+
+		return mbCategory;
+	}
+
 	@Override
 	public List<MBCategory> getCategories(long groupId) {
 		return mbCategoryPersistence.filterFindByGroupId(groupId);
@@ -393,6 +409,19 @@ public class MBCategoryServiceImpl extends MBCategoryServiceBaseImpl {
 		getSubcategoryIds(categoryIds, groupId, categoryId);
 
 		return ArrayUtil.toArray(categoryIds.toArray(new Long[0]));
+	}
+
+	@Override
+	public MBCategory getMBCategory(long groupId, String friendlyURL)
+		throws PortalException {
+
+		MBCategory mbCategory = mbCategoryLocalService.getMBCategory(
+			groupId, friendlyURL);
+
+		_categoryModelResourcePermission.check(
+			getPermissionChecker(), mbCategory, ActionKeys.VIEW);
+
+		return mbCategory;
 	}
 
 	@Override

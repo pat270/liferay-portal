@@ -27,6 +27,7 @@ import com.liferay.commerce.service.CommerceOrderService;
 import com.liferay.frontend.data.set.provider.search.FDSPagination;
 import com.liferay.frontend.taglib.servlet.taglib.util.JSPRenderer;
 import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -212,7 +213,7 @@ public class CommerceOrdersCommerceOrderImporterTypeImpl
 
 			if ((firstAvailableReplacementCPInstance != null) &&
 				!_cpAvailabilityChecker.check(
-					commerceChannelGroupId, cpInstance,
+					commerceChannelGroupId, cpInstance, StringPool.BLANK,
 					commerceOrderItem.getQuantity())) {
 
 				commerceOrderImporterItemImpl.setReplacingSKU(
@@ -241,6 +242,8 @@ public class CommerceOrdersCommerceOrderImporterTypeImpl
 		commerceOrderImporterItemImpl.setJSON(json);
 		commerceOrderImporterItemImpl.setQuantity(
 			commerceOrderItem.getQuantity());
+		commerceOrderImporterItemImpl.setUnitOfMeasureKey(
+			commerceOrderItem.getUnitOfMeasureKey());
 
 		return commerceOrderImporterItemImpl;
 	}

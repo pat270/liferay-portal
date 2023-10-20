@@ -13,9 +13,10 @@
 taglib uri="http://liferay.com/tld/clay" prefix="clay" %><%@
 taglib uri="http://liferay.com/tld/portlet" prefix="liferay-portlet" %><%@
 taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %><%@
-taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
+taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %><%@
+taglib uri="http://liferay.com/tld/user" prefix="liferay-user" %>
 
-<%@ page import="com.liferay.akismet.internal.util.ModerationUtil" %><%@
+<%@ page import="com.liferay.akismet.web.internal.util.ModerationUtil" %><%@
 page import="com.liferay.message.boards.exception.NoSuchMessageException" %><%@
 page import="com.liferay.message.boards.exception.RequiredMessageException" %><%@
 page import="com.liferay.message.boards.model.MBMessage" %><%@

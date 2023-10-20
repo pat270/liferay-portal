@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import ClayPanel from '@clayui/panel';
 import {
 	API,
 	BetaButton,
@@ -12,17 +13,17 @@ import {
 import React, {useEffect, useState} from 'react';
 
 import ObjectManagementToolbar from '../ObjectManagementToolbar';
+import {AccountRestrictionContainer} from './AccountRestrictionContainer';
 import {ConfigurationContainer} from './ConfigurationContainer';
 import {EntryDisplayContainer} from './EntryDisplayContainer';
+import {ExternalDataSourceContainer} from './ExternalDataSourceContainer';
 import {ObjectDataContainer} from './ObjectDataContainer';
 import {ScopeContainer} from './ScopeContainer';
 import Sheet from './Sheet';
+import {TranslationsContainer} from './TranslationsContainer';
 import {useObjectDetailsForm} from './useObjectDetailsForm';
 
 import './ObjectDetails.scss';
-import {AccountRestrictionContainer} from './AccountRestrictionContainer';
-import {ExternalDataSourceContainer} from './ExternalDataSourceContainer';
-import {TranslationsContainer} from './TranslationsContainer';
 
 export type KeyValuePair = {
 	key: string;
@@ -36,6 +37,7 @@ interface EditObjectDetailsProps {
 	hasPublishObjectPermission: boolean;
 	hasUpdateObjectDefinitionPermission: boolean;
 	isApproved: boolean;
+	isRootDescendantNode: boolean;
 	label: LocalizedValue<string>;
 	nonRelationshipObjectFieldsInfo: {
 		label: LocalizedValue<string>;
@@ -79,6 +81,7 @@ export default function EditObjectDetails({
 	hasPublishObjectPermission,
 	hasUpdateObjectDefinitionPermission,
 	isApproved,
+	isRootDescendantNode,
 	label,
 	nonRelationshipObjectFieldsInfo,
 	objectDefinitionId,
@@ -112,11 +115,6 @@ export default function EditObjectDetails({
 		const validationErrors = handleValidate();
 
 		if (!Object.keys(validationErrors).length) {
-			delete values.objectRelationships;
-			delete values.objectActions;
-			delete values.objectLayouts;
-			delete values.objectViews;
-
 			let objectDefinition = values;
 
 			if (values.accountEntryRestricted) {
@@ -142,18 +140,15 @@ export default function EditObjectDetails({
 			}
 
 			if (!draft) {
-				const publishResponse = await API.publishObjectDefinitionById(
+				const publishResponse = await API.postObjectDefinitionPublish(
 					values.id as number
 				);
 
 				if (!publishResponse.ok) {
-					const {title} = (await publishResponse.json()) as {
-						status: string;
-						title: string;
-					};
-
 					openToast({
-						message: title,
+						message: Liferay.Language.get(
+							'the-object-definition-is-already-published'
+						),
 						type: 'danger',
 					});
 
@@ -185,7 +180,7 @@ export default function EditObjectDetails({
 
 	useEffect(() => {
 		const makeFetch = async () => {
-			const objectFieldsResponse = await API.getObjectFieldsByExternalReferenceCode(
+			const objectFieldsResponse = await API.getObjectDefinitionByExternalReferenceCodeObjectFields(
 				externalReferenceCode
 			);
 			const objectDefinitionResponse = await API.getObjectDefinitionByExternalReferenceCode(
@@ -211,6 +206,7 @@ export default function EditObjectDetails({
 						hasUpdateObjectDefinitionPermission
 					}
 					isApproved={isApproved}
+					isRootDescendantNode={isRootDescendantNode}
 					label={getLocalizableLabel(
 						values.defaultLanguageId as Liferay.Language.Locale,
 						values.label,
@@ -227,83 +223,148 @@ export default function EditObjectDetails({
 
 			<div className="lfr-objects__object-definition-details">
 				<Sheet title={Liferay.Language.get('basic-information')}>
-					<ObjectDataContainer
-						dbTableName={dbTableName}
-						errors={errors}
-						handleChange={handleChange}
-						hasUpdateObjectDefinitionPermission={
-							hasUpdateObjectDefinitionPermission
-						}
-						isApproved={isApproved}
-						setValues={setValues}
-						values={values}
-					/>
-
-					<EntryDisplayContainer
-						errors={errors}
-						nonRelationshipObjectFieldsInfo={
-							nonRelationshipObjectFieldsInfo
-						}
-						objectFields={objectFields}
-						setValues={setValues}
-						values={values}
-					/>
-
-					{Liferay.FeatureFlags['LPS-135430'] && (
-						<div className="lfr__object-web-edit-object-details-external-data-source-container">
-							<ExternalDataSourceContainer
+					<ClayPanel
+						displayTitle={Liferay.Language.get(
+							'object-definition-data'
+						)}
+						displayType="unstyled"
+					>
+						<ClayPanel.Body>
+							<ObjectDataContainer
+								dbTableName={dbTableName}
 								errors={errors}
+								handleChange={handleChange}
+								hasUpdateObjectDefinitionPermission={
+									hasUpdateObjectDefinitionPermission
+								}
+								isApproved={isApproved}
 								setValues={setValues}
-								storageTypes={storageTypes}
 								values={values}
 							/>
+						</ClayPanel.Body>
+					</ClayPanel>
 
-							<div className="lfr__object-web-edit-object-details-external-data-source-container-beta">
-								{values.storageType === 'salesforce' && (
-									<BetaButton />
-								)}
-							</div>
-						</div>
+					<ClayPanel
+						collapsable
+						defaultExpanded
+						displayTitle={Liferay.Language.get('entry-display')}
+						displayType="unstyled"
+					>
+						<ClayPanel.Body>
+							<EntryDisplayContainer
+								errors={errors}
+								nonRelationshipObjectFieldsInfo={
+									nonRelationshipObjectFieldsInfo
+								}
+								objectFields={objectFields}
+								setValues={setValues}
+								values={values}
+							/>
+						</ClayPanel.Body>
+					</ClayPanel>
+
+					{Liferay.FeatureFlags['LPS-135430'] && (
+						<ClayPanel
+							collapsable
+							defaultExpanded
+							displayTitle={Liferay.Language.get(
+								'external-data-source'
+							)}
+							displayType="unstyled"
+						>
+							<ClayPanel.Body>
+								<div className="lfr__object-web-edit-object-details-external-data-source-container">
+									<ExternalDataSourceContainer
+										errors={errors}
+										setValues={setValues}
+										storageTypes={storageTypes}
+										values={values}
+									/>
+
+									<div className="lfr__object-web-edit-object-details-external-data-source-container-beta">
+										{values.storageType ===
+											'salesforce' && <BetaButton />}
+									</div>
+								</div>
+							</ClayPanel.Body>
+						</ClayPanel>
 					)}
 
-					<ScopeContainer
-						companyKeyValuePair={companyKeyValuePair}
-						errors={errors}
-						hasUpdateObjectDefinitionPermission={
-							hasUpdateObjectDefinitionPermission
-						}
-						isApproved={isApproved}
-						setValues={setValues}
-						siteKeyValuePair={siteKeyValuePair}
-						values={values}
-					/>
+					<ClayPanel
+						collapsable
+						defaultExpanded
+						displayTitle={Liferay.Language.get('scope')}
+						displayType="unstyled"
+					>
+						<ClayPanel.Body>
+							<ScopeContainer
+								companyKeyValuePairs={companyKeyValuePair}
+								errors={errors}
+								hasUpdateObjectDefinitionPermission={
+									hasUpdateObjectDefinitionPermission
+								}
+								isApproved={isApproved}
+								isRootDescendantNode={isRootDescendantNode}
+								setValues={setValues}
+								siteKeyValuePairs={siteKeyValuePair}
+								values={values}
+							/>
+						</ClayPanel.Body>
+					</ClayPanel>
 
-					{(Liferay.FeatureFlags['LPS-167253']
-						? values.modifiable
-						: !values.system) && (
-						<AccountRestrictionContainer
-							errors={errors}
-							isApproved={isApproved}
-							objectFields={objectFields}
-							setValues={setValues}
-							values={values}
-						/>
+					{values.modifiable && (
+						<ClayPanel
+							collapsable
+							defaultExpanded
+							displayTitle={Liferay.Language.get(
+								'account-restriction'
+							)}
+							displayType="unstyled"
+						>
+							<ClayPanel.Body>
+								<AccountRestrictionContainer
+									errors={errors}
+									isApproved={isApproved}
+									isRootDescendantNode={isRootDescendantNode}
+									objectFields={objectFields}
+									setValues={setValues}
+									values={values}
+								/>
+							</ClayPanel.Body>
+						</ClayPanel>
 					)}
 
-					<ConfigurationContainer
-						hasUpdateObjectDefinitionPermission={
-							hasUpdateObjectDefinitionPermission
-						}
-						setValues={setValues}
-						values={values}
-					/>
+					<ClayPanel
+						collapsable
+						defaultExpanded
+						displayTitle={Liferay.Language.get('configuration')}
+						displayType="unstyled"
+					>
+						<ClayPanel.Body>
+							<ConfigurationContainer
+								hasUpdateObjectDefinitionPermission={
+									hasUpdateObjectDefinitionPermission
+								}
+								isRootDescendantNode={isRootDescendantNode}
+								setValues={setValues}
+								values={values}
+							/>
+						</ClayPanel.Body>
+					</ClayPanel>
 
-					{Liferay.FeatureFlags['LPS-172017'] && (
-						<TranslationsContainer
-							setValues={setValues}
-							values={values}
-						/>
-					)}
+					<ClayPanel
+						collapsable
+						defaultExpanded
+						displayTitle={Liferay.Language.get('translations')}
+						displayType="unstyled"
+					>
+						<ClayPanel.Body>
+							<TranslationsContainer
+								setValues={setValues}
+								values={values}
+							/>
+						</ClayPanel.Body>
+					</ClayPanel>
 				</Sheet>
 			</div>
 		</>

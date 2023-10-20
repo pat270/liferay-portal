@@ -93,7 +93,7 @@ public class CommerceInventoryAuditModelImpl
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table CIAudit (mvccVersion LONG default 0 not null,CIAuditId LONG not null primary key,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,logType VARCHAR(75) null,logTypeSettings TEXT null,quantity DECIMAL(30, 16) null,sku VARCHAR(75) null,unitOfMeasureKey VARCHAR(75) null)";
+		"create table CIAudit (mvccVersion LONG default 0 not null,CIAuditId LONG not null primary key,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,logType VARCHAR(75) null,logTypeSettings TEXT null,quantity BIGDECIMAL null,sku VARCHAR(75) null,unitOfMeasureKey VARCHAR(75) null)";
 
 	public static final String TABLE_SQL_DROP = "drop table CIAudit";
 
@@ -126,6 +126,12 @@ public class CommerceInventoryAuditModelImpl
 	 */
 	@Deprecated
 	public static final long SKU_COLUMN_BITMASK = 4L;
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #getColumnBitmask(String)}
+	 */
+	@Deprecated
+	public static final long UNITOFMEASUREKEY_COLUMN_BITMASK = 8L;
 
 	/**
 	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
@@ -591,6 +597,15 @@ public class CommerceInventoryAuditModelImpl
 		}
 
 		_unitOfMeasureKey = unitOfMeasureKey;
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getColumnOriginalValue(String)}
+	 */
+	@Deprecated
+	public String getOriginalUnitOfMeasureKey() {
+		return getColumnOriginalValue("unitOfMeasureKey");
 	}
 
 	public long getColumnBitmask() {

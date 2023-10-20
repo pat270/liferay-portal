@@ -5,13 +5,7 @@
 
 package com.liferay.portal.events;
 
-import com.liferay.document.library.kernel.document.conversion.DocumentConversionUtil;
-import com.liferay.petra.executor.PortalExecutorManager;
 import com.liferay.petra.lang.CentralizedThreadLocal;
-import com.liferay.portal.kernel.dao.db.DB;
-import com.liferay.portal.kernel.dao.db.DBManagerUtil;
-import com.liferay.portal.kernel.dao.db.DBType;
-import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.deploy.auto.AutoDeployDir;
 import com.liferay.portal.kernel.deploy.auto.AutoDeployUtil;
 import com.liferay.portal.kernel.deploy.hot.HotDeployUtil;
@@ -19,17 +13,11 @@ import com.liferay.portal.kernel.events.SimpleAction;
 import com.liferay.portal.kernel.log.Jdk14LogFactoryImpl;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.messaging.MessageBusUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.ServiceProxyFactory;
 import com.liferay.portal.struts.AuthPublicPathRegistry;
 import com.liferay.portal.util.PropsUtil;
 import com.liferay.portal.util.PropsValues;
-import com.liferay.util.ThirdPartyThreadLocalRegistry;
-
-import java.sql.Connection;
-import java.sql.Statement;
 
 /**
  * @author Brian Wing Shun Chan
@@ -81,10 +69,6 @@ public class GlobalShutdownAction extends SimpleAction {
 		// Authentication
 
 		AuthPublicPathRegistry.unregister(PropsValues.AUTH_PUBLIC_PATHS);
-
-		// OpenOffice
-
-		DocumentConversionUtil.disconnect();
 	}
 
 	protected void shutdownLevel2() {
@@ -99,35 +83,12 @@ public class GlobalShutdownAction extends SimpleAction {
 	}
 
 	protected void shutdownLevel3() {
-
-		// Messaging
-
-		MessageBusUtil.shutdown(true);
 	}
 
 	protected void shutdownLevel4() {
-
-		// Hypersonic
-
-		DB db = DBManagerUtil.getDB();
-
-		if (db.getDBType() == DBType.HYPERSONIC) {
-			try (Connection connection = DataAccess.getConnection();
-				Statement statement = connection.createStatement()) {
-
-				statement.executeUpdate("SHUTDOWN");
-			}
-			catch (Exception exception) {
-				_log.error(exception);
-			}
-		}
 	}
 
 	protected void shutdownLevel5() {
-
-		// Portal executors
-
-		_portalExecutorManager.shutdown(true);
 	}
 
 	protected void shutdownLevel6() {
@@ -147,7 +108,6 @@ public class GlobalShutdownAction extends SimpleAction {
 
 		// Thread local registry
 
-		ThirdPartyThreadLocalRegistry.resetThreadLocals();
 		CentralizedThreadLocal.clearShortLivedThreadLocals();
 	}
 
@@ -185,10 +145,5 @@ public class GlobalShutdownAction extends SimpleAction {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		GlobalShutdownAction.class);
-
-	private static volatile PortalExecutorManager _portalExecutorManager =
-		ServiceProxyFactory.newServiceTrackedInstance(
-			PortalExecutorManager.class, GlobalShutdownAction.class,
-			"_portalExecutorManager", true);
 
 }

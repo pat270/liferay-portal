@@ -17,11 +17,12 @@ export default function Button({
 	locale: _locale,
 	portletId: _portletId,
 	portletNamespace: _portletNamespace,
+	swapIconSide,
 	...otherProps
 }) {
 	return (
 		<ClayButton className={cssClass} {...otherProps}>
-			{icon && (
+			{icon && !swapIconSide && (
 				<span
 					className={classNames('inline-item', {
 						'inline-item-before': label,
@@ -32,6 +33,16 @@ export default function Button({
 			)}
 
 			{label}
+
+			{icon && swapIconSide && (
+				<span
+					className={classNames('inline-item', {
+						'inline-item-after': label,
+					})}
+				>
+					<ClayIcon symbol={icon} />
+				</span>
+			)}
 		</ClayButton>
 	);
 }

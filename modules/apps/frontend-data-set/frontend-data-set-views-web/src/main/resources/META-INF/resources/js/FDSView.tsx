@@ -6,21 +6,20 @@
 import ClayButton from '@clayui/button';
 import ClayLoadingIndicator from '@clayui/loading-indicator';
 import ClayNavigationBar from '@clayui/navigation-bar';
-import {fetch, openToast} from 'frontend-js-web';
+import {IClientExtensionRenderer, fetch} from 'frontend-js-web';
 import React, {useEffect, useState} from 'react';
 
-import {IClientExtensionCellRenderer} from './api';
-
-import '../css/FDSView.scss';
 import {API_URL, OBJECT_RELATIONSHIP} from './Constants';
 import {FDSViewType} from './FDSViews';
+import Actions from './fds_view/Actions';
 import Details from './fds_view/Details';
 import Fields from './fds_view/Fields';
 import Filters from './fds_view/Filters';
 import Pagination from './fds_view/Pagination';
 import Sorting from './fds_view/Sorting';
+import openDefaultFailureToast from './utils/openDefaultFailureToast';
 
-let NAVIGATION_BAR_ITEMS = [
+const NAVIGATION_BAR_ITEMS = [
 	{
 		Component: Details,
 		label: Liferay.Language.get('details'),
@@ -29,54 +28,54 @@ let NAVIGATION_BAR_ITEMS = [
 		Component: Fields,
 		label: Liferay.Language.get('fields'),
 	},
-];
-
-if (Liferay.FeatureFlags['LPS-188645']) {
-	NAVIGATION_BAR_ITEMS = [
-		...NAVIGATION_BAR_ITEMS,
-		{
-			Component: Filters,
-			label: Liferay.Language.get('filters'),
-		},
-		{
-			Component: Sorting,
-			label: Liferay.Language.get('sorting'),
-		},
-	];
-}
-
-NAVIGATION_BAR_ITEMS = [
-	...NAVIGATION_BAR_ITEMS,
+	{
+		Component: Filters,
+		label: Liferay.Language.get('filters'),
+	},
+	{
+		Component: Sorting,
+		label: Liferay.Language.get('sorting'),
+	},
+	{
+		Component: Actions,
+		label: Liferay.Language.get('actions'),
+	},
 	{
 		Component: Pagination,
 		label: Liferay.Language.get('pagination'),
 	},
 ];
 
-interface IFDSViewSectionInterface {
-	fdsClientExtensionCellRenderers: IClientExtensionCellRenderer[];
+interface IFDSViewSectionProps {
+	fdsClientExtensionCellRenderers: IClientExtensionRenderer[];
+	fdsFilterClientExtensions: IClientExtensionRenderer[];
 	fdsView: FDSViewType;
 	fdsViewsURL: string;
 	namespace: string;
 	onFDSViewUpdate: (data: FDSViewType) => void;
 	saveFDSFieldsURL: string;
+	spritemap: string;
 }
 
-interface IFDSViewInterface {
-	fdsClientExtensionCellRenderers: IClientExtensionCellRenderer[];
+interface IFDSViewProps {
+	fdsClientExtensionCellRenderers: IClientExtensionRenderer[];
+	fdsFilterClientExtensions: IClientExtensionRenderer[];
 	fdsViewId: string;
 	fdsViewsURL: string;
 	namespace: string;
 	saveFDSFieldsURL: string;
+	spritemap: string;
 }
 
 const FDSView = ({
 	fdsClientExtensionCellRenderers,
+	fdsFilterClientExtensions,
 	fdsViewId,
 	fdsViewsURL,
 	namespace,
 	saveFDSFieldsURL,
-}: IFDSViewInterface) => {
+	spritemap,
+}: IFDSViewProps) => {
 	const [activeIndex, setActiveIndex] = useState(0);
 	const [fdsView, setFDSView] = useState<FDSViewType>();
 	const [loading, setLoading] = useState(true);
@@ -100,12 +99,7 @@ const FDSView = ({
 				setLoading(false);
 			}
 			else {
-				openToast({
-					message: Liferay.Language.get(
-						'your-request-failed-to-complete'
-					),
-					type: 'danger',
-				});
+				openDefaultFailureToast();
 			}
 		};
 
@@ -139,6 +133,7 @@ const FDSView = ({
 						fdsClientExtensionCellRenderers={
 							fdsClientExtensionCellRenderers
 						}
+						fdsFilterClientExtensions={fdsFilterClientExtensions}
 						fdsView={fdsView}
 						fdsViewsURL={fdsViewsURL}
 						namespace={namespace}
@@ -146,6 +141,7 @@ const FDSView = ({
 							setFDSView({...fdsView, ...updatedFdsViewData});
 						}}
 						saveFDSFieldsURL={saveFDSFieldsURL}
+						spritemap={spritemap}
 					/>
 				)
 			)}
@@ -153,5 +149,5 @@ const FDSView = ({
 	);
 };
 
-export {IFDSViewSectionInterface};
+export {IFDSViewSectionProps};
 export default FDSView;

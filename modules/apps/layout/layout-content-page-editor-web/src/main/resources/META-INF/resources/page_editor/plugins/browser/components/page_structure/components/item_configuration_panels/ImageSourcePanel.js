@@ -4,12 +4,14 @@
  */
 
 import ClayForm, {ClaySelectWithOption} from '@clayui/form';
+import {useId} from 'frontend-js-components-web';
 import React, {useCallback, useState} from 'react';
 
 import {CheckboxField} from '../../../../../../app/components/fragment_configuration_fields/CheckboxField';
 import {BACKGROUND_IMAGE_FRAGMENT_ENTRY_PROCESSOR} from '../../../../../../app/config/constants/backgroundImageFragmentEntryProcessor';
 import {EDITABLE_FRAGMENT_ENTRY_PROCESSOR} from '../../../../../../app/config/constants/editableFragmentEntryProcessor';
 import {EDITABLE_TYPES} from '../../../../../../app/config/constants/editableTypes';
+import {STANDARD_IMAGE_SIZE_LIMIT} from '../../../../../../app/config/constants/standardImageSizeLimit';
 import {VIEWPORT_SIZES} from '../../../../../../app/config/constants/viewportSizes';
 import {config} from '../../../../../../app/config/index';
 import {useGlobalContext} from '../../../../../../app/contexts/GlobalContext';
@@ -29,7 +31,6 @@ import {updateIn} from '../../../../../../app/utils/updateIn';
 import {ImageSelector} from '../../../../../../common/components/ImageSelector';
 import {ImageSelectorDescription} from '../../../../../../common/components/ImageSelectorDescription';
 import {ImageSelectorSize} from '../../../../../../common/components/ImageSelectorSize';
-import {useId} from '../../../../../../common/hooks/useId';
 import {getEditableItemPropTypes} from '../../../../../../prop_types/index';
 import {MappingPanel} from './MappingPanel';
 
@@ -115,34 +116,6 @@ export default function ImageSourcePanel({item}) {
 			)}
 
 			{ConfigurationPanel && <ConfigurationPanel item={item} />}
-
-			{item.type === EDITABLE_TYPES.image && (
-				<CheckboxField
-					field={{
-						defaultValue: false,
-						label: Liferay.Language.get('enable-lazy-loading'),
-						name: 'lazyLoading',
-					}}
-					onValueSelect={(name, value) => {
-						dispatch(
-							updateEditableValuesThunk({
-								editableValues: setIn(
-									editableValues,
-									[
-										EDITABLE_FRAGMENT_ENTRY_PROCESSOR,
-										item.editableId,
-										'config',
-										name,
-									],
-									value
-								),
-								fragmentEntryLinkId: item.fragmentEntryLinkId,
-							})
-						);
-					}}
-					value={editableValue.config.lazyLoading}
-				/>
-			)}
 		</>
 	);
 }
@@ -170,6 +143,7 @@ function DirectImagePanel({item}) {
 		fragmentEntryLinks[fragmentEntryLinkId].editableValues;
 
 	const editableValue = editableValues[processorKey]?.[editableId];
+
 	const editableConfig = editableValue.config || {};
 
 	const editableContent = selectEditableValueContent(
@@ -282,6 +256,39 @@ function DirectImagePanel({item}) {
 
 			<ImagePanelSizeSelector item={item} />
 
+			{item.type === EDITABLE_TYPES.image && (
+				<CheckboxField
+					field={{
+						defaultValue: false,
+						description: Liferay.FeatureFlags['LPS-187285']
+							? Liferay.Language.get(
+									'lazy-loading-can-help-to-improve-page-performance'
+							  )
+							: undefined,
+						label: Liferay.Language.get('enable-lazy-loading'),
+						name: 'lazyLoading',
+					}}
+					onValueSelect={(name, value) => {
+						dispatch(
+							updateEditableValuesThunk({
+								editableValues: setIn(
+									editableValues,
+									[
+										EDITABLE_FRAGMENT_ENTRY_PROCESSOR,
+										item.editableId,
+										'config',
+										name,
+									],
+									value
+								),
+								fragmentEntryLinkId: item.fragmentEntryLinkId,
+							})
+						);
+					}}
+					value={editableValue.config.lazyLoading}
+				/>
+			)}
+
 			{selectedViewportSize === VIEWPORT_SIZES.desktop &&
 				type === EDITABLE_TYPES.image && (
 					<ImageSelectorDescription
@@ -389,12 +396,15 @@ function ImagePanelSizeSelector({item}) {
 	};
 
 	return editableContent?.fileEntryId ||
-		isMappedToInfoItem(editableContent) ||
-		isMappedToCollection(editableContent) ? (
+		isMappedToInfoItem(editableValue) ||
+		isMappedToCollection(editableValue) ? (
 		<ImageSelectorSize
-			fieldValue={editableContent}
+			fieldValue={editableContent || editableValue}
 			getEditableElement={getEditableElement}
 			imageSizeId={imageSizeId}
+			imageSizeLimit={
+				editableConfig.lazyLoading ? null : STANDARD_IMAGE_SIZE_LIMIT
+			}
 			onImageSizeIdChanged={
 				item.type === EDITABLE_TYPES.image
 					? handleImageSizeChanged

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import React, {ReactNode} from 'react';
+import React, {FocusEvent, ReactNode} from 'react';
 import './index.scss';
 export interface CustomItem<T = string> {
 	checked?: boolean;
@@ -25,12 +25,15 @@ export interface SelectProps {
 	feedbackMessage?: string;
 	id?: string;
 	label?: string;
+	onBlur?: (event: FocusEvent<HTMLInputElement>) => void;
 	placeholder?: string;
+	readonly?: boolean;
 	required?: boolean;
 	value?: string;
 }
-interface IProps extends SelectProps {
+interface BaseSelectProps extends SelectProps {
 	children: ReactNode;
+	contentRight?: ReactNode;
 	dropdownActive: boolean;
 	setDropdownActive: React.Dispatch<React.SetStateAction<boolean>>;
 	trigger?: JSX.Element;
@@ -38,17 +41,20 @@ interface IProps extends SelectProps {
 export declare function BaseSelect({
 	children,
 	className,
+	contentRight,
 	disabled,
 	dropdownActive,
 	error,
 	feedbackMessage,
 	id,
 	label,
+	onBlur,
 	placeholder,
+	readonly,
 	required,
 	setDropdownActive,
 	trigger,
 	value,
 	...restProps
-}: IProps): JSX.Element;
+}: BaseSelectProps): JSX.Element;
 export {};

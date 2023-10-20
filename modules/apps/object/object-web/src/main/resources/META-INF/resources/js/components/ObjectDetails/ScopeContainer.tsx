@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayPanel from '@clayui/panel';
 import {
 	AutoComplete,
 	FormError,
@@ -13,8 +12,6 @@ import {
 import React, {useEffect, useMemo, useState} from 'react';
 
 import {KeyValuePair} from './EditObjectDetails';
-
-import './ObjectDetails.scss';
 
 const SCOPE_OPTIONS = [
 	{
@@ -28,22 +25,28 @@ const SCOPE_OPTIONS = [
 ];
 
 interface ScopeContainerProps {
-	companyKeyValuePair: KeyValuePair[];
+	companyKeyValuePairs: KeyValuePair[];
 	errors: FormError<ObjectDefinition>;
 	hasUpdateObjectDefinitionPermission: boolean;
 	isApproved: boolean;
+	isLinkedObjectDefinition?: boolean;
+	isRootDescendantNode: boolean;
+	onSubmit?: (editedObjectDefinition?: Partial<ObjectDefinition>) => void;
 	setValues: (values: Partial<ObjectDefinition>) => void;
-	siteKeyValuePair: KeyValuePair[];
+	siteKeyValuePairs: KeyValuePair[];
 	values: Partial<ObjectDefinition>;
 }
 
 export function ScopeContainer({
-	companyKeyValuePair,
+	companyKeyValuePairs,
 	errors,
 	hasUpdateObjectDefinitionPermission,
 	isApproved,
+	isLinkedObjectDefinition,
+	isRootDescendantNode,
+	onSubmit,
 	setValues,
-	siteKeyValuePair,
+	siteKeyValuePairs,
 	values,
 }: ScopeContainerProps) {
 	const [panelCategoryKeyQuery, setPanelCategoryKeyQuery] = useState('');
@@ -56,8 +59,8 @@ export function ScopeContainer({
 		return filterArrayByQuery({
 			array:
 				values.scope === 'company'
-					? companyKeyValuePair
-					: siteKeyValuePair,
+					? companyKeyValuePairs
+					: siteKeyValuePairs,
 			creationLanguageId: values.defaultLanguageId,
 			query: panelCategoryKeyQuery,
 			str: 'value',
@@ -65,8 +68,8 @@ export function ScopeContainer({
 	}, [
 		values.defaultLanguageId,
 		values.scope,
-		companyKeyValuePair,
-		siteKeyValuePair,
+		companyKeyValuePairs,
+		siteKeyValuePairs,
 		panelCategoryKeyQuery,
 	]);
 
@@ -85,75 +88,89 @@ export function ScopeContainer({
 
 	useEffect(() => {
 		setPanelCategoryKey(
-			values.scope === 'company' ? companyKeyValuePair : siteKeyValuePair,
+			values.scope === 'company'
+				? companyKeyValuePairs
+				: siteKeyValuePairs,
 			values.panelCategoryKey as string
 		);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [values.scope, companyKeyValuePair, siteKeyValuePair]);
+	}, [values.scope, companyKeyValuePairs, siteKeyValuePairs]);
 
 	return (
-		<ClayPanel
-			collapsable
-			defaultExpanded
-			displayTitle={Liferay.Language.get('scope')}
-			displayType="unstyled"
-		>
-			<ClayPanel.Body>
-				<SingleSelect<LabelValueObject>
-					disabled={
-						isApproved ||
-						!hasUpdateObjectDefinitionPermission ||
-						values.storageType === 'salesforce'
-					}
-					error={errors.titleObjectFieldId}
-					label={Liferay.Language.get('scope')}
-					onChange={({value}) => {
-						setValues({
+		<>
+			<SingleSelect<LabelValueObject>
+				disabled={
+					isApproved ||
+					!hasUpdateObjectDefinitionPermission ||
+					values.storageType === 'salesforce' ||
+					isRootDescendantNode ||
+					isLinkedObjectDefinition
+				}
+				error={errors.titleObjectFieldId}
+				label={Liferay.Language.get('scope')}
+				onChange={({value}) => {
+					setValues({
+						panelCategoryKey: '',
+						scope: value,
+					});
+
+					if (onSubmit) {
+						onSubmit({
+							...values,
 							panelCategoryKey: '',
 							scope: value,
 						});
-						setSelectedPanelCategoryKey('');
-					}}
-					options={SCOPE_OPTIONS}
-					value={
-						SCOPE_OPTIONS.find(
-							(scopeOption) => scopeOption.value === values.scope
-						)?.label
 					}
-				/>
 
-				<AutoComplete<KeyValuePair>
-					disabled={
-						(Liferay.FeatureFlags['LPS-167253']
-							? !values.modifiable && values.system
-							: values.system) ||
-						!hasUpdateObjectDefinitionPermission
-					}
-					emptyStateMessage={Liferay.Language.get(
-						'no-options-were-found'
-					)}
-					error={errors.titleObjectFieldId}
-					items={filteredPanelCategoryKey}
-					label={Liferay.Language.get('panel-category-key')}
-					onActive={(item) => selectedPanelCategoryKey === item.value}
-					onChangeQuery={setPanelCategoryKeyQuery}
-					onSelectItem={({key, value}: KeyValuePair) => {
-						setValues({
+					setSelectedPanelCategoryKey('');
+				}}
+				options={SCOPE_OPTIONS}
+				value={
+					SCOPE_OPTIONS.find(
+						(scopeOption) => scopeOption.value === values.scope
+					)?.label
+				}
+			/>
+
+			<AutoComplete<KeyValuePair>
+				disabled={
+					(!values.modifiable && values.system) ||
+					!hasUpdateObjectDefinitionPermission ||
+					isRootDescendantNode ||
+					isLinkedObjectDefinition
+				}
+				emptyStateMessage={Liferay.Language.get(
+					'no-options-were-found'
+				)}
+				error={errors.titleObjectFieldId}
+				id="objectDetailsScopeContainer"
+				items={filteredPanelCategoryKey}
+				label={Liferay.Language.get('panel-link')}
+				onActive={(item) => selectedPanelCategoryKey === item.value}
+				onChangeQuery={setPanelCategoryKeyQuery}
+				onSelectItem={({key, value}: KeyValuePair) => {
+					setValues({
+						panelCategoryKey: key,
+					});
+
+					if (onSubmit) {
+						onSubmit({
+							...values,
 							panelCategoryKey: key,
 						});
+					}
 
-						setSelectedPanelCategoryKey(value);
-					}}
-					query={panelCategoryKeyQuery}
-					value={selectedPanelCategoryKey}
-				>
-					{({value}) => (
-						<div className="d-flex justify-content-between">
-							<div>{value}</div>
-						</div>
-					)}
-				</AutoComplete>
-			</ClayPanel.Body>
-		</ClayPanel>
+					setSelectedPanelCategoryKey(value);
+				}}
+				query={panelCategoryKeyQuery}
+				value={selectedPanelCategoryKey}
+			>
+				{({value}) => (
+					<div className="d-flex justify-content-between">
+						<div>{value}</div>
+					</div>
+				)}
+			</AutoComplete>
+		</>
 	);
 }

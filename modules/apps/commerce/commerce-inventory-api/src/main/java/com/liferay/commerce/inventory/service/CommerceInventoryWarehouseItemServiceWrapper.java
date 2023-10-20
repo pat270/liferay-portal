@@ -34,7 +34,8 @@ public class CommerceInventoryWarehouseItemServiceWrapper
 	public com.liferay.commerce.inventory.model.CommerceInventoryWarehouseItem
 			addCommerceInventoryWarehouseItem(
 				String externalReferenceCode, long commerceInventoryWarehouseId,
-				int quantity, String sku, String unitOfMeasureKey)
+				java.math.BigDecimal quantity, String sku,
+				String unitOfMeasureKey)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _commerceInventoryWarehouseItemService.
@@ -47,7 +48,8 @@ public class CommerceInventoryWarehouseItemServiceWrapper
 	public com.liferay.commerce.inventory.model.CommerceInventoryWarehouseItem
 			addOrUpdateCommerceInventoryWarehouseItem(
 				String externalReferenceCode, long companyId,
-				long commerceInventoryWarehouseId, int quantity, String sku,
+				long commerceInventoryWarehouseId,
+				java.math.BigDecimal quantity, String sku,
 				String unitOfMeasureKey)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -69,22 +71,24 @@ public class CommerceInventoryWarehouseItemServiceWrapper
 
 	@Override
 	public void deleteCommerceInventoryWarehouseItems(
-			long companyId, String sku)
+			long companyId, String sku, String unitOfMeasureKey)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		_commerceInventoryWarehouseItemService.
-			deleteCommerceInventoryWarehouseItems(companyId, sku);
+			deleteCommerceInventoryWarehouseItems(
+				companyId, sku, unitOfMeasureKey);
 	}
 
 	@Override
 	public com.liferay.commerce.inventory.model.CommerceInventoryWarehouseItem
 			fetchCommerceInventoryWarehouseItem(
-				long commerceInventoryWarehouseId, String sku)
+				long commerceInventoryWarehouseId, String sku,
+				String unitOfMeasureKey)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _commerceInventoryWarehouseItemService.
 			fetchCommerceInventoryWarehouseItem(
-				commerceInventoryWarehouseId, sku);
+				commerceInventoryWarehouseId, sku, unitOfMeasureKey);
 	}
 
 	@Override
@@ -111,12 +115,13 @@ public class CommerceInventoryWarehouseItemServiceWrapper
 	@Override
 	public com.liferay.commerce.inventory.model.CommerceInventoryWarehouseItem
 			getCommerceInventoryWarehouseItem(
-				long commerceInventoryWarehouseId, String sku)
+				long commerceInventoryWarehouseId, String sku,
+				String unitOfMeasureKey)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _commerceInventoryWarehouseItemService.
 			getCommerceInventoryWarehouseItem(
-				commerceInventoryWarehouseId, sku);
+				commerceInventoryWarehouseId, sku, unitOfMeasureKey);
 	}
 
 	@Override
@@ -146,13 +151,14 @@ public class CommerceInventoryWarehouseItemServiceWrapper
 	@Override
 	public java.util.List
 		<com.liferay.commerce.inventory.model.CommerceInventoryWarehouseItem>
-				getCommerceInventoryWarehouseItemsByCompanyIdAndSku(
-					long companyId, String sku, int start, int end)
+				getCommerceInventoryWarehouseItemsByCompanyIdSkuAndUnitOfMeasureKey(
+					long companyId, String sku, String unitOfMeasureKey,
+					int start, int end)
 			throws com.liferay.portal.kernel.security.auth.PrincipalException {
 
 		return _commerceInventoryWarehouseItemService.
-			getCommerceInventoryWarehouseItemsByCompanyIdAndSku(
-				companyId, sku, start, end);
+			getCommerceInventoryWarehouseItemsByCompanyIdSkuAndUnitOfMeasureKey(
+				companyId, sku, unitOfMeasureKey, start, end);
 	}
 
 	@Override
@@ -167,20 +173,22 @@ public class CommerceInventoryWarehouseItemServiceWrapper
 
 	@Override
 	public int getCommerceInventoryWarehouseItemsCount(
-			long companyId, long groupId, String sku)
+			long companyId, long groupId, String sku, String unitOfMeasureKey)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _commerceInventoryWarehouseItemService.
-			getCommerceInventoryWarehouseItemsCount(companyId, groupId, sku);
+			getCommerceInventoryWarehouseItemsCount(
+				companyId, groupId, sku, unitOfMeasureKey);
 	}
 
 	@Override
 	public int getCommerceInventoryWarehouseItemsCount(
-			long companyId, String sku)
+			long companyId, String sku, String unitOfMeasureKey)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _commerceInventoryWarehouseItemService.
-			getCommerceInventoryWarehouseItemsCount(companyId, sku);
+			getCommerceInventoryWarehouseItemsCount(
+				companyId, sku, unitOfMeasureKey);
 	}
 
 	@Override
@@ -227,21 +235,26 @@ public class CommerceInventoryWarehouseItemServiceWrapper
 	}
 
 	@Override
-	public int getStockQuantity(long companyId, long groupId, String sku) {
+	public java.math.BigDecimal getStockQuantity(
+		long companyId, long groupId, String sku, String unitOfMeasureKey) {
+
 		return _commerceInventoryWarehouseItemService.getStockQuantity(
-			companyId, groupId, sku);
+			companyId, groupId, sku, unitOfMeasureKey);
 	}
 
 	@Override
-	public int getStockQuantity(long companyId, String sku) {
+	public java.math.BigDecimal getStockQuantity(
+		long companyId, String sku, String unitOfMeasureKey) {
+
 		return _commerceInventoryWarehouseItemService.getStockQuantity(
-			companyId, sku);
+			companyId, sku, unitOfMeasureKey);
 	}
 
 	@Override
 	public com.liferay.commerce.inventory.model.CommerceInventoryWarehouseItem
 			increaseCommerceInventoryWarehouseItemQuantity(
-				long commerceInventoryWarehouseItemId, int quantity)
+				long commerceInventoryWarehouseItemId,
+				java.math.BigDecimal quantity)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _commerceInventoryWarehouseItemService.
@@ -252,19 +265,21 @@ public class CommerceInventoryWarehouseItemServiceWrapper
 	@Override
 	public void moveQuantitiesBetweenWarehouses(
 			long fromCommerceInventoryWarehouseId,
-			long toCommerceInventoryWarehouseId, int quantity, String sku)
+			long toCommerceInventoryWarehouseId, java.math.BigDecimal quantity,
+			String sku, String unitOfMeasureKey)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		_commerceInventoryWarehouseItemService.moveQuantitiesBetweenWarehouses(
 			fromCommerceInventoryWarehouseId, toCommerceInventoryWarehouseId,
-			quantity, sku);
+			quantity, sku, unitOfMeasureKey);
 	}
 
 	@Override
 	public com.liferay.commerce.inventory.model.CommerceInventoryWarehouseItem
 			updateCommerceInventoryWarehouseItem(
-				long commerceInventoryWarehouseItemId, int quantity,
-				int reservedQuantity, long mvccVersion)
+				long commerceInventoryWarehouseItemId,
+				java.math.BigDecimal quantity,
+				java.math.BigDecimal reservedQuantity, long mvccVersion)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _commerceInventoryWarehouseItemService.
@@ -276,13 +291,14 @@ public class CommerceInventoryWarehouseItemServiceWrapper
 	@Override
 	public com.liferay.commerce.inventory.model.CommerceInventoryWarehouseItem
 			updateCommerceInventoryWarehouseItem(
-				long commerceInventoryWarehouseItemId, int quantity,
-				long mvccVersion)
+				long commerceInventoryWarehouseItemId, long mvccVersion,
+				java.math.BigDecimal quantity, String unitOfMeasureKey)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _commerceInventoryWarehouseItemService.
 			updateCommerceInventoryWarehouseItem(
-				commerceInventoryWarehouseItemId, quantity, mvccVersion);
+				commerceInventoryWarehouseItemId, mvccVersion, quantity,
+				unitOfMeasureKey);
 	}
 
 	@Override

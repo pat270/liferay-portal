@@ -17,6 +17,7 @@ export default function ChangeTrackingCollectionEditView({
 	ctCollectionId,
 	ctCollectionTemplates,
 	ctCollectionTemplatesData,
+	ctRemoteId,
 	defaultCTCollectionTemplateId,
 	descriptionFieldMaxLength,
 	inviteUsersURL,
@@ -52,8 +53,11 @@ export default function ChangeTrackingCollectionEditView({
 	const handleSubmit = (event) => {
 		event.preventDefault();
 
+		setSaveButtonDisabled(true);
+
 		const bodyContent = objectToFormData({
 			[`${namespace}ctCollectionId`]: ctCollectionId,
+			[`${namespace}ctRemoteId`]: ctRemoteId,
 			[`${namespace}name`]: nameField,
 			[`${namespace}description`]: descriptionField,
 			[`${namespace}publishTime`]: publishTimeField,
@@ -115,6 +119,9 @@ export default function ChangeTrackingCollectionEditView({
 					else {
 						navigate(redirect);
 					}
+				}
+				else {
+					setSaveButtonDisabled(false);
 				}
 			})
 			.catch((error) => {

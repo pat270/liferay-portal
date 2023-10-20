@@ -17,6 +17,8 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.Repository;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
@@ -26,6 +28,8 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionUtil;
+import com.liferay.portal.kernel.service.GroupServiceUtil;
+import com.liferay.portal.kernel.service.RepositoryLocalServiceUtil;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HashMapBuilder;
@@ -231,13 +235,23 @@ public class DLSelectFolderDisplayContext {
 				return getFolderName();
 			}
 		).put(
-			"repositoryid",
+			"repositoryid", getRepositoryId()
+		).put(
+			"repositoryname",
 			() -> {
-				if (folder != null) {
-					return folder.getRepositoryId();
+				if ((folder == null) ||
+					(getRepositoryId() == folder.getGroupId())) {
+
+					Group group = GroupServiceUtil.getGroup(getRepositoryId());
+
+					return group.getDescriptiveName(_themeDisplay.getLocale());
 				}
 
-				return getRepositoryId();
+				Repository repository =
+					RepositoryLocalServiceUtil.fetchRepository(
+						getRepositoryId());
+
+				return repository.getName();
 			}
 		).build();
 	}

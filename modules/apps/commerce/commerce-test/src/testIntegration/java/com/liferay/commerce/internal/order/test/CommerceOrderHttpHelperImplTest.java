@@ -26,6 +26,7 @@ import com.liferay.commerce.test.util.CommerceInventoryTestUtil;
 import com.liferay.commerce.test.util.CommerceTestUtil;
 import com.liferay.commerce.test.util.context.TestCommerceContext;
 import com.liferay.petra.lang.CentralizedThreadLocal;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
@@ -40,11 +41,14 @@ import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.BigDecimalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.portal.theme.ThemeDisplayFactory;
+
+import java.math.BigDecimal;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,14 +94,14 @@ public class CommerceOrderHttpHelperImplTest {
 
 		List<CommerceInventoryBookedQuantity>
 			commerceInventoryBookedQuantities =
-				_commerceBookedQuantityLocalService.
+				_commerceInventoryBookedQuantityLocalService.
 					getCommerceInventoryBookedQuantities(
 						QueryUtil.ALL_POS, QueryUtil.ALL_POS);
 
 		for (CommerceInventoryBookedQuantity commerceInventoryBookedQuantity :
 				commerceInventoryBookedQuantities) {
 
-			_commerceBookedQuantityLocalService.
+			_commerceInventoryBookedQuantityLocalService.
 				deleteCommerceInventoryBookedQuantity(
 					commerceInventoryBookedQuantity);
 		}
@@ -206,18 +210,19 @@ public class CommerceOrderHttpHelperImplTest {
 			_commerceChannel.getCommerceChannelId());
 
 		CommerceInventoryTestUtil.addCommerceInventoryWarehouseItem(
-			_user.getUserId(), _commerceInventoryWarehouse, cpInstance.getSku(),
-			10);
+			_user.getUserId(), _commerceInventoryWarehouse, BigDecimal.TEN,
+			cpInstance.getSku(), StringPool.BLANK);
 
 		CommerceOrderItem commerceOrderItem =
 			CommerceTestUtil.addCommerceOrderItem(
 				commerceOrder.getCommerceOrderId(),
-				cpInstance.getCPInstanceId(), 2);
+				cpInstance.getCPInstanceId(), BigDecimal.valueOf(2));
 
-		Assert.assertEquals(
-			commerceOrderItem.getQuantity(),
-			_commerceOrderHttpHelper.getCommerceOrderItemsQuantity(
-				_httpServletRequest));
+		Assert.assertTrue(
+			BigDecimalUtil.eq(
+				commerceOrderItem.getQuantity(),
+				_commerceOrderHttpHelper.getCommerceOrderItemsQuantity(
+					_httpServletRequest)));
 	}
 
 	@Rule
@@ -228,15 +233,15 @@ public class CommerceOrderHttpHelperImplTest {
 	@DeleteAfterTestRun
 	private AccountEntry _accountEntry;
 
-	@Inject
-	private CommerceInventoryBookedQuantityLocalService
-		_commerceBookedQuantityLocalService;
-
 	@DeleteAfterTestRun
 	private CommerceChannel _commerceChannel;
 
 	@DeleteAfterTestRun
 	private CommerceCurrency _commerceCurrency;
+
+	@Inject
+	private CommerceInventoryBookedQuantityLocalService
+		_commerceInventoryBookedQuantityLocalService;
 
 	@DeleteAfterTestRun
 	private CommerceInventoryWarehouse _commerceInventoryWarehouse;

@@ -7,17 +7,16 @@ import ClayButton from '@clayui/button';
 import ClayForm, {ClayInput} from '@clayui/form';
 import ClayLink from '@clayui/link';
 import ClayModal from '@clayui/modal';
-import {
-	FrontendDataSet,
-	InternalRenderer,
-} from '@liferay/frontend-data-set-web';
+import {FrontendDataSet} from '@liferay/frontend-data-set-web';
 import classNames from 'classnames';
-import {fetch, navigate, openModal, openToast} from 'frontend-js-web';
+import {IInternalRenderer, fetch, navigate, openModal} from 'frontend-js-web';
 import React, {useRef, useState} from 'react';
 
 import {API_URL, FDS_DEFAULT_PROPS, OBJECT_RELATIONSHIP} from './Constants';
 import {FDSEntryType} from './FDSEntries';
 import RequiredMark from './components/RequiredMark';
+import openDefaultFailureToast from './utils/openDefaultFailureToast';
+import openDefaultSuccessToast from './utils/openDefaultSuccessToast';
 
 const LIST_OF_ITEMS_PER_PAGE = '4, 8, 20, 40, 60';
 const DEFAULT_ITEMS_PER_PAGE = 20;
@@ -72,28 +71,25 @@ const AddFDSViewModalContent = ({
 			method: 'POST',
 		});
 
+		if (!response.ok) {
+			openDefaultFailureToast();
+
+			return;
+		}
+
 		const fdsView = await response.json();
 
 		if (fdsView?.id) {
 			closeModal();
 
-			openToast({
-				message: Liferay.Language.get(
-					'your-request-completed-successfully'
-				),
-				type: 'success',
-			});
+			openDefaultSuccessToast();
 
 			loadData();
 		}
 		else {
 			setSaveButtonDisabled(false);
-			openToast({
-				message: Liferay.Language.get(
-					'your-request-failed-to-complete'
-				),
-				type: 'danger',
-			});
+
+			openDefaultFailureToast();
 		}
 	};
 
@@ -204,7 +200,7 @@ const FDSViews = ({
 	fdsViewURL,
 	namespace,
 }: IFDSViewsInterface) => {
-	const getViewURL = (itemData: FDSViewType) => {
+	const getEditURL = (itemData: FDSViewType) => {
 		const url = new URL(fdsViewURL);
 
 		url.searchParams.set(`${namespace}fdsEntryId`, fdsEntryId);
@@ -215,8 +211,8 @@ const FDSViews = ({
 		return url;
 	};
 
-	const onViewClick = ({itemData}: {itemData: FDSViewType}) => {
-		navigate(getViewURL(itemData));
+	const onEditClick = ({itemData}: {itemData: FDSViewType}) => {
+		navigate(getEditURL(itemData));
 	};
 
 	const onDeleteClick = ({
@@ -247,23 +243,11 @@ const FDSViews = ({
 							method: 'DELETE',
 						})
 							.then(() => {
-								openToast({
-									message: Liferay.Language.get(
-										'your-request-completed-successfully'
-									),
-									type: 'success',
-								});
+								openDefaultSuccessToast();
 
 								loadData();
 							})
-							.catch(() =>
-								openToast({
-									message: Liferay.Language.get(
-										'your-request-failed-to-complete'
-									),
-									type: 'danger',
-								})
-							);
+							.catch(openDefaultFailureToast);
 					},
 				},
 			],
@@ -299,7 +283,7 @@ const FDSViews = ({
 	const TitleRenderer = ({itemData}: {itemData: FDSViewType}) => {
 		return (
 			<div className="table-list-title">
-				<ClayLink href={getViewURL(itemData).toString()}>
+				<ClayLink href={getEditURL(itemData).toString()}>
 					{itemData.label}
 				</ClayLink>
 			</div>
@@ -319,7 +303,7 @@ const FDSViews = ({
 					label: Liferay.Language.get('title'),
 					name: 'title',
 					type: 'internal',
-				} as InternalRenderer,
+				} as IInternalRenderer,
 			},
 		},
 	];
@@ -336,12 +320,19 @@ const FDSViews = ({
 				image: '/states/empty_state.gif',
 				title: Liferay.Language.get('no-views-created'),
 			}}
+			header={{
+				title: Liferay.Language.get('views'),
+			}}
 			id={`${namespace}FDSViews`}
 			itemsActions={[
 				{
-					icon: 'view',
-					label: Liferay.Language.get('view'),
-					onClick: onViewClick,
+					icon: 'pencil',
+					label: Liferay.Language.get('edit'),
+					onClick: onEditClick,
+				},
+				{
+					separator: true,
+					type: 'group',
 				},
 				{
 					icon: 'trash',
@@ -349,6 +340,7 @@ const FDSViews = ({
 					onClick: onDeleteClick,
 				},
 			]}
+			sorts={[{direction: 'desc', key: 'dateModified'}]}
 			views={views}
 		/>
 	);

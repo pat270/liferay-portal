@@ -226,6 +226,14 @@ public class ObjectEntryDTOConverter
 										objectDefinition.
 											getTitleObjectFieldId());
 
+								if (objectField == null) {
+									objectField =
+										_objectFieldLocalService.getObjectField(
+											objectDefinition.
+												getObjectDefinitionId(),
+											"id");
+								}
+
 								values.put(
 									objectField.getName(),
 									ObjectEntryValuesUtil.getTitleFieldValue(
@@ -528,15 +536,6 @@ public class ObjectEntryDTOConverter
 				dateModified = objectEntry.getModifiedDate();
 				externalReferenceCode = objectEntry.getExternalReferenceCode();
 				id = objectEntry.getObjectEntryId();
-
-				if (objectDefinition.isEnableCategorization()) {
-					keywords = ListUtil.toArray(
-						_assetTagLocalService.getTags(
-							objectDefinition.getClassName(),
-							objectEntry.getObjectEntryId()),
-						AssetTag.NAME_ACCESSOR);
-				}
-
 				properties = _toProperties(
 					dtoConverterContext, objectDefinition, objectEntry);
 				scopeKey = _getScopeKey(objectDefinition, objectEntry);
@@ -553,6 +552,18 @@ public class ObjectEntryDTOConverter
 					}
 				};
 
+				setKeywords(
+					() -> {
+						if (!objectDefinition.isEnableCategorization()) {
+							return null;
+						}
+
+						return ListUtil.toArray(
+							_assetTagLocalService.getTags(
+								objectDefinition.getClassName(),
+								objectEntry.getObjectEntryId()),
+							AssetTag.NAME_ACCESSOR);
+					});
 				setTaxonomyCategoryBriefs(
 					() -> {
 						if (!objectDefinition.isEnableCategorization()) {
@@ -616,12 +627,14 @@ public class ObjectEntryDTOConverter
 
 		List<ObjectField> objectFields =
 			_objectFieldLocalService.getObjectFields(
-				objectDefinition.getObjectDefinitionId(), false);
+				objectDefinition.getObjectDefinitionId());
 
 		for (ObjectField objectField : objectFields) {
-			if (FeatureFlagManagerUtil.isEnabled("LPS-172017") &&
-				objectField.isLocalized()) {
+			if (objectField.isMetadata()) {
+				continue;
+			}
 
+			if (objectField.isLocalized()) {
 				map.put(
 					objectField.getI18nObjectFieldName(),
 					values.get(objectField.getI18nObjectFieldName()));

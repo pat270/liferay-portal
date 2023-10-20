@@ -12,15 +12,16 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.bean.BeanLocatorImpl;
 import com.liferay.portal.dao.init.DBInitUtil;
+import com.liferay.portal.db.partition.DBPartitionUtil;
 import com.liferay.portal.deploy.hot.CustomJspBagRegistryUtil;
 import com.liferay.portal.deploy.hot.ServiceWrapperRegistry;
 import com.liferay.portal.events.StartupHelperUtil;
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 import com.liferay.portal.kernel.cache.thread.local.ThreadLocalCacheManager;
 import com.liferay.portal.kernel.concurrent.SystemExecutorServiceUtil;
-import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.db.DBType;
+import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.deploy.hot.HotDeployUtil;
 import com.liferay.portal.kernel.exception.LoggedExceptionInInitializerError;
 import com.liferay.portal.kernel.log.Log;
@@ -66,9 +67,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import java.util.Enumeration;
 import java.util.List;
@@ -138,6 +141,17 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 		}
 		catch (Exception exception) {
 			_log.error(exception);
+		}
+
+		if (DBManagerUtil.getDBType() == DBType.HYPERSONIC) {
+			try (Connection connection = DataAccess.getConnection();
+				Statement statement = connection.createStatement()) {
+
+				statement.executeUpdate("SHUTDOWN");
+			}
+			catch (Exception exception) {
+				_log.error(exception);
+			}
 		}
 
 		closeDataSource("liferayDataSource");
@@ -347,7 +361,13 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 				_log.debug("Check class names");
 			}
 
-			ClassNameLocalServiceUtil.checkClassNames();
+			try {
+				DBPartitionUtil.forEachCompanyId(
+					companyId -> ClassNameLocalServiceUtil.checkClassNames());
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
 		}
 
 		ModuleFrameworkUtil.registerContext(applicationContext);
@@ -440,9 +460,7 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 			}
 		}
 
-		DB db = DBManagerUtil.getDB();
-
-		DBType dbType = db.getDBType();
+		DBType dbType = DBManagerUtil.getDBType();
 
 		if (dbType == DBType.MYSQL) {
 			try {

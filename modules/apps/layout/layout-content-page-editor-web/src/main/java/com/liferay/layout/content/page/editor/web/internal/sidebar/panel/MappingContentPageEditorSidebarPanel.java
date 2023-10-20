@@ -26,7 +26,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Eudaldo Alonso
  */
 @Component(
-	property = "service.ranking:Integer=400",
+	property = "service.ranking:Integer=300",
 	service = ContentPageEditorSidebarPanel.class
 )
 public class MappingContentPageEditorSidebarPanel
@@ -55,7 +55,7 @@ public class MappingContentPageEditorSidebarPanel
 
 		if ((layout == null) ||
 			((layoutType !=
-				LayoutPageTemplateEntryTypeConstants.TYPE_DISPLAY_PAGE) &&
+				LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE) &&
 			 !Objects.equals(
 				 layout.getType(), LayoutConstants.TYPE_COLLECTION))) {
 

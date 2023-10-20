@@ -5,6 +5,7 @@
 
 package com.liferay.change.tracking.internal.upgrade.registry;
 
+import com.liferay.change.tracking.internal.upgrade.v2_10_0.CTCollectionUpgradeProcess;
 import com.liferay.change.tracking.internal.upgrade.v2_3_0.UpgradeCompanyId;
 import com.liferay.change.tracking.internal.upgrade.v2_4_0.CTSchemaVersionUpgradeProcess;
 import com.liferay.change.tracking.internal.upgrade.v2_7_0.CTProcessUpgradeProcess;
@@ -87,6 +88,37 @@ public class ChangeTrackingServiceUpgradeStepRegistrator
 				@Override
 				protected String[][] getTableAndPrimaryKeyColumnNames() {
 					return new String[][] {{"CTCollection", "ctCollectionId"}};
+				}
+
+			});
+
+		registry.register("2.9.1", "2.10.0", new CTCollectionUpgradeProcess());
+
+		registry.register(
+			"2.10.0", "2.11.0",
+			UpgradeProcessFactory.addColumns("CTCollection", "ctRemoteId LONG"),
+			UpgradeProcessFactory.addColumns(
+				"CTRemote", "clientId VARCHAR(75)",
+				"clientSecret VARCHAR(75)"));
+
+		registry.register(
+			"2.11.0", "2.12.0",
+			new BaseUuidUpgradeProcess() {
+
+				@Override
+				protected String[][] getTableAndPrimaryKeyColumnNames() {
+					return new String[][] {{"CTEntry", "ctEntryId"}};
+				}
+
+			});
+
+		registry.register(
+			"2.12.0", "2.12.1",
+			new BaseExternalReferenceCodeUpgradeProcess() {
+
+				@Override
+				protected String[][] getTableAndPrimaryKeyColumnNames() {
+					return new String[][] {{"CTEntry", "ctEntryId"}};
 				}
 
 			});

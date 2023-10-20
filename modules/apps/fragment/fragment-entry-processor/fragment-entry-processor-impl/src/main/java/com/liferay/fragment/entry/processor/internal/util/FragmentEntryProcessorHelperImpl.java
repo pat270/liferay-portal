@@ -26,6 +26,7 @@ import com.liferay.info.localized.InfoLocalizedValue;
 import com.liferay.info.search.InfoSearchClassMapperRegistry;
 import com.liferay.info.type.Labeled;
 import com.liferay.info.type.WebImage;
+import com.liferay.info.type.WebURL;
 import com.liferay.layout.display.page.LayoutDisplayPageObjectProvider;
 import com.liferay.layout.display.page.constants.LayoutDisplayPageWebKeys;
 import com.liferay.petra.string.StringPool;
@@ -88,7 +89,7 @@ public class FragmentEntryProcessorHelperImpl
 	@Override
 	public Object getFieldValue(
 			JSONObject editableValueJSONObject,
-			Map<Long, InfoItemFieldValues> infoDisplaysFieldValues,
+			Map<InfoItemReference, InfoItemFieldValues> infoDisplaysFieldValues,
 			FragmentEntryProcessorContext fragmentEntryProcessorContext)
 		throws PortalException {
 
@@ -99,15 +100,13 @@ public class FragmentEntryProcessorHelperImpl
 			return null;
 		}
 
-		long classPK = 0;
-		String className = StringPool.BLANK;
 		String fieldName = StringPool.BLANK;
+		InfoItemReference infoItemReference = null;
 		Object object = null;
 
 		if (isMapped(editableValueJSONObject)) {
-			className = _portal.getClassName(
+			String className = _portal.getClassName(
 				editableValueJSONObject.getLong("classNameId"));
-			classPK = editableValueJSONObject.getLong("classPK");
 			String externalReferenceCode = editableValueJSONObject.getString(
 				"externalReferenceCode");
 
@@ -120,7 +119,8 @@ public class FragmentEntryProcessorHelperImpl
 					externalReferenceCode);
 			}
 			else {
-				infoItemIdentifier = new ClassPKInfoItemIdentifier(classPK);
+				infoItemIdentifier = new ClassPKInfoItemIdentifier(
+					editableValueJSONObject.getLong("classPK"));
 			}
 
 			if (fragmentEntryProcessorContext.getPreviewClassPK() > 0) {
@@ -135,29 +135,18 @@ public class FragmentEntryProcessorHelperImpl
 				}
 			}
 
-			object = _getInfoItem(className, infoItemIdentifier);
+			infoItemReference = new InfoItemReference(
+				className, infoItemIdentifier);
+
+			object = _getInfoItem(infoItemReference);
 		}
 		else if (isMappedCollection(editableValueJSONObject)) {
-			InfoItemReference infoItemReference =
+			infoItemReference =
 				fragmentEntryProcessorContext.getContextInfoItemReference();
 
 			if (infoItemReference == null) {
 				return null;
 			}
-
-			InfoItemIdentifier infoItemIdentifier =
-				infoItemReference.getInfoItemIdentifier();
-
-			if (!(infoItemIdentifier instanceof ClassPKInfoItemIdentifier)) {
-				return null;
-			}
-
-			ClassPKInfoItemIdentifier classPKInfoItemIdentifier =
-				(ClassPKInfoItemIdentifier)
-					infoItemReference.getInfoItemIdentifier();
-
-			className = infoItemReference.getClassName();
-			classPK = classPKInfoItemIdentifier.getClassPK();
 
 			fieldName = editableValueJSONObject.getString("collectionFieldId");
 
@@ -181,8 +170,23 @@ public class FragmentEntryProcessorHelperImpl
 				return null;
 			}
 
-			className = layoutDisplayPageObjectProvider.getClassName();
-			classPK = layoutDisplayPageObjectProvider.getClassPK();
+			InfoItemIdentifier infoItemIdentifier = null;
+
+			if (Validator.isNotNull(
+					layoutDisplayPageObjectProvider.
+						getExternalReferenceCode())) {
+
+				infoItemIdentifier = new ERCInfoItemIdentifier(
+					layoutDisplayPageObjectProvider.getExternalReferenceCode());
+			}
+			else {
+				infoItemIdentifier = new ClassPKInfoItemIdentifier(
+					layoutDisplayPageObjectProvider.getClassPK());
+			}
+
+			infoItemReference = new InfoItemReference(
+				layoutDisplayPageObjectProvider.getClassName(),
+				infoItemIdentifier);
 
 			fieldName = editableValueJSONObject.getString("mappedField");
 
@@ -190,27 +194,39 @@ public class FragmentEntryProcessorHelperImpl
 		}
 
 		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			className);
+			infoItemReference.getClassName());
 
-		if ((trashHandler != null) && trashHandler.isInTrash(classPK)) {
-			return null;
+		InfoItemIdentifier infoItemIdentifier =
+			infoItemReference.getInfoItemIdentifier();
+
+		if ((trashHandler != null) &&
+			(infoItemIdentifier instanceof ClassPKInfoItemIdentifier)) {
+
+			ClassPKInfoItemIdentifier classPKInfoItemIdentifier =
+				(ClassPKInfoItemIdentifier)infoItemIdentifier;
+
+			if (trashHandler.isInTrash(
+					classPKInfoItemIdentifier.getClassPK())) {
+
+				return null;
+			}
 		}
 
 		InfoItemFieldValuesProvider infoItemFieldValuesProvider =
-			_getInfoItemFieldValuesProvider(className);
+			_getInfoItemFieldValuesProvider(infoItemReference.getClassName());
 
 		if (infoItemFieldValuesProvider == null) {
 			return null;
 		}
 
 		InfoItemFieldValues infoItemFieldValues = infoDisplaysFieldValues.get(
-			classPK);
+			infoItemReference);
 
-		if (infoItemFieldValues == null) {
+		if ((object != null) && (infoItemFieldValues == null)) {
 			infoItemFieldValues =
 				infoItemFieldValuesProvider.getInfoItemFieldValues(object);
 
-			infoDisplaysFieldValues.put(classPK, infoItemFieldValues);
+			infoDisplaysFieldValues.put(infoItemReference, infoItemFieldValues);
 		}
 
 		return _getMappedInfoItemFieldValue(
@@ -458,21 +474,12 @@ public class FragmentEntryProcessorHelperImpl
 	}
 
 	private Object _getInfoItem(InfoItemReference infoItemReference) {
-		if (infoItemReference == null) {
-			return null;
-		}
-
-		return _getInfoItem(
-			infoItemReference.getClassName(),
-			infoItemReference.getInfoItemIdentifier());
-	}
-
-	private Object _getInfoItem(
-		String className, InfoItemIdentifier infoItemIdentifier) {
+		InfoItemIdentifier infoItemIdentifier =
+			infoItemReference.getInfoItemIdentifier();
 
 		InfoItemObjectProvider<Object> infoItemObjectProvider =
 			_infoItemServiceRegistry.getFirstInfoItemService(
-				InfoItemObjectProvider.class, className,
+				InfoItemObjectProvider.class, infoItemReference.getClassName(),
 				infoItemIdentifier.getInfoItemServiceFilter());
 
 		if (infoItemObjectProvider == null) {
@@ -542,6 +549,12 @@ public class FragmentEntryProcessorHelperImpl
 			}
 
 			return valueJSONObject;
+		}
+
+		if (value instanceof WebURL) {
+			WebURL webURL = (WebURL)value;
+
+			return webURL.toJSONObject();
 		}
 
 		if (value instanceof Collection) {

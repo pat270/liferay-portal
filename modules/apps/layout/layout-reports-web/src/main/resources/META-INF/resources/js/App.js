@@ -31,16 +31,6 @@ export default function App(props) {
 		layoutReportsPanelToggle
 	);
 
-	if (isPanelStateOpen) {
-		layoutReportsPanelToggle.setAttribute('aria-pressed', true);
-	}
-
-	const handleKeydownPanel = (event) => {
-		if (event.key === 'Escape') {
-			sidenavInstance.toggle();
-		}
-	};
-
 	useEffect(() => {
 		sidenavInstance.on('open.lexicon.sidenav', () => {
 			setSessionValue(
@@ -48,8 +38,6 @@ export default function App(props) {
 				'open'
 			);
 
-			layoutReportsPanelToggle.setAttribute('aria-pressed', true);
-			layoutReportsPanelId.focus();
 			setPanelIsOpen(true);
 		});
 
@@ -59,8 +47,6 @@ export default function App(props) {
 				'closed'
 			);
 
-			layoutReportsPanelToggle.setAttribute('aria-pressed', false);
-			layoutReportsPanelToggle.focus();
 			setPanelIsOpen(false);
 		});
 
@@ -69,14 +55,20 @@ export default function App(props) {
 		});
 	}, [layoutReportsPanelToggle, layoutReportsPanelId, sidenavInstance]);
 
-	const [eventTriggered, setEventTriggered] = useState(false);
+	useEffect(() => {
+		if (Liferay.FeatureFlags['LPS-187284']) {
+			if (panelIsOpen) {
+				Liferay.fire('PageAuditMenu:openPageAuditPanel');
+			}
+			else {
+				Liferay.fire('PageAuditMenu:closePageAuditPanel');
+			}
+		}
 
-	useEventListener(
-		'keydown',
-		handleKeydownPanel,
-		false,
-		layoutReportsPanelId
-	);
+		layoutReportsPanelToggle.setAttribute('aria-pressed', panelIsOpen);
+	}, [panelIsOpen, layoutReportsPanelToggle]);
+
+	const [eventTriggered, setEventTriggered] = useState(false);
 
 	useEventListener(
 		'mouseenter',
@@ -95,18 +87,17 @@ export default function App(props) {
 	return (
 		<ConstantsContextProvider constants={props}>
 			<StoreContextProvider>
-				<SidebarHeader />
+				{Liferay.FeatureFlags['LPS-187284'] ? (
+					<PageAudit panelIsOpen={panelIsOpen} />
+				) : (
+					<>
+						<SidebarHeader />
 
-				<SidebarBody>
-					{Liferay.FeatureFlags['LPS-187284'] ? (
-						<PageAudit
-							layoutReportsEventTriggered={eventTriggered}
-							panelIsOpen={panelIsOpen}
-						/>
-					) : (
-						<LayoutReports eventTriggered={eventTriggered} />
-					)}
-				</SidebarBody>
+						<SidebarBody>
+							<LayoutReports eventTriggered={eventTriggered} />
+						</SidebarBody>
+					</>
+				)}
 			</StoreContextProvider>
 		</ConstantsContextProvider>
 	);

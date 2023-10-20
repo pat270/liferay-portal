@@ -69,6 +69,9 @@ public class ObjectValidationRuleDTOConverter
 					serviceBuilderObjectValidationRule.getEngine());
 				errorLabel = LocalizedMapUtil.getLanguageIdMap(
 					serviceBuilderObjectValidationRule.getErrorLabelMap());
+				externalReferenceCode =
+					serviceBuilderObjectValidationRule.
+						getExternalReferenceCode();
 				id =
 					serviceBuilderObjectValidationRule.
 						getObjectValidationRuleId();
@@ -78,21 +81,20 @@ public class ObjectValidationRuleDTOConverter
 					objectDefinition.getExternalReferenceCode();
 				objectDefinitionId =
 					serviceBuilderObjectValidationRule.getObjectDefinitionId();
-
-				if (FeatureFlagManagerUtil.isEnabled("LPS-187846")) {
-					objectValidationRuleSettings =
-						TransformUtil.transformToArray(
-							serviceBuilderObjectValidationRule.
-								getObjectValidationRuleSettings(),
-							objectValidationRuleSetting ->
-								_toObjectValidationRuleSetting(
-									objectValidationRuleSetting),
-							ObjectValidationRuleSetting.class);
-					outputType = ObjectValidationRule.OutputType.create(
-						serviceBuilderObjectValidationRule.getOutputType());
-				}
-
 				script = serviceBuilderObjectValidationRule.getScript();
+				system = serviceBuilderObjectValidationRule.getSystem();
+
+				setObjectValidationRuleSettings(
+					() -> TransformUtil.transformToArray(
+						serviceBuilderObjectValidationRule.
+							getObjectValidationRuleSettings(),
+						objectValidationRuleSetting ->
+							_toObjectValidationRuleSetting(
+								objectValidationRuleSetting),
+						ObjectValidationRuleSetting.class));
+				setOutputType(
+					() -> ObjectValidationRule.OutputType.create(
+						serviceBuilderObjectValidationRule.getOutputType()));
 			}
 		};
 	}
@@ -109,21 +111,42 @@ public class ObjectValidationRuleDTOConverter
 			{
 				setName(
 					() -> {
-						if (objectValidationRuleSetting.compareName(
+						if (FeatureFlagManagerUtil.isEnabled("LPS-187854") &&
+							objectValidationRuleSetting.compareName(
 								ObjectValidationRuleSettingConstants.
-									NAME_OBJECT_FIELD_ID)) {
+									NAME_KEY_OBJECT_FIELD_ID)) {
 
 							return ObjectValidationRuleSettingConstants.
-								NAME_OBJECT_FIELD_EXTERNAL_REFERENCE_CODE;
+								NAME_KEY_OBJECT_FIELD_EXTERNAL_REFERENCE_CODE;
+						}
+
+						if (objectValidationRuleSetting.compareName(
+								ObjectValidationRuleSettingConstants.
+									NAME_OUTPUT_OBJECT_FIELD_ID)) {
+
+							return ObjectValidationRuleSettingConstants.
+								NAME_OUTPUT_OBJECT_FIELD_EXTERNAL_REFERENCE_CODE;
 						}
 
 						return objectValidationRuleSetting.getName();
 					});
 				setValue(
 					() -> {
-						if (!objectValidationRuleSetting.compareName(
+						if (FeatureFlagManagerUtil.isEnabled("LPS-187854") &&
+							!(objectValidationRuleSetting.compareName(
 								ObjectValidationRuleSettingConstants.
-									NAME_OBJECT_FIELD_ID)) {
+									NAME_KEY_OBJECT_FIELD_ID) ||
+							  objectValidationRuleSetting.compareName(
+								  ObjectValidationRuleSettingConstants.
+									  NAME_OUTPUT_OBJECT_FIELD_ID))) {
+
+							return objectValidationRuleSetting.getValue();
+						}
+
+						if (!(FeatureFlagManagerUtil.isEnabled("LPS-187854") ||
+							  objectValidationRuleSetting.compareName(
+								  ObjectValidationRuleSettingConstants.
+									  NAME_OUTPUT_OBJECT_FIELD_ID))) {
 
 							return objectValidationRuleSetting.getValue();
 						}

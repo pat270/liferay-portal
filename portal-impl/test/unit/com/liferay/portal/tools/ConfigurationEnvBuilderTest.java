@@ -109,7 +109,9 @@ public class ConfigurationEnvBuilderTest {
 
 		for (String line : lines) {
 			if (line.contains("configuration.override")) {
-				line = line.replace(StringPool.POUND, StringPool.BLANK);
+				line =
+					com.liferay.portal.kernel.util.StringUtil.removeSubstring(
+						line, StringPool.POUND);
 
 				result.add(line.trim());
 			}

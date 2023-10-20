@@ -22,7 +22,7 @@ import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.service.CompanyLocalService;
-import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.BigDecimalUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
@@ -120,18 +120,20 @@ public class ProductDTOConverter
 				new ProductConfiguration() {
 					{
 						allowBackOrder = cpDefinitionInventory.isBackOrders();
-						allowedOrderQuantities = ArrayUtil.toArray(
+						allowedOrderQuantities =
 							cpDefinitionInventory.
-								getAllowedOrderQuantitiesArray());
+								getAllowedOrderQuantitiesArray();
 						inventoryEngine =
 							cpDefinitionInventory.
 								getCPDefinitionInventoryEngine();
-						maxOrderQuantity =
-							cpDefinitionInventory.getMaxOrderQuantity();
-						minOrderQuantity =
-							cpDefinitionInventory.getMinOrderQuantity();
+						maxOrderQuantity = BigDecimalUtil.stripTrailingZeros(
+							cpDefinitionInventory.getMaxOrderQuantity());
+						minOrderQuantity = BigDecimalUtil.stripTrailingZeros(
+							cpDefinitionInventory.getMinOrderQuantity());
 						multipleOrderQuantity =
-							cpDefinitionInventory.getMultipleOrderQuantity();
+							BigDecimalUtil.stripTrailingZeros(
+								cpDefinitionInventory.
+									getMultipleOrderQuantity());
 					}
 				};
 

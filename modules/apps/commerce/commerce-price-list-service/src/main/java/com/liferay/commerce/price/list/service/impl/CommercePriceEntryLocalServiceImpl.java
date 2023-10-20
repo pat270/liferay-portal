@@ -15,6 +15,7 @@ import com.liferay.commerce.price.list.exception.NoSuchPriceEntryException;
 import com.liferay.commerce.price.list.model.CommercePriceEntry;
 import com.liferay.commerce.price.list.model.CommercePriceEntryTable;
 import com.liferay.commerce.price.list.model.CommercePriceList;
+import com.liferay.commerce.price.list.model.CommercePriceListTable;
 import com.liferay.commerce.price.list.service.base.CommercePriceEntryLocalServiceBaseImpl;
 import com.liferay.commerce.price.list.service.persistence.CommercePriceListFinder;
 import com.liferay.commerce.price.list.service.persistence.CommercePriceListPersistence;
@@ -68,6 +69,7 @@ import com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil;
 import java.io.Serializable;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -92,7 +94,6 @@ import org.osgi.service.component.annotations.Reference;
 public class CommercePriceEntryLocalServiceImpl
 	extends CommercePriceEntryLocalServiceBaseImpl {
 
-	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public CommercePriceEntry addCommercePriceEntry(
 			String externalReferenceCode, long cProductId,
@@ -140,7 +141,11 @@ public class CommercePriceEntryLocalServiceImpl
 		CPInstance cpInstance = _cpInstanceLocalService.fetchCPInstance(
 			cProductId, cpInstanceUuid);
 
-		long cpInstanceId = cpInstance.getCPInstanceId();
+		long cpInstanceId = 0;
+
+		if (cpInstance != null) {
+			cpInstanceId = cpInstance.getCPInstanceId();
+		}
 
 		_validateUnitOfMeasureKey(cpInstanceId, unitOfMeasureKey);
 
@@ -202,6 +207,10 @@ public class CommercePriceEntryLocalServiceImpl
 
 		commercePriceEntry = _startWorkflowInstance(
 			user.getUserId(), commercePriceEntry, serviceContext);
+
+		if (cpInstance != null) {
+			_reindexCPDefinition(cpInstance.getCPDefinitionId());
+		}
 
 		return commercePriceEntry;
 	}
@@ -346,10 +355,17 @@ public class CommercePriceEntryLocalServiceImpl
 
 	@Override
 	public void deleteCommercePriceEntries(
-		String cpInstanceUuid, BigDecimal quantity, String unitOfMeasureKey) {
+			String cpInstanceUuid, BigDecimal quantity, String unitOfMeasureKey)
+		throws PortalException {
 
-		commercePriceEntryPersistence.removeByC_Q_U(
-			cpInstanceUuid, quantity, unitOfMeasureKey);
+		List<CommercePriceEntry> commercePriceEntries =
+			commercePriceEntryPersistence.findByC_Q_U(
+				cpInstanceUuid, quantity, unitOfMeasureKey);
+
+		for (CommercePriceEntry commercePriceEntry : commercePriceEntries) {
+			commercePriceEntryLocalService.deleteCommercePriceEntry(
+				commercePriceEntry);
+		}
 	}
 
 	@Indexable(type = IndexableType.DELETE)
@@ -367,6 +383,14 @@ public class CommercePriceEntryLocalServiceImpl
 
 		_expandoRowLocalService.deleteRows(
 			commercePriceEntry.getCommercePriceEntryId());
+
+		CPInstance cpInstance = _cpInstanceLocalService.fetchCPInstance(
+			commercePriceEntry.getCProductId(),
+			commercePriceEntry.getCPInstanceUuid());
+
+		if (cpInstance != null) {
+			_reindexCPDefinition(cpInstance.getCPDefinitionId());
+		}
 
 		return commercePriceEntry;
 	}
@@ -398,14 +422,14 @@ public class CommercePriceEntryLocalServiceImpl
 
 	@Override
 	public CommercePriceEntry fetchCommercePriceEntry(
-		long commercePriceListId, String cpInstanceUuid) {
+		long commercePriceListId, String cpInstanceUuid, int status,
+		String unitOfMeasureKey) {
 
 		List<CommercePriceEntry> commercePriceEntries = dslQuery(
 			_getGroupByStep(
 				DSLQueryFactoryUtil.selectDistinct(
 					CommercePriceEntryTable.INSTANCE),
-				commercePriceListId, cpInstanceUuid,
-				WorkflowConstants.STATUS_ANY
+				commercePriceListId, cpInstanceUuid, status, unitOfMeasureKey
 			).orderBy(
 				CommercePriceEntryTable.INSTANCE.displayDate.descending(),
 				CommercePriceEntryTable.INSTANCE.createDate.descending()
@@ -422,12 +446,38 @@ public class CommercePriceEntryLocalServiceImpl
 
 	@Override
 	public CommercePriceEntry fetchCommercePriceEntry(
-		long commercePriceListId, String cpInstanceUuid, boolean useAncestor) {
+		long commercePriceListId, String cpInstanceUuid,
+		String unitOfMeasureKey) {
+
+		List<CommercePriceEntry> commercePriceEntries = dslQuery(
+			_getGroupByStep(
+				DSLQueryFactoryUtil.selectDistinct(
+					CommercePriceEntryTable.INSTANCE),
+				commercePriceListId, cpInstanceUuid,
+				WorkflowConstants.STATUS_ANY, unitOfMeasureKey
+			).orderBy(
+				CommercePriceEntryTable.INSTANCE.displayDate.descending(),
+				CommercePriceEntryTable.INSTANCE.createDate.descending()
+			).limit(
+				0, 1
+			));
+
+		if (commercePriceEntries.isEmpty()) {
+			return null;
+		}
+
+		return commercePriceEntries.get(0);
+	}
+
+	@Override
+	public CommercePriceEntry fetchCommercePriceEntry(
+		long commercePriceListId, String cpInstanceUuid,
+		String unitOfMeasureKey, boolean useAncestor) {
 
 		CommercePriceEntry commercePriceEntry =
 			commercePriceEntryLocalService.fetchCommercePriceEntry(
 				commercePriceListId, cpInstanceUuid,
-				WorkflowConstants.STATUS_APPROVED);
+				WorkflowConstants.STATUS_APPROVED, unitOfMeasureKey);
 
 		if (!useAncestor || (commercePriceEntry != null)) {
 			return commercePriceEntry;
@@ -445,30 +495,7 @@ public class CommercePriceEntryLocalServiceImpl
 
 		return commercePriceEntryLocalService.fetchCommercePriceEntry(
 			commercePriceList.getParentCommercePriceListId(), cpInstanceUuid,
-			useAncestor);
-	}
-
-	@Override
-	public CommercePriceEntry fetchCommercePriceEntry(
-		long commercePriceListId, String cpInstanceUuid, int status) {
-
-		List<CommercePriceEntry> commercePriceEntries = dslQuery(
-			_getGroupByStep(
-				DSLQueryFactoryUtil.selectDistinct(
-					CommercePriceEntryTable.INSTANCE),
-				commercePriceListId, cpInstanceUuid, status
-			).orderBy(
-				CommercePriceEntryTable.INSTANCE.displayDate.descending(),
-				CommercePriceEntryTable.INSTANCE.createDate.descending()
-			).limit(
-				0, 1
-			));
-
-		if (commercePriceEntries.isEmpty()) {
-			return null;
-		}
-
-		return commercePriceEntries.get(0);
+			unitOfMeasureKey, useAncestor);
 	}
 
 	@Override
@@ -517,10 +544,42 @@ public class CommercePriceEntryLocalServiceImpl
 
 	@Override
 	public CommercePriceEntry getInstanceBaseCommercePriceEntry(
-		String cpInstanceUuid, String priceListType) {
+		String cpInstanceUuid, String priceListType, String unitOfMeasureKey) {
 
-		return _commercePriceListFinder.findBasePriceEntry(
-			cpInstanceUuid, priceListType);
+		List<CommercePriceEntry> commercePriceEntries = dslQuery(
+			DSLQueryFactoryUtil.select(
+				CommercePriceEntryTable.INSTANCE
+			).from(
+				CommercePriceEntryTable.INSTANCE
+			).innerJoinON(
+				CommercePriceListTable.INSTANCE,
+				CommercePriceListTable.INSTANCE.commercePriceListId.eq(
+					CommercePriceEntryTable.INSTANCE.commercePriceListId)
+			).where(
+				CommercePriceEntryTable.INSTANCE.CPInstanceUuid.eq(
+					cpInstanceUuid
+				).and(
+					() -> {
+						if (Validator.isNull(unitOfMeasureKey)) {
+							return null;
+						}
+
+						return CommercePriceEntryTable.INSTANCE.
+							unitOfMeasureKey.eq(unitOfMeasureKey);
+					}
+				).and(
+					CommercePriceListTable.INSTANCE.type.eq(priceListType)
+				).and(
+					CommercePriceListTable.INSTANCE.catalogBasePriceList.eq(
+						true)
+				)
+			));
+
+		if (commercePriceEntries.isEmpty()) {
+			return null;
+		}
+
+		return commercePriceEntries.get(0);
 	}
 
 	@Override
@@ -600,23 +659,6 @@ public class CommercePriceEntryLocalServiceImpl
 
 	@Indexable(type = IndexableType.REINDEX)
 	public CommercePriceEntry updateCommercePriceEntry(
-			long commercePriceEntryId, BigDecimal price,
-			boolean priceOnApplication, BigDecimal promoPrice,
-			String unitOfMeasureKey, ServiceContext serviceContext)
-		throws PortalException {
-
-		Calendar calendar = new GregorianCalendar();
-
-		return commercePriceEntryLocalService.updateCommercePriceEntry(
-			commercePriceEntryId, true, true, null, null, null, null,
-			calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH),
-			calendar.get(Calendar.YEAR), calendar.get(Calendar.HOUR),
-			calendar.get(Calendar.MINUTE), 0, 0, 0, 0, 0, true, price,
-			priceOnApplication, promoPrice, unitOfMeasureKey, serviceContext);
-	}
-
-	@Indexable(type = IndexableType.REINDEX)
-	public CommercePriceEntry updateCommercePriceEntry(
 			long commercePriceEntryId, boolean bulkPricing,
 			boolean discountDiscovery, BigDecimal discountLevel1,
 			BigDecimal discountLevel2, BigDecimal discountLevel3,
@@ -651,7 +693,11 @@ public class CommercePriceEntryLocalServiceImpl
 			commercePriceEntry.getCProductId(),
 			commercePriceEntry.getCPInstanceUuid());
 
-		long cpInstanceId = cpInstance.getCPInstanceId();
+		long cpInstanceId = 0;
+
+		if (cpInstance != null) {
+			cpInstanceId = cpInstance.getCPInstanceId();
+		}
 
 		_validateUnitOfMeasureKey(cpInstanceId, unitOfMeasureKey);
 
@@ -695,6 +741,10 @@ public class CommercePriceEntryLocalServiceImpl
 		commercePriceEntry = _startWorkflowInstance(
 			user.getUserId(), commercePriceEntry, serviceContext);
 
+		if (cpInstance != null) {
+			_reindexCPDefinition(cpInstance.getCPDefinitionId());
+		}
+
 		return commercePriceEntry;
 	}
 
@@ -709,6 +759,27 @@ public class CommercePriceEntryLocalServiceImpl
 		}
 
 		commercePriceEntry.setExternalReferenceCode(externalReferenceCode);
+
+		return commercePriceEntryPersistence.update(commercePriceEntry);
+	}
+
+	@Override
+	public CommercePriceEntry updatePricingInfo(
+			long commercePriceEntryId, boolean bulkPricing, BigDecimal price,
+			boolean priceOnApplication, BigDecimal promoPrice,
+			String unitOfMeasureKey, ServiceContext serviceContext)
+		throws PortalException {
+
+		CommercePriceEntry commercePriceEntry =
+			commercePriceEntryLocalService.getCommercePriceEntry(
+				commercePriceEntryId);
+
+		commercePriceEntry.setBulkPricing(bulkPricing);
+		commercePriceEntry.setPrice(price);
+		commercePriceEntry.setPriceOnApplication(priceOnApplication);
+		commercePriceEntry.setPromoPrice(promoPrice);
+		commercePriceEntry.setUnitOfMeasureKey(unitOfMeasureKey);
+		commercePriceEntry.setExpandoBridgeAttributes(serviceContext);
 
 		return commercePriceEntryPersistence.update(commercePriceEntry);
 	}
@@ -895,7 +966,7 @@ public class CommercePriceEntryLocalServiceImpl
 
 	private GroupByStep _getGroupByStep(
 		FromStep fromStep, long commercePriceListId, String cpInstanceUuid,
-		int status) {
+		int status, String unitOfMeasureKey) {
 
 		return fromStep.from(
 			CommercePriceEntryTable.INSTANCE
@@ -914,6 +985,15 @@ public class CommercePriceEntryLocalServiceImpl
 
 					return CommercePriceEntryTable.INSTANCE.status.eq(status);
 				}
+			).and(
+				() -> {
+					if (Validator.isNull(unitOfMeasureKey)) {
+						return null;
+					}
+
+					return CommercePriceEntryTable.INSTANCE.unitOfMeasureKey.eq(
+						unitOfMeasureKey);
+				}
 			)
 		);
 	}
@@ -930,7 +1010,11 @@ public class CommercePriceEntryLocalServiceImpl
 				cpInstanceId, unitOfMeasureKey);
 
 		if (cpInstanceUnitOfMeasure != null) {
-			return cpInstanceUnitOfMeasure.getIncrementalOrderQuantity();
+			BigDecimal incrementalOrderQuantity =
+				cpInstanceUnitOfMeasure.getIncrementalOrderQuantity();
+
+			return incrementalOrderQuantity.setScale(
+				cpInstanceUnitOfMeasure.getPrecision(), RoundingMode.HALF_UP);
 		}
 
 		return null;
@@ -965,6 +1049,15 @@ public class CommercePriceEntryLocalServiceImpl
 		}
 
 		return null;
+	}
+
+	private void _reindexCPDefinition(long cpDefinitionId)
+		throws PortalException {
+
+		Indexer<CPDefinition> indexer = IndexerRegistryUtil.nullSafeGetIndexer(
+			CPDefinition.class);
+
+		indexer.reindex(CPDefinition.class.getName(), cpDefinitionId);
 	}
 
 	private BaseModelSearchResult<CommercePriceEntry>

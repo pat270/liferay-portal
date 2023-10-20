@@ -68,15 +68,16 @@ public interface DLFolderLocalService
 	 *
 	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.portlet.documentlibrary.service.impl.DLFolderLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the document library folder local service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link DLFolderLocalServiceUtil} if injection and service tracking are not available.
 	 */
-	public void addDLFileEntryTypeDLFolder(
+	public boolean addDLFileEntryTypeDLFolder(
 		long fileEntryTypeId, DLFolder dlFolder);
 
-	public void addDLFileEntryTypeDLFolder(long fileEntryTypeId, long folderId);
+	public boolean addDLFileEntryTypeDLFolder(
+		long fileEntryTypeId, long folderId);
 
-	public void addDLFileEntryTypeDLFolders(
+	public boolean addDLFileEntryTypeDLFolders(
 		long fileEntryTypeId, List<DLFolder> dlFolders);
 
-	public void addDLFileEntryTypeDLFolders(
+	public boolean addDLFileEntryTypeDLFolders(
 		long fileEntryTypeId, long[] folderIds);
 
 	/**
@@ -483,6 +484,9 @@ public interface DLFolderLocalService
 	public int getFoldersCount(
 		long groupId, long parentFolderId, int status,
 		boolean includeMountfolders);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public long getFolderSize(long companyId, long groupId, String treePath);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Long> getGroupFolderIds(long groupId, long parentFolderId);

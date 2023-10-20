@@ -7,11 +7,11 @@ export declare function getCheckedWorkflowStatusItems(
 	itemValues: LabelValueObject[],
 	setEditingFilterType: () => number[] | string[] | null
 ): IItem[];
-export declare function getCheckedPickListItems(
-	itemValues: PickListItem[],
+export declare function getCheckedListTypeEntries(
+	itemValues: ListTypeEntry[],
 	setEditingFilterType: () => number[] | string[] | null
 ): IItem[];
-export declare function getSystemFieldLabelFromEntry(
+export declare function getSystemObjectFieldLabelFromObjectEntry(
 	titleFieldName: string,
 	entry: ObjectEntry,
 	itemObject: LabelValueObject
@@ -19,7 +19,7 @@ export declare function getSystemFieldLabelFromEntry(
 	label: unknown;
 	value: string;
 };
-export declare function getCheckedRelationshipItems(
+export declare function getCheckedObjectRelationshipItems(
 	relatedEntries: ObjectEntry[],
 	titleFieldName: string,
 	systemField: boolean,

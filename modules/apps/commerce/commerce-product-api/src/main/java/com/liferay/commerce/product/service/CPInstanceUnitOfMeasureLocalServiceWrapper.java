@@ -66,6 +66,21 @@ public class CPInstanceUnitOfMeasureLocalServiceWrapper
 			nameMap, precision, primary, priority, rate, sku);
 	}
 
+	@Override
+	public CPInstanceUnitOfMeasure addOrUpdateCPInstanceUnitOfMeasure(
+			long userId, long cpInstanceId, boolean active,
+			java.math.BigDecimal incrementalOrderQuantity, String key,
+			java.util.Map<java.util.Locale, String> nameMap, int precision,
+			boolean primary, double priority, java.math.BigDecimal rate,
+			String sku)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _cpInstanceUnitOfMeasureLocalService.
+			addOrUpdateCPInstanceUnitOfMeasure(
+				userId, cpInstanceId, active, incrementalOrderQuantity, key,
+				nameMap, precision, primary, priority, rate, sku);
+	}
+
 	/**
 	 * Creates a new cp instance unit of measure with the primary key. Does not add the cp instance unit of measure to the database.
 	 *
@@ -262,6 +277,14 @@ public class CPInstanceUnitOfMeasureLocalServiceWrapper
 			fetchCPInstanceUnitOfMeasure(cpInstanceId, key);
 	}
 
+	@Override
+	public CPInstanceUnitOfMeasure fetchCPInstanceUnitOfMeasure(
+		long companyId, String key, String sku) {
+
+		return _cpInstanceUnitOfMeasureLocalService.
+			fetchCPInstanceUnitOfMeasure(companyId, key, sku);
+	}
+
 	/**
 	 * Returns the cp instance unit of measure with the matching UUID and company.
 	 *
@@ -279,10 +302,32 @@ public class CPInstanceUnitOfMeasureLocalServiceWrapper
 	}
 
 	@Override
+	public CPInstanceUnitOfMeasure fetchPrimaryCPInstanceUnitOfMeasure(
+		long cpInstanceId) {
+
+		return _cpInstanceUnitOfMeasureLocalService.
+			fetchPrimaryCPInstanceUnitOfMeasure(cpInstanceId);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery
 		getActionableDynamicQuery() {
 
 		return _cpInstanceUnitOfMeasureLocalService.getActionableDynamicQuery();
+	}
+
+	@Override
+	public java.util.List<CPInstanceUnitOfMeasure>
+		getActiveCPInstanceUnitOfMeasures(long cpInstanceId) {
+
+		return _cpInstanceUnitOfMeasureLocalService.
+			getActiveCPInstanceUnitOfMeasures(cpInstanceId);
+	}
+
+	@Override
+	public int getActiveCPInstanceUnitOfMeasuresCount(long cpInstanceId) {
+		return _cpInstanceUnitOfMeasureLocalService.
+			getActiveCPInstanceUnitOfMeasuresCount(cpInstanceId);
 	}
 
 	/**
@@ -356,6 +401,14 @@ public class CPInstanceUnitOfMeasureLocalServiceWrapper
 			cpInstanceId, start, end, orderByComparator);
 	}
 
+	@Override
+	public java.util.List<CPInstanceUnitOfMeasure> getCPInstanceUnitOfMeasures(
+		long companyId, String sku) {
+
+		return _cpInstanceUnitOfMeasureLocalService.getCPInstanceUnitOfMeasures(
+			companyId, sku);
+	}
+
 	/**
 	 * Returns the number of cp instance unit of measures.
 	 *
@@ -371,6 +424,12 @@ public class CPInstanceUnitOfMeasureLocalServiceWrapper
 	public int getCPInstanceUnitOfMeasuresCount(long cpInstanceId) {
 		return _cpInstanceUnitOfMeasureLocalService.
 			getCPInstanceUnitOfMeasuresCount(cpInstanceId);
+	}
+
+	@Override
+	public int getCPInstanceUnitOfMeasuresCount(long companyId, String sku) {
+		return _cpInstanceUnitOfMeasureLocalService.
+			getCPInstanceUnitOfMeasuresCount(companyId, sku);
 	}
 
 	@Override

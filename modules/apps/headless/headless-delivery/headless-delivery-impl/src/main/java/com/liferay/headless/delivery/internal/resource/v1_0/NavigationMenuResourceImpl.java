@@ -6,7 +6,7 @@
 package com.liferay.headless.delivery.internal.resource.v1_0;
 
 import com.liferay.document.library.kernel.model.DLFileEntry;
-import com.liferay.headless.common.spi.service.context.ServiceContextRequestUtil;
+import com.liferay.headless.common.spi.service.context.ServiceContextBuilder;
 import com.liferay.headless.delivery.dto.v1_0.NavigationMenu;
 import com.liferay.headless.delivery.dto.v1_0.NavigationMenuItem;
 import com.liferay.headless.delivery.dto.v1_0.util.CreatorUtil;
@@ -31,6 +31,7 @@ import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
+import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 import com.liferay.portal.vulcan.util.JaxRsLinkUtil;
@@ -125,8 +126,9 @@ public class NavigationMenuResourceImpl extends BaseNavigationMenuResourceImpl {
 			_siteNavigationMenuService.addSiteNavigationMenu(
 				siteId, navigationMenu.getName(),
 				SiteNavigationConstants.TYPE_DEFAULT, true,
-				ServiceContextRequestUtil.createServiceContext(
-					siteId, contextHttpServletRequest, null));
+				ServiceContextBuilder.create(
+					siteId, contextHttpServletRequest, null
+				).build());
 
 		_createNavigationMenuItems(
 			navigationMenu.getNavigationMenuItems(), 0, siteId,
@@ -149,10 +151,9 @@ public class NavigationMenuResourceImpl extends BaseNavigationMenuResourceImpl {
 			siteNavigationMenu.getGroupId(),
 			siteNavigationMenu.getSiteNavigationMenuId());
 
-		ServiceContext serviceContext =
-			ServiceContextRequestUtil.createServiceContext(
-				siteNavigationMenu.getGroupId(), contextHttpServletRequest,
-				null);
+		ServiceContext serviceContext = ServiceContextBuilder.create(
+			siteNavigationMenu.getGroupId(), contextHttpServletRequest, null
+		).build();
 
 		NavigationMenu.NavigationType navigationType =
 			navigationMenu.getNavigationType();
@@ -198,8 +199,9 @@ public class NavigationMenuResourceImpl extends BaseNavigationMenuResourceImpl {
 			_siteNavigationMenuItemService.addSiteNavigationMenuItem(
 				siteId, siteNavigationMenuId, parentNavigationMenuId,
 				_getType(navigationMenuItem), unicodeProperties,
-				ServiceContextRequestUtil.createServiceContext(
-					siteId, contextHttpServletRequest, null));
+				ServiceContextBuilder.create(
+					siteId, contextHttpServletRequest, null
+				).build());
 
 		_createNavigationMenuItems(
 			navigationMenuItem.getNavigationMenuItems(),
@@ -450,7 +452,9 @@ public class NavigationMenuResourceImpl extends BaseNavigationMenuResourceImpl {
 		return new NavigationMenu() {
 			{
 				creator = CreatorUtil.toCreator(
-					_portal, contextUriInfo,
+					new DefaultDTOConverterContext(
+						null, null, null, contextUriInfo, null),
+					_portal,
 					_userLocalService.fetchUser(
 						siteNavigationMenu.getUserId()));
 				dateCreated = siteNavigationMenu.getCreateDate();
@@ -505,7 +509,9 @@ public class NavigationMenuResourceImpl extends BaseNavigationMenuResourceImpl {
 		return new NavigationMenuItem() {
 			{
 				creator = CreatorUtil.toCreator(
-					_portal, contextUriInfo,
+					new DefaultDTOConverterContext(
+						null, null, null, contextUriInfo, null),
+					_portal,
 					_userLocalService.fetchUser(
 						siteNavigationMenuItem.getUserId()));
 				dateCreated = siteNavigationMenuItem.getCreateDate();
@@ -698,8 +704,9 @@ public class NavigationMenuResourceImpl extends BaseNavigationMenuResourceImpl {
 								_getUnicodeProperties(
 									false, navigationMenuItem, siteId,
 									siteNavigationMenuItem),
-								ServiceContextRequestUtil.createServiceContext(
-									siteId, contextHttpServletRequest, null));
+								ServiceContextBuilder.create(
+									siteId, contextHttpServletRequest, null
+								).build());
 
 					_updateNavigationMenuItems(
 						navigationMenuItem.getNavigationMenuItems(),

@@ -14,6 +14,7 @@ import com.liferay.portal.events.StartupAction;
 import com.liferay.portal.events.StartupHelperUtil;
 import com.liferay.portal.kernel.cache.thread.local.Lifecycle;
 import com.liferay.portal.kernel.cache.thread.local.ThreadLocalCacheManager;
+import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.dependency.manager.DependencyManagerSyncUtil;
 import com.liferay.portal.kernel.deploy.hot.HotDeployUtil;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
@@ -82,6 +83,7 @@ import com.liferay.portal.struts.model.ActionForward;
 import com.liferay.portal.struts.model.ActionMapping;
 import com.liferay.portal.struts.model.ModuleConfig;
 import com.liferay.portal.tools.DBUpgrader;
+import com.liferay.portal.upgrade.PortalUpgradeProcess;
 import com.liferay.portal.util.MaintenanceUtil;
 import com.liferay.portal.util.PortalInstances;
 import com.liferay.portal.util.PropsUtil;
@@ -95,7 +97,10 @@ import com.liferay.social.kernel.util.SocialConfigurationUtil;
 import java.io.IOException;
 import java.io.InputStream;
 
+import java.sql.Connection;
+
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -381,7 +386,7 @@ public class MainServlet extends HttpServlet {
 		}
 
 		if (DBUpgrader.isUpgradeDatabaseAutoRunEnabled()) {
-			DBUpgrader.upgradeModules();
+			DBUpgrader.upgradeModules(true);
 
 			StartupHelperUtil.setUpgrading(false);
 		}
@@ -392,20 +397,7 @@ public class MainServlet extends HttpServlet {
 
 		_registerPortalInitialized();
 
-		if ((_releaseManager != null) && _log.isWarnEnabled()) {
-			String message = _releaseManager.getShortStatusMessage(true);
-
-			if (Validator.isNotNull(message)) {
-				_log.warn(message);
-			}
-			else if (_log.isInfoEnabled()) {
-				message = _releaseManager.getShortStatusMessage(false);
-
-				if (Validator.isNotNull(message)) {
-					_log.info(message);
-				}
-			}
-		}
+		_checkBuildDate();
 
 		if (StartupHelperUtil.isDBNew() &&
 			PropsValues.SETUP_WIZARD_ADD_SAMPLE_DATA) {
@@ -601,6 +593,48 @@ public class MainServlet extends HttpServlet {
 			}
 			catch (Exception exception) {
 				_log.error(exception);
+			}
+		}
+	}
+
+	private void _checkBuildDate() {
+		if (_releaseManager == null) {
+			return;
+		}
+
+		try (Connection connection = DataAccess.getConnection()) {
+			Date currentBuildDate = PortalUpgradeProcess.getCurrentBuildDate(
+				connection);
+
+			if (!currentBuildDate.before(ReleaseInfo.getBuildDate())) {
+				return;
+			}
+
+			if (_log.isWarnEnabled()) {
+				String message = _releaseManager.getShortStatusMessage(true);
+
+				if (Validator.isNotNull(message)) {
+					_log.warn(message);
+
+					return;
+				}
+			}
+
+			String message = _releaseManager.getShortStatusMessage(false);
+
+			if (Validator.isNotNull(message)) {
+				if (_log.isInfoEnabled()) {
+					_log.info(message);
+				}
+
+				return;
+			}
+
+			PortalUpgradeProcess.updateBuildInfo(connection);
+		}
+		catch (Exception exception) {
+			if (_log.isWarnEnabled()) {
+				_log.warn("Unable to check build date", exception);
 			}
 		}
 	}
@@ -1254,19 +1288,6 @@ public class MainServlet extends HttpServlet {
 					"original.bean", Boolean.TRUE
 				).put(
 					"service.vendor", ReleaseInfo.getVendor()
-				).build()));
-
-		_serviceRegistrations.add(
-			bundleContext.registerService(
-				ModuleServiceLifecycle.class,
-				new ModuleServiceLifecycle() {
-				},
-				HashMapDictionaryBuilder.<String, Object>put(
-					"module.service.lifecycle", "system.check"
-				).put(
-					"service.vendor", ReleaseInfo.getVendor()
-				).put(
-					"service.version", ReleaseInfo.getVersion()
 				).build()));
 
 		_serviceRegistrations.add(

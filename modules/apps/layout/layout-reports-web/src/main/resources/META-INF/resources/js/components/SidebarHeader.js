@@ -6,14 +6,18 @@
 import {ClayButtonWithIcon} from '@clayui/button';
 import React, {useContext} from 'react';
 
-import {SET_SELECTED_ISSUE} from '../constants/actionTypes';
+import {SET_SELECTED_ITEM} from '../constants/actionTypes';
 import {StoreDispatchContext, StoreStateContext} from '../context/StoreContext';
 import loadIssues from '../utils/loadIssues';
 
 export default function SidebarHeader() {
-	const {selectedIssue} = useContext(StoreStateContext);
+	const {selectedItem} = useContext(StoreStateContext);
 
-	return selectedIssue ? (
+	if (Liferay.FeatureFlags['LPS-187284']) {
+		return null;
+	}
+
+	return selectedItem ? (
 		<IssueDetailSidebarHeader />
 	) : (
 		<DefaultSidebarHeader />
@@ -27,7 +31,7 @@ const DefaultSidebarHeader = () => {
 	const showRefreshButton = data?.validConnection && !data?.privateLayout;
 
 	return (
-		<div className="d-flex justify-content-between p-3 sidebar-header">
+		<div className="d-flex justify-content-between sidebar-header">
 			<span className="font-weight-bold">
 				{Liferay.Language.get('page-audit')}
 			</span>
@@ -68,7 +72,7 @@ const DefaultSidebarHeader = () => {
 };
 
 const IssueDetailSidebarHeader = () => {
-	const {selectedIssue} = useContext(StoreStateContext);
+	const {selectedItem} = useContext(StoreStateContext);
 	const dispatch = useContext(StoreDispatchContext);
 
 	return (
@@ -79,8 +83,8 @@ const IssueDetailSidebarHeader = () => {
 					displayType="unstyled"
 					onClick={() => {
 						dispatch({
-							issue: null,
-							type: SET_SELECTED_ISSUE,
+							item: null,
+							type: SET_SELECTED_ITEM,
 						});
 					}}
 					symbol="angle-left"
@@ -88,7 +92,7 @@ const IssueDetailSidebarHeader = () => {
 				/>
 
 				<span className="align-self-center font-weight-bold issue-detail-title">
-					{selectedIssue.title}
+					{selectedItem.title}
 				</span>
 			</div>
 

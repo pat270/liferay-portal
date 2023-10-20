@@ -573,11 +573,6 @@ public class PropsValues {
 	public static final String DISCUSSION_COMMENTS_ALLOWED_CONTENT =
 		PropsUtil.get(PropsKeys.DISCUSSION_COMMENTS_ALLOWED_CONTENT);
 
-	public static final boolean DISCUSSION_COMMENTS_ALWAYS_EDITABLE_BY_OWNER =
-		GetterUtil.getBoolean(
-			PropsUtil.get(
-				PropsKeys.DISCUSSION_COMMENTS_ALWAYS_EDITABLE_BY_OWNER));
-
 	public static final int DISCUSSION_COMMENTS_DELTA_VALUE =
 		GetterUtil.getInteger(
 			PropsUtil.get(PropsKeys.DISCUSSION_COMMENTS_DELTA_VALUE));
@@ -587,9 +582,6 @@ public class PropsValues {
 
 	public static final int DISCUSSION_MAX_COMMENTS = GetterUtil.getInteger(
 		PropsUtil.get(PropsKeys.DISCUSSION_MAX_COMMENTS));
-
-	public static final boolean DISCUSSION_SUBSCRIBE = GetterUtil.getBoolean(
-		PropsUtil.get(PropsKeys.DISCUSSION_SUBSCRIBE));
 
 	public static final String[] DL_CHAR_BLACKLIST = PropsUtil.getArray(
 		PropsKeys.DL_CHAR_BLACKLIST);
@@ -2236,9 +2228,6 @@ public class PropsValues {
 	public static final String[] SPRING_INFRASTRUCTURE_CONFIGS =
 		PropsUtil.getArray(PropsKeys.SPRING_INFRASTRUCTURE_CONFIGS);
 
-	public static final int SQL_DATA_MAX_PARAMETERS = GetterUtil.getInteger(
-		PropsUtil.get(PropsKeys.SQL_DATA_MAX_PARAMETERS));
-
 	public static int STAGING_DRAFT_EXPORT_IMPORT_CONFIGURATION_CHECK_INTERVAL =
 		GetterUtil.getInteger(
 			PropsUtil.get(
@@ -2392,6 +2381,9 @@ public class PropsValues {
 	public static final boolean UPGRADE_LOG_CONTEXT_ENABLED =
 		GetterUtil.getBoolean(
 			PropsUtil.get(PropsKeys.UPGRADE_LOG_CONTEXT_ENABLED));
+
+	public static final String UPGRADE_REPORT_DIR = GetterUtil.getString(
+		PropsUtil.get(PropsKeys.UPGRADE_REPORT_DIR));
 
 	public static final long UPGRADE_REPORT_DL_STORAGE_SIZE_TIMEOUT =
 		GetterUtil.getLong(

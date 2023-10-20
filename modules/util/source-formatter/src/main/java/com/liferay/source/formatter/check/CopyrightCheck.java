@@ -5,22 +5,15 @@
 
 package com.liferay.source.formatter.check;
 
-import com.liferay.portal.kernel.servlet.HttpMethods;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.tools.GitUtil;
 import com.liferay.source.formatter.SourceFormatterArgs;
-import com.liferay.source.formatter.check.util.SourceUtil;
 import com.liferay.source.formatter.processor.SourceProcessor;
-import com.liferay.source.formatter.util.SourceFormatterUtil;
-
-import java.io.IOException;
-
-import java.net.HttpURLConnection;
-import java.net.URL;
 
 import java.text.SimpleDateFormat;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author Hugo Huijser
@@ -30,7 +23,7 @@ public class CopyrightCheck extends BaseFileCheck {
 	@Override
 	protected String doProcess(
 			String fileName, String absolutePath, String content)
-		throws IOException {
+		throws Exception {
 
 		if (!fileName.endsWith(".tpl") && !fileName.endsWith(".vm")) {
 			content = _fixCopyright(fileName, absolutePath, content);
@@ -41,7 +34,7 @@ public class CopyrightCheck extends BaseFileCheck {
 
 	private String _fixCopyright(
 			String fileName, String absolutePath, String content)
-		throws IOException {
+		throws Exception {
 
 		int x = content.indexOf("/**\n * SPDX-FileCopyrightText: (c) ");
 
@@ -75,54 +68,70 @@ public class CopyrightCheck extends BaseFileCheck {
 		SourceFormatterArgs sourceFormatterArgs =
 			sourceProcessor.getSourceFormatterArgs();
 
-		if (sourceFormatterArgs.isFormatCurrentBranch()) {
-			String rootDirName = SourceUtil.getRootDirName(absolutePath);
+		for (String currentBranchRenamedFileName :
+				_getCurrentBranchRenamedFileNames(sourceFormatterArgs)) {
 
-			if (Validator.isNull(rootDirName)) {
+			if (absolutePath.endsWith(currentBranchRenamedFileName)) {
 				return content;
 			}
+		}
 
-			String portalBranchName = getAttributeValue(
-				SourceFormatterUtil.GIT_LIFERAY_PORTAL_BRANCH, absolutePath);
+		for (String currentBranchAddedFileNames :
+				_getCurrentBranchAddedFileName(sourceFormatterArgs)) {
 
-			URL url = SourceFormatterUtil.getPortalGitURL(
-				absolutePath.substring(rootDirName.length()), portalBranchName);
+			if (absolutePath.endsWith(currentBranchAddedFileNames)) {
+				SimpleDateFormat simpleDateFormat = new SimpleDateFormat(
+					"yyyy");
 
-			try {
-				HttpURLConnection httpURLConnection =
-					(HttpURLConnection)url.openConnection();
+				String currentYear = simpleDateFormat.format(new Date());
 
-				httpURLConnection.setConnectTimeout(5000);
-				httpURLConnection.setReadTimeout(5000);
-				httpURLConnection.setRequestMethod(HttpMethods.HEAD);
+				String year = s.substring(0, 4);
 
-				if (httpURLConnection.getResponseCode() !=
-						HttpURLConnection.HTTP_OK) {
-
-					SimpleDateFormat simpleDateFormat = new SimpleDateFormat(
-						"yyyy");
-
-					String currentYear = simpleDateFormat.format(new Date());
-
-					String year = s.substring(0, 4);
-
-					if (!year.equals(currentYear)) {
-						content = StringUtil.replaceFirst(
-							content, year, currentYear, x + 35);
-					}
+				if (!year.equals(currentYear)) {
+					return StringUtil.replaceFirst(
+						content, year, currentYear, x + 35);
 				}
-
-				httpURLConnection.disconnect();
-			}
-			catch (Exception exception) {
-				addMessage(fileName, exception.getMessage());
 			}
 		}
 
 		return content;
 	}
 
+	private synchronized List<String> _getCurrentBranchAddedFileName(
+			SourceFormatterArgs sourceFormatterArgs)
+		throws Exception {
+
+		if (_currentBranchAddedFileNames != null) {
+			return _currentBranchAddedFileNames;
+		}
+
+		_currentBranchAddedFileNames = GitUtil.getCurrentBranchAddedFileNames(
+			sourceFormatterArgs.getBaseDirName(),
+			sourceFormatterArgs.getGitWorkingBranchName());
+
+		return _currentBranchAddedFileNames;
+	}
+
+	private synchronized List<String> _getCurrentBranchRenamedFileNames(
+			SourceFormatterArgs sourceFormatterArgs)
+		throws Exception {
+
+		if (_currentBranchRenamedFileNames != null) {
+			return _currentBranchRenamedFileNames;
+		}
+
+		_currentBranchRenamedFileNames =
+			GitUtil.getCurrentBranchRenamedFileNames(
+				sourceFormatterArgs.getBaseDirName(),
+				sourceFormatterArgs.getGitWorkingBranchName());
+
+		return _currentBranchRenamedFileNames;
+	}
+
 	private static final String _XML_DECLARATION =
 		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+
+	private static List<String> _currentBranchAddedFileNames;
+	private static List<String> _currentBranchRenamedFileNames;
 
 }

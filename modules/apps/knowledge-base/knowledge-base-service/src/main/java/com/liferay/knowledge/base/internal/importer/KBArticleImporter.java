@@ -25,12 +25,13 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.zip.ZipReader;
-import com.liferay.portal.kernel.zip.ZipReaderFactoryUtil;
+import com.liferay.portal.kernel.zip.ZipReaderFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -45,13 +46,14 @@ public class KBArticleImporter {
 	public KBArticleImporter(
 		MarkdownConverter markdownConverter, KBArchiveFactory kbArchiveFactory,
 		KBArticleLocalService kbArticleLocalService, Portal portal,
-		DLURLHelper dlURLHelper) {
+		DLURLHelper dlURLHelper, ZipReaderFactory zipReaderFactory) {
 
 		_markdownConverter = markdownConverter;
 		_kbArchiveFactory = kbArchiveFactory;
 		_kbArticleLocalService = kbArticleLocalService;
 		_portal = portal;
 		_dlURLHelper = dlURLHelper;
+		_zipReaderFactory = zipReaderFactory;
 	}
 
 	public int processZipFile(
@@ -65,8 +67,7 @@ public class KBArticleImporter {
 		}
 
 		try {
-			ZipReader zipReader = ZipReaderFactoryUtil.getZipReader(
-				inputStream);
+			ZipReader zipReader = _zipReaderFactory.getZipReader(inputStream);
 
 			return _processKBArticleFiles(
 				userId, groupId, parentKBFolderId, prioritizeByNumericalPrefix,
@@ -110,8 +111,8 @@ public class KBArticleImporter {
 					null, userId, parentResourceClassNameId,
 					parentResourcePrimaryKey,
 					kbArticleMarkdownConverter.getTitle(), urlTitle, markdown,
-					null, null, kbArticleMarkdownConverter.getSourceURL(), null,
-					null, null, serviceContext);
+					null, null, kbArticleMarkdownConverter.getSourceURL(),
+					new Date(), null, null, null, serviceContext);
 
 				serviceContext.setWorkflowAction(workflowAction);
 			}
@@ -138,8 +139,8 @@ public class KBArticleImporter {
 				kbArticleMarkdownConverter.getTitle(), html,
 				kbArticle.getDescription(), null,
 				kbArticleMarkdownConverter.getSourceURL(),
-				kbArticle.getExpirationDate(), kbArticle.getReviewDate(), null,
-				null, serviceContext);
+				kbArticle.getDisplayDate(), kbArticle.getExpirationDate(),
+				kbArticle.getReviewDate(), null, null, serviceContext);
 		}
 		catch (Exception exception) {
 			throw new KBArticleImportException(
@@ -331,5 +332,6 @@ public class KBArticleImporter {
 	private final KBArticleLocalService _kbArticleLocalService;
 	private final MarkdownConverter _markdownConverter;
 	private final Portal _portal;
+	private final ZipReaderFactory _zipReaderFactory;
 
 }

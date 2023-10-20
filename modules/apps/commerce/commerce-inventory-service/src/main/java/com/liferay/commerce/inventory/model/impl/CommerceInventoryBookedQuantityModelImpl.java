@@ -27,6 +27,8 @@ import java.io.Serializable;
 
 import java.lang.reflect.InvocationHandler;
 
+import java.math.BigDecimal;
+
 import java.sql.Blob;
 import java.sql.Types;
 
@@ -67,7 +69,7 @@ public class CommerceInventoryBookedQuantityModelImpl
 		{"companyId", Types.BIGINT}, {"userId", Types.BIGINT},
 		{"userName", Types.VARCHAR}, {"createDate", Types.TIMESTAMP},
 		{"modifiedDate", Types.TIMESTAMP}, {"bookedNote", Types.VARCHAR},
-		{"expirationDate", Types.TIMESTAMP}, {"quantity", Types.INTEGER},
+		{"expirationDate", Types.TIMESTAMP}, {"quantity", Types.DECIMAL},
 		{"sku", Types.VARCHAR}, {"unitOfMeasureKey", Types.VARCHAR}
 	};
 
@@ -84,13 +86,13 @@ public class CommerceInventoryBookedQuantityModelImpl
 		TABLE_COLUMNS_MAP.put("modifiedDate", Types.TIMESTAMP);
 		TABLE_COLUMNS_MAP.put("bookedNote", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("expirationDate", Types.TIMESTAMP);
-		TABLE_COLUMNS_MAP.put("quantity", Types.INTEGER);
+		TABLE_COLUMNS_MAP.put("quantity", Types.DECIMAL);
 		TABLE_COLUMNS_MAP.put("sku", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("unitOfMeasureKey", Types.VARCHAR);
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table CIBookedQuantity (mvccVersion LONG default 0 not null,CIBookedQuantityId LONG not null primary key,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,bookedNote VARCHAR(75) null,expirationDate DATE null,quantity INTEGER,sku VARCHAR(75) null,unitOfMeasureKey VARCHAR(75) null)";
+		"create table CIBookedQuantity (mvccVersion LONG default 0 not null,CIBookedQuantityId LONG not null primary key,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,bookedNote VARCHAR(75) null,expirationDate DATE null,quantity BIGDECIMAL null,sku VARCHAR(75) null,unitOfMeasureKey VARCHAR(75) null)";
 
 	public static final String TABLE_SQL_DROP = "drop table CIBookedQuantity";
 
@@ -125,12 +127,18 @@ public class CommerceInventoryBookedQuantityModelImpl
 	public static final long SKU_COLUMN_BITMASK = 4L;
 
 	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #getColumnBitmask(String)}
+	 */
+	@Deprecated
+	public static final long UNITOFMEASUREKEY_COLUMN_BITMASK = 8L;
+
+	/**
 	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
 	 *		#getColumnBitmask(String)}
 	 */
 	@Deprecated
 	public static final long COMMERCEINVENTORYBOOKEDQUANTITYID_COLUMN_BITMASK =
-		8L;
+		16L;
 
 	/**
 	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
@@ -335,7 +343,7 @@ public class CommerceInventoryBookedQuantityModelImpl
 					CommerceInventoryBookedQuantity::setExpirationDate);
 			attributeSetterBiConsumers.put(
 				"quantity",
-				(BiConsumer<CommerceInventoryBookedQuantity, Integer>)
+				(BiConsumer<CommerceInventoryBookedQuantity, BigDecimal>)
 					CommerceInventoryBookedQuantity::setQuantity);
 			attributeSetterBiConsumers.put(
 				"sku",
@@ -542,12 +550,12 @@ public class CommerceInventoryBookedQuantityModelImpl
 
 	@JSON
 	@Override
-	public int getQuantity() {
+	public BigDecimal getQuantity() {
 		return _quantity;
 	}
 
 	@Override
-	public void setQuantity(int quantity) {
+	public void setQuantity(BigDecimal quantity) {
 		if (_columnOriginalValues == Collections.EMPTY_MAP) {
 			_setColumnOriginalValues();
 		}
@@ -602,6 +610,15 @@ public class CommerceInventoryBookedQuantityModelImpl
 		}
 
 		_unitOfMeasureKey = unitOfMeasureKey;
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getColumnOriginalValue(String)}
+	 */
+	@Deprecated
+	public String getOriginalUnitOfMeasureKey() {
+		return getColumnOriginalValue("unitOfMeasureKey");
 	}
 
 	public long getColumnBitmask() {
@@ -711,7 +728,7 @@ public class CommerceInventoryBookedQuantityModelImpl
 		commerceInventoryBookedQuantityImpl.setExpirationDate(
 			this.<Date>getColumnOriginalValue("expirationDate"));
 		commerceInventoryBookedQuantityImpl.setQuantity(
-			this.<Integer>getColumnOriginalValue("quantity"));
+			this.<BigDecimal>getColumnOriginalValue("quantity"));
 		commerceInventoryBookedQuantityImpl.setSku(
 			this.<String>getColumnOriginalValue("sku"));
 		commerceInventoryBookedQuantityImpl.setUnitOfMeasureKey(
@@ -954,7 +971,7 @@ public class CommerceInventoryBookedQuantityModelImpl
 	private boolean _setModifiedDate;
 	private String _bookedNote;
 	private Date _expirationDate;
-	private int _quantity;
+	private BigDecimal _quantity;
 	private String _sku;
 	private String _unitOfMeasureKey;
 

@@ -13,8 +13,8 @@ import com.liferay.commerce.currency.exception.CommerceCurrencyNameException;
 import com.liferay.commerce.currency.exception.NoSuchCurrencyException;
 import com.liferay.commerce.currency.model.CommerceCurrency;
 import com.liferay.commerce.currency.service.CommerceCurrencyService;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
@@ -22,9 +22,9 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.settings.CompanyServiceSettingsLocator;
+import com.liferay.portal.kernel.settings.FallbackKeysSettingsUtil;
 import com.liferay.portal.kernel.settings.ModifiableSettings;
 import com.liferay.portal.kernel.settings.Settings;
-import com.liferay.portal.kernel.settings.SettingsFactory;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PropertiesParamUtil;
@@ -122,7 +122,7 @@ public class EditExchangeRateMVCActionCommand extends BaseMVCActionCommand {
 		Map<String, String> parameterMap = PropertiesParamUtil.getProperties(
 			actionRequest, "exchangeRateConfiguration--");
 
-		Settings settings = _settingsFactory.getSettings(
+		Settings settings = FallbackKeysSettingsUtil.getSettings(
 			new CompanyServiceSettingsLocator(
 				serviceContext.getCompanyId(),
 				CommerceCurrencyExchangeRateConstants.SERVICE_NAME));
@@ -142,8 +142,5 @@ public class EditExchangeRateMVCActionCommand extends BaseMVCActionCommand {
 
 	@Reference
 	private ConfigurationProvider _configurationProvider;
-
-	@Reference
-	private SettingsFactory _settingsFactory;
 
 }

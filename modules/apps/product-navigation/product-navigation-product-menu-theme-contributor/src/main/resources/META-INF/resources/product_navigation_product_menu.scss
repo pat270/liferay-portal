@@ -18,7 +18,7 @@ html#{$cadmin-selector} {
 		}
 	}
 
-	body.open {
+	body.product-menu-open {
 		#wrapper,
 		.cadmin.control-menu-container {
 			@include media-breakpoint-up(sm, $cadmin-grid-breakpoints) {
@@ -114,7 +114,7 @@ html#{$cadmin-selector} {
 					color: $product-menu-nav-link-color;
 				}
 
-				&:not(.treeview-item a):focus {
+				&:not(.treeview-item a):focus-visible {
 					box-shadow: none;
 
 					&:before {

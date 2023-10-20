@@ -8,8 +8,8 @@ package com.liferay.headless.delivery.internal.dto.v1_0.converter;
 import com.liferay.asset.kernel.model.AssetTag;
 import com.liferay.asset.kernel.service.AssetCategoryLocalService;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
-import com.liferay.asset.kernel.service.AssetLinkLocalService;
 import com.liferay.asset.kernel.service.AssetTagLocalService;
+import com.liferay.asset.link.service.AssetLinkLocalService;
 import com.liferay.headless.delivery.dto.v1_0.KnowledgeBaseArticle;
 import com.liferay.headless.delivery.dto.v1_0.TaxonomyCategoryBrief;
 import com.liferay.headless.delivery.dto.v1_0.util.CreatorUtil;
@@ -73,7 +73,7 @@ public class KnowledgeBaseArticleDTOConverter
 						kbArticle.getResourcePrimKey()));
 				articleBody = kbArticle.getContent();
 				creator = CreatorUtil.toCreator(
-					_portal, dtoConverterContext.getUriInfo(),
+					dtoConverterContext, _portal,
 					_userLocalService.fetchUser(kbArticle.getUserId()));
 				customFields = CustomFieldsUtil.toCustomFields(
 					dtoConverterContext.isAcceptAllLanguages(),
@@ -81,6 +81,7 @@ public class KnowledgeBaseArticleDTOConverter
 					kbArticle.getCompanyId(), dtoConverterContext.getLocale());
 				dateCreated = kbArticle.getCreateDate();
 				dateModified = kbArticle.getModifiedDate();
+				datePublished = kbArticle.getDisplayDate();
 				description = kbArticle.getDescription();
 				encodingFormat = "text/html";
 				externalReferenceCode = kbArticle.getExternalReferenceCode();

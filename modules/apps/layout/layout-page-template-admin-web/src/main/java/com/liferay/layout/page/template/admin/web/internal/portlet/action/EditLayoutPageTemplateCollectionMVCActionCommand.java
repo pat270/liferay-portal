@@ -6,6 +6,8 @@
 package com.liferay.layout.page.template.admin.web.internal.portlet.action;
 
 import com.liferay.layout.page.template.admin.constants.LayoutPageTemplateAdminPortletKeys;
+import com.liferay.layout.page.template.constants.LayoutPageTemplateCollectionTypeConstants;
+import com.liferay.layout.page.template.constants.LayoutPageTemplateConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateCollection;
 import com.liferay.layout.page.template.service.LayoutPageTemplateCollectionService;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
@@ -58,7 +60,11 @@ public class EditLayoutPageTemplateCollectionMVCActionCommand
 			layoutPageTemplateCollection =
 				_layoutPageTemplateCollectionService.
 					addLayoutPageTemplateCollection(
-						serviceContext.getScopeGroupId(), name, description,
+						serviceContext.getScopeGroupId(),
+						LayoutPageTemplateConstants.
+							PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
+						name, description,
+						LayoutPageTemplateCollectionTypeConstants.BASIC,
 						serviceContext);
 		}
 		else {
@@ -72,19 +78,19 @@ public class EditLayoutPageTemplateCollectionMVCActionCommand
 		}
 
 		String redirect = getRedirectURL(
-			actionResponse, layoutPageTemplateCollection);
+			actionRequest, actionResponse, layoutPageTemplateCollection);
 
 		sendRedirect(actionRequest, actionResponse, redirect);
 	}
 
 	protected String getRedirectURL(
-		ActionResponse actionResponse,
+		ActionRequest actionRequest, ActionResponse actionResponse,
 		LayoutPageTemplateCollection layoutPageTemplateCollection) {
 
 		return PortletURLBuilder.createRenderURL(
 			_portal.getLiferayPortletResponse(actionResponse)
 		).setTabs1(
-			"page-templates"
+			ParamUtil.getString(actionRequest, "tabs1")
 		).setParameter(
 			"layoutPageTemplateCollectionId",
 			layoutPageTemplateCollection.getLayoutPageTemplateCollectionId()

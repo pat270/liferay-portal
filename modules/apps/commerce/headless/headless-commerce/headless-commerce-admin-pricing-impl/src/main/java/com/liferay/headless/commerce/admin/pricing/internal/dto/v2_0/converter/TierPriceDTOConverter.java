@@ -11,16 +11,14 @@ import com.liferay.commerce.price.list.model.CommercePriceEntry;
 import com.liferay.commerce.price.list.model.CommercePriceList;
 import com.liferay.commerce.price.list.model.CommerceTierPriceEntry;
 import com.liferay.commerce.price.list.service.CommerceTierPriceEntryService;
-import com.liferay.commerce.product.model.CPInstance;
-import com.liferay.commerce.product.model.CPInstanceUnitOfMeasure;
-import com.liferay.commerce.product.service.CPInstanceUnitOfMeasureLocalService;
+import com.liferay.commerce.product.service.CPInstanceLocalService;
+import com.liferay.commerce.util.CommerceQuantityFormatter;
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.headless.commerce.admin.pricing.dto.v2_0.TierPrice;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 import java.util.Locale;
 
@@ -80,35 +78,19 @@ public class TierPriceDTOConverter
 				externalReferenceCode =
 					commerceTierPriceEntry.getExternalReferenceCode();
 				id = commerceTierPriceEntry.getCommerceTierPriceEntryId();
+				minimumQuantity = _commerceQuantityFormatter.format(
+					_cpInstanceLocalService.fetchCPInstance(
+						commercePriceEntry.getCProductId(),
+						commercePriceEntry.getCPInstanceUuid()),
+					commerceTierPriceEntry.getMinQuantity(),
+					commercePriceEntry.getUnitOfMeasureKey());
 				price = tierPriceEntryPrice.doubleValue();
 				priceEntryExternalReferenceCode =
 					commercePriceEntry.getExternalReferenceCode();
 				priceEntryId = commercePriceEntry.getCommercePriceEntryId();
 				priceFormatted = _formatPrice(
 					tierPriceEntryPrice, commerceCurrency, locale);
-
-				setMinimumQuantity(
-					() -> {
-						CPInstance cpInstance =
-							commercePriceEntry.getCPInstance();
-
-						CPInstanceUnitOfMeasure cpInstanceUnitOfMeasure =
-							_cpInstanceUnitOfMeasureLocalService.
-								fetchCPInstanceUnitOfMeasure(
-									cpInstance.getCPInstanceId(),
-									commercePriceEntry.getUnitOfMeasureKey());
-
-						if (cpInstanceUnitOfMeasure != null) {
-							BigDecimal tierPriceEntryMinQuantity =
-								commerceTierPriceEntry.getMinQuantity();
-
-							return tierPriceEntryMinQuantity.setScale(
-								cpInstanceUnitOfMeasure.getPrecision(),
-								RoundingMode.HALF_UP);
-						}
-
-						return commerceTierPriceEntry.getMinQuantity();
-					});
+				unitOfMeasureKey = commercePriceEntry.getUnitOfMeasureKey();
 			}
 		};
 	}
@@ -128,10 +110,12 @@ public class TierPriceDTOConverter
 	private CommercePriceFormatter _commercePriceFormatter;
 
 	@Reference
+	private CommerceQuantityFormatter _commerceQuantityFormatter;
+
+	@Reference
 	private CommerceTierPriceEntryService _commerceTierPriceEntryService;
 
 	@Reference
-	private CPInstanceUnitOfMeasureLocalService
-		_cpInstanceUnitOfMeasureLocalService;
+	private CPInstanceLocalService _cpInstanceLocalService;
 
 }

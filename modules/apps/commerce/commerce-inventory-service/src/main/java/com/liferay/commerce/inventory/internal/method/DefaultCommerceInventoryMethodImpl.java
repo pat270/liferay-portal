@@ -18,13 +18,13 @@ import com.liferay.commerce.inventory.service.CommerceInventoryWarehouseItemLoca
 import com.liferay.commerce.inventory.service.CommerceInventoryWarehouseItemService;
 import com.liferay.commerce.inventory.type.CommerceInventoryAuditType;
 import com.liferay.commerce.inventory.type.CommerceInventoryAuditTypeRegistry;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
+import com.liferay.portal.kernel.util.BigDecimalUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 
 import java.math.BigDecimal;
@@ -54,17 +54,20 @@ public class DefaultCommerceInventoryMethodImpl
 		propagation = Propagation.REQUIRED, rollbackFor = Exception.class
 	)
 	public void consumeQuantity(
-			long userId, long commerceInventoryWarehouseId, String sku,
-			int quantity, long bookedQuantityId, Map<String, String> context)
+			long userId, long commerceInventoryBookedQuantityId,
+			long commerceInventoryWarehouseId, BigDecimal quantity, String sku,
+			String unitOfMeasureKey, Map<String, String> context)
 		throws PortalException {
 
-		if (bookedQuantityId > 0) {
-			_commerceBookedQuantityLocalService.consumeCommerceBookedQuantity(
-				bookedQuantityId, quantity);
+		if (commerceInventoryBookedQuantityId > 0) {
+			_commerceInventoryBookedQuantityLocalService.
+				consumeCommerceInventoryBookedQuantity(
+					commerceInventoryBookedQuantityId, quantity);
 		}
 
 		decreaseStockQuantity(
-			userId, commerceInventoryWarehouseId, sku, quantity);
+			userId, commerceInventoryWarehouseId, quantity, sku,
+			unitOfMeasureKey);
 
 		CommerceInventoryAuditType commerceInventoryAuditType =
 			_commerceInventoryAuditTypeRegistry.getCommerceInventoryAuditType(
@@ -72,8 +75,8 @@ public class DefaultCommerceInventoryMethodImpl
 
 		_commerceInventoryAuditLocalService.addCommerceInventoryAudit(
 			userId, commerceInventoryAuditType.getType(),
-			commerceInventoryAuditType.getLog(context),
-			BigDecimal.valueOf(quantity), sku, StringPool.BLANK);
+			commerceInventoryAuditType.getLog(context), quantity, sku,
+			unitOfMeasureKey);
 
 		for (CommerceInventoryEngineContributor
 				commerceInventoryEngineContributor :
@@ -81,8 +84,9 @@ public class DefaultCommerceInventoryMethodImpl
 						getCommerceInventoryEngineContributors()) {
 
 			commerceInventoryEngineContributor.consumeQuantityContribute(
-				userId, commerceInventoryWarehouseId, sku, quantity,
-				bookedQuantityId, context);
+				userId, commerceInventoryBookedQuantityId,
+				commerceInventoryWarehouseId, quantity, sku, unitOfMeasureKey,
+				context);
 		}
 	}
 
@@ -91,22 +95,26 @@ public class DefaultCommerceInventoryMethodImpl
 		propagation = Propagation.REQUIRED, rollbackFor = Exception.class
 	)
 	public void decreaseStockQuantity(
-			long userId, long commerceInventoryWarehouseId, String sku,
-			int quantity)
+			long userId, long commerceInventoryWarehouseId, BigDecimal quantity,
+			String sku, String unitOfMeasureKey)
 		throws PortalException {
 
 		CommerceInventoryWarehouseItem commerceInventoryWarehouseItem =
 			_commerceInventoryWarehouseItemLocalService.
 				fetchCommerceInventoryWarehouseItem(
-					commerceInventoryWarehouseId, sku);
+					commerceInventoryWarehouseId, sku, unitOfMeasureKey);
+
+		BigDecimal commerceInventoryWarehouseItemQuantity =
+			commerceInventoryWarehouseItem.getQuantity();
 
 		_commerceInventoryWarehouseItemLocalService.
 			updateCommerceInventoryWarehouseItem(
 				userId,
 				commerceInventoryWarehouseItem.
 					getCommerceInventoryWarehouseItemId(),
-				commerceInventoryWarehouseItem.getQuantity() - quantity,
-				commerceInventoryWarehouseItem.getMvccVersion());
+				commerceInventoryWarehouseItem.getMvccVersion(),
+				commerceInventoryWarehouseItemQuantity.subtract(quantity),
+				commerceInventoryWarehouseItem.getUnitOfMeasureKey());
 
 		for (CommerceInventoryEngineContributor
 				commerceInventoryEngineContributor :
@@ -114,18 +122,20 @@ public class DefaultCommerceInventoryMethodImpl
 						getCommerceInventoryEngineContributors()) {
 
 			commerceInventoryEngineContributor.decreaseStockQuantityContribute(
-				userId, commerceInventoryWarehouseId, sku, quantity);
+				userId, commerceInventoryWarehouseId, quantity, sku,
+				unitOfMeasureKey);
 		}
 	}
 
 	@Override
 	public String getAvailabilityStatus(
-		long companyId, long commerceChannelGroupId, int minStockQuantity,
-		String sku) {
+		long companyId, long commerceChannelGroupId,
+		BigDecimal minStockQuantity, String sku, String unitOfMeasureKey) {
 
 		return _getAvailabilityStatus(
 			minStockQuantity,
-			getStockQuantity(companyId, commerceChannelGroupId, sku));
+			getStockQuantity(
+				companyId, commerceChannelGroupId, sku, unitOfMeasureKey));
 	}
 
 	@Override
@@ -142,36 +152,42 @@ public class DefaultCommerceInventoryMethodImpl
 	}
 
 	@Override
-	public int getStockQuantity(
-		long companyId, long commerceChannelGroupId, String sku) {
+	public BigDecimal getStockQuantity(
+		long companyId, long commerceChannelGroupId, String sku,
+		String unitOfMeasureKey) {
 
-		int stockQuantity =
+		BigDecimal stockQuantity =
 			_commerceInventoryWarehouseItemService.getStockQuantity(
-				companyId, commerceChannelGroupId, sku);
+				companyId, commerceChannelGroupId, sku, unitOfMeasureKey);
 
-		int commerceBookedQuantity =
-			_commerceBookedQuantityLocalService.getCommerceBookedQuantity(
-				companyId, commerceChannelGroupId, sku);
-
-		return stockQuantity - commerceBookedQuantity;
+		return stockQuantity.subtract(
+			_commerceInventoryBookedQuantityLocalService.
+				getCommerceInventoryBookedQuantity(
+					companyId, commerceChannelGroupId, sku, unitOfMeasureKey));
 	}
 
 	@Override
-	public int getStockQuantity(long companyId, String sku) {
-		int stockQuantity =
+	public BigDecimal getStockQuantity(
+		long companyId, String sku, String unitOfMeasureKey) {
+
+		BigDecimal stockQuantity =
 			_commerceInventoryWarehouseItemService.getStockQuantity(
-				companyId, sku);
+				companyId, sku, unitOfMeasureKey);
 
-		int commerceBookedQuantity =
-			_commerceBookedQuantityLocalService.getCommerceBookedQuantity(
-				companyId, sku);
-
-		return stockQuantity - commerceBookedQuantity;
+		return stockQuantity.subtract(
+			_commerceInventoryBookedQuantityLocalService.
+				getCommerceInventoryBookedQuantity(
+					companyId, sku, unitOfMeasureKey));
 	}
 
 	@Override
-	public boolean hasStockQuantity(long companyId, String sku, int quantity) {
-		if (quantity <= getStockQuantity(companyId, sku)) {
+	public boolean hasStockQuantity(
+		long companyId, BigDecimal quantity, String sku,
+		String unitOfMeasureKey) {
+
+		if (BigDecimalUtil.lte(
+				quantity, getStockQuantity(companyId, sku, unitOfMeasureKey))) {
+
 			return true;
 		}
 
@@ -183,23 +199,27 @@ public class DefaultCommerceInventoryMethodImpl
 		propagation = Propagation.REQUIRED, rollbackFor = Exception.class
 	)
 	public void increaseStockQuantity(
-			long userId, long commerceInventoryWarehouseId, String sku,
-			int quantity)
+			long userId, long commerceInventoryWarehouseId, BigDecimal quantity,
+			String sku, String unitOfMeasureKey)
 		throws PortalException {
 
 		CommerceInventoryWarehouseItem commerceInventoryWarehouseItem =
 			_commerceInventoryWarehouseItemLocalService.
 				fetchCommerceInventoryWarehouseItem(
-					commerceInventoryWarehouseId, sku);
+					commerceInventoryWarehouseId, sku, unitOfMeasureKey);
 
 		try {
+			BigDecimal commerceInventoryWarehouseItemQuantity =
+				commerceInventoryWarehouseItem.getQuantity();
+
 			_commerceInventoryWarehouseItemLocalService.
 				updateCommerceInventoryWarehouseItem(
 					userId,
 					commerceInventoryWarehouseItem.
 						getCommerceInventoryWarehouseItemId(),
-					commerceInventoryWarehouseItem.getQuantity() + quantity,
-					commerceInventoryWarehouseItem.getMvccVersion());
+					commerceInventoryWarehouseItem.getMvccVersion(),
+					commerceInventoryWarehouseItemQuantity.add(quantity),
+					commerceInventoryWarehouseItem.getUnitOfMeasureKey());
 		}
 		catch (MVCCException mvccException) {
 			_log.error(mvccException);
@@ -213,8 +233,8 @@ public class DefaultCommerceInventoryMethodImpl
 
 		_commerceInventoryAuditLocalService.addCommerceInventoryAudit(
 			userId, commerceInventoryAuditType.getType(),
-			commerceInventoryAuditType.getLog(null),
-			BigDecimal.valueOf(quantity), sku, StringPool.BLANK);
+			commerceInventoryAuditType.getLog(null), quantity, sku,
+			unitOfMeasureKey);
 
 		for (CommerceInventoryEngineContributor
 				commerceInventoryEngineContributor :
@@ -222,19 +242,20 @@ public class DefaultCommerceInventoryMethodImpl
 						getCommerceInventoryEngineContributors()) {
 
 			commerceInventoryEngineContributor.increaseStockQuantityContribute(
-				userId, commerceInventoryWarehouseId, sku, quantity);
+				userId, commerceInventoryWarehouseId, quantity, sku,
+				unitOfMeasureKey);
 		}
 	}
 
 	private String _getAvailabilityStatus(
-		int minStockQuantity, int stockQuantity) {
+		BigDecimal minStockQuantity, BigDecimal stockQuantity) {
 
 		String availabilityStatus =
 			CommerceInventoryAvailabilityConstants.UNAVAILABLE;
 
 		boolean available = false;
 
-		if (stockQuantity > minStockQuantity) {
+		if (BigDecimalUtil.gt(stockQuantity, minStockQuantity)) {
 			available = true;
 		}
 
@@ -250,16 +271,16 @@ public class DefaultCommerceInventoryMethodImpl
 		DefaultCommerceInventoryMethodImpl.class);
 
 	@Reference
-	private CommerceInventoryBookedQuantityLocalService
-		_commerceBookedQuantityLocalService;
-
-	@Reference
 	private CommerceInventoryAuditLocalService
 		_commerceInventoryAuditLocalService;
 
 	@Reference
 	private CommerceInventoryAuditTypeRegistry
 		_commerceInventoryAuditTypeRegistry;
+
+	@Reference
+	private CommerceInventoryBookedQuantityLocalService
+		_commerceInventoryBookedQuantityLocalService;
 
 	@Reference
 	private CommerceInventoryEngineContributorRegistry

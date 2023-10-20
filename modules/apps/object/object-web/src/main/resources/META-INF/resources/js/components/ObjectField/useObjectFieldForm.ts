@@ -6,6 +6,7 @@
 import {
 	REQUIRED_MSG,
 	invalidateRequired,
+	openToast,
 	useForm,
 } from '@liferay/object-js-components-web';
 import {sub} from 'frontend-js-web';
@@ -192,6 +193,13 @@ export function useObjectFieldForm({
 			if (!field.id) {
 				if (field.state && !thereIsDefaultValue) {
 					errors.defaultValue = REQUIRED_MSG;
+
+					openToast({
+						message: Liferay.Language.get(
+							'please-fill-out-all-required-fields'
+						),
+						type: 'danger',
+					});
 				}
 			}
 			else {
@@ -204,14 +212,25 @@ export function useObjectFieldForm({
 		return errors;
 	};
 
-	const {errors, handleChange, handleSubmit, setValues, values} = useForm<
-		ObjectField,
-		{[key in ObjectFieldSettingName]: unknown}
-	>({
+	const {
+		errors,
+		handleChange,
+		handleSubmit,
+		handleValidate,
+		setValues,
+		values,
+	} = useForm<ObjectField, {[key in ObjectFieldSettingName]: unknown}>({
 		initialValues,
 		onSubmit,
 		validate,
 	});
 
-	return {errors, handleChange, handleSubmit, setValues, values};
+	return {
+		errors,
+		handleChange,
+		handleSubmit,
+		handleValidate,
+		setValues,
+		values,
+	};
 }

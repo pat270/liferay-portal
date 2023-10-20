@@ -10,7 +10,6 @@ import com.liferay.exportimport.kernel.xstream.XStreamConverter;
 import com.liferay.exportimport.kernel.xstream.XStreamType;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portlet.asset.model.impl.AssetCategoryImpl;
-import com.liferay.portlet.asset.model.impl.AssetLinkImpl;
 import com.liferay.portlet.asset.model.impl.AssetVocabularyImpl;
 import com.liferay.xstream.configurator.XStreamConfigurator;
 
@@ -27,7 +26,7 @@ public class AssetCategoriesXStreamConfigurator implements XStreamConfigurator {
 
 	@Override
 	public List<XStreamType> getAllowedXStreamTypes() {
-		return ListUtil.fromArray(_xStreamTypes);
+		return null;
 	}
 
 	@Override
@@ -46,13 +45,8 @@ public class AssetCategoriesXStreamConfigurator implements XStreamConfigurator {
 			new XStreamAlias(AssetCategoryImpl.class, "AssetCategory"),
 			new XStreamAlias(AssetVocabularyImpl.class, "AssetVocabulary")
 		};
-
-		_xStreamTypes = new XStreamType[] {
-			new XStreamType(AssetLinkImpl.class)
-		};
 	}
 
 	private XStreamAlias[] _xStreamAliases;
-	private XStreamType[] _xStreamTypes;
 
 }

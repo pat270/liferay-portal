@@ -17,7 +17,6 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.source.formatter.SourceFormatterArgs;
 import com.liferay.source.formatter.SourceFormatterExcludes;
 import com.liferay.source.formatter.SourceFormatterMessage;
-import com.liferay.source.formatter.SourceMismatchException;
 import com.liferay.source.formatter.check.SourceCheck;
 import com.liferay.source.formatter.check.configuration.SourceChecksResult;
 import com.liferay.source.formatter.check.configuration.SourceFormatterConfiguration;
@@ -26,6 +25,8 @@ import com.liferay.source.formatter.check.util.SourceChecksUtil;
 import com.liferay.source.formatter.check.util.SourceUtil;
 import com.liferay.source.formatter.checkstyle.Checker;
 import com.liferay.source.formatter.checkstyle.util.CheckstyleLogger;
+import com.liferay.source.formatter.exception.SourceMismatchException;
+import com.liferay.source.formatter.exception.UpgradeCatchAllException;
 import com.liferay.source.formatter.util.DebugUtil;
 import com.liferay.source.formatter.util.FileUtil;
 import com.liferay.source.formatter.util.SourceFormatterUtil;
@@ -96,7 +97,7 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 				new Callable<Void>() {
 
 					@Override
-					public Void call() {
+					public Void call() throws Exception {
 						_performTask(fileName);
 
 						return null;
@@ -694,7 +695,7 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 		return pattern;
 	}
 
-	private void _performTask(String fileName) {
+	private void _performTask(String fileName) throws Exception {
 		try {
 			if (!_sourceFormatterArgs.isShowDebugInformation()) {
 				_format(fileName);
@@ -707,6 +708,9 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 			_format(fileName);
 
 			DebugUtil.finishTask();
+		}
+		catch (UpgradeCatchAllException upgradeCatchAllException) {
+			throw upgradeCatchAllException;
 		}
 		catch (Throwable throwable) {
 			throw new RuntimeException(

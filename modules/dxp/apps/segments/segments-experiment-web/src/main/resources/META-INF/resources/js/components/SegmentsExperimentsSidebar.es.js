@@ -4,21 +4,23 @@
  */
 
 import ClayModal, {useModal} from '@clayui/modal';
-import {openToast} from 'frontend-js-web';
+import {sub} from 'frontend-js-web';
 import PropTypes from 'prop-types';
-import React, {useContext, useReducer} from 'react';
+import React, {useContext, useEffect, useReducer} from 'react';
 
 import SegmentsExperimentsContext from '../context.es';
 import {
-	addSegmentsExperiment,
-	addVariant,
-	archiveExperiment,
 	closeCreationModal,
+	closeDeletionModal,
 	closeEditionModal,
-	deleteArchivedExperiment,
+	closePublishModal,
+	closeTerminateModal,
 	editSegmentsExperiment,
 	openCreationModal,
+	openDeletionModal,
 	openEditionModal,
+	openTerminateModal,
+	reviewAndRunExperiment,
 	reviewClickTargetElement,
 	updateSegmentsExperimentStatus,
 	updateSegmentsExperimentTarget,
@@ -34,15 +36,25 @@ import {
 	SegmentsExperimentType,
 	SegmentsVariantType,
 } from '../types.es';
-import {navigateToExperience} from '../util/navigation.es';
-import {STATUS_COMPLETED, STATUS_TERMINATED} from '../util/statuses.es';
+import {
+	getSegmentsExperimentAction,
+	navigateToExperience,
+} from '../util/navigation.es';
+import {
+	STATUS_COMPLETED,
+	STATUS_DRAFT,
+	STATUS_FINISHED_NO_WINNER,
+	STATUS_FINISHED_WINNER,
+	STATUS_RUNNING,
+	STATUS_TERMINATED,
+} from '../util/statuses.es';
 import {openErrorToast, openSuccessToast} from '../util/toasts.es';
+import {ConfirmModal} from './ConfirmModal';
 import SegmentsExperiments from './SegmentsExperiments.es';
 import SegmentsExperimentsModal from './SegmentsExperimentsModal.es';
 import UnsupportedSegmentsExperiments from './UnsupportedSegmentsExperiments.es';
 
 function SegmentsExperimentsSidebar({
-	initialExperimentHistory,
 	initialGoals,
 	initialSegmentsExperiment,
 	initialSegmentsVariants,
@@ -53,7 +65,6 @@ function SegmentsExperimentsSidebar({
 	const [state, dispatch] = useReducer(
 		reducer,
 		{
-			initialExperimentHistory,
 			initialSegmentsExperiment,
 			initialSegmentsVariants,
 			initialSelectedSegmentsExperienceId,
@@ -62,7 +73,14 @@ function SegmentsExperimentsSidebar({
 		getInitialState
 	);
 
-	const {createExperimentModal, editExperimentModal, experiment} = state;
+	const {
+		createExperimentModal,
+		deleteExperimentModal,
+		editExperimentModal,
+		experiment,
+		publishExperimentModal,
+		terminateExperimentModal,
+	} = state;
 
 	const {
 		observer: creationModalObserver,
@@ -76,6 +94,56 @@ function SegmentsExperimentsSidebar({
 	} = useModal({
 		onClose: () => dispatch(closeEditionModal()),
 	});
+	const {
+		observer: deletionModalObserver,
+		onClose: onDeletionModalClose,
+	} = useModal({
+		onClose: () => dispatch(closeDeletionModal()),
+	});
+	const {
+		observer: terminateModalObserver,
+		onClose: onTerminateModalClose,
+	} = useModal({
+		onClose: () => dispatch(closeTerminateModal()),
+	});
+
+	const {
+		observer: publishModalObserver,
+		onClose: onPublishModalClose,
+	} = useModal({
+		onClose: () => dispatch(closePublishModal()),
+	});
+
+	useEffect(() => {
+		const segmentsExperimentAction = getSegmentsExperimentAction();
+
+		if (!segmentsExperimentAction || !experiment) {
+			return;
+		}
+
+		if (segmentsExperimentAction === 'delete') {
+			if (
+				experiment.status.value === STATUS_DRAFT ||
+				experiment.status.value === STATUS_FINISHED_NO_WINNER ||
+				experiment.status.value === STATUS_FINISHED_WINNER ||
+				experiment.status.value === STATUS_TERMINATED
+			) {
+				dispatch(openDeletionModal());
+			}
+		}
+		else if (
+			segmentsExperimentAction === 'reviewAndRun' &&
+			experiment.status.value === STATUS_DRAFT
+		) {
+			dispatch(reviewAndRunExperiment());
+		}
+		else if (
+			segmentsExperimentAction === 'terminate' &&
+			experiment.status.value === STATUS_RUNNING
+		) {
+			dispatch(openTerminateModal());
+		}
+	}, [dispatch, experiment, terminateExperimentModal]);
 
 	return page.type === 'content' ? (
 		<DispatchContext.Provider value={dispatch}>
@@ -132,6 +200,77 @@ function SegmentsExperimentsSidebar({
 							/>
 						</ClayModal>
 					)}
+
+					{deleteExperimentModal.active && (
+						<ConfirmModal
+							modalObserver={deletionModalObserver}
+							onCancel={onDeletionModalClose}
+							onConfirm={() => {
+								_handleDeleteSegmentsExperiment(
+									experiment.segmentsExperimentId
+								);
+
+								onDeletionModalClose();
+							}}
+							submitTitle={Liferay.Language.get('delete')}
+							title={Liferay.Language.get('delete-test')}
+						>
+							<p className="font-weight-bold text-secondary">
+								{Liferay.Language.get(
+									'are-you-sure-you-want-to-delete-this'
+								)}
+							</p>
+
+							<p className="text-secondary">
+								{Liferay.Language.get(
+									'you-will-lose-all-data-relate-to-it.-you-will-not-be-able-to-undo-this-operation'
+								)}
+							</p>
+						</ConfirmModal>
+					)}
+
+					{terminateExperimentModal.active && (
+						<ConfirmModal
+							modalObserver={terminateModalObserver}
+							onCancel={onTerminateModalClose}
+							onConfirm={() => {
+								_handleEditSegmentExperimentStatus(
+									experiment,
+									STATUS_TERMINATED
+								);
+
+								onTerminateModalClose();
+							}}
+							submitTitle={Liferay.Language.get('terminate')}
+							title={Liferay.Language.get('terminate-test')}
+						>
+							<p className="font-weight-bold text-secondary">
+								{Liferay.Language.get(
+									'are-you-sure-you-want-to-terminate-this-test'
+								)}
+							</p>
+						</ConfirmModal>
+					)}
+
+					{publishExperimentModal.active && (
+						<ConfirmModal
+							modalObserver={publishModalObserver}
+							onCancel={onPublishModalClose}
+							onConfirm={() =>
+								_handlePublishSegmentExperiment(
+									publishExperimentModal.experience
+								)
+							}
+							submitTitle={Liferay.Language.get('publish')}
+							title={Liferay.Language.get('publish-variant')}
+						>
+							<p className="font-weight-bold text-secondary">
+								{Liferay.Language.get(
+									'are-you-sure-you-want-to-publish-this-variant'
+								)}
+							</p>
+						</ConfirmModal>
+					)}
 				</div>
 			</StateContext.Provider>
 		</DispatchContext.Provider>
@@ -139,7 +278,7 @@ function SegmentsExperimentsSidebar({
 		<UnsupportedSegmentsExperiments />
 	);
 
-	function _handleCreateSegmentsExperiment(_experienceId) {
+	function _handleCreateSegmentsExperiment() {
 		dispatch(openCreationModal());
 	}
 
@@ -157,9 +296,6 @@ function SegmentsExperimentsSidebar({
 					experiment.segmentsExperimentId === experimentId
 				) {
 					navigateToExperience(experiment.segmentsExperienceId);
-				}
-				else {
-					dispatch(deleteArchivedExperiment(experimentId));
 				}
 			})
 			.catch((_error) => {
@@ -186,45 +322,12 @@ function SegmentsExperimentsSidebar({
 		};
 
 		return APIService.createExperiment(body)
-			.then(function _successCallback(objectResponse) {
-				const {
-					segmentsExperiment,
-					segmentsExperimentRel,
-				} = objectResponse;
-
-				const {
-					confidenceLevel,
-					description,
-					detailsURL,
-					editable,
-					goal,
-					name,
-					segmentsEntryName,
-					segmentsExperienceId,
-					segmentsExperimentId,
-					status,
-				} = segmentsExperiment;
+			.then(function _successCallback({
+				segmentsExperiment: {segmentsExperienceId},
+			}) {
+				navigateToExperience(segmentsExperienceId);
 
 				openSuccessToast();
-
-				dispatch(addVariant(segmentsExperimentRel));
-
-				dispatch(closeCreationModal());
-
-				dispatch(
-					addSegmentsExperiment({
-						confidenceLevel,
-						description,
-						detailsURL,
-						editable,
-						goal,
-						name,
-						segmentsEntryName,
-						segmentsExperienceId,
-						segmentsExperimentId,
-						status,
-					})
-				);
 			})
 			.catch(function _errorCallback() {
 				dispatch(
@@ -248,32 +351,17 @@ function SegmentsExperimentsSidebar({
 			.then(function _successCallback(objectResponse) {
 				const {editable, status} = objectResponse.segmentsExperiment;
 
-				if (
-					status.value === STATUS_TERMINATED ||
-					status.value === STATUS_COMPLETED
-				) {
-					dispatch(
-						archiveExperiment({
-							status,
-						})
-					);
-				}
-				else {
-					dispatch(
-						updateSegmentsExperimentStatus({
-							editable,
-							status,
-						})
-					);
-				}
+				openSuccessToast();
+
+				dispatch(
+					updateSegmentsExperimentStatus({
+						editable,
+						status,
+					})
+				);
 			})
-			.catch(function _errorCallback() {
-				openToast({
-					message: Liferay.Language.get(
-						'an-unexpected-error-occurred'
-					),
-					type: 'danger',
-				});
+			.catch((_error) => {
+				openErrorToast();
 			});
 	}
 
@@ -346,6 +434,30 @@ function SegmentsExperimentsSidebar({
 			});
 	}
 
+	function _handlePublishSegmentExperiment({experienceId, experienceName}) {
+		APIService.publishExperience({
+			segmentsExperimentId: experiment.segmentsExperimentId,
+			status:
+				experiment.status.value === STATUS_TERMINATED
+					? STATUS_TERMINATED
+					: STATUS_COMPLETED,
+			winnerSegmentsExperienceId: experienceId,
+		})
+			.then(() => {
+				openSuccessToast(
+					sub(
+						Liferay.Language.get('x-was-published-successfully'),
+						experienceName
+					)
+				);
+
+				navigateToExperience(experienceId);
+			})
+			.catch((_error) => {
+				openErrorToast();
+			});
+	}
+
 	function _handleTargetChange(selector) {
 		const body = {
 			description: experiment.description,
@@ -373,8 +485,6 @@ function SegmentsExperimentsSidebar({
 }
 
 SegmentsExperimentsSidebar.propTypes = {
-	initialExperimentHistory: PropTypes.arrayOf(SegmentsExperimentType)
-		.isRequired,
 	initialGoals: PropTypes.arrayOf(SegmentsExperimentGoal),
 	initialSegmentsExperiment: SegmentsExperimentType,
 	initialSegmentsVariants: PropTypes.arrayOf(SegmentsVariantType).isRequired,

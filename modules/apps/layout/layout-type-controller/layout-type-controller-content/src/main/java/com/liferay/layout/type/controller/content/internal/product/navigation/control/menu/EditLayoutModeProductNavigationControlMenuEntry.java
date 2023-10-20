@@ -7,9 +7,9 @@ package com.liferay.layout.type.controller.content.internal.product.navigation.c
 
 import com.liferay.exportimport.kernel.staging.LayoutStaging;
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorWebKeys;
+import com.liferay.layout.helper.LayoutCopyHelper;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.security.permission.resource.LayoutContentModelResourcePermission;
-import com.liferay.layout.util.LayoutCopyHelper;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutRevision;
 import com.liferay.portal.kernel.model.LayoutTypeController;
 import com.liferay.portal.kernel.model.LayoutTypePortlet;
+import com.liferay.portal.kernel.model.impl.VirtualLayout;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -185,7 +186,8 @@ public class EditLayoutModeProductNavigationControlMenuEntry
 
 		if (Objects.equals(
 				className, LayoutPageTemplateEntry.class.getName()) ||
-			!layout.isTypeContent() || !_sites.isLayoutUpdateable(layout)) {
+			(layout instanceof VirtualLayout) || !layout.isLayoutUpdateable() ||
+			!layout.isTypeContent()) {
 
 			return false;
 		}
@@ -211,12 +213,11 @@ public class EditLayoutModeProductNavigationControlMenuEntry
 			Layout layout, ThemeDisplay themeDisplay)
 		throws PortalException {
 
-		String redirect = HttpComponentsUtil.setParameter(
+		String redirect = HttpComponentsUtil.addParameters(
 			fullLayoutURL, "p_l_back_url",
-			_portal.getLayoutFullURL(layout, themeDisplay));
-
-		redirect = HttpComponentsUtil.setParameter(
-			redirect, "p_l_mode", Constants.EDIT);
+			_portal.getLayoutFullURL(layout, themeDisplay),
+			"p_l_back_url_title", layout.getName(themeDisplay.getLocale()),
+			"p_l_mode", Constants.EDIT);
 
 		long segmentsExperienceId = ParamUtil.getLong(
 			httpServletRequest, "segmentsExperienceId", -1);

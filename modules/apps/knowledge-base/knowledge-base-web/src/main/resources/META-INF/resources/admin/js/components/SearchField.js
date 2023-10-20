@@ -9,12 +9,13 @@ import {ClayInput} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import ClayLink from '@clayui/link';
 import ClayList from '@clayui/list';
+import classnames from 'classnames';
 import {sub} from 'frontend-js-web';
 import React, {useEffect, useState} from 'react';
 
 const ITEM_TYPES_SYMBOL = {
-	article: 'document-text',
-	folder: 'folder',
+	KBArticle: 'document-text',
+	KBFolder: 'folder',
 };
 
 const SEARCH_DELTA = 2;
@@ -35,16 +36,31 @@ const highlithKeywordInText = (text, keyword) => {
 	);
 };
 
-const SearchResult = ({filteredItems, keyword}) => {
+const SearchResult = ({filteredItems, handleOnclickItem, keyword}) => {
+	const [selectedResultId, setSelectedResultId] = useState();
+
 	return filteredItems.length ? (
 		<ClayList role="list">
 			{filteredItems.map((item) => {
 				return (
-					<ClayList.ItemField expand key={item.id}>
+					<ClayList.ItemField
+						className={classnames({
+							'knowledge-base-navigation-item-active':
+								item.id === selectedResultId,
+						})}
+						expand
+						key={item.id}
+					>
 						<ClayLink
 							className="p-1"
 							displayType="secondary"
-							href={item.href}
+							href={handleOnclickItem ? '#' : item.href}
+							onClick={() => {
+								setSelectedResultId(item.id);
+								if (handleOnclickItem) {
+									handleOnclickItem(item);
+								}
+							}}
 						>
 							<ClayIcon
 								className="mr-2"
@@ -72,7 +88,11 @@ const SearchResult = ({filteredItems, keyword}) => {
 	);
 };
 
-export default function SearchField({handleSearchChange, items}) {
+export default function SearchField({
+	handleOnclickItem,
+	handleSearchChange,
+	items,
+}) {
 	const initialSearchInfo = {
 		filteredItems: [],
 		query: '',
@@ -145,6 +165,7 @@ export default function SearchField({handleSearchChange, items}) {
 			{searchActive && (
 				<SearchResult
 					filteredItems={searchInfo.filteredItems}
+					handleOnclickItem={handleOnclickItem}
 					keyword={searchInfo.query}
 				/>
 			)}

@@ -31,7 +31,7 @@ public class LayoutReportsDataProviderTest {
 	}
 
 	@Test
-	public void testIsValidConnectionWithoutApiKey() {
+	public void testIsValidConnectionWithoutAPIKey() {
 		LayoutReportsDataProvider layoutReportsDataProvider =
 			new LayoutReportsDataProvider(null, "strategy");
 

@@ -176,6 +176,7 @@ export default function DatePicker({
 				<div
 					data-tooltip-align="top"
 					{...getTooltipTitle({placeholder, value: formattedDate})}
+					aria-required={otherProps.required}
 				>
 					<ClayDatePicker
 						dateFormat={clayFormat}

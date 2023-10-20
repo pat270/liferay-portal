@@ -72,7 +72,6 @@ import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.dto.converter.util.DTOConverterUtil;
 import com.liferay.portal.vulcan.fields.NestedField;
-import com.liferay.portal.vulcan.fields.NestedFieldSupport;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 import com.liferay.portal.vulcan.util.SearchUtil;
@@ -98,11 +97,10 @@ import org.osgi.service.component.annotations.ServiceScope;
  */
 @Component(
 	properties = "OSGI-INF/liferay/rest/v1_0/organization.properties",
-	scope = ServiceScope.PROTOTYPE,
-	service = {NestedFieldSupport.class, OrganizationResource.class}
+	property = "nested.field.support=true", scope = ServiceScope.PROTOTYPE,
+	service = OrganizationResource.class
 )
-public class OrganizationResourceImpl
-	extends BaseOrganizationResourceImpl implements NestedFieldSupport {
+public class OrganizationResourceImpl extends BaseOrganizationResourceImpl {
 
 	@Override
 	public void deleteAccountByExternalReferenceCodeOrganization(
@@ -348,6 +346,7 @@ public class OrganizationResourceImpl
 
 		com.liferay.portal.kernel.model.Organization
 			serviceBuilderOrganization = _organizationService.addOrganization(
+				organization.getExternalReferenceCode(),
 				_getDefaultParentOrganizationId(organization),
 				organization.getName(), OrganizationConstants.TYPE_ORGANIZATION,
 				_getRegionId(organization, countryId), countryId,
@@ -442,6 +441,7 @@ public class OrganizationResourceImpl
 		return _organizationResourceDTOConverter.toDTO(
 			_getDTOConverterContext(organizationId),
 			_organizationService.updateOrganization(
+				organization.getExternalReferenceCode(),
 				serviceBuilderOrganization.getOrganizationId(),
 				_getDefaultParentOrganizationId(organization),
 				organization.getName(), serviceBuilderOrganization.getType(),

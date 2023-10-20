@@ -93,7 +93,7 @@ public class CPOptionIndexer extends BaseIndexer<CPOption> {
 	@Override
 	protected Document doGetDocument(CPOption cpOption) throws Exception {
 		if (_log.isDebugEnabled()) {
-			_log.debug("Indexing option " + cpOption);
+			_log.debug("Indexing commerce product option " + cpOption);
 		}
 
 		Document document = getBaseModelDocument(CLASS_NAME, cpOption);
@@ -115,8 +115,8 @@ public class CPOptionIndexer extends BaseIndexer<CPOption> {
 			}
 
 			document.addText(
-				CPField.DDM_FORM_FIELD_TYPE_NAME,
-				cpOption.getDDMFormFieldTypeName());
+				CPField.COMMERCE_OPTION_TYPE_KEY,
+				cpOption.getCommerceOptionTypeKey());
 			document.addText(CPField.KEY, cpOption.getKey());
 			document.addText(Field.CONTENT, name);
 			document.addText(
@@ -127,7 +127,9 @@ public class CPOptionIndexer extends BaseIndexer<CPOption> {
 		}
 
 		if (_log.isDebugEnabled()) {
-			_log.debug("Document " + cpOption + " indexed successfully");
+			_log.debug(
+				"Commerce product option " + cpOption +
+					" indexed successfully");
 		}
 
 		return document;
@@ -179,7 +181,7 @@ public class CPOptionIndexer extends BaseIndexer<CPOption> {
 					if (_log.isWarnEnabled()) {
 						_log.warn(
 							"Unable to index commerce product option " +
-								cpOption.getCPOptionId(),
+								cpOption,
 							portalException);
 					}
 				}

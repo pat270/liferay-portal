@@ -1,5 +1,5 @@
 /**
- * SPDX-FileCopyrightText: (c) 2000 Liferay, Inc. https://liferay.com
+ * SPDX-FileCopyrightText: (c) 2023 Liferay, Inc. https://liferay.com
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
@@ -21,13 +21,15 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
 import com.liferay.item.selector.ItemSelector;
 import com.liferay.item.selector.ItemSelectorReturnType;
+import com.liferay.item.selector.criteria.InfoItemItemSelectorReturnType;
 import com.liferay.item.selector.criteria.UUIDItemSelectorReturnType;
+import com.liferay.item.selector.criteria.info.item.criterion.InfoItemItemSelectorCriterion;
 import com.liferay.layout.item.selector.criterion.LayoutItemSelectorCriterion;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
@@ -97,35 +99,36 @@ public class CategoryCPDisplayLayoutDisplayContext
 		return _assetCategoryLocalService.getAssetCategory(assetCategoryId);
 	}
 
-	public String getCategorySelectorURL(RenderResponse renderResponse)
-		throws Exception {
-
+	public String getCategorySelectorURL(RenderResponse renderResponse) {
 		ThemeDisplay themeDisplay =
 			(ThemeDisplay)httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
-		PortletURL portletURL = PortletProviderUtil.getPortletURL(
-			httpServletRequest, AssetCategory.class.getName(),
-			PortletProvider.Action.BROWSE);
+		InfoItemItemSelectorCriterion itemSelectorCriterion =
+			new InfoItemItemSelectorCriterion();
 
-		if (portletURL == null) {
-			return null;
-		}
+		itemSelectorCriterion.setDesiredItemSelectorReturnTypes(
+			new InfoItemItemSelectorReturnType());
+		itemSelectorCriterion.setItemType(AssetCategory.class.getName());
 
-		List<AssetVocabulary> vocabularies =
-			AssetVocabularyServiceUtil.getGroupVocabularies(
-				themeDisplay.getCompanyGroupId());
-
-		portletURL.setParameter(
-			"eventName", renderResponse.getNamespace() + "selectCategory");
-		portletURL.setParameter("singleSelect", "true");
-		portletURL.setParameter(
+		return PortletURLBuilder.create(
+			_itemSelector.getItemSelectorURL(
+				RequestBackedPortletURLFactoryUtil.create(
+					liferayPortletRequest),
+				themeDisplay.getScopeGroup(), themeDisplay.getScopeGroupId(),
+				renderResponse.getNamespace() + "selectCategory",
+				itemSelectorCriterion)
+		).setParameter(
 			"vocabularyIds",
-			ListUtil.toString(
-				vocabularies, AssetVocabulary.VOCABULARY_ID_ACCESSOR));
-		portletURL.setWindowState(LiferayWindowState.POP_UP);
+			() -> {
+				List<AssetVocabulary> vocabularies =
+					AssetVocabularyServiceUtil.getGroupVocabularies(
+						themeDisplay.getCompanyGroupId());
 
-		return portletURL.toString();
+				return ListUtil.toString(
+					vocabularies, AssetVocabulary.VOCABULARY_ID_ACCESSOR);
+			}
+		).buildString();
 	}
 
 	public CommerceChannel getCommerceChannel() {
@@ -208,9 +211,6 @@ public class CategoryCPDisplayLayoutDisplayContext
 		LayoutItemSelectorCriterion layoutItemSelectorCriterion =
 			new LayoutItemSelectorCriterion();
 
-		layoutItemSelectorCriterion.setShowHiddenPages(true);
-		layoutItemSelectorCriterion.setShowPrivatePages(true);
-		layoutItemSelectorCriterion.setShowPublicPages(true);
 		layoutItemSelectorCriterion.setDesiredItemSelectorReturnTypes(
 			Collections.<ItemSelectorReturnType>singletonList(
 				new UUIDItemSelectorReturnType()));

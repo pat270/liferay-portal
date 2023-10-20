@@ -430,7 +430,7 @@ exports[`Select filters according to the input and calls onChange callback when 
                 class="input-group input-group-sm"
               >
                 <div
-                  class="input-group-item"
+                  class="input-group-item input-group-item-focusable"
                 >
                   <input
                     class="form-control input-group-inset input-group-inset-after"
@@ -1606,6 +1606,7 @@ exports[`Select is not required 1`] = `
     class="form-group hide"
   >
     <div
+      aria-required="false"
       data-tooltip-align="top"
       title="choose-an-option"
     >
@@ -1728,6 +1729,7 @@ exports[`Select puts an asterisk when field is required 1`] = `
       </span>
     </label>
     <div
+      aria-required="true"
       data-tooltip-align="top"
       title="choose-an-option"
     >
@@ -2260,7 +2262,7 @@ exports[`Select shows a search input when the number of options is more than the
                 class="input-group input-group-sm"
               >
                 <div
-                  class="input-group-item"
+                  class="input-group-item input-group-item-focusable"
                 >
                   <input
                     class="form-control input-group-inset input-group-inset-after"

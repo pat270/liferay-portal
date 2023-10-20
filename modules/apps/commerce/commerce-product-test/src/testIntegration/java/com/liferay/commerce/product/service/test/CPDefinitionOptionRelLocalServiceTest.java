@@ -114,7 +114,7 @@ public class CPDefinitionOptionRelLocalServiceTest {
 				cpDefinitionOptionRel.getCPOptionId(),
 				cpDefinitionOptionRel.getNameMap(),
 				cpDefinitionOptionRel.getDescriptionMap(),
-				cpDefinitionOptionRel.getDDMFormFieldTypeName(),
+				cpDefinitionOptionRel.getCommerceOptionTypeKey(),
 				cpDefinitionOptionRel.getPriority(),
 				cpDefinitionOptionRel.isFacetable(),
 				cpDefinitionOptionRel.isRequired(), true, _serviceContext);
@@ -169,7 +169,7 @@ public class CPDefinitionOptionRelLocalServiceTest {
 			cpDefinitionOptionRel.getCPOptionId(),
 			cpDefinitionOptionRel.getNameMap(),
 			cpDefinitionOptionRel.getDescriptionMap(),
-			cpDefinitionOptionRel.getDDMFormFieldTypeName(),
+			cpDefinitionOptionRel.getCommerceOptionTypeKey(),
 			cpDefinitionOptionRel.getPriority(),
 			cpDefinitionOptionRel.isFacetable(),
 			cpDefinitionOptionRel.isRequired(), false, _serviceContext);
@@ -268,7 +268,7 @@ public class CPDefinitionOptionRelLocalServiceTest {
 
 		CPOption cpOption = CPTestUtil.addCPOption(
 			_commerceCatalog.getGroupId(),
-			CPTestUtil.getDefaultDDMFormFieldType(false), false);
+			CPTestUtil.getDefaultCommerceOptionTypeKey(false), false);
 
 		CPDefinitionOptionRel cpDefinitionOptionRel =
 			CPTestUtil.addCPDefinitionOptionRel(
@@ -451,11 +451,14 @@ public class CPDefinitionOptionRelLocalServiceTest {
 			cpDefinitionOptionRel.getCPOptionId(),
 			cpDefinitionOptionRel.getNameMap(),
 			cpDefinitionOptionRel.getDescriptionMap(),
-			cpDefinitionOptionRel.getDDMFormFieldTypeName(),
+			cpDefinitionOptionRel.getCommerceOptionTypeKey(),
+			cpDefinitionOptionRel.getInfoItemServiceKey(),
 			cpDefinitionOptionRel.getPriority(),
+			cpDefinitionOptionRel.isDefinedExternally(),
 			cpDefinitionOptionRel.isFacetable(),
 			cpDefinitionOptionRel.isRequired(),
 			cpDefinitionOptionRel.isSkuContributor(), priceType,
+			cpDefinitionOptionRel.getTypeSettings(),
 			ServiceContextTestUtil.getServiceContext(
 				cpDefinitionOptionRel.getGroupId()));
 	}

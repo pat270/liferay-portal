@@ -5,9 +5,11 @@
 
 package com.liferay.jethr0.event.handler;
 
-import com.liferay.jethr0.jenkins.cohort.JenkinsCohort;
-import com.liferay.jethr0.jenkins.repository.JenkinsCohortRepository;
-import com.liferay.jethr0.jenkins.repository.JenkinsServerRepository;
+import com.liferay.jethr0.jenkins.cohort.JenkinsCohortEntity;
+import com.liferay.jethr0.jenkins.repository.JenkinsCohortEntityRepository;
+import com.liferay.jethr0.jenkins.repository.JenkinsNodeEntityRepository;
+import com.liferay.jethr0.jenkins.repository.JenkinsServerEntityRepository;
+import com.liferay.jethr0.jenkins.server.JenkinsServerEntity;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -24,8 +26,11 @@ public class CreateJenkinsCohortEventHandler extends BaseObjectEventHandler {
 		JSONObject jenkinsCohortJSONObject = validateJenkinsCohortJSONObject(
 			messageJSONObject.optJSONObject("jenkinsCohort"));
 
-		JenkinsCohort jenkinsCohort = _createJenkinsCohort(
-			jenkinsCohortJSONObject);
+		JenkinsCohortEntityRepository jenkinsCohortEntityRepository =
+			getJenkinsCohortEntityRepository();
+
+		JenkinsCohortEntity jenkinsCohortEntity =
+			jenkinsCohortEntityRepository.create(jenkinsCohortJSONObject);
 
 		JSONArray jenkinsServersJSONArray =
 			jenkinsCohortJSONObject.optJSONArray("jenkinsServers");
@@ -33,34 +38,34 @@ public class CreateJenkinsCohortEventHandler extends BaseObjectEventHandler {
 		if ((jenkinsServersJSONArray != null) &&
 			!jenkinsServersJSONArray.isEmpty()) {
 
-			JenkinsServerRepository jenkinsServerRepository =
-				getJenkinsServerRepository();
+			JenkinsServerEntityRepository jenkinsServerEntityRepository =
+				getJenkinsServerEntityRepository();
+			JenkinsNodeEntityRepository jenkinsNodeEntityRepository =
+				getJenkinsNodeEntityRepository();
 
 			for (int i = 0; i < jenkinsServersJSONArray.length(); i++) {
 				JSONObject jenkinsServerJSONObject =
 					jenkinsServersJSONArray.getJSONObject(i);
 
-				jenkinsServerRepository.add(
-					jenkinsCohort, jenkinsServerJSONObject);
+				JenkinsServerEntity jenkinsServerEntity =
+					jenkinsServerEntityRepository.create(
+						jenkinsCohortEntity, jenkinsServerJSONObject);
+
+				jenkinsNodeEntityRepository.createAll(jenkinsServerEntity);
+
+				jenkinsServerEntityRepository.update(jenkinsServerEntity);
 			}
 		}
 
-		return jenkinsCohort.toString();
+		jenkinsCohortEntityRepository.update(jenkinsCohortEntity);
+
+		return jenkinsCohortEntity.toString();
 	}
 
 	protected CreateJenkinsCohortEventHandler(
 		EventHandlerContext eventHandlerContext, JSONObject messageJSONObject) {
 
 		super(eventHandlerContext, messageJSONObject);
-	}
-
-	private JenkinsCohort _createJenkinsCohort(
-		JSONObject jenkinsCohortJSONObject) {
-
-		JenkinsCohortRepository jenkinsCohortRepository =
-			getJenkinsCohortRepository();
-
-		return jenkinsCohortRepository.add(jenkinsCohortJSONObject);
 	}
 
 }

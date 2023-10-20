@@ -195,6 +195,15 @@ public class DDMFieldPersistenceTest {
 	}
 
 	@Test
+	public void testCountByS_F() throws Exception {
+		_persistence.countByS_F(RandomTestUtil.nextLong(), "");
+
+		_persistence.countByS_F(0L, "null");
+
+		_persistence.countByS_F(0L, (String)null);
+	}
+
+	@Test
 	public void testCountByS_I() throws Exception {
 		_persistence.countByS_I(RandomTestUtil.nextLong(), "");
 
@@ -230,8 +239,8 @@ public class DDMFieldPersistenceTest {
 		return OrderByComparatorFactoryUtil.create(
 			"DDMField", "mvccVersion", true, "ctCollectionId", true, "fieldId",
 			true, "companyId", true, "parentFieldId", true, "storageId", true,
-			"structureVersionId", true, "fieldType", true, "instanceId", true,
-			"localizable", true, "priority", true);
+			"structureVersionId", true, "fieldName", true, "fieldType", true,
+			"instanceId", true, "localizable", true, "priority", true);
 	}
 
 	@Test

@@ -54,9 +54,12 @@
 
 		<!-- Other fields -->
 
+		<column name="ctRemoteId" type="long" />
 		<column name="schemaVersionId" type="long" />
 		<column name="name" type="String" />
 		<column name="description" type="String" />
+		<column name="onDemandUserId" type="long" />
+		<column name="shareable" type="boolean" />
 		<column name="status" type="int" />
 		<column name="statusByUserId" type="long" />
 		<column name="statusDate" type="Date" />
@@ -144,7 +147,7 @@
 			<finder-column name="ctEntryId" />
 		</finder>
 	</entity>
-	<entity local-service="true" name="CTEntry" remote-service="false" trash-enabled="false" uuid="false">
+	<entity external-reference-code="true" local-service="true" name="CTEntry" remote-service="false" trash-enabled="false" uuid="true">
 
 		<!-- PK fields -->
 
@@ -291,6 +294,8 @@
 		<column name="name" type="String" />
 		<column name="description" type="String" />
 		<column name="url" type="String" />
+		<column name="clientId" type="String" />
+		<column name="clientSecret" type="String" />
 
 		<!-- Order -->
 

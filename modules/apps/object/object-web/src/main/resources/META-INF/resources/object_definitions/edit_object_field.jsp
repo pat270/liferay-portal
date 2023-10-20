@@ -13,10 +13,14 @@ ObjectDefinitionsFieldsDisplayContext objectDefinitionsFieldsDisplayContext = (O
 ObjectField objectField = (ObjectField)request.getAttribute(ObjectWebKeys.OBJECT_FIELD);
 %>
 
+<liferay-portlet:resourceURL copyCurrentRenderParameters="<%= false %>" var="baseResourceURL" />
+
 <react:component
 	module="js/components/ObjectField/EditObjectField"
 	props='<%=
 		HashMapBuilder.<String, Object>put(
+			"baseResourceURL", String.valueOf(baseResourceURL)
+		).put(
 			"creationLanguageId", objectDefinition.getDefaultLanguageId()
 		).put(
 			"filterOperators", LocalizedJSONArrayUtil.getFilterOperatorsJSONObject(locale)
@@ -31,21 +35,13 @@ ObjectField objectField = (ObjectField)request.getAttribute(ObjectWebKeys.OBJECT
 		).put(
 			"isDefaultStorageType", objectDefinition.isDefaultStorageType()
 		).put(
+			"learnResources", LearnMessageUtil.getReactDataJSONObject("object-web")
+		).put(
 			"objectDefinitionExternalReferenceCode", objectDefinition.getExternalReferenceCode()
 		).put(
 			"objectFieldId", objectField.getObjectFieldId()
 		).put(
-			"objectFieldTypes", objectDefinitionsFieldsDisplayContext.getObjectFieldBusinessTypeMaps(Validator.isNotNull(objectField.getRelationshipType()), locale)
-		).put(
-			"objectName", objectDefinition.getShortName()
-		).put(
-			"objectRelationshipId", objectDefinitionsFieldsDisplayContext.getObjectRelationshipId(objectField)
-		).put(
 			"readOnly", !objectDefinitionsFieldsDisplayContext.hasUpdateObjectDefinitionPermission()
-		).put(
-			"readOnlySidebarElements", objectDefinitionsFieldsDisplayContext.getObjectFieldCodeEditorElements()
-		).put(
-			"sidebarElements", objectDefinitionsFieldsDisplayContext.getObjectFieldCodeEditorElements(objectField.getBusinessType())
 		).put(
 			"workflowStatusJSONArray", LocalizedJSONArrayUtil.getWorkflowStatusJSONArray(locale)
 		).build()

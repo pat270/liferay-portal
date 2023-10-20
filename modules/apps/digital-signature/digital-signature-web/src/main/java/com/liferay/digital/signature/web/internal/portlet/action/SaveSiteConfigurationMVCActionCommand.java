@@ -7,7 +7,7 @@ package com.liferay.digital.signature.web.internal.portlet.action;
 
 import com.liferay.configuration.admin.constants.ConfigurationAdminPortletKeys;
 import com.liferay.digital.signature.configuration.DigitalSignatureConfiguration;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
@@ -69,6 +69,8 @@ public class SaveSiteConfigurationMVCActionCommand
 				"apiUsername", ParamUtil.getString(actionRequest, "apiUsername")
 			).put(
 				"enabled", ParamUtil.getBoolean(actionRequest, "enabled")
+			).put(
+				"environment", ParamUtil.getString(actionRequest, "environment")
 			).put(
 				"integrationKey",
 				ParamUtil.getString(actionRequest, "integrationKey")

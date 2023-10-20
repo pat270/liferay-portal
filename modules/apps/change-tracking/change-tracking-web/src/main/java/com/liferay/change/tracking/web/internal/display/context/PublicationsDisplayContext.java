@@ -10,12 +10,15 @@ import com.liferay.change.tracking.constants.CTConstants;
 import com.liferay.change.tracking.mapping.CTMappingTableInfo;
 import com.liferay.change.tracking.model.CTCollection;
 import com.liferay.change.tracking.model.CTPreferences;
+import com.liferay.change.tracking.model.CTRemote;
 import com.liferay.change.tracking.service.CTCollectionLocalService;
 import com.liferay.change.tracking.service.CTCollectionService;
 import com.liferay.change.tracking.service.CTEntryLocalService;
 import com.liferay.change.tracking.service.CTPreferencesLocalService;
+import com.liferay.change.tracking.service.CTRemoteLocalService;
 import com.liferay.change.tracking.spi.display.CTDisplayRendererRegistry;
 import com.liferay.change.tracking.web.internal.constants.PublicationRoleConstants;
+import com.liferay.change.tracking.web.internal.helper.PublicationHelper;
 import com.liferay.change.tracking.web.internal.security.permission.resource.CTCollectionPermission;
 import com.liferay.change.tracking.web.internal.security.permission.resource.CTPermission;
 import com.liferay.change.tracking.web.internal.util.PublicationsPortletURLUtil;
@@ -28,6 +31,7 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.DisplayTerms;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
@@ -66,8 +70,10 @@ public class PublicationsDisplayContext extends BasePublicationsDisplayContext {
 		CTDisplayRendererRegistry ctDisplayRendererRegistry,
 		CTEntryLocalService ctEntryLocalService,
 		CTPreferencesLocalService ctPreferencesLocalService,
+		CTRemoteLocalService ctRemoteLocalService,
 		HttpServletRequest httpServletRequest, Language language,
-		RenderRequest renderRequest, RenderResponse renderResponse) {
+		PublicationHelper publicationHelper, RenderRequest renderRequest,
+		RenderResponse renderResponse) {
 
 		super(httpServletRequest);
 
@@ -75,8 +81,10 @@ public class PublicationsDisplayContext extends BasePublicationsDisplayContext {
 		_ctCollectionService = ctCollectionService;
 		_ctDisplayRendererRegistry = ctDisplayRendererRegistry;
 		_ctEntryLocalService = ctEntryLocalService;
+		_ctRemoteLocalService = ctRemoteLocalService;
 		_httpServletRequest = httpServletRequest;
 		_language = language;
+		_publicationHelper = publicationHelper;
 		_renderRequest = renderRequest;
 		_renderResponse = renderResponse;
 
@@ -138,6 +146,23 @@ public class PublicationsDisplayContext extends BasePublicationsDisplayContext {
 								ctCollectionId));
 
 				return getCollaboratorsURL.toString();
+			}
+		).put(
+			"getSharePublicationLinkURL",
+			() -> {
+				if (publicationTemplate) {
+					return null;
+				}
+
+				ResourceURL getSharePublicationLinkURL =
+					_renderResponse.createResourceURL();
+
+				getSharePublicationLinkURL.setResourceID(
+					"/change_tracking/get_share_publication_link");
+				getSharePublicationLinkURL.setParameter(
+					"ctCollectionId", String.valueOf(ctCollectionId));
+
+				return getSharePublicationLinkURL.toString();
 			}
 		).put(
 			"inviteUsersURL",
@@ -261,17 +286,22 @@ public class PublicationsDisplayContext extends BasePublicationsDisplayContext {
 					"longDescription",
 					_language.get(
 						_httpServletRequest,
-						"admins-can-view,-edit,-publish,-and-invite-other-" +
-							"users")
+						"administrators-can-view,-edit,-publish,-and-invite-" +
+							"other-users")
 				).put(
 					"shortDescription",
 					_language.get(
 						_httpServletRequest,
-						"admins-can-view,-edit,-publish,-and-invite-other-" +
-							"users")
+						"administrators-can-view,-edit,-publish,-and-invite-" +
+							"other-users")
 				).put(
 					"value", PublicationRoleConstants.ROLE_ADMIN
 				))
+		).put(
+			"sharePublicationLink",
+			() -> _publicationHelper.getShareURL(ctCollectionId, _renderRequest)
+		).put(
+			"showShareLinkTab", FeatureFlagManagerUtil.isEnabled("LPS-187436")
 		).put(
 			"spritemap", _themeDisplay.getPathThemeSpritemap()
 		).put(
@@ -302,17 +332,44 @@ public class PublicationsDisplayContext extends BasePublicationsDisplayContext {
 			return null;
 		}
 
-		return CreationMenuBuilder.addPrimaryDropdownItem(
-			dropdownItem -> {
-				dropdownItem.setHref(
-					_renderResponse.createRenderURL(), "mvcRenderCommandName",
-					"/change_tracking/add_ct_collection", "redirect",
-					_themeDisplay.getURLCurrent());
-				dropdownItem.setLabel(
-					_language.get(
-						_httpServletRequest, "create-new-publication"));
+		CreationMenuBuilder.CreationMenuWrapper creationMenuWrapper =
+			CreationMenuBuilder.addDropdownItem(
+				dropdownItem -> {
+					dropdownItem.setHref(
+						_renderResponse.createRenderURL(),
+						"mvcRenderCommandName",
+						"/change_tracking/add_ct_collection", "redirect",
+						_themeDisplay.getURLCurrent());
+					dropdownItem.setLabel(
+						_language.get(
+							_httpServletRequest, "create-new-publication"));
+				});
+
+		if (FeatureFlagManagerUtil.isEnabled(
+				_themeDisplay.getCompanyId(), "LPS-186360")) {
+
+			List<CTRemote> ctRemotes = _ctRemoteLocalService.getCTRemotes(
+				_themeDisplay.getCompanyId());
+
+			for (CTRemote ctRemote : ctRemotes) {
+				creationMenuWrapper.addDropdownItem(
+					dropdownItem -> {
+						dropdownItem.setHref(
+							_renderResponse.createRenderURL(),
+							"mvcRenderCommandName",
+							"/change_tracking/add_ct_collection", "ctRemoteId",
+							ctRemote.getCtRemoteId(), "redirect",
+							_themeDisplay.getURLCurrent());
+						dropdownItem.setLabel(
+							_language.format(
+								_httpServletRequest,
+								"create-new-publication-on-x",
+								ctRemote.getName()));
+					});
 			}
-		).build();
+		}
+
+		return creationMenuWrapper.build();
 	}
 
 	public long getCtCollectionId() {
@@ -491,9 +548,18 @@ public class PublicationsDisplayContext extends BasePublicationsDisplayContext {
 				_language.get(
 					_httpServletRequest,
 					"are-you-sure-you-want-to-delete-this-publication"),
-				null, "times-circle", "delete",
-				_language.get(_httpServletRequest, "delete"), "delete",
-				"delete", "headless"),
+				PortletURLBuilder.createActionURL(
+					_renderResponse
+				).setActionName(
+					"/change_tracking/delete_ct_collection"
+				).setRedirect(
+					_themeDisplay.getURLCurrent()
+				).setParameter(
+					"ctCollectionId", "{id}"
+				).buildString(),
+				"times-circle", "delete",
+				_language.get(_httpServletRequest, "delete"), "get", "delete",
+				"async"),
 			new FDSActionDropdownItem(
 				PortletURLBuilder.createRenderURL(
 					_renderResponse
@@ -678,8 +744,10 @@ public class PublicationsDisplayContext extends BasePublicationsDisplayContext {
 	private final CTCollectionService _ctCollectionService;
 	private final CTDisplayRendererRegistry _ctDisplayRendererRegistry;
 	private final CTEntryLocalService _ctEntryLocalService;
+	private final CTRemoteLocalService _ctRemoteLocalService;
 	private final HttpServletRequest _httpServletRequest;
 	private final Language _language;
+	private final PublicationHelper _publicationHelper;
 	private final RenderRequest _renderRequest;
 	private final RenderResponse _renderResponse;
 	private SearchContainer<CTCollection> _searchContainer;

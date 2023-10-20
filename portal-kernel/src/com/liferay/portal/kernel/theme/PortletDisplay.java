@@ -11,8 +11,6 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutTypePortlet;
-import com.liferay.portal.kernel.module.configuration.ConfigurationException;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.portlet.configuration.icon.PortletConfigurationIconMenu;
 import com.liferay.portal.kernel.portlet.toolbar.PortletToolbar;
 import com.liferay.portal.kernel.util.Constants;
@@ -256,18 +254,6 @@ public class PortletDisplay implements Cloneable, Serializable {
 		return _portletDisplayName;
 	}
 
-	public <T> T getPortletInstanceConfiguration(Class<T> clazz)
-		throws ConfigurationException {
-
-		if (Validator.isNull(_portletResource)) {
-			return ConfigurationProviderUtil.getPortletInstanceConfiguration(
-				clazz, _themeDisplay.getLayout(), _id);
-		}
-
-		return ConfigurationProviderUtil.getPortletInstanceConfiguration(
-			clazz, _themeDisplay.getLayout(), _portletResource);
-	}
-
 	public String getPortletName() {
 		return _portletName;
 	}
@@ -370,6 +356,10 @@ public class PortletDisplay implements Cloneable, Serializable {
 
 	public boolean isActive() {
 		return _active;
+	}
+
+	public boolean isBeta() {
+		return _beta;
 	}
 
 	public boolean isFocused() {
@@ -625,6 +615,10 @@ public class PortletDisplay implements Cloneable, Serializable {
 
 	public void setActive(boolean active) {
 		_active = active;
+	}
+
+	public void setBeta(boolean beta) {
+		_beta = beta;
 	}
 
 	public void setColumnCount(int columnCount) {
@@ -933,6 +927,7 @@ public class PortletDisplay implements Cloneable, Serializable {
 		StringPool.BLANK);
 
 	private boolean _active;
+	private boolean _beta;
 	private int _columnCount;
 	private String _columnId = StringPool.BLANK;
 	private int _columnPos;

@@ -12,6 +12,7 @@ ViewKBSuggestionDisplayContext viewKBSuggestionDisplayContext = new ViewKBSugges
 
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(viewKBSuggestionDisplayContext.getRedirect());
+portletDisplay.setURLBackTitle(portletDisplay.getTitle());
 
 renderResponse.setTitle(viewKBSuggestionDisplayContext.getKBCommentTitle());
 %>
@@ -24,7 +25,7 @@ renderResponse.setTitle(viewKBSuggestionDisplayContext.getKBCommentTitle());
 			<div class="card-body">
 				<div class="card-col-field">
 					<div class="list-group-card-icon">
-						<liferay-ui:user-portrait
+						<liferay-user:user-portrait
 							userId="<%= viewKBSuggestionDisplayContext.getKBCommentUserId() %>"
 						/>
 					</div>

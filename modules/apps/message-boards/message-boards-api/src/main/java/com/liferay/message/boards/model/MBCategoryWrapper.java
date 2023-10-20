@@ -50,6 +50,7 @@ public class MBCategoryWrapper
 		attributes.put("name", getName());
 		attributes.put("description", getDescription());
 		attributes.put("displayStyle", getDisplayStyle());
+		attributes.put("friendlyURL", getFriendlyURL());
 		attributes.put("lastPublishDate", getLastPublishDate());
 		attributes.put("status", getStatus());
 		attributes.put("statusByUserId", getStatusByUserId());
@@ -143,6 +144,12 @@ public class MBCategoryWrapper
 
 		if (displayStyle != null) {
 			setDisplayStyle(displayStyle);
+		}
+
+		String friendlyURL = (String)attributes.get("friendlyURL");
+
+		if (friendlyURL != null) {
+			setFriendlyURL(friendlyURL);
 		}
 
 		Date lastPublishDate = (Date)attributes.get("lastPublishDate");
@@ -273,6 +280,16 @@ public class MBCategoryWrapper
 	@Override
 	public String getDisplayStyle() {
 		return model.getDisplayStyle();
+	}
+
+	/**
+	 * Returns the friendly url of this message boards category.
+	 *
+	 * @return the friendly url of this message boards category
+	 */
+	@Override
+	public String getFriendlyURL() {
+		return model.getFriendlyURL();
 	}
 
 	/**
@@ -640,6 +657,16 @@ public class MBCategoryWrapper
 	@Override
 	public void setDisplayStyle(String displayStyle) {
 		model.setDisplayStyle(displayStyle);
+	}
+
+	/**
+	 * Sets the friendly url of this message boards category.
+	 *
+	 * @param friendlyURL the friendly url of this message boards category
+	 */
+	@Override
+	public void setFriendlyURL(String friendlyURL) {
+		model.setFriendlyURL(friendlyURL);
 	}
 
 	/**

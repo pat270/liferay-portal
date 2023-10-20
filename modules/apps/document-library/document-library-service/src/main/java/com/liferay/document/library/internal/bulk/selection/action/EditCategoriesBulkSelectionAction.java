@@ -14,15 +14,16 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.security.permission.BaseModelPermissionCheckerUtil;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 
 import java.io.Serializable;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -47,7 +48,6 @@ public class EditCategoriesBulkSelectionAction
 
 		Set<Long> toAddCategoryIdsSet = _toLongSet(
 			inputMap, "toAddCategoryIds");
-
 		Set<Long> toRemoveCategoryIdsSet = _toLongSet(
 			inputMap, "toRemoveCategoryIds");
 
@@ -57,11 +57,10 @@ public class EditCategoriesBulkSelectionAction
 		bulkSelection.forEach(
 			assetEntry -> {
 				try {
-					if (!BaseModelPermissionCheckerUtil.
-							containsBaseModelPermission(
-								permissionChecker, assetEntry.getGroupId(),
-								assetEntry.getClassName(),
-								assetEntry.getClassPK(), ActionKeys.UPDATE)) {
+					if (!ModelResourcePermissionUtil.contains(
+							permissionChecker, assetEntry.getGroupId(),
+							assetEntry.getClassName(), assetEntry.getClassPK(),
+							ActionKeys.UPDATE)) {
 
 						return;
 					}
@@ -69,8 +68,8 @@ public class EditCategoriesBulkSelectionAction
 					long[] newCategoryIds = new long[0];
 
 					if (SetUtil.isNotEmpty(toAddCategoryIdsSet)) {
-						newCategoryIds = _getLongArray(
-							inputMap, "toAddCategoryIds");
+						newCategoryIds = ArrayUtil.toLongArray(
+							toAddCategoryIdsSet);
 					}
 
 					if (MapUtil.getBoolean(inputMap, "append")) {
@@ -98,14 +97,21 @@ public class EditCategoriesBulkSelectionAction
 			});
 	}
 
-	private long[] _getLongArray(Map<String, Serializable> map, String key) {
-		return ArrayUtil.toArray((Long[])map.getOrDefault(key, new Long[0]));
-	}
-
 	private Set<Long> _toLongSet(Map<String, Serializable> map, String key) {
 		try {
-			return SetUtil.fromArray(
-				(Long[])map.getOrDefault(key, new Long[0]));
+			Serializable values = map.get(key);
+
+			if (values instanceof Long[]) {
+				return SetUtil.fromArray((Long[])values);
+			}
+
+			Set<Long> set = new HashSet<>();
+
+			for (Integer value : (Integer[])values) {
+				set.add(value.longValue());
+			}
+
+			return set;
 		}
 		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {

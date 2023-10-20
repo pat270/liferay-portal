@@ -142,7 +142,12 @@ public class DLFolderItemSelectorView
 
 			if (!groupConnectedDepotEntries.contains(group.getGroupId())) {
 				folderId = DLFolderConstants.DEFAULT_PARENT_FOLDER_ID;
+
 				repositoryId = themeDisplay.getRefererGroupId();
+
+				if (repositoryId == 0) {
+					repositoryId = themeDisplay.getScopeGroupId();
+				}
 			}
 		}
 
@@ -194,7 +199,7 @@ public class DLFolderItemSelectorView
 
 		try {
 			return ListUtil.toList(
-				_depotEntryService.getGroupConnectedDepotEntries(
+				_depotEntryService.getCurrentAndGroupConnectedDepotEntries(
 					themeDisplay.getRefererGroupId(), QueryUtil.ALL_POS,
 					QueryUtil.ALL_POS),
 				DepotEntry::getGroupId);

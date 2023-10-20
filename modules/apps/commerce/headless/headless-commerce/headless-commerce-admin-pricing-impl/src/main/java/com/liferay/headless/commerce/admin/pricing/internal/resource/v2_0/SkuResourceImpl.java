@@ -9,7 +9,9 @@ import com.liferay.commerce.discount.model.CommerceDiscountRel;
 import com.liferay.commerce.discount.service.CommerceDiscountRelService;
 import com.liferay.commerce.price.list.model.CommercePriceEntry;
 import com.liferay.commerce.price.list.service.CommercePriceEntryService;
+import com.liferay.commerce.product.exception.NoSuchCPInstanceException;
 import com.liferay.commerce.product.model.CPInstance;
+import com.liferay.commerce.product.service.CPInstanceLocalService;
 import com.liferay.headless.commerce.admin.pricing.dto.v2_0.DiscountSku;
 import com.liferay.headless.commerce.admin.pricing.dto.v2_0.PriceEntry;
 import com.liferay.headless.commerce.admin.pricing.dto.v2_0.Sku;
@@ -17,7 +19,6 @@ import com.liferay.headless.commerce.admin.pricing.resource.v2_0.SkuResource;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.fields.NestedField;
-import com.liferay.portal.vulcan.fields.NestedFieldSupport;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -28,11 +29,10 @@ import org.osgi.service.component.annotations.ServiceScope;
  */
 @Component(
 	properties = "OSGI-INF/liferay/rest/v2_0/sku.properties",
-	scope = ServiceScope.PROTOTYPE,
-	service = {NestedFieldSupport.class, SkuResource.class}
+	property = "nested.field.support=true", scope = ServiceScope.PROTOTYPE,
+	service = SkuResource.class
 )
-public class SkuResourceImpl
-	extends BaseSkuResourceImpl implements NestedFieldSupport {
+public class SkuResourceImpl extends BaseSkuResourceImpl {
 
 	@NestedField(parentClass = DiscountSku.class, value = "sku")
 	@Override
@@ -52,7 +52,13 @@ public class SkuResourceImpl
 		CommercePriceEntry commercePriceEntry =
 			_commercePriceEntryService.getCommercePriceEntry(id);
 
-		CPInstance cpInstance = commercePriceEntry.getCPInstance();
+		CPInstance cpInstance = _cpInstanceLocalService.fetchCPInstance(
+			commercePriceEntry.getCProductId(),
+			commercePriceEntry.getCPInstanceUuid());
+
+		if (cpInstance == null) {
+			throw new NoSuchCPInstanceException();
+		}
 
 		return _skuDTOConverter.toDTO(
 			new DefaultDTOConverterContext(
@@ -65,6 +71,9 @@ public class SkuResourceImpl
 
 	@Reference
 	private CommercePriceEntryService _commercePriceEntryService;
+
+	@Reference
+	private CPInstanceLocalService _cpInstanceLocalService;
 
 	@Reference(
 		target = "(component.name=com.liferay.headless.commerce.admin.pricing.internal.dto.v2_0.converter.SkuDTOConverter)"

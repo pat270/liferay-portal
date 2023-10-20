@@ -140,8 +140,9 @@ export default function PageContent({
 					if (editable) {
 						setIsHovered(
 							editable.classPK === classPK ||
-								editable.externalReferenceCode ===
-									externalReferenceCode
+								(editable.externalReferenceCode &&
+									editable.externalReferenceCode ===
+										externalReferenceCode)
 						);
 					}
 				}
@@ -184,12 +185,8 @@ export default function PageContent({
 		hoverItem(null);
 	};
 
-	const onClickEditInlineText = () => {
-		if (isBeingEdited) {
-			return;
-		}
-
-		const itemId = getFirstControlsId({
+	const getInlineTextItemId = () => {
+		return getFirstControlsId({
 			item: {
 				id: editableId,
 				itemType: ITEM_TYPES.editable,
@@ -198,19 +195,53 @@ export default function PageContent({
 			},
 			layoutData,
 		});
+	};
+
+	const isInlineText = !!editableId;
+
+	const onClickEditInlineText = () => {
+		if (isBeingEdited || !isInlineText) {
+			return;
+		}
+
+		const itemId = getInlineTextItemId();
+
+		setNextEditableProcessorUniqueId(itemId);
+	};
+
+	const onClickSelectInlineText = () => {
+		if (isBeingEdited || !isInlineText) {
+			return;
+		}
+
+		const itemId = getInlineTextItemId();
 
 		selectItem(itemId, {
 			itemType: ITEM_TYPES.editable,
 			origin: ITEM_ACTIVATION_ORIGINS.sidebar,
 		});
-
-		setNextEditableProcessorUniqueId(itemId);
 	};
+
+	const extraProps = isInlineText
+		? {
+				'aria-label': `${Liferay.Language.get('select')} ${title}`,
+				'onClick': () => onClickSelectInlineText(),
+				'onKeyDown': (event) => {
+					if (event.key === 'Enter') {
+						onClickSelectInlineText();
+					}
+				},
+				'role': 'button',
+				'tabIndex': '0',
+		  }
+		: {
+				'aria-label': title,
+		  };
 
 	return (
 		<li
 			className={classNames(
-				'page-editor__page-contents__page-content mb-1 p-1',
+				'page-editor__page-contents__page-content position-relative mb-1 p-1 pr-3 d-inline-flex autofit-row',
 				{
 					'page-editor__page-contents__page-content--mapped-item-hovered':
 						isHovered || activeActions || isBeingEdited,
@@ -232,8 +263,12 @@ export default function PageContent({
 				</div>
 			) : (
 				<ClayLayout.ContentRow
-					className={classNames({'align-items-center': !subtype})}
+					className={classNames('c-mr-1', {
+						'align-items-center': !subtype,
+						'btn btn-unstyled editable-hovered': isInlineText,
+					})}
 					padded
+					{...extraProps}
 				>
 					<ClayLayout.ContentCol>
 						<ClayIcon
@@ -256,68 +291,60 @@ export default function PageContent({
 							</span>
 						)}
 					</ClayLayout.ContentCol>
-
-					<ClayLayout.ContentCol>
-						{dropdownItems?.length ? (
-							<ClayDropDownWithItems
-								active={activeActions}
-								className="align-self-center"
-								items={dropdownItems}
-								menuElementAttrs={{
-									containerProps: {
-										className: 'cadmin',
-									},
-								}}
-								onActiveChange={setActiveActions}
-								trigger={
-									<ClayButton
-										aria-label={sub(
-											Liferay.Language.get(
-												'actions-for-x'
-											),
-											title
-										)}
-										className={classNames(
-											'page-editor__page-contents__button',
-											{'mt-1': subtype}
-										)}
-										displayType="unstyled"
-										size="sm"
-										title={sub(
-											Liferay.Language.get(
-												'open-actions-menu'
-											),
-											title
-										)}
-									>
-										<ClayIcon symbol="ellipsis-v" />
-									</ClayButton>
-								}
-							/>
-						) : (
-							<ClayButton
-								aria-label={sub(
-									Liferay.Language.get('edit-inline-text-x'),
-									title
-								)}
-								className={classNames(
-									'page-editor__page-contents__button',
-									{
-										'not-allowed':
-											isBeingEdited ||
-											!canUpdateEditables,
-									}
-								)}
-								disabled={isBeingEdited || !canUpdateEditables}
-								displayType="unstyled"
-								onClick={onClickEditInlineText}
-								size="sm"
-							>
-								<ClayIcon symbol="pencil" />
-							</ClayButton>
-						)}
-					</ClayLayout.ContentCol>
 				</ClayLayout.ContentRow>
+			)}
+
+			{dropdownItems?.length ? (
+				<ClayDropDownWithItems
+					active={activeActions}
+					className="align-self-center"
+					items={dropdownItems}
+					menuElementAttrs={{
+						containerProps: {
+							className: 'cadmin',
+						},
+					}}
+					onActiveChange={setActiveActions}
+					trigger={
+						<ClayButton
+							aria-label={sub(
+								Liferay.Language.get('actions-for-x'),
+								title
+							)}
+							className={classNames(
+								'page-editor__page-contents__button',
+								{'mt-1': subtype}
+							)}
+							displayType="unstyled"
+							size="sm"
+							title={sub(
+								Liferay.Language.get('open-actions-menu'),
+								title
+							)}
+						>
+							<ClayIcon symbol="ellipsis-v" />
+						</ClayButton>
+					}
+				/>
+			) : (
+				<ClayButton
+					aria-label={sub(
+						Liferay.Language.get('edit-inline-text-x'),
+						title
+					)}
+					className={classNames(
+						'page-editor__page-contents__button',
+						{
+							'not-allowed': isBeingEdited || !canUpdateEditables,
+						}
+					)}
+					disabled={isBeingEdited || !canUpdateEditables}
+					displayType="unstyled"
+					onClick={onClickEditInlineText}
+					size="sm"
+				>
+					<ClayIcon symbol="pencil" />
+				</ClayButton>
 			)}
 
 			{imageEditorParams && (

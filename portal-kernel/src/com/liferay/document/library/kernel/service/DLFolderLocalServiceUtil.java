@@ -36,28 +36,32 @@ public class DLFolderLocalServiceUtil {
 	 *
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.portlet.documentlibrary.service.impl.DLFolderLocalServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
-	public static void addDLFileEntryTypeDLFolder(
+	public static boolean addDLFileEntryTypeDLFolder(
 		long fileEntryTypeId, DLFolder dlFolder) {
 
-		getService().addDLFileEntryTypeDLFolder(fileEntryTypeId, dlFolder);
+		return getService().addDLFileEntryTypeDLFolder(
+			fileEntryTypeId, dlFolder);
 	}
 
-	public static void addDLFileEntryTypeDLFolder(
+	public static boolean addDLFileEntryTypeDLFolder(
 		long fileEntryTypeId, long folderId) {
 
-		getService().addDLFileEntryTypeDLFolder(fileEntryTypeId, folderId);
+		return getService().addDLFileEntryTypeDLFolder(
+			fileEntryTypeId, folderId);
 	}
 
-	public static void addDLFileEntryTypeDLFolders(
+	public static boolean addDLFileEntryTypeDLFolders(
 		long fileEntryTypeId, List<DLFolder> dlFolders) {
 
-		getService().addDLFileEntryTypeDLFolders(fileEntryTypeId, dlFolders);
+		return getService().addDLFileEntryTypeDLFolders(
+			fileEntryTypeId, dlFolders);
 	}
 
-	public static void addDLFileEntryTypeDLFolders(
+	public static boolean addDLFileEntryTypeDLFolders(
 		long fileEntryTypeId, long[] folderIds) {
 
-		getService().addDLFileEntryTypeDLFolders(fileEntryTypeId, folderIds);
+		return getService().addDLFileEntryTypeDLFolders(
+			fileEntryTypeId, folderIds);
 	}
 
 	/**
@@ -615,6 +619,12 @@ public class DLFolderLocalServiceUtil {
 
 		return getService().getFoldersCount(
 			groupId, parentFolderId, status, includeMountfolders);
+	}
+
+	public static long getFolderSize(
+		long companyId, long groupId, String treePath) {
+
+		return getService().getFolderSize(companyId, groupId, treePath);
 	}
 
 	public static List<Long> getGroupFolderIds(

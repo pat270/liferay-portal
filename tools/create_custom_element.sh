@@ -106,6 +106,7 @@ EOF
 
 	sed -i \
 		-e 's/{ Component }/{ Component, Input }/' \
+		-e "s/selector: 'app-root'/selector: '${CUSTOM_ELEMENT_NAME}'/" \
 		-e 's/title = /@Input("title") title = /' \
 		src/app/app.component.ts
 
@@ -277,7 +278,7 @@ function write_react_app_files {
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {Liferay} from './liferay';
+import {Liferay} from './liferay.js';
 
 const {REACT_APP_LIFERAY_HOST = window.location.origin} = process.env;
 

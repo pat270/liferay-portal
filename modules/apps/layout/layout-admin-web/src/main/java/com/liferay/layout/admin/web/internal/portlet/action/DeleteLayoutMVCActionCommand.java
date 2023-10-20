@@ -13,6 +13,7 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.LayoutType;
+import com.liferay.portal.kernel.model.impl.VirtualLayout;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
@@ -21,7 +22,7 @@ import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.LayoutService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
-import com.liferay.portal.kernel.service.permission.GroupPermission;
+import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
 import com.liferay.portal.kernel.service.permission.LayoutPermissionUtil;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
@@ -89,9 +90,7 @@ public class DeleteLayoutMVCActionCommand extends BaseMVCActionCommand {
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		Group group = layout.getGroup();
-
-		if (!_sites.isLayoutDeleteable(layout)) {
+		if ((layout instanceof VirtualLayout) || !layout.isLayoutDeleteable()) {
 			PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
 
 			SessionMessages.add(
@@ -102,11 +101,13 @@ public class DeleteLayoutMVCActionCommand extends BaseMVCActionCommand {
 			throw new GroupInheritContentException();
 		}
 
+		Group group = layout.getGroup();
+
 		if (group.isStagingGroup() &&
-			!_groupPermission.contains(
+			!GroupPermissionUtil.contains(
 				themeDisplay.getPermissionChecker(), group,
 				ActionKeys.MANAGE_STAGING) &&
-			!_groupPermission.contains(
+			!GroupPermissionUtil.contains(
 				themeDisplay.getPermissionChecker(), group,
 				ActionKeys.PUBLISH_STAGING)) {
 
@@ -166,9 +167,6 @@ public class DeleteLayoutMVCActionCommand extends BaseMVCActionCommand {
 			}
 		}
 	}
-
-	@Reference
-	private GroupPermission _groupPermission;
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;

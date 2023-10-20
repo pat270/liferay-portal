@@ -739,6 +739,14 @@ public abstract class BaseCartItemResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("skuUnitOfMeasure", additionalAssertFieldName)) {
+				if (cartItem.getSkuUnitOfMeasure() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("subscription", additionalAssertFieldName)) {
 				if (cartItem.getSubscription() == null) {
 					valid = false;
@@ -1049,6 +1057,17 @@ public abstract class BaseCartItemResourceTestCase {
 			if (Objects.equals("skuId", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						cartItem1.getSkuId(), cartItem2.getSkuId())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("skuUnitOfMeasure", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						cartItem1.getSkuUnitOfMeasure(),
+						cartItem2.getSkuUnitOfMeasure())) {
 
 					return false;
 				}
@@ -1369,9 +1388,8 @@ public abstract class BaseCartItemResourceTestCase {
 		}
 
 		if (entityFieldName.equals("quantity")) {
-			sb.append(String.valueOf(cartItem.getQuantity()));
-
-			return sb.toString();
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
 		}
 
 		if (entityFieldName.equals("replacedSku")) {
@@ -1477,6 +1495,11 @@ public abstract class BaseCartItemResourceTestCase {
 		}
 
 		if (entityFieldName.equals("skuId")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
+		if (entityFieldName.equals("skuUnitOfMeasure")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
 		}
@@ -1588,7 +1611,6 @@ public abstract class BaseCartItemResourceTestCase {
 				options = StringUtil.toLowerCase(RandomTestUtil.randomString());
 				parentCartItemId = RandomTestUtil.randomLong();
 				productId = RandomTestUtil.randomLong();
-				quantity = RandomTestUtil.randomInt();
 				replacedSku = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
 				replacedSkuId = RandomTestUtil.randomLong();

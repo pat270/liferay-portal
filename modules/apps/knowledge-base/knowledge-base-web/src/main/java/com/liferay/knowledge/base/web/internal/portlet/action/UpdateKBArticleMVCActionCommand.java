@@ -24,6 +24,7 @@ import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
@@ -92,6 +93,9 @@ public class UpdateKBArticleMVCActionCommand
 		String content = ParamUtil.getString(actionRequest, "content");
 		String description = ParamUtil.getString(actionRequest, "description");
 		String sourceURL = ParamUtil.getString(actionRequest, "sourceURL");
+		Date displayDate = ParamUtil.getDate(
+			actionRequest, "displayDate",
+			DateFormatFactoryUtil.getSimpleDateFormat("yyyy-MM-dd HH:mm"));
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
@@ -120,7 +124,8 @@ public class UpdateKBArticleMVCActionCommand
 				null, _portal.getPortletId(actionRequest),
 				parentResourceClassNameId, parentResourcePrimKey, title,
 				urlTitle, content, description, sections, sourceURL,
-				expirationDate, reviewDate, selectedFileNames, serviceContext);
+				displayDate, expirationDate, reviewDate, selectedFileNames,
+				serviceContext);
 		}
 		else if (cmd.equals(Constants.UPDATE)) {
 			long[] removeFileEntryIds = ParamUtil.getLongValues(
@@ -128,8 +133,8 @@ public class UpdateKBArticleMVCActionCommand
 
 			kbArticle = _kbArticleService.updateKBArticle(
 				resourcePrimKey, title, content, description, sections,
-				sourceURL, expirationDate, reviewDate, selectedFileNames,
-				removeFileEntryIds, serviceContext);
+				sourceURL, displayDate, expirationDate, reviewDate,
+				selectedFileNames, removeFileEntryIds, serviceContext);
 		}
 
 		_assetDisplayPageEntryFormProcessor.process(

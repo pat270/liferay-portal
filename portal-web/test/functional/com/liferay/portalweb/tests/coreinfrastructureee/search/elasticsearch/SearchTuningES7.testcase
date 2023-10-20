@@ -21,6 +21,7 @@ definition {
 		}
 	}
 
+	@priority = 3
 	test AssertAliasCaseInsensitivity {
 		JSONWebcontent.addWebContent(
 			content = "WC WC",
@@ -41,19 +42,20 @@ definition {
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "abc");
+		SearchPage.searchEmbedded(searchTerm = "abc");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "WC Title",
 			searchAssetType = "Web Content Article");
 
-		SearchPortlets.searchEmbedded(searchTerm = "ABC");
+		SearchPage.searchEmbedded(searchTerm = "ABC");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "WC Title",
 			searchAssetType = "Web Content Article");
 	}
 
+	@description = "This is a use case for LPS-191998."
 	@priority = 3
 	test AssertCannotAddDuplicateQueriesAndAliases {
 		SearchTuning.openResultRankingsAdmin();
@@ -107,6 +109,22 @@ definition {
 		Button.clickSave();
 
 		Alert.viewErrorMessage(errorMessage = "Active search queries and aliases must be unique across all rankings. The following ones already exist: Journal.");
+
+		SearchTuning.openResultRankingsAdmin();
+
+		SearchTuning.addResultRanking(searchQuery = "Third Ranking");
+
+		SearchTuning.configureAliases(addAlias = "Article");
+
+		SearchTuning.configureAliases(addAlias = "Web Content");
+
+		Button.clickSave();
+
+		Alert.viewErrorMessage(errorMessage = "Error:Active search queries and aliases must be unique across all rankings. The following ones already exist: Article, Web Content.");
+
+		Refresh();
+
+		ControlMenu.viewHeaderTitle(headerTitle = "Customize Results");
 	}
 
 	@priority = 4
@@ -134,11 +152,11 @@ definition {
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "Article");
+		SearchPage.searchEmbedded(searchTerm = "Article");
 
-		SearchResultPortlet.viewSearchResultsSpecificOrder(resultsList = "Article 3,Article 1");
+		SearchResults.viewSearchResultsSpecificOrder(resultsList = "Article 3,Article 1");
 
-		SearchResultPortlet.viewSearchResultNotPresent(
+		SearchResults.viewSearchResultNotPresent(
 			searchAssetTitle = "Article 2",
 			searchAssetType = "Web Content Article");
 
@@ -152,9 +170,9 @@ definition {
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "Article");
+		SearchPage.searchEmbedded(searchTerm = "Article");
 
-		SearchResultPortlet.viewSearchResultsSpecificOrder(resultsList = "Article 1,Article 2,Article 3");
+		SearchResults.viewSearchResultsSpecificOrder(resultsList = "Article 1,Article 2,Article 3");
 	}
 
 	@priority = 3
@@ -284,31 +302,31 @@ definition {
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "Article");
+		SearchPage.searchEmbedded(searchTerm = "Article");
 
-		SearchResultPortlet.viewSearchResultsSpecificOrder(resultsList = "Journal 2");
+		SearchResults.viewSearchResultsSpecificOrder(resultsList = "Journal 2");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Article 1",
 			searchAssetType = "Web Content Article");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Journal 1",
 			searchAssetType = "Web Content Article");
 
-		SearchResultPortlet.viewSearchResultNotPresent(
+		SearchResults.viewSearchResultNotPresent(
 			searchAssetTitle = "Article 2",
 			searchAssetType = "Web Content Article");
 
-		SearchPortlets.searchEmbedded(searchTerm = "Journal");
+		SearchPage.searchEmbedded(searchTerm = "Journal");
 
 		AssertTextNotEquals.assertNotPartialText(
-			locator1 = "SearchResults#ASSET_ENTRY_TABLE_TITLE_SPECIFIC_ORDER",
+			locator1 = "SearchPage#RESULT_TITLE_SPECIFIC_ORDER",
 			resultOrder = 1,
 			value1 = "Journal 2");
 
 		for (var webContentTitle : list "Article 1,Article 2,Journal 1,Journal 2") {
-			SearchResultPortlet.viewSearchResults(
+			SearchResults.viewSearchResults(
 				searchAssetTitle = ${webContentTitle},
 				searchAssetType = "Web Content Article");
 		}
@@ -333,23 +351,23 @@ definition {
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "Article");
+		SearchPage.searchEmbedded(searchTerm = "Article");
 
-		SearchResultPortlet.viewSearchResultsSpecificOrder(resultsList = "Journal 2,Article 1");
+		SearchResults.viewSearchResultsSpecificOrder(resultsList = "Journal 2,Article 1");
 
-		SearchResultPortlet.viewMultipleSearchResultsNotPresent(noResultsList = "Article 2/Web Content Article,Journal 1/Web Content Article");
+		SearchResults.viewMultipleSearchResultsNotPresent(noResultsList = "Article 2,Journal 1");
 
-		SearchPortlets.searchEmbedded(searchTerm = "Journal");
+		SearchPage.searchEmbedded(searchTerm = "Journal");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Journal 1",
 			searchAssetType = "Web Content Article");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Journal 2",
 			searchAssetType = "Web Content Article");
 
-		SearchResultPortlet.viewMultipleSearchResultsNotPresent(noResultsList = "Article 1/Web Content Article,Article 2/Web Content Article");
+		SearchResults.viewMultipleSearchResultsNotPresent(noResultsList = "Article 1,Article 2");
 
 		SearchTuning.openResultRankingsAdmin();
 
@@ -371,13 +389,13 @@ definition {
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "Article");
+		SearchPage.searchEmbedded(searchTerm = "Article");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Article 1",
 			searchAssetType = "Web Content Article");
 
-		SearchResultPortlet.viewMultipleSearchResultsNotPresent(noResultsList = "Article 2/Web Content Article,Journal 1/Web Content Article,Journal 2/Web Content Article");
+		SearchResults.viewMultipleSearchResultsNotPresent(noResultsList = "Article 2,Journal 1,Journal 2");
 
 		SearchTuning.openResultRankingsAdmin();
 
@@ -416,19 +434,19 @@ definition {
 		Navigator.openURL();
 
 		for (var searchTerm : list "Article,Journal") {
-			SearchPortlets.searchEmbedded(searchTerm = ${searchTerm});
+			SearchPage.searchEmbedded(searchTerm = ${searchTerm});
 
-			SearchResultPortlet.viewSearchResultsSpecificOrder(resultsList = "Journal 2");
+			SearchResults.viewSearchResultsSpecificOrder(resultsList = "Journal 2");
 
-			SearchResultPortlet.viewSearchResults(
+			SearchResults.viewSearchResults(
 				searchAssetTitle = "Article 1",
 				searchAssetType = "Web Content Article");
 
-			SearchResultPortlet.viewSearchResults(
+			SearchResults.viewSearchResults(
 				searchAssetTitle = "Journal 1",
 				searchAssetType = "Web Content Article");
 
-			SearchResultPortlet.viewSearchResultNotPresent(
+			SearchResults.viewSearchResultNotPresent(
 				searchAssetTitle = "Article 2",
 				searchAssetType = "Web Content Article");
 		}
@@ -585,29 +603,29 @@ definition {
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "Article");
+		SearchPage.searchEmbedded(searchTerm = "Article");
 
-		SearchResultPortlet.viewSearchResultsSpecificOrder(resultsList = "Article 3,Article 1,Article 4");
+		SearchResults.viewSearchResultsSpecificOrder(resultsList = "Article 3,Article 1,Article 4");
 
-		SearchResultPortlet.viewSearchResultNotPresent(
+		SearchResults.viewSearchResultNotPresent(
 			searchAssetTitle = "Article 2",
 			searchAssetType = "Web Content Article");
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "orange");
+		SearchPage.searchEmbedded(searchTerm = "orange");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Article 3",
 			searchAssetType = "Web Content Article");
 
-		SearchResultPortlet.viewMultipleSearchResultsNotPresent(noResultsList = "Article 1/Web Content Article,Article 2/Web Content Article,Article 4/Web Content Article");
+		SearchResults.viewMultipleSearchResultsNotPresent(noResultsList = "Article 1,Article 2,Article 4");
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "apple");
+		SearchPage.searchEmbedded(searchTerm = "apple");
 
-		SearchResultPortlet.viewNoSearchResults(searchTerm = "apple");
+		SearchResults.viewNoSearchResults(searchTerm = "apple");
 
 		SearchTuning.openResultRankingsAdmin();
 
@@ -644,27 +662,28 @@ definition {
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "Article");
+		SearchPage.searchEmbedded(searchTerm = "Article");
 
-		SearchResultPortlet.viewSearchResultsSpecificOrder(resultsList = "Article 4,Article 1,Article 2,Article 3");
+		SearchResults.viewSearchResultsSpecificOrder(resultsList = "Article 4,Article 1,Article 2,Article 3");
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "apple");
+		SearchPage.searchEmbedded(searchTerm = "apple");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Article 4",
 			searchAssetType = "Web Content Article");
 
-		SearchResultPortlet.viewMultipleSearchResultsNotPresent(noResultsList = "Article 1/Web Content Article,Article 2/Web Content Article,Article 3/Web Content Article");
+		SearchResults.viewMultipleSearchResultsNotPresent(noResultsList = "Article 1,Article 2,Article 3");
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "orange");
+		SearchPage.searchEmbedded(searchTerm = "orange");
 
-		SearchResultPortlet.viewNoSearchResults(searchTerm = "orange");
+		SearchResults.viewNoSearchResults(searchTerm = "orange");
 	}
 
+	@priority = 3
 	test NavigateToResultRankingsViaUI {
 		ApplicationsMenu.gotoPortlet(
 			category = "Search Tuning",
@@ -674,6 +693,7 @@ definition {
 		ControlMenu.viewHeaderTitle(headerTitle = "Result Rankings");
 	}
 
+	@priority = 3
 	test NavigateToSynonymsViaUI {
 		ApplicationsMenu.gotoPortlet(
 			category = "Search Tuning",
@@ -718,29 +738,29 @@ definition {
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "WC Title");
+		SearchPage.searchEmbedded(searchTerm = "WC Title");
 
-		SearchResultPortlet.viewSearchResultsSpecificOrder(resultsList = "WC Title 3,WC Title 1");
+		SearchResults.viewSearchResultsSpecificOrder(resultsList = "WC Title 3,WC Title 1");
 
-		SearchResultPortlet.viewSearchResultNotPresent(
+		SearchResults.viewSearchResultNotPresent(
 			searchAssetTitle = "WC Title 2",
 			searchAssetType = "Web Content Article");
 
-		SearchPortlets.searchEmbedded(searchTerm = "apple");
+		SearchPage.searchEmbedded(searchTerm = "apple");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "WC Title 3",
 			searchAssetType = "Web Content Article");
 
-		SearchResultPortlet.viewMultipleSearchResultsNotPresent(noResultsList = "WC Title 1/Web Content Article,WC Title 2/Web Content Article");
+		SearchResults.viewMultipleSearchResultsNotPresent(noResultsList = "WC Title 1,WC Title 2");
 
-		SearchPortlets.searchEmbedded(searchTerm = "banana");
+		SearchPage.searchEmbedded(searchTerm = "banana");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "WC Title 3",
 			searchAssetType = "Web Content Article");
 
-		SearchResultPortlet.viewMultipleSearchResultsNotPresent(noResultsList = "WC Title 1/Web Content Article,WC Title 2/Web Content Article");
+		SearchResults.viewMultipleSearchResultsNotPresent(noResultsList = "WC Title 1,WC Title 2");
 
 		SearchTuning.openResultRankingsAdmin();
 
@@ -756,25 +776,25 @@ definition {
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "WC Title");
+		SearchPage.searchEmbedded(searchTerm = "WC Title");
 
-		SearchResultPortlet.viewSearchResultsSpecificOrder(resultsList = "WC Title 3,WC Title 1");
+		SearchResults.viewSearchResultsSpecificOrder(resultsList = "WC Title 3,WC Title 1");
 
-		SearchResultPortlet.viewSearchResultNotPresent(
+		SearchResults.viewSearchResultNotPresent(
 			searchAssetTitle = "WC Title 2",
 			searchAssetType = "Web Content Article");
 
-		SearchPortlets.searchEmbedded(searchTerm = "apple");
+		SearchPage.searchEmbedded(searchTerm = "apple");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "WC Title 2",
 			searchAssetType = "Web Content Article");
 
-		SearchResultPortlet.viewMultipleSearchResultsNotPresent(noResultsList = "WC Title 1/Web Content Article,WC Title 3/Web Content Article");
+		SearchResults.viewMultipleSearchResultsNotPresent(noResultsList = "WC Title 1,WC Title 3");
 
-		SearchPortlets.searchEmbedded(searchTerm = "banana");
+		SearchPage.searchEmbedded(searchTerm = "banana");
 
-		SearchResultPortlet.viewNoSearchResults(searchTerm = "banana");
+		SearchResults.viewNoSearchResults(searchTerm = "banana");
 
 		SearchTuning.openResultRankingsAdmin();
 
@@ -790,14 +810,15 @@ definition {
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "WC Title");
+		SearchPage.searchEmbedded(searchTerm = "WC Title");
 
-		SearchResultPortlet.viewSearchResultsSpecificOrder(resultsList = "WC Title 1,WC Title 2,WC Title 3");
+		SearchResults.viewSearchResultsSpecificOrder(resultsList = "WC Title 1,WC Title 2,WC Title 3");
 	}
 
 	@priority = 5
 	test ReindexingRestoresResultRankingsIndex {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		for (var title : list "Article,Journal") {
 			JSONWebcontent.addWebContent(
@@ -845,6 +866,7 @@ definition {
 	@priority = 5
 	test ReindexingRestoresSynonymsIndex {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		SearchTuning.openSynonymsAdmin();
 
@@ -876,6 +898,161 @@ definition {
 			indexName = "liferay-${companyId}-search-tuning-synonyms",
 			locator1 = "Search#FIELD_MAPPINGS_EDITOR",
 			value1 = "liferay-${companyId}-search-tuning-synonyms");
+	}
+
+	@description = "This is a use case for LPS-177665."
+	@priority = 4
+	test ReindexSearchTuningWithConcurrentExecutionMode {
+		property search.environment.suite.exclude = "true";
+		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
+
+		task ("Create a new result ranking") {
+			SearchTuning.openResultRankingsAdmin();
+
+			SearchTuning.addResultRanking(searchQuery = "Test Ranking");
+		}
+
+		task ("Create a new synonym set") {
+			SearchTuning.openSynonymsAdmin();
+
+			SearchTuning.addSynonymSet(synonyms = "Test Synonym Set");
+		}
+
+		task ("Perform a concurrent reindex") {
+			SearchAdministration.executeReindex(reindexMode = "Concurrent");
+		}
+
+		task ("Assert that the result ranking and synonym set is still available after concurrent reindex") {
+			SearchTuning.openResultRankingsAdmin();
+
+			LexiconEntry.viewEntryName(rowEntry = "Test Ranking");
+
+			SearchTuning.openSynonymsAdmin();
+
+			LexiconEntry.viewEntryName(rowEntry = "Test Synonym Set");
+		}
+	}
+
+	@description = "This is a use case for LPS-184999."
+	@priority = 4
+	test ReindexSearchTuningWithSyncExecutionMode {
+		property search.environment.suite.exclude = "true";
+		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
+
+		task ("Create a new result ranking") {
+			SearchTuning.openResultRankingsAdmin();
+
+			SearchTuning.addResultRanking(searchQuery = "Test Ranking");
+		}
+
+		task ("Create a new synonym set") {
+			SearchTuning.openSynonymsAdmin();
+
+			SearchTuning.addSynonymSet(synonyms = "Test Synonym Set");
+		}
+
+		task ("Grab the timestamp values for the result ranking and synonyms set indexed documents before a Sync reindex is executed") {
+			var companyId = JSONCompany.getCompanyId();
+			var port = Elasticsearch.getServerPort();
+			var portalHostname = PropsUtil.get("portal.hostname");
+
+			var rankingsCurl = '''
+				http://${portalHostname}:${port}/liferay-${companyId}-search-tuning-rankings/_search?pretty \
+					-H 'Content-Type: application/json' \
+					-d '{
+						"query":
+						{
+							"match_all":{}
+						}
+					}'
+			''';
+
+			var rankingsPreSyncReindexTimestamp = JSONCurlUtil.get(${rankingsCurl}, "$.hits.hits[0]._source.timestamp");
+			var synonymsCurl = '''
+				http://${portalHostname}:${port}/liferay-${companyId}-search-tuning-synonyms/_search?pretty \
+					-H 'Content-Type: application/json' \
+					-d '{
+						"query":
+						{
+							"match_all":{}
+						}
+					}'
+			''';
+
+			var synonymsPreSyncReindexTimestamp = JSONCurlUtil.get(${synonymsCurl}, "$.hits.hits[0]._source.timestamp");
+		}
+
+		task ("Begin a full reindex using sync execution mode") {
+			SearchAdministration.executeReindex(
+				reindexMode = "Sync",
+				waitForReindexFinished = "false");
+		}
+
+		task ("Assert that the result ranking and synonym set is still available in the UI during the reindex") {
+			SearchTuning.openResultRankingsAdmin();
+
+			AssertElementPresent(locator1 = "Search#REINDEX_IN_PROGRESS_INDICATOR");
+
+			LexiconEntry.viewEntryName(rowEntry = "Test Ranking");
+
+			SearchTuning.openSynonymsAdmin();
+
+			AssertElementPresent(locator1 = "Search#REINDEX_IN_PROGRESS_INDICATOR");
+
+			LexiconEntry.viewEntryName(rowEntry = "Test Synonym Set");
+		}
+
+		task ("After the reindex is complete, assert the timestamp values for both the result ranking and the synonym set are updated in the index") {
+			SearchAdministration.openIndexActions();
+
+			WaitForElementNotPresent(locator1 = "Search#REINDEX_IN_PROGRESS_INDICATOR");
+
+			var rankingsPostSyncReindexTimestamp = JSONCurlUtil.get(${rankingsCurl}, "$.hits.hits[0]._source.timestamp");
+
+			if (${rankingsPreSyncReindexTimestamp} != ${rankingsPostSyncReindexTimestamp}) {
+				echo("The timestamp value for the result ranking document has been updated in the index");
+			}
+			else {
+				fail("The timestamp value for the result ranking document has not been updated in the index");
+			}
+
+			var synonymsPostSyncReindexTimestamp = JSONCurlUtil.get(${synonymsCurl}, "$.hits.hits[0]._source.timestamp");
+
+			if (${synonymsPreSyncReindexTimestamp} != ${synonymsPostSyncReindexTimestamp}) {
+				echo("The timestamp value for the synonym set document has been updated in the index");
+			}
+			else {
+				fail("The timestamp value for the synonym set document has not been updated in the index");
+			}
+		}
+
+		task ("Reindex the individual Result Rankings index using sync execution mode") {
+			SearchAdministration.executeReindex(
+				action = "Ranking",
+				reindexMode = "Sync",
+				waitForReindexFinished = "false");
+		}
+
+		task ("Assert that the Result Rankings is still present within Result Rankings") {
+			SearchTuning.openResultRankingsAdmin();
+
+			LexiconEntry.viewEntryName(rowEntry = "Test Ranking");
+		}
+
+		task ("Reindex the individual Synonym Set index using sync execution mode") {
+			SearchAdministration.executeReindex(
+				action = "Synonym Set",
+				reindexMode = "Sync",
+				waitForReindexFinished = "false");
+		}
+
+		task ("Assert the Synonym set is still present within Synonyms admin") {
+			SearchTuning.openSynonymsAdmin();
+
+			LexiconEntry.viewEntryName(rowEntry = "Test Synonym Set");
+		}
 	}
 
 	@priority = 4
@@ -926,9 +1103,9 @@ definition {
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "Article");
+		SearchPage.searchEmbedded(searchTerm = "Article");
 
-		SearchResultPortlet.viewSearchResultsSpecificOrder(resultsList = "Liferay Journal,New Site Article,New Site Journal,Liferay Article");
+		SearchResults.viewSearchResultsSpecificOrder(resultsList = "Liferay Journal,New Site Article,New Site Journal,Liferay Article");
 
 		SearchTuning.openResultRankingsAdmin();
 
@@ -944,13 +1121,13 @@ definition {
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "Article");
+		SearchPage.searchEmbedded(searchTerm = "Article");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Liferay Article",
 			searchAssetType = "Web Content Article");
 
-		SearchResultPortlet.viewMultipleSearchResultsNotPresent(noResultsList = "Liferay Journal/Web Content Article,New Site Article/Web Content Article,New Site Journal/Web Content Article");
+		SearchResults.viewMultipleSearchResultsNotPresent(noResultsList = "Liferay Journal,New Site Article,New Site Journal");
 	}
 
 	@description = "This is a use case for LPS-126743"
@@ -973,9 +1150,9 @@ definition {
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = 11);
+		SearchPage.searchEmbedded(searchTerm = 11);
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "eleven",
 			searchAssetType = "Web Content Article");
 	}
@@ -1004,10 +1181,10 @@ definition {
 		var searchTerms = "banana,red apple,blue.berry!,\"xigua\",fruit,sweet";
 
 		for (var searchTerm : list ${searchTerms}) {
-			SearchPortlets.searchEmbedded(searchTerm = ${searchTerm});
+			SearchPage.searchEmbedded(searchTerm = ${searchTerm});
 
-			SearchResultPortlet.viewMultipleSearchResults(
-				resultsList = "banana/Web Content Article,red apple/Web Content Article,blue.berry!/Web Content Article,\"xigua\"/Web Content Article",
+			SearchResults.viewMultipleSearchResults(
+				resultsList = "banana,red apple,blue.berry!,\"xigua\"",
 				searchTerm = ${searchTerm});
 		}
 
@@ -1024,30 +1201,30 @@ definition {
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "banana");
+		SearchPage.searchEmbedded(searchTerm = "banana");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "banana",
 			searchAssetType = "Web Content Article");
 
-		SearchPortlets.searchEmbedded(searchTerm = "pear");
+		SearchPage.searchEmbedded(searchTerm = "pear");
 
-		SearchResultPortlet.viewSearchResultNotPresent(
+		SearchResults.viewSearchResultNotPresent(
 			searchAssetTitle = "banana",
 			searchAssetType = "Web Content Article");
 
-		SearchResultPortlet.viewMultipleSearchResults(
-			resultsList = "red apple/Web Content Article,blue.berry!/Web Content Article,\"xigua\"/Web Content Article",
+		SearchResults.viewMultipleSearchResults(
+			resultsList = "red apple,blue.berry!,\"xigua\"",
 			searchTerm = "pear");
 
-		SearchPortlets.searchEmbedded(searchTerm = "red apple");
+		SearchPage.searchEmbedded(searchTerm = "red apple");
 
-		SearchResultPortlet.viewSearchResultNotPresent(
+		SearchResults.viewSearchResultNotPresent(
 			searchAssetTitle = "banana",
 			searchAssetType = "Web Content Article");
 
-		SearchResultPortlet.viewMultipleSearchResults(
-			resultsList = "red apple/Web Content Article,blue.berry!/Web Content Article,\"xigua\"/Web Content Article",
+		SearchResults.viewMultipleSearchResults(
+			resultsList = "red apple,blue.berry!,\"xigua\"",
 			searchTerm = "red apple");
 
 		SearchTuning.openSynonymsAdmin();
@@ -1060,16 +1237,16 @@ definition {
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "red apple");
+		SearchPage.searchEmbedded(searchTerm = "red apple");
 
-		SearchResultPortlet.viewMultipleSearchResults(
-			resultsList = "red apple/Web Content Article,blue.berry!/Web Content Article,\"xigua\"/Web Content Article,citrus-orange/Web Content Article",
+		SearchResults.viewMultipleSearchResults(
+			resultsList = "red apple,blue.berry!,\"xigua\",citrus-orange",
 			searchTerm = "red apple");
 
-		SearchPortlets.searchEmbedded(searchTerm = "citrus-orange");
+		SearchPage.searchEmbedded(searchTerm = "citrus-orange");
 
-		SearchResultPortlet.viewMultipleSearchResults(
-			resultsList = "red apple/Web Content Article,citrus-orange/Web Content Article",
+		SearchResults.viewMultipleSearchResults(
+			resultsList = "red apple,citrus-orange",
 			searchTerm = "citrus-orange");
 
 		SearchTuning.openSynonymsAdmin();
@@ -1078,9 +1255,9 @@ definition {
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "fruit");
+		SearchPage.searchEmbedded(searchTerm = "fruit");
 
-		SearchResultPortlet.viewNoSearchResults(searchTerm = "fruit");
+		SearchResults.viewNoSearchResults(searchTerm = "fruit");
 	}
 
 	@priority = 3

@@ -6,7 +6,6 @@
 package com.liferay.layout.admin.web.internal.display.context;
 
 import com.liferay.exportimport.kernel.staging.LayoutStagingUtil;
-import com.liferay.layout.admin.web.internal.servlet.taglib.util.LayoutActionDropdownItemsProvider;
 import com.liferay.layout.set.prototype.helper.LayoutSetPrototypeHelper;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -27,6 +26,7 @@ import com.liferay.portal.kernel.model.LayoutTypeController;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
+import com.liferay.portal.kernel.portlet.url.builder.ResourceURLBuilder;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutServiceUtil;
 import com.liferay.portal.kernel.service.LayoutSetBranchLocalServiceUtil;
@@ -36,6 +36,7 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -54,13 +55,11 @@ import javax.servlet.http.HttpServletRequest;
 public class MillerColumnsDisplayContext {
 
 	public MillerColumnsDisplayContext(
-		LayoutActionDropdownItemsProvider layoutActionDropdownItemsProvider,
 		LayoutSetPrototypeHelper layoutSetPrototypeHelper,
 		LayoutsAdminDisplayContext layoutsAdminDisplayContext,
 		LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse) {
 
-		_layoutActionDropdownItemsProvider = layoutActionDropdownItemsProvider;
 		_layoutSetPrototypeHelper = layoutSetPrototypeHelper;
 		_layoutsAdminDisplayContext = layoutsAdminDisplayContext;
 		_liferayPortletResponse = liferayPortletResponse;
@@ -69,6 +68,16 @@ public class MillerColumnsDisplayContext {
 			liferayPortletRequest);
 		_themeDisplay = (ThemeDisplay)liferayPortletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
+	}
+
+	public String getLayoutActionsURL() {
+		return ResourceURLBuilder.createResourceURL(
+			_liferayPortletResponse
+		).setRedirect(
+			_themeDisplay.getURLCurrent()
+		).setResourceID(
+			"/layout_admin/get_layout_actions"
+		).buildString();
 	}
 
 	public String getLayoutChildrenURL() {
@@ -136,7 +145,15 @@ public class MillerColumnsDisplayContext {
 			HashMapBuilder.<String, Object>put(
 				"breadcrumbEntries", _getBreadcrumbEntriesJSONArray()
 			).put(
+				"createLayoutPageTemplateEntryURL",
+				_getCreateLayoutPageTemplateEntryURL()
+			).put(
+				"getItemActionsURL", getLayoutActionsURL()
+			).put(
 				"getItemChildrenURL", getLayoutChildrenURL()
+			).put(
+				"getLayoutPageTemplateCollectionsURL",
+				_getLayoutPageTemplateCollectionsURL()
 			).put(
 				"isLayoutSetPrototype",
 				() -> {
@@ -156,8 +173,7 @@ public class MillerColumnsDisplayContext {
 			).put(
 				"layoutColumns", getLayoutColumnsJSONArray()
 			).put(
-				"moveItemURL",
-				_layoutsAdminDisplayContext.getMoveLayoutColumnItemURL()
+				"moveItemURL", _getMoveLayoutColumnItemURL()
 			).put(
 				"searchContainerId", "pages"
 			).build()
@@ -189,10 +205,6 @@ public class MillerColumnsDisplayContext {
 					layout.getType());
 
 			JSONObject layoutJSONObject = JSONUtil.put(
-				"actions",
-				_layoutActionDropdownItemsProvider.getActionDropdownItems(
-					layout, false)
-			).put(
 				"active", _layoutsAdminDisplayContext.isActive(layout.getPlid())
 			).put(
 				"bulkActions",
@@ -347,6 +359,18 @@ public class MillerColumnsDisplayContext {
 		return breadcrumbEntriesJSONArray;
 	}
 
+	private String _getCreateLayoutPageTemplateEntryURL() {
+		return PortletURLBuilder.createActionURL(
+			_liferayPortletResponse
+		).setActionName(
+			"/layout_content_page_editor/create_layout_page_template_entry"
+		).setBackURL(
+			ParamUtil.getString(
+				PortalUtil.getOriginalServletRequest(_httpServletRequest),
+				"p_l_back_url", _themeDisplay.getURLCurrent())
+		).buildString();
+	}
+
 	private List<Long> _getDuplicatedFriendlyURLPlids() throws PortalException {
 		if (_duplicatedFriendlyURLPlids != null) {
 			return _duplicatedFriendlyURLPlids;
@@ -493,6 +517,14 @@ public class MillerColumnsDisplayContext {
 		return jsonArray;
 	}
 
+	private String _getLayoutPageTemplateCollectionsURL() {
+		return ResourceURLBuilder.createResourceURL(
+			_liferayPortletResponse
+		).setResourceID(
+			"/layout_content_page_editor/get_layout_page_template_collections"
+		).buildString();
+	}
+
 	private JSONArray _getLayoutSetBranchesJSONArray() throws Exception {
 		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
 
@@ -557,7 +589,9 @@ public class MillerColumnsDisplayContext {
 		Layout draftLayout = layout.fetchDraftLayout();
 
 		if (layout.isTypeContent()) {
-			if (draftLayout.isDraft() || !layout.isPublished()) {
+			if (((draftLayout != null) && draftLayout.isDraft()) ||
+				!layout.isPublished()) {
+
 				jsonArray.put(
 					JSONUtil.put(
 						"id", "draft"
@@ -589,6 +623,16 @@ public class MillerColumnsDisplayContext {
 		}
 
 		return jsonArray;
+	}
+
+	private String _getMoveLayoutColumnItemURL() {
+		return PortletURLBuilder.createActionURL(
+			_liferayPortletResponse
+		).setActionName(
+			"/layout_admin/move_layout"
+		).setRedirect(
+			_themeDisplay.getURLCurrent()
+		).buildString();
 	}
 
 	private JSONArray _getQuickActionsJSONArray(Layout layout)
@@ -624,8 +668,6 @@ public class MillerColumnsDisplayContext {
 
 	private List<Long> _duplicatedFriendlyURLPlids;
 	private final HttpServletRequest _httpServletRequest;
-	private final LayoutActionDropdownItemsProvider
-		_layoutActionDropdownItemsProvider;
 	private final LayoutsAdminDisplayContext _layoutsAdminDisplayContext;
 	private final LayoutSetPrototypeHelper _layoutSetPrototypeHelper;
 	private final LiferayPortletResponse _liferayPortletResponse;

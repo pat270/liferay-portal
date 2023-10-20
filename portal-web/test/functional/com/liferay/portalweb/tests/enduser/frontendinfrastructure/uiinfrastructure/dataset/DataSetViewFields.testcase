@@ -87,6 +87,130 @@ definition {
 		}
 	}
 
+	@description = "LPS-176516 Confirm the success of the changes, and addition of the new language"
+	@priority = 5
+	test AssertTheSuccessMessageInField {
+		task ("And adds two or more fields") {
+			DataSetAdmin.addFields(key_fieldList = "creator,id,status");
+		}
+
+		task ("And clicks on ellipsis button on one of these fields") {
+			Click(
+				key_fieldName = "creator",
+				locator1 = "DataSet#VERTICAL_ELLIPSIS_BY_FIELDS_NAME");
+		}
+
+		task ("And clicks on Edit option") {
+			MenuItem.click(menuItem = "Edit");
+		}
+
+		task ("And clicks on language button") {
+			Click(
+				key_symbolName = "",
+				locator1 = "FormViewBuilder#BUTTON_LOCALIZATION");
+		}
+
+		task ("And add a pt-BR translate") {
+			Click(
+				locator1 = "CommerceWidget#TAG_FACET_COMPACT_LAYOUT",
+				tagName = "pt_BR");
+
+			Click(
+				locator1 = "Portlet#MODAL_TITLE",
+				value1 = "Edit creator");
+
+			Type(
+				key_text = "Label",
+				locator1 = "TextInput#ANY",
+				value1 = "PT-BR");
+
+			Button.clickSave();
+		}
+
+		task ("Then confirm the success message") {
+			Alert.viewSuccessMessage();
+		}
+	}
+
+	@description = "LPS-176516 Confirm that the language dropdown is displayed"
+	@priority = 5
+	test AssertTheTranslationModal {
+		task ("And adds two or more fields") {
+			DataSetAdmin.addFields(key_fieldList = "creator,id,status");
+		}
+
+		task ("And clicks on ellipsis button on one of these fields") {
+			Click(
+				key_fieldName = "creator",
+				locator1 = "DataSet#VERTICAL_ELLIPSIS_BY_FIELDS_NAME");
+		}
+
+		task ("And clicks on Edit option") {
+			MenuItem.click(menuItem = "Edit");
+		}
+
+		task ("And clicks on language button") {
+			Click(
+				key_symbolName = "",
+				locator1 = "FormViewBuilder#BUTTON_LOCALIZATION");
+		}
+
+		task ("Then confirm that the language dropdown is displayed") {
+			AssertElementPresent(
+				key_menuItem = "en_US",
+				locator1 = "CommerceNavigation#DROPDOWN_ITEM");
+		}
+	}
+
+	@description = "LPS-176516 Confirm the translated in language selected"
+	@priority = 5
+	test AssertTranslatedStatusIsDisplayes {
+		task ("And adds two or more fields") {
+			DataSetAdmin.addFields(key_fieldList = "creator,id,status");
+		}
+
+		task ("And clicks on ellipsis button on one of these fields") {
+			Click(
+				key_fieldName = "creator",
+				locator1 = "DataSet#VERTICAL_ELLIPSIS_BY_FIELDS_NAME");
+		}
+
+		task ("And clicks on Edit option") {
+			MenuItem.click(menuItem = "Edit");
+		}
+
+		task ("And clicks on language button") {
+			Click(
+				key_symbolName = "",
+				locator1 = "FormViewBuilder#BUTTON_LOCALIZATION");
+		}
+
+		task ("And select pt_BR language, and add a label in this translation") {
+			Click(
+				locator1 = "CommerceWidget#TAG_FACET_COMPACT_LAYOUT",
+				tagName = "pt_BR");
+
+			Click(
+				locator1 = "Portlet#MODAL_TITLE",
+				value1 = "Edit creator");
+
+			Type(
+				key_text = "Label",
+				locator1 = "TextInput#ANY",
+				value1 = "PT-BR");
+
+			Click(
+				key_symbolName = "",
+				locator1 = "FormViewBuilder#BUTTON_LOCALIZATION");
+		}
+
+		task ("Then assert the translated status green in PT-BR language") {
+			AssertElementPresent(
+				locator1 = "CommerceWidget#TAG_FACET_LABEL_LAYOUT",
+				tagName = "Translated");
+		}
+	}
+
 	@description = "LPS-185226. Confirm that the user can add a field"
 	@priority = 5
 	test CanAddField {
@@ -192,6 +316,188 @@ definition {
 		}
 	}
 
+	@description = "LPS-176516 Confirm that when adding a field with translation, and adding pt to the page URL, the values change according to the translation"
+	@priority = 3
+	test CanAssertTranslationIsWorking {
+		task ("And adds two or more fields") {
+			DataSetAdmin.addFields(key_fieldList = "creator,id,status");
+		}
+
+		task ("And clicks on ellipsis button on one of these fields") {
+			Click(
+				key_fieldName = "creator",
+				locator1 = "DataSet#VERTICAL_ELLIPSIS_BY_FIELDS_NAME");
+		}
+
+		task ("And clicks on Edit option") {
+			MenuItem.click(menuItem = "Edit");
+		}
+
+		task ("And clicks on language button") {
+			Click(
+				key_symbolName = "",
+				locator1 = "FormViewBuilder#BUTTON_LOCALIZATION");
+		}
+
+		task ("And add a pt-BR translate") {
+			Click(
+				locator1 = "CommerceWidget#TAG_FACET_COMPACT_LAYOUT",
+				tagName = "pt_BR");
+
+			Click(
+				locator1 = "Portlet#MODAL_TITLE",
+				value1 = "Edit creator");
+
+			Type(
+				key_text = "Label",
+				locator1 = "TextInput#ANY",
+				value1 = "PT-BR");
+
+			Button.clickSave();
+		}
+
+		task ("When the user adds a widget page and add a fragment Data Set") {
+			Navigator.openURL();
+
+			ContentPages.addPage(pageName = "Data Set Test");
+
+			PageEditor.addFragment(
+				collectionName = "Content Display",
+				fragmentName = "Data Set");
+		}
+
+		task ("And viewing the configuration menu of the portlet And selects View Fields Test") {
+			Click(locator1 = "ReportsAdminViewReportEntry#INFO_MESSAGE");
+
+			Click.javaScriptClick(
+				key_value = "Select Data Set View",
+				locator1 = "Button#SECONDARY_BY_TITLE");
+
+			SelectFrame(
+				key_title = "Select",
+				locator1 = "IFrame#MODAL_ANY");
+
+			Click.clickAtNotVisible(
+				key_radioOption = "View Fields Test",
+				locator1 = "CommerceEntry#RADIO_BUTTON");
+
+			Button.clickSave();
+		}
+
+		task ("And publishes the page") {
+			SelectFrame(locator1 = "DataSet#DEFOCUS");
+
+			Click.javaScriptClick(locator1 = "WorkflowMetricsIndex#METRICS_REINDEX_ALL_BUTTON");
+		}
+
+		task ("And go to the page created, and put a "pt" in URL page") {
+			Navigator.openURL();
+
+			Navigator.gotoPage(pageName = "Data Set Test");
+		}
+
+		task ("Then Confirm the page translation according to PT-BR") {
+			Navigator.openSpecificURL(url = "http://localhost:8080/pt/data-set-test");
+
+			AssertElementPresent(
+				key_column = "PT-BR",
+				locator1 = "ObjectPortlet#ENTRY_COLUMN");
+		}
+	}
+
+	@description = "LPS-176516 Confirm that when adding a field with translation and canceling it, and adding pt to the page URL, the values ​​do not change according to the translation"
+	@priority = 4
+	test CanCanAssertTranslationIsCanceled {
+		task ("And adds two or more fields") {
+			DataSetAdmin.addFields(key_fieldList = "creator,id,status");
+		}
+
+		task ("And clicks on ellipsis button on one of these fields") {
+			Click(
+				key_fieldName = "creator",
+				locator1 = "DataSet#VERTICAL_ELLIPSIS_BY_FIELDS_NAME");
+		}
+
+		task ("And clicks on Edit option") {
+			MenuItem.click(menuItem = "Edit");
+		}
+
+		task ("And clicks on language button") {
+			Click(
+				key_symbolName = "",
+				locator1 = "FormViewBuilder#BUTTON_LOCALIZATION");
+		}
+
+		task ("And add a pt-BR translate and click on cancel button") {
+			Click(
+				locator1 = "CommerceWidget#TAG_FACET_COMPACT_LAYOUT",
+				tagName = "pt_BR");
+
+			Click(
+				locator1 = "Portlet#MODAL_TITLE",
+				value1 = "Edit creator");
+
+			Type(
+				key_text = "Label",
+				locator1 = "TextInput#ANY",
+				value1 = "PT-BR");
+
+			Button.clickCancel();
+		}
+
+		task ("When the user adds a widget page and add a fragment Data Set") {
+			Navigator.openURL();
+
+			ContentPages.addPage(pageName = "Data Set Test");
+
+			PageEditor.addFragment(
+				collectionName = "Content Display",
+				fragmentName = "Data Set");
+		}
+
+		task ("And viewing the configuration menu of the portlet And selects View Fields Test") {
+			Click(locator1 = "ReportsAdminViewReportEntry#INFO_MESSAGE");
+
+			Click.javaScriptClick(
+				key_value = "Select Data Set View",
+				locator1 = "Button#SECONDARY_BY_TITLE");
+
+			SelectFrame(
+				key_title = "Select",
+				locator1 = "IFrame#MODAL_ANY");
+
+			Click.clickAtNotVisible(
+				key_radioOption = "View Fields Test",
+				locator1 = "CommerceEntry#RADIO_BUTTON");
+
+			Button.clickSave();
+		}
+
+		task ("And publishes the page") {
+			SelectFrame(locator1 = "DataSet#DEFOCUS");
+
+			Click.javaScriptClick(locator1 = "WorkflowMetricsIndex#METRICS_REINDEX_ALL_BUTTON");
+		}
+
+		task ("And go to the page created, and put a "pt" in URL page") {
+			Navigator.openURL();
+
+			Navigator.gotoPage(pageName = "Data Set Test");
+		}
+
+		task ("Then the label of the field translated (but not saved) is displayed in the default language.") {
+			Navigator.openSpecificURL(url = "http://localhost:8080/pt/data-set-test");
+
+			AssertElementNotPresent(
+				key_column = "PT-BR",
+				locator1 = "ObjectPortlet#ENTRY_COLUMN");
+
+			AssertElementPresent(
+				key_column = "creator",
+				locator1 = "ObjectPortlet#ENTRY_COLUMN");
+		}
+	}
+
 	@description = "LPS-185230. Confirm that the user can cancel adding a field by clicking on cancel button."
 	@priority = 4
 	test CanCancelAddingOnCancelButton {
@@ -260,7 +566,9 @@ definition {
 		}
 
 		task ("And clicks on Cancel button") {
-			Button.click(button = "Cancel");
+			Click(
+				key_text = "Cancel",
+				locator1 = "Button#ANY");
 		}
 
 		task ("Then the Edit field modal is closed") {
@@ -434,6 +742,124 @@ definition {
 		}
 	}
 
+	@description = "LPS-176516 Confirm that the indication of a translation in the field and stop with the cancel button"
+	@priority = 4
+	test CanCancelTranslationOnCancelButton {
+		task ("And adds two or more fields") {
+			DataSetAdmin.addFields(key_fieldList = "creator,id,status");
+		}
+
+		task ("And clicks on ellipsis button on one of these fields") {
+			Click(
+				key_fieldName = "creator",
+				locator1 = "DataSet#VERTICAL_ELLIPSIS_BY_FIELDS_NAME");
+		}
+
+		task ("And clicks on Edit option") {
+			MenuItem.click(menuItem = "Edit");
+		}
+
+		task ("And clicks on language button") {
+			Click(
+				key_symbolName = "",
+				locator1 = "FormViewBuilder#BUTTON_LOCALIZATION");
+		}
+
+		task ("And add a pt-BR translate") {
+			Click(
+				locator1 = "CommerceWidget#TAG_FACET_COMPACT_LAYOUT",
+				tagName = "pt_BR");
+
+			Click(
+				locator1 = "Portlet#MODAL_TITLE",
+				value1 = "Edit creator");
+
+			Type(
+				key_text = "Label",
+				locator1 = "TextInput#ANY",
+				value1 = "PT-BR");
+
+			Button.clickCancel();
+		}
+
+		task ("And clicks on edit again, and localization button") {
+			Click(
+				key_fieldName = "creator",
+				locator1 = "DataSet#VERTICAL_ELLIPSIS_BY_FIELDS_NAME");
+
+			MenuItem.click(menuItem = "Edit");
+
+			Click(
+				key_symbolName = "",
+				locator1 = "FormViewBuilder#BUTTON_LOCALIZATION");
+		}
+
+		task ("Then the translations are not saved, in the language dropdown dont have the TRANSLATED green label") {
+			AssertElementNotPresent(
+				locator1 = "CommerceWidget#TAG_FACET_LABEL_LAYOUT",
+				tagName = "Translated");
+		}
+	}
+
+	@description = "LPS-176516 Confirm that the indication of a translation in the field and stop with the close button "
+	@priority = 3
+	test CanCancelTranslationOnCloseButton {
+		task ("And adds two or more fields") {
+			DataSetAdmin.addFields(key_fieldList = "creator,id,status");
+		}
+
+		task ("And clicks on ellipsis button on one of these fields") {
+			Click(
+				key_fieldName = "creator",
+				locator1 = "DataSet#VERTICAL_ELLIPSIS_BY_FIELDS_NAME");
+		}
+
+		task ("And clicks on Edit option") {
+			MenuItem.click(menuItem = "Edit");
+		}
+
+		task ("And clicks on language button") {
+			Click(
+				key_symbolName = "",
+				locator1 = "FormViewBuilder#BUTTON_LOCALIZATION");
+		}
+
+		task ("And add a pt-BR translate") {
+			Click(
+				locator1 = "CommerceWidget#TAG_FACET_COMPACT_LAYOUT",
+				tagName = "pt_BR");
+
+			Click(
+				locator1 = "Portlet#MODAL_TITLE",
+				value1 = "Edit creator");
+
+			Type(
+				key_text = "Label",
+				locator1 = "TextInput#ANY",
+				value1 = "PT-BR");
+
+			Click(locator1 = "Icon#CLOSE");
+		}
+
+		task ("And clicks on edit again, and localization button") {
+			Click(
+				key_fieldName = "creator",
+				locator1 = "DataSet#VERTICAL_ELLIPSIS_BY_FIELDS_NAME");
+
+			MenuItem.click(menuItem = "Edit");
+
+			Click(
+				key_symbolName = "",
+				locator1 = "FormViewBuilder#BUTTON_LOCALIZATION");
+		}
+
+		task ("Then the translations are not saved, in the language dropdown dont have the TRANSLATED green label") {
+			AssertElementNotPresent(
+				locator1 = "CommerceWidget#TAG_FACET_LABEL_LAYOUT",
+				tagName = "Translated");
+		}
+	}
+
 	@description = "LPS-178736. Confirm that the user can change the Cell Renderer type on Edit"
 	@priority = 5
 	test CanChangeCellRenderer {
@@ -458,7 +884,7 @@ definition {
 
 		task ("And change the Cell Renderer to "Label"") {
 			Click(
-				dropdownLabel = "Cell Renderer",
+				dropdownLabel = "Renderer",
 				locator1 = "ObjectField#ANY_DROPDOWN_LABEL");
 
 			MenuItem.click(menuItem = "Label");
@@ -470,7 +896,7 @@ definition {
 
 		task ("Then assert the "Label" is present from the column Cell Renderer") {
 			AssertElementPresent(
-				key_tableColumn = "Cell Renderer",
+				key_tableColumn = "Renderer",
 				key_tableRow = "Label",
 				locator1 = "DataSet#FIELDS_TABLE_AND_ROW");
 		}
@@ -519,7 +945,7 @@ definition {
 		}
 
 		task ("Then Confirm all fields are checked ") {
-			DataSetAdmin.assertFieldsChecked(key_fieldList = "name,creator,externalReferenceCode,id,status,createDate,label,modifiedDate,renderer,r_fdsViewFDSFieldRelationship_c_fdsViewId,r_fdsViewFDSFieldRelationship_c_fdsViewERC,sortable,type");
+			DataSetAdmin.assertFieldsChecked(key_fieldList = "creator,dateCreated,dateModified,externalReferenceCode,id,status,label,name,renderer,rendererType,r_fdsViewFDSFieldRelationship_c_fdsViewId,r_fdsViewFDSFieldRelationship_c_fdsViewERC,sortable,type");
 		}
 
 		task ("When Uncheck all the fields.") {
@@ -527,7 +953,7 @@ definition {
 		}
 
 		task ("Then Confirm that all fields are unchecked ") {
-			DataSetAdmin.assertFieldsNotChecked(key_fieldList = "name,creator,externalReferenceCode,id,status,createDate,label,modifiedDate,renderer,r_fdsViewFDSFieldRelationship_c_fdsViewId,r_fdsViewFDSFieldRelationship_c_fdsViewERC,sortable,type");
+			DataSetAdmin.assertFieldsNotChecked(key_fieldList = "creator,dateCreated,dateModified,externalReferenceCode,id,status,label,name,renderer,rendererType,r_fdsViewFDSFieldRelationship_c_fdsViewId,r_fdsViewFDSFieldRelationship_c_fdsViewERC,sortable,type");
 		}
 	}
 
@@ -641,48 +1067,6 @@ definition {
 		}
 	}
 
-	@description = "LPS-177576 - Verifiy if is possible to cancel changes when clicks on cancel button"
-	@priority = 4
-	test CanDiscartChangesOnCancelButton {
-		task ("Given the creation of a new dataset") {
-			DataSetAdmin.createDataSet(
-				key_name = "Dataset Test",
-				key_type = "/c/fdsfields");
-		}
-
-		task ("And the user clicks on the 3 dots button of a dataset entry") {
-			Click(locator1 = "ObjectAdmin#KEBAB_MENU");
-		}
-
-		task ("And the user chooses the Rename option") {
-			Click(
-				key_kebabOption = "Rename",
-				locator1 = "ObjectAdmin#KEBAB_MENU_OPTION");
-		}
-
-		task ("And the user changes the Name field") {
-			Type(
-				locator1 = "TextInput#NAME",
-				value1 = "Dataset Test 2");
-		}
-
-		task ("And clicks on the Cancel button") {
-			Button.clickCancel();
-		}
-
-		task ("Then the Edit Dataset modal is closed") {
-			AssertElementNotPresent(
-				locator1 = "Portlet#MODAL_TITLE",
-				value1 = "Rename Data Set");
-		}
-
-		task ("And the changes are not applied") {
-			AssertElementNotPresent(
-				key_itemName = "Dataset Test 2",
-				locator1 = "DataSet#TABLE_CELL");
-		}
-	}
-
 	@description = "LPS-178736. Confirm that the user can edit Label field on Edit"
 	@priority = 5
 	test CanEditLabelFieldOnEdit {
@@ -778,50 +1162,6 @@ definition {
 		}
 	}
 
-	@description = "LPS-177576 - Verify if is not possible to leave the Name field on the Rename modal"
-	@priority = 5
-	test CannotLeaveNameFieldEmpty {
-		task ("Given the creation of a new dataset") {
-			DataSetAdmin.createDataSet(
-				key_name = "Dataset Test",
-				key_type = "/c/fdsfields");
-		}
-
-		task ("And the user clicks on the 3 dots button of a dataset entry") {
-			Click(locator1 = "ObjectAdmin#KEBAB_MENU");
-		}
-
-		task ("And the user chooses the Rename option") {
-			Click(
-				key_kebabOption = "Rename",
-				locator1 = "ObjectAdmin#KEBAB_MENU_OPTION");
-		}
-
-		task ("And the user leaves the Name field empty") {
-			Type(
-				locator1 = "TextInput#NAME",
-				value1 = "");
-		}
-
-		task ("And clicks on Save button") {
-			Click(
-				key_text = "Save",
-				locator1 = "Button#ANY");
-		}
-
-		task ("Then an error message is displayed") {
-			AssertElementPresent(
-				locator1 = "Message#WARNING_FEEDBACK",
-				value1 = "This field is required.");
-		}
-
-		task ("And the user can't save the changes") {
-			AssertElementPresent(
-				key_itemName = "Dataset Test",
-				locator1 = "DataSet#TABLE_CELL");
-		}
-	}
-
 	@description = "LPS-185501. Confirm that fields are not updated if proccess is canceled on cancel button."
 	@priority = 4
 	test CannotUpdateFieldsIfCancelOnCancelButton {
@@ -893,52 +1233,6 @@ definition {
 			DataSetAdmin.assertFieldsOnTable(
 				key_position = 2,
 				keyName = "label");
-		}
-	}
-
-	@description = "LPS-177576 - Verifiy if is possible to save changes when clicks on save button"
-	@priority = 5
-	test CanRenameDataSet {
-		task ("Given the creation of a new dataset") {
-			DataSetAdmin.createDataSet(
-				key_name = "Dataset Test",
-				key_type = "/c/fdsfields");
-		}
-
-		task ("And the user clicks on the 3 dots button of a dataset entry") {
-			Click(locator1 = "ObjectAdmin#KEBAB_MENU");
-		}
-
-		task ("And the user chooses the Rename option") {
-			Click(
-				key_kebabOption = "Rename",
-				locator1 = "ObjectAdmin#KEBAB_MENU_OPTION");
-		}
-
-		task ("And the user changes the Name field") {
-			Type(
-				locator1 = "TextInput#NAME",
-				value1 = "Dataset Test 2");
-		}
-
-		task ("And clicks on Save button") {
-			Button.clickSave();
-		}
-
-		task ("Then the Edit Dataset modal is closed") {
-			AssertElementNotPresent(
-				locator1 = "Portlet#MODAL_TITLE",
-				value1 = "Rename Data Set");
-		}
-
-		task ("And a successful message is displayed") {
-			Alert.viewSuccessMessage();
-		}
-
-		task ("And the changes are applied") {
-			AssertElementPresent(
-				key_itemName = "Dataset Test 2",
-				locator1 = "DataSet#TABLE_CELL");
 		}
 	}
 
@@ -1081,7 +1375,7 @@ definition {
 		}
 
 		task ("Then a dropdown is displayed") {
-			AssertVisible(locator1 = "ObjectCustomViews#VIEW_DROPDOWN_MENU_ON_MODAL_DEFAULT_SORT");
+			AssertVisible(locator1 = "WorkflowAllItems#TRANSITION_DROPDOWN_KEBAB");
 		}
 
 		task ("And the options present in the dropdown can be selected") {
@@ -1160,52 +1454,6 @@ definition {
 
 		task ("Then the Edit option appears") {
 			MenuItem.viewVisible(menuItem = "Edit");
-		}
-	}
-
-	@description = "LPS-177576 - Verify if is possible choose the Rename option on dropdown menu and view the Rename modal"
-	@priority = 5
-	test CanViewRenameDataSetModal {
-		task ("Given the creation of a new dataset") {
-			DataSetAdmin.createDataSet(
-				key_name = "Dataset Test",
-				key_type = "/c/fdsfields");
-		}
-
-		task ("And the user clicks on the 3 dots button of a dataset entry") {
-			Click(locator1 = "ObjectAdmin#KEBAB_MENU");
-		}
-
-		task ("When the user chooses the Rename option") {
-			Click(
-				key_kebabOption = "Rename",
-				locator1 = "ObjectAdmin#KEBAB_MENU_OPTION");
-		}
-
-		task ("Then the Edit Dataset modal is displayed") {
-			AssertElementPresent(
-				locator1 = "Portlet#MODAL_TITLE",
-				value1 = "Rename Data Set");
-		}
-	}
-
-	@description = "LPS-177576 - Verify if is possible to see the Rename option on dropdown menu"
-	@priority = 5
-	test CanViewRenameMenuOption {
-		task ("Given the creation of a new dataset") {
-			DataSetAdmin.createDataSet(
-				key_name = "Dataset Test",
-				key_type = "/c/fdsfields");
-		}
-
-		task ("When the user clicks on the 3 dots button of a dataset entry") {
-			Click(locator1 = "ObjectAdmin#KEBAB_MENU");
-		}
-
-		task ("Then the option Rename is present in the 3 dots menu") {
-			AssertElementPresent(
-				key_kebabOption = "Rename",
-				locator1 = "ObjectAdmin#KEBAB_MENU_OPTION");
 		}
 	}
 

@@ -18,7 +18,6 @@ import com.liferay.headless.delivery.dto.v1_0.PageDefinition;
 import com.liferay.headless.delivery.dto.v1_0.Settings;
 import com.liferay.headless.delivery.dto.v1_0.StyleBook;
 import com.liferay.headless.delivery.dto.v1_0.util.ContentDocumentUtil;
-import com.liferay.headless.delivery.internal.dto.v1_0.mapper.LayoutStructureItemMapperRegistry;
 import com.liferay.headless.delivery.internal.dto.v1_0.util.PageElementUtil;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
@@ -36,12 +35,14 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.UnicodeProperties;
+import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
 import com.liferay.style.book.model.StyleBookEntry;
 import com.liferay.style.book.service.StyleBookEntryLocalService;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
@@ -88,8 +89,8 @@ public class PageDefinitionDTOConverter
 			{
 				pageElement = PageElementUtil.toPageElement(
 					layout.getGroupId(), layoutStructure,
-					mainLayoutStructureItem, _layoutStructureItemMapperRegistry,
-					saveInlineContent, saveMappingConfiguration);
+					mainLayoutStructureItem, saveInlineContent,
+					saveMappingConfiguration);
 				settings = _toSettings(dtoConverterContext, layout);
 				version =
 					LayoutStructureConstants.LATEST_PAGE_DEFINITION_VERSION;
@@ -112,6 +113,30 @@ public class PageDefinitionDTOConverter
 			companyId, clientExtensionEntryRel.getCETExternalReferenceCode());
 	}
 
+	private Map<String, String> _getClientExtensionConfig(
+		ClientExtensionEntryRel clientExtensionEntryRel) {
+
+		if (clientExtensionEntryRel == null) {
+			return null;
+		}
+
+		UnicodeProperties unicodeProperties = UnicodePropertiesBuilder.fastLoad(
+			clientExtensionEntryRel.getTypeSettings()
+		).build();
+
+		if (unicodeProperties.isEmpty()) {
+			return null;
+		}
+
+		Map<String, String> clientExtensionConfig = new HashMap<>();
+
+		for (Map.Entry<String, String> entry : unicodeProperties.entrySet()) {
+			clientExtensionConfig.put(entry.getKey(), entry.getValue());
+		}
+
+		return clientExtensionConfig;
+	}
+
 	private ClientExtension[] _getClientExtensions(
 		long classNameId, DTOConverterContext dtoConverterContext,
 		Layout layout, String type) {
@@ -130,6 +155,8 @@ public class PageDefinitionDTOConverter
 
 				return new ClientExtension() {
 					{
+						clientExtensionConfig = _getClientExtensionConfig(
+							clientExtensionEntryRel);
 						externalReferenceCode = cet.getExternalReferenceCode();
 						name = cet.getName(dtoConverterContext.getLocale());
 					}
@@ -344,10 +371,6 @@ public class PageDefinitionDTOConverter
 	@Reference
 	private LayoutPageTemplateEntryLocalService
 		_layoutPageTemplateEntryLocalService;
-
-	@Reference
-	private LayoutStructureItemMapperRegistry
-		_layoutStructureItemMapperRegistry;
 
 	@Reference
 	private Portal _portal;

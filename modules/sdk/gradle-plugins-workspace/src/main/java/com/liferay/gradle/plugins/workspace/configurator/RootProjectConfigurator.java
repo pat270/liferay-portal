@@ -75,7 +75,6 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
-import org.gradle.api.artifacts.DependencySet;
 import org.gradle.api.execution.TaskExecutionGraph;
 import org.gradle.api.file.CopySpec;
 import org.gradle.api.file.DirectoryProperty;
@@ -101,6 +100,7 @@ import org.gradle.api.tasks.bundling.Compression;
 import org.gradle.api.tasks.bundling.Tar;
 import org.gradle.api.tasks.bundling.Zip;
 import org.gradle.language.base.plugins.LifecycleBasePlugin;
+import org.gradle.util.Path;
 
 /**
  * @author Andrea Di Giorgi
@@ -236,9 +236,6 @@ public class RootProjectConfigurator implements Plugin<Project> {
 			GradleUtil.addDefaultRepositories(project);
 		}
 
-		Configuration bundleSupportConfiguration =
-			_addConfigurationBundleSupport(project);
-
 		Configuration providedModulesConfiguration =
 			_addConfigurationProvidedModules(project);
 
@@ -267,8 +264,7 @@ public class RootProjectConfigurator implements Plugin<Project> {
 
 		_addTaskInitBundle(
 			project, verifyProductTask, downloadBundleTask, verifyBundleTask,
-			workspaceExtension, bundleSupportConfiguration,
-			providedModulesConfiguration);
+			workspaceExtension, providedModulesConfiguration);
 
 		_addDockerTasks(
 			project, workspaceExtension, providedModulesConfiguration,
@@ -285,29 +281,6 @@ public class RootProjectConfigurator implements Plugin<Project> {
 		_defaultRepositoryEnabled = defaultRepositoryEnabled;
 	}
 
-	private Configuration _addConfigurationBundleSupport(
-		final Project project) {
-
-		Configuration configuration = GradleUtil.addConfiguration(
-			project, BUNDLE_SUPPORT_CONFIGURATION_NAME);
-
-		configuration.defaultDependencies(
-			new Action<DependencySet>() {
-
-				@Override
-				public void execute(DependencySet dependencySet) {
-					_addDependenciesBundleSupport(project);
-				}
-
-			});
-
-		configuration.setDescription(
-			"Configures Liferay Bundle Support for this project.");
-		configuration.setVisible(false);
-
-		return configuration;
-	}
-
 	private Configuration _addConfigurationProvidedModules(Project project) {
 		Configuration configuration = GradleUtil.addConfiguration(
 			project, PROVIDED_MODULES_CONFIGURATION_NAME);
@@ -318,12 +291,6 @@ public class RootProjectConfigurator implements Plugin<Project> {
 		configuration.setVisible(true);
 
 		return configuration;
-	}
-
-	private void _addDependenciesBundleSupport(Project project) {
-		GradleUtil.addDependency(
-			project, BUNDLE_SUPPORT_CONFIGURATION_NAME, "com.liferay",
-			"com.liferay.portal.tools.bundle.support", "latest.release");
 	}
 
 	private void _addDockerTasks(
@@ -911,6 +878,7 @@ public class RootProjectConfigurator implements Plugin<Project> {
 		copy.setGroup(DOCKER_GROUP);
 
 		copy.setDestinationDir(workspaceExtension.getDockerDir());
+		copy.setDuplicatesStrategy(DuplicatesStrategy.INCLUDE);
 
 		copy.from(
 			providedModulesConfiguration,
@@ -1119,7 +1087,8 @@ public class RootProjectConfigurator implements Plugin<Project> {
 
 				@Override
 				public void execute(Project project) {
-					_configureDownloadTask(download, workspaceExtension);
+					_configureDownloadTask(
+						project, download, workspaceExtension);
 				}
 
 			});
@@ -1144,7 +1113,6 @@ public class RootProjectConfigurator implements Plugin<Project> {
 		Project project, VerifyProductTask verifyProductTask,
 		Download downloadBundleTask, VerifyBundleTask verifyBundleTask,
 		final WorkspaceExtension workspaceExtension,
-		Configuration bundleSupportConfiguration,
 		Configuration osgiModulesConfiguration) {
 
 		InitBundleTask initBundleTask = GradleUtil.addTask(
@@ -1161,6 +1129,9 @@ public class RootProjectConfigurator implements Plugin<Project> {
 
 					WorkResult workResult = project.copy(
 						copySpec -> {
+							copySpec.setDuplicatesStrategy(
+								DuplicatesStrategy.INCLUDE);
+
 							copySpec.from(
 								new File(
 									workspaceExtension.getConfigsDir(),
@@ -1181,7 +1152,6 @@ public class RootProjectConfigurator implements Plugin<Project> {
 
 			});
 		initBundleTask.mustRunAfter(verifyProductTask);
-		initBundleTask.setClasspath(bundleSupportConfiguration);
 		initBundleTask.setConfigEnvironment(
 			new Callable<String>() {
 
@@ -1696,37 +1666,24 @@ public class RootProjectConfigurator implements Plugin<Project> {
 		VerifyProductTask verifyProductTask = GradleUtil.addTask(
 			project, VERIFY_PRODUCT_TASK_NAME, VerifyProductTask.class);
 
+		verifyProductTask.onlyIf(
+			new Spec<Task>() {
+
+				@Override
+				public boolean isSatisfiedBy(Task task) {
+					return Validator.isNotNull(workspaceExtension.getProduct());
+				}
+
+			});
+
 		project.afterEvaluate(
 			new Action<Project>() {
 
 				@Override
 				public void execute(Project project) {
-					if (Objects.nonNull(workspaceExtension.getProduct())) {
-						WorkspaceExtension.ProductInfo productInfo =
-							workspaceExtension.getProductInfo();
-
-						if (Objects.nonNull(productInfo)) {
-							verifyProductTask.setBundleUrl(
-								productInfo.getBundleUrl());
-							verifyProductTask.setDockerImageLiferay(
-								productInfo.getLiferayDockerImage());
-							verifyProductTask.setTargetPlatformVersion(
-								productInfo.getTargetPlatformVersion());
-						}
-						else {
-							verifyProductTask.setErrorMessage(
-								"The product key is invalid. Please provide " +
-									"a valid product key.");
-						}
-					}
-					else {
-						verifyProductTask.setBundleUrl(
-							workspaceExtension.getBundleUrl());
-						verifyProductTask.setDockerImageLiferay(
-							workspaceExtension.getDockerImageLiferay());
-						verifyProductTask.setTargetPlatformVersion(
-							workspaceExtension.getTargetPlatformVersion());
-					}
+					verifyProductTask.setProduct(
+						workspaceExtension.getProduct());
+					verifyProductTask.setExtension(workspaceExtension);
 				}
 
 			});
@@ -1786,7 +1743,8 @@ public class RootProjectConfigurator implements Plugin<Project> {
 	}
 
 	private void _configureDownloadTask(
-		Download download, WorkspaceExtension workspaceExtension) {
+		Project project, Download download,
+		WorkspaceExtension workspaceExtension) {
 
 		File destinationDir = workspaceExtension.getBundleCacheDir();
 
@@ -1804,9 +1762,22 @@ public class RootProjectConfigurator implements Plugin<Project> {
 			if (bundleURLString.startsWith("file:")) {
 				URL url = new URL(bundleURLString);
 
-				File file = new File(url.getFile());
+				Path bundleFilePath = Path.path(url.getPath());
 
-				file = file.getAbsoluteFile();
+				File file = null;
+
+				if (bundleFilePath.isAbsolute()) {
+					file = new File(url.getFile());
+
+					file = file.getAbsoluteFile();
+				}
+				else {
+					file = project.file(url.getFile());
+				}
+
+				if (Objects.isNull(file)) {
+					return;
+				}
 
 				URI uri = file.toURI();
 

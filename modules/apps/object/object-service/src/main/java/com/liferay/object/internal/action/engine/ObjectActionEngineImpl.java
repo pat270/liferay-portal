@@ -265,6 +265,7 @@ public class ObjectActionEngineImpl implements ObjectActionEngine {
 
 			objectActionExecutor.execute(
 				objectDefinition.getCompanyId(),
+				objectAction.getObjectActionId(),
 				objectAction.getParametersUnicodeProperties(),
 				payloadJSONObject, userId);
 

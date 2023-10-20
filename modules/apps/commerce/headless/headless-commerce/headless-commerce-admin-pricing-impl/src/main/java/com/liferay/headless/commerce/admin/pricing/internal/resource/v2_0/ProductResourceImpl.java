@@ -11,8 +11,10 @@ import com.liferay.commerce.price.list.model.CommercePriceEntry;
 import com.liferay.commerce.price.list.service.CommercePriceEntryService;
 import com.liferay.commerce.pricing.model.CommercePriceModifierRel;
 import com.liferay.commerce.pricing.service.CommercePriceModifierRelService;
+import com.liferay.commerce.product.exception.NoSuchCPInstanceException;
 import com.liferay.commerce.product.model.CPDefinition;
 import com.liferay.commerce.product.model.CPInstance;
+import com.liferay.commerce.product.service.CPInstanceLocalService;
 import com.liferay.headless.commerce.admin.pricing.dto.v2_0.DiscountProduct;
 import com.liferay.headless.commerce.admin.pricing.dto.v2_0.PriceEntry;
 import com.liferay.headless.commerce.admin.pricing.dto.v2_0.PriceModifierProduct;
@@ -21,7 +23,6 @@ import com.liferay.headless.commerce.admin.pricing.resource.v2_0.ProductResource
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.fields.NestedField;
-import com.liferay.portal.vulcan.fields.NestedFieldSupport;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -32,11 +33,10 @@ import org.osgi.service.component.annotations.ServiceScope;
  */
 @Component(
 	properties = "OSGI-INF/liferay/rest/v2_0/product.properties",
-	scope = ServiceScope.PROTOTYPE,
-	service = {NestedFieldSupport.class, ProductResource.class}
+	property = "nested.field.support=true", scope = ServiceScope.PROTOTYPE,
+	service = ProductResource.class
 )
-public class ProductResourceImpl
-	extends BaseProductResourceImpl implements NestedFieldSupport {
+public class ProductResourceImpl extends BaseProductResourceImpl {
 
 	@NestedField(parentClass = DiscountProduct.class, value = "product")
 	@Override
@@ -56,7 +56,13 @@ public class ProductResourceImpl
 		CommercePriceEntry commercePriceEntry =
 			_commercePriceEntryService.getCommercePriceEntry(id);
 
-		CPInstance cpInstance = commercePriceEntry.getCPInstance();
+		CPInstance cpInstance = _cpInstanceLocalService.fetchCPInstance(
+			commercePriceEntry.getCProductId(),
+			commercePriceEntry.getCPInstanceUuid());
+
+		if (cpInstance == null) {
+			throw new NoSuchCPInstanceException();
+		}
 
 		return _productDTOConverter.toDTO(
 			new DefaultDTOConverterContext(
@@ -84,6 +90,9 @@ public class ProductResourceImpl
 
 	@Reference
 	private CommercePriceModifierRelService _commercePriceModifierRelService;
+
+	@Reference
+	private CPInstanceLocalService _cpInstanceLocalService;
 
 	@Reference(
 		target = "(component.name=com.liferay.headless.commerce.admin.pricing.internal.dto.v2_0.converter.ProductDTOConverter)"

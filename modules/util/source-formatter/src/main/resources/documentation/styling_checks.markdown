@@ -51,7 +51,7 @@ GroovyImportsCheck | .groovy | Sorts and groups imports in `.groovy` files. |
 HTMLEmptyLinesCheck | .html or .path | Finds missing and unnecessary empty lines. |
 HTMLWhitespaceCheck | .html or .path | Finds missing and unnecessary whitespace in `.html` files. |
 [IfStatementCheck](check/if_statement_check.markdown#ifstatementcheck) | .java, .jsp, .jspf, .jspx, .tag, .tpl or .vm | Finds empty if-statements and consecutive if-statements with identical bodies |
-InstanceInitializerCheck | .java | Checks the order of variable assignments and set* calls in the instance initializer. |
+InstanceInitializerCheck | .java | Performs several checks on class instance initializer. |
 InstanceofOrderCheck | .java, .jsp, .jspf, .jspx, .tag, .tpl or .vm | Check the order of `instanceof` calls. |
 JSONStylingCheck | .ipynb, .json or .npmbridgerc | Applies rules to enforce consistency in code style. |
 [JSONUtilCheck](check/json_util_check.markdown#jsonutilcheck) | .java, .jsp, .jspf, .jspx, .tag, .tpl or .vm | Checks for utilization of class `JSONUtil`. |
@@ -125,6 +125,7 @@ PlusStatementCheck | .java, .jsp, .jspf, .jspx, .tag, .tpl or .vm | Performs sev
 PoshiAntCommandParametersOrderCheck | .function, .jar, .lar, .macro, .path, .testcase, .war or .zip | Sorts parameters in AntCommand call in Poshi Script files. |
 PoshiImportsCheck | .function, .jar, .lar, .macro, .path, .testcase, .war or .zip | Sorts and groups imports in Poshi Script files. |
 PoshiIndentationCheck | .function, .jar, .lar, .macro, .path, .testcase, .war or .zip | Finds incorrect indentation in Poshi Script files. |
+PoshiPropertiesOrderCheck | .function, .jar, .lar, .macro, .path, .testcase, .war or .zip | Sorts the values of properties in `.testcase` file. |
 PoshiStylingCheck | .function, .jar, .lar, .macro, .path, .testcase, .war or .zip | Applies rules to enforce consistency in code style. |
 PoshiVariableNameCheck | .function, .jar, .lar, .macro, .path, .testcase, .war or .zip | Checks variable names for correct use of `camelCase`. |
 PoshiWhitespaceCheck | .function, .jar, .lar, .macro, .path, .testcase, .war or .zip | Finds missing and unnecessary whitespace. |

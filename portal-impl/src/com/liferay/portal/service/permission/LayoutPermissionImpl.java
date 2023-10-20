@@ -33,13 +33,11 @@ import com.liferay.portal.kernel.service.permission.LayoutPermission;
 import com.liferay.portal.kernel.service.permission.LayoutPrototypePermissionUtil;
 import com.liferay.portal.kernel.service.permission.LayoutSetPrototypePermissionUtil;
 import com.liferay.portal.kernel.service.permission.OrganizationPermissionUtil;
-import com.liferay.portal.kernel.service.permission.UserGroupPermissionUtil;
 import com.liferay.portal.kernel.service.permission.UserPermissionUtil;
 import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.workflow.permission.WorkflowPermissionUtil;
 import com.liferay.portal.util.LayoutTypeControllerTracker;
 import com.liferay.portal.util.PropsValues;
-import com.liferay.sites.kernel.util.SitesUtil;
 
 import java.util.Arrays;
 import java.util.List;
@@ -287,7 +285,9 @@ public class LayoutPermissionImpl implements LayoutPermission {
 		}
 
 		if (actionId.equals(ActionKeys.ADD_LAYOUT)) {
-			if (!SitesUtil.isLayoutSortable(layout)) {
+			if ((layout instanceof VirtualLayout) ||
+				!layout.isLayoutSortable()) {
+
 				return false;
 			}
 
@@ -299,7 +299,8 @@ public class LayoutPermissionImpl implements LayoutPermission {
 		}
 
 		if (actionId.equals(ActionKeys.DELETE) &&
-			!SitesUtil.isLayoutDeleteable(layout)) {
+			((layout instanceof VirtualLayout) ||
+			 !layout.isLayoutDeleteable())) {
 
 			return false;
 		}
@@ -432,7 +433,8 @@ public class LayoutPermissionImpl implements LayoutPermission {
 
 		if ((ActionKeys.CUSTOMIZE.equals(actionId) ||
 			 ActionKeys.UPDATE.equals(actionId)) &&
-			!SitesUtil.isLayoutUpdateable(layout)) {
+			((layout instanceof VirtualLayout) ||
+			 !layout.isLayoutUpdateable())) {
 
 			return true;
 		}

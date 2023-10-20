@@ -219,7 +219,7 @@ public class PostalAddress implements Serializable {
 	}
 
 	@GraphQLField(description = "The address's ID.")
-	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Long id;
 
 	@Schema(description = "The address's name.")
@@ -247,6 +247,34 @@ public class PostalAddress implements Serializable {
 	@GraphQLField(description = "The address's name.")
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected String name;
+
+	@Schema(description = "The phone number.")
+	public String getPhoneNumber() {
+		return phoneNumber;
+	}
+
+	public void setPhoneNumber(String phoneNumber) {
+		this.phoneNumber = phoneNumber;
+	}
+
+	@JsonIgnore
+	public void setPhoneNumber(
+		UnsafeSupplier<String, Exception> phoneNumberUnsafeSupplier) {
+
+		try {
+			phoneNumber = phoneNumberUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField(description = "The phone number.")
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected String phoneNumber;
 
 	@Schema(description = "The address's postal code (e.g., zip code).")
 	public String getPostalCode() {
@@ -509,6 +537,20 @@ public class PostalAddress implements Serializable {
 			sb.append("\"");
 
 			sb.append(_escape(name));
+
+			sb.append("\"");
+		}
+
+		if (phoneNumber != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"phoneNumber\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(phoneNumber));
 
 			sb.append("\"");
 		}

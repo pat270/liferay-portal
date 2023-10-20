@@ -11,6 +11,7 @@ import com.liferay.asset.kernel.service.AssetCategoryServiceUtil;
 import com.liferay.asset.kernel.service.AssetVocabularyServiceUtil;
 import com.liferay.asset.tags.item.selector.AssetTagsItemSelectorReturnType;
 import com.liferay.asset.tags.item.selector.criterion.AssetTagsItemSelectorCriterion;
+import com.liferay.depot.util.SiteConnectedGroupGroupProviderUtil;
 import com.liferay.digital.signature.configuration.DigitalSignatureConfiguration;
 import com.liferay.digital.signature.configuration.DigitalSignatureConfigurationUtil;
 import com.liferay.document.library.constants.DLPortletKeys;
@@ -162,6 +163,17 @@ public class DLAdminManagementToolbarDisplayContext
 				dropdownItem.setQuickAction(true);
 			}
 		).add(
+			() ->
+				stagedActions && !user.isGuestUser() &&
+				FeatureFlagManagerUtil.isEnabled("LPS-182512"),
+			dropdownItem -> {
+				dropdownItem.putData("action", "copy");
+				dropdownItem.setIcon("copy");
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "copy-to"));
+				dropdownItem.setQuickAction(false);
+			}
+		).add(
 			() -> stagedActions && !user.isGuestUser(),
 			dropdownItem -> {
 				dropdownItem.putData("action", "editTags");
@@ -228,6 +240,7 @@ public class DLAdminManagementToolbarDisplayContext
 				dropdownItem.setIcon("password-policies");
 				dropdownItem.setLabel(
 					LanguageUtil.get(_httpServletRequest, "permissions"));
+				dropdownItem.setMultipleTypesBulkActionDisabled(true);
 				dropdownItem.setQuickAction(false);
 			}
 		).build();
@@ -301,17 +314,13 @@ public class DLAdminManagementToolbarDisplayContext
 
 	@Override
 	public List<DropdownItem> getFilterDropdownItems() {
-		if (_isSearch() && !FeatureFlagManagerUtil.isEnabled("LPS-84424")) {
-			return null;
-		}
-
 		return DropdownItemListBuilder.addGroup(
 			dropdownGroupItem -> {
 				dropdownGroupItem.setDropdownItems(
 					_getFilterNavigationDropdownItems());
 				dropdownGroupItem.setLabel(
-					LanguageUtil.get(
-						_httpServletRequest, "filter-by-navigation"));
+					LanguageUtil.get(_httpServletRequest, "filter-by") +
+						StringPool.TRIPLE_PERIOD);
 			}
 		).addGroup(
 			() ->
@@ -341,9 +350,7 @@ public class DLAdminManagementToolbarDisplayContext
 
 	@Override
 	public List<DropdownItem> getOrderDropdownItems() {
-		if ((_isSearch() && !FeatureFlagManagerUtil.isEnabled("LPS-84424")) ||
-			!FeatureFlagManagerUtil.isEnabled("LPS-144527")) {
-
+		if (!FeatureFlagManagerUtil.isEnabled("LPS-144527")) {
 			return null;
 		}
 
@@ -364,19 +371,11 @@ public class DLAdminManagementToolbarDisplayContext
 
 	@Override
 	public String getSortingOrder() {
-		if (_isSearch() && !FeatureFlagManagerUtil.isEnabled("LPS-84424")) {
-			return null;
-		}
-
 		return _dlAdminDisplayContext.getOrderByType();
 	}
 
 	@Override
 	public String getSortingURL() {
-		if (_isSearch() && !FeatureFlagManagerUtil.isEnabled("LPS-84424")) {
-			return null;
-		}
-
 		return PortletURLBuilder.create(
 			_getCurrentRenderURL()
 		).setParameter(
@@ -393,10 +392,6 @@ public class DLAdminManagementToolbarDisplayContext
 
 	@Override
 	public List<ViewTypeItem> getViewTypeItems() {
-		if (_isSearch() && !FeatureFlagManagerUtil.isEnabled("LPS-84424")) {
-			return null;
-		}
-
 		PortletURL renderURL = _getCurrentRenderURL();
 
 		int curEntry = ParamUtil.getInteger(_httpServletRequest, "curEntry");
@@ -591,8 +586,9 @@ public class DLAdminManagementToolbarDisplayContext
 			"vocabularyIds",
 			StringUtil.merge(
 				AssetVocabularyServiceUtil.getGroupsVocabularies(
-					PortalUtil.getCurrentAndAncestorSiteGroupIds(
-						_themeDisplay.getScopeGroupId()),
+					SiteConnectedGroupGroupProviderUtil.
+						getCurrentAndAncestorSiteAndDepotGroupIds(
+							_themeDisplay.getScopeGroupId()),
 					DLFileEntryConstants.getClassName()),
 				assetVocabulary -> String.valueOf(
 					assetVocabulary.getVocabularyId()),
@@ -834,7 +830,6 @@ public class DLAdminManagementToolbarDisplayContext
 					LanguageUtil.get(_httpServletRequest, "mine"));
 			}
 		).add(
-			() -> FeatureFlagManagerUtil.isEnabled("LPS-84424"),
 			dropdownItem -> {
 				dropdownItem.putData("action", "openCategoriesSelector");
 				dropdownItem.putData(
@@ -876,7 +871,6 @@ public class DLAdminManagementToolbarDisplayContext
 				dropdownItem.setLabel(label);
 			}
 		).add(
-			() -> FeatureFlagManagerUtil.isEnabled("LPS-84424"),
 			dropdownItem -> {
 				dropdownItem.putData("action", "openExtensionSelector");
 				dropdownItem.putData(
@@ -887,7 +881,6 @@ public class DLAdminManagementToolbarDisplayContext
 						StringPool.TRIPLE_PERIOD);
 			}
 		).add(
-			() -> FeatureFlagManagerUtil.isEnabled("LPS-84424"),
 			dropdownItem -> {
 				dropdownItem.putData("action", "openTagsSelector");
 				dropdownItem.putData(
@@ -984,7 +977,8 @@ public class DLAdminManagementToolbarDisplayContext
 
 		List<AssetVocabulary> assetVocabularies =
 			AssetVocabularyServiceUtil.getGroupVocabularies(
-				PortalUtil.getCurrentAndAncestorSiteGroupIds(scopeGroupId));
+				SiteConnectedGroupGroupProviderUtil.
+					getCurrentAndAncestorSiteAndDepotGroupIds(scopeGroupId));
 
 		for (AssetVocabulary assetVocabulary : assetVocabularies) {
 			if (!assetVocabulary.isAssociatedToClassNameId(

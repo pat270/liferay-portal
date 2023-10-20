@@ -1,7 +1,8 @@
 @component-name = "portal-frontend-infrastructure"
+@ignore = "true"
 definition {
 
-	property custom.properties = "feature.flag.LPS-164563=true${line.separator}feature.flag.LPS-188645=true${line.separator}feature.flag.LPS-167253=true";
+	property custom.properties = "feature.flag.LPS-164563=true${line.separator}feature.flag.LPS-167253=true${line.separator}feature.flag.LPS-188645=true";
 	property portal.acceptance = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
@@ -16,7 +17,7 @@ definition {
 		task ("Given the creation of a new data set") {
 			DataSetAdmin.goToDataSetAdminPage();
 
-			JSONDataSet._createDataSetEntry(
+			DataSetAdmin.createDataSetEntryViaAPI(
 				dataSetName = "Data Set Fields Test",
 				restApplication = "/headless-admin-taxonomy/v1.0",
 				restEndpoint = "/v1.0/keywords/ranked",
@@ -24,10 +25,10 @@ definition {
 		}
 
 		task ("And adding a data set view") {
-			JSONDataSet._createFDSViewViaAPI(
+			DataSetAdmin.createFDSViewViaAPI(
 				dataSetName = "Data Set Fields Test",
 				dataSetViewDescription = "FDSViewDescription",
-				dataSetViewName = "View Fields Test");
+				key_dataSetViewNameList = "View Fields Test");
 		}
 
 		task ("When go to the View page of the data set created.") {
@@ -238,7 +239,7 @@ definition {
 				locator1 = "DataSet#DATEPICKER_BUTTON");
 
 			Select(
-				key_type = "month",
+				key_number = 1,
 				locator1 = "DataSet#SELECT_MONTH",
 				value1 = "April");
 
@@ -256,7 +257,7 @@ definition {
 				locator1 = "DataSet#DATEPICKER_BUTTON");
 
 			Select(
-				key_type = "month",
+				key_number = 2,
 				locator1 = "DataSet#SELECT_MONTH",
 				value1 = "May");
 

@@ -299,6 +299,16 @@ public class PriceEntrySerDes {
 			sb.append(String.valueOf(priceEntry.getProduct()));
 		}
 
+		if (priceEntry.getQuantity() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"quantity\": ");
+
+			sb.append(priceEntry.getQuantity());
+		}
+
 		if (priceEntry.getSku() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -353,16 +363,16 @@ public class PriceEntrySerDes {
 			sb.append("]");
 		}
 
-		if (priceEntry.getUnitOfMeasure() != null) {
+		if (priceEntry.getUnitOfMeasureKey() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"unitOfMeasure\": ");
+			sb.append("\"unitOfMeasureKey\": ");
 
 			sb.append("\"");
 
-			sb.append(_escape(priceEntry.getUnitOfMeasure()));
+			sb.append(_escape(priceEntry.getUnitOfMeasureKey()));
 
 			sb.append("\"");
 		}
@@ -569,6 +579,13 @@ public class PriceEntrySerDes {
 			map.put("product", String.valueOf(priceEntry.getProduct()));
 		}
 
+		if (priceEntry.getQuantity() == null) {
+			map.put("quantity", null);
+		}
+		else {
+			map.put("quantity", String.valueOf(priceEntry.getQuantity()));
+		}
+
 		if (priceEntry.getSku() == null) {
 			map.put("sku", null);
 		}
@@ -599,12 +616,13 @@ public class PriceEntrySerDes {
 			map.put("tierPrices", String.valueOf(priceEntry.getTierPrices()));
 		}
 
-		if (priceEntry.getUnitOfMeasure() == null) {
-			map.put("unitOfMeasure", null);
+		if (priceEntry.getUnitOfMeasureKey() == null) {
+			map.put("unitOfMeasureKey", null);
 		}
 		else {
 			map.put(
-				"unitOfMeasure", String.valueOf(priceEntry.getUnitOfMeasure()));
+				"unitOfMeasureKey",
+				String.valueOf(priceEntry.getUnitOfMeasureKey()));
 		}
 
 		return map;
@@ -766,6 +784,12 @@ public class PriceEntrySerDes {
 						ProductSerDes.toDTO((String)jsonParserFieldValue));
 				}
 			}
+			else if (Objects.equals(jsonParserFieldName, "quantity")) {
+				if (jsonParserFieldValue != null) {
+					priceEntry.setQuantity(
+						new BigDecimal((String)jsonParserFieldValue));
+				}
+			}
 			else if (Objects.equals(jsonParserFieldName, "sku")) {
 				if (jsonParserFieldValue != null) {
 					priceEntry.setSku(
@@ -802,9 +826,10 @@ public class PriceEntrySerDes {
 					priceEntry.setTierPrices(tierPricesArray);
 				}
 			}
-			else if (Objects.equals(jsonParserFieldName, "unitOfMeasure")) {
+			else if (Objects.equals(jsonParserFieldName, "unitOfMeasureKey")) {
 				if (jsonParserFieldValue != null) {
-					priceEntry.setUnitOfMeasure((String)jsonParserFieldValue);
+					priceEntry.setUnitOfMeasureKey(
+						(String)jsonParserFieldValue);
 				}
 			}
 		}

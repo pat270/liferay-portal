@@ -8,6 +8,7 @@ package com.liferay.portal.kernel.test;
 import com.liferay.petra.function.UnsafeRunnable;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.SystemProperties;
 
 import java.io.InputStream;
 
@@ -109,6 +110,44 @@ public class AssertUtils {
 	}
 
 	public static void assertFailure(
+		Class<?> clazz, boolean liferayTestMode, String message,
+		UnsafeRunnable<Exception> unsafeRunnable) {
+
+		if (liferayTestMode) {
+			_assertFailure(clazz, message, unsafeRunnable);
+
+			return;
+		}
+
+		String liferayMode = SystemProperties.get("liferay.mode");
+
+		SystemProperties.clear("liferay.mode");
+
+		try {
+			_assertFailure(clazz, message, unsafeRunnable);
+		}
+		finally {
+			SystemProperties.set("liferay.mode", liferayMode);
+		}
+	}
+
+	public static void assertFailure(
+		Class<?> clazz, String message,
+		UnsafeRunnable<Exception> unsafeRunnable) {
+
+		assertFailure(clazz, true, message, unsafeRunnable);
+	}
+
+	public static void assertLessThan(
+			double expectedDouble, double actualDouble)
+		throws Exception {
+
+		if (actualDouble > expectedDouble) {
+			Assert.fail(actualDouble + " is not less than " + expectedDouble);
+		}
+	}
+
+	private static void _assertFailure(
 		Class<?> clazz, String message,
 		UnsafeRunnable<Exception> unsafeRunnable) {
 
@@ -118,17 +157,14 @@ public class AssertUtils {
 			Assert.fail();
 		}
 		catch (Exception exception) {
-			Assert.assertTrue(clazz.isInstance(exception));
-			Assert.assertEquals(exception.getMessage(), message);
-		}
-	}
+			Class<?> exceptionClass = exception.getClass();
 
-	public static void assertLessThan(
-			double expectedDouble, double actualDouble)
-		throws Exception {
+			Assert.assertTrue(
+				exceptionClass.getName() + " is not an instance of " +
+					clazz.getName(),
+				clazz.isInstance(exception));
 
-		if (actualDouble > expectedDouble) {
-			Assert.fail(actualDouble + " is not less than " + expectedDouble);
+			Assert.assertEquals(message, exception.getMessage());
 		}
 	}
 

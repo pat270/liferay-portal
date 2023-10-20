@@ -185,7 +185,12 @@ definition {
 		var body = '''"alternateName": "${alternateName}","emailAddress": "${emailAddress}","familyName": "${familyName}","givenName": "${givenName}"''';
 
 		if (isSet(fieldName) && isSet(fieldValue)) {
-			var body = StringUtil.add("${body},", "\"${fieldName}\":\"${fieldValue}\"", "");
+			if (${dbType} == "Integer") {
+				var body = StringUtil.add(${body}, ",\"${fieldName}\": ${fieldValue}", "");
+			}
+			else {
+				var body = StringUtil.add("${body},", "\"${fieldName}\":\"${fieldValue}\"", "");
+			}
 		}
 
 		var curl = StringUtil.add(${curl}, "-d {${body}}", " ");
@@ -345,6 +350,7 @@ definition {
 				"emailAddress": "${emailAddress}",
 				"familyName": "${familyName}",
 				"givenName": "${givenName}",
+				"status": "Active",
 				"${fieldName}":"${updatedFieldValue}"
 			}
 		''';
@@ -423,6 +429,7 @@ definition {
 	macro setUpGlobalUserAccountId {
 		var response = UserAccountAPI.createUserAccount(
 			alternateName = ${alternateName},
+			dbType = ${dbType},
 			emailAddress = ${emailAddress},
 			familyName = ${familyName},
 			fieldName = ${fieldName},
@@ -478,7 +485,7 @@ definition {
 		var curl = UserAccountAPI._curlUserAccount(
 			userAccountId = ${userAccountId},
 			virtualHost = ${virtualHost});
-		var body = '''"alternateName": "${alternateName}","emailAddress": "${emailAddress}","familyName": "${familyName}","givenName": "${givenName}"''';
+		var body = '''"alternateName": "${alternateName}","emailAddress": "${emailAddress}","familyName": "${familyName}","givenName": "${givenName}","status": "Active"''';
 
 		if (isSet(fieldName) && isSet(fieldValue)) {
 			var body = StringUtil.add("${body},", "\"${fieldName}\":\"${fieldValue}\"", "");

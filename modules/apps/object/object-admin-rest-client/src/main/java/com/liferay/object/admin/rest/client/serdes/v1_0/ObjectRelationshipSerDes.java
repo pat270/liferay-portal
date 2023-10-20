@@ -70,6 +70,16 @@ public class ObjectRelationshipSerDes {
 			sb.append("\"");
 		}
 
+		if (objectRelationship.getEdge() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"edge\": ");
+
+			sb.append(objectRelationship.getEdge());
+		}
+
 		if (objectRelationship.getId() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -231,6 +241,16 @@ public class ObjectRelationshipSerDes {
 			sb.append(objectRelationship.getReverse());
 		}
 
+		if (objectRelationship.getSystem() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"system\": ");
+
+			sb.append(objectRelationship.getSystem());
+		}
+
 		if (objectRelationship.getType() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -280,6 +300,13 @@ public class ObjectRelationshipSerDes {
 			map.put(
 				"deletionType",
 				String.valueOf(objectRelationship.getDeletionType()));
+		}
+
+		if (objectRelationship.getEdge() == null) {
+			map.put("edge", null);
+		}
+		else {
+			map.put("edge", String.valueOf(objectRelationship.getEdge()));
 		}
 
 		if (objectRelationship.getId() == null) {
@@ -402,6 +429,13 @@ public class ObjectRelationshipSerDes {
 			map.put("reverse", String.valueOf(objectRelationship.getReverse()));
 		}
 
+		if (objectRelationship.getSystem() == null) {
+			map.put("system", null);
+		}
+		else {
+			map.put("system", String.valueOf(objectRelationship.getSystem()));
+		}
+
 		if (objectRelationship.getType() == null) {
 			map.put("type", null);
 		}
@@ -442,6 +476,11 @@ public class ObjectRelationshipSerDes {
 					objectRelationship.setDeletionType(
 						ObjectRelationship.DeletionType.create(
 							(String)jsonParserFieldValue));
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "edge")) {
+				if (jsonParserFieldValue != null) {
+					objectRelationship.setEdge((Boolean)jsonParserFieldValue);
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "id")) {
@@ -542,6 +581,11 @@ public class ObjectRelationshipSerDes {
 				if (jsonParserFieldValue != null) {
 					objectRelationship.setReverse(
 						(Boolean)jsonParserFieldValue);
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "system")) {
+				if (jsonParserFieldValue != null) {
+					objectRelationship.setSystem((Boolean)jsonParserFieldValue);
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "type")) {

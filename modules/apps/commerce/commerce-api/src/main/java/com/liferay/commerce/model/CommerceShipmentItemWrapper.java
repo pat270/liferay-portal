@@ -9,6 +9,8 @@ import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
+import java.math.BigDecimal;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,6 +53,7 @@ public class CommerceShipmentItemWrapper
 		attributes.put(
 			"commerceInventoryWarehouseId", getCommerceInventoryWarehouseId());
 		attributes.put("quantity", getQuantity());
+		attributes.put("unitOfMeasureKey", getUnitOfMeasureKey());
 
 		return attributes;
 	}
@@ -138,10 +141,16 @@ public class CommerceShipmentItemWrapper
 			setCommerceInventoryWarehouseId(commerceInventoryWarehouseId);
 		}
 
-		Integer quantity = (Integer)attributes.get("quantity");
+		BigDecimal quantity = (BigDecimal)attributes.get("quantity");
 
 		if (quantity != null) {
 			setQuantity(quantity);
+		}
+
+		String unitOfMeasureKey = (String)attributes.get("unitOfMeasureKey");
+
+		if (unitOfMeasureKey != null) {
+			setUnitOfMeasureKey(unitOfMeasureKey);
 		}
 	}
 
@@ -278,8 +287,18 @@ public class CommerceShipmentItemWrapper
 	 * @return the quantity of this commerce shipment item
 	 */
 	@Override
-	public int getQuantity() {
+	public BigDecimal getQuantity() {
 		return model.getQuantity();
+	}
+
+	/**
+	 * Returns the unit of measure key of this commerce shipment item.
+	 *
+	 * @return the unit of measure key of this commerce shipment item
+	 */
+	@Override
+	public String getUnitOfMeasureKey() {
+		return model.getUnitOfMeasureKey();
 	}
 
 	/**
@@ -445,8 +464,18 @@ public class CommerceShipmentItemWrapper
 	 * @param quantity the quantity of this commerce shipment item
 	 */
 	@Override
-	public void setQuantity(int quantity) {
+	public void setQuantity(BigDecimal quantity) {
 		model.setQuantity(quantity);
+	}
+
+	/**
+	 * Sets the unit of measure key of this commerce shipment item.
+	 *
+	 * @param unitOfMeasureKey the unit of measure key of this commerce shipment item
+	 */
+	@Override
+	public void setUnitOfMeasureKey(String unitOfMeasureKey) {
+		model.setUnitOfMeasureKey(unitOfMeasureKey);
 	}
 
 	/**

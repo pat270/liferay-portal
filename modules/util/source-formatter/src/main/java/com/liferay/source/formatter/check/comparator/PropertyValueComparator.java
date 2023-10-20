@@ -6,6 +6,7 @@
 package com.liferay.source.formatter.check.comparator;
 
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.NaturalOrderStringComparator;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -36,11 +37,42 @@ public class PropertyValueComparator extends NaturalOrderStringComparator {
 			}
 		}
 
-		if ((x > 0) && (s1.charAt(x - 1) == CharPool.PERIOD)) {
+		if (x <= 0) {
+			return value;
+		}
+
+		if (s1.charAt(x - 1) == CharPool.PERIOD) {
 			if (Character.isUpperCase(c1) && Character.isLowerCase(c2)) {
 				return -1;
 			}
 			else if (Character.isLowerCase(c1) && Character.isUpperCase(c2)) {
+				return 1;
+			}
+		}
+
+		if (s1.charAt(x - 1) == CharPool.SLASH) {
+			if (c1 == CharPool.STAR) {
+				return -1;
+			}
+
+			if (c2 == CharPool.STAR) {
+				return 1;
+			}
+
+			if ((s1.indexOf(StringPool.PERIOD, x) == -1) ||
+				(s2.indexOf(StringPool.PERIOD, x) == -1)) {
+
+				return value;
+			}
+
+			if ((s1.indexOf(StringPool.SLASH, x) == -1) &&
+				(s2.indexOf(StringPool.SLASH, x) != -1)) {
+
+				return -1;
+			}
+			else if ((s1.indexOf(StringPool.SLASH, x) != -1) &&
+					 (s2.indexOf(StringPool.SLASH, x) == -1)) {
+
 				return 1;
 			}
 		}

@@ -1901,9 +1901,11 @@ public class VerifyProperties {
 		"layout.url.friendliable[panel]", "layout.url.friendliable[url]",
 		"layout.view.page[control_panel]", "layout.view.page[embedded]",
 		"layout.view.page[link_to_layout]", "layout.view.page[panel]",
-		"layout.view.page[url]", "library.download.url.resin.jar",
-		"library.download.url.script-10.jar", "liferay.lib.global.shared.dir",
-		"liferay.web.portal.dir", "look.and.feel.modifiable", "lucene.analyzer",
+		"layout.view.page[url]", "ldap.clock.skew",
+		"ldap.ignore.user.search.filter.for.auth=true",
+		"library.download.url.resin.jar", "library.download.url.script-10.jar",
+		"liferay.lib.global.shared.dir", "liferay.web.portal.dir",
+		"look.and.feel.modifiable", "lucene.analyzer",
 		"lucene.cluster.index.loading.sync.timeout", "lucene.file.extractor",
 		"lucene.file.extractor.regexp.strip", "lucene.replicate.write",
 		"lucene.store.jdbc.auto.clean.up",
@@ -2235,7 +2237,8 @@ public class VerifyProperties {
 		{
 			"tags.asset.increment.view.counter.enabled",
 			"asset.entry.increment.view.counter.enabled"
-		}
+		},
+		{"sql.data.max.parameters", "database.max.parameters"}
 	};
 
 	private static final String[][] _RENAMED_SYSTEM_KEYS = {

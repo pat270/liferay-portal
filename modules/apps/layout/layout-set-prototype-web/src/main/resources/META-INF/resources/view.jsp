@@ -18,6 +18,7 @@
 	filterDropdownItems="<%= layoutSetPrototypeDisplayContext.getFilterDropdownItems() %>"
 	infoPanelId="infoPanelId"
 	itemsTotal="<%= layoutSetPrototypeDisplayContext.getTotalItems() %>"
+	orderDropdownItems="<%= layoutSetPrototypeDisplayContext.getOrderByDropdownItems() %>"
 	propsTransformer="js/LayoutSetPrototypeManagementToolbarPropsTransformer"
 	searchActionURL="<%= layoutSetPrototypeDisplayContext.getSearchActionURL() %>"
 	searchContainerId="layoutSetPrototype"
@@ -113,7 +114,7 @@
 						<aui:a href="<%= rowURL %>" target="_blank"><%= layoutSetPrototype.getName(locale) %></aui:a>
 
 						<%
-						int mergeFailCount = SitesUtil.getMergeFailCount(layoutSetPrototype);
+						int mergeFailCount = layoutSetPrototype.getMergeFailCount();
 						%>
 
 						<c:if test="<%= mergeFailCount > PropsValues.LAYOUT_SET_PROTOTYPE_MERGE_FAIL_THRESHOLD %>">

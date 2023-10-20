@@ -52,6 +52,15 @@ public class SegmentsExperimentServiceWrapper
 
 	@Override
 	public SegmentsExperiment deleteSegmentsExperiment(
+			SegmentsExperiment segmentsExperiment, boolean force)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _segmentsExperimentService.deleteSegmentsExperiment(
+			segmentsExperiment, force);
+	}
+
+	@Override
+	public SegmentsExperiment deleteSegmentsExperiment(
 			String segmentsExperimentKey)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -61,11 +70,11 @@ public class SegmentsExperimentServiceWrapper
 
 	@Override
 	public SegmentsExperiment fetchSegmentsExperiment(
-			long segmentsExperienceId, long plid, int[] statuses)
+			long groupId, long segmentsExperienceId, long plid)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _segmentsExperimentService.fetchSegmentsExperiment(
-			segmentsExperienceId, plid, statuses);
+			groupId, segmentsExperienceId, plid);
 	}
 
 	@Override
@@ -88,18 +97,6 @@ public class SegmentsExperimentServiceWrapper
 	}
 
 	@Override
-	public java.util.List<SegmentsExperiment>
-			getSegmentsExperienceSegmentsExperiments(
-				long[] segmentsExperienceIds, long plid, int[] statuses,
-				int start, int end)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _segmentsExperimentService.
-			getSegmentsExperienceSegmentsExperiments(
-				segmentsExperienceIds, plid, statuses, start, end);
-	}
-
-	@Override
 	public SegmentsExperiment getSegmentsExperiment(long segmentsExperimentId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -114,23 +111,6 @@ public class SegmentsExperimentServiceWrapper
 
 		return _segmentsExperimentService.getSegmentsExperiment(
 			segmentsExperimentKey);
-	}
-
-	@Override
-	public java.util.List<SegmentsExperiment> getSegmentsExperiments(
-		long groupId, long plid) {
-
-		return _segmentsExperimentService.getSegmentsExperiments(groupId, plid);
-	}
-
-	@Override
-	public java.util.List<SegmentsExperiment> getSegmentsExperiments(
-		long segmentsExperienceId, long plid, int[] statuses,
-		com.liferay.portal.kernel.util.OrderByComparator<SegmentsExperiment>
-			orderByComparator) {
-
-		return _segmentsExperimentService.getSegmentsExperiments(
-			segmentsExperienceId, plid, statuses, orderByComparator);
 	}
 
 	@Override

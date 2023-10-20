@@ -3,23 +3,31 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import ClayAlert from '@clayui/alert';
+
 import 'codemirror/mode/groovy/groovy';
 import {
 	AutoComplete,
 	Card,
 	CodeEditor,
-	InputLocalized,
 	RadioField,
 	SidebarCategory,
 	filterArrayByQuery,
 	getLocalizableLabel,
 } from '@liferay/object-js-components-web';
+import {
+	InputLocalized,
+	LearnMessage,
+	LearnResourcesContext,
+} from 'frontend-js-components-web';
 import React, {useMemo, useState} from 'react';
 
+import {NAME_OUTPUT_OBJECT_FIELD_EXTERNAL_REFERENCE_CODE} from '../../utils/constants';
 import {TabProps} from './useObjectValidationForm';
 
 interface ConditionsProps extends TabProps {
 	creationLanguageId: Liferay.Language.Locale;
+	learnResources: ObjectWebLearnResources;
 	objectFields: ObjectField[];
 	objectValidationRuleElements: SidebarCategory[];
 }
@@ -39,6 +47,7 @@ export function Conditions({
 	creationLanguageId,
 	disabled,
 	errors,
+	learnResources,
 	objectFields,
 	objectValidationRuleElements,
 	setValues,
@@ -102,6 +111,21 @@ export function Conditions({
 
 	return (
 		<>
+			<ClayAlert
+				className="lfr-objects__side-panel-content-container"
+				displayType="info"
+				title={`${Liferay.Language.get('info')}:`}
+			>
+				{Liferay.Language.get('create-validations-using-expressions')}
+				&nbsp;
+				<LearnResourcesContext.Provider value={learnResources}>
+					<LearnMessage
+						className="alert-link"
+						resource="object-web"
+						resourceKey="general"
+					/>
+				</LearnResourcesContext.Provider>
+			</ClayAlert>
 			<Card
 				title={values.engineLabel!}
 				tooltip={engine === 'ddm' ? ddmTooltip : null}
@@ -130,79 +154,73 @@ export function Conditions({
 					translations={values.errorLabel!}
 				/>
 
-				{Liferay.FeatureFlags['LPS-187846'] && (
-					<>
-						<RadioField
-							defaultValue={values.outputType}
-							inline={false}
-							label={Liferay.Language.get(
-								'output-validation-type'
-							)}
-							onChange={(value) => {
-								if (value === 'fullValidation') {
-									setValues({
-										objectValidationRuleSettings: [],
-										outputType: value as string,
-									});
-
-									return;
-								}
-
+				<>
+					<RadioField
+						defaultValue={values.outputType}
+						inline={false}
+						label={Liferay.Language.get('output-validation-type')}
+						onChange={(value) => {
+							if (value === 'fullValidation') {
 								setValues({
+									objectValidationRuleSettings: [],
 									outputType: value as string,
 								});
-							}}
-							options={outputValidationTypeArray}
-							popover={{
-								alignPosition: 'top',
-								content: Liferay.Language.get(
-									'map-the-error-message-to-be-displayed-next-to-the-validated-field'
-								),
-								header: Liferay.Language.get(
-									'message-location'
-								),
-							}}
-						/>
 
-						{values.outputType === 'partialValidation' && (
-							<AutoComplete<ObjectField>
-								emptyStateMessage={Liferay.Language.get(
-									'no-fields-were-found'
-								)}
-								error={errors.outputType}
-								items={filteredObjectFields ?? []}
-								label={Liferay.Language.get('fields')}
-								onChangeQuery={setQuery}
-								onSelectItem={(item) => {
-									setValues({
-										objectValidationRuleSettings: [
-											{
-												name:
-													'objectFieldExternalReferenceCode',
-												value: item.externalReferenceCode as string,
-											},
-										],
-									});
-								}}
-								query={query}
-								required
-								value={getSelectedPartialValidationField()}
-							>
-								{({label, name}) => (
-									<div className="d-flex justify-content-between">
-										<div>
-											{getLocalizableLabel(
-												creationLanguageId,
-												label,
-												name
-											)}
-										</div>
+								return;
+							}
+
+							setValues({
+								outputType: value as string,
+							});
+						}}
+						options={outputValidationTypeArray}
+						popover={{
+							alignPosition: 'top',
+							content: Liferay.Language.get(
+								'map-the-error-message-to-be-displayed-next-to-the-validated-field'
+							),
+							header: Liferay.Language.get('message-location'),
+						}}
+					/>
+
+					{values.outputType === 'partialValidation' && (
+						<AutoComplete<ObjectField>
+							emptyStateMessage={Liferay.Language.get(
+								'no-fields-were-found'
+							)}
+							error={errors.outputType}
+							id="objectValidationConditions"
+							items={filteredObjectFields ?? []}
+							label={Liferay.Language.get('fields')}
+							onChangeQuery={setQuery}
+							onSelectItem={(item) => {
+								setValues({
+									objectValidationRuleSettings: [
+										{
+											name: NAME_OUTPUT_OBJECT_FIELD_EXTERNAL_REFERENCE_CODE,
+											value: item.externalReferenceCode as string,
+										},
+									],
+								});
+							}}
+							query={query}
+							required
+							value={getSelectedPartialValidationField()}
+						>
+							{({label, name}) => (
+								<div className="d-flex justify-content-between">
+									<div>
+										{getLocalizableLabel(
+											creationLanguageId,
+											label,
+											name
+										)}
 									</div>
-								)}
-							</AutoComplete>
-						)}
-					</>
-				)}
+								</div>
+							)}
+						</AutoComplete>
+					)}
+				</>
 			</Card>
 		</>
 	);

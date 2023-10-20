@@ -34,11 +34,10 @@ import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.zip.ZipWriter;
-import com.liferay.portal.kernel.zip.ZipWriterFactoryUtil;
+import com.liferay.portal.kernel.zip.ZipWriterFactory;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portal.upload.UploadPortletRequestImpl;
-import com.liferay.portal.upload.UploadServletRequestImpl;
+import com.liferay.portal.upload.test.util.UploadTestUtil;
 import com.liferay.portal.util.PropsValues;
 
 import java.io.File;
@@ -111,8 +110,8 @@ public class ImportFragmentEntriesStrutsActionTest {
 			bytes, "file");
 
 		UploadPortletRequest uploadPortletRequest =
-			new UploadPortletRequestImpl(
-				new UploadServletRequestImpl(
+			UploadTestUtil.createUploadPortletRequest(
+				UploadTestUtil.createUploadServletRequest(
 					httpServletRequest, fileParameters,
 					HashMapBuilder.put(
 						"groupId",
@@ -200,7 +199,7 @@ public class ImportFragmentEntriesStrutsActionTest {
 		Enumeration<URL> enumeration = _bundle.findEntries(
 			_RESOURCES_PATH, "*", true);
 
-		ZipWriter zipWriter = ZipWriterFactoryUtil.getZipWriter();
+		ZipWriter zipWriter = _zipWriterFactory.getZipWriter();
 
 		while (enumeration.hasMoreElements()) {
 			URL url = enumeration.nextElement();
@@ -292,5 +291,8 @@ public class ImportFragmentEntriesStrutsActionTest {
 
 	@Inject
 	private UserLocalService _userLocalService;
+
+	@Inject
+	private ZipWriterFactory _zipWriterFactory;
 
 }

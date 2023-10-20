@@ -8,9 +8,9 @@ package com.liferay.commerce.product.service.impl;
 import com.liferay.account.model.AccountGroupRel;
 import com.liferay.account.service.AccountGroupRelLocalService;
 import com.liferay.asset.kernel.model.AssetEntry;
-import com.liferay.asset.kernel.model.AssetLinkConstants;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
-import com.liferay.asset.kernel.service.AssetLinkLocalService;
+import com.liferay.asset.link.constants.AssetLinkConstants;
+import com.liferay.asset.link.service.AssetLinkLocalService;
 import com.liferay.commerce.price.list.constants.CommercePriceListConstants;
 import com.liferay.commerce.price.list.model.CommercePriceEntry;
 import com.liferay.commerce.price.list.model.CommercePriceList;
@@ -82,6 +82,7 @@ import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.aop.AopService;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.dao.orm.QueryDefinition;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -91,7 +92,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.search.BaseModelSearchResult;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
@@ -2035,7 +2035,7 @@ public class CPDefinitionLocalServiceImpl
 
 		try {
 			CProductVersionConfiguration cProductVersionConfiguration =
-				ConfigurationProviderUtil.getConfiguration(
+				_configurationProvider.getConfiguration(
 					CProductVersionConfiguration.class,
 					new SystemSettingsLocator(
 						CProductVersionConfiguration.class.getName()));
@@ -2669,7 +2669,8 @@ public class CPDefinitionLocalServiceImpl
 
 		CommercePriceEntry commercePriceEntry =
 			_commercePriceEntryLocalService.fetchCommercePriceEntry(
-				commercePriceList.getCommercePriceListId(), cpInstanceUuid);
+				commercePriceList.getCommercePriceListId(), cpInstanceUuid,
+				StringPool.BLANK);
 
 		if (commercePriceEntry == null) {
 			return;
@@ -2681,7 +2682,7 @@ public class CPDefinitionLocalServiceImpl
 			null, cpDefinition.getCProductId(), cpInstance.getCPInstanceUuid(),
 			commercePriceList.getCommercePriceListId(),
 			commercePriceEntry.getPrice(),
-			commercePriceEntry.isPriceOnApplication(), null, null,
+			commercePriceEntry.isPriceOnApplication(), null, StringPool.BLANK,
 			serviceContext);
 	}
 
@@ -3028,7 +3029,7 @@ public class CPDefinitionLocalServiceImpl
 	private boolean _isVersioningEnabled() {
 		try {
 			CProductVersionConfiguration cProductVersionConfiguration =
-				ConfigurationProviderUtil.getConfiguration(
+				_configurationProvider.getConfiguration(
 					CProductVersionConfiguration.class,
 					new SystemSettingsLocator(
 						CProductVersionConfiguration.class.getName()));
@@ -3337,6 +3338,9 @@ public class CPDefinitionLocalServiceImpl
 
 	@Reference
 	private CommerceChannelRelLocalService _commerceChannelRelLocalService;
+
+	@Reference
+	private ConfigurationProvider _configurationProvider;
 
 	@Reference
 	private CPAttachmentFileEntryLocalService

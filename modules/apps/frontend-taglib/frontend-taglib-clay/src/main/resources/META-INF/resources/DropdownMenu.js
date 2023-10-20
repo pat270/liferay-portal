@@ -24,6 +24,7 @@ export default function DropdownMenu({
 	menuProps,
 	portletId: _portletId,
 	portletNamespace: _portletNamespace,
+	swapIconSide,
 	...otherProps
 }) {
 	return (
@@ -41,7 +42,7 @@ export default function DropdownMenu({
 						})}
 						{...otherProps}
 					>
-						{icon && (
+						{icon && !swapIconSide && (
 							<span
 								className={classNames('inline-item', {
 									'inline-item-before': label,
@@ -52,6 +53,16 @@ export default function DropdownMenu({
 						)}
 
 						{label}
+
+						{icon && swapIconSide && (
+							<span
+								className={classNames('inline-item', {
+									'inline-item-after': label,
+								})}
+							>
+								<ClayIcon symbol={icon} />
+							</span>
+						)}
 					</ClayButton>
 				}
 			/>

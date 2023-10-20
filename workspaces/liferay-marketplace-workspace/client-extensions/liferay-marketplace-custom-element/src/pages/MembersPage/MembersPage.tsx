@@ -34,7 +34,10 @@ interface MembersPageProps {
 	isCustomerDashboard: boolean;
 	isPublisherDashboard: boolean;
 	listOfRoles: string[];
-	rolesPermissionDescription: PermissionDescription[];
+	rolesPermissionDescription: {
+		appPermissions: PermissionDescription[];
+		dashboardPermissions: PermissionDescription[];
+	};
 	selectedAccount: Account;
 	setShowDashboardNavigation?: (value: boolean) => void;
 }
@@ -75,8 +78,9 @@ export function MembersPage({
 	const [loading] = useState<boolean>(false);
 	const [members, setMembers] = useState<MemberProps[]>(Array<MemberProps>());
 	const [selectedMember, setSelectedMember] = useState<MemberProps>();
-	const [isCurrentUserAdmin, setIsCurrentUserAdmin] =
-		useState<boolean>(false);
+	const [isCurrentUserAdmin, setIsCurrentUserAdmin] = useState<boolean>(
+		false
+	);
 	const [toastItems, setToastItems] = useState<
 		{message: string; title?: string; type: DisplayType}[]
 	>([]);
@@ -114,11 +118,10 @@ export function MembersPage({
 				isPublisherAccount: false,
 			};
 
-			const currentUserAccountBriefs =
-				currentUserAccount.accountBriefs.find(
-					(accountBrief: {id: number}) =>
-						accountBrief.id === selectedAccount.id
-				);
+			const currentUserAccountBriefs = currentUserAccount.accountBriefs.find(
+				(accountBrief: {id: number}) =>
+					accountBrief.id === selectedAccount.id
+			);
 
 			if (currentUserAccountBriefs) {
 				customerRoles.forEach((customerRole) => {

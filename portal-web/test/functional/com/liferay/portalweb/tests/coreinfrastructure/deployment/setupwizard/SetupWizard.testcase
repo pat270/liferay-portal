@@ -10,7 +10,7 @@ definition {
 	@description = "This is a use case for LPS-107347. It asserts that an admin is still required to change password with Setup Wizard disabled."
 	@priority = 4
 	test AdminIsRequiredToChangePasswordWithSetupWizardDisabled {
-		property custom.properties = "setup.wizard.enabled=false${line.separator}passwords.default.policy.change.required=true";
+		property custom.properties = "passwords.default.policy.change.required=true${line.separator}setup.wizard.enabled=false";
 		property database.types = "mysql";
 		property test.prepare.bundle.properties = "true";
 		property testray.main.component.name = "Users and Organizations";
@@ -56,6 +56,7 @@ definition {
 	test BasicConfigurationVisualLook {
 		property database.types = "mysql";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		SetupWizard.viewDefaultPortalNamePG();
 
@@ -69,12 +70,43 @@ definition {
 
 	}
 
+	@priority = 4
+	test CannnotUseTestConnectionWithInvalidDriverClass {
+		property database.types = "mysql";
+		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
+
+		SetupWizard.configureAdministratorUserPG(
+			administratorEmail = "test@liferay.com",
+			administratorFirstName = "Test",
+			administratorLastName = "Test");
+
+		AssertClick(
+			locator1 = "SetupWizard#DATABASE_CHANGE_LINK",
+			value1 = "(Change)");
+
+		Type(
+			locator1 = "SetupWizard#DATABASE_CHANGE_JDBC_DRIVER_CLASS_NAME_FIELD",
+			value1 = "java.lang.String");
+
+		TestUtils.changeElementValueById(
+			elementId = "cmd",
+			newValue = "test");
+
+		SetupWizard.finishConfigurationPG();
+
+		WaitForConsoleTextPresent(value1 = "java.lang.String is not specified in the portal property \"setup.database.driverClassName\"");
+
+		AssertElementNotPresent(locator1 = "//body[contains(.,'Database connection was established successfully')]");
+	}
+
 	@description = "This is a use case for LPS-187661. Verify the admin user can be configured to a non liferay domain via setup wizard."
 	@priority = 5
 	test ConfigureNonLiferayDomain {
 		property database.types = "mysql";
 		property test.assert.warning.exceptions = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		SetupWizard.configurePG(
 			administratorEmail = "test@test.com",
@@ -94,10 +126,11 @@ definition {
 	@description = "This is a use case for LPS-187661. Verify there are no errors after configuring a non liferay domain via editing the admin email."
 	@priority = 5
 	test ConfigureNonLiferayDomainViaUserEdit {
-		property custom.properties = "setup.wizard.enabled=false${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}setup.wizard.enabled=false";
 		property test.assert.warning.exceptions = "true";
 		property test.liferay.virtual.instance = "false";
 		property test.prepare.bundle.properties = "true";
+		property test.run.type = "single";
 
 		User.firstLoginPG();
 
@@ -130,6 +163,7 @@ definition {
 		property database.types = "mysql";
 		property test.assert.warning.exceptions = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		SetupWizard.configurePG(
 			administratorEmail = "test@liferay.com",
@@ -150,6 +184,7 @@ definition {
 	test HypersonicWithSpecialContent {
 		property database.types = "hypersonic";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		SetupWizard.configurePortalNamePG(portalName = "");
 
@@ -219,6 +254,7 @@ definition {
 		property database.types = "mysql";
 		property test.assert.warning.exceptions = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		AntCommands.runCommand("build-test.xml", "portal-ext-properties-update -Dadd.new.properties=true -Dupdate.properties=company.security.strangers.verify=false");
 
@@ -267,6 +303,7 @@ definition {
 	test ViewConfiguredSetupWizardValue {
 		property database.types = "mysql";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		SetupWizard.viewDefaultPortalNamePG();
 

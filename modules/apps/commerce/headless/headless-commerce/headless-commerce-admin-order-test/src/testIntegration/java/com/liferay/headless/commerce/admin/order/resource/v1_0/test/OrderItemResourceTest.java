@@ -330,7 +330,8 @@ public class OrderItemResourceTest extends BaseOrderItemResourceTestCase {
 
 		return new OrderItem() {
 			{
-				bookedQuantityId = commerceOrderItem.getBookedQuantityId();
+				bookedQuantityId =
+					commerceOrderItem.getCommerceInventoryBookedQuantityId();
 				deliveryGroup = commerceOrderItem.getDeliveryGroup();
 				discountManuallyAdjusted =
 					commerceOrderItem.isDiscountManuallyAdjusted();
@@ -404,9 +405,10 @@ public class OrderItemResourceTest extends BaseOrderItemResourceTestCase {
 				priceManuallyAdjusted = RandomTestUtil.randomBoolean();
 				printedNote = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
-				quantity = RandomTestUtil.randomInt(1, 100);
+				quantity = BigDecimal.valueOf(RandomTestUtil.randomInt(1, 100));
 				requestedDeliveryDate = RandomTestUtil.nextDate();
-				shippedQuantity = RandomTestUtil.randomInt();
+				shippedQuantity = BigDecimal.valueOf(
+					RandomTestUtil.randomInt());
 				shippingAddressId = RandomTestUtil.randomLong();
 				sku = cpInstance.getSku();
 				skuExternalReferenceCode =

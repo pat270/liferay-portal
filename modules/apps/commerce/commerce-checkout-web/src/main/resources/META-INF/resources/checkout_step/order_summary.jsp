@@ -149,9 +149,21 @@ Map<Long, List<CommerceOrderValidatorResult>> commerceOrderValidatorResultsMap =
 							name="quantity"
 						>
 							<div class="quantity-section">
-								<span class="commerce-quantity"><%= commerceOrderItem.getQuantity() %></span><span class="inline-item-after">x</span>
+								<span class="commerce-quantity"><%= orderSummaryCheckoutStepDisplayContext.getCommerceOrderItemFormattedQuantity(commerceOrderItem) %></span><span class="inline-item-after">x</span>
 							</div>
 						</liferay-ui:search-container-column-text>
+
+						<c:if test='<%= FeatureFlagManagerUtil.isEnabled("COMMERCE-11287") %>'>
+							<liferay-ui:search-container-column-text
+								name="uom"
+							>
+								<div class="value-section">
+									<span class="commerce-value">
+										<%= HtmlUtil.escape(commerceOrderItem.getUnitOfMeasureKey()) %>
+									</span>
+								</div>
+							</liferay-ui:search-container-column-text>
+						</c:if>
 
 						<%
 						CommerceProductPrice commerceProductPrice = orderSummaryCheckoutStepDisplayContext.getCommerceProductPrice(commerceOrderItem);
@@ -176,7 +188,7 @@ Map<Long, List<CommerceOrderValidatorResult>> commerceOrderValidatorResultsMap =
 								<div class="value-section">
 									<span class="price">
 										<c:choose>
-											<c:when test="<%= !unitPromoPriceCommerceMoney.isEmpty() && CommerceBigDecimalUtil.gt(unitPromoPriceCommerceMoney.getPrice(), BigDecimal.ZERO) && CommerceBigDecimalUtil.lt(unitPromoPriceCommerceMoney.getPrice(), unitPriceCommerceMoney.getPrice()) %>">
+											<c:when test="<%= !unitPromoPriceCommerceMoney.isEmpty() && BigDecimalUtil.gt(unitPromoPriceCommerceMoney.getPrice(), BigDecimal.ZERO) && BigDecimalUtil.lt(unitPromoPriceCommerceMoney.getPrice(), unitPriceCommerceMoney.getPrice()) %>">
 												<span class="price-value price-value-promo">
 													<%= HtmlUtil.escape(unitPromoPriceCommerceMoney.format(locale)) %>
 												</span>

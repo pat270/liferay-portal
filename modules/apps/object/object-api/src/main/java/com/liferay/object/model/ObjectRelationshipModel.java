@@ -286,6 +286,27 @@ public interface ObjectRelationshipModel
 	public void setDBTableName(String dbTableName);
 
 	/**
+	 * Returns the edge of this object relationship.
+	 *
+	 * @return the edge of this object relationship
+	 */
+	public boolean getEdge();
+
+	/**
+	 * Returns <code>true</code> if this object relationship is edge.
+	 *
+	 * @return <code>true</code> if this object relationship is edge; <code>false</code> otherwise
+	 */
+	public boolean isEdge();
+
+	/**
+	 * Sets whether this object relationship is edge.
+	 *
+	 * @param edge the edge of this object relationship
+	 */
+	public void setEdge(boolean edge);
+
+	/**
 	 * Returns the label of this object relationship.
 	 *
 	 * @return the label of this object relationship
@@ -419,6 +440,27 @@ public interface ObjectRelationshipModel
 	 * @param reverse the reverse of this object relationship
 	 */
 	public void setReverse(boolean reverse);
+
+	/**
+	 * Returns the system of this object relationship.
+	 *
+	 * @return the system of this object relationship
+	 */
+	public boolean getSystem();
+
+	/**
+	 * Returns <code>true</code> if this object relationship is system.
+	 *
+	 * @return <code>true</code> if this object relationship is system; <code>false</code> otherwise
+	 */
+	public boolean isSystem();
+
+	/**
+	 * Sets whether this object relationship is system.
+	 *
+	 * @param system the system of this object relationship
+	 */
+	public void setSystem(boolean system);
 
 	/**
 	 * Returns the type of this object relationship.

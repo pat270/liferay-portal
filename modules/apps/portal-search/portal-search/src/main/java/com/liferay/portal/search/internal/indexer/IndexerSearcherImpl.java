@@ -152,6 +152,7 @@ public class IndexerSearcherImpl<T extends BaseModel<?>>
 
 	private boolean _isUseSearchResultPermissionFilter() {
 		if (_indexerPermissionPostFilter.isPermissionAware() &&
+			_modelSearchSettings.isPermissionAware() &&
 			!_modelSearchSettings.isSearchResultPermissionFilterSuppressed()) {
 
 			return true;

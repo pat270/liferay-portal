@@ -15,6 +15,8 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
 
+import java.math.BigDecimal;
+
 import java.util.Date;
 import java.util.List;
 
@@ -39,7 +41,7 @@ public class CommerceInventoryReplenishmentItemServiceImpl
 	public CommerceInventoryReplenishmentItem
 			addCommerceInventoryReplenishmentItem(
 				String externalReferenceCode, long commerceInventoryWarehouseId,
-				Date availabilityDate, int quantity, String sku,
+				Date availabilityDate, BigDecimal quantity, String sku,
 				String unitOfMeasureKey)
 		throws PortalException {
 
@@ -79,7 +81,7 @@ public class CommerceInventoryReplenishmentItemServiceImpl
 
 	@Override
 	public void deleteCommerceInventoryReplenishmentItems(
-			long companyId, String sku)
+			long companyId, String sku, String unitOfMeasureKey)
 		throws PortalException {
 
 		PortletResourcePermission portletResourcePermission =
@@ -91,7 +93,8 @@ public class CommerceInventoryReplenishmentItemServiceImpl
 			CommerceInventoryActionKeys.MANAGE_INVENTORY);
 
 		commerceInventoryReplenishmentItemLocalService.
-			deleteCommerceInventoryReplenishmentItems(companyId, sku);
+			deleteCommerceInventoryReplenishmentItems(
+				companyId, sku, unitOfMeasureKey);
 	}
 
 	@Override
@@ -153,8 +156,9 @@ public class CommerceInventoryReplenishmentItemServiceImpl
 
 	@Override
 	public List<CommerceInventoryReplenishmentItem>
-			getCommerceInventoryReplenishmentItemsByCompanyIdAndSku(
-				long companyId, String sku, int start, int end)
+			getCommerceInventoryReplenishmentItemsByCompanyIdSkuAndUnitOfMeasureKey(
+				long companyId, String sku, String unitOfMeasureKey, int start,
+				int end)
 		throws PortalException {
 
 		PortletResourcePermission portletResourcePermission =
@@ -166,13 +170,14 @@ public class CommerceInventoryReplenishmentItemServiceImpl
 			CommerceInventoryActionKeys.MANAGE_INVENTORY);
 
 		return commerceInventoryReplenishmentItemLocalService.
-			getCommerceInventoryReplenishmentItemsByCompanyIdAndSku(
-				companyId, sku, start, end);
+			getCommerceInventoryReplenishmentItemsByCompanyIdSkuAndUnitOfMeasureKey(
+				companyId, sku, unitOfMeasureKey, start, end);
 	}
 
 	@Override
-	public long getCommerceInventoryReplenishmentItemsCount(
-			long commerceInventoryWarehouseId, String sku)
+	public BigDecimal getCommerceInventoryReplenishmentItemsCount(
+			long commerceInventoryWarehouseId, String sku,
+			String unitOfMeasureKey)
 		throws PortalException {
 
 		_commerceInventoryWarehouseModelResourcePermission.check(
@@ -181,7 +186,7 @@ public class CommerceInventoryReplenishmentItemServiceImpl
 
 		return commerceInventoryReplenishmentItemLocalService.
 			getCommerceInventoryReplenishmentItemsCount(
-				commerceInventoryWarehouseId, sku);
+				commerceInventoryWarehouseId, sku, unitOfMeasureKey);
 	}
 
 	@Override
@@ -200,8 +205,9 @@ public class CommerceInventoryReplenishmentItemServiceImpl
 	}
 
 	@Override
-	public int getCommerceInventoryReplenishmentItemsCountByCompanyIdAndSku(
-			long companyId, String sku)
+	public int
+			getCommerceInventoryReplenishmentItemsCountByCompanyIdSkuAndUnitOfMeasureKey(
+				long companyId, String sku, String unitOfMeasureKey)
 		throws PortalException {
 
 		PortletResourcePermission portletResourcePermission =
@@ -213,8 +219,8 @@ public class CommerceInventoryReplenishmentItemServiceImpl
 			CommerceInventoryActionKeys.MANAGE_INVENTORY);
 
 		return commerceInventoryReplenishmentItemLocalService.
-			getCommerceInventoryReplenishmentItemsCountByCompanyIdAndSku(
-				companyId, sku);
+			getCommerceInventoryReplenishmentItemsCountByCompanyIdSkuAndUnitOfMeasureKey(
+				companyId, sku, unitOfMeasureKey);
 	}
 
 	@Override
@@ -222,7 +228,7 @@ public class CommerceInventoryReplenishmentItemServiceImpl
 			updateCommerceInventoryReplenishmentItem(
 				String externalReferenceCode,
 				long commerceInventoryReplenishmentItemId,
-				Date availabilityDate, int quantity, long mvccVersion)
+				Date availabilityDate, BigDecimal quantity, long mvccVersion)
 		throws PortalException {
 
 		CommerceInventoryReplenishmentItem commerceInventoryReplenishmentItem =

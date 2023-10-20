@@ -29,6 +29,7 @@ import com.liferay.portal.kernel.resource.bundle.ResourceBundleLoader;
 import com.liferay.portal.kernel.resource.bundle.ResourceBundleLoaderUtil;
 import com.liferay.portal.kernel.servlet.PipingServletResponse;
 import com.liferay.portal.kernel.servlet.SessionErrors;
+import com.liferay.portal.kernel.template.TemplateException;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.Validator;
@@ -109,16 +110,15 @@ public class FragmentRendererControllerImpl
 						exception.getMessage(), ", ", throwable.getMessage()),
 					exception);
 			}
-			else {
-				_log.error(
-					StringBundler.concat(
-						"Unable to render content of fragment entry ",
-						fragmentEntryLink.getFragmentEntryId(), ":",
-						exception.getMessage(), ", ", throwable.getMessage()));
-			}
 
 			SessionErrors.add(
 				httpServletRequest, "fragmentEntryContentInvalid");
+
+			if (fragmentRendererContext.isIndexMode() &&
+				(throwable.getCause() instanceof TemplateException)) {
+
+				return StringPool.BLANK;
+			}
 
 			return _getFragmentEntryContentExceptionMessage(
 				exception, httpServletRequest);

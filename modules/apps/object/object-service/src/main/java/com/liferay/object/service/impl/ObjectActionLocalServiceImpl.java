@@ -15,6 +15,7 @@ import com.liferay.object.constants.ObjectActionConstants;
 import com.liferay.object.constants.ObjectActionExecutorConstants;
 import com.liferay.object.constants.ObjectActionTriggerConstants;
 import com.liferay.object.constants.ObjectFieldConstants;
+import com.liferay.object.definition.util.ObjectDefinitionUtil;
 import com.liferay.object.exception.DuplicateObjectActionExternalReferenceCodeException;
 import com.liferay.object.exception.ObjectActionConditionExpressionException;
 import com.liferay.object.exception.ObjectActionErrorMessageException;
@@ -22,6 +23,7 @@ import com.liferay.object.exception.ObjectActionExecutorKeyException;
 import com.liferay.object.exception.ObjectActionLabelException;
 import com.liferay.object.exception.ObjectActionNameException;
 import com.liferay.object.exception.ObjectActionParametersException;
+import com.liferay.object.exception.ObjectActionSystemException;
 import com.liferay.object.exception.ObjectActionTriggerKeyException;
 import com.liferay.object.internal.action.trigger.util.ObjectActionTriggerUtil;
 import com.liferay.object.internal.security.permission.resource.util.ObjectDefinitionResourcePermissionUtil;
@@ -39,6 +41,7 @@ import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -89,8 +92,11 @@ public class ObjectActionLocalServiceImpl
 			Map<Locale, String> errorMessageMap, Map<Locale, String> labelMap,
 			String name, String objectActionExecutorKey,
 			String objectActionTriggerKey,
-			UnicodeProperties parametersUnicodeProperties)
+			UnicodeProperties parametersUnicodeProperties, boolean system)
 		throws PortalException {
+
+		_validateInvokerBundle(
+			"Only allowed bundles can create system object actions", system);
 
 		ObjectDefinition objectDefinition =
 			_objectDefinitionPersistence.findByPrimaryKey(objectDefinitionId);
@@ -136,6 +142,7 @@ public class ObjectActionLocalServiceImpl
 		objectAction.setObjectActionExecutorKey(objectActionExecutorKey);
 		objectAction.setObjectActionTriggerKey(objectActionTriggerKey);
 		objectAction.setParameters(parametersUnicodeProperties.toString());
+		objectAction.setSystem(system);
 		objectAction.setStatus(ObjectActionConstants.STATUS_NEVER_RAN);
 
 		objectAction = objectActionPersistence.update(objectAction);
@@ -166,7 +173,7 @@ public class ObjectActionLocalServiceImpl
 			String description, Map<Locale, String> errorMessageMap,
 			Map<Locale, String> labelMap, String name,
 			String objectActionExecutorKey, String objectActionTriggerKey,
-			UnicodeProperties parametersUnicodeProperties)
+			UnicodeProperties parametersUnicodeProperties, boolean system)
 		throws PortalException {
 
 		ObjectAction existingObjectAction = null;
@@ -200,7 +207,7 @@ public class ObjectActionLocalServiceImpl
 			externalReferenceCode, userId, objectDefinitionId, active,
 			conditionExpression, description, errorMessageMap, labelMap, name,
 			objectActionExecutorKey, objectActionTriggerKey,
-			parametersUnicodeProperties);
+			parametersUnicodeProperties, system);
 	}
 
 	@Indexable(type = IndexableType.DELETE)
@@ -217,7 +224,13 @@ public class ObjectActionLocalServiceImpl
 	@Indexable(type = IndexableType.DELETE)
 	@Override
 	@SystemEvent(type = SystemEventConstants.TYPE_DELETE)
-	public ObjectAction deleteObjectAction(ObjectAction objectAction) {
+	public ObjectAction deleteObjectAction(ObjectAction objectAction)
+		throws PortalException {
+
+		_validateInvokerBundle(
+			"Only allowed bundles can delete system object actions",
+			objectAction.isSystem());
+
 		objectAction = objectActionPersistence.remove(objectAction);
 
 		ObjectDefinition objectDefinition =
@@ -246,6 +259,22 @@ public class ObjectActionLocalServiceImpl
 
 			objectActionLocalService.deleteObjectAction(objectAction);
 		}
+	}
+
+	@Override
+	public ObjectAction fetchObjectAction(
+		String externalReferenceCode, long objectDefinitionId) {
+
+		ObjectDefinition objectDefinition =
+			_objectDefinitionPersistence.fetchByPrimaryKey(objectDefinitionId);
+
+		if (objectDefinition == null) {
+			return null;
+		}
+
+		return objectActionPersistence.fetchByERC_C_ODI(
+			externalReferenceCode, objectDefinition.getCompanyId(),
+			objectDefinitionId);
 	}
 
 	@Override
@@ -284,6 +313,16 @@ public class ObjectActionLocalServiceImpl
 
 		ObjectAction objectAction = objectActionPersistence.findByPrimaryKey(
 			objectActionId);
+
+		if (objectAction.isSystem() &&
+			!ObjectDefinitionUtil.isInvokerBundleAllowed()) {
+
+			_validateLabel(labelMap);
+
+			objectAction.setLabelMap(labelMap, LocaleUtil.getSiteDefault());
+
+			return objectActionPersistence.update(objectAction);
+		}
 
 		_validateExternalReferenceCode(
 			externalReferenceCode, objectAction.getObjectActionId(),
@@ -380,6 +419,16 @@ public class ObjectActionLocalServiceImpl
 
 			throw new DuplicateObjectActionExternalReferenceCodeException();
 		}
+	}
+
+	private void _validateInvokerBundle(String message, boolean system)
+		throws PortalException {
+
+		if (!system || ObjectDefinitionUtil.isInvokerBundleAllowed()) {
+			return;
+		}
+
+		throw new ObjectActionSystemException(message);
 	}
 
 	private void _validateLabel(Map<Locale, String> labelMap)
@@ -482,7 +531,20 @@ public class ObjectActionLocalServiceImpl
 			ObjectDefinition objectDefinition)
 		throws PortalException {
 
-		if (Objects.equals(
+		if (FeatureFlagManagerUtil.isEnabled("LPS-187142") &&
+			StringUtil.equals(
+				objectActionTriggerKey,
+				ObjectActionTriggerConstants.KEY_ON_AFTER_ROOT_UPDATE) &&
+			!objectDefinition.isRootNode()) {
+
+			throw new ObjectActionTriggerKeyException(
+				StringBundler.concat(
+					"The object action trigger key ",
+					ObjectActionTriggerConstants.KEY_ON_AFTER_ROOT_UPDATE,
+					" can only be used by a root object definition"));
+		}
+
+		if (StringUtil.equals(
 				objectActionTriggerKey,
 				ObjectActionTriggerConstants.KEY_STANDALONE)) {
 
@@ -607,7 +669,9 @@ public class ObjectActionLocalServiceImpl
 					objectActionExecutorKey,
 					ObjectActionExecutorConstants.KEY_ADD_OBJECT_ENTRY) &&
 				 (!objectDefinition.isActive() ||
-				  !objectDefinition.isApproved()))) {
+				  !objectDefinition.isApproved()) &&
+				 !(objectDefinition.isModifiable() &&
+				   objectDefinition.isSystem()))) {
 
 				errorMessageKeys.put("objectDefinitionId", "invalid");
 			}

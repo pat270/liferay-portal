@@ -53,6 +53,7 @@ import com.liferay.message.boards.model.MBMessage;
 import com.liferay.message.boards.service.MBMessageLocalServiceUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.bean.BeanParamUtil;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -64,7 +65,6 @@ import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.PortalPreferences;
@@ -84,7 +84,6 @@ import com.liferay.portal.kernel.search.SearchContextFactory;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
-import com.liferay.portal.kernel.servlet.BrowserSnifferUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -98,6 +97,7 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.search.searcher.SearchResponse;
+import com.liferay.portal.servlet.BrowserSnifferUtil;
 import com.liferay.trash.TrashHelper;
 
 import java.io.Serializable;
@@ -599,6 +599,20 @@ public class JournalDisplayContext {
 		).build();
 	}
 
+	public List<TabsItem> getInfoPanelTabsItems(boolean journalArticle) {
+		return TabsItemListBuilder.add(
+			tabsItem -> {
+				tabsItem.setActive(true);
+				tabsItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "details"));
+			}
+		).add(
+			() -> journalArticle,
+			tabsItem -> tabsItem.setLabel(
+				LanguageUtil.get(_httpServletRequest, "versions"))
+		).build();
+	}
+
 	public String getKeywords() {
 		if (_keywords != null) {
 			return _keywords;
@@ -972,16 +986,17 @@ public class JournalDisplayContext {
 	}
 
 	public int getTotalItems() throws PortalException {
-		SearchContainer<?> articleSearch = _getArticlesSearchContainer();
+		SearchContainer<?> articleSearchContainer =
+			_getArticlesSearchContainer();
 
-		return articleSearch.getTotal();
+		return articleSearchContainer.getTotal();
 	}
 
 	public int getVersionsTotal() throws PortalException {
-		SearchContainer<JournalArticle> articleSearch =
+		SearchContainer<JournalArticle> articleSearchContainer =
 			_getVersionsSearchContainer();
 
-		return articleSearch.getTotal();
+		return articleSearchContainer.getTotal();
 	}
 
 	public boolean hasCommentsResults() throws PortalException {

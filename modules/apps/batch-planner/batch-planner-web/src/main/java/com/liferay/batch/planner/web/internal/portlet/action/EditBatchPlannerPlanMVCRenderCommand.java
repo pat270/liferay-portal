@@ -9,9 +9,11 @@ import com.liferay.batch.planner.constants.BatchPlannerPortletKeys;
 import com.liferay.batch.planner.model.BatchPlannerPlan;
 import com.liferay.batch.planner.service.BatchPlannerPlanService;
 import com.liferay.batch.planner.web.internal.display.context.EditBatchPlannerPlanDisplayContext;
+import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
@@ -19,6 +21,7 @@ import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineTaskItemDelegate;
 import com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineTaskItemDelegateRegistry;
@@ -26,6 +29,7 @@ import com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineTaskItemDelegateR
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
@@ -65,16 +69,18 @@ public class EditBatchPlannerPlanMVCRenderCommand implements MVCRenderCommand {
 		return "/view.jsp";
 	}
 
-	private Map<String, String> _getInternalClassNameCategories(
+	private Map<String, String> _getInternalClassNameKeyCategories(
 		long companyId, boolean export) {
 
-		Map<String, String> internalClassNameCategories = new HashMap<>();
+		Map<String, String> internalClassNameKeyCategories = new HashMap<>();
 
 		for (String entityClassName :
 				_vulcanBatchEngineTaskItemDelegateRegistry.getEntityClassNames(
 					companyId)) {
 
-			if (!_isBatchPlannerEnabled(companyId, entityClassName, export)) {
+			if (!_isAllowedEntityClassName(entityClassName) ||
+				!_isBatchPlannerEnabled(companyId, entityClassName, export)) {
+
 				continue;
 			}
 
@@ -84,17 +90,17 @@ public class EditBatchPlannerPlanMVCRenderCommand implements MVCRenderCommand {
 						getVulcanBatchEngineTaskItemDelegate(
 							companyId, entityClassName);
 
-			internalClassNameCategories.put(
+			internalClassNameKeyCategories.put(
 				entityClassName,
-				_getInternalClassNameCategory(
+				_getInternalClassNameKeyCategory(
 					FrameworkUtil.getBundle(
 						vulcanBatchEngineTaskItemDelegate.getClass())));
 		}
 
-		return internalClassNameCategories;
+		return internalClassNameKeyCategories;
 	}
 
-	private String _getInternalClassNameCategory(Bundle bundle) {
+	private String _getInternalClassNameKeyCategory(Bundle bundle) {
 		Dictionary<String, String> headers = bundle.getHeaders(
 			StringPool.BLANK);
 
@@ -103,6 +109,24 @@ public class EditBatchPlannerPlanMVCRenderCommand implements MVCRenderCommand {
 
 		return bundleName.substring(
 			0, bundleName.lastIndexOf(StringPool.SPACE));
+	}
+
+	private boolean _isAllowedEntityClassName(String entityClassName) {
+		if (FeatureFlagManagerUtil.isEnabled("LPS-186620")) {
+			return true;
+		}
+
+		int index = entityClassName.indexOf(CharPool.POUND);
+
+		if (index >= 0) {
+			entityClassName = entityClassName.substring(0, index);
+		}
+
+		if (_allowedEntityClassNames.contains(entityClassName)) {
+			return true;
+		}
+
+		return false;
 	}
 
 	private boolean _isBatchPlannerEnabled(
@@ -131,8 +155,8 @@ public class EditBatchPlannerPlanMVCRenderCommand implements MVCRenderCommand {
 		boolean export = _isExport(
 			ParamUtil.getString(renderRequest, "navigation"));
 
-		Map<String, String> internalClassNameCategories =
-			_getInternalClassNameCategories(companyId, export);
+		Map<String, String> internalClassNameKeyCategories =
+			_getInternalClassNameKeyCategories(companyId, export);
 
 		long batchPlannerPlanId = ParamUtil.getLong(
 			renderRequest, "batchPlannerPlanId");
@@ -145,7 +169,7 @@ public class EditBatchPlannerPlanMVCRenderCommand implements MVCRenderCommand {
 						_batchPlannerPlanService.getBatchPlannerPlans(
 							companyId, true, true, QueryUtil.ALL_POS,
 							QueryUtil.ALL_POS, null),
-						internalClassNameCategories, renderRequest, null));
+						internalClassNameKeyCategories, renderRequest, null));
 
 				return "/export/edit_batch_planner_plan.jsp";
 			}
@@ -156,7 +180,7 @@ public class EditBatchPlannerPlanMVCRenderCommand implements MVCRenderCommand {
 					_batchPlannerPlanService.getBatchPlannerPlans(
 						_portal.getCompanyId(renderRequest), false, true,
 						QueryUtil.ALL_POS, QueryUtil.ALL_POS, null),
-					internalClassNameCategories, renderRequest, null));
+					internalClassNameKeyCategories, renderRequest, null));
 
 			return "/import/edit_batch_planner_plan.jsp";
 		}
@@ -171,7 +195,7 @@ public class EditBatchPlannerPlanMVCRenderCommand implements MVCRenderCommand {
 					_batchPlannerPlanService.getBatchPlannerPlans(
 						_portal.getCompanyId(renderRequest), true, true,
 						QueryUtil.ALL_POS, QueryUtil.ALL_POS, null),
-					internalClassNameCategories, renderRequest,
+					internalClassNameKeyCategories, renderRequest,
 					batchPlannerPlan));
 
 			return "/export/edit_batch_planner_plan.jsp";
@@ -183,13 +207,19 @@ public class EditBatchPlannerPlanMVCRenderCommand implements MVCRenderCommand {
 				_batchPlannerPlanService.getBatchPlannerPlans(
 					_portal.getCompanyId(renderRequest), false, true,
 					QueryUtil.ALL_POS, QueryUtil.ALL_POS, null),
-				internalClassNameCategories, renderRequest, batchPlannerPlan));
+				internalClassNameKeyCategories, renderRequest,
+				batchPlannerPlan));
 
 		return "/import/edit_batch_planner_plan.jsp";
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		EditBatchPlannerPlanMVCRenderCommand.class);
+
+	private static final Set<String> _allowedEntityClassNames =
+		SetUtil.fromArray(
+			"com.liferay.object.admin.rest.dto.v1_0.ObjectDefinition",
+			"com.liferay.object.rest.dto.v1_0.ObjectEntry");
 
 	@Reference
 	private BatchPlannerPlanService _batchPlannerPlanService;

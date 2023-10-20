@@ -16,6 +16,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.json.JSONObject;
 
 /**
  * @author Michael Hashimoto
@@ -37,8 +41,6 @@ public class PortalTestSuiteUpstreamControllerBuildRunner
 
 	@Override
 	public void run() {
-		keepJenkinsBuild(true);
-
 		invokeTestSuiteBuilds();
 	}
 
@@ -102,10 +104,12 @@ public class PortalTestSuiteUpstreamControllerBuildRunner
 		if (testSuiteNames.isEmpty()) {
 			System.out.println("There are no test suites to run at this time.");
 
+			keepJenkinsBuild(false);
+
 			return;
 		}
 
-		String jenkinsAuthenticationToken;
+		String jenkinsAuthenticationToken = null;
 
 		try {
 			Properties buildProperties =
@@ -120,7 +124,23 @@ public class PortalTestSuiteUpstreamControllerBuildRunner
 
 		S buildData = getBuildData();
 
+		String portalBranchSHA = buildData.getPortalBranchSHA();
+
 		for (String testSuiteName : testSuiteNames) {
+			JSONObject previousBuildJSONObject =
+				_getPreviousTestSuiteBuildJSONObject(testSuiteName);
+
+			if ((previousBuildJSONObject != null) &&
+				_previousBuildHasCurrentSHA(
+					previousBuildJSONObject, portalBranchSHA)) {
+
+				System.out.println(
+					testSuiteName + " was invoked on this SHA already: " +
+						portalBranchSHA);
+
+				continue;
+			}
+
 			String jobURL = getJobURL();
 
 			StringBuilder sb = new StringBuilder();
@@ -139,8 +159,7 @@ public class PortalTestSuiteUpstreamControllerBuildRunner
 			invocationParameters.put(
 				"JENKINS_GITHUB_BRANCH_USERNAME",
 				buildData.getJenkinsGitHubUsername());
-			invocationParameters.put(
-				"PORTAL_GIT_COMMIT", buildData.getPortalBranchSHA());
+			invocationParameters.put("PORTAL_GIT_COMMIT", portalBranchSHA);
 			invocationParameters.put(
 				"PORTAL_GITHUB_URL", buildData.getPortalGitHubURL());
 			invocationParameters.put(
@@ -221,8 +240,34 @@ public class PortalTestSuiteUpstreamControllerBuildRunner
 			}
 		}
 
-		buildData.setBuildDescription(
-			JenkinsResultsParserUtil.join(", ", _invokedTestSuiteNames));
+		boolean keepLogs = true;
+
+		if (_invokedTestSuiteNames.isEmpty()) {
+			keepLogs = false;
+		}
+
+		keepJenkinsBuild(keepLogs);
+
+		StringBuilder sb = new StringBuilder();
+
+		sb.append(JenkinsResultsParserUtil.join(", ", _invokedTestSuiteNames));
+		sb.append(",");
+		sb.append(" <strong>GIT ID</strong> - ");
+		sb.append("<a href=\"https://github.com/");
+		sb.append(buildData.getPortalGitHubUsername());
+		sb.append("/");
+		sb.append(buildData.getPortalGitHubRepositoryName());
+		sb.append("/commit/");
+
+		sb.append(portalBranchSHA);
+
+		sb.append("\">");
+
+		sb.append(_getPortalBranchAbbreviatedSHA());
+
+		sb.append("</a>");
+
+		buildData.setBuildDescription(sb.toString());
 
 		updateBuildDescription();
 	}
@@ -310,6 +355,37 @@ public class PortalTestSuiteUpstreamControllerBuildRunner
 		return latestTestSuiteStartTimes;
 	}
 
+	private String _getPortalBranchAbbreviatedSHA() {
+		S buildData = getBuildData();
+
+		String portalBranchSHA = buildData.getPortalBranchSHA();
+
+		return portalBranchSHA.substring(0, 7);
+	}
+
+	private JSONObject _getPreviousTestSuiteBuildJSONObject(
+		String testSuiteName) {
+
+		for (JSONObject previousBuildJSONObject :
+				getPreviousBuildJSONObjects()) {
+
+			String description = previousBuildJSONObject.optString(
+				"description", "");
+
+			if (description.contains("EXPIRE") ||
+				description.contains("SKIPPED")) {
+
+				continue;
+			}
+
+			if (description.contains(testSuiteName)) {
+				return previousBuildJSONObject;
+			}
+		}
+
+		return null;
+	}
+
 	private List<String> _getSelectedTestSuiteNames() {
 		if (_selectedTestSuiteNames != null) {
 			return _selectedTestSuiteNames;
@@ -395,6 +471,35 @@ public class PortalTestSuiteUpstreamControllerBuildRunner
 			throw new RuntimeException(ioException);
 		}
 	}
+
+	private boolean _previousBuildHasCurrentSHA(
+		JSONObject previousBuildJSONObject, String portalBranchSHA) {
+
+		if (previousBuildJSONObject == null) {
+			return false;
+		}
+
+		String description = previousBuildJSONObject.optString(
+			"description", "");
+
+		Matcher matcher = _portalBranchSHAPattern.matcher(description);
+
+		if (!matcher.find()) {
+			return false;
+		}
+
+		String previousPortalBranchSHA = matcher.group("branchSHA");
+
+		if (portalBranchSHA.equals(previousPortalBranchSHA)) {
+			return true;
+		}
+
+		return false;
+	}
+
+	private static final Pattern _portalBranchSHAPattern = Pattern.compile(
+		"<strong>GIT ID</strong> - <a href=\"https://github.com/[^/]+/[^/]+/" +
+			"commit/(?<branchSHA>[0-9a-f]{40})\">[0-9a-f]{7}</a>");
 
 	private final List<String> _invokedTestSuiteNames = new ArrayList<>();
 	private List<String> _selectedTestSuiteNames;

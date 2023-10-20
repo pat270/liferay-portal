@@ -55,14 +55,15 @@ public class CommerceShipmentItemLocalServiceUtil {
 	public static CommerceShipmentItem addCommerceShipmentItem(
 			String externalReferenceCode, long commerceShipmentId,
 			long commerceOrderItemId, long commerceInventoryWarehouseId,
-			int quantity, boolean validateInventory,
+			java.math.BigDecimal quantity, String unitOfMeasureKey,
+			boolean validateInventory,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws PortalException {
 
 		return getService().addCommerceShipmentItem(
 			externalReferenceCode, commerceShipmentId, commerceOrderItemId,
-			commerceInventoryWarehouseId, quantity, validateInventory,
-			serviceContext);
+			commerceInventoryWarehouseId, quantity, unitOfMeasureKey,
+			validateInventory, serviceContext);
 	}
 
 	public static CommerceShipmentItem
@@ -78,14 +79,15 @@ public class CommerceShipmentItemLocalServiceUtil {
 	public static CommerceShipmentItem addOrUpdateCommerceShipmentItem(
 			String externalReferenceCode, long commerceShipmentId,
 			long commerceOrderItemId, long commerceInventoryWarehouseId,
-			int quantity, boolean validateInventory,
+			java.math.BigDecimal quantity, String unitOfMeasureKey,
+			boolean validateInventory,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws PortalException {
 
 		return getService().addOrUpdateCommerceShipmentItem(
 			externalReferenceCode, commerceShipmentId, commerceOrderItemId,
-			commerceInventoryWarehouseId, quantity, validateInventory,
-			serviceContext);
+			commerceInventoryWarehouseId, quantity, unitOfMeasureKey,
+			validateInventory, serviceContext);
 	}
 
 	/**
@@ -452,7 +454,7 @@ public class CommerceShipmentItemLocalServiceUtil {
 			commerceOrderItemId);
 	}
 
-	public static int getCommerceShipmentOrderItemsQuantity(
+	public static java.math.BigDecimal getCommerceShipmentOrderItemsQuantity(
 		long commerceShipmentId, long commerceOrderItemId) {
 
 		return getService().getCommerceShipmentOrderItemsQuantity(
@@ -510,7 +512,7 @@ public class CommerceShipmentItemLocalServiceUtil {
 
 	public static CommerceShipmentItem updateCommerceShipmentItem(
 			long commerceShipmentItemId, long commerceInventoryWarehouseId,
-			int quantity, boolean validateInventory)
+			java.math.BigDecimal quantity, boolean validateInventory)
 		throws PortalException {
 
 		return getService().updateCommerceShipmentItem(

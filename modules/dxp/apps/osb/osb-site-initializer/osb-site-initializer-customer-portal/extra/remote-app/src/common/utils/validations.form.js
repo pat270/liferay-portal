@@ -30,6 +30,14 @@ const isValidEmail = (value, bannedEmailDomains) => {
 	}
 };
 
+const isLiferayDomain = (liferayDomain) => {
+	if (liferayDomain) {
+		return i18n.translate(
+			'this-liferay-contact-does-not-exist-please-enter-a-correct-email-address'
+		);
+	}
+};
+
 const isValidEmailDomain = (bannedEmailDomains) => {
 	if (bannedEmailDomains.length) {
 		return i18n.translate('domain-not-allowed');
@@ -116,9 +124,46 @@ const validate = (validations, value) => {
 	return error;
 };
 
+const validateEmailsArray = (emailArray, emailsAvailable) => {
+	const seenEmails = new Set();
+	const invalidEmails = [];
+	const repeatedEmails = [];
+	const errorMessages = [];
+
+	for (const email of emailArray) {
+		if (!emailsAvailable.find((item) => item.email === email)) {
+			invalidEmails.push(email);
+		}
+		else if (seenEmails.has(email)) {
+			repeatedEmails.push(email);
+		}
+		else {
+			seenEmails.add(email);
+		}
+	}
+
+	if (invalidEmails.length) {
+		errorMessages.push(
+			`${i18n.translate(
+				'please-insert-a-valid-email'
+			)} ${invalidEmails.join(', ')}`
+		);
+	}
+	if (repeatedEmails.length) {
+		errorMessages.push(
+			`${i18n.translate(
+				'please-remove-duplicate-emails'
+			)} ${repeatedEmails.join(', ')}`
+		);
+	}
+
+	return errorMessages.join(' | ') || undefined;
+};
+
 export {
 	isLowercaseAndNumbers,
 	isValidEmail,
+	isLiferayDomain,
 	isValidFriendlyURL,
 	isValidEmailDomain,
 	maxLength,
@@ -127,4 +172,5 @@ export {
 	isValidHost,
 	isValidIp,
 	isValidMac,
+	validateEmailsArray,
 };

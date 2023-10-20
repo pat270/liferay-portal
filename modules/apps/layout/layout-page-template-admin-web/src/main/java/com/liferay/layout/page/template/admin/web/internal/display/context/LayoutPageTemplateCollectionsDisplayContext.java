@@ -7,6 +7,7 @@ package com.liferay.layout.page.template.admin.web.internal.display.context;
 
 import com.liferay.layout.page.template.admin.constants.LayoutPageTemplateAdminPortletKeys;
 import com.liferay.layout.page.template.admin.web.internal.util.LayoutPageTemplatePortletUtil;
+import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateCollection;
 import com.liferay.layout.page.template.service.LayoutPageTemplateCollectionServiceUtil;
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
@@ -88,12 +89,14 @@ public class LayoutPageTemplateCollectionsDisplayContext {
 					LayoutPageTemplateCollectionServiceUtil.
 						getLayoutPageTemplateCollections(
 							themeDisplay.getScopeGroupId(), _getKeywords(),
+							LayoutPageTemplateEntryTypeConstants.BASIC,
 							searchContainer.getStart(),
 							searchContainer.getEnd(),
 							searchContainer.getOrderByComparator()),
 				LayoutPageTemplateCollectionServiceUtil.
 					getLayoutPageTemplateCollectionsCount(
-						themeDisplay.getScopeGroupId(), _getKeywords()));
+						themeDisplay.getScopeGroupId(), _getKeywords(),
+						LayoutPageTemplateEntryTypeConstants.BASIC));
 		}
 		else {
 			searchContainer.setResultsAndTotal(
@@ -101,12 +104,14 @@ public class LayoutPageTemplateCollectionsDisplayContext {
 					LayoutPageTemplateCollectionServiceUtil.
 						getLayoutPageTemplateCollections(
 							themeDisplay.getScopeGroupId(),
+							LayoutPageTemplateEntryTypeConstants.BASIC,
 							searchContainer.getStart(),
 							searchContainer.getEnd(),
 							searchContainer.getOrderByComparator()),
 				LayoutPageTemplateCollectionServiceUtil.
 					getLayoutPageTemplateCollectionsCount(
-						themeDisplay.getScopeGroupId()));
+						themeDisplay.getScopeGroupId(),
+						LayoutPageTemplateEntryTypeConstants.BASIC));
 		}
 
 		searchContainer.setRowChecker(

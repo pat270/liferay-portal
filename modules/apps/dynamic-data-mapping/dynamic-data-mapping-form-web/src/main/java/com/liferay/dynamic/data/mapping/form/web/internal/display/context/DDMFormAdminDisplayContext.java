@@ -627,11 +627,11 @@ public class DDMFormAdminDisplayContext {
 	}
 
 	public String getEmptyResultsMessage() {
-		SearchContainer<?> search = getSearch();
+		SearchContainer<?> searchContainer = getSearchContainer();
 
 		return LanguageUtil.get(
 			ddmFormAdminRequestHelper.getRequest(),
-			search.getEmptyResultsMessage());
+			searchContainer.getEmptyResultsMessage());
 	}
 
 	public String getExportFormURL(long formInstanceId) {
@@ -1078,7 +1078,19 @@ public class DDMFormAdminDisplayContext {
 		return ddmFormAdminRequestHelper.getScopeGroupId();
 	}
 
-	public SearchContainer<?> getSearch() {
+	public String getSearchActionURL() {
+		return PortletURLBuilder.createRenderURL(
+			renderResponse
+		).setMVCPath(
+			"/admin/view.jsp"
+		).setParameter(
+			"currentTab", "forms"
+		).setParameter(
+			"groupId", getScopeGroupId()
+		).buildString();
+	}
+
+	public SearchContainer<?> getSearchContainer() {
 		PortletURL portletURL = PortletURLBuilder.create(
 			getPortletURL()
 		).setParameter(
@@ -1114,18 +1126,6 @@ public class DDMFormAdminDisplayContext {
 			new DDMFormInstanceRowChecker(renderResponse));
 
 		return ddmFormInstanceSearch;
-	}
-
-	public String getSearchActionURL() {
-		return PortletURLBuilder.createRenderURL(
-			renderResponse
-		).setMVCPath(
-			"/admin/view.jsp"
-		).setParameter(
-			"currentTab", "forms"
-		).setParameter(
-			"groupId", getScopeGroupId()
-		).buildString();
 	}
 
 	public String getSearchContainerId() {
@@ -1181,7 +1181,7 @@ public class DDMFormAdminDisplayContext {
 	}
 
 	public int getTotalItems() {
-		SearchContainer<?> searchContainer = getSearch();
+		SearchContainer<?> searchContainer = getSearchContainer();
 
 		return searchContainer.getTotal();
 	}
@@ -1411,13 +1411,6 @@ public class DDMFormAdminDisplayContext {
 	}
 
 	protected Locale getDefaultLocale() {
-		String i18nLanguageId = (String)renderRequest.getAttribute(
-			WebKeys.I18N_LANGUAGE_ID);
-
-		if (Validator.isNotNull(i18nLanguageId)) {
-			return LocaleUtil.fromLanguageId(i18nLanguageId);
-		}
-
 		ThemeDisplay themeDisplay = ddmFormAdminRequestHelper.getThemeDisplay();
 
 		Locale defaultLocale = themeDisplay.getSiteDefaultLocale();

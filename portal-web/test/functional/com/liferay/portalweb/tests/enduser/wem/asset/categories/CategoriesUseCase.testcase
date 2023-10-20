@@ -1,6 +1,7 @@
 @component-name = "portal-categories"
 definition {
 
+	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.component.names = "Categories";
@@ -1020,7 +1021,7 @@ definition {
 		}
 
 		task ("View the search results") {
-			SearchResultPortlet.viewSearchResults(
+			SearchResults.viewSearchResults(
 				searchAssetTitle = "Web Content Title",
 				searchAssetType = "Webcontent");
 		}
@@ -1152,7 +1153,7 @@ definition {
 		}
 
 		task ("View the web content is shown in search result") {
-			SearchResultPortlet.viewSearchResults(
+			SearchResults.viewSearchResults(
 				searchAssetTitle = "Test Title",
 				searchAssetType = "Web Content Article");
 		}

@@ -89,7 +89,6 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
@@ -128,7 +127,6 @@ import org.springframework.mock.web.MockHttpServletResponse;
 /**
  * @author Eudaldo Alonso
  */
-@FeatureFlags("LPS-169992")
 @RunWith(Arquillian.class)
 public class EditableFragmentEntryProcessorTest {
 
@@ -720,7 +718,8 @@ public class EditableFragmentEntryProcessorTest {
 			ObjectActionTriggerConstants.KEY_STANDALONE,
 			UnicodePropertiesBuilder.put(
 				"script", "println 'Action Executed'"
-			).build());
+			).build(),
+			false);
 
 		long classNameId = _portal.getClassNameId(
 			ObjectDefinition.class.getName() + "#" +
@@ -1180,14 +1179,14 @@ public class EditableFragmentEntryProcessorTest {
 			displayCalendar.get(Calendar.YEAR),
 			displayCalendar.get(Calendar.HOUR_OF_DAY),
 			displayCalendar.get(Calendar.MINUTE), 0, 0, 0, 0, 0, true, 0, 0, 0,
-			0, 0, true, true, false, null, null, null, null,
+			0, 0, true, true, false, 0, 0, null, null, null, null,
 			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 	}
 
 	private ObjectDefinition _addObjectDefinition() throws Exception {
 		ObjectDefinition objectDefinition =
 			_objectDefinitionLocalService.addCustomObjectDefinition(
-				TestPropsValues.getUserId(), false, false,
+				TestPropsValues.getUserId(), 0, false, false, false,
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
 				"A" + RandomTestUtil.randomString(), null,
 				"control_panel.sites",
@@ -1392,6 +1391,7 @@ public class EditableFragmentEntryProcessorTest {
 		themeDisplay.setCompany(_company);
 		themeDisplay.setLanguageId(LocaleUtil.toLanguageId(locale));
 		themeDisplay.setLayout(_layout);
+		themeDisplay.setLocale(locale);
 
 		LayoutSet layoutSet = _layoutSetLocalService.getLayoutSet(
 			_group.getGroupId(), false);
@@ -1407,6 +1407,7 @@ public class EditableFragmentEntryProcessorTest {
 		themeDisplay.setRealUser(TestPropsValues.getUser());
 		themeDisplay.setRequest(_getHttpServletRequest(locale));
 		themeDisplay.setResponse(new MockHttpServletResponse());
+		themeDisplay.setScopeGroupId(_group.getGroupId());
 		themeDisplay.setSiteGroupId(_group.getGroupId());
 		themeDisplay.setUser(TestPropsValues.getUser());
 

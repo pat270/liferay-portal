@@ -28,15 +28,15 @@ export function getCheckedWorkflowStatusItems(
 	return newItemsValues;
 }
 
-export function getCheckedPickListItems(
-	itemValues: PickListItem[],
+export function getCheckedListTypeEntries(
+	itemValues: ListTypeEntry[],
 	setEditingFilterType: () => number[] | string[] | null
 ): IItem[] {
 	let newItemsValues: IItem[] = [];
 
 	const valuesArray = setEditingFilterType() as string[];
 
-	newItemsValues = (itemValues as PickListItem[]).map((itemValue) => {
+	newItemsValues = (itemValues as ListTypeEntry[]).map((itemValue) => {
 		const item = {
 			checked: false,
 			label: itemValue.name,
@@ -53,7 +53,7 @@ export function getCheckedPickListItems(
 	return newItemsValues;
 }
 
-export function getSystemFieldLabelFromEntry(
+export function getSystemObjectFieldLabelFromObjectEntry(
 	titleFieldName: string,
 	entry: ObjectEntry,
 	itemObject: LabelValueObject
@@ -96,7 +96,7 @@ export function getSystemFieldLabelFromEntry(
 	};
 }
 
-export function getCheckedRelationshipItems(
+export function getCheckedObjectRelationshipItems(
 	relatedEntries: ObjectEntry[],
 	titleFieldName: string,
 	systemField: boolean,
@@ -116,7 +116,7 @@ export function getCheckedRelationshipItems(
 		} as IItem;
 
 		if (systemField) {
-			item = getSystemFieldLabelFromEntry(
+			item = getSystemObjectFieldLabelFromObjectEntry(
 				titleFieldName,
 				entry,
 				item

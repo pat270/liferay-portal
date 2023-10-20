@@ -40,6 +40,11 @@ public class ImportObjectDefinitionPortletConfigurationIcon
 	}
 
 	@Override
+	public String getIconCssClass() {
+		return "download";
+	}
+
+	@Override
 	public String getJspPath() {
 		return "/object_definitions/configuration/icon" +
 			"/import_object_definition.jsp";
@@ -47,7 +52,8 @@ public class ImportObjectDefinitionPortletConfigurationIcon
 
 	@Override
 	public String getMessage(PortletRequest portletRequest) {
-		return _language.get(getLocale(portletRequest), "import");
+		return _language.get(
+			getLocale(portletRequest), "import-object-definition");
 	}
 
 	@Override

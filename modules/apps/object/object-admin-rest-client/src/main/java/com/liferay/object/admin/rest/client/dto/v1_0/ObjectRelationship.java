@@ -77,6 +77,25 @@ public class ObjectRelationship implements Cloneable, Serializable {
 
 	protected DeletionType deletionType;
 
+	public Boolean getEdge() {
+		return edge;
+	}
+
+	public void setEdge(Boolean edge) {
+		this.edge = edge;
+	}
+
+	public void setEdge(UnsafeSupplier<Boolean, Exception> edgeUnsafeSupplier) {
+		try {
+			edge = edgeUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Boolean edge;
+
 	public Long getId() {
 		return id;
 	}
@@ -363,6 +382,27 @@ public class ObjectRelationship implements Cloneable, Serializable {
 	}
 
 	protected Boolean reverse;
+
+	public Boolean getSystem() {
+		return system;
+	}
+
+	public void setSystem(Boolean system) {
+		this.system = system;
+	}
+
+	public void setSystem(
+		UnsafeSupplier<Boolean, Exception> systemUnsafeSupplier) {
+
+		try {
+			system = systemUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Boolean system;
 
 	public Type getType() {
 		return type;

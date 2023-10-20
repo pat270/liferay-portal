@@ -59,7 +59,7 @@ public class GCloudNaturalLanguageDocumentAssetAutoTaggerTest {
 	}
 
 	@Test
-	public void testGetTagNamesWithInvalidApiKey() throws Exception {
+	public void testGetTagNamesWithInvalidAPIKey() throws Exception {
 		_testWithGCloudNaturalLanguageAutoTagEntitiesEndpointEnabledAndClassificationEndpointEnabled(
 			() -> {
 				Object originalHttp = ReflectionTestUtil.getAndSetFieldValue(
@@ -111,7 +111,7 @@ public class GCloudNaturalLanguageDocumentAssetAutoTaggerTest {
 						originalHttp);
 				}
 			},
-			"invalidApiKey");
+			"invalidAPIKey");
 	}
 
 	@Test

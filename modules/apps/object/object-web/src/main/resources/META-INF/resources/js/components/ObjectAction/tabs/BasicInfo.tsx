@@ -8,9 +8,9 @@ import {
 	Card,
 	FormError,
 	Input,
-	InputLocalized,
 	Toggle,
 } from '@liferay/object-js-components-web';
+import {InputLocalized} from 'frontend-js-components-web';
 import React from 'react';
 
 import {defaultLanguageId} from '../../../utils/constants';
@@ -42,9 +42,12 @@ export default function BasicInfo({
 				onChange={(label) =>
 					setValues({
 						...values,
-						...(!isApproved && {
-							name: toCamelCase(label[defaultLanguageId] ?? ''),
-						}),
+						...(!isApproved &&
+							!values.system && {
+								name: toCamelCase(
+									label[defaultLanguageId] ?? ''
+								),
+							}),
 						label,
 					})
 				}
@@ -53,7 +56,7 @@ export default function BasicInfo({
 			/>
 
 			<Input
-				disabled={isApproved}
+				disabled={isApproved || values.system}
 				error={errors.name}
 				label={Liferay.Language.get('action-name')}
 				name="name"
@@ -64,6 +67,7 @@ export default function BasicInfo({
 
 			<Input
 				component="textarea"
+				disabled={values.system}
 				error={errors.description}
 				label={Liferay.Language.get('description')}
 				name="description"
@@ -73,7 +77,7 @@ export default function BasicInfo({
 
 			<ClayForm.Group>
 				<Toggle
-					disabled={readOnly}
+					disabled={readOnly || values.system}
 					label={Liferay.Language.get('active')}
 					name="indexed"
 					onToggle={(active) => setValues({active})}

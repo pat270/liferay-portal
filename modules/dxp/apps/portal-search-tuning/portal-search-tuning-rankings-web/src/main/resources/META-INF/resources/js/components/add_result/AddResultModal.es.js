@@ -34,7 +34,7 @@ import AddResultSearchBar from './AddResultSearchBar.es';
  * A button that opens a modal to be able to search, select, and add results.
  */
 function AddResultModal({
-	fetchDocumentsSearchUrl,
+	fetchDocumentsSearchURL,
 	observer,
 	onAddResultSubmit,
 	onClose,
@@ -70,7 +70,7 @@ function AddResultModal({
 
 	const {refetch, resource} = useResource({
 		fetchOptions: FETCH_OPTIONS,
-		link: buildUrl(fetchDocumentsSearchUrl, {
+		link: buildUrl(fetchDocumentsSearchURL, {
 			[`${namespace}companyId`]: companyId,
 			[`${namespace}from`]: page * delta - delta,
 			[`${namespace}keywords`]: searchQuery,
@@ -350,6 +350,9 @@ function AddResultModal({
 								{!!selectedIds.length && (
 									<li className="nav-item nav-item-shrink">
 										<ClayButton
+											aria-label={Liferay.Language.get(
+												'clear-all-selected'
+											)}
 											className="btn-outline-borderless"
 											displayType="secondary"
 											onClick={_handleClearAllSelected}
@@ -488,7 +491,7 @@ function AddResultModal({
 }
 
 AddResultModal.propTypes = {
-	fetchDocumentsSearchUrl: PropTypes.string.isRequired,
+	fetchDocumentsSearchURL: PropTypes.string.isRequired,
 	onAddResultSubmit: PropTypes.func.isRequired,
 	onClose: PropTypes.func.isRequired,
 };

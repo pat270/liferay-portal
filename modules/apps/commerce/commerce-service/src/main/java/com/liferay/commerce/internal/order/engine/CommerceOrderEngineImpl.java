@@ -52,7 +52,7 @@ import com.liferay.commerce.service.CommerceShipmentLocalService;
 import com.liferay.commerce.service.CommerceShippingMethodLocalService;
 import com.liferay.commerce.subscription.CommerceSubscriptionEntryHelperUtil;
 import com.liferay.commerce.util.CommerceShippingHelper;
-import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
@@ -62,7 +62,6 @@ import com.liferay.portal.kernel.messaging.DestinationNames;
 import com.liferay.portal.kernel.messaging.Message;
 import com.liferay.portal.kernel.messaging.MessageBusUtil;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -282,10 +281,11 @@ public class CommerceOrderEngineImpl implements CommerceOrderEngine {
 		for (CommerceOrderItem commerceOrderItem : commerceOrderItems) {
 			CommerceInventoryBookedQuantity commerceInventoryBookedQuantity =
 				_commerceInventoryBookedQuantityLocalService.
-					addCommerceBookedQuantity(
+					addCommerceInventoryBookedQuantity(
 						commerceOrderItem.getUserId(), null,
 						commerceOrderItem.getQuantity(),
-						commerceOrderItem.getSku(), StringPool.BLANK,
+						commerceOrderItem.getSku(),
+						commerceOrderItem.getUnitOfMeasureKey(),
 						HashMapBuilder.put(
 							CommerceInventoryAuditTypeConstants.ACCOUNT_NAME,
 							accountEntry.getName()

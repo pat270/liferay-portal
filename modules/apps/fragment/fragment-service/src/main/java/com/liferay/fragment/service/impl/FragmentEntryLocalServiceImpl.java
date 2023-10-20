@@ -23,9 +23,9 @@ import com.liferay.fragment.service.persistence.FragmentCollectionPersistence;
 import com.liferay.fragment.service.persistence.FragmentEntryLinkPersistence;
 import com.liferay.fragment.validator.FragmentEntryValidator;
 import com.liferay.petra.string.CharPool;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.aop.AopService;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.dao.orm.custom.sql.CustomSQL;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Property;
@@ -41,7 +41,6 @@ import com.liferay.portal.kernel.model.Repository;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.Folder;
@@ -183,11 +182,7 @@ public class FragmentEntryLocalServiceImpl
 				publishedFragmentEntry.fetchDraftFragmentEntry();
 		}
 
-		String name = StringBundler.concat(
-			sourceFragmentEntry.getName(), StringPool.SPACE,
-			StringPool.OPEN_PARENTHESIS,
-			_language.get(LocaleUtil.getMostRelevantLocale(), "copy"),
-			StringPool.CLOSE_PARENTHESIS);
+		String name = _getUniqueCopyName(sourceFragmentEntry);
 
 		FragmentEntry copyPublishedFragmentEntry = null;
 
@@ -515,6 +510,33 @@ public class FragmentEntryLocalServiceImpl
 		throws PortalException {
 
 		return TempFileEntryUtil.getTempFileNames(groupId, userId, folderName);
+	}
+
+	@Override
+	public String getUniqueFragmentEntryName(
+		long groupId, long fragmentCollectionId, String name) {
+
+		FragmentEntry fragmentEntry =
+			fragmentEntryPersistence.fetchByG_FCI_LikeN_First(
+				groupId, fragmentCollectionId, name, null);
+
+		if (fragmentEntry == null) {
+			return name;
+		}
+
+		int count = 1;
+
+		while (true) {
+			String newName = StringUtil.appendParentheticalSuffix(
+				name, count++);
+
+			fragmentEntry = fragmentEntryPersistence.fetchByG_FCI_LikeN_First(
+				groupId, fragmentCollectionId, newName, null);
+
+			if (fragmentEntry == null) {
+				return newName;
+			}
+		}
 	}
 
 	@Override
@@ -976,6 +998,29 @@ public class FragmentEntryLocalServiceImpl
 		}
 
 		return repository;
+	}
+
+	private String _getUniqueCopyName(FragmentEntry fragmentEntry) {
+		String copy = _language.get(LocaleUtil.getMostRelevantLocale(), "copy");
+
+		String name = StringUtil.appendParentheticalSuffix(
+			fragmentEntry.getName(), copy);
+
+		for (int i = 1;; i++) {
+			FragmentEntry existingFragmentEntry =
+				fragmentEntryPersistence.fetchByG_FCI_LikeN_First(
+					fragmentEntry.getGroupId(),
+					fragmentEntry.getFragmentCollectionId(), name, null);
+
+			if (existingFragmentEntry == null) {
+				break;
+			}
+
+			name = StringUtil.appendParentheticalSuffix(
+				fragmentEntry.getName(), copy + StringPool.SPACE + i);
+		}
+
+		return name;
 	}
 
 	private void _propagateChanges(long fragmentEntryId)

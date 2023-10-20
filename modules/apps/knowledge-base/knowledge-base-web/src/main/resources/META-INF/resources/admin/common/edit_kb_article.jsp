@@ -13,6 +13,7 @@ EditKBArticleDisplayContext editKBArticleDisplayContext = new EditKBArticleDispl
 if (editKBArticleDisplayContext.isPortletTitleBasedNavigation()) {
 	portletDisplay.setShowBackIcon(true);
 	portletDisplay.setURLBack(editKBArticleDisplayContext.getRedirect());
+	portletDisplay.setURLBackTitle(portletDisplay.getTitle());
 
 	renderResponse.setTitle(editKBArticleDisplayContext.getHeaderTitle());
 }
@@ -28,6 +29,7 @@ if (editKBArticleDisplayContext.isPortletTitleBasedNavigation()) {
 
 <aui:form action="<%= editKBArticleDisplayContext.getUpdateKBArticleURL() %>" cssClass="edit-knowledge-base-article-form" method="post" name="fm">
 	<aui:input name="redirect" type="hidden" value="<%= editKBArticleDisplayContext.getRedirect() %>" />
+	<aui:input name="displayDate" type="hidden" value="" />
 	<aui:input name="workflowAction" type="hidden" value="<%= WorkflowConstants.ACTION_SAVE_DRAFT %>" />
 
 	<nav class="component-tbar subnav-tbar-light tbar tbar-knowledge-base-edit-article">
@@ -56,16 +58,51 @@ if (editKBArticleDisplayContext.isPortletTitleBasedNavigation()) {
 							type="submit"
 						/>
 
-						<clay:button
-							cssClass="mr-3"
-							disabled="<%= editKBArticleDisplayContext.isPending() %>"
-							displayType="primary"
-							id='<%= liferayPortletResponse.getNamespace() + "publishButton" %>'
-							label="<%= editKBArticleDisplayContext.getPublishButtonLabel() %>"
-							name="publishButton"
-							small="<%= true %>"
-							type="submit"
-						/>
+						<c:choose>
+							<c:when test='<%= FeatureFlagManagerUtil.isEnabled("LPS-188058") %>'>
+								<c:choose>
+									<c:when test="<%= editKBArticleDisplayContext.isScheduled() %>">
+										<span class="lfr-portal-tooltip">
+											<clay:button
+												cssClass="c-mr-3"
+												displayType="primary"
+												icon="time"
+												id='<%= liferayPortletResponse.getNamespace() + "scheduledButton" %>'
+												label="scheduled"
+												small="<%= true %>"
+												title='<%= LanguageUtil.format(request, "this-article-will-be-published-on-x", editKBArticleDisplayContext.getUserFormattedDisplayDateString()) %>'
+												type="button"
+											/>
+										</span>
+									</c:when>
+									<c:otherwise>
+										<clay:dropdown-menu
+											cssClass="c-mr-3"
+											displayType="primary"
+											dropdownItems="<%= editKBArticleDisplayContext.getEditKBArticleActionDropdownItems() %>"
+											icon="caret-bottom"
+											id='<%= liferayPortletResponse.getNamespace() + "publishDropdown" %>'
+											label="<%= editKBArticleDisplayContext.getPublishButtonLabel() %>"
+											name="publishDropdown"
+											small="<%= true %>"
+											swapIconSide="<%= true %>"
+										/>
+									</c:otherwise>
+								</c:choose>
+							</c:when>
+							<c:otherwise>
+								<clay:button
+									cssClass="c-mr-3"
+									disabled="<%= editKBArticleDisplayContext.isPending() %>"
+									displayType="primary"
+									id='<%= liferayPortletResponse.getNamespace() + "publishButton" %>'
+									label="<%= editKBArticleDisplayContext.getPublishButtonLabel() %>"
+									name="publishButton"
+									small="<%= true %>"
+									type="submit"
+								/>
+							</c:otherwise>
+						</c:choose>
 
 						<clay:button
 							borderless="<%= true %>"
@@ -124,15 +161,17 @@ if (editKBArticleDisplayContext.isPortletTitleBasedNavigation()) {
 					<liferay-frontend:fieldset
 						collapsed="<%= true %>"
 						collapsible="<%= true %>"
-						cssClass="mb-3 panel-unstyled"
+						cssClass="panel-unstyled"
 						label="display-page"
 					>
-						<liferay-asset:select-asset-display-page
-							classNameId="<%= PortalUtil.getClassNameId(KBArticle.class) %>"
-							classPK="<%= editKBArticleDisplayContext.getResourcePrimKey() %>"
-							groupId="<%= scopeGroupId %>"
-							showViewInContextLink="<%= true %>"
-						/>
+						<div class="mb-3">
+							<liferay-asset:select-asset-display-page
+								classNameId="<%= PortalUtil.getClassNameId(KBArticle.class) %>"
+								classPK="<%= editKBArticleDisplayContext.getResourcePrimKey() %>"
+								groupId="<%= scopeGroupId %>"
+								showViewInContextLink="<%= true %>"
+							/>
+						</div>
 					</liferay-frontend:fieldset>
 
 					<aui:fieldset collapsed="<%= true %>" collapsible="<%= true %>" label="categorization">
@@ -332,3 +371,16 @@ if (editKBArticleDisplayContext.isPortletTitleBasedNavigation()) {
 	%>'
 	module="admin/js/EditKBArticle"
 />
+
+<div>
+	<react:component
+		module="admin/js/components/ScheduleKBArticle"
+		props='<%=
+			HashMapBuilder.<String, Object>put(
+				"displayDate", editKBArticleDisplayContext.getDatePickerFormattedDisplayDate()
+			).put(
+				"scheduled", editKBArticleDisplayContext.isScheduled()
+			).build()
+		%>'
+	/>
+</div>

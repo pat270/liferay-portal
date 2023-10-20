@@ -16,6 +16,7 @@ import com.liferay.headless.commerce.admin.shipment.dto.v1_0.ShipmentItem;
 import com.liferay.headless.commerce.admin.shipment.internal.util.v1_0.ShipmentItemUtil;
 import com.liferay.headless.commerce.admin.shipment.resource.v1_0.ShipmentItemResource;
 import com.liferay.headless.commerce.core.util.ServiceContextHelper;
+import com.liferay.portal.kernel.util.BigDecimalUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Validator;
@@ -24,7 +25,6 @@ import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.fields.NestedField;
 import com.liferay.portal.vulcan.fields.NestedFieldId;
-import com.liferay.portal.vulcan.fields.NestedFieldSupport;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 
@@ -40,11 +40,10 @@ import org.osgi.service.component.annotations.ServiceScope;
  */
 @Component(
 	properties = "OSGI-INF/liferay/rest/v1_0/shipment-item.properties",
-	scope = ServiceScope.PROTOTYPE,
-	service = {NestedFieldSupport.class, ShipmentItemResource.class}
+	property = "nested.field.support=true", scope = ServiceScope.PROTOTYPE,
+	service = ShipmentItemResource.class
 )
-public class ShipmentItemResourceImpl
-	extends BaseShipmentItemResourceImpl implements NestedFieldSupport {
+public class ShipmentItemResourceImpl extends BaseShipmentItemResourceImpl {
 
 	@Override
 	public void deleteShipmentItem(Long shipmentItemId) throws Exception {
@@ -155,7 +154,7 @@ public class ShipmentItemResourceImpl
 			GetterUtil.get(
 				shipmentItem.getWarehouseId(),
 				commerceShipmentItem.getCommerceInventoryWarehouseId()),
-			GetterUtil.get(
+			BigDecimalUtil.get(
 				shipmentItem.getQuantity(), commerceShipmentItem.getQuantity()),
 			GetterUtil.getBoolean(shipmentItem.getValidateInventory(), true));
 
@@ -189,7 +188,7 @@ public class ShipmentItemResourceImpl
 			GetterUtil.get(
 				shipmentItem.getWarehouseId(),
 				commerceShipmentItem.getCommerceInventoryWarehouseId()),
-			GetterUtil.get(
+			BigDecimalUtil.get(
 				shipmentItem.getQuantity(), commerceShipmentItem.getQuantity()),
 			GetterUtil.getBoolean(shipmentItem.getValidateInventory(), true));
 
@@ -205,7 +204,7 @@ public class ShipmentItemResourceImpl
 			_commerceShipmentItemService.addCommerceShipmentItem(
 				shipmentItem.getExternalReferenceCode(), shipmentId,
 				shipmentItem.getOrderItemId(), shipmentItem.getWarehouseId(),
-				shipmentItem.getQuantity(),
+				shipmentItem.getQuantity(), null,
 				GetterUtil.getBoolean(
 					shipmentItem.getValidateInventory(), true),
 				_serviceContextHelper.getServiceContext(contextUser));

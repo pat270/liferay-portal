@@ -39,10 +39,17 @@ SiteNavigationMenu siteNavigationMenu = siteNavigationAdminDisplayContext.getSit
 	</c:if>
 
 	<aui:fieldset>
-		<aui:input checked="<%= siteNavigationMenu.isAuto() %>" label="when-creating-a-new-page,-the-page-will-be-automatically-added-to-this-menu-unless-the-user-deselects-it" name="auto" type="checkbox" />
+		<clay:checkbox
+			checked="<%= siteNavigationMenu.isAuto() %>"
+			id='<%= liferayPortletResponse.getNamespace() + "auto" %>'
+			label="when-creating-a-new-page,-display-an-option-to-add-it-to-this-navigation-menu"
+			name='<%= liferayPortletResponse.getNamespace() + "auto" %>'
+		/>
 	</aui:fieldset>
 
-	<aui:button-row>
-		<aui:button cssClass="btn-block" type="submit" value="save" />
-	</aui:button-row>
+	<clay:button
+		block="<%= true %>"
+		label="save"
+		type="submit"
+	/>
 </aui:form>

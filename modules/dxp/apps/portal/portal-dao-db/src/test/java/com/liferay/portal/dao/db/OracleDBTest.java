@@ -37,7 +37,8 @@ public class OracleDBTest extends BaseDBTestCase {
 		Method method = ReflectionTestUtil.getMethod(
 			db.getClass(), "replaceTemplate", String.class);
 
-		PropsUtil.set(PropsKeys.DATABASE_STRING_INDEX_MAX_LENGTH, "-1");
+		PropsUtil.set(
+			PropsKeys.DATABASE_STRING_INDEX_MAX_LENGTH + "[oracle]", "-1");
 
 		Assert.assertEquals(
 			"create index IX on Test (cola);",
@@ -125,7 +126,8 @@ public class OracleDBTest extends BaseDBTestCase {
 				"create index IX on Test (cola, colb[$COLUMN_LENGTH:4000$], " +
 					"colc[$COLUMN_LENGTH:4000$]);"));
 
-		PropsUtil.set(PropsKeys.DATABASE_STRING_INDEX_MAX_LENGTH, "256");
+		PropsUtil.set(
+			PropsKeys.DATABASE_STRING_INDEX_MAX_LENGTH + "[oracle]", "256");
 
 		Assert.assertEquals(
 			"create index IX on Test (cola);",
@@ -232,7 +234,8 @@ public class OracleDBTest extends BaseDBTestCase {
 				"create index IX on Test (cola, colb[$COLUMN_LENGTH:4000$], " +
 					"colc[$COLUMN_LENGTH:4000$]);"));
 
-		PropsUtil.set(PropsKeys.DATABASE_STRING_INDEX_MAX_LENGTH, "4000");
+		PropsUtil.set(
+			PropsKeys.DATABASE_STRING_INDEX_MAX_LENGTH + "[oracle]", "4000");
 
 		Assert.assertEquals(
 			"create index IX on Test (cola);",
@@ -347,30 +350,53 @@ public class OracleDBTest extends BaseDBTestCase {
 	@Test
 	public void testRewordAlterColumnType() throws Exception {
 		Assert.assertEquals(
-			"alter table DLFolder modify userName VARCHAR2(75 CHAR);\n",
+			"alter table DLFolder modify userName VARCHAR2(75 CHAR) default " +
+				"null null;\n",
 			buildSQL("alter_column_type DLFolder userName VARCHAR(75);"));
+	}
+
+	@Test
+	public void testRewordAlterColumnTypeBigDecimal() throws Exception {
+		Assert.assertEquals(
+			"alter table DLFolder modify userId decimal(30, 16) default null " +
+				"null;\n",
+			buildSQL("alter_column_type DLFolder userId BIGDECIMAL;"));
 	}
 
 	@Test
 	public void testRewordAlterColumnTypeLowerCase() throws Exception {
 		Assert.assertEquals(
-			"alter table DLFolder modify userName VARCHAR2(75 CHAR);\n",
+			"alter table DLFolder modify userName VARCHAR2(75 CHAR) default " +
+				"null null;\n",
 			buildSQL("alter_column_type DLFolder userName varchar(75);"));
 	}
 
 	@Test
 	public void testRewordAlterColumnTypeNoSemicolon() throws Exception {
 		Assert.assertEquals(
-			"alter table DLFolder modify userName VARCHAR2(75 CHAR);\n",
+			"alter table DLFolder modify userName VARCHAR2(75 CHAR) default " +
+				"null null;\n",
 			buildSQL("alter_column_type DLFolder userName VARCHAR(75)"));
 	}
 
 	@Test
 	public void testRewordAlterColumnTypeNotNullWhenNotNull() throws Exception {
 		Assert.assertEquals(
-			"alter table DLFolder modify userName VARCHAR2(75 CHAR);\n",
+			"alter table DLFolder modify userName VARCHAR2(75 CHAR) default " +
+				"null;\n",
 			buildSQL(
 				"alter_column_type DLFolder userName VARCHAR(75) not null;"));
+	}
+
+	@Test
+	public void testRewordAlterColumnTypeNotNullWhenNotNullUpperCase()
+		throws Exception {
+
+		Assert.assertEquals(
+			"alter table DLFolder modify userName VARCHAR2(75 CHAR) default " +
+				"null;\n",
+			buildSQL(
+				"alter_column_type DLFolder userName VARCHAR(75) NOT NULL;"));
 	}
 
 	@Test
@@ -378,17 +404,41 @@ public class OracleDBTest extends BaseDBTestCase {
 		_nullable = true;
 
 		Assert.assertEquals(
-			"alter table DLFolder modify userName VARCHAR2(75 CHAR) not " +
-				"null;\n",
+			"alter table DLFolder modify userName VARCHAR2(75 CHAR) default " +
+				"null not null;\n",
 			buildSQL(
 				"alter_column_type DLFolder userName VARCHAR(75) not null;"));
 	}
 
 	@Test
+	public void testRewordAlterColumnTypeNotNullWhenNullUpperCase()
+		throws Exception {
+
+		_nullable = true;
+
+		Assert.assertEquals(
+			"alter table DLFolder modify userName VARCHAR2(75 CHAR) default " +
+				"null not null;\n",
+			buildSQL(
+				"alter_column_type DLFolder userName VARCHAR(75) NOT NULL;"));
+	}
+
+	@Test
 	public void testRewordAlterColumnTypeNullWhenNotNull() throws Exception {
 		Assert.assertEquals(
-			"alter table DLFolder modify userName VARCHAR2(75 CHAR) null;\n",
+			"alter table DLFolder modify userName VARCHAR2(75 CHAR) default " +
+				"null null;\n",
 			buildSQL("alter_column_type DLFolder userName VARCHAR(75) null;"));
+	}
+
+	@Test
+	public void testRewordAlterColumnTypeNullWhenNotNullUpperCase()
+		throws Exception {
+
+		Assert.assertEquals(
+			"alter table DLFolder modify userName VARCHAR2(75 CHAR) default " +
+				"null null;\n",
+			buildSQL("alter_column_type DLFolder userName VARCHAR(75) NULL;"));
 	}
 
 	@Test
@@ -396,15 +446,55 @@ public class OracleDBTest extends BaseDBTestCase {
 		_nullable = true;
 
 		Assert.assertEquals(
-			"alter table DLFolder modify userName VARCHAR2(75 CHAR);\n",
+			"alter table DLFolder modify userName VARCHAR2(75 CHAR) default " +
+				"null;\n",
 			buildSQL("alter_column_type DLFolder userName VARCHAR(75) null;"));
+	}
+
+	@Test
+	public void testRewordAlterColumnTypeNullWhenNullUpperCase()
+		throws Exception {
+
+		_nullable = true;
+
+		Assert.assertEquals(
+			"alter table DLFolder modify userName VARCHAR2(75 CHAR) default " +
+				"null;\n",
+			buildSQL("alter_column_type DLFolder userName VARCHAR(75) NULL;"));
 	}
 
 	@Test
 	public void testRewordAlterColumnTypeString() throws Exception {
 		Assert.assertEquals(
-			"alter table BlogsEntry modify description VARCHAR2(4000 CHAR);\n",
+			"alter table BlogsEntry modify description VARCHAR2(4000 CHAR) " +
+				"default null null;\n",
 			buildSQL("alter_column_type BlogsEntry description STRING;"));
+	}
+
+	@Test
+	public void testRewordAlterColumnTypeWithDefaultWhenNotNull()
+		throws Exception {
+
+		Assert.assertEquals(
+			"alter table DLFolder modify userName VARCHAR2(75 CHAR) default " +
+				"'test test';\n",
+			buildSQL(
+				"alter_column_type DLFolder userName VARCHAR(75) default " +
+					"'test test' not null;"));
+	}
+
+	@Test
+	public void testRewordAlterColumnTypeWithDefaultWhenNull()
+		throws Exception {
+
+		_nullable = true;
+
+		Assert.assertEquals(
+			"alter table DLFolder modify userName VARCHAR2(75 CHAR) default " +
+				"'test test' not null;\n",
+			buildSQL(
+				"alter_column_type DLFolder userName VARCHAR(75) default " +
+					"'test test' not null;"));
 	}
 
 	@Override

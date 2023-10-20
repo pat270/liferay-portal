@@ -131,6 +131,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -149,6 +150,10 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 	public void setUp() throws Exception {
 		super.setUp();
 
+		_originalName = PrincipalThreadLocal.getName();
+
+		PrincipalThreadLocal.setName(TestPropsValues.getUserId());
+
 		SitePageResource.Builder builder = SitePageResource.builder();
 
 		sitePageResource = builder.authentication(
@@ -158,6 +163,14 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
+	}
+
+	@After
+	@Override
+	public void tearDown() throws Exception {
+		super.tearDown();
+
+		PrincipalThreadLocal.setName(_originalName);
 	}
 
 	@Override
@@ -681,16 +694,15 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 				{
 					settings = new Settings() {
 						{
-							setGlobalJSClientExtensions(
-								new ClientExtension[] {
-									new ClientExtension() {
-										{
-											externalReferenceCode =
-												globalCSSClientExtensionEntry.
-													getExternalReferenceCode();
-										}
+							globalJSClientExtensions = new ClientExtension[] {
+								new ClientExtension() {
+									{
+										externalReferenceCode =
+											globalCSSClientExtensionEntry.
+												getExternalReferenceCode();
 									}
-								});
+								}
+							};
 						}
 					};
 				}
@@ -998,26 +1010,24 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 				{
 					settings = new Settings() {
 						{
-							setGlobalCSSClientExtensions(
-								new ClientExtension[] {
-									new ClientExtension() {
-										{
-											externalReferenceCode =
-												globalCSSClientExtensionEntry.
-													getExternalReferenceCode();
-										}
+							globalCSSClientExtensions = new ClientExtension[] {
+								new ClientExtension() {
+									{
+										externalReferenceCode =
+											globalCSSClientExtensionEntry.
+												getExternalReferenceCode();
 									}
-								});
-							setGlobalJSClientExtensions(
-								new ClientExtension[] {
-									new ClientExtension() {
-										{
-											externalReferenceCode =
-												globalJSClientExtensionEntry.
-													getExternalReferenceCode();
-										}
+								}
+							};
+							globalJSClientExtensions = new ClientExtension[] {
+								new ClientExtension() {
+									{
+										externalReferenceCode =
+											globalJSClientExtensionEntry.
+												getExternalReferenceCode();
 									}
-								});
+								}
+							};
 						}
 					};
 				}
@@ -1067,11 +1077,10 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 				{
 					settings = new Settings() {
 						{
-							setFavIcon(
-								JSONUtil.put(
-									"externalReferenceCode",
-									clientExtensionEntry.
-										getExternalReferenceCode()));
+							favIcon = JSONUtil.put(
+								"externalReferenceCode",
+								clientExtensionEntry.
+									getExternalReferenceCode());
 						}
 					};
 				}
@@ -1112,12 +1121,11 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 				{
 					settings = new Settings() {
 						{
-							setFavIcon(
-								JSONUtil.put(
-									"contentType", "Document"
-								).put(
-									"id", dlFileEntry.getFileEntryId()
-								));
+							favIcon = JSONUtil.put(
+								"contentType", "Document"
+							).put(
+								"id", dlFileEntry.getFileEntryId()
+							);
 						}
 					};
 				}
@@ -1612,7 +1620,7 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 		randomSitePage.setParentSitePage(
 			new ParentSitePage() {
 				{
-					setFriendlyUrlPath(parentPostSitePage.getFriendlyUrlPath());
+					friendlyUrlPath = parentPostSitePage.getFriendlyUrlPath();
 				}
 			});
 
@@ -1645,9 +1653,9 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 		randomSitePage.setParentSitePage(
 			new ParentSitePage() {
 				{
-					setFriendlyUrlPath(
+					friendlyUrlPath =
 						StringPool.FORWARD_SLASH +
-							RandomTestUtil.randomString());
+							RandomTestUtil.randomString();
 				}
 			});
 
@@ -1983,6 +1991,7 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 			configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
 		}
 	};
+	private String _originalName;
 
 	@Inject
 	private Portal _portal;

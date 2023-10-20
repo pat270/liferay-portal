@@ -50,7 +50,6 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
@@ -73,7 +72,6 @@ import org.junit.runner.RunWith;
 /**
  * @author Gabriel Albuquerque
  */
-@FeatureFlags("LPS-167253")
 @RunWith(Arquillian.class)
 public class ObjectViewLocalServiceTest {
 
@@ -382,7 +380,7 @@ public class ObjectViewLocalServiceTest {
 		ListTypeDefinition listTypeDefinition =
 			_listTypeDefinitionLocalService.addListTypeDefinition(
 				null, TestPropsValues.getUserId(),
-				Collections.singletonMap(LocaleUtil.US, "Countries"),
+				Collections.singletonMap(LocaleUtil.US, "Countries"), false,
 				Collections.singletonList(
 					ListTypeEntryUtil.createListTypeEntry(
 						StringUtil.randomId(),
@@ -395,7 +393,7 @@ public class ObjectViewLocalServiceTest {
 		objectField.setListTypeDefinitionId(
 			listTypeDefinition.getListTypeDefinitionId());
 
-		return ObjectDefinitionTestUtil.addObjectDefinition(
+		return ObjectDefinitionTestUtil.addCustomObjectDefinition(
 			false, _objectDefinitionLocalService,
 			Arrays.asList(
 				objectField,
@@ -429,7 +427,7 @@ public class ObjectViewLocalServiceTest {
 		ListTypeDefinition listTypeDefinition =
 			_listTypeDefinitionLocalService.addListTypeDefinition(
 				null, TestPropsValues.getUserId(),
-				Collections.singletonMap(LocaleUtil.US, "Countries"),
+				Collections.singletonMap(LocaleUtil.US, "Countries"), false,
 				Collections.singletonList(
 					ListTypeEntryUtil.createListTypeEntry(
 						StringUtil.randomId(),
@@ -528,7 +526,7 @@ public class ObjectViewLocalServiceTest {
 			objectDefinitionId2, 0,
 			ObjectRelationshipConstants.DELETION_TYPE_PREVENT,
 			LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
-			StringUtil.randomId(),
+			StringUtil.randomId(), false,
 			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
 	}
 
@@ -640,7 +638,7 @@ public class ObjectViewLocalServiceTest {
 		String externalReferenceCode = RandomTestUtil.randomString();
 
 		ObjectDefinition objectDefinition1 =
-			ObjectDefinitionTestUtil.addObjectDefinition(
+			ObjectDefinitionTestUtil.addCustomObjectDefinition(
 				false, _objectDefinitionLocalService,
 				Arrays.asList(
 					ObjectFieldUtil.createObjectField(

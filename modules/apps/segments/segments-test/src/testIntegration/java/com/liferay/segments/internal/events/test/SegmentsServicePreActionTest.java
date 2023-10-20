@@ -6,6 +6,7 @@
 package com.liferay.segments.internal.events.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.layout.constants.LayoutTypeSettingsConstants;
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerList;
 import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerListFactory;
@@ -20,7 +21,6 @@ import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.settings.SettingsFactoryUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
@@ -92,8 +92,7 @@ public class SegmentsServicePreActionTest {
 							SegmentsCompanyConfiguration.class.getName(),
 							HashMapDictionaryBuilder.<String, Object>put(
 								"segmentationEnabled", true
-							).build(),
-							SettingsFactoryUtil.getSettingsFactory())) {
+							).build())) {
 
 				LifecycleAction lifecycleAction = _getLifecycleAction();
 
@@ -113,7 +112,7 @@ public class SegmentsServicePreActionTest {
 					nameMap, Collections.emptyMap(), Collections.emptyMap(),
 					Collections.emptyMap(), LayoutConstants.TYPE_COLLECTION,
 					UnicodePropertiesBuilder.put(
-						"published", "true"
+						LayoutTypeSettingsConstants.KEY_PUBLISHED, "true"
 					).buildString(),
 					false, false, Collections.emptyMap(), 0, serviceContext);
 
@@ -150,8 +149,7 @@ public class SegmentsServicePreActionTest {
 							SegmentsCompanyConfiguration.class.getName(),
 							HashMapDictionaryBuilder.<String, Object>put(
 								"segmentationEnabled", true
-							).build(),
-							SettingsFactoryUtil.getSettingsFactory())) {
+							).build())) {
 
 				LifecycleAction lifecycleAction = _getLifecycleAction();
 
@@ -171,7 +169,7 @@ public class SegmentsServicePreActionTest {
 					nameMap, Collections.emptyMap(), Collections.emptyMap(),
 					Collections.emptyMap(), LayoutConstants.TYPE_COLLECTION,
 					UnicodePropertiesBuilder.put(
-						"published", "true"
+						LayoutTypeSettingsConstants.KEY_PUBLISHED, "true"
 					).buildString(),
 					false, false, Collections.emptyMap(), 0, serviceContext);
 
@@ -214,8 +212,7 @@ public class SegmentsServicePreActionTest {
 							SegmentsCompanyConfiguration.class.getName(),
 							HashMapDictionaryBuilder.<String, Object>put(
 								"segmentationEnabled", true
-							).build(),
-							SettingsFactoryUtil.getSettingsFactory())) {
+							).build())) {
 
 				LifecycleAction lifecycleAction = _getLifecycleAction();
 
@@ -256,8 +253,7 @@ public class SegmentsServicePreActionTest {
 							SegmentsCompanyConfiguration.class.getName(),
 							HashMapDictionaryBuilder.<String, Object>put(
 								"segmentationEnabled", true
-							).build(),
-							SettingsFactoryUtil.getSettingsFactory())) {
+							).build())) {
 
 				LifecycleAction lifecycleAction = _getLifecycleAction();
 
@@ -297,8 +293,7 @@ public class SegmentsServicePreActionTest {
 							SegmentsCompanyConfiguration.class.getName(),
 							HashMapDictionaryBuilder.<String, Object>put(
 								"segmentationEnabled", true
-							).build(),
-							SettingsFactoryUtil.getSettingsFactory())) {
+							).build())) {
 
 				LifecycleAction lifecycleAction = _getLifecycleAction();
 
@@ -318,7 +313,7 @@ public class SegmentsServicePreActionTest {
 					nameMap, Collections.emptyMap(), Collections.emptyMap(),
 					Collections.emptyMap(), LayoutConstants.TYPE_COLLECTION,
 					UnicodePropertiesBuilder.put(
-						"published", "true"
+						LayoutTypeSettingsConstants.KEY_PUBLISHED, "true"
 					).buildString(),
 					false, false, Collections.emptyMap(), 0, serviceContext);
 

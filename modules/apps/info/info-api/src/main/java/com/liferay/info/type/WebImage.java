@@ -47,7 +47,7 @@ public class WebImage {
 		return _infoItemReference;
 	}
 
-	public String getUrl() {
+	public String getURL() {
 		return _url;
 	}
 
@@ -96,7 +96,7 @@ public class WebImage {
 
 	@Override
 	public String toString() {
-		return getUrl();
+		return getURL();
 	}
 
 	private InfoLocalizedValue<String> _altInfoLocalizedValue;

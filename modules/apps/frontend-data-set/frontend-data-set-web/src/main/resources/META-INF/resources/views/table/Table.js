@@ -11,7 +11,7 @@ import React, {useContext, useRef, useState} from 'react';
 
 import FrontendDataSetContext from '../../FrontendDataSetContext';
 import Actions from '../../actions/Actions';
-import {getValueDetailsFromItem} from '../../utils/index';
+import {getLocalizedValue} from '../../utils/getLocalizedValue';
 import ViewsContext from '../ViewsContext';
 import TableCell from './TableCell';
 import TableHead from './TableHead';
@@ -28,27 +28,20 @@ function getItemFields(
 	return fields.map((field) => {
 		const {actionDropdownItems} = item;
 		const {rootPropertyName, value, valuePath} = field.fieldName
-			? getValueDetailsFromItem(item, field.fieldName)
+			? getLocalizedValue(item, field.fieldName)
 			: {};
 
 		return (
 			<TableCell
 				actions={itemsActions || actionDropdownItems}
-				inlineEditSettings={field.inlineEditSettings}
+				field={field}
 				itemData={item}
 				itemId={itemId}
 				itemInlineChanges={itemInlineChanges}
 				key={valuePath ? valuePath.join('_') : field.label}
-				options={field}
 				rootPropertyName={rootPropertyName}
 				value={value}
 				valuePath={valuePath}
-				view={{
-					contentRenderer: field.contentRenderer,
-					contentRendererClientExtension:
-						field.contentRendererClientExtension,
-					contentRendererModuleURL: field.contentRendererModuleURL,
-				}}
 			/>
 		);
 	});
@@ -276,7 +269,11 @@ const RowWithActions = ({
 				itemsChanges[itemId]
 			)}
 
-			<DndTable.Cell className="item-actions" columnName="item-actions">
+			<DndTable.Cell
+				className="item-actions"
+				columnName="item-actions"
+				defaultWidth="44px"
+			>
 				{(itemsActions?.length > 0 ||
 					item.actionDropdownItems?.length > 0) && (
 					<Actions

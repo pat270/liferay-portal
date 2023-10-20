@@ -320,7 +320,7 @@ public class PlacedOrderItemResourceTest
 				id = RandomTestUtil.randomLong();
 				name = StringUtil.toLowerCase(RandomTestUtil.randomString());
 				productId = cpDefinition.getCProductId();
-				quantity = RandomTestUtil.randomInt(1, 100);
+				quantity = BigDecimal.valueOf(RandomTestUtil.randomInt(1, 100));
 				sku = cpInstance.getSku();
 				skuId = cpInstance.getCPInstanceId();
 				subscription = false;

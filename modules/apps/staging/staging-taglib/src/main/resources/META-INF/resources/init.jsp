@@ -17,6 +17,7 @@ taglib uri="http://liferay.com/tld/react" prefix="react" %><%@
 taglib uri="http://liferay.com/tld/staging" prefix="liferay-staging" %><%@
 taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %><%@
 taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %><%@
+taglib uri="http://liferay.com/tld/user" prefix="liferay-user" %><%@
 taglib uri="http://liferay.com/tld/util" prefix="liferay-util" %>
 
 <%@ page import="com.liferay.exportimport.configuration.ExportImportServiceConfiguration" %><%@
@@ -39,6 +40,7 @@ page import="com.liferay.exportimport.kernel.service.ExportImportConfigurationLo
 page import="com.liferay.exportimport.kernel.staging.LayoutStagingUtil" %><%@
 page import="com.liferay.exportimport.kernel.staging.StagingUtil" %><%@
 page import="com.liferay.petra.string.StringPool" %><%@
+page import="com.liferay.portal.configuration.module.configuration.ConfigurationProviderUtil" %><%@
 page import="com.liferay.portal.kernel.backgroundtask.BackgroundTask" %><%@
 page import="com.liferay.portal.kernel.backgroundtask.BackgroundTaskManagerUtil" %><%@
 page import="com.liferay.portal.kernel.backgroundtask.BackgroundTaskStatus" %><%@
@@ -70,7 +72,6 @@ page import="com.liferay.portal.kernel.model.Portlet" %><%@
 page import="com.liferay.portal.kernel.model.StagedGroupedModel" %><%@
 page import="com.liferay.portal.kernel.model.StagedModel" %><%@
 page import="com.liferay.portal.kernel.model.User" %><%@
-page import="com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil" %><%@
 page import="com.liferay.portal.kernel.portlet.LiferayWindowState" %><%@
 page import="com.liferay.portal.kernel.portlet.PortletBag" %><%@
 page import="com.liferay.portal.kernel.portlet.PortletBagPool" %><%@
@@ -105,7 +106,8 @@ page import="com.liferay.portal.kernel.util.UnicodeProperties" %><%@
 page import="com.liferay.portal.kernel.util.Validator" %><%@
 page import="com.liferay.staging.constants.StagingProcessesWebKeys" %><%@
 page import="com.liferay.staging.taglib.internal.display.context.LayoutsTreeDisplayContext" %><%@
-page import="com.liferay.staging.taglib.internal.display.context.ProcessListDisplayContext" %>
+page import="com.liferay.staging.taglib.internal.display.context.ProcessListDisplayContext" %><%@
+page import="com.liferay.staging.taglib.internal.display.context.RenderControlsDisplayContext" %>
 
 <%@ page import="java.io.Serializable" %>
 

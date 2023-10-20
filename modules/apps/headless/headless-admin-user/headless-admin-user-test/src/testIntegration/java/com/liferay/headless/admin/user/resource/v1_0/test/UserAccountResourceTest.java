@@ -47,7 +47,11 @@ import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.security.auth.Authenticator;
+import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.OrganizationLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
@@ -55,6 +59,7 @@ import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.UserGroupLocalService;
 import com.liferay.portal.kernel.service.UserGroupRoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.service.UserService;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.DataGuard;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
@@ -397,6 +402,25 @@ public class UserAccountResourceTest extends BaseUserAccountResourceTestCase {
 			() -> _userGroupLocalService.addUserUserGroup(
 				user.getUserId(), userGroup),
 			user);
+	}
+
+	@Override
+	@Test
+	public void testGetUserAccountByEmailAddress() throws Exception {
+		super.testGetUserAccountByEmailAddress();
+
+		UserAccount postUserAccount =
+			testGetUserAccountsByStatusPage_addUserAccount(
+				com.liferay.headless.admin.user.dto.v1_0.UserAccount.Status.
+					INACTIVE.toString(),
+				randomUserAccount());
+
+		UserAccount getUserAccount =
+			userAccountResource.getUserAccountByEmailAddress(
+				postUserAccount.getEmailAddress());
+
+		assertEquals(postUserAccount, getUserAccount);
+		assertValid(getUserAccount);
 	}
 
 	@Override
@@ -1240,6 +1264,13 @@ public class UserAccountResourceTest extends BaseUserAccountResourceTestCase {
 	}
 
 	@Override
+	protected UserAccount testGetUserAccountByEmailAddress_addUserAccount()
+		throws Exception {
+
+		return userAccountResource.postUserAccount(randomUserAccount());
+	}
+
+	@Override
 	protected UserAccount
 			testGetUserAccountByExternalReferenceCode_addUserAccount()
 		throws Exception {
@@ -1250,6 +1281,55 @@ public class UserAccountResourceTest extends BaseUserAccountResourceTestCase {
 	}
 
 	@Override
+	protected UserAccount testGetUserAccountsByStatusPage_addUserAccount(
+			String status, UserAccount userAccount)
+		throws Exception {
+
+		UserAccount postUserAccount = testPostAccountUserAccount_addUserAccount(
+			userAccount);
+
+		if (StringUtil.equalsIgnoreCase(
+				status,
+				com.liferay.headless.admin.user.dto.v1_0.UserAccount.Status.
+					INACTIVE.toString())) {
+
+			PermissionChecker originalPermissionChecker =
+				PermissionThreadLocal.getPermissionChecker();
+
+			String originalName = PrincipalThreadLocal.getName();
+
+			try {
+				PermissionThreadLocal.setPermissionChecker(
+					PermissionCheckerFactoryUtil.create(
+						TestPropsValues.getUser()));
+
+				PrincipalThreadLocal.setName(TestPropsValues.getUserId());
+
+				_userService.updateStatus(
+					postUserAccount.getId(), WorkflowConstants.STATUS_INACTIVE,
+					ServiceContextTestUtil.getServiceContext(
+						testCompany.getCompanyId(), testGroup.getGroupId(),
+						_testUser.getUserId()));
+			}
+			finally {
+				PermissionThreadLocal.setPermissionChecker(
+					originalPermissionChecker);
+
+				PrincipalThreadLocal.setName(originalName);
+			}
+		}
+
+		return postUserAccount;
+	}
+
+	@Override
+	protected String testGetUserAccountsByStatusPage_getStatus()
+		throws Exception {
+
+		return com.liferay.headless.admin.user.dto.v1_0.UserAccount.Status.
+			INACTIVE.toString();
+	}
+
 	protected UserAccount testGetUserAccountsPage_addUserAccount(
 			UserAccount userAccount)
 		throws Exception {
@@ -1466,9 +1546,9 @@ public class UserAccountResourceTest extends BaseUserAccountResourceTestCase {
 	private EmailAddress _randomEmailAddress() throws Exception {
 		return new EmailAddress() {
 			{
-				setEmailAddress(RandomTestUtil.randomString() + "@liferay.com");
-				setPrimary(true);
-				setType("email-address");
+				emailAddress = RandomTestUtil.randomString() + "@liferay.com";
+				primary = true;
+				type = "email-address";
 			}
 		};
 	}
@@ -1476,10 +1556,10 @@ public class UserAccountResourceTest extends BaseUserAccountResourceTestCase {
 	private Phone _randomPhone() throws Exception {
 		return new Phone() {
 			{
-				setExtension(String.valueOf(RandomTestUtil.randomInt()));
-				setPhoneNumber(String.valueOf(RandomTestUtil.randomInt()));
-				setPhoneType("personal");
-				setPrimary(true);
+				extension = String.valueOf(RandomTestUtil.randomInt());
+				phoneNumber = String.valueOf(RandomTestUtil.randomInt());
+				phoneType = "personal";
+				primary = true;
 			}
 		};
 	}
@@ -1487,15 +1567,15 @@ public class UserAccountResourceTest extends BaseUserAccountResourceTestCase {
 	private PostalAddress _randomPostalAddress() throws Exception {
 		return new PostalAddress() {
 			{
-				setAddressCountry("united-states");
-				setAddressLocality("Diamond Bar");
-				setAddressRegion("California");
-				setAddressType("personal");
-				setPostalCode("91765");
-				setPrimary(true);
-				setStreetAddressLine1(RandomTestUtil.randomString());
-				setStreetAddressLine2(RandomTestUtil.randomString());
-				setStreetAddressLine3(RandomTestUtil.randomString());
+				addressCountry = "united-states";
+				addressLocality = "Diamond Bar";
+				addressRegion = "California";
+				addressType = "personal";
+				postalCode = "91765";
+				primary = true;
+				streetAddressLine1 = RandomTestUtil.randomString();
+				streetAddressLine2 = RandomTestUtil.randomString();
+				streetAddressLine3 = RandomTestUtil.randomString();
 			}
 		};
 	}
@@ -1516,16 +1596,15 @@ public class UserAccountResourceTest extends BaseUserAccountResourceTestCase {
 
 		return new UserAccountContactInformation() {
 			{
-				setEmailAddresses(new EmailAddress[] {_randomEmailAddress()});
-				setFacebook(RandomTestUtil.randomString());
-				setJabber(RandomTestUtil.randomString());
-				setPostalAddresses(
-					new PostalAddress[] {_randomPostalAddress()});
-				setSkype(RandomTestUtil.randomString());
-				setSms(RandomTestUtil.randomString() + "@liferay.com");
-				setTelephones(new Phone[] {_randomPhone()});
-				setTwitter(RandomTestUtil.randomString());
-				setWebUrls(new WebUrl[] {_randomWebUrl()});
+				emailAddresses = new EmailAddress[] {_randomEmailAddress()};
+				facebook = RandomTestUtil.randomString();
+				jabber = RandomTestUtil.randomString();
+				postalAddresses = new PostalAddress[] {_randomPostalAddress()};
+				skype = RandomTestUtil.randomString();
+				sms = RandomTestUtil.randomString() + "@liferay.com";
+				telephones = new Phone[] {_randomPhone()};
+				twitter = RandomTestUtil.randomString();
+				webUrls = new WebUrl[] {_randomWebUrl()};
 			}
 		};
 	}
@@ -1533,9 +1612,9 @@ public class UserAccountResourceTest extends BaseUserAccountResourceTestCase {
 	private WebUrl _randomWebUrl() throws Exception {
 		return new WebUrl() {
 			{
-				setPrimary(true);
-				setUrl("https://" + RandomTestUtil.randomString() + ".com");
-				setUrlType("personal");
+				primary = true;
+				url = "https://" + RandomTestUtil.randomString() + ".com";
+				urlType = "personal";
 			}
 		};
 	}
@@ -1727,6 +1806,9 @@ public class UserAccountResourceTest extends BaseUserAccountResourceTestCase {
 
 	@Inject
 	private UserLocalService _userLocalService;
+
+	@Inject
+	private UserService _userService;
 
 	private class TestSimpleCaptchaImpl extends SimpleCaptchaImpl {
 

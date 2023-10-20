@@ -5,7 +5,6 @@
 
 import {useState} from 'react';
 
-import {Footer} from '../../components/Footer/Footer';
 import {AppFlowList} from '../../components/NewAppFlowList/AppFlowList';
 import {NewAppToolBar} from '../../components/NewAppToolBar/NewAppToolBar';
 import {ChoosePricingModelPage} from '../ChoosePricingModelPage/ChoosePricingModelPage';
@@ -31,8 +30,9 @@ type SetAppFlowListStateProps = {
 
 export function AppCreationFlow() {
 	const [{appERC, appProductId, priceModel}] = useAppContext();
-	const [appFlowListItems, setAppFlowListItems] =
-		useState(initialFLowListItems);
+	const [appFlowListItems, setAppFlowListItems] = useState(
+		initialFLowListItems
+	);
 	const [currentFlow, setCurrentFlow] = useState('create');
 
 	const setAppFlowListState = ({
@@ -402,8 +402,6 @@ export function AppCreationFlow() {
 					/>
 				)}
 			</div>
-
-			<Footer />
 		</div>
 	);
 }

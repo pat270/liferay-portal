@@ -16,9 +16,12 @@ import com.liferay.batch.engine.service.BatchEngineImportTaskLocalService;
 import com.liferay.batch.engine.unit.BatchEngineUnit;
 import com.liferay.batch.engine.unit.BatchEngineUnitConfiguration;
 import com.liferay.batch.engine.unit.BatchEngineUnitProcessor;
+import com.liferay.batch.engine.unit.BatchEngineUnitThreadLocal;
+import com.liferay.batch.engine.unit.BundleBatchEngineUnit;
 import com.liferay.petra.executor.PortalExecutorManager;
 import com.liferay.petra.io.StreamUtil;
 import com.liferay.petra.io.unsync.UnsyncByteArrayOutputStream;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -35,18 +38,22 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineTaskItemDelegateAdaptorFactory;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.annotations.Activate;
@@ -68,6 +75,22 @@ public class BatchEngineUnitProcessorImpl implements BatchEngineUnitProcessor {
 
 		for (BatchEngineUnit batchEngineUnit : batchEngineUnits) {
 			try {
+				BatchEngineUnitConfiguration batchEngineUnitConfiguration =
+					batchEngineUnit.getBatchEngineUnitConfiguration();
+
+				String featureFlagKey = _getFeatureFlagKey(
+					batchEngineUnitConfiguration);
+
+				if (_isFeatureFlagDisabled(featureFlagKey)) {
+					_featureFlagBatchEngineUnitProcessor.
+						registerBatchEngineUnit(
+							batchEngineUnitConfiguration.getCompanyId(),
+							featureFlagKey,
+							() -> _processBatchEngineUnit(batchEngineUnit));
+
+					continue;
+				}
+
 				CompletableFuture<Void> completableFuture =
 					_processBatchEngineUnit(batchEngineUnit);
 
@@ -193,9 +216,17 @@ public class BatchEngineUnitProcessorImpl implements BatchEngineUnitProcessor {
 				batchEngineUnitConfiguration.getTaskItemDelegateName(),
 				batchEngineTaskItemDelegate);
 
-		_batchEngineImportTaskExecutor.execute(
-			batchEngineImportTask, batchEngineTaskItemDelegate,
-			batchEngineUnitConfiguration.isCheckPermissions());
+		try {
+			BatchEngineUnitThreadLocal.setFileName(
+				batchEngineUnit.getFileName());
+
+			_batchEngineImportTaskExecutor.execute(
+				batchEngineImportTask, batchEngineTaskItemDelegate,
+				batchEngineUnitConfiguration.isCheckPermissions());
+		}
+		finally {
+			BatchEngineUnitThreadLocal.setFileName(StringPool.BLANK);
+		}
 
 		if (_log.isInfoEnabled()) {
 			_log.info(
@@ -206,6 +237,30 @@ public class BatchEngineUnitProcessorImpl implements BatchEngineUnitProcessor {
 		}
 
 		serviceTracker.close();
+	}
+
+	private Bundle _getBundle(BatchEngineUnit batchEngineUnit) {
+		if (!(batchEngineUnit instanceof BundleBatchEngineUnit)) {
+			return null;
+		}
+
+		BundleBatchEngineUnit bundleBatchEngineUnit =
+			(BundleBatchEngineUnit)batchEngineUnit;
+
+		return bundleBatchEngineUnit.getBundle();
+	}
+
+	private String _getFeatureFlagKey(
+		BatchEngineUnitConfiguration batchEngineUnitConfiguration) {
+
+		Map<String, Serializable> parameters =
+			batchEngineUnitConfiguration.getParameters();
+
+		if (parameters == null) {
+			return null;
+		}
+
+		return (String)parameters.get("featureFlag");
 	}
 
 	private String _getObjectEntryClassName(
@@ -222,6 +277,65 @@ public class BatchEngineUnitProcessorImpl implements BatchEngineUnitProcessor {
 		}
 
 		return className;
+	}
+
+	private boolean _isFeatureFlagDisabled(String featureFlagKey) {
+		if (Validator.isNotNull(featureFlagKey) &&
+			!FeatureFlagManagerUtil.isEnabled(featureFlagKey)) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	private boolean _isProcessed(BatchEngineUnit batchEngineUnit) {
+		Bundle bundle = _getBundle(batchEngineUnit);
+
+		if (bundle == null) {
+			return false;
+		}
+
+		try {
+			BatchEngineUnitConfiguration batchEngineUnitConfiguration =
+				batchEngineUnit.getBatchEngineUnitConfiguration();
+
+			String dataFileName = batchEngineUnit.getDataFileName();
+
+			java.io.File processedFile = bundle.getDataFile(
+				com.liferay.petra.string.StringUtil.merge(
+					Arrays.asList(
+						dataFileName.replaceAll("\\W+", "."),
+						batchEngineUnitConfiguration.getCompanyId(),
+						"processed"),
+					"."));
+
+			if (processedFile == null) {
+				return false;
+			}
+
+			String lastModifiedString = String.valueOf(
+				bundle.getLastModified());
+
+			if (processedFile.exists() &&
+				Objects.equals(_file.read(processedFile), lastModifiedString)) {
+
+				return true;
+			}
+
+			if (!processedFile.exists()) {
+				processedFile.createNewFile();
+			}
+
+			_file.write(processedFile, lastModifiedString, true);
+
+			return false;
+		}
+		catch (IOException ioException) {
+			ReflectionUtil.throwException(ioException);
+		}
+
+		return false;
 	}
 
 	private CompletableFuture<Void> _processBatchEngineUnit(
@@ -263,14 +377,7 @@ public class BatchEngineUnitProcessorImpl implements BatchEngineUnitProcessor {
 					" ", batchEngineUnit.getDataFileName()));
 		}
 
-		Map<String, Serializable> parameters =
-			batchEngineUnitConfiguration.getParameters();
-
-		String featureFlag = (String)parameters.get("featureFlag");
-
-		if (Validator.isNotNull(featureFlag) &&
-			!FeatureFlagManagerUtil.isEnabled(featureFlag)) {
-
+		if (_isProcessed(batchEngineUnit)) {
 			return null;
 		}
 
@@ -343,6 +450,10 @@ public class BatchEngineUnitProcessorImpl implements BatchEngineUnitProcessor {
 
 	@Reference
 	private CompanyLocalService _companyLocalService;
+
+	@Reference
+	private FeatureFlagBatchEngineUnitProcessor
+		_featureFlagBatchEngineUnitProcessor;
 
 	@Reference
 	private File _file;

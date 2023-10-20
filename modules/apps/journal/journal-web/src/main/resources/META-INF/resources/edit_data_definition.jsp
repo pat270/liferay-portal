@@ -18,6 +18,7 @@ long groupId = BeanParamUtil.getLong(ddmStructure, request, "groupId", scopeGrou
 
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(redirect);
+portletDisplay.setURLBackTitle(portletDisplay.getPortletDisplayName());
 
 renderResponse.setTitle((ddmStructure != null) ? LanguageUtil.format(request, "edit-x", ddmStructure.getName(locale), false) : LanguageUtil.get(request, "new-structure"));
 
@@ -62,7 +63,7 @@ editDDMStructureURL.setParameter("structureKey", String.valueOf(ddmStructureKey)
 					<aui:input activeLanguageIds="<%= journalEditDDMStructuresDisplayContext.getAvailableLanguageIds() %>" adminMode="<%= true %>" cssClass="form-control-inline" defaultLanguageId="<%= (ddmForm == null) ? LocaleUtil.toLanguageId(LocaleUtil.getSiteDefault()): LocaleUtil.toLanguageId(ddmForm.getDefaultLocale()) %>" label='<%= LanguageUtil.get(request, "name") %>' labelCssClass="sr-only" languagesDropdownDirection="down" localized="<%= true %>" name="name" placeholder='<%= LanguageUtil.format(request, "untitled-x", "structure") %>' required="<%= true %>" type="text" wrapperCssClass="article-content-title c-mb-0" />
 				</li>
 				<li class="tbar-item">
-					<div class="c-gap-3 form-group-sm journal-article-button-row tbar-section text-right">
+					<div class="c-gap-3 form-group-sm journal-article-button-row mb-0 tbar-section text-right">
 						<clay:link
 							borderless="<%= true %>"
 							displayType="secondary"

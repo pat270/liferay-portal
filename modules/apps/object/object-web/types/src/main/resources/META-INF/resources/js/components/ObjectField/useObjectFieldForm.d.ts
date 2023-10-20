@@ -22,8 +22,8 @@ export declare function useObjectFieldForm({
 	errors: import('@liferay/object-js-components-web').FormError<
 		ObjectField & {
 			function: unknown;
-			acceptedFileExtensions: unknown;
 			defaultValue: unknown;
+			acceptedFileExtensions: unknown;
 			defaultValueType: unknown;
 			fileSource: unknown;
 			filters: unknown;
@@ -45,6 +45,32 @@ export declare function useObjectFieldForm({
 	>;
 	handleChange: import('react').ChangeEventHandler<HTMLInputElement>;
 	handleSubmit: import('react').FormEventHandler<HTMLFormElement>;
+	handleValidate: (
+		editedValues?: Partial<ObjectField> | undefined
+	) => import('@liferay/object-js-components-web').FormError<
+		ObjectField & {
+			function: unknown;
+			defaultValue: unknown;
+			acceptedFileExtensions: unknown;
+			defaultValueType: unknown;
+			fileSource: unknown;
+			filters: unknown;
+			maxLength: unknown;
+			maximumFileSize: unknown;
+			objectDefinition1ShortName: unknown;
+			objectFieldName: unknown;
+			objectRelationshipName: unknown;
+			output: unknown;
+			script: unknown;
+			showCounter: unknown;
+			showFilesInDocumentsAndMedia: unknown;
+			stateFlow: unknown;
+			storageDLFolderPath: unknown;
+			timeStorage: unknown;
+			uniqueValues: unknown;
+			uniqueValuesErrorMessage: unknown;
+		}
+	>;
 	setValues: (values: Partial<ObjectField>) => void;
 	values: Partial<ObjectField>;
 };

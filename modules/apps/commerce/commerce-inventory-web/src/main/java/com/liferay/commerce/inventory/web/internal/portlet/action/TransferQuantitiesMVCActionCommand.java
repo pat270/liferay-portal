@@ -12,6 +12,8 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ParamUtil;
 
+import java.math.BigDecimal;
+
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 
@@ -48,12 +50,15 @@ public class TransferQuantitiesMVCActionCommand extends BaseMVCActionCommand {
 			actionRequest, "fromCommerceInventoryWarehouseId");
 		long toCommerceInventoryWarehouseId = ParamUtil.getLong(
 			actionRequest, "toCommerceInventoryWarehouseId");
-		int quantity = ParamUtil.getInteger(actionRequest, "quantity");
+		BigDecimal quantity = (BigDecimal)ParamUtil.getNumber(
+			actionRequest, "quantity", BigDecimal.ZERO);
 		String sku = ParamUtil.getString(actionRequest, "sku");
+		String unitOfMeasureKey = ParamUtil.getString(
+			actionRequest, "unitOfMeasureKey");
 
 		_commerceInventoryWarehouseItemService.moveQuantitiesBetweenWarehouses(
 			fromCommerceInventoryWarehouseId, toCommerceInventoryWarehouseId,
-			quantity, sku);
+			quantity, sku, unitOfMeasureKey);
 	}
 
 	@Reference

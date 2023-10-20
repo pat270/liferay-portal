@@ -71,7 +71,9 @@ public class APIApplicationProviderImpl implements APIApplicationProvider {
 				companyId,
 				"apiApplicationToAPIEndpoints/externalReferenceCode eq '" +
 					apiApplicationExternalReferenceCode + "'",
-				Arrays.asList("apiEndpointToAPIFilters"), "L_API_ENDPOINT"),
+				Arrays.asList(
+					"apiEndpointToAPIFilters", "apiEndpointToAPISorts"),
+				"L_API_ENDPOINT", null),
 			objectEntry -> {
 				Map<String, Object> properties = objectEntry.getProperties();
 
@@ -97,6 +99,11 @@ public class APIApplicationProviderImpl implements APIApplicationProvider {
 					}
 
 					@Override
+					public String getPathParameter() {
+						return (String)properties.get("pathParameter");
+					}
+
+					@Override
 					public APIApplication.Schema getRequestSchema() {
 						return _getSchema(
 							(String)properties.get(
@@ -115,12 +122,24 @@ public class APIApplicationProviderImpl implements APIApplicationProvider {
 					}
 
 					@Override
+					public RetrieveType getRetrieveType() {
+						ListEntry listEntry = (ListEntry)properties.get(
+							"retrieveType");
+
+						return RetrieveType.parse(listEntry.getKey());
+					}
+
+					@Override
 					public Scope getScope() {
 						ListEntry listEntry = (ListEntry)properties.get(
 							"scope");
 
-						return Scope.valueOf(
-							StringUtil.toUpperCase(listEntry.getKey()));
+						return Scope.parse(listEntry.getKey());
+					}
+
+					@Override
+					public APIApplication.Sort getSort() {
+						return _getSort(properties);
 					}
 
 				};
@@ -267,7 +286,8 @@ public class APIApplicationProviderImpl implements APIApplicationProvider {
 				companyId,
 				"apiApplicationToAPISchemas/externalReferenceCode eq '" +
 					apiApplicationObjectEntry.getExternalReferenceCode() + "'",
-				Arrays.asList("apiSchemaToAPIProperties"), "L_API_SCHEMA"),
+				Arrays.asList("apiSchemaToAPIProperties"), "L_API_SCHEMA",
+				null),
 			objectEntry -> {
 				Map<String, Object> properties = objectEntry.getProperties();
 
@@ -306,6 +326,30 @@ public class APIApplicationProviderImpl implements APIApplicationProvider {
 
 				};
 			});
+	}
+
+	private APIApplication.Sort _getSort(
+		Map<String, Object> endpointProperties) {
+
+		ObjectEntry[] objectEntries = (ObjectEntry[])endpointProperties.get(
+			"apiEndpointToAPISorts");
+
+		if (ArrayUtil.isEmpty(objectEntries)) {
+			return null;
+		}
+
+		ObjectEntry objectEntry = objectEntries[0];
+
+		Map<String, Object> properties = objectEntry.getProperties();
+
+		return new APIApplication.Sort() {
+
+			@Override
+			public String getODataSortString() {
+				return (String)properties.get("oDataSort");
+			}
+
+		};
 	}
 
 	private APIApplication _toApiApplication(

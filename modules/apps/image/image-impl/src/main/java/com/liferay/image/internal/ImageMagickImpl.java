@@ -5,10 +5,10 @@
 
 package com.liferay.image.internal;
 
+import com.liferay.image.ImageMagick;
 import com.liferay.petra.concurrent.DCLSingleton;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.configuration.Filter;
-import com.liferay.portal.kernel.image.ImageMagick;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.NamedThreadFactory;
@@ -31,6 +31,7 @@ import java.util.concurrent.Future;
 import javax.portlet.PortletPreferences;
 
 import org.im4java.process.ArrayListOutputConsumer;
+import org.im4java.process.ProcessEvent;
 import org.im4java.process.ProcessExecutor;
 import org.im4java.process.ProcessTask;
 
@@ -226,7 +227,13 @@ public class ImageMagickImpl implements ImageMagick {
 
 			Future<?> future = convert(arguments);
 
-			future.get();
+			ProcessEvent processEvent = (ProcessEvent)future.get();
+
+			if (_log.isDebugEnabled() &&
+				(processEvent.getException() != null)) {
+
+				_log.debug(processEvent.getException());
+			}
 
 			return _file.getBytes(scaledImageFile);
 		}

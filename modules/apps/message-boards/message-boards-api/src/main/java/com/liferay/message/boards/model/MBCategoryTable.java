@@ -51,6 +51,8 @@ public class MBCategoryTable extends BaseTable<MBCategoryTable> {
 		"description", String.class, Types.VARCHAR, Column.FLAG_DEFAULT);
 	public final Column<MBCategoryTable, String> displayStyle = createColumn(
 		"displayStyle", String.class, Types.VARCHAR, Column.FLAG_DEFAULT);
+	public final Column<MBCategoryTable, String> friendlyURL = createColumn(
+		"friendlyURL", String.class, Types.VARCHAR, Column.FLAG_DEFAULT);
 	public final Column<MBCategoryTable, Date> lastPublishDate = createColumn(
 		"lastPublishDate", Date.class, Types.TIMESTAMP, Column.FLAG_DEFAULT);
 	public final Column<MBCategoryTable, Integer> status = createColumn(

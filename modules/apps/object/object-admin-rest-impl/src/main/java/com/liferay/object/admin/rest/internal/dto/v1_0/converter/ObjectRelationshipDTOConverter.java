@@ -72,25 +72,25 @@ public class ObjectRelationshipDTOConverter
 					serviceBuilderObjectRelationship.getObjectDefinitionId1();
 				objectDefinitionId2 =
 					serviceBuilderObjectRelationship.getObjectDefinitionId2();
-
-				if (FeatureFlagManagerUtil.isEnabled("LPS-167253")) {
-					objectDefinitionModifiable2 =
-						objectDefinition2.isModifiable();
-				}
-
+				objectDefinitionModifiable2 = objectDefinition2.isModifiable();
 				objectDefinitionName2 = objectDefinition2.getShortName();
-
-				if (FeatureFlagManagerUtil.isEnabled("LPS-167253")) {
-					objectDefinitionSystem2 = objectDefinition2.isSystem();
-				}
-
+				objectDefinitionSystem2 = objectDefinition2.isSystem();
 				parameterObjectFieldId =
 					serviceBuilderObjectRelationship.
 						getParameterObjectFieldId();
 				reverse = serviceBuilderObjectRelationship.isReverse();
+				system = serviceBuilderObjectRelationship.isSystem();
 				type = ObjectRelationship.Type.create(
 					serviceBuilderObjectRelationship.getType());
 
+				setEdge(
+					() -> {
+						if (!FeatureFlagManagerUtil.isEnabled("LPS-187142")) {
+							return null;
+						}
+
+						return serviceBuilderObjectRelationship.isEdge();
+					});
 				setParameterObjectFieldName(
 					() -> {
 						if (Validator.isNull(

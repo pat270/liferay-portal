@@ -14,8 +14,9 @@ import './ObjectFieldFormBase.scss';
 interface IAttachmentFormBaseProps {
 	disabled?: boolean;
 	error?: string;
+	objectDefinitionName: string;
 	objectFieldSettings: ObjectFieldSetting[];
-	objectName: string;
+	onSubmit?: () => void;
 	setValues: (values: Partial<ObjectField>) => void;
 }
 
@@ -41,8 +42,9 @@ const attachmentSources = [
 export function AttachmentFormBase({
 	disabled,
 	error,
+	objectDefinitionName,
 	objectFieldSettings,
-	objectName,
+	onSubmit,
 	setValues,
 }: IAttachmentFormBaseProps) {
 	const settings = normalizeFieldSettings(objectFieldSettings);
@@ -88,7 +90,7 @@ export function AttachmentFormBase({
 		if (value) {
 			updatedSettings.push({
 				name: 'storageDLFolderPath',
-				value: `/${objectName}`,
+				value: `/${objectDefinitionName}`,
 			});
 		}
 
@@ -101,6 +103,13 @@ export function AttachmentFormBase({
 				disabled={disabled}
 				error={error}
 				label={Liferay.Language.get('request-files')}
+				onBlur={(event) => {
+					event.stopPropagation();
+
+					if (onSubmit) {
+						onSubmit();
+					}
+				}}
 				onChange={handleAttachmentSourceChange}
 				options={attachmentSources}
 				required
@@ -115,6 +124,13 @@ export function AttachmentFormBase({
 							'show-files-in-documents-and-media'
 						)}
 						name="showFilesInDocumentsAndMedia"
+						onBlur={(event) => {
+							event.stopPropagation();
+
+							if (onSubmit) {
+								onSubmit();
+							}
+						}}
 						onToggle={toggleShowFiles}
 						toggled={!!settings.showFilesInDocumentsAndMedia}
 						tooltip={Liferay.Language.get(

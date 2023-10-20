@@ -3,8 +3,13 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import ClayIcon from '@clayui/icon';
+import ClayLabel from '@clayui/label';
+import ClayPanel from '@clayui/panel';
+import {ClayTooltipProvider} from '@clayui/tooltip';
+import {sub} from 'frontend-js-web';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, {useState} from 'react';
 
 function ItemInfoViewOptions({options}) {
 	return (
@@ -15,19 +20,82 @@ function ItemInfoViewOptions({options}) {
 }
 
 function ItemInfoViewBundle({childItems}) {
-	return (
+	const [expanded, setExpanded] = useState(false);
+
+	return Liferay.FeatureFlags['COMMERCE-9599'] ? (
+		<ClayPanel
+			className="item-info-collapse mb-0"
+			collapsable
+			displayTitle={sub(
+				Liferay.Language.get('x-product-options'),
+				expanded
+					? Liferay.Language.get('hide')
+					: Liferay.Language.get('show')
+			)}
+			displayType="secondary"
+			expanded={expanded}
+			onExpandedChange={(expanded) => {
+				setExpanded(expanded);
+			}}
+			showCollapseIcon
+		>
+			<ClayPanel.Body>
+				<div className="child-items">
+					{childItems.map((item, index) => {
+						const {name, quantity, skuUnitOfMeasure} = item;
+
+						return (
+							<div className="child-item" key={index}>
+								<span>
+									<>
+										{quantity} &times; {name}
+									</>
+									<> {skuUnitOfMeasure?.key || ''}</>
+								</span>
+							</div>
+						);
+					})}
+				</div>
+			</ClayPanel.Body>
+		</ClayPanel>
+	) : (
 		<div className="child-items">
 			{childItems.map((item, index) => {
-				const {name, quantity} = item;
+				const {name, quantity, skuUnitOfMeasure} = item;
 
 				return (
 					<div className="child-item" key={index}>
 						<span>
-							{quantity} &times; {name}
+							<>
+								{quantity} &times; {name}
+							</>
+							<> {skuUnitOfMeasure?.key || ''}</>
 						</span>
 					</div>
 				);
 			})}
+		</div>
+	);
+}
+
+function ItemInfoViewReplacement({replacedSku}) {
+	return (
+		<div className="item-info-replacement">
+			<ClayLabel displayType="info">
+				{Liferay.Language.get('replacement')}
+			</ClayLabel>
+
+			<ClayTooltipProvider>
+				<span
+					data-tooltip-align="left"
+					title={sub(
+						Liferay.Language.get('replacement-product-for-x'),
+						replacedSku
+					)}
+				>
+					<ClayIcon aria-label="Info" symbol="info-circle" />
+				</span>
+			</ClayTooltipProvider>
 		</div>
 	);
 }
@@ -42,13 +110,18 @@ function ItemInfoViewBase({name, sku}) {
 	);
 }
 
-function ItemInfoView({childItems = [], name, options = '', sku}) {
+function ItemInfoView({childItems = [], name, options = '', replacedSku, sku}) {
+	const hasReplacement = !!replacedSku;
 	const isBundle = !!childItems.length;
 	const hasOptions = !!options;
 
 	return (
 		<>
 			<ItemInfoViewBase name={name} sku={sku} />
+
+			{hasReplacement && (
+				<ItemInfoViewReplacement replacedSku={replacedSku} />
+			)}
 
 			{isBundle && <ItemInfoViewBundle childItems={childItems} />}
 
