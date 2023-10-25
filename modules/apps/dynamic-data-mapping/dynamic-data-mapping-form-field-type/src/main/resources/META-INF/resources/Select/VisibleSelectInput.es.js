@@ -5,7 +5,7 @@
 
 import './VisibleSelectInput.scss';
 
-import ClayIcon from '@clayui/icon';
+import ClayButton from '@clayui/button';
 import ClayLabel from '@clayui/label';
 import classNames from 'classnames';
 import React, {forwardRef} from 'react';
@@ -44,7 +44,7 @@ const OptionSelected = ({isPlaceholder, label}) => (
 const VisibleSelectInput = forwardRef(
 	(
 		{
-			className,
+			expanded,
 			id,
 			multiple,
 			onClick,
@@ -75,65 +75,47 @@ const VisibleSelectInput = forwardRef(
 		};
 
 		return (
-			<div
-				className={classNames(
-					className,
-					'form-builder-select-field input-group-container',
-					'lfr__ddm-select-input-trigger'
-				)}
+			<ClayButton
+				aria-expanded={expanded}
+				aria-haspopup="true"
+				className="form-control form-control-select lfr__ddm-select-input-trigger"
+				displayType={null}
+				id={id}
 				onClick={onClick}
 				onKeyDown={onKeyDown}
 				ref={ref}
+				type="button"
 			>
-				<div
-					className={classNames(
-						'form-control results-chosen select-field-trigger',
-						{
-							'disabled': readOnly,
-							'multiple-label-list': multiple,
-						}
-					)}
-					disabled={readOnly}
-					id={id}
-					tabIndex="0"
-				>
-					{isValueEmpty || (value.length === 1 && !multiple) ? (
-						<OptionSelected
-							isPlaceholder={isValueEmpty}
-							label={selectedLabel()}
-						/>
-					) : (
-						<>
-							{value.map((item) => {
-								const option = options.find(
-									(option) => option.value === item
-								);
+				{isValueEmpty || (value.length === 1 && !multiple) ? (
+					<OptionSelected
+						isPlaceholder={isValueEmpty}
+						label={selectedLabel()}
+					/>
+				) : (
+					<>
+						{value.map((item) => {
+							const option = options.find(
+								(option) => option.value === item
+							);
 
-								return (
-									<>
-										{option && (
-											<LabelOptionListItem
-												key={`${option.value}-${option.label}`}
-												onCloseButtonClicked={
-													onCloseButtonClicked
-												}
-												option={option}
-												readOnly={readOnly}
-											/>
-										)}
-									</>
-								);
-							})}
-						</>
-					)}
-
-					<div className="lfr__ddm-form-field-type-select-arrow-down">
-						<a className="select-arrow-down-container">
-							<ClayIcon symbol="caret-double" />
-						</a>
-					</div>
-				</div>
-			</div>
+							return (
+								<>
+									{option && (
+										<LabelOptionListItem
+											key={`${option.value}-${option.label}`}
+											onCloseButtonClicked={
+												onCloseButtonClicked
+											}
+											option={option}
+											readOnly={readOnly}
+										/>
+									)}
+								</>
+							);
+						})}
+					</>
+				)}
+			</ClayButton>
 		);
 	}
 );
