@@ -649,36 +649,18 @@ exports[`Select has a help text 1`] = `
           value=""
         />
       </select>
-      <div
-        class="form-builder-select-field input-group-container lfr__ddm-select-input-trigger"
+      <button
+        aria-expanded="false"
+        aria-haspopup="true"
+        class="form-control form-control-select lfr__ddm-select-input-trigger btn"
+        type="button"
       >
         <div
-          class="form-control results-chosen select-field-trigger"
-          tabindex="0"
+          class="option-selected option-selected-placeholder"
         >
-          <div
-            class="option-selected option-selected-placeholder"
-          >
-            choose-an-option
-          </div>
-          <div
-            class="lfr__ddm-form-field-type-select-arrow-down"
-          >
-            <a
-              class="select-arrow-down-container"
-            >
-              <svg
-                class="lexicon-icon lexicon-icon-caret-double"
-                role="presentation"
-              >
-                <use
-                  xlink:href="#caret-double"
-                />
-              </svg>
-            </a>
-          </div>
+          choose-an-option
         </div>
-      </div>
+      </button>
       <div>
         <div
           aria-hidden="true"
@@ -769,36 +751,18 @@ exports[`Select has a key 1`] = `
           value=""
         />
       </select>
-      <div
-        class="form-builder-select-field input-group-container lfr__ddm-select-input-trigger"
+      <button
+        aria-expanded="false"
+        aria-haspopup="true"
+        class="form-control form-control-select lfr__ddm-select-input-trigger btn"
+        type="button"
       >
         <div
-          class="form-control results-chosen select-field-trigger"
-          tabindex="0"
+          class="option-selected option-selected-placeholder"
         >
-          <div
-            class="option-selected option-selected-placeholder"
-          >
-            choose-an-option
-          </div>
-          <div
-            class="lfr__ddm-form-field-type-select-arrow-down"
-          >
-            <a
-              class="select-arrow-down-container"
-            >
-              <svg
-                class="lexicon-icon lexicon-icon-caret-double"
-                role="presentation"
-              >
-                <use
-                  xlink:href="#caret-double"
-                />
-              </svg>
-            </a>
-          </div>
+          choose-an-option
         </div>
-      </div>
+      </button>
       <div>
         <div
           aria-hidden="true"
@@ -858,7 +822,6 @@ exports[`Select has a label 1`] = `
     <label
       aria-labelledby="undefined_fieldDetails"
       class="ddm-label"
-      tabindex="0"
     >
       label
     </label>
@@ -879,36 +842,18 @@ exports[`Select has a label 1`] = `
           value=""
         />
       </select>
-      <div
-        class="form-builder-select-field input-group-container lfr__ddm-select-input-trigger"
+      <button
+        aria-expanded="false"
+        aria-haspopup="true"
+        class="form-control form-control-select lfr__ddm-select-input-trigger btn"
+        type="button"
       >
         <div
-          class="form-control results-chosen select-field-trigger"
-          tabindex="0"
+          class="option-selected option-selected-placeholder"
         >
-          <div
-            class="option-selected option-selected-placeholder"
-          >
-            choose-an-option
-          </div>
-          <div
-            class="lfr__ddm-form-field-type-select-arrow-down"
-          >
-            <a
-              class="select-arrow-down-container"
-            >
-              <svg
-                class="lexicon-icon lexicon-icon-caret-double"
-                role="presentation"
-              >
-                <use
-                  xlink:href="#caret-double"
-                />
-              </svg>
-            </a>
-          </div>
+          choose-an-option
         </div>
-      </div>
+      </button>
       <div>
         <div
           aria-hidden="true"
@@ -997,36 +942,18 @@ exports[`Select has a placeholder 1`] = `
           value=""
         />
       </select>
-      <div
-        class="form-builder-select-field input-group-container lfr__ddm-select-input-trigger"
+      <button
+        aria-expanded="false"
+        aria-haspopup="true"
+        class="form-control form-control-select lfr__ddm-select-input-trigger btn"
+        type="button"
       >
         <div
-          class="form-control results-chosen select-field-trigger"
-          tabindex="0"
+          class="option-selected option-selected-placeholder"
         >
-          <div
-            class="option-selected option-selected-placeholder"
-          >
-            choose-an-option
-          </div>
-          <div
-            class="lfr__ddm-form-field-type-select-arrow-down"
-          >
-            <a
-              class="select-arrow-down-container"
-            >
-              <svg
-                class="lexicon-icon lexicon-icon-caret-double"
-                role="presentation"
-              >
-                <use
-                  xlink:href="#caret-double"
-                />
-              </svg>
-            </a>
-          </div>
+          choose-an-option
         </div>
-      </div>
+      </button>
       <div>
         <div
           aria-hidden="true"
@@ -1101,36 +1028,18 @@ exports[`Select has a predefinedValue 1`] = `
           value=""
         />
       </select>
-      <div
-        class="form-builder-select-field input-group-container lfr__ddm-select-input-trigger"
+      <button
+        aria-expanded="false"
+        aria-haspopup="true"
+        class="form-control form-control-select lfr__ddm-select-input-trigger btn"
+        type="button"
       >
         <div
-          class="form-control results-chosen select-field-trigger"
-          tabindex="0"
+          class="option-selected option-selected-placeholder"
         >
-          <div
-            class="option-selected option-selected-placeholder"
-          >
-            choose-an-option
-          </div>
-          <div
-            class="lfr__ddm-form-field-type-select-arrow-down"
-          >
-            <a
-              class="select-arrow-down-container"
-            >
-              <svg
-                class="lexicon-icon lexicon-icon-caret-double"
-                role="presentation"
-              >
-                <use
-                  xlink:href="#caret-double"
-                />
-              </svg>
-            </a>
-          </div>
+          choose-an-option
         </div>
-      </div>
+      </button>
       <div>
         <div
           aria-hidden="true"
@@ -1205,36 +1114,18 @@ exports[`Select has a value 1`] = `
           value=""
         />
       </select>
-      <div
-        class="form-builder-select-field input-group-container lfr__ddm-select-input-trigger"
+      <button
+        aria-expanded="false"
+        aria-haspopup="true"
+        class="form-control form-control-select lfr__ddm-select-input-trigger btn"
+        type="button"
       >
         <div
-          class="form-control results-chosen select-field-trigger"
-          tabindex="0"
+          class="option-selected option-selected-placeholder"
         >
-          <div
-            class="option-selected option-selected-placeholder"
-          >
-            choose-an-option
-          </div>
-          <div
-            class="lfr__ddm-form-field-type-select-arrow-down"
-          >
-            <a
-              class="select-arrow-down-container"
-            >
-              <svg
-                class="lexicon-icon lexicon-icon-caret-double"
-                role="presentation"
-              >
-                <use
-                  xlink:href="#caret-double"
-                />
-              </svg>
-            </a>
-          </div>
+          choose-an-option
         </div>
-      </div>
+      </button>
       <div>
         <div
           aria-hidden="true"
@@ -1309,37 +1200,19 @@ exports[`Select has an id 1`] = `
           value=""
         />
       </select>
-      <div
-        class="form-builder-select-field input-group-container lfr__ddm-select-input-trigger"
+      <button
+        aria-expanded="false"
+        aria-haspopup="true"
+        class="form-control form-control-select lfr__ddm-select-input-trigger btn"
+        id="Id"
+        type="button"
       >
         <div
-          class="form-control results-chosen select-field-trigger"
-          id="Id"
-          tabindex="0"
+          class="option-selected option-selected-placeholder"
         >
-          <div
-            class="option-selected option-selected-placeholder"
-          >
-            choose-an-option
-          </div>
-          <div
-            class="lfr__ddm-form-field-type-select-arrow-down"
-          >
-            <a
-              class="select-arrow-down-container"
-            >
-              <svg
-                class="lexicon-icon lexicon-icon-caret-double"
-                role="presentation"
-              >
-                <use
-                  xlink:href="#caret-double"
-                />
-              </svg>
-            </a>
-          </div>
+          choose-an-option
         </div>
-      </div>
+      </button>
       <div>
         <div
           aria-hidden="true"
@@ -1414,36 +1287,18 @@ exports[`Select has class dropdown-opened when it's opened 1`] = `
           value=""
         />
       </select>
-      <div
-        class="form-builder-select-field input-group-container lfr__ddm-select-input-trigger"
+      <button
+        aria-expanded="false"
+        aria-haspopup="true"
+        class="form-control form-control-select lfr__ddm-select-input-trigger btn"
+        type="button"
       >
         <div
-          class="form-control results-chosen select-field-trigger"
-          tabindex="0"
+          class="option-selected option-selected-placeholder"
         >
-          <div
-            class="option-selected option-selected-placeholder"
-          >
-            choose-an-option
-          </div>
-          <div
-            class="lfr__ddm-form-field-type-select-arrow-down"
-          >
-            <a
-              class="select-arrow-down-container"
-            >
-              <svg
-                class="lexicon-icon lexicon-icon-caret-double"
-                role="presentation"
-              >
-                <use
-                  xlink:href="#caret-double"
-                />
-              </svg>
-            </a>
-          </div>
+          choose-an-option
         </div>
-      </div>
+      </button>
       <div>
         <div
           aria-hidden="true"
@@ -1518,36 +1373,18 @@ exports[`Select is closed by default 1`] = `
           value=""
         />
       </select>
-      <div
-        class="form-builder-select-field input-group-container lfr__ddm-select-input-trigger"
+      <button
+        aria-expanded="false"
+        aria-haspopup="true"
+        class="form-control form-control-select lfr__ddm-select-input-trigger btn"
+        type="button"
       >
         <div
-          class="form-control results-chosen select-field-trigger"
-          tabindex="0"
+          class="option-selected option-selected-placeholder"
         >
-          <div
-            class="option-selected option-selected-placeholder"
-          >
-            choose-an-option
-          </div>
-          <div
-            class="lfr__ddm-form-field-type-select-arrow-down"
-          >
-            <a
-              class="select-arrow-down-container"
-            >
-              <svg
-                class="lexicon-icon lexicon-icon-caret-double"
-                role="presentation"
-              >
-                <use
-                  xlink:href="#caret-double"
-                />
-              </svg>
-            </a>
-          </div>
+          choose-an-option
         </div>
-      </div>
+      </button>
       <div>
         <div
           aria-hidden="true"
@@ -1623,36 +1460,18 @@ exports[`Select is not required 1`] = `
           value=""
         />
       </select>
-      <div
-        class="form-builder-select-field input-group-container lfr__ddm-select-input-trigger"
+      <button
+        aria-expanded="false"
+        aria-haspopup="true"
+        class="form-control form-control-select lfr__ddm-select-input-trigger btn"
+        type="button"
       >
         <div
-          class="form-control results-chosen select-field-trigger"
-          tabindex="0"
+          class="option-selected option-selected-placeholder"
         >
-          <div
-            class="option-selected option-selected-placeholder"
-          >
-            choose-an-option
-          </div>
-          <div
-            class="lfr__ddm-form-field-type-select-arrow-down"
-          >
-            <a
-              class="select-arrow-down-container"
-            >
-              <svg
-                class="lexicon-icon lexicon-icon-caret-double"
-                role="presentation"
-              >
-                <use
-                  xlink:href="#caret-double"
-                />
-              </svg>
-            </a>
-          </div>
+          choose-an-option
         </div>
-      </div>
+      </button>
       <div>
         <div
           aria-hidden="true"
@@ -1712,7 +1531,6 @@ exports[`Select puts an asterisk when field is required 1`] = `
     <label
       aria-labelledby="undefined_fieldDetails"
       class="ddm-label"
-      tabindex="0"
     >
       This is the label
       <span
@@ -1746,36 +1564,18 @@ exports[`Select puts an asterisk when field is required 1`] = `
           value=""
         />
       </select>
-      <div
-        class="form-builder-select-field input-group-container lfr__ddm-select-input-trigger"
+      <button
+        aria-expanded="false"
+        aria-haspopup="true"
+        class="form-control form-control-select lfr__ddm-select-input-trigger btn"
+        type="button"
       >
         <div
-          class="form-control results-chosen select-field-trigger"
-          tabindex="0"
+          class="option-selected option-selected-placeholder"
         >
-          <div
-            class="option-selected option-selected-placeholder"
-          >
-            choose-an-option
-          </div>
-          <div
-            class="lfr__ddm-form-field-type-select-arrow-down"
-          >
-            <a
-              class="select-arrow-down-container"
-            >
-              <svg
-                class="lexicon-icon lexicon-icon-caret-double"
-                role="presentation"
-              >
-                <use
-                  xlink:href="#caret-double"
-                />
-              </svg>
-            </a>
-          </div>
+          choose-an-option
         </div>
-      </div>
+      </button>
       <div>
         <div
           aria-hidden="true"
@@ -1851,7 +1651,6 @@ exports[`Select renders Label if showLabel is true 1`] = `
     <label
       aria-labelledby="undefined_fieldDetails"
       class="ddm-label"
-      tabindex="0"
     >
       text
     </label>
@@ -1872,36 +1671,18 @@ exports[`Select renders Label if showLabel is true 1`] = `
           value=""
         />
       </select>
-      <div
-        class="form-builder-select-field input-group-container lfr__ddm-select-input-trigger"
+      <button
+        aria-expanded="false"
+        aria-haspopup="true"
+        class="form-control form-control-select lfr__ddm-select-input-trigger btn"
+        type="button"
       >
         <div
-          class="form-control results-chosen select-field-trigger"
-          tabindex="0"
+          class="option-selected option-selected-placeholder"
         >
-          <div
-            class="option-selected option-selected-placeholder"
-          >
-            choose-an-option
-          </div>
-          <div
-            class="lfr__ddm-form-field-type-select-arrow-down"
-          >
-            <a
-              class="select-arrow-down-container"
-            >
-              <svg
-                class="lexicon-icon lexicon-icon-caret-double"
-                role="presentation"
-              >
-                <use
-                  xlink:href="#caret-double"
-                />
-              </svg>
-            </a>
-          </div>
+          choose-an-option
         </div>
-      </div>
+      </button>
       <div>
         <div
           aria-hidden="true"
@@ -1990,36 +1771,18 @@ exports[`Select renders no options when options come empty 1`] = `
           value=""
         />
       </select>
-      <div
-        class="form-builder-select-field input-group-container lfr__ddm-select-input-trigger"
+      <button
+        aria-expanded="false"
+        aria-haspopup="true"
+        class="form-control form-control-select lfr__ddm-select-input-trigger btn"
+        type="button"
       >
         <div
-          class="form-control results-chosen select-field-trigger"
-          tabindex="0"
+          class="option-selected option-selected-placeholder"
         >
-          <div
-            class="option-selected option-selected-placeholder"
-          >
-            choose-an-option
-          </div>
-          <div
-            class="lfr__ddm-form-field-type-select-arrow-down"
-          >
-            <a
-              class="select-arrow-down-container"
-            >
-              <svg
-                class="lexicon-icon lexicon-icon-caret-double"
-                role="presentation"
-              >
-                <use
-                  xlink:href="#caret-double"
-                />
-              </svg>
-            </a>
-          </div>
+          choose-an-option
         </div>
-      </div>
+      </button>
       <div>
         <div
           aria-hidden="true"
@@ -2094,36 +1857,18 @@ exports[`Select renders options 1`] = `
           value=""
         />
       </select>
-      <div
-        class="form-builder-select-field input-group-container lfr__ddm-select-input-trigger"
+      <button
+        aria-expanded="false"
+        aria-haspopup="true"
+        class="form-control form-control-select lfr__ddm-select-input-trigger btn"
+        type="button"
       >
         <div
-          class="form-control results-chosen select-field-trigger"
-          tabindex="0"
+          class="option-selected option-selected-placeholder"
         >
-          <div
-            class="option-selected option-selected-placeholder"
-          >
-            choose-an-option
-          </div>
-          <div
-            class="lfr__ddm-form-field-type-select-arrow-down"
-          >
-            <a
-              class="select-arrow-down-container"
-            >
-              <svg
-                class="lexicon-icon lexicon-icon-caret-double"
-                role="presentation"
-              >
-                <use
-                  xlink:href="#caret-double"
-                />
-              </svg>
-            </a>
-          </div>
+          choose-an-option
         </div>
-      </div>
+      </button>
       <div>
         <div
           aria-hidden="true"
