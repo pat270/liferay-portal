@@ -34,6 +34,9 @@ import com.liferay.gradle.util.Validator;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 
+import groovy.json.JsonException;
+import groovy.json.JsonSlurper;
+
 import groovy.lang.Closure;
 
 import java.io.File;
@@ -1167,6 +1170,44 @@ public class ClientExtensionProjectConfigurator
 				clientExtension, "membershipType", "open", "private",
 				"restricted");
 		}
+
+		if (Objects.equals(clientExtension.type, "themeCSS")) {
+			_validateFrontendTokenDefinitionFile(clientExtension, project);
+		}
+	}
+
+	private void _validateFrontendTokenDefinitionFile(
+		ClientExtension clientExtension, Project project) {
+
+		String frontendTokenDefinitionFilePath = null;
+
+		try {
+			Map<String, Object> typeSettings = clientExtension.typeSettings;
+
+			if (typeSettings.containsKey(_FRONTEND_TOKEN_DEFINITION_JSON_KEY)) {
+				frontendTokenDefinitionFilePath = String.valueOf(
+					typeSettings.get(_FRONTEND_TOKEN_DEFINITION_JSON_KEY));
+
+				File file = project.file(frontendTokenDefinitionFilePath);
+
+				if (!file.exists() || !file.isFile()) {
+					throw new GradleException(
+						String.format(
+							"Unable to find file %s",
+							StringUtil.quote(frontendTokenDefinitionFilePath)));
+				}
+
+				JsonSlurper jsonSlurper = new JsonSlurper();
+
+				jsonSlurper.parse(file);
+			}
+		}
+		catch (JsonException jsonException) {
+			throw new GradleException(
+				String.format(
+					"Unable to parse file %s",
+					StringUtil.quote(frontendTokenDefinitionFilePath)));
+		}
 	}
 
 	private void _validateRequiredDirectory(
@@ -1241,6 +1282,9 @@ public class ClientExtensionProjectConfigurator
 		"LIFERAY_ROUTES_CLIENT_EXTENSION";
 
 	private static final String _ENV_LIFERAY_ROUTES_DXP = "LIFERAY_ROUTES_DXP";
+
+	private static final String _FRONTEND_TOKEN_DEFINITION_JSON_KEY =
+		"frontendTokenDefinitionJSON";
 
 	private static final Pattern _overrideClientExtensionYamlPattern =
 		Pattern.compile("^client-extension\\.([a-z]+)\\.yaml$");
