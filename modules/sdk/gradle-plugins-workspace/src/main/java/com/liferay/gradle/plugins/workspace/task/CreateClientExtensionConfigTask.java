@@ -22,6 +22,9 @@ import com.liferay.gradle.plugins.workspace.internal.util.StringUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 
+import groovy.json.JsonOutput;
+import groovy.json.JsonSlurper;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
@@ -131,6 +134,10 @@ public class CreateClientExtensionConfigTask extends DefaultTask {
 
 				pluginPackageProperties.put(
 					"Liferay-Client-Extension-Frontend", "static/");
+			}
+
+			if (Objects.equals(clientExtension.type, "themeCSS")) {
+				_inlineFrontendTokenDefinitionJSON(clientExtension);
 			}
 
 			String pid = _clientExtensionProperties.getProperty(
@@ -483,6 +490,26 @@ public class CreateClientExtensionConfigTask extends DefaultTask {
 		return pluginPackageProperties;
 	}
 
+	private void _inlineFrontendTokenDefinitionJSON(
+		ClientExtension clientExtension) {
+
+		Map<String, Object> typeSettings = clientExtension.typeSettings;
+
+		if (typeSettings.containsKey(_FRONTEND_TOKEN_DEFINITION_KEY)) {
+			JsonSlurper jsonSlurper = new JsonSlurper();
+
+			Map<String, Object> jsonMap =
+				(Map<String, Object>)jsonSlurper.parse(
+					_project.file(
+						String.valueOf(
+							typeSettings.get(_FRONTEND_TOKEN_DEFINITION_KEY))));
+
+			typeSettings.put(
+				_FRONTEND_TOKEN_DEFINITION_KEY,
+				String.valueOf(JsonOutput.toJson(jsonMap)));
+		}
+	}
+
 	private boolean _isWildcardValue(String value) {
 		if (value.contains(StringPool.STAR)) {
 			return true;
@@ -765,6 +792,9 @@ public class CreateClientExtensionConfigTask extends DefaultTask {
 
 	private static final String _CLIENT_EXTENSION_CONFIG_FILE_NAME =
 		".client-extension-config.json";
+
+	private static final String _FRONTEND_TOKEN_DEFINITION_KEY =
+		"frontendTokenDefinitionJSON";
 
 	private static final String _PLUGIN_PACKAGE_PROPERTIES_PATH =
 		"WEB-INF/liferay-plugin-package.properties";

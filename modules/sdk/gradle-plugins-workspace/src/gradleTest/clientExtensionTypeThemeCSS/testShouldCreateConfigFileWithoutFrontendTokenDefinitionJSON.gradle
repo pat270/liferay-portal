@@ -1,0 +1,30 @@
+import groovy.json.JsonSlurper
+
+task runGradleTest
+
+String CLIENT_EXTENSION_PROJECT='theme-css-without-frontend-token-definition-json'
+
+runGradleTest {
+	dependsOn ":${CLIENT_EXTENSION_PROJECT}:build"
+
+	doLast {
+		Project project = project(":${CLIENT_EXTENSION_PROJECT}")
+
+		File buildDir = new File(project.buildDir, "liferay-client-extension-build")
+
+		File configJSONFile = new File(buildDir, "${CLIENT_EXTENSION_PROJECT}.client-extension-config.json")
+
+		assert configJSONFile.exists()
+
+		def jsonSlurper = new JsonSlurper()
+
+		def jsonData = jsonSlurper.parse(configJSONFile)
+
+		jsonData.each {
+			key, value ->
+			assert value instanceof Map
+
+			assert !value.get("typeSettings").toString().contains("frontendTokenDefinitionJSON")
+		}
+	}
+}
