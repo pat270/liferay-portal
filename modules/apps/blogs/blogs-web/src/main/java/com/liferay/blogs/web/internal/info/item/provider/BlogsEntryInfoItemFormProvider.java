@@ -19,7 +19,6 @@ import com.liferay.info.localized.bundle.ModelResourceLocalizedValue;
 import com.liferay.layout.page.template.info.item.provider.DisplayPageInfoItemFieldSetProvider;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.template.info.item.provider.TemplateInfoItemFieldSetProvider;
 
 import org.osgi.framework.Constants;
@@ -43,7 +42,8 @@ public class BlogsEntryInfoItemFormProvider
 			_assetEntryInfoItemFieldSetProvider.getInfoFieldSet(
 				BlogsEntry.class.getName()),
 			_displayPageInfoItemFieldSetProvider.getInfoFieldSet(
-				BlogsEntry.class.getName(), StringPool.BLANK, 0));
+				BlogsEntry.class.getName(), StringPool.BLANK,
+				BlogsEntry.class.getSimpleName(), 0));
 	}
 
 	@Override
@@ -54,7 +54,8 @@ public class BlogsEntryInfoItemFormProvider
 					_assetEntryLocalService.getEntry(
 						BlogsEntry.class.getName(), blogsEntry.getEntryId())),
 				_displayPageInfoItemFieldSetProvider.getInfoFieldSet(
-					BlogsEntry.class.getName(), StringPool.BLANK, 0));
+					BlogsEntry.class.getName(), StringPool.BLANK,
+					BlogsEntry.class.getSimpleName(), 0));
 		}
 		catch (PortalException portalException) {
 			throw new RuntimeException(
@@ -70,7 +71,8 @@ public class BlogsEntryInfoItemFormProvider
 			_assetEntryInfoItemFieldSetProvider.getInfoFieldSet(
 				BlogsEntry.class.getName(), 0, groupId),
 			_displayPageInfoItemFieldSetProvider.getInfoFieldSet(
-				BlogsEntry.class.getName(), StringPool.BLANK, groupId));
+				BlogsEntry.class.getName(), StringPool.BLANK,
+				BlogsEntry.class.getSimpleName(), groupId));
 	}
 
 	private InfoFieldSet _getBasicInformationInfoFieldSet() {
@@ -121,17 +123,6 @@ public class BlogsEntryInfoItemFormProvider
 		).build();
 	}
 
-	private InfoFieldSet _getDisplayPageInfoFieldSet() {
-		return InfoFieldSet.builder(
-		).infoFieldSetEntry(
-			BlogsEntryInfoItemFields.displayPageURLInfoField
-		).labelInfoLocalizedValue(
-			InfoLocalizedValue.localize(getClass(), "configuration")
-		).name(
-			"configuration"
-		).build();
-	}
-
 	private InfoForm _getInfoForm(
 		InfoFieldSet assetEntryInfoFieldSet,
 		InfoFieldSet displayPageInfoFieldSet) {
@@ -148,17 +139,7 @@ public class BlogsEntryInfoItemFormProvider
 			_templateInfoItemFieldSetProvider.getInfoFieldSet(
 				BlogsEntry.class.getName())
 		).infoFieldSetEntry(
-			unsafeConsumer -> {
-				if (!FeatureFlagManagerUtil.isEnabled("LPS-183727")) {
-					unsafeConsumer.accept(_getDisplayPageInfoFieldSet());
-				}
-			}
-		).infoFieldSetEntry(
-			unsafeConsumer -> {
-				if (FeatureFlagManagerUtil.isEnabled("LPS-183727")) {
-					unsafeConsumer.accept(displayPageInfoFieldSet);
-				}
-			}
+			displayPageInfoFieldSet
 		).infoFieldSetEntry(
 			_getConfigurationInfoFieldSet()
 		).infoFieldSetEntry(

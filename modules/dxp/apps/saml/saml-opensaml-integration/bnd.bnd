@@ -1,6 +1,6 @@
 Bundle-Name: Liferay SAML OpenSAML Integration
 Bundle-SymbolicName: com.liferay.saml.opensaml.integration
-Bundle-Version: 6.1.9
+Bundle-Version: 6.2.14
 Export-Package:\
 	com.liferay.saml.opensaml.integration.field.expression.handler,\
 	com.liferay.saml.opensaml.integration.field.expression.handler.registry,\
@@ -9,13 +9,13 @@ Export-Package:\
 	com.liferay.saml.opensaml.integration.processor,\
 	com.liferay.saml.opensaml.integration.processor.context,\
 	com.liferay.saml.opensaml.integration.processor.factory,\
-	com.liferay.saml.opensaml.integration.resolver
+	com.liferay.saml.opensaml.integration.resolver,\
+	com.liferay.saml.opensaml.integration.session.util
 Import-Package:\
 	!bsh,\
 	\
 	!com.beust.jcommander.*,\
 	\
-	!com.google.common.*,\
 	!com.google.errorprone.*,\
 	\
 	!com.sun.*,\
@@ -71,7 +71,6 @@ Import-Package:\
 -fixupmessages: Classes found in the wrong directory: ...;is:=ignore
 -includeresource:\
 	opensaml-core-*;lib:=true,\
-	opensaml-messaging-api-*;lib:=true,\
 	opensaml-messaging-impl-*;lib:=true,\
 	opensaml-profile-api-*;lib:=true,\
 	opensaml-profile-impl-*;lib:=true,\
@@ -84,4 +83,5 @@ Import-Package:\
 	opensaml-storage-api-*;lib:=true,\
 	opensaml-storage-impl-*;lib:=true,\
 	opensaml-xmlsec-api-*;lib:=true,\
-	opensaml-xmlsec-impl-*;lib:=true
+	opensaml-xmlsec-impl-*;lib:=true,\
+	org.opensaml.messaging-*;lib:=true

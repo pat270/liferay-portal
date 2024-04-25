@@ -8,8 +8,8 @@ package com.liferay.depot.web.internal.servlet.taglib;
 import com.liferay.depot.model.DepotEntry;
 import com.liferay.depot.service.DepotEntryLocalService;
 import com.liferay.depot.web.internal.constants.DepotPortletKeys;
+import com.liferay.depot.web.internal.util.StagingIndicatorUtil;
 import com.liferay.exportimport.kernel.staging.Staging;
-import com.liferay.frontend.js.loader.modules.extender.npm.NPMResolver;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -25,8 +25,6 @@ import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
-import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.service.permission.PortletPermission;
 import com.liferay.portal.kernel.servlet.taglib.BaseDynamicInclude;
 import com.liferay.portal.kernel.servlet.taglib.DynamicInclude;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -40,8 +38,7 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.template.react.renderer.ComponentDescriptor;
 import com.liferay.portal.template.react.renderer.ReactRenderer;
-import com.liferay.site.util.GroupURLProvider;
-import com.liferay.staging.constants.StagingProcessesPortletKeys;
+import com.liferay.site.provider.GroupURLProvider;
 import com.liferay.taglib.util.HtmlTopTag;
 
 import java.io.IOException;
@@ -73,17 +70,12 @@ public class StagingIndicatorDynamicInclude extends BaseDynamicInclude {
 		throws IOException {
 
 		try {
-			ThemeDisplay themeDisplay =
-				(ThemeDisplay)httpServletRequest.getAttribute(
-					WebKeys.THEME_DISPLAY);
+			if (StagingIndicatorUtil.isShowStagingIndicator(
+					httpServletRequest)) {
 
-			Group scopeGroup = themeDisplay.getScopeGroup();
-
-			if (scopeGroup.isDepot() && scopeGroup.isStaged() &&
-				_portletPermission.contains(
-					themeDisplay.getPermissionChecker(),
-					StagingProcessesPortletKeys.STAGING_PROCESSES,
-					ActionKeys.VIEW)) {
+				ThemeDisplay themeDisplay =
+					(ThemeDisplay)httpServletRequest.getAttribute(
+						WebKeys.THEME_DISPLAY);
 
 				_includeStagingIndicator(
 					httpServletRequest, httpServletResponse, themeDisplay);
@@ -368,12 +360,10 @@ public class StagingIndicatorDynamicInclude extends BaseDynamicInclude {
 		String componentId =
 			_portal.getPortletNamespace(DepotPortletKeys.DEPOT_ADMIN) +
 				"IndicatorComponent";
-		String module =
-			_npmResolver.resolveModuleName("depot-web") +
-				"/dynamic_include/StagingIndicator";
 
 		_reactRenderer.renderReact(
-			new ComponentDescriptor(module, componentId),
+			new ComponentDescriptor(
+				"{StagingIndicator} from depot-web", componentId),
 			_getReactData(httpServletRequest, themeDisplay), httpServletRequest,
 			writer);
 
@@ -396,13 +386,7 @@ public class StagingIndicatorDynamicInclude extends BaseDynamicInclude {
 	private Language _language;
 
 	@Reference
-	private NPMResolver _npmResolver;
-
-	@Reference
 	private Portal _portal;
-
-	@Reference
-	private PortletPermission _portletPermission;
 
 	@Reference
 	private ReactRenderer _reactRenderer;

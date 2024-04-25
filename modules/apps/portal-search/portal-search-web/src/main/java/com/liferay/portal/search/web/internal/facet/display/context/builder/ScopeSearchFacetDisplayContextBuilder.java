@@ -8,6 +8,7 @@ package com.liferay.portal.search.web.internal.facet.display.context.builder;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Group;
@@ -16,7 +17,6 @@ import com.liferay.portal.kernel.search.facet.Facet;
 import com.liferay.portal.kernel.search.facet.collector.FacetCollector;
 import com.liferay.portal.kernel.search.facet.collector.TermCollector;
 import com.liferay.portal.kernel.service.GroupLocalService;
-import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -45,11 +45,9 @@ public class ScopeSearchFacetDisplayContextBuilder {
 		_themeDisplay = (ThemeDisplay)renderRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		PortletDisplay portletDisplay = _themeDisplay.getPortletDisplay();
-
 		_siteFacetPortletInstanceConfiguration =
-			portletDisplay.getPortletInstanceConfiguration(
-				SiteFacetPortletInstanceConfiguration.class);
+			ConfigurationProviderUtil.getPortletInstanceConfiguration(
+				SiteFacetPortletInstanceConfiguration.class, _themeDisplay);
 	}
 
 	public ScopeSearchFacetDisplayContext build() {
@@ -57,7 +55,7 @@ public class ScopeSearchFacetDisplayContextBuilder {
 			new ScopeSearchFacetDisplayContext();
 
 		scopeSearchFacetDisplayContext.setBucketDisplayContexts(
-			buildBucketDisplayContexts(getTermCollectors()));
+			_buildBucketDisplayContexts(getTermCollectors()));
 		scopeSearchFacetDisplayContext.setDisplayStyleGroupId(
 			getDisplayStyleGroupId());
 		scopeSearchFacetDisplayContext.setNothingSelected(isNothingSelected());
@@ -177,42 +175,6 @@ public class ScopeSearchFacetDisplayContextBuilder {
 		return buildBucketDisplayContext(groupId, count, isSelected(groupId));
 	}
 
-	protected List<BucketDisplayContext> buildBucketDisplayContexts(
-		List<TermCollector> termCollectors) {
-
-		if (termCollectors.isEmpty()) {
-			return getEmptySearchResultBucketDisplayContexts();
-		}
-
-		List<BucketDisplayContext> bucketDisplayContexts = new ArrayList<>(
-			termCollectors.size());
-
-		int limit = termCollectors.size();
-
-		if ((_maxTerms > 0) && (limit > _maxTerms)) {
-			limit = _maxTerms;
-		}
-
-		for (int i = 0; i < limit; i++) {
-			TermCollector termCollector = termCollectors.get(i);
-
-			int count = termCollector.getFrequency();
-
-			if (_countThreshold <= count) {
-				bucketDisplayContexts.add(
-					buildBucketDisplayContext(termCollector, count));
-			}
-		}
-
-		if (_order != null) {
-			bucketDisplayContexts.sort(
-				BucketDisplayContextComparatorFactoryUtil.
-					getBucketDisplayContextComparator(_order));
-		}
-
-		return bucketDisplayContexts;
-	}
-
 	protected long getDisplayStyleGroupId() {
 		long displayStyleGroupId =
 			_siteFacetPortletInstanceConfiguration.displayStyleGroupId();
@@ -290,6 +252,42 @@ public class ScopeSearchFacetDisplayContextBuilder {
 		}
 
 		return false;
+	}
+
+	private List<BucketDisplayContext> _buildBucketDisplayContexts(
+		List<TermCollector> termCollectors) {
+
+		if (termCollectors.isEmpty()) {
+			return getEmptySearchResultBucketDisplayContexts();
+		}
+
+		List<BucketDisplayContext> bucketDisplayContexts = new ArrayList<>(
+			termCollectors.size());
+
+		int limit = termCollectors.size();
+
+		if ((_maxTerms > 0) && (limit > _maxTerms)) {
+			limit = _maxTerms;
+		}
+
+		for (int i = 0; i < limit; i++) {
+			TermCollector termCollector = termCollectors.get(i);
+
+			int count = termCollector.getFrequency();
+
+			if (_countThreshold <= count) {
+				bucketDisplayContexts.add(
+					buildBucketDisplayContext(termCollector, count));
+			}
+		}
+
+		if (_order != null) {
+			bucketDisplayContexts.sort(
+				BucketDisplayContextComparatorFactoryUtil.
+					getBucketDisplayContextComparator(_order));
+		}
+
+		return bucketDisplayContexts;
 	}
 
 	private String _getDescriptiveName(long groupId) {

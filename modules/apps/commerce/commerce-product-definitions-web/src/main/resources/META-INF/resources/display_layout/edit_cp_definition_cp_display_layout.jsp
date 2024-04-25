@@ -106,7 +106,7 @@ String searchContainerId = "CPDefinitionsSearchContainer";
 		HashMapBuilder.<String, Object>put(
 			"layoutItemSelectorUrl", cpDefinitionDisplayLayoutDisplayContext.getLayoutItemSelectorUrl()
 		).put(
-			"layoutPageTemplateEntryItemSelectorUrl", cpDefinitionDisplayLayoutDisplayContext.getLayoutPageTemplateEntryItemSelectorUrl()
+			"layoutPageTemplateEntryItemSelectorUrl", cpDefinitionDisplayLayoutDisplayContext.getLayoutPageTemplateEntryItemSelectorURL()
 		).put(
 			"portletNamespace", liferayPortletResponse.getNamespace()
 		).put(
@@ -117,5 +117,5 @@ String searchContainerId = "CPDefinitionsSearchContainer";
 			"searchContainerId", searchContainerId
 		).build()
 	%>'
-	module="js/EditDisplayLayout"
+	module="{EditDisplayLayout} from commerce-product-definitions-web"
 />

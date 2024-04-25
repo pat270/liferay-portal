@@ -8,6 +8,8 @@ package com.liferay.headless.commerce.admin.catalog.client.serdes.v1_0;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductConfiguration;
 import com.liferay.headless.commerce.admin.catalog.client.json.BaseJSONParser;
 
+import java.math.BigDecimal;
+
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
@@ -80,6 +82,27 @@ public class ProductConfigurationSerDes {
 			}
 
 			sb.append("]");
+		}
+
+		if (productConfiguration.getAvailabilityEstimateId() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"availabilityEstimateId\": ");
+
+			sb.append(productConfiguration.getAvailabilityEstimateId());
+		}
+
+		if (productConfiguration.getAvailabilityEstimateName() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"availabilityEstimateName\": ");
+
+			sb.append(
+				_toJSON(productConfiguration.getAvailabilityEstimateName()));
 		}
 
 		if (productConfiguration.getDisplayAvailability() != null) {
@@ -210,6 +233,26 @@ public class ProductConfigurationSerDes {
 					productConfiguration.getAllowedOrderQuantities()));
 		}
 
+		if (productConfiguration.getAvailabilityEstimateId() == null) {
+			map.put("availabilityEstimateId", null);
+		}
+		else {
+			map.put(
+				"availabilityEstimateId",
+				String.valueOf(
+					productConfiguration.getAvailabilityEstimateId()));
+		}
+
+		if (productConfiguration.getAvailabilityEstimateName() == null) {
+			map.put("availabilityEstimateName", null);
+		}
+		else {
+			map.put(
+				"availabilityEstimateName",
+				String.valueOf(
+					productConfiguration.getAvailabilityEstimateName()));
+		}
+
 		if (productConfiguration.getDisplayAvailability() == null) {
 			map.put("displayAvailability", null);
 		}
@@ -315,7 +358,24 @@ public class ProductConfigurationSerDes {
 
 				if (jsonParserFieldValue != null) {
 					productConfiguration.setAllowedOrderQuantities(
-						toIntegers((Object[])jsonParserFieldValue));
+						toBigDecimals((Object[])jsonParserFieldValue));
+				}
+			}
+			else if (Objects.equals(
+						jsonParserFieldName, "availabilityEstimateId")) {
+
+				if (jsonParserFieldValue != null) {
+					productConfiguration.setAvailabilityEstimateId(
+						Long.valueOf((String)jsonParserFieldValue));
+				}
+			}
+			else if (Objects.equals(
+						jsonParserFieldName, "availabilityEstimateName")) {
+
+				if (jsonParserFieldValue != null) {
+					productConfiguration.setAvailabilityEstimateName(
+						(Map)ProductConfigurationSerDes.toMap(
+							(String)jsonParserFieldValue));
 				}
 			}
 			else if (Objects.equals(
@@ -349,19 +409,19 @@ public class ProductConfigurationSerDes {
 			else if (Objects.equals(jsonParserFieldName, "maxOrderQuantity")) {
 				if (jsonParserFieldValue != null) {
 					productConfiguration.setMaxOrderQuantity(
-						Integer.valueOf((String)jsonParserFieldValue));
+						new BigDecimal((String)jsonParserFieldValue));
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "minOrderQuantity")) {
 				if (jsonParserFieldValue != null) {
 					productConfiguration.setMinOrderQuantity(
-						Integer.valueOf((String)jsonParserFieldValue));
+						new BigDecimal((String)jsonParserFieldValue));
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "minStockQuantity")) {
 				if (jsonParserFieldValue != null) {
 					productConfiguration.setMinStockQuantity(
-						Integer.valueOf((String)jsonParserFieldValue));
+						new BigDecimal((String)jsonParserFieldValue));
 				}
 			}
 			else if (Objects.equals(
@@ -369,7 +429,7 @@ public class ProductConfigurationSerDes {
 
 				if (jsonParserFieldValue != null) {
 					productConfiguration.setMultipleOrderQuantity(
-						Integer.valueOf((String)jsonParserFieldValue));
+						new BigDecimal((String)jsonParserFieldValue));
 				}
 			}
 		}

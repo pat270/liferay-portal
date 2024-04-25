@@ -5,7 +5,7 @@
 
 package com.liferay.poshi.runner.util;
 
-import com.liferay.poshi.core.util.PoshiProperties;
+import com.liferay.poshi.core.PoshiProperties;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -26,6 +26,12 @@ import org.openqa.selenium.Proxy;
  * @author Kenji Heigel
  */
 public class ProxyUtil {
+
+	public static void addHeader(String headerName, String content) {
+		BrowserMobProxy browserMobProxy = getBrowserMobProxy();
+
+		browserMobProxy.addHeader(headerName, content);
+	}
 
 	public static String getHarRecording(String jsonPath) throws IOException {
 		BrowserMobProxy browserMobProxy = getBrowserMobProxy();

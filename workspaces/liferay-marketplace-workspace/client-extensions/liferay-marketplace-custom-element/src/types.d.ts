@@ -9,13 +9,82 @@ declare module '*.svg' {
 
 declare module 'warning';
 
+type AnalyticsViews = {
+	results: {
+		metrics: {
+			avgTimeOnPageMetric: {
+				value: number;
+			};
+			bounceMetric: {
+				value: number;
+			};
+			bounceRateMetric: {
+				value: number;
+			};
+			ctaClicksMetric: {
+				value: number;
+			};
+			directAccessMetric: {
+				value: number;
+			};
+			entrancesMetric: {
+				value: number;
+			};
+			exitRateMetric: {
+				value: number;
+			};
+			indirectAccessMetric: {
+				value: number;
+			};
+			readsMetric: {
+				value: number;
+			};
+			sessionsMetric: {
+				value: number;
+			};
+			timeOnPageMetric: {
+				value: number;
+			};
+			viewsMetric: {
+				value: number;
+			};
+			visitorsMetric: {
+				value: number;
+			};
+		};
+		title: string;
+		url: string;
+	}[];
+	total: number;
+};
+
+type PublisherRequestInfo = {
+	emailAddress?: string;
+	extension?: string;
+	firstName?: string;
+	id?: number;
+	lastName?: string;
+	phone?: {
+		code: string;
+		flag: string;
+	};
+	phoneNumber?: string;
+	requestDescription?: string;
+	requestStatus?: {
+		key: string;
+		name: string;
+	};
+};
+
 type Account = {
 	customFields?: CustomField[];
 	description: string;
+	emailAddress: string;
 	externalReferenceCode: string;
 	id: number;
 	logoURL?: string;
 	name: string;
+	taxId: string;
 	type: string;
 };
 
@@ -25,6 +94,11 @@ type Categories = {
 	name: string;
 	vocabulary: string;
 };
+
+interface CheckboxVersion {
+	isChecked: boolean;
+	versionName: string;
+}
 
 type CustomField = {
 	customValue: {
@@ -106,11 +180,19 @@ type Cart = {
 	billingAddress: BillingAddress;
 	cartItems: CartItem[];
 	currencyCode: string;
+	customFields: any;
+	id: number;
+	orderStatusInfo: {[key: string]: string};
 	orderTypeExternalReferenceCode: string;
 	orderTypeId: number;
 	paymentMethod: string;
+	paymentStatusInfo: {[key: string]: string};
+	paymentStatusLabel: string;
 	purchaseOrderNumber?: string;
 	shippingAddress: BillingAddress;
+	summary: {
+		totalFormatted: string;
+	};
 };
 
 type CartItem = {
@@ -118,10 +200,10 @@ type CartItem = {
 	price: {
 		currency: string;
 		discount: number;
-		finalPrice: number;
-		price: number;
+		finalPrice?: number;
+		price?: number;
 	};
-	productId: number;
+	productId?: number;
 	quantity: number;
 	settings: {
 		maxQuantity: number;
@@ -130,12 +212,29 @@ type CartItem = {
 };
 
 type Catalog = {
+	accountId: number | null;
 	currencyCode: string;
 	defaultLanguageId: string;
 	externalReferenceCode: string;
 	id: number;
 	name: string;
 	system: boolean;
+};
+
+type ContactSales = {
+	accountName: string;
+	additionalAppsRequested?: string | undefined;
+	comments?: string | undefined;
+	email: string;
+	name: string;
+};
+
+type EmailAppInformation = {
+	dashboardLink: string;
+	orderID: number;
+	priceModel?: string;
+	productName?: string;
+	productType: string;
 };
 
 type Vocabulary = {
@@ -161,6 +260,13 @@ type Channel = {
 	type: string;
 };
 
+type DefaultProperties = {
+	cloudBaseURL: string;
+	contactSupportUrl: string;
+	eulaBaseURL: string;
+	marketoFormId: string;
+};
+
 interface CommerceAccount extends Omit<Account, 'description'> {
 	active: boolean;
 	logoURL: string;
@@ -173,7 +279,7 @@ type CommerceOption = {
 	name: string;
 };
 
-interface Order {
+type Order = {
 	account: {
 		id: number;
 		type: string;
@@ -200,30 +306,32 @@ interface Order {
 	orderItems: [
 		{
 			id?: number;
+			name?: {
+				en_US: string;
+			};
 			quantity?: number;
 			skuId: number;
 			unitPriceWithTaxAmount?: number;
 		}
 	];
 	orderStatus: number;
+	orderStatusInfo?: {
+		label: string;
+	};
 	orderTypeExternalReferenceCode?: string;
-	orderTypeId: number;
+	orderTypeId?: number;
 	shippingAmount?: number;
 	shippingWithTaxAmount?: number;
-}
+	totalAmount?: number;
+};
 
-interface OrderType {
-	active: boolean;
-	displayDate: string;
-	displayOrder: number;
+type OrderType = {
 	externalReferenceCode: string;
 	id: number;
 	name: {[key: string]: string};
-}
+};
 
-type PaymentMethodMode = 'PayPal';
-
-type PaymentMethodSelector = 'order' | 'pay' | 'trial' | null;
+type PaymentMethodSelector = 'order' | 'pay' | 'trial' | 'free';
 
 interface PlacedOrder {
 	account: string;
@@ -244,11 +352,19 @@ interface PlacedOrder {
 interface PlacedOrderItems {
 	id: number;
 	name: string;
+	options: string;
+	price: {
+		price: number;
+		priceFormatted: string;
+	};
 	productId: number;
+	quantity: number;
+	sku: string;
 	skuId: number;
 	subscription: boolean;
 	thumbnail: string;
 	version: string;
+	virtualItemURLs: string;
 }
 
 interface PostalAddressResponse {
@@ -298,18 +414,26 @@ interface PostCheckoutCartResponse extends PostCartResponse {
 interface Product {
 	active: boolean;
 	attachments: ProductAttachment[];
+	catalog: Catalog;
 	catalogId: number;
+	catalogName?: string;
 	categories: ProductCategories[];
+	customFields?: CustomField[];
 	description: {[key: string]: string};
 	externalReferenceCode: string;
-	id: number;
+	finalPrice?: number;
+	id?: number;
 	images: ProductImages[];
 	modifiedDate: string;
 	name: {[key: string]: string};
+	price?: number;
+	productChannelFilter?: boolean;
 	productChannels: Channel[];
 	productId: number;
+	productSpecifications: ProductSpecification[];
 	productStatus: number;
 	productType: string;
+	skus: SKU[];
 	thumbnail: string;
 	version: number;
 	workflowStatusInfo: {
@@ -319,12 +443,68 @@ interface Product {
 	};
 }
 
-interface ProductAttachment {
-	customFields?: CustomField[];
-	externalReferenceCode: string;
+interface DeliveryProductAttachment {
+	customFields: CustomField[];
+	galleryEnabled: boolean;
 	id: number;
 	priority: number;
 	src: string;
+	tags?: string[];
+	title: string;
+	type: number;
+}
+
+interface DeliveryProductSpecification {
+	id: number;
+	optionCategoryId: number;
+	priority: number;
+	specificationGroupKey: string;
+	specificationGroupTitle: string;
+	specificationId: number;
+	specificationKey: string;
+	specificationTitle: string;
+	value: string;
+}
+
+type DeliverySKU = {
+	customFields?: CustomField[];
+	externalReferenceCode: string;
+	id: number;
+	price: {price: number; priceFormatted: string};
+	purchasable: boolean;
+	sku: string;
+	skuOptions: DeliverySKUOption[];
+	tierPrices?: TierPrice[];
+};
+
+type DeliverySKUOption = {skuOptionKey: string; skuOptionValueKey: string};
+
+interface DeliveryProduct {
+	attachments: DeliveryProductAttachment[];
+	catalogName?: string;
+	categories: ProductCategories[];
+	customFields?: CustomField[];
+	description: string;
+	externalReferenceCode: string;
+	id: number;
+	images: ProductImages[];
+	modifiedDate: string;
+	name: string;
+	productId: number;
+	productSpecifications: DeliveryProductSpecification[];
+	productType: string;
+	skus: DeliverySKU[];
+	urlImage: string;
+}
+
+interface ProductAttachment {
+	customFields?: CustomField[];
+	externalReferenceCode: string;
+	galleryEnabled: boolean;
+	id: number;
+	priority: number;
+	src: string;
+	tags?: string[];
 	title: {[key: string]: string};
 }
 
@@ -365,14 +545,37 @@ type SKU = {
 	skuOptions: {key: string; value: string}[];
 };
 
+type OptionCategory = {
+	description?: {[key: string]: string};
+	id?: number;
+	key?: string;
+	priority?: number;
+	title?: {[key: string]: string};
+};
+
+type Specification = {
+	description?: {[key: string]: string};
+	id?: number;
+	key?: string;
+	optionCategory?: OptionCategory;
+	title?: {[key: string]: string};
+};
+
 type ProductSpecification = {
-	id: number;
-	optionCategoryId: number;
-	priority: number;
-	productId: number;
-	specificationId: number;
+	id?: number;
+	optionCategoryId?: number;
+	priority?: number;
+	productId?: number;
+	specificationId?: number;
 	specificationKey: string;
 	value: {[key: string]: string};
+};
+
+type TierPrice = {
+	currency: string;
+	price: number;
+	priceFormatted: string;
+	quantity: number;
 };
 
 type UserAccount = {
@@ -387,8 +590,12 @@ type UserAccount = {
 	image: string;
 	isCustomerAccount: boolean;
 	isPublisherAccount: boolean;
+	logoURL: string;
+	name: string;
 	newsSubscription: boolean;
 	password: string;
+	roleBriefs: {id: number; name: string}[];
+	type: string;
 };
 
 type RequestBody = {
@@ -438,7 +645,9 @@ type Industries = {
 };
 
 type UserForm = {
-	agreeToTermsAndConditions: boolean;
+	accountQuantity: number;
+	accountSelected: Account | undefined;
+	accounts: Account[];
 	companyName: string;
 	emailAddress: string;
 	extension?: string | undefined;
@@ -449,13 +658,32 @@ type UserForm = {
 	phoneNumber: string;
 };
 
+type OfferingType = {
+	description: string;
+	disabled?: boolean;
+	label: string;
+};
+
 type OrderInfo = {
 	account: Account | UserForm;
 	product?: Product;
 	sku?: number;
+	specifications?: ProductSpecification[];
 };
 
-type RadioOption = {
+type RadioOption<T> = {
 	index: number;
-	value: Account;
+	value: T;
+};
+
+type StorageType = 'persisted' | 'temporary';
+
+type APIResponse<Query = any> = {
+	actions: ObjectActions;
+	facets: Facets[];
+	items: Query[];
+	lastPage: number;
+	page: number;
+	pageSize: number;
+	totalCount: number;
 };

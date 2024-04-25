@@ -9,6 +9,7 @@ import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectRelationship;
 import com.liferay.object.related.models.ObjectRelatedModelsProvider;
 import com.liferay.object.related.models.ObjectRelatedModelsProviderRegistry;
+import com.liferay.object.relationship.util.ObjectRelationshipUtil;
 import com.liferay.object.rest.dto.v1_0.ObjectEntry;
 import com.liferay.object.rest.manager.v1_0.DefaultObjectEntryManager;
 import com.liferay.object.rest.manager.v1_0.DefaultObjectEntryManagerProvider;
@@ -16,8 +17,8 @@ import com.liferay.object.rest.manager.v1_0.ObjectEntryManagerRegistry;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectRelationshipLocalService;
 import com.liferay.portal.kernel.service.PersistedModelLocalService;
-import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.service.PersistedModelLocalServiceRegistryUtil;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
@@ -36,16 +37,13 @@ public class ObjectEntryRelatedObjectsResourceImpl
 		ObjectDefinitionLocalService objectDefinitionLocalService,
 		ObjectEntryManagerRegistry objectEntryManagerRegistry,
 		ObjectRelatedModelsProviderRegistry objectRelatedModelsProviderRegistry,
-		ObjectRelationshipLocalService objectRelationshipLocalService,
-		PersistedModelLocalServiceRegistry persistedModelLocalServiceRegistry) {
+		ObjectRelationshipLocalService objectRelationshipLocalService) {
 
 		_objectDefinitionLocalService = objectDefinitionLocalService;
 		_objectEntryManagerRegistry = objectEntryManagerRegistry;
 		_objectRelatedModelsProviderRegistry =
 			objectRelatedModelsProviderRegistry;
 		_objectRelationshipLocalService = objectRelationshipLocalService;
-		_persistedModelLocalServiceRegistry =
-			persistedModelLocalServiceRegistry;
 	}
 
 	@Override
@@ -186,7 +184,8 @@ public class ObjectEntryRelatedObjectsResourceImpl
 
 		defaultObjectEntryManager.getObjectEntry(
 			_getDTOConverterContext(relatedObjectEntryId),
-			_getRelatedObjectDefinition(
+			ObjectRelationshipUtil.getRelatedObjectDefinition(
+				_objectDefinition,
 				_objectRelationshipLocalService.getObjectRelationship(
 					_objectDefinition.getObjectDefinitionId(),
 					objectRelationshipName)),
@@ -198,8 +197,9 @@ public class ObjectEntryRelatedObjectsResourceImpl
 		throws Exception {
 
 		PersistedModelLocalService persistedModelLocalService =
-			_persistedModelLocalServiceRegistry.getPersistedModelLocalService(
-				systemObjectDefinition.getClassName());
+			PersistedModelLocalServiceRegistryUtil.
+				getPersistedModelLocalService(
+					systemObjectDefinition.getClassName());
 
 		persistedModelLocalService.getPersistedModel(objectEntryId);
 	}
@@ -212,21 +212,6 @@ public class ObjectEntryRelatedObjectsResourceImpl
 			contextHttpServletRequest, objectEntryId,
 			contextAcceptLanguage.getPreferredLocale(), contextUriInfo,
 			contextUser);
-	}
-
-	private ObjectDefinition _getRelatedObjectDefinition(
-			ObjectRelationship objectRelationship)
-		throws Exception {
-
-		long objectDefinitionId1 = objectRelationship.getObjectDefinitionId1();
-
-		if (objectDefinitionId1 != _objectDefinition.getObjectDefinitionId()) {
-			return _objectDefinitionLocalService.getObjectDefinition(
-				objectRelationship.getObjectDefinitionId1());
-		}
-
-		return _objectDefinitionLocalService.getObjectDefinition(
-			objectRelationship.getObjectDefinitionId2());
 	}
 
 	private ObjectEntry _getRelatedObjectEntry(
@@ -269,7 +254,5 @@ public class ObjectEntryRelatedObjectsResourceImpl
 		_objectRelatedModelsProviderRegistry;
 	private final ObjectRelationshipLocalService
 		_objectRelationshipLocalService;
-	private final PersistedModelLocalServiceRegistry
-		_persistedModelLocalServiceRegistry;
 
 }

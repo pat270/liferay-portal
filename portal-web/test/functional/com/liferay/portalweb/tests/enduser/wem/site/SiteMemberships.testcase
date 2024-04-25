@@ -1,6 +1,7 @@
 @component-name = "portal-wcm"
 definition {
 
+	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Sites Administration";
@@ -11,28 +12,9 @@ definition {
 		User.firstLoginPG();
 	}
 
-	tearDown {
-		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
-
-		if (${testLiferayVirtualInstance} == "true") {
-			PortalInstances.tearDownCP();
-		}
-		else {
-			Organization.tearDownCP();
-
-			Site.tearDownCP();
-
-			UserGroup.tearDownCP();
-
-			JSONUser.tearDownNonAdminUsers();
-		}
-	}
-
 	@description = "Assert could assign user to new site in site memberships admin."
 	@priority = 4
 	test AddMember {
-		property testray.component.names = "Sites Administration,Users and Organizations";
-
 		task ("Add a user and add a site") {
 			JSONUser.addUser(
 				userEmailAddress = "userea@liferay.com",
@@ -57,7 +39,6 @@ definition {
 	@priority = 5
 	test AddMemberAssignSiteRole {
 		property portal.acceptance = "true";
-		property testray.component.names = "Sites Administration,Training,Users and Organizations";
 
 		task ("Add a user and assign him to default site") {
 			JSONUser.addUser(
@@ -65,6 +46,10 @@ definition {
 				userFirstName = "userfn",
 				userLastName = "userln",
 				userScreenName = "usersn");
+
+			Site.openSiteSettingsAdmin(siteURLKey = "guest");
+
+			Site.manageMembershipOptions(allowManualMembershipManagement = "true");
 
 			Site.openSiteMembershipsAdmin(siteURLKey = "guest");
 
@@ -94,13 +79,15 @@ definition {
 	@description = "Assert could assign organization to default site in site membership admin."
 	@priority = 4
 	test AddMemberOrganization {
-		property testray.component.names = "Sites Administration,Users and Organizations";
-
 		task ("Add an organization") {
 			JSONOrganization.addOrganization(organizationName = "Organization Name");
 		}
 
 		task ("Assign organization to site in memeberships") {
+			Site.openSiteSettingsAdmin(siteURLKey = "guest");
+
+			Site.manageMembershipOptions(allowManualMembershipManagement = "true");
+
 			Site.openSiteMembershipsAdmin(siteURLKey = "guest");
 
 			Site.assignOrganizationAsMemberCP(orgName = "Organization Name");
@@ -117,7 +104,6 @@ definition {
 	@priority = 5
 	test AddMembersSiteUser {
 		property portal.acceptance = "true";
-		property testray.component.names = "Sites Administration,Users and Organizations";
 
 		task ("Add 3 users and a site") {
 			for (var userNum : list "1,2,3") {
@@ -160,8 +146,6 @@ definition {
 	@priority = 4
 	@uitest
 	test AddMemberUserGroup {
-		property testray.component.names = "Sites Administration,User Groups";
-
 		task ("Add a user group") {
 			UserGroup.openUserGroupsAdmin();
 
@@ -169,6 +153,10 @@ definition {
 		}
 
 		task ("Assign user group to default site in memberships") {
+			Site.openSiteSettingsAdmin(siteURLKey = "guest");
+
+			Site.manageMembershipOptions(allowManualMembershipManagement = "true");
+
 			Site.openSiteMembershipsAdmin(siteURLKey = "guest");
 
 			Site.assignUserGroupAsMemberCP(userGroupName = "User Group Name");
@@ -185,8 +173,6 @@ definition {
 	@priority = 4
 	@uitest
 	test AddMemberUserGroupAssignSiteRole {
-		property testray.component.names = "Sites Administration,User Groups";
-
 		task ("Add a user group") {
 			UserGroup.openUserGroupsAdmin();
 
@@ -194,6 +180,10 @@ definition {
 		}
 
 		task ("Assign user group to default site in memberships") {
+			Site.openSiteSettingsAdmin(siteURLKey = "guest");
+
+			Site.manageMembershipOptions(allowManualMembershipManagement = "true");
+
 			Site.openSiteMembershipsAdmin(siteURLKey = "guest");
 
 			Site.assignUserGroupAsMemberCP(userGroupName = "User Group Name");
@@ -223,8 +213,6 @@ definition {
 	@description = "Assert could limit memebership in site memberships admin."
 	@priority = 4
 	test LimitMembershipParentSite {
-		property testray.component.names = "Sites Administration";
-
 		task ("Add a site and add a child site in it") {
 			HeadlessSite.addSite(siteName = "Site Name");
 
@@ -320,7 +308,7 @@ definition {
 	test OrganizationsView {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
-		property testray.component.names = "Sites Administration,Users and Organizations";
+		property test.run.type = "single";
 
 		task ("Reindex search") {
 			SearchAdministration.executeReindex();
@@ -345,29 +333,15 @@ definition {
 		}
 
 		task ("Assign created user to organization in user admin") {
-			User.openUsersAdmin();
-
-			UsersAndOrganizationsNavigator.gotoOrganizations();
-
-			Organization.assignUser(
-				orgName = "Organization Name 1",
-				userFirstName = "userfn",
-				userLastName = "userln",
-				userName = "userfn userln",
-				userScreenName = "usersn");
+			JSONOrganization.assignUserToOrganization(
+				organizationName = "Organization Name 1",
+				userEmailAddress = "userea@liferay.com");
 		}
 
 		task ("Assign default user to organization in user admin") {
-			User.openUsersAdmin();
-
-			UsersAndOrganizationsNavigator.gotoOrganizations();
-
-			Organization.assignUser(
-				orgName = "Organization Name 1",
-				userFirstName = "Test",
-				userLastName = "Test",
-				userName = "Test Test",
-				userScreenName = "test");
+			JSONOrganization.assignUserToOrganization(
+				organizationName = "Organization Name 1",
+				userEmailAddress = "test@liferay.com");
 		}
 
 		task ("Allow manual memebership management for Organization Name 1") {
@@ -424,7 +398,6 @@ definition {
 	@priority = 5
 	test RemoveMember {
 		property portal.acceptance = "true";
-		property testray.component.names = "Sites Administration,Users and Organizations";
 
 		task ("Add a user") {
 			JSONUser.addUser(
@@ -476,17 +449,15 @@ definition {
 
 		JSONSiteTemplate.addSiteTemplate(siteTemplateName = "Site Template Name");
 
-		SiteTemplates.addSitePageViaSiteTemplateCP(
-			pageName = "MB Page",
-			siteTemplateName = "Site Template Name");
+		JSONSiteTemplate.addLayoutToSiteTemplate(
+			groupName = "Site Template Name",
+			layoutName = "MB Page");
 
-		ProductMenu.gotoHomePage();
-
-		Navigator._gotoPage(pageName = "MB Page");
-
-		Portlet.addPG(
-			defaultURL = "false",
-			portletName = "Message Boards");
+		JSONLayout.addWidgetToPrivateLayout(
+			groupName = "Site Template Name",
+			layoutName = "MB Page",
+			site = "false",
+			widgetName = "Message Boards");
 
 		User.openUsersAdmin();
 
@@ -502,16 +473,10 @@ definition {
 				userEmailAddress = "userea${i}@liferay.com");
 		}
 
-		User.openUsersAdmin();
-
-		UsersAndOrganizationsNavigator.gotoOrganizations();
-
-		Organization.assignOrgRole(
-			orgName = "Organization Name 2",
+		JSONRole.assignSiteRoleToUser(
+			groupName = "Organization Name 2",
 			roleTitle = "Organization Administrator",
-			userFirstName = "userfn2",
-			userLastName = "userln2",
-			userScreenName = "usersn2");
+			userEmailAddress = "userea2@liferay.com");
 
 		for (var i : list "1,2,3") {
 			JSONUserGroup.addUserGroup(
@@ -525,13 +490,15 @@ definition {
 
 		HeadlessSite.addSite(siteName = "Site Name");
 
+		var groupId = JSONGroupSetter.setGroupId(groupName = "Site Name");
+
 		JSONLayout.addPublicLayout(
-			groupName = "Site Name",
+			groupId = ${groupId},
 			layoutName = "Asset Publisher Page");
 
 		for (var widgetName : list "Asset Publisher,Message Boards") {
 			JSONLayout.addWidgetToPublicLayout(
-				groupName = "Site Name",
+				groupId = ${groupId},
 				layoutName = "Asset Publisher Page",
 				widgetName = ${widgetName});
 		}
@@ -564,29 +531,29 @@ definition {
 			roleType = "site");
 
 		JSONUser.addUserToSite(
-			groupName = "Site Name",
+			groupId = ${groupId},
 			userEmailAddress = "userea1@liferay.com");
 
 		JSONGroup.assignOrganizationToGroup(
-			groupName = "Site Name",
+			groupId = ${groupId},
 			organizationName = "Organization Name 2");
 
 		JSONGroup.assignUserGroupToGroup(
-			groupName = "Site Name",
+			groupId = ${groupId},
 			userGroupName = "UG UserGroup3 Name");
 
 		JSONRole.assignSiteRoleToUser(
-			groupName = "Site Name",
+			groupId = ${groupId},
 			roleTitle = "Music Fan Name",
 			userEmailAddress = "userea1@liferay.com");
 
 		JSONRole.assignSiteRoleToUser(
-			groupName = "Site Name",
+			groupId = ${groupId},
 			roleTitle = "Movie Blogger Name",
 			userEmailAddress = "userea2@liferay.com");
 
 		JSONUserGroup.assignGroupRoleToUserGroup(
-			groupName = "Site Name",
+			groupId = ${groupId},
 			roleTitle = "Sports Journalist Name",
 			userGroupName = "UG UserGroup3 Name");
 
@@ -685,8 +652,6 @@ definition {
 	@description = "Assert could search organization memebership in site memberships admin."
 	@priority = 3
 	test SiteMembershipSearchOrganization {
-		property testray.component.names = "Sites Administration,Users and Organizations";
-
 		task ("Add 2 organizations") {
 			for (var n : list "1,2") {
 				JSONOrganization.addOrganization(organizationName = "Organization Name ${n}");
@@ -694,6 +659,10 @@ definition {
 		}
 
 		task ("Assign the first organization to site in memeberships") {
+			Site.openSiteSettingsAdmin(siteURLKey = "guest");
+
+			Site.manageMembershipOptions(allowManualMembershipManagement = "true");
+
 			Site.openSiteMembershipsAdmin(siteURLKey = "guest");
 
 			Site.assignOrganizationAsMemberCP(orgName = "Organization Name 1");
@@ -717,8 +686,6 @@ definition {
 	@description = "Assert could search user group memebership in site membership admin."
 	@priority = 3
 	test SiteMembershipSearchUserGroup {
-		property testray.component.names = "Sites Administration,User Groups";
-
 		task ("Add 2 user groups") {
 			for (var n : list "1,2") {
 				UserGroup.openUserGroupsAdmin();
@@ -728,6 +695,10 @@ definition {
 		}
 
 		task ("Assign the first user group to site in memeberships") {
+			Site.openSiteSettingsAdmin(siteURLKey = "guest");
+
+			Site.manageMembershipOptions(allowManualMembershipManagement = "true");
+
 			Site.openSiteMembershipsAdmin(siteURLKey = "guest");
 
 			Site.assignUserGroupAsMemberCP(userGroupName = "User Group Name 1");
@@ -751,8 +722,6 @@ definition {
 	@description = "View pagination in site memberships admin."
 	@priority = 3
 	test SiteMembershipsPagination {
-		property testray.component.names = "Sites Administration,Users and Organizations";
-
 		task ("Add 10 users") {
 			for (var screenName : list "userfn1,userfn2,userfn3,userfn4,userfn5,userfn6,userfn7,userfn8,userfn9,userfn10") {
 				JSONUser.addUser(
@@ -861,8 +830,6 @@ definition {
 	@description = "Assert could search user via user info in site memberships admin."
 	@priority = 4
 	test SiteMembershipsSearch {
-		property testray.component.names = "Sites Administration,Users and Organizations";
-
 		task ("Add 3 users") {
 			JSONUser.addUser(
 				userEmailAddress = "4568@liferay.com",
@@ -884,6 +851,10 @@ definition {
 		}
 
 		task ("Assign 3 users to the default site") {
+			Site.openSiteSettingsAdmin(siteURLKey = "guest");
+
+			Site.manageMembershipOptions(allowManualMembershipManagement = "true");
+
 			Site.openSiteMembershipsAdmin(siteURLKey = "guest");
 
 			Site.addAllMembersCP();
@@ -1062,11 +1033,109 @@ definition {
 		}
 	}
 
+	@description = "This is a test for LPS-177717. The tooltip of the back button of Reply Membership, Membership Request, and Approved users is Go to Memberships."
+	@priority = 3
+	test ViewBackButtonTooltipForMembershipsAdmin {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+
+		task ("Given a site administrator accesses to view membersip requests") {
+			JSONUser.addUser(
+				userEmailAddress = "userea@liferay.com",
+				userFirstName = "userfn",
+				userLastName = "userln",
+				userScreenName = "usersn");
+
+			JSONUser.setFirstPassword(
+				agreeToTermsAndAnswerReminderQuery = "true",
+				requireReset = "false",
+				userEmailAddress = "userea@liferay.com");
+
+			HeadlessSite.addSite(
+				membershipType = "Restricted",
+				siteName = "Test Site Name");
+
+			User.logoutAndLoginPG(userLoginEmailAddress = "userea@liferay.com");
+
+			UserBar.gotoDropdownItem(dropdownItem = "My Dashboard");
+
+			NavItem.gotoAvailableSites();
+
+			LexiconList.clickEllipsisItem(
+				item = "Request Membership",
+				listEntry = "Test Site Name");
+
+			Type(
+				key_text = "comments",
+				locator1 = "TextArea#ANY",
+				value1 = "Request Membership for Test Site Name");
+
+			PortletEntry.save();
+
+			User.logoutAndLoginPG(userLoginEmailAddress = "test@liferay.com");
+
+			Site.openSiteMembershipsAdmin(siteURLKey = "test-site-name");
+
+			Click.waitForMenuToggleJSClick(locator1 = "Icon#HEADER_VERTICAL_ELLIPSIS");
+
+			MenuItem.click(menuItem = "View Membership Requests");
+
+			ControlMenu.viewHeaderTitle(headerTitle = "Membership Requests");
+		}
+
+		task ("When the site administrator hovers over the back button") {
+			MouseOver(locator1 = "Icon#BACK");
+		}
+
+		task ("Then the site administrator could see the tooltip message") {
+			AssertVisible(
+				key_content = "Go to Memberships",
+				locator1 = "Tooltip#FLOATING_TOOLTIP_CONTENT");
+		}
+
+		task ("Given a site administrator replies a membersip request") {
+			LexiconCard.clickEllipsisItem(
+				card = "userfn userln",
+				item = "Reply");
+
+			WaitForElementPresent(
+				key_text = "replyComments",
+				locator1 = "TextArea#ANY");
+		}
+
+		task ("When the site administrator hovers over the back button") {
+			MouseOver(locator1 = "Icon#BACK");
+		}
+
+		task ("Then the site administrator could see the tooltip message") {
+			AssertVisible(
+				key_content = "Go to Membership Requests",
+				locator1 = "Tooltip#FLOATING_TOOLTIP_CONTENT");
+		}
+
+		task ("Given a site administrator approves the membersip request") {
+			Type(
+				key_text = "replyComments",
+				locator1 = "TextArea#ANY",
+				value1 = "Approved");
+
+			PortletEntry.save();
+		}
+
+		task ("When the site administrator hovers over the back button") {
+			MouseOver(locator1 = "Icon#BACK");
+		}
+
+		task ("Then the site administrator could see the tooltip message") {
+			AssertVisible(
+				key_content = "Go to Memberships",
+				locator1 = "Tooltip#FLOATING_TOOLTIP_CONTENT");
+		}
+	}
+
 	@description = "View memebership request in site memberships admin."
 	@priority = 3
 	test ViewMembershipRequestWithSiteMembershipScope {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
-		property testray.component.names = "Sites Administration,Users and Organizations";
 
 		task ("Add 2 sites") {
 			for (var i : list "1,2") {
@@ -1124,8 +1193,6 @@ definition {
 	@priority = 3
 	@uitest
 	test ViewNoManualMembershipManagement {
-		property testray.component.names = "Sites Administration";
-
 		task ("Allow manual memebership management from site settings") {
 			Site.openSiteSettingsAdmin(siteURLKey = "guest");
 

@@ -37,9 +37,7 @@ public class GroupModelListener extends BaseModelListener<Group> {
 
 			List<LayoutPageTemplateCollection> layoutPageTemplateCollections =
 				_layoutPageTemplateCollectionLocalService.
-					getLayoutPageTemplateCollections(
-						group.getGroupId(), QueryUtil.ALL_POS,
-						QueryUtil.ALL_POS);
+					getLayoutPageTemplateCollections(group.getGroupId());
 
 			for (LayoutPageTemplateCollection layoutPageTemplateCollection :
 					layoutPageTemplateCollections) {

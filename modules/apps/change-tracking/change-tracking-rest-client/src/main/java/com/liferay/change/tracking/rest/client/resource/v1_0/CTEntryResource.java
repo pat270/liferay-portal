@@ -12,6 +12,8 @@ import com.liferay.change.tracking.rest.client.pagination.Pagination;
 import com.liferay.change.tracking.rest.client.problem.Problem;
 import com.liferay.change.tracking.rest.client.serdes.v1_0.CTEntrySerDes;
 
+import java.net.URL;
+
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -33,13 +35,13 @@ public interface CTEntryResource {
 	}
 
 	public Page<CTEntry> getCtCollectionCTEntriesPage(
-			Long ctCollectionId, String search, String filterString,
-			Pagination pagination, String sortString)
+			Long ctCollectionId, String search, Boolean showHideable,
+			String filterString, Pagination pagination, String sortString)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse getCtCollectionCTEntriesPageHttpResponse(
-			Long ctCollectionId, String search, String filterString,
-			Pagination pagination, String sortString)
+			Long ctCollectionId, String search, Boolean showHideable,
+			String filterString, Pagination pagination, String sortString)
 		throws Exception;
 
 	public CTEntry getCTEntry(Long ctEntryId) throws Exception;
@@ -100,6 +102,10 @@ public interface CTEntryResource {
 			return this;
 		}
 
+		public Builder endpoint(URL url) {
+			return endpoint(url.getHost(), url.getPort(), url.getProtocol());
+		}
+
 		public Builder header(String key, String value) {
 			_headers.put(key, value);
 
@@ -152,14 +158,14 @@ public interface CTEntryResource {
 	public static class CTEntryResourceImpl implements CTEntryResource {
 
 		public Page<CTEntry> getCtCollectionCTEntriesPage(
-				Long ctCollectionId, String search, String filterString,
-				Pagination pagination, String sortString)
+				Long ctCollectionId, String search, Boolean showHideable,
+				String filterString, Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				getCtCollectionCTEntriesPageHttpResponse(
-					ctCollectionId, search, filterString, pagination,
-					sortString);
+					ctCollectionId, search, showHideable, filterString,
+					pagination, sortString);
 
 			String content = httpResponse.getContent();
 
@@ -222,8 +228,9 @@ public interface CTEntryResource {
 
 		public HttpInvoker.HttpResponse
 				getCtCollectionCTEntriesPageHttpResponse(
-					Long ctCollectionId, String search, String filterString,
-					Pagination pagination, String sortString)
+					Long ctCollectionId, String search, Boolean showHideable,
+					String filterString, Pagination pagination,
+					String sortString)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -249,6 +256,11 @@ public interface CTEntryResource {
 
 			if (search != null) {
 				httpInvoker.parameter("search", String.valueOf(search));
+			}
+
+			if (showHideable != null) {
+				httpInvoker.parameter(
+					"showHideable", String.valueOf(showHideable));
 			}
 
 			if (filterString != null) {

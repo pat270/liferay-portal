@@ -11,11 +11,14 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.security.access.control.AccessControlThreadLocal;
+import com.liferay.portal.kernel.servlet.TryFilter;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.MapUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.servlet.filters.authverifier.AuthVerifierFilter;
 
 import java.io.IOException;
@@ -30,6 +33,8 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -52,6 +57,8 @@ import org.osgi.util.tracker.ServiceTrackerCustomizer;
 		"default.registration.property=filter.init.auth.verifier.PortalSessionAuthVerifier.urls.includes=*",
 		"default.registration.property=filter.init.guest.allowed=true",
 		"default.remote.access.filter.service.ranking:Integer=-10",
+		"default.whiteboard.property=" + HttpWhiteboardConstants.HTTP_WHITEBOARD_FILTER_DISPATCHER + "=" + HttpWhiteboardConstants.DISPATCHER_FORWARD,
+		"default.whiteboard.property=" + HttpWhiteboardConstants.HTTP_WHITEBOARD_FILTER_DISPATCHER + "=" + HttpWhiteboardConstants.DISPATCHER_REQUEST,
 		"default.whiteboard.property=" + HttpWhiteboardConstants.HTTP_WHITEBOARD_FILTER_SERVLET + "=cxf-servlet",
 		"servlet.context.helper.select.filter=(!(liferay.auth.verifier=false))"
 	},
@@ -119,7 +126,18 @@ public class AuthVerifierFilterTracker {
 				propertyValue = property.substring(index + 1);
 			}
 
-			dictionary.put(propertyKey, propertyValue);
+			Object existingPropertyValue = dictionary.get(propertyKey);
+
+			if (existingPropertyValue != null) {
+				List<String> strings = StringUtil.asList(existingPropertyValue);
+
+				strings.add(propertyValue);
+
+				dictionary.put(propertyKey, strings);
+			}
+			else {
+				dictionary.put(propertyKey, propertyValue);
+			}
 		}
 
 		return dictionary;
@@ -133,6 +151,47 @@ public class AuthVerifierFilterTracker {
 	private int _defaultRemoteAccessFilterServiceRanking;
 	private Dictionary<String, Object> _defaultWhiteboardProperties;
 	private ServiceTracker<?, ?> _serviceTracker;
+
+	private static class AuditFilter implements Filter {
+
+		@Override
+		public void destroy() {
+		}
+
+		@Override
+		public void doFilter(
+				ServletRequest servletRequest, ServletResponse servletResponse,
+				FilterChain filterChain)
+			throws IOException, ServletException {
+
+			Filter auditFilter = _auditFilterSnapshot.get();
+
+			if (auditFilter instanceof TryFilter) {
+				TryFilter tryFilter = (TryFilter)auditFilter;
+
+				try {
+					tryFilter.doFilterTry(
+						(HttpServletRequest)servletRequest,
+						(HttpServletResponse)servletResponse);
+				}
+				catch (Exception exception) {
+					throw new ServletException(exception);
+				}
+			}
+
+			filterChain.doFilter(servletRequest, servletResponse);
+		}
+
+		@Override
+		public void init(FilterConfig filterConfig) {
+		}
+
+		private static final Snapshot<Filter> _auditFilterSnapshot =
+			new Snapshot<>(
+				AuditFilter.class, Filter.class,
+				"(servlet-filter-name=Audit Filter)", true);
+
+	}
 
 	private static class RemoteAccessFilter implements Filter {
 
@@ -168,12 +227,18 @@ public class AuthVerifierFilterTracker {
 
 		public ServiceRegistrations(
 			ServiceRegistration<Filter> authVerifierFilterServiceRegistration,
+			ServiceRegistration<Filter> auditFilterServiceRegistration,
 			ServiceRegistration<Filter> remoteAccessFilterServiceRegistration) {
 
 			_authVerifierFilterServiceRegistration =
 				authVerifierFilterServiceRegistration;
+			_auditFilterServiceRegistration = auditFilterServiceRegistration;
 			_remoteAccessFilterServiceRegistration =
 				remoteAccessFilterServiceRegistration;
+		}
+
+		public ServiceRegistration<Filter> getAuditFilterServiceRegistration() {
+			return _auditFilterServiceRegistration;
 		}
 
 		public ServiceRegistration<Filter>
@@ -188,6 +253,8 @@ public class AuthVerifierFilterTracker {
 			return _remoteAccessFilterServiceRegistration;
 		}
 
+		private final ServiceRegistration<Filter>
+			_auditFilterServiceRegistration;
 		private final ServiceRegistration<Filter>
 			_authVerifierFilterServiceRegistration;
 		private final ServiceRegistration<Filter>
@@ -208,6 +275,9 @@ public class AuthVerifierFilterTracker {
 					Filter.class, new AuthVerifierFilter(),
 					_buildPropertiesForAuthVerifierFilter(serviceReference)),
 				_bundleContext.registerService(
+					Filter.class, new AuditFilter(),
+					_buildPropertiesForAuditFilter(serviceReference)),
+				_bundleContext.registerService(
 					Filter.class, new RemoteAccessFilter(),
 					_buildPropertiesForRemoteAccessFilter(serviceReference)));
 		}
@@ -222,6 +292,12 @@ public class AuthVerifierFilterTracker {
 
 			authVerifierFilterServiceRegistration.setProperties(
 				_buildPropertiesForAuthVerifierFilter(serviceReference));
+
+			ServiceRegistration<Filter> auditFilterServiceRegistration =
+				serviceRegistrations.getAuditFilterServiceRegistration();
+
+			auditFilterServiceRegistration.setProperties(
+				_buildPropertiesForAuditFilter(serviceReference));
 
 			ServiceRegistration<Filter> remoteAccessFilterServiceRegistration =
 				serviceRegistrations.getRemoteAccessFilterServiceRegistration();
@@ -240,10 +316,27 @@ public class AuthVerifierFilterTracker {
 
 			authVerifierFilterServiceRegistration.unregister();
 
+			ServiceRegistration<Filter> auditFilterServiceRegistration =
+				serviceRegistrations.getAuditFilterServiceRegistration();
+
+			auditFilterServiceRegistration.unregister();
+
 			ServiceRegistration<Filter> remoteAccessFilterServiceRegistration =
 				serviceRegistrations.getRemoteAccessFilterServiceRegistration();
 
 			remoteAccessFilterServiceRegistration.unregister();
+		}
+
+		private Dictionary<String, Object> _buildPropertiesForAuditFilter(
+			ServiceReference<ServletContextHelper> serviceReference) {
+
+			HashMapDictionaryBuilder.HashMapDictionaryWrapper<String, Object>
+				properties =
+					new HashMapDictionaryBuilder.HashMapDictionaryWrapper<>();
+
+			_putWhiteboardProperties(properties, serviceReference);
+
+			return properties.build();
 		}
 
 		private Dictionary<String, Object>
@@ -306,15 +399,11 @@ public class AuthVerifierFilterTracker {
 				}
 			}
 
-			String contextName = GetterUtil.getString(
-				serviceReference.getProperty(
-					HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_NAME));
-
 			properties.put(
 				HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_SELECT,
-				StringBundler.concat(
-					"(", HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_NAME,
-					"=", contextName, ")"));
+				GetterUtil.getString(
+					serviceReference.getProperty(
+						HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_NAME)));
 		}
 
 	}

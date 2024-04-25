@@ -1,44 +1,19 @@
-import * as d3 from 'd3';
-import DeleteExperimentModal from 'experiments/components/modals/DeleteExperimentModal';
-import ImprovementTooltip from 'experiments/components/variant-card/ImprovementTooltip';
-import moment from 'moment';
-import PublishOtherVariantModal from 'experiments/components/modals/PublishOtherVariantModal';
-import PublishVariantModal from 'experiments/components/modals/PublishVariantModal';
-import React, {useEffect} from 'react';
-import UpdateExperimentStatusModal from 'experiments/components/modals/UpdateExperimentStatusModal';
-import {Alignments, Weights} from 'shared/components/chart-tooltip';
-import {ButtonProps} from 'experiments/components/summary-base-card/types';
+import {CHART_COLORS} from 'shared/util/charts';
+import {CONTROL_COLOR} from './constants';
 import {
-	FormatHistogramKeyValue,
 	FormatYAxisFn,
-	GetFormattedDataTooltip,
-	GetFormattedHistogramFn,
 	GetFormattedMedianFn,
-	GetFormattedVariantHistogramFn,
-	GetLinkFn,
 	GetMetricNameFn,
 	GetMetricUnitFn,
 	GetShortIntervals,
 	GetStatusColorFn,
 	GetStatusNameFn,
-	GetStepFn,
 	GetTicksFn,
-	GetVariantLabel,
-	MakeAllRefetchFn,
-	MergedVariantsFn,
-	ModalCompleteFn,
-	ModalDeleteFn,
-	ModalPublishOtherVariantFn,
-	ModalPublishVariantFn,
-	NormalizeHistogramFn,
-	SortOrderExperiment,
-	StepInputs,
-	TooltipMetric
+	GetVariantLabels,
+	MergedVariantsFn
 } from './types';
-import {getDate as getDateUtil} from 'shared/util/date';
 import {round} from 'lodash';
 import {toRounded, toThousands, toThousandsBase} from 'shared/util/numbers';
-import {useStateValue} from 'experiments/state';
 
 const METRICS_NAMES = new Map([
 	['BOUNCE_RATE', Liferay.Language.get('bounce-rate')],
@@ -76,66 +51,15 @@ const STATUS_NAMES = new Map([
 	['TERMINATED', Liferay.Language.get('terminated')]
 ]);
 
-export const dateFormatter = d3.utcFormat('%Y-%m-%d');
+const getExperimentLink = ({action, id, pageURL}) => {
+	const experimentLink = `${pageURL}?segmentsExperimentKey=${id}`;
 
-export const TOOLTIP_METRICS: Array<TooltipMetric> = [
-	{
-		dataRenderer: data => {
-			const {confidenceInterval, metricUnit} = data;
-
-			return `${confidenceInterval[1]}${metricUnit}`;
-		},
-		name: 'high',
-		title: Liferay.Language.get('high')
-	},
-	{
-		dataRenderer: ({confidenceInterval, metricUnit}) =>
-			`${confidenceInterval[0]}${metricUnit}`,
-		name: 'low',
-		title: Liferay.Language.get('low')
-	},
-	{
-		dataRenderer: ({median, metricUnit}) => `${median}${metricUnit}`,
-		name: 'median',
-		title: Liferay.Language.get('median')
-	},
-	{
-		dataRenderer: ({improvement}) => () => (
-			<ImprovementTooltip improvement={improvement} />
-		),
-		name: 'lift',
-		title: null
+	if (action) {
+		return `${experimentLink}&segmentsExperimentAction=${action}`;
 	}
-];
 
-export const formatHistogramKeyValue: FormatHistogramKeyValue = (
-	variants,
-	metricUnit
-) =>
-	variants.reduce((variants, variant, index) => {
-		variants[`data${index + 1}`] = variant.variantsHistogram.reduce(
-			(histogram, day) => {
-				const date = dateFormatter(
-					formatProcessedDate(day.processedDate)
-				);
-
-				histogram[date] = {
-					...day,
-					control: Boolean(variant.control),
-					metricUnit,
-					name: variant.dxpVariantName
-				};
-
-				return histogram;
-			},
-			{}
-		);
-
-		return variants;
-	}, {});
-
-export const formatProcessedDate = date =>
-	moment.utc(date).startOf('day').toDate();
+	return experimentLink;
+};
 
 export const formatYAxis: FormatYAxisFn = metricUnit => value => {
 	if (value % 1 === 0) {
@@ -144,14 +68,6 @@ export const formatYAxis: FormatYAxisFn = metricUnit => value => {
 
 	return `${value.toFixed(1)}${metricUnit}`;
 };
-
-export const getExperimentLink: GetLinkFn = (pageURL, id) =>
-	`${pageURL}?segmentsExperimentKey=${id}`;
-
-export const getFormattedHistogram: GetFormattedHistogramFn = histogram => ({
-	key: histogram.map(({key}) => getDateUtil(key)),
-	value: histogram.map(({value}) => parseInt(value) || 0)
-});
 
 export const getFormattedMedian: GetFormattedMedianFn = (median, metric) => {
 	const precision = metric === 'CLICK_RATE' ? 3 : 2;
@@ -176,11 +92,6 @@ export const getFormattedProbabilityToWin = value => {
 	return value;
 };
 
-export const getFormattedVariantHistogram: GetFormattedVariantHistogramFn = histogram => ({
-	key: histogram.map(({processedDate}) => formatProcessedDate(processedDate)),
-	value: histogram.map(({median}) => median || 0)
-});
-
 export const getMetricName: GetMetricNameFn = metric =>
 	METRICS_NAMES.get(metric);
 
@@ -193,34 +104,6 @@ export const getStatusColor: GetStatusColorFn = status =>
 export const getStatusName: GetStatusNameFn = status =>
 	STATUS_NAMES.get(status).toUpperCase();
 
-export const getStep: GetStepFn = ({
-	disabled,
-	label,
-	showIcon = true,
-	tooltip,
-	...otherProps
-}: StepInputs) => {
-	const buttonProps: ButtonProps = {
-		...(disabled && {disabled}),
-		...(showIcon && {
-			symbol: 'dxp-logo'
-		}),
-		...(tooltip && {
-			['data-tooltip']: true,
-			title: tooltip
-		}),
-		label
-	};
-
-	return {
-		buttonProps,
-		...otherProps
-	};
-};
-
-export const getVariantLink: GetLinkFn = (pageURL, id) =>
-	`${pageURL}?segmentsExperienceKey=${id}`;
-
 export const mergedVariants: MergedVariantsFn = (variants, variantMetrics) =>
 	variants.map(variant => ({
 		...variant,
@@ -229,150 +112,170 @@ export const mergedVariants: MergedVariantsFn = (variants, variantMetrics) =>
 		)
 	}));
 
-export const modalComplete: ModalCompleteFn = (
-	experimentId,
-	publishedDXPVariantId
-) => ({
-	Component: UpdateExperimentStatusModal,
-	props: {
-		experimentId,
-		modalBody: (
-			<>
-				<div className='mb-2 text-secondary'>
-					{Liferay.Language.get(
-						'are-you-sure-you-want-to-complete-this-test'
-					)}
-				</div>
-				<strong>
-					{Liferay.Language.get(
-						'no-more-traffic-will-be-directed-to-the-test-variants-and-we-will-stop-collecting-test-data'
-					)}{' '}
-					{Liferay.Language.get(
-						'you-will-still-have-access-to-the-data-that-has-already-been-collected'
-					)}
-				</strong>
-			</>
-		),
-		nextStatus: 'COMPLETED',
-		publishedDXPVariantId,
-		submitMessage: Liferay.Language.get('complete-test'),
-		title: Liferay.Language.get('complete-test')
-	},
-	title: Liferay.Language.get('complete-test')
-});
+export const getActions = (
+	status: string,
+	{id, onDelete, pageURL, publishable} = null
+) => {
+	const deleteButton = {
+		displayType: 'secondary',
+		label: Liferay.Language.get('delete'),
+		onClick: onDelete
+	};
 
-export const modalDelete: ModalDeleteFn = experimentId => ({
-	Component: DeleteExperimentModal,
-	props: {
-		experimentId
-	},
-	title: Liferay.Language.get('delete-test')
-});
-
-export const modalPublishVariant: ModalPublishVariantFn = (
-	dxpVariantId,
-	dxpVariantName,
-	experimentId,
-	pageURL
-) => ({
-	Component: PublishVariantModal,
-	props: {
-		dxpVariantId,
-		dxpVariantName,
-		experimentId,
-		pageURL,
-		title: Liferay.Language.get('publish-winner')
-	},
-	title: Liferay.Language.get('publish-winner')
-});
-
-export const modalPublishOtherVariant: ModalPublishOtherVariantFn = (
-	dxpVariants,
-	experimentId,
-	pageURL,
-	title = Liferay.Language.get('publish-other-variant')
-) => ({
-	Component: PublishOtherVariantModal,
-	props: {
-		dxpVariants,
-		experimentId,
-		pageURL,
-		title
-	},
-	title
-});
-
-export const normalizeHistogram: NormalizeHistogramFn = ({
-	dxpVariants,
-	goal: {metric},
-	metricsHistogram
-}) =>
-	dxpVariants.map(variant => ({
-		...variant,
-		variantsHistogram: metricsHistogram.map(
-			({processedDate, variantMetrics}) => {
-				const variantMetric = variantMetrics.find(
-					({dxpVariantId}) => dxpVariantId === variant.dxpVariantId
-				);
-
-				return {
-					...variantMetric,
-					confidenceInterval: variantMetric.confidenceInterval.map(
-						value => getFormattedMedian(value, metric)
-					),
-					improvement: Number(
-						toRounded(variantMetric.improvement, 2)
-					),
-					median: Number(
-						getFormattedMedian(variantMetric.median, metric)
-					),
-					processedDate
-				};
+	switch (status) {
+		case 'COMPLETED': {
+			return [deleteButton];
+		}
+		case 'DRAFT': {
+			return [
+				{
+					displayType: 'primary',
+					label: Liferay.Language.get('review'),
+					redirectURL: getExperimentLink({
+						action: 'reviewAndRun',
+						id,
+						pageURL
+					})
+				},
+				{
+					displayType: 'secondary',
+					label: Liferay.Language.get('delete'),
+					redirectURL: getExperimentLink({
+						action: 'delete',
+						id,
+						pageURL
+					})
+				}
+			];
+		}
+		case 'FINISHED_NO_WINNER':
+		case 'FINISHED_WINNER': {
+			return [
+				{
+					displayType: 'primary',
+					label: Liferay.Language.get('publish'),
+					redirectURL: getExperimentLink({
+						action: 'publish',
+						id,
+						pageURL
+					})
+				},
+				{
+					displayType: 'secondary',
+					label: Liferay.Language.get('delete'),
+					redirectURL: getExperimentLink({
+						action: 'delete',
+						id,
+						pageURL
+					})
+				}
+			];
+		}
+		case 'TERMINATED': {
+			if (publishable) {
+				return [
+					{
+						displayType: 'primary',
+						label: Liferay.Language.get('publish'),
+						redirectURL: getExperimentLink({
+							action: 'publish',
+							id,
+							pageURL
+						})
+					},
+					{
+						displayType: 'secondary',
+						label: Liferay.Language.get('delete'),
+						redirectURL: getExperimentLink({
+							action: 'delete',
+							id,
+							pageURL
+						})
+					}
+				];
 			}
-		)
-	}));
 
-/**
- * Used to make all refetch that are passed by parameter
- * @param allRefetch
- */
-export const makeAllRefetch: MakeAllRefetchFn = allRefetch =>
-	allRefetch.map(refetch => refetch());
-
-/**
- * Used to insert a new refetch in the makeAllRefetch Experiment's state
- * @param refetch
- */
-export const useAddRefetch = (refetch: Function) => {
-	const [, dispatch]: any = useStateValue();
-
-	useEffect(() => {
-		dispatch({
-			newAction: refetch,
-			type: 'addRefetch'
-		});
-	}, [refetch]);
+			return [deleteButton];
+		}
+		case 'RUNNING': {
+			return [
+				{
+					displayType: 'secondary',
+					label: Liferay.Language.get('terminate'),
+					redirectURL: getExperimentLink({
+						action: 'terminate',
+						id,
+						pageURL
+					})
+				}
+			];
+		}
+		default: {
+			return [];
+		}
+	}
 };
 
-export const getVariantLabel: GetVariantLabel = (
-	status,
-	bestVariant,
-	winnerVariantId,
-	variantId
-) => {
-	let label = undefined;
-
+export const getBestVariant = ({
+	dxpVariants,
+	goal,
+	metrics: {variantMetrics}
+}) => {
 	if (
-		bestVariant &&
-		status === 'RUNNING' &&
-		bestVariant.dxpVariantId === variantId
+		!dxpVariants ||
+		variantMetrics.every(({median}) => median === variantMetrics[0].median)
 	) {
-		label = Liferay.Language.get('current-best');
-	} else if (status === 'FINISHED_WINNER' && winnerVariantId === variantId) {
-		label = Liferay.Language.get('winner');
+		return null;
 	}
 
-	return label;
+	if (goal?.metric === 'BOUNCE_RATE') {
+		return mergedVariants(
+			dxpVariants,
+			variantMetrics
+		).reduce((prev, current) =>
+			prev.median < current.median ? prev : current
+		);
+	}
+
+	return mergedVariants(dxpVariants, variantMetrics).reduce((prev, current) =>
+		prev.median > current.median ? prev : current
+	);
+};
+
+export const getVariantLabels: GetVariantLabels = ({
+	bestVariant,
+	dxpVariantId,
+	publishedDXPVariantId,
+	status,
+	winnerDXPVariantId
+}) => {
+	const labels = [];
+
+	if (status === 'RUNNING' && bestVariant?.dxpVariantId === dxpVariantId) {
+		labels.push({
+			status: 'success',
+			value: Liferay.Language.get('current-best')
+		});
+	}
+
+	if (
+		winnerDXPVariantId === dxpVariantId &&
+		(status === 'COMPLETED' || status === 'FINISHED_WINNER')
+	) {
+		labels.push({
+			status: 'success',
+			value: Liferay.Language.get('winner')
+		});
+	}
+
+	if (publishedDXPVariantId === dxpVariantId) {
+		labels.push({
+			status: 'info',
+			value: Liferay.Language.get('published')
+		});
+	}
+
+	return labels;
 };
 
 export const getTicks: GetTicksFn = maxValue => {
@@ -402,48 +305,55 @@ export const toThousandsABTesting = number => {
 	return toThousands(number);
 };
 
-export const getFormattedDataHistogram = (histogram, index) =>
-	histogram.map(({median, processedDate}) => ({
-		id: `data${index + 1}`,
-		key: processedDate,
-		value: median
+export const getLegendData = dxpVariants => {
+	const COLORS = [...CHART_COLORS];
+
+	return dxpVariants.map(({control, dxpVariantId, dxpVariantName}) => ({
+		color: control ? CONTROL_COLOR : COLORS.shift(),
+		id: dxpVariantId,
+		name: dxpVariantName
 	}));
+};
 
-export const getFormattedDataTooltip: GetFormattedDataTooltip = dataPoint => {
-	const header = [
-		{
-			columns: [
-				{
-					label: d3.utcFormat('%b %-d')(
-						getDateUtil(dataPoint[0].payload.key)
-					),
-					weight: Weights.Semibold
-				},
-				{
-					label: Liferay.Language.get('sessions'),
-					weight: Weights.Semibold
-				}
-			]
-		}
-	];
+export const getMedianGraphData = ({dxpVariants, metricUnit}) => {
+	const COLORS = [...CHART_COLORS];
 
-	const rows = dataPoint.map(({color, name, payload}) => ({
-		columns: [
+	const type = metricUnit === '%' ? 'percentage' : 'number';
+
+	const formatter =
+		metricUnit === '%' ? value => value : value => `${value}s`;
+
+	const items = dxpVariants.map(({confidenceInterval, control, median}) => ({
+		intervals: [
 			{
-				color,
-				label: name
-			},
+				end: confidenceInterval[1],
+				start: confidenceInterval[0]
+			}
+		],
+		progress: [
 			{
-				align: Alignments.Right,
-				label: toThousandsABTesting(payload.value)
+				color: control ? CONTROL_COLOR : COLORS.shift(),
+				value: median
 			}
 		]
 	}));
 
-	return {header, rows};
-};
+	const maxValue = Math.max(
+		...dxpVariants.map(({confidenceInterval}) => confidenceInterval[1])
+	);
 
-export const sortOrderExperiment: SortOrderExperiment = (
-	{control: experimentControlA},
-	{control: experimentControlB}
-) => Number(experimentControlB) - Number(experimentControlA);
+	return {
+		disableScroll: true,
+		empty: maxValue === 0,
+		formatSpacement: false,
+		grid: {
+			formatter,
+			maxValue,
+			minValue: 0,
+			precision: 2,
+			show: true,
+			type
+		},
+		items
+	};
+};

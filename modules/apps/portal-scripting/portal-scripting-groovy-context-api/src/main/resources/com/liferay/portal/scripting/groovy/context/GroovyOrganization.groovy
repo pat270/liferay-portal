@@ -10,6 +10,7 @@ import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.OrganizationConstants;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.CountryServiceUtil;
+import com.liferay.portal.kernel.service.ListTypeServiceUtil;
 import com.liferay.portal.kernel.service.OrganizationLocalServiceUtil;
 import com.liferay.portal.kernel.service.RegionServiceUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -76,8 +77,11 @@ class GroovyOrganization {
 		organization = OrganizationLocalServiceUtil.addOrganization(
 			groovyScriptingContext.guestUserId, parentOrganizationId, name,
 			type, regionId, countryId,
-			ListTypeConstants.ORGANIZATION_STATUS_DEFAULT, comments, site,
-			groovyScriptingContext.getServiceContext());
+			ListTypeServiceUtil.getListTypeId(
+				groovyScriptingContext.companyId,
+				ListTypeConstants.ORGANIZATION_STATUS_DEFAULT,
+				ListTypeConstants.ORGANIZATION_STATUS),
+			comments, site, groovyScriptingContext.getServiceContext());
 	}
 
 	String comments;

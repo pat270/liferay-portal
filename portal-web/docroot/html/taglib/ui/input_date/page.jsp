@@ -10,7 +10,7 @@
 <%
 String randomNamespace = PortalUtil.generateRandomKey(request, "taglib_ui_input_date_page") + StringPool.UNDERLINE;
 
-if (GetterUtil.getBoolean((String)request.getAttribute("liferay-ui:input-date:disableNamespace"))) {
+if (!GetterUtil.getBoolean((String)request.getAttribute("liferay-ui:input-date:useNamespace"), true)) {
 	namespace = StringPool.BLANK;
 }
 
@@ -72,6 +72,12 @@ if (!BrowserSnifferUtil.isMobile(request)) {
 
 	mask = simpleDateFormatPattern;
 
+	// Replace single quotes to prevent the string from breaking when passing
+	// into the A.DatePicker mask. This is used for the zh_HK locale which
+	// returns the format yyyy'年'MM'月'dd'日'. See LPS-191923.
+
+	mask = mask.replaceAll("'", "");
+
 	mask = mask.replaceAll("yyyy", "%Y");
 	mask = mask.replaceAll("MM", "%m");
 	mask = mask.replaceAll("dd", "%d");
@@ -115,7 +121,19 @@ else {
 					<aui:input autocomplete="<%= autoComplete %>" cssClass="<%= cssClass %>" disabled="<%= disabled %>" id="<%= HtmlUtil.getAUICompatibleId(name) %>" label="" name="<%= name %>" placeholder="<%= StringUtil.toLowerCase(placeholderValue) %>" required="<%= required %>" title="" type="text" useNamespace="<%= !StringPool.BLANK.equals(namespace) %>" value="<%= dateString %>" wrappedField="<%= true %>">
 						<aui:validator errorMessage="please-enter-a-valid-date" name="custom">
 							function(val) {
-								return AUI().use('aui-datatype-date-parse').Parsers.date('<%= mask %>', val);
+								const dateValidation = AUI().use('aui-datatype-date-parse').Parsers.date('<%= mask %>', val);
+
+								if (!dateValidation) {
+									let parentNode = A.one('#<%= nameId %>')._node.parentElement;
+
+									let feedbackElement = parentNode.querySelector('.form-feedback-item');
+
+									if (feedbackElement) {
+										parentNode.removeChild(feedbackElement);
+									}
+								}
+
+								return dateValidation;
 							}
 						</aui:validator>
 					</aui:input>
@@ -124,7 +142,18 @@ else {
 					<aui:input cssClass="<%= cssClass %>" disabled="<%= disabled %>" id="<%= HtmlUtil.getAUICompatibleId(name) %>" label="" name="<%= name %>" placeholder="<%= StringUtil.toLowerCase(placeholderValue) %>" required="<%= required %>" title="" type="text" useNamespace="<%= !StringPool.BLANK.equals(namespace) %>" value="<%= dateString %>" wrappedField="<%= true %>">
 						<aui:validator errorMessage="please-enter-a-valid-date" name="custom">
 							function(val) {
-								return AUI().use('aui-datatype-date-parse').Parsers.date('<%= mask %>', val);
+								const dateValidation = AUI().use('aui-datatype-date-parse').Parsers.date('<%= mask %>', val);
+
+								if (!dateValidation) {
+									let parentNode = A.one('#<%= nameId %>')._node.parentElement;
+
+									let feedbackElement = parentNode.querySelector('.form-feedback-item');
+
+									if (feedbackElement) {
+										parentNode.removeChild(feedbackElement);
+									}
+								}
+								return dateValidation;
 							}
 						</aui:validator>
 					</aui:input>
@@ -146,7 +175,7 @@ else {
 
 	<aui:input label="<%= dateTogglerCheckboxLabel %>" name="<%= randomNamespace + dateTogglerCheckboxName %>" type="checkbox" value="<%= disabled %>" />
 
-	<script>
+	<aui:script>
 		(function() {
 			var form = document.<%= namespace + formName %>;
 
@@ -205,7 +234,7 @@ else {
 				);
 			}
 		})();
-	</script>
+	</aui:script>
 </c:if>
 
 <aui:script use='<%= "aui-datepicker" + (BrowserSnifferUtil.isMobile(request) ? "-native" : StringPool.BLANK) %>'>
@@ -321,6 +350,39 @@ else {
 
 							if ((invalidNumber && !nullable) || (invalidNumber && !date && nullable && newSelection) || (newSelection.getFullYear() > 9999)) {
 								event.newSelection[0] = new Date();
+
+								const instance = this;
+
+								const container = instance.get('container');
+
+								let year = container.one('#<%= yearParamId %>');
+
+								const fullYear = newSelection.getFullYear();
+
+								year.val(fullYear);
+
+								const parentNode = A.one('#<%= nameId %>')._node.parentElement;
+
+								const feedbackElement = parentNode.querySelector('.form-feedback-item');
+
+								if (!feedbackElement) {
+									let input = A.one('#<%= nameId %>');
+
+									let changeAlert = document.createElement('div');
+									let feedback = document.createElement('span');
+									let sr = document.createElement('span');
+
+									changeAlert.className = 'form-feedback-item';
+									changeAlert.role = 'alert';
+									feedback.className = 'form-feedback-indicator';
+									feedback.innerHTML = 'The Date has been corrected.';
+									sr.className = 'sr-only'
+									sr.className = 'New Date: ' + event.newSelection[0];
+
+									changeAlert.append(feedback);
+									changeAlert.append(sr);
+									input._node.insertAdjacentElement('afterEnd', changeAlert);
+								}
 							}
 
 							var updatedVal = '';
@@ -391,13 +453,13 @@ else {
 			};
 
 			datePicker.updateValue = function(date) {
-				var instance = this;
+				const instance = this;
 
-				var container = instance.get('container');
+				const container = instance.get('container');
 
-				var dateVal = '';
-				var monthVal = '';
-				var yearVal = '';
+				let dateVal = '';
+				let monthVal = '';
+				let yearVal = '';
 
 				if (date && !isNaN(date)) {
 					dateVal = date.getDate();
@@ -405,9 +467,25 @@ else {
 					yearVal = date.getFullYear();
 				}
 
-				container.one('#<%= dayParamId %>').val(dateVal);
-				container.one('#<%= monthParamId %>').val(monthVal);
-				container.one('#<%= yearParamId %>').val(yearVal);
+				let day = container.one('#<%= dayParamId %>');
+				let month = container.one('#<%= monthParamId %>');
+				let year = container.one('#<%= yearParamId %>');
+
+				if (!(yearVal < 9999 && year._node.value > 9999)) {
+					if (day._node.value != dateVal || month._node.value != monthVal || year._node.value !=yearVal) {
+						const parentNode = A.one('#<%= nameId %>')._node.parentElement;
+
+						const feedbackElement = parentNode.querySelector('.form-feedback-item');
+
+						if (feedbackElement) {
+							parentNode.removeChild(feedbackElement);
+						}
+					}
+				}
+
+				day.val(dateVal);
+				month.val(monthVal);
+				year.val(yearVal);
 			};
 
 			datePicker.after(

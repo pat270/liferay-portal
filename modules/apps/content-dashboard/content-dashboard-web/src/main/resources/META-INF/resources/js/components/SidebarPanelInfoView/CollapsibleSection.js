@@ -8,34 +8,29 @@ import ClayPanel from '@clayui/panel';
 import PropTypes from 'prop-types';
 import React from 'react';
 
-const SidebarPanelInfoCollapsibleSection = ({
-	children,
-	expanded = false,
-	title,
-}) => {
+const SidebarPanelInfoCollapsibleSection = ({children, title}) => {
 	return (
 		<ClayPanel
+			className="c-mb-1"
 			collapsable
-			defaultExpanded={expanded}
+			defaultExpanded
 			displayTitle={
-				<span className="c-inner" tabIndex="-1">
-					<ClayPanel.Title>
-						<ClayLayout.ContentRow>
-							<ClayLayout.ContentCol
-								className="align-self-center panel-title"
-								expand
+				<ClayPanel.Title>
+					<ClayLayout.ContentRow>
+						<ClayLayout.ContentCol
+							className="align-self-center panel-title"
+							expand
+						>
+							<span
+								aria-label={`${Liferay.Language.get(
+									'view'
+								)} ${title}`}
 							>
-								<span
-									aria-label={`${Liferay.Language.get(
-										'view'
-									)} ${title}`}
-								>
-									{title}
-								</span>
-							</ClayLayout.ContentCol>
-						</ClayLayout.ContentRow>
-					</ClayPanel.Title>
-				</span>
+								{title}
+							</span>
+						</ClayLayout.ContentCol>
+					</ClayLayout.ContentRow>
+				</ClayPanel.Title>
 			}
 			displayType="unstyled"
 			showCollapseIcon={true}

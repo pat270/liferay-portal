@@ -4,22 +4,18 @@
  */
 
 import {Dispatch, SetStateAction} from 'react';
-declare type DataError = {
-	baseURL: boolean;
-	title: boolean;
-};
 interface BaseAPIApplicationFieldsProps {
 	basePath: string;
-	data: Partial<APIApplicationItem>;
-	displayError: DataError;
-	setData: Dispatch<SetStateAction<Partial<APIApplicationItem>>>;
-	urlAutoFill?: boolean;
+	data: Partial<APIApplicationUIData>;
+	disableURLAutoFill?: boolean;
+	displayError: ApplicationDataError;
+	setData: Dispatch<SetStateAction<APIApplicationUIData>>;
 }
 export default function BaseAPIApplicationFields({
 	basePath,
 	data,
+	disableURLAutoFill,
 	displayError,
 	setData,
-	urlAutoFill,
 }: BaseAPIApplicationFieldsProps): JSX.Element;
 export {};

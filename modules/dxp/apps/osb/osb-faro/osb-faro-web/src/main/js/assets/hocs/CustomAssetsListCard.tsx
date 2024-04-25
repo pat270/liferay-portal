@@ -1,4 +1,5 @@
 import Card from 'shared/components/Card';
+import ClayLink from '@clayui/link';
 import CustomAssetsListQuery from 'shared/queries/CustomAssetsListQuery';
 import ListComponent from 'shared/hoc/ListComponent';
 import NoResultsDisplay from 'shared/components/NoResultsDisplay';
@@ -9,14 +10,14 @@ import {
 	getGraphQLVariablesFromPagination,
 	MODIFIED_DATE
 } from 'shared/util/pagination';
-import {getRangeSelectorsFromQuery} from 'shared/util/util';
 import {mapListResultsToProps} from 'shared/util/mappers';
 import {metricsListColumns} from 'shared/util/table-columns';
 import {Routes} from 'shared/util/router';
 import {Sizes} from 'shared/util/constants';
 import {useParams} from 'react-router-dom';
 import {useQuery} from '@apollo/react-hooks';
-import {useQueryPagination} from 'shared/hooks';
+import {useQueryPagination} from 'shared/hooks/useQueryPagination';
+import {useQueryRangeSelectors} from 'shared/hooks/useQueryRangeSelectors';
 
 const CustomAssetsListCard: React.FC<{timeZoneId: string}> = ({timeZoneId}) => {
 	const {delta, orderIOMap, page, query} = useQueryPagination({
@@ -24,6 +25,7 @@ const CustomAssetsListCard: React.FC<{timeZoneId: string}> = ({timeZoneId}) => {
 	});
 
 	const {channelId, groupId} = useParams();
+	const rangeSelectors = useQueryRangeSelectors();
 
 	const response = useQuery(CustomAssetsListQuery, {
 		fetchPolicy: 'network-only',
@@ -52,7 +54,7 @@ const CustomAssetsListCard: React.FC<{timeZoneId: string}> = ({timeZoneId}) => {
 						label: `${Liferay.Language.get(
 							'asset'
 						)} | ${Liferay.Language.get('id').toUpperCase()}`,
-						rangeSelectors: getRangeSelectorsFromQuery(query),
+						rangeSelectors,
 						route: Routes.ASSETS_CUSTOM_DASHBOARD
 					}),
 					metricsListColumns.modifiedDate,
@@ -70,7 +72,7 @@ const CustomAssetsListCard: React.FC<{timeZoneId: string}> = ({timeZoneId}) => {
 									)}
 								</span>
 
-								<a
+								<ClayLink
 									href={
 										URLConstants.AssetsCustomAssetsListDocumentation
 									}
@@ -80,7 +82,7 @@ const CustomAssetsListCard: React.FC<{timeZoneId: string}> = ({timeZoneId}) => {
 									{Liferay.Language.get(
 										'learn-more-about-custom-assets'
 									)}
-								</a>
+								</ClayLink>
 							</>
 						}
 						icon={{

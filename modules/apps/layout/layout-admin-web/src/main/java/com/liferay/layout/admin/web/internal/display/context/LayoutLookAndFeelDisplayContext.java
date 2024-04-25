@@ -9,17 +9,20 @@ import com.liferay.client.extension.constants.ClientExtensionEntryConstants;
 import com.liferay.client.extension.model.ClientExtensionEntryRel;
 import com.liferay.client.extension.service.ClientExtensionEntryRelLocalServiceUtil;
 import com.liferay.client.extension.type.CET;
+import com.liferay.client.extension.type.GlobalJSCET;
 import com.liferay.client.extension.type.manager.CETManager;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.TabsItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.TabsItemListBuilder;
 import com.liferay.item.selector.ItemSelector;
 import com.liferay.item.selector.criteria.UUIDItemSelectorReturnType;
+import com.liferay.layout.admin.constants.LayoutScreenNavigationEntryConstants;
 import com.liferay.layout.admin.web.internal.item.selector.MasterLayoutPageTemplateEntryItemSelectorCriterion;
 import com.liferay.layout.admin.web.internal.item.selector.StyleBookEntryItemSelectorCriterion;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalServiceUtil;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -38,7 +41,6 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
-import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
@@ -151,19 +153,15 @@ public class LayoutLookAndFeelDisplayContext {
 				Layout masterLayout = LayoutLocalServiceUtil.getLayout(
 					selLayout.getMasterLayoutPlid());
 
-				String editLayoutURL = HttpComponentsUtil.addParameter(
-					HttpComponentsUtil.addParameter(
-						PortalUtil.getLayoutFullURL(selLayout, _themeDisplay),
-						"p_l_mode", Constants.EDIT),
-					"p_l_back_url",
-					ParamUtil.getString(_httpServletRequest, "redirect"));
-
-				return HttpComponentsUtil.addParameter(
-					HttpComponentsUtil.addParameter(
-						PortalUtil.getLayoutFullURL(
-							masterLayout.fetchDraftLayout(), _themeDisplay),
-						"p_l_mode", Constants.EDIT),
-					"p_l_back_url", editLayoutURL);
+				return HttpComponentsUtil.addParameters(
+					PortalUtil.getLayoutFullURL(
+						masterLayout.fetchDraftLayout(), _themeDisplay),
+					"p_l_back_url", _themeDisplay.getURLCurrent(),
+					"p_l_back_url_title",
+					LanguageUtil.get(
+						_themeDisplay.getLocale(),
+						LayoutScreenNavigationEntryConstants.ENTRY_KEY_DESIGN),
+					"p_l_mode", Constants.EDIT);
 			}
 		).put(
 			"isReadOnly", _layoutsAdminDisplayContext.isReadOnly()
@@ -346,7 +344,7 @@ public class LayoutLookAndFeelDisplayContext {
 		if ((layoutPageTemplateEntry == null) ||
 			!Objects.equals(
 				layoutPageTemplateEntry.getType(),
-				LayoutPageTemplateEntryTypeConstants.TYPE_MASTER_LAYOUT)) {
+				LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT)) {
 
 			hasEditableMasterLayout = true;
 		}
@@ -401,7 +399,7 @@ public class LayoutLookAndFeelDisplayContext {
 		if ((layoutPageTemplateEntry != null) &&
 			Objects.equals(
 				layoutPageTemplateEntry.getType(),
-				LayoutPageTemplateEntryTypeConstants.TYPE_MASTER_LAYOUT)) {
+				LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT)) {
 
 			return false;
 		}
@@ -443,6 +441,21 @@ public class LayoutLookAndFeelDisplayContext {
 			() -> typeSettingsUnicodeProperties.getProperty("loadType", null)
 		).put(
 			"name", cet.getName(_themeDisplay.getLocale())
+		).put(
+			"scriptElementAttributesJSON",
+			() -> {
+				if (!Objects.equals(
+						cet.getType(),
+						ClientExtensionEntryConstants.TYPE_GLOBAL_JS) ||
+					!FeatureFlagManagerUtil.isEnabled("LPD-10981")) {
+
+					return null;
+				}
+
+				GlobalJSCET globalJSCET = (GlobalJSCET)cet;
+
+				return globalJSCET.getScriptElementAttributesJSON();
+			}
 		).put(
 			"scriptLocation",
 			() -> typeSettingsUnicodeProperties.getProperty(

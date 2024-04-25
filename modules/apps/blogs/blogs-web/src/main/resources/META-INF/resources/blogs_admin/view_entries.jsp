@@ -21,9 +21,8 @@ PortletURL portletURL = entriesSearchContainer.getIteratorURL();
 %>
 
 <clay:management-toolbar
-	managementToolbarDisplayContext="<%= new BlogsManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, entriesSearchContainer, trashHelper, displayStyle) %>"
-	propsTransformer="blogs_admin/js/BlogEntriesManagementToolbarPropsTransformer"
-	searchContainerId="blogEntries"
+	managementToolbarDisplayContext="<%= new BlogsManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, entriesSearchContainer, trashHelper) %>"
+	propsTransformer="{BlogEntriesManagementToolbarPropsTransformer} from blogs-web"
 />
 
 <portlet:actionURL name="/blogs/edit_entry" var="restoreTrashEntriesURL">
@@ -85,5 +84,5 @@ PortletURL portletURL = entriesSearchContainer.getIteratorURL();
 <liferay-frontend:component
 	componentId="<%= BlogsWebConstants.BLOGS_ELEMENTS_DEFAULT_EVENT_HANDLER %>"
 	context="<%= blogsViewEntriesDisplayContext.getComponentContext() %>"
-	module="blogs_admin/js/ElementsDefaultEventHandler.es"
+	module="{ElementsDefaultEventHandler} from blogs-web"
 />

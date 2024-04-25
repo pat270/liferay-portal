@@ -27,13 +27,12 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
@@ -191,7 +190,7 @@ public abstract class BaseTaxCategoryResourceTestCase {
 			taxCategoryResource.getCommerceAdminSiteSettingGroupTaxCategoryPage(
 				groupId, Pagination.of(1, 10));
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if (irrelevantGroupId != null) {
 			TaxCategory irrelevantTaxCategory =
@@ -201,13 +200,13 @@ public abstract class BaseTaxCategoryResourceTestCase {
 			page =
 				taxCategoryResource.
 					getCommerceAdminSiteSettingGroupTaxCategoryPage(
-						irrelevantGroupId, Pagination.of(1, 2));
+						irrelevantGroupId,
+						Pagination.of(1, (int)totalCount + 1));
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantTaxCategory),
-				(List<TaxCategory>)page.getItems());
+			assertContains(
+				irrelevantTaxCategory, (List<TaxCategory>)page.getItems());
 			assertValid(
 				page,
 				testGetCommerceAdminSiteSettingGroupTaxCategoryPage_getExpectedActions(
@@ -226,11 +225,10 @@ public abstract class BaseTaxCategoryResourceTestCase {
 			taxCategoryResource.getCommerceAdminSiteSettingGroupTaxCategoryPage(
 				groupId, Pagination.of(1, 10));
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(taxCategory1, taxCategory2),
-			(List<TaxCategory>)page.getItems());
+		assertContains(taxCategory1, (List<TaxCategory>)page.getItems());
+		assertContains(taxCategory2, (List<TaxCategory>)page.getItems());
 		assertValid(
 			page,
 			testGetCommerceAdminSiteSettingGroupTaxCategoryPage_getExpectedActions(
@@ -258,6 +256,12 @@ public abstract class BaseTaxCategoryResourceTestCase {
 		Long groupId =
 			testGetCommerceAdminSiteSettingGroupTaxCategoryPage_getGroupId();
 
+		Page<TaxCategory> taxCategoryPage =
+			taxCategoryResource.getCommerceAdminSiteSettingGroupTaxCategoryPage(
+				groupId, null);
+
+		int totalCount = GetterUtil.getInteger(taxCategoryPage.getTotalCount());
+
 		TaxCategory taxCategory1 =
 			testGetCommerceAdminSiteSettingGroupTaxCategoryPage_addTaxCategory(
 				groupId, randomTaxCategory());
@@ -270,33 +274,78 @@ public abstract class BaseTaxCategoryResourceTestCase {
 			testGetCommerceAdminSiteSettingGroupTaxCategoryPage_addTaxCategory(
 				groupId, randomTaxCategory());
 
-		Page<TaxCategory> page1 =
-			taxCategoryResource.getCommerceAdminSiteSettingGroupTaxCategoryPage(
-				groupId, Pagination.of(1, 2));
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<TaxCategory> taxCategories1 = (List<TaxCategory>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			taxCategories1.toString(), 2, taxCategories1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<TaxCategory> page1 =
+				taxCategoryResource.
+					getCommerceAdminSiteSettingGroupTaxCategoryPage(
+						groupId,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+							pageSizeLimit));
 
-		Page<TaxCategory> page2 =
-			taxCategoryResource.getCommerceAdminSiteSettingGroupTaxCategoryPage(
-				groupId, Pagination.of(2, 2));
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(3, page2.getTotalCount());
+			assertContains(taxCategory1, (List<TaxCategory>)page1.getItems());
 
-		List<TaxCategory> taxCategories2 = (List<TaxCategory>)page2.getItems();
+			Page<TaxCategory> page2 =
+				taxCategoryResource.
+					getCommerceAdminSiteSettingGroupTaxCategoryPage(
+						groupId,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+							pageSizeLimit));
 
-		Assert.assertEquals(
-			taxCategories2.toString(), 1, taxCategories2.size());
+			assertContains(taxCategory2, (List<TaxCategory>)page2.getItems());
 
-		Page<TaxCategory> page3 =
-			taxCategoryResource.getCommerceAdminSiteSettingGroupTaxCategoryPage(
-				groupId, Pagination.of(1, 3));
+			Page<TaxCategory> page3 =
+				taxCategoryResource.
+					getCommerceAdminSiteSettingGroupTaxCategoryPage(
+						groupId,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+							pageSizeLimit));
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(taxCategory1, taxCategory2, taxCategory3),
-			(List<TaxCategory>)page3.getItems());
+			assertContains(taxCategory3, (List<TaxCategory>)page3.getItems());
+		}
+		else {
+			Page<TaxCategory> page1 =
+				taxCategoryResource.
+					getCommerceAdminSiteSettingGroupTaxCategoryPage(
+						groupId, Pagination.of(1, totalCount + 2));
+
+			List<TaxCategory> taxCategories1 =
+				(List<TaxCategory>)page1.getItems();
+
+			Assert.assertEquals(
+				taxCategories1.toString(), totalCount + 2,
+				taxCategories1.size());
+
+			Page<TaxCategory> page2 =
+				taxCategoryResource.
+					getCommerceAdminSiteSettingGroupTaxCategoryPage(
+						groupId, Pagination.of(2, totalCount + 2));
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<TaxCategory> taxCategories2 =
+				(List<TaxCategory>)page2.getItems();
+
+			Assert.assertEquals(
+				taxCategories2.toString(), 1, taxCategories2.size());
+
+			Page<TaxCategory> page3 =
+				taxCategoryResource.
+					getCommerceAdminSiteSettingGroupTaxCategoryPage(
+						groupId, Pagination.of(1, (int)totalCount + 3));
+
+			assertContains(taxCategory1, (List<TaxCategory>)page3.getItems());
+			assertContains(taxCategory2, (List<TaxCategory>)page3.getItems());
+			assertContains(taxCategory3, (List<TaxCategory>)page3.getItems());
+		}
 	}
 
 	protected TaxCategory
@@ -376,7 +425,11 @@ public abstract class BaseTaxCategoryResourceTestCase {
 
 	@Test
 	public void testGraphQLDeleteTaxCategory() throws Exception {
-		TaxCategory taxCategory = testGraphQLDeleteTaxCategory_addTaxCategory();
+
+		// No namespace
+
+		TaxCategory taxCategory1 =
+			testGraphQLDeleteTaxCategory_addTaxCategory();
 
 		Assert.assertTrue(
 			JSONUtil.getValueAsBoolean(
@@ -385,23 +438,61 @@ public abstract class BaseTaxCategoryResourceTestCase {
 						"deleteTaxCategory",
 						new HashMap<String, Object>() {
 							{
-								put("id", taxCategory.getId());
+								put("id", taxCategory1.getId());
 							}
 						})),
 				"JSONObject/data", "Object/deleteTaxCategory"));
-		JSONArray errorsJSONArray = JSONUtil.getValueAsJSONArray(
+
+		JSONArray errorsJSONArray1 = JSONUtil.getValueAsJSONArray(
 			invokeGraphQLQuery(
 				new GraphQLField(
 					"taxCategory",
 					new HashMap<String, Object>() {
 						{
-							put("id", taxCategory.getId());
+							put("id", taxCategory1.getId());
 						}
 					},
 					new GraphQLField("id"))),
 			"JSONArray/errors");
 
-		Assert.assertTrue(errorsJSONArray.length() > 0);
+		Assert.assertTrue(errorsJSONArray1.length() > 0);
+
+		// Using the namespace headlessCommerceAdminSiteSetting_v1_0
+
+		TaxCategory taxCategory2 =
+			testGraphQLDeleteTaxCategory_addTaxCategory();
+
+		Assert.assertTrue(
+			JSONUtil.getValueAsBoolean(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"headlessCommerceAdminSiteSetting_v1_0",
+						new GraphQLField(
+							"deleteTaxCategory",
+							new HashMap<String, Object>() {
+								{
+									put("id", taxCategory2.getId());
+								}
+							}))),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminSiteSetting_v1_0",
+				"Object/deleteTaxCategory"));
+
+		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminSiteSetting_v1_0",
+					new GraphQLField(
+						"taxCategory",
+						new HashMap<String, Object>() {
+							{
+								put("id", taxCategory2.getId());
+							}
+						},
+						new GraphQLField("id")))),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray2.length() > 0);
 	}
 
 	protected TaxCategory testGraphQLDeleteTaxCategory_addTaxCategory()
@@ -430,6 +521,8 @@ public abstract class BaseTaxCategoryResourceTestCase {
 	public void testGraphQLGetTaxCategory() throws Exception {
 		TaxCategory taxCategory = testGraphQLGetTaxCategory_addTaxCategory();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				taxCategory,
@@ -445,11 +538,35 @@ public abstract class BaseTaxCategoryResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/taxCategory"))));
+
+		// Using the namespace headlessCommerceAdminSiteSetting_v1_0
+
+		Assert.assertTrue(
+			equals(
+				taxCategory,
+				TaxCategorySerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminSiteSetting_v1_0",
+								new GraphQLField(
+									"taxCategory",
+									new HashMap<String, Object>() {
+										{
+											put("id", taxCategory.getId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminSiteSetting_v1_0",
+						"Object/taxCategory"))));
 	}
 
 	@Test
 	public void testGraphQLGetTaxCategoryNotFound() throws Exception {
 		Long irrelevantId = RandomTestUtil.randomLong();
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -463,6 +580,25 @@ public abstract class BaseTaxCategoryResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminSiteSetting_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminSiteSetting_v1_0",
+						new GraphQLField(
+							"taxCategory",
+							new HashMap<String, Object>() {
+								{
+									put("id", irrelevantId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -784,6 +920,10 @@ public abstract class BaseTaxCategoryResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -931,9 +1071,9 @@ public abstract class BaseTaxCategoryResourceTestCase {
 	}
 
 	protected TaxCategoryResource taxCategoryResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

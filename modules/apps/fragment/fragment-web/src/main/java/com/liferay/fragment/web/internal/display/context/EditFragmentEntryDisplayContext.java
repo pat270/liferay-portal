@@ -14,10 +14,10 @@ import com.liferay.fragment.processor.FragmentEntryProcessorRegistry;
 import com.liferay.fragment.service.FragmentCollectionLocalServiceUtil;
 import com.liferay.fragment.service.FragmentCollectionServiceUtil;
 import com.liferay.fragment.service.FragmentEntryLocalServiceUtil;
-import com.liferay.fragment.web.internal.constants.FragmentWebKeys;
 import com.liferay.fragment.web.internal.info.field.type.CaptchaInfoFieldType;
 import com.liferay.info.field.type.BooleanInfoFieldType;
 import com.liferay.info.field.type.DateInfoFieldType;
+import com.liferay.info.field.type.DateTimeInfoFieldType;
 import com.liferay.info.field.type.FileInfoFieldType;
 import com.liferay.info.field.type.HTMLInfoFieldType;
 import com.liferay.info.field.type.InfoFieldType;
@@ -28,6 +28,7 @@ import com.liferay.info.field.type.RelationshipInfoFieldType;
 import com.liferay.info.field.type.SelectInfoFieldType;
 import com.liferay.info.field.type.TextInfoFieldType;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -36,7 +37,6 @@ import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
@@ -48,6 +48,7 @@ import com.liferay.portal.kernel.template.TemplateManager;
 import com.liferay.portal.kernel.template.TemplateManagerUtil;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -83,10 +84,10 @@ public class EditFragmentEntryDisplayContext {
 		_fragmentCollectionContributorRegistry =
 			(FragmentCollectionContributorRegistry)
 				httpServletRequest.getAttribute(
-					FragmentWebKeys.FRAGMENT_COLLECTION_CONTRIBUTOR_TRACKER);
+					FragmentCollectionContributorRegistry.class.getName());
 		_fragmentEntryProcessorRegistry =
 			(FragmentEntryProcessorRegistry)httpServletRequest.getAttribute(
-				FragmentWebKeys.FRAGMENT_ENTRY_PROCESSOR_REGISTRY);
+				FragmentEntryProcessorRegistry.class.getName());
 		_themeDisplay = (ThemeDisplay)httpServletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
@@ -544,9 +545,9 @@ public class EditFragmentEntryDisplayContext {
 					return HttpComponentsUtil.addParameters(
 						_themeDisplay.getPathMain() +
 							"/portal/fragment/render_fragment_entry",
-						"groupId", _themeDisplay.getScopeGroupId(),
-						"fragmentEntryId", fragmentEntry.getFragmentEntryId(),
-						"fragmentEntryKey",
+						"p_l_mode", Constants.PREVIEW, "groupId",
+						_themeDisplay.getScopeGroupId(), "fragmentEntryId",
+						fragmentEntry.getFragmentEntryId(), "fragmentEntryKey",
 						fragmentEntry.getFragmentEntryKey());
 				}
 			).build()
@@ -614,6 +615,7 @@ public class EditFragmentEntryDisplayContext {
 
 		portletDisplay.setShowBackIcon(true);
 		portletDisplay.setURLBack(getRedirect());
+		portletDisplay.setURLBackTitle(portletDisplay.getPortletDisplayName());
 
 		FragmentEntry fragmentEntry = getFragmentEntry();
 
@@ -645,11 +647,11 @@ public class EditFragmentEntryDisplayContext {
 
 	private static final InfoFieldType[] _INFO_FIELD_TYPES = {
 		BooleanInfoFieldType.INSTANCE, CaptchaInfoFieldType.INSTANCE,
-		DateInfoFieldType.INSTANCE, FileInfoFieldType.INSTANCE,
-		HTMLInfoFieldType.INSTANCE, LongTextInfoFieldType.INSTANCE,
-		MultiselectInfoFieldType.INSTANCE, NumberInfoFieldType.INSTANCE,
-		RelationshipInfoFieldType.INSTANCE, SelectInfoFieldType.INSTANCE,
-		TextInfoFieldType.INSTANCE
+		DateInfoFieldType.INSTANCE, DateTimeInfoFieldType.INSTANCE,
+		FileInfoFieldType.INSTANCE, HTMLInfoFieldType.INSTANCE,
+		LongTextInfoFieldType.INSTANCE, MultiselectInfoFieldType.INSTANCE,
+		NumberInfoFieldType.INSTANCE, RelationshipInfoFieldType.INSTANCE,
+		SelectInfoFieldType.INSTANCE, TextInfoFieldType.INSTANCE
 	};
 
 	private static final Log _log = LogFactoryUtil.getLog(

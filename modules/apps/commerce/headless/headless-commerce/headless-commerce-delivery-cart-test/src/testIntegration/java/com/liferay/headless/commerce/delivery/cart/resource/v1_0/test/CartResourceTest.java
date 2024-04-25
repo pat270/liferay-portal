@@ -20,19 +20,24 @@ import com.liferay.headless.commerce.delivery.cart.client.dto.v1_0.CouponCode;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.test.rule.Inject;
+import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 
 import java.util.List;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -41,6 +46,13 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class CartResourceTest extends BaseCartResourceTestCase {
+
+	@ClassRule
+	@Rule
+	public static final AggregateTestRule aggregateTestRule =
+		new AggregateTestRule(
+			new LiferayIntegrationTestRule(),
+			PermissionCheckerMethodTestRule.INSTANCE);
 
 	@Before
 	@Override
@@ -95,6 +107,24 @@ public class CartResourceTest extends BaseCartResourceTestCase {
 
 	@Override
 	@Test
+	public void testGetCartByExternalReferenceCodePaymentUrl()
+		throws Exception {
+
+		Cart cart = randomCart();
+
+		String callbackURL = RandomTestUtil.randomString();
+
+		Assert.assertEquals(
+			StringBundler.concat(
+				"http://localhost:8080/o/commerce-payment?groupId=",
+				_commerceChannel.getGroupId(), "&nextStep=", callbackURL,
+				"&uuid=", cart.getOrderUUID()),
+			cartResource.getCartByExternalReferenceCodePaymentUrl(
+				cart.getExternalReferenceCode(), callbackURL));
+	}
+
+	@Override
+	@Test
 	public void testGetCartPaymentURL() throws Exception {
 		Cart cart = randomCart();
 
@@ -133,6 +163,8 @@ public class CartResourceTest extends BaseCartResourceTestCase {
 				billingAddressId = commerceOrder.getBillingAddressId();
 				couponCode = commerceOrder.getCouponCode();
 				currencyCode = _commerceCurrency.getCode();
+				externalReferenceCode =
+					commerceOrder.getExternalReferenceCode();
 				id = commerceOrder.getCommerceOrderId();
 				orderTypeId = commerceOrder.getCommerceOrderTypeId();
 				orderUUID = commerceOrder.getUuid();
@@ -144,18 +176,41 @@ public class CartResourceTest extends BaseCartResourceTestCase {
 		};
 	}
 
+	@Override
 	protected Cart testDeleteCart_addCart() throws Exception {
 		Cart cart = randomCart();
 
 		return cartResource.postCartCheckout(cart.getId());
 	}
 
+	@Override
+	protected Cart testDeleteCartByExternalReferenceCode_addCart()
+		throws Exception {
+
+		Cart cart = randomCart();
+
+		return cartResource.postCartByExternalReferenceCodeCheckout(
+			cart.getExternalReferenceCode());
+	}
+
+	@Override
 	protected Cart testGetCart_addCart() throws Exception {
 		Cart cart = randomCart();
 
 		return cartResource.postCartCheckout(cart.getId());
 	}
 
+	@Override
+	protected Cart testGetCartByExternalReferenceCode_addCart()
+		throws Exception {
+
+		Cart cart = randomCart();
+
+		return cartResource.postCartByExternalReferenceCodeCheckout(
+			cart.getExternalReferenceCode());
+	}
+
+	@Override
 	protected Cart testGetChannelCartsPage_addCart(
 			Long accountId, Long channelId, Cart cart)
 		throws Exception {
@@ -163,22 +218,57 @@ public class CartResourceTest extends BaseCartResourceTestCase {
 		return cartResource.postCartCheckout(cart.getId());
 	}
 
+	@Override
 	protected Long testGetChannelCartsPage_getAccountId() throws Exception {
 		return _accountEntry.getAccountEntryId();
 	}
 
+	@Override
 	protected Long testGetChannelCartsPage_getChannelId() throws Exception {
 		return _commerceChannel.getCommerceChannelId();
 	}
 
+	@Override
 	protected Cart testGraphQLCart_addCart() throws Exception {
 		Cart cart = randomCart();
 
 		return cartResource.postCartCheckout(cart.getId());
 	}
 
+	@Override
 	protected Cart testPatchCart_addCart() throws Exception {
 		return randomCart();
+	}
+
+	@Override
+	protected Cart testPatchCartByExternalReferenceCode_addCart()
+		throws Exception {
+
+		return randomCart();
+	}
+
+	@Override
+	protected Cart testPostCartByExternalReferenceCodeCheckout_addCart(
+			Cart cart)
+		throws Exception {
+
+		return cartResource.postCartByExternalReferenceCodeCheckout(
+			cart.getExternalReferenceCode());
+	}
+
+	@Override
+	protected Cart testPostCartByExternalReferenceCodeCouponCode_addCart(
+			Cart cart)
+		throws Exception {
+
+		CouponCode couponCode = new CouponCode() {
+			{
+				code = cart.getCouponCode();
+			}
+		};
+
+		return cartResource.postCartByExternalReferenceCodeCouponCode(
+			cart.getExternalReferenceCode(), couponCode);
 	}
 
 	@Override
@@ -186,6 +276,7 @@ public class CartResourceTest extends BaseCartResourceTestCase {
 		return cartResource.postCartCheckout(cart.getId());
 	}
 
+	@Override
 	protected Cart testPostCartCouponCode_addCart(Cart cart) throws Exception {
 		CouponCode couponCode = new CouponCode() {
 			{
@@ -196,10 +287,21 @@ public class CartResourceTest extends BaseCartResourceTestCase {
 		return cartResource.postCartCouponCode(cart.getId(), couponCode);
 	}
 
+	@Override
 	protected Cart testPutCart_addCart() throws Exception {
 		Cart cart = randomCart();
 
 		return cartResource.postCartCheckout(cart.getId());
+	}
+
+	@Override
+	protected Cart testPutCartByExternalReferenceCode_addCart()
+		throws Exception {
+
+		Cart cart = randomCart();
+
+		return cartResource.postCartByExternalReferenceCodeCheckout(
+			cart.getExternalReferenceCode());
 	}
 
 	private CommerceOrder _getCommerceOrder() throws Exception {

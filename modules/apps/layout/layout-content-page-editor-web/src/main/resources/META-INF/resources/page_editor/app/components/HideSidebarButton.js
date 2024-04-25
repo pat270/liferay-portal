@@ -5,16 +5,16 @@
 
 import {ClayButtonWithIcon} from '@clayui/button';
 import {ReactDOMServer} from '@liferay/frontend-js-react-web';
+import {useId} from 'frontend-js-components-web';
 import React, {useMemo} from 'react';
 
-import {useId} from '../../common/hooks/useId';
-import {useDispatch, useSelector} from '../contexts/StoreContext';
-import switchSidebarPanel from '../thunks/switchSidebarPanel';
+import {useSelector} from '../contexts/StoreContext';
+import useOnToggleSidebars from './useOnToggleSidebars';
 
 export default function HideSidebarButton() {
-	const dispatch = useDispatch();
 	const id = useId();
 	const sidebarHidden = useSelector((state) => state.sidebar.hidden);
+	const onToggleSidebars = useOnToggleSidebars();
 
 	const buttonTitle = useMemo(() => {
 		const keyLabel = Liferay.Browser?.isMac() ? '⌘' : 'Ctrl';
@@ -30,13 +30,7 @@ export default function HideSidebarButton() {
 				data-title={ReactDOMServer.renderToString(buttonTitle)}
 				data-title-set-as-html
 				displayType="secondary"
-				onClick={() =>
-					dispatch(
-						switchSidebarPanel({
-							hidden: !sidebarHidden,
-						})
-					)
-				}
+				onClick={onToggleSidebars}
 				size="sm"
 				symbol={sidebarHidden ? 'hidden' : 'view'}
 				type="button"

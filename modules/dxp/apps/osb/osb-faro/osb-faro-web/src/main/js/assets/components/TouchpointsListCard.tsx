@@ -7,9 +7,9 @@ import {Link, useParams} from 'react-router-dom';
 import {Routes} from 'shared/util/router';
 import {sub} from 'shared/util/lang';
 import {toFixedPoint} from 'shared/util/numbers';
-import {useQueryRangeSelectors} from 'shared/hooks';
+import {useQueryRangeSelectors} from 'shared/hooks/useQueryRangeSelectors';
 
-interface ITouchpointRouter {
+export interface ITouchpointRouter {
 	params: {
 		channelId: string;
 		groupId: string;
@@ -20,7 +20,7 @@ interface ITouchpointRouter {
 }
 
 const MAX_PAGES_LIMIT = 1000;
-type Item = {
+export type Item = {
 	title: string;
 	touchpoint: string;
 };
@@ -106,12 +106,22 @@ const TouchpointsListCard: React.FC<ITouchpointsListCardProps> = ({items}) => {
 				items={items}
 				rowIdentifier={['touchpoint', 'title']}
 			/>
+
 			{items?.length >= MAX_PAGES_LIMIT && (
 				<p>
-					{sub(
-						Liferay.Language.get('x-page-limit-has-been-reached'),
-						[toFixedPoint(MAX_PAGES_LIMIT)]
-					)}
+					{items.length === 1
+						? sub(
+								Liferay.Language.get(
+									'1-page-view-is-available-of-x-total'
+								),
+								[toFixedPoint(MAX_PAGES_LIMIT)]
+						  )
+						: sub(
+								Liferay.Language.get(
+									'x-page-views-are-available-of-x-total'
+								),
+								[items?.length, toFixedPoint(MAX_PAGES_LIMIT)]
+						  )}
 				</p>
 			)}
 		</div>

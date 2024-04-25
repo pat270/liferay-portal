@@ -7,7 +7,8 @@ package com.liferay.commerce.address.web.internal.display.context;
 
 import com.liferay.account.model.AccountEntry;
 import com.liferay.account.service.AccountEntryService;
-import com.liferay.commerce.address.web.internal.display.context.helper.CommerceCountryRequestHelper;
+import com.liferay.commerce.address.web.internal.display.context.helper.CommerceAddressRequestHelper;
+import com.liferay.commerce.constants.CommerceAccountActionKeys;
 import com.liferay.commerce.model.CommerceAddress;
 import com.liferay.commerce.product.constants.CommerceChannelAccountEntryRelConstants;
 import com.liferay.commerce.product.model.CommerceChannel;
@@ -23,7 +24,6 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
-import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -64,7 +64,7 @@ public class CommerceChannelAccountEntryRelDisplayContext {
 
 		_accountEntry = accountEntryService.getAccountEntry(accountEntryId);
 
-		_commerceCountryRequestHelper = new CommerceCountryRequestHelper(
+		_commerceAddressRequestHelper = new CommerceAddressRequestHelper(
 			httpServletRequest);
 
 		_type = ParamUtil.getInteger(httpServletRequest, "type");
@@ -74,7 +74,7 @@ public class CommerceChannelAccountEntryRelDisplayContext {
 		throws PortalException {
 
 		long commerceChannelAccountEntryRelId = ParamUtil.getLong(
-			_commerceCountryRequestHelper.getRequest(),
+			_commerceAddressRequestHelper.getRequest(),
 			"commerceChannelAccountEntryRelId");
 
 		return _commerceChannelAccountEntryRelService.
@@ -88,7 +88,7 @@ public class CommerceChannelAccountEntryRelDisplayContext {
 
 	public String getAddCommerceChannelAccountEntryRelRenderURL(int type) {
 		return PortletURLBuilder.createRenderURL(
-			_commerceCountryRequestHelper.getLiferayPortletResponse()
+			_commerceAddressRequestHelper.getLiferayPortletResponse()
 		).setMVCRenderCommandName(
 			"/commerce_address/edit_account_entry_default_commerce_address"
 		).setParameter(
@@ -116,12 +116,28 @@ public class CommerceChannelAccountEntryRelDisplayContext {
 		return "address";
 	}
 
+	public String getCommerceAddressAPIURL() {
+		if (CommerceChannelAccountEntryRelConstants.TYPE_BILLING_ADDRESS ==
+				_type) {
+
+			return "/commerce.commerceaddress/get-billing-commerce-addresses";
+		}
+
+		if (CommerceChannelAccountEntryRelConstants.TYPE_SHIPPING_ADDRESS ==
+				_type) {
+
+			return "/commerce.commerceaddress/get-shipping-commerce-addresses";
+		}
+
+		return StringPool.BLANK;
+	}
+
 	public List<CommerceAddress> getCommerceAddresses() throws PortalException {
 		if (CommerceChannelAccountEntryRelConstants.TYPE_BILLING_ADDRESS ==
 				_type) {
 
 			return _commerceAddressService.getBillingCommerceAddresses(
-				_commerceCountryRequestHelper.getCompanyId(),
+				_commerceAddressRequestHelper.getCompanyId(),
 				AccountEntry.class.getName(),
 				_accountEntry.getAccountEntryId());
 		}
@@ -130,7 +146,7 @@ public class CommerceChannelAccountEntryRelDisplayContext {
 				_type) {
 
 			return _commerceAddressService.getShippingCommerceAddresses(
-				_commerceCountryRequestHelper.getCompanyId(),
+				_commerceAddressRequestHelper.getCompanyId(),
 				AccountEntry.class.getName(),
 				_accountEntry.getAccountEntryId());
 		}
@@ -154,14 +170,14 @@ public class CommerceChannelAccountEntryRelDisplayContext {
 	public CreationMenu getCreationMenu(int type) throws Exception {
 		CreationMenu creationMenu = new CreationMenu();
 
-		if (hasPermission(ActionKeys.UPDATE)) {
+		if (hasPermission(CommerceAccountActionKeys.MANAGE_CHANNEL_DEFAULTS)) {
 			creationMenu.addDropdownItem(
 				dropdownItem -> {
 					dropdownItem.setHref(
 						getAddCommerceChannelAccountEntryRelRenderURL(type));
 					dropdownItem.setLabel(
 						_language.get(
-							_commerceCountryRequestHelper.getRequest(),
+							_commerceAddressRequestHelper.getRequest(),
 							"add-default-address"));
 					dropdownItem.setTarget("modal");
 				});
@@ -176,8 +192,9 @@ public class CommerceChannelAccountEntryRelDisplayContext {
 		long[] commerceChannelIds = _getFilteredCommerceChannelIds();
 
 		return ListUtil.filter(
-			_commerceChannelService.getCommerceChannels(
-				_commerceCountryRequestHelper.getCompanyId()),
+			_commerceChannelService.getEligibleCommerceChannels(
+				_accountEntry.getAccountEntryId(), null, QueryUtil.ALL_POS,
+				QueryUtil.ALL_POS),
 			commerceChannel -> !ArrayUtil.contains(
 				commerceChannelIds, commerceChannel.getCommerceChannelId()));
 	}
@@ -187,7 +204,7 @@ public class CommerceChannelAccountEntryRelDisplayContext {
 				_type) {
 
 			return _language.get(
-				_commerceCountryRequestHelper.getRequest(),
+				_commerceAddressRequestHelper.getRequest(),
 				"set-default-billing-address");
 		}
 
@@ -195,7 +212,7 @@ public class CommerceChannelAccountEntryRelDisplayContext {
 				_type) {
 
 			return _language.get(
-				_commerceCountryRequestHelper.getRequest(),
+				_commerceAddressRequestHelper.getRequest(),
 				"set-default-shipping-address");
 		}
 
@@ -208,7 +225,7 @@ public class CommerceChannelAccountEntryRelDisplayContext {
 
 	public boolean hasPermission(String actionId) throws PortalException {
 		return _accountEntryModelResourcePermission.contains(
-			_commerceCountryRequestHelper.getPermissionChecker(),
+			_commerceAddressRequestHelper.getPermissionChecker(),
 			_accountEntry.getAccountEntryId(), actionId);
 	}
 
@@ -278,11 +295,11 @@ public class CommerceChannelAccountEntryRelDisplayContext {
 	private final ModelResourcePermission<AccountEntry>
 		_accountEntryModelResourcePermission;
 	private final AccountEntryService _accountEntryService;
+	private final CommerceAddressRequestHelper _commerceAddressRequestHelper;
 	private final CommerceAddressService _commerceAddressService;
 	private final CommerceChannelAccountEntryRelService
 		_commerceChannelAccountEntryRelService;
 	private final CommerceChannelService _commerceChannelService;
-	private final CommerceCountryRequestHelper _commerceCountryRequestHelper;
 	private final Language _language;
 	private final int _type;
 

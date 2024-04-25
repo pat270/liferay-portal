@@ -7,6 +7,7 @@ package com.liferay.object.admin.rest.internal.odata.entity.v1_0;
 
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.odata.entity.CollectionEntityField;
 import com.liferay.portal.odata.entity.DateTimeEntityField;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -22,6 +23,8 @@ public class ObjectDefinitionEntityModel implements EntityModel {
 
 	public ObjectDefinitionEntityModel() {
 		_entityFieldsMap = EntityModel.toEntityFieldsMap(
+			new CollectionEntityField(
+				new IntegerEntityField("status", locale -> Field.STATUS)),
 			new DateTimeEntityField(
 				"dateCreated",
 				locale -> Field.getSortableFieldName(Field.CREATE_DATE),
@@ -30,14 +33,20 @@ public class ObjectDefinitionEntityModel implements EntityModel {
 				"dateModified",
 				locale -> Field.getSortableFieldName(Field.MODIFIED_DATE),
 				locale -> Field.MODIFIED_DATE),
+			new IntegerEntityField("userId", locale -> Field.USER_ID),
 			new StringEntityField(
 				"label",
 				locale -> Field.getSortableFieldName(
 					"localized_label_".concat(
 						LocaleUtil.toLanguageId(locale)))),
-			new IntegerEntityField("userId", locale -> Field.USER_ID),
 			new StringEntityField(
-				"name", locale -> Field.getSortableFieldName("name")));
+				"name", locale -> Field.getSortableFieldName("name")),
+			new StringEntityField(
+				"objectFolderExternalReferenceCode",
+				locale -> "objectFolderExternalReferenceCode"),
+			new StringEntityField(
+				"rootObjectDefinitionExternalReferenceCode",
+				locale -> "rootObjectDefinitionExternalReferenceCode"));
 	}
 
 	@Override

@@ -1,0 +1,697 @@
+/**
+ * SPDX-FileCopyrightText: (c) 2000 Liferay, Inc. https://liferay.com
+ * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
+ */
+
+import ClayButton from '@clayui/button';
+import ClayDropDown from '@clayui/drop-down';
+import ClayForm, {ClayCheckbox, ClayInput} from '@clayui/form';
+import ClayLabel from '@clayui/label';
+import ClayLayout from '@clayui/layout';
+import ClayLoadingIndicator from '@clayui/loading-indicator';
+import ClayModal from '@clayui/modal';
+import {
+	FDS_INTERNAL_CELL_RENDERERS,
+	IClientExtensionRenderer,
+	IInternalRenderer,
+} from '@liferay/frontend-data-set-web';
+import {InputLocalized} from 'frontend-js-components-web';
+import {fetch, openModal} from 'frontend-js-web';
+import fuzzy from 'fuzzy';
+import React, {useEffect, useState} from 'react';
+
+import {IFDSViewSectionProps} from '../../../FDSView';
+import OrderableTable from '../../../components/OrderableTable';
+import {
+	API_URL,
+	FUZZY_OPTIONS,
+	OBJECT_RELATIONSHIP,
+} from '../../../utils/constants';
+import openDefaultFailureToast from '../../../utils/openDefaultFailureToast';
+import openDefaultSuccessToast from '../../../utils/openDefaultSuccessToast';
+
+import '../../../../css/TableVisualizationMode.scss';
+
+import ClayAlert from '@clayui/alert';
+import ClayIcon from '@clayui/icon';
+
+import {EFieldType, IFDSField} from '../../../utils/types';
+import AddFieldsModalContent from './modal_content/AddFieldsModalContent';
+
+const defaultLanguageId = Liferay.ThemeDisplay.getDefaultLanguageId();
+
+const getRendererLabel = ({
+	cetRenderers = [],
+	rendererName,
+}: {
+	cetRenderers?: IClientExtensionRenderer[];
+	rendererName: string;
+}): string => {
+	let clientExtensionRenderer;
+
+	const internalRenderer = FDS_INTERNAL_CELL_RENDERERS.find(
+		(renderer: IInternalRenderer) => {
+			return renderer.name === rendererName;
+		}
+	);
+
+	if (internalRenderer?.label) {
+		return internalRenderer.label;
+	}
+	else {
+		clientExtensionRenderer = cetRenderers.find(
+			(renderer: IClientExtensionRenderer) => {
+				return renderer.externalReferenceCode === rendererName;
+			}
+		);
+
+		if (clientExtensionRenderer?.name) {
+			return clientExtensionRenderer.name;
+		}
+
+		return rendererName;
+	}
+};
+
+interface IRendererLabelCellRendererComponentProps {
+	cetRenderers?: IClientExtensionRenderer[];
+	item: IFDSField;
+	query: string;
+}
+
+const RendererLabelCellRendererComponent = ({
+	cetRenderers = [],
+	item,
+	query,
+}: IRendererLabelCellRendererComponentProps) => {
+	const itemFieldValue = getRendererLabel({
+		cetRenderers,
+		rendererName: item.renderer,
+	});
+
+	const fuzzyMatch = fuzzy.match(query, itemFieldValue, FUZZY_OPTIONS);
+
+	return (
+		<span>
+			{fuzzyMatch ? (
+				<span
+					dangerouslySetInnerHTML={{
+						__html: fuzzyMatch.rendered,
+					}}
+				/>
+			) : (
+				<span>{itemFieldValue}</span>
+			)}
+		</span>
+	);
+};
+interface IEditFDSFieldModalContentProps {
+	closeModal: Function;
+	fdsClientExtensionCellRenderers: IClientExtensionRenderer[];
+	fdsField: IFDSField;
+	namespace: string;
+	onSave: Function;
+}
+
+const EditFDSFieldModalContent = ({
+	closeModal,
+	fdsClientExtensionCellRenderers,
+	fdsField,
+	namespace,
+	onSave,
+}: IEditFDSFieldModalContentProps) => {
+	const [selectedFDSFieldRenderer, setSelectedFDSFieldRenderer] = useState(
+		fdsField.renderer ?? 'default'
+	);
+
+	const [fdsFieldSortable, setFSDFieldSortable] = useState<boolean>(
+		fdsField.sortable ?? fdsField.type !== EFieldType.OBJECT
+	);
+
+	const fdsInternalCellRendererNames = FDS_INTERNAL_CELL_RENDERERS.map(
+		(cellRenderer: IInternalRenderer) => cellRenderer.name
+	);
+
+	const fdsFieldTranslations = fdsField.label_i18n;
+
+	const [i18nFieldLabels, setI18nFieldLabels] = useState(
+		fdsFieldTranslations
+	);
+
+	const editFDSField = async () => {
+		const body = {
+			label_i18n: i18nFieldLabels,
+			renderer: selectedFDSFieldRenderer,
+			rendererType: !fdsInternalCellRendererNames.includes(
+				selectedFDSFieldRenderer
+			)
+				? 'clientExtension'
+				: 'internal',
+			sortable: fdsFieldSortable,
+		};
+
+		const response = await fetch(
+			`${API_URL.FDS_FIELDS}/by-external-reference-code/${fdsField.externalReferenceCode}`,
+			{
+				body: JSON.stringify(body),
+				headers: {
+					'Accept': 'application/json',
+					'Content-Type': 'application/json',
+				},
+				method: 'PATCH',
+			}
+		);
+
+		if (!response.ok) {
+			openDefaultFailureToast();
+
+			return;
+		}
+
+		const editedFDSField = await response.json();
+
+		closeModal();
+
+		openDefaultSuccessToast();
+
+		onSave({editedFDSField});
+	};
+
+	const fdsFieldNameInputId = `${namespace}fdsFieldNameInput`;
+	const fdsFieldLabelInputId = `${namespace}fdsFieldLabelInput`;
+	const fdsFieldRendererSelectId = `${namespace}fdsFieldRendererSelectId`;
+
+	const options = FDS_INTERNAL_CELL_RENDERERS.map(
+		(renderer: IInternalRenderer) => ({
+			label: renderer.label!,
+			value: renderer.name!,
+		})
+	);
+
+	options.push(
+		...fdsClientExtensionCellRenderers.map((item) => ({
+			label: item.name!,
+			value: item.externalReferenceCode!,
+		}))
+	);
+
+	const CellRendererDropdown = ({
+		cellRenderers,
+		namespace,
+		onItemClick,
+	}: {
+		cellRenderers: {
+			label: string;
+			value: string;
+		}[];
+		namespace: string;
+		onItemClick: Function;
+	}) => {
+		const fdsClientExtensionCellRenderersERCs = fdsClientExtensionCellRenderers.map(
+			(cellRendererCET) => cellRendererCET.externalReferenceCode
+		);
+
+		return (
+			<ClayDropDown
+				menuElementAttrs={{
+					className: 'fds-cell-renderers-dropdown-menu',
+				}}
+				trigger={
+					<ClayButton
+						aria-labelledby={`${namespace}cellRenderersLabel`}
+						className="form-control form-control-select form-control-select-secondary"
+						displayType="secondary"
+						id={fdsFieldRendererSelectId}
+					>
+						{selectedFDSFieldRenderer
+							? getRendererLabel({
+									cetRenderers: fdsClientExtensionCellRenderers,
+									rendererName: selectedFDSFieldRenderer,
+							  })
+							: Liferay.Language.get('choose-an-option')}
+					</ClayButton>
+				}
+			>
+				<ClayDropDown.ItemList items={cellRenderers} role="listbox">
+					{cellRenderers.map((cellRenderer) => (
+						<ClayDropDown.Item
+							className="align-items-center d-flex justify-content-between"
+							key={cellRenderer.value}
+							onClick={() => onItemClick(cellRenderer.value)}
+							roleItem="option"
+						>
+							{cellRenderer.label}
+
+							{fdsClientExtensionCellRenderersERCs.includes(
+								cellRenderer.value
+							) && (
+								<ClayLabel displayType="info">
+									{Liferay.Language.get('client-extension')}
+								</ClayLabel>
+							)}
+						</ClayDropDown.Item>
+					))}
+				</ClayDropDown.ItemList>
+			</ClayDropDown>
+		);
+	};
+
+	return (
+		<>
+			<ClayModal.Header>
+				{Liferay.Util.sub(
+					Liferay.Language.get('edit-x'),
+					fdsField.label_i18n[defaultLanguageId] ?? fdsField.name
+				)}
+			</ClayModal.Header>
+
+			<ClayModal.Body>
+				<ClayForm.Group>
+					<label htmlFor={fdsFieldNameInputId}>
+						{Liferay.Language.get('name')}
+					</label>
+
+					<ClayInput
+						disabled
+						id={fdsFieldNameInputId}
+						type="text"
+						value={fdsField.name}
+					/>
+				</ClayForm.Group>
+
+				<ClayForm.Group>
+					<InputLocalized
+						id={fdsFieldLabelInputId}
+						label={Liferay.Language.get('label')}
+						name="label"
+						onChange={setI18nFieldLabels}
+						translations={i18nFieldLabels}
+					/>
+				</ClayForm.Group>
+
+				<ClayForm.Group>
+					<label htmlFor={fdsFieldRendererSelectId}>
+						{Liferay.Language.get('renderer')}
+					</label>
+
+					<CellRendererDropdown
+						cellRenderers={options}
+						namespace={namespace}
+						onItemClick={(item: string) =>
+							setSelectedFDSFieldRenderer(item)
+						}
+					/>
+				</ClayForm.Group>
+
+				<ClayForm.Group>
+					<ClayCheckbox
+						checked={fdsFieldSortable}
+						disabled={fdsField.type === EFieldType.OBJECT}
+						inline
+						label={Liferay.Language.get('sortable')}
+						onChange={({target: {checked}}) =>
+							setFSDFieldSortable(checked)
+						}
+					/>
+
+					{fdsField.type !== EFieldType.OBJECT && (
+						<span
+							className="label-icon lfr-portal-tooltip ml-2"
+							title={Liferay.Language.get(
+								'if-checked,-data-set-items-can-be-sorted-by-this-field'
+							)}
+						>
+							<ClayIcon symbol="question-circle-full" />
+						</span>
+					)}
+				</ClayForm.Group>
+			</ClayModal.Body>
+
+			<ClayModal.Footer
+				last={
+					<ClayButton.Group spaced>
+						<ClayButton onClick={() => editFDSField()}>
+							{Liferay.Language.get('save')}
+						</ClayButton>
+
+						<ClayButton
+							displayType="secondary"
+							onClick={() => closeModal()}
+						>
+							{Liferay.Language.get('cancel')}
+						</ClayButton>
+					</ClayButton.Group>
+				}
+			/>
+		</>
+	);
+};
+
+function Table({
+	fdsClientExtensionCellRenderers,
+	fdsView,
+	namespace,
+	saveFDSFieldsURL,
+	title,
+}: IFDSViewSectionProps & {title?: string}) {
+	const [fdsFields, setFDSFields] = useState<Array<IFDSField> | null>(null);
+
+	const reorderFDSFields = ({
+		fdsFieldsOrder,
+		storedFDSFields,
+	}: {
+		fdsFieldsOrder: string;
+		storedFDSFields: Array<IFDSField>;
+	}): Array<IFDSField> => {
+		const storedOrderedFDSFieldIds = fdsFieldsOrder.split(',');
+
+		const orderedFDSFields: Array<IFDSField> = [];
+
+		const orderedFDSFieldIds: Array<number> = [];
+
+		storedOrderedFDSFieldIds.forEach((fdsFieldId: string) => {
+			storedFDSFields.forEach((storedFDSField: IFDSField) => {
+				if (fdsFieldId === String(storedFDSField.id)) {
+					orderedFDSFields.push(storedFDSField);
+
+					orderedFDSFieldIds.push(storedFDSField.id);
+				}
+			});
+		});
+
+		storedFDSFields.forEach((storedFDSField: IFDSField) => {
+			if (!orderedFDSFieldIds.includes(storedFDSField.id)) {
+				orderedFDSFields.push(storedFDSField);
+			}
+		});
+
+		return orderedFDSFields;
+	};
+
+	const getFDSFields = async () => {
+		const response = await fetch(
+			`${API_URL.FDS_FIELDS}?filter=(${OBJECT_RELATIONSHIP.FDS_VIEW_FDS_FIELD_ID} eq '${fdsView.id}')&nestedFields=${OBJECT_RELATIONSHIP.FDS_VIEW_FDS_FIELD}`
+		);
+
+		if (!response.ok) {
+			openDefaultFailureToast();
+
+			return null;
+		}
+
+		const responseJSON = await response.json();
+
+		const storedFDSFields = responseJSON?.items;
+
+		if (!storedFDSFields) {
+			openDefaultFailureToast();
+
+			return null;
+		}
+
+		const fdsFieldsOrder =
+			storedFDSFields?.[0]?.[OBJECT_RELATIONSHIP.FDS_VIEW_FDS_FIELD]
+				?.fdsFieldsOrder;
+
+		if (fdsFieldsOrder) {
+			const orderedFDSFields = reorderFDSFields({
+				fdsFieldsOrder,
+				storedFDSFields,
+			});
+
+			setFDSFields(orderedFDSFields);
+		}
+		else {
+			setFDSFields(storedFDSFields);
+		}
+	};
+
+	const handleDelete = ({item}: {item: IFDSField}) => {
+		openModal({
+			bodyHTML: Liferay.Language.get(
+				'are-you-sure-you-want-to-delete-this-field?-fragments-using-it-will-be-affected'
+			),
+			buttons: [
+				{
+					autoFocus: true,
+					displayType: 'secondary',
+					label: Liferay.Language.get('cancel'),
+					type: 'cancel',
+				},
+				{
+					displayType: 'warning',
+					label: Liferay.Language.get('delete'),
+					onClick: async ({
+						processClose,
+					}: {
+						processClose: Function;
+					}) => {
+						processClose();
+
+						const url = `${API_URL.FDS_FIELDS}/${item.id}`;
+
+						const response = await fetch(url, {method: 'DELETE'});
+
+						if (!response.ok) {
+							openDefaultFailureToast();
+
+							return;
+						}
+
+						openDefaultSuccessToast();
+
+						setFDSFields(
+							fdsFields?.filter(
+								(fdsField: IFDSField) => fdsField.id !== item.id
+							) || []
+						);
+					},
+				},
+			],
+			status: 'warning',
+			title: Liferay.Language.get('delete-filter'),
+		});
+	};
+
+	const updateFDSFieldsOrder = async ({
+		fdsFieldsOrder,
+	}: {
+		fdsFieldsOrder: string;
+	}) => {
+		const body = {
+			fdsFieldsOrder,
+		};
+
+		const response = await fetch(
+			`${API_URL.FDS_VIEWS}/by-external-reference-code/${fdsView.externalReferenceCode}`,
+			{
+				body: JSON.stringify(body),
+				headers: {
+					'Accept': 'application/json',
+					'Content-Type': 'application/json',
+				},
+				method: 'PATCH',
+			}
+		);
+
+		if (!response.ok) {
+			openDefaultFailureToast();
+
+			return null;
+		}
+
+		const responseJSON = await response.json();
+
+		const storedFDSFieldsOrder = responseJSON?.fdsFieldsOrder;
+
+		const storedFDSFields = fdsFields;
+
+		if (
+			storedFDSFields &&
+			storedFDSFieldsOrder &&
+			storedFDSFieldsOrder === fdsFieldsOrder
+		) {
+			const orderedFDSFields = reorderFDSFields({
+				fdsFieldsOrder,
+				storedFDSFields,
+			});
+
+			setFDSFields(orderedFDSFields);
+
+			openDefaultSuccessToast();
+		}
+		else {
+			openDefaultFailureToast();
+		}
+	};
+
+	useEffect(() => {
+		getFDSFields();
+
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
+	const onCreationButtonClick = () => {
+		openModal({
+			contentComponent: ({closeModal}: {closeModal: Function}) => (
+				<AddFieldsModalContent
+					closeModal={closeModal}
+					fdsView={fdsView}
+					namespace={namespace}
+					onSave={({
+						createdFDSFields,
+						deletedFDSFieldsIds,
+					}: {
+						createdFDSFields: Array<IFDSField>;
+						deletedFDSFieldsIds: Array<number>;
+					}) => {
+						const newFDSFields: Array<IFDSField> = [];
+
+						fdsFields?.forEach((fdsField) => {
+							if (!deletedFDSFieldsIds.includes(fdsField.id)) {
+								newFDSFields.push(fdsField);
+							}
+						});
+
+						createdFDSFields.forEach((fdsField) => {
+							newFDSFields.push(fdsField);
+						});
+
+						setFDSFields(newFDSFields);
+					}}
+					saveFDSFieldsURL={saveFDSFieldsURL}
+					savedFDSFields={fdsFields || []}
+				/>
+			),
+			size: 'full-screen',
+		});
+	};
+
+	const onEditFDSField = ({editedFDSField}: {editedFDSField: IFDSField}) => {
+		setFDSFields(
+			fdsFields?.map((fdsField) => {
+				if (fdsField.id === editedFDSField.id) {
+					return editedFDSField;
+				}
+
+				return fdsField;
+			}) || null
+		);
+	};
+
+	return fdsFields ? (
+		<ClayLayout.ContentCol className="c-gap-4">
+			<ClayAlert
+				displayType="info"
+				title={`${Liferay.Language.get('info')}:`}
+				variant="stripe"
+			>
+				{Liferay.Language.get(
+					'this-visualization-mode-will-not-be-shown-until-you-assign-at-least-one-field'
+				)}
+			</ClayAlert>
+
+			<OrderableTable
+				actions={[
+					{
+						icon: 'pencil',
+						label: Liferay.Language.get('edit'),
+						onClick: ({item}: {item: IFDSField}) => {
+							openModal({
+								className: 'overflow-auto',
+								contentComponent: ({
+									closeModal,
+								}: {
+									closeModal: Function;
+								}) => (
+									<EditFDSFieldModalContent
+										closeModal={closeModal}
+										fdsClientExtensionCellRenderers={
+											fdsClientExtensionCellRenderers
+										}
+										fdsField={item}
+										namespace={namespace}
+										onSave={onEditFDSField}
+									/>
+								),
+							});
+						},
+					},
+					{
+						icon: 'trash',
+						label: Liferay.Language.get('delete'),
+						onClick: handleDelete,
+					},
+				]}
+				creationMenuItems={[
+					{
+						label: Liferay.Language.get('add-fields'),
+						onClick: onCreationButtonClick,
+					},
+				]}
+				fields={[
+					{
+						label: Liferay.Language.get('name'),
+						name: 'name',
+					},
+					{
+						label: Liferay.Language.get('label'),
+						name: 'label',
+					},
+					{
+						label: Liferay.Language.get('type'),
+						name: 'type',
+					},
+					{
+						contentRenderer: {
+							component: ({item, query}) => (
+								<RendererLabelCellRendererComponent
+									cetRenderers={
+										fdsClientExtensionCellRenderers
+									}
+									item={item}
+									query={query}
+								/>
+							),
+							textMatch: (item: IFDSField) =>
+								getRendererLabel({
+									cetRenderers: fdsClientExtensionCellRenderers,
+									rendererName: item.renderer,
+								}),
+						},
+						label: Liferay.Language.get('renderer'),
+						name: 'renderer',
+					},
+					{
+						label: Liferay.Language.get('sortable'),
+						name: 'sortable',
+					},
+				]}
+				items={fdsFields}
+				noItemsButtonLabel={Liferay.Language.get('add-fields')}
+				noItemsDescription={Liferay.Language.get(
+					'add-fields-to-show-in-your-view'
+				)}
+				noItemsTitle={Liferay.Language.get('no-fields-added-yet')}
+				onOrderChange={({order}: {order: string}) => {
+					updateFDSFieldsOrder({
+						fdsFieldsOrder: order,
+					});
+				}}
+				title={title}
+			/>
+		</ClayLayout.ContentCol>
+	) : (
+		<ClayLoadingIndicator />
+	);
+}
+
+export function Fields(props: IFDSViewSectionProps) {
+	return (
+		<ClayLayout.ContainerFluid>
+			<Table {...props} title={Liferay.Language.get('fields')} />
+		</ClayLayout.ContainerFluid>
+	);
+}
+
+export default Table;

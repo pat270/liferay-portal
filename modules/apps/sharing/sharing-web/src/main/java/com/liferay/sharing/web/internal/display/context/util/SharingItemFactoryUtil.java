@@ -15,6 +15,18 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class SharingItemFactoryUtil {
 
+	public static String getCopyLinkLabel(
+		HttpServletRequest httpServletRequest) {
+
+		return _getLabel("copy-link", httpServletRequest);
+	}
+
+	public static String getInviteToCollaborateLabel(
+		HttpServletRequest httpServletRequest) {
+
+		return _getLabel("invite-to-collaborate", httpServletRequest);
+	}
+
 	public static String getManageCollaboratorsLabel(
 		HttpServletRequest httpServletRequest) {
 

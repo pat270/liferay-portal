@@ -20,12 +20,16 @@ portletDisplay.setURLBack(backURL);
 renderResponse.setTitle(objectDefinition.getLabel(locale, true));
 %>
 
+<liferay-portlet:resourceURL copyCurrentRenderParameters="<%= false %>" var="baseResourceURL" />
+
 <div>
 	<react:component
-		module="js/components/ObjectRelationship/Relationships"
+		module="{Relationships} from object-web"
 		props='<%=
 			HashMapBuilder.<String, Object>put(
 				"apiURL", objectDefinitionsRelationshipsDisplayContext.getAPIURL()
+			).put(
+				"baseResourceURL", String.valueOf(baseResourceURL)
 			).put(
 				"creationMenu", objectDefinitionsRelationshipsDisplayContext.getCreationMenu()
 			).put(
@@ -33,39 +37,17 @@ renderResponse.setTitle(objectDefinition.getLabel(locale, true));
 			).put(
 				"id", ObjectDefinitionsFDSNames.OBJECT_RELATIONSHIPS
 			).put(
+				"isApproved", objectDefinition.isApproved()
+			).put(
 				"items", objectDefinitionsRelationshipsDisplayContext.getFDSActionDropdownItems()
 			).put(
 				"objectDefinitionExternalReferenceCode", objectDefinition.getExternalReferenceCode()
 			).put(
+				"parameterRequired", objectDefinitionsRelationshipsDisplayContext.isParameterRequired(objectDefinition)
+			).put(
 				"style", "fluid"
 			).put(
 				"url", objectDefinitionsRelationshipsDisplayContext.getEditObjectRelationshipURL()
-			).build()
-		%>'
-	/>
-</div>
-
-<div>
-	<react:component
-		module="js/components/ObjectRelationship/AddRelationship"
-		props='<%=
-			HashMapBuilder.<String, Object>put(
-				"objectDefinitionExternalReferenceCode", objectDefinition.getExternalReferenceCode()
-			).put(
-				"objectRelationshipTypes", objectDefinitionsRelationshipsDisplayContext.getObjectRelationshipTypes(objectDefinition)
-			).put(
-				"parameterRequired", objectDefinitionsRelationshipsDisplayContext.isParameterRequired(objectDefinition)
-			).build()
-		%>'
-	/>
-</div>
-
-<div>
-	<react:component
-		module="js/components/ObjectRelationship/DeleteRelationship"
-		props='<%=
-			HashMapBuilder.<String, Object>put(
-				"isApproved", objectDefinition.isApproved()
 			).build()
 		%>'
 	/>

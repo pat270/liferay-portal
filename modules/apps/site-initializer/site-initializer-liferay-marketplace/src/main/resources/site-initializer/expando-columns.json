@@ -1,5 +1,24 @@
 [
 	{
+		"dataType": 16,
+		"defaultValue": [
+			"No",
+			"Yes"
+		],
+		"modelResource": "com.liferay.commerce.product.model.CPAttachmentFileEntry",
+		"name": "App Icon",
+		"properties": {
+			"display-type": "selection-list",
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": false,
+			"secret": false,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
+		}
+	},
+	{
 		"dataType": 15,
 		"modelResource": "com.liferay.commerce.product.model.CPDefinition",
 		"name": "App Icon",
@@ -214,7 +233,21 @@
 	{
 		"dataType": 15,
 		"modelResource": "com.liferay.commerce.model.CommerceOrder",
-		"name": "Github username",
+		"name": "Github Username",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": false,
+			"secret": false,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.product.model.CPDefinition",
+		"name": "Github Username",
 		"properties": {
 			"hidden": false,
 			"indexType": 2,
@@ -336,6 +369,81 @@
 			"hidden": false,
 			"indexType": 2,
 			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
+		}
+	},
+	{
+		"dataType": 16,
+		"defaultValue": [
+			"Liferay DXP 7.4 U10",
+			"Liferay Portal 7.4 GA10",
+			"Liferay DXP 7.4 U20",
+			"Liferay Portal 7.4 GA20",
+			"Liferay DXP 7.4 U30",
+			"Liferay Portal 7.4 GA30",
+			"Liferay DXP 7.4 U40",
+			"Liferay Portal 7.4 GA40",
+			"Liferay DXP 7.4 U50",
+			"Liferay Portal 7.4 GA50",
+			"Liferay DXP 7.4 U60",
+			"Liferay Portal 7.4 GA60",
+			"Liferay DXP 7.4 U70",
+			"Liferay Portal 7.4 GA70",
+			"Liferay DXP 7.4 U80",
+			"Liferay Portal 7.4 GA80",
+			"Liferay DXP 7.4 U90",
+			"Liferay Portal 7.4 GA90",
+			"Liferay DXP 7.4 U91",
+			"Liferay Portal 7.4 GA91",
+			"Liferay DXP 7.4 U92",
+			"Liferay Portal 7.4 GA92",
+			"Liferay DXP 7.4 U93",
+			"Liferay Portal 7.4 GA93",
+			"Liferay DXP 7.4 U94",
+			"Liferay Portal 7.4 GA94",
+			"Liferay DXP 7.4 U95",
+			"Liferay Portal 7.4 GA95",
+			"Liferay DXP 7.4 U96",
+			"Liferay Portal 7.4 GA96",
+			"Liferay DXP 7.4 U97",
+			"Liferay Portal 7.4 GA97",
+			"Liferay DXP 7.4 U98",
+			"Liferay Portal 7.4 GA98",
+			"Liferay DXP 7.4 U99",
+			"Liferay Portal 7.4 GA99",
+			"Liferay DXP 7.4 U100",
+			"Liferay Portal 7.4 GA100",
+			"Liferay DXP 7.4 U101",
+			"Liferay Portal 7.4 GA101",
+			"Liferay DXP 7.4 U102",
+			"Liferay Portal 7.4 GA102",
+			"Liferay DXP 7.4 U103",
+			"Liferay Portal 7.4 GA103",
+			"Liferay DXP 7.4 U104",
+			"Liferay Portal 7.4 GA104",
+			"Liferay DXP 7.4 U105",
+			"Liferay Portal 7.4 GA105",
+			"Liferay DXP 7.4 U106",
+			"Liferay Portal 7.4 GA106",
+			"Liferay DXP 7.4 U107",
+			"Liferay Portal 7.4 GA107",
+			"Liferay DXP 7.4 U108",
+			"Liferay Portal 7.4 GA108",
+			"Liferay DXP 7.4 U109",
+			"Liferay Portal 7.4 GA109",
+			"Liferay DXP 7.4 U110",
+			"Liferay Portal 7.4 GA110"
+		],
+		"modelResource": "com.liferay.commerce.product.model.CPDefinition",
+		"name": "Liferay Version",
+		"properties": {
+			"display-type": "checkbox",
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": true,
 			"localizeFieldName": true,
 			"secret": false,
 			"visibleWithUpdatePermission": false,
@@ -476,7 +584,7 @@
 			"Liferay DXP 7.4 U66",
 			"Liferay Portal 7.4 GA66",
 			"Liferay DXP 7.4 U67",
-			"Liferay Portal 7.4 GA67",
+			"Liferay Porta l 7.4 GA67",
 			"Liferay DXP 7.4 U68",
 			"Liferay Portal 7.4 GA68",
 			"Liferay DXP 7.4 U69",
@@ -484,7 +592,7 @@
 			"Liferay DXP 7.4 U70",
 			"Liferay Portal 7.4 GA70",
 			"Liferay DXP 7.4 U71",
-			"Liferay Portal 7.4 GA71",
+			"Liferay Porta l 7.4 GA71",
 			"Liferay DXP 7.4 U72",
 			"Liferay Portal 7.4 GA72",
 			"Liferay DXP 7.4 U73",
@@ -516,7 +624,7 @@
 			"Liferay DXP 7.4 U86",
 			"Liferay Portal 7.4 GA86"
 		],
-		"modelResource": "com.liferay.commerce.product.model.CPDefinition",
+		"modelResource": "com.liferay.commerce.product.model.CPAttachmentFileEntry",
 		"name": "Liferay Version",
 		"properties": {
 			"display-type": "checkbox",
@@ -589,6 +697,76 @@
 	},
 	{
 		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "trial-end-date",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "trial-start-date",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "trial-virtualhost",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.product.model.CPDefinition",
+		"name": "Project Name",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": false,
+			"secret": false,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.product.model.CPDefinition",
+		"name": "Source",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": false,
+			"secret": false,
+			"visibleWithUpdatePermission": true,
+			"width": "0"
+		}
+	},
+	{
+		"dataType": 15,
 		"modelResource": "com.liferay.commerce.product.model.CPDefinition",
 		"name": "Publisher Icon",
 		"properties": {
@@ -645,6 +823,34 @@
 	},
 	{
 		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "Site Initializer",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.product.model.CPDefinition",
+		"name": "Site Initializer",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
+		}
+	},
+	{
+		"dataType": 15,
 		"modelResource": "com.liferay.commerce.product.model.CPInstance",
 		"name": "Source",
 		"properties": {
@@ -652,6 +858,25 @@
 			"indexType": 2,
 			"localizeField": false,
 			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
+		}
+	},
+	{
+		"dataType": 16,
+		"defaultValue": [
+			"No",
+			"Yes"
+		],
+		"modelResource": "com.liferay.commerce.product.model.CPAttachmentFileEntry",
+		"name": "Source Files",
+		"properties": {
+			"display-type": "selection-list",
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": false,
 			"secret": false,
 			"visibleWithUpdatePermission": false,
 			"width": "0"
@@ -791,6 +1016,483 @@
 		"name": "Version Notes",
 		"properties": {
 			"height": 150,
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.portal.kernel.model.User",
+		"name": "clientId"
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.portal.kernel.model.User",
+		"name": "hsContactCache"
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.portal.kernel.model.User",
+		"name": "hsGuestCache"
+	},
+	{
+		"dataType": 4,
+		"modelResource": "com.liferay.portal.kernel.model.Company",
+		"name": "synchronizeDates"
+	},
+	{
+		"dataType": 1,
+		"modelResource": "com.liferay.portal.kernel.model.User",
+		"name": "osbAgreedToContactSales"
+	},
+	{
+		"dataType": 1,
+		"modelResource": "com.liferay.portal.kernel.model.User",
+		"name": "osbAgreedToContactEvents"
+	},
+	{
+		"dataType": 1,
+		"modelResource": "com.liferay.portal.kernel.model.User",
+		"name": "osbAgreedToContactTrainings"
+	},
+	{
+		"dataType": 1,
+		"modelResource": "com.liferay.portal.kernel.model.User",
+		"name": "osbAgreedToContactTrialLicenses"
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.portal.kernel.model.UserGroup",
+		"name": "link",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
+		}
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.portal.kernel.model.UserGroup",
+		"name": "label"
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.portal.kernel.model.UserGroup",
+		"name": "included_user_group_ids",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
+		}
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.journal.model.JournalArticle",
+		"name": "seo_title",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
+		}
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.journal.model.JournalArticle",
+		"name": "seo_description",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
+		}
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.journal.model.JournalArticle",
+		"name": "seo_title",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
+		}
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.journal.model.JournalArticle",
+		"name": "open_graph_images",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
+		}
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.document.library.kernel.model.DLFileEntry",
+		"name": "seo_title",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
+		}
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.document.library.kernel.model.DLFileEntry",
+		"name": "seo_description",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
+		}
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.document.library.kernel.model.DLFileEntry",
+		"name": "open_graph_images",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
+		}
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.portal.kernel.model.Layout",
+		"name": "campaign_id"
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.journal.model.JournalArticle",
+		"name": "campaign_id"
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.document.library.kernel.model.DLFileEntry",
+		"name": "campaign_id"
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.document.library.kernel.model.DLFileEntry",
+		"name": "campaign_id"
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.blogs.model.BlogsEntry",
+		"name": "display-title"
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.blogs.model.BlogsEntry",
+		"name": "display-title"
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.portal.kernel.model.User",
+		"name": "accessSecret"
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.portal.kernel.model.User",
+		"name": "accessToken"
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.portal.kernel.model.User",
+		"name": "requestSecret"
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.portal.kernel.model.User",
+		"name": "requestToken"
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.saml.persistence.model.SamlIdpSpConnection",
+		"name": "keepAliveURL"
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.saml.persistence.model.SamlSpIdpConnection",
+		"name": "keepAliveURL"
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.portal.kernel.model.User",
+		"name": "googleAccessToken"
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.portal.kernel.model.User",
+		"name": "googleRefreshToken"
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.portal.kernel.model.Layout",
+		"name": "article_section"
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.portal.kernel.model.Layout",
+		"name": "cta_text"
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.portal.kernel.model.Layout",
+		"name": "short_description"
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.portal.kernel.model.Layout",
+		"name": "short_title"
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.portal.kernel.model.Layout",
+		"name": "small_image"
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.journal.model.JournalArticle",
+		"name": "cta_text"
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.journal.model.JournalArticle",
+		"name": "short_description",
+		"properties": {
+			"height": 150
+		}
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.journal.model.JournalArticle",
+		"name": "short_title"
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.journal.model.JournalArticle",
+		"name": "short_title"
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.journal.model.JournalArticle",
+		"name": "small_image"
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.document.library.kernel.model.DLFileEntry",
+		"name": "cta_text"
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.document.library.kernel.model.DLFileEntry",
+		"name": "short_description",
+		"properties": {
+			"height": 150
+		}
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.document.library.kernel.model.DLFileEntry",
+		"name": "short_title"
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.document.library.kernel.model.DLFileEntry",
+		"name": "small_image"
+	},
+	{
+		"dataType": 16,
+		"modelResource": "com.liferay.portal.kernel.model.Layout",
+		"name": "color_scheme",
+		"properties": {
+			"display-type": "selection-list",
+			"hidden": false,
+			"indexType": 2,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.site.navigation.model.SiteNavigationMenuItem",
+		"name": "Menu Item Description",
+		"properties": {
+			"height": 150,
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": true,
+			"localizeFieldName": true,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
+		}
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.site.navigation.model.SiteNavigationMenuItem",
+		"name": "Menu Item Image URL",
+		"properties": {
+			"height": 150,
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": true,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
+		}
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.site.navigation.model.SiteNavigationMenuItem",
+		"name": "Menu Item Preheader",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": true,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
+		}
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.site.navigation.model.SiteNavigationMenuItem",
+		"name": "Menu Item Type",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": true,
+			"localizeFieldName": true,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 16,
+		"modelResource": "com.liferay.site.navigation.model.SiteNavigationMenuItem",
+		"name": "Submenu Background",
+		"properties": {
+			"display-type": "selection-list",
+			"hidden": false,
+			"indexType": 2,
+			"localizeFieldName": true,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 16,
+		"modelResource": "com.liferay.site.navigation.model.SiteNavigationMenuItem",
+		"name": "Submenu Column Span",
+		"properties": {
+			"display-type": "selection-list",
+			"hidden": false,
+			"indexType": 2,
+			"localizeFieldName": true,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 16,
+		"modelResource": "com.liferay.site.navigation.model.SiteNavigationMenuItem",
+		"name": "Submenu Child Columns",
+		"properties": {
+			"display-type": "selection-list",
+			"hidden": false,
+			"indexType": 2,
+			"localizeFieldName": true,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.blogs.model.BlogsEntry",
+		"name": "display-author",
+		"properties": {
+			"hidden": false,
+			"indexType": 1,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.blogs.model.BlogsEntry",
+		"name": "display-author-image-url",
+		"properties": {
+			"hidden": false,
+			"indexType": 1,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 1,
+		"modelResource": "com.liferay.blogs.model.BlogsEntry",
+		"name": "show-author-info",
+		"properties": {
+			"display-type": "boolean",
+			"hidden": false,
+			"indexType": 0,
+			"localizeFieldName": true,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.dispatch.model.DispatchTrigger",
+		"name": "fileName"
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.product.model.CPDefinition",
+		"name": "version",
+		"properties": {
 			"hidden": false,
 			"indexType": 2,
 			"localizeField": false,

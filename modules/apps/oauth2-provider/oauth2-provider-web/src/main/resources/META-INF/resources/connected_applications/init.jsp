@@ -9,13 +9,12 @@
 
 <%@ page import="com.liferay.oauth2.provider.model.OAuth2Authorization" %><%@
 page import="com.liferay.oauth2.provider.service.OAuth2ApplicationLocalServiceUtil" %><%@
-page import="com.liferay.oauth2.provider.service.OAuth2AuthorizationServiceUtil" %><%@
 page import="com.liferay.oauth2.provider.web.internal.AssignableScopes" %><%@
 page import="com.liferay.oauth2.provider.web.internal.constants.OAuth2ProviderWebKeys" %><%@
+page import="com.liferay.oauth2.provider.web.internal.display.context.OAuth2ConnectedApplicationsDisplayContext" %><%@
 page import="com.liferay.oauth2.provider.web.internal.display.context.OAuth2ConnectedApplicationsManagementToolbarDisplayContext" %><%@
 page import="com.liferay.oauth2.provider.web.internal.display.context.OAuth2ConnectedApplicationsPortletDisplayContext" %><%@
 page import="com.liferay.petra.string.StringPool" %><%@
-page import="com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker" %><%@
 page import="com.liferay.portal.kernel.dao.search.ResultRow" %><%@
 page import="com.liferay.portal.kernel.util.StringUtil" %><%@
 page import="com.liferay.portal.kernel.util.Validator" %>

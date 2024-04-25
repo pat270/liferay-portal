@@ -1,9 +1,9 @@
 <li class="control-menu-nav-item segments-experiment-icon ${cssClass}">
 	<button
 		aria-label="${title}"
-		class="btn-monospaced btn-sm lfr-portal-tooltip product-menu-toggle sidenav-toggler"
+		class="btn btn-monospaced btn-sm control-menu-nav-link lfr-portal-tooltip product-menu-toggle sidenav-toggler"
 		data-content="body"
-		data-open-class="open-admin-panel"
+		data-open-class="open-admin-panel open"
 		data-qa-id="segmentsExperimentPanel"
 		data-target="#${portletNamespace}segmentsExperimentPanelId"
 		data-title="${title}"
@@ -16,6 +16,6 @@
 	</button>
 </li>
 
-<script>
+<script ${nonceAttribute}>
 	Liferay.SideNavigation.initialize(document.getElementById('${portletNamespace}segmentsExperimentPanelToggleId'));
 </script>

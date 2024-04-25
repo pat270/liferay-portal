@@ -5,15 +5,20 @@
 
 package com.liferay.headless.admin.user.internal.dto.v1_0.util;
 
+import com.liferay.account.constants.AccountListTypeConstants;
 import com.liferay.headless.admin.user.dto.v1_0.PostalAddress;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Address;
 import com.liferay.portal.kernel.model.Country;
 import com.liferay.portal.kernel.model.ListType;
 import com.liferay.portal.kernel.model.Region;
+import com.liferay.portal.kernel.service.ListTypeLocalService;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -21,6 +26,20 @@ import java.util.Map;
  * @author Javier Gamarra
  */
 public class PostalAddressUtil {
+
+	public static long[] getAccountEntryContactAddressListTypeIds(
+		long companyId, ListTypeLocalService listTypeLocalService) {
+
+		return TransformUtil.transformToLongArray(
+			_names,
+			name -> {
+				ListType listType = listTypeLocalService.getListType(
+					companyId, name,
+					AccountListTypeConstants.ACCOUNT_ENTRY_CONTACT_ADDRESS);
+
+				return listType.getListTypeId();
+			});
+	}
 
 	public static PostalAddress toPostalAddress(
 		boolean acceptAllLanguages, Address address, long companyId,
@@ -30,16 +49,6 @@ public class PostalAddressUtil {
 
 		return new PostalAddress() {
 			{
-				addressLocality = address.getCity();
-				addressType = listType.getName();
-				id = address.getAddressId();
-				name = address.getName();
-				postalCode = address.getZip();
-				primary = address.isPrimary();
-				streetAddressLine1 = address.getStreet1();
-				streetAddressLine2 = address.getStreet2();
-				streetAddressLine3 = address.getStreet3();
-
 				setAddressCountry(
 					() -> {
 						if (address.getCountryId() <= 0) {
@@ -71,6 +80,7 @@ public class PostalAddressUtil {
 
 						return countryNames;
 					});
+				setAddressLocality(address::getCity);
 				setAddressRegion(
 					() -> {
 						if (address.getRegionId() <= 0) {
@@ -81,8 +91,23 @@ public class PostalAddressUtil {
 
 						return region.getName();
 					});
+				setAddressType(listType::getName);
+				setId(address::getAddressId);
+				setName(address::getName);
+				setPhoneNumber(address::getPhoneNumber);
+				setPostalCode(address::getZip);
+				setPrimary(address::isPrimary);
+				setStreetAddressLine1(address::getStreet1);
+				setStreetAddressLine2(address::getStreet2);
+				setStreetAddressLine3(address::getStreet3);
 			}
 		};
 	}
+
+	private static final List<String> _names = ListUtil.fromArray(
+		AccountListTypeConstants.ACCOUNT_ENTRY_CONTACT_ADDRESS_TYPE_BILLING,
+		AccountListTypeConstants.ACCOUNT_ENTRY_CONTACT_ADDRESS_TYPE_OTHER,
+		AccountListTypeConstants.ACCOUNT_ENTRY_CONTACT_ADDRESS_TYPE_P_O_BOX,
+		AccountListTypeConstants.ACCOUNT_ENTRY_CONTACT_ADDRESS_TYPE_SHIPPING);
 
 }

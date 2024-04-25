@@ -1,6 +1,7 @@
 @component-name = "portal-categories"
 definition {
 
+	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.component.names = "Categories";
@@ -12,17 +13,6 @@ definition {
 		User.firstLoginPG();
 
 		HeadlessSite.addSite(siteName = "Test Site Name");
-	}
-
-	tearDown {
-		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
-
-		if (${testLiferayVirtualInstance} == "true") {
-			PortalInstances.tearDownCP();
-		}
-		else {
-			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
-		}
 	}
 
 	@description = "Add a category as Site Role."
@@ -281,6 +271,8 @@ definition {
 	@description = "This is a test for LPS-143509. The sites creator can add a site with required vocabulary."
 	@priority = 4
 	test AddSiteWithRequiredVocabulary {
+		property portal.upstream = "quarantine";
+
 		task ("Given a site creator has a required vocabulary on Global site") {
 			task ("Add a vocabulary with site as associated asset type") {
 				Category.openCategoriesAdmin(siteURLKey = "global");
@@ -552,51 +544,8 @@ definition {
 		}
 
 		task ("Define the permissions") {
-			for (var resourceActionIndex : list "ADD_VOCABULARY,ADD_CATEGORY") {
-				Permissions.definePermissionViaJSONAPI(
-					resourceAction = ${resourceActionIndex},
-					resourceName = "com.liferay.asset.categories",
-					roleTitle = "Category Role Name",
-					roleType = "site");
-			}
-
-			Permissions.definePermissionViaJSONAPI(
-				resourceAction = "VIEW_SITE_ADMINISTRATION",
-				resourceName = "com.liferay.portal.kernel.model.Group",
-				roleTitle = "Category Role Name",
-				roleType = "site");
-
-			for (var resourceActionIndex : list "VIEW,CONFIGURATION,ACCESS_IN_CONTROL_PANEL") {
-				Permissions.definePermissionViaJSONAPI(
-					resourceAction = ${resourceActionIndex},
-					resourceName = "com_liferay_asset_categories_admin_web_portlet_AssetCategoriesAdminPortlet",
-					roleTitle = "Category Role Name",
-					roleType = "site");
-			}
-
-			for (var resourceActionIndex : list "ADD_TO_PAGE,PERMISSIONS,CONFIGURATION,VIEW") {
-				Permissions.definePermissionViaJSONAPI(
-					resourceAction = ${resourceActionIndex},
-					resourceName = "com_liferay_asset_categories_navigation_web_portlet_AssetCategoriesNavigationPortlet",
-					roleTitle = "Category Role Name",
-					roleType = "site");
-			}
-
-			Permissions.definePermissionViaJSONAPI(
-				resourceAction = "VIEW_SITE_ADMINISTRATION",
-				resourceName = "com.liferay.portal.kernel.model.Group",
-				roleTitle = "Category Role Name",
-				roleType = "site");
-
-			Permissions.definePermissionViaJSONAPI(
-				resourceAction = "VIEW",
-				resourceName = "com.liferay.asset.kernel.model.AssetCategory",
-				roleTitle = "Category Role Name",
-				roleType = "site");
-
-			Permissions.definePermissionViaJSONAPI(
-				resourceAction = "VIEW",
-				resourceName = "com.liferay.asset.kernel.model.AssetVocabulary",
+			Permissions.definePermissionsViaJSONAPI(
+				resourceNameActionList = "com.liferay.asset.categories,ADD_VOCABULARY,ADD_CATEGORY:com.liferay.portal.kernel.model.Group,VIEW_SITE_ADMINISTRATION:com_liferay_asset_categories_admin_web_portlet_AssetCategoriesAdminPortlet,VIEW,CONFIGURATION,ACCESS_IN_CONTROL_PANEL:com_liferay_asset_categories_navigation_web_portlet_AssetCategoriesNavigationPortlet,ADD_TO_PAGE,PERMISSIONS,CONFIGURATION,VIEW:com.liferay.asset.kernel.model.AssetCategory,VIEW:com.liferay.asset.kernel.model.AssetVocabulary,VIEW",
 				roleTitle = "Category Role Name",
 				roleType = "site");
 		}
@@ -666,11 +615,11 @@ definition {
 		}
 
 		task ("View the category is assigned to the copy of web content") {
-			WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Title Duplicate 1");
+			WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Title (Copy)");
 
 			WebContent.viewCP(
 				webContentContent = "Web Content Content",
-				webContentTitle = "Web Content Title Duplicate 1");
+				webContentTitle = "Web Content Title (Copy)");
 
 			WebContent.viewCategorizationVocabularyCP(vocabularyNameList = "Vocabulary Name");
 
@@ -712,8 +661,6 @@ definition {
 	@description = "Export and import a web content with a category or a subcategory."
 	@priority = 5
 	test ExportImportWebContentWithCategoryOrSubCategory {
-		property portal.acceptance = "true";
-
 		task ("Add a widget page") {
 			JSONLayout.addPublicLayout(
 				groupName = "Test Site Name",
@@ -840,6 +787,59 @@ definition {
 			WebContent.viewCategorizationCategoryCP(
 				categoryNameList = "Subcategory Name",
 				webContentTitle = "Subcategory WC Title");
+		}
+	}
+
+	@description = "This is a test for LPS-187080. Changing the category filter 'Vocabulary' setting from 'All' to 'Filter' may not work properly."
+	@priority = 3
+	test FilterCategoryFilterByVocabularies {
+		task ("Given a user has a Category Filter widget on a content page") {
+			JSONCategory.addVocabulary(
+				groupName = "Test Site Name",
+				title = "Vocabulary Name");
+
+			JSONCategory.addCategory(
+				groupName = "Test Site Name",
+				title = "Category Name",
+				vocabularyName = "Vocabulary Name");
+
+			JSONLayout.addPublicLayout(
+				groupName = "Test Site Name",
+				layoutName = "Test Page Name",
+				type = "content");
+
+			ContentPagesNavigator.openEditContentPage(
+				pageName = "Test Page Name",
+				siteName = "Test Site Name");
+
+			PageEditor.addWidget(portletName = "Category Filter");
+		}
+
+		task ("When the user filters Category Filter by vocabularies") {
+			Portlet.gotoPortletOptions(
+				portletName = "Category Filter",
+				portletOption = "Configuration");
+
+			IFrame.selectModalFrame();
+
+			Select(
+				key_fieldLabel = "Vocabularies",
+				locator1 = "Select#GENERIC_SELECT_FIELD",
+				value1 = "Filter");
+
+			PortletEntry.save();
+
+			IFrame.closeFrame();
+
+			PageEditor.publish();
+		}
+
+		task ("Then the user could see categories on Category Filter") {
+			Portlet.expandTree();
+
+			AssertVisible(
+				key_nodeName = "Category Name",
+				locator1 = "Treeview#NODE_ITEM");
 		}
 	}
 
@@ -1020,7 +1020,7 @@ definition {
 		}
 
 		task ("View the search results") {
-			SearchResultPortlet.viewSearchResults(
+			SearchResults.viewSearchResults(
 				searchAssetTitle = "Web Content Title",
 				searchAssetType = "Webcontent");
 		}
@@ -1152,7 +1152,7 @@ definition {
 		}
 
 		task ("View the web content is shown in search result") {
-			SearchResultPortlet.viewSearchResults(
+			SearchResults.viewSearchResults(
 				searchAssetTitle = "Test Title",
 				searchAssetType = "Web Content Article");
 		}

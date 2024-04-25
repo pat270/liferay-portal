@@ -27,8 +27,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -217,7 +215,7 @@ public abstract class BaseKnowledgeBaseAttachmentResourceTestCase {
 				getKnowledgeBaseArticleKnowledgeBaseAttachmentsPage(
 					knowledgeBaseArticleId);
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if (irrelevantKnowledgeBaseArticleId != null) {
 			KnowledgeBaseAttachment irrelevantKnowledgeBaseAttachment =
@@ -230,10 +228,10 @@ public abstract class BaseKnowledgeBaseAttachmentResourceTestCase {
 					getKnowledgeBaseArticleKnowledgeBaseAttachmentsPage(
 						irrelevantKnowledgeBaseArticleId);
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantKnowledgeBaseAttachment),
+			assertContains(
+				irrelevantKnowledgeBaseAttachment,
 				(List<KnowledgeBaseAttachment>)page.getItems());
 			assertValid(
 				page,
@@ -254,10 +252,13 @@ public abstract class BaseKnowledgeBaseAttachmentResourceTestCase {
 				getKnowledgeBaseArticleKnowledgeBaseAttachmentsPage(
 					knowledgeBaseArticleId);
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(knowledgeBaseAttachment1, knowledgeBaseAttachment2),
+		assertContains(
+			knowledgeBaseAttachment1,
+			(List<KnowledgeBaseAttachment>)page.getItems());
+		assertContains(
+			knowledgeBaseAttachment2,
 			(List<KnowledgeBaseAttachment>)page.getItems());
 		assertValid(
 			page,
@@ -385,7 +386,10 @@ public abstract class BaseKnowledgeBaseAttachmentResourceTestCase {
 
 	@Test
 	public void testGraphQLDeleteKnowledgeBaseAttachment() throws Exception {
-		KnowledgeBaseAttachment knowledgeBaseAttachment =
+
+		// No namespace
+
+		KnowledgeBaseAttachment knowledgeBaseAttachment1 =
 			testGraphQLDeleteKnowledgeBaseAttachment_addKnowledgeBaseAttachment();
 
 		Assert.assertTrue(
@@ -397,11 +401,12 @@ public abstract class BaseKnowledgeBaseAttachmentResourceTestCase {
 							{
 								put(
 									"knowledgeBaseAttachmentId",
-									knowledgeBaseAttachment.getId());
+									knowledgeBaseAttachment1.getId());
 							}
 						})),
 				"JSONObject/data", "Object/deleteKnowledgeBaseAttachment"));
-		JSONArray errorsJSONArray = JSONUtil.getValueAsJSONArray(
+
+		JSONArray errorsJSONArray1 = JSONUtil.getValueAsJSONArray(
 			invokeGraphQLQuery(
 				new GraphQLField(
 					"knowledgeBaseAttachment",
@@ -409,13 +414,53 @@ public abstract class BaseKnowledgeBaseAttachmentResourceTestCase {
 						{
 							put(
 								"knowledgeBaseAttachmentId",
-								knowledgeBaseAttachment.getId());
+								knowledgeBaseAttachment1.getId());
 						}
 					},
 					new GraphQLField("id"))),
 			"JSONArray/errors");
 
-		Assert.assertTrue(errorsJSONArray.length() > 0);
+		Assert.assertTrue(errorsJSONArray1.length() > 0);
+
+		// Using the namespace headlessDelivery_v1_0
+
+		KnowledgeBaseAttachment knowledgeBaseAttachment2 =
+			testGraphQLDeleteKnowledgeBaseAttachment_addKnowledgeBaseAttachment();
+
+		Assert.assertTrue(
+			JSONUtil.getValueAsBoolean(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"headlessDelivery_v1_0",
+						new GraphQLField(
+							"deleteKnowledgeBaseAttachment",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"knowledgeBaseAttachmentId",
+										knowledgeBaseAttachment2.getId());
+								}
+							}))),
+				"JSONObject/data", "JSONObject/headlessDelivery_v1_0",
+				"Object/deleteKnowledgeBaseAttachment"));
+
+		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessDelivery_v1_0",
+					new GraphQLField(
+						"knowledgeBaseAttachment",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"knowledgeBaseAttachmentId",
+									knowledgeBaseAttachment2.getId());
+							}
+						},
+						new GraphQLField("id")))),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray2.length() > 0);
 	}
 
 	protected KnowledgeBaseAttachment
@@ -451,6 +496,8 @@ public abstract class BaseKnowledgeBaseAttachmentResourceTestCase {
 		KnowledgeBaseAttachment knowledgeBaseAttachment =
 			testGraphQLGetKnowledgeBaseAttachment_addKnowledgeBaseAttachment();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				knowledgeBaseAttachment,
@@ -468,6 +515,30 @@ public abstract class BaseKnowledgeBaseAttachmentResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/knowledgeBaseAttachment"))));
+
+		// Using the namespace headlessDelivery_v1_0
+
+		Assert.assertTrue(
+			equals(
+				knowledgeBaseAttachment,
+				KnowledgeBaseAttachmentSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessDelivery_v1_0",
+								new GraphQLField(
+									"knowledgeBaseAttachment",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"knowledgeBaseAttachmentId",
+												knowledgeBaseAttachment.
+													getId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data", "JSONObject/headlessDelivery_v1_0",
+						"Object/knowledgeBaseAttachment"))));
 	}
 
 	@Test
@@ -475,6 +546,8 @@ public abstract class BaseKnowledgeBaseAttachmentResourceTestCase {
 		throws Exception {
 
 		Long irrelevantKnowledgeBaseAttachmentId = RandomTestUtil.randomLong();
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -490,6 +563,27 @@ public abstract class BaseKnowledgeBaseAttachmentResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessDelivery_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessDelivery_v1_0",
+						new GraphQLField(
+							"knowledgeBaseAttachment",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"knowledgeBaseAttachmentId",
+										irrelevantKnowledgeBaseAttachmentId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -607,6 +701,8 @@ public abstract class BaseKnowledgeBaseAttachmentResourceTestCase {
 		KnowledgeBaseAttachment knowledgeBaseAttachment =
 			testGraphQLGetSiteKnowledgeBaseArticleByExternalReferenceCodeKnowledgeBaseArticleExternalReferenceCodeKnowledgeBaseAttachmentByExternalReferenceCode_addKnowledgeBaseAttachment();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				knowledgeBaseAttachment,
@@ -640,6 +736,44 @@ public abstract class BaseKnowledgeBaseAttachmentResourceTestCase {
 								getGraphQLFields())),
 						"JSONObject/data",
 						"Object/knowledgeBaseArticleByExternalReferenceCodeKnowledgeBaseArticleExternalReferenceCodeKnowledgeBaseAttachmentByExternalReferenceCode"))));
+
+		// Using the namespace headlessDelivery_v1_0
+
+		Assert.assertTrue(
+			equals(
+				knowledgeBaseAttachment,
+				KnowledgeBaseAttachmentSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessDelivery_v1_0",
+								new GraphQLField(
+									"knowledgeBaseArticleByExternalReferenceCodeKnowledgeBaseArticleExternalReferenceCodeKnowledgeBaseAttachmentByExternalReferenceCode",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"siteKey",
+												"\"" +
+													testGraphQLGetSiteKnowledgeBaseArticleByExternalReferenceCodeKnowledgeBaseArticleExternalReferenceCodeKnowledgeBaseAttachmentByExternalReferenceCode_getSiteId() +
+														"\"");
+
+											put(
+												"knowledgeBaseArticleExternalReferenceCode",
+												"\"" +
+													testGraphQLGetSiteKnowledgeBaseArticleByExternalReferenceCodeKnowledgeBaseArticleExternalReferenceCodeKnowledgeBaseAttachmentByExternalReferenceCode_getKnowledgeBaseArticleExternalReferenceCode() +
+														"\"");
+
+											put(
+												"externalReferenceCode",
+												"\"" +
+													knowledgeBaseAttachment.
+														getExternalReferenceCode() +
+															"\"");
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data", "JSONObject/headlessDelivery_v1_0",
+						"Object/knowledgeBaseArticleByExternalReferenceCodeKnowledgeBaseArticleExternalReferenceCodeKnowledgeBaseAttachmentByExternalReferenceCode"))));
 	}
 
 	protected Long
@@ -667,6 +801,8 @@ public abstract class BaseKnowledgeBaseAttachmentResourceTestCase {
 		String irrelevantExternalReferenceCode =
 			"\"" + RandomTestUtil.randomString() + "\"";
 
+		// No namespace
+
 		Assert.assertEquals(
 			"Not Found",
 			JSONUtil.getValueAsString(
@@ -687,6 +823,34 @@ public abstract class BaseKnowledgeBaseAttachmentResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessDelivery_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessDelivery_v1_0",
+						new GraphQLField(
+							"knowledgeBaseArticleByExternalReferenceCodeKnowledgeBaseArticleExternalReferenceCodeKnowledgeBaseAttachmentByExternalReferenceCode",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"siteKey",
+										"\"" + irrelevantGroup.getGroupId() +
+											"\"");
+									put(
+										"knowledgeBaseArticleExternalReferenceCode",
+										irrelevantKnowledgeBaseArticleExternalReferenceCode);
+									put(
+										"externalReferenceCode",
+										irrelevantExternalReferenceCode);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -1120,6 +1284,10 @@ public abstract class BaseKnowledgeBaseAttachmentResourceTestCase {
 
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
+
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
 
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
@@ -1560,9 +1728,9 @@ public abstract class BaseKnowledgeBaseAttachmentResourceTestCase {
 	}
 
 	protected KnowledgeBaseAttachmentResource knowledgeBaseAttachmentResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

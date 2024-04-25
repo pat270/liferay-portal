@@ -19,7 +19,6 @@ if (editContactInformationDisplayContext.getPrimaryKey() > 0) {
 }
 
 PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "opening-hours"), editContactInformationDisplayContext.getRedirect());
-
 PortalUtil.addPortletBreadcrumbEntry(request, editContactInformationDisplayContext.getSheetTitle(), null);
 %>
 
@@ -51,7 +50,7 @@ PortalUtil.addPortletBreadcrumbEntry(request, editContactInformationDisplayConte
 
 				<liferay-ui:error key="<%= NoSuchListTypeException.class.getName() + editContactInformationDisplayContext.getClassName() + ListTypeConstants.ORGANIZATION_SERVICE %>" message="please-select-a-type" />
 
-				<aui:select label="type-of-service" listType="<%= ListTypeConstants.ORGANIZATION_SERVICE %>" name="orgLaborListTypeId" />
+				<aui:select label="type-of-service" listType="<%= ListTypeConstants.ORGANIZATION_SERVICE %>" listTypeFieldName="listTypeId" name="orgLaborListTypeId" />
 
 				<table border="0">
 

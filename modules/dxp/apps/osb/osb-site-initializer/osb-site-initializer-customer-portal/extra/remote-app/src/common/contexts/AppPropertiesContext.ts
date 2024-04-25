@@ -7,9 +7,12 @@ import {ApolloClient} from '@apollo/client';
 import {createContext, useContext} from 'react';
 
 export const AppPropertiesContext = createContext({
+	accountSettingsURL: '',
 	articleAccountSupportURL: '',
+	articleDeactivateKey: '',
 	articleDeployingActivationKeysURL: '',
 	articleGettingStartedWithLiferayEnterpriseSearchURL: '',
+	articleNotifiedWhenMyActivationKeyIsAboutToExpireURL: '',
 	articleWhatIsMyInstanceSizingValueURL: '',
 	client: null,
 	featureFlags: [],
@@ -18,6 +21,7 @@ export const AppPropertiesContext = createContext({
 	oktaSessionAPI: '',
 	provisioningServerAPI: '',
 	submitSupportTicketURL: '',
+	theOverviewPageURL: '',
 });
 
 export function useAppPropertiesContext() {

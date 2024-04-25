@@ -30,10 +30,6 @@ definition {
 			ACUtils.createBlogsAndAddToPage();
 		}
 
-		task ("Connect the DXP to AC") {
-			ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
-		}
-
 		task ("Add 3 more new users") {
 			for (var name : list ${usernameList}) {
 				JSONUser.addUser(
@@ -49,17 +45,13 @@ definition {
 			}
 		}
 
-		task ("Sync the Contact Data") {
-			ACDXPSettings.syncNewContactData();
+		task ("Connect the DXP to AC") {
+			ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
 		}
 	}
 
 	tearDown {
 		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
-
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
-		//ACUtils.tearDownAC();
 
 		ACUtils.tearDownDXP();
 
@@ -69,12 +61,14 @@ definition {
 		else {
 			JSONGroup.deleteGroupByName(groupName = "Site Name");
 		}
+
+		ACUtils.tearDownAC();
 	}
 
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8523 | Test Summary: Assert segment membership list shows all known individuals"
 	@priority = 4
 	test AssertSegmentMembershipListShowsAllKnownIndividuals {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var emailList = "user1@liferay.com,user2@liferay.com,user3@liferay.com";
 		var nameList = "user1 user1,user2 user2,user3 user3";
@@ -82,7 +76,7 @@ definition {
 		task ("View the blogs page as different users") {
 			ACUtils.navigateToSitePageWithUser(
 				actionType = "View Blog",
-				documentTitleList = "Blogs AC Title",
+				documentTitleList = "Blogs AC Title,Blogs AC Title,Blogs AC Title,Blogs AC Title",
 				emailList = ${emailList},
 				pageName = "AC Page",
 				siteName = "Site Name");
@@ -126,7 +120,7 @@ definition {
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8512 | Test Summary: Segment membership list is searchable"
 	@priority = 5
 	test CanSearchMembershipList {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var emailList = "user1@liferay.com,user2@liferay.com,user3@liferay.com";
 		var nameList = "user1 user1,user2 user2,user3 user3";
@@ -187,7 +181,7 @@ definition {
 		// AC Refactor: Data doesn't appear on time
 		// AC Refactor ticket: LRAC-14011
 
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var nameList1 = "user2 user2,user3 user3";
 		var nameList2 = "user1 user1,user2 user2";
@@ -278,77 +272,10 @@ definition {
 		}
 	}
 
-	@description = "Feature ID: Legacy | Automation ID: LRAC-8524 | Test Summary: No change on segment profile selected point"
-	@ignore = "true"
-	@priority = 3
-	test NoChangeOnSegmentProfileSelectedPoint {
-
-		// AC Refactor: Segment data takes time to appear.
-		// AC Refactor ticket: LRAC-9260
-
-		var emailList = "user1@liferay.com,user2@liferay.com,user3@liferay.com";
-		var nameList = "user1 user1,user2 user2,user3 user3";
-
-		task ("View the blogs page as different users") {
-			ACUtils.navigateToSitePageWithUser(
-				actionType = "View Blog",
-				documentTitleList = "Blogs AC Title",
-				emailList = ${emailList},
-				pageName = "AC Page",
-				siteName = "Site Name");
-		}
-
-		task ("Close sessions") {
-			ACUtils.closeAllSessionsAndWait();
-		}
-
-		task ("Switch to new property in AC") {
-			ACUtils.launchAC();
-
-			ACProperties.switchProperty(propertyName = ${assignedPropertyName});
-		}
-
-		task ("Add a new static segment") {
-			ACNavigation.goToSegments();
-
-			ACSegments.createStaticSegment();
-		}
-
-		task ("Type the segment name") {
-			ACUtils.setItemName(itemName = "Static Segment Test");
-		}
-
-		task ("Add multiple members") {
-			ACSegments.addStaticMultiMember(tableMember = ${nameList});
-		}
-
-		task ("Create the segment") {
-			ACSegments.saveSegment();
-		}
-
-		task ("Go to membership tab") {
-			ACNavigation.switchTab(tabName = "Membership");
-		}
-
-		task ("Hover over earliest day") {
-			MouseOver.mouseOverInvisible(locator1 = "ACSegments#SEGMENT_MEMBERSHIP_CHART_EARLY_DATE_POINT");
-		}
-
-		task ("View membership card when hovering") {
-			ACSegments.viewSegmentMembershipChartRowNumbers(
-				row = "Added",
-				value = 0);
-
-			ACSegments.viewSegmentMembershipChartRowNumbers(
-				row = "Removed",
-				value = 0);
-		}
-	}
-
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8513 | Test Summary: Order the Segment Profile Membership List"
 	@priority = 3
 	test OrderSegmentProfileMembershipList {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var emailList = "user1@liferay.com,user2@liferay.com,user3@liferay.com";
 		var nameList = "user1 user1,user2 user2,user3 user3";
@@ -430,7 +357,7 @@ definition {
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8519 | Test Summary: Search a Dynamic Segment's Membership Preview Modal"
 	@priority = 3
 	test SearchDynamicSegmentsMembershipPreviewModal {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var emailList = "user1@liferay.com,user2@liferay.com,user3@liferay.com";
 		var nameList = "user1 user1,user2 user2,user3 user3";
@@ -467,9 +394,7 @@ definition {
 
 			ACSegments.addSegmentField(segmentField = "givenName");
 
-			ACSegments.editFormControlCriterion(
-				criterionName = "givenName",
-				option = "is unknown");
+			ACSegments.selectOperator(operator = "is known");
 		}
 
 		task ("View members of preview segment") {
@@ -480,73 +405,6 @@ definition {
 
 				ACUtils.viewNameList(nameList = ${username});
 			}
-		}
-	}
-
-	@description = "Feature ID: Legacy | Automation ID: LRAC-8522 | Test Summary: Segment Membership graph exist and shows members"
-	@ignore = "true"
-	@priority = 4
-	test SegmentMembershipGraphExistAndShowsMembers {
-
-		// AC Refactor: Segment data takes time to appear.
-		// AC Refactor ticket: LRAC-9258
-
-		var emailList = "user1@liferay.com,user2@liferay.com,user3@liferay.com";
-		var nameList = "user1 user1,user2 user2,user3 user3";
-
-		task ("View the blogs page as different users") {
-			ACUtils.navigateToSitePageWithUser(
-				actionType = "View Blog",
-				documentTitleList = "Blogs AC Title",
-				emailList = ${emailList},
-				pageName = "AC Page",
-				siteName = "Site Name");
-		}
-
-		task ("Close sessions") {
-			ACUtils.closeAllSessionsAndWait();
-		}
-
-		task ("Switch to new property in AC") {
-			ACUtils.launchAC();
-
-			ACProperties.switchProperty(propertyName = ${assignedPropertyName});
-		}
-
-		task ("Add a new static segment") {
-			ACNavigation.goToSegments();
-
-			ACSegments.createStaticSegment();
-		}
-
-		task ("Type the segment name") {
-			ACUtils.setItemName(itemName = "Static Segment Test");
-		}
-
-		task ("Add multiple members") {
-			ACSegments.addStaticMultiMember(tableMember = ${nameList});
-		}
-
-		task ("Create the segment") {
-			ACSegments.saveSegment();
-		}
-
-		task ("Go to membership tab") {
-			ACNavigation.switchTab(tabName = "Membership");
-		}
-
-		// Timing issue will cause this test to fail
-		// The graph shows yesterdays date and would require a full day before you can actually see when a member was added
-
-		task ("View membership graph") {
-			AssertVisible(locator1 = "ACSegments#SEGMENT_MEMBERSHIP_CHART");
-		}
-
-		task ("View membership counts via graph legend") {
-			ACSegments.viewSegmentMembershipLegendNumbers(
-				anonymousNumber = 0,
-				knownNumber = 3,
-				totalNumber = 3);
 		}
 	}
 

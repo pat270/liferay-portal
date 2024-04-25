@@ -1,10 +1,12 @@
 definition {
 
-	macro _saveDisplaySettings {
+	@summary = "Default summary"
+	macro _saveDisplaySettings() {
 		PortletEntry.save();
 	}
 
-	macro addLDAPServer {
+	@summary = "Default summary"
+	macro addLDAPServer(baseURL = null) {
 		PortalSettings.gotoConfiguration(
 			baseURL = ${baseURL},
 			configurationCategory = "LDAP",
@@ -28,7 +30,8 @@ definition {
 		Button.clickSave();
 	}
 
-	macro changeGroupImportMethod {
+	@summary = "Default summary"
+	macro changeGroupImportMethod(groupImportMethod = null) {
 		Variables.assertDefined(parameterList = ${groupImportMethod});
 
 		PortalSettings.gotoConfiguration(
@@ -44,7 +47,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro configureAudienceTargetingAnalytics {
+	@summary = "Default summary"
+	macro configureAudienceTargetingAnalytics(enableAnalyticsList = null, disableAnalyticsList = null) {
 		if (isSet(enableAnalyticsList)) {
 			for (var enableAnalytics : list ${enableAnalyticsList}) {
 				Check.checkToggleSwitch(
@@ -64,7 +68,13 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro configureContentSharingAcrossSitesCP {
+	@summary = "Default summary"
+	macro configureContentSharingAcrossSitesCP(enableAcrossSite = null) {
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "Sharing",
+			configurationName = "Content Sharing",
+			configurationScope = "Virtual Instance Scope");
+
 		if (${enableAcrossSite} == "true") {
 			Check(locator1 = "PortalSettingsContentSharing#CONTENT_SHARING_CHECKBOX");
 
@@ -81,7 +91,8 @@ definition {
 		}
 	}
 
-	macro configureContentSharingSubSitesCP {
+	@summary = "Default summary"
+	macro configureContentSharingSubSitesCP(subSites = null) {
 		if (${subSites} == "enabledByDefault") {
 			Select(
 				locator1 = "PortalSettingsContentSharing#CONTENT_SHARING_SELECTOR",
@@ -117,7 +128,8 @@ definition {
 		}
 	}
 
-	macro configureCurrentLanguagesCP {
+	@summary = "Default summary"
+	macro configureCurrentLanguagesCP(failExpected = null, errorMessage = null, currentPortalLanguages = null, useLanguageKey = null) {
 		if (isSet(currentPortalLanguages)) {
 			while (IsElementPresent(locator1 = "LanguageConfiguration#LANGUAGES_CURRENT_SELECT")) {
 				AddSelection(
@@ -130,15 +142,25 @@ definition {
 			for (var currentPortalLanguage : list ${currentPortalLanguages}) {
 				var currentPortalLanguage = ${currentPortalLanguage};
 
-				AddSelection(
-					locator1 = "LanguageConfiguration#LANGUAGES_AVAILABLE",
-					value1 = ${currentPortalLanguage});
+				if (${useLanguageKey} == "true") {
+					Click.clickNoMouseOver(locator1 = "//select[contains(@id,'availableLanguageIds')]/option[@value='${currentPortalLanguage}']");
+				}
+				else {
+					AddSelection(
+						locator1 = "LanguageConfiguration#LANGUAGES_AVAILABLE",
+						value1 = ${currentPortalLanguage});
+				}
 
 				Click(locator1 = "Button#MOVE_AVAILABLE_TO_CURRENT");
 
-				AssertTextEquals.assertPartialText(
-					locator1 = "LanguageConfiguration#LANGUAGES_CURRENT",
-					value1 = ${currentPortalLanguage});
+				if (${useLanguageKey} == "true") {
+					AssertElementPresent(locator1 = "//select[contains(@id,'currentLanguageIds')]/option[@value='${currentPortalLanguage}']");
+				}
+				else {
+					AssertTextEquals.assertPartialText(
+						locator1 = "LanguageConfiguration#LANGUAGES_CURRENT",
+						value1 = ${currentPortalLanguage});
+				}
 			}
 		}
 
@@ -164,7 +186,8 @@ definition {
 		}
 	}
 
-	macro configureEmailSender {
+	@summary = "Default summary"
+	macro configureEmailSender(emailAddress = null, emailSenderName = null) {
 		Type(
 			locator1 = "PortalSettingsEmailNotifications#EMAIL_NOTIFICATIONS_SENDER_NAME_FIELD",
 			value1 = ${emailSenderName});
@@ -176,7 +199,8 @@ definition {
 		PortalSettings._saveDisplaySettings();
 	}
 
-	macro configureGoogleDrive {
+	@summary = "Default summary"
+	macro configureGoogleDrive(googleClientSecret = null, googlePickerApiKey = null, googleClientId = null) {
 		Type(
 			key_text = "clientId",
 			locator1 = "TextArea#ANY",
@@ -201,10 +225,12 @@ definition {
 		VerifyElementPresent(locator1 = "Message#SUCCESS");
 	}
 
-	macro configureLDAPSetting {
+	@summary = "Default summary"
+	macro configureLDAPSetting(baseURL = null, enableSettingList = null) {
 		for (var enableSetting : list ${enableSettingList}) {
 			if (${enableSetting} == "enabled") {
 				PortalSettings.gotoConfiguration(
+					baseURL = ${baseURL},
 					configurationCategory = "LDAP",
 					configurationName = "General",
 					configurationScope = "Virtual Instance Scope");
@@ -212,6 +238,7 @@ definition {
 
 			if (${enableSetting} == "ldapImportEnabled") {
 				PortalSettings.gotoConfiguration(
+					baseURL = ${baseURL},
 					configurationCategory = "LDAP",
 					configurationName = "Import",
 					configurationScope = "Virtual Instance Scope");
@@ -219,6 +246,7 @@ definition {
 
 			if (${enableSetting} == "importOnStartup") {
 				PortalSettings.gotoConfiguration(
+					baseURL = ${baseURL},
 					configurationCategory = "LDAP",
 					configurationName = "Import",
 					configurationScope = "Virtual Instance Scope");
@@ -226,6 +254,7 @@ definition {
 
 			if (${enableSetting} == "ldapExportEnabled") {
 				PortalSettings.gotoConfiguration(
+					baseURL = ${baseURL},
 					configurationCategory = "LDAP",
 					configurationName = "Export",
 					configurationScope = "Virtual Instance Scope");
@@ -237,7 +266,8 @@ definition {
 		}
 	}
 
-	macro configureOpenSSO {
+	@summary = "Default summary"
+	macro configureOpenSSO(openSsoServiceURL = null, openSsoLoginURL = null, openSsoLogoutURL = null) {
 		Check(locator1 = "PortalSettingsAuthentication#AUTHENTICATION_OPEN_SSO_ENABLED_CHECKBOX");
 
 		FormFields.editText(
@@ -255,7 +285,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro configureRatingType {
+	@summary = "Default summary"
+	macro configureRatingType(ratingType = null, configureBlogsRatingType = null, configureKbRatingType = null) {
 		if (${configureBlogsRatingType} == "true") {
 			Select(
 				locator1 = "Select#BLOGS_RATING",
@@ -275,7 +306,8 @@ definition {
 		AssertConfirm(value1 = "Existing ratings data values will be adapted to match the new ratings type even though it may not be accurate. Do you want to continue?");
 	}
 
-	macro configureTimeZone {
+	@summary = "Default summary"
+	macro configureTimeZone(timeZone = null) {
 		Select(
 			locator1 = "Select#TIME_ZONE",
 			value1 = ${timeZone});
@@ -283,7 +315,8 @@ definition {
 		PortalSettings._saveDisplaySettings();
 	}
 
-	macro configureWikiService {
+	@summary = "Default summary"
+	macro configureWikiService(editor = null, counter = null) {
 		var key_counter = ${counter};
 
 		Type(
@@ -291,7 +324,8 @@ definition {
 			value1 = ${editor});
 	}
 
-	macro disableApplicationsMenu {
+	@summary = "Default summary"
+	macro disableApplicationsMenu() {
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "Navigation",
 			configurationName = "Applications Menu",
@@ -321,7 +355,8 @@ definition {
 		AssertElementNotPresent(locator1 = "ApplicationsMenu#TOGGLE");
 	}
 
-	macro editConfigurationAuthenticationFacebook {
+	@summary = "Default summary"
+	macro editConfigurationAuthenticationFacebook(facebookApplicationSecret = null, facebookApplicationId = null) {
 		Check(locator1 = "PortalSettingsAuthentication#AUTHENTICATION_FACEBOOK_ENABLED_CHECKBOX");
 
 		Type(
@@ -351,7 +386,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro editConfigurationAuthenticationGeneral {
+	@summary = "Default summary"
+	macro editConfigurationAuthenticationGeneral(enableRequireStrangers = null, authenticationMethod = null) {
 		if (${enableRequireStrangers} == "true") {
 			Check(locator1 = "PortalSettingsAuthentication#AUTHENTICATION_GENERAL_REQUIRE_STRANGERS_TO_VERIFY_THEIR_EMAIL_ADDRESS_CHECKBOX");
 		}
@@ -364,7 +400,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro editConfigurationUsersDefaultUserAssociationsCP {
+	@summary = "Default summary"
+	macro editConfigurationUsersDefaultUserAssociationsCP(orgName = null, roleTitle = null, userGroupName = null, siteName = null) {
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "Users",
 			configurationName = "Default User Associations",
@@ -447,7 +484,8 @@ definition {
 		}
 	}
 
-	macro editConfigurationUsersEmailNotificationsCP {
+	@summary = "Default summary"
+	macro editConfigurationUsersEmailNotificationsCP(configurationName = null, notificationsSubject = null, notificationsBody = null) {
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "Email",
 			configurationName = ${configurationName},
@@ -475,7 +513,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro editConfigurationUsersPersonalMenuPersonalApplicationLookAndFeel {
+	@summary = "Default summary"
+	macro editConfigurationUsersPersonalMenuPersonalApplicationLookAndFeel(selectOption = null) {
 		SystemSettings.selectOptionSetting(
 			fieldName = "Personal Applications Look and Feel",
 			selectOption = ${selectOption});
@@ -488,7 +527,8 @@ definition {
 		}
 	}
 
-	macro editConfigurationUsersPersonalMenuShowInControlMenu {
+	@summary = "Default summary"
+	macro editConfigurationUsersPersonalMenuShowInControlMenu(toggleSwitchLabel = null) {
 		Check.checkToggleSwitch(
 			key_toggleSwitchLabel = ${toggleSwitchLabel},
 			locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
@@ -501,7 +541,8 @@ definition {
 		}
 	}
 
-	macro editDefaultLandingPageCP {
+	@summary = "Default summary"
+	macro editDefaultLandingPageCP(defaultLandingPage = null) {
 		Type(
 			locator1 = "PortalSettings#DEFAULT_LANDING_PAGE_FIELD",
 			value1 = ${defaultLandingPage});
@@ -509,7 +550,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro editLDAPServer {
+	@summary = "Default summary"
+	macro editLDAPServer(baseURL = null) {
 		PortalSettings.gotoConfiguration(
 			baseURL = ${baseURL},
 			configurationCategory = "LDAP",
@@ -525,7 +567,8 @@ definition {
 		Click(locator1 = "PortalSettingsAuthentication#LDAP_SERVERS_TABLE_EDIT");
 	}
 
-	macro editVirtualHostCP {
+	@summary = "Default summary"
+	macro editVirtualHostCP(virtualHostName = null) {
 		Type(
 			locator1 = "PortalSettings#VIRTUAL_HOST_FIELD",
 			value1 = ${virtualHostName});
@@ -537,7 +580,8 @@ definition {
 			value1 = ${virtualHostName});
 	}
 
-	macro enableApplicationsMenu {
+	@summary = "Default summary"
+	macro enableApplicationsMenu() {
 		ProductMenu.gotoPortletWhenDisableApplicationsMenu(
 			category = "Configuration",
 			panel = "Control Panel",
@@ -572,7 +616,8 @@ definition {
 		AssertElementPresent(locator1 = "ApplicationsMenu#TOGGLE");
 	}
 
-	macro enableGoogleSSOCP {
+	@summary = "Default summary"
+	macro enableGoogleSSOCP(googleClientSecret = null, googleClientId = null) {
 		Check(locator1 = "PortalSettingsAuthentication#AUTHENTICATION_GOOGLE_ENABLED_CHECKBOX");
 
 		FormFields.editText(
@@ -586,7 +631,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro enableOpenIDConnectCP {
+	@summary = "Default summary"
+	macro enableOpenIDConnectCP() {
 		if (isSet(systemLevel)) {
 			Click.clickAtNotVisible(locator1 = "PortalSettingsAuthentication#AUTHENTICATION_OPEN_ID_CONNECT_ENABLED_CHECKBOX_SYSTEM_LEVEL");
 
@@ -603,7 +649,8 @@ definition {
 		}
 	}
 
-	macro enterReservedEmailAddressCP {
+	@summary = "Default summary"
+	macro enterReservedEmailAddressCP(userEmailAddress = null) {
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "User Authentication",
 			configurationName = "Reserved Credentials",
@@ -632,7 +679,8 @@ definition {
 			value1 = ${userEmailAddress});
 	}
 
-	macro enterReservedScreenNameCP {
+	@summary = "Default summary"
+	macro enterReservedScreenNameCP(userScreenName = null) {
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "User Authentication",
 			configurationName = "Reserved Credentials",
@@ -661,7 +709,8 @@ definition {
 			value1 = ${userScreenName});
 	}
 
-	macro gotoConfiguration {
+	@summary = "Default summary"
+	macro gotoConfiguration(baseURL = null, configurationScope = null, configurationName = null, configurationCategory = null) {
 		PortalSettings.openInstanceSettingsAdmin(baseURL = ${baseURL});
 
 		SystemSettings.gotoConfiguration(
@@ -670,7 +719,8 @@ definition {
 			configurationScope = ${configurationScope});
 	}
 
-	macro gotoPortalSettings {
+	@summary = "Default summary"
+	macro gotoPortalSettings() {
 		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
@@ -682,26 +732,29 @@ definition {
 			configurationScope = "Virtual Instance Scope");
 	}
 
-	macro openInstanceSettingsAdmin {
+	@summary = "Default summary"
+	macro openInstanceSettingsAdmin(baseURL = null) {
 		Navigator.openWithAppendToBaseURL(
 			baseURL = ${baseURL},
 			urlAppend = "group/control_panel/manage?p_p_id=com_liferay_configuration_admin_web_portlet_InstanceSettingsPortlet");
 	}
 
-	macro openToConfigInInstanceSettings {
+	@summary = "Default summary"
+	macro openToConfigInInstanceSettings(portletKey = null, portletId = null) {
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		if (isSet(portletId)) {
-			Open(locator1 = "${baseURL}/group/control_panel/manage?p_p_id=com_liferay_configuration_admin_web_portlet_InstanceSettingsPortlet&_com_liferay_configuration_admin_web_portlet_InstanceSettingsPortlet_mvcRenderCommandName=%2Fconfiguration_admin%2Fedit_configuration&_com_liferay_configuration_admin_web_portlet_InstanceSettingsPortlet_factoryPid=${portletId}");
+			Open(value1 = "${baseURL}/group/control_panel/manage?p_p_id=com_liferay_configuration_admin_web_portlet_InstanceSettingsPortlet&_com_liferay_configuration_admin_web_portlet_InstanceSettingsPortlet_mvcRenderCommandName=%2Fconfiguration_admin%2Fedit_configuration&_com_liferay_configuration_admin_web_portlet_InstanceSettingsPortlet_factoryPid=${portletId}");
 		}
 		else if (isSet(portletKey)) {
-			Open(locator1 = "${baseURL}/group/control_panel/manage?p_p_id=com_liferay_configuration_admin_web_portlet_InstanceSettingsPortlet&_com_liferay_configuration_admin_web_portlet_InstanceSettingsPortlet_mvcRenderCommandName=%2Fconfiguration_admin%2Fview_configuration_screen&_com_liferay_configuration_admin_web_portlet_InstanceSettingsPortlet_configurationScreenKey=${portletKey}");
+			Open(value1 = "${baseURL}/group/control_panel/manage?p_p_id=com_liferay_configuration_admin_web_portlet_InstanceSettingsPortlet&_com_liferay_configuration_admin_web_portlet_InstanceSettingsPortlet_mvcRenderCommandName=%2Fconfiguration_admin%2Fview_configuration_screen&_com_liferay_configuration_admin_web_portlet_InstanceSettingsPortlet_configurationScreenKey=${portletKey}");
 		}
 	}
 
-	macro setCurrentInstanceLanguageCP {
+	@summary = "Default summary"
+	macro setCurrentInstanceLanguageCP(newLanguage = null) {
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "Localization",
 			configurationName = "Language",
@@ -710,7 +763,8 @@ definition {
 		PortalSettings.configureCurrentLanguagesCP(defaultPortalLanguage = ${newLanguage});
 	}
 
-	macro setImportIntervalTime {
+	@summary = "Default summary"
+	macro setImportIntervalTime(importIntervalTime = null) {
 		Variables.assertDefined(parameterList = ${importIntervalTime});
 
 		PortalSettings.gotoConfiguration(
@@ -725,7 +779,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro tearDownAuthenticationCP {
+	@summary = "Default summary"
+	macro tearDownAuthenticationCP() {
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "User Authentication",
 			configurationName = "General",
@@ -738,7 +793,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro tearDownCP {
+	@summary = "Default summary"
+	macro tearDownCP() {
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "Users",
 			configurationName = "Default User Associations",
@@ -784,7 +840,8 @@ definition {
 		PortalSettings.configureContentSharingAcrossSitesCP(enableAcrossSite = "true");
 	}
 
-	macro testLDAPConnection {
+	@summary = "Default summary"
+	macro testLDAPConnection() {
 		AssertClick(
 			locator1 = "PortalSettingsAuthentication#LDAP_SERVER_TEST_LDAP_CONNECTION_BUTTON",
 			value1 = "Test LDAP Connection");
@@ -818,7 +875,8 @@ definition {
 		Click(locator1 = "Button#CLOSE_MODAL");
 	}
 
-	macro testOpenSSOConnection {
+	@summary = "Default summary"
+	macro testOpenSSOConnection() {
 		Click.waitForMenuToggleJSClick(locator1 = "PortalSettingsAuthentication#VERTICAL_ELLIPSIS");
 
 		AssertClick(
@@ -834,13 +892,15 @@ definition {
 		Click(locator1 = "Button#CLOSE_MODAL");
 	}
 
-	macro uncheckStrangersVerifyEmailCheckbox {
+	@summary = "Default summary"
+	macro uncheckStrangersVerifyEmailCheckbox() {
 		Uncheck(locator1 = "PortalSettingsAuthentication#AUTHENTICATION_GENERAL_REQUIRE_STRANGERS_TO_VERIFY_THEIR_EMAIL_ADDRESS_CHECKBOX");
 
 		PortletEntry.save();
 	}
 
-	macro viewAuthenticationGeneralCP {
+	@summary = "Default summary"
+	macro viewAuthenticationGeneralCP() {
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "User Authentication",
 			configurationName = "General",
@@ -863,7 +923,8 @@ definition {
 		AssertElementPresent(locator1 = "PortalSettingsAuthentication#AUTHENTICATION_GENERAL_REQUIRE_STRANGERS_TO_VERIFY_THEIR_EMAIL_ADDRESS_CHECKBOX");
 	}
 
-	macro viewAuthenticationLDAPCP {
+	@summary = "Default summary"
+	macro viewAuthenticationLDAPCP() {
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "LDAP",
 			configurationName = "Export",
@@ -939,7 +1000,8 @@ definition {
 		AssertElementPresent(locator1 = "PortalSettingsAuthentication#LDAP_SERVER_TEST_LDAP_GROUPS_BUTTON");
 	}
 
-	macro viewAuthenticationOpenSSOCP {
+	@summary = "Default summary"
+	macro viewAuthenticationOpenSSOCP() {
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "SSO",
 			configurationName = "OpenSSO",
@@ -1008,7 +1070,8 @@ definition {
 		AssertElementPresent(locator1 = "PortalSettingsAuthentication#AUTHENTICATION_OPEN_SSO_TEST_OPEN_SSO_CONFIGURATION_BUTTON");
 	}
 
-	macro viewCurrentDefaultPortalLanguageCP {
+	@summary = "Default summary"
+	macro viewCurrentDefaultPortalLanguageCP(defaultPortalLanguage = null, localizationTranslation = null) {
 		var configuration = "Localization";
 
 		if (isSet(localizationTranslation)) {
@@ -1024,13 +1087,15 @@ definition {
 			value1 = ${defaultPortalLanguage});
 	}
 
-	macro viewDefaultLanguageCP {
+	@summary = "Default summary"
+	macro viewDefaultLanguageCP(defaultPortalLanguage = null) {
 		AssertSelectedLabel(
 			locator1 = "Select#DEFAULT_LANGUAGE",
 			value1 = ${defaultPortalLanguage});
 	}
 
-	macro viewDefaultUserAssociationsCP {
+	@summary = "Default summary"
+	macro viewDefaultUserAssociationsCP() {
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "Users",
 			configurationName = "Default User Associations",
@@ -1081,7 +1146,8 @@ definition {
 			value1 = "");
 	}
 
-	macro viewEmailNotificationsAccountCreatedNotificationCP {
+	@summary = "Default summary"
+	macro viewEmailNotificationsAccountCreatedNotificationCP() {
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "Email",
 			configurationName = "Account Created Notification",
@@ -1110,7 +1176,8 @@ definition {
 		AssertElementPresent(locator1 = "PortalSettingsEmailNotifications#EMAIL_NOTIFICATIONS_ACCOUNT_CREATED_NOTIFICATION_BODY_WITHOUT_PASSWORD_FIELD");
 	}
 
-	macro viewEmailNotificationsPasswordChangedNotificationCP {
+	@summary = "Default summary"
+	macro viewEmailNotificationsPasswordChangedNotificationCP() {
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "Email",
 			configurationName = "Password Changed Notification",
@@ -1129,7 +1196,8 @@ definition {
 		AssertElementPresent(locator1 = "PortalSettingsEmailNotifications#EMAIL_NOTIFICATIONS_PASSWORD_CHANGED_NOTIFICATION_BODY_FIELD");
 	}
 
-	macro viewEmailNotificationsSenderCP {
+	@summary = "Default summary"
+	macro viewEmailNotificationsSenderCP() {
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "Email",
 			configurationName = "Email Sender",
@@ -1152,10 +1220,12 @@ definition {
 			value1 = "test@liferay.com");
 	}
 
-	macro viewEnabledLDAPSetting {
+	@summary = "Default summary"
+	macro viewEnabledLDAPSetting(baseURL = null, enableSettingList = null) {
 		for (var enableSetting : list ${enableSettingList}) {
 			if (${enableSetting} == "enabled") {
 				PortalSettings.gotoConfiguration(
+					baseURL = ${baseURL},
 					configurationCategory = "LDAP",
 					configurationName = "General",
 					configurationScope = "Virtual Instance Scope");
@@ -1163,6 +1233,7 @@ definition {
 
 			if (${enableSetting} == "ldapImportEnabled") {
 				PortalSettings.gotoConfiguration(
+					baseURL = ${baseURL},
 					configurationCategory = "LDAP",
 					configurationName = "Import",
 					configurationScope = "Virtual Instance Scope");
@@ -1170,6 +1241,7 @@ definition {
 
 			if (${enableSetting} == "importOnStartup") {
 				PortalSettings.gotoConfiguration(
+					baseURL = ${baseURL},
 					configurationCategory = "LDAP",
 					configurationName = "Import",
 					configurationScope = "Virtual Instance Scope");
@@ -1177,6 +1249,7 @@ definition {
 
 			if (${enableSetting} == "ldapExportEnabled") {
 				PortalSettings.gotoConfiguration(
+					baseURL = ${baseURL},
 					configurationCategory = "LDAP",
 					configurationName = "Export",
 					configurationScope = "Virtual Instance Scope");
@@ -1186,7 +1259,8 @@ definition {
 		}
 	}
 
-	macro viewReservedCredentialsScreenNamesCP {
+	@summary = "Default summary"
+	macro viewReservedCredentialsScreenNamesCP() {
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "User Authentication",
 			configurationName = "Reserved Credentials",
@@ -1213,13 +1287,15 @@ definition {
 			value1 = "");
 	}
 
-	macro viewToggleSwitchChecked {
+	@summary = "Default summary"
+	macro viewToggleSwitchChecked(portalSetting = null) {
 		AssertChecked.assertCheckedNotVisible(
 			key_toggleSwitchLabel = ${portalSetting},
 			locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
 	}
 
-	macro viewToggleSwitchNotChecked {
+	@summary = "Default summary"
+	macro viewToggleSwitchNotChecked(portalSetting = null) {
 		AssertNotChecked.assertNotCheckedNotVisible(
 			key_toggleSwitchLabel = ${portalSetting},
 			locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");

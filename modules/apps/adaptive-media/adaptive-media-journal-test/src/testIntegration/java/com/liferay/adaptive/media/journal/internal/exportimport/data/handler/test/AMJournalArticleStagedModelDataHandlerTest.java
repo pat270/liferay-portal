@@ -259,7 +259,7 @@ public class AMJournalArticleStagedModelDataHandlerTest
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			StringUtil.randomString(), ContentTypes.IMAGE_JPEG,
 			FileUtil.getBytes(getClass(), "dependencies/image.jpg"), null, null,
-			serviceContext);
+			null, serviceContext);
 	}
 
 	private JournalArticle _addJournalArticle(
@@ -300,7 +300,7 @@ public class AMJournalArticleStagedModelDataHandlerTest
 			true, 0, titleMap, null, titleMap, content,
 			ddmStructure.getStructureId(), ddmTemplate.getTemplateKey(), null,
 			1, 1, 1965, 0, 0, 0, 0, 0, 0, 0, true, 0, 0, 0, 0, 0, true, true,
-			false, null, null, null, null, serviceContext);
+			false, 0, 0, null, null, null, null, serviceContext);
 	}
 
 	private void _assertContentEquals(

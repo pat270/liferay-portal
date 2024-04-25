@@ -12,7 +12,9 @@ ContentPageEditorDisplayContext contentPageEditorDisplayContext = (ContentPageEd
 %>
 
 <div class="management-bar navbar navbar-expand-md page-editor__toolbar <%= contentPageEditorDisplayContext.isMasterLayout() ? "page-editor__toolbar--master-layout" : StringPool.BLANK %>" id="<%= contentPageEditorDisplayContext.getPortletNamespace() %>pageEditorToolbar">
-	<clay:container-fluid>
+	<clay:container-fluid
+		fullWidth='<%= FeatureFlagManagerUtil.isEnabled("LPS-184404") %>'
+	>
 		<ul class="navbar-nav start">
 			<li class="nav-item">
 				<div class="dropdown">
@@ -34,7 +36,8 @@ ContentPageEditorDisplayContext contentPageEditorDisplayContext = (ContentPageEd
 
 		<ul class="end navbar-nav">
 			<li class="nav-item"></li>
-			<li class="nav-item">
+
+			<li class="d-lg-flex d-none nav-item">
 				<div class="btn-group flex-nowrap" role="group">
 					<clay:button
 						disabled="<%= true %>"
@@ -42,7 +45,7 @@ ContentPageEditorDisplayContext contentPageEditorDisplayContext = (ContentPageEd
 						icon="undo"
 						monospaced="<%= true %>"
 						small="<%= true %>"
-						title='<%= LanguageUtil.get(request, "undo") %>'
+						title="undo"
 					/>
 
 					<clay:button
@@ -51,28 +54,26 @@ ContentPageEditorDisplayContext contentPageEditorDisplayContext = (ContentPageEd
 						icon="redo"
 						monospaced="<%= true %>"
 						small="<%= true %>"
-						title='<%= LanguageUtil.get(request, "redo") %>'
+						title="redo"
 					/>
 				</div>
 
-				<span class="d-none d-sm-block">
-					<div class="dropdown ml-2">
-						<clay:button
-							cssClass="dropdown-toggle"
-							disabled="<%= true %>"
-							displayType="secondary"
-							icon="time"
-							monospaced="<%= true %>"
-							small="<%= true %>"
-							title='<%= LanguageUtil.get(request, "history") %>'
-						/>
-					</div>
+				<span class="d-none d-sm-block ml-2">
+					<clay:button
+						cssClass="dropdown-toggle"
+						disabled="<%= true %>"
+						displayType="secondary"
+						icon="time"
+						monospaced="<%= true %>"
+						small="<%= true %>"
+						title="history"
+					/>
 				</span>
 			</li>
-			<li class="nav-item">
+			<li class="d-lg-flex d-none nav-item">
 				<div class="dropdown">
 					<clay:button
-						cssClass="dropdown-toggle form-control-select page-editor__edit-mode-selector text-left"
+						cssClass="form-control-select"
 						disabled="<%= true %>"
 						displayType="secondary"
 						small="<%= true %>"
@@ -81,19 +82,43 @@ ContentPageEditorDisplayContext contentPageEditorDisplayContext = (ContentPageEd
 					</clay:button>
 				</div>
 			</li>
-			<li class="nav-item">
-				<ul class="navbar-nav">
-					<li class="nav-item">
-						<clay:button
-							disabled="<%= true %>"
-							displayType="secondary"
-							icon="view"
-							monospaced="<%= true %>"
-							small="<%= true %>"
-							title='<%= LanguageUtil.get(request, "view") %>'
-						/>
-					</li>
-				</ul>
+			<li class="d-lg-none nav-item">
+				<clay:button
+					cssClass="form-control-select"
+					disabled="<%= true %>"
+					displayType="secondary"
+					icon="format"
+					monospaced="<%= false %>"
+					small="<%= true %>"
+				/>
+			</li>
+			<li class="d-lg-flex d-none nav-item">
+				<clay:button
+					disabled="<%= true %>"
+					displayType="secondary"
+					icon="view"
+					monospaced="<%= true %>"
+					small="<%= true %>"
+					title="view"
+				/>
+			</li>
+			<li class="d-lg-flex d-none nav-item">
+				<clay:button
+					disabled="<%= true %>"
+					displayType="secondary"
+					small="<%= true %>"
+				>
+					<liferay-ui:message key="discard-draft" />
+				</clay:button>
+			</li>
+			<li class="d-lg-none nav-item">
+				<clay:button
+					disabled="<%= true %>"
+					displayType="secondary"
+					icon="ellipsis-v"
+					monospaced="<%= true %>"
+					small="<%= true %>"
+				/>
 			</li>
 
 			<c:if test="<%= contentPageEditorDisplayContext.isSingleSegmentsExperienceMode() %>">
@@ -130,6 +155,16 @@ ContentPageEditorDisplayContext contentPageEditorDisplayContext = (ContentPageEd
 						</c:otherwise>
 					</c:choose>
 				</clay:button>
+			</li>
+			<li class="d-md-none nav-item">
+				<clay:button
+					cssClass="text-secondary"
+					disabled="<%= true %>"
+					displayType="unstyled"
+					icon="cog"
+					monospaced="<%= true %>"
+					small="<%= true %>"
+				/>
 			</li>
 		</ul>
 	</clay:container-fluid>

@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {ClayButtonWithIcon} from '@clayui/button';
 import ClayEmptyState from '@clayui/empty-state';
 import {ReactPortal} from '@liferay/frontend-js-react-web';
 import classNames from 'classnames';
@@ -10,26 +11,55 @@ import React from 'react';
 
 import {config} from '../config/index';
 import {useActiveItemId, useActiveItemType} from '../contexts/ControlsContext';
-import {useSelector} from '../contexts/StoreContext';
+import {useDispatch, useSelector} from '../contexts/StoreContext';
 import selectItemConfigurationOpen from '../selectors/selectItemConfigurationOpen';
+import switchSidebarPanel from '../thunks/switchSidebarPanel';
 import ItemConfiguration from './ItemConfiguration';
 
 export default function ItemConfigurationSidebar() {
 	const activeItemId = useActiveItemId();
 	const activeItemType = useActiveItemType();
+	const dispatch = useDispatch();
 
 	const itemConfigurationOpen = useSelector(selectItemConfigurationOpen);
 
 	return (
 		<ReactPortal className="cadmin">
 			<div
+				aria-label={Liferay.Language.get('configuration-panel')}
 				className={classNames(
-					'page-editor__item-configuration-sidebar',
+					'flex-column page-editor__item-configuration-sidebar',
 					{
-						[`page-editor__item-configuration-sidebar--open`]: itemConfigurationOpen,
+						'page-editor__item-configuration-sidebar--open': itemConfigurationOpen,
 					}
 				)}
+				tabIndex={activeItemId ? null : 0}
 			>
+				<div className="d-flex d-md-none justify-content-end mr-2 mt-3">
+					<ClayButtonWithIcon
+						aria-label={Liferay.Language.get('close')}
+						borderless
+						displayType="unstyled"
+						monospaced
+						onClick={() => {
+							dispatch(
+								switchSidebarPanel({
+									itemConfigurationOpen: false,
+								})
+							);
+
+							document
+								.getElementById(
+									'page-editor__toolbar__configuration-button'
+								)
+								?.focus();
+						}}
+						size="sm"
+						symbol="times"
+						title={Liferay.Language.get('close')}
+					/>
+				</div>
+
 				{activeItemId ? (
 					<ItemConfiguration
 						activeItemId={activeItemId}

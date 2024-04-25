@@ -1,11 +1,10 @@
 /**
- * SPDX-FileCopyrightText: (c) 2000 Liferay, Inc. https://liferay.com
+ * SPDX-FileCopyrightText: (c) 2023 Liferay, Inc. https://liferay.com
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
 package com.liferay.jethr0.entity.dalo;
 
-import com.liferay.client.extension.util.spring.boot.LiferayOAuth2AccessTokenConfiguration;
 import com.liferay.jethr0.entity.Entity;
 import com.liferay.jethr0.entity.factory.EntityFactory;
 import com.liferay.jethr0.util.BaseRetryable;
@@ -25,7 +24,6 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -37,10 +35,16 @@ import org.springframework.web.reactive.function.client.WebClient;
  */
 @Configuration
 public abstract class BaseEntityDALO<T extends Entity>
-	implements EntityDALO<T> {
+	extends BaseDALO implements EntityDALO<T> {
 
 	@Override
 	public T create(JSONObject jsonObject) {
+		long id = jsonObject.optLong("id");
+
+		if (id != 0) {
+			throw new RuntimeException("Entity already exists");
+		}
+
 		JSONObject responseJSONObject = _create(jsonObject);
 
 		if (responseJSONObject == null) {
@@ -48,23 +52,6 @@ public abstract class BaseEntityDALO<T extends Entity>
 		}
 
 		T entity = newEntity(responseJSONObject);
-
-		entity.setCreatedDate(
-			_getDateFromJSON(responseJSONObject, "dateCreated"));
-		entity.setId(responseJSONObject.getLong("id"));
-		entity.setModifiedDate(
-			_getDateFromJSON(responseJSONObject, "dateModified"));
-
-		return entity;
-	}
-
-	@Override
-	public T create(T entity) {
-		JSONObject responseJSONObject = _create(entity.getJSONObject());
-
-		if (responseJSONObject == null) {
-			throw new RuntimeException("No response");
-		}
 
 		entity.setCreatedDate(
 			_getDateFromJSON(responseJSONObject, "dateCreated"));
@@ -86,20 +73,24 @@ public abstract class BaseEntityDALO<T extends Entity>
 
 	@Override
 	public T get(long id) {
-		for (T entity : getAll()) {
-			if (!Objects.equals(entity.getId(), id)) {
-				continue;
-			}
-
-			return entity;
-		}
-
-		return null;
+		return newEntity(_get(id));
 	}
 
 	@Override
 	public Set<T> getAll() {
-		return getAll(null, null);
+		return getAll(null, null, null);
+	}
+
+	@Override
+	public Set<T> getAllAfterCreatedDate(Date createdDate) {
+		return getAll(
+			"dateCreated gt " + StringUtil.toString(createdDate), null, null);
+	}
+
+	@Override
+	public Set<T> getAllAfterModifiedDate(Date modifiedDate) {
+		return getAll(
+			"dateModified gt " + StringUtil.toString(modifiedDate), null, null);
 	}
 
 	@Override
@@ -119,10 +110,10 @@ public abstract class BaseEntityDALO<T extends Entity>
 		return entity;
 	}
 
-	protected Set<T> getAll(String filter, String search) {
+	protected Set<T> getAll(String filter, String search, String sort) {
 		Set<T> entities = new HashSet<>();
 
-		for (JSONObject jsonObject : _get(filter, search)) {
+		for (JSONObject jsonObject : _get(filter, search, sort)) {
 			T entity = newEntity(jsonObject);
 
 			entities.add(entity);
@@ -130,8 +121,6 @@ public abstract class BaseEntityDALO<T extends Entity>
 
 		return entities;
 	}
-
-	protected abstract EntityFactory<T> getEntityFactory();
 
 	protected T newEntity(JSONObject jsonObject) {
 		EntityFactory<T> entityFactory = getEntityFactory();
@@ -156,9 +145,7 @@ public abstract class BaseEntityDALO<T extends Entity>
 					).contentType(
 						MediaType.APPLICATION_JSON
 					).header(
-						"Authorization",
-						_liferayOAuth2AccessTokenConfiguration.
-							getAuthorization()
+						"Authorization", getAuthorization()
 					).body(
 						BodyInserters.fromValue(requestJSONObject.toString())
 					).retrieve(
@@ -167,7 +154,7 @@ public abstract class BaseEntityDALO<T extends Entity>
 					).block();
 				}
 				catch (Exception exception) {
-					_liferayOAuth2AccessTokenConfiguration.refresh();
+					refresh();
 
 					throw new RuntimeException(exception);
 				}
@@ -176,23 +163,34 @@ public abstract class BaseEntityDALO<T extends Entity>
 					throw new RuntimeException("No response");
 				}
 
+				JSONObject jsonObject = new JSONObject();
+
+				for (String key : requestJSONObject.keySet()) {
+					jsonObject.put(key, requestJSONObject.get(key));
+				}
+
 				JSONObject responseJSONObject = new JSONObject(response);
+
+				for (String key : responseJSONObject.keySet()) {
+					jsonObject.put(key, responseJSONObject.get(key));
+				}
 
 				if (_log.isDebugEnabled()) {
 					_log.debug(
 						StringUtil.combine(
 							"Created ", _getEntityLabel(), " ",
-							responseJSONObject.getLong("id")));
+							jsonObject.getLong("id")));
 				}
 
-				return responseJSONObject;
+				return jsonObject;
 			}
 
 			@Override
 			protected String getRetryMessage(int retryCount) {
 				return StringUtil.combine(
 					"Unable to create ", _getEntityPluralLabel(),
-					". Retry attempt ", retryCount, " of ", maxRetries);
+					". Retry attempt ", retryCount, " of ", maxRetries, " ",
+					requestJSONObject);
 			}
 
 		};
@@ -217,16 +215,14 @@ public abstract class BaseEntityDALO<T extends Entity>
 					).accept(
 						MediaType.APPLICATION_JSON
 					).header(
-						"Authorization",
-						_liferayOAuth2AccessTokenConfiguration.
-							getAuthorization()
+						"Authorization", getAuthorization()
 					).retrieve(
 					).bodyToMono(
 						Void.class
 					).block();
 				}
 				catch (Exception exception) {
-					_liferayOAuth2AccessTokenConfiguration.refresh();
+					refresh();
 
 					throw new RuntimeException(exception);
 				}
@@ -253,7 +249,59 @@ public abstract class BaseEntityDALO<T extends Entity>
 		retryable.executeWithRetries();
 	}
 
-	private Set<JSONObject> _get(String filter, String search) {
+	private JSONObject _get(long id) {
+		Retryable<JSONObject> retryable = new BaseRetryable<JSONObject>() {
+
+			@Override
+			public JSONObject execute() {
+				String response = null;
+
+				try {
+					response = WebClient.create(
+						StringUtil.combine(
+							_liferayPortalURL, _getEntityURLPath(), "/", id)
+					).get(
+					).accept(
+						MediaType.APPLICATION_JSON
+					).header(
+						"Authorization", getAuthorization()
+					).retrieve(
+					).bodyToMono(
+						String.class
+					).block();
+				}
+				catch (Exception exception) {
+					refresh();
+
+					throw new RuntimeException(exception);
+				}
+
+				if (response == null) {
+					throw new RuntimeException("No response");
+				}
+
+				return new JSONObject(response);
+			}
+
+			@Override
+			protected String getRetryMessage(int retryCount) {
+				return StringUtil.combine(
+					"Unable to retrieve ", _getEntityPluralLabel(),
+					". Retry attempt ", retryCount, " of ", maxRetries);
+			}
+
+		};
+
+		if (_log.isDebugEnabled()) {
+			_log.debug(
+				StringUtil.combine(
+					"Retrieved ", _getEntityLabel(), " with ID " + id));
+		}
+
+		return retryable.executeWithRetries();
+	}
+
+	private Set<JSONObject> _get(String filter, String search, String sort) {
 		Set<JSONObject> jsonObjects = new HashSet<>();
 
 		int currentPage = 1;
@@ -288,21 +336,23 @@ public abstract class BaseEntityDALO<T extends Entity>
 										uriBuilder.queryParam("search", search);
 									}
 
+									if (sort != null) {
+										uriBuilder.queryParam("sort", sort);
+									}
+
 									return uriBuilder.build();
 								}
 							).accept(
 								MediaType.APPLICATION_JSON
 							).header(
-								"Authorization",
-								_liferayOAuth2AccessTokenConfiguration.
-									getAuthorization()
+								"Authorization", getAuthorization()
 							).retrieve(
 							).bodyToMono(
 								String.class
 							).block();
 						}
 						catch (Exception exception) {
-							_liferayOAuth2AccessTokenConfiguration.refresh();
+							refresh();
 
 							throw new RuntimeException(exception);
 						}
@@ -427,9 +477,7 @@ public abstract class BaseEntityDALO<T extends Entity>
 					).contentType(
 						MediaType.APPLICATION_JSON
 					).header(
-						"Authorization",
-						_liferayOAuth2AccessTokenConfiguration.
-							getAuthorization()
+						"Authorization", getAuthorization()
 					).body(
 						BodyInserters.fromValue(requestJSONObject.toString())
 					).retrieve(
@@ -438,7 +486,7 @@ public abstract class BaseEntityDALO<T extends Entity>
 					).block();
 				}
 				catch (Exception exception) {
-					_liferayOAuth2AccessTokenConfiguration.refresh();
+					refresh();
 
 					throw new RuntimeException(exception);
 				}
@@ -483,13 +531,11 @@ public abstract class BaseEntityDALO<T extends Entity>
 		return retryable.executeWithRetries();
 	}
 
-	private static final Log _log = LogFactory.getLog(BaseEntityDALO.class);
+	private static final Log _log = LogFactory.getLog(BaseDALO.class);
 
-	@Autowired
-	private LiferayOAuth2AccessTokenConfiguration
-		_liferayOAuth2AccessTokenConfiguration;
-
-	@Value("${liferay.portal.url}")
+	@Value(
+		"${com.liferay.lxc.dxp.server.protocol}://${com.liferay.lxc.dxp.main.domain}"
+	)
 	private String _liferayPortalURL;
 
 }

@@ -6,9 +6,9 @@
 package com.liferay.message.boards.service.impl;
 
 import com.liferay.asset.kernel.model.AssetEntry;
-import com.liferay.asset.kernel.model.AssetLinkConstants;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
-import com.liferay.asset.kernel.service.AssetLinkLocalService;
+import com.liferay.asset.link.constants.AssetLinkConstants;
+import com.liferay.asset.link.service.AssetLinkLocalService;
 import com.liferay.change.tracking.service.CTEntryLocalService;
 import com.liferay.comment.configuration.CommentGroupServiceConfiguration;
 import com.liferay.comment.constants.CommentConstants;
@@ -37,6 +37,7 @@ import com.liferay.message.boards.model.MBCategory;
 import com.liferay.message.boards.model.MBDiscussion;
 import com.liferay.message.boards.model.MBMessage;
 import com.liferay.message.boards.model.MBMessageDisplay;
+import com.liferay.message.boards.model.MBMessageTable;
 import com.liferay.message.boards.model.MBThread;
 import com.liferay.message.boards.model.impl.MBCategoryImpl;
 import com.liferay.message.boards.model.impl.MBMessageDisplayImpl;
@@ -50,9 +51,12 @@ import com.liferay.message.boards.social.MBActivityKeys;
 import com.liferay.message.boards.util.comparator.MessageCreateDateComparator;
 import com.liferay.message.boards.util.comparator.MessageThreadComparator;
 import com.liferay.petra.lang.SafeCloseable;
+import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
+import com.liferay.petra.sql.dsl.query.DSLQuery;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.aop.AopService;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.json.jabsorb.serializer.LiferayJSONDeserializationWhitelist;
 import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
 import com.liferay.portal.kernel.comment.Comment;
@@ -73,7 +77,6 @@ import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.notifications.UserNotificationDefinition;
 import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
@@ -431,7 +434,7 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 
 		body = SanitizerUtil.sanitize(
 			user.getCompanyId(), groupId, userId, MBMessage.class.getName(),
-			messageId, "text/" + format, Sanitizer.MODE_ALL, body,
+			messageId, ContentTypes.TEXT_HTML, Sanitizer.MODE_ALL, body,
 			HashMapBuilder.<String, Object>put(
 				"discussion",
 				() -> {
@@ -758,6 +761,17 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 				message.getThreadId());
 
 			_mbThreadLocalService.deleteMBThread(thread);
+
+			// Discussion
+
+			if (message.isDiscussion()) {
+				MBDiscussion discussion =
+					_mbDiscussionLocalService.getThreadDiscussion(
+						message.getThreadId());
+
+				_mbDiscussionLocalService.deleteMBDiscussion(
+					discussion.getDiscussionId());
+			}
 
 			// Indexer
 
@@ -1142,9 +1156,12 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 						subject, new ServiceContext());
 				}
 				else {
+					Group group = _groupLocalService.fetchGroup(groupId);
+
 					try (SafeCloseable safeCloseable =
 							CTCollectionThreadLocal.
-								setProductionModeWithSafeCloseable()) {
+								setCTCollectionIdWithSafeCloseable(
+									group.getCtCollectionId())) {
 
 						message = mbMessageLocalService.addDiscussionMessage(
 							null, userId, null, groupId, className, classPK, 0,
@@ -1300,6 +1317,114 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 		}
 
 		return mbMessagePersistence.countByG_U_S(groupId, userId, status);
+	}
+
+	@Override
+	public List<MBMessage> getGroupUserMessageBoardMessagesActivity(
+		long groupId, long userId, int start, int end) {
+
+		MBMessageTable aliasMBMessageTable = MBMessageTable.INSTANCE.as(
+			"aliasMBMessageTable");
+
+		DSLQuery dslQuery = DSLQueryFactoryUtil.select(
+			MBMessageTable.INSTANCE
+		).from(
+			MBMessageTable.INSTANCE
+		).where(
+			MBMessageTable.INSTANCE.modifiedDate.in(
+				DSLQueryFactoryUtil.selectDistinct(
+					MBMessageTable.INSTANCE.modifiedDate
+				).from(
+					aliasMBMessageTable
+				).where(
+					MBMessageTable.INSTANCE.rootMessageId.eq(
+						MBMessageTable.INSTANCE.parentMessageId
+					).and(
+						MBMessageTable.INSTANCE.categoryId.eq(
+							aliasMBMessageTable.categoryId)
+					).and(
+						MBMessageTable.INSTANCE.groupId.eq(groupId)
+					).and(
+						MBMessageTable.INSTANCE.userId.eq(userId)
+					)
+				)
+			).or(
+				MBMessageTable.INSTANCE.parentMessageId.eq(
+					0L
+				).and(
+					MBMessageTable.INSTANCE.rootMessageId.notIn(
+						DSLQueryFactoryUtil.select(
+							MBMessageTable.INSTANCE.parentMessageId
+						).from(
+							MBMessageTable.INSTANCE
+						).where(
+							MBMessageTable.INSTANCE.rootMessageId.eq(
+								MBMessageTable.INSTANCE.parentMessageId)
+						))
+				).and(
+					MBMessageTable.INSTANCE.groupId.eq(groupId)
+				).and(
+					MBMessageTable.INSTANCE.userId.eq(userId)
+				)
+			)
+		).orderBy(
+			MBMessageTable.INSTANCE.modifiedDate.descending()
+		).limit(
+			start, end
+		);
+
+		return mbMessagePersistence.dslQuery(dslQuery);
+	}
+
+	@Override
+	public int getGroupUserMessageBoardMessagesActivityCount(
+		long groupId, long userId) {
+
+		MBMessageTable aliasMBMessageTable = MBMessageTable.INSTANCE.as(
+			"aliasMBMessageTable");
+
+		return mbMessagePersistence.dslQueryCount(
+			DSLQueryFactoryUtil.count(
+			).from(
+				MBMessageTable.INSTANCE
+			).where(
+				MBMessageTable.INSTANCE.modifiedDate.in(
+					DSLQueryFactoryUtil.selectDistinct(
+						MBMessageTable.INSTANCE.modifiedDate
+					).from(
+						aliasMBMessageTable
+					).where(
+						MBMessageTable.INSTANCE.rootMessageId.eq(
+							MBMessageTable.INSTANCE.parentMessageId
+						).and(
+							MBMessageTable.INSTANCE.categoryId.eq(
+								aliasMBMessageTable.categoryId)
+						).and(
+							MBMessageTable.INSTANCE.groupId.eq(groupId)
+						).and(
+							MBMessageTable.INSTANCE.userId.eq(userId)
+						)
+					)
+				).or(
+					MBMessageTable.INSTANCE.parentMessageId.eq(
+						0L
+					).and(
+						MBMessageTable.INSTANCE.groupId.eq(groupId)
+					).and(
+						MBMessageTable.INSTANCE.rootMessageId.notIn(
+							DSLQueryFactoryUtil.select(
+								MBMessageTable.INSTANCE.parentMessageId
+							).from(
+								MBMessageTable.INSTANCE
+							).where(
+								MBMessageTable.INSTANCE.rootMessageId.eq(
+									MBMessageTable.INSTANCE.parentMessageId)
+							))
+					).and(
+						MBMessageTable.INSTANCE.userId.eq(userId)
+					)
+				)
+			));
 	}
 
 	@Override
@@ -2666,7 +2791,7 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 
 		body = SanitizerUtil.sanitize(
 			message.getCompanyId(), message.getGroupId(), userId,
-			MBMessage.class.getName(), messageId, "text/" + message.getFormat(),
+			MBMessage.class.getName(), messageId, ContentTypes.TEXT_HTML,
 			Sanitizer.MODE_ALL, body,
 			HashMapBuilder.<String, Object>put(
 				"discussion", message.isDiscussion()

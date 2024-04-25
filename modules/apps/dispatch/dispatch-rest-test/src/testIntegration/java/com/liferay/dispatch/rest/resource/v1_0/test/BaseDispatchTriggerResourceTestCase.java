@@ -25,8 +25,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -34,6 +32,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.test.rule.Inject;
@@ -58,8 +57,6 @@ import java.util.Set;
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-
-import org.apache.commons.lang.time.DateUtils;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -246,6 +243,8 @@ public abstract class BaseDispatchTriggerResourceTestCase {
 			new GraphQLField("items", getGraphQLFields()),
 			new GraphQLField("page"), new GraphQLField("totalCount"));
 
+		// No namespace
+
 		JSONObject dispatchTriggersJSONObject = JSONUtil.getValueAsJSONObject(
 			invokeGraphQLQuery(graphQLField), "JSONObject/data",
 			"JSONObject/dispatchTriggers");
@@ -259,6 +258,27 @@ public abstract class BaseDispatchTriggerResourceTestCase {
 
 		dispatchTriggersJSONObject = JSONUtil.getValueAsJSONObject(
 			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/dispatchTriggers");
+
+		Assert.assertEquals(
+			totalCount + 2, dispatchTriggersJSONObject.getLong("totalCount"));
+
+		assertContains(
+			dispatchTrigger1,
+			Arrays.asList(
+				DispatchTriggerSerDes.toDTOs(
+					dispatchTriggersJSONObject.getString("items"))));
+		assertContains(
+			dispatchTrigger2,
+			Arrays.asList(
+				DispatchTriggerSerDes.toDTOs(
+					dispatchTriggersJSONObject.getString("items"))));
+
+		// Using the namespace dispatch_v1_0
+
+		dispatchTriggersJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(new GraphQLField("dispatch_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/dispatch_v1_0",
 			"JSONObject/dispatchTriggers");
 
 		Assert.assertEquals(
@@ -864,6 +884,10 @@ public abstract class BaseDispatchTriggerResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -1047,21 +1071,20 @@ public abstract class BaseDispatchTriggerResourceTestCase {
 
 		if (entityFieldName.equals("endDate")) {
 			if (operator.equals("between")) {
+				Date date = dispatchTrigger.getEndDate();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							dispatchTrigger.getEndDate(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(dispatchTrigger.getEndDate(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -1181,22 +1204,20 @@ public abstract class BaseDispatchTriggerResourceTestCase {
 
 		if (entityFieldName.equals("startDate")) {
 			if (operator.equals("between")) {
+				Date date = dispatchTrigger.getStartDate();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							dispatchTrigger.getStartDate(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							dispatchTrigger.getStartDate(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -1348,9 +1369,9 @@ public abstract class BaseDispatchTriggerResourceTestCase {
 	}
 
 	protected DispatchTriggerResource dispatchTriggerResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

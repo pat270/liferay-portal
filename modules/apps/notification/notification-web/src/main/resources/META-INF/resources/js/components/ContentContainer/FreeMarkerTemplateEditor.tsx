@@ -4,11 +4,10 @@
  */
 
 import {
-	AutoComplete,
 	CodeEditorLocalized,
 	SidebarCategory,
-	filterArrayByQuery,
-	getLocalizableLabel,
+	SingleSelect,
+	stringUtils,
 } from '@liferay/object-js-components-web';
 import {createResourceURL, fetch} from 'frontend-js-web';
 import React, {useMemo, useState} from 'react';
@@ -29,11 +28,10 @@ export function FreeMarkerTemplateEditor({
 	setValues,
 	values,
 }: FreeMarkerTemplateEditorProps) {
-	const [query, setQuery] = useState<string>('');
-	const [selectedEntity, setSelectedEntity] = useState<ObjectDefinition>();
+	const [selectedEntityValue, setSelectedEntityValue] = useState<number>();
 	const [entityFields, setEntityFields] = useState<SidebarCategory[]>([]);
 
-	const filteredEntities = useMemo(() => {
+	const objectDefinitionItems = useMemo(() => {
 		const availableObjectDefinitions = objectDefinitions.filter(
 			(objectDefinition) => {
 				const {label: statusLabel} = objectDefinition.status;
@@ -51,12 +49,17 @@ export function FreeMarkerTemplateEditor({
 			}
 		);
 
-		return filterArrayByQuery({
-			array: availableObjectDefinitions,
-			query,
-			str: 'label',
-		});
-	}, [objectDefinitions, query]);
+		return availableObjectDefinitions.map(
+			({defaultLanguageId, id, label, name}) => ({
+				label: stringUtils.getLocalizableLabel(
+					defaultLanguageId,
+					label,
+					name
+				),
+				value: id,
+			})
+		) as LabelValueObject<number>[];
+	}, [objectDefinitions]);
 
 	const getEntityFields = async (objectDefinitionId: number) => {
 		const response = await fetch(
@@ -73,37 +76,16 @@ export function FreeMarkerTemplateEditor({
 	return (
 		<CodeEditorLocalized
 			CustomSidebarContent={
-				<AutoComplete<ObjectDefinition>
-					emptyStateMessage={Liferay.Language.get(
-						'no-entities-were-found'
-					)}
-					items={filteredEntities ?? []}
+				<SingleSelect
+					disabled={values.system}
+					items={objectDefinitionItems ?? []}
 					label={Liferay.Language.get('entity')}
-					onActive={(item) => item.name === selectedEntity?.name}
-					onChangeQuery={setQuery}
-					onSelectItem={(item) => {
-						setSelectedEntity(item);
-						getEntityFields(item.id);
+					onSelectionChange={(value) => {
+						setSelectedEntityValue(value as number);
+						getEntityFields(value as number);
 					}}
-					query={query}
-					value={getLocalizableLabel(
-						selectedEntity?.defaultLanguageId as Locale,
-						selectedEntity?.label,
-						selectedEntity?.name as string
-					)}
-				>
-					{({label, name}) => (
-						<div className="d-flex justify-content-between">
-							<div>
-								{getLocalizableLabel(
-									selectedEntity?.defaultLanguageId as Locale,
-									label,
-									name
-								)}
-							</div>
-						</div>
-					)}
-				</AutoComplete>
+					selectedKey={selectedEntityValue}
+				/>
 			}
 			mode="freemarker"
 			onSelectedLocaleChange={({label}) => {
@@ -118,8 +100,10 @@ export function FreeMarkerTemplateEditor({
 			placeholder={`<#--${Liferay.Language.get(
 				'add-elements-from-the-sidebar-to-define-your-template'
 			)}-->`}
+			readOnly={values.system}
 			selectedLocale={selectedLocale}
 			sidebarElements={entityFields}
+			sidebarElementsDisabled={values.system}
 			translations={values.body}
 		/>
 	);

@@ -1,0 +1,68 @@
+[
+	{
+		"key": "account-settings",
+		"value": {
+			"en-US": "Account Settings",
+			"es-ES": "Configuraciones de la cuenta",
+			"ja-JP": "アカウント設定",
+			"pt-BR": "Configurações de Conta"
+		}
+	},
+	{
+		"key": "community",
+		"value": {
+			"en-US": "Community"
+		}
+	},
+	{
+		"key": "help-center",
+		"value": {
+			"en-US": "Help Center"
+		}
+	},
+	{
+		"key": "liferay-learn",
+		"value": {
+			"en-US": "Liferay Learn"
+		}
+	},
+	{
+		"key": "liferays-commercial-offerings-have-been-renamed-from-lxc-to-liferay-saas-lxc-sm-to-liferay-paas-and-dxp-to-liferay-self-hosted",
+		"value": {
+			"en-US": "Liferay's commercial offerings have been renamed from LXC to Liferay SaaS, LXC - SM to Liferay PaaS, and DXP to Liferay Self-Hosted.",
+			"es-ES": "Hemos renombrado las ofertas comerciales de Liferay de LXC a Liferay SaaS, de LXC - SM a Liferay PaaS y de DXP a Liferay Self-Hosted.",
+			"ja-JP": "Liferayの商用製品の名前は、LXC から Liferay SaaS に、LXC - SM は Liferay PaaS に、DXP は Liferay Self-Hosted に変更されました。",
+			"pt-BR": "As ofertas comerciais da Liferay foram renomeadas de LXC para Liferay SaaS, de LXC - SM para Liferay PaaS e de DXP para Liferay Self-Hosted."
+		}
+	},
+	{
+		"key": "marketplace",
+		"value": {
+			"en-US": "Marketplace"
+		}
+	},
+	{
+		"key": "no-highlights-found-for-the-selected-product-capabilities",
+		"value": {
+			"en-US": "No highlights found for the selected product capabilities.",
+			"es-ES": "No se encontraron aspectos destacados para las capacidades del producto seleccionado.",
+			"ja-JP": "選択した製品機能のハイライトは見つかりませんでした。",
+			"pt-BR": "Nenhum destaque encontrado para os recursos do produto selecionado."
+		}
+	},
+	{
+		"key": "notifications",
+		"value": {
+			"en-US": "Notifications",
+			"es-ES": "Notificaciones",
+			"ja-JP": "通知",
+			"pt-BR": "Notificações"
+		}
+	},
+	{
+		"key": "sites",
+		"value": {
+			"en-US": "Sites"
+		}
+	}
+]

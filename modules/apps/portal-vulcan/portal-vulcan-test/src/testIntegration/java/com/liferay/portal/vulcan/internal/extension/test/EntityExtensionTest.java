@@ -132,7 +132,7 @@ public class EntityExtensionTest {
 
 		try (LogCapture logCapture1 = LoggerTestUtil.configureLog4JLogger(
 				"com.liferay.portal.vulcan.internal.jaxrs.exception.mapper." +
-					"WebApplicationExceptionMapper",
+					"ExceptionMapper",
 				LoggerTestUtil.ERROR);
 			LogCapture logCapture2 = LoggerTestUtil.configureLog4JLogger(
 				"com.liferay.portal.vulcan.internal.jaxrs.container.response." +
@@ -223,7 +223,7 @@ public class EntityExtensionTest {
 
 		@Override
 		public Map<String, Serializable> getExtendedProperties(
-			long companyId, String className, Object entity) {
+			long companyId, long userId, String className, Object entity) {
 
 			return HashMapBuilder.<String, Serializable>put(
 				_propertyName, RandomTestUtil.randomString()

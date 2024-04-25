@@ -19,6 +19,7 @@ import com.google.cloud.storage.BucketInfo;
 import com.google.cloud.storage.CopyWriter;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageBatch;
+import com.google.cloud.storage.StorageBatchResult;
 import com.google.cloud.storage.StorageException;
 import com.google.cloud.storage.StorageOptions;
 
@@ -30,12 +31,14 @@ import com.liferay.document.library.kernel.util.comparator.VersionNumberComparat
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.io.StreamUtil;
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.store.gcs.configuration.GCSStoreConfiguration;
@@ -56,9 +59,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Modified;
 
 import org.threeten.bp.Duration;
@@ -72,9 +78,9 @@ import org.threeten.bp.Duration;
 	configurationPid = "com.liferay.portal.store.gcs.configuration.GCSStoreConfiguration",
 	configurationPolicy = ConfigurationPolicy.REQUIRE,
 	property = "store.type=com.liferay.portal.store.gcs.GCSStore",
-	service = {Store.class, StoreAreaProcessor.class}
+	service = Store.class
 )
-public class GCSStore implements Store, StoreAreaProcessor {
+public class GCSStore implements Store {
 
 	@Override
 	public void addFile(
@@ -103,82 +109,48 @@ public class GCSStore implements Store, StoreAreaProcessor {
 	}
 
 	@Override
-	public String cleanUpDeletedStoreArea(
-		long companyId, int deletionQuota, Predicate<String> predicate,
-		String startOffset, TemporalAmount temporalAmount) {
-
-		return _processStoreArea(
-			companyId, deletionQuota, blob -> predicate.test(blob.getName()),
-			startOffset, StoreArea.DELETED, temporalAmount);
-	}
-
-	@Override
-	public String cleanUpNewStoreArea(
-		long companyId, int evictionQuota, Predicate<String> predicate,
-		String startOffset, TemporalAmount temporalAmount) {
-
-		return _processStoreArea(
-			companyId, evictionQuota,
-			blob -> {
-				if (predicate.test(blob.getName())) {
-					return copy(
-						blob.getName(),
-						StoreArea.NEW.relocate(
-							blob.getName(), StoreArea.DELETED));
-				}
-
-				return copy(
-					blob.getName(),
-					StoreArea.NEW.relocate(blob.getName(), StoreArea.LIVE));
-			},
-			startOffset, StoreArea.NEW, temporalAmount);
-	}
-
-	@Override
-	public boolean copy(String sourceFileName, String destinationFileName) {
-		try {
-			if (!FeatureFlagManagerUtil.isEnabled("LPS-174816")) {
-				return true;
-			}
-
-			CopyWriter copyWriter = _gcsStore.copy(
-				Storage.CopyRequest.newBuilder(
-				).setSource(
-					_gcsStoreConfiguration.bucketName(), sourceFileName
-				).setTarget(
-					BlobId.of(
-						_gcsStoreConfiguration.bucketName(),
-						destinationFileName)
-				).build());
-
-			while (!copyWriter.isDone()) {
-				copyWriter.copyChunk();
-			}
-
-			return true;
-		}
-		catch (StorageException storageException) {
-			if (_log.isInfoEnabled()) {
-				_log.info(storageException);
-			}
-
-			return false;
-		}
-	}
-
-	@Override
 	public void deleteDirectory(
 		long companyId, long repositoryId, String dirName) {
 
 		String path = _getDirectoryKey(companyId, repositoryId, dirName);
 
-		Page<Blob> blobPage = _gcsStore.list(
-			_gcsStoreConfiguration.bucketName(),
-			Storage.BlobListOption.prefix(path));
+		try {
+			Page<Blob> blobPage = _gcsStore.list(
+				_gcsStoreConfiguration.bucketName(),
+				Storage.BlobListOption.pageSize(_PAGE_SIZE),
+				Storage.BlobListOption.prefix(path));
 
-		Iterable<Blob> blobs = blobPage.iterateAll();
+			Iterable<Blob> blobs = blobPage.iterateAll();
 
-		blobs.forEach(this::_deleteBlob);
+			List<StorageBatchResult<Boolean>> results = new ArrayList<>();
+
+			StorageBatch storageBatch = _gcsStore.batch();
+
+			try {
+				blobs.forEach(
+					blob -> results.add(_deleteBlob(blob, storageBatch)));
+			}
+			finally {
+				if (!results.isEmpty()) {
+					storageBatch.submit();
+
+					for (StorageBatchResult<Boolean> result : results) {
+						if ((result == null) || !result.get()) {
+							_log.error(
+								StringBundler.concat(
+									"Error deleting objects in bucket ",
+									_gcsStoreConfiguration.bucketName(), " at ",
+									path));
+
+							break;
+						}
+					}
+				}
+			}
+		}
+		catch (StorageException storageException) {
+			_log.error("Unable to delete " + path, storageException);
+		}
 	}
 
 	@Override
@@ -284,8 +256,24 @@ public class GCSStore implements Store, StoreAreaProcessor {
 	}
 
 	@Activate
+	protected void activate(
+		BundleContext bundleContext, Map<String, Object> properties) {
+
+		modified(properties);
+
+		_serviceRegistration = bundleContext.registerService(
+			StoreAreaProcessor.class, new GCSStoreAreaProcessor(),
+			MapUtil.singletonDictionary(
+				"store.type", "com.liferay.portal.store.gcs.GCSStore"));
+	}
+
+	@Deactivate
+	protected void deactivate() {
+		_serviceRegistration.unregister();
+	}
+
 	@Modified
-	protected void activate(Map<String, Object> properties) {
+	protected void modified(Map<String, Object> properties) {
 		try {
 			_gcsStoreConfiguration = ConfigurableUtil.createConfigurable(
 				GCSStoreConfiguration.class, properties);
@@ -300,13 +288,15 @@ public class GCSStore implements Store, StoreAreaProcessor {
 		}
 	}
 
-	private void _deleteBlob(Blob blob) {
-		if (_blobDecryptSourceOption == null) {
-			blob.delete();
+	private StorageBatchResult<Boolean> _deleteBlob(
+		Blob blob, StorageBatch storageBatch) {
+
+		if (_decryptStorageBlobSourceOption == null) {
+			return storageBatch.delete(blob.getBlobId());
 		}
-		else {
-			blob.delete(_blobDecryptSourceOption);
-		}
+
+		return storageBatch.delete(
+			blob.getBlobId(), _decryptStorageBlobSourceOption);
 	}
 
 	private BucketInfo _getBucketInfo() {
@@ -397,11 +387,11 @@ public class GCSStore implements Store, StoreAreaProcessor {
 	}
 
 	private ReadChannel _getReadChannel(Blob blob) {
-		if (_blobDecryptSourceOption == null) {
+		if (_decryptBlobBlobSourceOption == null) {
 			return blob.reader();
 		}
 
-		return blob.reader(_blobDecryptSourceOption);
+		return blob.reader(_decryptBlobBlobSourceOption);
 	}
 
 	private String _getRepositoryKey(long companyId, long repositoryId) {
@@ -409,11 +399,11 @@ public class GCSStore implements Store, StoreAreaProcessor {
 	}
 
 	private WriteChannel _getWriteChannel(BlobInfo blobInfo) {
-		if (_blobEncryptWriteOption == null) {
+		if (_encryptStorageBlobWriteOption == null) {
 			return _gcsStore.writer(blobInfo);
 		}
 
-		return _gcsStore.writer(blobInfo, _blobEncryptWriteOption);
+		return _gcsStore.writer(blobInfo, _encryptStorageBlobWriteOption);
 	}
 
 	private void _initEncryption() {
@@ -426,14 +416,17 @@ public class GCSStore implements Store, StoreAreaProcessor {
 						"\"dl.store.gcs.aes256.key\" is not set");
 			}
 
-			_blobDecryptSourceOption = null;
-			_blobEncryptWriteOption = null;
+			_decryptBlobBlobSourceOption = null;
+			_decryptStorageBlobSourceOption = null;
+			_encryptStorageBlobWriteOption = null;
 		}
 		else {
-			_blobDecryptSourceOption = Blob.BlobSourceOption.decryptionKey(
+			_decryptBlobBlobSourceOption = Blob.BlobSourceOption.decryptionKey(
 				aes256Key);
-			_blobEncryptWriteOption = Storage.BlobWriteOption.encryptionKey(
-				aes256Key);
+			_decryptStorageBlobSourceOption =
+				Storage.BlobSourceOption.decryptionKey(aes256Key);
+			_encryptStorageBlobWriteOption =
+				Storage.BlobWriteOption.encryptionKey(aes256Key);
 		}
 	}
 
@@ -504,7 +497,7 @@ public class GCSStore implements Store, StoreAreaProcessor {
 		String lastVisitedBlobName = startOffset;
 		StorageBatch storageBatch = _gcsStore.batch();
 
-		int pageSize = evictedBlobQuota * 2;
+		int pageSize = Math.max(evictedBlobQuota * 2, 10);
 		int visitedPageLimit = Math.max(evictedBlobQuota / 10, 10);
 
 		while ((evictedBlobQuota > 0) && (visitedPageLimit > 0)) {
@@ -563,13 +556,120 @@ public class GCSStore implements Store, StoreAreaProcessor {
 
 	private static final int _EVICTED_BATCH_SIZE = 10;
 
+	private static final long _PAGE_SIZE = 50L;
+
 	private static final Log _log = LogFactoryUtil.getLog(GCSStore.class);
 
-	private Blob.BlobSourceOption _blobDecryptSourceOption;
-	private Storage.BlobWriteOption _blobEncryptWriteOption;
 	private BucketInfo _bucketInfo;
+	private Blob.BlobSourceOption _decryptBlobBlobSourceOption;
+	private Storage.BlobSourceOption _decryptStorageBlobSourceOption;
+	private Storage.BlobWriteOption _encryptStorageBlobWriteOption;
 	private Storage _gcsStore;
 	private volatile GCSStoreConfiguration _gcsStoreConfiguration;
 	private GoogleCredentials _googleCredentials;
+	private ServiceRegistration<StoreAreaProcessor> _serviceRegistration;
+
+	private class GCSStoreAreaProcessor implements StoreAreaProcessor {
+
+		@Override
+		public String cleanUpDeletedStoreArea(
+			long companyId, int deletionQuota, Predicate<String> predicate,
+			String startOffset, TemporalAmount temporalAmount) {
+
+			return _processStoreArea(
+				companyId, deletionQuota,
+				blob -> predicate.test(blob.getName()), startOffset,
+				StoreArea.DELETED, temporalAmount);
+		}
+
+		@Override
+		public String cleanUpNewStoreArea(
+			long companyId, int evictionQuota, Predicate<String> predicate,
+			String startOffset, TemporalAmount temporalAmount) {
+
+			return _processStoreArea(
+				companyId, evictionQuota,
+				blob -> {
+					if (predicate.test(blob.getName())) {
+						return copy(
+							blob.getName(),
+							StoreArea.NEW.relocate(
+								blob.getName(), StoreArea.DELETED));
+					}
+
+					return copy(
+						blob.getName(),
+						StoreArea.NEW.relocate(blob.getName(), StoreArea.LIVE));
+				},
+				startOffset, StoreArea.NEW, temporalAmount);
+		}
+
+		@Override
+		public boolean copy(String sourceFileName, String destinationFileName) {
+			try {
+				if (!FeatureFlagManagerUtil.isEnabled("LPS-174816")) {
+					return true;
+				}
+
+				CopyWriter copyWriter = _gcsStore.copy(
+					Storage.CopyRequest.newBuilder(
+					).setSource(
+						_gcsStoreConfiguration.bucketName(), sourceFileName
+					).setTarget(
+						BlobId.of(
+							_gcsStoreConfiguration.bucketName(),
+							destinationFileName)
+					).build());
+
+				while (!copyWriter.isDone()) {
+					copyWriter.copyChunk();
+				}
+
+				return true;
+			}
+			catch (StorageException storageException) {
+				if (_log.isInfoEnabled()) {
+					_log.info(storageException);
+				}
+
+				return false;
+			}
+		}
+
+		@Override
+		public boolean copyDirectory(
+			long companyId, long repositoryId, String dirName,
+			StoreArea[] sourceStoreAreas, StoreArea destinationStoreArea) {
+
+			try {
+				if (!FeatureFlagManagerUtil.isEnabled("LPS-174816")) {
+					return true;
+				}
+
+				for (StoreArea sourceStoreArea : sourceStoreAreas) {
+					String[] filePaths = StoreArea.withStoreArea(
+						sourceStoreArea,
+						() -> _getFilePaths(companyId, repositoryId, dirName));
+
+					for (String filePath : filePaths) {
+						copy(
+							filePath,
+							sourceStoreArea.relocate(
+								filePath, destinationStoreArea));
+					}
+				}
+
+				return true;
+			}
+			catch (StorageException storageException) {
+				if (_log.isInfoEnabled()) {
+					_log.info(storageException);
+				}
+
+				return false;
+			}
+		}
+
+	}
 
 }

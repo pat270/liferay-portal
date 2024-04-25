@@ -23,7 +23,6 @@ import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
-import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.OrderByComparator;
 
 import java.util.List;
@@ -44,14 +43,16 @@ import org.osgi.service.component.annotations.Reference;
 public class CTRemoteServiceImpl extends CTRemoteServiceBaseImpl {
 
 	@Override
-	public CTRemote addCTRemote(String name, String description, String url)
+	public CTRemote addCTRemote(
+			String name, String description, String url, String clientId,
+			String clientSecret)
 		throws PortalException {
 
 		_portletResourcePermission.check(
 			getPermissionChecker(), null, CTActionKeys.ADD_REMOTE);
 
 		return ctRemoteLocalService.addCTRemote(
-			getUserId(), name, description, url);
+			getUserId(), name, description, url, clientId, clientSecret);
 	}
 
 	@Override
@@ -70,6 +71,7 @@ public class CTRemoteServiceImpl extends CTRemoteServiceBaseImpl {
 		return ctRemoteLocalService.deleteCTRemote(ctRemoteId);
 	}
 
+	@Override
 	public List<CTRemote> getCTRemotes(
 		String keywords, int start, int end,
 		OrderByComparator<CTRemote> orderByComparator) {
@@ -104,6 +106,7 @@ public class CTRemoteServiceImpl extends CTRemoteServiceBaseImpl {
 		return ctRemotePersistence.dslQuery(dslQuery);
 	}
 
+	@Override
 	public int getCTRemotesCount(String keywords) {
 		String[] keywordsArray = _customSQL.keywords(
 			keywords, true, WildcardMode.SURROUND);
@@ -132,14 +135,15 @@ public class CTRemoteServiceImpl extends CTRemoteServiceBaseImpl {
 
 	@Override
 	public CTRemote updateCTRemote(
-			long ctRemoteId, String name, String description, String url)
+			long ctRemoteId, String name, String description, String url,
+			String clientId, String clientSecret)
 		throws PortalException {
 
 		_ctRemoteModelResourcePermission.check(
 			getPermissionChecker(), ctRemoteId, ActionKeys.UPDATE);
 
 		return ctRemoteLocalService.updateCTRemote(
-			ctRemoteId, name, description, url);
+			ctRemoteId, name, description, url, clientId, clientSecret);
 	}
 
 	@Reference(
@@ -152,8 +156,5 @@ public class CTRemoteServiceImpl extends CTRemoteServiceBaseImpl {
 
 	@Reference(target = "(resource.name=" + CTConstants.RESOURCE_NAME + ")")
 	private PortletResourcePermission _portletResourcePermission;
-
-	@Reference
-	private UserLocalService _userLocalService;
 
 }

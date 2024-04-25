@@ -37,19 +37,17 @@ public interface PasswordEncryptor {
 
 	public static final String TYPE_UFC_CRYPT = "UFC-CRYPT";
 
-	public String encrypt(String plainTextPassword, String encryptedPassword)
-		throws PwdEncryptorException;
-
-	public String encrypt(
+	public default String encrypt(
 			String algorithm, String plainTextPassword,
 			String encryptedPassword)
-		throws PwdEncryptorException;
+		throws PwdEncryptorException {
+
+		return encrypt(algorithm, plainTextPassword, encryptedPassword, false);
+	}
 
 	public String encrypt(
 			String algorithm, String plainTextPassword,
 			String encryptedPassword, boolean upgradeHashSecurity)
 		throws PwdEncryptorException;
-
-	public String getDefaultPasswordEncryptionAlgorithm();
 
 }

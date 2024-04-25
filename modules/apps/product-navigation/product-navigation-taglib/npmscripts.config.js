@@ -5,8 +5,6 @@
 
 module.exports = {
 	build: {
-		bundler: {
-			ignore: ['**/config.js', '**/control_menu/**/*'],
-		},
+		main: 'src/main/resources/META-INF/resources/js/index.js',
 	},
 };

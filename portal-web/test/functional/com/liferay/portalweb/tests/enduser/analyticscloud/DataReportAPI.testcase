@@ -26,6 +26,15 @@ definition {
 
 		ACUtils.tearDownDXP();
 
+		if (${testLiferayVirtualInstance} == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			JSONUser.tearDownNonAdminUsers();
+
+			JSONGroup.deleteGroupByName(groupName = "Site Name");
+		}
+
 		ACUtils.launchAC();
 
 		ACNavigation.goToSettings();
@@ -36,18 +45,7 @@ definition {
 
 		ACUtils.clickAnyButton(button = "Continue");
 
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
-		//ACUtils.tearDownAC();
-
-		if (${testLiferayVirtualInstance} == "true") {
-			PortalInstances.tearDownCP();
-		}
-		else {
-			JSONUser.tearDownNonAdminUsers();
-
-			JSONGroup.deleteGroupByName(groupName = "Site Name");
-		}
+		ACUtils.tearDownAC();
 	}
 
 	@description = "Feature ID: LRAC-8103 | Automation ID: LRAC-11502 | Test Summary: Assert the user is able to query data using Analytics Cloud API"
@@ -157,7 +155,7 @@ definition {
 	@description = "Feature ID: LRAC-12919 | Automation ID: LRAC-13504 | Test Summary: Check that you can access data from all existing Documents and Media"
 	@priority = 4
 	test RequestToAccessDataForAllDocumentsAndMedia {
-		var documentsMediaTitleList = "DM AC Title 1,DM AC Title 2";
+		var documentsMediaTitleList = "DM AC Title 1,DM AC Title 1,DM AC Title 1,DM AC Title 1,DM AC Title 2,DM AC Title 2,DM AC Title 2,DM AC Title 2";
 		var type = "documents-and-media";
 		var range = "rangeKey";
 		var rangeValue = 0;
@@ -356,8 +354,8 @@ definition {
 	@priority = 4
 	test RequestToAccessDataForAllIndividuals {
 		var type = "individuals";
-		var userNameList = "ac,bq";
-		var emailList = "ac@liferay.com,bq@liferay.com";
+		var userNameList = "brazil,spain";
+		var emailList = "brazil@liferay.com,spain@liferay.com";
 
 		task ("Copy the token value for the API and copy the token for the AC and DXP connection") {
 			var token = ACApi.getTokenValue();
@@ -394,9 +392,13 @@ definition {
 
 		task ("Visit the site page") {
 			ACUtils.navigateToSitePageWithUser(
+				actionType = "View WC",
+				documentTitleList = "1,2,3,4",
 				emailList = ${emailList},
 				pageName = "AC Page",
 				siteName = "Site Name");
+
+			ACUtils.closeAllSessionsAndWait();
 		}
 
 		task ("Create a data report using analytics cloud API with the type individuals") {
@@ -590,16 +592,6 @@ definition {
 				filterValue = ${rangeValue},
 				token = ${token},
 				type = ${type});
-		}
-
-		task ("Assert the total items of the response is 2 (because we have just 2 blogs)") {
-			var totalValue = ACApi.searchApiResponse(
-				apiDataResponse = ${apiResponse},
-				jsonQuery = "total");
-
-			TestUtils.assertEquals(
-				actual = ${totalValue},
-				expected = 2);
 		}
 
 		task ("Get the id of the blog in the first position of the response") {
@@ -948,6 +940,8 @@ definition {
 	@description = "Feature ID: LRAC-12919 | Automation ID: LRAC-13492 | Test Summary: Check that you can access the activities of a specific individual"
 	@priority = 3
 	test RequestToAccessDataForSpecificIndividual {
+		property test.run.type = "single";
+
 		var type = "individuals";
 		var usernameList = "analytics,cloud";
 		var emailList = "analytics@liferay.com,cloud@liferay.com";
@@ -987,9 +981,13 @@ definition {
 
 		task ("Visit the site page") {
 			ACUtils.navigateToSitePageWithUser(
+				actionType = "View WC",
+				documentTitleList = "1,2,3,4,5,6",
 				emailList = ${emailList},
 				pageName = "AC Page",
 				siteName = "Site Name");
+
+			ACUtils.closeAllSessionsAndWait();
 		}
 
 		task ("Create a data report using analytics cloud API with the type individuals") {

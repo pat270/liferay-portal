@@ -4,7 +4,7 @@ definition {
 	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Fragments";
+	property testray.main.component.name = "Fragment Administration";
 
 	setUp {
 		task ("Set up instance and sign in") {
@@ -25,9 +25,7 @@ definition {
 		}
 
 		task ("Activate local live staging") {
-			Staging.openStagingAdmin(siteURLKey = "test-site-name");
-
-			Staging.activateStagingCP(siteName = "Test Site Name");
+			JSONStaging.enableLocalStaging(groupName = "Test Site Name");
 		}
 	}
 
@@ -120,7 +118,7 @@ definition {
 				contentType = "Purchase Order",
 				panel = "General");
 
-			for (var fragmentName : list "Text Input,Submit Button") {
+			for (var fragmentName : list "Text,Submit Button") {
 				PageEditor.removeFragment(fragmentName = ${fragmentName});
 			}
 		}
@@ -129,7 +127,7 @@ definition {
 			PageEditor.gotoConfiguration(fragmentName = "Form Container");
 
 			AssertSelectedLabel(
-				key_fieldLabel = "Success Interaction",
+				key_fieldLabel = "Success Action",
 				locator1 = "Select#GENERIC_SELECT_FIELD",
 				value1 = "Show Embedded Message");
 
@@ -139,7 +137,7 @@ definition {
 				value1 = "Thank you. Your information was successfully received.");
 
 			AssertNotChecked.assertNotCheckedNotVisible(
-				key_toggleSwitchLabel = "Preview Embedded Message",
+				key_toggleSwitchLabel = "Preview Success Message",
 				locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
 
 			AssertVisible(
@@ -150,10 +148,7 @@ definition {
 		}
 
 		task ("When the page designer checks preview success state toggle") {
-			PageEditor.editFormContainer(
-				panel = "General",
-				previewSuccessState = "true",
-				successMessage = "Embedded");
+			PageEditor.previewEmbeddedMessage();
 		}
 
 		task ("Then the page designer can see sucess text under Form Container") {
@@ -163,16 +158,16 @@ definition {
 		task ("When the page designer publishes the content page with mapped Form Container") {
 			PageEditor.addFragmentToFormContainer(
 				collectionName = "Form Components",
-				fragmentName = "Text Input");
+				fragmentName = "Text");
 
 			PageEditor.editInput(
 				field = "Region",
-				fragmentName = "Text Input");
+				fragmentName = "Text");
 
 			PageEditor.addFragmentToFormContainer(
 				collectionName = "Form Components",
 				fragmentName = "Submit Button",
-				targetFragmentName = "Text Input");
+				targetFragmentName = "Text");
 
 			PageEditor.publish();
 		}
@@ -185,7 +180,7 @@ definition {
 			PageEditor.viewInputStyle(
 				label = "Region",
 				showLabel = "true",
-				type = "text-input");
+				type = "text");
 
 			Button.viewPresent(button = "Submit");
 		}
@@ -204,7 +199,7 @@ definition {
 			PageEditor.viewInputStyle(
 				label = "Region",
 				showLabel = "true",
-				type = "text-input");
+				type = "text");
 
 			Button.viewPresent(button = "Submit");
 		}

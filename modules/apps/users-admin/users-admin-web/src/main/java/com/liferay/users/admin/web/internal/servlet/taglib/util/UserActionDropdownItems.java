@@ -34,6 +34,7 @@ import com.liferay.users.admin.user.action.contributor.UserActionContributor;
 import com.liferay.users.admin.web.internal.display.context.UserActionDisplayContext;
 
 import java.util.List;
+import java.util.Objects;
 
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
@@ -59,13 +60,18 @@ public class UserActionDropdownItems {
 	}
 
 	public List<DropdownItem> getActionDropdownItems() {
-		boolean hasUpdatePermission = UserPermissionUtil.contains(
+		boolean hasActivatePermission = UserPermissionUtil.contains(
 			_themeDisplay.getPermissionChecker(), _user.getUserId(),
-			ActionKeys.UPDATE);
-
+			ActionKeys.ACTIVATE);
+		boolean hasDeactivatePermission = UserPermissionUtil.contains(
+			_themeDisplay.getPermissionChecker(), _user.getUserId(),
+			ActionKeys.DEACTIVATE);
 		boolean hasDeletePermission = UserPermissionUtil.contains(
 			_themeDisplay.getPermissionChecker(), _user.getUserId(),
 			ActionKeys.DELETE);
+		boolean hasUpdatePermission = UserPermissionUtil.contains(
+			_themeDisplay.getPermissionChecker(), _user.getUserId(),
+			ActionKeys.UPDATE);
 
 		UserActionDisplayContext userActionDisplayContext =
 			new UserActionDisplayContext(
@@ -100,15 +106,25 @@ public class UserActionDropdownItems {
 					() ->
 						!PropsValues.PORTAL_JAAS_ENABLE &&
 						PropsValues.PORTAL_IMPERSONATION_ENABLE &&
+						!Objects.equals(
+							_user.getScreenName(), "default-service-account") &&
 						(_user.getUserId() != _themeDisplay.getUserId()) &&
-						!_themeDisplay.isImpersonated() &&
+						_user.isActive() && !_themeDisplay.isImpersonated() &&
 						UserPermissionUtil.contains(
 							_themeDisplay.getPermissionChecker(),
 							_user.getUserId(), ActionKeys.IMPERSONATE),
 					_getImpersonateUserActionUnsafeConsumer()
 				).add(
-					() -> hasDeletePermission && !_user.isActive(),
+					() ->
+						(hasActivatePermission || hasDeletePermission) &&
+						!_user.isActive(),
 					_getActivateActionUnsafeConsumer()
+				).add(
+					() ->
+						(hasDeactivatePermission || hasDeletePermission) &&
+						_user.isActive() &&
+						(_user.getUserId() != _themeDisplay.getUserId()),
+					_getDeactivateActionUnsafeConsumer()
 				).add(
 					() ->
 						hasDeletePermission &&
@@ -174,7 +190,7 @@ public class UserActionDropdownItems {
 	}
 
 	private UnsafeConsumer<DropdownItem, Exception>
-		_getDeleteActionUnsafeConsumer() {
+		_getDeactivateActionUnsafeConsumer() {
 
 		if (_user.isActive()) {
 			return dropdownItem -> {
@@ -196,6 +212,12 @@ public class UserActionDropdownItems {
 					LanguageUtil.get(_httpServletRequest, "deactivate"));
 			};
 		}
+
+		return null;
+	}
+
+	private UnsafeConsumer<DropdownItem, Exception>
+		_getDeleteActionUnsafeConsumer() {
 
 		if (!_user.isActive() && PropsValues.USERS_DELETE) {
 			return dropdownItem -> {

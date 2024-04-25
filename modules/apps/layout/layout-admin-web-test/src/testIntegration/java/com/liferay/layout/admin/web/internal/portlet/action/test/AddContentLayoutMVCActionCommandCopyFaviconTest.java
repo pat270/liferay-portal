@@ -17,6 +17,7 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
@@ -45,8 +46,10 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -66,6 +69,18 @@ public class AddContentLayoutMVCActionCommandCopyFaviconTest {
 			new LiferayIntegrationTestRule(),
 			PermissionCheckerMethodTestRule.INSTANCE);
 
+	@BeforeClass
+	public static void setUpClass() throws Exception {
+		_originalName = PrincipalThreadLocal.getName();
+
+		PrincipalThreadLocal.setName(TestPropsValues.getUserId());
+	}
+
+	@AfterClass
+	public static void tearDownClass() throws Exception {
+		PrincipalThreadLocal.setName(_originalName);
+	}
+
 	@Before
 	public void setUp() throws Exception {
 		_group = GroupTestUtil.addGroup();
@@ -76,7 +91,7 @@ public class AddContentLayoutMVCActionCommandCopyFaviconTest {
 			_layoutPageTemplateEntryLocalService.addLayoutPageTemplateEntry(
 				TestPropsValues.getUserId(), _group.getGroupId(), 0,
 				RandomTestUtil.randomString(),
-				LayoutPageTemplateEntryTypeConstants.TYPE_BASIC, 0,
+				LayoutPageTemplateEntryTypeConstants.BASIC, 0,
 				WorkflowConstants.STATUS_APPROVED,
 				ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
@@ -114,8 +129,9 @@ public class AddContentLayoutMVCActionCommandCopyFaviconTest {
 		return _dlAppLocalService.addFileEntry(
 			null, TestPropsValues.getUserId(), group.getGroupId(),
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
-			StringUtil.randomString(), ContentTypes.IMAGE_JPEG, bytes, null,
-			null, ServiceContextTestUtil.getServiceContext(group.getGroupId()));
+			StringUtil.randomString(), ContentTypes.APPLICATION_TEXT, bytes,
+			null, null, null,
+			ServiceContextTestUtil.getServiceContext(group.getGroupId()));
 	}
 
 	private byte[] _getBytes(String favicon) throws Exception {
@@ -180,6 +196,8 @@ public class AddContentLayoutMVCActionCommandCopyFaviconTest {
 
 		return themeDisplay;
 	}
+
+	private static String _originalName;
 
 	private Company _company;
 

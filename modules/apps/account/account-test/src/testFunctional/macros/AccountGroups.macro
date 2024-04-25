@@ -1,6 +1,7 @@
 definition {
 
-	macro addAssignee {
+	@summary = "Default summary"
+	macro addAssignee(accountGroupName = null, assigneeNames = null) {
 		LexiconEntry.gotoAdd();
 
 		SelectFrame(
@@ -25,7 +26,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro addCP {
+	@summary = "Default summary"
+	macro addCP(accountGroupDescription = null, accountGroupName = null) {
 		LexiconEntry.gotoAdd();
 
 		AssertTextEquals(
@@ -43,7 +45,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro editCP {
+	@summary = "Default summary"
+	macro editCP(accountGroupName = null, accountGroupDescriptionEdit = null, accountGroupNameEdit = null) {
 		AccountGroups.openAccountGroupsAdmin();
 
 		LexiconEntry.gotoEntryMenuItem(
@@ -69,15 +72,19 @@ definition {
 			value1 = "Edit ${accountGroupNameEdit}");
 	}
 
-	macro openAccountGroupsAdmin {
+	@summary = "Default summary"
+	macro openAccountGroupsAdmin() {
 		Navigator.openWithAppendToBaseURL(urlAppend = "group/control_panel/manage?p_p_id=com_liferay_account_admin_web_internal_portlet_AccountGroupsAdminPortlet");
 	}
 
-	macro removeAccount {
+	@summary = "Default summary"
+	macro removeAccount(removeType = null, accountGroupName = null) {
 		if (${removeType} == "Toolbar Remove Icon") {
 			LexiconEntry.selectEntry(key_rowEntry = ${accountGroupName});
 
-			ClickNoError.clickNoMouseOver(locator1 = "ManagementBar#REMOVE");
+			ClickNoError(
+				key_text = "times-circle",
+				locator1 = "ManagementBar#ANY_ICON");
 
 			AssertConfirm(value1 = "Are you sure you want to remove the selected accounts?");
 
@@ -86,7 +93,7 @@ definition {
 		else if (${removeType} == "Management Toolbar") {
 			LexiconEntry.selectEntry(key_rowEntry = ${accountGroupName});
 
-			Click(locator1 = "Icon#TOOLBAR_ELLIPSIS");
+			Click(locator1 = "ManagementBar#ELLIPSIS");
 
 			MenuItem.clickNoError(menuItem = "Remove");
 
@@ -107,7 +114,8 @@ definition {
 		LexiconEntry.viewNoEntry(rowEntry = ${accountGroupName});
 	}
 
-	macro viewAssignee {
+	@summary = "Default summary"
+	macro viewAssignee(assigneeName = null) {
 		AssertElementPresent(
 			key_tab = "Accounts",
 			locator1 = "NavTab#ACTIVE_TAB_LINK");
@@ -118,7 +126,8 @@ definition {
 			value1 = ${assigneeName});
 	}
 
-	macro viewDefault {
+	@summary = "Default summary"
+	macro viewDefault() {
 		if (IsElementPresent(key_tab = ${tabName}, locator1 = "NavTab#ACTIVE_TAB_LINK")) {
 			AssertElementPresent(
 				key_tab = ${tabName},
@@ -132,7 +141,8 @@ definition {
 			value1 = "No ${tabName} were found.");
 	}
 
-	macro viewEntry {
+	@summary = "Default summary"
+	macro viewEntry(accountGroupDescription = null, accountGroupName = null, accountGroupAccount = null) {
 		LexiconEntry.viewEntryName(rowEntry = ${accountGroupName});
 
 		if (isSet(accountGroupDescription)) {

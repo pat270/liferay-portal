@@ -72,7 +72,12 @@ public class ProductVirtualSettingsResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _productVirtualSettingsResourceProxyProviderFunction.
+				Function<InvocationHandler, ProductVirtualSettingsResource>
+					productVirtualSettingsResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_productVirtualSettingsResourceProxyProviderFunction;
+
+				return productVirtualSettingsResourceProxyProviderFunction.
 					apply(
 						(proxy, method, arguments) -> _invoke(
 							method, arguments, _checkPermissions,
@@ -237,11 +242,6 @@ public class ProductVirtualSettingsResourceFactoryImpl
 		}
 	}
 
-	private static final Function
-		<InvocationHandler, ProductVirtualSettingsResource>
-			_productVirtualSettingsResourceProxyProviderFunction =
-				_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -277,6 +277,15 @@ public class ProductVirtualSettingsResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function
+			<InvocationHandler, ProductVirtualSettingsResource>
+				_productVirtualSettingsResourceProxyProviderFunction =
+					_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

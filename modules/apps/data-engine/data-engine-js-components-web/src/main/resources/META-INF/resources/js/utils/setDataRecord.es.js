@@ -42,10 +42,21 @@ export default function setDataRecord(
 
 	if (localizable) {
 		const edited =
-			!!localizedValue?.[languageId] ||
+			(!!Array.isArray(localizedValue?.[languageId]) &&
+				!!localizedValue?.[languageId].length) ||
 			(localizedValueEdited && localizedValueEdited[languageId]);
 
-		let availableLanguageIds;
+		const isValidValue = (value) => {
+			return value === '' || !value?.length || value === false;
+		};
+
+		if (
+			!edited &&
+			Liferay.ThemeDisplay.getDefaultLanguageId() === languageId &&
+			isValidValue(value)
+		) {
+			delete localizedValue[languageId];
+		}
 
 		Object.keys(localizedValue)
 			.filter(
@@ -59,17 +70,6 @@ export default function setDataRecord(
 				delete localizedValue[languageId];
 			});
 
-		if (localizedValue) {
-			availableLanguageIds = Object.keys(localizedValue);
-		}
-		else {
-			availableLanguageIds = [];
-		}
-
-		if (!availableLanguageIds.includes(languageId)) {
-			availableLanguageIds.push(languageId);
-		}
-
 		dataRecordValues[dataRecordValueKey] = {...localizedValue};
 
 		if (edited) {
@@ -78,7 +78,10 @@ export default function setDataRecord(
 				[languageId]: _value,
 			};
 		}
-		else if (preserveValue) {
+		else if (
+			preserveValue &&
+			Liferay.ThemeDisplay.getDefaultLanguageId() !== languageId
+		) {
 			dataRecordValues[dataRecordValueKey] = {
 				...localizedValue,
 				[languageId]: value,

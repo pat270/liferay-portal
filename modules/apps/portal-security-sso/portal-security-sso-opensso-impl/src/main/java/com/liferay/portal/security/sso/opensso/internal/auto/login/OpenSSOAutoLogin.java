@@ -7,6 +7,7 @@ package com.liferay.portal.security.sso.opensso.internal.auto.login;
 
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.exception.ContactNameException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -17,7 +18,6 @@ import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserConstants;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.security.auth.ScreenNameGenerator;
 import com.liferay.portal.kernel.security.auto.login.AutoLogin;
 import com.liferay.portal.kernel.security.auto.login.BaseAutoLogin;
@@ -34,7 +34,7 @@ import com.liferay.portal.kernel.util.PrefsPropsUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.security.exportimport.UserImporter;
+import com.liferay.portal.security.ldap.exportimport.LDAPUserImporter;
 import com.liferay.portal.security.sso.opensso.configuration.OpenSSOConfiguration;
 import com.liferay.portal.security.sso.opensso.constants.OpenSSOConstants;
 import com.liferay.portal.security.sso.opensso.constants.OpenSSOWebKeys;
@@ -137,11 +137,11 @@ public class OpenSSOAutoLogin extends BaseAutoLogin {
 					PropsValues.COMPANY_SECURITY_AUTH_TYPE);
 
 				if (authType.equals(CompanyConstants.AUTH_TYPE_SN)) {
-					user = _userImporter.importUser(
+					user = _ldapUserImporter.importUser(
 						companyId, StringPool.BLANK, screenName);
 				}
 				else {
-					user = _userImporter.importUser(
+					user = _ldapUserImporter.importUser(
 						companyId, emailAddress, StringPool.BLANK);
 				}
 			}
@@ -318,6 +318,9 @@ public class OpenSSOAutoLogin extends BaseAutoLogin {
 	private ConfigurationProvider _configurationProvider;
 
 	@Reference
+	private LDAPUserImporter _ldapUserImporter;
+
+	@Reference
 	private OpenSSO _openSSO;
 
 	@Reference
@@ -325,9 +328,6 @@ public class OpenSSOAutoLogin extends BaseAutoLogin {
 
 	@Reference
 	private ScreenNameGenerator _screenNameGenerator;
-
-	@Reference
-	private UserImporter _userImporter;
 
 	@Reference
 	private UserLocalService _userLocalService;

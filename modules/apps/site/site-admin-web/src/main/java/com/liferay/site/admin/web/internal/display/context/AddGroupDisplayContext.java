@@ -8,8 +8,6 @@ package com.liferay.site.admin.web.internal.display.context;
 import com.liferay.asset.kernel.model.AssetVocabulary;
 import com.liferay.asset.kernel.service.AssetCategoryServiceUtil;
 import com.liferay.asset.kernel.service.AssetVocabularyServiceUtil;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -37,6 +35,9 @@ public class AddGroupDisplayContext {
 		_disablePrivateLayouts = disablePrivateLayouts;
 		_httpServletRequest = httpServletRequest;
 		_renderResponse = renderResponse;
+
+		_themeDisplay = (ThemeDisplay)httpServletRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
 	}
 
 	public String getAddGroupURL() {
@@ -67,24 +68,11 @@ public class AddGroupDisplayContext {
 			return _groupsIds;
 		}
 
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)_httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
-		long[] groupsIds = {themeDisplay.getCompanyGroupId()};
+		long[] groupsIds = {_themeDisplay.getCompanyGroupId()};
 
 		if (_getParentGroupId() > 0) {
-			try {
-				groupsIds = PortalUtil.getCurrentAndAncestorSiteGroupIds(
-					_getParentGroupId());
-			}
-			catch (Exception exception) {
-				if (_log.isDebugEnabled()) {
-					_log.debug(exception);
-				}
-
-				return groupsIds;
-			}
+			groupsIds = PortalUtil.getCurrentAndAncestorSiteGroupIds(
+				_getParentGroupId());
 		}
 
 		_groupsIds = groupsIds;
@@ -100,7 +88,8 @@ public class AddGroupDisplayContext {
 
 		for (AssetVocabulary assetVocabulary : assetVocabularies) {
 			if (assetVocabulary.isAssociatedToClassNameId(classNameId) &&
-				assetVocabulary.isRequired(classNameId, 0)) {
+				assetVocabulary.isRequired(
+					classNameId, 0, _themeDisplay.getScopeGroupId())) {
 
 				return true;
 			}
@@ -117,7 +106,8 @@ public class AddGroupDisplayContext {
 
 		for (AssetVocabulary assetVocabulary : assetVocabularies) {
 			if (assetVocabulary.isAssociatedToClassNameId(classNameId) &&
-				assetVocabulary.isRequired(classNameId, 0)) {
+				assetVocabulary.isRequired(
+					classNameId, 0, _themeDisplay.getScopeGroupId())) {
 
 				int assetVocabularyCategoriesCount =
 					AssetCategoryServiceUtil.getVocabularyCategoriesCount(
@@ -159,13 +149,11 @@ public class AddGroupDisplayContext {
 		return _parentGroupId;
 	}
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		AddGroupDisplayContext.class);
-
 	private final boolean _disablePrivateLayouts;
 	private long[] _groupsIds;
 	private final HttpServletRequest _httpServletRequest;
 	private Long _parentGroupId;
 	private final RenderResponse _renderResponse;
+	private final ThemeDisplay _themeDisplay;
 
 }

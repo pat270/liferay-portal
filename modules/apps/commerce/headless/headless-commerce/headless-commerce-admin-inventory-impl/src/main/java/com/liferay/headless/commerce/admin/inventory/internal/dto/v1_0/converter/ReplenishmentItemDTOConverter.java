@@ -7,6 +7,7 @@ package com.liferay.headless.commerce.admin.inventory.internal.dto.v1_0.converte
 
 import com.liferay.commerce.inventory.model.CommerceInventoryReplenishmentItem;
 import com.liferay.commerce.inventory.service.CommerceInventoryReplenishmentItemService;
+import com.liferay.commerce.util.CommerceQuantityFormatter;
 import com.liferay.headless.commerce.admin.inventory.dto.v1_0.ReplenishmentItem;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
@@ -41,19 +42,34 @@ public class ReplenishmentItemDTOConverter
 
 		return new ReplenishmentItem() {
 			{
-				availabilityDate =
-					commerceInventoryReplenishmentItem.getAvailabilityDate();
-				externalReferenceCode =
-					commerceInventoryReplenishmentItem.
-						getExternalReferenceCode();
-				id =
-					commerceInventoryReplenishmentItem.
-						getCommerceInventoryReplenishmentItemId();
-				quantity = commerceInventoryReplenishmentItem.getQuantity();
-				sku = commerceInventoryReplenishmentItem.getSku();
-				warehouseId =
-					commerceInventoryReplenishmentItem.
-						getCommerceInventoryWarehouseId();
+				setAvailabilityDate(
+					() ->
+						commerceInventoryReplenishmentItem.
+							getAvailabilityDate());
+				setExternalReferenceCode(
+					() ->
+						commerceInventoryReplenishmentItem.
+							getExternalReferenceCode());
+				setId(
+					() ->
+						commerceInventoryReplenishmentItem.
+							getCommerceInventoryReplenishmentItemId());
+				setQuantity(
+					() -> _commerceQuantityFormatter.format(
+						commerceInventoryReplenishmentItem.getCompanyId(),
+						commerceInventoryReplenishmentItem.getQuantity(),
+						commerceInventoryReplenishmentItem.getSku(),
+						commerceInventoryReplenishmentItem.
+							getUnitOfMeasureKey()));
+				setSku(commerceInventoryReplenishmentItem::getSku);
+				setUnitOfMeasureKey(
+					() ->
+						commerceInventoryReplenishmentItem.
+							getUnitOfMeasureKey());
+				setWarehouseId(
+					() ->
+						commerceInventoryReplenishmentItem.
+							getCommerceInventoryWarehouseId());
 			}
 		};
 	}
@@ -61,5 +77,8 @@ public class ReplenishmentItemDTOConverter
 	@Reference
 	private CommerceInventoryReplenishmentItemService
 		_commerceInventoryReplenishmentItemService;
+
+	@Reference
+	private CommerceQuantityFormatter _commerceQuantityFormatter;
 
 }

@@ -5,17 +5,13 @@
 
 package com.liferay.commerce.product.content.web.internal.info.item.renderer;
 
-import com.liferay.account.model.AccountEntry;
-import com.liferay.commerce.constants.CommerceWebKeys;
-import com.liferay.commerce.context.CommerceContext;
 import com.liferay.commerce.product.content.constants.CPContentWebKeys;
-import com.liferay.commerce.product.content.util.CPContentHelper;
+import com.liferay.commerce.product.content.helper.CPContentHelper;
 import com.liferay.commerce.product.model.CPDefinition;
 import com.liferay.info.item.renderer.InfoItemRenderer;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
@@ -63,28 +59,6 @@ public class OptionSelectorInfoItemRenderer
 			httpServletRequest.setAttribute(
 				CPContentWebKeys.CP_CONTENT_HELPER, _cpContentHelper);
 
-			long accountEntryId = 0;
-
-			CommerceContext commerceContext =
-				(CommerceContext)httpServletRequest.getAttribute(
-					CommerceWebKeys.COMMERCE_CONTEXT);
-
-			AccountEntry accountEntry = commerceContext.getAccountEntry();
-
-			if (accountEntry != null) {
-				accountEntryId = accountEntry.getAccountEntryId();
-			}
-
-			httpServletRequest.setAttribute(
-				"liferay-commerce:option-selector:accountId", accountEntryId);
-
-			httpServletRequest.setAttribute(
-				"liferay-commerce:option-selector:channelId",
-				commerceContext.getCommerceChannelId());
-			httpServletRequest.setAttribute(
-				"liferay-commerce:option-selector:cpDefinitionId",
-				cpDefinition.getCPDefinitionId());
-
 			String namespace = (String)httpServletRequest.getAttribute(
 				"liferay-commerce:option-selector:namespace");
 
@@ -102,10 +76,6 @@ public class OptionSelectorInfoItemRenderer
 			httpServletRequest.setAttribute(
 				"liferay-commerce:option-selector:namespace", namespace);
 
-			httpServletRequest.setAttribute(
-				"liferay-commerce:option-selector:productId",
-				cpDefinition.getCProductId());
-
 			requestDispatcher.include(httpServletRequest, httpServletResponse);
 		}
 		catch (Exception exception) {
@@ -118,9 +88,6 @@ public class OptionSelectorInfoItemRenderer
 
 	@Reference
 	private Language _language;
-
-	@Reference
-	private Portal _portal;
 
 	@Reference(
 		target = "(osgi.web.symbolicname=com.liferay.commerce.product.content.web)"

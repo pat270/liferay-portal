@@ -6,13 +6,14 @@
 package com.liferay.product.navigation.control.menu.internal.manager;
 
 import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Role;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.role.RoleConstants;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -43,7 +44,8 @@ public class ProductNavigationControlMenuManagerImpl
 				Constants.PREVIEW,
 				ParamUtil.getString(
 					httpServletRequest, "p_l_mode", Constants.VIEW)) ||
-			_isLockedLayoutView(httpServletRequest)) {
+			_isLockedLayoutView(httpServletRequest) ||
+			_isGuestUser(httpServletRequest)) {
 
 			return false;
 		}
@@ -63,7 +65,7 @@ public class ProductNavigationControlMenuManagerImpl
 
 		try {
 			MenuAccessConfiguration menuAccessConfiguration =
-				ConfigurationProviderUtil.getGroupConfiguration(
+				_configurationProvider.getGroupConfiguration(
 					MenuAccessConfiguration.class, group.getGroupId());
 
 			if ((menuAccessConfiguration != null) &&
@@ -99,6 +101,32 @@ public class ProductNavigationControlMenuManagerImpl
 		return true;
 	}
 
+	private boolean _isGuestUser(HttpServletRequest httpServletRequest) {
+		try {
+			User user = _portal.getUser(httpServletRequest);
+
+			if (user == null) {
+				ThemeDisplay themeDisplay =
+					(ThemeDisplay)httpServletRequest.getAttribute(
+						WebKeys.THEME_DISPLAY);
+
+				user = themeDisplay.getUser();
+			}
+
+			if ((user == null) || user.isGuestUser()) {
+				return true;
+			}
+		}
+		catch (Exception exception) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to determine if user is guest user", exception);
+			}
+		}
+
+		return false;
+	}
+
 	private boolean _isLockedLayoutView(HttpServletRequest httpServletRequest) {
 		String mvcRenderCommandName =
 			_portal.getPortletNamespace(LayoutAdminPortletKeys.GROUP_PAGES) +
@@ -116,6 +144,9 @@ public class ProductNavigationControlMenuManagerImpl
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		ProductNavigationControlMenuManagerImpl.class);
+
+	@Reference
+	private ConfigurationProvider _configurationProvider;
 
 	@Reference
 	private Portal _portal;

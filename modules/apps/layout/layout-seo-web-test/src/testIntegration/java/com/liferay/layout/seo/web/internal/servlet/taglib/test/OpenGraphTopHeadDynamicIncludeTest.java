@@ -90,6 +90,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -371,6 +372,29 @@ public class OpenGraphTopHeadDynamicIncludeTest {
 		_assertMetaTag(document, "property1", "content1");
 		_assertNoOpenGraphMetaProperty(document, "property2");
 		_assertNoOpenGraphMetaContent(document, "content3");
+	}
+
+	@Test
+	public void testIncludeInternalServerErrorResponseStatus()
+		throws Exception {
+
+		MockHttpServletResponse mockHttpServletResponse =
+			new MockHttpServletResponse();
+
+		mockHttpServletResponse.setStatus(
+			HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+
+		_testWithLayoutSEOCompanyConfiguration(
+			() -> _dynamicInclude.include(
+				_getHttpServletRequest(), mockHttpServletResponse,
+				RandomTestUtil.randomString()),
+			false, true);
+
+		Document document = Jsoup.parse(
+			mockHttpServletResponse.getContentAsString());
+
+		_assertNoLinkElements(document, "alternate");
+		_assertNoLinkElements(document, "canonical");
 	}
 
 	@Test
@@ -1135,6 +1159,26 @@ public class OpenGraphTopHeadDynamicIncludeTest {
 	}
 
 	@Test
+	public void testIncludeNotFoundResponseStatus() throws Exception {
+		MockHttpServletResponse mockHttpServletResponse =
+			new MockHttpServletResponse();
+
+		mockHttpServletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
+
+		_testWithLayoutSEOCompanyConfiguration(
+			() -> _dynamicInclude.include(
+				_getHttpServletRequest(), mockHttpServletResponse,
+				RandomTestUtil.randomString()),
+			false, true);
+
+		Document document = Jsoup.parse(
+			mockHttpServletResponse.getContentAsString());
+
+		_assertNoLinkElements(document, "alternate");
+		_assertNoLinkElements(document, "canonical");
+	}
+
+	@Test
 	public void testIncludeOpenGraphNotEnabled() throws Exception {
 		MockHttpServletResponse mockHttpServletResponse =
 			new MockHttpServletResponse();
@@ -1358,6 +1402,27 @@ public class OpenGraphTopHeadDynamicIncludeTest {
 		_assertNoLinkElements(document, "canonical");
 	}
 
+	@Test
+	public void testStatusErrorPage() throws Exception {
+		MockHttpServletResponse mockHttpServletResponse =
+			new MockHttpServletResponse();
+
+		mockHttpServletResponse.setStatus(
+			HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+
+		_testWithLayoutSEOCompanyConfiguration(
+			() -> _dynamicInclude.include(
+				_getHttpServletRequest(), mockHttpServletResponse,
+				RandomTestUtil.randomString()),
+			false, true);
+
+		Document document = Jsoup.parse(
+			mockHttpServletResponse.getContentAsString());
+
+		_assertNoLinkElements(document, "alternate");
+		_assertNoLinkElements(document, "canonical");
+	}
+
 	private FileEntry _addImageFileEntry(
 			String fileName, ServiceContext serviceContext)
 		throws Exception {
@@ -1367,7 +1432,7 @@ public class OpenGraphTopHeadDynamicIncludeTest {
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			StringUtil.randomString(), ContentTypes.IMAGE_JPEG,
 			FileUtil.getBytes(getClass(), "dependencies/" + fileName), null,
-			null, serviceContext);
+			null, null, serviceContext);
 	}
 
 	private void _assertAlternateLinkTag(Document document, Set<Locale> locales)
@@ -1529,8 +1594,8 @@ public class OpenGraphTopHeadDynamicIncludeTest {
 			_layoutPageTemplateEntryLocalService.addLayoutPageTemplateEntry(
 				_group.getCreatorUserId(), _group.getGroupId(), 0, classNameId,
 				0, RandomTestUtil.randomString(),
-				LayoutPageTemplateEntryTypeConstants.TYPE_DISPLAY_PAGE, 0, true,
-				0, 0, 0, 0,
+				LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE, 0, true, 0,
+				0, 0, 0,
 				ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
 		_assetDisplayPageEntryLocalService.addAssetDisplayPageEntry(

@@ -1,4 +1,4 @@
-@component-name = "portal-lima"
+@component-name = "portal-content-management"
 definition {
 
 	property portal.acceptance = "true";
@@ -26,10 +26,11 @@ definition {
 	}
 
 	@description = "This test covers LPS-89884. It ensures that a DL image can be added to a wiki page via URL."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanAddDMImageToWikiPageViaURL {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
@@ -77,7 +78,7 @@ definition {
 
 	@description = "This ensures that a wiki page can be added to a wiki node."
 	@e2etest
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanAddPageToNode {
 		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
@@ -305,7 +306,7 @@ definition {
 	}
 
 	@description = "This ensures that the imported pages can be viewed."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanViewImportedPages {
 		HeadlessSite.addSite(siteName = "Site Name");
@@ -347,7 +348,7 @@ definition {
 	}
 
 	@description = "This ensures that the deleted front page can be restored."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanViewRestoredFrontPage {
 		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
@@ -391,7 +392,7 @@ definition {
 	}
 
 	@description = "This ensures that the restored and rename wiki page can be viewed."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanViewRestoredWikiPage {
 		JSONWiki.addWikiPage(

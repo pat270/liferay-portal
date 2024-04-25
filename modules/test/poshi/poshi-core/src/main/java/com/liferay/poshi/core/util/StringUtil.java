@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.IllegalFormatConversionException;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 
@@ -72,7 +73,7 @@ public class StringUtil {
 		if (!contains(expectedText, actualText)) {
 			throw new RuntimeException(
 				"Expected text \"" + expectedText +
-					"\" does not contain atual text\"" + actualText + "\"");
+					"\" does not contain atual text \"" + actualText + "\"");
 		}
 	}
 
@@ -810,6 +811,21 @@ public class StringUtil {
 
 		for (int i = 0; i < oldSubs.length; i++) {
 			s = replaceFirst(s, oldSubs[i], newSubs[i]);
+		}
+
+		return s;
+	}
+
+	public static String replacePropertyVariables(String s) {
+		Properties properties = PropsUtil.getProperties();
+
+		for (Object object : properties.keySet()) {
+			String propertyName = (String)object;
+
+			System.out.println(propertyName);
+
+			s = s.replace(
+				"${" + propertyName + "}", PropsUtil.get(propertyName));
 		}
 
 		return s;

@@ -32,6 +32,7 @@ import com.liferay.info.list.provider.item.selector.criterion.InfoListProviderIt
 import com.liferay.info.list.renderer.DefaultInfoListRendererContext;
 import com.liferay.info.list.renderer.InfoListRenderer;
 import com.liferay.info.list.renderer.InfoListRendererRegistry;
+import com.liferay.info.pagination.InfoPage;
 import com.liferay.info.search.InfoSearchClassMapperRegistry;
 import com.liferay.item.selector.ItemSelector;
 import com.liferay.item.selector.criteria.InfoListItemSelectorReturnType;
@@ -50,7 +51,6 @@ import com.liferay.layout.list.retriever.SegmentsEntryLayoutListRetriever;
 import com.liferay.layout.util.CollectionPaginationUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
@@ -71,13 +71,10 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.segments.SegmentsEntryRetriever;
-import com.liferay.segments.context.RequestContextMapper;
 import com.liferay.segments.model.SegmentsExperience;
 import com.liferay.segments.service.SegmentsExperienceLocalService;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -165,12 +162,16 @@ public class GetCollectionFieldMVCResourceCommand
 
 	private long[] _filterSegmentsEntryIds(
 		LayoutListRetriever<?, ListObjectReference> layoutListRetriever,
-		ListObjectReference listObjectReference, long segmentsEntryId) {
+		ListObjectReference listObjectReference, long segmentsExperienceId) {
+
+		SegmentsExperience segmentsExperience =
+			_segmentsExperienceLocalService.fetchSegmentsExperience(
+				segmentsExperienceId);
 
 		if (!(layoutListRetriever instanceof
 				SegmentsEntryLayoutListRetriever)) {
 
-			return new long[] {segmentsEntryId};
+			return new long[] {segmentsExperience.getSegmentsEntryId()};
 		}
 
 		SegmentsEntryLayoutListRetriever<ListObjectReference>
@@ -179,9 +180,9 @@ public class GetCollectionFieldMVCResourceCommand
 					layoutListRetriever;
 
 		if (segmentsEntryLayoutListRetriever.hasSegmentsEntryVariation(
-				listObjectReference, segmentsEntryId)) {
+				listObjectReference, segmentsExperience.getSegmentsEntryId())) {
 
-			return new long[] {segmentsEntryId};
+			return new long[] {segmentsExperience.getSegmentsEntryId()};
 		}
 
 		return new long[] {
@@ -216,8 +217,6 @@ public class GetCollectionFieldMVCResourceCommand
 			long segmentsExperienceId, String templateKey)
 		throws PortalException {
 
-		JSONObject jsonObject = _jsonFactory.createJSONObject();
-
 		JSONObject layoutObjectReferenceJSONObject =
 			_jsonFactory.createJSONObject(layoutObjectReference);
 
@@ -228,14 +227,14 @@ public class GetCollectionFieldMVCResourceCommand
 				_layoutListRetrieverRegistry.getLayoutListRetriever(type);
 
 		if (layoutListRetriever == null) {
-			return jsonObject;
+			return _jsonFactory.createJSONObject();
 		}
 
 		ListObjectReferenceFactory<?> listObjectReferenceFactory =
 			_listObjectReferenceFactoryRegistry.getListObjectReference(type);
 
 		if (listObjectReferenceFactory == null) {
-			return jsonObject;
+			return _jsonFactory.createJSONObject();
 		}
 
 		ListObjectReference listObjectReference =
@@ -254,7 +253,7 @@ public class GetCollectionFieldMVCResourceCommand
 		}
 
 		if (!_hasViewPermission(httpServletRequest, listObjectReference)) {
-			jsonObject.put(
+			return JSONUtil.put(
 				"customCollectionSelectorURL", StringPool.BLANK
 			).put(
 				"isRestricted", true
@@ -276,8 +275,6 @@ public class GetCollectionFieldMVCResourceCommand
 			).put(
 				"totalNumberOfItems", 0
 			);
-
-			return jsonObject;
 		}
 
 		String itemType = _infoSearchClassMapperRegistry.getClassName(
@@ -306,74 +303,72 @@ public class GetCollectionFieldMVCResourceCommand
 				layoutObjectReferenceJSONObject));
 		defaultLayoutListRetrieverContext.setContextObject(
 			_getInfoItem(httpServletRequest));
-
-		SegmentsExperience segmentsExperience =
-			_segmentsExperienceLocalService.fetchSegmentsExperience(
-				segmentsExperienceId);
-
+		defaultLayoutListRetrieverContext.setPagination(
+			CollectionPaginationUtil.getPagination(
+				activePage, displayAllItems, numberOfItems,
+				numberOfItemsPerPage, paginationType));
 		defaultLayoutListRetrieverContext.setSegmentsEntryIds(
 			_filterSegmentsEntryIds(
 				layoutListRetriever, listObjectReference,
-				segmentsExperience.getSegmentsEntryId()));
+				segmentsExperienceId));
 
-		if (activePage < 1) {
-			activePage = 1;
-		}
-
-		int listCount = layoutListRetriever.getListCount(
+		InfoPage<?> infoPage = layoutListRetriever.getInfoPage(
 			listObjectReference, defaultLayoutListRetrieverContext);
 
-		defaultLayoutListRetrieverContext.setPagination(
-			CollectionPaginationUtil.getPagination(
-				activePage, listCount, displayAllPages, displayAllItems,
-				numberOfItems, numberOfItemsPerPage, numberOfPages,
-				paginationType));
+		return JSONUtil.put(
+			"content",
+			() -> {
+				InfoListRenderer<Object> infoListRenderer =
+					(InfoListRenderer<Object>)
+						_infoListRendererRegistry.getInfoListRenderer(
+							listStyle);
 
-		JSONArray jsonArray = _jsonFactory.createJSONArray();
+				if (infoListRenderer == null) {
+					return null;
+				}
 
-		List<Object> list = layoutListRetriever.getList(
-			listObjectReference, defaultLayoutListRetrieverContext);
+				UnsyncStringWriter unsyncStringWriter =
+					new UnsyncStringWriter();
 
-		for (Object object : list) {
-			jsonArray.put(
-				_getDisplayObjectJSONObject(
-					httpServletRequest, httpServletResponse,
-					infoItemFieldValuesProvider, object,
-					LocaleUtil.fromLanguageId(languageId)));
-		}
+				HttpServletResponse pipingHttpServletResponse =
+					new PipingServletResponse(
+						httpServletResponse, unsyncStringWriter);
 
-		InfoListRenderer<Object> infoListRenderer =
-			(InfoListRenderer<Object>)
-				_infoListRendererRegistry.getInfoListRenderer(listStyle);
+				DefaultInfoListRendererContext defaultInfoListRendererContext =
+					new DefaultInfoListRendererContext(
+						httpServletRequest, pipingHttpServletResponse);
 
-		if (infoListRenderer != null) {
-			UnsyncStringWriter unsyncStringWriter = new UnsyncStringWriter();
+				defaultInfoListRendererContext.setListItemRendererKey(
+					listItemStyle);
+				defaultInfoListRendererContext.setTemplateKey(templateKey);
 
-			HttpServletResponse pipingHttpServletResponse =
-				new PipingServletResponse(
-					httpServletResponse, unsyncStringWriter);
+				infoListRenderer.render(
+					(List<Object>)infoPage.getPageItems(),
+					defaultInfoListRendererContext);
 
-			DefaultInfoListRendererContext defaultInfoListRendererContext =
-				new DefaultInfoListRendererContext(
-					httpServletRequest, pipingHttpServletResponse);
-
-			defaultInfoListRendererContext.setListItemRendererKey(
-				listItemStyle);
-			defaultInfoListRendererContext.setTemplateKey(templateKey);
-
-			infoListRenderer.render(list, defaultInfoListRendererContext);
-
-			jsonObject.put("content", unsyncStringWriter.toString());
-		}
-
-		jsonObject.put(
+				return unsyncStringWriter.toString();
+			}
+		).put(
 			"customCollectionSelectorURL",
 			_getCustomCollectionSelectorURL(
 				httpServletRequest, itemType, namespace)
 		).put(
 			"isRestricted", false
 		).put(
-			"items", jsonArray
+			"items",
+			() -> {
+				JSONArray jsonArray = _jsonFactory.createJSONArray();
+
+				for (Object object : infoPage.getPageItems()) {
+					jsonArray.put(
+						_getDisplayObjectJSONObject(
+							httpServletRequest, httpServletResponse,
+							infoItemFieldValuesProvider, object,
+							LocaleUtil.fromLanguageId(languageId)));
+				}
+
+				return jsonArray;
+			}
 		).put(
 			"itemSubtype",
 			() -> {
@@ -386,15 +381,14 @@ public class GetCollectionFieldMVCResourceCommand
 		).put(
 			"itemType", originalItemType
 		).put(
-			"length", listCount
+			"length", infoPage.getTotalCount()
 		).put(
 			"totalNumberOfItems",
 			CollectionPaginationUtil.getTotalNumberOfItems(
-				listCount, displayAllPages, displayAllItems, numberOfItems,
-				numberOfItemsPerPage, numberOfPages, paginationType)
+				infoPage.getTotalCount(), displayAllPages, displayAllItems,
+				numberOfItems, numberOfItemsPerPage, numberOfPages,
+				paginationType)
 		);
-
-		return jsonObject;
 	}
 
 	private String _getCustomCollectionSelectorURL(
@@ -514,22 +508,17 @@ public class GetCollectionFieldMVCResourceCommand
 
 			displayObjectJSONObject.put("fieldId", infoField.getUniqueId());
 
-			try {
-				Object value = _fragmentEntryProcessorHelper.getFieldValue(
-					displayObjectJSONObject, new HashMap<>(),
-					fragmentEntryProcessorContext);
+			Object value =
+				_fragmentEntryProcessorHelper.getMappedInfoItemFieldValue(
+					displayObjectJSONObject, infoField.getUniqueId(),
+					infoItemFieldValues,
+					fragmentEntryProcessorContext.getLocale());
 
-				displayObjectJSONObject.put(
-					infoField.getName(), value
-				).put(
-					infoField.getUniqueId(), value
-				);
-			}
-			catch (PortalException portalException) {
-				if (_log.isDebugEnabled()) {
-					_log.debug(portalException);
-				}
-			}
+			displayObjectJSONObject.put(
+				infoField.getName(), value
+			).put(
+				infoField.getUniqueId(), value
+			);
 		}
 
 		return displayObjectJSONObject;
@@ -588,10 +577,6 @@ public class GetCollectionFieldMVCResourceCommand
 	private boolean _hasViewPermission(
 		HttpServletRequest httpServletRequest,
 		ListObjectReference listObjectReference) {
-
-		if (!FeatureFlagManagerUtil.isEnabled("LPS-169923")) {
-			return true;
-		}
 
 		Class<? extends ListObjectReference> listObjectReferenceClass =
 			listObjectReference.getClass();
@@ -656,12 +641,6 @@ public class GetCollectionFieldMVCResourceCommand
 
 	@Reference
 	private Portal _portal;
-
-	@Reference
-	private RequestContextMapper _requestContextMapper;
-
-	@Reference
-	private SegmentsEntryRetriever _segmentsEntryRetriever;
 
 	@Reference
 	private SegmentsExperienceLocalService _segmentsExperienceLocalService;

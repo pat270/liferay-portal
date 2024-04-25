@@ -11,12 +11,10 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.URLUtil;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
-
-import java.net.URL;
 
 import java.util.Collection;
 import java.util.Map;
@@ -46,7 +44,7 @@ import org.osgi.service.component.annotations.Reference;
 		"osgi.http.whiteboard.servlet.pattern=/js_bundle_config",
 		"service.ranking:Integer=" + (Integer.MAX_VALUE - 1000)
 	},
-	service = {JSBundleConfigServlet.class, Servlet.class}
+	service = Servlet.class
 )
 public class JSBundleConfigServlet extends HttpServlet {
 
@@ -80,16 +78,14 @@ public class JSBundleConfigServlet extends HttpServlet {
 
 		PrintWriter printWriter = new PrintWriter(servletOutputStream, true);
 
-		Collection<JSBundleConfigRegistry.JSConfig> jsConfigs =
-			_jsBundleConfigRegistry.getJSConfigs();
+		Collection<JSBundleConfigRegistryUtil.JSConfig> jsConfigs =
+			JSBundleConfigRegistryUtil.getJSConfigs();
 
 		if (!jsConfigs.isEmpty()) {
 			printWriter.print("(function(){");
 
-			for (JSBundleConfigRegistry.JSConfig jsConfig : jsConfigs) {
-				URL url = jsConfig.getURL();
-
-				try (InputStream inputStream = url.openStream()) {
+			for (JSBundleConfigRegistryUtil.JSConfig jsConfig : jsConfigs) {
+				try {
 					printWriter.print("try{");
 
 					ServletContext servletContext =
@@ -102,7 +98,7 @@ public class JSBundleConfigServlet extends HttpServlet {
 
 					printWriter.print(
 						StringUtil.removeSubstring(
-							StringUtil.read(inputStream),
+							URLUtil.toString(jsConfig.getURL()),
 							"//# sourceMappingURL=config.js.map"));
 
 					printWriter.print("}catch(error){console.error(error);}");
@@ -122,9 +118,6 @@ public class JSBundleConfigServlet extends HttpServlet {
 		JSBundleConfigServlet.class);
 
 	private volatile ComponentContext _componentContext;
-
-	@Reference
-	private JSBundleConfigRegistry _jsBundleConfigRegistry;
 
 	@Reference
 	private Portal _portal;

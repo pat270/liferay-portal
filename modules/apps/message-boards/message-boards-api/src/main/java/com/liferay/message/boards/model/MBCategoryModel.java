@@ -294,6 +294,21 @@ public interface MBCategoryModel
 	public void setDisplayStyle(String displayStyle);
 
 	/**
+	 * Returns the friendly url of this message boards category.
+	 *
+	 * @return the friendly url of this message boards category
+	 */
+	@AutoEscape
+	public String getFriendlyURL();
+
+	/**
+	 * Sets the friendly url of this message boards category.
+	 *
+	 * @param friendlyURL the friendly url of this message boards category
+	 */
+	public void setFriendlyURL(String friendlyURL);
+
+	/**
 	 * Returns the last publish date of this message boards category.
 	 *
 	 * @return the last publish date of this message boards category

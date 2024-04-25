@@ -1,6 +1,5 @@
 import * as API from 'shared/api';
 import EnrichedProfilesCard from '../EnrichedProfilesCard';
-import Promise from 'metal-promise';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {cleanup, queryByText, render} from '@testing-library/react';
@@ -13,6 +12,7 @@ import {
 	mockSalesforceDataSource
 } from 'test/data';
 import {StaticRouter} from 'react-router';
+import {waitForLoadingToBeRemoved} from 'test/helpers';
 
 jest.unmock('react-dom');
 
@@ -38,15 +38,17 @@ describe('EnrichedProfilesCard', () => {
 		cleanup();
 	});
 
-	it('should render', () => {
+	it('should render', async () => {
 		const {container} = render(<EnrichedProfilesCard />);
 
 		jest.runAllTimers();
 
+		await waitForLoadingToBeRemoved(container);
+
 		expect(container).toMatchSnapshot();
 	});
 
-	it('should render a fallback display if count is not finite', () => {
+	it('should render a fallback display if count is not finite', async () => {
 		API.individuals.fetchEnrichedProfilesCount.mockReturnValue(
 			Promise.resolve({total: 0})
 		);
@@ -54,6 +56,8 @@ describe('EnrichedProfilesCard', () => {
 		const {container} = render(<EnrichedProfilesCard />);
 
 		jest.runAllTimers();
+
+		await waitForLoadingToBeRemoved(container);
 
 		expect(container.querySelector('.total')).toHaveTextContent(
 			'0 Profiles'

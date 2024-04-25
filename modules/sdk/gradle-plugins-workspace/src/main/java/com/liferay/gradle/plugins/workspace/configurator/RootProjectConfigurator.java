@@ -29,18 +29,16 @@ import com.liferay.gradle.plugins.workspace.WorkspaceExtension;
 import com.liferay.gradle.plugins.workspace.WorkspacePlugin;
 import com.liferay.gradle.plugins.workspace.docker.DockerPruneImage;
 import com.liferay.gradle.plugins.workspace.internal.configurator.TargetPlatformRootProjectConfigurator;
-import com.liferay.gradle.plugins.workspace.internal.util.FileUtil;
 import com.liferay.gradle.plugins.workspace.internal.util.GradleUtil;
+import com.liferay.gradle.plugins.workspace.internal.util.ReleaseUtil;
 import com.liferay.gradle.plugins.workspace.internal.util.StringUtil;
 import com.liferay.gradle.plugins.workspace.task.CreateTokenTask;
 import com.liferay.gradle.plugins.workspace.task.InitBundleTask;
 import com.liferay.gradle.plugins.workspace.task.VerifyBundleTask;
 import com.liferay.gradle.plugins.workspace.task.VerifyProductTask;
+import com.liferay.gradle.util.ArrayUtil;
 import com.liferay.gradle.util.OSDetector;
 import com.liferay.gradle.util.Validator;
-import com.liferay.gradle.util.copy.StripPathSegmentsAction;
-import com.liferay.petra.string.StringBundler;
-import com.liferay.petra.string.StringPool;
 
 import de.undercouch.gradle.tasks.download.Download;
 
@@ -59,7 +57,6 @@ import java.nio.file.Files;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -75,14 +72,12 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
-import org.gradle.api.artifacts.DependencySet;
 import org.gradle.api.execution.TaskExecutionGraph;
 import org.gradle.api.file.CopySpec;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.DuplicatesStrategy;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.FileCopyDetails;
-import org.gradle.api.file.RelativePath;
 import org.gradle.api.initialization.Settings;
 import org.gradle.api.invocation.Gradle;
 import org.gradle.api.logging.Logger;
@@ -101,6 +96,7 @@ import org.gradle.api.tasks.bundling.Compression;
 import org.gradle.api.tasks.bundling.Tar;
 import org.gradle.api.tasks.bundling.Zip;
 import org.gradle.language.base.plugins.LifecycleBasePlugin;
+import org.gradle.util.Path;
 
 /**
  * @author Andrea Di Giorgi
@@ -203,9 +199,9 @@ public class RootProjectConfigurator implements Plugin<Project> {
 	}
 
 	public RootProjectConfigurator(Settings settings) {
-		_bundleCheckSumMD5 = GradleUtil.getProperty(
-			settings, WorkspacePlugin.PROPERTY_PREFIX + "bundle.checksum.md5",
-			null);
+		_bundleCheckSumSHA512 = GradleUtil.getProperty(
+			settings,
+			WorkspacePlugin.PROPERTY_PREFIX + "bundle.checksum.sha512", null);
 		_defaultRepositoryEnabled = GradleUtil.getProperty(
 			settings,
 			WorkspacePlugin.PROPERTY_PREFIX + "default.repository.enabled",
@@ -236,9 +232,6 @@ public class RootProjectConfigurator implements Plugin<Project> {
 			GradleUtil.addDefaultRepositories(project);
 		}
 
-		Configuration bundleSupportConfiguration =
-			_addConfigurationBundleSupport(project);
-
 		Configuration providedModulesConfiguration =
 			_addConfigurationProvidedModules(project);
 
@@ -252,23 +245,21 @@ public class RootProjectConfigurator implements Plugin<Project> {
 		Download downloadBundleTask = _addTaskDownloadBundle(
 			project, verifyProductTask, workspaceExtension);
 
-		VerifyBundleTask verifyBundleTask = _addTaskVerifyBundle(
-			project, verifyProductTask, downloadBundleTask, workspaceExtension);
+		_addTaskVerifyBundle(project, downloadBundleTask, workspaceExtension);
+
+		_addTaskInitBundle(
+			project, downloadBundleTask, workspaceExtension,
+			providedModulesConfiguration, INIT_BUNDLE_TASK_NAME);
 
 		Copy distBundleTask = _addTaskDistBundle(
 			project, downloadBundleTask, DIST_BUNDLE_TASK_NAME,
 			workspaceExtension, null, providedModulesConfiguration);
 
-		_addTasksDistBundleArchive(project, distBundleTask, workspaceExtension);
-
 		_addTasksDistBundleEnvironments(
 			project, downloadBundleTask, workspaceExtension,
 			providedModulesConfiguration);
 
-		_addTaskInitBundle(
-			project, verifyProductTask, downloadBundleTask, verifyBundleTask,
-			workspaceExtension, bundleSupportConfiguration,
-			providedModulesConfiguration);
+		_addTasksDistBundleArchive(project, distBundleTask, workspaceExtension);
 
 		_addDockerTasks(
 			project, workspaceExtension, providedModulesConfiguration,
@@ -285,29 +276,6 @@ public class RootProjectConfigurator implements Plugin<Project> {
 		_defaultRepositoryEnabled = defaultRepositoryEnabled;
 	}
 
-	private Configuration _addConfigurationBundleSupport(
-		final Project project) {
-
-		Configuration configuration = GradleUtil.addConfiguration(
-			project, BUNDLE_SUPPORT_CONFIGURATION_NAME);
-
-		configuration.defaultDependencies(
-			new Action<DependencySet>() {
-
-				@Override
-				public void execute(DependencySet dependencySet) {
-					_addDependenciesBundleSupport(project);
-				}
-
-			});
-
-		configuration.setDescription(
-			"Configures Liferay Bundle Support for this project.");
-		configuration.setVisible(false);
-
-		return configuration;
-	}
-
 	private Configuration _addConfigurationProvidedModules(Project project) {
 		Configuration configuration = GradleUtil.addConfiguration(
 			project, PROVIDED_MODULES_CONFIGURATION_NAME);
@@ -318,12 +286,6 @@ public class RootProjectConfigurator implements Plugin<Project> {
 		configuration.setVisible(true);
 
 		return configuration;
-	}
-
-	private void _addDependenciesBundleSupport(Project project) {
-		GradleUtil.addDependency(
-			project, BUNDLE_SUPPORT_CONFIGURATION_NAME, "com.liferay",
-			"com.liferay.portal.tools.bundle.support", "latest.release");
 	}
 
 	private void _addDockerTasks(
@@ -482,76 +444,6 @@ public class RootProjectConfigurator implements Plugin<Project> {
 		cleanTask.dependsOn(dockerRemoveImage);
 
 		return dockerBuildImage;
-	}
-
-	@SuppressWarnings("serial")
-	private Copy _addTaskCopyBundle(
-		Project project, String taskName, Download downloadBundleTask,
-		final WorkspaceExtension workspaceExtension, String environment,
-		Configuration providedModulesConfiguration) {
-
-		Copy copy = GradleUtil.addTask(project, taskName, Copy.class);
-
-		_configureTaskCopyBundleFromConfig(
-			project, copy,
-			new Callable<File>() {
-
-				@Override
-				public File call() throws Exception {
-					return new File(
-						workspaceExtension.getConfigsDir(),
-						(environment == null) ?
-							workspaceExtension.getEnvironment() : environment);
-				}
-
-			});
-
-		_configureTaskCopyBundleFromConfig(
-			project, copy,
-			new Callable<File>() {
-
-				@Override
-				public File call() throws Exception {
-					return new File(
-						workspaceExtension.getConfigsDir(), "common");
-				}
-
-			});
-
-		copy.from(
-			providedModulesConfiguration,
-			new Closure<Void>(project) {
-
-				@SuppressWarnings("unused")
-				public void doCall(CopySpec copySpec) {
-					copySpec.into("osgi/modules");
-				}
-
-			});
-
-		_configureTaskCopyBundleFromDownload(copy, downloadBundleTask);
-
-		_configureTaskCopyBundlePreserveTimestamps(copy);
-
-		copy.dependsOn(downloadBundleTask);
-
-		copy.doFirst(
-			new Action<Task>() {
-
-				@Override
-				public void execute(Task task) {
-					Copy copy = (Copy)task;
-
-					Project project = copy.getProject();
-
-					project.delete(copy.getDestinationDir());
-				}
-
-			});
-
-		copy.setDuplicatesStrategy(DuplicatesStrategy.EXCLUDE);
-
-		return copy;
 	}
 
 	private DockerCreateContainer _addTaskCreateDockerContainer(
@@ -761,52 +653,19 @@ public class RootProjectConfigurator implements Plugin<Project> {
 					String dockerLocalRegistryAddress =
 						workspaceExtension.getDockerLocalRegistryAddress();
 
-					if (Objects.nonNull(workspaceExtension.getProduct())) {
-						WorkspaceExtension.ProductInfo productInfo =
-							workspaceExtension.getProductInfo();
+					String dockerImageLiferay =
+						workspaceExtension.getDockerImageLiferay();
 
-						if (Objects.nonNull(productInfo)) {
-							String dockerImageLiferay =
-								productInfo.getLiferayDockerImage();
-
-							if (!Objects.equals(
-									workspaceExtension.getDockerImageLiferay(),
-									productInfo.getLiferayDockerImage()) &&
-								Objects.nonNull(
-									workspaceExtension.
-										getDockerImageLiferay())) {
-
-								dockerImageLiferay =
-									workspaceExtension.getDockerImageLiferay();
-							}
-
-							if (Objects.nonNull(dockerLocalRegistryAddress)) {
-								dockerImageLiferay = dockerImageLiferay.replace(
-									"liferay", dockerLocalRegistryAddress);
-							}
-
-							Dockerfile.FromInstruction baseImage =
-								new Dockerfile.FromInstruction(
-									new Dockerfile.From(dockerImageLiferay));
-
-							originalInstructions.add(0, baseImage);
-						}
+					if (Objects.nonNull(dockerLocalRegistryAddress)) {
+						dockerImageLiferay = dockerImageLiferay.replace(
+							"liferay", dockerLocalRegistryAddress);
 					}
-					else {
-						String dockerImageLiferay =
-							workspaceExtension.getDockerImageLiferay();
 
-						if (Objects.nonNull(dockerLocalRegistryAddress)) {
-							dockerImageLiferay = dockerImageLiferay.replace(
-								"liferay", dockerLocalRegistryAddress);
-						}
+					Dockerfile.FromInstruction baseImage =
+						new Dockerfile.FromInstruction(
+							new Dockerfile.From(dockerImageLiferay));
 
-						Dockerfile.FromInstruction baseImage =
-							new Dockerfile.FromInstruction(
-								new Dockerfile.From(dockerImageLiferay));
-
-						originalInstructions.add(0, baseImage);
-					}
+					originalInstructions.add(0, baseImage);
 
 					instructions.set(originalInstructions);
 				}
@@ -827,27 +686,62 @@ public class RootProjectConfigurator implements Plugin<Project> {
 	}
 
 	private Copy _addTaskDistBundle(
-		final Project project, Download downloadBundleTask, String taskName,
+		Project project, Download downloadBundleTask, String taskName,
 		WorkspaceExtension workspaceExtension, String environment,
 		Configuration providedModulesConfiguration) {
 
-		Copy copy = _addTaskCopyBundle(
-			project, taskName, downloadBundleTask, workspaceExtension,
-			environment, providedModulesConfiguration);
+		InitBundleTask initBundleTask = _addTaskInitBundle(
+			project, downloadBundleTask, workspaceExtension,
+			providedModulesConfiguration, taskName + "InitBundle");
 
-		_configureTaskDisableUpToDate(copy);
+		initBundleTask.setConfigEnvironment(
+			new Callable<String>() {
 
+				@Override
+				public String call() throws Exception {
+					if (environment == null) {
+						return workspaceExtension.getEnvironment();
+					}
+
+					return environment;
+				}
+
+			});
+		initBundleTask.setDestinationDir(
+			new File(project.getBuildDir(), "dist"));
+		initBundleTask.setGroup("hidden");
+
+		initBundleTask.doFirst(
+			new Action<Task>() {
+
+				@Override
+				public void execute(Task task) {
+					InitBundleTask initBundleTask = (InitBundleTask)task;
+
+					Project project = initBundleTask.getProject();
+
+					project.delete(initBundleTask.getDestinationDir());
+				}
+
+			});
+
+		Copy copy = GradleUtil.addTask(project, taskName, Copy.class);
+
+		copy.dependsOn(initBundleTask);
 		copy.into(
 			new Callable<File>() {
 
 				@Override
 				public File call() throws Exception {
-					return new File(project.getBuildDir(), "dist");
+					return initBundleTask.getDestinationDir();
 				}
 
 			});
-
 		copy.setDescription("Assembles the Liferay bundle.");
+		copy.setDuplicatesStrategy(DuplicatesStrategy.EXCLUDE);
+
+		_configureTaskCopyBundlePreserveTimestamps(copy);
+		_configureTaskDisableUpToDate(copy);
 
 		return copy;
 	}
@@ -911,6 +805,7 @@ public class RootProjectConfigurator implements Plugin<Project> {
 		copy.setGroup(DOCKER_GROUP);
 
 		copy.setDestinationDir(workspaceExtension.getDockerDir());
+		copy.setDuplicatesStrategy(DuplicatesStrategy.INCLUDE);
 
 		copy.from(
 			providedModulesConfiguration,
@@ -1057,56 +952,26 @@ public class RootProjectConfigurator implements Plugin<Project> {
 
 				@Override
 				public boolean isSatisfiedBy(Task task) {
-					return Validator.isNotNull(
-						workspaceExtension.getBundleUrl());
-				}
-
-			});
-
-		download.doFirst(
-			new Action<Task>() {
-
-				@Override
-				public void execute(Task task) {
-					Logger logger = download.getLogger();
-					Project project = download.getProject();
-
-					for (Object src : _getSrcList(download)) {
-						File file = null;
-
-						try {
-							URL srcURL = (URL)src;
-
-							if (Objects.equals(srcURL.getProtocol(), "file")) {
-								URI uri = project.uri(src);
-
-								file = project.file(uri);
-							}
-						}
-						catch (Exception exception) {
-							if (logger.isDebugEnabled()) {
-								logger.debug(exception.getMessage(), exception);
-							}
-						}
-
-						if ((file == null) || !file.exists()) {
-							continue;
-						}
-
-						File destinationFile = download.getDest();
-
-						if (destinationFile.isDirectory()) {
-							destinationFile = new File(
-								destinationFile, file.getName());
-						}
-
-						if (destinationFile.equals(file)) {
-							throw new GradleException(
-								"Download source " + file +
-									" and destination " + destinationFile +
-										" cannot be the same");
-						}
+					if (Validator.isNull(workspaceExtension.getBundleUrl())) {
+						return false;
 					}
+
+					File downloadFile = _getDownloadFile((Download)task);
+
+					if (downloadFile.exists()) {
+						Logger logger = task.getLogger();
+
+						if (logger.isInfoEnabled()) {
+							logger.info(
+								"Bundle archive file is already downloaded " +
+									"at {}",
+								downloadFile);
+						}
+
+						return false;
+					}
+
+					return true;
 				}
 
 			});
@@ -1119,7 +984,8 @@ public class RootProjectConfigurator implements Plugin<Project> {
 
 				@Override
 				public void execute(Project project) {
-					_configureDownloadTask(download, workspaceExtension);
+					_configureDownloadTask(
+						project, download, workspaceExtension);
 				}
 
 			});
@@ -1141,47 +1007,21 @@ public class RootProjectConfigurator implements Plugin<Project> {
 	}
 
 	private InitBundleTask _addTaskInitBundle(
-		Project project, VerifyProductTask verifyProductTask,
-		Download downloadBundleTask, VerifyBundleTask verifyBundleTask,
+		Project project, Download downloadBundleTask,
 		final WorkspaceExtension workspaceExtension,
-		Configuration bundleSupportConfiguration,
-		Configuration osgiModulesConfiguration) {
+		Configuration osgiModulesConfiguration, String taskName) {
 
 		InitBundleTask initBundleTask = GradleUtil.addTask(
-			project, INIT_BUNDLE_TASK_NAME, InitBundleTask.class);
+			project, taskName, InitBundleTask.class);
 
 		initBundleTask.dependsOn(
-			verifyProductTask, downloadBundleTask, verifyBundleTask);
-		initBundleTask.doLast(
-			new Action<Task>() {
+			VERIFY_PRODUCT_TASK_NAME, downloadBundleTask,
+			VERIFY_BUNDLE_TASK_NAME);
 
-				@Override
-				public void execute(Task task) {
-					File homeDir = workspaceExtension.getHomeDir();
+		_configureFixTargetTomcatConfigs(
+			initBundleTask::getDestinationDir, initBundleTask);
 
-					WorkResult workResult = project.copy(
-						copySpec -> {
-							copySpec.from(
-								new File(
-									workspaceExtension.getConfigsDir(),
-									"common"),
-								new File(
-									workspaceExtension.getConfigsDir(),
-									workspaceExtension.getEnvironment()));
-							copySpec.into(homeDir);
-
-							_configureCopySpecExpandTomcatVersion(
-								copySpec, workspaceExtension);
-						});
-
-					if (workResult.getDidWork()) {
-						project.delete(new File(homeDir, "tomcat"));
-					}
-				}
-
-			});
-		initBundleTask.mustRunAfter(verifyProductTask);
-		initBundleTask.setClasspath(bundleSupportConfiguration);
+		initBundleTask.mustRunAfter(VERIFY_PRODUCT_TASK_NAME);
 		initBundleTask.setConfigEnvironment(
 			new Callable<String>() {
 
@@ -1631,14 +1471,15 @@ public class RootProjectConfigurator implements Plugin<Project> {
 	}
 
 	private VerifyBundleTask _addTaskVerifyBundle(
-		Project project, VerifyProductTask verifyProductTask,
-		Download downloadBundleTask, WorkspaceExtension workspaceExtension) {
+		Project project, Download downloadBundleTask,
+		WorkspaceExtension workspaceExtension) {
 
 		VerifyBundleTask verifyBundleTask = GradleUtil.addTask(
 			project, VERIFY_BUNDLE_TASK_NAME, VerifyBundleTask.class);
 
-		verifyBundleTask.algorithm("MD5");
-		verifyBundleTask.dependsOn(verifyProductTask, downloadBundleTask);
+		verifyBundleTask.algorithm("SHA-512");
+		verifyBundleTask.dependsOn(
+			VERIFY_PRODUCT_TASK_NAME, DOWNLOAD_BUNDLE_TASK_NAME);
 		verifyBundleTask.setDescription(
 			"Verifies the Liferay bundle zip file.");
 
@@ -1649,9 +1490,11 @@ public class RootProjectConfigurator implements Plugin<Project> {
 				public boolean isSatisfiedBy(Task task) {
 					if (!Objects.equals(
 							workspaceExtension.getBundleUrl(),
-							workspaceExtension.getDefaultBundleUrl())) {
+							ReleaseUtil.getFromReleaseProperties(
+								workspaceExtension.getProduct(),
+								ReleaseUtil.ReleaseProperties::getBundleUrl))) {
 
-						if (Objects.nonNull(_bundleCheckSumMD5)) {
+						if (Objects.nonNull(_bundleCheckSumSHA512)) {
 							return true;
 						}
 
@@ -1674,7 +1517,7 @@ public class RootProjectConfigurator implements Plugin<Project> {
 							workspaceExtension.getBundleUrl())) {
 
 						verifyBundleTask.checksum(
-							workspaceExtension.getBundleChecksumMD5());
+							workspaceExtension.getBundleChecksumSHA512());
 
 						TaskOutputs taskOutputs =
 							downloadBundleTask.getOutputs();
@@ -1696,37 +1539,24 @@ public class RootProjectConfigurator implements Plugin<Project> {
 		VerifyProductTask verifyProductTask = GradleUtil.addTask(
 			project, VERIFY_PRODUCT_TASK_NAME, VerifyProductTask.class);
 
+		verifyProductTask.onlyIf(
+			new Spec<Task>() {
+
+				@Override
+				public boolean isSatisfiedBy(Task task) {
+					return Validator.isNotNull(workspaceExtension.getProduct());
+				}
+
+			});
+
 		project.afterEvaluate(
 			new Action<Project>() {
 
 				@Override
 				public void execute(Project project) {
-					if (Objects.nonNull(workspaceExtension.getProduct())) {
-						WorkspaceExtension.ProductInfo productInfo =
-							workspaceExtension.getProductInfo();
-
-						if (Objects.nonNull(productInfo)) {
-							verifyProductTask.setBundleUrl(
-								productInfo.getBundleUrl());
-							verifyProductTask.setDockerImageLiferay(
-								productInfo.getLiferayDockerImage());
-							verifyProductTask.setTargetPlatformVersion(
-								productInfo.getTargetPlatformVersion());
-						}
-						else {
-							verifyProductTask.setErrorMessage(
-								"The product key is invalid. Please provide " +
-									"a valid product key.");
-						}
-					}
-					else {
-						verifyProductTask.setBundleUrl(
-							workspaceExtension.getBundleUrl());
-						verifyProductTask.setDockerImageLiferay(
-							workspaceExtension.getDockerImageLiferay());
-						verifyProductTask.setTargetPlatformVersion(
-							workspaceExtension.getTargetPlatformVersion());
-					}
+					verifyProductTask.setProduct(
+						workspaceExtension.getProduct());
+					verifyProductTask.setExtension(workspaceExtension);
 				}
 
 			});
@@ -1735,24 +1565,6 @@ public class RootProjectConfigurator implements Plugin<Project> {
 			"Verify Liferay Workspace product settings.");
 
 		return verifyProductTask;
-	}
-
-	private void _configureCopySpecExpandTomcatVersion(
-		CopySpec copySpec, WorkspaceExtension workspaceExtension) {
-
-		String tomcatVersion = workspaceExtension.getAppServerTomcatVersion();
-
-		copySpec.eachFile(
-			fileCopyDetails -> {
-				String path = fileCopyDetails.getPath();
-
-				fileCopyDetails.setPath(
-					path.replaceAll(
-						"tomcat/",
-						StringBundler.concat(
-							"tomcat-", tomcatVersion,
-							StringPool.FORWARD_SLASH)));
-			});
 	}
 
 	private <T extends AbstractArchiveTask> void _configureDistBundleEnvArchive(
@@ -1786,7 +1598,8 @@ public class RootProjectConfigurator implements Plugin<Project> {
 	}
 
 	private void _configureDownloadTask(
-		Download download, WorkspaceExtension workspaceExtension) {
+		Project project, Download download,
+		WorkspaceExtension workspaceExtension) {
 
 		File destinationDir = workspaceExtension.getBundleCacheDir();
 
@@ -1804,9 +1617,22 @@ public class RootProjectConfigurator implements Plugin<Project> {
 			if (bundleURLString.startsWith("file:")) {
 				URL url = new URL(bundleURLString);
 
-				File file = new File(url.getFile());
+				Path bundleFilePath = Path.path(url.getPath());
 
-				file = file.getAbsoluteFile();
+				File file = null;
+
+				if (bundleFilePath.isAbsolute()) {
+					file = new File(url.getFile());
+
+					file = file.getAbsoluteFile();
+				}
+				else {
+					file = project.file(url.getFile());
+				}
+
+				if (Objects.isNull(file)) {
+					return;
+				}
 
 				URI uri = file.toURI();
 
@@ -1822,6 +1648,54 @@ public class RootProjectConfigurator implements Plugin<Project> {
 			throw new GradleException(
 				malformedURLException.getMessage(), malformedURLException);
 		}
+	}
+
+	private void _configureFixTargetTomcatConfigs(
+		Callable<File> bundleHomeDirObject, Task task) {
+
+		task.doLast(
+			new Action<Task>() {
+
+				@Override
+				public void execute(Task task) {
+					File bundleHomeDir = GradleUtil.toFile(
+						task.getProject(), bundleHomeDirObject);
+
+					File unversionedTomcatDirectory = new File(
+						bundleHomeDir, "tomcat");
+
+					if (!unversionedTomcatDirectory.exists()) {
+						return;
+					}
+
+					File[] files = bundleHomeDir.listFiles(
+						(dir, name) -> name.startsWith("tomcat-"));
+
+					if (ArrayUtil.isEmpty(files)) {
+						return;
+					}
+
+					File versionedTomcatDirectory = files[0];
+
+					Project project = task.getProject();
+
+					WorkResult workResult = project.copy(
+						copySpec -> {
+							copySpec.setDuplicatesStrategy(
+								DuplicatesStrategy.INCLUDE);
+
+							copySpec.from(unversionedTomcatDirectory);
+							copySpec.into(versionedTomcatDirectory);
+
+							copySpec.setIncludeEmptyDirs(false);
+						});
+
+					if (workResult.getDidWork()) {
+						project.delete(unversionedTomcatDirectory);
+					}
+				}
+
+			});
 	}
 
 	private void _configureNpmProject(Project project) {
@@ -1877,87 +1751,6 @@ public class RootProjectConfigurator implements Plugin<Project> {
 				}
 
 			});
-	}
-
-	@SuppressWarnings("serial")
-	private void _configureTaskCopyBundleFromDownload(
-		Copy copy, final Download download) {
-
-		final Project project = copy.getProject();
-
-		final Set<String> rootDirNames = new HashSet<>();
-
-		copy.dependsOn(download);
-
-		copy.doLast(
-			new Action<Task>() {
-
-				@Override
-				public void execute(Task task) {
-					Copy copy = (Copy)task;
-
-					File destinationDir = copy.getDestinationDir();
-
-					for (String rootDirName : rootDirNames) {
-						FileUtil.moveTree(
-							new File(destinationDir, rootDirName),
-							destinationDir);
-					}
-
-					if (copy.getDidWork()) {
-						project.delete(new File(destinationDir, "tomcat"));
-					}
-				}
-
-			});
-
-		copy.from(
-			new Callable<FileCollection>() {
-
-				@Override
-				public FileCollection call() throws Exception {
-					File file = _getDownloadFile(download);
-
-					String fileName = file.getName();
-
-					if (fileName.endsWith(".tar.gz")) {
-						return project.tarTree(file);
-					}
-
-					return project.zipTree(file);
-				}
-
-			},
-			new Closure<Void>(project) {
-
-				@SuppressWarnings("unused")
-				public void doCall(CopySpec copySpec) {
-					copySpec.eachFile(
-						new Action<FileCopyDetails>() {
-
-							@Override
-							public void execute(
-								FileCopyDetails fileCopyDetails) {
-
-								RelativePath relativePath =
-									fileCopyDetails.getRelativePath();
-
-								String[] segments = relativePath.getSegments();
-
-								rootDirNames.add(segments[0]);
-							}
-
-						});
-
-					copySpec.eachFile(new StripPathSegmentsAction(1));
-				}
-
-			});
-
-		WorkspaceExtension workspaceExtension = GradleUtil.getExtension(
-			(ExtensionAware)project.getGradle(), WorkspaceExtension.class);
-
-		_configureCopySpecExpandTomcatVersion(copy, workspaceExtension);
 	}
 
 	private void _configureTaskCopyBundlePreserveTimestamps(Copy copy) {
@@ -2112,20 +1905,6 @@ public class RootProjectConfigurator implements Plugin<Project> {
 		return sb.toString();
 	}
 
-	private List<?> _getSrcList(Download download) {
-		Object src = download.getSrc();
-
-		if (src == null) {
-			return Collections.emptyList();
-		}
-
-		if (src instanceof List<?>) {
-			return (List<?>)src;
-		}
-
-		return Collections.singletonList(src);
-	}
-
 	private String _loadTemplate(String name) {
 		try (InputStream inputStream =
 				RootProjectConfigurator.class.getResourceAsStream(
@@ -2176,7 +1955,7 @@ public class RootProjectConfigurator implements Plugin<Project> {
 
 		};
 
-	private String _bundleCheckSumMD5;
+	private String _bundleCheckSumSHA512;
 	private boolean _defaultRepositoryEnabled;
 
 }

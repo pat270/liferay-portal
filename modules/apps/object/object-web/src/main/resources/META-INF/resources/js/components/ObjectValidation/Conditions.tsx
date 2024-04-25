@@ -3,49 +3,47 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import 'codemirror/mode/groovy/groovy';
+import ClayAlert from '@clayui/alert';
 import {
-	AutoComplete,
 	Card,
 	CodeEditor,
-	InputLocalized,
-	RadioField,
 	SidebarCategory,
-	filterArrayByQuery,
-	getLocalizableLabel,
+	SingleSelect,
+	stringUtils,
 } from '@liferay/object-js-components-web';
-import React, {useMemo, useState} from 'react';
+import {
+	ILearnResourceContext,
+	LearnMessage,
+	LearnResourcesContext,
+} from 'frontend-js-components-web';
+import React, {useMemo} from 'react';
 
+import {NAME_OUTPUT_OBJECT_FIELD_EXTERNAL_REFERENCE_CODE} from '../../utils/constants';
+import {DisabledGroovyScriptAlert} from '../DisabledGroovyScriptAlert';
+import {ErrorMessage} from './ErrorMessage';
 import {TabProps} from './useObjectValidationForm';
 
-interface ConditionsProps extends TabProps {
+export interface ConditionsProps extends TabProps {
 	creationLanguageId: Liferay.Language.Locale;
-	objectFields: ObjectField[];
+	customObjectFields: ObjectField[];
+	disabledGroovyValidation: boolean;
+	learnResources: ILearnResourceContext;
 	objectValidationRuleElements: SidebarCategory[];
 }
 
-const outputValidationTypeArray = [
-	{
-		label: Liferay.Language.get('full-validation-form-summary'),
-		value: 'fullValidation',
-	},
-	{
-		label: Liferay.Language.get('partial-validation-inline-field'),
-		value: 'partialValidation',
-	},
-];
-
 export function Conditions({
 	creationLanguageId,
+	customObjectFields,
 	disabled,
+	disabledGroovyValidation,
 	errors,
-	objectFields,
+	learnResources,
 	objectValidationRuleElements,
+	scriptManagementConfigurationPortletURL,
+	selectedPartialValidationField,
 	setValues,
 	values,
 }: ConditionsProps) {
-	const [query, setQuery] = useState<string>('');
-
 	const engine = values.engine;
 	const ddmTooltip = {
 		content: Liferay.Language.get(
@@ -69,39 +67,44 @@ export function Conditions({
 		placeholder = '';
 	}
 
-	const filteredObjectFields = useMemo(() => {
-		if (objectFields) {
-			return filterArrayByQuery({
-				array: objectFields,
-				query,
-				str: 'label',
-			});
-		}
-	}, [objectFields, query]);
-
-	const getSelectedPartialValidationField = () => {
-		if (values.objectValidationRuleSettings?.length) {
-			const [
-				partialValidationField,
-			] = values.objectValidationRuleSettings;
-
-			const objectField = objectFields.find(
-				(field) =>
-					field.externalReferenceCode === partialValidationField.value
-			);
-
-			return getLocalizableLabel(
-				creationLanguageId,
-				objectField?.label,
-				objectField?.name
-			);
-		}
-
-		return '';
-	};
+	const objectFieldsItems = useMemo(() => {
+		return customObjectFields.map(
+			({externalReferenceCode, label, name}) => ({
+				label: stringUtils.getLocalizableLabel(
+					creationLanguageId,
+					label,
+					name
+				),
+				value: externalReferenceCode,
+			})
+		);
+	}, [creationLanguageId, customObjectFields]);
 
 	return (
 		<>
+			{disabledGroovyValidation && (
+				<DisabledGroovyScriptAlert
+					scriptManagementConfigurationPortletURL={
+						scriptManagementConfigurationPortletURL
+					}
+				/>
+			)}
+
+			<ClayAlert
+				className="lfr-objects__side-panel-content-container"
+				displayType="info"
+				title={`${Liferay.Language.get('info')}:`}
+			>
+				{Liferay.Language.get('create-validations-using-expressions')}
+				&nbsp;
+				<LearnResourcesContext.Provider value={learnResources}>
+					<LearnMessage
+						className="alert-link"
+						resource="object-web"
+						resourceKey="expression-builder-validations-reference"
+					/>
+				</LearnResourcesContext.Provider>
+			</ClayAlert>
 			<Card
 				title={values.engineLabel!}
 				tooltip={engine === 'ddm' ? ddmTooltip : null}
@@ -113,97 +116,37 @@ export function Conditions({
 						setValues({lineCount, script})
 					}
 					placeholder={placeholder}
-					readOnly={disabled}
+					readOnly={disabled || disabledGroovyValidation}
 					sidebarElements={objectValidationRuleElements}
 					value={values.script ?? ''}
 				/>
 			</Card>
 
-			<Card title={Liferay.Language.get('error-message')}>
-				<InputLocalized
-					disabled={disabled}
-					error={errors.errorLabel}
-					label={Liferay.Language.get('message')}
-					onChange={(errorLabel) => setValues({errorLabel})}
-					placeholder={Liferay.Language.get('add-an-error-message')}
+			<ErrorMessage
+				disabled={disabled}
+				errors={errors}
+				setValues={setValues}
+				values={values}
+			>
+				<SingleSelect
+					error={errors.outputType}
+					id="objectValidationConditions"
+					items={objectFieldsItems}
+					label={Liferay.Language.get('fields')}
+					onSelectionChange={(value) => {
+						setValues({
+							objectValidationRuleSettings: [
+								{
+									name: NAME_OUTPUT_OBJECT_FIELD_EXTERNAL_REFERENCE_CODE,
+									value: value as string,
+								},
+							],
+						});
+					}}
 					required
-					translations={values.errorLabel!}
+					selectedKey={selectedPartialValidationField}
 				/>
-
-				{Liferay.FeatureFlags['LPS-187846'] && (
-					<>
-						<RadioField
-							defaultValue={values.outputType}
-							inline={false}
-							label={Liferay.Language.get(
-								'output-validation-type'
-							)}
-							onChange={(value) => {
-								if (value === 'fullValidation') {
-									setValues({
-										objectValidationRuleSettings: [],
-										outputType: value as string,
-									});
-
-									return;
-								}
-
-								setValues({
-									outputType: value as string,
-								});
-							}}
-							options={outputValidationTypeArray}
-							popover={{
-								alignPosition: 'top',
-								content: Liferay.Language.get(
-									'map-the-error-message-to-be-displayed-next-to-the-validated-field'
-								),
-								header: Liferay.Language.get(
-									'message-location'
-								),
-							}}
-						/>
-
-						{values.outputType === 'partialValidation' && (
-							<AutoComplete<ObjectField>
-								emptyStateMessage={Liferay.Language.get(
-									'no-fields-were-found'
-								)}
-								error={errors.outputType}
-								items={filteredObjectFields ?? []}
-								label={Liferay.Language.get('fields')}
-								onChangeQuery={setQuery}
-								onSelectItem={(item) => {
-									setValues({
-										objectValidationRuleSettings: [
-											{
-												name:
-													'objectFieldExternalReferenceCode',
-												value: item.externalReferenceCode as string,
-											},
-										],
-									});
-								}}
-								query={query}
-								required
-								value={getSelectedPartialValidationField()}
-							>
-								{({label, name}) => (
-									<div className="d-flex justify-content-between">
-										<div>
-											{getLocalizableLabel(
-												creationLanguageId,
-												label,
-												name
-											)}
-										</div>
-									</div>
-								)}
-							</AutoComplete>
-						)}
-					</>
-				)}
-			</Card>
+			</ErrorMessage>
 		</>
 	);
 }

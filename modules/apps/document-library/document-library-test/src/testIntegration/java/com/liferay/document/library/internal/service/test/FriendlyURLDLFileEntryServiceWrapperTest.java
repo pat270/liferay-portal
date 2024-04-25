@@ -9,7 +9,6 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFileEntryTypeConstants;
 import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
-import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.document.library.kernel.service.DLFileEntryService;
 import com.liferay.document.library.test.util.BaseDLAppTestCase;
 import com.liferay.friendly.url.model.FriendlyURLEntry;
@@ -63,7 +62,7 @@ public class FriendlyURLDLFileEntryServiceWrapperTest
 			ContentTypes.APPLICATION_OCTET_STREAM, "title", "urltitle",
 			StringPool.BLANK, StringPool.BLANK,
 			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT, null,
-			null, inputStream, bytes.length, null, null,
+			null, inputStream, bytes.length, null, null, null,
 			ServiceContextTestUtil.getServiceContext(
 				group.getGroupId(), TestPropsValues.getUserId()));
 
@@ -93,7 +92,7 @@ public class FriendlyURLDLFileEntryServiceWrapperTest
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			StringPool.BLANK, StringPool.BLANK,
 			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT, null,
-			null, inputStream, bytes.length, null, null, serviceContext);
+			null, inputStream, bytes.length, null, null, null, serviceContext);
 
 		dlFileEntry = _dlFileEntryService.updateFileEntry(
 			dlFileEntry.getFileEntryId(), StringUtil.randomString(),
@@ -101,7 +100,7 @@ public class FriendlyURLDLFileEntryServiceWrapperTest
 			RandomTestUtil.randomString(), "urltitle", StringPool.BLANK,
 			StringPool.BLANK, DLVersionNumberIncrease.MAJOR,
 			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT,
-			Collections.emptyMap(), null, inputStream, 0, null, null,
+			Collections.emptyMap(), null, inputStream, 0, null, null, null,
 			serviceContext);
 
 		FriendlyURLEntry friendlyURLEntry =
@@ -111,9 +110,6 @@ public class FriendlyURLDLFileEntryServiceWrapperTest
 
 		Assert.assertEquals("urltitle", friendlyURLEntry.getUrlTitle());
 	}
-
-	@Inject
-	private static DLAppService _dlAppService;
 
 	@Inject
 	private static DLFileEntryService _dlFileEntryService;

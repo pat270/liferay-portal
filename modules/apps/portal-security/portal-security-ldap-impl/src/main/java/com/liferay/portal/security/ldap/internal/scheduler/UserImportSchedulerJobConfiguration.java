@@ -8,7 +8,6 @@ package com.liferay.portal.security.ldap.internal.scheduler;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeRunnable;
 import com.liferay.petra.string.StringBundler;
-import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.scheduler.SchedulerJobConfiguration;
@@ -32,7 +31,7 @@ import org.osgi.service.component.annotations.ReferencePolicyOption;
  * @author Shuyang Zhou
  */
 @Component(
-	configurationPid = "com.liferay.portal.security.ldap.exportimport.configuration.LDAPImportConfiguration",
+	factory = "com.liferay.portal.security.ldap.internal.scheduler.UserImportSchedulerJobConfiguration",
 	service = SchedulerJobConfiguration.class
 )
 public class UserImportSchedulerJobConfiguration
@@ -62,19 +61,21 @@ public class UserImportSchedulerJobConfiguration
 
 	@Override
 	public TriggerConfiguration getTriggerConfiguration() {
-		return TriggerConfiguration.createTriggerConfiguration(
-			_ldapImportConfiguration.importInterval(), TimeUnit.MINUTE);
+		return _triggerConfiguration;
 	}
 
 	@Activate
 	protected void activate(Map<String, Object> properties) {
-		_ldapImportConfiguration = ConfigurableUtil.createConfigurable(
-			LDAPImportConfiguration.class, properties);
+		LDAPImportConfiguration ldapImportConfiguration =
+			(LDAPImportConfiguration)properties.get("configuration");
+
+		_triggerConfiguration = TriggerConfiguration.createTriggerConfiguration(
+			ldapImportConfiguration.importInterval(), TimeUnit.MINUTE);
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
 				"LDAP user imports will be attempted every " +
-					_ldapImportConfiguration.importInterval() + " minutes");
+					ldapImportConfiguration.importInterval() + " minutes");
 		}
 	}
 
@@ -130,8 +131,6 @@ public class UserImportSchedulerJobConfiguration
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
-	private LDAPImportConfiguration _ldapImportConfiguration;
-
 	@Reference(
 		target = "(factoryPid=com.liferay.portal.security.ldap.exportimport.configuration.LDAPImportConfiguration)"
 	)
@@ -143,5 +142,7 @@ public class UserImportSchedulerJobConfiguration
 		policyOption = ReferencePolicyOption.GREEDY
 	)
 	private volatile LDAPUserImporter _ldapUserImporter;
+
+	private TriggerConfiguration _triggerConfiguration;
 
 }

@@ -24,6 +24,7 @@ EditSynonymSetsDisplayContext editSynonymSetsDisplayContext = (EditSynonymSetsDi
 
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(editSynonymSetsDisplayContext.getBackURL());
+portletDisplay.setURLBackTitle(portletDisplay.getPortletDisplayName());
 %>
 
 <portlet:actionURL name="/synonyms/edit_synonym_sets" var="editSynonymSetURL">
@@ -42,7 +43,7 @@ portletDisplay.setURLBack(editSynonymSetsDisplayContext.getBackURL());
 		<span aria-hidden="true" class="loading-animation"></span>
 
 		<react:component
-			module="js/SynonymSetsApp.es"
+			module="{SynonymSetsApp} from portal-search-tuning-synonyms-web"
 			props="<%= editSynonymSetsDisplayContext.getData() %>"
 		/>
 	</liferay-frontend:edit-form-body>

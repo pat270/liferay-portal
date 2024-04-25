@@ -52,7 +52,7 @@ public interface CPDefinitionOptionRelService extends BaseService {
 	 */
 	public CPDefinitionOptionRel addCPDefinitionOptionRel(
 			long cpDefinitionId, long cpOptionId, Map<Locale, String> nameMap,
-			Map<Locale, String> descriptionMap, String ddmFormFieldTypeName,
+			Map<Locale, String> descriptionMap, String commerceOptionTypeKey,
 			double priority, boolean facetable, boolean required,
 			boolean skuContributor, boolean importOptionValue,
 			ServiceContext serviceContext)
@@ -60,10 +60,11 @@ public interface CPDefinitionOptionRelService extends BaseService {
 
 	public CPDefinitionOptionRel addCPDefinitionOptionRel(
 			long cpDefinitionId, long cpOptionId, Map<Locale, String> nameMap,
-			Map<Locale, String> descriptionMap, String ddmFormFieldTypeName,
-			double priority, boolean facetable, boolean required,
+			Map<Locale, String> descriptionMap, String commerceOptionTypeKey,
+			String infoItemServiceKey, double priority,
+			boolean definedExternally, boolean facetable, boolean required,
 			boolean skuContributor, boolean importOptionValue, String priceType,
-			ServiceContext serviceContext)
+			String typeSettings, ServiceContext serviceContext)
 		throws PortalException;
 
 	public CPDefinitionOptionRel addCPDefinitionOptionRel(
@@ -147,7 +148,7 @@ public interface CPDefinitionOptionRelService extends BaseService {
 	public CPDefinitionOptionRel updateCPDefinitionOptionRel(
 			long cpDefinitionOptionRelId, long cpOptionId,
 			Map<Locale, String> nameMap, Map<Locale, String> descriptionMap,
-			String ddmFormFieldTypeName, double priority, boolean facetable,
+			String commerceOptionTypeKey, double priority, boolean facetable,
 			boolean required, boolean skuContributor,
 			ServiceContext serviceContext)
 		throws PortalException;
@@ -155,9 +156,10 @@ public interface CPDefinitionOptionRelService extends BaseService {
 	public CPDefinitionOptionRel updateCPDefinitionOptionRel(
 			long cpDefinitionOptionRelId, long cpOptionId,
 			Map<Locale, String> nameMap, Map<Locale, String> descriptionMap,
-			String ddmFormFieldTypeName, double priority, boolean facetable,
+			String commerceOptionTypeKey, String infoItemServiceKey,
+			double priority, boolean definedExternally, boolean facetable,
 			boolean required, boolean skuContributor, String priceType,
-			ServiceContext serviceContext)
+			String typeSettings, ServiceContext serviceContext)
 		throws PortalException;
 
 }

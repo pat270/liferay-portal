@@ -18,6 +18,8 @@ public class ActionKeys {
 	public static final String ACCESS_IN_CONTROL_PANEL =
 		"ACCESS_IN_CONTROL_PANEL";
 
+	public static final String ACTIVATE = "ACTIVATE";
+
 	public static final String ADD_ARTICLE = "ADD_ARTICLE";
 
 	public static final String ADD_ATTACHMENT = "ADD_ATTACHMENT";
@@ -134,6 +136,8 @@ public class ActionKeys {
 
 	public static final String CUSTOMIZE = "CUSTOMIZE";
 
+	public static final String DEACTIVATE = "DEACTIVATE";
+
 	public static final String DEFINE_PERMISSIONS = "DEFINE_PERMISSIONS";
 
 	public static final String DELEGATE = "DELEGATE";
@@ -166,6 +170,8 @@ public class ActionKeys {
 	public static final String IMPERSONATE = "IMPERSONATE";
 
 	public static final String IMPORT = "IMPORT";
+
+	public static final String LAYOUT_RULE_BUILDER = "LAYOUT_RULE_BUILDER";
 
 	public static final String LOCK_THREAD = "LOCK_THREAD";
 
@@ -208,6 +214,8 @@ public class ActionKeys {
 	public static final String PERMISSIONS_USER = "PERMISSIONS_USER";
 
 	public static final String PREFERENCES = "PREFERENCES";
+
+	public static final String PREVIEW_DRAFT = "PREVIEW_DRAFT";
 
 	public static final String PREVIEW_IN_DEVICE = "PREVIEW_IN_DEVICE";
 

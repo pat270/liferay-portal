@@ -10,7 +10,6 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.events.EventsProcessorUtil;
 import com.liferay.portal.kernel.cookies.CookiesManagerUtil;
 import com.liferay.portal.kernel.cookies.constants.CookiesConstants;
-import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.exception.NoSuchVirtualHostException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.instance.PortalInstancePool;
@@ -20,7 +19,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.LayoutSet;
-import com.liferay.portal.kernel.model.PortletCategory;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.VirtualHost;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
@@ -30,7 +28,6 @@ import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutSetLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.service.VirtualHostLocalServiceUtil;
-import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
@@ -38,12 +35,8 @@ import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -131,7 +124,7 @@ public class PortalInstances {
 		}
 
 		if (companyId <= 0) {
-			companyId = getDefaultCompanyId();
+			companyId = PortalInstancePool.getDefaultCompanyId();
 
 			if (_log.isDebugEnabled()) {
 				_log.debug("Default company ID " + companyId);
@@ -177,70 +170,47 @@ public class PortalInstances {
 		return companyId;
 	}
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 *             PortalInstancePool#getCompanyIds}
+	 */
+	@Deprecated
 	public static long[] getCompanyIds() {
 		return PortalInstancePool.getCompanyIds();
 	}
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 *             PortalInstancePool#getCompanyIds}
+	 */
+	@Deprecated
 	public static long[] getCompanyIdsBySQL() throws SQLException {
-		List<Long> companyIds = new ArrayList<>();
-
-		long defaultCompanyId = getDefaultCompanyIdBySQL();
-
-		if (defaultCompanyId != 0) {
-			companyIds.add(defaultCompanyId);
-		}
-
-		try (Connection connection = DataAccess.getConnection();
-			PreparedStatement preparedStatement = connection.prepareStatement(
-				_GET_COMPANY_IDS);
-			ResultSet resultSet = preparedStatement.executeQuery()) {
-
-			while (resultSet.next()) {
-				long companyId = resultSet.getLong("companyId");
-
-				if (companyId != defaultCompanyId) {
-					companyIds.add(companyId);
-				}
-			}
-		}
-
-		return ArrayUtil.toArray(companyIds.toArray(new Long[0]));
+		return PortalInstancePool.getCompanyIds();
 	}
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 *             PortalInstancePool#getDefaultCompanyId}
+	 */
+	@Deprecated
 	public static long getDefaultCompanyId() {
-		long[] companyIds = PortalInstancePool.getCompanyIds();
-
-		if (companyIds.length == 0) {
-			try {
-				return getDefaultCompanyIdBySQL();
-			}
-			catch (SQLException sqlException) {
-				_log.error(
-					"Unable to get the default company ID by SQL",
-					sqlException);
-
-				throw new RuntimeException(sqlException);
-			}
-		}
-
 		return PortalInstancePool.getDefaultCompanyId();
 	}
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 *             PortalInstancePool#getDefaultCompanyId}
+	 */
+	@Deprecated
 	public static long getDefaultCompanyIdBySQL() throws SQLException {
-		try (Connection connection = DataAccess.getConnection();
-			PreparedStatement preparedStatement = connection.prepareStatement(
-				"select companyId from Company where webId = '" +
-					PropsValues.COMPANY_DEFAULT_WEB_ID + "'");
-			ResultSet resultSet = preparedStatement.executeQuery()) {
-
-			if (resultSet.next()) {
-				return resultSet.getLong(1);
-			}
-		}
-
-		return 0;
+		return PortalInstancePool.getDefaultCompanyId();
 	}
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 *             PortalInstancePool#getWebIds}}
+	 */
+	@Deprecated
 	public static String[] getWebIds() {
 		return PortalInstancePool.getWebIds();
 	}
@@ -289,41 +259,6 @@ public class PortalInstances {
 			}
 
 			PrincipalThreadLocal.setName(principalName);
-
-			// Initialize display
-
-			if (_log.isDebugEnabled()) {
-				_log.debug("Initialize display");
-			}
-
-			try {
-				PortletCategory portletCategory =
-					(PortletCategory)WebAppPool.get(
-						company.getCompanyId(), WebKeys.PORTLET_CATEGORY);
-
-				if (portletCategory == null) {
-					portletCategory = new PortletCategory();
-				}
-
-				for (long currentCompanyId :
-						PortalInstancePool.getCompanyIds()) {
-
-					PortletCategory currentPortletCategory =
-						(PortletCategory)WebAppPool.get(
-							currentCompanyId, WebKeys.PORTLET_CATEGORY);
-
-					if (currentPortletCategory != null) {
-						portletCategory.merge(currentPortletCategory);
-					}
-				}
-
-				WebAppPool.put(
-					company.getCompanyId(), WebKeys.PORTLET_CATEGORY,
-					portletCategory);
-			}
-			catch (Exception exception) {
-				_log.error(exception);
-			}
 
 			// Process application startup events
 
@@ -540,9 +475,6 @@ public class PortalInstances {
 
 	private PortalInstances() {
 	}
-
-	private static final String _GET_COMPANY_IDS =
-		"select companyId from Company";
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		PortalInstances.class);

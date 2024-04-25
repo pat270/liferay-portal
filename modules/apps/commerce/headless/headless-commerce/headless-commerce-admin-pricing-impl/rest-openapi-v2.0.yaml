@@ -206,6 +206,11 @@ components:
                     format: bigdecimal
                     minimum: 0
                     type: number
+                modifiedDate:
+                    example: 2017-07-21
+                    format: date
+                    readOnly: true
+                    type: string
                 neverExpire:
                     example: true
                     type: boolean
@@ -607,6 +612,9 @@ components:
                     format: int64
                     minimum: 0
                     type: integer
+                unitOfMeasureKey:
+                    example: m
+                    type: string
             required:
                 - skuId
             type: object
@@ -742,6 +750,10 @@ components:
                 product:
                     $ref: "#/components/schemas/Product"
                     readOnly: true
+                quantity:
+                    example: 10.1
+                    format: bigdecimal
+                    type: number
                 sku:
                     $ref: "#/components/schemas/Sku"
                     readOnly: true
@@ -757,7 +769,7 @@ components:
                     items:
                         $ref: "#/components/schemas/TierPrice"
                     type: array
-                unitOfMeasure:
+                unitOfMeasureKey:
                     example: m
                     type: string
             required:
@@ -871,8 +883,7 @@ components:
                     example: price-list, promotion, contract
                     type: string
                 workflowStatusInfo:
-                    allOf:
-                        - $ref: "#/components/schemas/Status"
+                    $ref: "#/components/schemas/Status"
                     readOnly: true
             required:
                 - catalogId
@@ -1445,6 +1456,9 @@ components:
                     type: integer
                 priceFormatted:
                     type: string
+                unitOfMeasureKey:
+                    example: m
+                    type: string
             required:
                 - minimumQuantity
                 - price
@@ -1473,7 +1487,7 @@ info:
         name: Commerce Team
     description:
         "Liferay Commerce Admin Pricing API. A Java client JAR is available for use with the group ID 'com.liferay',
-        artifact ID 'com.liferay.headless.commerce.admin.pricing.client', and version '4.0.25'."
+        artifact ID 'com.liferay.headless.commerce.admin.pricing.client', and version '4.0.35'."
     license:
         name: "Apache 2.0"
         url: "http://www.apache.org/licenses/LICENSE-2.0.html"

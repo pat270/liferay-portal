@@ -10,21 +10,15 @@
 <%
 List<ConfigurationCategorySectionDisplay> configurationCategorySectionDisplays = (List<ConfigurationCategorySectionDisplay>)request.getAttribute(ConfigurationAdminWebKeys.CONFIGURATION_CATEGORY_SECTION_DISPLAYS);
 ConfigurationEntryRetriever configurationEntryRetriever = (ConfigurationEntryRetriever)request.getAttribute(ConfigurationAdminWebKeys.CONFIGURATION_ENTRY_RETRIEVER);
+
 ConfigurationScopeDisplayContext configurationScopeDisplayContext = ConfigurationScopeDisplayContextFactory.create(renderRequest);
+
+ExtendedObjectClassDefinition.Scope scope = configurationScopeDisplayContext.getScope();
 %>
 
-<portlet:renderURL var="redirectURL" />
-
-<portlet:renderURL var="searchURL">
-	<portlet:param name="mvcRenderCommandName" value="/configuration_admin/search_results" />
-	<portlet:param name="redirect" value="<%= redirectURL %>" />
-</portlet:renderURL>
-
-<div class="sticky-top" style="top: 56px; z-index: 999;">
+<div class="sticky-top" style="top: var(--control-menu-container-height);">
 	<clay:management-toolbar
-		searchActionURL="<%= searchURL %>"
-		selectable="<%= false %>"
-		showSearch="<%= true %>"
+		managementToolbarDisplayContext="<%= new ConfigurationScopeManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, 0) %>"
 	/>
 </div>
 
@@ -34,7 +28,23 @@ ConfigurationScopeDisplayContext configurationScopeDisplayContext = Configuratio
 
 <clay:container-fluid
 	cssClass="container-view"
+	fullWidth='<%= FeatureFlagManagerUtil.isEnabled("LPS-184404") %>'
 >
+	<c:if test="<%= scope.equals(ExtendedObjectClassDefinition.Scope.COMPANY) || scope.equals(ExtendedObjectClassDefinition.Scope.SYSTEM) %>">
+
+		<%
+		String[] installedPatchNames = PatcherValues.INSTALLED_PATCH_NAMES;
+		%>
+
+		<div class="alert alert-info">
+			<strong><liferay-ui:message key="info" /></strong>: <%= ReleaseInfo.getReleaseInfo() %>
+
+			<c:if test="<%= (installedPatchNames != null) && (installedPatchNames.length > 0) %>">
+				<strong><liferay-ui:message key="patch" /></strong>: <%= StringUtil.merge(installedPatchNames, StringPool.COMMA_AND_SPACE) %>
+			</c:if>
+		</div>
+	</c:if>
+
 	<c:if test="<%= configurationCategorySectionDisplays.isEmpty() %>">
 		<liferay-frontend:empty-result-message
 			animationType="<%= EmptyResultMessageKeys.AnimationType.SEARCH %>"

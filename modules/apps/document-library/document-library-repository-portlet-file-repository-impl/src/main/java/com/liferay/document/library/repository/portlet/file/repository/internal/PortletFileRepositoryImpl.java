@@ -40,7 +40,7 @@ import com.liferay.portal.kernel.systemevent.SystemEventHierarchyEntryThreadLoca
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
-import com.liferay.portal.kernel.util.Html;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.ObjectValuePair;
@@ -162,7 +162,7 @@ public class PortletFileRepositoryImpl implements PortletFileRepository {
 			return localRepository.addFileEntry(
 				externalReferenceCode, userId, folderId, fileName, mimeType,
 				fileName, fileName, StringPool.BLANK, StringPool.BLANK, file,
-				null, null, serviceContext);
+				null, null, null, serviceContext);
 		}
 		finally {
 			DLAppHelperThreadLocal.setEnabled(dlAppHelperEnabled);
@@ -608,7 +608,7 @@ public class PortletFileRepositoryImpl implements PortletFileRepository {
 			fileName = _trashHelper.getOriginalTitle(fileEntry.getTitle());
 		}
 
-		sb.append(URLCodec.encodeURL(_html.unescape(fileName)));
+		sb.append(URLCodec.encodeURL(HtmlUtil.unescape(fileName)));
 
 		sb.append(StringPool.SLASH);
 		sb.append(URLCodec.encodeURL(fileEntry.getUuid()));
@@ -818,9 +818,6 @@ public class PortletFileRepositoryImpl implements PortletFileRepository {
 
 	@Reference
 	private GroupLocalService _groupLocalService;
-
-	@Reference
-	private Html _html;
 
 	@Reference(
 		target = "(class.name=com.liferay.portal.repository.liferayrepository.LiferayRepository)"

@@ -29,16 +29,17 @@ import org.osgi.service.component.annotations.ServiceScope;
 public class StrategyResourceImpl extends BaseStrategyResourceImpl {
 
 	@Override
-	public Page<Strategy> getPlanInternalClassNameStrategiesPage(
-			String internalClassName)
+	public Page<Strategy> getPlanInternalClassNameKeyStrategiesPage(
+			String internalClassNameKey)
 		throws Exception {
 
 		List<Strategy> strategies = new ArrayList<>();
 
 		BatchEngineTaskItemDelegate<?> batchEngineTaskItemDelegate =
 			_batchEngineTaskItemDelegateRegistry.getBatchEngineTaskItemDelegate(
-				TaskItemUtil.getInternalClassName(internalClassName),
-				TaskItemUtil.getDelegateName(internalClassName));
+				contextCompany.getCompanyId(),
+				TaskItemUtil.getInternalClassName(internalClassNameKey),
+				TaskItemUtil.getTaskItemDelegateName(internalClassNameKey));
 
 		for (String createStrategy :
 				batchEngineTaskItemDelegate.getAvailableCreateStrategies()) {
@@ -46,8 +47,8 @@ public class StrategyResourceImpl extends BaseStrategyResourceImpl {
 			strategies.add(
 				new Strategy() {
 					{
-						name = createStrategy;
-						type = "create";
+						setName(() -> createStrategy);
+						setType(() -> "create");
 					}
 				});
 		}
@@ -58,8 +59,8 @@ public class StrategyResourceImpl extends BaseStrategyResourceImpl {
 			strategies.add(
 				new Strategy() {
 					{
-						name = updateStrategy;
-						type = "update";
+						setName(() -> updateStrategy);
+						setType(() -> "update");
 					}
 				});
 		}

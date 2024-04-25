@@ -1,7 +1,7 @@
 import ActivitiesChart from 'contacts/components/ActivitiesChart';
 import Card from 'shared/components/Card';
 import ClayButton from '@clayui/button';
-import DropdownRangeKey from 'shared/hoc/DropdownRangeKey';
+import ClayLink from '@clayui/link';
 import EventMetricQuery, {
 	EventMetricsData,
 	EventMetricsVariables
@@ -17,7 +17,6 @@ import UserSessionQuery, {
 	UserSessionData,
 	UserSessionVariables
 } from 'shared/queries/UserSessionQuery';
-import useSelectedPoint from 'shared/hooks/useSelectedPoint';
 import VerticalTimeline from 'shared/components/VerticalTimeline';
 import {compose, withPaginationBar} from 'shared/hoc';
 import {
@@ -27,6 +26,7 @@ import {
 	getDateRangeLabelFromDate,
 	getEndDate
 } from 'shared/util/date';
+import {DropdownRangeKey} from 'shared/components/dropdown-range-key/DropdownRangeKey';
 import {fetchPolicyDefinition} from 'shared/util/graphql';
 import {formatSessions, getActivityLabel} from 'shared/util/activities';
 import {getSafeRangeSelectors} from 'shared/util/util';
@@ -38,7 +38,8 @@ import {mapListResultsToProps} from 'shared/util/mappers';
 import {RangeKeyTimeRanges, SessionEntityTypes} from 'shared/util/constants';
 import {sub} from 'shared/util/lang';
 import {useQuery} from '@apollo/react-hooks';
-import {useStatefulPagination} from 'shared/hooks';
+import {useSelectedPoint} from 'shared/hooks/useSelectedPoint';
+import {useStatefulPagination} from 'shared/hooks/useStatefulPagination';
 import {withEmpty} from 'cerebro-shared/hocs/utils';
 import {withError, withLoading, WrapSafeResults} from 'shared/hoc/util';
 
@@ -250,7 +251,7 @@ const ProfileCard: React.FC<IProfileCardProps> = ({
 
 					<DropdownRangeKey
 						legacy={false}
-						onChange={(rangeSelectors: RangeSelectors) => {
+						onRangeSelectorChange={rangeSelectors => {
 							onRangeSelectorsChange(rangeSelectors);
 
 							handleChangeSelection(null);
@@ -335,7 +336,7 @@ const ProfileCard: React.FC<IProfileCardProps> = ({
 									)}
 								</span>
 
-								<a
+								<ClayLink
 									href={
 										URLConstants.IndividualProfilesDocument
 									}
@@ -345,7 +346,7 @@ const ProfileCard: React.FC<IProfileCardProps> = ({
 									{Liferay.Language.get(
 										'learn-more-about-individuals'
 									)}
-								</a>
+								</ClayLink>
 							</>
 						}
 						spacer

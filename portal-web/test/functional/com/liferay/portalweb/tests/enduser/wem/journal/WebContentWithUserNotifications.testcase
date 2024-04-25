@@ -1,4 +1,4 @@
-@component-name = "portal-wcm"
+@component-name = "portal-content-management"
 definition {
 
 	property ci.retries.disabled = "true";
@@ -43,19 +43,6 @@ definition {
 			JSONUser.addUserToSite(
 				groupName = "Test Site Name",
 				userEmailAddress = "userea@liferay.com");
-		}
-	}
-
-	tearDown {
-		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
-
-		if (${testLiferayVirtualInstance} == "true") {
-			PortalInstances.tearDownCP();
-		}
-		else {
-			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
-
-			JSONUser.tearDownNonAdminUsers();
 		}
 	}
 
@@ -160,12 +147,10 @@ definition {
 			task ("Enable Granted Email with Article diffs") {
 				LexiconEntry.gotoHeaderMenuItem(menuItem = "Configuration");
 
-				SelectFrame(locator1 = "IFrame#CONFIGURATION");
-
 				WebContentAdmin.configureEmailNotifications(
 					enabled = "true",
 					fieldName = "Granted",
-					navTab = "Web Content Granted Email",
+					navTab = "Web Content Granted",
 					notificationsBody = "Article diff is [$ARTICLE_DIFFS$]");
 			}
 

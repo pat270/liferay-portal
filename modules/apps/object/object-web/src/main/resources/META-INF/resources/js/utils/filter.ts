@@ -3,57 +3,67 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {MultiSelectItem} from '@liferay/object-js-components-web';
+
 export function getCheckedWorkflowStatusItems(
 	itemValues: LabelValueObject[],
 	setEditingFilterType: () => number[] | string[] | null
-): IItem[] {
-	let newItemsValues: IItem[] = [];
-
+): MultiSelectItem[] {
 	const valuesArray = setEditingFilterType() as number[];
 
-	newItemsValues = itemValues.map((itemValue) => {
-		const item = {
-			checked: false,
-			label: itemValue.label,
-			value: itemValue.value,
-		};
+	const newItemsValues = [
+		{
+			children: itemValues.map((itemValue) => {
+				const item = {
+					checked: false,
+					label: itemValue.label,
+					value: itemValue.value,
+				};
 
-		if (valuesArray?.includes(Number(itemValue.value))) {
-			item.checked = true;
-		}
+				if (valuesArray?.includes(Number(itemValue.value))) {
+					item.checked = true;
+				}
 
-		return item;
-	});
+				return item;
+			}),
+			label: '',
+			value: 'checkedWorkflowStatusItems',
+		},
+	];
 
 	return newItemsValues;
 }
 
-export function getCheckedPickListItems(
-	itemValues: PickListItem[],
+export function getCheckedListTypeEntries(
+	itemValues: ListTypeEntry[],
 	setEditingFilterType: () => number[] | string[] | null
-): IItem[] {
-	let newItemsValues: IItem[] = [];
-
+): MultiSelectItem[] {
 	const valuesArray = setEditingFilterType() as string[];
 
-	newItemsValues = (itemValues as PickListItem[]).map((itemValue) => {
-		const item = {
-			checked: false,
-			label: itemValue.name,
-			value: itemValue.key,
-		};
+	const newItemsValues = [
+		{
+			children: (itemValues as ListTypeEntry[]).map((itemValue) => {
+				const item = {
+					checked: false,
+					label: itemValue.name,
+					value: itemValue.key,
+				};
 
-		if (valuesArray?.includes(itemValue.key)) {
-			item.checked = true;
-		}
+				if (valuesArray?.includes(itemValue.key)) {
+					item.checked = true;
+				}
 
-		return item;
-	});
+				return item;
+			}),
+			label: '',
+			value: 'checkedListTypeEntries',
+		},
+	];
 
 	return newItemsValues;
 }
 
-export function getSystemFieldLabelFromEntry(
+export function getSystemObjectFieldLabelFromObjectEntry(
 	titleFieldName: string,
 	entry: ObjectEntry,
 	itemObject: LabelValueObject
@@ -96,45 +106,49 @@ export function getSystemFieldLabelFromEntry(
 	};
 }
 
-export function getCheckedRelationshipItems(
+export function getCheckedObjectRelationshipItems(
 	relatedEntries: ObjectEntry[],
 	titleFieldName: string,
 	systemField: boolean,
 	systemObject: boolean,
 	setEditingFilterType: () => number[] | string[] | null
-): IItem[] {
-	let newItemsValues: IItem[] = [];
-
+): MultiSelectItem[] {
 	const valuesArray = setEditingFilterType() as string[];
 
-	newItemsValues = relatedEntries.map((entry) => {
-		let item = {
-			checked: false,
-			value: systemObject
-				? String(entry.id)
-				: entry.externalReferenceCode,
-		} as IItem;
+	const newItemsValues = [
+		{
+			children: relatedEntries.map((entry) => {
+				let item = {
+					checked: false,
+					value: systemObject
+						? String(entry.id)
+						: entry.externalReferenceCode,
+				} as IItem;
 
-		if (systemField) {
-			item = getSystemFieldLabelFromEntry(
-				titleFieldName,
-				entry,
-				item
-			) as IItem;
-		}
-		else {
-			item = {
-				...item,
-				label: entry[titleFieldName] as string,
-			};
-		}
+				if (systemField) {
+					item = getSystemObjectFieldLabelFromObjectEntry(
+						titleFieldName,
+						entry,
+						item
+					) as IItem;
+				}
+				else {
+					item = {
+						...item,
+						label: entry[titleFieldName] as string,
+					};
+				}
 
-		if (valuesArray.includes(entry.externalReferenceCode)) {
-			item.checked = true;
-		}
+				if (valuesArray.includes(entry.externalReferenceCode)) {
+					item.checked = true;
+				}
 
-		return item;
-	});
+				return item;
+			}),
+			label: '',
+			value: 'checkedObjectRelationshipItems',
+		},
+	];
 
 	return newItemsValues;
 }

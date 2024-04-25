@@ -6,7 +6,6 @@
 package com.liferay.layout.internal.struts;
 
 import com.liferay.layout.util.LayoutsTree;
-import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.service.LayoutService;
 import com.liferay.portal.kernel.servlet.ServletResponseUtil;
@@ -14,7 +13,6 @@ import com.liferay.portal.kernel.struts.StrutsAction;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.util.PropsValues;
 
@@ -57,6 +55,13 @@ public class GetLayoutsTreeStrutsAction implements StrutsAction {
 			JSONUtil.put(
 				"hasMoreElements",
 				() -> {
+					int pageSize = GetterUtil.getInteger(
+						PropsValues.LAYOUT_MANAGE_PAGES_INITIAL_CHILDREN);
+
+					if (pageSize <= 0) {
+						return false;
+					}
+
 					int childLayoutsCount = _layoutService.getLayoutsCount(
 						groupId, privateLayout, parentLayoutId);
 
@@ -64,9 +69,6 @@ public class GetLayoutsTreeStrutsAction implements StrutsAction {
 						httpServletRequest, "start");
 
 					start = Math.max(0, start);
-
-					int pageSize = GetterUtil.getInteger(
-						PropsValues.LAYOUT_MANAGE_PAGES_INITIAL_CHILDREN);
 
 					int end = ParamUtil.getInteger(
 						httpServletRequest, "end", start + pageSize);
@@ -90,15 +92,9 @@ public class GetLayoutsTreeStrutsAction implements StrutsAction {
 	}
 
 	@Reference
-	private JSONFactory _jsonFactory;
-
-	@Reference
 	private LayoutService _layoutService;
 
 	@Reference
 	private LayoutsTree _layoutsTree;
-
-	@Reference
-	private Portal _portal;
 
 }

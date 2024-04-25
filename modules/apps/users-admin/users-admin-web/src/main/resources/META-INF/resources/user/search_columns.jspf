@@ -8,7 +8,7 @@
 <c:choose>
 	<c:when test='<%= displayStyle.equals("descriptive") %>'>
 		<liferay-ui:search-container-column-text>
-			<liferay-ui:user-portrait
+			<liferay-user:user-portrait
 				userId="<%= user2.getUserId() %>"
 			/>
 		</liferay-ui:search-container-column-text>
@@ -20,9 +20,9 @@
 				<aui:a href="<%= String.valueOf(rowURL) %>"><%= user2.getFullName() %></aui:a>
 			</h5>
 
-			<h6 class="text-default">
+			<div class="h6 text-default">
 				<%= user2.getScreenName() %>
-			</h6>
+			</div>
 		</liferay-ui:search-container-column-text>
 
 		<%
@@ -33,14 +33,14 @@
 			<clay:dropdown-actions
 				aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 				dropdownItems="<%= userActionDropdownItems.getActionDropdownItems() %>"
-				propsTransformer="js/OrganizationAndUserDropdownDefaultPropsTransformer"
+				propsTransformer="{OrganizationAndUserDropdownDefaultPropsTransformer} from users-admin-web"
 			/>
 		</liferay-ui:search-container-column-text>
 	</c:when>
 	<c:when test='<%= displayStyle.equals("icon") %>'>
 		<liferay-ui:search-container-column-text>
 			<clay:user-card
-				propsTransformer="js/OrganizationAndUserDropdownDefaultPropsTransformer"
+				propsTransformer="{OrganizationAndUserDropdownDefaultPropsTransformer} from users-admin-web"
 				userCard="<%= new UserVerticalCard(renderRequest, renderResponse, userSearchContainer.getRowChecker(), true, user2) %>"
 			/>
 		</liferay-ui:search-container-column-text>
@@ -104,7 +104,7 @@
 			<clay:dropdown-actions
 				aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 				dropdownItems="<%= userActionDropdownItems.getActionDropdownItems() %>"
-				propsTransformer="js/OrganizationAndUserDropdownDefaultPropsTransformer"
+				propsTransformer="{OrganizationAndUserDropdownDefaultPropsTransformer} from users-admin-web"
 			/>
 		</liferay-ui:search-container-column-text>
 	</c:otherwise>

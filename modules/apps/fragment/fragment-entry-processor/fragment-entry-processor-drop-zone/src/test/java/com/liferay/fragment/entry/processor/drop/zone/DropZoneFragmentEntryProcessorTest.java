@@ -21,9 +21,7 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.KeyValuePair;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
-import com.liferay.portal.uuid.PortalUUIDImpl;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -53,8 +51,6 @@ public class DropZoneFragmentEntryProcessorTest {
 	public static void setUpClass() {
 		_setUpDropZoneDocumentFragmentEntryProcessor();
 		_setUpDropZoneFragmentEntryValidator();
-
-		_setUpPortalUUIDUtil();
 	}
 
 	@Test
@@ -317,24 +313,28 @@ public class DropZoneFragmentEntryProcessorTest {
 		String dropZoneId = RandomTestUtil.randomString();
 
 		_dropZoneFragmentEntryValidator.validateFragmentEntryHTML(
-			FragmentEntryProcessorDropZoneTestUtil.getHTML(
-				dropZoneId, dropZoneId),
+			_getDocument(
+				FragmentEntryProcessorDropZoneTestUtil.getHTML(
+					dropZoneId, dropZoneId)),
 			null, LocaleUtil.getDefault());
 	}
 
 	@Test(expected = FragmentEntryContentException.class)
 	public void testValidateFragmentEntryHTMLMissingId() throws Exception {
 		_dropZoneFragmentEntryValidator.validateFragmentEntryHTML(
-			FragmentEntryProcessorDropZoneTestUtil.getHTML(
-				StringPool.BLANK, RandomTestUtil.randomString()),
+			_getDocument(
+				FragmentEntryProcessorDropZoneTestUtil.getHTML(
+					StringPool.BLANK, RandomTestUtil.randomString())),
 			null, LocaleUtil.getDefault());
 	}
 
 	@Test
 	public void testValidateFragmentEntryHTMLValidWithIds() throws Exception {
 		_dropZoneFragmentEntryValidator.validateFragmentEntryHTML(
-			FragmentEntryProcessorDropZoneTestUtil.getHTML(
-				RandomTestUtil.randomString(), RandomTestUtil.randomString()),
+			_getDocument(
+				FragmentEntryProcessorDropZoneTestUtil.getHTML(
+					RandomTestUtil.randomString(),
+					RandomTestUtil.randomString())),
 			null, LocaleUtil.getDefault());
 	}
 
@@ -343,8 +343,9 @@ public class DropZoneFragmentEntryProcessorTest {
 		throws Exception {
 
 		_dropZoneFragmentEntryValidator.validateFragmentEntryHTML(
-			FragmentEntryProcessorDropZoneTestUtil.getHTML(
-				StringPool.BLANK, StringPool.BLANK),
+			_getDocument(
+				FragmentEntryProcessorDropZoneTestUtil.getHTML(
+					StringPool.BLANK, StringPool.BLANK)),
 			null, LocaleUtil.getDefault());
 	}
 
@@ -364,12 +365,6 @@ public class DropZoneFragmentEntryProcessorTest {
 		ReflectionTestUtil.setFieldValue(
 			_dropZoneFragmentEntryValidator, "_language",
 			Mockito.mock(Language.class));
-	}
-
-	private static void _setUpPortalUUIDUtil() {
-		PortalUUIDUtil portalUUIDUtil = new PortalUUIDUtil();
-
-		portalUUIDUtil.setPortalUUID(new PortalUUIDImpl());
 	}
 
 	private Document _getDocument(String html) {

@@ -29,19 +29,6 @@ public class ObjectRelationshipLocalServiceWrapper
 		_objectRelationshipLocalService = objectRelationshipLocalService;
 	}
 
-	@Override
-	public com.liferay.object.model.ObjectRelationship addObjectRelationship(
-			long userId, long objectDefinitionId1, long objectDefinitionId2,
-			long parameterObjectFieldId, String deletionType,
-			java.util.Map<java.util.Locale, String> labelMap, String name,
-			String type)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _objectRelationshipLocalService.addObjectRelationship(
-			userId, objectDefinitionId1, objectDefinitionId2,
-			parameterObjectFieldId, deletionType, labelMap, name, type);
-	}
-
 	/**
 	 * Adds the object relationship to the database. Also notifies the appropriate model listeners.
 	 *
@@ -58,6 +45,22 @@ public class ObjectRelationshipLocalServiceWrapper
 
 		return _objectRelationshipLocalService.addObjectRelationship(
 			objectRelationship);
+	}
+
+	@Override
+	public com.liferay.object.model.ObjectRelationship addObjectRelationship(
+			String externalReferenceCode, long userId, long objectDefinitionId1,
+			long objectDefinitionId2, long parameterObjectFieldId,
+			String deletionType,
+			java.util.Map<java.util.Locale, String> labelMap, String name,
+			boolean system, String type,
+			com.liferay.object.model.ObjectField objectField)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _objectRelationshipLocalService.addObjectRelationship(
+			externalReferenceCode, userId, objectDefinitionId1,
+			objectDefinitionId2, parameterObjectFieldId, deletionType, labelMap,
+			name, system, type, objectField);
 	}
 
 	@Override
@@ -199,6 +202,13 @@ public class ObjectRelationshipLocalServiceWrapper
 	}
 
 	@Override
+	public void disableEdge(long objectDefinitionId2)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		_objectRelationshipLocalService.disableEdge(objectDefinitionId2);
+	}
+
+	@Override
 	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
 		return _objectRelationshipLocalService.dslQuery(dslQuery);
 	}
@@ -302,11 +312,41 @@ public class ObjectRelationshipLocalServiceWrapper
 	}
 
 	@Override
+	public com.liferay.object.model.ObjectRelationship enableEdge(
+			long objectRelationshipId, boolean edge)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _objectRelationshipLocalService.enableEdge(
+			objectRelationshipId, edge);
+	}
+
+	@Override
 	public com.liferay.object.model.ObjectRelationship fetchObjectRelationship(
 		long objectRelationshipId) {
 
 		return _objectRelationshipLocalService.fetchObjectRelationship(
 			objectRelationshipId);
+	}
+
+	@Override
+	public com.liferay.object.model.ObjectRelationship
+		fetchObjectRelationshipByExternalReferenceCode(
+			String externalReferenceCode, long objectDefinitionId1) {
+
+		return _objectRelationshipLocalService.
+			fetchObjectRelationshipByExternalReferenceCode(
+				externalReferenceCode, objectDefinitionId1);
+	}
+
+	@Override
+	public com.liferay.object.model.ObjectRelationship
+		fetchObjectRelationshipByExternalReferenceCode(
+			String externalReferenceCode, long companyId,
+			long objectDefinitionId1) {
+
+		return _objectRelationshipLocalService.
+			fetchObjectRelationshipByExternalReferenceCode(
+				externalReferenceCode, companyId, objectDefinitionId1);
 	}
 
 	@Override
@@ -422,9 +462,21 @@ public class ObjectRelationshipLocalServiceWrapper
 
 	@Override
 	public com.liferay.object.model.ObjectRelationship
+			getObjectRelationshipByExternalReferenceCode(
+				String externalReferenceCode, long companyId,
+				long objectDefinitionId1)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _objectRelationshipLocalService.
+			getObjectRelationshipByExternalReferenceCode(
+				externalReferenceCode, companyId, objectDefinitionId1);
+	}
+
+	@Override
+	public com.liferay.object.model.ObjectRelationship
 			getObjectRelationshipByObjectDefinitionId(
 				long objectDefinitionId, String name)
-		throws Exception {
+		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _objectRelationshipLocalService.
 			getObjectRelationshipByObjectDefinitionId(objectDefinitionId, name);
@@ -472,6 +524,14 @@ public class ObjectRelationshipLocalServiceWrapper
 
 		return _objectRelationshipLocalService.getObjectRelationships(
 			objectDefinitionId1);
+	}
+
+	@Override
+	public java.util.List<com.liferay.object.model.ObjectRelationship>
+		getObjectRelationships(long objectDefinitionId1, boolean edge) {
+
+		return _objectRelationshipLocalService.getObjectRelationships(
+			objectDefinitionId1, edge);
 	}
 
 	@Override
@@ -557,18 +617,6 @@ public class ObjectRelationshipLocalServiceWrapper
 				objectDefinition1, objectDefinitionLocalService);
 	}
 
-	@Override
-	public com.liferay.object.model.ObjectRelationship updateObjectRelationship(
-			long objectRelationshipId, long parameterObjectFieldId,
-			String deletionType,
-			java.util.Map<java.util.Locale, String> labelMap)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _objectRelationshipLocalService.updateObjectRelationship(
-			objectRelationshipId, parameterObjectFieldId, deletionType,
-			labelMap);
-	}
-
 	/**
 	 * Updates the object relationship in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
@@ -585,6 +633,19 @@ public class ObjectRelationshipLocalServiceWrapper
 
 		return _objectRelationshipLocalService.updateObjectRelationship(
 			objectRelationship);
+	}
+
+	@Override
+	public com.liferay.object.model.ObjectRelationship updateObjectRelationship(
+			String externalReferenceCode, long objectRelationshipId,
+			long parameterObjectFieldId, String deletionType, boolean edge,
+			java.util.Map<java.util.Locale, String> labelMap,
+			com.liferay.object.model.ObjectField objectField)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _objectRelationshipLocalService.updateObjectRelationship(
+			externalReferenceCode, objectRelationshipId, parameterObjectFieldId,
+			deletionType, edge, labelMap, objectField);
 	}
 
 	@Override

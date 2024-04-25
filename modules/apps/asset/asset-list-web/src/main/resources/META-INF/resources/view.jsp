@@ -11,6 +11,8 @@
 AssetListManagementToolbarDisplayContext assetListManagementToolbarDisplayContext = new AssetListManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, assetListDisplayContext);
 %>
 
+<liferay-ui:error exception="<%= RequiredAssetListEntryException.class %>" message="you-cannot-delete-collections-that-are-used-by-one-or-more-items.-please-view-the-usages-and-try-to-unassign-them" />
+
 <clay:navigation-bar
 	inverted="<%= true %>"
 	navigationItems='<%= assetListDisplayContext.getNavigationItems("collections") %>'
@@ -18,7 +20,7 @@ AssetListManagementToolbarDisplayContext assetListManagementToolbarDisplayContex
 
 <clay:management-toolbar
 	managementToolbarDisplayContext="<%= assetListManagementToolbarDisplayContext %>"
-	propsTransformer="js/ManagementToolbarPropsTransformer"
+	propsTransformer="{ManagementToolbarPropsTransformer} from asset-list-web"
 />
 
 <portlet:actionURL name="/asset_list/delete_asset_list_entries" var="deleteAssetListEntryURL">
@@ -72,13 +74,13 @@ AssetListManagementToolbarDisplayContext assetListManagementToolbarDisplayContex
 									</aui:a>
 								</h5>
 
-								<h6 class="text-default">
+								<div class="h6 text-default">
 									<%= assetListDisplayContext.getAssetEntrySubtypeLabel(assetListEntry) %>
-								</h6>
+								</div>
 
-								<h6 class="text-default">
+								<div class="h6 text-default">
 									<liferay-ui:message arguments="<%= assetListDisplayContext.getAssetListEntryUsageCount(assetListEntry) %>" key="x-usages" translateArguments="<%= false %>" />
-								</h6>
+								</div>
 
 								<c:choose>
 									<c:when test="<%= assetListEntrySegmentsEntryRelsCount > 0 %>">
@@ -91,7 +93,7 @@ AssetListManagementToolbarDisplayContext assetListManagementToolbarDisplayContex
 									<c:otherwise>
 										<clay:label
 											cssClass="mr-auto"
-											label='<%= LanguageUtil.get(request, "no-variations") %>'
+											label="no-variations"
 										/>
 									</c:otherwise>
 								</c:choose>
@@ -101,14 +103,14 @@ AssetListManagementToolbarDisplayContext assetListManagementToolbarDisplayContex
 								<clay:dropdown-actions
 									aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 									dropdownItems="<%= assetListDisplayContext.getActionDropdownItems(assetListEntry) %>"
-									propsTransformer="js/AssetEntryListDropdownDefaultPropsTransformer"
+									propsTransformer="{AssetEntryListDropdownDefaultPropsTransformer} from asset-list-web"
 								/>
 							</liferay-ui:search-container-column-text>
 						</c:when>
 						<c:when test='<%= Objects.equals(assetListDisplayContext.getDisplayStyle(), "icon") %>'>
 							<liferay-ui:search-container-column-text>
 								<clay:vertical-card
-									propsTransformer="js/AssetEntryListDropdownDefaultPropsTransformer"
+									propsTransformer="{AssetEntryListDropdownDefaultPropsTransformer} from asset-list-web"
 									verticalCard="<%= new AssetListEntryVerticalCard(assetListDisplayContext, assetListEntry, renderRequest, searchContainer.getRowChecker()) %>"
 								/>
 							</liferay-ui:search-container-column-text>
@@ -172,7 +174,7 @@ AssetListManagementToolbarDisplayContext assetListManagementToolbarDisplayContex
 								<clay:dropdown-actions
 									aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 									dropdownItems="<%= assetListDisplayContext.getActionDropdownItems(assetListEntry) %>"
-									propsTransformer="js/AssetEntryListDropdownDefaultPropsTransformer"
+									propsTransformer="{AssetEntryListDropdownDefaultPropsTransformer} from asset-list-web"
 								/>
 							</liferay-ui:search-container-column-text>
 						</c:otherwise>
@@ -191,7 +193,7 @@ AssetListManagementToolbarDisplayContext assetListManagementToolbarDisplayContex
 				buttonCssClass="secondary"
 				description="<%= assetListDisplayContext.getEmptyResultMessageDescription() %>"
 				elementType='<%= LanguageUtil.get(request, "collections") %>'
-				propsTransformer="js/EmptyResultMessagePropsTransformer"
+				propsTransformer="{EmptyResultMessagePropsTransformer} from asset-list-web"
 				propsTransformerServletContext="<%= application %>"
 			/>
 		</c:otherwise>

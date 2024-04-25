@@ -100,7 +100,7 @@ definition {
 
 		SignOut.signOut();
 
-		User.firstLoginUI(
+		User.firstLoginPG(
 			password = "test",
 			userEmailAddress = "userea@liferay.com");
 
@@ -123,6 +123,115 @@ definition {
 		PublicationsPermissions.assertEditorPermissions(publicationName = "Publication Name 2");
 	}
 
+	@description = "This is a use case for LPS-195716. Can enable and disable share access link."
+	@priority = 3
+	test CanEnableAndDisableShareAccessLink {
+		property custom.properties = "feature.flag.LPS-187436=true";
+
+		task ("Create Web Content and Publication") {
+			JSONPublications.addPublication(publicationName = "Publication Name");
+
+			JSONPublications.selectPublication(publicationName = "Publication Name");
+
+			HeadlessSite.addSite(siteName = "Site Name");
+
+			JSONWebcontent.addWebContent(
+				content = "WC WebContent Content",
+				groupName = "Site Name",
+				title = "WC WebContent Title");
+		}
+
+		task ("Go to Publication Review Changes") {
+			PublicationsNavigator.gotoReviewChanges(
+				gotoPublicationsAdmin = "true",
+				publicationName = "Publication Name");
+
+			PublicationsChanges.viewChanges(
+				changeCategory = "Web Content Article",
+				changeSite = "Site Name",
+				changeTitle = "WC WebContent Title",
+				changeType = "Added",
+				changeUser = "Test Test");
+		}
+
+		task ("Enable Share Publication Link and copy URL") {
+			Publications.enablePublicationSharing();
+
+			var shareLinkURL = Publications.getShareLinkURL();
+		}
+
+		task ("Disable Share Publication Link and then enable") {
+			Publications.disablePublicationSharing();
+
+			Check.checkToggleSwitch(locator1 = "PublicationsChanges#ENABLE_SHARE_LINK_TOGGLE_SWITCH");
+		}
+
+		task ("Copy the second URL") {
+			var shareLinkURL2 = Publications.getShareLinkURL();
+		}
+
+		task ("Assert URL1 and URL2 are different") {
+			TestUtils.assertNotEquals(
+				actual = ${shareLinkURL2},
+				expected = ${shareLinkURL1});
+		}
+	}
+
+	@description = "This is a use case for LPS-195715. Can view Publication with link as Guest user."
+	@priority = 3
+	test CanReviewPublicationWithLinkAsGuest {
+		property custom.properties = "feature.flag.LPS-187436=true";
+
+		task ("Create Web Content and Publication") {
+			JSONPublications.addPublication(publicationName = "Publication Name");
+
+			JSONPublications.selectPublication(publicationName = "Publication Name");
+
+			HeadlessSite.addSite(siteName = "Site Name");
+
+			JSONWebcontent.addWebContent(
+				content = "WC WebContent Content",
+				groupName = "Site Name",
+				title = "WC WebContent Title");
+		}
+
+		task ("Go to Publication Review Changes") {
+			PublicationsNavigator.gotoReviewChanges(
+				gotoPublicationsAdmin = "true",
+				publicationName = "Publication Name");
+
+			PublicationsChanges.viewChanges(
+				changeCategory = "Web Content Article",
+				changeSite = "Site Name",
+				changeTitle = "WC WebContent Title",
+				changeType = "Added",
+				changeUser = "Test Test");
+		}
+
+		task ("Enable Share Publication Link and copy URL") {
+			Publications.enablePublicationSharing();
+
+			var shareLinkURL = Publications.getShareLinkURL();
+
+			echo("shareLinkURL is ${shareLinkURL}");
+		}
+
+		task ("Sign out and access to URL as guest user") {
+			SignOut.signOut();
+
+			Navigator.openSpecificURL(url = ${shareLinkURL});
+		}
+
+		task ("Assert guest user can view Publication with link") {
+			PublicationsChanges.viewChanges(
+				changeCategory = "Web Content Article",
+				changeSite = "Site Name",
+				changeTitle = "WC WebContent Title",
+				changeType = "Added",
+				changeUser = "Test Test");
+		}
+	}
+
 	@description = "This is a use case for LPS-168508. Switching Publications invitee between roles shouldn't remove it from the invitee list."
 	@priority = 3
 	test CanSwitchInviteeRoles {
@@ -141,6 +250,8 @@ definition {
 		PublicationsNavigator.gotoPublicationEllipsisItem(
 			menuItem = "Invite Users",
 			publicationName = "Test Publication");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		Click(
 			key_title = "Viewers can view. Viewers cannot edit, publish, or invite other users.",
@@ -166,7 +277,11 @@ definition {
 			key_publicationRole = "Editor",
 			locator1 = "Publications#PUBLICATION_ROLE_BUTTON_BODY");
 
-		Click(
+		SelectFrame(value1 = "relative=top");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		Click.javaScriptClick(
 			key_title = "Editors can view and edit. Editors cannot publish or invite other users.",
 			locator1 = "Publications#PUBLICATION_ROLE_BUTTON_BODY_TITLE");
 
@@ -179,6 +294,120 @@ definition {
 		AssertConfirm(value1 = "You are inviting user userea@liferay.com who does not have access to Publications. This user will be assigned the Publications User role to gain access to Publications.");
 
 		Alert.viewSuccessMessage();
+	}
+
+	@description = "This is a use case for LPS-195718. Expire link when publication is published."
+	@priority = 3
+	test ExpireLinkWhenPublicationIsPublished {
+		property custom.properties = "feature.flag.LPS-187436=true";
+
+		task ("Create Web Content and Publication") {
+			JSONPublications.addPublication(publicationName = "Publication Name");
+
+			JSONPublications.selectPublication(publicationName = "Publication Name");
+
+			HeadlessSite.addSite(siteName = "Site Name");
+
+			JSONWebcontent.addWebContent(
+				content = "WC WebContent Content",
+				groupName = "Site Name",
+				title = "WC WebContent Title");
+		}
+
+		task ("Go to Publication Review Changes") {
+			PublicationsNavigator.gotoReviewChanges(
+				gotoPublicationsAdmin = "true",
+				publicationName = "Publication Name");
+
+			PublicationsChanges.viewChanges(
+				changeCategory = "Web Content Article",
+				changeSite = "Site Name",
+				changeTitle = "WC WebContent Title",
+				changeType = "Added",
+				changeUser = "Test Test");
+		}
+
+		task ("Enable Share Publication Link and copy URL") {
+			Publications.enablePublicationSharing();
+
+			var shareLinkURL = Publications.getShareLinkURL();
+
+			echo("shareLinkURL is ${shareLinkURL}");
+		}
+
+		task ("Publish Publication") {
+			Publications.publishPublication(publicationName = "Publication Name");
+		}
+
+		task ("Sign out and access to the URL") {
+			SignOut.signOut();
+
+			Navigator.openSpecificURL(url = ${shareLinkURL});
+		}
+
+		task ("Assert 404 page shows up indicating the link is expired") {
+			ContentPages.viewFragmentText(
+				fragmentName = "heading",
+				id = "element-text",
+				text = 404);
+		}
+	}
+
+	@description = "This is a use case for LPS-195717. Expire link when sharing is disabled."
+	@priority = 3
+	test ExpireLinkWhenSharingIsDisabled {
+		property custom.properties = "feature.flag.LPS-187436=true";
+
+		task ("Create Web Content and Publication") {
+			JSONPublications.addPublication(publicationName = "Publication Name");
+
+			JSONPublications.selectPublication(publicationName = "Publication Name");
+
+			HeadlessSite.addSite(siteName = "Site Name");
+
+			JSONWebcontent.addWebContent(
+				content = "WC WebContent Content",
+				groupName = "Site Name",
+				title = "WC WebContent Title");
+		}
+
+		task ("Go to Publication Review Changes") {
+			PublicationsNavigator.gotoReviewChanges(
+				gotoPublicationsAdmin = "true",
+				publicationName = "Publication Name");
+
+			PublicationsChanges.viewChanges(
+				changeCategory = "Web Content Article",
+				changeSite = "Site Name",
+				changeTitle = "WC WebContent Title",
+				changeType = "Added",
+				changeUser = "Test Test");
+		}
+
+		task ("Enable Share Publication Link and copy URL") {
+			Publications.enablePublicationSharing();
+
+			var shareLinkURL = Publications.getShareLinkURL();
+
+			echo("shareLinkURL is ${shareLinkURL}");
+		}
+
+		task ("Disable Share Publication Link") {
+			Publications.disablePublicationSharing();
+		}
+
+		task ("Sign out and access to the URL") {
+			SignOut.signOut();
+
+			Navigator.openSpecificURL(url = ${shareLinkURL});
+		}
+
+		task ("Assert 404 page shows up indicating the link is expired") {
+			ContentPages.viewFragmentText(
+				fragmentName = "heading",
+				id = "element-text",
+				text = 404);
+		}
 	}
 
 	@priority = 3
@@ -209,7 +438,7 @@ definition {
 
 		PublicationsPermissions.viewPublicationRoleHelpText(
 			publicationRole = "Admin",
-			publicationRoleHelpText = "Admins can view, edit, publish, and invite other users.");
+			publicationRoleHelpText = "Administrators can view, edit, publish, and invite other users.");
 	}
 
 	@priority = 5
@@ -272,7 +501,7 @@ definition {
 
 		SignOut.signOut();
 
-		User.firstLoginUI(
+		User.firstLoginPG(
 			password = "test",
 			userEmailAddress = "userea1@liferay.com");
 
@@ -338,7 +567,7 @@ definition {
 
 		SignOut.signOut();
 
-		User.firstLoginUI(
+		User.firstLoginPG(
 			password = "test",
 			userEmailAddress = "userea@liferay.com");
 
@@ -409,7 +638,7 @@ definition {
 
 		SignOut.signOut();
 
-		User.firstLoginUI(
+		User.firstLoginPG(
 			password = "test",
 			userEmailAddress = "userea@liferay.com");
 
@@ -471,7 +700,7 @@ definition {
 
 		SignOut.signOut();
 
-		User.firstLoginUI(
+		User.firstLoginPG(
 			password = "test",
 			userEmailAddress = "userea@liferay.com");
 
@@ -489,10 +718,7 @@ definition {
 	@description = "This is a use case for LPS-150313."
 	@priority = 4
 	test VerifyPublicationsUserPermissions {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Roles");
+		Role.openRolesAdmin();
 
 		AssertClick(
 			key_itemName = "Publications User",

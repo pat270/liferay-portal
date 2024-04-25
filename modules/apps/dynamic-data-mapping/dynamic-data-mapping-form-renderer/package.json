@@ -1,5 +1,7 @@
 {
-	"main": "js/index.js",
+	"dependencies": {
+		"data-engine-js-components-web": "*"
+	},
 	"name": "dynamic-data-mapping-form-renderer",
 	"private": true,
 	"scripts": {
@@ -7,5 +9,5 @@
 		"checkFormat": "liferay-npm-scripts check",
 		"format": "liferay-npm-scripts fix"
 	},
-	"version": "6.0.59"
+	"version": "6.0.67"
 }

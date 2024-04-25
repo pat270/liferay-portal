@@ -448,7 +448,7 @@
 </tr>
 <tr>
 	<td>FIELD_LABEL</td>
-	<td>//div[@data-field-name='${key_fieldName}' and contains(@class,'ddm-field')]//label[contains(@class,'ddm-label')] | //div[contains(@class,'ddm-field-container')]//label[text()='${key_fieldName}'] | //div[@data-field-name='${key_fieldName}' and contains(@class,'ddm-field')]//legend[contains(@class,'lfr-ddm-legend')] | //div[contains(@class,'ddm-field-container')]//legend[text()='${key_fieldName}'] | //div[@class='ddm-field']//label[text()='${key_fieldName}']</td>
+	<td>//div[@data-field-name='${key_fieldName}' and contains(@class,'ddm-field')]//label[contains(@class,'ddm-label')] | //div[contains(@class,'ddm-field-container')]//label[text()='${key_fieldName}'] | //div[@data-field-name='${key_fieldName}' and contains(@class,'ddm-field')]//label[contains(@class,'lfr-ddm-legend')] | //div[contains(@class,'ddm-field-container')]//legend[text()='${key_fieldName}'] | //div[@class='ddm-field']//label[text()='${key_fieldName}']</td>
 	<td></td>
 </tr>
 <tr>
@@ -624,7 +624,7 @@
 </tr>
 <tr>
 	<td>DATA_PROVIDER_INPUT_PARAMETER_TYPE_FIELD</td>
-	<td>//div[contains(@data-field-name,'inputParameters')]//div[contains(@data-field-name,'inputParameterType')]//div[contains(@class,'form-builder-select-field')]</td>
+	<td>//div[contains(@data-field-name, 'inputParameters')]//button[contains(@aria-labelledby, 'inputParameters')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -652,12 +652,12 @@
 </tr>
 <tr>
 	<td>DATA_PROVIDER_OUTPUT_PARAMETER_TYPE_FIELD</td>
-	<td>//div[contains(@data-field-name,'outputParameters')]//div[contains(@data-field-name,'outputParameterType')]//div[contains(@class,'form-builder-select-field')]</td>
+	<td>xpath=(//div[contains(@data-field-name, 'outputParameters')]//button[contains(@aria-labelledby, 'outputParameterType')])[1]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>DATA_PROVIDER_OUTPUT_PARAMETER_TYPE_FIELD_2</td>
-	<td>//div[contains(@data-field-name,'outputParameters')]/following-sibling::div//div[contains(@data-field-name,'outputParameterType')]//div[contains(@class,'form-builder-select-field')]</td>
+	<td>//div[contains(@data-field-name,'outputParameters')]/following-sibling::div//div[contains(@data-field-name,'outputParameterType')]//button[contains(@class,'form-control')]</td>
 	<td></td>
 </tr>
 <tr>

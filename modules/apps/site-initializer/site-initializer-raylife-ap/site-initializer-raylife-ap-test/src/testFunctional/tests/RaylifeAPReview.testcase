@@ -21,7 +21,10 @@ definition {
 		task ("Create a new Raylife AP Site") {
 			Site.openSitesAdmin();
 
-			Raylife.createRaylifeSite(siteName = "Raylife D2C");
+			HeadlessSite.addSite(
+				siteName = "Raylife D2C",
+				templateName = "Raylife D2C",
+				templateType = "Site Initializer");
 
 			Raylife.createRaylifeSite(siteName = "Raylife AP");
 		}
@@ -56,9 +59,10 @@ definition {
 	@priority = 3
 	test AssertNewApplicationBoundStatus {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given that an user go to Raylife AP and start a new application") {
-			RaylifeAP.goToRaylifeUserProfileMenu(raylifeSite = "Raylife AP");
+			Navigator.openSiteURL(siteName = "Raylife AP");
 
 			RaylifeApplicationModal.openNewApplicationFlow(
 				insurance = "Personal",
@@ -92,7 +96,7 @@ definition {
 				highestEducation = "Masters",
 				lastName = "Model",
 				maritalStatus = "Single",
-				millitaryAffiliation = "None",
+				militaryAffiliation = "None",
 				occupation = "Engineer",
 				relationToContact = "Spouse");
 
@@ -122,6 +126,7 @@ definition {
 	@priority = 5
 	test CanCreateNewApplication {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -158,7 +163,7 @@ definition {
 				highestEducation = "Masters",
 				lastName = "Model",
 				maritalStatus = "Single",
-				millitaryAffiliation = "None",
+				militaryAffiliation = "None",
 				occupation = "Engineer",
 				relationToContact = "Spouse");
 
@@ -188,11 +193,12 @@ definition {
 	@priority = 3
 	test CanDeleteIncompleteApplication {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
 		task ("Given that an user created an uncompleted new application") {
-			RaylifeAP.goToRaylifeUserProfileMenu(raylifeSite = "Raylife AP");
+			Navigator.openSiteURL(siteName = "Raylife AP");
 
 			RaylifeApplicationModal.openNewApplicationFlow(
 				insurance = "Personal",
@@ -224,7 +230,7 @@ definition {
 				highestEducation = "Masters",
 				lastName = "Model",
 				maritalStatus = "Single",
-				millitaryAffiliation = "None",
+				militaryAffiliation = "None",
 				occupation = "Engineer",
 				relationToContact = "Spouse");
 

@@ -1,9 +1,10 @@
 @component-name = "portal-wcm"
 definition {
 
+	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Navigation";
+	property testray.main.component.name = "Navigation Menus";
 
 	setUp {
 		task ("Set up instance and sign in") {
@@ -159,6 +160,35 @@ definition {
 		}
 	}
 
+	@description = "This is a test for LPS-188364. The user is able to configure header menu display on content page."
+	@priority = 4
+	test ConfigureDefaultMenuDisplayWidgetOnContentPage {
+		task ("Given a user has a content page") {
+			var siteName = StringUtil.randomString(8);
+
+			HeadlessSite.addSite(
+				siteName = ${siteName},
+				templateName = "Welcome",
+				templateType = "Site Initializer");
+		}
+
+		task ("When the user accesses to the content page") {
+			ContentPagesNavigator.openViewContentPage(
+				pageName = "Home",
+				siteName = ${siteName});
+		}
+
+		task ("Then the user could configure the default Menu Display widget") {
+			NavigationMenusWidget.gotoNavigationMenuWidgetConfig();
+
+			NavigationMenusWidget.selectNavigation(menuType = "Secondary Navigation");
+
+			Portlet.saveAndCloseConfig();
+
+			Alert.viewWarningSpecific(warningMessage = "There is no Secondary Navigation available for the current site.");
+		}
+	}
+
 	@description = "This is a use case for LPS-67191. The user could configure the display template in the Navigation Menu widget."
 	@priority = 5
 	test ConfigureDisplayTemplateOfNavigationMenuWidget {
@@ -177,7 +207,7 @@ definition {
 		}
 
 		task ("Select the Split Button Dropdowns display template in Navigation Menu widget") {
-			ApplicationDisplayTemplates.selectPortletADT(
+			WidgetTemplates.selectPortletADT(
 				portletName = "Menu Display",
 				templateName = "Split Button Dropdowns");
 		}
@@ -241,7 +271,7 @@ definition {
 		}
 
 		task ("Select Bar minimally styled display template in Navigation Menu widget") {
-			ApplicationDisplayTemplates.selectPortletADT(
+			WidgetTemplates.selectPortletADT(
 				portletName = "Menu Display",
 				templateName = "Bar minimally styled");
 		}
@@ -564,7 +594,7 @@ definition {
 
 			NavigationMenusWidget.selectDisplayTemplate(templateName = "Bar minimally styled");
 
-			AssertSelectedLabel(
+			AssertTextEquals(
 				locator1 = "Select#DISPLAY_TEMPLATE",
 				value1 = "Bar minimally styled");
 
@@ -626,7 +656,7 @@ definition {
 
 			NavigationMenusWidget.selectDisplayTemplate(templateName = "Bar minimally styled");
 
-			AssertSelectedLabel(
+			AssertTextEquals(
 				locator1 = "Select#DISPLAY_TEMPLATE",
 				value1 = "Bar minimally styled");
 
@@ -702,7 +732,7 @@ definition {
 
 			NavigationMenusWidget.selectDisplayTemplate(templateName = "List Menu");
 
-			AssertSelectedLabel(
+			AssertTextEquals(
 				locator1 = "Select#DISPLAY_TEMPLATE",
 				value1 = "List Menu");
 
@@ -836,10 +866,7 @@ definition {
 	@priority = 4
 	test ViewCustomFieldOfNavigationMenu {
 		task ("Add a custom field for Site Navigation Menu Item") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Configuration",
-				panel = "Control Panel",
-				portlet = "Custom Fields");
+			CustomFields.openCustomFieldAdmin();
 
 			CustomFields.addCP(
 				customFieldName = "Subtitle",
@@ -916,9 +943,9 @@ definition {
 		${customFields["subtitle"]}
 			''';
 
-			ApplicationDisplayTemplates.openWidgetTemplatesAdmin(siteURLKey = "test-site-name");
+			WidgetTemplates.openWidgetTemplatesAdmin(siteURLKey = "test-site-name");
 
-			ApplicationDisplayTemplates.addCP(
+			WidgetTemplates.addCP(
 				adtType = "Menu Display",
 				templateScript = ${templateScript});
 		}
@@ -934,7 +961,7 @@ definition {
 
 			NavigationMenusWidget.selectDisplayTemplate(templateName = "Menu Display Test ADT");
 
-			AssertSelectedLabel(
+			AssertTextEquals(
 				locator1 = "Select#DISPLAY_TEMPLATE",
 				value1 = "Menu Display Test ADT");
 

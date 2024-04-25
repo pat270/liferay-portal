@@ -7,12 +7,12 @@ package com.liferay.poshi.runner.logger;
 
 import com.liferay.poshi.core.PoshiContext;
 import com.liferay.poshi.core.PoshiGetterUtil;
+import com.liferay.poshi.core.PoshiProperties;
 import com.liferay.poshi.core.PoshiStackTrace;
 import com.liferay.poshi.core.elements.PoshiElement;
 import com.liferay.poshi.core.util.Dom4JUtil;
 import com.liferay.poshi.core.util.FileUtil;
 import com.liferay.poshi.core.util.GetterUtil;
-import com.liferay.poshi.core.util.PoshiProperties;
 import com.liferay.poshi.core.util.StringUtil;
 import com.liferay.poshi.runner.exception.PoshiRunnerLoggerException;
 
@@ -51,7 +51,7 @@ public class PoshiLogger {
 			ClassLoader classLoader = PoshiLogger.class.getClassLoader();
 
 			URL url = classLoader.getResource(
-				"META-INF/resources/html/index.html");
+				"META-INF/resources/logger/html/index.html");
 
 			indexHTMLContent = FileUtil.read(url);
 
@@ -68,16 +68,16 @@ public class PoshiLogger {
 
 			if (_poshiProperties.testRunLocally) {
 				FileUtil.copyFileFromResource(
-					"META-INF/resources/css/main.css",
+					"META-INF/resources/logger/css/main.css",
 					currentDirName + "/test-results/css/main.css");
 				FileUtil.copyFileFromResource(
-					"META-INF/resources/js/component.js",
+					"META-INF/resources/logger/js/component.js",
 					currentDirName + "/test-results/js/component.js");
 				FileUtil.copyFileFromResource(
-					"META-INF/resources/js/main.js",
+					"META-INF/resources/logger/js/main.js",
 					currentDirName + "/test-results/js/main.js");
 				FileUtil.copyFileFromResource(
-					"META-INF/resources/js/update_images.js",
+					"META-INF/resources/logger/js/update_images.js",
 					currentDirName + "/test-results/js/update_images.js");
 			}
 			else {
@@ -141,7 +141,7 @@ public class PoshiLogger {
 	}
 
 	public void failCommand(Element element) throws PoshiRunnerLoggerException {
-		_commandLogger.failCommand(element, _syntaxLogger);
+		_commandLogger.failCommand(element);
 
 		LoggerElement syntaxLoggerElement = _getSyntaxLoggerElement();
 
@@ -156,16 +156,8 @@ public class PoshiLogger {
 		return _testNamespacedClassCommandName;
 	}
 
-	public void logExternalMethodCommand(
-			Element element, List<String> arguments, Object returnValue)
-		throws Exception {
-
-		_commandLogger.logExternalMethodCommand(
-			element, arguments, returnValue, _syntaxLogger);
-	}
-
 	public void logMessage(Element element) throws PoshiRunnerLoggerException {
-		_commandLogger.logMessage(element, _syntaxLogger);
+		_commandLogger.logMessage(element);
 
 		LoggerElement syntaxLoggerElement = _getSyntaxLoggerElement();
 
@@ -191,7 +183,7 @@ public class PoshiLogger {
 	public void ocularCommand(Element element)
 		throws PoshiRunnerLoggerException {
 
-		_commandLogger.ocularCommand(element, _syntaxLogger);
+		_commandLogger.ocularCommand(element);
 
 		LoggerElement syntaxLoggerElement = _getSyntaxLoggerElement();
 
@@ -199,7 +191,7 @@ public class PoshiLogger {
 	}
 
 	public void passCommand(Element element) throws PoshiRunnerLoggerException {
-		_commandLogger.passCommand(element, _syntaxLogger);
+		_commandLogger.passCommand(element);
 
 		LoggerElement syntaxLoggerElement = _getSyntaxLoggerElement();
 
@@ -209,7 +201,22 @@ public class PoshiLogger {
 	public void startCommand(Element element)
 		throws PoshiRunnerLoggerException {
 
-		_commandLogger.startCommand(element, _syntaxLogger);
+		_commandLogger.startCommand(element);
+
+		LoggerElement syntaxLoggerElement = _getSyntaxLoggerElement();
+
+		syntaxLoggerElement.setAttribute("data-status01", "pending");
+
+		_linkLoggerElements(
+			syntaxLoggerElement, _commandLogger.lineGroupLoggerElement);
+	}
+
+	public void startExternalMethodCommand(
+			Element element, List<String> arguments, Object returnValue)
+		throws Exception {
+
+		_commandLogger.startExternalMethodCommand(
+			element, arguments, returnValue);
 
 		LoggerElement syntaxLoggerElement = _getSyntaxLoggerElement();
 
@@ -222,7 +229,7 @@ public class PoshiLogger {
 	public void takeScreenshotCommand(Element element)
 		throws PoshiRunnerLoggerException {
 
-		_commandLogger.takeScreenshotCommand(element, _syntaxLogger);
+		_commandLogger.takeScreenshotCommand(element);
 
 		LoggerElement syntaxLoggerElement = _getSyntaxLoggerElement();
 
@@ -237,7 +244,7 @@ public class PoshiLogger {
 	}
 
 	public void warnCommand(Element element) throws PoshiRunnerLoggerException {
-		_commandLogger.warnCommand(element, _syntaxLogger);
+		_commandLogger.warnCommand(element);
 
 		LoggerElement syntaxLoggerElement = _getSyntaxLoggerElement();
 
@@ -259,11 +266,7 @@ public class PoshiLogger {
 			classCommandName, namespace);
 
 		if (commandElement instanceof PoshiElement) {
-			PoshiElement poshiCommandElement = (PoshiElement)commandElement;
-
-			if (!poshiCommandElement.isPoshiProse()) {
-				return new PoshiScriptSyntaxLogger(namespacedClassCommandName);
-			}
+			return new PoshiScriptSyntaxLogger(namespacedClassCommandName);
 		}
 
 		return new XMLSyntaxLogger(namespacedClassCommandName);

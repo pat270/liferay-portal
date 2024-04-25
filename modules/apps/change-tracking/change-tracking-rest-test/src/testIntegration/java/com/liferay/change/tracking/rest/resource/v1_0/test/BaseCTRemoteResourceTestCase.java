@@ -28,8 +28,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -38,6 +36,7 @@ import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.test.rule.Inject;
@@ -62,8 +61,6 @@ import java.util.Set;
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-
-import org.apache.commons.lang.time.DateUtils;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -175,6 +172,8 @@ public abstract class BaseCTRemoteResourceTestCase {
 
 		CTRemote ctRemote = randomCTRemote();
 
+		ctRemote.setClientId(regex);
+		ctRemote.setClientSecret(regex);
 		ctRemote.setDescription(regex);
 		ctRemote.setName(regex);
 		ctRemote.setOwnerName(regex);
@@ -186,6 +185,8 @@ public abstract class BaseCTRemoteResourceTestCase {
 
 		ctRemote = CTRemoteSerDes.toDTO(json);
 
+		Assert.assertEquals(regex, ctRemote.getClientId());
+		Assert.assertEquals(regex, ctRemote.getClientSecret());
 		Assert.assertEquals(regex, ctRemote.getDescription());
 		Assert.assertEquals(regex, ctRemote.getName());
 		Assert.assertEquals(regex, ctRemote.getOwnerName());
@@ -228,10 +229,10 @@ public abstract class BaseCTRemoteResourceTestCase {
 
 	@Test
 	public void testGetCTRemotesPageWithPagination() throws Exception {
-		Page<CTRemote> totalPage = ctRemoteResource.getCTRemotesPage(
+		Page<CTRemote> ctRemotePage = ctRemoteResource.getCTRemotesPage(
 			null, null, null);
 
-		int totalCount = GetterUtil.getInteger(totalPage.getTotalCount());
+		int totalCount = GetterUtil.getInteger(ctRemotePage.getTotalCount());
 
 		CTRemote ctRemote1 = testGetCTRemotesPage_addCTRemote(randomCTRemote());
 
@@ -239,29 +240,65 @@ public abstract class BaseCTRemoteResourceTestCase {
 
 		CTRemote ctRemote3 = testGetCTRemotesPage_addCTRemote(randomCTRemote());
 
-		Page<CTRemote> page1 = ctRemoteResource.getCTRemotesPage(
-			null, Pagination.of(1, totalCount + 2), null);
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<CTRemote> ctRemotes1 = (List<CTRemote>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			ctRemotes1.toString(), totalCount + 2, ctRemotes1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<CTRemote> page1 = ctRemoteResource.getCTRemotesPage(
+				null,
+				Pagination.of(
+					(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+					pageSizeLimit),
+				null);
 
-		Page<CTRemote> page2 = ctRemoteResource.getCTRemotesPage(
-			null, Pagination.of(2, totalCount + 2), null);
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+			assertContains(ctRemote1, (List<CTRemote>)page1.getItems());
 
-		List<CTRemote> ctRemotes2 = (List<CTRemote>)page2.getItems();
+			Page<CTRemote> page2 = ctRemoteResource.getCTRemotesPage(
+				null,
+				Pagination.of(
+					(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+					pageSizeLimit),
+				null);
 
-		Assert.assertEquals(ctRemotes2.toString(), 1, ctRemotes2.size());
+			assertContains(ctRemote2, (List<CTRemote>)page2.getItems());
 
-		Page<CTRemote> page3 = ctRemoteResource.getCTRemotesPage(
-			null, Pagination.of(1, totalCount + 3), null);
+			Page<CTRemote> page3 = ctRemoteResource.getCTRemotesPage(
+				null,
+				Pagination.of(
+					(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+					pageSizeLimit),
+				null);
 
-		assertContains(ctRemote1, (List<CTRemote>)page3.getItems());
-		assertContains(ctRemote2, (List<CTRemote>)page3.getItems());
-		assertContains(ctRemote3, (List<CTRemote>)page3.getItems());
+			assertContains(ctRemote3, (List<CTRemote>)page3.getItems());
+		}
+		else {
+			Page<CTRemote> page1 = ctRemoteResource.getCTRemotesPage(
+				null, Pagination.of(1, totalCount + 2), null);
+
+			List<CTRemote> ctRemotes1 = (List<CTRemote>)page1.getItems();
+
+			Assert.assertEquals(
+				ctRemotes1.toString(), totalCount + 2, ctRemotes1.size());
+
+			Page<CTRemote> page2 = ctRemoteResource.getCTRemotesPage(
+				null, Pagination.of(2, totalCount + 2), null);
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<CTRemote> ctRemotes2 = (List<CTRemote>)page2.getItems();
+
+			Assert.assertEquals(ctRemotes2.toString(), 1, ctRemotes2.size());
+
+			Page<CTRemote> page3 = ctRemoteResource.getCTRemotesPage(
+				null, Pagination.of(1, (int)totalCount + 3), null);
+
+			assertContains(ctRemote1, (List<CTRemote>)page3.getItems());
+			assertContains(ctRemote2, (List<CTRemote>)page3.getItems());
+			assertContains(ctRemote3, (List<CTRemote>)page3.getItems());
+		}
 	}
 
 	@Test
@@ -271,7 +308,7 @@ public abstract class BaseCTRemoteResourceTestCase {
 			(entityField, ctRemote1, ctRemote2) -> {
 				BeanTestUtil.setProperty(
 					ctRemote1, entityField.getName(),
-					DateUtils.addMinutes(new Date(), -2));
+					new Date(System.currentTimeMillis() - (2 * Time.MINUTE)));
 			});
 	}
 
@@ -369,20 +406,23 @@ public abstract class BaseCTRemoteResourceTestCase {
 
 		ctRemote2 = testGetCTRemotesPage_addCTRemote(ctRemote2);
 
+		Page<CTRemote> page = ctRemoteResource.getCTRemotesPage(
+			null, null, null);
+
 		for (EntityField entityField : entityFields) {
 			Page<CTRemote> ascPage = ctRemoteResource.getCTRemotesPage(
-				null, Pagination.of(1, 2), entityField.getName() + ":asc");
+				null, Pagination.of(1, (int)page.getTotalCount() + 1),
+				entityField.getName() + ":asc");
 
-			assertEquals(
-				Arrays.asList(ctRemote1, ctRemote2),
-				(List<CTRemote>)ascPage.getItems());
+			assertContains(ctRemote1, (List<CTRemote>)ascPage.getItems());
+			assertContains(ctRemote2, (List<CTRemote>)ascPage.getItems());
 
 			Page<CTRemote> descPage = ctRemoteResource.getCTRemotesPage(
-				null, Pagination.of(1, 2), entityField.getName() + ":desc");
+				null, Pagination.of(1, (int)page.getTotalCount() + 1),
+				entityField.getName() + ":desc");
 
-			assertEquals(
-				Arrays.asList(ctRemote2, ctRemote1),
-				(List<CTRemote>)descPage.getItems());
+			assertContains(ctRemote2, (List<CTRemote>)descPage.getItems());
+			assertContains(ctRemote1, (List<CTRemote>)descPage.getItems());
 		}
 	}
 
@@ -432,7 +472,10 @@ public abstract class BaseCTRemoteResourceTestCase {
 
 	@Test
 	public void testGraphQLDeleteCTRemote() throws Exception {
-		CTRemote ctRemote = testGraphQLDeleteCTRemote_addCTRemote();
+
+		// No namespace
+
+		CTRemote ctRemote1 = testGraphQLDeleteCTRemote_addCTRemote();
 
 		Assert.assertTrue(
 			JSONUtil.getValueAsBoolean(
@@ -441,23 +484,59 @@ public abstract class BaseCTRemoteResourceTestCase {
 						"deleteCTRemote",
 						new HashMap<String, Object>() {
 							{
-								put("id", ctRemote.getId());
+								put("id", ctRemote1.getId());
 							}
 						})),
 				"JSONObject/data", "Object/deleteCTRemote"));
-		JSONArray errorsJSONArray = JSONUtil.getValueAsJSONArray(
+
+		JSONArray errorsJSONArray1 = JSONUtil.getValueAsJSONArray(
 			invokeGraphQLQuery(
 				new GraphQLField(
 					"cTRemote",
 					new HashMap<String, Object>() {
 						{
-							put("id", ctRemote.getId());
+							put("id", ctRemote1.getId());
 						}
 					},
 					new GraphQLField("id"))),
 			"JSONArray/errors");
 
-		Assert.assertTrue(errorsJSONArray.length() > 0);
+		Assert.assertTrue(errorsJSONArray1.length() > 0);
+
+		// Using the namespace changeTracking_v1_0
+
+		CTRemote ctRemote2 = testGraphQLDeleteCTRemote_addCTRemote();
+
+		Assert.assertTrue(
+			JSONUtil.getValueAsBoolean(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"changeTracking_v1_0",
+						new GraphQLField(
+							"deleteCTRemote",
+							new HashMap<String, Object>() {
+								{
+									put("id", ctRemote2.getId());
+								}
+							}))),
+				"JSONObject/data", "JSONObject/changeTracking_v1_0",
+				"Object/deleteCTRemote"));
+
+		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"changeTracking_v1_0",
+					new GraphQLField(
+						"cTRemote",
+						new HashMap<String, Object>() {
+							{
+								put("id", ctRemote2.getId());
+							}
+						},
+						new GraphQLField("id")))),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray2.length() > 0);
 	}
 
 	protected CTRemote testGraphQLDeleteCTRemote_addCTRemote()
@@ -486,6 +565,8 @@ public abstract class BaseCTRemoteResourceTestCase {
 	public void testGraphQLGetCTRemote() throws Exception {
 		CTRemote ctRemote = testGraphQLGetCTRemote_addCTRemote();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				ctRemote,
@@ -501,11 +582,34 @@ public abstract class BaseCTRemoteResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/cTRemote"))));
+
+		// Using the namespace changeTracking_v1_0
+
+		Assert.assertTrue(
+			equals(
+				ctRemote,
+				CTRemoteSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"changeTracking_v1_0",
+								new GraphQLField(
+									"cTRemote",
+									new HashMap<String, Object>() {
+										{
+											put("id", ctRemote.getId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data", "JSONObject/changeTracking_v1_0",
+						"Object/cTRemote"))));
 	}
 
 	@Test
 	public void testGraphQLGetCTRemoteNotFound() throws Exception {
 		Long irrelevantId = RandomTestUtil.randomLong();
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -519,6 +623,25 @@ public abstract class BaseCTRemoteResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace changeTracking_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"changeTracking_v1_0",
+						new GraphQLField(
+							"cTRemote",
+							new HashMap<String, Object>() {
+								{
+									put("id", irrelevantId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -665,6 +788,22 @@ public abstract class BaseCTRemoteResourceTestCase {
 
 			if (Objects.equals("actions", additionalAssertFieldName)) {
 				if (ctRemote.getActions() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("clientId", additionalAssertFieldName)) {
+				if (ctRemote.getClientId() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("clientSecret", additionalAssertFieldName)) {
+				if (ctRemote.getClientSecret() == null) {
 					valid = false;
 				}
 
@@ -829,6 +968,27 @@ public abstract class BaseCTRemoteResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("clientId", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						ctRemote1.getClientId(), ctRemote2.getClientId())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("clientSecret", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						ctRemote1.getClientSecret(),
+						ctRemote2.getClientSecret())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("dateCreated", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						ctRemote1.getDateCreated(),
@@ -937,6 +1097,10 @@ public abstract class BaseCTRemoteResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -1008,22 +1172,114 @@ public abstract class BaseCTRemoteResourceTestCase {
 				"Invalid entity field " + entityFieldName);
 		}
 
+		if (entityFieldName.equals("clientId")) {
+			Object object = ctRemote.getClientId();
+
+			String value = String.valueOf(object);
+
+			if (operator.equals("contains")) {
+				sb = new StringBundler();
+
+				sb.append("contains(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 2)) {
+					sb.append(value.substring(1, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else if (operator.equals("startswith")) {
+				sb = new StringBundler();
+
+				sb.append("startswith(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 1)) {
+					sb.append(value.substring(0, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else {
+				sb.append("'");
+				sb.append(value);
+				sb.append("'");
+			}
+
+			return sb.toString();
+		}
+
+		if (entityFieldName.equals("clientSecret")) {
+			Object object = ctRemote.getClientSecret();
+
+			String value = String.valueOf(object);
+
+			if (operator.equals("contains")) {
+				sb = new StringBundler();
+
+				sb.append("contains(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 2)) {
+					sb.append(value.substring(1, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else if (operator.equals("startswith")) {
+				sb = new StringBundler();
+
+				sb.append("startswith(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 1)) {
+					sb.append(value.substring(0, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else {
+				sb.append("'");
+				sb.append(value);
+				sb.append("'");
+			}
+
+			return sb.toString();
+		}
+
 		if (entityFieldName.equals("dateCreated")) {
 			if (operator.equals("between")) {
+				Date date = ctRemote.getDateCreated();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(ctRemote.getDateCreated(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(ctRemote.getDateCreated(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -1041,20 +1297,20 @@ public abstract class BaseCTRemoteResourceTestCase {
 
 		if (entityFieldName.equals("dateModified")) {
 			if (operator.equals("between")) {
+				Date date = ctRemote.getDateModified();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(ctRemote.getDateModified(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(ctRemote.getDateModified(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -1303,6 +1559,10 @@ public abstract class BaseCTRemoteResourceTestCase {
 	protected CTRemote randomCTRemote() throws Exception {
 		return new CTRemote() {
 			{
+				clientId = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
+				clientSecret = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
 				dateCreated = RandomTestUtil.nextDate();
 				dateModified = RandomTestUtil.nextDate();
 				description = StringUtil.toLowerCase(
@@ -1327,9 +1587,9 @@ public abstract class BaseCTRemoteResourceTestCase {
 	}
 
 	protected CTRemoteResource ctRemoteResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

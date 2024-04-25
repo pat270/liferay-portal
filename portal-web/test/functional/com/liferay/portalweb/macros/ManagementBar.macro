@@ -1,6 +1,7 @@
 definition {
 
-	macro changeDisplayStyle {
+	@summary = "Default summary"
+	macro changeDisplayStyle(displayStyle = null) {
 		if (IsElementNotPresent(locator1 = "//body[contains(@class,'dialog-iframe-popup')]")) {
 			WaitForPageLoad();
 		}
@@ -12,7 +13,13 @@ definition {
 		ManagementBar.viewDisplayStyle(displayStyle = ${displayStyle});
 	}
 
-	macro clickInfo {
+	@summary = "Default summary"
+	macro clearFilter() {
+		Click(locator1 = "ManagementBar#CLEAR_FILTER");
+	}
+
+	@summary = "Default summary"
+	macro clickInfo() {
 		if (IsElementPresent(locator1 = "Icon#INFO_DM")) {
 			Click.clickNoMouseOver(locator1 = "Icon#INFO_DM");
 		}
@@ -21,49 +28,77 @@ definition {
 		}
 	}
 
-	macro clickSelectAllCheckbox {
+	@summary = "Default summary"
+	macro clickSelectAllCheckbox() {
 		Click(locator1 = "Checkbox#LEXICON_SELECT_ALL_CONTAINER");
 
 		AssertChecked.assertCheckedNotVisible(locator1 = "Checkbox#LEXICON_SELECT_ALL_INPUT");
 	}
 
-	macro setFilterAndOrder {
-		if (isSet(filterBy)) {
-			var menuItem = ${filterBy};
-		}
-		else if (isSet(orderBy)) {
-			var menuItem = ${orderBy};
-		}
-
-		Click.pauseClickAt(locator1 = "ManagementBar#FILTER_AND_ORDER");
-
-		if (isSet(active)) {
-			AssertElementPresent(
-				key_item = ${filterBy},
-				locator1 = "ManagementBar#ACTIVE_DROPDOWN_ITEM");
-		}
-
-		WaitForLiferayEvent.initializeLiferayEventLog();
+	@summary = "Go to management bar ellipsis menu item"
+	macro gotoManagementBarEllipsisMenuItem(menuItem = null) {
+		Click.waitForMenuToggleJSClick(locator1 = "ManagementBar#ELLIPSIS");
 
 		MenuItem.click(menuItem = ${menuItem});
 	}
 
-	macro toggleViewOrder {
+	@summary = "Default summary"
+	macro setFilterAndOrder(orderBy = null, filterBy = null) {
+		if (isSet(filterBy)) {
+			Click.pauseClickAt(locator1 = "ManagementBar#FILTER");
+
+			if (isSet(active)) {
+				AssertElementPresent(
+					key_item = ${filterBy},
+					locator1 = "ManagementBar#ACTIVE_DROPDOWN_ITEM");
+			}
+
+			WaitForLiferayEvent.initializeLiferayEventLog();
+
+			MenuItem.click(menuItem = ${filterBy});
+		}
+		else if (isSet(orderBy)) {
+			Click.pauseClickAt(locator1 = "ManagementBar#ORDER");
+
+			if (isSet(active)) {
+				AssertElementPresent(
+					key_item = ${orderBy},
+					locator1 = "ManagementBar#ACTIVE_DROPDOWN_ITEM");
+			}
+
+			WaitForLiferayEvent.initializeLiferayEventLog();
+
+			MenuItem.click(menuItem = ${orderBy});
+		}
+	}
+
+	@summary = "Default summary"
+	macro sortAssets(sortDirection = null) {
+		WaitForLiferayEvent.initializeLiferayEventLog();
+
+		Click.pauseClickAt(locator1 = "ManagementBar#ORDER");
+
+		MenuItem.click(menuItem = ${sortDirection});
+	}
+
+	@summary = "Default summary"
+	macro toggleViewOrder(order = null) {
 		if (isSet(order)) {
 			Click.clickNoMouseOver(
 				key_order = ${order},
 				locator1 = "ManagementBar#ORDER_ICON_SPECIFIC");
 
-			MouseOver(locator1 = "ManagementBar#FILTER_AND_ORDER");
+			MouseOver(locator1 = "ManagementBar#FILTER");
 		}
 		else {
 			Click.clickNoMouseOver(locator1 = "ManagementBar#ORDER_ICON_GENERIC");
 
-			MouseOver(locator1 = "ManagementBar#FILTER_AND_ORDER");
+			MouseOver(locator1 = "ManagementBar#FILTER");
 		}
 	}
 
-	macro viewDisplayStyle {
+	@summary = "Default summary"
+	macro viewDisplayStyle(displayStyle = null) {
 		var displayStyleKey = StringUtil.lowerCaseFirstLetter(${displayStyle});
 
 		AssertVisible(
@@ -71,39 +106,44 @@ definition {
 			locator1 = "Icon#CURRENT_DISPLAY_STYLE_ACTIVE");
 	}
 
-	macro viewFilterAndOrder {
-		Click(locator1 = "ManagementBar#FILTER_AND_ORDER");
+	@summary = "Default summary"
+	macro viewFilterAndOrder(menuItem = null) {
+		Click.pauseClickAt(locator1 = "ManagementBar#ORDER");
 
 		AssertElementPresent(
 			key_menuItem = ${menuItem},
 			locator1 = "ManagementBar#FILTER_AND_ORDER_ACTIVE_ITEM");
 	}
 
-	macro viewFilterAndOrderItem {
-		Click(locator1 = "ManagementBar#FILTER_AND_ORDER");
+	@summary = "Default summary"
+	macro viewFilterAndOrderItem(menuItem = null) {
+		Click.pauseClickAt(locator1 = "ManagementBar#ORDER");
 
 		AssertElementPresent(
 			key_menuItem = ${menuItem},
 			locator1 = "ManagementBar#FILTER_AND_ORDER_ITEM");
 	}
 
-	macro viewFilterAndOrderNoItem {
-		Click(locator1 = "ManagementBar#FILTER_AND_ORDER");
+	@summary = "Default summary"
+	macro viewFilterAndOrderNoItem(menuItem = null) {
+		Click.pauseClickAt(locator1 = "ManagementBar#ORDER");
 
 		AssertElementNotPresent(
 			key_menuItem = ${menuItem},
 			locator1 = "ManagementBar#FILTER_AND_ORDER_ITEM");
 	}
 
-	macro viewFilterAndOrderSelectedItem {
-		Click(locator1 = "ManagementBar#FILTER_AND_ORDER");
+	@summary = "Default summary"
+	macro viewFilterAndOrderSelectedItem(menuItem = null) {
+		Click.pauseClickAt(locator1 = "ManagementBar#ORDER");
 
 		AssertElementPresent(
 			key_menuItem = ${menuItem},
 			locator1 = "ManagementBar#FILTER_AND_ORDER_ITEM_SELECTED");
 	}
 
-	macro viewItemsDisabled {
+	@summary = "Default summary"
+	macro viewItemsDisabled(textList = null) {
 		for (var text : list ${textList}) {
 			AssertElementPresent(
 				key_text = ${text},
@@ -111,7 +151,8 @@ definition {
 		}
 	}
 
-	macro viewNoItems {
+	@summary = "Default summary"
+	macro viewNoItems(textList = null) {
 		for (var text : list ${textList}) {
 			AssertElementNotPresent(
 				key_text = ${text},
@@ -119,15 +160,8 @@ definition {
 		}
 	}
 
-	macro viewNoSubheaderInFilterAndOrder {
-		Click(locator1 = "ManagementBar#FILTER_AND_ORDER");
-
-		AssertElementNotPresent(
-			key_subheaderItem = ${subheaderItem},
-			locator1 = "ManagementBar#FILTER_AND_ORDER_SUBHEADER");
-	}
-
-	macro viewNumberOfSelectedItems {
+	@summary = "Default summary"
+	macro viewNumberOfSelectedItems(text = null) {
 		AssertTextEquals(
 			locator1 = "ManagementBar#NAVBAR_TEXT",
 			value1 = ${text});

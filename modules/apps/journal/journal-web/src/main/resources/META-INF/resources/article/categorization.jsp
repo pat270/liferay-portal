@@ -10,7 +10,7 @@
 <%
 JournalArticle article = journalDisplayContext.getArticle();
 
-JournalEditArticleDisplayContext journalEditArticleDisplayContext = new JournalEditArticleDisplayContext(request, liferayPortletResponse, article);
+JournalEditArticleDisplayContext journalEditArticleDisplayContext = (JournalEditArticleDisplayContext)request.getAttribute(JournalEditArticleDisplayContext.class.getName());
 %>
 
 <liferay-ui:error-marker
@@ -74,7 +74,7 @@ DDMStructure ddmStructure = journalEditArticleDisplayContext.getDDMStructure();
 	<clay:checkbox
 		checked="<%= assetAutoTaggerConfiguration.isUpdateAutoTags() %>"
 		id='<%= liferayPortletResponse.getNamespace() + "updateAutoTags" %>'
-		label='<%= LanguageUtil.get(request, "update-auto-tags") %>'
+		label="update-auto-tags"
 		name='<%= liferayPortletResponse.getNamespace() + "updateAutoTags" %>'
 	/>
 

@@ -55,6 +55,7 @@
 			<available file=".lfrbuild-app-server-lib" />
 			<available file=".lfrbuild-portal-pre" />
 			<available file=".lfrbuild-releng-ignore" />
+			<contains string="${basedir}" substring="glowroot-plugin-freemarker" />
 			<contains string="${basedir}" substring="modules-compat-data" />
 			<contains string="${basedir}" substring="portal-osgi-web-jasper-plugins-taglib" />
 			<contains string="${basedir}" substring="required-dependencies" />
@@ -257,11 +258,7 @@
 			</or>
 		</condition>
 
-		<condition property="artifact.location.src" value="${osgi.dir}/portal/${Bundle-SymbolicName}.jar">
-			<contains string="${Bundle-SymbolicName}" substring="com.liferay.portal" />
-		</condition>
-
-		<property name="artifact.location.src" value="${osgi.dir}/modules/${Bundle-SymbolicName}.jar" />
+		<property name="artifact.location.src" value="${osgi.dir}/portal/${Bundle-SymbolicName}.jar" />
 
 		<dirname file="${artifact.location.src}" property="artifact.dir.name" />
 		<basename file="${artifact.location.src}" property="artifact.file.name" />
@@ -328,12 +325,7 @@
 		</condition>
 
 		<property name="artifact.location.dest" value="${output.dir}/${lpkg.title.prefix}${liferay.releng.app.title} - Impl/${artifact.name}-${artifact.version}.war" />
-
-		<condition property="artifact.location.src" value="${osgi.dir}/war/${artifact.name}.war">
-			<available file="${osgi.dir}/war/${artifact.name}.war" />
-		</condition>
-
-		<property name="artifact.location.src" value="${osgi.dir}/../deploy/${artifact.name}.war" />
+		<property name="artifact.location.src" value="${osgi.dir}/portal-war/${artifact.name}.war" />
 	</target>
 
 	<target depends="get-artifact-version-from-releng" if="artifact.legacy" name="get-artifact-properties-legacy">
@@ -355,7 +347,7 @@
 		</condition>
 
 		<property name="artifact.location.dest" value="${output.dir}/${lpkg.title.prefix}${liferay.releng.app.title} - Impl/${artifact.name}-${artifact.version}.war" />
-		<property name="artifact.location.src" value="${osgi.dir}/../deploy/${artifact.name}-${artifact.version}.war" />
+		<property name="artifact.location.src" value="${osgi.dir}/portal-war/${artifact.name}-${artifact.version}.war" />
 	</target>
 
 	<target name="get-artifact-properties-releng" unless="artifact.exclude">

@@ -15,7 +15,7 @@
 		</Appender>
 
 		<Appender filePattern="@liferay.home@/logs/liferay.%d{yyyy-MM-dd}.xml" ignoreExceptions="false" name="XML_FILE" type="RollingFile">
-			<Log4j1XmlLayout locationInfo="true" />
+			<Layout locationInfo="true" type="LiferayXmlLayout" />
 
 			<TimeBasedTriggeringPolicy />
 
@@ -57,12 +57,12 @@
 		<Logger level="ERROR" name="com.liferay.portal.dao.orm.common.SQLTransformer" />
 		<Logger level="ERROR" name="com.liferay.portal.dao.orm.hibernate.SessionFactoryImpl" />
 		<Logger level="FATAL" name="com.liferay.portal.dao.orm.hibernate.VerifySessionFactoryWrapper" />
-		<Logger level="WARN" name="com.liferay.portal.db.index.IndexUpdaterUtil" />
+		<Logger level="INFO" name="com.liferay.portal.db.index.IndexUpdaterUtil" />
 		<Logger level="INFO" name="com.liferay.portal.deploy" />
-		<Logger level="INFO" name="com.liferay.portal.deploy.hot.HookHotDeployListener" />
+		<Logger level="ERROR" name="com.liferay.portal.deploy.hot.HookHotDeployListener" />
 		<Logger level="ERROR" name="com.liferay.portal.deploy.hot.PluginPackageHotDeployListener" />
+		<Logger level="ERROR" name="com.liferay.portal.deploy.hot.ThemeHotDeployListener" />
 		<Logger level="ERROR" name="com.liferay.portal.deploy.hot.ThemeLoaderHotDeployListener" />
-		<Logger level="ERROR" name="com.liferay.portal.editor" />
 		<Logger level="ERROR" name="com.liferay.portal.events.EventsProcessor" />
 		<Logger level="ERROR" name="com.liferay.portal.events.GarbageCollectorAction" />
 		<Logger level="ERROR" name="com.liferay.portal.events.GlobalStartupAction" />
@@ -82,6 +82,7 @@
 		<Logger level="ERROR" name="com.liferay.portal.kernel.bean.PortalBeanLocatorUtil" />
 		<Logger level="WARN" name="com.liferay.portal.kernel.cluster" />
 		<Logger level="WARN" name="com.liferay.portal.kernel.dao.orm.QueryUtil" />
+		<Logger level="INFO" name="com.liferay.portal.kernel.dependency.manager.DependencyManagerSyncUtil" />
 		<Logger level="INFO" name="com.liferay.portal.kernel.deploy" />
 		<Logger level="ERROR" name="com.liferay.portal.kernel.lar" />
 		<Logger level="INFO" name="com.liferay.portal.kernel.messaging.config.DefaultMessagingConfigurator" />
@@ -98,6 +99,7 @@
 		<Logger level="INFO" name="com.liferay.portal.kernel.servlet.ServletContextUtil" />
 		<Logger level="INFO" name="com.liferay.portal.kernel.servlet.ServletRequestUtil" />
 		<Logger level="ERROR" name="com.liferay.portal.kernel.servlet.ServletResponseUtil" />
+		<Logger level="ERROR" name="com.liferay.portal.kernel.servlet.SessionErrors" />
 		<Logger level="FATAL" name="com.liferay.portal.kernel.servlet.filters.invoker.InvokerFilter" />
 		<Logger level="FATAL" name="com.liferay.portal.kernel.servlet.filters.invoker.InvokerFilterHelper" />
 		<Logger level="INFO" name="com.liferay.portal.kernel.upgrade" />
@@ -106,11 +108,9 @@
 		<Logger level="INFO" name="com.liferay.portal.kernel.util.LoggingTimer" />
 		<Logger level="WARN" name="com.liferay.portal.kernel.util.ReferenceRegistry" />
 		<Logger level="INFO" name="com.liferay.portal.kernel.util.ServerDetector" />
-		<Logger level="INFO" name="com.liferay.portal.kernel.util.ServiceProxyFactory" />
 		<Logger level="WARN" name="com.liferay.portal.language.LanguageResources" />
 		<Logger level="INFO" name="com.liferay.portal.license" />
 		<Logger level="ERROR" name="com.liferay.portal.model.DefaultModelHintsImpl" />
-		<Logger level="WARN" name="com.liferay.portal.patcher.PatcherImpl" />
 		<Logger level="INFO" name="com.liferay.portal.plugin.PluginPackageUtil" />
 		<Logger level="ERROR" name="com.liferay.portal.pop" />
 		<Logger level="WARN" name="com.liferay.portal.security" />
@@ -158,6 +158,7 @@
 		<Logger level="INFO" name="com.liferay.portal.spring.context.PortalContextLoaderListener" />
 		<Logger level="ERROR" name="com.liferay.portal.spring.context.TunnelApplicationContext" />
 		<Logger level="INFO" name="com.liferay.portal.spring.hibernate.DialectDetector" />
+		<Logger level="WARN" name="com.liferay.portal.spring.hibernate.PortalHibernateConfiguration" />
 		<Logger level="ERROR" name="com.liferay.portal.struts" />
 		<Logger level="ERROR" name="com.liferay.portal.struts.JSONAction" />
 		<Logger level="ERROR" name="com.liferay.portal.struts.PortalRequestProcessor" />
@@ -224,6 +225,7 @@
 		<Logger level="ERROR" name="org.hibernate.util.JDBCExceptionReporter" />
 		<Logger level="ERROR" name="org.jabsorb" />
 		<Logger level="ERROR" name="org.jgroups" />
+		<Logger level="ERROR" name="org.mariadb.jdbc.message.server.ErrorPacket" />
 		<Logger level="ERROR" name="org.openid4java" />
 		<Logger level="INFO" name="org.pdfbox" />
 		<Logger level="INFO" name="org.portletbridge" />

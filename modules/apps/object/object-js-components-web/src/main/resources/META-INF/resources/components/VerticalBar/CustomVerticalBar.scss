@@ -1,0 +1,29 @@
+.lfr__objects-custom-vertical-bar {
+	&-content {
+		.c-slideout-show.sidebar {
+			overflow: auto;
+		}
+	}
+
+	&--left-closed {
+		transform: translateX(-100%);
+		transition: transform 0.5s;
+	}
+
+	&--left-open {
+		top: 121px;
+		transform: translateX(0);
+		transition: transform 0.5s;
+	}
+
+	&--right-closed {
+		transform: translateX(100%);
+		transition: transform 0.5s;
+	}
+
+	&--right-open {
+		top: 121px;
+		transform: translateX(0);
+		transition: transform 0.5s;
+	}
+}

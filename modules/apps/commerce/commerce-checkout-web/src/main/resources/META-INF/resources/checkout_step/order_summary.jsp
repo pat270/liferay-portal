@@ -93,10 +93,11 @@ Map<Long, List<CommerceOrderValidatorResult>> commerceOrderValidatorResultsMap =
 								<span class="sticker-overlay">
 									<c:choose>
 										<c:when test="<%= Validator.isNotNull(cpInstanceCDNURL) %>">
-											<img class="sticker-img" src="<%= cpInstanceCDNURL %>" />
+											<img alt="thumbnail" class="sticker-img" src="<%= cpInstanceCDNURL %>" />
 										</c:when>
 										<c:otherwise>
 											<liferay-adaptive-media:img
+												alt="thumbnail"
 												class="sticker-img"
 												fileVersion="<%= orderSummaryCheckoutStepDisplayContext.getCPInstanceImageFileVersion(commerceOrderItem) %>"
 											/>
@@ -149,7 +150,17 @@ Map<Long, List<CommerceOrderValidatorResult>> commerceOrderValidatorResultsMap =
 							name="quantity"
 						>
 							<div class="quantity-section">
-								<span class="commerce-quantity"><%= commerceOrderItem.getQuantity() %></span><span class="inline-item-after">x</span>
+								<span class="commerce-quantity"><%= orderSummaryCheckoutStepDisplayContext.getCommerceOrderItemFormattedQuantity(commerceOrderItem) %></span><span class="inline-item-after">x</span>
+							</div>
+						</liferay-ui:search-container-column-text>
+
+						<liferay-ui:search-container-column-text
+							name="uom"
+						>
+							<div class="value-section">
+								<span class="commerce-value">
+									<%= HtmlUtil.escape(commerceOrderItem.getUnitOfMeasureKey()) %>
+								</span>
 							</div>
 						</liferay-ui:search-container-column-text>
 
@@ -176,7 +187,7 @@ Map<Long, List<CommerceOrderValidatorResult>> commerceOrderValidatorResultsMap =
 								<div class="value-section">
 									<span class="price">
 										<c:choose>
-											<c:when test="<%= !unitPromoPriceCommerceMoney.isEmpty() && CommerceBigDecimalUtil.gt(unitPromoPriceCommerceMoney.getPrice(), BigDecimal.ZERO) && CommerceBigDecimalUtil.lt(unitPromoPriceCommerceMoney.getPrice(), unitPriceCommerceMoney.getPrice()) %>">
+											<c:when test="<%= !unitPromoPriceCommerceMoney.isEmpty() && BigDecimalUtil.gt(unitPromoPriceCommerceMoney.getPrice(), BigDecimal.ZERO) && BigDecimalUtil.lt(unitPromoPriceCommerceMoney.getPrice(), unitPriceCommerceMoney.getPrice()) %>">
 												<span class="price-value price-value-promo">
 													<%= HtmlUtil.escape(unitPromoPriceCommerceMoney.format(locale)) %>
 												</span>
@@ -563,7 +574,7 @@ Map<Long, List<CommerceOrderValidatorResult>> commerceOrderValidatorResultsMap =
 									"modalTitle", deliveryTermEntryName
 								).build()
 							%>'
-							module="js/attachModalToHTMLElement"
+							module="{attachModalToHTMLElement} from commerce-checkout-web"
 						/>
 					</div>
 				</div>
@@ -592,7 +603,7 @@ Map<Long, List<CommerceOrderValidatorResult>> commerceOrderValidatorResultsMap =
 									"modalTitle", paymentTermEntryName
 								).build()
 							%>'
-							module="js/attachModalToHTMLElement"
+							module="{attachModalToHTMLElement} from commerce-checkout-web"
 						/>
 					</div>
 				</div>

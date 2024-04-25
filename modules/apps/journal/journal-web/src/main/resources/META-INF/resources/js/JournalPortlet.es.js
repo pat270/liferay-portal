@@ -8,11 +8,12 @@ import {
 	fetch,
 	navigate,
 	openConfirmModal,
-	openToast,
 	sub,
 } from 'frontend-js-web';
 
 import {LocaleChangedHandler} from './LocaleChangedHandler.es';
+import initializeLock from './initializeLock';
+import showAlert from './showAlert';
 
 const AUTO_SAVE_DELAY = 1500;
 
@@ -60,14 +61,32 @@ export default function _JournalPortlet({
 	let defaultLanguageId = initialDefaultLanguageId;
 	let selectedLanguageId = initialDefaultLanguageId;
 
-	const publishingLock = getLock('publishing', {
-		lockedIndicator: document.getElementById(
-			`${namespace}savingChangesIndicator`
-		),
-		triggerElements: [publishButton, resetValuesButton, saveButton],
-		unlockedIndicator: document.getElementById(
-			`${namespace}changesSavedIndicator`
-		),
+	const lockHolder = {};
+
+	if (!Liferay.FeatureFlags['LPD-15596']) {
+		initializeLock('publishing', {
+			lockedIndicator: document.getElementById(
+				`${namespace}savingChangesIndicator`
+			),
+			namespace,
+			onLockChange: ({isLocked}) => {
+				[publishButton, resetValuesButton, saveButton].forEach(
+					(triggerElement) => {
+						if (triggerElement) {
+							triggerElement.disabled = isLocked;
+						}
+					}
+				);
+			},
+			triggerElements: [publishButton, resetValuesButton, saveButton],
+			unlockedIndicator: document.getElementById(
+				`${namespace}changesSavedIndicator`
+			),
+		});
+	}
+
+	Liferay.componentReady(`${namespace}publishing`).then((lock) => {
+		lockHolder.lock = lock;
 	});
 
 	const editingDefaultValues = classNameId && classNameId !== '0';
@@ -135,13 +154,16 @@ export default function _JournalPortlet({
 		updateContextualSidebarAriaAttributes();
 
 		if (isContextualSidebarOpen()) {
-			contextualSidebarContainer.focus();
+			contextualSidebarContainer.focus({preventScroll: true});
 		}
 	};
 
-	const handleDDMFormError = (error) => {
-		publishingLock.unlock();
-		console.error(error);
+	const handleDDMFormError = (event) => {
+		lockHolder.lock?.unlock();
+
+		if (event.error?.statusCode) {
+			showAlert(event.error.message);
+		}
 
 		const workflowActionInput = document.getElementById(
 			`${namespace}workflowAction`
@@ -214,12 +236,16 @@ export default function _JournalPortlet({
 				);
 			}
 
-			publishingLock.unlock();
+			lockHolder.lock?.unlock();
 		}
 	};
 
 	const handlePublishButtonClick = (event) => {
-		publishingLock.lock();
+		if (Liferay.FeatureFlags['LPS-141392']) {
+			return;
+		}
+
+		lockHolder.lock?.lock();
 
 		document
 			.querySelectorAll('.journal-alert-container')
@@ -247,6 +273,8 @@ export default function _JournalPortlet({
 				: '/journal/add_data_engine_default_values';
 		}
 		else {
+			articleId = document.getElementById(`${namespace}articleId`).value;
+
 			actionInput.value = articleId
 				? '/journal/update_article'
 				: '/journal/add_article';
@@ -281,7 +309,7 @@ export default function _JournalPortlet({
 	};
 
 	const handleResetValuesButtonClick = (event) => {
-		publishingLock.lock();
+		lockHolder.lock?.lock();
 
 		openConfirmModal({
 			message: Liferay.Language.get(
@@ -301,29 +329,9 @@ export default function _JournalPortlet({
 					);
 				}
 				else {
-					publishingLock.unlock();
+					lockHolder.lock?.unlock();
 				}
 			},
-		});
-	};
-
-	const showAlert = (message) => {
-		const articleContentWrapper = document.querySelector(
-			'.article-content-content'
-		);
-
-		const alertContainer = document.createElement('div');
-
-		alertContainer.classList.add('journal-alert-container');
-		articleContentWrapper.prepend(alertContainer);
-
-		openToast({
-			autoClose: false,
-			container: alertContainer,
-			message,
-			onClose: () => alertContainer.remove(),
-			title: Liferay.Language.get('error'),
-			type: 'danger',
 		});
 	};
 
@@ -357,12 +365,12 @@ export default function _JournalPortlet({
 						}
 					}
 
-					publishingLock.unlock();
+					lockHolder.lock?.unlock();
 				}
 			})
 			.catch((error) => {
 				console.error(error);
-				publishingLock.unlock();
+				lockHolder.lock?.unlock();
 			});
 	};
 
@@ -415,10 +423,10 @@ export default function _JournalPortlet({
 			attachFormChangeListener(
 				form,
 				() => {
-					return !publishingLock.isLocked();
+					return !lockHolder.lock?.isLocked();
 				},
 				(mutationRecord) => {
-					if (publishingLock.isLocked()) {
+					if (lockHolder.lock?.isLocked()) {
 						return false;
 					}
 
@@ -434,11 +442,11 @@ export default function _JournalPortlet({
 					);
 				},
 				() => {
-					if (publishingLock.isLocked()) {
+					if (lockHolder.lock?.isLocked()) {
 						return;
 					}
 
-					publishingLock.lock();
+					lockHolder.lock?.lock();
 
 					actionInput.value = articleId
 						? '/journal/update_article'
@@ -533,42 +541,5 @@ function attachListener(element, eventType, callback) {
 		detach() {
 			element?.removeEventListener(eventType, callback);
 		},
-	};
-}
-
-function getLock(name, {lockedIndicator, triggerElements, unlockedIndicator}) {
-	let locked = false;
-
-	const toggle = (nextValue) => {
-		if (nextValue === locked) {
-			throw new Error(
-				`${name} is already ${locked ? 'locked' : 'unlocked'}`
-			);
-		}
-
-		locked = nextValue;
-
-		requestAnimationFrame(() => {
-			triggerElements.forEach((triggerElement) => {
-				if (triggerElement) {
-					triggerElement.disabled = locked;
-				}
-			});
-
-			if (locked) {
-				lockedIndicator?.classList.replace('d-none', 'd-flex');
-				unlockedIndicator?.classList.replace('d-flex', 'd-none');
-			}
-			else {
-				lockedIndicator?.classList.replace('d-flex', 'd-none');
-				unlockedIndicator?.classList.replace('d-none', 'd-flex');
-			}
-		});
-	};
-
-	return {
-		isLocked: () => locked,
-		lock: () => toggle(true),
-		unlock: () => toggle(false),
 	};
 }

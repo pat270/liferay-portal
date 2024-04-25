@@ -6,21 +6,30 @@
 package com.liferay.headless.delivery.resource.v1_0.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.asset.kernel.model.AssetCategory;
+import com.liferay.asset.kernel.model.AssetVocabulary;
+import com.liferay.asset.kernel.service.AssetCategoryLocalService;
+import com.liferay.asset.kernel.service.AssetVocabularyLocalService;
 import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.blogs.test.util.BlogsTestUtil;
+import com.liferay.data.engine.rest.resource.v2_0.DataDefinitionResource;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFolder;
 import com.liferay.document.library.test.util.DLTestUtil;
 import com.liferay.dynamic.data.mapping.constants.DDMStructureConstants;
+import com.liferay.dynamic.data.mapping.form.field.type.constants.DDMFormFieldTypeConstants;
 import com.liferay.dynamic.data.mapping.io.DDMFormDeserializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerDeserializeRequest;
 import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerDeserializeResponse;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
+import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
+import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 import com.liferay.dynamic.data.mapping.storage.StorageType;
 import com.liferay.dynamic.data.mapping.test.util.DDMStructureTestHelper;
 import com.liferay.dynamic.data.mapping.test.util.DDMTemplateTestUtil;
+import com.liferay.dynamic.data.mapping.util.DDMFormValuesToFieldsConverter;
 import com.liferay.headless.delivery.client.dto.v1_0.ContentDocument;
 import com.liferay.headless.delivery.client.dto.v1_0.ContentField;
 import com.liferay.headless.delivery.client.dto.v1_0.ContentFieldValue;
@@ -28,7 +37,6 @@ import com.liferay.headless.delivery.client.dto.v1_0.Geo;
 import com.liferay.headless.delivery.client.dto.v1_0.RelatedContent;
 import com.liferay.headless.delivery.client.dto.v1_0.StructuredContent;
 import com.liferay.headless.delivery.client.dto.v1_0.StructuredContentLink;
-import com.liferay.headless.delivery.client.http.HttpInvoker;
 import com.liferay.headless.delivery.client.pagination.Page;
 import com.liferay.headless.delivery.client.pagination.Pagination;
 import com.liferay.headless.delivery.client.problem.Problem;
@@ -38,19 +46,23 @@ import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalFolder;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.test.util.JournalTestUtil;
+import com.liferay.journal.util.JournalConverter;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.role.RoleConstants;
+import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserGroupRoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
@@ -60,17 +72,16 @@ import com.liferay.portal.kernel.test.util.RoleTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.portal.test.log.LogCapture;
-import com.liferay.portal.test.log.LogEntry;
-import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.SynchronousMailTestRule;
 
@@ -85,6 +96,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -109,11 +121,13 @@ public class StructuredContentResourceTest
 	public void setUp() throws Exception {
 		super.setUp();
 
+		_originalName = PrincipalThreadLocal.getName();
+
+		PrincipalThreadLocal.setName(TestPropsValues.getUserId());
+
 		_blogsEntry = BlogsTestUtil.addEntryWithWorkflow(
 			TestPropsValues.getUserId(), RandomTestUtil.randomString(), true,
 			ServiceContextTestUtil.getServiceContext(testGroup.getGroupId()));
-		_complexDDMStructure = _addDDMStructure(
-			testGroup, "test-complex-ddm-structure.json");
 
 		_ddmStructure = _addDDMStructure(testGroup, "test-ddm-structure.json");
 
@@ -138,6 +152,14 @@ public class StructuredContentResourceTest
 		_layout = LayoutTestUtil.addTypeContentLayout(testGroup);
 		_localizedDDMStructure = _addDDMStructure(
 			testGroup, "test-localized-ddm-structure.json");
+	}
+
+	@After
+	@Override
+	public void tearDown() throws Exception {
+		super.tearDown();
+
+		PrincipalThreadLocal.setName(_originalName);
 	}
 
 	@Override
@@ -257,42 +279,21 @@ public class StructuredContentResourceTest
 
 		long assetLibraryId = RandomTestUtil.randomLong();
 
-		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
-				"com.liferay.portal.vulcan.internal.jaxrs.exception.mapper." +
-					"WebApplicationExceptionMapper",
-				LoggerTestUtil.ERROR)) {
+		try {
+			structuredContentResource.
+				getAssetLibraryStructuredContentByExternalReferenceCode(
+					assetLibraryId,
+					postStructuredContent.getExternalReferenceCode());
 
-			try {
-				structuredContentResource.
-					getAssetLibraryStructuredContentByExternalReferenceCode(
-						assetLibraryId,
-						postStructuredContent.getExternalReferenceCode());
+			Assert.fail();
+		}
+		catch (Problem.ProblemException problemException) {
+			Problem problem = problemException.getProblem();
 
-				Assert.fail();
-			}
-			catch (Problem.ProblemException problemException) {
-				Problem problem = problemException.getProblem();
-
-				Assert.assertEquals("NOT_FOUND", problem.getStatus());
-				Assert.assertEquals(
-					"Unable to get a valid asset library with ID " +
-						assetLibraryId,
-					problem.getTitle());
-			}
-
-			List<LogEntry> logEntries = logCapture.getLogEntries();
-
-			Assert.assertEquals(logEntries.toString(), 1, logEntries.size());
-
-			LogEntry logEntry = logEntries.get(0);
-
-			Assert.assertEquals(LoggerTestUtil.ERROR, logEntry.getPriority());
-
-			Throwable throwable = logEntry.getThrowable();
-
+			Assert.assertEquals("NOT_FOUND", problem.getStatus());
 			Assert.assertEquals(
 				"Unable to get a valid asset library with ID " + assetLibraryId,
-				throwable.getMessage());
+				problem.getTitle());
 		}
 
 		// Nonexistent external reference code
@@ -328,7 +329,78 @@ public class StructuredContentResourceTest
 
 		_testGetSiteStructuredContentsPageByDefaultPriority();
 		_testGetSiteStructuredContentsPageByGivenPriority();
+		_testGetSiteStructuredContentsPageFilteredByDateField();
 		_testGetSiteStructuredContentsPageOrderedByDescendingPriority();
+	}
+
+	@Override
+	@Test
+	public void testGetSiteStructuredContentsPageWithSortInteger()
+		throws Exception {
+
+		super.testGetSiteStructuredContentsPageWithSortInteger();
+
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(testGroup.getGroupId());
+
+		AssetVocabulary assetVocabulary =
+			_assetVocabularyLocalService.addVocabulary(
+				TestPropsValues.getUserId(), testGroup.getGroupId(),
+				RandomTestUtil.randomString(), serviceContext);
+
+		AssetCategory assetCategory1 = _assetCategoryLocalService.addCategory(
+			TestPropsValues.getUserId(), testGroup.getGroupId(),
+			RandomTestUtil.randomString(), assetVocabulary.getVocabularyId(),
+			serviceContext);
+		AssetCategory assetCategory2 = _assetCategoryLocalService.addCategory(
+			TestPropsValues.getUserId(), testGroup.getGroupId(),
+			RandomTestUtil.randomString(), assetVocabulary.getVocabularyId(),
+			serviceContext);
+
+		Assert.assertTrue(
+			assetCategory1.getCategoryId() < assetCategory2.getCategoryId());
+
+		StructuredContent structuredContent1 = randomStructuredContent();
+
+		structuredContent1.setTaxonomyCategoryIds(
+			new Long[] {assetCategory2.getCategoryId()});
+
+		structuredContent1 =
+			testGetSiteStructuredContentsPage_addStructuredContent(
+				testGroup.getGroupId(), structuredContent1);
+
+		StructuredContent structuredContent2 = randomStructuredContent();
+
+		structuredContent2.setTaxonomyCategoryIds(
+			new Long[] {assetCategory1.getCategoryId()});
+
+		structuredContent2 =
+			testGetSiteStructuredContentsPage_addStructuredContent(
+				testGroup.getGroupId(), structuredContent2);
+
+		Page<StructuredContent> page =
+			structuredContentResource.getSiteStructuredContentsPage(
+				testGroup.getGroupId(), null, null, null,
+				String.format(
+					"taxonomyCategoryIds/any(k:k in (%d,%d))",
+					assetCategory1.getCategoryId(),
+					assetCategory2.getCategoryId()),
+				null, "taxonomyCategoryIds:asc");
+
+		assertEquals(
+			Arrays.asList(structuredContent2, structuredContent1),
+			(List<StructuredContent>)page.getItems());
+
+		page = structuredContentResource.getSiteStructuredContentsPage(
+			testGroup.getGroupId(), null, null, null,
+			String.format(
+				"taxonomyCategoryIds/any(k:k in (%d,%d))",
+				assetCategory1.getCategoryId(), assetCategory2.getCategoryId()),
+			null, "taxonomyCategoryIds:desc");
+
+		assertEquals(
+			Arrays.asList(structuredContent1, structuredContent2),
+			(List<StructuredContent>)page.getItems());
 	}
 
 	@Override
@@ -339,197 +411,15 @@ public class StructuredContentResourceTest
 
 		super.testGetStructuredContent();
 
-		// Complete structured content with all types of content fields
-
-		StructuredContent postStructuredContent =
-			structuredContentResource.postSiteStructuredContent(
-				testGroup.getGroupId(), _randomCompleteStructuredContent());
-
-		StructuredContent getStructuredContent =
-			structuredContentResource.getStructuredContent(
-				postStructuredContent.getId());
-
-		assertEquals(postStructuredContent, getStructuredContent);
-		assertValid(getStructuredContent);
-
-		// Different folder
-
-		postStructuredContent =
-			structuredContentResource.
-				postStructuredContentFolderStructuredContent(
-					_journalFolder.getFolderId(),
-					_randomCompleteStructuredContent());
-
-		getStructuredContent = structuredContentResource.getStructuredContent(
-			postStructuredContent.getId());
-
-		Assert.assertEquals(
-			_journalFolder.getFolderId(),
-			(long)getStructuredContent.getStructuredContentFolderId());
-
-		// Different locale
-
-		postStructuredContent =
-			structuredContentResource.postSiteStructuredContent(
-				testGroup.getGroupId(), randomStructuredContent());
-
-		String title = postStructuredContent.getTitle();
-
-		StructuredContentResource.Builder builder =
-			StructuredContentResource.builder();
-
-		StructuredContentResource frenchStructuredContentResource =
-			builder.authentication(
-				"test@liferay.com", "test"
-			).locale(
-				LocaleUtil.FRANCE
-			).build();
-
-		String frenchTitle = RandomTestUtil.randomString();
-
-		postStructuredContent.setTitle(frenchTitle);
-
-		frenchStructuredContentResource.putStructuredContent(
-			postStructuredContent.getId(), postStructuredContent);
-
-		getStructuredContent =
-			frenchStructuredContentResource.getStructuredContent(
-				postStructuredContent.getId());
-
-		Assert.assertEquals(frenchTitle, getStructuredContent.getTitle());
-
-		getStructuredContent = structuredContentResource.getStructuredContent(
-			getStructuredContent.getId());
-
-		Assert.assertEquals(title, getStructuredContent.getTitle());
-
-		// Role admin user
-
-		postStructuredContent = testGetStructuredContent_addStructuredContent();
-
-		getStructuredContent = structuredContentResource.getStructuredContent(
-			postStructuredContent.getId());
-
-		Map<String, Map<String, String>> actions =
-			getStructuredContent.getActions();
-
-		Assert.assertTrue(actions.containsKey("delete"));
-		Assert.assertTrue(actions.containsKey("get"));
-		Assert.assertTrue(actions.containsKey("get-rendered-content"));
-		Assert.assertTrue(actions.containsKey("replace"));
-		Assert.assertTrue(actions.containsKey("subscribe"));
-		Assert.assertTrue(actions.containsKey("unsubscribe"));
-		Assert.assertTrue(actions.containsKey("update"));
-
-		// Role owner
-
-		Role role = RoleTestUtil.addRole(RoleConstants.TYPE_SITE);
-
-		RoleTestUtil.addResourcePermission(
-			role.getName(), "com.liferay.journal",
-			ResourceConstants.SCOPE_GROUP,
-			String.valueOf(testGroup.getGroupId()), ActionKeys.ADD_ARTICLE);
-
-		String password = RandomTestUtil.randomString();
-
-		User ownerUser = UserTestUtil.addUser(
-			TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
-			password, RandomTestUtil.randomString() + "@liferay.com",
-			RandomTestUtil.randomString(), LocaleUtil.getDefault(),
-			RandomTestUtil.randomString(), RandomTestUtil.randomString(), null,
-			ServiceContextTestUtil.getServiceContext());
-
-		UserLocalServiceUtil.updateEmailAddressVerified(
-			ownerUser.getUserId(), true);
-
-		UserGroupRoleLocalServiceUtil.addUserGroupRoles(
-			new long[] {ownerUser.getUserId()}, testGroup.getGroupId(),
-			role.getRoleId());
-
-		StructuredContentResource ownerUserStructuredContentResource =
-			builder.authentication(
-				ownerUser.getLogin(), password
-			).locale(
-				LocaleUtil.getDefault()
-			).build();
-
-		postStructuredContent =
-			ownerUserStructuredContentResource.postSiteStructuredContent(
-				testGroup.getGroupId(), randomStructuredContent());
-
-		getStructuredContent =
-			ownerUserStructuredContentResource.getStructuredContent(
-				postStructuredContent.getId());
-
-		try {
-			actions = getStructuredContent.getActions();
-
-			Assert.assertTrue(actions.containsKey("delete"));
-			Assert.assertTrue(actions.containsKey("get"));
-			Assert.assertTrue(actions.containsKey("get-rendered-content"));
-			Assert.assertTrue(actions.containsKey("replace"));
-			Assert.assertTrue(actions.containsKey("subscribe"));
-			Assert.assertTrue(actions.containsKey("unsubscribe"));
-			Assert.assertTrue(actions.containsKey("update"));
-		}
-		finally {
-			_roleLocalService.deleteRole(role);
-		}
-
-		// Role regular user
-
-		role = RoleTestUtil.addRole(RoleConstants.TYPE_SITE);
-
-		RoleTestUtil.addResourcePermission(
-			role.getName(), JournalArticle.class.getName(),
-			ResourceConstants.SCOPE_GROUP,
-			String.valueOf(testGroup.getGroupId()), ActionKeys.VIEW);
-
-		User regularUser = UserTestUtil.addUser(
-			TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
-			password, RandomTestUtil.randomString() + "@liferay.com",
-			RandomTestUtil.randomString(), LocaleUtil.getDefault(),
-			RandomTestUtil.randomString(), RandomTestUtil.randomString(), null,
-			ServiceContextTestUtil.getServiceContext());
-
-		UserLocalServiceUtil.updateEmailAddressVerified(
-			regularUser.getUserId(), true);
-
-		UserGroupRoleLocalServiceUtil.addUserGroupRoles(
-			new long[] {regularUser.getUserId()}, testGroup.getGroupId(),
-			role.getRoleId());
-
-		builder = StructuredContentResource.builder();
-
-		StructuredContentResource regularUserStructuredContentResource =
-			builder.authentication(
-				regularUser.getLogin(), password
-			).locale(
-				LocaleUtil.getDefault()
-			).build();
-
-		getStructuredContent =
-			regularUserStructuredContentResource.getStructuredContent(
-				postStructuredContent.getId());
-
-		try {
-			actions = getStructuredContent.getActions();
-
-			Assert.assertFalse(actions.containsKey("delete"));
-			Assert.assertTrue(actions.containsKey("get"));
-			Assert.assertTrue(actions.containsKey("get-rendered-content"));
-			Assert.assertFalse(actions.containsKey("replace"));
-			Assert.assertFalse(actions.containsKey("subscribe"));
-			Assert.assertFalse(actions.containsKey("unsubscribe"));
-			Assert.assertFalse(actions.containsKey("update"));
-		}
-		finally {
-			_roleLocalService.deleteRole(role);
-			_userLocalService.deleteUser(regularUser);
-			_userLocalService.deleteUser(ownerUser);
-		}
-
 		_testGetStructuredContentAssetLibrary();
+		_testGetStructuredContentWithAllTypesOfContentFields(false);
+		_testGetStructuredContentWithAllTypesOfContentFields(true);
+		_testGetStructuredContentWithDifferentFolder();
+		_testGetStructuredContentWithDifferentLocale();
+		_testGetStructuredContentWithDifferentTimeZone();
+		_testGetStructuredContentWithRoleAdministrator();
+		_testGetStructuredContentWithRoleOwner();
+		_testGetStructuredContentWithRoleRegularUser();
 	}
 
 	@Override
@@ -546,8 +436,8 @@ public class StructuredContentResourceTest
 				testGroup.getCreatorUserId(), testGroup.getGroupId(), 0,
 				_portal.getClassNameId(JournalArticle.class.getName()),
 				_ddmStructure.getStructureId(), RandomTestUtil.randomString(),
-				LayoutPageTemplateEntryTypeConstants.TYPE_DISPLAY_PAGE, 0,
-				false, 0, 0, 0, WorkflowConstants.STATUS_APPROVED,
+				LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE, 0, false, 0,
+				0, 0, WorkflowConstants.STATUS_APPROVED,
 				ServiceContextTestUtil.getServiceContext(
 					testGroup.getGroupId()));
 
@@ -652,17 +542,22 @@ public class StructuredContentResourceTest
 		randomStructuredContent2.setExternalReferenceCode(
 			postStructuredContent3.getExternalReferenceCode());
 
-		HttpInvoker.HttpResponse httpResponse =
-			structuredContentResource.
-				postAssetLibraryStructuredContentHttpResponse(
-					testDepotEntry.getDepotEntryId(), randomStructuredContent2);
+		try {
+			structuredContentResource.postAssetLibraryStructuredContent(
+				testDepotEntry.getDepotEntryId(), randomStructuredContent2);
 
-		Assert.assertEquals(
-			StringBundler.concat(
-				"Duplicate journal article external reference code ",
-				postStructuredContent3.getExternalReferenceCode(), "in group ",
-				testDepotEntry.getGroupId()),
-			httpResponse.getContent());
+			Assert.fail();
+		}
+		catch (Problem.ProblemException problemException) {
+			Problem problem = problemException.getProblem();
+
+			Assert.assertEquals("BAD_REQUEST", problem.getStatus());
+			Assert.assertEquals(
+				_language.get(
+					LocaleUtil.getDefault(),
+					"this-external-reference-code-is-already-in-use"),
+				problem.getTitle());
+		}
 	}
 
 	@Override
@@ -745,8 +640,8 @@ public class StructuredContentResourceTest
 			_portal.getClassNameId(JournalArticle.class.getName()),
 			_localizedDDMStructure.getStructureId(),
 			RandomTestUtil.randomString(),
-			LayoutPageTemplateEntryTypeConstants.TYPE_DISPLAY_PAGE, 0, true, 0,
-			0, 0, WorkflowConstants.STATUS_APPROVED,
+			LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE, 0, true, 0, 0, 0,
+			WorkflowConstants.STATUS_APPROVED,
 			ServiceContextTestUtil.getServiceContext(testGroup.getGroupId()));
 
 		Locale locale = LocaleUtil.getDefault();
@@ -1082,6 +977,56 @@ public class StructuredContentResourceTest
 			_read("test-structured-content-template.vm"), LocaleUtil.US);
 	}
 
+	private void _assertFilterSiteStructuredContentsPageFilteredByDateField(
+			Locale locale)
+		throws Exception {
+
+		Locale currentLocale = LocaleThreadLocal.getDefaultLocale();
+
+		try {
+			LocaleThreadLocal.setSiteDefaultLocale(locale);
+
+			DDMFormField ddmFormField = _createDDMFormField(
+				false, "Date", DDMFormFieldTypeConstants.DATE);
+
+			String dateString = DateUtil.getDate(
+				new Date(), "yyyy-MM-dd", LocaleUtil.US);
+
+			JournalArticle journalArticle = JournalTestUtil.addJournalArticle(
+				_dataDefinitionResourceFactory, ddmFormField,
+				_ddmFormValuesToFieldsConverter, locale, dateString,
+				testGroup.getGroupId(), _journalConverter);
+
+			DDMStructure ddmStructure = journalArticle.getDDMStructure();
+
+			Page<StructuredContent> page =
+				structuredContentResource.
+					getContentStructureStructuredContentsPage(
+						ddmStructure.getStructureId(), null, null,
+						"contentFields/Date eq " + dateString,
+						Pagination.of(1, 10), null);
+
+			Assert.assertNotNull(page);
+
+			List<StructuredContent> items =
+				(List<StructuredContent>)page.getItems();
+
+			Assert.assertEquals(items.toString(), 1, items.size());
+
+			StructuredContent structuredContent = items.get(0);
+
+			Assert.assertEquals(
+				String.valueOf(journalArticle.getResourcePrimKey()),
+				String.valueOf(structuredContent.getId()));
+
+			structuredContentResource.deleteStructuredContent(
+				structuredContent.getId());
+		}
+		finally {
+			LocaleThreadLocal.setSiteDefaultLocale(currentLocale);
+		}
+	}
+
 	private void _assertLocalizedValue(
 		Map<String, String> localizedValues, String value, String w3cLanguageId,
 		Set<String> w3cLanguageIds) {
@@ -1137,6 +1082,26 @@ public class StructuredContentResourceTest
 		).build();
 	}
 
+	private DDMFormField _createDDMFormField(
+		boolean localizable, String name, String type) {
+
+		DDMFormField ddmFormField = new DDMFormField(name, type);
+
+		ddmFormField.setDataType(type);
+		ddmFormField.setIndexType("text");
+
+		LocalizedValue localizedValue = new LocalizedValue(LocaleUtil.US);
+
+		localizedValue.addString(
+			LocaleUtil.US, RandomTestUtil.randomString(10));
+
+		ddmFormField.setLabel(localizedValue);
+
+		ddmFormField.setLocalizable(localizable);
+
+		return ddmFormField;
+	}
+
 	private DDMForm _deserialize(String content) {
 		DDMFormDeserializerDeserializeRequest.Builder builder =
 			DDMFormDeserializerDeserializeRequest.Builder.newBuilder(content);
@@ -1154,8 +1119,24 @@ public class StructuredContentResourceTest
 			RandomTestUtil.randomInt(0, 100), RandomTestUtil.randomInt(0, 100));
 	}
 
-	private StructuredContent _randomCompleteStructuredContent()
+	private StructuredContent _randomCompleteStructuredContent(
+			boolean localizable)
 		throws Exception {
+
+		DDMStructureTestHelper ddmStructureTestHelper =
+			new DDMStructureTestHelper(
+				PortalUtil.getClassNameId(JournalArticle.class), testGroup);
+
+		DDMStructure complexDDMStructure = ddmStructureTestHelper.addStructure(
+			PortalUtil.getClassNameId(JournalArticle.class),
+			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
+			_deserialize(
+				StringUtil.replace(
+					_read("test-complex-ddm-structure.json"), "\"[#", "#]\"",
+					HashMapBuilder.put(
+						"LOCALIZABLE", String.valueOf(localizable)
+					).build())),
+			StorageType.DEFAULT.getValue(), DDMStructureConstants.TYPE_DEFAULT);
 
 		JournalArticle journalArticle = JournalTestUtil.addArticle(
 			testGroup.getGroupId(), _journalFolder.getFolderId());
@@ -1163,9 +1144,9 @@ public class StructuredContentResourceTest
 		StructuredContent structuredContent = super.randomStructuredContent();
 
 		structuredContent.setContentFields(
-			_randomContentFields(journalArticle));
+			_randomContentFields(journalArticle, localizable));
 		structuredContent.setContentStructureId(
-			_complexDDMStructure.getStructureId());
+			complexDDMStructure.getStructureId());
 		structuredContent.setRelatedContents(
 			new RelatedContent[] {
 				new RelatedContent() {
@@ -1181,7 +1162,9 @@ public class StructuredContentResourceTest
 		return structuredContent;
 	}
 
-	private ContentField[] _randomContentFields(JournalArticle journalArticle) {
+	private ContentField[] _randomContentFields(
+		JournalArticle journalArticle, boolean localizable) {
+
 		return new ContentField[] {
 			new ContentField() {
 				{
@@ -1199,6 +1182,16 @@ public class StructuredContentResourceTest
 						{
 							data = _COMPLETE_STRUCTURED_CONTENT_OPTIONS
 								[RandomTestUtil.randomInt(0, 2)];
+
+							setValue(
+								() -> {
+									if (localizable) {
+										return null;
+									}
+
+									return _COMPLETE_STRUCTURED_CONTENT_OPTIONS
+										[RandomTestUtil.randomInt(0, 2)];
+								});
 						}
 					};
 					name = "SelectFromList";
@@ -1210,6 +1203,16 @@ public class StructuredContentResourceTest
 						{
 							data = _COMPLETE_STRUCTURED_CONTENT_OPTIONS
 								[RandomTestUtil.randomInt(0, 2)];
+
+							setValue(
+								() -> {
+									if (localizable) {
+										return null;
+									}
+
+									return _COMPLETE_STRUCTURED_CONTENT_OPTIONS
+										[RandomTestUtil.randomInt(0, 2)];
+								});
 						}
 					};
 					name = "SingleSelection";
@@ -1223,6 +1226,18 @@ public class StructuredContentResourceTest
 								"[" +
 									_COMPLETE_STRUCTURED_CONTENT_OPTIONS
 										[RandomTestUtil.randomInt(0, 2)] + "]";
+
+							setValue(
+								() -> {
+									if (localizable) {
+										return null;
+									}
+
+									return "[" +
+										_COMPLETE_STRUCTURED_CONTENT_OPTIONS
+											[RandomTestUtil.randomInt(0, 2)] +
+												"]";
+								});
 						}
 					};
 					name = "MultipleSelection";
@@ -1548,6 +1563,15 @@ public class StructuredContentResourceTest
 			postStructuredContent.getId());
 	}
 
+	private void _testGetSiteStructuredContentsPageFilteredByDateField()
+		throws Exception {
+
+		_assertFilterSiteStructuredContentsPageFilteredByDateField(
+			LocaleUtil.fromLanguageId("ar_SA"));
+		_assertFilterSiteStructuredContentsPageFilteredByDateField(
+			LocaleUtil.US);
+	}
+
 	private void _testGetSiteStructuredContentsPageOrderedByDescendingPriority()
 		throws Exception {
 
@@ -1679,6 +1703,300 @@ public class StructuredContentResourceTest
 				getStructuredContent3.getStructuredContentFolderId()));
 	}
 
+	private void _testGetStructuredContentWithAllTypesOfContentFields(
+			boolean localizable)
+		throws Exception {
+
+		StructuredContent postStructuredContent =
+			structuredContentResource.postSiteStructuredContent(
+				testGroup.getGroupId(),
+				_randomCompleteStructuredContent(localizable));
+
+		StructuredContent getStructuredContent =
+			structuredContentResource.getStructuredContent(
+				postStructuredContent.getId());
+
+		assertEquals(postStructuredContent, getStructuredContent);
+		assertValid(getStructuredContent);
+	}
+
+	private void _testGetStructuredContentWithDifferentFolder()
+		throws Exception {
+
+		StructuredContent postStructuredContent =
+			structuredContentResource.
+				postStructuredContentFolderStructuredContent(
+					_journalFolder.getFolderId(),
+					_randomCompleteStructuredContent(true));
+
+		StructuredContent getStructuredContent =
+			structuredContentResource.getStructuredContent(
+				postStructuredContent.getId());
+
+		Assert.assertEquals(
+			_journalFolder.getFolderId(),
+			(long)getStructuredContent.getStructuredContentFolderId());
+	}
+
+	private void _testGetStructuredContentWithDifferentLocale()
+		throws Exception {
+
+		StructuredContent postStructuredContent =
+			structuredContentResource.postSiteStructuredContent(
+				testGroup.getGroupId(), randomStructuredContent());
+
+		String title = postStructuredContent.getTitle();
+
+		StructuredContentResource.Builder builder =
+			StructuredContentResource.builder();
+
+		StructuredContentResource frenchStructuredContentResource =
+			builder.authentication(
+				"test@liferay.com", "test"
+			).locale(
+				LocaleUtil.FRANCE
+			).build();
+
+		String frenchTitle = RandomTestUtil.randomString();
+
+		postStructuredContent.setTitle(frenchTitle);
+
+		frenchStructuredContentResource.putStructuredContent(
+			postStructuredContent.getId(), postStructuredContent);
+
+		StructuredContent getStructuredContent =
+			frenchStructuredContentResource.getStructuredContent(
+				postStructuredContent.getId());
+
+		Assert.assertEquals(frenchTitle, getStructuredContent.getTitle());
+
+		getStructuredContent = structuredContentResource.getStructuredContent(
+			getStructuredContent.getId());
+
+		Assert.assertEquals(title, getStructuredContent.getTitle());
+	}
+
+	private void _testGetStructuredContentWithDifferentTimeZone()
+		throws Exception {
+
+		User user = UserTestUtil.addGroupAdminUser(testGroup);
+
+		user.setTimeZoneId("America/Sao_Paulo");
+
+		user = _userLocalService.updateUser(user);
+
+		user = _userLocalService.updatePassword(
+			user.getUserId(), "test", "test", false, true);
+
+		try {
+			StructuredContent postStructuredContent =
+				structuredContentResource.postSiteStructuredContent(
+					testGroup.getGroupId(), randomStructuredContent());
+
+			StructuredContentResource.Builder builder =
+				StructuredContentResource.builder();
+
+			StructuredContentResource structuredContentResource =
+				builder.authentication(
+					user.getEmailAddress(), "test"
+				).locale(
+					LocaleUtil.getDefault()
+				).build();
+
+			postStructuredContent.setDatePublished(new Date());
+
+			StructuredContent putStructuredContent =
+				structuredContentResource.putStructuredContent(
+					postStructuredContent.getId(), postStructuredContent);
+
+			JournalArticle journalArticle =
+				_journalArticleLocalService.fetchLatestArticle(
+					putStructuredContent.getId());
+
+			Assert.assertEquals(
+				journalArticle.getDisplayDate(),
+				putStructuredContent.getDatePublished());
+		}
+		finally {
+			_userLocalService.deleteUser(user);
+		}
+	}
+
+	private void _testGetStructuredContentWithRoleAdministrator()
+		throws Exception {
+
+		StructuredContent postStructuredContent =
+			testGetStructuredContent_addStructuredContent();
+
+		StructuredContent getStructuredContent =
+			structuredContentResource.getStructuredContent(
+				postStructuredContent.getId());
+
+		Map<String, Map<String, String>> actions =
+			getStructuredContent.getActions();
+
+		Assert.assertTrue(actions.containsKey("delete"));
+		Assert.assertTrue(actions.containsKey("get"));
+		Assert.assertTrue(actions.containsKey("get-rendered-content"));
+		Assert.assertTrue(actions.containsKey("replace"));
+		Assert.assertTrue(actions.containsKey("subscribe"));
+		Assert.assertTrue(actions.containsKey("unsubscribe"));
+		Assert.assertTrue(actions.containsKey("update"));
+	}
+
+	private void _testGetStructuredContentWithRoleOwner() throws Exception {
+		Role role = RoleTestUtil.addRole(RoleConstants.TYPE_SITE);
+
+		RoleTestUtil.addResourcePermission(
+			role.getName(), "com.liferay.journal",
+			ResourceConstants.SCOPE_GROUP,
+			String.valueOf(testGroup.getGroupId()), ActionKeys.ADD_ARTICLE);
+
+		String password = RandomTestUtil.randomString();
+
+		User ownerUser = UserTestUtil.addUser(
+			TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
+			password, RandomTestUtil.randomString() + "@liferay.com",
+			RandomTestUtil.randomString(), LocaleUtil.getDefault(),
+			RandomTestUtil.randomString(), RandomTestUtil.randomString(), null,
+			ServiceContextTestUtil.getServiceContext());
+
+		UserLocalServiceUtil.updateEmailAddressVerified(
+			ownerUser.getUserId(), true);
+
+		UserGroupRoleLocalServiceUtil.addUserGroupRoles(
+			new long[] {ownerUser.getUserId()}, testGroup.getGroupId(),
+			role.getRoleId());
+
+		StructuredContentResource.Builder builder =
+			StructuredContentResource.builder();
+
+		StructuredContentResource ownerUserStructuredContentResource =
+			builder.authentication(
+				ownerUser.getLogin(), password
+			).locale(
+				LocaleUtil.getDefault()
+			).build();
+
+		StructuredContent postStructuredContent =
+			ownerUserStructuredContentResource.postSiteStructuredContent(
+				testGroup.getGroupId(), randomStructuredContent());
+
+		StructuredContent getStructuredContent =
+			ownerUserStructuredContentResource.getStructuredContent(
+				postStructuredContent.getId());
+
+		try {
+			Map<String, Map<String, String>> actions =
+				getStructuredContent.getActions();
+
+			Assert.assertTrue(actions.containsKey("delete"));
+			Assert.assertTrue(actions.containsKey("get"));
+			Assert.assertTrue(actions.containsKey("get-rendered-content"));
+			Assert.assertTrue(actions.containsKey("replace"));
+			Assert.assertTrue(actions.containsKey("subscribe"));
+			Assert.assertTrue(actions.containsKey("unsubscribe"));
+			Assert.assertTrue(actions.containsKey("update"));
+		}
+		finally {
+			_roleLocalService.deleteRole(role);
+			_userLocalService.deleteUser(ownerUser);
+		}
+	}
+
+	private void _testGetStructuredContentWithRoleRegularUser()
+		throws Exception {
+
+		Role role = RoleTestUtil.addRole(RoleConstants.TYPE_SITE);
+
+		RoleTestUtil.addResourcePermission(
+			role.getName(), "com.liferay.journal",
+			ResourceConstants.SCOPE_GROUP,
+			String.valueOf(testGroup.getGroupId()), ActionKeys.ADD_ARTICLE);
+
+		String password = RandomTestUtil.randomString();
+
+		User ownerUser = UserTestUtil.addUser(
+			TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
+			password, RandomTestUtil.randomString() + "@liferay.com",
+			RandomTestUtil.randomString(), LocaleUtil.getDefault(),
+			RandomTestUtil.randomString(), RandomTestUtil.randomString(), null,
+			ServiceContextTestUtil.getServiceContext());
+
+		UserLocalServiceUtil.updateEmailAddressVerified(
+			ownerUser.getUserId(), true);
+
+		UserGroupRoleLocalServiceUtil.addUserGroupRoles(
+			new long[] {ownerUser.getUserId()}, testGroup.getGroupId(),
+			role.getRoleId());
+
+		RoleTestUtil.addResourcePermission(
+			role.getName(), JournalArticle.class.getName(),
+			ResourceConstants.SCOPE_GROUP,
+			String.valueOf(testGroup.getGroupId()), ActionKeys.VIEW);
+
+		StructuredContentResource.Builder builder =
+			StructuredContentResource.builder();
+
+		StructuredContentResource ownerUserStructuredContentResource =
+			builder.authentication(
+				ownerUser.getLogin(), password
+			).locale(
+				LocaleUtil.getDefault()
+			).build();
+
+		password = RandomTestUtil.randomString();
+
+		User regularUser = UserTestUtil.addUser(
+			TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
+			password, RandomTestUtil.randomString() + "@liferay.com",
+			RandomTestUtil.randomString(), LocaleUtil.getDefault(),
+			RandomTestUtil.randomString(), RandomTestUtil.randomString(), null,
+			ServiceContextTestUtil.getServiceContext());
+
+		UserLocalServiceUtil.updateEmailAddressVerified(
+			regularUser.getUserId(), true);
+
+		UserGroupRoleLocalServiceUtil.addUserGroupRoles(
+			new long[] {regularUser.getUserId()}, testGroup.getGroupId(),
+			role.getRoleId());
+
+		builder = StructuredContentResource.builder();
+
+		StructuredContentResource regularUserStructuredContentResource =
+			builder.authentication(
+				regularUser.getLogin(), password
+			).locale(
+				LocaleUtil.getDefault()
+			).build();
+
+		StructuredContent postStructuredContent =
+			ownerUserStructuredContentResource.postSiteStructuredContent(
+				testGroup.getGroupId(), randomStructuredContent());
+
+		StructuredContent getStructuredContent =
+			regularUserStructuredContentResource.getStructuredContent(
+				postStructuredContent.getId());
+
+		try {
+			Map<String, Map<String, String>> actions =
+				getStructuredContent.getActions();
+
+			Assert.assertFalse(actions.containsKey("delete"));
+			Assert.assertTrue(actions.containsKey("get"));
+			Assert.assertTrue(actions.containsKey("get-rendered-content"));
+			Assert.assertFalse(actions.containsKey("replace"));
+			Assert.assertFalse(actions.containsKey("subscribe"));
+			Assert.assertFalse(actions.containsKey("unsubscribe"));
+			Assert.assertFalse(actions.containsKey("update"));
+		}
+		finally {
+			_roleLocalService.deleteRole(role);
+			_userLocalService.deleteUser(ownerUser);
+			_userLocalService.deleteUser(regularUser);
+		}
+	}
+
 	private void _testPostAssetLibraryStructuredContent(
 			String externalReferenceCode)
 		throws Exception {
@@ -1705,8 +2023,20 @@ public class StructuredContentResourceTest
 	@Inject(filter = "ddm.form.deserializer.type=json")
 	private static DDMFormDeserializer _jsonDDMFormDeserializer;
 
+	@Inject
+	private AssetCategoryLocalService _assetCategoryLocalService;
+
+	@Inject
+	private AssetVocabularyLocalService _assetVocabularyLocalService;
+
 	private BlogsEntry _blogsEntry;
-	private DDMStructure _complexDDMStructure;
+
+	@Inject
+	private DataDefinitionResource.Factory _dataDefinitionResourceFactory;
+
+	@Inject
+	private DDMFormValuesToFieldsConverter _ddmFormValuesToFieldsConverter;
+
 	private DDMStructure _ddmStructure;
 	private DDMTemplate _ddmTemplate;
 	private DDMStructure _depotDDMStructure;
@@ -1717,7 +2047,14 @@ public class StructuredContentResourceTest
 	@Inject
 	private JournalArticleLocalService _journalArticleLocalService;
 
+	@Inject
+	private JournalConverter _journalConverter;
+
 	private JournalFolder _journalFolder;
+
+	@Inject
+	private Language _language;
+
 	private Layout _layout;
 
 	@Inject
@@ -1725,6 +2062,7 @@ public class StructuredContentResourceTest
 		_layoutPageTemplateEntryLocalService;
 
 	private DDMStructure _localizedDDMStructure;
+	private String _originalName;
 
 	@Inject
 	private Portal _portal;

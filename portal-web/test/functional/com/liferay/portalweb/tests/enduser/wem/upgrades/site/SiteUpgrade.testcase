@@ -1,10 +1,13 @@
 @component-name = "portal-upgrades"
 definition {
 
+	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.component.names = "Sites Administration,Upgrades WEM";
-	property testray.main.component.name = "Upgrades WEM";
+	property test.liferay.virtual.instance = "false";
+	property test.run.type = "single";
+	property testray.component.names = "Upgrades WEM";
+	property testray.main.component.name = "Sites Administration";
 
 	setUp {
 		SignIn.signIn();

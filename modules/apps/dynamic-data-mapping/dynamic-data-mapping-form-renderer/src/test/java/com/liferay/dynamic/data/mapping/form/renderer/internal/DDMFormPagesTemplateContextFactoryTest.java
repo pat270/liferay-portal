@@ -44,7 +44,6 @@ import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HtmlParser;
-import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
@@ -57,7 +56,6 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 import com.liferay.portal.util.FastDateFormatFactoryImpl;
-import com.liferay.portal.util.HtmlImpl;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -95,7 +93,6 @@ public class DDMFormPagesTemplateContextFactoryTest {
 		_setUpFastDateFormatFactoryUtil();
 		_setUpGooglePlacesUtil();
 		_setUpHtmlParser();
-		_setUpHtmlUtil();
 		_setUpHttpServletRequest();
 		setUpLanguageUtil();
 		_setUpLocaleThreadLocal();
@@ -920,12 +917,6 @@ public class DDMFormPagesTemplateContextFactoryTest {
 		).thenReturn(
 			"titlePage"
 		);
-	}
-
-	private static void _setUpHtmlUtil() {
-		HtmlUtil htmlUtil = new HtmlUtil();
-
-		htmlUtil.setHtml(new HtmlImpl());
 	}
 
 	private static void _setUpHttpServletRequest() {

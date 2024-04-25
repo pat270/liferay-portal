@@ -20,6 +20,24 @@ boolean hasUpdateLayoutPermission = GetterUtil.getBoolean(request.getAttribute(C
 <div id="<%= portletNamespace %>customizationBar">
 	<div class="control-menu-level-2">
 		<clay:container-fluid>
+			<div class="control-menu-level-2-heading d-flex d-md-none">
+				<liferay-ui:message key="customization-options" />
+
+				<clay:button
+					additionalProps='<%=
+						HashMapBuilder.<String, Object>put(
+							"portletNamespace", portletNamespace
+						).build()
+					%>'
+					cssClass="close"
+					displayType="unstyled"
+					aria-label="<%= LanguageUtil.get(request, "close") %>"
+					icon="times"
+					propsTransformer="{CustomizationButtonPropsTransformer} from layout-admin-web"
+					small="<%= true %>"
+				/>
+			</div>
+
 			<ul class="control-menu-level-2-nav control-menu-nav flex-column flex-md-row">
 				<li class="c-mb-0 control-menu-nav-item flex-shrink-1">
 					<span class="text-info">
@@ -61,7 +79,7 @@ boolean hasUpdateLayoutPermission = GetterUtil.getBoolean(request.getAttribute(C
 					</li>
 
 					<liferay-frontend:component
-						module="js/LayoutCustomizationSettings"
+						module="{LayoutCustomizationSettings} from layout-admin-web"
 					/>
 				</c:if>
 
@@ -74,7 +92,17 @@ boolean hasUpdateLayoutPermission = GetterUtil.getBoolean(request.getAttribute(C
 					<clay:dropdown-actions
 						aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 						dropdownItems="<%= customizationSettingsActionDropdownItemsProvider.getActionDropdownItems() %>"
-						propsTransformer="js/CustomizationSettingsActionDropdownPropsTransformer"
+						propsTransformer="{CustomizationSettingsActionDropdownPropsTransformer} from layout-admin-web"
+					/>
+				</li>
+				<li class="c-ml-2 control-menu-nav-item d-block d-md-none flex-shrink-0">
+					<clay:dropdown-menu
+						icon="caret-bottom"
+						swapIconSide="<%= true %>"
+						label="show-actions"
+						aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
+						dropdownItems="<%= customizationSettingsActionDropdownItemsProvider.getActionDropdownItems() %>"
+						propsTransformer="{CustomizationSettingsActionDropdownPropsTransformer} from layout-admin-web"
 					/>
 				</li>
 			</ul>

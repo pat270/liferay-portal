@@ -26,6 +26,8 @@ import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.test.rule.Inject;
 
+import java.math.BigDecimal;
+
 import java.text.DateFormat;
 
 import org.junit.Assert;
@@ -68,7 +70,7 @@ public class ReplenishmentItemResourceTest
 
 		replenishmentItem.setAvailabilityDate(_dateFormat.parse("2022-09-24"));
 		replenishmentItem.setExternalReferenceCode("newExternalReferenceCode");
-		replenishmentItem.setQuantity(25);
+		replenishmentItem.setQuantity(BigDecimal.valueOf(25));
 
 		replenishmentItemResource.patchReplenishmentItem(
 			replenishmentItem.getId(), replenishmentItem);
@@ -92,7 +94,7 @@ public class ReplenishmentItemResourceTest
 			replenishmentItem.getExternalReferenceCode();
 
 		replenishmentItem.setAvailabilityDate(_dateFormat.parse("2022-09-24"));
-		replenishmentItem.setQuantity(25);
+		replenishmentItem.setQuantity(BigDecimal.valueOf(25));
 
 		replenishmentItemResource.patchReplenishmentItemByExternalReferenceCode(
 			externalReferenceCode, replenishmentItem);
@@ -122,7 +124,7 @@ public class ReplenishmentItemResourceTest
 				externalReferenceCode = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
 				id = RandomTestUtil.randomLong();
-				quantity = RandomTestUtil.randomInt();
+				quantity = BigDecimal.valueOf(RandomTestUtil.randomInt());
 				sku = testGetReplenishmentItemsPage_getSku();
 				warehouseId =
 					testGetWarehouseIdReplenishmentItemsPage_getWarehouseId();
@@ -227,7 +229,7 @@ public class ReplenishmentItemResourceTest
 					_getCommerceInventoryWarehouseId(),
 					_dateFormat.parse(
 						_dateFormat.format(RandomTestUtil.nextDate())),
-					RandomTestUtil.nextInt(),
+					BigDecimal.valueOf(RandomTestUtil.nextInt()),
 					testGetReplenishmentItemsPage_getSku(), StringPool.BLANK);
 
 		return _toReplenishmentItem(_commerceInventoryReplenishmentItem);
@@ -289,7 +291,7 @@ public class ReplenishmentItemResourceTest
 					_getCommerceInventoryWarehouseId(),
 					_dateFormat.parse(
 						_dateFormat.format(RandomTestUtil.nextDate())),
-					RandomTestUtil.nextInt(),
+					BigDecimal.valueOf(RandomTestUtil.nextInt()),
 					testGetReplenishmentItemsPage_getSku(), StringPool.BLANK);
 
 		return _commerceInventoryReplenishmentItem;

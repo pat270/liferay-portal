@@ -1,4 +1,4 @@
-@component-name = "portal-wcm"
+@component-name = "portal-content-management"
 definition {
 
 	property ci.retries.disabled = "true";
@@ -16,17 +16,6 @@ definition {
 
 		task ("Add a site") {
 			HeadlessSite.addSite(siteName = "Test Site Name");
-		}
-	}
-
-	tearDown {
-		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
-
-		if (${testLiferayVirtualInstance} == "true") {
-			PortalInstances.tearDownCP();
-		}
-		else {
-			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
 		}
 	}
 
@@ -116,6 +105,383 @@ definition {
 				webContentTitle = "Web Content Title");
 
 			WebContent.viewExpirationDateCP(expirationDate = "01/02/3000");
+		}
+	}
+
+	@description = "This is a use case for LPS-195345. Verify that the order of the categories remains as previously selected after publishing a web content."
+	@priority = 4
+	test AddWebContentWithCategoryHiearchy {
+		task ("Given the user has a category hiearchy") {
+			JSONCategory.addVocabulary(
+				groupName = "Test Site Name",
+				title = "Vocabulary Name");
+
+			JSONCategory.addCategory(
+				groupName = "Test Site Name",
+				title = "Category Name 1",
+				vocabularyName = "Vocabulary Name");
+
+			var parentCategoryNumber = 1;
+
+			for (var subCategoryNumber : list "2,3,4,5,6") {
+				JSONCategory.addSubcategory(
+					groupName = "Test Site Name",
+					parentCategoryName = "Category Name ${parentCategoryNumber}",
+					title = "Category Name ${subCategoryNumber}",
+					vocabularyName = "Vocabulary Name");
+
+				var parentCategoryNumber = ${parentCategoryNumber} + 1;
+			}
+		}
+
+		task ("When the user adds a web content with the category hiearchy") {
+			JSONWebcontent.addWebContent(
+				content = "Web Content Content",
+				groupName = "Test Site Name",
+				title = "Web Content Title");
+
+			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+			WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Title");
+
+			WebContent.addWithMultipleCategories(
+				categoryNameList = "Category Name 1,Category Name 2,Category Name 3,Category Name 4,Category Name 5,Category Name 6",
+				vocabularyName = "Vocabulary Name",
+				webContentContent = "Web Content Content",
+				webContentTitle = "Web Content Title");
+		}
+
+		task ("Then the added categories should keep the same order with hiearchy") {
+			WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Title");
+
+			WebContent.viewCategorizationCategoriesOrderCP(
+				categoryNameList = "Category Name 1,Category Name 2,Category Name 3,Category Name 4,Category Name 5,Category Name 6",
+				vocabularyName = "Vocabulary Name");
+		}
+	}
+
+	@description = "This is a test for LPS-192836. Assert can select feature image from Document and Media in web content creation."
+	@priority = 5
+	test AddWebContentWithFeaturedImageFromDocumentsAndMedia {
+		property portal.acceptance = "true";
+
+		task ("Given a user accesses to the web content editor") {
+			HeadlessSite.addSite(
+				siteName = "Site Name",
+				templateName = "Welcome",
+				templateType = "Site Initializer");
+
+			WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name");
+
+			WebContentNavigator.gotoAddCP();
+
+			WebContent.addCP(webContentTitle = "Web Content Title");
+		}
+
+		task ("When the user selects the From Documents and Media as Featured Image") {
+			Panel.expandPanel(panel = "Featured Image");
+
+			Select(
+				locator1 = "WCEditWebContent#SELECT_FEATURED_IMAGE_TYPE",
+				value1 = "From Documents and Media");
+		}
+
+		task ("Then the user cannot publish the web content without select an existing small image") {
+			Button.clickPublish();
+
+			Alert.viewErrorMessage(errorMessage = "Please select an existing small image.");
+		}
+
+		task ("When the user selects an image from Documents and Media") {
+			WebContent.addFeaturedImageFromDocumentsAndMedia(
+				dmFolderName = "Provided by Liferay",
+				imageFileName = "earth.png");
+		}
+
+		task ("Then the user could publish the web content") {
+			PortletEntry.publish();
+
+			LexiconEntry.changeDisplayStyle(displayStyle = "cards");
+
+			LexiconCard.viewSpecificCardThumbnail(
+				card = "Web Content Title",
+				imageFileName = "earth.png");
+		}
+
+		task ("When the user edits the web content") {
+			WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Title");
+
+			AssertTextEquals(
+				locator1 = "WCEditWebContent#SELECT_FEATURED_IMAGE_INPUT",
+				value1 = "earth.png");
+		}
+
+		task ("Then the user could change the selected featured image") {
+			WebContent.addFeaturedImageFromDocumentsAndMedia(
+				dmFolderName = "Provided by Liferay",
+				imageFileName = "moon.png");
+
+			PortletEntry.publish();
+
+			LexiconEntry.changeDisplayStyle(displayStyle = "cards");
+
+			LexiconCard.viewSpecificCardThumbnail(
+				card = "Web Content Title",
+				imageFileName = "moon.png");
+		}
+	}
+
+	@description = "This is a test for LPS-202016. Can configure required vocabulary in an asset library on the site connected."
+	@priority = 4
+	test CanConfigureRequiredVocabularyInAnAssetLibraryOnTheSiteConnected {
+		task ("When adding a vocabulary in asset libraray") {
+			task ("Add an asset library and connect it to the created site") {
+				JSONDepot.addDepot(depotName = "Test Depot Name");
+
+				JSONDepot.connectSite(
+					depotName = "Test Depot Name",
+					groupName = "Test Site Name");
+			}
+
+			task ("Add a vocabulary in asset library") {
+				DepotNavigator.openDepotCategoriesAdmin(depotName = "Test Depot Name");
+			}
+
+			task ("Add a name") {
+				Vocabulary.gotoAddVocabulary();
+
+				PortletEntry.inputName(name = "Vocabulary Name");
+			}
+		}
+
+		task ("Then can configure required vocabulary") {
+			task ("Expand Associated Asset Types") {
+				Panel.expandPanel(panel = "Associated Asset Types");
+			}
+
+			task ("View there's an explanatory text 'Choose the asset types this vocabulary is associated with and whether it is required.'") {
+				AssertTextEquals(
+					locator1 = "Message#SUBTITLE",
+					value1 = "Choose the asset types this vocabulary is associated with and whether it is required.");
+			}
+
+			task ("View Not Required is selected as default in radio") {
+				AssertElementPresent(
+					locator1 = "Radio#ANY_CHECKED",
+					radioLabel = "Not Required");
+			}
+
+			task ("View Choose Asset Type is changed to Asset Types and select 'Only Required in this Asset Library' and save") {
+				AssertElementPresent(
+					ariaLabel = "Asset Types",
+					locator1 = "Select#ANY_ARIA_LABEL",
+					value1 = "All Asset Types");
+
+				Check.checkNotVisible(
+					locator1 = "Radio#ANY",
+					radioLabel = "Only Required in This Asset Library");
+
+				Button.clickNoError(button = "Save");
+
+				AssertConfirm.assertPartialConfirmation(value1 = "Are you sure you want to create this vocabulary with public visibility?");
+
+				Alert.viewSuccessMessage();
+			}
+
+			task ("Add a category to the vocabulary") {
+				Category.addCP(
+					categoryName = "Category Name",
+					vocabularyName = "Vocabulary Name");
+			}
+
+			task ("Go to the created site > Categorization > Categories") {
+				Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+			}
+
+			task ("View there's no asterisk on the created vocabulary") {
+				Navigator.gotoNavNested(navNested = "Vocabulary Name");
+
+				AssertVisible(
+					assetTitle = "Vocabulary Name",
+					info = "Asset Types: All Asset Types",
+					locator1 = "Message#ASSET_INFO");
+			}
+
+			task ("Add a web content with no category selected") {
+				WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+				WebContent.addArticleCP(
+					webContentContent = "Web Content Content Without Category",
+					webContentTitle = "Web Content Title Without Category");
+			}
+
+			task ("Assert the web content is added successfully") {
+				WebContent.viewTitle(webContentTitle = "Web Content Title Without Category");
+			}
+
+			task ("Go to Asset Library > Categories") {
+				DepotNavigator.openDepotCategoriesAdmin(depotName = "Test Depot Name");
+			}
+
+			task ("Edit the created vocabulary") {
+				Navigator.gotoNavNested(navNested = "Vocabulary Name");
+
+				Click.waitForMenuToggleJSClick(
+					key_headerName = "Vocabulary Name",
+					locator1 = "Portlet#H2_HEADER_VERTICAL_ELLIPSIS");
+
+				MenuItem.click(menuItem = "Edit");
+			}
+
+			task ("Select'Required in This Asset Library and Its Connected Sites' and save") {
+				Check.checkNotVisible(
+					locator1 = "Radio#ANY",
+					radioLabel = "Required in This Asset Library and Its Connected Sites");
+
+				PortletEntry.save();
+			}
+
+			task ("Go to the created site > Categorization > Categories") {
+				Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+			}
+
+			task ("View there's asterisk on the created vocabulary") {
+				Navigator.gotoNavNested(navNested = "Vocabulary Name");
+
+				AssertVisible(
+					assetTitle = "Vocabulary Name",
+					info = "Asset Types: All Asset Types *(Required)",
+					locator1 = "Message#ASSET_INFO");
+			}
+
+			task ("Select the category and publish again") {
+				WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+				WebContentNavigator.gotoAddCP();
+
+				WebContent.addFailWithoutRequiredCategoryAssetTypeCP(vocabularyName = "Vocabulary Name");
+
+				WebContent.selectCategory(
+					categoryNameList = "Category Name",
+					vocabularyName = "Vocabulary Name");
+
+				PortletEntry.publish();
+			}
+
+			task ("Assert the web content is added successfully") {
+				WebContent.viewTitle(webContentTitle = "Web Content Title");
+			}
+		}
+	}
+
+	@description = "This is a test for LPS-202016. Disconnect and connect the site to the Asset Library when selecting 'Required in This Asset Library and Its Connected Sites'."
+	@priority = 4
+	test CanDisconnectAndConnectTheSiteToTheAssetLibraryInRequiredVocabulary {
+		task ("When adding a vocabulary in asset libraray") {
+			task ("Add an asset library and connect it to the created site") {
+				JSONDepot.addDepot(depotName = "Test Depot Name");
+
+				JSONDepot.connectSite(
+					depotName = "Test Depot Name",
+					groupName = "Test Site Name");
+			}
+
+			task ("Add a vocabulary in asset library") {
+				DepotNavigator.openDepotCategoriesAdmin(depotName = "Test Depot Name");
+			}
+
+			task ("Add a name") {
+				Vocabulary.gotoAddVocabulary();
+
+				PortletEntry.inputName(name = "Vocabulary Name");
+			}
+		}
+
+		task ("Then can disconnect and connect the site to the Asset Library when selecting 'Required in This Asset Library and Its Connected Sites") {
+			task ("Expand Associated Asset Types") {
+				Panel.expandPanel(panel = "Associated Asset Types");
+			}
+
+			task ("Select 'Required in This Asset Library and Its Connected Sites' and save") {
+				Check.checkNotVisible(
+					locator1 = "Radio#ANY",
+					radioLabel = "Required in This Asset Library and Its Connected Sites");
+
+				Button.clickNoError(button = "Save");
+
+				AssertConfirm.assertPartialConfirmation(value1 = "Are you sure you want to create this vocabulary with public visibility?");
+
+				Alert.viewSuccessMessage();
+			}
+
+			task ("Add a category to the vocabulary") {
+				Category.addCP(
+					categoryName = "Category Name",
+					vocabularyName = "Vocabulary Name");
+			}
+
+			task ("Disconnect the site to asset library") {
+				JSONDepot.disconnectSite(groupName = "Test Site Name");
+			}
+
+			task ("Go to the created site > Categorization > Categories") {
+				Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+			}
+
+			task ("View the created vocabulary doesn’t display") {
+				AssertElementNotPresent(
+					key_tab = "Vocabulary Name",
+					locator1 = "NavTab#TAB_LINK");
+			}
+
+			task ("Add a web content with no category selected") {
+				WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+				WebContent.addArticleCP(
+					webContentContent = "Web Content Content Without Category",
+					webContentTitle = "Web Content Title Without Category");
+			}
+
+			task ("Assert the web content is added successfully") {
+				WebContent.viewTitle(webContentTitle = "Web Content Title Without Category");
+			}
+
+			task ("Reconnect the site to asset library") {
+				JSONDepot.connectSite(
+					depotName = "Test Depot Name",
+					groupName = "Test Site Name");
+			}
+
+			task ("Go to the created site > Categorization > Categories") {
+				Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+			}
+
+			task ("View there's asterisk on the created vocabulary") {
+				Navigator.gotoNavNested(navNested = "Vocabulary Name");
+
+				AssertVisible(
+					assetTitle = "Vocabulary Name",
+					info = "Asset Types: All Asset Types *(Required)",
+					locator1 = "Message#ASSET_INFO");
+			}
+
+			task ("Select the category and publish again") {
+				WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+				WebContentNavigator.gotoAddCP();
+
+				WebContent.addFailWithoutRequiredCategoryAssetTypeCP(vocabularyName = "Vocabulary Name");
+
+				WebContent.selectCategory(
+					categoryNameList = "Category Name",
+					vocabularyName = "Vocabulary Name");
+
+				PortletEntry.publish();
+			}
+
+			task ("Assert the web content is added successfully") {
+				WebContent.viewTitle(webContentTitle = "Web Content Title");
+			}
 		}
 	}
 
@@ -327,7 +693,7 @@ definition {
 		task ("Open a second tab and select it") {
 			var baseURL = PropsUtil.get("portal.url");
 
-			Open.openInTheNewTab(locator1 = "${baseURL}/group/test-site-name/~/control_panel/manage?p_p_id=com_liferay_journal_web_portlet_JournalPortlet");
+			Open.openInTheNewTab(value1 = "${baseURL}/group/test-site-name/~/control_panel/manage?p_p_id=com_liferay_journal_web_portlet_JournalPortlet");
 		}
 
 		task ("Edit Web Content article in the second tab") {
@@ -340,15 +706,15 @@ definition {
 		}
 
 		task ("Select the first tab and edit Web Content Title") {
-			SelectWindow.selectPopUp(locator1 = "null");
+			SelectWindow(value1 = "null");
 
 			WebContent.addCP(webContentTitle = "WC WebContent Title Edit");
 		}
 
 		task ("Publish Web Content and view the error message") {
-			PortletEntry.publish();
+			Button.clickPublish();
 
-			Alert.viewErrorMessage(errorMessage = "Another user has made changes since you started editing. Publish this article to save this version and overwrite the recent changes.");
+			Alert.viewErrorMessage(errorMessage = "Another user has made changes since you started editing. Publish this version to save it and overwrite the recent changes.");
 		}
 	}
 
@@ -696,7 +1062,7 @@ definition {
 				webContentDateFieldLabel = "Date and Time",
 				webContentTitle = "Web Content Title");
 
-			PageEditor.publish();
+			PortletEntry.publish();
 		}
 
 		task ("When we have a display page with a date fragment") {
@@ -977,7 +1343,7 @@ definition {
 		}
 
 		task ("Assert the user is taken to the Web Content Display Page and the draft version of the Web Content article displays in the Web Content Display widget") {
-			SelectWindow.selectPopUp(locator1 = "null");
+			SelectWindow.selectPopUp(value1 = "null");
 
 			WebContentDisplayPortlet.viewContent(
 				webContentContent = "Web Content Content Edit",
@@ -1031,9 +1397,7 @@ definition {
 				webContentContent = "Web Content Content Edit",
 				webContentTitle = "Web Content Title Edit");
 
-			Button.clickSubmitForWorkflow();
-
-			Alert.viewSuccessMessage();
+			PortletEntry.submitForWorkflow();
 		}
 
 		task ("View the usages of the Web Content article") {
@@ -1049,7 +1413,7 @@ definition {
 		}
 
 		task ("Assert the user is taken to the Web Content Display Page and the pending version of the Web Content article displays in the Web Content Display widget") {
-			SelectWindow.selectPopUp(locator1 = "null");
+			SelectWindow.selectPopUp(value1 = "null");
 
 			WebContentDisplayPortlet.viewContent(
 				webContentContent = "Web Content Content Edit",
@@ -1124,7 +1488,7 @@ definition {
 		}
 
 		task ("Assert the user is taken to the Web Content Display Page and the scheduled Web Content article displays in the Web Content Display widget") {
-			SelectWindow.selectPopUp(locator1 = "null");
+			SelectWindow.selectPopUp(value1 = "null");
 
 			WebContentDisplayPortlet.viewContent(
 				webContentContent = "Web Content Content",
@@ -1206,6 +1570,170 @@ definition {
 			WebContent.searchNoResultsCP(
 				searchQuery = "Web3 Content3 Title3",
 				webContentTitle = "Web2 Content2 Title2");
+		}
+	}
+
+	@description = "This is a use case for LPS-133629. The user can select folder by search when create web content based on custom structure via Asset Publisher."
+	@priority = 4
+	test SelectFolderBySearchWhenCreateWebContentBasedOnCustomStructureViaAssetPublisher {
+		task ("Add a widget page") {
+			JSONLayout.addPublicLayout(
+				groupName = "Test Site Name",
+				layoutName = "Asset Publisher Page");
+		}
+
+		task ("Add an Asset Publisher to page") {
+			JSONLayout.addWidgetToPublicLayout(
+				groupName = "Test Site Name",
+				layoutName = "Asset Publisher Page",
+				widgetName = "Asset Publisher");
+		}
+
+		task ("Add a web content folder") {
+			JSONWebcontent.addFolder(
+				folderDescription = "WC Folder Description",
+				folderName = "WC Folder Name",
+				groupName = "Test Site Name");
+		}
+
+		task ("Add a web content structure with a Text field") {
+			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+			NavItem.gotoStructures();
+
+			WebContentStructures.addCP(structureName = "WC Structure Name");
+
+			DataEngine.addField(
+				fieldFieldLabel = "Text",
+				fieldName = "Text");
+
+			WebContentStructures.saveCP();
+		}
+
+		task ("Add a web content based on new structure via Asset Publisher") {
+			Navigator.gotoSitePage(
+				pageName = "Asset Publisher Page",
+				siteName = "Test Site Name");
+
+			AssetPublisherPortlet.addAsset(assetType = "WC Structure Name");
+		}
+
+		task ("Type title and content") {
+			WebContent.addWithStructureCP(
+				webContentText = "This is a Text field",
+				webContentTitle = "Web Content Title");
+		}
+
+		task ("View the Home is shown in selector input") {
+			AssertTextEquals.assertValue(
+				inputFieldId = "resourceName",
+				locator1 = "TextInput#INPUT_ID",
+				value1 = "Home");
+		}
+
+		task ("Select the new folder") {
+			WebContent.selectFolder(
+				folderName = "WC Folder Name",
+				searchTerm = "WC Folder Name");
+
+			PortletEntry.publish();
+		}
+
+		task ("View the new folder and web content are shown in Asset Publisher") {
+			AssetPublisherPortlet.viewAssetPG(
+				assetContent = "WC Folder Description",
+				assetTitle = "WC Folder Name");
+
+			AssetPublisherPortlet.viewAssetPG(
+				assetContent = "This is a Text field",
+				assetTitle = "Web Content Title");
+		}
+
+		task ("Navigate to the new folder in Web Content admin") {
+			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+			WebContentFolder.gotoCP(
+				folderName = "WC Folder Name",
+				webContentTitle = "WC Folder Name");
+		}
+
+		task ("View the web content shown in new folder") {
+			WebContent.viewTitle(webContentTitle = "Web Content Title");
+		}
+	}
+
+	@description = "This is a use case for LPS-133629. The user can select folder when create web content based on Basic Web Content via Asset Publisher."
+	@priority = 5
+	test SelectFolderWhenCreateWebContentViaAssetPublisher {
+		property portal.acceptance = "true";
+
+		task ("Add a widget page") {
+			JSONLayout.addPublicLayout(
+				groupName = "Test Site Name",
+				layoutName = "Asset Publisher Page");
+		}
+
+		task ("Add an Asset Publisher to page") {
+			JSONLayout.addWidgetToPublicLayout(
+				groupName = "Test Site Name",
+				layoutName = "Asset Publisher Page",
+				widgetName = "Asset Publisher");
+		}
+
+		task ("Add a web content folder") {
+			JSONWebcontent.addFolder(
+				folderDescription = "WC Folder Description",
+				folderName = "WC Folder Name",
+				groupName = "Test Site Name");
+		}
+
+		task ("Add a web content based on Basic Web Content via Asset Publisher") {
+			Navigator.gotoSitePage(
+				pageName = "Asset Publisher Page",
+				siteName = "Test Site Name");
+
+			AssetPublisherPortlet.addAsset(assetType = "Basic Web Content");
+		}
+
+		task ("Type title and content") {
+			WebContent.addCP(
+				webContentContent = "Web Content Content",
+				webContentTitle = "Web Content Title");
+		}
+
+		task ("View the Home is shown in selector input") {
+			AssertTextEquals.assertValue(
+				inputFieldId = "resourceName",
+				locator1 = "TextInput#INPUT_ID",
+				value1 = "Home");
+		}
+
+		task ("Select the new folder") {
+			WebContent.selectFolder(folderName = "WC Folder Name");
+
+			PortletEntry.publish();
+		}
+
+		task ("View the new folder and web content are shown in Asset Publisher") {
+			AssetPublisherPortlet.viewAssetPG(
+				assetContent = "WC Folder Description",
+				assetTitle = "WC Folder Name");
+
+			AssetPublisherPortlet.viewAssetPG(
+				assetContent = "Web Content Content",
+				assetTitle = "Web Content Title");
+		}
+
+		task ("Navigate to the new folder in Web Content admin") {
+			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+			WebContentFolder.gotoCP(
+				folderName = "WC Folder Name",
+				webContentTitle = "WC Folder Name");
+		}
+
+		task ("View the web content shown in new folder") {
+			WebContent.viewTitle(webContentTitle = "Web Content Title");
 		}
 	}
 
@@ -1305,7 +1833,7 @@ definition {
 		task ("Copy the Web Content") {
 			WebContentNavigator.gotoEntryMenuItem(
 				entry = "WC WebContent 1",
-				menuItem = "Copy");
+				menuItem = "Make a Copy");
 		}
 
 		task ("Add the second web content and select the display page template in web content") {
@@ -1327,9 +1855,54 @@ definition {
 				pageName = "Test Page Name 1",
 				siteName = "Test Site Name");
 
-			AssetPublisherPortlet.clickAssetTitle(assetTitle = "WC WebContent 1 Duplicate 2");
+			AssetPublisherPortlet.clickAssetTitle(assetTitle = "WC WebContent 1 (Copy)");
 
-			AssertLocation.assertPartialLocation(value1 = "web/test-site-name/-/wc-webcontent-1-duplicate-2");
+			AssertLocation.assertPartialLocation(value1 = "web/test-site-name/-/wc-webcontent-1-copy");
+		}
+	}
+
+	@description = "This is a test for LPS-177690. The tooltip of the back button should be Go to Web Content in the editor of Web Content."
+	@priority = 3
+	test ViewBackButtonTooltipOfWebContentEditor {
+		task ("Given a content creator adds a web content") {
+			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+			WebContentNavigator.gotoAddCP();
+		}
+
+		task ("When the content creator hovers over the back button") {
+			MouseOver(locator1 = "Icon#BACK");
+		}
+
+		task ("Then the content creator could see the tooltip message") {
+			AssertVisible(
+				key_content = "Go to Web Content",
+				locator1 = "Tooltip#FLOATING_TOOLTIP_CONTENT");
+		}
+
+		task ("Given a content creator edits the copy of web content") {
+			JSONWebcontent.addWebContent(
+				content = "Web Content Content",
+				groupName = "Test Site Name",
+				title = "Web Content Title");
+
+			Navigator.gotoBack();
+
+			WebContent.copyCP(webContentTitle = "Web Content Title");
+
+			WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Title (Copy)");
+
+			WaitForVisible(locator1 = "WCEditWebContent#SIDEBAR");
+		}
+
+		task ("When the content creator hovers over the back button") {
+			MouseOver(locator1 = "Icon#BACK");
+		}
+
+		task ("Then the content creator could see the tooltip message") {
+			AssertVisible(
+				key_content = "Go to Web Content",
+				locator1 = "Tooltip#FLOATING_TOOLTIP_CONTENT");
 		}
 	}
 
@@ -1338,6 +1911,7 @@ definition {
 	test ViewCategorizationSettingsAfterDeleteCategoryOfWebContent {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Add a vocabulary") {
 			JSONCategory.addVocabulary(
@@ -1522,10 +2096,7 @@ definition {
 		}
 
 		task ("Impersonate the user") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Users and Organizations");
+			User.openUsersAdmin();
 
 			User.impersonateCP(userName = "userfn1");
 		}
@@ -1546,113 +2117,6 @@ definition {
 				entryExternalURL = "/web/test-site-name/test-page-name",
 				fieldLabel = "Content",
 				pageName = "Test Page Name");
-		}
-	}
-
-	@description = "This is a test for LPS-145292. The user could view new icons on dropdown menu of web content admin."
-	@priority = 4
-	test ViewDropdownMenuIconsInWebContentAdmin {
-		task ("Given a Web Content creator has a new web content") {
-			JSONWebcontent.addWebContent(
-				content = "Web Content",
-				groupName = "Test Site Name",
-				title = "Web Content Title");
-		}
-
-		task ("When the Web Content creator opens the dropdown menu of management toolbar after selecting the new web content") {
-			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
-
-			ManagementBar.clickSelectAllCheckbox();
-
-			Click(locator1 = "ManagementBar#MORE_ACTIONS_ELLIPSIS");
-		}
-
-		task ("Then the Web Content creator can see the new icons on the dropdown menu") {
-			DropdownMenuItem.viewIcon(iconList = "time,move-folder,trash");
-		}
-
-		task ("When the Web Content creator opens the dropdown menu of web content") {
-			LexiconEntry.openEntryMenu(rowEntry = "Web Content Title");
-		}
-
-		task ("Then the Web Content creator can see the new icons on the dropdown menu") {
-			DropdownMenuItem.viewIcon(iconList = "pencil,view,automatic-translate,time,bell-on,date-time,list-ul,copy,upload,download,move-folder,password-policies,trash");
-		}
-
-		task ("When the Web Content creator opens the dropdown menu of given version on View History page") {
-			MenuItem.click(menuItem = "View History");
-
-			LexiconEntry.openEntryMenu(rowEntry = "Web Content Title");
-		}
-
-		task ("Then the Web Content creator can see the new icons on the dropdown menu") {
-			DropdownMenuItem.viewIcon(iconList = "view,time,copy,trash");
-		}
-
-		task ("When the Web Content creator opens the dropdown menu of management toolbar after selecting all versions") {
-			ManagementBar.clickSelectAllCheckbox();
-
-			Click(locator1 = "ManagementBar#MORE_ACTIONS_ELLIPSIS");
-		}
-
-		task ("Then the Web Content creator can see the new icons on the dropdown menu") {
-			DropdownMenuItem.viewIcon(iconList = "time,trash");
-		}
-
-		task ("Given a Web Content creator has a new web content structure") {
-			WebContentStructures.openWebContentStructuresAdmin(siteURLKey = "test-site-name");
-
-			WebContentStructures.addCP(structureName = "WC Structure Name");
-
-			DataEngine.addField(
-				fieldFieldLabel = "Text",
-				fieldName = "Text");
-
-			WebContentStructures.saveCP();
-		}
-
-		task ("When the Web Content creator opens the dropdown menu of management toolbar after selecting new structure") {
-			ManagementBar.clickSelectAllCheckbox();
-
-			Click(locator1 = "ManagementBar#MORE_ACTIONS_ELLIPSIS");
-		}
-
-		task ("Then the Web Content creator can see the new icon on the dropdown menu") {
-			DropdownMenuItem.viewIcon(iconList = "trash");
-		}
-
-		task ("When the Web Content creator opens the dropdown menu of new strucure") {
-			LexiconEntry.openEntryMenu(rowEntry = "WC Structure Name");
-		}
-
-		task ("Then the Web Content creator can see the new icons on the dropdown menu") {
-			DropdownMenuItem.viewIcon(iconList = "pencil,copy,upload,password-policies,trash");
-		}
-
-		task ("Given a Web Content creator has a new web content template") {
-			WebContentTemplates.openWebContentTemplatesAdmin(siteURLKey = "test-site-name");
-
-			WebContentTemplates.addCP(templateName = "WC Template Name");
-		}
-
-		task ("When the Web Content creator opens the dropdown menu of management toolbar after selecting new template") {
-			ManagementBar.clickSelectAllCheckbox();
-
-			Click(locator1 = "ManagementBar#MORE_ACTIONS_ELLIPSIS");
-		}
-
-		task ("Then the Web Content creator can see the new icon on the dropdown menu") {
-			DropdownMenuItem.viewIcon(iconList = "trash");
-		}
-
-		task ("When the Web Content creator opens the dropdown menu of new template") {
-			Click.waitForMenuToggleJSClick(
-				key_card = "WC Template Name",
-				locator1 = "Card#CARD_ELLIPSIS");
-		}
-
-		task ("Then the Web Content creator can see the new icons on the dropdown menu") {
-			DropdownMenuItem.viewIcon(iconList = "pencil,copy,password-policies,trash");
 		}
 	}
 
@@ -2184,8 +2648,6 @@ definition {
 		}
 
 		task ("Then there's warning message inside Friendly URL section") {
-			Pause(locator1 = 60000);
-
 			AssertTextEquals(
 				locator1 = "Message#ERROR_3",
 				value1 = "Warning:The URL used in English (United States), Chinese (China) and German (Germany) already exists in other sites or asset libraries.");
@@ -2235,6 +2697,8 @@ definition {
 	@description = "This is a test for LPS-172561. View warning of duplicated friendly URL in web content from sites and asset libraries."
 	@priority = 3
 	test ViewWarningOfDuplicatedFriendlyURLInWebContentFromSitesAndAssetLibraries {
+		property portal.upstream = "quarantine";
+
 		task ("Given some web contents with one duplicated friendly URL") {
 			task ("Add a web content with 3 friendly URLs") {
 				JSONWebcontent.addWebContent(

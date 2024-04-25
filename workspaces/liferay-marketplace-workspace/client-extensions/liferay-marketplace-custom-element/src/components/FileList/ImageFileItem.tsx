@@ -4,7 +4,7 @@
  */
 
 import ClayButton from '@clayui/button';
-import {CircularProgressbarWithChildren} from 'react-circular-progressbar';
+import {Text} from '@clayui/core';
 
 import arrowNorth from '../../assets/icons/arrow_north_icon.svg';
 import arrowSouth from '../../assets/icons/arrow_south_icon.svg';
@@ -13,21 +13,48 @@ import {UploadedFile} from './FileList';
 
 import './ImageFileItem.scss';
 
-interface ImageFileItemProps {
-	onDelete: (id: string) => void;
+import {ClayInput} from '@clayui/form';
+import ClayIcon from '@clayui/icon';
+import classNames from 'classnames';
+
+import {useAppContext} from '../../manage-app-state/AppManageState';
+import {TYPES} from '../../manage-app-state/actionTypes';
+import CircularProgress from '../CircularProgress';
+
+type ImageFileItemProps = {
+	index: number;
+	isProcessing: boolean;
+	onArrowClick: (index: number, direction: string) => void;
+	onDelete: (id: string, versionName?: string) => void;
+	position: number;
 	tooltip?: string;
 	uploadedFile: UploadedFile;
-}
+	versionName?: string;
+};
 
 export function ImageFileItem({
+	index,
+	isProcessing,
+	onArrowClick,
 	onDelete,
+	position,
 	tooltip,
 	uploadedFile,
+	versionName,
 }: ImageFileItemProps) {
+	const [{appStorefrontImages}, dispatch] = useAppContext();
+
+	const showProgress =
+		isProcessing && !uploadedFile.uploaded && uploadedFile.progress > 0;
+
 	return (
 		<div className="image-file-item-container">
 			<div className="image-file-item-arrow-container">
-				<ClayButton displayType="unstyled">
+				<ClayButton
+					disabled={isProcessing || index === 0}
+					displayType="unstyled"
+					onClick={() => onArrowClick(index, 'up')}
+				>
 					<img
 						alt="Arrow Up"
 						className="image-file-item-arrow-icon"
@@ -35,7 +62,11 @@ export function ImageFileItem({
 					/>
 				</ClayButton>
 
-				<ClayButton displayType="unstyled">
+				<ClayButton
+					disabled={isProcessing || index === position - 1}
+					displayType="unstyled"
+					onClick={() => onArrowClick(index, 'down')}
+				>
 					<img
 						alt="Arrow South"
 						className="image-file-item-arrow-icon"
@@ -44,57 +75,84 @@ export function ImageFileItem({
 				</ClayButton>
 			</div>
 
-			{uploadedFile.uploaded && !uploadedFile.error ? (
-				<img
-					className="image-file-item-uploaded-preview"
-					style={{
-						backgroundImage: `url(${uploadedFile?.preview})`,
-					}}
-				/>
-			) : (
-				<CircularProgressbarWithChildren
-					styles={{
-						path: {stroke: '#0B5FFF'},
-						root: {
-							marginRight: 40,
-							width: 50,
-						},
-					}}
-					value={uploadedFile.progress}
-				>
-					<div
-						style={{
-							fontSize: 10,
-							marginRight: 40,
-							marginTop: 75,
-						}}
-					>
-						<strong>{uploadedFile.progress}</strong>
+			<div>
+				{showProgress ? (
+					<div className="image-file-item-loading-container">
+						<CircularProgress
+							height={80}
+							pathColor="#ffffff"
+							progress={uploadedFile.progress}
+							progressColor="#0B5FFF"
+							width={80}
+						/>
 					</div>
-				</CircularProgressbarWithChildren>
-			)}
+				) : (
+					<div className="d-flex">
+						<img
+							alt=""
+							className="image-file-item-uploaded-preview"
+							src={uploadedFile?.preview}
+						/>
+
+						{uploadedFile.uploaded && (
+							<ClayIcon
+								className={classNames(
+									'image-file-item-icon-check',
+									{
+										'image-file-item-icon-check-animation':
+											uploadedFile.uploaded,
+									}
+								)}
+								symbol="check"
+							/>
+						)}
+					</div>
+				)}
+			</div>
 
 			<div className="image-file-item-info-container">
 				<div className="image-file-item-info-content">
-					<span className="image-file-item-info-content-text">
+					<Text as="span" size={3} weight="normal">
 						{uploadedFile.fileName}
-					</span>
+					</Text>
 
-					<button
-						className="image-file-item-info-content-button"
-						onClick={() => onDelete(uploadedFile.id)}
-					>
-						Remove
-					</button>
+					{!isProcessing && (
+						<ClayButton
+							displayType="secondary"
+							onClick={() =>
+								onDelete(uploadedFile.id, versionName)
+							}
+							size="sm"
+						>
+							Remove
+						</ClayButton>
+					)}
 				</div>
 
-				<div className="image-file-item-info-input-container">
-					<input
-						className="image-file-item-info-input"
+				<div className="align-items-center d-flex">
+					<ClayInput
+						onChange={({target}) => {
+							appStorefrontImages[index].imageDescription =
+								target.value;
+
+							appStorefrontImages[index].changed = true;
+
+							dispatch({
+								payload: {
+									files: appStorefrontImages,
+								},
+								type: TYPES.UPLOAD_APP_STOREFRONT_IMAGES,
+							});
+						}}
 						placeholder="Image description"
+						value={appStorefrontImages[index].imageDescription}
 					/>
 
-					{tooltip && <Tooltip tooltip={tooltip} />}
+					{tooltip && (
+						<div style={{marginLeft: '-40px'}}>
+							<Tooltip tooltip={tooltip} />
+						</div>
+					)}
 				</div>
 			</div>
 		</div>

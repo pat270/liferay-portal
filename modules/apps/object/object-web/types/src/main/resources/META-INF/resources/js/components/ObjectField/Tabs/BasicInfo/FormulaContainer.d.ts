@@ -5,15 +5,25 @@
 
 /// <reference types="react" />
 
+import {SidebarCategory} from '@liferay/object-js-components-web';
 import {ObjectFieldErrors} from '../../ObjectFieldFormBase';
+import '../../EditObjectFieldContent.scss';
 interface FormulaContainerProps {
 	errors: ObjectFieldErrors;
+	modelBuilder?: boolean;
 	objectFieldSettings: ObjectFieldSetting[];
+	onSubmit?: (editedObjectField?: Partial<ObjectField>) => void;
 	setValues: (values: Partial<ObjectField>) => void;
+	sidebarElements: SidebarCategory[];
+	values: Partial<ObjectField>;
 }
 export declare function FormulaContainer({
 	errors,
+	modelBuilder,
 	objectFieldSettings,
+	onSubmit,
 	setValues,
+	sidebarElements,
+	values,
 }: FormulaContainerProps): JSX.Element;
 export {};

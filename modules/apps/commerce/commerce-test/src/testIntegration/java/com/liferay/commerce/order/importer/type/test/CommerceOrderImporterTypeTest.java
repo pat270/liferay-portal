@@ -167,7 +167,7 @@ public class CommerceOrderImporterTypeTest {
 					DLFolderConstants.DEFAULT_PARENT_FOLDER_ID, fileName,
 					MimeTypesUtil.getContentType(file, fileName), fileName,
 					StringPool.BLANK, StringPool.BLANK, StringPool.BLANK, file,
-					null, null, _serviceContext));
+					null, null, null, _serviceContext));
 
 		Assert.assertEquals(
 			commerceOrderImporterItems.toString(), 2,
@@ -201,8 +201,8 @@ public class CommerceOrderImporterTypeTest {
 			_commerceChannel.getCommerceChannelId());
 
 		CommerceInventoryTestUtil.addCommerceInventoryWarehouseItem(
-			_user.getUserId(), commerceInventoryWarehouse, cpInstance.getSku(),
-			100);
+			_user.getUserId(), commerceInventoryWarehouse,
+			BigDecimal.valueOf(100), cpInstance.getSku(), StringPool.BLANK);
 
 		CPTestUtil.addBaseCommerceCatalogCommercePriceList(
 			commerceCatalog.getGroupId(), _commerceCurrency.getCode(),
@@ -236,7 +236,7 @@ public class CommerceOrderImporterTypeTest {
 					DLFolderConstants.DEFAULT_PARENT_FOLDER_ID, fileName,
 					MimeTypesUtil.getContentType(file, fileName), fileName,
 					StringPool.BLANK, StringPool.BLANK, StringPool.BLANK, file,
-					null, null, _serviceContext));
+					null, null, null, _serviceContext));
 
 		Assert.assertEquals(
 			commerceOrderImporterItems.toString(), 1,

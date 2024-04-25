@@ -33,6 +33,7 @@ const RolesDropdown = ({
 					: isSupportSeatRole(accountRole.name) &&
 					  availableSupportSeatsCount === 0,
 				label: accountRole.name,
+				raysourceName: accountRole.raysourceName,
 				value: accountRole.id,
 			})),
 		[
@@ -60,7 +61,9 @@ const RolesDropdown = ({
 				onClick={() => handleOnClick(item)}
 				symbolRight={item.active && 'check'}
 			>
-				{i18n.translate(getKebabCase(item.label))}
+				{i18n.translate(getKebabCase(item.label))
+					? i18n.translate(getKebabCase(item.label))
+					: item.label}
 			</DropDown.Item>
 		));
 
@@ -78,7 +81,11 @@ const RolesDropdown = ({
 					small
 				>
 					<div className="text-truncate">
-						{i18n.translate(getKebabCase(selectedAccountRoleName))}
+						{i18n.translate(getKebabCase(selectedAccountRoleName))
+							? i18n.translate(
+									getKebabCase(selectedAccountRoleName)
+							  )
+							: selectedAccountRoleName}
 					</div>
 
 					<span className="inline-item inline-item-after mt-1">

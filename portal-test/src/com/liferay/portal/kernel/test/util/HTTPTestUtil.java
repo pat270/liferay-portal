@@ -14,8 +14,11 @@ import com.liferay.portal.kernel.util.Base64;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.HttpUtil;
+import com.liferay.portal.kernel.util.MapUtil;
 
 import java.nio.charset.StandardCharsets;
+
+import java.util.Map;
 
 /**
  * @author Luis Miguel Barcos
@@ -23,11 +26,16 @@ import java.nio.charset.StandardCharsets;
  */
 public class HTTPTestUtil {
 
+	public static HTTPTestUtilCustomizer customize() {
+		return new HTTPTestUtilCustomizer();
+	}
+
 	public static int invokeToHttpCode(
 			String body, String endpoint, Http.Method httpMethod)
 		throws Exception {
 
-		Http.Options options = _getHttpOptions(body, endpoint, httpMethod);
+		Http.Options options = _getHttpOptions(
+			body, endpoint, null, httpMethod);
 
 		HttpUtil.URLtoString(options);
 
@@ -40,30 +48,81 @@ public class HTTPTestUtil {
 			String body, String endpoint, Http.Method httpMethod)
 		throws Exception {
 
-		Http.Options options = _getHttpOptions(body, endpoint, httpMethod);
-
-		return JSONFactoryUtil.createJSONObject(HttpUtil.URLtoString(options));
+		return invokeToJSONObject(body, endpoint, null, httpMethod);
 	}
 
-	public static <T extends Throwable> void withCredentials(
-			String emailAddress, String password,
-			UnsafeRunnable<T> unsafeRunnable)
-		throws T {
+	public static JSONObject invokeToJSONObject(
+			String body, String endpoint, Map<String, String> headers,
+			Http.Method httpMethod)
+		throws Exception {
 
-		String credentials = _credentials;
+		return JSONFactoryUtil.createJSONObject(
+			invokeToString(body, endpoint, headers, httpMethod));
+	}
 
-		_credentials = emailAddress + StringPool.COLON + password;
+	public static String invokeToString(
+			String body, String endpoint, Http.Method httpMethod)
+		throws Exception {
 
-		try {
-			unsafeRunnable.run();
+		return invokeToString(body, endpoint, null, httpMethod);
+	}
+
+	public static String invokeToString(
+			String body, String endpoint, Map<String, String> headers,
+			Http.Method httpMethod)
+		throws Exception {
+
+		Http.Options options = _getHttpOptions(
+			body, endpoint, headers, httpMethod);
+
+		return HttpUtil.URLtoString(options);
+	}
+
+	public static class HTTPTestUtilCustomizer {
+
+		public <T extends Throwable> void apply(
+				UnsafeRunnable<T> unsafeRunnable)
+			throws T {
+
+			String defaultBaseURL = _baseURL;
+
+			_baseURL = _newBaseURL;
+
+			String defaultCredentials = _credentials;
+
+			_credentials = _newCredentials;
+
+			try {
+				unsafeRunnable.run();
+			}
+			finally {
+				_baseURL = defaultBaseURL;
+				_credentials = defaultCredentials;
+			}
 		}
-		finally {
-			_credentials = credentials;
+
+		public HTTPTestUtilCustomizer withBaseURL(String baseURL) {
+			_newBaseURL = baseURL;
+
+			return this;
 		}
+
+		public HTTPTestUtilCustomizer withCredentials(
+			String emailAddress, String password) {
+
+			_newCredentials = emailAddress + StringPool.COLON + password;
+
+			return this;
+		}
+
+		private String _newBaseURL = _baseURL;
+		private String _newCredentials = _credentials;
+
 	}
 
 	private static Http.Options _getHttpOptions(
-		String body, String endpoint, Http.Method httpMethod) {
+		String body, String endpoint, Map<String, String> headers,
+		Http.Method httpMethod) {
 
 		Http.Options options = new Http.Options();
 
@@ -71,7 +130,12 @@ public class HTTPTestUtil {
 			HttpHeaders.CONTENT_TYPE, ContentTypes.APPLICATION_JSON);
 		options.addHeader(
 			"Authorization", "Basic " + Base64.encode(_credentials.getBytes()));
-		options.setLocation("http://localhost:8080/o/" + endpoint);
+
+		if (MapUtil.isNotEmpty(headers)) {
+			headers.forEach(options::addHeader);
+		}
+
+		options.setLocation(_baseURL + "/o/" + endpoint);
 		options.setMethod(httpMethod);
 
 		if (body != null) {
@@ -83,6 +147,7 @@ public class HTTPTestUtil {
 		return options;
 	}
 
+	private static String _baseURL = "http://localhost:8080";
 	private static String _credentials = "test@liferay.com:test";
 
 }

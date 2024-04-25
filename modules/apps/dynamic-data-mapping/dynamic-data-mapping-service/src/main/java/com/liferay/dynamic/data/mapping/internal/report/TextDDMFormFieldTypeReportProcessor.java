@@ -43,6 +43,8 @@ import org.osgi.service.component.annotations.Reference;
 		"ddm.form.field.type.name=" + DDMFormFieldTypeConstants.COLOR,
 		"ddm.form.field.type.name=" + DDMFormFieldTypeConstants.DATE,
 		"ddm.form.field.type.name=" + DDMFormFieldTypeConstants.DATE_TIME,
+		"ddm.form.field.type.name=" + DDMFormFieldTypeConstants.DOCUMENT_LIBRARY,
+		"ddm.form.field.type.name=" + DDMFormFieldTypeConstants.IMAGE,
 		"ddm.form.field.type.name=" + DDMFormFieldTypeConstants.SEARCH_LOCATION,
 		"ddm.form.field.type.name=" + DDMFormFieldTypeConstants.TEXT
 	},
@@ -128,7 +130,10 @@ public class TextDDMFormFieldTypeReportProcessor
 						return ddmFormInstanceRecordId != formInstanceRecordId;
 					});
 
-			for (int i = 0; i < _VALUES_MAX_LENGTH; i++) {
+			int length = Math.min(
+				ddmFormInstanceRecords.size(), _VALUES_MAX_LENGTH);
+
+			for (int i = 0; i < length; i++) {
 				DDMFormInstanceRecord currentDDMFormInstanceRecord =
 					ddmFormInstanceRecords.get(i);
 

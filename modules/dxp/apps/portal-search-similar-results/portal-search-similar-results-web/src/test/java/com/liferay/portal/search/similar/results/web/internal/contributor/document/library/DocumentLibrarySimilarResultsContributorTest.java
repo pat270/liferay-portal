@@ -7,11 +7,10 @@ package com.liferay.portal.search.similar.results.web.internal.contributor.docum
 
 import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.petra.string.StringBundler;
-import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.search.similar.results.web.internal.builder.DestinationBuilderImpl;
 import com.liferay.portal.search.similar.results.web.internal.builder.RouteBuilderImpl;
-import com.liferay.portal.search.similar.results.web.internal.helper.HttpHelperImpl;
-import com.liferay.portal.search.similar.results.web.spi.contributor.SimilarResultsContributor;
+import com.liferay.portal.search.similar.results.web.internal.contributor.BaseSimilarResultsContributorTestCase;
+import com.liferay.portal.search.similar.results.web.internal.contributor.SimilarResultsContributor;
 import com.liferay.portal.search.similar.results.web.spi.contributor.helper.DestinationHelper;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 
@@ -25,7 +24,8 @@ import org.mockito.Mockito;
 /**
  * @author André de Oliveira
  */
-public class DocumentLibrarySimilarResultsContributorTest {
+public class DocumentLibrarySimilarResultsContributorTest
+	extends BaseSimilarResultsContributorTestCase {
 
 	@ClassRule
 	@Rule
@@ -41,7 +41,9 @@ public class DocumentLibrarySimilarResultsContributorTest {
 
 		DocumentLibrarySimilarResultsContributor
 			documentLibrarySimilarResultsContributor =
-				_createDocumentLibrarySimilarResultsContributor();
+				new DocumentLibrarySimilarResultsContributor(
+					assetEntryLocalService, dlFileEntryLocalService,
+					dlFolderLocalService);
 
 		documentLibrarySimilarResultsContributor.detectRoute(
 			new RouteBuilderImpl(), () -> urlString);
@@ -79,20 +81,6 @@ public class DocumentLibrarySimilarResultsContributorTest {
 			destinationBuilderImpl, destinationHelper);
 
 		return destinationBuilderImpl.build();
-	}
-
-	private DocumentLibrarySimilarResultsContributor
-		_createDocumentLibrarySimilarResultsContributor() {
-
-		DocumentLibrarySimilarResultsContributor
-			documentLibrarySimilarResultsContributor =
-				new DocumentLibrarySimilarResultsContributor();
-
-		ReflectionTestUtil.setFieldValue(
-			documentLibrarySimilarResultsContributor, "_httpHelper",
-			new HttpHelperImpl());
-
-		return documentLibrarySimilarResultsContributor;
 	}
 
 }

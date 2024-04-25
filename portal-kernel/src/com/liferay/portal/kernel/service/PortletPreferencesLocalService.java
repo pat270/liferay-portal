@@ -27,6 +27,7 @@ import com.liferay.portal.kernel.settings.PortletInstanceSettingsLocator;
 import com.liferay.portal.kernel.settings.Settings;
 import com.liferay.portal.kernel.spring.aop.Property;
 import com.liferay.portal.kernel.spring.aop.Retry;
+import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
@@ -50,6 +51,11 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @CTAware
+@OSGiBeanProperties(
+	property = {
+		"model.class.name=com.liferay.portal.kernel.model.PortletPreferences"
+	}
+)
 @ProviderType
 @Transactional(
 	isolation = Isolation.PORTAL,
@@ -315,6 +321,10 @@ public interface PortletPreferencesLocalService
 	public List<PortletPreferences> getPortletPreferencesByPlid(long plid);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<PortletPreferences> getPortletPreferencesByPortletId(
+		String portletId);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public long getPortletPreferencesCount(
 		int ownerType, long plid, String portletId);
 
@@ -330,6 +340,10 @@ public interface PortletPreferencesLocalService
 	public long getPortletPreferencesCount(
 		long ownerId, int ownerType, String portletId,
 		boolean excludeDefaultPreferences);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getPortletPreferencesCount(
+		long companyId, long ownerId, int ownerType, String portletId);
 
 	/**
 	 * Returns a range of all the portlet preferenceses.

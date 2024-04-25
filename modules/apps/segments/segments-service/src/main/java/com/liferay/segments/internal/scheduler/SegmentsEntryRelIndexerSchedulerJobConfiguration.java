@@ -59,15 +59,18 @@ public class SegmentsEntryRelIndexerSchedulerJobConfiguration
 
 	@Override
 	public TriggerConfiguration getTriggerConfiguration() {
-		return TriggerConfiguration.createTriggerConfiguration(
-			_segmentsConfiguration.segmentsPreviewCheckInterval(),
-			TimeUnit.MINUTE);
+		return _triggerConfiguration;
 	}
 
 	@Activate
 	protected void activate(Map<String, Object> properties) {
-		_segmentsConfiguration = ConfigurableUtil.createConfigurable(
-			SegmentsConfiguration.class, properties);
+		SegmentsConfiguration segmentsConfiguration =
+			ConfigurableUtil.createConfigurable(
+				SegmentsConfiguration.class, properties);
+
+		_triggerConfiguration = TriggerConfiguration.createTriggerConfiguration(
+			segmentsConfiguration.segmentsPreviewCheckInterval(),
+			TimeUnit.MINUTE);
 	}
 
 	private void _reindex(SegmentsEntry segmentsEntry) {
@@ -75,7 +78,6 @@ public class SegmentsEntryRelIndexerSchedulerJobConfiguration
 
 		message.put("companyId", segmentsEntry.getCompanyId());
 		message.put("segmentsEntryId", segmentsEntry.getSegmentsEntryId());
-		message.put("type", segmentsEntry.getType());
 
 		_messageBus.sendMessage(
 			SegmentsDestinationNames.SEGMENTS_ENTRY_REINDEX, message);
@@ -84,9 +86,9 @@ public class SegmentsEntryRelIndexerSchedulerJobConfiguration
 	@Reference
 	private MessageBus _messageBus;
 
-	private volatile SegmentsConfiguration _segmentsConfiguration;
-
 	@Reference
 	private SegmentsEntryLocalService _segmentsEntryLocalService;
+
+	private TriggerConfiguration _triggerConfiguration;
 
 }

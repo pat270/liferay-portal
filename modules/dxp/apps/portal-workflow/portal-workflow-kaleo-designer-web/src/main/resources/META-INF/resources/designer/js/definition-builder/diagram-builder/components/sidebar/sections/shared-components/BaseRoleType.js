@@ -9,7 +9,7 @@ import ClayDropDown from '@clayui/drop-down';
 import ClayForm, {ClayCheckbox} from '@clayui/form';
 import React, {useEffect, useState} from 'react';
 
-import {titleCase} from '../../../../../util/utils';
+import {stringToBoolean, titleCase} from '../../../../../util/utils';
 
 const BaseRoleType = ({
 	accountRoles,
@@ -40,11 +40,7 @@ const BaseRoleType = ({
 	const [selectedRoleType, setSelectedRoleType] = useState(
 		titleCase(roleType)
 	);
-	if (autoCreate === 'false') {
-		autoCreate = false;
-	}
-
-	const [checked, setChecked] = useState(autoCreate);
+	const [checked, setChecked] = useState(stringToBoolean(autoCreate));
 
 	const checkRoleTypeErrors = (errors, selectedRoleName) => {
 		const temp = errors?.roleName ? [...errors.roleName] : [];
@@ -66,6 +62,21 @@ const BaseRoleType = ({
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [selectedRoleName]);
+
+	useEffect(() => {
+		setChecked(stringToBoolean(autoCreate));
+		setSelectedRoleName(roleName || roleKey);
+		setSelectedRoleType(titleCase(roleType));
+
+		roleNameItemUpdate({
+			autoCreate,
+			roleKey,
+			roleName,
+			roleType: roleType.toLowerCase(),
+		});
+
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [autoCreate, roleKey, roleName, roleType]);
 
 	const deleteSection = () => {
 		setSections((prevSections) => {
@@ -141,14 +152,16 @@ const BaseRoleType = ({
 		setRoleNameDropdownActive(false);
 
 		setSections((prev) => {
-			prev[index] = {
-				...prev[index],
+			const newSections = [...prev];
+
+			newSections[index] = {
+				...newSections[index],
 				...item,
 			};
 
-			updateSelectedItem(prev);
+			updateSelectedItem(newSections);
 
-			return prev;
+			return newSections;
 		});
 	};
 
@@ -317,16 +330,18 @@ const BaseRoleType = ({
 							onChange={() => {
 								setChecked((value) => {
 									setSections((prev) => {
-										prev[index] = {
-											...prev[index],
+										const newSections = [...prev];
+
+										newSections[index] = {
+											...newSections[index],
 											autoCreate: !value,
 											roleName: selectedRoleName,
-											roleType: selectedRoleType,
+											roleType: selectedRoleType.toLowerCase(),
 										};
 
-										updateSelectedItem(prev);
+										updateSelectedItem(newSections);
 
-										return prev;
+										return newSections;
 									});
 
 									return !value;

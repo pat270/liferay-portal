@@ -22,6 +22,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.URLUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.File;
@@ -175,8 +176,7 @@ public class FlatNPMBundleProcessor implements JSBundleProcessor {
 	 */
 	private String _getDefineArgs(URL url) {
 		try {
-			String urlContent = _normalizeModuleContent(
-				StringUtil.read(url.openStream()));
+			String urlContent = _normalizeModuleContent(URLUtil.toString(url));
 
 			int x = urlContent.indexOf("Liferay.Loader.define");
 
@@ -249,15 +249,14 @@ public class FlatNPMBundleProcessor implements JSBundleProcessor {
 					() -> new AbstractMap.SimpleImmutableEntry<>(
 						packageJSONURL,
 						_jsonFactory.createJSONObject(
-							StringUtil.read(packageJSONURL.openStream())))));
+							URLUtil.toString(packageJSONURL)))));
 		}
 
 		if (manifestJSONURL != null) {
 			futures.add(
 				_executorService.submit(
 					() -> {
-						String content = StringUtil.read(
-							manifestJSONURL.openStream());
+						String content = URLUtil.toString(manifestJSONURL);
 
 						if (!content.contains("\"flags\"")) {
 							return new AbstractMap.SimpleImmutableEntry<>(
@@ -354,37 +353,48 @@ public class FlatNPMBundleProcessor implements JSBundleProcessor {
 			}
 		}
 
-		HashMap<URL, Collection<String>> moduleDependenciesMap =
-			new HashMap<>();
+		Map<URL, Collection<String>> moduleDependenciesMap = new HashMap<>();
+
+		Map<String, URL> jsURLsMap = new HashMap<>();
 
 		Enumeration<URL> enumeration = bundle.findEntries(
 			"META-INF/resources", "*.js", true);
 
 		if (enumeration != null) {
-			List<Future<Map.Entry<URL, Collection<String>>>>
-				moduleDepedenciesFutures = new ArrayList<>();
-
 			while (enumeration.hasMoreElements()) {
 				URL jsURL = enumeration.nextElement();
 
-				moduleDepedenciesFutures.add(
-					_executorService.submit(
-						() -> new AbstractMap.SimpleImmutableEntry<>(
-							jsURL,
-							_parseModuleDependencies(_getDefineArgs(jsURL)))));
+				String path = jsURL.getPath();
+
+				URL bundleURL = bundle.getEntry(path);
+
+				if (bundleURL != null) {
+					jsURLsMap.putIfAbsent(path, bundleURL);
+				}
 			}
+		}
 
-			for (Future<Map.Entry<URL, Collection<String>>> future :
-					moduleDepedenciesFutures) {
+		List<Future<Map.Entry<URL, Collection<String>>>>
+			moduleDepedenciesFutures = new ArrayList<>();
 
-				try {
-					Map.Entry<URL, Collection<String>> entry = future.get();
+		for (URL jsURL : jsURLsMap.values()) {
+			moduleDepedenciesFutures.add(
+				_executorService.submit(
+					() -> new AbstractMap.SimpleImmutableEntry<>(
+						jsURL,
+						_parseModuleDependencies(_getDefineArgs(jsURL)))));
+		}
 
-					moduleDependenciesMap.put(entry.getKey(), entry.getValue());
-				}
-				catch (Exception exception) {
-					_log.error(exception);
-				}
+		for (Future<Map.Entry<URL, Collection<String>>> future :
+				moduleDepedenciesFutures) {
+
+			try {
+				Map.Entry<URL, Collection<String>> entry = future.get();
+
+				moduleDependenciesMap.put(entry.getKey(), entry.getValue());
+			}
+			catch (Exception exception) {
+				_log.error(exception);
 			}
 		}
 

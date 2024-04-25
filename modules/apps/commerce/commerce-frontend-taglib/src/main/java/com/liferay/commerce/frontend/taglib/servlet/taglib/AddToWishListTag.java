@@ -10,7 +10,7 @@ import com.liferay.commerce.context.CommerceContext;
 import com.liferay.commerce.frontend.taglib.internal.servlet.ServletContextUtil;
 import com.liferay.commerce.product.catalog.CPCatalogEntry;
 import com.liferay.commerce.product.catalog.CPSku;
-import com.liferay.commerce.product.content.util.CPContentHelper;
+import com.liferay.commerce.product.content.helper.CPContentHelper;
 import com.liferay.commerce.util.CommerceUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -36,7 +36,11 @@ public class AddToWishListTag extends IncludeTag {
 				(CommerceContext)httpServletRequest.getAttribute(
 					CommerceWebKeys.COMMERCE_CONTEXT));
 
-			CPSku cpSku = _cpContentHelper.getDefaultCPSku(_cpCatalogEntry);
+			CPSku cpSku = null;
+
+			if (!_cpContentHelper.hasMultipleCPSkus(_cpCatalogEntry)) {
+				cpSku = _cpContentHelper.getDefaultCPSku(_cpCatalogEntry);
+			}
 
 			ThemeDisplay themeDisplay =
 				(ThemeDisplay)httpServletRequest.getAttribute(
@@ -68,15 +72,18 @@ public class AddToWishListTag extends IncludeTag {
 
 	@Override
 	public void setAttributes(HttpServletRequest httpServletRequest) {
-		setAttributeNamespace(_ATTRIBUTE_NAMESPACE);
-
-		setNamespacedAttribute(
-			httpServletRequest, "commerceAccountId", _commerceAccountId);
-		setNamespacedAttribute(
-			httpServletRequest, "cpCatalogEntry", _cpCatalogEntry);
-		setNamespacedAttribute(httpServletRequest, "inWishList", _inWishList);
-		setNamespacedAttribute(httpServletRequest, "large", _large);
-		setNamespacedAttribute(httpServletRequest, "skuId", _skuId);
+		httpServletRequest.setAttribute(
+			"liferay-commerce:add-to-wish-list:commerceAccountId",
+			_commerceAccountId);
+		httpServletRequest.setAttribute(
+			"liferay-commerce:add-to-wish-list:cpCatalogEntry",
+			_cpCatalogEntry);
+		httpServletRequest.setAttribute(
+			"liferay-commerce:add-to-wish-list:inWishList", _inWishList);
+		httpServletRequest.setAttribute(
+			"liferay-commerce:add-to-wish-list:large", _large);
+		httpServletRequest.setAttribute(
+			"liferay-commerce:add-to-wish-list:skuId", _skuId);
 	}
 
 	public void setCPCatalogEntry(CPCatalogEntry cpCatalogEntry) {
@@ -116,9 +123,6 @@ public class AddToWishListTag extends IncludeTag {
 	protected String getPage() {
 		return _PAGE;
 	}
-
-	private static final String _ATTRIBUTE_NAMESPACE =
-		"liferay-commerce:add-to-wish-list:";
 
 	private static final String _PAGE = "/add_to_wish_list/page.jsp";
 

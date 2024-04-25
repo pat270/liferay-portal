@@ -22,6 +22,7 @@ import com.liferay.account.service.AccountRoleLocalService;
 import com.liferay.account.service.test.util.AccountEntryArgs;
 import com.liferay.account.service.test.util.AccountEntryTestUtil;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.configuration.test.util.CompanyConfigurationTemporarySwapper;
 import com.liferay.portal.configuration.test.util.ConfigurationTestUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
@@ -33,7 +34,6 @@ import com.liferay.portal.kernel.search.BaseModelSearchResult;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
-import com.liferay.portal.kernel.settings.SettingsFactoryUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DataGuard;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
@@ -597,8 +597,7 @@ public class AccountEntryUserRelLocalServiceTest {
 							"invitationEmailBody", invitationEmailBody
 						).put(
 							"invitationEmailSubject", invitationEmailSubject
-						).build(),
-						SettingsFactoryUtil.getSettingsFactory())) {
+						).build())) {
 
 			ServiceContext serviceContext =
 				ServiceContextTestUtil.getServiceContext();
@@ -619,6 +618,90 @@ public class AccountEntryUserRelLocalServiceTest {
 
 			Assert.assertTrue(mailMessageBody.contains(invitationEmailBody));
 		}
+	}
+
+	@Test
+	public void testInviteUserWithCustomSenderEmailAddress() throws Exception {
+		String invitationEmailSenderEmailAddress = "custom@liferay.com";
+
+		try (CompanyConfigurationTemporarySwapper
+				companyConfigurationTemporarySwapper =
+					new CompanyConfigurationTemporarySwapper(
+						TestPropsValues.getCompanyId(),
+						AccountEntryEmailConfiguration.class.getName(),
+						HashMapDictionaryBuilder.<String, Object>put(
+							"invitationEmailSenderEmailAddress",
+							invitationEmailSenderEmailAddress
+						).build())) {
+
+			ServiceContext serviceContext =
+				ServiceContextTestUtil.getServiceContext();
+
+			serviceContext.setRequest(new MockHttpServletRequest());
+
+			_accountEntryUserRelLocalService.inviteUser(
+				_accountEntry.getAccountEntryId(), null, "user@test.com",
+				TestPropsValues.getUser(), serviceContext);
+
+			MailMessage mailMessage = MailServiceTestUtil.getLastMailMessage();
+
+			String from = mailMessage.getFirstHeaderValue("From");
+
+			Assert.assertEquals(
+				from,
+				StringBundler.concat(
+					"Test Test <", invitationEmailSenderEmailAddress, ">"));
+		}
+	}
+
+	@Test
+	public void testInviteUserWithCustomSenderName() throws Exception {
+		String invitationEmailSenderName = "Custom sender name";
+
+		try (CompanyConfigurationTemporarySwapper
+				companyConfigurationTemporarySwapper =
+					new CompanyConfigurationTemporarySwapper(
+						TestPropsValues.getCompanyId(),
+						AccountEntryEmailConfiguration.class.getName(),
+						HashMapDictionaryBuilder.<String, Object>put(
+							"invitationEmailSenderName",
+							invitationEmailSenderName
+						).build())) {
+
+			ServiceContext serviceContext =
+				ServiceContextTestUtil.getServiceContext();
+
+			serviceContext.setRequest(new MockHttpServletRequest());
+
+			_accountEntryUserRelLocalService.inviteUser(
+				_accountEntry.getAccountEntryId(), null, "user@test.com",
+				TestPropsValues.getUser(), serviceContext);
+
+			MailMessage mailMessage = MailServiceTestUtil.getLastMailMessage();
+
+			String from = mailMessage.getFirstHeaderValue("From");
+
+			Assert.assertEquals(
+				from, invitationEmailSenderName + " <test@liferay.com>");
+		}
+	}
+
+	@Test
+	public void testInviteUserWithDefaultSender() throws Exception {
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext();
+
+		serviceContext.setRequest(new MockHttpServletRequest());
+
+		_accountEntryUserRelLocalService.inviteUser(
+			_accountEntry.getAccountEntryId(), null, "user@test.com",
+			TestPropsValues.getUser(), serviceContext);
+
+		MailMessage mailMessage = MailServiceTestUtil.getLastMailMessage();
+
+		String from = mailMessage.getFirstHeaderValue("From");
+
+		Assert.assertEquals("Test Test <test@liferay.com>", from);
 	}
 
 	@Test

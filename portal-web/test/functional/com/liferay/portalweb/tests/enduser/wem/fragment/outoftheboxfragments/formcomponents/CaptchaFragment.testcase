@@ -5,7 +5,7 @@ definition {
 	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Fragments";
+	property testray.main.component.name = "Fragment Administration";
 
 	setUp {
 		task ("Set up instance and sign in") {
@@ -23,19 +23,6 @@ definition {
 				labelName = "Purchase Order",
 				objectName = "PurchaseOrder",
 				pluralLabelName = "Purchase Orders");
-		}
-	}
-
-	tearDown {
-		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
-
-		if (${testLiferayVirtualInstance} == "true") {
-			PortalInstances.tearDownCP();
-		}
-		else {
-			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
-
-			ObjectAdmin.deleteObjectViaAPI(objectName = "PurchaseOrder");
 		}
 	}
 
@@ -81,15 +68,15 @@ definition {
 			PageEditor.addFragmentToFormContainer(
 				collectionName = "Form Components",
 				fragmentName = "CAPTCHA",
-				targetFragmentName = "Text Input");
+				targetFragmentName = "Text");
 		}
 
 		task ("Then the page creator cannot type text verification and reload simple captcha") {
 			AssertAttributeValue(
-				attribute1 = "disabled",
 				index = 1,
 				locator1 = "Fragment#INPUT_CAPTCHA_BODY",
-				value1 = "true");
+				value1 = "disabled",
+				value2 = "true");
 		}
 	}
 
@@ -134,7 +121,7 @@ definition {
 				PageEditor.addFragmentToFormContainer(
 					collectionName = "Form Components",
 					fragmentName = "CAPTCHA",
-					targetFragmentName = "Text Input");
+					targetFragmentName = "Text");
 
 				PageEditor.publish();
 			}
@@ -148,17 +135,19 @@ definition {
 
 		task ("Then the site member could submit text verification via clicking submit") {
 			Type(
-				inputFieldId = "captchaText",
-				locator1 = "TextInput#INPUT_ID",
+				locator1 = "TextInput#ANY_WITH_NAME",
+				name = "captchaText",
 				value1 = "Fake");
 
 			Button.clickSubmitButton();
 
-			Alert.viewErrorMessage(errorMessage = "CAPTCHA verification failed. Please try again.");
+			Alert.viewFieldErrorMessage(
+				errorMessage = "CAPTCHA verification failed. Please try again.",
+				fieldLabel = "Text Verification");
 		}
 	}
 
-	@description = "This is a test for LPS-155168. The user could submit Text verification of Simple Captcha via pressing enter at view mode. The user could see error message when validation fail."
+	@description = "This is a test for LPS-155168 and LPS-182728. The user could submit Text verification of Simple Captcha via pressing enter at view mode. The user should see the field error below the Captcha fragment."
 	@priority = 5
 	test SubmitTextVerificationViaPressingEnter {
 		property portal.acceptance = "true";
@@ -196,7 +185,7 @@ definition {
 					contentType = "Purchase Order",
 					panel = "General");
 
-				for (var fragmentName : list "Text Input,Submit Button") {
+				for (var fragmentName : list "Text,Submit Button") {
 					PageEditor.removeFragment(fragmentName = ${fragmentName});
 				}
 			}
@@ -218,16 +207,18 @@ definition {
 
 		task ("Then the site member could submit text verification via pressing enter") {
 			Type(
-				inputFieldId = "captchaText",
-				locator1 = "TextInput#INPUT_ID",
+				locator1 = "TextInput#ANY_WITH_NAME",
+				name = "captchaText",
 				value1 = "Fake");
 
 			KeyPress(
-				inputFieldId = "captchaText",
-				locator1 = "TextInput#INPUT_ID",
+				locator1 = "TextInput#ANY_WITH_NAME",
+				name = "captchaText",
 				value1 = "\ENTER");
 
-			Alert.viewErrorMessage(errorMessage = "CAPTCHA verification failed. Please try again.");
+			Alert.viewFieldErrorMessage(
+				errorMessage = "CAPTCHA verification failed. Please try again.",
+				fieldLabel = "Text Verification");
 		}
 	}
 
@@ -236,6 +227,7 @@ definition {
 	test SubmitVerificationOfReCaptcha {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given a site member has a content page with a reCaptcha and a Submit Button inside Form Container") {
 			task ("Add a Text field to object") {
@@ -298,7 +290,7 @@ definition {
 				PageEditor.addFragmentToFormContainer(
 					collectionName = "Form Components",
 					fragmentName = "CAPTCHA",
-					targetFragmentName = "Text Input");
+					targetFragmentName = "Text");
 
 				AssertElementPresent(locator1 = "IFrame#RECAPTCHA");
 
@@ -317,7 +309,9 @@ definition {
 
 			Button.clickSubmitButton();
 
-			Alert.viewErrorMessage(errorMessage = "CAPTCHA verification failed. Please try again.");
+			AssertTextEquals(
+				locator1 = "//div[contains(@class,'lfr-layout-structure-item-inputs-captcha')]//p[contains(@class,'text-danger')]",
+				value1 = "CAPTCHA verification failed. Please try again.");
 		}
 	}
 

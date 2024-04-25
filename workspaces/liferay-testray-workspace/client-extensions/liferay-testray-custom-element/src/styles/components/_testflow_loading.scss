@@ -1,0 +1,39 @@
+.tr-testflow-loading {
+	align-items: center;
+	display: flex;
+	flex-direction: column;
+	margin-top: 2rem;
+
+	&__message {
+		color: color-gray;
+		font-size: 2rem;
+		margin: 32px 0;
+		&__dots {
+			animation: dotsAnimation 1s infinite linear;
+			font-size: 2rem;
+		}
+	}
+
+	&__processing {
+		background-color: $color-gray-light;
+		border: 1px solid #cdd3d8;
+		height: 10px;
+		margin: 24px 0;
+		width: 100%;
+
+		@keyframes dotsAnimation {
+			0% {
+				opacity: 0.3;
+				transform: translateY(0);
+			}
+			50% {
+				opacity: 1;
+				transform: translateY(-4px);
+			}
+			100% {
+				opacity: 0.3;
+				transform: translateY(0);
+			}
+		}
+	}
+}

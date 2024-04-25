@@ -1,10 +1,5 @@
-// import FaroConstants from '../constants';
 import {INDIVIDUALS, PAGEVIEWS} from 'shared/util/subscriptions';
 import {List, Map, Record} from 'immutable';
-
-// const {
-// 	pagination: {orderDefault}
-// } = FaroConstants;
 
 export {default as Account} from './Account';
 export {default as CustomValue} from './CustomValue';
@@ -47,18 +42,12 @@ export const Metric = new Record({
 	status: 0
 });
 
-// export const OrderParams = new Record({
-// 	field: '',
-// 	sortOrder: orderDefault
-// });
-
 export const Plan = new Record({
 	addOns: new Map({
 		[INDIVIDUALS]: new Map(),
 		[PAGEVIEWS]: new Map()
 	}),
 	endDate: Date.now(),
-	lastAnniversaryDate: Date.now(),
 	metrics: new Map({
 		[INDIVIDUALS]: new Metric(),
 		[PAGEVIEWS]: new Metric()

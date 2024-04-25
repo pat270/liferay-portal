@@ -1,6 +1,7 @@
 @component-name = "portal-wcm"
 definition {
 
+	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Display Page Templates";
@@ -78,9 +79,7 @@ definition {
 					locator1 = "LexiconTable#TABLE_ENTRY_CHECKBOX");
 			}
 
-			Click(
-				key_text = "ellipsis",
-				locator1 = "ManagementBar#ANY_ICON");
+			Click(locator1 = "ManagementBar#ELLIPSIS");
 
 			MenuItem.clickNoError(menuItem = "Assign to Default");
 
@@ -165,9 +164,7 @@ definition {
 
 			PortletEntry.selectAll();
 
-			Click(
-				key_text = "ellipsis",
-				locator1 = "ManagementBar#ANY_ICON");
+			Click(locator1 = "ManagementBar#ELLIPSIS");
 
 			MenuItem.clickNoError(menuItem = "Assign to Default (Display Page Name 1)");
 
@@ -237,9 +234,7 @@ definition {
 				key_tableEntry = "Blogs Entry Title",
 				locator1 = "LexiconTable#TABLE_ENTRY_CHECKBOX");
 
-			Click(
-				key_text = "ellipsis",
-				locator1 = "ManagementBar#ANY_ICON");
+			Click(locator1 = "ManagementBar#ELLIPSIS");
 
 			MenuItem.clickNoError(menuItem = "Assign to Default");
 
@@ -308,9 +303,7 @@ definition {
 
 			Click(locator1 = "Checkbox#LEXICON_SELECT_ALL_CONTAINER");
 
-			Click(
-				key_text = "ellipsis",
-				locator1 = "ManagementBar#ANY_ICON");
+			Click(locator1 = "ManagementBar#ELLIPSIS");
 
 			MenuItem.clickNoError(menuItem = "Assign to Default");
 
@@ -381,9 +374,7 @@ definition {
 
 			Click(locator1 = "Checkbox#LEXICON_SELECT_ALL_CONTAINER");
 
-			Click(
-				key_text = "ellipsis",
-				locator1 = "ManagementBar#ANY_ICON");
+			Click(locator1 = "ManagementBar#ELLIPSIS");
 
 			MenuItem.clickNoError(menuItem = "Unassign");
 
@@ -454,9 +445,7 @@ definition {
 
 			Click(locator1 = "Checkbox#LEXICON_SELECT_ALL_CONTAINER");
 
-			Click(
-				key_text = "ellipsis",
-				locator1 = "ManagementBar#ANY_ICON");
+			Click(locator1 = "ManagementBar#ELLIPSIS");
 
 			MenuItem.clickNoError(menuItem = "Unassign");
 
@@ -542,8 +531,6 @@ definition {
 			AssertTextEquals(
 				locator1 = "ControlMenu#HEADING",
 				value1 = "Web Content Display Page");
-
-			ManagementBar.viewFilterAndOrder(menuItem = "Modified Date");
 
 			var index = 1;
 
@@ -694,8 +681,6 @@ definition {
 				AssertTextEquals(
 					locator1 = "ControlMenu#HEADING",
 					value1 = "${assetType} Display Page");
-
-				ManagementBar.viewFilterAndOrder(menuItem = "Modified Date");
 
 				AssertElementNotPresent(locator1 = "TextInput#SEARCH");
 

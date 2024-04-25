@@ -13,7 +13,7 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.service.permission.GroupPermission;
+import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 
 import java.util.List;
@@ -38,18 +38,18 @@ public class LayoutUtilityPageEntryServiceImpl
 	public LayoutUtilityPageEntry addLayoutUtilityPageEntry(
 			String externalReferenceCode, long groupId, long plid,
 			long previewFileEntryId, boolean defaultLayoutUtilityPageEntry,
-			String name, String type, long masterLayoutPlid,
-			ServiceContext serviceContext)
+			String name, String type, long masterLayoutPlid, String friendlyURL,
+			boolean privateLayout, ServiceContext serviceContext)
 		throws PortalException {
 
-		_groupPermission.check(
+		GroupPermissionUtil.check(
 			getPermissionChecker(), groupId,
 			LayoutUtilityPageActionKeys.ADD_LAYOUT_UTILITY_PAGE_ENTRY);
 
 		return layoutUtilityPageEntryLocalService.addLayoutUtilityPageEntry(
 			externalReferenceCode, getUserId(), groupId, plid,
 			previewFileEntryId, defaultLayoutUtilityPageEntry, name, type,
-			masterLayoutPlid, serviceContext);
+			masterLayoutPlid, friendlyURL, privateLayout, serviceContext);
 	}
 
 	@Override
@@ -58,7 +58,7 @@ public class LayoutUtilityPageEntryServiceImpl
 			ServiceContext serviceContext)
 		throws Exception {
 
-		_groupPermission.check(
+		GroupPermissionUtil.check(
 			getPermissionChecker(), groupId,
 			LayoutUtilityPageActionKeys.ADD_LAYOUT_UTILITY_PAGE_ENTRY);
 
@@ -81,7 +81,7 @@ public class LayoutUtilityPageEntryServiceImpl
 			ActionKeys.DELETE);
 
 		if (layoutUtilityPageEntry.isDefaultLayoutUtilityPageEntry()) {
-			_groupPermission.check(
+			GroupPermissionUtil.check(
 				getPermissionChecker(), layoutUtilityPageEntry.getGroupId(),
 				LayoutUtilityPageActionKeys.
 					ASSIGN_DEFAULT_LAYOUT_UTILITY_PAGE_ENTRY);
@@ -135,9 +135,24 @@ public class LayoutUtilityPageEntryServiceImpl
 	}
 
 	@Override
+	public List<LayoutUtilityPageEntry> getLayoutUtilityPageEntries(
+		long groupId, String[] types, int start, int end,
+		OrderByComparator<LayoutUtilityPageEntry> orderByComparator) {
+
+		return layoutUtilityPageEntryLocalService.getLayoutUtilityPageEntries(
+			groupId, types, start, end, orderByComparator);
+	}
+
+	@Override
 	public int getLayoutUtilityPageEntriesCount(long groupId) {
 		return layoutUtilityPageEntryLocalService.
 			getLayoutUtilityPageEntriesCount(groupId);
+	}
+
+	@Override
+	public int getLayoutUtilityPageEntriesCount(long groupId, String[] types) {
+		return layoutUtilityPageEntryLocalService.
+			getLayoutUtilityPageEntriesCount(groupId, types);
 	}
 
 	@Override
@@ -149,7 +164,7 @@ public class LayoutUtilityPageEntryServiceImpl
 			layoutUtilityPageEntryLocalService.getLayoutUtilityPageEntry(
 				layoutUtilityPageEntryId);
 
-		_groupPermission.check(
+		GroupPermissionUtil.check(
 			getPermissionChecker(), layoutUtilityPageEntry.getGroupId(),
 			LayoutUtilityPageActionKeys.
 				ASSIGN_DEFAULT_LAYOUT_UTILITY_PAGE_ENTRY);
@@ -171,7 +186,7 @@ public class LayoutUtilityPageEntryServiceImpl
 			layoutUtilityPageEntryLocalService.getLayoutUtilityPageEntry(
 				layoutUtilityPageEntryId);
 
-		_groupPermission.check(
+		GroupPermissionUtil.check(
 			getPermissionChecker(), layoutUtilityPageEntry.getGroupId(),
 			LayoutUtilityPageActionKeys.
 				ASSIGN_DEFAULT_LAYOUT_UTILITY_PAGE_ENTRY);
@@ -211,9 +226,6 @@ public class LayoutUtilityPageEntryServiceImpl
 		return layoutUtilityPageEntryLocalService.updateLayoutUtilityPageEntry(
 			layoutUtilityPageEntryId, name);
 	}
-
-	@Reference
-	private GroupPermission _groupPermission;
 
 	@Reference(
 		target = "(model.class.name=com.liferay.layout.utility.page.model.LayoutUtilityPageEntry)"

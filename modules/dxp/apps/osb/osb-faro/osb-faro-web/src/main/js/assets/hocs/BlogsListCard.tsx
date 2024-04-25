@@ -1,5 +1,6 @@
 import BlogsListQuery from 'shared/queries/BlogsListQuery';
 import Card from 'shared/components/Card';
+import ClayLink from '@clayui/link';
 import ListComponent from 'shared/hoc/ListComponent';
 import NoResultsDisplay from 'shared/components/NoResultsDisplay';
 import React from 'react';
@@ -16,7 +17,8 @@ import {Routes} from 'shared/util/router';
 import {Sizes} from 'shared/util/constants';
 import {useParams} from 'react-router-dom';
 import {useQuery} from '@apollo/react-hooks';
-import {useQueryPagination, useQueryRangeSelectors} from 'shared/hooks';
+import {useQueryPagination} from 'shared/hooks/useQueryPagination';
+import {useQueryRangeSelectors} from 'shared/hooks/useQueryRangeSelectors';
 
 const BlogsListCard: React.FC = () => {
 	const {delta, orderIOMap, page, query} = useQueryPagination({
@@ -74,7 +76,7 @@ const BlogsListCard: React.FC = () => {
 									)}
 								</span>
 
-								<a
+								<ClayLink
 									href={
 										URLConstants.AssetsBlogsListDocumentation
 									}
@@ -84,7 +86,7 @@ const BlogsListCard: React.FC = () => {
 									{Liferay.Language.get(
 										'learn-more-about-blogs'
 									)}
-								</a>
+								</ClayLink>
 							</>
 						}
 						icon={{

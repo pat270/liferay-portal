@@ -14,7 +14,7 @@ ApplicationsMenuDisplayContext applicationsMenuDisplayContext = new Applications
 <li class="control-menu-nav-item control-menu-nav-item-separator">
 	<clay:button
 		aria-haspopup="dialog"
-		cssClass="lfr-portal-tooltip"
+		cssClass="control-menu-nav-link lfr-portal-tooltip"
 		displayType="unstyled"
 		icon="grid"
 		small="<%= true %>"
@@ -22,7 +22,7 @@ ApplicationsMenuDisplayContext applicationsMenuDisplayContext = new Applications
 	/>
 
 	<react:component
-		module="js/ApplicationsMenu"
+		module="{ApplicationsMenu} from product-navigation-applications-menu-web"
 		props="<%= applicationsMenuDisplayContext.getApplicationsMenuComponentData() %>"
 	/>
 </li>

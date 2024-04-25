@@ -36,6 +36,9 @@ public class RoleConstants {
 	public static final String ORGANIZATION_ADMINISTRATOR =
 		"Organization Administrator";
 
+	public static final String ORGANIZATION_CONTENT_REVIEWER =
+		"Organization Content Reviewer";
+
 	public static final String ORGANIZATION_OWNER = "Organization Owner";
 
 	public static final String ORGANIZATION_USER = "Organization User";
@@ -112,6 +115,23 @@ public class RoleConstants {
 	};
 
 	public static final String USER = "User";
+
+	public static int getLabelType(String label) {
+		if (TYPE_ACCOUNT_LABEL.equals(label)) {
+			return TYPE_ACCOUNT;
+		}
+		else if (TYPE_DEPOT_LABEL.equals(label)) {
+			return TYPE_DEPOT;
+		}
+		else if (TYPE_ORGANIZATION_LABEL.equals(label)) {
+			return TYPE_ORGANIZATION;
+		}
+		else if (TYPE_SITE_LABEL.equals(label)) {
+			return TYPE_SITE;
+		}
+
+		return TYPE_REGULAR;
+	}
 
 	public static String getNameGeneralRestrictions(
 		Locale locale, boolean allowNumeric) {

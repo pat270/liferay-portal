@@ -15,12 +15,10 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.module.util.SystemBundleUtil;
 import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.SearchContext;
-import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.util.PropsTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.upgrade.MockPortletPreferences;
-import com.liferay.portal.kernel.util.Html;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.search.context.SearchContextFactory;
@@ -32,7 +30,6 @@ import com.liferay.portal.search.searcher.SearchResponseBuilder;
 import com.liferay.portal.search.searcher.Searcher;
 import com.liferay.portal.search.summary.SummaryBuilderFactory;
 import com.liferay.portal.search.web.constants.SearchPortletParameterNames;
-import com.liferay.portal.search.web.internal.facet.SearchFacetRegistry;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 import com.liferay.portlet.portletconfiguration.util.ConfigurationRenderRequest;
 
@@ -44,15 +41,18 @@ import javax.portlet.RenderRequest;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
 
 /**
  * @author André de Oliveira
@@ -64,8 +64,21 @@ public class SearchDisplayContextTest {
 	public static final LiferayUnitTestRule liferayUnitTestRule =
 		LiferayUnitTestRule.INSTANCE;
 
+	@AfterClass
+	public static void tearDownClass() {
+		_frameworkUtilMockedStatic.close();
+	}
+
 	@Before
 	public void setUp() throws Exception {
+		BundleContext bundleContext = SystemBundleUtil.getBundleContext();
+
+		Mockito.when(
+			FrameworkUtil.getBundle(Mockito.any())
+		).thenReturn(
+			bundleContext.getBundle()
+		);
+
 		themeDisplay = _createThemeDisplay();
 
 		_setUpHttpServletRequest();
@@ -242,20 +255,12 @@ public class SearchDisplayContextTest {
 
 		PropsTestUtil.setProps(Collections.emptyMap());
 
-		SearchFacetRegistry searchFacetRegistry = new SearchFacetRegistry();
-
-		ReflectionTestUtil.invoke(
-			searchFacetRegistry, "activate",
-			new Class<?>[] {BundleContext.class},
-			SystemBundleUtil.getBundleContext());
-
 		return new SearchDisplayContext(
 			renderRequest, portletPreferences, _createPortal(renderRequest),
-			Mockito.mock(Html.class), Mockito.mock(Language.class), searcher,
+			Mockito.mock(Language.class), searcher,
 			Mockito.mock(IndexSearchPropsValues.class), portletURLFactory,
 			Mockito.mock(SummaryBuilderFactory.class), searchContextFactory,
-			searchRequestBuilderFactory, searchFacetRegistry,
-			_createJSONFactory());
+			searchRequestBuilderFactory, _createJSONFactory());
 	}
 
 	private ThemeDisplay _createThemeDisplay() throws Exception {
@@ -358,5 +363,8 @@ public class SearchDisplayContextTest {
 			searchResponseBuilder
 		).build();
 	}
+
+	private static final MockedStatic<FrameworkUtil>
+		_frameworkUtilMockedStatic = Mockito.mockStatic(FrameworkUtil.class);
 
 }

@@ -13,11 +13,8 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.json.JSONFactoryImpl;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONUtil;
-import com.liferay.portal.kernel.test.ReflectionTestUtil;
-import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
-import com.liferay.portal.util.DateFormatFactoryImpl;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -40,7 +37,6 @@ public class DateParameterUtilTest {
 
 	@BeforeClass
 	public static void setUpClass() {
-		_setUpDateFormatFactory();
 		_setUpJSONFactoryUtil();
 	}
 
@@ -64,6 +60,25 @@ public class DateParameterUtilTest {
 				DateParameterUtil.getLocalDateTime("2021-10-28 1:00")));
 		Assert.assertNull(DateParameterUtil.getLocalDateTime(null));
 		Assert.assertNull(DateParameterUtil.getLocalDateTime(StringPool.BLANK));
+		Assert.assertEquals(
+			"2021-10-28T00:00",
+			String.valueOf(DateParameterUtil.getLocalDateTime("2021-10-28")));
+
+		Assert.assertEquals(
+			"2021-10-28T01:00",
+			String.valueOf(
+				DateParameterUtil.getLocalDateTime("2021-10-28 01:00:00")));
+
+		Assert.assertEquals(
+			"2021-10-28T01:00",
+			String.valueOf(
+				DateParameterUtil.getLocalDateTime("2021-10-28 1:00")));
+
+		Assert.assertEquals(
+			"2024-02-06T14:43:44",
+			String.valueOf(
+				DateParameterUtil.getLocalDateTime(
+					"Tue Feb 06 14:43:44 GMT 2024")));
 	}
 
 	@Test
@@ -173,12 +188,6 @@ public class DateParameterUtilTest {
 		_assertEquals(
 			null, null, null, LocalDate.now(ZoneId.of("UTC")), null, null,
 			"responseDate", null);
-	}
-
-	private static void _setUpDateFormatFactory() {
-		ReflectionTestUtil.setFieldValue(
-			DateFormatFactoryUtil.class, "_fastDateFormatFactory",
-			new DateFormatFactoryImpl());
 	}
 
 	private static void _setUpJSONFactoryUtil() {

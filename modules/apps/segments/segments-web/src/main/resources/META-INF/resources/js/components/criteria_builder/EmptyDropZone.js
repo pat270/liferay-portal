@@ -5,10 +5,15 @@
 
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, {useEffect, useRef} from 'react';
 import {DropTarget as dropTarget} from 'react-dnd';
 
-import {DragTypes} from '../../utils/drag-types';
+import {
+	POSITIONS,
+	useMovementTarget,
+} from '../../contexts/KeyboardMovementContext';
+import {DragTypes} from '../../utils/dragTypes';
+import getDropZoneElementClassName from '../../utils/getDropZoneElementClassName';
 import EmptyPlaceholder from './EmptyPlaceholder.es';
 
 /**
@@ -38,40 +43,63 @@ function drop(props, monitor) {
 	props.onCriterionAdd(0, criterion);
 }
 
-function EmptyDropZone({canDrop, connectDropTarget, emptyContributors, hover}) {
-	const displayEmptyDropZone = canDrop || !emptyContributors;
+function EmptyDropZone({
+	canDrop,
+	connectDropTarget,
+	emptyContributors,
+	hover,
+	propertyKey,
+}) {
+	const movementTarget = useMovementTarget();
 
-	return (
-		<div
-			className={classNames('empty-drop-zone-root', {
-				'empty-drop-zone-dashed border-primary rounded':
-					displayEmptyDropZone && (!canDrop || !hover),
-			})}
-		>
-			{connectDropTarget(
-				displayEmptyDropZone ? (
-					<div
-						className={classNames(
-							emptyContributors
-								? 'empty-drop-zone-target'
-								: 'drop-zone-target p-5',
-							{
-								'empty-drop-zone-target-solid dnd-hover border-primary rounded':
-									canDrop && hover,
-							}
-						)}
-					>
-						<div className="empty-drop-zone-indicator w-100" />
-					</div>
-				) : (
-					<div>
-						<EmptyPlaceholder />
-					</div>
-				)
-			)}
-		</div>
+	const ref = useRef();
+
+	const isKeyboardTarget = movementTarget?.groupId === 'root';
+
+	const displayEmptyDropZone =
+		canDrop || !emptyContributors || isKeyboardTarget;
+
+	const dropZoneClassName = getDropZoneElementClassName(
+		propertyKey,
+		'root',
+		0,
+		POSITIONS.middle
+	);
+
+	useEffect(() => {
+		if (isKeyboardTarget) {
+			ref.current?.scrollIntoView?.({
+				behavior: 'smooth',
+				block: 'nearest',
+				inline: 'nearest',
+			});
+		}
+	}, [isKeyboardTarget]);
+
+	return connectDropTarget(
+		displayEmptyDropZone ? (
+			<div
+				className={classNames(
+					'empty-drop-zone p-6 rounded',
+					dropZoneClassName,
+					{
+						'border-primary': canDrop || hover || isKeyboardTarget,
+						'border-secondary-light': !canDrop,
+						'empty-drop-zone--dashed':
+							!emptyContributors || (canDrop && !hover),
+						'empty-drop-zone--target': hover || isKeyboardTarget,
+					}
+				)}
+				ref={ref}
+			/>
+		) : (
+			<div>
+				<EmptyPlaceholder />
+			</div>
+		)
 	);
 }
+
 EmptyDropZone.propTypes = {
 	canDrop: PropTypes.bool,
 	connectDropTarget: PropTypes.func,

@@ -122,6 +122,7 @@ public interface JournalArticleService extends BaseService {
 	 * @param neverReview whether the web content article is not set for review
 	 * @param indexable whether the web content article is searchable
 	 * @param smallImage whether the web content article has a small image
+	 * @param smallImageSource the web content article's small image source
 	 * @param smallImageURL the web content article's small image URL
 	 * @param smallFile the web content article's small image file
 	 * @param images the web content's images
@@ -149,8 +150,9 @@ public interface JournalArticleService extends BaseService {
 			boolean neverExpire, int reviewDateMonth, int reviewDateDay,
 			int reviewDateYear, int reviewDateHour, int reviewDateMinute,
 			boolean neverReview, boolean indexable, boolean smallImage,
-			String smallImageURL, File smallFile, Map<String, byte[]> images,
-			String articleURL, ServiceContext serviceContext)
+			long smallImageId, int smallImageSource, String smallImageURL,
+			File smallFile, Map<String, byte[]> images, String articleURL,
+			ServiceContext serviceContext)
 		throws PortalException;
 
 	/**
@@ -198,7 +200,8 @@ public interface JournalArticleService extends BaseService {
 			int expirationDateMinute, boolean neverExpire, int reviewDateMonth,
 			int reviewDateDay, int reviewDateYear, int reviewDateHour,
 			int reviewDateMinute, boolean neverReview, boolean indexable,
-			boolean smallImage, String smallImageURL, File smallImageFile,
+			boolean smallImage, long smallImageId, int smallImageSource,
+			String smallImageURL, File smallImageFile,
 			ServiceContext serviceContext)
 		throws PortalException;
 
@@ -1409,6 +1412,8 @@ public interface JournalArticleService extends BaseService {
 	 * @param smallImage whether to update web content article's a small image.
 	 A file must be passed in as <code>smallImageFile</code> value,
 	 otherwise the current small image is deleted.
+	 * @param smallImageSource the web content article's small image source
+	 (optionally <code>null</code>)
 	 * @param smallImageURL the web content article's small image URL
 	 (optionally <code>null</code>)
 	 * @param smallFile the web content article's new small image file
@@ -1442,98 +1447,9 @@ public interface JournalArticleService extends BaseService {
 			boolean neverExpire, int reviewDateMonth, int reviewDateDay,
 			int reviewDateYear, int reviewDateHour, int reviewDateMinute,
 			boolean neverReview, boolean indexable, boolean smallImage,
-			String smallImageURL, File smallFile, Map<String, byte[]> images,
-			String articleURL, ServiceContext serviceContext)
-		throws PortalException;
-
-	/**
-	 * Updates the web content article with additional parameters. All
-	 * scheduling parameters (display date, expiration date, and review date)
-	 * use the current user's timezone.
-	 *
-	 * @param groupId the primary key of the web content article's group
-	 * @param folderId the primary key of the web content article folder
-	 * @param articleId the primary key of the web content article
-	 * @param version the web content article's version
-	 * @param titleMap the web content article's locales and localized titles
-	 * @param descriptionMap the web content article's locales and localized
-	 descriptions
-	 * @param content the HTML content wrapped in XML. For more information,
-	 see the content example in the {@link #updateArticle(long, long,
-	 String, double, String, ServiceContext)} description.
-	 * @param ddmTemplateKey the primary key of the web content article's DDM
-	 template
-	 * @param layoutUuid the unique string identifying the web content
-	 article's display page
-	 * @param displayDateMonth the month the web content article is set to
-	 display
-	 * @param displayDateDay the calendar day the web content article is set to
-	 display
-	 * @param displayDateYear the year the web content article is set to
-	 display
-	 * @param displayDateHour the hour the web content article is set to
-	 display
-	 * @param displayDateMinute the minute the web content article is set to
-	 display
-	 * @param expirationDateMonth the month the web content article is set to
-	 expire
-	 * @param expirationDateDay the calendar day the web content article is set
-	 to expire
-	 * @param expirationDateYear the year the web content article is set to
-	 expire
-	 * @param expirationDateHour the hour the web content article is set to
-	 expire
-	 * @param expirationDateMinute the minute the web content article is set to
-	 expire
-	 * @param neverExpire whether the web content article is not set to auto
-	 expire
-	 * @param reviewDateMonth the month the web content article is set for
-	 review
-	 * @param reviewDateDay the calendar day the web content article is set for
-	 review
-	 * @param reviewDateYear the year the web content article is set for review
-	 * @param reviewDateHour the hour the web content article is set for review
-	 * @param reviewDateMinute the minute the web content article is set for
-	 review
-	 * @param neverReview whether the web content article is not set for review
-	 * @param indexable whether the web content is searchable
-	 * @param smallImage whether to update web content article's a small image.
-	 A file must be passed in as <code>smallImageFile</code> value,
-	 otherwise the current small image is deleted.
-	 * @param smallImageURL the web content article's small image URL
-	 (optionally <code>null</code>)
-	 * @param smallFile the web content article's new small image file
-	 (optionally <code>null</code>). Must pass in
-	 <code>smallImage</code> value of <code>true</code> to replace the
-	 article's small image file.
-	 * @param images the web content's images (optionally <code>null</code>)
-	 * @param articleURL the web content article's accessible URL (optionally
-	 <code>null</code>)
-	 * @param serviceContext the service context to be applied. Can set the
-	 modification date, expando bridge attributes, asset category IDs,
-	 asset tag names, asset link entry IDs, asset priority, workflow
-	 actions, URL title, and can set whether to add the default
-	 command update for the web content article. With respect to
-	 social activities, by setting the service context's command to
-	 {@link com.liferay.portal.kernel.util.Constants#UPDATE}, the
-	 invocation is considered a web content update activity; otherwise
-	 it is considered a web content add activity.
-	 * @return the updated web content article
-	 * @throws PortalException if a portal exception occurred
-	 */
-	public JournalArticle updateArticle(
-			long groupId, long folderId, String articleId, double version,
-			Map<Locale, String> titleMap, Map<Locale, String> descriptionMap,
-			String content, String ddmTemplateKey, String layoutUuid,
-			int displayDateMonth, int displayDateDay, int displayDateYear,
-			int displayDateHour, int displayDateMinute, int expirationDateMonth,
-			int expirationDateDay, int expirationDateYear,
-			int expirationDateHour, int expirationDateMinute,
-			boolean neverExpire, int reviewDateMonth, int reviewDateDay,
-			int reviewDateYear, int reviewDateHour, int reviewDateMinute,
-			boolean neverReview, boolean indexable, boolean smallImage,
-			String smallImageURL, File smallFile, Map<String, byte[]> images,
-			String articleURL, ServiceContext serviceContext)
+			long smallImageId, int smallImageSource, String smallImageURL,
+			File smallFile, Map<String, byte[]> images, String articleURL,
+			ServiceContext serviceContext)
 		throws PortalException;
 
 	/**
@@ -1591,8 +1507,8 @@ public interface JournalArticleService extends BaseService {
 			boolean neverExpire, int reviewDateMonth, int reviewDateDay,
 			int reviewDateYear, int reviewDateHour, int reviewDateMinute,
 			boolean neverReview, boolean indexable, boolean smallImage,
-			String smallImageURL, File smallImageFile,
-			ServiceContext serviceContext)
+			long smallImageId, int smallImageSource, String smallImageURL,
+			File smallImageFile, ServiceContext serviceContext)
 		throws PortalException;
 
 	/**

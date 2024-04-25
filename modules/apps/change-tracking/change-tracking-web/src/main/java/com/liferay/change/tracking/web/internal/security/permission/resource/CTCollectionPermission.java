@@ -6,8 +6,8 @@
 package com.liferay.change.tracking.web.internal.security.permission.resource;
 
 import com.liferay.change.tracking.model.CTCollection;
-import com.liferay.osgi.util.service.Snapshot;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 
@@ -15,6 +15,30 @@ import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermi
  * @author Preston Crary
  */
 public class CTCollectionPermission {
+
+	public static void check(
+			PermissionChecker permissionChecker, CTCollection ctCollection,
+			String actionId)
+		throws PortalException {
+
+		ModelResourcePermission<CTCollection> modelResourcePermission =
+			_ctCollectionModelResourcePermissionSnapshot.get();
+
+		modelResourcePermission.check(
+			permissionChecker, ctCollection, actionId);
+	}
+
+	public static void check(
+			PermissionChecker permissionChecker, long ctCollectionId,
+			String actionId)
+		throws PortalException {
+
+		ModelResourcePermission<CTCollection> modelResourcePermission =
+			_ctCollectionModelResourcePermissionSnapshot.get();
+
+		modelResourcePermission.check(
+			permissionChecker, ctCollectionId, actionId);
+	}
 
 	public static boolean contains(
 			PermissionChecker permissionChecker, CTCollection ctCollection,

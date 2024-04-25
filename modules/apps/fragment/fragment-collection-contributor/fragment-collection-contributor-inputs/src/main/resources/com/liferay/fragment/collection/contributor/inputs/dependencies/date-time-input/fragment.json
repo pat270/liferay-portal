@@ -1,0 +1,12 @@
+{
+	"cacheable": false,
+	"fragmentEntryKey": "date-time-input",
+	"icon": "date-time",
+	"name": "date-and-time",
+	"type": "input",
+	"typeOptions": {
+		"fieldTypes": [
+			"date-time"
+		]
+	}
+}

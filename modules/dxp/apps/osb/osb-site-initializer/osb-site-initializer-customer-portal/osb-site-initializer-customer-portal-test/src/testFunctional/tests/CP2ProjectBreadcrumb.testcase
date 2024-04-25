@@ -46,7 +46,7 @@ definition {
 	@priority = 3
 	test ClickProjectGoesToProjectPage {
 		task ("Go to CP2.0 and join a project") {
-			CP2Utils.goToCustomerPortalSiteWithRefresh();
+			ApplicationsMenu.gotoSite(key_site = "Customer Portal Site");
 
 			CustomerPortal.enterOnProject(title = "Test Account LXC - SM");
 		}
@@ -66,7 +66,7 @@ definition {
 		var key_project = "Test Account Analytics Cloud";
 
 		task ("Go to CP2.0 and join a project") {
-			CP2Utils.goToCustomerPortalSiteWithRefresh();
+			ApplicationsMenu.gotoSite(key_site = "Customer Portal Site");
 
 			CustomerPortal.enterOnProject(title = "Test Account LXC - SM");
 		}
@@ -83,8 +83,8 @@ definition {
 				locator1 = "CP2Utils#SVG_DROPDOWN_LIST");
 
 			AssertElementPresent(
-				locator1 = "CP2Utils#SVG_DROPDOWN_LIST",
-				value1 = ${searchItem});
+				key_project = "Test Account Ana",
+				locator1 = "CP2Utils#SVG_DROPDOWN_LIST");
 		}
 	}
 

@@ -4,7 +4,7 @@ definition {
 	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Fragments";
+	property testray.main.component.name = "Fragment Administration";
 
 	setUp {
 		task ("Set up instance and sign in") {
@@ -59,20 +59,7 @@ definition {
 		}
 	}
 
-	tearDown {
-		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
-
-		if (${testLiferayVirtualInstance} == "true") {
-			PortalInstances.tearDownCP();
-		}
-		else {
-			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
-
-			ObjectAdmin.deleteObjectViaAPI(objectName = "PurchaseOrder");
-		}
-	}
-
-	@description = "This is a test for LPS-155169. The page creator could configure the Numeric Input framgent."
+	@description = "This is a test for LPS-155169. The page creator could configure the Numeric framgent."
 	@priority = 4
 	test ConfigureNumericInput {
 		task ("Given a page creator has a Form Container mapped to an entity with Integer field") {
@@ -100,11 +87,11 @@ definition {
 			task ("Remove the automatic added fragments") {
 				for (var index : list "4,3,2") {
 					PageEditor.removeFragment(
-						fragmentName = "Numeric Input",
+						fragmentName = "Numeric",
 						index = ${index});
 				}
 
-				for (var fragmentName : list "Numeric Input,Submit Button") {
+				for (var fragmentName : list "Numeric,Submit Button") {
 					PageEditor.removeFragment(fragmentName = ${fragmentName});
 				}
 			}
@@ -113,73 +100,73 @@ definition {
 		task ("When the page creator adds a Numeric Input fragment into the Form Container") {
 			PageEditor.addFragmentToFormContainer(
 				collectionName = "Form Components",
-				fragmentName = "Numeric Input");
+				fragmentName = "Numeric");
 		}
 
 		task ("Then the page creator could configure the Numeric Input fragment") {
 			task ("Mark the Numeric Input as required") {
 				PageEditor.editInput(
 					field = "Ticket Number",
-					fragmentName = "Numeric Input",
+					fragmentName = "Numeric",
 					markAsRequired = "true");
 
 				PageEditor.viewInputStyle(
 					label = "Ticket Number",
 					markAsRequired = "true",
-					type = "numeric-input");
+					type = "numeric");
 			}
 
 			task ("Rename the label") {
 				PageEditor.editInput(
-					fragmentName = "Numeric Input",
+					fragmentName = "Numeric",
 					label = "Purchase Ticket Number");
 
 				PageEditor.viewInputStyle(
 					label = "Purchase Ticket Number",
 					showLabel = "true",
-					type = "numeric-input");
+					type = "numeric");
 			}
 
 			task ("Hide the label") {
 				PageEditor.editInput(
-					fragmentName = "Numeric Input",
+					fragmentName = "Numeric",
 					hideLabel = "true");
 
 				PageEditor.viewInputStyle(
 					label = "Purchase Ticket Number",
 					showLabel = "false",
-					type = "numeric-input");
+					type = "numeric");
 			}
 
 			task ("Show the Help Text") {
 				PageEditor.editInput(
-					fragmentName = "Numeric Input",
+					fragmentName = "Numeric",
 					hideHelpText = "false");
 
 				PageEditor.viewInputStyle(
 					helpText = "Add your help text here.",
 					showHelpText = "true",
-					type = "numeric-input");
+					type = "numeric");
 			}
 
 			task ("Clear the Help Text") {
 				PageEditor.editInput(
-					fragmentName = "Numeric Input",
+					fragmentName = "Numeric",
 					helpText = "");
 
 				PageEditor.viewInputStyle(
 					showHelpText = "false",
-					type = "numeric-input");
+					type = "numeric");
 			}
 
 			task ("Add a placeholder to Numeric Input") {
 				PageEditor.editInput(
-					fragmentName = "Numeric Input",
+					fragmentName = "Numeric",
 					placeholder = "Type your ticket number");
 
 				PageEditor.viewInputStyle(
 					placeholder = "Type your ticket number",
-					type = "numeric-input");
+					type = "numeric");
 			}
 		}
 	}
@@ -439,10 +426,10 @@ definition {
 
 		task ("Then the user should see an error message") {
 			AssertAttributeValue(
-				attribute1 = "validationMessage",
 				key_text = "Ticket Number",
 				locator1 = "TextInput#ANY",
-				value1 = "Value must be less than or equal to 2147483647.");
+				value1 = "validationMessage",
+				value2 = "Value must be less than or equal to 2147483647.");
 		}
 
 		task ("When the user submits form with value exceeding the minimum value of Numeric Input") {
@@ -460,10 +447,10 @@ definition {
 
 		task ("Then the user should see an error message") {
 			AssertAttributeValue(
-				attribute1 = "validationMessage",
 				key_text = "Ticket Number",
 				locator1 = "TextInput#ANY",
-				value1 = "Value must be greater than or equal to -2147483648.");
+				value1 = "validationMessage",
+				value2 = "Value must be greater than or equal to -2147483648.");
 		}
 	}
 
@@ -497,11 +484,11 @@ definition {
 			task ("Remove the automatic added fragments") {
 				for (var index : list "4,3,2") {
 					PageEditor.removeFragment(
-						fragmentName = "Numeric Input",
+						fragmentName = "Numeric",
 						index = ${index});
 				}
 
-				for (var fragmentName : list "Numeric Input,Submit Button") {
+				for (var fragmentName : list "Numeric,Submit Button") {
 					PageEditor.removeFragment(fragmentName = ${fragmentName});
 				}
 			}
@@ -509,12 +496,12 @@ definition {
 			task ("Add a Numeric Input fragment into the Form Container") {
 				PageEditor.addFragmentToFormContainer(
 					collectionName = "Form Components",
-					fragmentName = "Numeric Input");
+					fragmentName = "Numeric");
 			}
 		}
 
 		task ("When the page creator accesses to the General panel of Numeric Input") {
-			PageEditor.gotoConfiguration(fragmentName = "Numeric Input");
+			PageEditor.gotoConfiguration(fragmentName = "Numeric");
 		}
 
 		task ("Then the page creator could see mappable fields in mapping field selector") {
@@ -524,6 +511,53 @@ definition {
 					key_value = ${fieldName},
 					locator1 = "Select#GENERIC_SELECT_VALUE");
 			}
+		}
+	}
+
+	@description = "This is a test for LPS-182728. The user should see the field error below the Numeric Input fragment."
+	@priority = 3
+	test ViewNumericInputFieldErrorMessageWhenPartialValidationFailure {
+		task ("Given a user has a content page where a mapped Numeric Input fragment has a partial validation") {
+			JSONObject.addObjectValidation(
+				errorMessage = "Please enter a valid ticket number.",
+				fieldName = "ticketNumber",
+				labelName = "Numeric Validation",
+				objectName = "PurchaseOrder",
+				outputValidationType = "partialValidation",
+				script = "ticketNumber > 1000",
+				validationType = "ddm");
+
+			JSONLayout.addPublicLayout(
+				groupName = "Test Site Name",
+				layoutName = "Test Page Name",
+				type = "content");
+
+			ContentPagesNavigator.openEditContentPage(
+				pageName = "Test Page Name",
+				siteName = "Test Site Name");
+
+			PageEditor.addFragment(
+				collectionName = "Form Components",
+				fragmentName = "Form Container");
+
+			PageEditor.mapFormContainerToObject(contentType = "Purchase Order");
+
+			PageEditor.publish();
+		}
+
+		task ("When the user submits form with invalid value") {
+			Type(
+				key_text = "Ticket Number",
+				locator1 = "TextInput#ANY",
+				value1 = 150);
+
+			Button.clickSubmitButton();
+		}
+
+		task ("Then the user should see a field error message below Numeric Input") {
+			Alert.viewFieldErrorMessage(
+				errorMessage = "Please enter a valid ticket number.",
+				fieldLabel = "Ticket Number");
 		}
 	}
 

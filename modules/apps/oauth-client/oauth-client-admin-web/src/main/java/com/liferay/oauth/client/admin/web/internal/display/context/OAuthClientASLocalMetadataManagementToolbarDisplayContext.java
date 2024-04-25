@@ -79,22 +79,6 @@ public class OAuthClientASLocalMetadataManagementToolbarDisplayContext
 		).build();
 	}
 
-	public List<DropdownItem> getFilterDropdownItems() {
-		return DropdownItemListBuilder.addGroup(
-			dropdownGroupItem -> {
-				dropdownGroupItem.setDropdownItems(
-					getOrderByDropdownItems(
-						HashMapBuilder.put(
-							"createDate", "createDate"
-						).put(
-							"localWellKnownURI", "localWellKnownURI"
-						).build()));
-				dropdownGroupItem.setLabel(
-					LanguageUtil.get(httpServletRequest, "order-by"));
-			}
-		).build();
-	}
-
 	public OrderByComparator<OAuthClientASLocalMetadata>
 		getOrderByComparator() {
 
@@ -109,6 +93,15 @@ public class OAuthClientASLocalMetadataManagementToolbarDisplayContext
 		return OrderByComparatorFactoryUtil.create(
 			"OAuthClientASLocalMetadata", columnName,
 			Objects.equals(getOrderByType(), "asc"));
+	}
+
+	public List<DropdownItem> getOrderByDropdownItems() {
+		return getOrderByDropdownItems(
+			HashMapBuilder.put(
+				"createDate", "createDate"
+			).put(
+				"localWellKnownURI", "localWellKnownURI"
+			).build());
 	}
 
 }

@@ -10,6 +10,7 @@
 <%
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(ParamUtil.getString(request, "backURL", String.valueOf(renderResponse.createRenderURL())));
+portletDisplay.setURLBackTitle(portletDisplay.getPortletDisplayName());
 
 renderResponse.setTitle(LanguageUtil.get(request, "import"));
 
@@ -17,6 +18,6 @@ ImportDisplayContext importDisplayContext = new ImportDisplayContext(request, re
 %>
 
 <react:component
-	module="js/Import"
+	module="{ImportFragments} from fragment-web"
 	props="<%= importDisplayContext.getProps() %>"
 />

@@ -1,12 +1,19 @@
 [#assign mdfRequestId = (request.getAttribute("INFO_ITEM").objectEntryId)! /]
 
 [#if mdfRequestId?has_content]
-	[#assign mdfRequest = restClient.get("/c/mdfrequests/${mdfRequestId}?nestedFields=user") /]
+	[#assign mdfRequest = (restClient.get("/c/mdfrequests/${mdfRequestId}?nestedFields=user"))! /]
 
-	[#assign firstName = mdfRequest.r_usrToMDFReqs_user.givenName /]
-	[#assign lastName = mdfRequest.r_usrToMDFReqs_user.familyName /]
-	[#assign infoEmail = mdfRequest.r_usrToMDFReqs_user.emailAddress /]
-	[#assign telephones = (mdfRequest.r_usrToMDFReqs_user.userAccountContactInformation.telephones?map(telephone -> telephone.phoneNumber)?join(', '))! /]
+	[#assign userAccountId = (mdfRequest.creator.id!) /]
+
+	[#assign userAccount = (restClient.get("/headless-admin-user/v1.0/user-accounts/${userAccountId}"))! /]
+
+	[#if userAccount?has_content]
+		[#assign telephones = (userAccount.userAccountContactInformation.telephones?map(telephone -> telephone.phoneNumber)?join(', '))! /]
+	[/#if]
+
+	[#assign firstName = (mdfRequest.r_usrToMDFReqs_user.givenName)! /]
+	[#assign lastName = (mdfRequest.r_usrToMDFReqs_user.familyName)! /]
+	[#assign infoEmail = (mdfRequest.r_usrToMDFReqs_user.emailAddress)! /]
 
 	<table class="table table-borderless w-100">
 		<thead>

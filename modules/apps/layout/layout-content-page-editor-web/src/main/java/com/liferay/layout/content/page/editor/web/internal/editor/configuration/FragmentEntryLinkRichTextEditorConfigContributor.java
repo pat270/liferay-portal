@@ -67,9 +67,9 @@ public class FragmentEntryLinkRichTextEditorConfigContributor
 				_getAllowedContentLists(), _getAllowedContentTable(),
 				" span[*](*){*}; ")
 		).put(
-			"documentBrowseLinkUrl", itemSelectorURL.toString()
+			"autoParagraph", false
 		).put(
-			"enterMode", 2
+			"documentBrowseLinkUrl", itemSelectorURL.toString()
 		).put(
 			"extraPlugins", getExtraPluginsLists()
 		).put(
@@ -119,13 +119,12 @@ public class FragmentEntryLinkRichTextEditorConfigContributor
 
 		layoutItemSelectorCriterion.setDesiredItemSelectorReturnTypes(
 			new URLItemSelectorReturnType());
-		layoutItemSelectorCriterion.setShowHiddenPages(true);
 
 		return layoutItemSelectorCriterion;
 	}
 
 	protected String getRemovePluginsLists() {
-		return "contextmenu,elementspath,floatingspace,image,link,liststyle," +
+		return "contextmenu,elementspath,floatingspace,image,liststyle," +
 			"magicline,resize,tabletools,toolbar,ae_embed";
 	}
 

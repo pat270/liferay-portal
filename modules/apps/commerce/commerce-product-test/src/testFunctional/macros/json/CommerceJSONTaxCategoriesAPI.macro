@@ -1,10 +1,11 @@
 definition {
 
-	macro _deleteCommerceTaxCategories {
+	@summary = "Default summary"
+	macro _deleteCommerceTaxCategories() {
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var commerceTaxCategoriesIds = CommerceJSONTaxCategoriesAPI._getCommerceTaxCategories();
@@ -29,11 +30,12 @@ definition {
 		}
 	}
 
-	macro _getCommerceTaxCategories {
+	@summary = "Default summary"
+	macro _getCommerceTaxCategories() {
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var companyId = JSONCompany.getCompanyId();
@@ -57,7 +59,8 @@ definition {
 		return ${commerceTaxCategories};
 	}
 
-	macro _getCommereTaxCategoriesCount {
+	@summary = "Default summary"
+	macro _getCommereTaxCategoriesCount() {
 		var taxCategoriesCount = 0;
 		var commerceTaxCategoriesIds = CommerceJSONTaxCategoriesAPI._getCommerceTaxCategories();
 

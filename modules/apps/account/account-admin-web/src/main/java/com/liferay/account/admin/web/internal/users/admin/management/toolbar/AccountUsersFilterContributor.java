@@ -20,7 +20,10 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Drew Brokke
  */
-@Component(service = FilterContributor.class)
+@Component(
+	property = "filter.contributor.key=" + UsersAdminManagementToolbarKeys.VIEW_FLAT_USERS,
+	service = FilterContributor.class
+)
 public class AccountUsersFilterContributor implements FilterContributor {
 
 	@Override
@@ -31,11 +34,6 @@ public class AccountUsersFilterContributor implements FilterContributor {
 	@Override
 	public String getLabel(Locale locale) {
 		return _getMessage(locale, "filter-by-domain");
-	}
-
-	@Override
-	public String getManagementToolbarKey() {
-		return UsersAdminManagementToolbarKeys.VIEW_FLAT_USERS;
 	}
 
 	@Override
@@ -55,6 +53,9 @@ public class AccountUsersFilterContributor implements FilterContributor {
 				"accountEntryIds",
 				new long[] {AccountConstants.ACCOUNT_ENTRY_ID_ANY});
 		}
+		else if (currentValue.equals("unassociated-users")) {
+			params.put("noAccountEntriesAndNoOrganizations", new long[0]);
+		}
 
 		return params;
 	}
@@ -71,7 +72,9 @@ public class AccountUsersFilterContributor implements FilterContributor {
 
 	@Override
 	public String[] getValues() {
-		return new String[] {"all", "company-users", "account-users"};
+		return new String[] {
+			"all", "company-users", "account-users", "unassociated-users"
+		};
 	}
 
 	private String _getMessage(Locale locale, String key) {

@@ -5,6 +5,7 @@
 
 package com.liferay.depot.service;
 
+import com.liferay.depot.model.DepotEntry;
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
 /**
@@ -26,7 +27,7 @@ public class DepotEntryServiceWrapper
 	}
 
 	@Override
-	public com.liferay.depot.model.DepotEntry addDepotEntry(
+	public DepotEntry addDepotEntry(
 			java.util.Map<java.util.Locale, String> nameMap,
 			java.util.Map<java.util.Locale, String> descriptionMap,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
@@ -37,25 +38,31 @@ public class DepotEntryServiceWrapper
 	}
 
 	@Override
-	public com.liferay.depot.model.DepotEntry deleteDepotEntry(
-			long depotEntryId)
+	public DepotEntry deleteDepotEntry(long depotEntryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _depotEntryService.deleteDepotEntry(depotEntryId);
 	}
 
 	@Override
-	public com.liferay.depot.model.DepotEntry getDepotEntry(long depotEntryId)
+	public java.util.List<DepotEntry> getCurrentAndGroupConnectedDepotEntries(
+			long groupId, int start, int end)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _depotEntryService.getCurrentAndGroupConnectedDepotEntries(
+			groupId, start, end);
+	}
+
+	@Override
+	public DepotEntry getDepotEntry(long depotEntryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _depotEntryService.getDepotEntry(depotEntryId);
 	}
 
 	@Override
-	public java.util.List<com.liferay.depot.model.DepotEntry>
-			getGroupConnectedDepotEntries(
-				long groupId, boolean ddmStructuresAvailable, int start,
-				int end)
+	public java.util.List<DepotEntry> getGroupConnectedDepotEntries(
+			long groupId, boolean ddmStructuresAvailable, int start, int end)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _depotEntryService.getGroupConnectedDepotEntries(
@@ -63,8 +70,8 @@ public class DepotEntryServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.depot.model.DepotEntry>
-			getGroupConnectedDepotEntries(long groupId, int start, int end)
+	public java.util.List<DepotEntry> getGroupConnectedDepotEntries(
+			long groupId, int start, int end)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _depotEntryService.getGroupConnectedDepotEntries(
@@ -79,7 +86,7 @@ public class DepotEntryServiceWrapper
 	}
 
 	@Override
-	public com.liferay.depot.model.DepotEntry getGroupDepotEntry(long groupId)
+	public DepotEntry getGroupDepotEntry(long groupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _depotEntryService.getGroupDepotEntry(groupId);
@@ -96,7 +103,7 @@ public class DepotEntryServiceWrapper
 	}
 
 	@Override
-	public com.liferay.depot.model.DepotEntry updateDepotEntry(
+	public DepotEntry updateDepotEntry(
 			long depotEntryId, java.util.Map<java.util.Locale, String> nameMap,
 			java.util.Map<java.util.Locale, String> descriptionMap,
 			java.util.Map<String, Boolean> depotAppCustomizationMap,

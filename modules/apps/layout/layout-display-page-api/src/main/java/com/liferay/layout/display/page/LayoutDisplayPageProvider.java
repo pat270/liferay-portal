@@ -14,6 +14,10 @@ public interface LayoutDisplayPageProvider<T> {
 
 	public String getClassName();
 
+	public default String getDefaultURLSeparator() {
+		return null;
+	}
+
 	public LayoutDisplayPageObjectProvider<T>
 		getLayoutDisplayPageObjectProvider(InfoItemReference infoItemReference);
 
@@ -25,6 +29,12 @@ public interface LayoutDisplayPageProvider<T> {
 			long groupId, String urlTitle, String version) {
 
 		return getLayoutDisplayPageObjectProvider(groupId, urlTitle);
+	}
+
+	public default LayoutDisplayPageObjectProvider<T>
+		getLayoutDisplayPageObjectProvider(T t) {
+
+		return null;
 	}
 
 	public default LayoutDisplayPageObjectProvider<T>

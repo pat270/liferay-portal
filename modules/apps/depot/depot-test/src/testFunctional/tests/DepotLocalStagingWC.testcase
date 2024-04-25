@@ -154,6 +154,7 @@ definition {
 	@refactordone
 	test CanEditFriendlyURL {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		DepotNavigator.openDepotWebContentAdminStaging(depotName = "Test Depot Name");
 
@@ -258,7 +259,7 @@ definition {
 	}
 
 	@description = "This ensures that image in basic article in depot can be edited and republished in staging site when enabling local staging."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanEditWCInlineImageInDepot {
 		DepotNavigator.openDepotDocumentsAndMediaAdmin(depotName = "Test Depot Name");
@@ -354,10 +355,11 @@ definition {
 	}
 
 	@description = "This ensures that an article using a structure stored in depot can be deleted and republished in staging site when enabling local staging. Skip the instance for performance improvement."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanPublishDeletedWCCustomization {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		DepotNavigator.openDepotAdmin();
 
@@ -437,10 +439,11 @@ definition {
 	}
 
 	@description = "This ensures that an article using a structure stored in depot can be edited and republished in staging site when enabling local staging. Skip the instance for performance improvement."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanPublishEditedWCCustomization {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		DepotNavigator.openDepotAdmin();
 
@@ -535,6 +538,7 @@ definition {
 	@refactordone
 	test CanPublishWCFolder {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		DepotNavigator.openDepotWebContentAdminStaging(depotName = "Test Depot Name");
 
@@ -629,6 +633,7 @@ definition {
 	@refactordone
 	test CanPublishWCWithCategory {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		DepotNavigator.openDepotCategoriesAdminStaging(depotName = "Test Depot Name");
 
@@ -691,6 +696,7 @@ definition {
 	@refactordone
 	test CanPublishWCWithEmbeddedVideo {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDepot.addDepot(
 			depotDescription = "This is the description of a depot",
@@ -753,6 +759,8 @@ definition {
 		Staging.gotoPublishToLive();
 
 		Staging.publishToLive();
+
+		Refresh();
 
 		Navigator.openSitePage(
 			pageName = "Test Page",

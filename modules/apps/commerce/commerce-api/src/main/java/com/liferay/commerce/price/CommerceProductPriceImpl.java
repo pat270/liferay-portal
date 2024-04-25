@@ -41,13 +41,23 @@ public class CommerceProductPriceImpl implements CommerceProductPrice {
 	}
 
 	@Override
-	public int getQuantity() {
+	public BigDecimal getQuantity() {
 		return _quantity;
 	}
 
 	@Override
 	public BigDecimal getTaxValue() {
 		return _taxValue;
+	}
+
+	@Override
+	public BigDecimal getUnitOfMeasureIncrementalOrderQuantity() {
+		return _unitOfMeasureIncrementalOrderQuantity;
+	}
+
+	@Override
+	public String getUnitOfMeasureKey() {
+		return _unitOfMeasureKey;
 	}
 
 	@Override
@@ -70,6 +80,7 @@ public class CommerceProductPriceImpl implements CommerceProductPrice {
 		return _unitPromoPriceWithTaxAmount;
 	}
 
+	@Override
 	public boolean isPriceOnApplication() {
 		return _priceOnApplication;
 	}
@@ -101,16 +112,28 @@ public class CommerceProductPriceImpl implements CommerceProductPrice {
 		_finalPriceWithTaxAmount = finalPriceWithTaxAmount;
 	}
 
+	@Override
 	public void setPriceOnApplication(boolean priceOnApplication) {
 		_priceOnApplication = priceOnApplication;
 	}
 
-	public void setQuantity(int quantity) {
+	public void setQuantity(BigDecimal quantity) {
 		_quantity = quantity;
 	}
 
 	public void setTaxValue(BigDecimal taxValue) {
 		_taxValue = taxValue;
+	}
+
+	public void setUnitOfMeasureIncrementalOrderQuantity(
+		BigDecimal unitOfMeasureIncrementalOrderQuantity) {
+
+		_unitOfMeasureIncrementalOrderQuantity =
+			unitOfMeasureIncrementalOrderQuantity;
+	}
+
+	public void setUnitOfMeasureKey(String unitOfMeasureKey) {
+		_unitOfMeasureKey = unitOfMeasureKey;
 	}
 
 	public void setUnitPrice(CommerceMoney unitPrice) {
@@ -139,8 +162,10 @@ public class CommerceProductPriceImpl implements CommerceProductPrice {
 	private CommerceMoney _finalPrice;
 	private CommerceMoney _finalPriceWithTaxAmount;
 	private boolean _priceOnApplication;
-	private int _quantity;
+	private BigDecimal _quantity;
 	private BigDecimal _taxValue;
+	private BigDecimal _unitOfMeasureIncrementalOrderQuantity;
+	private String _unitOfMeasureKey;
 	private CommerceMoney _unitPrice;
 	private CommerceMoney _unitPriceWithTaxAmount;
 	private CommerceMoney _unitPromoPrice;

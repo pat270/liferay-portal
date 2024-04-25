@@ -34,6 +34,7 @@ import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUti
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.security.xml.SecureXMLFactoryProviderUtil;
 import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -261,6 +262,24 @@ public class SiteInitializerTestrayImportResultsDispatchTaskExecutor
 			testrayCaseId = objectEntry.getId();
 
 			_objectEntryIds.put(objectEntryIdsKey, testrayCaseId);
+		}
+
+		ObjectEntry objectEntry = ObjectEntryUtil.getObjectEntriesPage(
+			null, companyId, _defaultDTOConverterContext,
+			StringBundler.concat(
+				"buildId eq '", testrayBuildId, "' and caseId eq '",
+				testrayCaseId, "'"),
+			"BuildsCases", _objectEntryManager, null
+		).fetchFirstItem();
+
+		if (objectEntry == null) {
+			ObjectEntryUtil.addObjectEntry(
+				_defaultDTOConverterContext, "BuildsCases", _objectEntryManager,
+				HashMapBuilder.<String, Object>put(
+					"r_buildToBuildsCases_c_buildId", testrayBuildId
+				).put(
+					"r_caseToBuildsCases_c_caseId", testrayCaseId
+				).build());
 		}
 
 		long testrayCaseResultId = _getTestrayCaseResultId(
@@ -1225,6 +1244,9 @@ public class SiteInitializerTestrayImportResultsDispatchTaskExecutor
 		try (InputStream inputStream = new ByteArrayInputStream(
 				s3APIKey.getBytes())) {
 
+			long filesCountThreshold = GetterUtil.getLong(
+				unicodeProperties.getProperty("filesCountThreshold"), -1);
+
 			Storage storage = StorageOptions.newBuilder(
 			).setCredentials(
 				GoogleCredentials.fromStream(inputStream)
@@ -1239,6 +1261,10 @@ public class SiteInitializerTestrayImportResultsDispatchTaskExecutor
 				Storage.BlobListOption.prefix(s3InboxFolderName + "/"));
 
 			for (Blob blob : page.iterateAll()) {
+				if (filesCountThreshold == 0) {
+					break;
+				}
+
 				String name = blob.getName();
 
 				if (name.equals(s3InboxFolderName + "/")) {
@@ -1266,6 +1292,8 @@ public class SiteInitializerTestrayImportResultsDispatchTaskExecutor
 				}
 
 				blob.delete();
+
+				filesCountThreshold--;
 			}
 		}
 		catch (IOException ioException) {

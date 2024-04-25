@@ -10,6 +10,7 @@ import com.liferay.commerce.inventory.model.CommerceInventoryWarehouse;
 import com.liferay.commerce.inventory.service.CommerceInventoryReplenishmentItemService;
 import com.liferay.commerce.inventory.web.internal.constants.CommerceInventoryFDSNames;
 import com.liferay.commerce.inventory.web.internal.model.Replenishment;
+import com.liferay.commerce.util.CommerceQuantityFormatter;
 import com.liferay.frontend.data.set.provider.FDSDataProvider;
 import com.liferay.frontend.data.set.provider.search.FDSKeywords;
 import com.liferay.frontend.data.set.provider.search.FDSPagination;
@@ -20,6 +21,8 @@ import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
+
+import java.math.BigDecimal;
 
 import java.text.DateFormat;
 import java.text.Format;
@@ -60,13 +63,15 @@ public class CommerceInventoryReplenishmentFDSDataProvider
 			themeDisplay.getTimeZone());
 
 		String sku = ParamUtil.getString(httpServletRequest, "sku");
+		String unitOfMeasureKey = ParamUtil.getString(
+			httpServletRequest, "unitOfMeasureKey");
 
 		List<CommerceInventoryReplenishmentItem>
 			commerceInventoryReplenishmentItems =
 				_commerceInventoryReplenishmentItemService.
-					getCommerceInventoryReplenishmentItemsByCompanyIdAndSku(
+					getCommerceInventoryReplenishmentItemsByCompanyIdSkuAndUnitOfMeasureKey(
 						_portal.getCompanyId(httpServletRequest), sku,
-						fdsPagination.getStartPosition(),
+						unitOfMeasureKey, fdsPagination.getStartPosition(),
 						fdsPagination.getEndPosition());
 
 		for (CommerceInventoryReplenishmentItem
@@ -77,8 +82,19 @@ public class CommerceInventoryReplenishmentFDSDataProvider
 				commerceInventoryReplenishmentItem.
 					getCommerceInventoryWarehouse();
 
+			BigDecimal quantity = BigDecimal.ZERO;
+
+			BigDecimal commerceInventoryWarehouseItemQuantity =
+				commerceInventoryReplenishmentItem.getQuantity();
+
+			if (commerceInventoryWarehouseItemQuantity != null) {
+				quantity = commerceInventoryWarehouseItemQuantity;
+			}
+
 			replenishments.add(
 				new Replenishment(
+					commerceInventoryReplenishmentItem.
+						getCommerceInventoryWarehouseId(),
 					commerceInventoryReplenishmentItem.
 						getCommerceInventoryReplenishmentItemId(),
 					commerceInventoryWarehouse.getName(
@@ -86,7 +102,12 @@ public class CommerceInventoryReplenishmentFDSDataProvider
 					dateTimeFormat.format(
 						commerceInventoryReplenishmentItem.
 							getAvailabilityDate()),
-					commerceInventoryReplenishmentItem.getQuantity()));
+					_commerceQuantityFormatter.format(
+						commerceInventoryReplenishmentItem.getCompanyId(),
+						quantity, commerceInventoryReplenishmentItem.getSku(),
+						commerceInventoryReplenishmentItem.
+							getUnitOfMeasureKey()),
+					commerceInventoryReplenishmentItem.getUnitOfMeasureKey()));
 		}
 
 		return replenishments;
@@ -98,15 +119,21 @@ public class CommerceInventoryReplenishmentFDSDataProvider
 		throws PortalException {
 
 		String sku = ParamUtil.getString(httpServletRequest, "sku");
+		String unitOfMeasureKey = ParamUtil.getString(
+			httpServletRequest, "unitOfMeasureKey");
 
 		return _commerceInventoryReplenishmentItemService.
-			getCommerceInventoryReplenishmentItemsCountByCompanyIdAndSku(
-				_portal.getCompanyId(httpServletRequest), sku);
+			getCommerceInventoryReplenishmentItemsCountByCompanyIdSkuAndUnitOfMeasureKey(
+				_portal.getCompanyId(httpServletRequest), sku,
+				unitOfMeasureKey);
 	}
 
 	@Reference
 	private CommerceInventoryReplenishmentItemService
 		_commerceInventoryReplenishmentItemService;
+
+	@Reference
+	private CommerceQuantityFormatter _commerceQuantityFormatter;
 
 	@Reference
 	private Portal _portal;

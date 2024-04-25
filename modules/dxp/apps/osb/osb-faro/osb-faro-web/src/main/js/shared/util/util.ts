@@ -1,4 +1,4 @@
-import {Align} from 'metal-position';
+import {align} from './align';
 import {
 	ALIGNMENTS_MAP,
 	POSITIONS,
@@ -19,6 +19,11 @@ import {
 export const isBlank = (value: string | number): boolean =>
 	isNil(value) || (isString(value) && !value.length);
 
+/**
+ * It is deprecated, you should use useQueryRangeSelectors instead.
+ * @param query
+ * @deprecated
+ */
 export const getRangeSelectorsFromQuery = query => {
 	const rangeEnd = get(query, 'rangeEnd', '');
 	const rangeKey = get(query, 'rangeKey', RangeKeyTimeRanges.Last30Days);
@@ -180,11 +185,7 @@ export const getAlignPosition = (source, target, suggestedPosition) => {
 		suggestedPosition = 'top';
 	}
 
-	const position = Align.align(
-		source,
-		target,
-		ALIGNMENTS_MAP[suggestedPosition]
-	);
+	const position = align(source, target, ALIGNMENTS_MAP[suggestedPosition]);
 
 	return POSITIONS[position];
 };

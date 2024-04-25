@@ -6,14 +6,17 @@
 import ClayTable from '@clayui/table';
 import classNames from 'classnames';
 import {useEffect, useState} from 'react';
+import {FilterIcon} from '../../../../src/common/icons/filter_icon';
 import TablePagination from './Pagination';
 import TableSkeleton from './Skeleton';
 
 const Table = ({
 	checkboxConfig,
 	columns,
+	handleSortChange,
 	hasCheckbox,
 	hasPagination,
+	hasSorting,
 	isLoading = false,
 	paginationConfig,
 	rows,
@@ -77,7 +80,7 @@ const Table = ({
 
 	return (
 		<>
-			<ClayTable {...props}>
+			<ClayTable borderless={true} {...props}>
 				<ClayTable.Head>
 					<ClayTable.Row>
 						{hasCheckbox && (
@@ -112,7 +115,21 @@ const Table = ({
 										</p>
 									</div>
 								) : (
-									column.header.name
+									<div className="d-flex">
+										{column.header.name}
+
+										{hasSorting &&
+											column.filterIdentifier && (
+												<FilterIcon
+													columnName={
+														column.filterIdentifier
+													}
+													handleSortChange={
+														handleSortChange
+													}
+												/>
+											)}
+									</div>
 								)}
 							</ClayTable.Cell>
 						))}

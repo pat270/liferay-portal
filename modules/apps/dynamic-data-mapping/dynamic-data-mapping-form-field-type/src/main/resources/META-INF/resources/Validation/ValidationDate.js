@@ -41,7 +41,11 @@ const getDateOptionsByType = (label, name) => ({
 
 /* TODO: enforce parameter type consistency and remove this function */
 function getFromParameter(parameter, key, getLocalizedValue) {
-	let value = getLocalizedValue(parameter) ?? parameter;
+	let value = getLocalizedValue(parameter);
+
+	if (value === undefined) {
+		value = parameter[Liferay.ThemeDisplay.getLanguageId()];
+	}
 
 	if (value && typeof value === 'string') {
 		try {
@@ -136,7 +140,7 @@ export default function ValidationDate({
 			<div className="ddm-form-field-type__validation-date-accepted-date">
 				<DDMSelect
 					className="lfr-ddm__validation-date-select"
-					disabled={readOnly || localizationMode}
+					disabled={readOnly}
 					label={Liferay.Language.get('accepted-date')}
 					name="selectedValidation"
 					onChange={({target: {value}}) => {

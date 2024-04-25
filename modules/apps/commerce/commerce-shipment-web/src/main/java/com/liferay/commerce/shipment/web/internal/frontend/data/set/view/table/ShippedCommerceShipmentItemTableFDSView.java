@@ -43,6 +43,8 @@ public class ShippedCommerceShipmentItemTableFDSView extends BaseTableFDSView {
 			"warehouse", "warehouse"
 		).add(
 			"shippedQuantity", "shipped"
+		).add(
+			"unitOfMeasureKey", "uom"
 		).build();
 	}
 

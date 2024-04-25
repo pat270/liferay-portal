@@ -4,8 +4,12 @@
  */
 
 import {useModal} from '@clayui/core';
+import {ClayCheckbox} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import {useCallback, useEffect, useState} from 'react';
+import useProvisioningLicenseKeys from '~/common/hooks/useProvisioningLicenseKeys';
+import {getRolesFiltered} from '~/common/utils/getProjectRoles';
+import {rolesHighPriorityContacts} from '~/routes/customer-portal/utils/getHighPriorityContacts';
 import i18n from '../../../../../../../common/I18n';
 import StatusTag from '../../../../../../../common/components/StatusTag';
 import Table from '../../../../../../../common/components/Table';
@@ -24,23 +28,36 @@ import useUserAccountsByAccountExternalReferenceCode from './hooks/useUserAccoun
 import {getColumns} from './utils/getColumns';
 import getFilteredRoleBriefsByName from './utils/getFilteredRoleBriefsByName';
 
+const MAXIMUM_REQUESTORS_DEFAULT = -1;
+const UNLIMITED_RESQUESTORS = 9999;
+
 const TeamMembersTable = ({
 	koroneikiAccount,
 	loading: koroneikiAccountLoading,
 }) => {
 	const {
 		articleAccountSupportURL,
+		articleNotifiedWhenMyActivationKeyIsAboutToExpireURL,
 		gravatarAPI,
 		importDate,
 	} = useAppPropertiesContext();
+
+	const provisioningKeys = useProvisioningLicenseKeys();
 
 	const [{sessionId}] = useCustomerPortal();
 
 	const {observer, onOpenChange, open} = useModal();
 
-	const [currentIndexEditing, setCurrentIndexEditing] = useState();
-	const [currentIndexRemoving, setCurrentIndexRemoving] = useState();
+	const [currentUserEditing, setCurrentUserEditing] = useState();
+	const [currentUserRemoving, setCurrentUserRemoving] = useState();
 	const [selectedAccountRoleItem, setSelectedAccountRoleItem] = useState();
+	const [highPriorityContactsNames, setHighPriorityContactsNames] = useState(
+		[]
+	);
+	const [checkedBoxSubscription, setCheckedBoxSubscription] = useState(false);
+	const [isSingleSubscribedUser, setIsSingleSubscribedUser] = useState([]);
+	const [singleSubscribedKeys, setSingleSubscribedKeys] = useState('');
+	const [loadingModal, setLoadingModal] = useState(false);
 
 	const {
 		data: myUserAccountData,
@@ -68,10 +85,22 @@ const TeamMembersTable = ({
 		koroneikiAccountLoading
 	);
 
-	let availableSupportSeatsCount =
-		koroneikiAccount?.maxRequestors - supportSeatsCount;
-	availableSupportSeatsCount =
-		availableSupportSeatsCount < 0 ? 0 : availableSupportSeatsCount;
+	const [
+		availableSupportSeatsCount,
+		setAvailableSupportSeatsCount,
+	] = useState(1);
+
+	useEffect(() => {
+		let remainingAdmins =
+			koroneikiAccount?.maxRequestors - supportSeatsCount;
+		remainingAdmins = remainingAdmins < 0 ? 0 : remainingAdmins;
+
+		setAvailableSupportSeatsCount(
+			koroneikiAccount?.maxRequestors === MAXIMUM_REQUESTORS_DEFAULT
+				? UNLIMITED_RESQUESTORS
+				: remainingAdmins
+		);
+	}, [koroneikiAccount, supportSeatsCount]);
 
 	const userAccounts =
 		userAccountsData?.accountUserAccountsByExternalReferenceCode.items;
@@ -83,6 +112,47 @@ const TeamMembersTable = ({
 		userAccounts
 	);
 
+	const getHighPriorityContactsByFilter = useCallback(
+		(filter) => {
+			return userAccountsData?.accountUserAccountsByExternalReferenceCode?.items
+				.filter((account) =>
+					account?.selectedAccountSummary?.roleBriefs?.some(
+						(role) => role?.name === filter
+					)
+				)
+				.map((account) => ({
+					email: account.emailAddress,
+				}));
+		},
+		[userAccountsData?.accountUserAccountsByExternalReferenceCode?.items]
+	);
+
+	useEffect(() => {
+		const fetchHighPriorityContacts = async () => {
+			try {
+				const highPriorityContactsResults = await Promise.all(
+					rolesHighPriorityContacts.map((role) =>
+						getHighPriorityContactsByFilter(role)
+					)
+				);
+
+				const flattenedHighPriorityContacts = highPriorityContactsResults
+					.flat()
+					.filter((contact) => contact);
+
+				const highPriorityEmails = flattenedHighPriorityContacts.map(
+					(contact) => contact.email
+				);
+
+				setHighPriorityContactsNames(highPriorityEmails);
+			} catch (error) {
+				console.error('Error:', error);
+			}
+		};
+
+		fetchHighPriorityContacts();
+	}, [getHighPriorityContactsByFilter, userAccountsData]);
+
 	const {
 		data: accountRolesData,
 		loading: accountRolesLoading,
@@ -92,32 +162,60 @@ const TeamMembersTable = ({
 		!loggedUserAccount?.selectedAccountSummary.hasAdministratorRole
 	);
 
-	const availableAccountRoles =
-		accountRolesData?.accountAccountRolesByExternalReferenceCode.items;
+	const availableAccountRoles = getRolesFiltered(
+		accountRolesData?.accountAccountRolesByExternalReferenceCode.items,
+		koroneikiAccount
+	);
 
 	const loading =
 		myUserAccountLoading || userAccountsLoading || accountRolesLoading;
+
+	const handleProvisioningKeys = useCallback(
+		async (userAccount) => {
+			try {
+				setLoadingModal(true);
+
+				const {
+					items,
+				} = await provisioningKeys.getSingleUserSubscriptions(
+					koroneikiAccount?.accountKey,
+					userAccount?.emailAddress
+				);
+
+				const getLicensesKeyIds = items.map((licenseKey) => {
+					return licenseKey.id;
+				});
+
+				setIsSingleSubscribedUser(items);
+				setSingleSubscribedKeys(getLicensesKeyIds);
+			} catch (error) {
+				console.error('Error:', error);
+			}
+			setLoadingModal(false);
+		},
+		[koroneikiAccount?.accountKey, provisioningKeys]
+	);
 
 	useEffect(() => {
 		if (!updating) {
 			onOpenChange(false);
 
-			setCurrentIndexRemoving();
+			setCurrentUserRemoving();
 		}
 	}, [onOpenChange, updating]);
 
 	useEffect(() => {
 		if (!updating) {
-			setCurrentIndexEditing();
+			setCurrentUserEditing();
 			setSelectedAccountRoleItem();
 		}
 	}, [onOpenChange, updating]);
 
 	useEffect(() => {
-		if (currentIndexEditing) {
+		if (currentUserEditing?.id) {
 			setSelectedAccountRoleItem();
 		}
-	}, [currentIndexEditing]);
+	}, [currentUserEditing]);
 
 	const getCurrentRoleBriefs = useCallback(
 		(accountBrief) =>
@@ -125,32 +223,123 @@ const TeamMembersTable = ({
 		[]
 	);
 
+	const checkIsValidRole = (userAccount) => {
+		const isInvalidRole = (role) => {
+			const invalidRoles = ['Security', 'Data', 'Critical'];
+
+			return invalidRoles.some((keyword) => role.name.includes(keyword));
+		};
+
+		const roles = getCurrentRoleBriefs(userAccount.selectedAccountSummary);
+
+		for (const role of roles) {
+			if (!isInvalidRole(role)) {
+				return role?.name;
+			}
+		}
+
+		return 'User';
+	};
+
 	const handleEdit = () => {
 		const currentAccountRoles =
-			userAccounts[currentIndexEditing].selectedAccountSummary.roleBriefs;
+			currentUserEditing.selectedAccountSummary.roleBriefs;
 
 		update(
-			userAccounts[currentIndexEditing],
+			currentUserEditing,
 			currentAccountRoles,
 			selectedAccountRoleItem
 		);
 	};
 
+	const saveSubscriptionKey = (singleSubscribedKeys) => {
+		singleSubscribedKeys?.forEach(async (singleSubscribeKey) => {
+			try {
+				await provisioningKeys.putSubscriptionInKey(singleSubscribeKey);
+			} catch (error) {
+				console.error('Error:', error);
+			}
+		});
+	};
+
 	return (
 		<>
-			{open && currentIndexRemoving !== undefined && (
+			{open && currentUserRemoving !== undefined && !loadingModal && (
 				<RemoveUserModal
+					isSingleSubscribedUser={isSingleSubscribedUser}
 					modalTitle={i18n.translate('remove-user')}
 					observer={observer}
 					onClose={() => onOpenChange(false)}
-					onRemove={() => remove(userAccounts[currentIndexRemoving])}
+					onRemove={async () => {
+						if (checkedBoxSubscription) {
+							await saveSubscriptionKey(singleSubscribedKeys);
+							await remove(currentUserRemoving);
+
+							return;
+						}
+
+						remove(currentUserRemoving);
+					}}
 					removing={updating}
 				>
 					<p className="my-0 text-neutral-10">
-						{i18n.translate(
-							'are-you-sure-you-want-to-remove-this-team-member-from-the-project'
+						<p className="font-weight-bold">
+							{`${i18n.translate('team-member')}: ${
+								currentUserRemoving?.name
+							}`}
+						</p>
+
+						{!isSingleSubscribedUser.length ? (
+							<>
+								{i18n.translate(
+									'are-you-sure-you-want-to-remove-this-team-member-from-the-project'
+								)}
+							</>
+						) : (
+							<>
+								{i18n.translate(
+									'there-is-at-least-one-activation-key-for-which-this-team-member-is-the-only-one-subscribed-to-be-notified-before-the-activation-key-expires-are-you-sure-you-want-to-remove-this-team-member-and-their-notifications'
+								)}
+							</>
 						)}
 					</p>
+
+					{!!isSingleSubscribedUser.length && (
+						<div className="align-items-center d-flex pt-3">
+							<ClayCheckbox
+								checked={checkedBoxSubscription}
+								onChange={() =>
+									setCheckedBoxSubscription(
+										(checkedBoxSubscription) =>
+											!checkedBoxSubscription
+									)
+								}
+							/>
+
+							<p className="mb-0 pb-0 px-2">
+								{i18n.translate(
+									'i-want-to-receive-these-notifications'
+								)}
+							</p>
+
+							<a
+								href={
+									articleNotifiedWhenMyActivationKeyIsAboutToExpireURL
+								}
+								rel="noreferrer noopener"
+								target="_blank"
+							>
+								<u className="font-weight-semi-bold text-decoration-none">
+									{i18n.translate('learn-more')}
+								</u>
+
+								<ClayIcon
+									className="pl-1"
+									symbol="order-arrow-right"
+								/>
+							</a>
+						</div>
+					)}
 				</RemoveUserModal>
 			)}
 
@@ -189,7 +378,7 @@ const TeamMembersTable = ({
 							isLoading={loading || searching}
 							paginationConfig={paginationConfig}
 							rows={teamMembersByStatusPaginated?.map(
-								(userAccount, index) => ({
+								(userAccount) => ({
 									email: (
 										<p className="m-0 text-truncate">
 											{userAccount.emailAddress}
@@ -203,23 +392,37 @@ const TeamMembersTable = ({
 									),
 									options: (
 										<OptionsColumn
-											edit={index === currentIndexEditing}
+											edit={
+												userAccount?.id ===
+												currentUserEditing?.id
+											}
+											highPriorityContactsNames={
+												highPriorityContactsNames
+											}
 											onCancel={() => {
-												setCurrentIndexEditing();
+												setCurrentUserEditing();
 												setSelectedAccountRoleItem();
 											}}
 											onEdit={() =>
-												setCurrentIndexEditing(index)
+												setCurrentUserEditing(
+													userAccount
+												)
 											}
 											onRemove={() => {
-												setCurrentIndexRemoving(index);
+												setCurrentUserRemoving(
+													userAccount
+												);
 												onOpenChange(true);
+												handleProvisioningKeys(
+													userAccount
+												);
 											}}
 											onSave={() => handleEdit()}
 											saveDisabled={
 												!selectedAccountRoleItem ||
 												updating
 											}
+											userAccount={userAccount}
 										/>
 									),
 									role: (
@@ -228,12 +431,13 @@ const TeamMembersTable = ({
 											availableSupportSeatsCount={
 												availableSupportSeatsCount
 											}
-											currentRoleBriefName={
-												getCurrentRoleBriefs(
-													userAccount.selectedAccountSummary
-												)?.[0]?.name || 'User'
+											currentRoleBriefName={checkIsValidRole(
+												userAccount
+											)}
+											edit={
+												userAccount?.id ===
+												currentUserEditing?.id
 											}
-											edit={index === currentIndexEditing}
 											hasAccountSupportSeatRole={
 												userAccount
 													.selectedAccountSummary

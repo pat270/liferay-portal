@@ -3,16 +3,45 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {AxiosError} from 'axios';
+
 import {DocumentFileItem} from './DocumentFileItem';
 
 import './FileList.scss';
 import {ImageFileItem} from './ImageFileItem';
 
+export type ImageCustomField = {
+	customValue: {data: string[]};
+	dataType: string;
+	name: string;
+};
+
+export type UploadedImage = {
+	uploadedImage: {
+		cdnEnabled: boolean;
+		cdnURL: string;
+		customFields: ImageCustomField[];
+		displayDate: string;
+		externalReferenceCode: string;
+		fileEntryId: number;
+		galleryEnabled: boolean;
+		id: number;
+		options: {};
+		priority: number;
+		src: string;
+		tags: any[];
+		title: {en_US: string};
+		type: number;
+	};
+};
+
 export type UploadedFile = {
-	error: boolean;
+	changed: boolean;
+	error: boolean | AxiosError;
 	file: File;
 	fileName: string;
 	id: string;
+	imageDescription?: string;
 	preview?: string;
 	progress: number;
 	readableSize:
@@ -26,24 +55,38 @@ export type UploadedFile = {
 				value: any;
 		  };
 	uploaded: boolean;
+	uploadedImage?: UploadedImage;
+	versionName?: string;
 };
 
-interface FileListProps {
-	onDelete: (id: string) => void;
+type FileListProps = {
+	isProcessing: boolean;
+	onArrowClick?: (index: number, direction: string) => void;
+	onDelete: (id: string, versionName?: string) => void;
 	type: 'document' | 'image';
 	uploadedFiles: UploadedFile[];
-}
+	versionName?: string;
+};
 
-export function FileList({onDelete, type, uploadedFiles}: FileListProps) {
+export function FileList({
+	isProcessing,
+	onArrowClick = () => {},
+	onDelete,
+	type,
+	uploadedFiles,
+	versionName,
+}: FileListProps) {
 	return (
 		<div className="file-list-container">
-			{uploadedFiles.map((uploadedFile) => {
+			{uploadedFiles?.map((uploadedFile, index) => {
 				if (type === 'document') {
 					return (
 						<DocumentFileItem
-							key={uploadedFile.id}
+							isProcessing={isProcessing}
+							key={uploadedFile?.id}
 							onDelete={onDelete}
 							uploadedFile={uploadedFile}
+							versionName={versionName}
 						/>
 					);
 				}
@@ -51,10 +94,15 @@ export function FileList({onDelete, type, uploadedFiles}: FileListProps) {
 				if (type === 'image') {
 					return (
 						<ImageFileItem
-							key={uploadedFile.id}
+							index={index}
+							isProcessing={isProcessing}
+							key={index}
+							onArrowClick={onArrowClick}
 							onDelete={onDelete}
+							position={uploadedFiles.length}
 							tooltip="Use the image description to provide more context about the screenshot, such as what is the user trying to accomplish, what are the business requirements met by this screen or anything else you feel would be helpful to guide your potential customer.  This content will be provided in the form of a mouse over of the image."
 							uploadedFile={uploadedFile}
+							versionName={versionName}
 						/>
 					);
 				}

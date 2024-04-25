@@ -1,4 +1,4 @@
-@component-name = "portal-lima"
+@component-name = "portal-content-management"
 definition {
 
 	property custom.properties = "default.layout.template.id=1_column${line.separator}jsonws.web.service.paths.excludes=";
@@ -118,7 +118,7 @@ definition {
 	}
 
 	@description = "This case ensures that the user can mention the other user in a comment."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanViewCommentMentionedUser {
 		JSONRole.assignRoleToUser(

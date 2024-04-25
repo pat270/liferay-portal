@@ -1,10 +1,11 @@
 definition {
 
-	macro _getProductGroups {
+	@summary = "Default summary"
+	macro _getProductGroups() {
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var userLoginInfo = JSONUtil2.formatJSONUser();
@@ -20,13 +21,14 @@ definition {
 		return ${responseBody};
 	}
 
-	macro _postProductGroups {
+	@summary = "Default summary"
+	macro _postProductGroups(productsJSON = null, productGroupName = null, productNames = null) {
 		Variables.assertDefined(parameterList = ${productGroupName});
 
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		if (isSet(productNames)) {
@@ -73,7 +75,8 @@ definition {
 		JSONCurlUtil.post(${curl});
 	}
 
-	macro getProductGroupIdsByName {
+	@summary = "Default summary"
+	macro getProductGroupIdsByName(productGroupNames = null) {
 		Variables.assertDefined(parameterList = ${productGroupNames});
 
 		if (!(isSet(responseBody))) {

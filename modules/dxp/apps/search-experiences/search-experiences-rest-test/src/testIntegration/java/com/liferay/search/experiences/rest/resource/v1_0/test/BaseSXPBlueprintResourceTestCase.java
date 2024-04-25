@@ -22,8 +22,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -32,6 +30,7 @@ import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.search.test.util.SearchTestRule;
@@ -64,8 +63,6 @@ import java.util.Set;
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-
-import org.apache.commons.lang.time.DateUtils;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -319,10 +316,11 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 
 	@Test
 	public void testGetSXPBlueprintsPageWithPagination() throws Exception {
-		Page<SXPBlueprint> totalPage =
+		Page<SXPBlueprint> sxpBlueprintPage =
 			sxpBlueprintResource.getSXPBlueprintsPage(null, null, null, null);
 
-		int totalCount = GetterUtil.getInteger(totalPage.getTotalCount());
+		int totalCount = GetterUtil.getInteger(
+			sxpBlueprintPage.getTotalCount());
 
 		SXPBlueprint sxpBlueprint1 = testGetSXPBlueprintsPage_addSXPBlueprint(
 			randomSXPBlueprint());
@@ -333,32 +331,75 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 		SXPBlueprint sxpBlueprint3 = testGetSXPBlueprintsPage_addSXPBlueprint(
 			randomSXPBlueprint());
 
-		Page<SXPBlueprint> page1 = sxpBlueprintResource.getSXPBlueprintsPage(
-			null, null, Pagination.of(1, totalCount + 2), null);
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<SXPBlueprint> sxpBlueprints1 =
-			(List<SXPBlueprint>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			sxpBlueprints1.toString(), totalCount + 2, sxpBlueprints1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<SXPBlueprint> page1 =
+				sxpBlueprintResource.getSXPBlueprintsPage(
+					null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		Page<SXPBlueprint> page2 = sxpBlueprintResource.getSXPBlueprintsPage(
-			null, null, Pagination.of(2, totalCount + 2), null);
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+			assertContains(sxpBlueprint1, (List<SXPBlueprint>)page1.getItems());
 
-		List<SXPBlueprint> sxpBlueprints2 =
-			(List<SXPBlueprint>)page2.getItems();
+			Page<SXPBlueprint> page2 =
+				sxpBlueprintResource.getSXPBlueprintsPage(
+					null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		Assert.assertEquals(
-			sxpBlueprints2.toString(), 1, sxpBlueprints2.size());
+			assertContains(sxpBlueprint2, (List<SXPBlueprint>)page2.getItems());
 
-		Page<SXPBlueprint> page3 = sxpBlueprintResource.getSXPBlueprintsPage(
-			null, null, Pagination.of(1, totalCount + 3), null);
+			Page<SXPBlueprint> page3 =
+				sxpBlueprintResource.getSXPBlueprintsPage(
+					null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		assertContains(sxpBlueprint1, (List<SXPBlueprint>)page3.getItems());
-		assertContains(sxpBlueprint2, (List<SXPBlueprint>)page3.getItems());
-		assertContains(sxpBlueprint3, (List<SXPBlueprint>)page3.getItems());
+			assertContains(sxpBlueprint3, (List<SXPBlueprint>)page3.getItems());
+		}
+		else {
+			Page<SXPBlueprint> page1 =
+				sxpBlueprintResource.getSXPBlueprintsPage(
+					null, null, Pagination.of(1, totalCount + 2), null);
+
+			List<SXPBlueprint> sxpBlueprints1 =
+				(List<SXPBlueprint>)page1.getItems();
+
+			Assert.assertEquals(
+				sxpBlueprints1.toString(), totalCount + 2,
+				sxpBlueprints1.size());
+
+			Page<SXPBlueprint> page2 =
+				sxpBlueprintResource.getSXPBlueprintsPage(
+					null, null, Pagination.of(2, totalCount + 2), null);
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<SXPBlueprint> sxpBlueprints2 =
+				(List<SXPBlueprint>)page2.getItems();
+
+			Assert.assertEquals(
+				sxpBlueprints2.toString(), 1, sxpBlueprints2.size());
+
+			Page<SXPBlueprint> page3 =
+				sxpBlueprintResource.getSXPBlueprintsPage(
+					null, null, Pagination.of(1, (int)totalCount + 3), null);
+
+			assertContains(sxpBlueprint1, (List<SXPBlueprint>)page3.getItems());
+			assertContains(sxpBlueprint2, (List<SXPBlueprint>)page3.getItems());
+			assertContains(sxpBlueprint3, (List<SXPBlueprint>)page3.getItems());
+		}
 	}
 
 	@Test
@@ -368,7 +409,7 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 			(entityField, sxpBlueprint1, sxpBlueprint2) -> {
 				BeanTestUtil.setProperty(
 					sxpBlueprint1, entityField.getName(),
-					DateUtils.addMinutes(new Date(), -2));
+					new Date(System.currentTimeMillis() - (2 * Time.MINUTE)));
 			});
 	}
 
@@ -471,24 +512,29 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 
 		sxpBlueprint2 = testGetSXPBlueprintsPage_addSXPBlueprint(sxpBlueprint2);
 
+		Page<SXPBlueprint> page = sxpBlueprintResource.getSXPBlueprintsPage(
+			null, null, null, null);
+
 		for (EntityField entityField : entityFields) {
 			Page<SXPBlueprint> ascPage =
 				sxpBlueprintResource.getSXPBlueprintsPage(
-					null, null, Pagination.of(1, 2),
+					null, null, Pagination.of(1, (int)page.getTotalCount() + 1),
 					entityField.getName() + ":asc");
 
-			assertEquals(
-				Arrays.asList(sxpBlueprint1, sxpBlueprint2),
-				(List<SXPBlueprint>)ascPage.getItems());
+			assertContains(
+				sxpBlueprint1, (List<SXPBlueprint>)ascPage.getItems());
+			assertContains(
+				sxpBlueprint2, (List<SXPBlueprint>)ascPage.getItems());
 
 			Page<SXPBlueprint> descPage =
 				sxpBlueprintResource.getSXPBlueprintsPage(
-					null, null, Pagination.of(1, 2),
+					null, null, Pagination.of(1, (int)page.getTotalCount() + 1),
 					entityField.getName() + ":desc");
 
-			assertEquals(
-				Arrays.asList(sxpBlueprint2, sxpBlueprint1),
-				(List<SXPBlueprint>)descPage.getItems());
+			assertContains(
+				sxpBlueprint2, (List<SXPBlueprint>)descPage.getItems());
+			assertContains(
+				sxpBlueprint1, (List<SXPBlueprint>)descPage.getItems());
 		}
 	}
 
@@ -547,6 +593,8 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 		SXPBlueprint sxpBlueprint =
 			testGraphQLGetSXPBlueprintByExternalReferenceCode_addSXPBlueprint();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				sxpBlueprint,
@@ -568,6 +616,32 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 								getGraphQLFields())),
 						"JSONObject/data",
 						"Object/sXPBlueprintByExternalReferenceCode"))));
+
+		// Using the namespace searchExperiences_v1_0
+
+		Assert.assertTrue(
+			equals(
+				sxpBlueprint,
+				SXPBlueprintSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"searchExperiences_v1_0",
+								new GraphQLField(
+									"sXPBlueprintByExternalReferenceCode",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"externalReferenceCode",
+												"\"" +
+													sxpBlueprint.
+														getExternalReferenceCode() +
+															"\"");
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data", "JSONObject/searchExperiences_v1_0",
+						"Object/sXPBlueprintByExternalReferenceCode"))));
 	}
 
 	@Test
@@ -576,6 +650,8 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 
 		String irrelevantExternalReferenceCode =
 			"\"" + RandomTestUtil.randomString() + "\"";
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -591,6 +667,27 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace searchExperiences_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"searchExperiences_v1_0",
+						new GraphQLField(
+							"sXPBlueprintByExternalReferenceCode",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"externalReferenceCode",
+										irrelevantExternalReferenceCode);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -707,7 +804,10 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 
 	@Test
 	public void testGraphQLDeleteSXPBlueprint() throws Exception {
-		SXPBlueprint sxpBlueprint =
+
+		// No namespace
+
+		SXPBlueprint sxpBlueprint1 =
 			testGraphQLDeleteSXPBlueprint_addSXPBlueprint();
 
 		Assert.assertTrue(
@@ -717,23 +817,62 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 						"deleteSXPBlueprint",
 						new HashMap<String, Object>() {
 							{
-								put("sxpBlueprintId", sxpBlueprint.getId());
+								put("sxpBlueprintId", sxpBlueprint1.getId());
 							}
 						})),
 				"JSONObject/data", "Object/deleteSXPBlueprint"));
-		JSONArray errorsJSONArray = JSONUtil.getValueAsJSONArray(
+
+		JSONArray errorsJSONArray1 = JSONUtil.getValueAsJSONArray(
 			invokeGraphQLQuery(
 				new GraphQLField(
 					"sXPBlueprint",
 					new HashMap<String, Object>() {
 						{
-							put("sxpBlueprintId", sxpBlueprint.getId());
+							put("sxpBlueprintId", sxpBlueprint1.getId());
 						}
 					},
 					new GraphQLField("id"))),
 			"JSONArray/errors");
 
-		Assert.assertTrue(errorsJSONArray.length() > 0);
+		Assert.assertTrue(errorsJSONArray1.length() > 0);
+
+		// Using the namespace searchExperiences_v1_0
+
+		SXPBlueprint sxpBlueprint2 =
+			testGraphQLDeleteSXPBlueprint_addSXPBlueprint();
+
+		Assert.assertTrue(
+			JSONUtil.getValueAsBoolean(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"searchExperiences_v1_0",
+						new GraphQLField(
+							"deleteSXPBlueprint",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"sxpBlueprintId",
+										sxpBlueprint2.getId());
+								}
+							}))),
+				"JSONObject/data", "JSONObject/searchExperiences_v1_0",
+				"Object/deleteSXPBlueprint"));
+
+		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"searchExperiences_v1_0",
+					new GraphQLField(
+						"sXPBlueprint",
+						new HashMap<String, Object>() {
+							{
+								put("sxpBlueprintId", sxpBlueprint2.getId());
+							}
+						},
+						new GraphQLField("id")))),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray2.length() > 0);
 	}
 
 	protected SXPBlueprint testGraphQLDeleteSXPBlueprint_addSXPBlueprint()
@@ -765,6 +904,8 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 		SXPBlueprint sxpBlueprint =
 			testGraphQLGetSXPBlueprint_addSXPBlueprint();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				sxpBlueprint,
@@ -782,11 +923,36 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/sXPBlueprint"))));
+
+		// Using the namespace searchExperiences_v1_0
+
+		Assert.assertTrue(
+			equals(
+				sxpBlueprint,
+				SXPBlueprintSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"searchExperiences_v1_0",
+								new GraphQLField(
+									"sXPBlueprint",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"sxpBlueprintId",
+												sxpBlueprint.getId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data", "JSONObject/searchExperiences_v1_0",
+						"Object/sXPBlueprint"))));
 	}
 
 	@Test
 	public void testGraphQLGetSXPBlueprintNotFound() throws Exception {
 		Long irrelevantSxpBlueprintId = RandomTestUtil.randomLong();
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -800,6 +966,27 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace searchExperiences_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"searchExperiences_v1_0",
+						new GraphQLField(
+							"sXPBlueprint",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"sxpBlueprintId",
+										irrelevantSxpBlueprintId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -833,6 +1020,32 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 	}
 
 	protected SXPBlueprint testPatchSXPBlueprint_addSXPBlueprint()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testPutSXPBlueprint() throws Exception {
+		SXPBlueprint postSXPBlueprint = testPutSXPBlueprint_addSXPBlueprint();
+
+		SXPBlueprint randomSXPBlueprint = randomSXPBlueprint();
+
+		SXPBlueprint putSXPBlueprint = sxpBlueprintResource.putSXPBlueprint(
+			postSXPBlueprint.getId(), randomSXPBlueprint);
+
+		assertEquals(randomSXPBlueprint, putSXPBlueprint);
+		assertValid(putSXPBlueprint);
+
+		SXPBlueprint getSXPBlueprint = sxpBlueprintResource.getSXPBlueprint(
+			putSXPBlueprint.getId());
+
+		assertEquals(randomSXPBlueprint, getSXPBlueprint);
+		assertValid(getSXPBlueprint);
+	}
+
+	protected SXPBlueprint testPutSXPBlueprint_addSXPBlueprint()
 		throws Exception {
 
 		throw new UnsupportedOperationException(
@@ -1367,6 +1580,10 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -1445,21 +1662,20 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 
 		if (entityFieldName.equals("createDate")) {
 			if (operator.equals("between")) {
+				Date date = sxpBlueprint.getCreateDate();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							sxpBlueprint.getCreateDate(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(sxpBlueprint.getCreateDate(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -1584,22 +1800,20 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 
 		if (entityFieldName.equals("modifiedDate")) {
 			if (operator.equals("between")) {
+				Date date = sxpBlueprint.getModifiedDate();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							sxpBlueprint.getModifiedDate(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							sxpBlueprint.getModifiedDate(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -1876,9 +2090,9 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 	}
 
 	protected SXPBlueprintResource sxpBlueprintResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

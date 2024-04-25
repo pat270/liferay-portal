@@ -7,7 +7,7 @@ import {ClayButtonWithIcon} from '@clayui/button';
 import {FocusTrap} from '@clayui/core';
 import {ClayInput} from '@clayui/form';
 import {ManagementToolbar} from 'frontend-js-components-web';
-import React, {useEffect, useRef} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 
 const SearchControls = ({
 	disabled,
@@ -22,6 +22,19 @@ const SearchControls = ({
 	searchValue,
 }) => {
 	const searchInputRef = useRef();
+	const [searchDisabled, setSearchDisabled] = useState(true);
+
+	const searchTitle = Liferay.FeatureFlags['LPD-11313']
+		? Liferay.Language.get('search')
+		: Liferay.Language.get('search-for');
+
+	const onClick = () => {
+		setSearchDisabled(true);
+
+		const form = document.getElementById(`${searchFormName}_search`);
+
+		submitForm(form);
+	};
 
 	useEffect(() => {
 		if (searchMobile) {
@@ -29,10 +42,28 @@ const SearchControls = ({
 		}
 	}, [searchMobile]);
 
+	useEffect(() => {
+		const onPageLoad = () => {
+			setSearchDisabled(false);
+		};
+
+		if (!disabled) {
+			if (document.readyState === 'complete') {
+				onPageLoad();
+			}
+			else {
+				window.addEventListener('load', onPageLoad);
+
+				return () => window.removeEventListener('load', onPageLoad);
+			}
+		}
+	}, [disabled]);
+
 	return (
 		<>
 			<ManagementToolbar.Search
 				action={searchActionURL}
+				id={`${searchFormName}_search`}
 				method={searchFormMethod}
 				name={searchFormName}
 				showMobile={searchMobile}
@@ -47,26 +78,25 @@ const SearchControls = ({
 					>
 						<ClayInput.GroupItem>
 							<ClayInput
-								aria-label={`${Liferay.Language.get(
-									'search'
-								)}:`}
+								aria-label={`${searchTitle}:`}
 								autoFocus={searchInputAutoFocus}
 								className="form-control input-group-inset input-group-inset-after"
 								defaultValue={searchValue}
 								disabled={disabled}
 								name={searchInputName}
-								placeholder={Liferay.Language.get('search-for')}
+								placeholder={searchTitle}
 								ref={searchInputRef}
 								type="search"
 							/>
 
 							<ClayInput.GroupInsetItem after tag="span">
 								<ClayButtonWithIcon
-									aria-label={Liferay.Language.get('search')}
-									disabled={disabled}
+									aria-label={searchTitle}
+									disabled={searchDisabled}
 									displayType="unstyled"
+									onClick={onClick}
 									symbol="search"
-									title={Liferay.Language.get('search-for')}
+									title={searchTitle}
 									type="submit"
 								/>
 							</ClayInput.GroupInsetItem>

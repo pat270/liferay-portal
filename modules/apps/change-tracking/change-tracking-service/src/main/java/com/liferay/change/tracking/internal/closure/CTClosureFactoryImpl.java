@@ -30,6 +30,7 @@ import com.liferay.portal.kernel.dao.orm.ORMException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.persistence.BasePersistence;
+import com.liferay.portal.kernel.util.LRUMap;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.sql.Connection;
@@ -65,6 +66,11 @@ import org.osgi.service.component.annotations.Reference;
 public class CTClosureFactoryImpl implements CTClosureFactory {
 
 	@Override
+	public void clearCache(long ctCollectionId) {
+		_ctClosuresMap.remove(ctCollectionId);
+	}
+
+	@Override
 	public CTClosure create(long ctCollectionId) {
 		return create(ctCollectionId, Collections.emptySet());
 	}
@@ -76,34 +82,46 @@ public class CTClosureFactoryImpl implements CTClosureFactory {
 
 	@Override
 	public CTClosure create(long ctCollectionId, Set<Long> classNameIds) {
-		Map<Long, TableReferenceInfo<?>> combinedTableReferenceInfos;
+		Map<Set<Long>, CTClosure> ctClosures = _ctClosuresMap.getOrDefault(
+			ctCollectionId, new LRUMap<>(5));
+
+		CTClosure ctClosure = ctClosures.get(classNameIds);
+
+		if (ctClosure != null) {
+			return ctClosure;
+		}
+
+		Map<Long, TableReferenceInfo<?>> combinedTableReferenceInfos = null;
 
 		if (classNameIds.isEmpty()) {
 			combinedTableReferenceInfos =
 				_tableReferenceDefinitionManager.
 					getCombinedTableReferenceInfos();
-
-			return new CTClosureImpl(
-				ctCollectionId,
-				_buildClosureMap(
-					ctCollectionId, Collections.emptySet(),
-					combinedTableReferenceInfos));
+		}
+		else {
+			combinedTableReferenceInfos =
+				_tableReferenceDefinitionManager.getCombinedTableReferenceInfos(
+					classNameIds);
 		}
 
-		combinedTableReferenceInfos =
-			_tableReferenceDefinitionManager.getCombinedTableReferenceInfos(
-				classNameIds);
-
-		return new CTClosureImpl(
+		ctClosure = new CTClosureImpl(
 			ctCollectionId,
 			_buildClosureMap(
 				ctCollectionId, classNameIds, combinedTableReferenceInfos));
+
+		ctClosures.put(classNameIds, ctClosure);
+
+		_ctClosuresMap.putIfAbsent(ctCollectionId, ctClosures);
+
+		return ctClosure;
 	}
 
 	private Map<Node, Collection<Node>> _buildClosureMap(
 		long ctCollectionId, Set<Long> classNameIds,
 		Map<Long, TableReferenceInfo<?>> combinedTableReferenceInfos) {
 
+		CTCollection ctCollection = _ctCollectionPersistence.fetchByPrimaryKey(
+			ctCollectionId);
 		Map<Long, List<Long>> map = new LinkedHashMap<>();
 		List<Node> nodes = new ArrayList<>();
 
@@ -146,9 +164,6 @@ public class CTClosureFactoryImpl implements CTClosureFactory {
 				combinedTableReferenceInfos.get(childClassNameId);
 
 			if (childTableReferenceInfo == null) {
-				CTCollection ctCollection =
-					_ctCollectionPersistence.fetchByPrimaryKey(ctCollectionId);
-
 				if ((ctCollection != null) &&
 					(ctCollection.getStatus() !=
 						WorkflowConstants.STATUS_DRAFT) &&
@@ -235,44 +250,64 @@ public class CTClosureFactoryImpl implements CTClosureFactory {
 
 		List<Long> newParentPrimaryKeys = null;
 
-		DSLQuery dslQuery = _getDSLQuery(
-			ctCollectionId, childPrimaryKeys, entry.getValue());
+		int i = 0;
 
-		try (Connection connection = _getConnection(parentTableReferenceInfo);
-			PreparedStatement preparedStatement = _getPreparedStatement(
-				connection, dslQuery);
-			ResultSet resultSet = preparedStatement.executeQuery()) {
+		while (i < childPrimaryKeys.length) {
+			int batchSize = _SQL_SERVER_PARAMETER_LIMIT;
 
-			while (resultSet.next()) {
-				Node parentNode = new Node(
-					parentClassNameId, resultSet.getLong(1));
+			if ((i + batchSize) > childPrimaryKeys.length) {
+				batchSize = childPrimaryKeys.length - i;
+			}
 
-				if (!classNameIds.isEmpty() && !nodes.contains(parentNode)) {
-					continue;
-				}
+			Long[] batchChildPrimaryKeys = new Long[batchSize];
 
-				Node childNode = new Node(
-					childClassNameId, resultSet.getLong(2));
+			System.arraycopy(
+				childPrimaryKeys, i, batchChildPrimaryKeys, 0, batchSize);
 
-				if (!nodes.contains(parentNode)) {
-					nodes.add(parentNode);
+			DSLQuery dslQuery = _getDSLQuery(
+				ctCollectionId, batchChildPrimaryKeys, entry.getValue());
 
-					if (newParentPrimaryKeys == null) {
-						newParentPrimaryKeys = new ArrayList<>();
+			try (Connection connection = _getConnection(
+					parentTableReferenceInfo);
+				PreparedStatement preparedStatement = _getPreparedStatement(
+					connection, dslQuery);
+				ResultSet resultSet = preparedStatement.executeQuery()) {
+
+				while (resultSet.next()) {
+					Node parentNode = new Node(
+						parentClassNameId, resultSet.getLong(1));
+
+					if (!classNameIds.isEmpty() &&
+						!nodes.contains(parentNode)) {
+
+						continue;
 					}
 
-					newParentPrimaryKeys.add(parentNode.getPrimaryKey());
+					Node childNode = new Node(
+						childClassNameId, resultSet.getLong(2));
+
+					if (!nodes.contains(parentNode)) {
+						nodes.add(parentNode);
+
+						if (newParentPrimaryKeys == null) {
+							newParentPrimaryKeys = new ArrayList<>();
+						}
+
+						newParentPrimaryKeys.add(parentNode.getPrimaryKey());
+					}
+
+					Collection<Edge> edges = edgeMap.computeIfAbsent(
+						parentNode, key -> new LinkedList<>());
+
+					edges.add(new Edge(parentNode, childNode));
 				}
-
-				Collection<Edge> edges = edgeMap.computeIfAbsent(
-					parentNode, key -> new LinkedList<>());
-
-				edges.add(new Edge(parentNode, childNode));
 			}
-		}
-		catch (SQLException sqlException) {
-			throw new ORMException(
-				"Unable to execute query: " + dslQuery, sqlException);
+			catch (SQLException sqlException) {
+				throw new ORMException(
+					"Unable to execute query: " + dslQuery, sqlException);
+			}
+
+			i += batchSize;
 		}
 
 		return newParentPrimaryKeys;
@@ -323,7 +358,7 @@ public class CTClosureFactoryImpl implements CTClosureFactory {
 		int i = 0;
 
 		while (i < childPrimaryKeysArray.length) {
-			int batchSize = 1000;
+			int batchSize = _ORACLE_IN_CLAUSE_LIMIT;
 
 			if ((i + batchSize) > childPrimaryKeysArray.length) {
 				batchSize = childPrimaryKeysArray.length - i;
@@ -467,10 +502,17 @@ public class CTClosureFactoryImpl implements CTClosureFactory {
 		return preparedStatement;
 	}
 
+	private static final int _ORACLE_IN_CLAUSE_LIMIT = 1000;
+
 	private static final int _SQL_PLACEHOLDER_LIMIT = 65533;
+
+	private static final int _SQL_SERVER_PARAMETER_LIMIT = 2000;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		CTClosureFactoryImpl.class);
+
+	private final Map<Long, Map<Set<Long>, CTClosure>> _ctClosuresMap =
+		new LRUMap<>(10);
 
 	@Reference
 	private CTCollectionPersistence _ctCollectionPersistence;

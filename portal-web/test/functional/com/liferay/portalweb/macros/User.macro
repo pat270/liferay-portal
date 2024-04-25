@@ -3,13 +3,18 @@ definition {
 	var password = "test";
 	var userEmailAddress = "test@liferay.com";
 
-	macro _clickSignInButton {
+	@summary = "Default summary"
+	macro _clickSignInButton(localization = null) {
 		var localizedSignIn = User._getSignInText(localization = ${localization});
 
-		Button.click(button = ${localizedSignIn});
+		AssertClick(
+			buttonId = "LoginPortlet",
+			locator1 = "Button#BUTTON_ID",
+			value1 = ${localizedSignIn});
 	}
 
-	macro _clickSignInLink {
+	@summary = "Default summary"
+	macro _clickSignInLink(localization = null, idpName = null, samlMultiIdPs = null) {
 		var localizedSignIn = User._getSignInText(localization = ${localization});
 
 		if (IsElementNotPresent(locator1 = "TextInput#EMAIL_ADDRESS")) {
@@ -29,7 +34,11 @@ definition {
 						locator1 = "Select#GENERIC_SELECT_FIELD",
 						value1 = ${idpName});
 
-					Button.click(button = "Sign In");
+					AssertClick(
+						buttonId = "LoginPortlet",
+						key_text = "Sign In",
+						locator1 = "Button#ANY_WITH_SPAN",
+						value1 = "Sign In");
 				}
 			}
 			else if (IsElementPresent(key_text = "Sign In", locator1 = "Button#ANY")) {
@@ -38,7 +47,8 @@ definition {
 		}
 	}
 
-	macro _editUserInformation {
+	@summary = "Default summary"
+	macro _editUserInformation(userJobTitle = null, userComment = null, userTag = null, userLastName = null, userScreenName = null, userMiddleName = null, userEmailAddress = null, userCustomFieldLabel = null, userCustomField = null, userGender = null, userFirstName = null, userBirthday = null) {
 		if (isSet(userScreenName)) {
 			Type(
 				locator1 = "UsersAndOrganizationsEditUser#DETAILS_SCREEN_NAME_FIELD",
@@ -111,7 +121,8 @@ definition {
 		}
 	}
 
-	macro _getSignInText {
+	@summary = "Default summary"
+	macro _getSignInText(localization = null) {
 		if (${localization} == "JA") {
 			var localizedSignIn = "ログイン";
 		}
@@ -131,13 +142,15 @@ definition {
 		return ${localizedSignIn};
 	}
 
-	macro _login {
+	@summary = "Default summary"
+	macro _login(userPassword = null, userEmailAddress = null) {
 		SignIn._signIn(
 			userEmailAddress = ${userEmailAddress},
 			userPassword = ${userPassword});
 	}
 
-	macro acceptEndUserLicenseAgreement {
+	@summary = "Default summary"
+	macro acceptEndUserLicenseAgreement() {
 		if (IsElementPresent(locator1 = "Button#I_AGREE")) {
 			AssertClick(
 				locator1 = "Button#I_AGREE",
@@ -147,7 +160,8 @@ definition {
 		}
 	}
 
-	macro acceptEndUserLicenseAgreementLocalized {
+	@summary = "Default summary"
+	macro acceptEndUserLicenseAgreementLocalized(localizedAgree = null) {
 		var key_localizedAgree = ${localizedAgree};
 
 		if (IsElementPresent(locator1 = "Button#I_AGREE_LOCALIZED")) {
@@ -159,10 +173,9 @@ definition {
 		}
 	}
 
-	macro activateCP {
-		Click(locator1 = "Dropdown#FILTER_AND_ORDER");
-
-		MenuItem.click(menuItem = "Inactive");
+	@summary = "Default summary"
+	macro activateCP(userScreenName = null, userName = null) {
+		ManagementBar.setFilterAndOrder(filterBy = "Inactive");
 
 		LexiconEntry.gotoEntryMenuItem(
 			menuItem = "Activate",
@@ -186,7 +199,8 @@ definition {
 			value1 = ${userScreenName});
 	}
 
-	macro addAddressViaMyAccount {
+	@summary = "Default summary"
+	macro addAddressViaMyAccount(userAddressCity = null, userAddressStreet1 = null, userAddressCountry = null, userAddressType = null, userAddressRegion = null, userAddressPostalCode = null) {
 		Click(locator1 = "NavBar#ADDRESSES");
 
 		Click(locator1 = "Button#ADD_ADDRESS");
@@ -234,7 +248,8 @@ definition {
 		SelectFrame(value1 = "relative=top");
 	}
 
-	macro addContactInformation {
+	@summary = "Default summary"
+	macro addContactInformation(country = null, number = null, skype = null, extension = null, address = null, city = null, postalCode = null, contactType = null, street1 = null, region = null, makePrimary = null, url = null) {
 		if (isSet(contactType)) {
 			var key_contactType = ${contactType};
 
@@ -322,7 +337,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro addCP {
+	@summary = "Default summary"
+	macro addCP(userEmailAddressVariation = null, lng = null, userFirstName = null, userJobTitle = null, userComment = null, userTag = null, userScreenNameVariation = null, userLastName = null, userMiddleName = null, userGender = null, lat = null, userBirthday = null) {
 		LexiconEntry.gotoAdd();
 
 		User._editUserInformation(
@@ -394,7 +410,8 @@ definition {
 		WaitForLiferayEvent.initializeLiferayEventLog();
 	}
 
-	macro addMultipleCP {
+	@summary = "Default summary"
+	macro addMultipleCP(userEmailAddressVariation = null, userScreenNameVariation = null, usersEmailsList = null, userMiddleName = null, userGender = null, userBirthday = null) {
 		for (var userEmail : list ${usersEmailsList}) {
 			var userEmailAddress = ${userEmail};
 			var userName = StringUtil.replace(${userEmail}, "@liferay.com", "");
@@ -417,7 +434,8 @@ definition {
 		}
 	}
 
-	macro addPersonalSiteCP {
+	@summary = "Default summary"
+	macro addPersonalSiteCP(personalSite = null, userScreenName = null, siteTemplateName = null) {
 		UserNavigator.gotoUser(userScreenName = ${userScreenName});
 
 		UserNavigator.gotoProfileAndDashboard();
@@ -446,7 +464,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro addReservedEmailAddressCP {
+	@summary = "Default summary"
+	macro addReservedEmailAddressCP(userLastName = null, userScreenName = null, userEmailAddress = null, userFirstName = null) {
 		LexiconEntry.gotoAdd();
 
 		Type(
@@ -470,7 +489,8 @@ definition {
 		Alert.viewErrorMessage(errorMessage = "The email address you requested is reserved.");
 	}
 
-	macro addReservedScreenNameCP {
+	@summary = "Default summary"
+	macro addReservedScreenNameCP(userLastName = null, userScreenName = null, userEmailAddress = null, userFirstName = null) {
 		LexiconEntry.gotoAdd();
 
 		Type(
@@ -496,7 +516,8 @@ definition {
 			value1 = "The screen name you requested is reserved.");
 	}
 
-	macro advancedSearchViaFriendsDirectoryPG {
+	@summary = "Default summary"
+	macro advancedSearchViaFriendsDirectoryPG(searchTerm = null, searchField = null, searchNoResults = null, userLastName = null, userScreenName = null, userFirstName = null) {
 		Click(locator1 = "NavBar#SEARCH_TOGGLE_ADVANCED");
 
 		if (${searchField} == "First Name") {
@@ -559,7 +580,8 @@ definition {
 		}
 	}
 
-	macro advancedSearchViaMySitesDirectoryPG {
+	@summary = "Default summary"
+	macro advancedSearchViaMySitesDirectoryPG(searchTerm = null, searchField = null, searchNoResults = null, userLastName = null, userScreenName = null, userFirstName = null) {
 		Click(locator1 = "NavBar#SEARCH_TOGGLE_ADVANCED");
 
 		if (${searchField} == "First Name") {
@@ -622,7 +644,8 @@ definition {
 		}
 	}
 
-	macro advancedSearchViaPortalDirectoryPG {
+	@summary = "Default summary"
+	macro advancedSearchViaPortalDirectoryPG(searchTerm = null, searchField = null, searchNoResults = null, userLastName = null, userScreenName = null, userFirstName = null) {
 		Click(locator1 = "NavBar#SEARCH_TOGGLE_ADVANCED");
 
 		if (${searchField} == "First Name") {
@@ -685,7 +708,8 @@ definition {
 		}
 	}
 
-	macro advancedSearchViaSiteMembersDirectoryPG {
+	@summary = "Default summary"
+	macro advancedSearchViaSiteMembersDirectoryPG(searchTerm = null, searchField = null, searchNoResults = null, userLastName = null, userScreenName = null, userFirstName = null) {
 		Click(locator1 = "NavBar#SEARCH_TOGGLE_ADVANCED");
 
 		if (${searchField} == "First Name") {
@@ -748,7 +772,8 @@ definition {
 		}
 	}
 
-	macro answerPasswordReminder {
+	@summary = "Default summary"
+	macro answerPasswordReminder() {
 		if (IsElementPresent.pauseIsElementPresent(locator1 = "TextInput#REMINDER_QUERY")) {
 			Type(
 				locator1 = "TextInput#REMINDER_QUERY",
@@ -758,7 +783,8 @@ definition {
 		}
 	}
 
-	macro answerPasswordReminderLocalized {
+	@summary = "Default summary"
+	macro answerPasswordReminderLocalized(localizedSaveButton = null, localizedAnswer = null) {
 		var key_localizedAnswer = ${localizedAnswer};
 
 		if (IsElementPresent.pauseIsElementPresent(locator1 = "TextInput#ANSWER_LOCALIZED")) {
@@ -772,7 +798,8 @@ definition {
 		}
 	}
 
-	macro assertScreenNameDisabled {
+	@summary = "Default summary"
+	macro assertScreenNameDisabled() {
 		AssertClick(
 			key_assetTitle = "Information",
 			locator1 = "NavBar#ASSET_TITLE",
@@ -781,7 +808,8 @@ definition {
 		AssertElementPresent(locator1 = "UsersAndOrganizationsEditUser#DETAILS_SCREEN_NAME_FIELD_DISABLED");
 	}
 
-	macro assertSection {
+	@summary = "Default summary"
+	macro assertSection() {
 		for (var sectionName : list ${sectionName}) {
 			AssertClick(
 				key_assetTitle = ${sectionName},
@@ -790,7 +818,8 @@ definition {
 		}
 	}
 
-	macro assignAccountCP {
+	@summary = "Default summary"
+	macro assignAccountCP(userScreenName = null) {
 		User.openUsersAdmin();
 
 		UserNavigator.gotoUser(userScreenName = ${userScreenName});
@@ -814,7 +843,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro assignAssetLibraryRole {
+	@summary = "Default summary"
+	macro assignAssetLibraryRole(roleTitle = null, userScreenName = null) {
 		UserNavigator.gotoUser(userScreenName = ${userScreenName});
 
 		UserNavigator.gotoRoles();
@@ -845,7 +875,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro assignOrgRoleCP {
+	@summary = "Default summary"
+	macro assignOrgRoleCP(roleTitle = null, userScreenName = null) {
 		UserNavigator.gotoUser(userScreenName = ${userScreenName});
 
 		UserNavigator.gotoRoles();
@@ -876,7 +907,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro assignRegularRoleCP {
+	@summary = "Default summary"
+	macro assignRegularRoleCP(roleTitle = null, userScreenName = null) {
 		UserNavigator.gotoUser(userScreenName = ${userScreenName});
 
 		UserNavigator.gotoRoles();
@@ -909,7 +941,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro assignSiteRoleCP {
+	@summary = "Default summary"
+	macro assignSiteRoleCP(userScreenName = null, siteRoleName = null) {
 		UserNavigator.gotoUser(userScreenName = ${userScreenName});
 
 		UserNavigator.gotoRoles();
@@ -941,7 +974,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro assignUserGroupCP {
+	@summary = "Default summary"
+	macro assignUserGroupCP(userGroupName = null) {
 		User.selectMembership(assetType = "User Groups");
 
 		SelectFrame(locator1 = "IFrame#SELECT_USER_GROUP");
@@ -971,7 +1005,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro attemptImpersonateCP {
+	@summary = "Default summary"
+	macro attemptImpersonateCP(userScreenName = null) {
 		if (isSet(notAdmin)) {
 			AssertElementNotPresent(
 				key_tableEntry = ${userScreenName},
@@ -988,7 +1023,8 @@ definition {
 		}
 	}
 
-	macro basicSearchCP {
+	@summary = "Default summary"
+	macro basicSearchCP(userLastName = null, userScreenName = null, userBasicSearch = null, userFirstName = null, userName = null) {
 		if (${userBasicSearch} == "Basic") {
 			Search.searchCP(searchTerm = ${userScreenName});
 
@@ -1048,7 +1084,8 @@ definition {
 		}
 	}
 
-	macro bulkActivateCP {
+	@summary = "Default summary"
+	macro bulkActivateCP(userFirstNameList = null) {
 		if (isSet(userFirstNameList)) {
 			for (var userFirstName : list ${userFirstNameList}) {
 				LexiconEntry.selectEntry(rowEntry = ${userFirstName});
@@ -1068,14 +1105,15 @@ definition {
 				locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_CHECKBOX");
 		}
 
-		Click(locator1 = "Icon#TOOLBAR_ELLIPSIS");
+		Click(locator1 = "ManagementBar#ELLIPSIS");
 
 		MenuItem.clickNoError(menuItem = "Activate");
 
 		Alert.viewSuccessMessage();
 	}
 
-	macro bulkDeactivateCP {
+	@summary = "Default summary"
+	macro bulkDeactivateCP(deactivateType = null, userFirstNameList = null) {
 		if (isSet(userFirstNameList)) {
 			for (var userFirstName : list ${userFirstNameList}) {
 				LexiconEntry.selectEntry(rowEntry = ${userFirstName});
@@ -1096,12 +1134,14 @@ definition {
 		}
 
 		if (${deactivateType} == "Management Toolbar") {
-			Click(locator1 = "Icon#TOOLBAR_ELLIPSIS");
+			Click(locator1 = "ManagementBar#ELLIPSIS");
 
 			MenuItem.clickNoError(menuItem = "Deactivate");
 		}
 		else {
-			ClickNoError(locator1 = "Icon#DEACTIVATE");
+			ClickNoError(
+				key_text = "hidden",
+				locator1 = "ManagementBar#ANY_ICON");
 		}
 
 		AssertConfirm(value1 = "Are you sure you want to deactivate the selected users?");
@@ -1109,7 +1149,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro bulkDeleteCP {
+	@summary = "Default summary"
+	macro bulkDeleteCP(deactivateType = null, userFirstNameList = null) {
 		if (isSet(userFirstNameList)) {
 			for (var userFirstName : list ${userFirstNameList}) {
 				LexiconEntry.selectEntry(rowEntry = ${userFirstName});
@@ -1120,12 +1161,14 @@ definition {
 		}
 
 		if (${deactivateType} == "Management Toolbar") {
-			Click(locator1 = "Icon#TOOLBAR_ELLIPSIS");
+			Click(locator1 = "ManagementBar#ELLIPSIS");
 
 			MenuItem.clickNoError(menuItem = "Delete");
 		}
 		else {
-			ClickNoError(locator1 = "Icon#DELETE");
+			ClickNoError(
+				key_text = "times-circle",
+				locator1 = "ManagementBar#ANY_ICON");
 		}
 
 		AssertConfirm.waitForConfirmation(value1 = "Are you sure you want to permanently delete the selected users?");
@@ -1133,7 +1176,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro changePasswordCP {
+	@summary = "Default summary"
+	macro changePasswordCP(userPassword = null, authenticationMethod = null, userScreenName = null, userEmailAddress = null, newPassword = null, nodePort = null) {
 		UserNavigator.gotoPassword();
 
 		if (${userPassword} == "Invalid") {
@@ -1202,7 +1246,8 @@ definition {
 		}
 	}
 
-	macro changeProfileImage {
+	@summary = "Default summary"
+	macro changeProfileImage(imageName = null) {
 		Click(
 			ariaLabel = "Change Image",
 			locator1 = "Button#ANY_WITH_ARIA_LABEL");
@@ -1230,7 +1275,31 @@ definition {
 			locator1 = "UsersAndOrganizationsEditUser#DETAILS_PROFILE_IMAGE");
 	}
 
-	macro confirmPassword {
+	@summary = "Default summary"
+	macro configureCustomPasswordField(baseURL = null, enableCustomPassword = null) {
+		PortalSettings.gotoConfiguration(
+			baseURL = ${baseURL},
+			configurationCategory = "Users",
+			configurationName = "Fields",
+			configurationScope = "Virtual Instance Scope");
+
+		if (${enableCustomPassword} == "true") {
+			FormFields.enableCheckbox(fieldName = "login.create.account.allow.custom.password");
+		}
+		else {
+			FormFields.disableCheckbox(fieldName = "login.create.account.allow.custom.password");
+		}
+
+		if (IsElementPresent(locator1 = "Button#UPDATE")) {
+			PortletEntry.update();
+		}
+		else if (IsElementPresent(locator1 = "Button#SAVE")) {
+			PortletEntry.save();
+		}
+	}
+
+	@summary = "Default summary"
+	macro confirmPassword(password = null) {
 		SelectFrame.selectFrameNoLoading(locator1 = "IFrame#CONFIRM_PASSWORD");
 
 		Click(locator1 = "TextInput#PASSWORD_CONFIRM");
@@ -1248,7 +1317,8 @@ definition {
 		WaitForLiferayEvent.initializeLiferayEventLog();
 	}
 
-	macro createAccount {
+	@summary = "Default summary"
+	macro createAccount(userLastName = null, userScreenName = null, userEmailAddress = null, newPassword = null, userFirstName = null) {
 		SignInNavigator.gotoCreateAccount();
 
 		Type(
@@ -1280,7 +1350,55 @@ definition {
 		Alert.viewSuccessMessageText(successMessage = "Thank you for creating an account. Use your password to log in.");
 	}
 
-	macro deactivateCP {
+	@summary = "Default summary"
+	macro createMultipleUsers(letter = null) {
+		for (var letter : list ${letter}) {
+			User.createUser(
+				userEmailAddress = "${letter}@liferay.com",
+				userFirstName = ${letter},
+				userLastName = ${letter},
+				userScreenName = ${letter});
+
+			Navigator.gotoBack();
+		}
+	}
+
+	@summary = "Default summary"
+	macro createUser(lng = null, userEmailAddress = null, userFirstName = null, userJobTitle = null, userComment = null, userTag = null, userLastName = null, userScreenName = null, userMiddleName = null, userGender = null, lat = null, userBirthday = null,) {
+		LexiconEntry.gotoAdd();
+
+		User._editUserInformation(
+			userBirthday = ${userBirthday},
+			userComment = ${userComment},
+			userEmailAddress = ${userEmailAddress},
+			userFirstName = ${userFirstName},
+			userGender = ${userGender},
+			userJobTitle = ${userJobTitle},
+			userLastName = ${userLastName},
+			userMiddleName = ${userMiddleName},
+			userScreenName = ${userScreenName},
+			userTag = ${userTag});
+
+		if (isSet(lat) && isSet(lng)) {
+			Geolocation.setMarkerPosition(
+				lat = ${lat},
+				lng = ${lng});
+		}
+
+		var browserType = PropsUtil.get("browser.type");
+
+		if (${browserType} == "safari") {
+			Button.clickSave();
+		}
+		else {
+			AssertClick(
+				locator1 = "Button#SUBMIT",
+				value1 = "Save");
+		}
+	}
+
+	@summary = "Default summary"
+	macro deactivateCP(deactivateType = null, userFirstName = null, userFirstNameList = null) {
 		if (${deactivateType} == "Actions") {
 			User.singleDeactivateCP(userFirstName = ${userFirstName});
 		}
@@ -1291,7 +1409,17 @@ definition {
 		}
 	}
 
-	macro deleteCP {
+	@summary = "Default summary"
+	macro deactivateMultipleUsers(letter = null) {
+		for (var letter : list ${letter}) {
+			User.deactivateCP(
+				deactivateType = "Actions",
+				userFirstName = ${letter});
+		}
+	}
+
+	@summary = "Default summary"
+	macro deleteCP(deactivateType = null, userFirstName = null, userFirstNameList = null) {
 		ManagementBar.setFilterAndOrder(filterBy = "Inactive");
 
 		if (${deactivateType} == "Actions") {
@@ -1304,7 +1432,8 @@ definition {
 		}
 	}
 
-	macro deletePersonalDataCP {
+	@summary = "Default summary"
+	macro deletePersonalDataCP(userLastName = null, userFirstName = null) {
 		LexiconEntry.gotoEntryMenuItemNoError(
 			menuItem = "Delete Personal Data",
 			rowEntry = ${userFirstName});
@@ -1319,7 +1448,8 @@ definition {
 			locator1 = "DataErasure#HEADER");
 	}
 
-	macro deleteProfileImage {
+	@summary = "Default summary"
+	macro deleteProfileImage() {
 		if (!(IsElementPresent(key_title = "Clear Image", locator1 = "Button#ANY_TITLE_DISABLED"))) {
 			Click(
 				ariaLabel = "Clear Image",
@@ -1331,7 +1461,8 @@ definition {
 			locator1 = "UsersAndOrganizationsEditUser#DETAILS_PROFILE_IMAGE");
 	}
 
-	macro editAddressCP {
+	@summary = "Default summary"
+	macro editAddressCP(country = null, city = null, addressType = null, postalCode = null, street1 = null) {
 		UserNavigator.gotoContact();
 
 		LexiconEntry.gotoVerticalEllipsisMenuItemNoError(menuItem = "Edit");
@@ -1369,7 +1500,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro editCustomFieldInformation {
+	@summary = "Default summary"
+	macro editCustomFieldInformation(userFirstNameEdit = null, userScreenName = null, customFieldValue = null, customFieldName = null, customFieldType = null) {
 		UserNavigator.gotoUser(userScreenName = ${userScreenName});
 
 		if ((${customFieldType} == "Checkbox") || (${customFieldType} == "Radio")) {
@@ -1390,7 +1522,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro editDetailsViaProfile {
+	@summary = "Default summary"
+	macro editDetailsViaProfile(country = null, city = null, addressType = null, postalCode = null, street1 = null) {
 		Click.javaScriptClick(locator1 = "Icon#EDIT_PENCIL");
 
 		Portlet.viewSpecificPG(portletName = "Account Settings");
@@ -1407,7 +1540,8 @@ definition {
 		}
 	}
 
-	macro editDisplaySettingsCP {
+	@summary = "Default summary"
+	macro editDisplaySettingsCP(userScreenName = null, languageName = null) {
 		LexiconTable.clickEllipsisItem(
 			item = "Edit",
 			tableEntry = ${userScreenName});
@@ -1419,7 +1553,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro editEmailAddressCP {
+	@summary = "Default summary"
+	macro editEmailAddressCP(password = null, userScreenName = null, userEmailAddress = null) {
 		UserNavigator.gotoUser(userScreenName = ${userScreenName});
 
 		Type(
@@ -1439,7 +1574,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro editPassword {
+	@summary = "Default summary"
+	macro editPassword(requirePasswordReset = null, currentPassword = null) {
 		UserNavigator.gotoPassword();
 
 		if (isSet(currentPassword)) {
@@ -1476,7 +1612,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro editPasswordCP {
+	@summary = "Default summary"
+	macro editPasswordCP(authenticationMethod = null, userScreenName = null, requirePasswordReset = null, newPassword = null, userEmailAddress = null, nodePort = null, samlEnabled = null, currentPassword = null) {
 		JSONUserAPI._disablePasswordChangeRequired();
 
 		UserNavigator.gotoUser(userScreenName = ${userScreenName});
@@ -1514,7 +1651,8 @@ definition {
 			userScreenName = ${userScreenName});
 	}
 
-	macro editPasswordInvalidCP {
+	@summary = "Default summary"
+	macro editPasswordInvalidCP(passwordTooShort = null, regex = null, userScreenName = null, minimumNumbers = null) {
 		UserNavigator.gotoUser(userScreenName = ${userScreenName});
 
 		if (!(isSet(newPassword))) {
@@ -1555,7 +1693,8 @@ definition {
 		}
 	}
 
-	macro editPrimary {
+	@summary = "Default summary"
+	macro editPrimary(makePrimary = null) {
 		if (${makePrimary} == "true") {
 			Check(
 				checkboxName = "Make Primary",
@@ -1572,7 +1711,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro editUserAlertsAndAnnouncementsDeliveryCP {
+	@summary = "Default summary"
+	macro editUserAlertsAndAnnouncementsDeliveryCP(checkbox = null, deliveryOptions = null) {
 		UserNavigator.gotoAlertsAndAnnouncementsDelivery();
 
 		if (${checkbox} == "Enable") {
@@ -1586,7 +1726,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro editUserAssetLibraryCP {
+	@summary = "Default summary"
+	macro editUserAssetLibraryCP(depotName = null, userScreenName = null) {
 		UserNavigator.gotoUser(userScreenName = ${userScreenName});
 
 		User.selectMembership(assetType = "Asset Libraries");
@@ -1606,7 +1747,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro editUserDisplaySettingsCP {
+	@summary = "Default summary"
+	macro editUserDisplaySettingsCP(displaySettingsGreeting = null, userScreenName = null) {
 		var key_userScreenName = ${userScreenName};
 
 		AssertTextEquals(
@@ -1620,7 +1762,8 @@ definition {
 		User.editUserDisplaySettingsTimeZonePacific(displaySettingsGreeting = ${displaySettingsGreeting});
 	}
 
-	macro editUserDisplaySettingsTimeZonePacific {
+	@summary = "Default summary"
+	macro editUserDisplaySettingsTimeZonePacific(displaySettingsGreeting = null) {
 		UserNavigator.gotoDisplaySettings();
 
 		if (IsTextNotEqual(locator1 = "Select#LOS_ANGELES_TIME_ZONE", value1 = "(UTC -07:00) Pacific Daylight Time")) {
@@ -1658,7 +1801,8 @@ definition {
 			value1 = ${displaySettingsGreeting});
 	}
 
-	macro editUserGenderCP {
+	@summary = "Default summary"
+	macro editUserGenderCP(userGender = null, userName = null) {
 		LexiconEntry.gotoEntry(rowEntry = ${userName});
 
 		Select(
@@ -1668,7 +1812,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro editUserInformation {
+	@summary = "Default summary"
+	macro editUserInformation(password = null, userFirstNameEdit = null, userLastNameEdit = null, userCustomFieldLabel = null, userCustomField = null, userEmailAddressEdit = null, userMiddleNameEdit = null, userScreenNameEdit = null) {
 		AssertElementPresent.assertElementPresent(locator1 = "TextInput#FIRST_NAME");
 
 		if (isSet(userFirstNameEdit)) {
@@ -1719,7 +1864,8 @@ definition {
 		}
 	}
 
-	macro editUserJobTitleCP {
+	@summary = "Default summary"
+	macro editUserJobTitleCP(userJobTitle = null, userName = null) {
 		LexiconEntry.gotoEntry(rowEntry = ${userName});
 
 		Type(
@@ -1729,7 +1875,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro editUserSiteCP {
+	@summary = "Default summary"
+	macro editUserSiteCP(userScreenName = null, siteName = null) {
 		UserNavigator.gotoUser(userScreenName = ${userScreenName});
 
 		User.selectMembership(assetType = "Sites");
@@ -1771,7 +1918,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro editUserSuffixCP {
+	@summary = "Default summary"
+	macro editUserSuffixCP(userSuffix = null, userName = null) {
 		LexiconEntry.gotoEntry(rowEntry = ${userName});
 
 		Select(
@@ -1781,7 +1929,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro editUserTagCP {
+	@summary = "Default summary"
+	macro editUserTagCP(addTagMethod = null, tagNameList = null, userName = null) {
 		LexiconEntry.gotoEntry(rowEntry = ${userName});
 
 		if (${addTagMethod} == "Select") {
@@ -1789,8 +1938,6 @@ definition {
 		}
 		else {
 			for (var tagName : list ${tagNameList}) {
-				var tagName = StringUtil.lowerCase(${tagName});
-
 				AssetCategorization.addTag(tagName = ${tagName});
 			}
 		}
@@ -1798,7 +1945,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro exportPersonalDataCP {
+	@summary = "Default summary"
+	macro exportPersonalDataCP(userLastName = null, userFirstName = null) {
 		LexiconEntry.gotoEntryMenuItemNoError(
 			menuItem = "Export Personal Data",
 			rowEntry = ${userFirstName});
@@ -1809,7 +1957,19 @@ definition {
 			locator1 = "ExportPersonalData#HEADER");
 	}
 
-	macro firstLoginByScreenNamePG {
+	@summary = "Default summary"
+	macro fillResetPasswordFields(password = null) {
+		Type(
+			locator1 = "TextInput#PASSWORD_1",
+			value1 = ${password});
+
+		Type(
+			locator1 = "TextInput#PASSWORD_2",
+			value1 = ${password});
+	}
+
+	@summary = "Default summary"
+	macro firstLoginByScreenNamePG(virtualHostsURL = null, userScreenName = null, userEmailAddress = null, newPassword = null) {
 		if (isSet(virtualHostsURL)) {
 			Navigator.openSpecificURL(url = ${virtualHostsURL});
 		}
@@ -1827,7 +1987,7 @@ definition {
 			Navigator.openSpecificURL(url = "${virtualHostsURL}/web/guest?SM_USER=${userEmailAddress}");
 		}
 		else {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 
 			Navigator.openSpecificURL(url = "${baseURL}/web/guest?SM_USER=${userScreenName}");
 		}
@@ -1843,14 +2003,17 @@ definition {
 		WaitForLiferayEvent.initializeLiferayEventLog();
 	}
 
-	macro firstLoginPG {
+	@summary = "Default summary"
+	macro firstLoginPG(idpName = null, domain = null, virtualHostsURL = null, userScreenName = null, newPassword = null, rememberMeChecked = null) {
 		var appServerType = PropsUtil.get("app.server.type");
+		var password = JSONUtil2.getDefaultUserFirstPassword(customDefaultUserFirstPassword = ${password});
+		var userEmailAddress = JSONUtil2.getDefaultUserEmail(customDefaultUserEmail = ${userEmailAddress});
 
 		if (${appServerType} == "weblogic") {
 
 			// Pausing 2 seconds due to LPS-159595
 
-			Pause(locator1 = 2000);
+			Pause(value1 = 2000);
 		}
 
 		if (isSet(virtualHostsURL)) {
@@ -1864,15 +2027,30 @@ definition {
 
 		UserBar.signOut();
 
-		JSONUser.agreeToTermsAndAnswerReminderQuery(
-			portalURL = ${virtualHostsURL},
-			userEmailAddress = ${userEmailAddress});
+		if (isSet(virtualHostsURL)) {
+			var portalURL = ${virtualHostsURL};
+		}
+		else {
+			var portalURL = JSONCompany.getPortalURL();
+		}
+
+		var isLXC = JSONUtil2.getLXCEnvironment();
+
+		if (${isLXC} != "true") {
+
+			// Workaround for LXC not supporting JSON call currently
+
+			JSONUser.agreeToTermsAndAnswerReminderQuery(
+				password = ${password},
+				portalURL = ${portalURL},
+				userEmailAddress = ${userEmailAddress});
+		}
 
 		if (isSet(virtualHostsURL)) {
 			Navigator.openSpecificURL(url = "${virtualHostsURL}/web/guest?SM_USER=${userEmailAddress}");
 		}
 		else {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 
 			Navigator.openSpecificURL(url = "${baseURL}/web/guest?SM_USER=${userEmailAddress}");
 		}
@@ -1901,7 +2079,8 @@ definition {
 		}
 	}
 
-	macro firstLoginUI {
+	@summary = "Default summary"
+	macro firstLoginUI(localization = null, idpName = null, localizedAgree = null, localizedSaveButton = null, samlMultiIdPs = null, userEmailAddress = null, newPassword = null, userId = null, password = null, authenticationMethod = null, domain = null, userScreenName = null, specificURL = null, rememberMeChecked = null, localizedAnswer = null, successful = null) {
 		if (isSet(specificURL)) {
 			Navigator.openSpecificURL(
 				domain = ${domain},
@@ -1953,7 +2132,8 @@ definition {
 		if (IsElementPresent(locator1 = "TextInput#PASSWORD_2")) {
 			User.resetPassword(
 				localizedSaveButton = ${localizedSaveButton},
-				newPassword = ${newPassword});
+				newPassword = ${newPassword},
+				successful = ${successful});
 		}
 
 		if (isSet(localizedAnswer)) {
@@ -1968,7 +2148,8 @@ definition {
 		WaitForLiferayEvent.initializeLiferayEventLog();
 	}
 
-	macro forgotPasswordSendResetLink {
+	@summary = "Default summary"
+	macro forgotPasswordSendResetLink(userEmailAddress = null) {
 		SignInNavigator.gotoForgotPassword();
 
 		Type(
@@ -1984,13 +2165,15 @@ definition {
 		Alert.viewSuccessMessageText(successMessage = "Your request completed successfully.");
 	}
 
-	macro gotoAddPage {
+	@summary = "Default summary"
+	macro gotoAddPage(userName = null) {
 		LexiconEntry.gotoEntryMenuItem(
 			menuItem = "Manage Pages",
 			rowEntry = ${userName});
 	}
 
-	macro impersonateCP {
+	@summary = "Default summary"
+	macro impersonateCP(siteName = null, userName = null) {
 		if (isSet(userName)) {
 			var userScreenName = ${userName};
 		}
@@ -2000,16 +2183,17 @@ definition {
 			rowEntry = ${userScreenName});
 
 		if (isSet(siteName)) {
-			SelectWindow(locator1 = "title=Home - ${siteName}");
+			SelectWindow(value1 = "title=Home - ${siteName}");
 		}
 		else {
-			SelectWindow.selectPopUp(locator1 = "null");
+			SelectWindow.selectPopUp(value1 = "null");
 		}
 
 		UserBar.gotoDropdown();
 	}
 
-	macro loginByScreenNamePG {
+	@summary = "Default summary"
+	macro loginByScreenNamePG(password = null, virtualHostsURL = null, userScreenName = null, newPassword = null) {
 		JSONUser.agreeToTermsAndAnswerReminderQueryByScreenName(
 			creatorPassword = ${password},
 			portalURL = ${virtualHostsURL},
@@ -2019,7 +2203,7 @@ definition {
 			Navigator.openSpecificURL(url = "${virtualHostsURL}/web/guest?SM_USER=${userScreenName}");
 		}
 		else {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 
 			Navigator.openSpecificURL(url = "${baseURL}/web/guest?SM_USER=${userScreenName}");
 		}
@@ -2035,7 +2219,8 @@ definition {
 		WaitForLiferayEvent.initializeLiferayEventLog();
 	}
 
-	macro loginPG {
+	@summary = "Default summary"
+	macro loginPG(idpName = null, password = null, virtualHostsURL = null, userScreenName = null, userEmailAddress = null, newPassword = null, rememberMeChecked = null, nodePort = null) {
 		JSONUser.agreeToTermsAndAnswerReminderQuery(
 			portalURL = ${virtualHostsURL},
 			userEmailAddress = ${userEmailAddress});
@@ -2049,7 +2234,7 @@ definition {
 			Navigator.openSpecificURL(url = "${baseURL}/web/guest?SM_USER=${userEmailAddress}");
 		}
 		else {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 
 			Navigator.openSpecificURL(url = "${baseURL}/web/guest?SM_USER=${userEmailAddress}");
 		}
@@ -2078,7 +2263,8 @@ definition {
 		}
 	}
 
-	macro loginUserInvalidPG {
+	@summary = "Default summary"
+	macro loginUserInvalidPG(password = null, userEmailAddress = null) {
 		Navigator.openURL();
 
 		var count = 0;
@@ -2101,7 +2287,8 @@ definition {
 	}
 
 	@description = "Log into Liferay Portal as ${userEmailAddress} using the password ${password}."
-	macro loginUserPG {
+	@summary = "Default summary"
+	macro loginUserPG(password = null, userEmailAddress = null) {
 		Navigator.openURL();
 
 		User._login(
@@ -2114,7 +2301,8 @@ definition {
 	}
 
 	@description = "Log into Liferay Portal as ${userEmailAddress} using the password ${password} with CAS authentication enabled."
-	macro loginUserWithCASEnabledPG {
+	@summary = "Default summary"
+	macro loginUserWithCASEnabledPG(userPassword = null, userScreenName = null) {
 		Navigator.openURL();
 
 		Navigator.gotoLoginPage();
@@ -2135,7 +2323,8 @@ definition {
 	}
 
 	@description = "Log into Facebook as ${facebookEmail} using the password ${facebookPassword}."
-	macro loginUserWithFacebookSSOEnabledPG {
+	@summary = "Default summary"
+	macro loginUserWithFacebookSSOEnabledPG(facebookPassword = null, newPassword = null, facebookEmail = null) {
 		Navigator.openURL();
 
 		Navigator.gotoLoginPage();
@@ -2144,7 +2333,7 @@ definition {
 			locator1 = "Link#FACEBOOK",
 			value1 = "Facebook");
 
-		SelectWindow(locator1 = "title=Log into Facebook | Facebook");
+		SelectWindow(value1 = "title=Log into Facebook | Facebook");
 
 		Type(
 			locator1 = "FacebookLogin#LOGIN_EMAIL_FIELD",
@@ -2189,7 +2378,8 @@ definition {
 		AssertElementPresent(locator1 = "UserBar#USER_AVATAR_IMAGE");
 	}
 
-	macro loginUserWithGoogleSSOEnabledPG {
+	@summary = "Default summary"
+	macro loginUserWithGoogleSSOEnabledPG(userPassword = null, userEmailAddress = null) {
 		GoogleLogin.accountSignIn(
 			userEmailAddress = ${userEmailAddress},
 			userPassword = ${userPassword});
@@ -2199,7 +2389,8 @@ definition {
 		AssertElementPresent(locator1 = "UserBar#USER_AVATAR_IMAGE");
 	}
 
-	macro loginUserWithOpenIDConnectEnabledPG {
+	@summary = "Default summary"
+	macro loginUserWithOpenIDConnectEnabledPG(userPassword = null, specificURL = null, userEmailAddress = null) {
 		OpenIDConnect.accountSignIn(
 			specificURL = ${specificURL},
 			userEmailAddress = ${userEmailAddress},
@@ -2213,7 +2404,8 @@ definition {
 	}
 
 	@description = "Log into OpenAM as ${userScreenName} using the password ${password}."
-	macro loginUserWithOpenSSOEnabledPG {
+	@summary = "Default summary"
+	macro loginUserWithOpenSSOEnabledPG(password = null, hostsURL = null, userScreenName = null) {
 		Navigator.openSpecificURL(url = ${hostsURL});
 
 		Navigator.gotoLoginPage();
@@ -2231,10 +2423,11 @@ definition {
 		AssertElementPresent(locator1 = "UserBar#USER_AVATAR_IMAGE");
 	}
 
-	macro logoutAndLoginPG {
+	@summary = "Default summary"
+	macro logoutAndLoginPG(password = null, authenticationMethod = null, userScreenName = null, userLoginEmailAddress = null, nodePort = null, signOutLocalizationName = null) {
 		Navigator.openURL();
 
-		UserBar.signOut();
+		UserBar.signOut(signOutLocalizationName = ${signOutLocalizationName});
 
 		User.loginPG(
 			authenticationMethod = ${authenticationMethod},
@@ -2245,7 +2438,8 @@ definition {
 	}
 
 	@description = "Log out of Liferay Portal."
-	macro logoutPG {
+	@summary = "Default summary"
+	macro logoutPG(specificURL = null, signOutLocalizationName = null) {
 		if (isSet(specificURL)) {
 			Navigator.openSpecificURL(url = ${specificURL});
 		}
@@ -2253,19 +2447,21 @@ definition {
 			Navigator.openURL();
 		}
 
-		UserBar.signOut();
+		UserBar.signOut(signOutLocalizationName = ${signOutLocalizationName});
 	}
 
 	@description = "Log out of Liferay Portal via URL."
-	macro logoutViaURL {
-		var baseURL = PropsUtil.get("portal.url");
+	@summary = "Default summary"
+	macro logoutViaURL() {
+		var baseURL = JSONCompany.getPortalURL();
 
-		Open(locator1 = "${baseURL}/c/portal/logout");
+		Open(value1 = "${baseURL}/c/portal/logout");
 	}
 
 	// This new macro is created after LPS-168612. Once Contact Information are fixed the same way as LPS-168612, then we can consolidate this macro and User.makePrimary
 
-	macro makeAddressPrimary {
+	@summary = "Default summary"
+	macro makeAddressPrimary(listEntry = null) {
 		Click.waitForMenuToggleJSClick(
 			key_listEntry = ${listEntry},
 			locator1 = "LexiconList#LIST_ENTRY_ELLIPSIS");
@@ -2273,7 +2469,8 @@ definition {
 		MenuItem.click(menuItem = "Make Primary");
 	}
 
-	macro makePrimary {
+	@summary = "Default summary"
+	macro makePrimary(rowEntry = null) {
 		Click.waitForMenuToggleJSClick(
 			key_rowEntry = ${rowEntry},
 			locator1 = "Icon#TABLE_VERTICAL_ELLIPSIS");
@@ -2281,7 +2478,8 @@ definition {
 		MenuItem.click(menuItem = "Make Primary");
 	}
 
-	macro openUsersAdmin {
+	@summary = "Default summary"
+	macro openUsersAdmin(baseURL = null) {
 		Navigator.openWithAppendToBaseURL(
 			baseURL = ${baseURL},
 			urlAppend = "group/control_panel/manage?p_p_id=com_liferay_users_admin_web_portlet_UsersAdminPortlet");
@@ -2289,7 +2487,8 @@ definition {
 
 	// This new macro is created after LPS-168612. Once Contact Information are fixed the same way as LPS-168612, then we can consolidate this macro and User.removeContactInformation
 
-	macro removeAddress {
+	@summary = "Default summary"
+	macro removeAddress(listEntry = null) {
 		Click.waitForMenuToggleJSClick(
 			key_listEntry = ${listEntry},
 			locator1 = "LexiconList#LIST_ENTRY_ELLIPSIS");
@@ -2297,7 +2496,8 @@ definition {
 		MenuItem.click(menuItem = "Remove");
 	}
 
-	macro removeContactInformation {
+	@summary = "Default summary"
+	macro removeContactInformation(rowEntry = null) {
 		Click.waitForMenuToggleJSClick(
 			key_rowEntry = ${rowEntry},
 			locator1 = "Icon#TABLE_VERTICAL_ELLIPSIS");
@@ -2305,45 +2505,56 @@ definition {
 		MenuItem.click(menuItem = "Remove");
 	}
 
-	macro resetPassword {
+	@summary = "Default summary"
+	macro RequestPasswordResetLink(userEmailAddress = null) {
+		ACUtils.clickGenericHyperlink(hyperlinkText = "Request a new password reset link.");
+
+		Type(
+			locator1 = "TextInput#EMAIL_ADDRESS",
+			value1 = ${userEmailAddress});
+
+		Button.clickNext();
+
+		AssertClick(
+			locator1 = "Button#SEND_PASSWORD_RESET_LINK",
+			value1 = "Send Password Reset Link");
+
+		Alert.viewSuccessMessageText(successMessage = "Your request completed successfully.");
+	}
+
+	@summary = "Default summary"
+	macro resetPassword(localizedSaveButton = null, newPassword = null, successful = null) {
 		if (IsElementPresent.pauseIsElementPresent(locator1 = "TextInput#PASSWORD")) {
 			if (isSet(newPassword)) {
-				Type(
-					locator1 = "TextInput#PASSWORD_1",
-					value1 = ${newPassword});
-
-				Type(
-					locator1 = "TextInput#PASSWORD_2",
-					value1 = ${newPassword});
+				User.fillResetPasswordFields(password = ${newPassword});
 			}
 			else {
-				Type(
-					locator1 = "TextInput#PASSWORD_1",
-					value1 = "test");
-
-				Type(
-					locator1 = "TextInput#PASSWORD_2",
-					value1 = "test");
+				User.fillResetPasswordFields(password = "test");
 			}
 
 			if (isSet(localizedSaveButton)) {
 				Button.click(button = ${localizedSaveButton});
 			}
-			else {
+			else if (isSet(successful) && (${successful} == "true")) {
 				Button.clickSubmitButton();
 
 				AssertElementNotPresent(locator1 = "TextInput#REENTER_PASSWORD");
 			}
+			else {
+				Button.clickSubmitButton();
+			}
 		}
 	}
 
-	macro searchCP {
+	@summary = "Default summary"
+	macro searchCP(searchTerm = null) {
 		Search.searchCP(searchTerm = ${searchTerm});
 
 		AssertElementPresent(locator1 = "Search#SEARCH_INFO");
 	}
 
-	macro selectMembership {
+	@summary = "Default summary"
+	macro selectMembership(assetType = null) {
 		UserNavigator.gotoMemberships();
 
 		if (${assetType} == "Sites") {
@@ -2364,7 +2575,8 @@ definition {
 			value1 = "Select");
 	}
 
-	macro selectUserTagCP {
+	@summary = "Default summary"
+	macro selectUserTagCP(tagNameList = null) {
 		Click(
 			key_fieldLabel = "Tags",
 			key_text = "Select",
@@ -2373,8 +2585,6 @@ definition {
 		IFrame.selectTagFrame();
 
 		for (var tagName : list ${tagNameList}) {
-			var tagName = StringUtil.lowerCase(${tagName});
-
 			Check(
 				key_rowEntry = ${tagName},
 				locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_CHECKBOX");
@@ -2387,8 +2597,6 @@ definition {
 			value1 = "Done");
 
 		for (var tagName : list ${tagNameList}) {
-			var tagName = StringUtil.lowerCase(${tagName});
-
 			AssertTextEquals(
 				key_tagName = ${tagName},
 				locator1 = "AssetCategorization#TAG",
@@ -2396,7 +2604,8 @@ definition {
 		}
 	}
 
-	macro setPasswordByResetLink {
+	@summary = "Default summary"
+	macro setPasswordByResetLink(newPassword1 = null, newPassword2 = null) {
 		Type(
 			locator1 = "UsersAndOrganizationsEditUser#PASSWORD_NEW_PASSWORD_FIELD",
 			value1 = ${newPassword1});
@@ -2412,7 +2621,8 @@ definition {
 		User.answerPasswordReminder();
 	}
 
-	macro signInPG {
+	@summary = "Default summary"
+	macro signInPG(localization = null, idpName = null, emailVerification = null, localizedAgree = null, localizedSaveButton = null, samlMultiIdPs = null, userEmailAddress = null, newPassword = null, userId = null, password = null, authenticationMethod = null, userScreenName = null, rememberMeChecked = null, localizedAnswer = null) {
 		User._clickSignInLink(
 			idpName = ${idpName},
 			localization = ${localization},
@@ -2482,7 +2692,8 @@ definition {
 		WaitForLiferayEvent.initializeLiferayEventLog();
 	}
 
-	macro singleDeactivateCP {
+	@summary = "Default summary"
+	macro singleDeactivateCP(userFirstName = null) {
 		LexiconEntry.gotoEntryMenuItemNoError(
 			menuItem = "Deactivate",
 			rowEntry = ${userFirstName});
@@ -2492,7 +2703,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro singleDeleteCP {
+	@summary = "Default summary"
+	macro singleDeleteCP(userFirstName = null) {
 		LexiconEntry.gotoEntryMenuItemNoError(
 			menuItem = "Delete",
 			rowEntry = ${userFirstName});
@@ -2502,15 +2714,11 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro tearDownCP {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+	@summary = "Default summary"
+	macro tearDownCP() {
+		User.openUsersAdmin();
 
-		Click(locator1 = "Dropdown#FILTER_AND_ORDER");
-
-		MenuItem.click(menuItem = "Active");
+		ManagementBar.setFilterAndOrder(filterBy = "Active");
 
 		while (IsElementPresent(key_rowNumber = 2, locator1 = "ContentRow#ENTRY_CONTENT_ROW_NUMBER")) {
 			Click.waitForMenuToggleJSClick(
@@ -2522,14 +2730,14 @@ definition {
 			AssertConfirm(value1 = "Are you sure you want to deactivate this?");
 		}
 
-		Click(locator1 = "Dropdown#FILTER_AND_ORDER");
-
-		MenuItem.click(menuItem = "Inactive");
+		ManagementBar.setFilterAndOrder(filterBy = "Inactive");
 
 		if (IsElementPresent(locator1 = "ContentRow#ENTRY_CONTENT_ROW_1")) {
 			PortletEntry.selectAll();
 
-			ClickNoError(locator1 = "Icon#DELETE");
+			ClickNoError(
+				key_text = "trash",
+				locator1 = "ManagementBar#ANY_ICON");
 
 			AssertConfirm(value1 = "Are you sure you want to permanently delete the selected users?");
 
@@ -2539,15 +2747,11 @@ definition {
 		AssertElementPresent(locator1 = "Message#EMPTY_INFO");
 	}
 
-	macro tearDownSpecificUser {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+	@summary = "Default summary"
+	macro tearDownSpecificUser(userScreenName = null) {
+		User.openUsersAdmin();
 
-		Click(locator1 = "Dropdown#FILTER_AND_ORDER");
-
-		MenuItem.click(menuItem = "Active");
+		ManagementBar.setFilterAndOrder(filterBy = "Active");
 
 		User.searchCP(searchTerm = ${userScreenName});
 
@@ -2561,9 +2765,7 @@ definition {
 			Alert.viewSuccessMessage();
 		}
 
-		Click(locator1 = "Dropdown#FILTER_AND_ORDER");
-
-		MenuItem.click(menuItem = "Inactive");
+		ManagementBar.setFilterAndOrder(filterBy = "Inactive");
 
 		if (IsElementPresent(locator1 = "ContentRow#ENTRY_CONTENT_ROW_1")) {
 			PortletEntry.selectAll();
@@ -2576,7 +2778,8 @@ definition {
 		}
 	}
 
-	macro unassignMembershipCP {
+	@summary = "Default summary"
+	macro unassignMembershipCP(userScreenName = null) {
 		User.openUsersAdmin();
 
 		UserNavigator.gotoUser(userScreenName = ${userScreenName});
@@ -2594,7 +2797,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro unassignRegularRoleCP {
+	@summary = "Default summary"
+	macro unassignRegularRoleCP(userScreenName = null, regularRoleName = null) {
 		UserNavigator.gotoUser(userScreenName = ${userScreenName});
 
 		UserNavigator.gotoRoles();
@@ -2612,7 +2816,8 @@ definition {
 			value1 = ${regularRoleName});
 	}
 
-	macro unlockUserAccount {
+	@summary = "Default summary"
+	macro unlockUserAccount(userScreenName = null) {
 		var key_userScreenName = ${userScreenName};
 
 		AssertTextEquals(
@@ -2634,7 +2839,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro verifyEmail {
+	@summary = "Default summary"
+	macro verifyEmail(portalURL = null, recipient = null) {
 		if (IsElementPresent.pauseIsElementPresent(locator1 = "TextInput#EMAIL_VERIFICATION_CODE")) {
 			var bodySpecificText = MockMock.getBodySpecificText(
 				asset = "${portalURL}: Email Address Verification",
@@ -2657,7 +2863,8 @@ definition {
 		}
 	}
 
-	macro viewAddress {
+	@summary = "Default summary"
+	macro viewAddress(country = null, city = null, addressType = null, postalCode = null, street1 = null, region = null) {
 		var key_primaryValue = ${street1};
 
 		AssertTextEquals.assertPartialText(
@@ -2687,7 +2894,8 @@ definition {
 		}
 	}
 
-	macro viewCaptchaPG {
+	@summary = "Default summary"
+	macro viewCaptchaPG(captchaType = null) {
 		if (${captchaType} == "captcha") {
 			AssertElementPresent.assertElementPresent(locator1 = "SignInCreateAccount#CAPTCHA_IMAGE");
 		}
@@ -2698,7 +2906,8 @@ definition {
 		}
 	}
 
-	macro viewContactInformation {
+	@summary = "Default summary"
+	macro viewContactInformation(number = null, skype = null, extension = null, numberType = null, address = null, addressPrefix = null, searchContainerType = null, url = null, addressCount = null, websiteType = null) {
 		if (isSet(searchContainerType)) {
 			var key_searchContainerType = ${searchContainerType};
 
@@ -2766,7 +2975,8 @@ definition {
 		}
 	}
 
-	macro viewCP {
+	@summary = "Default summary"
+	macro viewCP(userEmailAddressVariation = null, userScreenNameVariation = null, userLastName = null, userScreenName = null, userEmailAddress = null, userFirstName = null) {
 		if (${userEmailAddressVariation} == "At") {
 			Search.searchCP(searchTerm = ${userEmailAddress});
 
@@ -2799,13 +3009,15 @@ definition {
 		}
 	}
 
-	macro viewExpiredSessionErrorMessage {
+	@summary = "Default summary"
+	macro viewExpiredSessionErrorMessage(message = null) {
 		AssertTextEquals.assertPartialText(
 			locator1 = "Home#ERROR_MESSAGE_EXPIRED_SESSION",
 			value1 = ${message});
 	}
 
-	macro viewIsPrimary {
+	@summary = "Default summary"
+	macro viewIsPrimary(primaryValue = null, searchContainerType = null, contactInfoPrimaryValue = null) {
 		if (isSet(primaryValue)) {
 			var key_primaryValue = ${primaryValue};
 
@@ -2820,7 +3032,8 @@ definition {
 		}
 	}
 
-	macro viewLoggedInPG {
+	@summary = "Default summary"
+	macro viewLoggedInPG(authenticationMethod = null) {
 		if (${authenticationMethod} == "By Screen Name") {
 			AssertElementNotPresent(locator1 = "TextInput#SCREEN_NAME");
 		}
@@ -2837,7 +3050,8 @@ definition {
 		AssertVisible(locator1 = "UserBar#USER_AVATAR_IMAGE");
 	}
 
-	macro viewLoggedOutPG {
+	@summary = "Default summary"
+	macro viewLoggedOutPG() {
 		AssertElementNotPresent(locator1 = "UserBar#USER_AVATAR_IMAGE");
 
 		AssertElementNotPresent(locator1 = "ControlMenu#ADD");
@@ -2847,7 +3061,8 @@ definition {
 			value1 = "Sign In");
 	}
 
-	macro viewLoggedOutWithCASEnabledPG {
+	@summary = "Default summary"
+	macro viewLoggedOutWithCASEnabledPG() {
 		AssertTextEquals(
 			locator1 = "CAS#APP_NAME_HEADER",
 			value1 = "Central Authentication Service (CAS)");
@@ -2865,7 +3080,8 @@ definition {
 			value1 = "For security reasons, exit your web browser.");
 	}
 
-	macro viewLoginPG {
+	@summary = "Default summary"
+	macro viewLoginPG(authenticationMethod = null, loginPg = null) {
 		if (${authenticationMethod} == "By Screen Name") {
 			AssertElementPresent(locator1 = "TextInput#SCREEN_NAME");
 		}
@@ -2887,7 +3103,8 @@ definition {
 		}
 	}
 
-	macro viewMemberships {
+	@summary = "Default summary"
+	macro viewMemberships(assigneeName = null, roleName = null, assetType = null) {
 		UserNavigator.gotoMemberships();
 
 		if (${assetType} == "Sites") {
@@ -2919,7 +3136,26 @@ definition {
 		}
 	}
 
-	macro viewNotPrimary {
+	@summary = "Default summary"
+	macro viewNoPasswordSection(specificURL = null) {
+		if (isSet(specificURL)) {
+			Navigator.openSpecificURL(url = ${specificURL});
+		}
+		else {
+			Navigator.openURL();
+		}
+
+		UserBar.signOut();
+
+		SignInNavigator.gotoCreateAccount();
+
+		AssertElementNotPresent(locator1 = "TextInput#PASSWORD");
+
+		AssertElementNotPresent(locator1 = "TextInput#REENTER_PASSWORD");
+	}
+
+	@summary = "Default summary"
+	macro viewNotPrimary(primaryValue = null, searchContainerType = null, contactInfoPrimaryValue = null) {
 		if (isSet(primaryValue)) {
 			var key_primaryValue = ${primaryValue};
 
@@ -2934,13 +3170,33 @@ definition {
 		}
 	}
 
-	macro viewNoUsersFoundCP {
+	@summary = "Default summary"
+	macro viewNoUsersFoundCP() {
 		AssertTextEquals.assertPartialText(
 			locator1 = "Message#EMPTY_INFO",
 			value1 = "No users were found.");
 	}
 
-	macro viewSessionNotExpired {
+	@summary = "Default summary"
+	macro viewPasswordSection(specificURL = null) {
+		if (isSet(specificURL)) {
+			Navigator.openSpecificURL(url = ${specificURL});
+		}
+		else {
+			Navigator.openURL();
+		}
+
+		UserBar.signOut();
+
+		SignInNavigator.gotoCreateAccount();
+
+		AssertElementPresent(locator1 = "TextInput#PASSWORD");
+
+		AssertElementPresent(locator1 = "TextInput#REENTER_PASSWORD");
+	}
+
+	@summary = "Default summary"
+	macro viewSessionNotExpired() {
 		AssertElementNotPresent(locator1 = "Home#ERROR_MESSAGE_EXPIRED_SESSION");
 
 		if (!(isSet(noSignin))) {
@@ -2948,15 +3204,18 @@ definition {
 		}
 	}
 
-	macro viewSignIn {
+	@summary = "Default summary"
+	macro viewSignIn() {
 		AssertElementPresent(locator1 = "UserBar#USER_SIGN_IN");
 	}
 
-	macro viewSignInPresent {
+	@summary = "Default summary"
+	macro viewSignInPresent() {
 		AssertElementPresent(locator1 = "UserBar#USER_SIGN_IN");
 	}
 
-	macro viewUnableToAssignRoleToUserCP {
+	@summary = "Default summary"
+	macro viewUnableToAssignRoleToUserCP(roleType = null) {
 		AssertElementNotPresent(
 			key_roleType = StringUtil.replace(${roleType}, " ", ""),
 			locator1 = "UsersAndOrganizationsEditUser#ROLES_SELECT_LINK",
@@ -2976,7 +3235,8 @@ definition {
 			value1 = ${emptyMessage});
 	}
 
-	macro viewUserCustomFieldsCP {
+	@summary = "Default summary"
+	macro viewUserCustomFieldsCP(customFieldName = null, customFieldType = null, startingValue = null) {
 		var key_customFieldName = ${customFieldName};
 
 		AssertTextEquals(
@@ -2993,7 +3253,8 @@ definition {
 		}
 	}
 
-	macro viewUserInformation {
+	@summary = "Default summary"
+	macro viewUserInformation(userJobTitle = null, userLastName = null, userScreenName = null, userMiddleName = null, userEmailAddress = null, userFirstName = null, userId = null, userBirthday = null) {
 		AssertTextEquals(
 			locator1 = "UsersAndOrganizationsEditUser#DETAILS_SCREEN_NAME_FIELD",
 			value1 = ${userScreenName});
@@ -3035,7 +3296,8 @@ definition {
 		}
 	}
 
-	macro viewUserInformationRolesCP {
+	@summary = "Default summary"
+	macro viewUserInformationRolesCP(roleTitle = null, roleType = null) {
 		UserNavigator.gotoRoles();
 
 		var key_roleTitle = ${roleTitle};
@@ -3052,14 +3314,16 @@ definition {
 		}
 	}
 
-	macro viewUserTableName {
+	@summary = "Default summary"
+	macro viewUserTableName(key_userScreenName = null, userln = null, userfn = null) {
 		AssertTextEquals(
 			key_userScreenName = ${key_userScreenName},
 			locator1 = "UsersAndOrganizations#USER_TABLE_NAME",
 			value1 = "${userfn} ${userln}");
 	}
 
-	macro viewWelcomeMEssageHTML {
+	@summary = "Default summary"
+	macro viewWelcomeMEssageHTML(userln = null, userfn = null) {
 		AssertHTMLSourceTextPresent(
 			locator1 = "JSONWS#SECURITY_RESULT",
 			value1 = "Welcome ${userfn} ${userln}!");

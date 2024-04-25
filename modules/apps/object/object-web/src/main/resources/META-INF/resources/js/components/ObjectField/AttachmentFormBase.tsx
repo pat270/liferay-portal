@@ -14,9 +14,11 @@ import './ObjectFieldFormBase.scss';
 interface IAttachmentFormBaseProps {
 	disabled?: boolean;
 	error?: string;
+	objectDefinitionName: string;
 	objectFieldSettings: ObjectFieldSetting[];
-	objectName: string;
+	onSubmit?: (values?: Partial<ObjectField>) => void;
 	setValues: (values: Partial<ObjectField>) => void;
+	values: Partial<ObjectField>;
 }
 
 const attachmentSources = [
@@ -41,9 +43,11 @@ const attachmentSources = [
 export function AttachmentFormBase({
 	disabled,
 	error,
+	objectDefinitionName,
 	objectFieldSettings,
-	objectName,
+	onSubmit,
 	setValues,
+	values,
 }: IAttachmentFormBaseProps) {
 	const settings = normalizeFieldSettings(objectFieldSettings);
 
@@ -51,7 +55,7 @@ export function AttachmentFormBase({
 		({value}) => value === settings.fileSource
 	);
 
-	const handleAttachmentSourceChange = ({value}: {value: string}) => {
+	const handleAttachmentSourceChange = (value: string) => {
 		const fileSource: ObjectFieldSetting = {name: 'fileSource', value};
 
 		const updatedSettings = objectFieldSettings.filter(
@@ -71,6 +75,13 @@ export function AttachmentFormBase({
 		}
 
 		setValues({objectFieldSettings: updatedSettings});
+
+		if (onSubmit) {
+			onSubmit({
+				...values,
+				objectFieldSettings: updatedSettings,
+			});
+		}
 	};
 
 	const toggleShowFiles = (value: boolean) => {
@@ -88,7 +99,7 @@ export function AttachmentFormBase({
 		if (value) {
 			updatedSettings.push({
 				name: 'storageDLFolderPath',
-				value: `/${objectName}`,
+				value: `/${objectDefinitionName}`,
 			});
 		}
 
@@ -100,11 +111,13 @@ export function AttachmentFormBase({
 			<SingleSelect
 				disabled={disabled}
 				error={error}
+				items={attachmentSources}
 				label={Liferay.Language.get('request-files')}
-				onChange={handleAttachmentSourceChange}
-				options={attachmentSources}
+				onSelectionChange={(value) =>
+					handleAttachmentSourceChange(value as string)
+				}
 				required
-				value={attachmentSource?.label}
+				selectedKey={attachmentSource?.value}
 			/>
 
 			{settings.fileSource === 'userComputer' && (
@@ -115,6 +128,13 @@ export function AttachmentFormBase({
 							'show-files-in-documents-and-media'
 						)}
 						name="showFilesInDocumentsAndMedia"
+						onBlur={(event) => {
+							event.stopPropagation();
+
+							if (onSubmit) {
+								onSubmit();
+							}
+						}}
 						onToggle={toggleShowFiles}
 						toggled={!!settings.showFilesInDocumentsAndMedia}
 						tooltip={Liferay.Language.get(

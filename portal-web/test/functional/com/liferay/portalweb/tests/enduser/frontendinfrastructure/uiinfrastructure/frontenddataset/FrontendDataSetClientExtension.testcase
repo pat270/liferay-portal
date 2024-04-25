@@ -1,8 +1,7 @@
 @component-name = "portal-frontend-infrastructure"
 definition {
 
-	property custom.properties = "feature.flag.LPS-172904=true";
-	property portal.acceptance = "true";
+	property custom.properties = "feature.flag.LPS-164563=true${line.separator}feature.flag.LPS-172904=true${line.separator}feature.flag.LPS-184016=true${line.separator}feature.flag.LPS-188645=true";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.component.names = "Frontend Data Set";
@@ -27,16 +26,193 @@ definition {
 		}
 	}
 
-	@description = "LPS-176807. Verify if the apple icon appears when file is deployed"
-	@priority = 4
-	test CanChangeFilterWithClientExtension {
+	@description = "LPS-185873 Confirm Cell Renderer label in cell renderer option"
+	@priority = 3
+	test AssertTheCellRendererIsDisplayed {
 		property osgi.modules.includes = "frontend-data-set-sample-web";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
+
+		task ("Given a client extension zip file deployed") {
+			var clientExtensionSamples = "liferay-sample-fds-cell-renderer";
+
+			AntCommands.runCommand("build-test-liferay-sample-workspace.xml", "deploy-workspace-client-extension -Dworkspace.client.extension.name=${clientExtensionSamples}");
+
+			Refresh();
+		}
+
+		task ("And the creation of a new data set") {
+			DataSetAdmin.goToDataSetAdminPage();
+
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Data Set Fields Test",
+				restApplication = "/data-set-manager/fields",
+				restEndpoint = "/",
+				restSchema = "FDSField");
+		}
+
+		task ("And adding a dataset view") {
+			DataSetAdmin.createFDSViewViaAPI(
+				dataSetName = "Data Set Fields Test",
+				dataSetViewDescription = "FDSViewDescription",
+				key_dataSetViewNameList = "View Fields Test");
+		}
+
+		task ("When go to the View page of the data set created.") {
+			DataSetAdmin.goToSpecificViewPage(
+				dataSetName = "Data Set Fields Test",
+				key_viewName = "View Fields Test");
+		}
+
+		task ("When the user goes to Fields tab") {
+			DataSetAdmin.goToTab(tabName = "Fields");
+		}
+
+		task ("And adds new fields //creator, id, status") {
+			DataSetAdmin.addFields(key_fieldList = "creator,id,status");
+		}
+
+		task ("And edits one of the fields") {
+			Click(
+				key_fieldName = "creator",
+				locator1 = "DataSet#VERTICAL_ELLIPSIS_BY_FIELDS_NAME");
+
+			MenuItem.click(menuItem = "Edit");
+		}
+
+		task ("When the user clicks on the Renderer field") {
+			Click(
+				key_dropdownItem = "Default",
+				locator1 = "TableViewBuilder#FILTER_DROPDOWN_ITEM");
+		}
+
+		task ("And there is not Cell Renderer label in the cell renderer option") {
+			AssertElementPresent(
+				key_selectAction = "Liferay Sample Frontend Data Set Cell Renderer",
+				locator1 = "FormViewBuilder#FIELD_ELLIPSIS_ACTION");
+		}
+	}
+
+	@description = "LPS-185873 Confirm that the Client Extension label is displayed on the drop-down item"
+	@priority = 3
+	test CanAssertClientExtensionInDropdown {
+		property osgi.modules.includes = "frontend-data-set-sample-web";
+		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
+
+		task ("Given a client extension zip file deployed") {
+			var clientExtensionSamples = "liferay-sample-fds-cell-renderer";
+
+			AntCommands.runCommand("build-test-liferay-sample-workspace.xml", "deploy-workspace-client-extension -Dworkspace.client.extension.name=${clientExtensionSamples}");
+
+			Refresh();
+		}
+
+		task ("And the creation of a new data set") {
+			DataSetAdmin.goToDataSetAdminPage();
+
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Data Set Fields Test",
+				restApplication = "/data-set-manager/fields",
+				restEndpoint = "/",
+				restSchema = "FDSField");
+		}
+
+		task ("And adding a dataset view") {
+			DataSetAdmin.createFDSViewViaAPI(
+				dataSetName = "Data Set Fields Test",
+				dataSetViewDescription = "FDSViewDescription",
+				key_dataSetViewNameList = "View Fields Test");
+		}
+
+		task ("When go to the View page of the data set created.") {
+			DataSetAdmin.goToSpecificViewPage(
+				dataSetName = "Data Set Fields Test",
+				key_viewName = "View Fields Test");
+		}
+
+		task ("When the user goes to Fields tab") {
+			DataSetAdmin.goToTab(tabName = "Fields");
+		}
+
+		task ("And adds new fields //creator, id, status") {
+			DataSetAdmin.addFields(key_fieldList = "creator,id,status");
+		}
+
+		task ("And edits one of the fields") {
+			Click(
+				key_fieldName = "creator",
+				locator1 = "DataSet#VERTICAL_ELLIPSIS_BY_FIELDS_NAME");
+
+			MenuItem.click(menuItem = "Edit");
+		}
+
+		task ("Then there is a Cell Renderer available to be selected") {
+			Click(
+				key_dropdownItem = "Default",
+				locator1 = "TableViewBuilder#FILTER_DROPDOWN_ITEM");
+		}
+
+		task ("And the label Client Extension is displayed in the dropdown item") {
+			AssertElementPresent(
+				key_workflowStatus = "Client Extension",
+				locator1 = "ProcessBuilderKaleoDesigner#WORKFLOW_STATUS");
+		}
+	}
+
+	@description = "LPS-185873 Confirm that the Renderer column is present on the fields creation page"
+	@priority = 4
+	test CanAssertTheRendererColumn {
+		task ("Given the creation of a new data set") {
+			DataSetAdmin.goToDataSetAdminPage();
+
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Data Set Fields Test",
+				restApplication = "/data-set-manager/fields",
+				restEndpoint = "/",
+				restSchema = "FDSField");
+		}
+
+		task ("And adding a dataset view ") {
+			DataSetAdmin.createFDSViewViaAPI(
+				dataSetName = "Data Set Fields Test",
+				dataSetViewDescription = "FDSViewDescription",
+				key_dataSetViewNameList = "View Fields Test");
+		}
+
+		task ("When go to the View page of the data set created.") {
+			DataSetAdmin.goToSpecificViewPage(
+				dataSetName = "Data Set Fields Test",
+				key_viewName = "View Fields Test");
+		}
+
+		task ("And the user goes to Fields tab") {
+			DataSetAdmin.goToTab(tabName = "Fields");
+		}
+
+		task ("When the user adds new fields") {
+			DataSetAdmin.addFields(key_fieldList = "creator,id,status");
+		}
+
+		task ("Then the column Renderer appears") {
+			AssertElementPresent(
+				key_type = "Renderer",
+				locator1 = "DataSet#FIELD_COLUMN_NAME");
+		}
+	}
+
+	@description = "LPS-176807. Verify if the apple icon appears when file is deployed"
+	@priority = 5
+	test CanChangeFilterWithClientExtension {
+		property osgi.modules.includes = "frontend-data-set-sample-web";
+		property portal.acceptance = "quarantine";
+		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given Sample FDS portlet deployed") {
-			FileInstall.deployFileOnServer(jarFile = "liferay-sample-fds-cell-renderer.zip");
+			var clientExtensionSamples = "liferay-sample-fds-cell-renderer";
 
-			WaitForConsoleTextPresent(value1 = "STARTED liferay-sample-fds-cell-renderer_1.0.0");
+			AntCommands.runCommand("build-test-liferay-sample-workspace.xml", "deploy-workspace-client-extension -Dworkspace.client.extension.name=${clientExtensionSamples}");
 		}
 
 		task ("When entering on a page which uses FDS") {
@@ -75,13 +251,10 @@ definition {
 	}
 
 	@description = "LPS-176807. Verify if is not possible to see an client extension deployed"
-	@priority = 4
+	@priority = 3
 	test CannotSeeClientExtensionNotDeployed {
 		task ("When you access the Client Extension admin page") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Custom Apps",
-				panel = "Applications",
-				portlet = "Client Extensions");
+			ClientExtension.openClientExtensionsAdmin();
 		}
 
 		task ("Then the client extension is not present") {
@@ -95,10 +268,125 @@ definition {
 		}
 	}
 
-	@description = "LPS-176807. Verify if the Client Extension are visible when deploys"
+	@description = "LPS-190457. Verify if the is possible to see the CX filters options in the Data Set fragment"
 	@priority = 4
+	test CanViewCXOptionsInDataSetFragment {
+		property osgi.modules.includes = "liferay-sample-fds-filter";
+		property test.liferay.virtual.instance = "false";
+
+		task ("Given a new Client Extension Frontend Data Set filter deployed") {
+			var clientExtensionSamples = "liferay-sample-fds-filter";
+
+			AntCommands.runCommand("build-test-liferay-sample-workspace.xml", "deploy-workspace-client-extension -Dworkspace.client.extension.name=${clientExtensionSamples}");
+		}
+
+		task ("And a new data set entry") {
+			DataSetAdmin.goToDataSetAdminPage();
+
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Data Set Test",
+				restApplication = "/headless-admin-address/v1.0",
+				restEndpoint = "/v1.0/countries",
+				restSchema = "Country");
+		}
+
+		task ("And a new view") {
+			DataSetAdmin.createFDSViewViaAPI(
+				dataSetName = "Data Set Test",
+				key_dataSetViewNameList = "View Test");
+		}
+
+		task ("When the user goes to the Filter tab") {
+			DataSetAdmin.goToSpecificViewPage(
+				dataSetName = "Data Set Test",
+				key_viewName = "View Test");
+
+			DataSetAdmin.goToTab(tabName = "Filters");
+		}
+
+		task ("And creates a new client extension filter") {
+			LexiconEntry.gotoAdd();
+
+			MenuItem.click(menuItem = "Client Extension");
+
+			Type(
+				key_text = "Name",
+				locator1 = "TextInput#ANY",
+				value1 = "Liferay Sample Data Set Filter");
+
+			Click(
+				key_indexNumber = 1,
+				key_text = "Select",
+				locator1 = "Button#ANY_N");
+
+			MenuItem.click(menuItem = "name");
+
+			Click(
+				key_indexNumber = 1,
+				key_text = "Select",
+				locator1 = "Button#ANY_N");
+
+			MenuItem.click(menuItem = "Liferay Sample FDS Filter");
+		}
+
+		task ("And saves the new filter") {
+			PortletEntry.save();
+		}
+
+		task ("And creates a new content page") {
+			Navigator.openURL();
+
+			ContentPages.addPage(pageName = "Green Page");
+		}
+
+		task ("And adds the data set fragment to the page ") {
+			PageEditor.addFragment(
+				collectionName = "Content Display",
+				fragmentName = "Data Set");
+		}
+
+		task ("And configures it to the new view") {
+			Click(locator1 = "ReportsAdminViewReportEntry#INFO_MESSAGE");
+
+			Click.javaScriptClick(
+				key_value = "Select Data Set View",
+				locator1 = "Button#SECONDARY_BY_TITLE");
+
+			SelectFrame(
+				key_title = "Select",
+				locator1 = "IFrame#MODAL_ANY");
+
+			Click.clickAtNotVisible(
+				key_radioOption = "View Test",
+				locator1 = "CommerceEntry#RADIO_BUTTON");
+
+			Button.clickSave();
+		}
+
+		task ("And publishes the page") {
+			SelectFrame(locator1 = "DataSet#DEFOCUS");
+
+			Click.javaScriptClick(locator1 = "WorkflowMetricsIndex#METRICS_REINDEX_ALL_BUTTON");
+		}
+
+		task ("Then Submit button is present in the filter") {
+			Navigator.gotoPage(pageName = "Green Page");
+
+			Click(locator1 = "ManagementBar#NAVBAR_TEXT");
+
+			MenuItem.click(menuItem = "Liferay Sample Data Set Filter");
+
+			AssertElementPresent(
+				key_text = "Submit",
+				locator1 = "Button#ANY_SECONDARY");
+		}
+	}
+
+	@description = "LPS-176807. Verify if the Client Extension are visible when deploys"
+	@priority = 5
 	test CanViewDeployedFile {
 		property osgi.modules.includes = "frontend-data-set-sample-web";
+		property portal.acceptance = "true";
 
 		task ("When create a page") {
 			JSONLayout.addPublicLayout(
@@ -120,6 +408,116 @@ definition {
 			AssertElementPresent(
 				key_remoteAppName = "Frontend Data Set Sample",
 				locator1 = "ClientExtension#APPLICATION_SEARCH_FIELD_WIDGET_SEARCH_REMOTE_APP");
+		}
+	}
+
+	@description = "LPS-190457. Verify if the is possible to see the CX filters in the Data Set fragment"
+	@priority = 4
+	test CanViewFiltersCXInDataSetFragment {
+		task ("Given a new Client Extension Frontend Data Set filter") {
+			ClientExtensionGeneral.goToRemoteAppsPortlet();
+
+			ClientExtensionGeneral.addFrontendDataSetFilter(
+				description = "New Client Extension Frontend Data Set Filter",
+				javaScriptURL = "https://liferay.github.io/liferay-frontend-projects/date-filter.js",
+				name = "Client Extension Filter Test");
+		}
+
+		task ("And a new data set entry") {
+			DataSetAdmin.goToDataSetAdminPage();
+
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Data Set Test",
+				restApplication = "/headless-admin-address/v1.0",
+				restEndpoint = "/v1.0/countries",
+				restSchema = "Country");
+		}
+
+		task ("And a new view") {
+			DataSetAdmin.createFDSViewViaAPI(
+				dataSetName = "Data Set Test",
+				key_dataSetViewNameList = "View Test");
+		}
+
+		task ("When the user goes to the Filter tab") {
+			DataSetAdmin.goToSpecificViewPage(
+				dataSetName = "Data Set Test",
+				key_viewName = "View Test");
+
+			DataSetAdmin.goToTab(tabName = "Filters");
+		}
+
+		task ("And creates a new client extension filter") {
+			LexiconEntry.gotoAdd();
+
+			MenuItem.click(menuItem = "Client Extension");
+
+			Type(
+				key_text = "Name",
+				locator1 = "TextInput#ANY",
+				value1 = "Liferay Sample Data Set Filter");
+
+			Click(
+				key_indexNumber = 1,
+				key_text = "Select",
+				locator1 = "Button#ANY_N");
+
+			MenuItem.click(menuItem = "name");
+
+			Click(
+				key_indexNumber = 1,
+				key_text = "Select",
+				locator1 = "Button#ANY_N");
+
+			MenuItem.click(menuItem = "Client Extension Filter Test");
+		}
+
+		task ("And saves the new filter") {
+			PortletEntry.save();
+		}
+
+		task ("And creates a new content page") {
+			Navigator.openURL();
+
+			ContentPages.addPage(pageName = "Green Page");
+		}
+
+		task ("And adds the data set fragment to the page ") {
+			PageEditor.addFragment(
+				collectionName = "Content Display",
+				fragmentName = "Data Set");
+		}
+
+		task ("And configures it to the new view") {
+			Click(locator1 = "ReportsAdminViewReportEntry#INFO_MESSAGE");
+
+			Click.javaScriptClick(
+				key_value = "Select Data Set View",
+				locator1 = "Button#SECONDARY_BY_TITLE");
+
+			SelectFrame(
+				key_title = "Select",
+				locator1 = "IFrame#MODAL_ANY");
+
+			Click.clickAtNotVisible(
+				key_radioOption = "View Test",
+				locator1 = "CommerceEntry#RADIO_BUTTON");
+
+			Button.clickSave();
+		}
+
+		task ("And publishes the page") {
+			SelectFrame(locator1 = "DataSet#DEFOCUS");
+
+			Click.javaScriptClick(locator1 = "WorkflowMetricsIndex#METRICS_REINDEX_ALL_BUTTON");
+		}
+
+		task ("Then the filter based on client extensions is present in the fragment") {
+			Navigator.gotoPage(pageName = "Green Page");
+
+			Click(locator1 = "ManagementBar#NAVBAR_TEXT");
+
+			MenuItem.viewPresent(menuItem = "Liferay Sample Data Set Filter");
 		}
 	}
 

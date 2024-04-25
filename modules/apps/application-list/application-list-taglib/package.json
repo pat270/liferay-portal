@@ -1,9 +1,10 @@
 {
+	"main": "js/index.ts",
 	"name": "@liferay/application-list-taglib",
 	"scripts": {
 		"build": "liferay-npm-scripts build",
 		"checkFormat": "liferay-npm-scripts check",
 		"format": "liferay-npm-scripts fix"
 	},
-	"version": "7.0.7"
+	"version": "7.0.13"
 }

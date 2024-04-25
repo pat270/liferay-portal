@@ -86,6 +86,8 @@ if (Validator.isNotNull(backURL)) {
 			"markNotificationsAsReadURL", markNotificationsAsReadURL.toString()
 		).put(
 			"markNotificationsAsUnreadURL", markNotificationsAsUnreadURL.toString()
+		).put(
+			"searchContainerId", searchContainerId
 		).build()
 	%>'
 	clearResultsURL="<%= notificationsManagementToolbarDisplayContext.getClearResultsURL() %>"
@@ -93,7 +95,8 @@ if (Validator.isNotNull(backURL)) {
 	filterDropdownItems="<%= notificationsManagementToolbarDisplayContext.getFilterDropdownItems() %>"
 	filterLabelItems="<%= notificationsManagementToolbarDisplayContext.getFilterLabelItems() %>"
 	itemsTotal="<%= notificationsSearchContainer.getTotal() %>"
-	propsTransformer="notifications/js/NotificationsManagementToolbarPropsTransformer"
+	orderDropdownItems="<%= notificationsManagementToolbarDisplayContext.getOrderByDropdownItems() %>"
+	propsTransformer="{NotificationsManagementToolbarPropsTransformer} from notifications-web"
 	searchContainerId="<%= searchContainerId %>"
 	selectable="<%= actionRequired ? false : true %>"
 	showCreationMenu="<%= false %>"
@@ -105,6 +108,9 @@ if (Validator.isNotNull(backURL)) {
 
 <clay:container-fluid>
 	<aui:form action="<%= currentURL %>" method="get" name="fm">
+		<aui:input name="selectedEntryIds" type="hidden" />
+		<aui:input name="selectAll" type="hidden" value="<%= false %>" />
+
 		<div class="user-notifications">
 			<liferay-ui:search-container
 				rowChecker="<%= actionRequired ? null : new UserNotificationEventRowChecker(renderResponse) %>"
@@ -172,6 +178,12 @@ if (Validator.isNotNull(backURL)) {
 
 							notificationContainer.remove();
 						}
+
+						if (currentTarget.siblings()) {
+							currentTarget.siblings().remove();
+						}
+
+						currentTarget.remove();
 					}
 					else {
 						Liferay.Util.openToast({

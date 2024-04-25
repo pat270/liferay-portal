@@ -1,6 +1,7 @@
 import Card from 'shared/components/Card';
 import ClayButton from '@clayui/button';
 import ClayIcon from '@clayui/icon';
+import ClayLink from '@clayui/link';
 import CrossPageSelect from 'shared/hoc/CrossPageSelect';
 import Nav from 'shared/components/Nav';
 import NoResultsDisplay from 'shared/components/NoResultsDisplay';
@@ -34,7 +35,8 @@ import {Routes, toRoute} from 'shared/util/router';
 import {Sizes} from 'shared/util/constants';
 import {useMutation, useQuery} from '@apollo/react-hooks';
 import {useParams} from 'react-router-dom';
-import {useQueryPagination, useQueryRangeSelectors} from 'shared/hooks';
+import {useQueryPagination} from 'shared/hooks/useQueryPagination';
+import {useQueryRangeSelectors} from 'shared/hooks/useQueryRangeSelectors';
 import {
 	useSelectionContext,
 	withSelectionProvider
@@ -234,7 +236,7 @@ const EventAnalysisListCard: React.FC<PropsFromRedux> = ({
 									'create-an-analysis-to-get-started'
 								)}
 
-								<a
+								<ClayLink
 									className='d-block'
 									href={
 										URLConstants.EventAnalysisDocumentationLink
@@ -245,7 +247,7 @@ const EventAnalysisListCard: React.FC<PropsFromRedux> = ({
 									{Liferay.Language.get(
 										'access-our-documentation-to-learn-more'
 									)}
-								</a>
+								</ClayLink>
 							</>
 						}
 						icon={{

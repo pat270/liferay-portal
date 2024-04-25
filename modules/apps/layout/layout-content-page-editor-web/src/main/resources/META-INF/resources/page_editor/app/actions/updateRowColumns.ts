@@ -5,25 +5,21 @@
 
 import {UPDATE_ROW_COLUMNS} from './types';
 
-import type {LayoutData} from '../../types/LayoutData';
-import type {PageContent} from './addItem';
+import type {LayoutData} from '../../types/layout_data/LayoutData';
 
 export default function updateRowColumns({
 	itemId,
 	layoutData,
 	numberOfColumns,
-	pageContents,
 }: {
 	itemId: string;
 	layoutData: LayoutData;
 	numberOfColumns: number;
-	pageContents: PageContent[];
 }) {
 	return {
 		itemId,
 		layoutData,
 		numberOfColumns,
-		pageContents,
 		type: UPDATE_ROW_COLUMNS,
 	} as const;
 }

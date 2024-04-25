@@ -25,8 +25,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -218,6 +216,8 @@ public abstract class BaseOrderAccountGroupResourceTestCase {
 		OrderAccountGroup orderAccountGroup =
 			testGraphQLGetOrderRuleAccountGroupAccountGroup_addOrderAccountGroup();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				orderAccountGroup,
@@ -236,6 +236,30 @@ public abstract class BaseOrderAccountGroupResourceTestCase {
 								getGraphQLFields())),
 						"JSONObject/data",
 						"Object/orderRuleAccountGroupAccountGroup"))));
+
+		// Using the namespace headlessCommerceAdminOrder_v1_0
+
+		Assert.assertTrue(
+			equals(
+				orderAccountGroup,
+				OrderAccountGroupSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminOrder_v1_0",
+								new GraphQLField(
+									"orderRuleAccountGroupAccountGroup",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"orderRuleAccountGroupId",
+												testGraphQLGetOrderRuleAccountGroupAccountGroup_getOrderRuleAccountGroupId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminOrder_v1_0",
+						"Object/orderRuleAccountGroupAccountGroup"))));
 	}
 
 	protected Long
@@ -252,6 +276,8 @@ public abstract class BaseOrderAccountGroupResourceTestCase {
 
 		Long irrelevantOrderRuleAccountGroupId = RandomTestUtil.randomLong();
 
+		// No namespace
+
 		Assert.assertEquals(
 			"Not Found",
 			JSONUtil.getValueAsString(
@@ -266,6 +292,27 @@ public abstract class BaseOrderAccountGroupResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminOrder_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminOrder_v1_0",
+						new GraphQLField(
+							"orderRuleAccountGroupAccountGroup",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"orderRuleAccountGroupId",
+										irrelevantOrderRuleAccountGroupId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -560,6 +607,10 @@ public abstract class BaseOrderAccountGroupResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -744,9 +795,9 @@ public abstract class BaseOrderAccountGroupResourceTestCase {
 	}
 
 	protected OrderAccountGroupResource orderAccountGroupResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

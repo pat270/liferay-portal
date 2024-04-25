@@ -27,13 +27,12 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
@@ -201,7 +200,7 @@ public abstract class BaseRelatedProductResourceTestCase {
 					externalReferenceCode, RandomTestUtil.randomString(),
 					Pagination.of(1, 10));
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if (irrelevantExternalReferenceCode != null) {
 			RelatedProduct irrelevantRelatedProduct =
@@ -213,12 +212,12 @@ public abstract class BaseRelatedProductResourceTestCase {
 				relatedProductResource.
 					getProductByExternalReferenceCodeRelatedProductsPage(
 						irrelevantExternalReferenceCode, null,
-						Pagination.of(1, 2));
+						Pagination.of(1, (int)totalCount + 1));
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantRelatedProduct),
+			assertContains(
+				irrelevantRelatedProduct,
 				(List<RelatedProduct>)page.getItems());
 			assertValid(
 				page,
@@ -239,11 +238,10 @@ public abstract class BaseRelatedProductResourceTestCase {
 				getProductByExternalReferenceCodeRelatedProductsPage(
 					externalReferenceCode, null, Pagination.of(1, 10));
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(relatedProduct1, relatedProduct2),
-			(List<RelatedProduct>)page.getItems());
+		assertContains(relatedProduct1, (List<RelatedProduct>)page.getItems());
+		assertContains(relatedProduct2, (List<RelatedProduct>)page.getItems());
 		assertValid(
 			page,
 			testGetProductByExternalReferenceCodeRelatedProductsPage_getExpectedActions(
@@ -271,6 +269,14 @@ public abstract class BaseRelatedProductResourceTestCase {
 		String externalReferenceCode =
 			testGetProductByExternalReferenceCodeRelatedProductsPage_getExternalReferenceCode();
 
+		Page<RelatedProduct> relatedProductPage =
+			relatedProductResource.
+				getProductByExternalReferenceCodeRelatedProductsPage(
+					externalReferenceCode, null, null);
+
+		int totalCount = GetterUtil.getInteger(
+			relatedProductPage.getTotalCount());
+
 		RelatedProduct relatedProduct1 =
 			testGetProductByExternalReferenceCodeRelatedProductsPage_addRelatedProduct(
 				externalReferenceCode, randomRelatedProduct());
@@ -283,38 +289,87 @@ public abstract class BaseRelatedProductResourceTestCase {
 			testGetProductByExternalReferenceCodeRelatedProductsPage_addRelatedProduct(
 				externalReferenceCode, randomRelatedProduct());
 
-		Page<RelatedProduct> page1 =
-			relatedProductResource.
-				getProductByExternalReferenceCodeRelatedProductsPage(
-					externalReferenceCode, null, Pagination.of(1, 2));
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<RelatedProduct> relatedProducts1 =
-			(List<RelatedProduct>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			relatedProducts1.toString(), 2, relatedProducts1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<RelatedProduct> page1 =
+				relatedProductResource.
+					getProductByExternalReferenceCodeRelatedProductsPage(
+						externalReferenceCode, null,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+							pageSizeLimit));
 
-		Page<RelatedProduct> page2 =
-			relatedProductResource.
-				getProductByExternalReferenceCodeRelatedProductsPage(
-					externalReferenceCode, null, Pagination.of(2, 2));
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(3, page2.getTotalCount());
+			assertContains(
+				relatedProduct1, (List<RelatedProduct>)page1.getItems());
 
-		List<RelatedProduct> relatedProducts2 =
-			(List<RelatedProduct>)page2.getItems();
+			Page<RelatedProduct> page2 =
+				relatedProductResource.
+					getProductByExternalReferenceCodeRelatedProductsPage(
+						externalReferenceCode, null,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+							pageSizeLimit));
 
-		Assert.assertEquals(
-			relatedProducts2.toString(), 1, relatedProducts2.size());
+			assertContains(
+				relatedProduct2, (List<RelatedProduct>)page2.getItems());
 
-		Page<RelatedProduct> page3 =
-			relatedProductResource.
-				getProductByExternalReferenceCodeRelatedProductsPage(
-					externalReferenceCode, null, Pagination.of(1, 3));
+			Page<RelatedProduct> page3 =
+				relatedProductResource.
+					getProductByExternalReferenceCodeRelatedProductsPage(
+						externalReferenceCode, null,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+							pageSizeLimit));
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(relatedProduct1, relatedProduct2, relatedProduct3),
-			(List<RelatedProduct>)page3.getItems());
+			assertContains(
+				relatedProduct3, (List<RelatedProduct>)page3.getItems());
+		}
+		else {
+			Page<RelatedProduct> page1 =
+				relatedProductResource.
+					getProductByExternalReferenceCodeRelatedProductsPage(
+						externalReferenceCode, null,
+						Pagination.of(1, totalCount + 2));
+
+			List<RelatedProduct> relatedProducts1 =
+				(List<RelatedProduct>)page1.getItems();
+
+			Assert.assertEquals(
+				relatedProducts1.toString(), totalCount + 2,
+				relatedProducts1.size());
+
+			Page<RelatedProduct> page2 =
+				relatedProductResource.
+					getProductByExternalReferenceCodeRelatedProductsPage(
+						externalReferenceCode, null,
+						Pagination.of(2, totalCount + 2));
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<RelatedProduct> relatedProducts2 =
+				(List<RelatedProduct>)page2.getItems();
+
+			Assert.assertEquals(
+				relatedProducts2.toString(), 1, relatedProducts2.size());
+
+			Page<RelatedProduct> page3 =
+				relatedProductResource.
+					getProductByExternalReferenceCodeRelatedProductsPage(
+						externalReferenceCode, null,
+						Pagination.of(1, (int)totalCount + 3));
+
+			assertContains(
+				relatedProduct1, (List<RelatedProduct>)page3.getItems());
+			assertContains(
+				relatedProduct2, (List<RelatedProduct>)page3.getItems());
+			assertContains(
+				relatedProduct3, (List<RelatedProduct>)page3.getItems());
+		}
 	}
 
 	protected RelatedProduct
@@ -374,7 +429,7 @@ public abstract class BaseRelatedProductResourceTestCase {
 			relatedProductResource.getProductIdRelatedProductsPage(
 				id, RandomTestUtil.randomString(), Pagination.of(1, 10));
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if (irrelevantId != null) {
 			RelatedProduct irrelevantRelatedProduct =
@@ -382,12 +437,12 @@ public abstract class BaseRelatedProductResourceTestCase {
 					irrelevantId, randomIrrelevantRelatedProduct());
 
 			page = relatedProductResource.getProductIdRelatedProductsPage(
-				irrelevantId, null, Pagination.of(1, 2));
+				irrelevantId, null, Pagination.of(1, (int)totalCount + 1));
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantRelatedProduct),
+			assertContains(
+				irrelevantRelatedProduct,
 				(List<RelatedProduct>)page.getItems());
 			assertValid(
 				page,
@@ -406,11 +461,10 @@ public abstract class BaseRelatedProductResourceTestCase {
 		page = relatedProductResource.getProductIdRelatedProductsPage(
 			id, null, Pagination.of(1, 10));
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(relatedProduct1, relatedProduct2),
-			(List<RelatedProduct>)page.getItems());
+		assertContains(relatedProduct1, (List<RelatedProduct>)page.getItems());
+		assertContains(relatedProduct2, (List<RelatedProduct>)page.getItems());
 		assertValid(
 			page, testGetProductIdRelatedProductsPage_getExpectedActions(id));
 
@@ -434,6 +488,13 @@ public abstract class BaseRelatedProductResourceTestCase {
 
 		Long id = testGetProductIdRelatedProductsPage_getId();
 
+		Page<RelatedProduct> relatedProductPage =
+			relatedProductResource.getProductIdRelatedProductsPage(
+				id, null, null);
+
+		int totalCount = GetterUtil.getInteger(
+			relatedProductPage.getTotalCount());
+
 		RelatedProduct relatedProduct1 =
 			testGetProductIdRelatedProductsPage_addRelatedProduct(
 				id, randomRelatedProduct());
@@ -446,35 +507,78 @@ public abstract class BaseRelatedProductResourceTestCase {
 			testGetProductIdRelatedProductsPage_addRelatedProduct(
 				id, randomRelatedProduct());
 
-		Page<RelatedProduct> page1 =
-			relatedProductResource.getProductIdRelatedProductsPage(
-				id, null, Pagination.of(1, 2));
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<RelatedProduct> relatedProducts1 =
-			(List<RelatedProduct>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			relatedProducts1.toString(), 2, relatedProducts1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<RelatedProduct> page1 =
+				relatedProductResource.getProductIdRelatedProductsPage(
+					id, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+						pageSizeLimit));
 
-		Page<RelatedProduct> page2 =
-			relatedProductResource.getProductIdRelatedProductsPage(
-				id, null, Pagination.of(2, 2));
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(3, page2.getTotalCount());
+			assertContains(
+				relatedProduct1, (List<RelatedProduct>)page1.getItems());
 
-		List<RelatedProduct> relatedProducts2 =
-			(List<RelatedProduct>)page2.getItems();
+			Page<RelatedProduct> page2 =
+				relatedProductResource.getProductIdRelatedProductsPage(
+					id, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+						pageSizeLimit));
 
-		Assert.assertEquals(
-			relatedProducts2.toString(), 1, relatedProducts2.size());
+			assertContains(
+				relatedProduct2, (List<RelatedProduct>)page2.getItems());
 
-		Page<RelatedProduct> page3 =
-			relatedProductResource.getProductIdRelatedProductsPage(
-				id, null, Pagination.of(1, 3));
+			Page<RelatedProduct> page3 =
+				relatedProductResource.getProductIdRelatedProductsPage(
+					id, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+						pageSizeLimit));
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(relatedProduct1, relatedProduct2, relatedProduct3),
-			(List<RelatedProduct>)page3.getItems());
+			assertContains(
+				relatedProduct3, (List<RelatedProduct>)page3.getItems());
+		}
+		else {
+			Page<RelatedProduct> page1 =
+				relatedProductResource.getProductIdRelatedProductsPage(
+					id, null, Pagination.of(1, totalCount + 2));
+
+			List<RelatedProduct> relatedProducts1 =
+				(List<RelatedProduct>)page1.getItems();
+
+			Assert.assertEquals(
+				relatedProducts1.toString(), totalCount + 2,
+				relatedProducts1.size());
+
+			Page<RelatedProduct> page2 =
+				relatedProductResource.getProductIdRelatedProductsPage(
+					id, null, Pagination.of(2, totalCount + 2));
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<RelatedProduct> relatedProducts2 =
+				(List<RelatedProduct>)page2.getItems();
+
+			Assert.assertEquals(
+				relatedProducts2.toString(), 1, relatedProducts2.size());
+
+			Page<RelatedProduct> page3 =
+				relatedProductResource.getProductIdRelatedProductsPage(
+					id, null, Pagination.of(1, (int)totalCount + 3));
+
+			assertContains(
+				relatedProduct1, (List<RelatedProduct>)page3.getItems());
+			assertContains(
+				relatedProduct2, (List<RelatedProduct>)page3.getItems());
+			assertContains(
+				relatedProduct3, (List<RelatedProduct>)page3.getItems());
+		}
 	}
 
 	protected RelatedProduct
@@ -550,7 +654,10 @@ public abstract class BaseRelatedProductResourceTestCase {
 
 	@Test
 	public void testGraphQLDeleteRelatedProduct() throws Exception {
-		RelatedProduct relatedProduct =
+
+		// No namespace
+
+		RelatedProduct relatedProduct1 =
 			testGraphQLDeleteRelatedProduct_addRelatedProduct();
 
 		Assert.assertTrue(
@@ -560,23 +667,61 @@ public abstract class BaseRelatedProductResourceTestCase {
 						"deleteRelatedProduct",
 						new HashMap<String, Object>() {
 							{
-								put("id", relatedProduct.getId());
+								put("id", relatedProduct1.getId());
 							}
 						})),
 				"JSONObject/data", "Object/deleteRelatedProduct"));
-		JSONArray errorsJSONArray = JSONUtil.getValueAsJSONArray(
+
+		JSONArray errorsJSONArray1 = JSONUtil.getValueAsJSONArray(
 			invokeGraphQLQuery(
 				new GraphQLField(
 					"relatedProduct",
 					new HashMap<String, Object>() {
 						{
-							put("id", relatedProduct.getId());
+							put("id", relatedProduct1.getId());
 						}
 					},
 					new GraphQLField("id"))),
 			"JSONArray/errors");
 
-		Assert.assertTrue(errorsJSONArray.length() > 0);
+		Assert.assertTrue(errorsJSONArray1.length() > 0);
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		RelatedProduct relatedProduct2 =
+			testGraphQLDeleteRelatedProduct_addRelatedProduct();
+
+		Assert.assertTrue(
+			JSONUtil.getValueAsBoolean(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0",
+						new GraphQLField(
+							"deleteRelatedProduct",
+							new HashMap<String, Object>() {
+								{
+									put("id", relatedProduct2.getId());
+								}
+							}))),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminCatalog_v1_0",
+				"Object/deleteRelatedProduct"));
+
+		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminCatalog_v1_0",
+					new GraphQLField(
+						"relatedProduct",
+						new HashMap<String, Object>() {
+							{
+								put("id", relatedProduct2.getId());
+							}
+						},
+						new GraphQLField("id")))),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray2.length() > 0);
 	}
 
 	protected RelatedProduct testGraphQLDeleteRelatedProduct_addRelatedProduct()
@@ -610,6 +755,8 @@ public abstract class BaseRelatedProductResourceTestCase {
 		RelatedProduct relatedProduct =
 			testGraphQLGetRelatedProduct_addRelatedProduct();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				relatedProduct,
@@ -625,11 +772,35 @@ public abstract class BaseRelatedProductResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/relatedProduct"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		Assert.assertTrue(
+			equals(
+				relatedProduct,
+				RelatedProductSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminCatalog_v1_0",
+								new GraphQLField(
+									"relatedProduct",
+									new HashMap<String, Object>() {
+										{
+											put("id", relatedProduct.getId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminCatalog_v1_0",
+						"Object/relatedProduct"))));
 	}
 
 	@Test
 	public void testGraphQLGetRelatedProductNotFound() throws Exception {
 		Long irrelevantId = RandomTestUtil.randomLong();
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -643,6 +814,25 @@ public abstract class BaseRelatedProductResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0",
+						new GraphQLField(
+							"relatedProduct",
+							new HashMap<String, Object>() {
+								{
+									put("id", irrelevantId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -987,6 +1177,10 @@ public abstract class BaseRelatedProductResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -1227,9 +1421,9 @@ public abstract class BaseRelatedProductResourceTestCase {
 	}
 
 	protected RelatedProductResource relatedProductResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

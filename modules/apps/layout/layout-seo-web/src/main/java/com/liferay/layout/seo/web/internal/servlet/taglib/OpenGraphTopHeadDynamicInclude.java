@@ -9,11 +9,11 @@ import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.document.library.kernel.service.DLFileEntryMetadataLocalService;
 import com.liferay.document.library.util.DLURLHelper;
 import com.liferay.dynamic.data.mapping.model.Value;
+import com.liferay.dynamic.data.mapping.service.DDMFieldLocalService;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.dynamic.data.mapping.storage.DDMStorageEngineManager;
-import com.liferay.dynamic.data.mapping.storage.StorageEngine;
 import com.liferay.info.constants.InfoDisplayWebKeys;
 import com.liferay.info.item.InfoItemDetails;
 import com.liferay.info.item.InfoItemFieldValues;
@@ -29,6 +29,7 @@ import com.liferay.layout.seo.template.LayoutSEOTemplateProcessor;
 import com.liferay.layout.seo.web.internal.configuration.LayoutSEODynamicRenderingConfiguration;
 import com.liferay.layout.seo.web.internal.util.OpenGraphImageProvider;
 import com.liferay.layout.seo.web.internal.util.TitleProvider;
+import com.liferay.layout.utility.page.kernel.LayoutUtilityPageEntryTypeUtil;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -43,6 +44,7 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.KeyValuePair;
+import com.liferay.portal.kernel.util.ListMergeable;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
@@ -83,6 +85,15 @@ public class OpenGraphTopHeadDynamicInclude extends BaseDynamicInclude {
 		throws IOException {
 
 		try {
+			String layoutUtilityPageEntryType =
+				LayoutUtilityPageEntryTypeUtil.
+					getStatusLayoutUtilityPageEntryType(
+						httpServletResponse.getStatus());
+
+			if (Validator.isNotNull(layoutUtilityPageEntryType)) {
+				return;
+			}
+
 			ThemeDisplay themeDisplay =
 				(ThemeDisplay)httpServletRequest.getAttribute(
 					WebKeys.THEME_DISPLAY);
@@ -201,6 +212,31 @@ public class OpenGraphTopHeadDynamicInclude extends BaseDynamicInclude {
 				}
 			}
 
+			ListMergeable<String> pageDescriptionListMergeable =
+				(ListMergeable<String>)httpServletRequest.getAttribute(
+					WebKeys.PAGE_DESCRIPTION);
+
+			if (!layout.isTypeAssetDisplay() &&
+				(pageDescriptionListMergeable != null)) {
+
+				String pageDescription =
+					pageDescriptionListMergeable.mergeToString(
+						StringPool.SPACE);
+
+				if (Validator.isNotNull(description) &&
+					Validator.isNotNull(pageDescription)) {
+
+					description = StringBundler.concat(
+						pageDescription, StringPool.PERIOD, StringPool.SPACE,
+						description);
+				}
+				else if (Validator.isNull(description) &&
+						 Validator.isNotNull(pageDescription)) {
+
+					description = pageDescription;
+				}
+			}
+
 			printWriter.println(
 				_getOpenGraphTag(
 					"og:description",
@@ -255,7 +291,7 @@ public class OpenGraphTopHeadDynamicInclude extends BaseDynamicInclude {
 
 			if (openGraphImage != null) {
 				printWriter.println(
-					_getOpenGraphTag("og:image", openGraphImage.getUrl()));
+					_getOpenGraphTag("og:image", openGraphImage.getURL()));
 
 				String alt = openGraphImage.getAlt();
 
@@ -266,7 +302,7 @@ public class OpenGraphTopHeadDynamicInclude extends BaseDynamicInclude {
 				if (themeDisplay.isSecure()) {
 					printWriter.println(
 						_getOpenGraphTag(
-							"og:image:secure_url", openGraphImage.getUrl()));
+							"og:image:secure_url", openGraphImage.getURL()));
 				}
 
 				String type = openGraphImage.getMimeType();
@@ -277,7 +313,7 @@ public class OpenGraphTopHeadDynamicInclude extends BaseDynamicInclude {
 				}
 
 				printWriter.println(
-					_getOpenGraphTag("og:image:url", openGraphImage.getUrl()));
+					_getOpenGraphTag("og:image:url", openGraphImage.getURL()));
 
 				for (KeyValuePair keyValuePair :
 						openGraphImage.getMetadataTagKeyValuePairs()) {
@@ -308,10 +344,9 @@ public class OpenGraphTopHeadDynamicInclude extends BaseDynamicInclude {
 			ConfigurableUtil.createConfigurable(
 				LayoutSEODynamicRenderingConfiguration.class, properties);
 		_openGraphImageProvider = new OpenGraphImageProvider(
-			_ddmStructureLocalService, _dlAppLocalService,
-			_dlFileEntryMetadataLocalService, _dlurlHelper,
-			_layoutSEOSiteLocalService, _layoutSEOTemplateProcessor, _portal,
-			_storageEngine);
+			_ddmFieldLocalService, _ddmStructureLocalService,
+			_dlAppLocalService, _dlFileEntryMetadataLocalService, _dlurlHelper,
+			_layoutSEOSiteLocalService, _layoutSEOTemplateProcessor, _portal);
 		_titleProvider = new TitleProvider(_layoutSEOLinkManager);
 	}
 
@@ -448,6 +483,9 @@ public class OpenGraphTopHeadDynamicInclude extends BaseDynamicInclude {
 	}
 
 	@Reference
+	private DDMFieldLocalService _ddmFieldLocalService;
+
+	@Reference
 	private DDMStorageEngineManager _ddmStorageEngineManager;
 
 	@Reference
@@ -490,9 +528,6 @@ public class OpenGraphTopHeadDynamicInclude extends BaseDynamicInclude {
 
 	@Reference
 	private Portal _portal;
-
-	@Reference
-	private StorageEngine _storageEngine;
 
 	private volatile TitleProvider _titleProvider;
 

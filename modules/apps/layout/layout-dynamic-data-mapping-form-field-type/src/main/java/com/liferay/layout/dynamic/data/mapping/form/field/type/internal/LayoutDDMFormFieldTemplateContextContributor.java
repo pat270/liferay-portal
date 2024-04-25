@@ -41,10 +41,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	property = "ddm.form.field.type.name=" + LayoutDDMFormFieldTypeConstants.LINK_TO_LAYOUT,
-	service = {
-		DDMFormFieldTemplateContextContributor.class,
-		LayoutDDMFormFieldTemplateContextContributor.class
-	}
+	service = DDMFormFieldTemplateContextContributor.class
 )
 public class LayoutDDMFormFieldTemplateContextContributor
 	implements DDMFormFieldTemplateContextContributor {
@@ -105,9 +102,6 @@ public class LayoutDDMFormFieldTemplateContextContributor
 
 		layoutItemSelectorCriterion.setDesiredItemSelectorReturnTypes(
 			new UUIDItemSelectorReturnType());
-		layoutItemSelectorCriterion.setShowHiddenPages(true);
-		layoutItemSelectorCriterion.setShowPrivatePages(true);
-		layoutItemSelectorCriterion.setShowPublicPages(true);
 
 		return String.valueOf(
 			_itemSelector.getItemSelectorURL(

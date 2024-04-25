@@ -8,7 +8,6 @@ package com.liferay.document.library.app.service.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
-import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.document.library.kernel.util.DLUtil;
 import com.liferay.document.library.kernel.util.comparator.RepositoryModelReadCountComparator;
 import com.liferay.document.library.kernel.util.comparator.RepositoryModelTitleComparator;
@@ -60,23 +59,23 @@ public class DLAppServiceWhenViewingFolderContentsTest
 		ServiceContext serviceContext =
 			ServiceContextTestUtil.getServiceContext(group.getGroupId());
 
-		_dlAppService.addFileEntry(
+		dlAppService.addFileEntry(
 			null, group.getGroupId(), parentFolder.getFolderId(),
 			StringUtil.randomString(), ContentTypes.APPLICATION_OCTET_STREAM,
 			StringUtil.randomString(), null, StringUtil.randomString(),
-			StringPool.BLANK, (byte[])null, null, null, serviceContext);
+			StringPool.BLANK, (byte[])null, null, null, null, serviceContext);
 
 		serviceContext.setWorkflowAction(WorkflowConstants.ACTION_SAVE_DRAFT);
 
-		_dlAppService.addFileEntry(
+		dlAppService.addFileEntry(
 			null, group.getGroupId(), parentFolder.getFolderId(),
 			StringUtil.randomString(), ContentTypes.APPLICATION_OCTET_STREAM,
 			StringUtil.randomString(), null, StringUtil.randomString(),
-			StringPool.BLANK, (byte[])null, null, null, serviceContext);
+			StringPool.BLANK, (byte[])null, null, null, null, serviceContext);
 
 		Assert.assertEquals(
 			2,
-			_dlAppService.getFoldersAndFileEntriesAndFileShortcutsCount(
+			dlAppService.getFoldersAndFileEntriesAndFileShortcutsCount(
 				group.getGroupId(), parentFolder.getFolderId(),
 				WorkflowConstants.STATUS_APPROVED, false));
 	}
@@ -86,19 +85,19 @@ public class DLAppServiceWhenViewingFolderContentsTest
 		ServiceContext serviceContext =
 			ServiceContextTestUtil.getServiceContext(group.getGroupId());
 
-		_dlAppService.addFileEntry(
+		dlAppService.addFileEntry(
 			null, group.getGroupId(), parentFolder.getFolderId(),
 			StringUtil.randomString(), ContentTypes.APPLICATION_OCTET_STREAM,
 			StringUtil.randomString(), null, StringUtil.randomString(),
-			StringPool.BLANK, (byte[])null, null, null, serviceContext);
+			StringPool.BLANK, (byte[])null, null, null, null, serviceContext);
 
 		serviceContext.setWorkflowAction(WorkflowConstants.ACTION_SAVE_DRAFT);
 
-		_dlAppService.addFileEntry(
+		dlAppService.addFileEntry(
 			null, group.getGroupId(), parentFolder.getFolderId(),
 			StringUtil.randomString(), ContentTypes.APPLICATION_OCTET_STREAM,
 			StringUtil.randomString(), null, StringUtil.randomString(),
-			StringPool.BLANK, (byte[])null, null, null, serviceContext);
+			StringPool.BLANK, (byte[])null, null, null, null, serviceContext);
 
 		User user = UserTestUtil.addGroupUser(group, "User");
 
@@ -107,7 +106,7 @@ public class DLAppServiceWhenViewingFolderContentsTest
 
 			Assert.assertEquals(
 				1,
-				_dlAppService.getFoldersAndFileEntriesAndFileShortcutsCount(
+				dlAppService.getFoldersAndFileEntriesAndFileShortcutsCount(
 					group.getGroupId(), parentFolder.getFolderId(),
 					WorkflowConstants.STATUS_APPROVED, false));
 		}
@@ -123,26 +122,26 @@ public class DLAppServiceWhenViewingFolderContentsTest
 		ServiceContext serviceContext =
 			ServiceContextTestUtil.getServiceContext(group.getGroupId());
 
-		Folder targetGroupFolder = _dlAppService.addFolder(
+		Folder targetGroupFolder = dlAppService.addFolder(
 			null, targetGroup.getGroupId(),
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			ServiceContextTestUtil.getServiceContext(targetGroup.getGroupId()));
 
-		_dlAppService.addFileEntry(
+		dlAppService.addFileEntry(
 			null, targetGroup.getGroupId(), targetGroupFolder.getFolderId(),
 			StringUtil.randomString() + ".jpg", ContentTypes.IMAGE_JPEG,
 			"title1", null, StringUtil.randomString(), StringPool.BLANK,
-			(byte[])null, null, null, serviceContext);
-		_dlAppService.addFileEntry(
+			(byte[])null, null, null, null, serviceContext);
+		dlAppService.addFileEntry(
 			null, targetGroup.getGroupId(), targetGroupFolder.getFolderId(),
 			StringUtil.randomString(), ContentTypes.APPLICATION_OCTET_STREAM,
 			"title2", null, StringUtil.randomString(), StringPool.BLANK,
-			(byte[])null, null, null, serviceContext);
+			(byte[])null, null, null, null, serviceContext);
 
 		Assert.assertEquals(
 			0,
-			_dlAppService.getFoldersAndFileEntriesAndFileShortcutsCount(
+			dlAppService.getFoldersAndFileEntriesAndFileShortcutsCount(
 				group.getGroupId(), targetGroupFolder.getFolderId(),
 				WorkflowConstants.STATUS_APPROVED,
 				ArrayUtil.toStringArray(DLUtil.getAllMediaGalleryMimeTypes()),
@@ -154,19 +153,19 @@ public class DLAppServiceWhenViewingFolderContentsTest
 		ServiceContext serviceContext =
 			ServiceContextTestUtil.getServiceContext(group.getGroupId());
 
-		_dlAppService.addFileEntry(
+		dlAppService.addFileEntry(
 			null, group.getGroupId(), parentFolder.getFolderId(),
 			StringUtil.randomString(), ContentTypes.APPLICATION_OCTET_STREAM,
 			StringUtil.randomString(), null, StringUtil.randomString(),
-			StringPool.BLANK, (byte[])null, null, null, serviceContext);
+			StringPool.BLANK, (byte[])null, null, null, null, serviceContext);
 
 		serviceContext.setWorkflowAction(WorkflowConstants.ACTION_SAVE_DRAFT);
 
-		_dlAppService.addFileEntry(
+		dlAppService.addFileEntry(
 			null, group.getGroupId(), parentFolder.getFolderId(),
 			StringUtil.randomString(), ContentTypes.APPLICATION_OCTET_STREAM,
 			StringUtil.randomString(), null, StringUtil.randomString(),
-			StringPool.BLANK, (byte[])null, null, null, serviceContext);
+			StringPool.BLANK, (byte[])null, null, null, null, serviceContext);
 
 		User user = UserTestUtil.addGroupUser(group, "User");
 
@@ -174,7 +173,7 @@ public class DLAppServiceWhenViewingFolderContentsTest
 				user)) {
 
 			List<Object> foldersAndFileEntriesAndFileShortcuts =
-				_dlAppService.getFoldersAndFileEntriesAndFileShortcuts(
+				dlAppService.getFoldersAndFileEntriesAndFileShortcuts(
 					group.getGroupId(), parentFolder.getFolderId(),
 					WorkflowConstants.STATUS_APPROVED, false, QueryUtil.ALL_POS,
 					QueryUtil.ALL_POS);
@@ -193,25 +192,25 @@ public class DLAppServiceWhenViewingFolderContentsTest
 		ServiceContext serviceContext =
 			ServiceContextTestUtil.getServiceContext(group.getGroupId());
 
-		_dlAppService.addFileEntry(
+		dlAppService.addFileEntry(
 			null, group.getGroupId(), parentFolder.getFolderId(),
 			StringUtil.randomString() + ".jpg", ContentTypes.IMAGE_JPEG,
 			"title1", null, StringUtil.randomString(), StringPool.BLANK,
-			(byte[])null, null, null, serviceContext);
-		_dlAppService.addFileEntry(
+			(byte[])null, null, null, null, serviceContext);
+		dlAppService.addFileEntry(
 			null, group.getGroupId(), parentFolder.getFolderId(),
 			StringUtil.randomString(), ContentTypes.APPLICATION_OCTET_STREAM,
 			"title2", null, StringUtil.randomString(), StringPool.BLANK,
-			(byte[])null, null, null, serviceContext);
+			(byte[])null, null, null, null, serviceContext);
 
-		_dlAppService.addFolder(
+		dlAppService.addFolder(
 			null, group.getGroupId(), parentFolder.getFolderId(),
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			ServiceContextTestUtil.getServiceContext(group.getGroupId()));
 
 		Assert.assertEquals(
 			2,
-			_dlAppService.getFoldersAndFileEntriesAndFileShortcutsCount(
+			dlAppService.getFoldersAndFileEntriesAndFileShortcutsCount(
 				group.getGroupId(), parentFolder.getFolderId(),
 				WorkflowConstants.STATUS_APPROVED,
 				ArrayUtil.toStringArray(DLUtil.getAllMediaGalleryMimeTypes()),
@@ -223,22 +222,22 @@ public class DLAppServiceWhenViewingFolderContentsTest
 		ServiceContext serviceContext =
 			ServiceContextTestUtil.getServiceContext(group.getGroupId());
 
-		_dlAppService.addFileEntry(
+		dlAppService.addFileEntry(
 			null, group.getGroupId(), parentFolder.getFolderId(),
 			StringUtil.randomString(), ContentTypes.APPLICATION_OCTET_STREAM,
 			StringUtil.randomString(), null, StringUtil.randomString(),
-			StringPool.BLANK, (byte[])null, null, null, serviceContext);
+			StringPool.BLANK, (byte[])null, null, null, null, serviceContext);
 
 		serviceContext.setWorkflowAction(WorkflowConstants.ACTION_SAVE_DRAFT);
 
-		_dlAppService.addFileEntry(
+		dlAppService.addFileEntry(
 			null, group.getGroupId(), parentFolder.getFolderId(),
 			StringUtil.randomString(), ContentTypes.APPLICATION_OCTET_STREAM,
 			StringUtil.randomString(), null, StringUtil.randomString(),
-			StringPool.BLANK, (byte[])null, null, null, serviceContext);
+			StringPool.BLANK, (byte[])null, null, null, null, serviceContext);
 
 		List<Object> foldersAndFileEntriesAndFileShortcuts =
-			_dlAppService.getFoldersAndFileEntriesAndFileShortcuts(
+			dlAppService.getFoldersAndFileEntriesAndFileShortcuts(
 				group.getGroupId(), parentFolder.getFolderId(),
 				WorkflowConstants.STATUS_APPROVED, false, QueryUtil.ALL_POS,
 				QueryUtil.ALL_POS);
@@ -255,33 +254,33 @@ public class DLAppServiceWhenViewingFolderContentsTest
 
 		List<FileEntry> expectedFileEntries = new ArrayList<>();
 
-		FileEntry fileEntry1 = _dlAppService.addFileEntry(
+		FileEntry fileEntry1 = dlAppService.addFileEntry(
 			null, group.getGroupId(), parentFolder.getFolderId(),
 			StringUtil.randomString(), ContentTypes.APPLICATION_OCTET_STREAM,
 			"title1", null, StringUtil.randomString(), StringPool.BLANK,
-			(byte[])null, null, null, serviceContext);
+			(byte[])null, null, null, null, serviceContext);
 
 		_viewCountManager.incrementViewCount(
 			fileEntry1.getCompanyId(),
 			_classNameLocalService.getClassNameId(DLFileEntry.class),
 			fileEntry1.getFileEntryId(), 2);
 
-		FileEntry fileEntry2 = _dlAppService.addFileEntry(
+		FileEntry fileEntry2 = dlAppService.addFileEntry(
 			null, group.getGroupId(), parentFolder.getFolderId(),
 			StringUtil.randomString(), ContentTypes.APPLICATION_OCTET_STREAM,
 			"title2", null, StringUtil.randomString(), StringPool.BLANK,
-			(byte[])null, null, null, serviceContext);
+			(byte[])null, null, null, null, serviceContext);
 
 		_viewCountManager.incrementViewCount(
 			fileEntry2.getCompanyId(),
 			_classNameLocalService.getClassNameId(DLFileEntry.class),
 			fileEntry2.getFileEntryId(), 1);
 
-		FileEntry fileEntry3 = _dlAppService.addFileEntry(
+		FileEntry fileEntry3 = dlAppService.addFileEntry(
 			null, group.getGroupId(), parentFolder.getFolderId(),
 			StringUtil.randomString(), ContentTypes.APPLICATION_OCTET_STREAM,
 			"title3", null, StringUtil.randomString(), StringPool.BLANK,
-			(byte[])null, null, null, serviceContext);
+			(byte[])null, null, null, null, serviceContext);
 
 		_viewCountManager.incrementViewCount(
 			fileEntry3.getCompanyId(),
@@ -293,7 +292,7 @@ public class DLAppServiceWhenViewingFolderContentsTest
 		expectedFileEntries.add(fileEntry3);
 
 		List<Object> actualFoldersAndFileEntriesAndFileShortcuts =
-			_dlAppService.getFoldersAndFileEntriesAndFileShortcuts(
+			dlAppService.getFoldersAndFileEntriesAndFileShortcuts(
 				group.getGroupId(), parentFolder.getFolderId(),
 				WorkflowConstants.STATUS_APPROVED, false, QueryUtil.ALL_POS,
 				QueryUtil.ALL_POS,
@@ -321,30 +320,30 @@ public class DLAppServiceWhenViewingFolderContentsTest
 
 		List<FileEntry> expectedFileEntries = new ArrayList<>();
 
-		FileEntry fileEntry1 = _dlAppService.addFileEntry(
+		FileEntry fileEntry1 = dlAppService.addFileEntry(
 			null, group.getGroupId(), parentFolder.getFolderId(),
 			StringUtil.randomString(), ContentTypes.APPLICATION_OCTET_STREAM,
 			"title2", null, StringUtil.randomString(), StringPool.BLANK,
-			(byte[])null, null, null, serviceContext);
+			(byte[])null, null, null, null, serviceContext);
 
-		FileEntry fileEntry2 = _dlAppService.addFileEntry(
+		FileEntry fileEntry2 = dlAppService.addFileEntry(
 			null, group.getGroupId(), parentFolder.getFolderId(),
 			StringUtil.randomString(), ContentTypes.APPLICATION_OCTET_STREAM,
 			"title1", null, StringUtil.randomString(), StringPool.BLANK,
-			(byte[])null, null, null, serviceContext);
+			(byte[])null, null, null, null, serviceContext);
 
-		FileEntry fileEntry3 = _dlAppService.addFileEntry(
+		FileEntry fileEntry3 = dlAppService.addFileEntry(
 			null, group.getGroupId(), parentFolder.getFolderId(),
 			StringUtil.randomString(), ContentTypes.APPLICATION_OCTET_STREAM,
 			"title3", null, StringUtil.randomString(), StringPool.BLANK,
-			(byte[])null, null, null, serviceContext);
+			(byte[])null, null, null, null, serviceContext);
 
 		expectedFileEntries.add(fileEntry2);
 		expectedFileEntries.add(fileEntry1);
 		expectedFileEntries.add(fileEntry3);
 
 		List<Object> actualFoldersAndFileEntriesAndFileShortcuts =
-			_dlAppService.getFoldersAndFileEntriesAndFileShortcuts(
+			dlAppService.getFoldersAndFileEntriesAndFileShortcuts(
 				group.getGroupId(), parentFolder.getFolderId(),
 				WorkflowConstants.STATUS_APPROVED, false, QueryUtil.ALL_POS,
 				QueryUtil.ALL_POS,
@@ -367,9 +366,6 @@ public class DLAppServiceWhenViewingFolderContentsTest
 
 	@Inject
 	private static ClassNameLocalService _classNameLocalService;
-
-	@Inject
-	private static DLAppService _dlAppService;
 
 	@Inject
 	private static UserLocalService _userLocalService;

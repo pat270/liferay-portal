@@ -5,8 +5,6 @@
 
 package com.liferay.portal.vulcan.internal.jaxrs.container.response.filter;
 
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.vulcan.extension.EntityExtensionHandler;
@@ -17,10 +15,6 @@ import java.io.Serializable;
 
 import java.util.Map;
 
-import javax.annotation.Priority;
-
-import javax.ws.rs.Priorities;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
@@ -33,7 +27,6 @@ import javax.ws.rs.ext.Providers;
 /**
  * @author Carlos Correa
  */
-@Priority(Priorities.USER + 10)
 @Provider
 public class EntityExtensionContainerResponseFilter
 	implements ContainerResponseFilter {
@@ -80,9 +73,7 @@ public class EntityExtensionContainerResponseFilter
 				containerResponseContext.getEntity(), extendedProperties);
 		}
 		catch (Exception exception) {
-			_log.error(exception);
-
-			throw new WebApplicationException(exception);
+			throw new IOException(exception);
 		}
 		finally {
 			EntityExtensionThreadLocal.clearExtendedProperties();
@@ -107,9 +98,6 @@ public class EntityExtensionContainerResponseFilter
 
 		return entityExtensionHandler;
 	}
-
-	private static final Log _log = LogFactoryUtil.getLog(
-		EntityExtensionContainerResponseFilter.class);
 
 	@Context
 	private Company _company;

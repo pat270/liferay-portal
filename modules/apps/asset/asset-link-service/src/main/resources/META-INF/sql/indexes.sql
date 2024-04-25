@@ -1,0 +1,1 @@
+create unique index IX_A97A4F34 on AssetLink (type_, entryId2, entryId1, ctCollectionId);

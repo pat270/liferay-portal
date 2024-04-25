@@ -82,7 +82,7 @@ public class ListTypeServiceHttp {
 	}
 
 	public static com.liferay.portal.kernel.model.ListType getListType(
-		HttpPrincipal httpPrincipal, String name, String type) {
+		HttpPrincipal httpPrincipal, long companyId, String name, String type) {
 
 		try {
 			MethodKey methodKey = new MethodKey(
@@ -90,7 +90,7 @@ public class ListTypeServiceHttp {
 				_getListTypeParameterTypes1);
 
 			MethodHandler methodHandler = new MethodHandler(
-				methodKey, name, type);
+				methodKey, companyId, name, type);
 
 			Object returnObj = null;
 
@@ -113,15 +113,48 @@ public class ListTypeServiceHttp {
 		}
 	}
 
+	public static long getListTypeId(
+		HttpPrincipal httpPrincipal, long companyId, String name, String type) {
+
+		try {
+			MethodKey methodKey = new MethodKey(
+				ListTypeServiceUtil.class, "getListTypeId",
+				_getListTypeIdParameterTypes2);
+
+			MethodHandler methodHandler = new MethodHandler(
+				methodKey, companyId, name, type);
+
+			Object returnObj = null;
+
+			try {
+				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
+			}
+			catch (Exception exception) {
+				throw new com.liferay.portal.kernel.exception.SystemException(
+					exception);
+			}
+
+			return ((Long)returnObj).longValue();
+		}
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
+
+			_log.error(systemException, systemException);
+
+			throw systemException;
+		}
+	}
+
 	public static java.util.List<com.liferay.portal.kernel.model.ListType>
-		getListTypes(HttpPrincipal httpPrincipal, String type) {
+		getListTypes(HttpPrincipal httpPrincipal, long companyId, String type) {
 
 		try {
 			MethodKey methodKey = new MethodKey(
 				ListTypeServiceUtil.class, "getListTypes",
-				_getListTypesParameterTypes2);
+				_getListTypesParameterTypes3);
 
-			MethodHandler methodHandler = new MethodHandler(methodKey, type);
+			MethodHandler methodHandler = new MethodHandler(
+				methodKey, companyId, type);
 
 			Object returnObj = null;
 
@@ -153,7 +186,7 @@ public class ListTypeServiceHttp {
 		try {
 			MethodKey methodKey = new MethodKey(
 				ListTypeServiceUtil.class, "validate",
-				_validateParameterTypes3);
+				_validateParameterTypes4);
 
 			MethodHandler methodHandler = new MethodHandler(
 				methodKey, listTypeId, classNameId, type);
@@ -189,7 +222,7 @@ public class ListTypeServiceHttp {
 		try {
 			MethodKey methodKey = new MethodKey(
 				ListTypeServiceUtil.class, "validate",
-				_validateParameterTypes4);
+				_validateParameterTypes5);
 
 			MethodHandler methodHandler = new MethodHandler(
 				methodKey, listTypeId, type);
@@ -224,15 +257,17 @@ public class ListTypeServiceHttp {
 		long.class
 	};
 	private static final Class<?>[] _getListTypeParameterTypes1 = new Class[] {
-		String.class, String.class
+		long.class, String.class, String.class
 	};
-	private static final Class<?>[] _getListTypesParameterTypes2 = new Class[] {
-		String.class
-	};
-	private static final Class<?>[] _validateParameterTypes3 = new Class[] {
-		long.class, long.class, String.class
+	private static final Class<?>[] _getListTypeIdParameterTypes2 =
+		new Class[] {long.class, String.class, String.class};
+	private static final Class<?>[] _getListTypesParameterTypes3 = new Class[] {
+		long.class, String.class
 	};
 	private static final Class<?>[] _validateParameterTypes4 = new Class[] {
+		long.class, long.class, String.class
+	};
+	private static final Class<?>[] _validateParameterTypes5 = new Class[] {
 		long.class, String.class
 	};
 

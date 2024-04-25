@@ -39,7 +39,7 @@ import com.liferay.portal.kernel.search.filter.QueryFilter;
 import com.liferay.portal.kernel.search.generic.BooleanQueryImpl;
 import com.liferay.portal.kernel.search.generic.NestedQuery;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.DateFormatFactory;
+import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlParser;
@@ -67,6 +67,7 @@ import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -665,11 +666,27 @@ public class DDMIndexerImpl implements DDMIndexer {
 		else if (value instanceof Object[]) {
 			String[] valuesString = ArrayUtil.toStringArray((Object[])value);
 
+			String type = field.getType();
+
+			if (type.equals(DDMFormFieldTypeConstants.DATE) ||
+				type.equals(DDMFormFieldTypeConstants.DATE_TIME)) {
+
+				Date[] dateValues = _getDateValues(type, valuesString);
+
+				if (dateValues.length > 0) {
+					document.addDate(name.concat("_date"), dateValues);
+				}
+			}
+
 			if (indexType.equals("keyword")) {
 				document.addKeywordSortable(name, valuesString);
+
+				document.addKeyword(_getSortableFieldName(name), valuesString);
 			}
 			else {
 				document.addTextSortable(name, valuesString);
+
+				document.addText(_getSortableFieldName(name), valuesString);
 			}
 		}
 		else {
@@ -704,24 +721,11 @@ public class DDMIndexerImpl implements DDMIndexer {
 					 type.equals(DDMFormFieldTypeConstants.DATE_TIME)) &&
 					Validator.isNotNull(valueString)) {
 
-					String pattern = "yyyy-MM-dd";
+					Date[] dateValues = _getDateValues(
+						type, new String[] {valueString});
 
-					if (type.equals(DDMFormFieldTypeConstants.DATE_TIME)) {
-						pattern = "yyyy-MM-dd hh:mm";
-					}
-
-					DateFormat dateFormat =
-						_dateFormatFactory.getSimpleDateFormat(pattern);
-
-					try {
-						document.addDate(
-							name.concat("_date"),
-							dateFormat.parse(valueString));
-					}
-					catch (ParseException parseException) {
-						if (_log.isWarnEnabled()) {
-							_log.warn(parseException);
-						}
+					if (dateValues.length > 0) {
+						document.addDate(name.concat("_date"), dateValues);
 					}
 				}
 				else if (type.equals(DDMFormFieldTypeConstants.RICH_TEXT)) {
@@ -805,6 +809,10 @@ public class DDMIndexerImpl implements DDMIndexer {
 		for (DDMFormFieldValue ddmFormFieldValue : ddmFormFieldValues) {
 			DDMFormField ddmFormField = ddmFormFieldValue.getDDMFormField();
 
+			if (ddmFormField == null) {
+				continue;
+			}
+
 			try {
 				Locale ddmFormFieldLocale = locale;
 
@@ -819,8 +827,17 @@ public class DDMIndexerImpl implements DDMIndexer {
 					ddmFormFieldLocale, sb, ddmFormFieldValue.getValue());
 			}
 			catch (Exception exception) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(exception);
+				}
+
 				if (_log.isWarnEnabled()) {
-					_log.warn(exception);
+					_log.warn(
+						StringBundler.concat(
+							"Unable to index ", ddmFormField.getName(),
+							" because it was deleted from the dynamic data ",
+							"mapping structure ID",
+							ddmStructure.getStructureId()));
 				}
 			}
 
@@ -832,6 +849,36 @@ public class DDMIndexerImpl implements DDMIndexer {
 					ddmStructure, defaultLocale, locale, sb);
 			}
 		}
+	}
+
+	private Date[] _getDateValues(String type, String[] values) {
+		List<Date> dateValues = new ArrayList<>(values.length);
+
+		String pattern = "yyyy-MM-dd";
+
+		if (type.equals(DDMFormFieldTypeConstants.DATE_TIME)) {
+			pattern = "yyyy-MM-dd hh:mm";
+		}
+
+		DateFormat dateFormat = DateFormatFactoryUtil.getSimpleDateFormat(
+			pattern);
+
+		for (String value : values) {
+			if (Validator.isNull(value)) {
+				continue;
+			}
+
+			try {
+				dateValues.add(dateFormat.parse(value));
+			}
+			catch (ParseException parseException) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(parseException);
+				}
+			}
+		}
+
+		return dateValues.toArray(new Date[0]);
 	}
 
 	private String _getSortableFieldName(String name) {
@@ -885,9 +932,6 @@ public class DDMIndexerImpl implements DDMIndexer {
 				PropsKeys.INDEX_SORTABLE_TEXT_FIELDS_TRUNCATED_LENGTH));
 
 	private static final Log _log = LogFactoryUtil.getLog(DDMIndexerImpl.class);
-
-	@Reference
-	private DateFormatFactory _dateFormatFactory;
 
 	@Reference
 	private DDM _ddm;

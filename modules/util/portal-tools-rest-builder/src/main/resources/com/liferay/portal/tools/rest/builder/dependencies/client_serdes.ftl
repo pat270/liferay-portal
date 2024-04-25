@@ -57,8 +57,8 @@ public class ${schemaName}SerDes {
 		sb.append("{");
 
 		<#assign
-			enumSchemas = freeMarkerTool.getDTOEnumSchemas(openAPIYAML, schema)
-			properties = freeMarkerTool.getDTOProperties(configYAML, openAPIYAML, schema)
+			enumSchemas = freeMarkerTool.getDTOEnumSchemas(configYAML, openAPIYAML, schema)
+			properties = freeMarkerTool.getDTOProperties(configYAML, openAPIYAML, schema, allSchemas)
 		/>
 
 		<#list properties?keys as propertyName>
@@ -74,7 +74,7 @@ public class ${schemaName}SerDes {
 		<#list properties?keys as propertyName>
 			<#assign
 				capitalizedPropertyName = propertyName?cap_first
-				propertySchema = freeMarkerTool.getDTOPropertySchema(propertyName, schema)
+				propertySchema = freeMarkerTool.getDTOPropertySchema(configYAML, propertyName, schema, allSchemas)
 			/>
 
 			<#if enumSchemas?keys?seq_contains(properties[propertyName])>
@@ -192,7 +192,7 @@ public class ${schemaName}SerDes {
 		<#list properties?keys as propertyName>
 			<#assign
 				capitalizedPropertyName = propertyName?cap_first
-				propertySchema = freeMarkerTool.getDTOPropertySchema(propertyName, schema)
+				propertySchema = freeMarkerTool.getDTOPropertySchema(configYAML, propertyName, schema, allSchemas)
 			/>
 
 			<#if enumSchemas?keys?seq_contains(properties[propertyName])>
@@ -237,7 +237,7 @@ public class ${schemaName}SerDes {
 		@Override
 		protected void setField(${schemaName} ${schemaVarName}, String jsonParserFieldName, Object jsonParserFieldValue) {
 			<#list properties?keys as propertyName>
-				<#assign propertySchema = freeMarkerTool.getDTOPropertySchema(propertyName, schema) />
+				<#assign propertySchema = freeMarkerTool.getDTOPropertySchema(configYAML, propertyName, schema, allSchemas) />
 
 				<#if !propertyName?is_first>
 					else
@@ -257,10 +257,12 @@ public class ${schemaName}SerDes {
 							<#assign capitalizedPropertyName = properties[propertyName] />
 						</#if>
 
-						<#assign propertyType = properties[propertyName] />
+						<#assign propertyType = properties[propertyName]?replace("com.liferay.portal.vulcan.permission.", "${configYAML.apiPackagePath}.client.permission.") />
 
 						<#if stringUtil.equals(propertyType, "BigDecimal")>
 							${schemaVarName}.set${capitalizedPropertyName}(new BigDecimal((String)jsonParserFieldValue));
+						<#elseif stringUtil.equals(propertyType, "BigDecimal[]")>
+							${schemaVarName}.set${capitalizedPropertyName}(toBigDecimals((Object[])jsonParserFieldValue));
 						<#elseif stringUtil.equals(propertyType, "Date")>
 							${schemaVarName}.set${capitalizedPropertyName}(toDate((String)jsonParserFieldValue));
 						<#elseif stringUtil.equals(propertyType, "Date[]")>
@@ -285,6 +287,18 @@ public class ${schemaName}SerDes {
 							${schemaVarName}.set${capitalizedPropertyName}(toIntegers((Object[])jsonParserFieldValue));
 						<#elseif stringUtil.equals(propertyType, "String[]")>
 							${schemaVarName}.set${capitalizedPropertyName}(toStrings((Object[])jsonParserFieldValue));
+						<#elseif stringUtil.equals(propertyType, "${configYAML.apiPackagePath}.client.permission.Permission")>
+							${schemaVarName}.set${capitalizedPropertyName}(${propertyType}.toDTO((String)jsonParserFieldValue));
+						<#elseif stringUtil.equals(propertyType, "${configYAML.apiPackagePath}.client.permission.Permission[]")>
+							Object[] jsonParserFieldValues = (Object[])jsonParserFieldValue;
+
+							${propertyType?remove_ending("[]")}[] ${propertyName}Array = new ${propertyType?remove_ending("[]")}[jsonParserFieldValues.length];
+
+							for (int i = 0; i < ${propertyName}Array.length; i++) {
+								${propertyName}Array[i] = ${propertyType?remove_ending("[]")}.toDTO((String)jsonParserFieldValues[i]);
+							}
+
+							${schemaVarName}.set${capitalizedPropertyName}(${propertyName}Array);
 						<#elseif allExternalSchemas?keys?seq_contains(propertyType) || allSchemas?keys?seq_contains(propertyType)>
 							${schemaVarName}.set${capitalizedPropertyName}(${propertyType}SerDes.toDTO((String)jsonParserFieldValue));
 						<#elseif propertyType?ends_with("[]") && (allExternalSchemas?keys?seq_contains(propertyType?remove_ending("[]")) || allSchemas?keys?seq_contains(propertyType?remove_ending("[]")))>

@@ -261,20 +261,30 @@ public class RowChecker {
 		boolean disabled, String name, String value, String checkBoxRowIds,
 		String checkBoxAllRowIds, String checkBoxPostOnClick) {
 
-		StringBundler sb = new StringBundler(14);
+		StringBundler sb = new StringBundler(17);
 
 		sb.append("<label><input ");
+
+		String rowElementId = (String)httpServletRequest.getAttribute(
+			"liferay-ui:search-container-row:rowElementId");
+
+		if (rowElementId != null) {
+			sb.append("aria-labelledby=\"");
+			sb.append(rowElementId);
+			sb.append("\" ");
+		}
 
 		if (checked) {
 			sb.append("checked ");
 		}
 
+		sb.append("class=\"");
+		sb.append(_cssClass);
+
 		if (disabled) {
 			sb.append("disabled ");
 		}
 
-		sb.append("class=\"");
-		sb.append(_cssClass);
 		sb.append("\" name=\"");
 		sb.append(name);
 		sb.append("\" title=\"");

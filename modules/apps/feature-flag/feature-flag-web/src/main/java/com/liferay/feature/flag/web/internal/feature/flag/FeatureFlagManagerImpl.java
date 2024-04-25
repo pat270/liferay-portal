@@ -5,10 +5,17 @@
 
 package com.liferay.feature.flag.web.internal.feature.flag;
 
-import com.liferay.feature.flag.web.internal.company.feature.flags.CompanyFeatureFlags;
-import com.liferay.feature.flag.web.internal.company.feature.flags.CompanyFeatureFlagsProvider;
+import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClassDefinition;
+import com.liferay.portal.kernel.feature.flag.FeatureFlag;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManager;
+import com.liferay.portal.kernel.feature.flag.constants.FeatureFlagConstants;
+import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.PropsUtil;
+
+import java.util.List;
+import java.util.function.Predicate;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -20,16 +27,34 @@ import org.osgi.service.component.annotations.Reference;
 public class FeatureFlagManagerImpl implements FeatureFlagManager {
 
 	@Override
+	public List<FeatureFlag> getFeatureFlags(
+		long companyId, Predicate<FeatureFlag> predicate) {
+
+		return _featureFlagsBagProvider.withFeatureFlagsBag(
+			companyId,
+			featureFlagsBag -> featureFlagsBag.getFeatureFlags(predicate));
+	}
+
+	@Override
 	public String getJSON(long companyId) {
-		return _companyFeatureFlagsProvider.withCompanyFeatureFlags(
-			companyId, CompanyFeatureFlags::getJSON);
+		return _featureFlagsBagProvider.withFeatureFlagsBag(
+			companyId, FeatureFlagsBag::getJSON);
 	}
 
 	@Override
 	public boolean isEnabled(long companyId, String key) {
-		return _companyFeatureFlagsProvider.withCompanyFeatureFlags(
-			companyId,
-			companyFeatureFlags -> companyFeatureFlags.isEnabled(key));
+		if (GetterUtil.getBoolean(
+				PropsUtil.get(
+					FeatureFlagConstants.getKey(
+						key,
+						ExtendedObjectClassDefinition.Scope.SYSTEM.
+							getValue())))) {
+
+			companyId = CompanyConstants.SYSTEM;
+		}
+
+		return _featureFlagsBagProvider.withFeatureFlagsBag(
+			companyId, featureFlagsBag -> featureFlagsBag.isEnabled(key));
 	}
 
 	@Override
@@ -38,6 +63,6 @@ public class FeatureFlagManagerImpl implements FeatureFlagManager {
 	}
 
 	@Reference
-	private CompanyFeatureFlagsProvider _companyFeatureFlagsProvider;
+	private FeatureFlagsBagProvider _featureFlagsBagProvider;
 
 }

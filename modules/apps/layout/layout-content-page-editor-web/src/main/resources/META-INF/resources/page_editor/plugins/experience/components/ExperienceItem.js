@@ -82,7 +82,7 @@ const ExperienceItem = ({
 		});
 	};
 
-	const itemClassName = classNames('d-flex dropdown-menu__experience', {
+	const itemClassName = classNames('d-sm-flex dropdown-menu__experience', {
 		'dropdown-menu__experience--active': active,
 	});
 
@@ -90,78 +90,72 @@ const ExperienceItem = ({
 		<ClayList.Item aria-current={active} className={itemClassName}>
 			<ClayList.ItemField expand>
 				<ClayButton displayType="unstyled" onClick={handleSelect}>
-					<div className="c-inner" tabIndex="-1">
-						<ClayLayout.ContentRow verticalAlign="center">
-							<ClayLayout.ContentCol
-								style={{flexShrink: 1, minWidth: 0}}
-							>
-								<ClayLayout.ContentSection>
-									<span className="text-truncate-inline">
-										<span
-											className="font-weight-semi-bold text-truncate"
-											data-tooltip-align="top"
-											title={experience.name}
-										>
-											{experience.name}
-										</span>
-
-										{experience.hasLockedSegmentsExperiment && (
-											<ExperienceLockIcon />
-										)}
-
-										{experience.active ? (
-											<ClayLabel
-												className="flex-shrink-0 inline-item-after"
-												displayType="success"
-											>
-												{Liferay.Language.get('active')}
-											</ClayLabel>
-										) : (
-											<ClayLabel
-												className="flex-shrink-0 inline-item-after"
-												displayType="secondary"
-											>
-												{Liferay.Language.get(
-													'inactive'
-												)}
-											</ClayLabel>
-										)}
+					<ClayLayout.ContentRow verticalAlign="center">
+						<ClayLayout.ContentCol
+							style={{flexShrink: 1, minWidth: 0}}
+						>
+							<ClayLayout.ContentSection>
+								<span>
+									<span
+										className="font-weight-semi-bold"
+										data-tooltip-align="top"
+										title={experience.name}
+									>
+										{experience.name}
 									</span>
 
-									<span className="text-truncate">
-										<span className="mr-1 text-secondary">
-											{Liferay.Language.get('audience')}
-										</span>
-
-										{experience.segmentsEntryName}
-									</span>
-
-									{experience.segmentsExperimentStatus && (
-										<div>
-											<span className="font-weight-normal inline-item-before text-secondary">
-												{Liferay.Language.get(
-													'ab-test'
-												)}
-											</span>
-
-											<ExperimentLabel
-												label={
-													experience
-														.segmentsExperimentStatus
-														.label
-												}
-												value={
-													experience
-														.segmentsExperimentStatus
-														.value
-												}
-											/>
-										</div>
+									{experience.hasLockedSegmentsExperiment && (
+										<ExperienceLockIcon />
 									)}
-								</ClayLayout.ContentSection>
-							</ClayLayout.ContentCol>
-						</ClayLayout.ContentRow>
-					</div>
+
+									{experience.active ? (
+										<ClayLabel
+											className="flex-shrink-0 inline-item-after"
+											displayType="success"
+										>
+											{Liferay.Language.get('active')}
+										</ClayLabel>
+									) : (
+										<ClayLabel
+											className="flex-shrink-0 inline-item-after"
+											displayType="secondary"
+										>
+											{Liferay.Language.get('inactive')}
+										</ClayLabel>
+									)}
+								</span>
+
+								<span className="text-truncate">
+									<span className="mr-1 text-secondary">
+										{Liferay.Language.get('audience')}
+									</span>
+
+									{experience.segmentsEntryName}
+								</span>
+
+								{experience.segmentsExperimentStatus && (
+									<div>
+										<span className="font-weight-normal inline-item-before text-secondary">
+											{Liferay.Language.get('ab-test')}
+										</span>
+
+										<ExperimentLabel
+											label={
+												experience
+													.segmentsExperimentStatus
+													.label
+											}
+											value={
+												experience
+													.segmentsExperimentStatus
+													.value
+											}
+										/>
+									</div>
+								)}
+							</ClayLayout.ContentSection>
+						</ClayLayout.ContentCol>
+					</ClayLayout.ContentRow>
 				</ClayButton>
 			</ClayList.ItemField>
 
@@ -198,7 +192,7 @@ const ExperienceActions = ({
 	return (
 		<>
 			{editable && (
-				<div className="pl-2">
+				<div className="pl-sm-2">
 					<ClayButtonWithIcon
 						aria-label={Liferay.Language.get(
 							'prioritize-experience'
@@ -210,6 +204,7 @@ const ExperienceActions = ({
 						monospaced
 						onClick={handlePriorityIncrease}
 						outline
+						size="sm"
 						symbol="angle-up"
 						title={Liferay.Language.get('prioritize-experience')}
 						type="button"
@@ -226,6 +221,7 @@ const ExperienceActions = ({
 						monospaced
 						onClick={handlePriorityDecrease}
 						outline
+						size="sm"
 						symbol="angle-down"
 						title={Liferay.Language.get('deprioritize-experience')}
 						type="button"
@@ -239,6 +235,7 @@ const ExperienceActions = ({
 						monospaced
 						onClick={handleExperienceEdit}
 						outline
+						size="sm"
 						symbol="pencil"
 						title={Liferay.Language.get('edit-experience')}
 						type="button"
@@ -254,6 +251,7 @@ const ExperienceActions = ({
 						monospaced
 						onClick={handleExperienceDuplicate}
 						outline
+						size="sm"
 						symbol="copy"
 						title={Liferay.Language.get('duplicate-experience')}
 						type="button"

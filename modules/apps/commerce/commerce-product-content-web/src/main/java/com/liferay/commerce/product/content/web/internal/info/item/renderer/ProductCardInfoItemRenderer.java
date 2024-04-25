@@ -8,8 +8,8 @@ package com.liferay.commerce.product.content.web.internal.info.item.renderer;
 import com.liferay.account.model.AccountEntry;
 import com.liferay.commerce.product.constants.CPWebKeys;
 import com.liferay.commerce.product.content.constants.CPContentWebKeys;
+import com.liferay.commerce.product.content.helper.CPContentHelper;
 import com.liferay.commerce.product.content.info.item.renderer.CPContentInfoItemRendererRegistry;
-import com.liferay.commerce.product.content.util.CPContentHelper;
 import com.liferay.commerce.product.model.CPDefinition;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.commerce.product.util.CPDefinitionHelper;
@@ -32,9 +32,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Alessio Antonio Rendina
  */
-@Component(
-	service = {InfoItemRenderer.class, ProductCardInfoItemRenderer.class}
-)
+@Component(service = InfoItemRenderer.class)
 public class ProductCardInfoItemRenderer
 	implements InfoItemRenderer<CPDefinition> {
 

@@ -50,6 +50,8 @@ public class PendingCommerceOrderItemTableFDSView extends BaseTableFDSView {
 		).add(
 			"formattedQuantity", "quantity"
 		).add(
+			"unitOfMeasureKey", "uom"
+		).add(
 			"total", "total"
 		).build();
 	}

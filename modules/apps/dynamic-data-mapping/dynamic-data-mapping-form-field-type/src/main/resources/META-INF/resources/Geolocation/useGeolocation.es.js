@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import MapGoogleMaps from '@liferay/map-google-maps/js/MapGoogleMaps';
-import MapOpenStreetMap from '@liferay/map-openstreetmap/js/MapOpenStreetMap';
+import {MapGoogleMaps} from '@liferay/map-google-maps';
+import {MapOpenStreetMap} from '@liferay/map-openstreetmap';
 import {parseName} from 'data-engine-js-components-web';
 import Leaflet from 'leaflet';
 import {useEffect, useRef} from 'react';
@@ -122,6 +122,14 @@ export function useGeolocation({
 					mapRef.current,
 					`#map_${instanceId}`
 				);
+
+				mapRef.current.removeAllListeners('positionChange');
+
+				mapRef.current.on('positionChange', onChange);
+
+				if (value) {
+					mapRef.current.setCenter(parseJSONValue(value));
+				}
 			};
 
 			switch (mapProviderKey) {
@@ -159,7 +167,7 @@ export function useGeolocation({
 	}, [onChange]);
 
 	useEffect(() => {
-		if (value && mapRef.current) {
+		if (value) {
 			let _value = value;
 
 			if (typeof _value !== 'string') {
@@ -170,7 +178,9 @@ export function useGeolocation({
 				.getElementById(`input_value_${instanceId}`)
 				.setAttribute('value', _value);
 
-			mapRef.current.setCenter(parseJSONValue(value));
+			if (mapRef.current) {
+				mapRef.current.setCenter(parseJSONValue(value));
+			}
 		}
 	}, [instanceId, value]);
 }

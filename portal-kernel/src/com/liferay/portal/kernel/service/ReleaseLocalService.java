@@ -16,17 +16,16 @@ import com.liferay.portal.kernel.model.PersistedModel;
 import com.liferay.portal.kernel.model.Release;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
+import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
-import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.OrderByComparator;
 
 import java.io.Serializable;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -40,6 +39,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see ReleaseLocalServiceUtil
  * @generated
  */
+@OSGiBeanProperties(
+	property = {"model.class.name=com.liferay.portal.kernel.model.Release"}
+)
 @ProviderType
 @Transactional(
 	isolation = Isolation.PORTAL,
@@ -268,16 +270,6 @@ public interface ReleaseLocalService
 	 */
 	@Indexable(type = IndexableType.REINDEX)
 	public Release updateRelease(Release release);
-
-	public void updateRelease(
-			String servletContextName, List<UpgradeProcess> upgradeProcesses,
-			int buildNumber, int previousBuildNumber)
-		throws PortalException;
-
-	public void updateRelease(
-			String servletContextName, List<UpgradeProcess> upgradeProcesses,
-			Properties unfilteredPortalProperties)
-		throws Exception;
 
 	public Release updateRelease(
 		String servletContextName, String schemaVersion,

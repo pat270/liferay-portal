@@ -13,6 +13,7 @@ import com.liferay.headless.delivery.dto.v1_0.PageElement;
 import com.liferay.info.collection.provider.InfoCollectionProvider;
 import com.liferay.info.collection.provider.RelatedInfoItemCollectionProvider;
 import com.liferay.info.collection.provider.SingleFormVariationInfoCollectionProvider;
+import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.info.list.provider.item.selector.criterion.InfoListProviderItemSelectorReturnType;
 import com.liferay.item.selector.criteria.InfoListItemSelectorReturnType;
 import com.liferay.layout.converter.AlignConverter;
@@ -28,26 +29,31 @@ import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-
 /**
  * @author Jürgen Kappler
  */
-@Component(service = LayoutStructureItemImporter.class)
 public class CollectionLayoutStructureItemImporter
 	extends BaseLayoutStructureItemImporter
 	implements LayoutStructureItemImporter {
+
+	public CollectionLayoutStructureItemImporter(
+		AssetListEntryLocalService assetListEntryLocalService) {
+
+		_assetListEntryLocalService = assetListEntryLocalService;
+	}
 
 	@Override
 	public LayoutStructureItem addLayoutStructureItem(
@@ -61,6 +67,10 @@ public class CollectionLayoutStructureItemImporter
 			collectionStyledLayoutStructureItem =
 				(CollectionStyledLayoutStructureItem)
 					layoutStructure.addCollectionStyledLayoutStructureItem(
+						_getCollectionItemId(
+							layoutStructureItemImporterContext, pageElement),
+						layoutStructureItemImporterContext.getItemId(
+							pageElement),
 						layoutStructureItemImporterContext.getParentItemId(),
 						layoutStructureItemImporterContext.getPosition());
 
@@ -76,7 +86,8 @@ public class CollectionLayoutStructureItemImporter
 
 		if (collectionConfig != null) {
 			collectionStyledLayoutStructureItem.setCollectionJSONObject(
-				_getCollectionConfigAsJSONObject(collectionConfig));
+				_getCollectionConfigAsJSONObject(
+					collectionConfig, layoutStructureItemImporterContext));
 		}
 
 		if (definitionMap.containsKey("collectionViewports")) {
@@ -208,7 +219,8 @@ public class CollectionLayoutStructureItemImporter
 	}
 
 	private JSONObject _getCollectionConfigAsJSONObject(
-		Map<String, Object> collectionConfig) {
+		Map<String, Object> collectionConfig,
+		LayoutStructureItemImporterContext layoutStructureItemImporterContext) {
 
 		String type = (String)collectionConfig.get("collectionType");
 
@@ -233,10 +245,24 @@ public class CollectionLayoutStructureItemImporter
 					CollectionConfig.CollectionType.COLLECTION_PROVIDER.
 						getValue())) {
 
-			return _getCollectionProviderJSONObject(collectionReference);
+			return _getCollectionProviderJSONObject(
+				collectionReference, layoutStructureItemImporterContext);
 		}
 
 		return null;
+	}
+
+	private String _getCollectionItemId(
+		LayoutStructureItemImporterContext layoutStructureItemImporterContext,
+		PageElement pageElement) {
+
+		PageElement[] pageElements = pageElement.getPageElements();
+
+		if (ArrayUtil.isEmpty(pageElements)) {
+			return PortalUUIDUtil.generate();
+		}
+
+		return layoutStructureItemImporterContext.getItemId(pageElements[0]);
 	}
 
 	private JSONObject _getCollectionJSONObject(
@@ -257,7 +283,8 @@ public class CollectionLayoutStructureItemImporter
 		}
 
 		return JSONUtil.put(
-			"classNameId", portal.getClassNameId(AssetListEntry.class.getName())
+			"classNameId",
+			PortalUtil.getClassNameId(AssetListEntry.class.getName())
 		).put(
 			"classPK", String.valueOf(classPK)
 		).put(
@@ -272,7 +299,11 @@ public class CollectionLayoutStructureItemImporter
 	}
 
 	private JSONObject _getCollectionProviderJSONObject(
-		Map<String, Object> collectionReference) {
+		Map<String, Object> collectionReference,
+		LayoutStructureItemImporterContext layoutStructureItemImporterContext) {
+
+		InfoItemServiceRegistry infoItemServiceRegistry =
+			layoutStructureItemImporterContext.getInfoItemServiceRegistry();
 
 		String className = (String)collectionReference.get("className");
 
@@ -428,7 +459,6 @@ public class CollectionLayoutStructureItemImporter
 	private static final Log _log = LogFactoryUtil.getLog(
 		CollectionLayoutStructureItemImporter.class);
 
-	@Reference
-	private AssetListEntryLocalService _assetListEntryLocalService;
+	private final AssetListEntryLocalService _assetListEntryLocalService;
 
 }

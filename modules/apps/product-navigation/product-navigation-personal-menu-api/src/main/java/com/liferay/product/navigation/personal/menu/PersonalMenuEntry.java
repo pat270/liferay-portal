@@ -57,6 +57,12 @@ public interface PersonalMenuEntry {
 	 */
 	public String getLabel(Locale locale);
 
+	public default String getOnClickESModule(
+		HttpServletRequest httpServletRequest) {
+
+		return null;
+	}
+
 	/**
 	 * Returns the URL used to render a portlet based on the servlet request
 	 * attributes.

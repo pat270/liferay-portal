@@ -16,7 +16,7 @@ import com.liferay.headless.admin.user.internal.dto.v1_0.converter.constants.DTO
 import com.liferay.headless.admin.user.internal.dto.v1_0.util.CustomFieldsUtil;
 import com.liferay.headless.admin.user.internal.odata.entity.v1_0.AccountGroupEntityModel;
 import com.liferay.headless.admin.user.resource.v1_0.AccountGroupResource;
-import com.liferay.headless.common.spi.service.context.ServiceContextRequestUtil;
+import com.liferay.headless.common.spi.service.context.ServiceContextBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Sort;
@@ -175,13 +175,14 @@ public class AccountGroupResourceImpl extends BaseAccountGroupResourceImpl {
 		return _entityModel;
 	}
 
+	@Override
 	public AccountGroup postAccountGroup(AccountGroup accountGroup)
 		throws Exception {
 
 		com.liferay.account.model.AccountGroup serviceBuilderAccountGroup =
 			_accountGroupService.addAccountGroup(
 				contextUser.getUserId(), accountGroup.getDescription(),
-				accountGroup.getName(), _getServiceContext(accountGroup));
+				accountGroup.getName(), _createServiceContext(accountGroup));
 
 		serviceBuilderAccountGroup =
 			_accountGroupService.updateExternalReferenceCode(
@@ -211,13 +212,26 @@ public class AccountGroupResourceImpl extends BaseAccountGroupResourceImpl {
 			Long accountGroupId, AccountGroup accountGroup)
 		throws Exception {
 
+		if (accountGroupId <= 0) {
+			com.liferay.account.model.AccountGroup serviceBuilderAccountGroup =
+				_accountGroupService.addAccountGroup(
+					contextUser.getUserId(), accountGroup.getDescription(),
+					accountGroup.getName(),
+					_createServiceContext(accountGroup));
+
+			return _toAccountGroup(
+				_accountGroupService.updateExternalReferenceCode(
+					serviceBuilderAccountGroup.getAccountGroupId(),
+					accountGroup.getExternalReferenceCode()));
+		}
+
 		_accountGroupService.updateExternalReferenceCode(
 			accountGroupId, accountGroup.getExternalReferenceCode());
 
 		return _toAccountGroup(
 			_accountGroupService.updateAccountGroup(
 				accountGroupId, accountGroup.getDescription(),
-				accountGroup.getName(), _getServiceContext(accountGroup)));
+				accountGroup.getName(), _createServiceContext(accountGroup)));
 	}
 
 	@Override
@@ -225,10 +239,34 @@ public class AccountGroupResourceImpl extends BaseAccountGroupResourceImpl {
 			String externalReferenceCode, AccountGroup accountGroup)
 		throws Exception {
 
+		com.liferay.account.model.AccountGroup serviceBuilderAccountGroup =
+			_accountGroupService.fetchAccountGroupByExternalReferenceCode(
+				externalReferenceCode, contextCompany.getCompanyId());
+
+		if (serviceBuilderAccountGroup == null) {
+			return putAccountGroup(0L, accountGroup);
+		}
+
 		return putAccountGroup(
-			DTOConverterUtil.getModelPrimaryKey(
-				_accountGroupResourceDTOConverter, externalReferenceCode),
-			accountGroup);
+			serviceBuilderAccountGroup.getAccountGroupId(), accountGroup);
+	}
+
+	private ServiceContext _createServiceContext(AccountGroup accountGroup)
+		throws Exception {
+
+		ServiceContext serviceContext = ServiceContextBuilder.create(
+			contextCompany.getGroupId(), contextHttpServletRequest, null
+		).expandoBridgeAttributes(
+			CustomFieldsUtil.toMap(
+				com.liferay.account.model.AccountGroup.class.getName(),
+				contextCompany.getCompanyId(), accountGroup.getCustomFields(),
+				contextAcceptLanguage.getPreferredLocale())
+		).build();
+
+		serviceContext.setCompanyId(contextCompany.getCompanyId());
+		serviceContext.setUserId(contextUser.getUserId());
+
+		return serviceContext;
 	}
 
 	private Page<AccountGroup> _getAccountGroups(
@@ -313,24 +351,6 @@ public class AccountGroupResourceImpl extends BaseAccountGroupResourceImpl {
 			null, contextHttpServletRequest, accountGroupId,
 			contextAcceptLanguage.getPreferredLocale(), contextUriInfo,
 			contextUser);
-	}
-
-	private ServiceContext _getServiceContext(AccountGroup accountGroup)
-		throws Exception {
-
-		ServiceContext serviceContext =
-			ServiceContextRequestUtil.createServiceContext(
-				CustomFieldsUtil.toMap(
-					com.liferay.account.model.AccountGroup.class.getName(),
-					contextCompany.getCompanyId(),
-					accountGroup.getCustomFields(),
-					contextAcceptLanguage.getPreferredLocale()),
-				contextCompany.getGroupId(), contextHttpServletRequest, null);
-
-		serviceContext.setCompanyId(contextCompany.getCompanyId());
-		serviceContext.setUserId(contextUser.getUserId());
-
-		return serviceContext;
 	}
 
 	private AccountGroup _toAccountGroup(

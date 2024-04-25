@@ -72,7 +72,12 @@ public class DataListViewResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _dataListViewResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, DataListViewResource>
+					dataListViewResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_dataListViewResourceProxyProviderFunction;
+
+				return dataListViewResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -229,10 +234,6 @@ public class DataListViewResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, DataListViewResource>
-		_dataListViewResourceProxyProviderFunction =
-			_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -268,6 +269,14 @@ public class DataListViewResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, DataListViewResource>
+			_dataListViewResourceProxyProviderFunction =
+				_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

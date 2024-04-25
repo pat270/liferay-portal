@@ -262,6 +262,9 @@
 									},
 									{
 										"key": "marketingDirectorReview"
+									},
+									{
+										"key": "completed"
 									}
 								]
 							},
@@ -360,6 +363,11 @@
 										"key": "marketingDirectorReview"
 									}
 								]
+							},
+							{
+								"key": "completed",
+								"objectStateTransitions": [
+								]
 							}
 						]
 					}
@@ -395,6 +403,49 @@
 			"name": "submitted",
 			"required": false,
 			"type": "Boolean"
+		},
+		{
+			"DBType": "String",
+			"businessType": "Aggregation",
+			"externalReferenceCode": "2cb7e162-a1f5-461c-aee6-61d896572005",
+			"indexed": true,
+			"indexedAsKeyword": false,
+			"label": {
+				"en_US": "MDF Activities Count"
+			},
+			"name": "mdfActivitiesCount",
+			"objectFieldSettings": [
+				{
+					"name": "objectRelationshipName",
+					"value": "mdfReqToActs"
+				},
+				{
+					"name": "function",
+					"value": "COUNT"
+				}
+			],
+			"required": false,
+			"state": false,
+			"system": false
+		},
+		{
+			"DBType": "DateTime",
+			"businessType": "DateTime",
+			"externalReferenceCode": "611d345a-3453-46b7-9656-d32b6affe9d3",
+			"indexed": true,
+			"indexedAsKeyword": false,
+			"label": {
+				"en_US": "Submit Date"
+			},
+			"name": "submitDate",
+			"objectFieldSettings": [
+				{
+					"name": "timeStorage",
+					"value": "convertToUTC"
+				}
+			],
+			"required": false,
+			"type": "DateTime"
 		}
 	],
 	"objectDefinitionId": "[$OBJECT_DEFINITION_ID:MDFRequest$]"

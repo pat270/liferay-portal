@@ -6,10 +6,13 @@
 package com.liferay.osb.faro.web.internal.controller.api;
 
 import com.liferay.oauth2.provider.scope.RequiresNoScope;
+import com.liferay.osb.faro.engine.client.exception.InvalidFilterException;
 import com.liferay.osb.faro.model.FaroProject;
 import com.liferay.osb.faro.util.FaroThreadLocal;
 import com.liferay.osb.faro.web.internal.context.GroupInfo;
 import com.liferay.osb.faro.web.internal.controller.BaseFaroController;
+import com.liferay.portal.kernel.json.JSONFactory;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
@@ -42,6 +45,7 @@ import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Marcellus Tavares
@@ -136,6 +140,31 @@ public class ReportController extends BaseFaroController {
 				faroProject, Collections.emptyMap(), path, queryParameters,
 				Map.class);
 		}
+		catch (InvalidFilterException invalidFilterException) {
+			Response.ResponseBuilder responseBuilder = Response.status(
+				Response.Status.BAD_REQUEST);
+
+			String description = "";
+
+			JSONObject jsonObject = _jsonFactory.createJSONObject(
+				invalidFilterException.getMessage());
+
+			JSONObject errorAttributesJSONObject = jsonObject.getJSONObject(
+				"errorAttributes");
+
+			if (errorAttributesJSONObject != null) {
+				description = errorAttributesJSONObject.getString(
+					"message", "");
+			}
+
+			return responseBuilder.entity(
+				HashMapBuilder.put(
+					"description", description
+				).put(
+					"message", "Bad Request"
+				).build()
+			).build();
+		}
 		catch (Exception exception) {
 			_log.error(exception);
 
@@ -172,17 +201,17 @@ public class ReportController extends BaseFaroController {
 		};
 
 		return Response.ok(
-			streamingOutput, "applization/zip"
+			streamingOutput, "application/zip"
 		).build();
 	}
 
 	private Map<String, String> _createHeaders(URI baseURI) {
 		return HashMapBuilder.put(
-			"X-Forwarded-Host", baseURI.getHost()
+			"X-Liferay-Origin-Forwarded-Host", baseURI.getHost()
 		).put(
-			"X-Forwarded-Port", String.valueOf(baseURI.getPort())
+			"X-Liferay-Origin-Forwarded-Port", String.valueOf(baseURI.getPort())
 		).put(
-			"X-Forwarded-Proto", baseURI.getScheme()
+			"X-Liferay-Origin-Forwarded-Proto", baseURI.getScheme()
 		).build();
 	}
 
@@ -216,5 +245,8 @@ public class ReportController extends BaseFaroController {
 	private static final ReportControllerResponseFactory
 		_reportControllerResponseFactory =
 			new ReportControllerResponseFactory();
+
+	@Reference
+	private JSONFactory _jsonFactory;
 
 }

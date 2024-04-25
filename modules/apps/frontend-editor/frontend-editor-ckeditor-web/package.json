@@ -1,15 +1,20 @@
 {
 	"dependencies": {
+		"@clayui/loading-indicator": "3.111.0",
+		"@liferay/cookies-banner-web": "*",
+		"ckeditor4": "4.22.1",
 		"ckeditor4-react": "1.4.2",
 		"frontend-js-web": "*",
-		"liferay-ckeditor": "4.18.0-liferay.4"
+		"liferay-ckeditor": "4.21.0-liferay.3",
+		"prop-types": "15.7.2",
+		"react": "16.12.0"
 	},
-	"main": "index.js",
+	"main": "js/index.js",
 	"name": "frontend-editor-ckeditor-web",
 	"scripts": {
 		"build": "liferay-npm-scripts build",
 		"checkFormat": "liferay-npm-scripts check",
 		"format": "liferay-npm-scripts fix"
 	},
-	"version": "5.0.82"
+	"version": "5.0.94"
 }

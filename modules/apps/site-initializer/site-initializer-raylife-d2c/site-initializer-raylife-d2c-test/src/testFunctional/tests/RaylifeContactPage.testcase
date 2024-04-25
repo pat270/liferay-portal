@@ -14,7 +14,10 @@ definition {
 
 		User.firstLoginPG();
 
-		Raylife.createRaylifeSite(siteName = ${testSiteName});
+		HeadlessSite.addSite(
+			siteName = ${testSiteName},
+			templateName = "Raylife D2C",
+			templateType = "Site Initializer");
 	}
 
 	tearDown {
@@ -34,6 +37,7 @@ definition {
 	@priority = 3
 	test CanDismissContactAgentPageInfoPanel {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
@@ -66,6 +70,7 @@ definition {
 	@priority = 5
 	test CanReachContactPageByBusinessPage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
@@ -96,6 +101,7 @@ definition {
 	@priority = 5
 	test CanReachContactPageByEmployeesPage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
@@ -130,6 +136,7 @@ definition {
 	@priority = 5
 	test CanReachContactPageByPropertyPage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
@@ -178,6 +185,7 @@ definition {
 	@priority = 5
 	test CanViewApplicationId {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
@@ -206,6 +214,7 @@ definition {
 	@priority = 5
 	test DataPersistsWhenTryToEditInfo {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 

@@ -45,10 +45,12 @@ String target = ParamUtil.getString(request, "target", groupItemSelectorCriterio
 		>
 
 			<%
-			List<Group> childGroups = GroupServiceUtil.getGroups(group.getCompanyId(), group.getGroupId(), true);
+			Group finalGroup = group;
 
 			Map<String, Object> data = HashMapBuilder.<String, Object>put(
 				"groupdescriptivename", group.getDescriptiveName(locale)
+			).put(
+				"groupexternalreferencecode", group.getExternalReferenceCode()
 			).put(
 				"groupid", group.getGroupId()
 			).put(
@@ -58,12 +60,27 @@ String target = ParamUtil.getString(request, "target", groupItemSelectorCriterio
 			).put(
 				"grouptype", LanguageUtil.get(resourceBundle, group.getTypeLabel())
 			).put(
+				"hasvirtualhost",
+				() -> {
+					if (!finalGroup.isDepot()) {
+						LayoutSet layoutSet = finalGroup.getPublicLayoutSet();
+
+						if ((layoutSet != null) && MapUtil.isNotEmpty(layoutSet.getVirtualHostnames())) {
+							return true;
+						}
+					}
+
+					return false;
+				}
+			).put(
 				"url", groupURLProvider.getGroupURL(group, liferayPortletRequest)
 			).put(
 				"uuid", group.getUuid()
 			).build();
 
 			String childGroupsHREF = null;
+
+			List<Group> childGroups = GroupServiceUtil.getGroups(group.getCompanyId(), group.getGroupId(), true);
 
 			if (!childGroups.isEmpty()) {
 				childGroupsHREF = PortletURLBuilder.create(
@@ -111,16 +128,16 @@ String target = ParamUtil.getString(request, "target", groupItemSelectorCriterio
 							</c:if>
 						</h5>
 
-						<h6 class="text-default">
+						<div class="h6 text-default">
 							<span><liferay-ui:message key="<%= group.getScopeLabel(themeDisplay) %>" /></span>
-						</h6>
+						</div>
 
 						<c:if test="<%= sitesItemSelectorViewDisplayContext.isShowChildSitesLink() %>">
-							<h6>
+							<div class="h6">
 								<aui:a cssClass='<%= !childGroups.isEmpty() ? "text-default" : "disabled text-muted" %>' href="<%= childGroupsHREF %>">
 									<liferay-ui:message arguments="<%= String.valueOf(childGroups.size()) %>" key="x-child-sites" />
 								</aui:a>
-							</h6>
+							</div>
 						</c:if>
 					</liferay-ui:search-container-column-text>
 				</c:when>

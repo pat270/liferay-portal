@@ -1,6 +1,7 @@
-@component-name = "portal-liferay-online"
+@component-name = "portal-solutions"
 definition {
 
+	property ci.retries.disabled = "true";
 	property osgi.modules.includes = "site-initializer-team-extranet";
 	property portal.release = "true";
 	property portal.upstream = "true";
@@ -22,17 +23,6 @@ definition {
 				siteName = ${testSiteName},
 				templateName = "Team Extranet",
 				templateType = "Site Initializer");
-		}
-	}
-
-	tearDown {
-		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
-
-		if (${testLiferayVirtualInstance} == "true") {
-			PortalInstances.tearDownCP();
-		}
-		else {
-			JSONGroup.deleteGroupByName(groupName = ${testSiteName});
 		}
 	}
 
@@ -284,9 +274,9 @@ definition {
 		task ("Search for Careers in Search Bar") {
 			Click(locator1 = "NavBar#TOGGLE_NAVIGATION");
 
-			SearchPortlets.searchEmbedded(searchTerm = "careers");
+			TeamExtranet.searchEmbedded(searchTerm = "careers");
 
-			SearchResultPortlet.viewSearchResults(
+			SearchResults.viewSearchResults(
 				searchAssetTitle = "Careers",
 				searchAssetType = "Page");
 		}
@@ -295,16 +285,14 @@ definition {
 	@description = "This is a test for LPS-144161. Can do a search in the Search bar"
 	@priority = 3
 	test CanDoASearchInTeamExtranetSearchBar {
-		property ci.retries.disabled = "true";
-
 		task ("Go to Team Extranet Site") {
 			ApplicationsMenu.gotoSite(site = ${testSiteName});
 		}
 
 		task ("Search for Careers in Search Bar") {
-			SearchPortlets.searchEmbedded(searchTerm = "careers");
+			TeamExtranet.searchEmbedded(searchTerm = "careers");
 
-			SearchResultPortlet.viewSearchResults(
+			SearchResults.viewSearchResults(
 				searchAssetTitle = "Careers",
 				searchAssetType = "Page");
 		}
@@ -314,6 +302,7 @@ definition {
 	@priority = 4
 	test CanSetAHostedVideoURL {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Create a new Page by Json") {
 			JSONLayout.addPublicLayout(
@@ -897,7 +886,7 @@ definition {
 
 		PageEditor.previewInANewTab();
 
-		AssertElementPresent(locator1 = "Search#EMBEDDED_SEARCH_BAR");
+		AssertElementPresent(locator1 = "Search#SEARCH_BAR_WIDGET");
 	}
 
 	@description = "This is a test for LPS-144161. Verify the Search Bar on Team Extranet Pages"
@@ -911,7 +900,7 @@ definition {
 					menuItem = "View",
 					pageName = ${pageName});
 
-				AssertElementPresent(locator1 = "Search#EMBEDDED_SEARCH_BAR");
+				AssertElementPresent(locator1 = "TeamExtranet#EMBEDDED_SEARCH_BAR");
 			}
 		}
 	}
@@ -1126,10 +1115,11 @@ definition {
 			}
 		}
 
-		task ("Go to Roles and Assert the Categories are Presente") {
+		task ("Go to Roles and Assert the Categories are present") {
 			Click(
-				categoryName = "Roles",
-				locator1 = "ContentDashboard#CATEGORY_NAME_ELEMENT");
+				key_menuBar = "Roles",
+				key_stackName = "Test Site Team Extranet Name",
+				locator1 = "MenuBar#NAV_LINK_IN_STACK");
 
 			for (var categoryName : list "Product Management,Marketing,Product Design") {
 				Category.viewCP(

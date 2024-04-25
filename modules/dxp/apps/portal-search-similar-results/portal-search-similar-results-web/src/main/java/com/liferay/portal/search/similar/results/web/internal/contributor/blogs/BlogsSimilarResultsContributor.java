@@ -10,9 +10,9 @@ import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.blogs.service.BlogsEntryLocalService;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.search.model.uid.UIDFactory;
-import com.liferay.portal.search.similar.results.web.internal.helper.HttpHelper;
+import com.liferay.portal.search.similar.results.web.internal.contributor.SimilarResultsContributor;
+import com.liferay.portal.search.similar.results.web.internal.helper.HttpHelperUtil;
 import com.liferay.portal.search.similar.results.web.internal.util.SearchStringUtil;
-import com.liferay.portal.search.similar.results.web.spi.contributor.SimilarResultsContributor;
 import com.liferay.portal.search.similar.results.web.spi.contributor.helper.CriteriaBuilder;
 import com.liferay.portal.search.similar.results.web.spi.contributor.helper.CriteriaHelper;
 import com.liferay.portal.search.similar.results.web.spi.contributor.helper.DestinationBuilder;
@@ -20,22 +20,25 @@ import com.liferay.portal.search.similar.results.web.spi.contributor.helper.Dest
 import com.liferay.portal.search.similar.results.web.spi.contributor.helper.RouteBuilder;
 import com.liferay.portal.search.similar.results.web.spi.contributor.helper.RouteHelper;
 
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-
 /**
  * @author Wade Cao
  * @author André de Oliveira
  */
-@Component(service = SimilarResultsContributor.class)
 public class BlogsSimilarResultsContributor
 	implements SimilarResultsContributor {
+
+	public BlogsSimilarResultsContributor(
+		BlogsEntryLocalService blogsEntryLocalService, UIDFactory uidFactory) {
+
+		_blogsEntryLocalService = blogsEntryLocalService;
+		_uidFactory = uidFactory;
+	}
 
 	@Override
 	public void detectRoute(
 		RouteBuilder routeBuilder, RouteHelper routeHelper) {
 
-		String[] parameters = _httpHelper.getFriendlyURLParameters(
+		String[] parameters = HttpHelperUtil.getFriendlyURLParameters(
 			HttpComponentsUtil.decodePath(routeHelper.getURLString()));
 
 		SearchStringUtil.requireEquals("blogs", parameters[0]);
@@ -87,13 +90,7 @@ public class BlogsSimilarResultsContributor
 		return "-/blogs/" + parameterValue + "?";
 	}
 
-	@Reference
-	private BlogsEntryLocalService _blogsEntryLocalService;
-
-	@Reference
-	private HttpHelper _httpHelper;
-
-	@Reference
-	private UIDFactory _uidFactory;
+	private final BlogsEntryLocalService _blogsEntryLocalService;
+	private final UIDFactory _uidFactory;
 
 }

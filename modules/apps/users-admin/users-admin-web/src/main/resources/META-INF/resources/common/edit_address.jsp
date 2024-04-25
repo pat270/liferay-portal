@@ -25,7 +25,6 @@ if (editContactInformationDisplayContext.getPrimaryKey() > 0) {
 }
 
 PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "addresses"), editContactInformationDisplayContext.getRedirect());
-
 PortalUtil.addPortletBreadcrumbEntry(request, editContactInformationDisplayContext.getSheetTitle(), null);
 %>
 
@@ -88,7 +87,10 @@ PortalUtil.addPortletBreadcrumbEntry(request, editContactInformationDisplayConte
 						<liferay-ui:message key="postal-code" />
 
 						<span hidden id="<portlet:namespace />addressZipRequiredWrapper">
-							<aui:icon cssClass="reference-mark text-warning" image="asterisk" markupView="lexicon" />
+							<clay:icon
+								cssClass="reference-mark text-warning"
+								symbol="asterisk"
+							/>
 
 							<span class="hide-accessible sr-only"><liferay-ui:message key="required" /></span>
 						</span>
@@ -139,7 +141,7 @@ PortalUtil.addPortletBreadcrumbEntry(request, editContactInformationDisplayConte
 				"regionSelectVal", regionId
 			).build()
 		%>'
-		module="js/CountryRegionDynamicSelect"
+		module="{CountryRegionDynamicSelect} from users-admin-web"
 	/>
 </aui:form>
 

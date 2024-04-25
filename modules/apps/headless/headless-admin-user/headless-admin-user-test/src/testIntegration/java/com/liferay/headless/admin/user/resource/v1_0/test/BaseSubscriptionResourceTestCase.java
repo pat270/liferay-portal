@@ -26,8 +26,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -36,6 +34,7 @@ import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.test.rule.Inject;
@@ -60,8 +59,6 @@ import java.util.Set;
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-
-import org.apache.commons.lang.time.DateUtils;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -226,10 +223,11 @@ public abstract class BaseSubscriptionResourceTestCase {
 	public void testGetMyUserAccountSubscriptionsPageWithPagination()
 		throws Exception {
 
-		Page<Subscription> totalPage =
+		Page<Subscription> subscriptionPage =
 			subscriptionResource.getMyUserAccountSubscriptionsPage(null, null);
 
-		int totalCount = GetterUtil.getInteger(totalPage.getTotalCount());
+		int totalCount = GetterUtil.getInteger(
+			subscriptionPage.getTotalCount());
 
 		Subscription subscription1 =
 			testGetMyUserAccountSubscriptionsPage_addSubscription(
@@ -243,35 +241,72 @@ public abstract class BaseSubscriptionResourceTestCase {
 			testGetMyUserAccountSubscriptionsPage_addSubscription(
 				randomSubscription());
 
-		Page<Subscription> page1 =
-			subscriptionResource.getMyUserAccountSubscriptionsPage(
-				null, Pagination.of(1, totalCount + 2));
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<Subscription> subscriptions1 =
-			(List<Subscription>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			subscriptions1.toString(), totalCount + 2, subscriptions1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<Subscription> page1 =
+				subscriptionResource.getMyUserAccountSubscriptionsPage(
+					null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+						pageSizeLimit));
 
-		Page<Subscription> page2 =
-			subscriptionResource.getMyUserAccountSubscriptionsPage(
-				null, Pagination.of(2, totalCount + 2));
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+			assertContains(subscription1, (List<Subscription>)page1.getItems());
 
-		List<Subscription> subscriptions2 =
-			(List<Subscription>)page2.getItems();
+			Page<Subscription> page2 =
+				subscriptionResource.getMyUserAccountSubscriptionsPage(
+					null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+						pageSizeLimit));
 
-		Assert.assertEquals(
-			subscriptions2.toString(), 1, subscriptions2.size());
+			assertContains(subscription2, (List<Subscription>)page2.getItems());
 
-		Page<Subscription> page3 =
-			subscriptionResource.getMyUserAccountSubscriptionsPage(
-				null, Pagination.of(1, totalCount + 3));
+			Page<Subscription> page3 =
+				subscriptionResource.getMyUserAccountSubscriptionsPage(
+					null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+						pageSizeLimit));
 
-		assertContains(subscription1, (List<Subscription>)page3.getItems());
-		assertContains(subscription2, (List<Subscription>)page3.getItems());
-		assertContains(subscription3, (List<Subscription>)page3.getItems());
+			assertContains(subscription3, (List<Subscription>)page3.getItems());
+		}
+		else {
+			Page<Subscription> page1 =
+				subscriptionResource.getMyUserAccountSubscriptionsPage(
+					null, Pagination.of(1, totalCount + 2));
+
+			List<Subscription> subscriptions1 =
+				(List<Subscription>)page1.getItems();
+
+			Assert.assertEquals(
+				subscriptions1.toString(), totalCount + 2,
+				subscriptions1.size());
+
+			Page<Subscription> page2 =
+				subscriptionResource.getMyUserAccountSubscriptionsPage(
+					null, Pagination.of(2, totalCount + 2));
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<Subscription> subscriptions2 =
+				(List<Subscription>)page2.getItems();
+
+			Assert.assertEquals(
+				subscriptions2.toString(), 1, subscriptions2.size());
+
+			Page<Subscription> page3 =
+				subscriptionResource.getMyUserAccountSubscriptionsPage(
+					null, Pagination.of(1, (int)totalCount + 3));
+
+			assertContains(subscription1, (List<Subscription>)page3.getItems());
+			assertContains(subscription2, (List<Subscription>)page3.getItems());
+			assertContains(subscription3, (List<Subscription>)page3.getItems());
+		}
 	}
 
 	protected Subscription
@@ -336,6 +371,8 @@ public abstract class BaseSubscriptionResourceTestCase {
 		Subscription subscription =
 			testGraphQLGetMyUserAccountSubscription_addSubscription();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				subscription,
@@ -354,6 +391,29 @@ public abstract class BaseSubscriptionResourceTestCase {
 								getGraphQLFields())),
 						"JSONObject/data",
 						"Object/myUserAccountSubscription"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		Assert.assertTrue(
+			equals(
+				subscription,
+				SubscriptionSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessAdminUser_v1_0",
+								new GraphQLField(
+									"myUserAccountSubscription",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"subscriptionId",
+												subscription.getId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+						"Object/myUserAccountSubscription"))));
 	}
 
 	@Test
@@ -361,6 +421,8 @@ public abstract class BaseSubscriptionResourceTestCase {
 		throws Exception {
 
 		Long irrelevantSubscriptionId = RandomTestUtil.randomLong();
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -374,6 +436,27 @@ public abstract class BaseSubscriptionResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessAdminUser_v1_0",
+						new GraphQLField(
+							"myUserAccountSubscription",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"subscriptionId",
+										irrelevantSubscriptionId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -735,6 +818,10 @@ public abstract class BaseSubscriptionResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -854,22 +941,20 @@ public abstract class BaseSubscriptionResourceTestCase {
 
 		if (entityFieldName.equals("dateCreated")) {
 			if (operator.equals("between")) {
+				Date date = subscription.getDateCreated();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							subscription.getDateCreated(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							subscription.getDateCreated(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -887,22 +972,20 @@ public abstract class BaseSubscriptionResourceTestCase {
 
 		if (entityFieldName.equals("dateModified")) {
 			if (operator.equals("between")) {
+				Date date = subscription.getDateModified();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							subscription.getDateModified(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							subscription.getDateModified(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -1043,9 +1126,9 @@ public abstract class BaseSubscriptionResourceTestCase {
 	}
 
 	protected SubscriptionResource subscriptionResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

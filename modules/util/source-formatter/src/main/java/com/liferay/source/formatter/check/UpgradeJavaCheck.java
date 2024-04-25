@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Hugo Huijser
@@ -74,13 +76,32 @@ public class UpgradeJavaCheck extends BaseFileCheck {
 			}
 		}
 
+		String javaClassContent = javaClass.getContent();
+
+		String newJavaClassContent = javaClassContent;
+
 		if (!newVariables.isEmpty()) {
-			content = StringUtil.replace(
-				content, ArrayUtil.toStringArray(variables),
-				ArrayUtil.toStringArray(newVariables));
+			newJavaClassContent = StringUtil.replace(
+				javaClassContent, ArrayUtil.toStringArray(variables),
+				ArrayUtil.toStringArray(newVariables), true);
+
+			for (int i = 0; i < variables.size(); i++) {
+				String regex = StringBundler.concat(
+					"\\b([_a-z]\\w*)", variables.get(i), "\\b");
+
+				Pattern pattern = Pattern.compile(regex);
+
+				Matcher matcher = pattern.matcher(content);
+
+				if (matcher.find()) {
+					newJavaClassContent = newJavaClassContent.replaceAll(
+						regex, matcher.group(1) + newVariables.get(i));
+				}
+			}
 		}
 
-		return content;
+		return StringUtil.replace(
+			content, javaClassContent, newJavaClassContent);
 	}
 
 	private synchronized Map<String, String> _getImportsMap() throws Exception {

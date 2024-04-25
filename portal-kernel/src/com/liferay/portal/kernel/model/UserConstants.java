@@ -6,12 +6,12 @@
 package com.liferay.portal.kernel.model;
 
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.util.DigesterUtil;
 import com.liferay.portal.kernel.util.PrefsPropsUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
-import com.liferay.portal.kernel.util.ServiceProxyFactory;
 import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.webserver.WebServerServletTokenUtil;
 import com.liferay.users.admin.kernel.file.uploads.UserFileUploadsSettings;
@@ -35,6 +35,8 @@ public class UserConstants {
 	public static final int TYPE_DEFAULT_SERVICE_ACCOUNT = 2;
 
 	public static final int TYPE_GUEST = 0;
+
+	public static final int TYPE_ON_DEMAND_USER = 4;
 
 	public static final int TYPE_REGULAR = 1;
 
@@ -72,7 +74,10 @@ public class UserConstants {
 		sb.append("?img_id=");
 		sb.append(portraitId);
 
-		if (_userFileUploadsSettings.isImageCheckToken()) {
+		UserFileUploadsSettings userFileUploadsSettings =
+			_userFileUploadsSettingsSnapshot.get();
+
+		if (userFileUploadsSettings.isImageCheckToken()) {
 			sb.append("&img_id_token=");
 			sb.append(URLCodec.encodeURL(DigesterUtil.digest(userUuid)));
 		}
@@ -83,9 +88,8 @@ public class UserConstants {
 		return sb.toString();
 	}
 
-	private static volatile UserFileUploadsSettings _userFileUploadsSettings =
-		ServiceProxyFactory.newServiceTrackedInstance(
-			UserFileUploadsSettings.class, UserConstants.class,
-			"_userFileUploadsSettings", false);
+	private static final Snapshot<UserFileUploadsSettings>
+		_userFileUploadsSettingsSnapshot = new Snapshot<>(
+			UserConstants.class, UserFileUploadsSettings.class);
 
 }

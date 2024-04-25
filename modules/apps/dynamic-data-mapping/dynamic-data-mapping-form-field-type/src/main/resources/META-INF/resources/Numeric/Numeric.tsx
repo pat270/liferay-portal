@@ -14,7 +14,7 @@ import React, {ChangeEventHandler, FocusEventHandler, useMemo} from 'react';
 import {createNumberMask} from 'text-mask-addons';
 import {conformToMask} from 'text-mask-core';
 
-import {FieldBase} from '../FieldBase/ReactFieldBase.es';
+import FieldBase from '../FieldBase/ReactFieldBase.es';
 import {ISymbols} from '../NumericInputMask/NumericInputMask';
 import {trimLeftZero} from '../util/numericalOperations';
 
@@ -163,6 +163,7 @@ const Numeric: React.FC<IProps> = ({
 	decimalPlaces,
 	defaultLanguageId,
 	focused,
+	htmlAutocompleteAttribute,
 	id,
 	inputMask,
 	inputMaskFormat,
@@ -317,6 +318,9 @@ const Numeric: React.FC<IProps> = ({
 			>
 				<ClayInput
 					{...accessibleProps}
+					{...(htmlAutocompleteAttribute && {
+						autoComplete: htmlAutocompleteAttribute,
+					})}
 					className={classNames({
 						'ddm-form-field-type__numeric--rtl':
 							Liferay.Language.direction[editingLanguageId] ===
@@ -400,6 +404,7 @@ interface IProps {
 	defaultLanguageId: Locale;
 	errorMessage?: string;
 	focused: boolean;
+	htmlAutocompleteAttribute: string;
 	id: string;
 	inputMask?: boolean;
 	inputMaskFormat?: string;

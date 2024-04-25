@@ -26,6 +26,7 @@ String userName = PortalUtil.getUserName(membershipRequest.getUserId(), StringPo
 
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(redirect);
+portletDisplay.setURLBackTitle("membership-requests");
 
 renderResponse.setTitle(LanguageUtil.format(request, "reply-membership-request-for-x", userName));
 %>
@@ -66,7 +67,7 @@ renderResponse.setTitle(LanguageUtil.format(request, "reply-membership-request-f
 					</p>
 				</c:if>
 
-				<liferay-ui:user-portrait
+				<liferay-user:user-portrait
 					userId="<%= membershipRequest.getUserId() %>"
 				/>
 
@@ -85,8 +86,16 @@ renderResponse.setTitle(LanguageUtil.format(request, "reply-membership-request-f
 	</div>
 
 	<aui:button-row>
-		<aui:button type="submit" />
+		<clay:button
+			label="save"
+			type="submit"
+		/>
 
-		<aui:button href="<%= redirect %>" type="cancel" />
+		<clay:link
+			displayType="secondary"
+			href="<%= redirect %>"
+			label="cancel"
+			type="button"
+		/>
 	</aui:button-row>
 </aui:form>

@@ -33,7 +33,6 @@ import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiServic
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
-import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 import com.liferay.portal.kernel.transaction.Transactional;
@@ -373,31 +372,31 @@ public abstract class AssetEntryLocalServiceBaseImpl
 	/**
 	 */
 	@Override
-	public void addAssetTagAssetEntry(long tagId, long entryId) {
-		assetTagPersistence.addAssetEntry(tagId, entryId);
+	public boolean addAssetTagAssetEntry(long tagId, long entryId) {
+		return assetTagPersistence.addAssetEntry(tagId, entryId);
 	}
 
 	/**
 	 */
 	@Override
-	public void addAssetTagAssetEntry(long tagId, AssetEntry assetEntry) {
-		assetTagPersistence.addAssetEntry(tagId, assetEntry);
+	public boolean addAssetTagAssetEntry(long tagId, AssetEntry assetEntry) {
+		return assetTagPersistence.addAssetEntry(tagId, assetEntry);
 	}
 
 	/**
 	 */
 	@Override
-	public void addAssetTagAssetEntries(long tagId, long[] entryIds) {
-		assetTagPersistence.addAssetEntries(tagId, entryIds);
+	public boolean addAssetTagAssetEntries(long tagId, long[] entryIds) {
+		return assetTagPersistence.addAssetEntries(tagId, entryIds);
 	}
 
 	/**
 	 */
 	@Override
-	public void addAssetTagAssetEntries(
+	public boolean addAssetTagAssetEntries(
 		long tagId, List<AssetEntry> assetEntries) {
 
-		assetTagPersistence.addAssetEntries(tagId, assetEntries);
+		return assetTagPersistence.addAssetEntries(tagId, assetEntries);
 	}
 
 	/**
@@ -585,17 +584,10 @@ public abstract class AssetEntryLocalServiceBaseImpl
 	}
 
 	public void afterPropertiesSet() {
-		persistedModelLocalServiceRegistry.register(
-			"com.liferay.asset.kernel.model.AssetEntry",
-			assetEntryLocalService);
-
 		AssetEntryLocalServiceUtil.setService(assetEntryLocalService);
 	}
 
 	public void destroy() {
-		persistedModelLocalServiceRegistry.unregister(
-			"com.liferay.asset.kernel.model.AssetEntry");
-
 		AssetEntryLocalServiceUtil.setService(null);
 	}
 
@@ -676,9 +668,5 @@ public abstract class AssetEntryLocalServiceBaseImpl
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		AssetEntryLocalServiceBaseImpl.class);
-
-	@BeanReference(type = PersistedModelLocalServiceRegistry.class)
-	protected PersistedModelLocalServiceRegistry
-		persistedModelLocalServiceRegistry;
 
 }

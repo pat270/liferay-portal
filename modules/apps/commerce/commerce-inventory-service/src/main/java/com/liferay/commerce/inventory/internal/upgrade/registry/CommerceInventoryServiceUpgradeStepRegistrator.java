@@ -12,16 +12,16 @@ import com.liferay.commerce.inventory.model.impl.CommerceInventoryAuditModelImpl
 import com.liferay.commerce.inventory.model.impl.CommerceInventoryBookedQuantityModelImpl;
 import com.liferay.commerce.inventory.model.impl.CommerceInventoryReplenishmentItemModelImpl;
 import com.liferay.commerce.inventory.model.impl.CommerceInventoryWarehouseItemModelImpl;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
-import com.liferay.portal.kernel.service.ResourceLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.upgrade.BaseExternalReferenceCodeUpgradeProcess;
 import com.liferay.portal.kernel.upgrade.BaseUuidUpgradeProcess;
 import com.liferay.portal.kernel.upgrade.DummyUpgradeProcess;
+import com.liferay.portal.kernel.upgrade.DummyUpgradeStep;
 import com.liferay.portal.kernel.upgrade.MVCCVersionUpgradeProcess;
 import com.liferay.portal.kernel.upgrade.UpgradeProcessFactory;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
@@ -131,8 +131,15 @@ public class CommerceInventoryServiceUpgradeStepRegistrator
 
 		registry.register(
 			"2.5.0", "2.5.1",
-			new com.liferay.commerce.inventory.internal.upgrade.v2_5_1.
-				CommerceInventoryReplenishmentItemUpgradeProcess());
+			UpgradeProcessFactory.runSQL(
+				StringBundler.concat(
+					"delete from CIReplenishmentItem where ",
+					"CIReplenishmentItem.sku not in (select ",
+					"CIWarehouseItem.sku from CIWarehouseItem where ",
+					"CIReplenishmentItem.companyId = ",
+					"CIWarehouseItem.companyId and ",
+					"CIReplenishmentItem.commerceInventoryWarehouseId = ",
+					"CIWarehouseItem.commerceInventoryWarehouseId)")));
 
 		registry.register(
 			"2.5.1", "2.6.0", CommerceInventoryWarehouseRelTable.create(),
@@ -162,8 +169,36 @@ public class CommerceInventoryServiceUpgradeStepRegistrator
 
 		registry.register(
 			"2.7.0", "2.8.0",
-			new com.liferay.commerce.inventory.internal.upgrade.v2_8_0.
-				CommerceInventoryAuditUpgradeProcess());
+			UpgradeProcessFactory.alterColumnType(
+				"CIAudit", "quantity", "BIGDECIMAL null"));
+
+		registry.register(
+			"2.8.0", "2.9.0",
+			UpgradeProcessFactory.alterColumnType(
+				"CIWarehouseItem", "quantity", "BIGDECIMAL null"),
+			UpgradeProcessFactory.alterColumnType(
+				"CIWarehouseItem", "reservedQuantity", "BIGDECIMAL null"));
+
+		registry.register(
+			"2.9.0", "2.10.0",
+			UpgradeProcessFactory.alterColumnType(
+				CommerceInventoryReplenishmentItemModelImpl.TABLE_NAME,
+				"quantity", "BIGDECIMAL null"));
+
+		registry.register(
+			"2.10.0", "2.11.0",
+			UpgradeProcessFactory.alterColumnType(
+				CommerceInventoryBookedQuantityModelImpl.TABLE_NAME, "quantity",
+				"BIGDECIMAL null"));
+
+		registry.register("2.11.0", "2.11.1", new DummyUpgradeStep());
+
+		registry.register(
+			"2.11.1", "2.11.2",
+			new com.liferay.commerce.inventory.internal.upgrade.v2_11_2.
+				CommercePermissionUpgradeProcess(
+					_resourceActionLocalService,
+					_resourcePermissionLocalService));
 
 		if (_log.isInfoEnabled()) {
 			_log.info("Commerce inventory upgrade step registrator finished");
@@ -174,13 +209,7 @@ public class CommerceInventoryServiceUpgradeStepRegistrator
 		CommerceInventoryServiceUpgradeStepRegistrator.class);
 
 	@Reference
-	private CompanyLocalService _companyLocalService;
-
-	@Reference
 	private ResourceActionLocalService _resourceActionLocalService;
-
-	@Reference
-	private ResourceLocalService _resourceLocalService;
 
 	@Reference
 	private ResourcePermissionLocalService _resourcePermissionLocalService;

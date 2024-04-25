@@ -71,7 +71,12 @@ public class StrategyResourceFactoryImpl implements StrategyResource.Factory {
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _strategyResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, StrategyResource>
+					strategyResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_strategyResourceProxyProviderFunction;
+
+				return strategyResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -227,9 +232,6 @@ public class StrategyResourceFactoryImpl implements StrategyResource.Factory {
 		}
 	}
 
-	private static final Function<InvocationHandler, StrategyResource>
-		_strategyResourceProxyProviderFunction = _getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -264,6 +266,14 @@ public class StrategyResourceFactoryImpl implements StrategyResource.Factory {
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, StrategyResource>
+			_strategyResourceProxyProviderFunction =
+				_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

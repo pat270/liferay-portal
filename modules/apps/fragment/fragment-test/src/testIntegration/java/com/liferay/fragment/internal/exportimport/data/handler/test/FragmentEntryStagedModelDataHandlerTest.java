@@ -16,7 +16,7 @@ import com.liferay.fragment.model.FragmentEntry;
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.service.FragmentEntryLinkLocalService;
 import com.liferay.fragment.service.FragmentEntryLocalService;
-import com.liferay.fragment.util.FragmentTestUtil;
+import com.liferay.fragment.test.util.FragmentTestUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -193,7 +193,8 @@ public class FragmentEntryStagedModelDataHandlerTest
 			TestPropsValues.getUserId(), fragmentEntry.getFragmentEntryId(),
 			fragmentEntry.getFragmentCollectionId(), fragmentEntry.getName(),
 			"css", "html", "js", false, "{fieldSets: []}", StringPool.BLANK,
-			fragmentEntry.getPreviewFileEntryId(), 0);
+			fragmentEntry.getPreviewFileEntryId(), false,
+			fragmentEntry.getTypeOptions(), WorkflowConstants.STATUS_APPROVED);
 
 		try {
 			exportImportStagedModel(stagedModel);
@@ -235,7 +236,7 @@ public class FragmentEntryStagedModelDataHandlerTest
 			fragmentCollection.getFragmentCollectionId(),
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
-			RandomTestUtil.randomString(), false, configuration, null, 0,
+			RandomTestUtil.randomString(), false, configuration, null, 0, false,
 			FragmentConstants.TYPE_COMPONENT, null,
 			WorkflowConstants.STATUS_APPROVED,
 			ServiceContextTestUtil.getServiceContext(

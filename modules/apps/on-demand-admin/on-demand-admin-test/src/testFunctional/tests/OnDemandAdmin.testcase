@@ -1,4 +1,4 @@
-@component-name = "portal-user-management-and-portal-configuration"
+@component-name = "portal-user-management"
 definition {
 
 	property portal.release = "false";
@@ -28,6 +28,7 @@ definition {
 	@priority = 5
 	test OnDemandAdminCanChangeInstanceAdminPassword {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: a new Virtual Instance is created") {
 			HeadlessPortalInstanceAPI.addPortalInstance(
@@ -66,12 +67,10 @@ definition {
 	@priority = 5
 	test OnDemandAdminUnavailableInNonDefaultInstance {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given a new Virtual Instance is created") {
-			ApplicationsMenu.gotoPortlet(
-				category = "System",
-				panel = "Control Panel",
-				portlet = "Virtual Instances");
+			PortalInstances.openVirtualInstancesAdmin();
 
 			PortalInstances.addCP(
 				mailDomain = "www.able.com",

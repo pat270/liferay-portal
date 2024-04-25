@@ -9,7 +9,11 @@ import com.liferay.batch.engine.model.BatchEngineImportTask;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.util.OrderByComparator;
 
+import java.io.InputStream;
+import java.io.Serializable;
+
 import java.util.List;
+import java.util.Map;
 
 /**
  * Provides the remote service utility for BatchEngineImportTask. This utility wraps
@@ -30,6 +34,55 @@ public class BatchEngineImportTaskServiceUtil {
 	 *
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.batch.engine.service.impl.BatchEngineImportTaskServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
+	public static BatchEngineImportTask addBatchEngineImportTask(
+			String externalReferenceCode, long companyId, long userId,
+			long batchSize, String callbackURL, String className,
+			byte[] content, String contentType, String executeStatus,
+			Map<String, String> fieldNameMappingMap, int importStrategy,
+			String operation, Map<String, Serializable> parameters,
+			String taskItemDelegateName)
+		throws PortalException {
+
+		return getService().addBatchEngineImportTask(
+			externalReferenceCode, companyId, userId, batchSize, callbackURL,
+			className, content, contentType, executeStatus, fieldNameMappingMap,
+			importStrategy, operation, parameters, taskItemDelegateName);
+	}
+
+	public static BatchEngineImportTask addBatchEngineImportTask(
+			String externalReferenceCode, long companyId, long userId,
+			long batchSize, String callbackURL, String className,
+			byte[] content, String contentType, String executeStatus,
+			Map<String, String> fieldNameMappingMap, int importStrategy,
+			String operation, Map<String, Serializable> parameters,
+			String taskItemDelegateName,
+			com.liferay.batch.engine.BatchEngineTaskItemDelegate<?>
+				batchEngineTaskItemDelegate)
+		throws PortalException {
+
+		return getService().addBatchEngineImportTask(
+			externalReferenceCode, companyId, userId, batchSize, callbackURL,
+			className, content, contentType, executeStatus, fieldNameMappingMap,
+			importStrategy, operation, parameters, taskItemDelegateName,
+			batchEngineTaskItemDelegate);
+	}
+
+	public static BatchEngineImportTask getBatchEngineImportTask(
+			long batchEngineImportTaskId)
+		throws PortalException {
+
+		return getService().getBatchEngineImportTask(batchEngineImportTaskId);
+	}
+
+	public static BatchEngineImportTask
+			getBatchEngineImportTaskByExternalReferenceCode(
+				String externalReferenceCode, long companyId)
+		throws PortalException {
+
+		return getService().getBatchEngineImportTaskByExternalReferenceCode(
+			externalReferenceCode, companyId);
+	}
+
 	public static List<BatchEngineImportTask> getBatchEngineImportTasks(
 			long companyId, int start, int end)
 		throws PortalException {
@@ -59,6 +112,13 @@ public class BatchEngineImportTaskServiceUtil {
 	 */
 	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
+	}
+
+	public static InputStream openContentInputStream(
+			long batchEngineImportTaskId)
+		throws PortalException {
+
+		return getService().openContentInputStream(batchEngineImportTaskId);
 	}
 
 	public static BatchEngineImportTaskService getService() {

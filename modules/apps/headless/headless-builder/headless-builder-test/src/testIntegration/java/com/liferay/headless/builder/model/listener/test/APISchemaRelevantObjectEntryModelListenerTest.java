@@ -6,46 +6,86 @@
 package com.liferay.headless.builder.model.listener.test;
 
 import com.liferay.headless.builder.test.BaseTestCase;
+import com.liferay.headless.builder.test.util.ObjectDefinitionTestUtil;
+import com.liferay.object.constants.ObjectDefinitionConstants;
+import com.liferay.object.field.util.ObjectFieldUtil;
+import com.liferay.object.model.ObjectDefinition;
+import com.liferay.object.model.ObjectEntry;
+import com.liferay.object.rest.test.util.ObjectEntryTestUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.HTTPTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.Http;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.test.rule.FeatureFlags;
 
+import java.util.Collections;
+
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
  * @author Sergio Jiménez del Coso
  */
-@FeatureFlags({"LPS-167253", "LPS-184413", "LPS-186757"})
+@FeatureFlags("LPS-178642")
 public class APISchemaRelevantObjectEntryModelListenerTest
 	extends BaseTestCase {
 
+	@Before
+	@Override
+	public void setUp() throws Exception {
+		super.setUp();
+
+		_objectDefinition = ObjectDefinitionTestUtil.publishObjectDefinition(
+			Collections.singletonList(
+				ObjectFieldUtil.createObjectField(
+					"Text", "String", true, true, null,
+					RandomTestUtil.randomString(),
+					"x" + RandomTestUtil.randomString(), false)),
+			ObjectDefinitionConstants.SCOPE_COMPANY);
+
+		_objectEntry = ObjectEntryTestUtil.addObjectEntry(
+			_objectDefinition, "x" + RandomTestUtil.randomString(),
+			RandomTestUtil.randomString());
+	}
+
 	@Test
 	public void test() throws Exception {
-		JSONObject jsonObject = HTTPTestUtil.invokeToJSONObject(
+		JSONObject apiApplicationJSONObject = HTTPTestUtil.invokeToJSONObject(
 			JSONUtil.put(
-				"mainObjectDefinitionERC", RandomTestUtil.randomString()
+				"applicationStatus", "unpublished"
 			).put(
-				"name", RandomTestUtil.randomString()
+				"baseURL", StringUtil.toLowerCase(RandomTestUtil.randomString())
+			).put(
+				"title", RandomTestUtil.randomString()
 			).toString(),
-			"headless-builder/schemas", Http.Method.POST);
+			"headless-builder/applications", Http.Method.POST);
 
-		Assert.assertEquals("BAD_REQUEST", jsonObject.get("status"));
-		Assert.assertEquals(
-			"An API schema must be related to an API application.",
-			jsonObject.get("title"));
-
-		jsonObject = HTTPTestUtil.invokeToJSONObject(
+		JSONObject jsonObject = HTTPTestUtil.invokeToJSONObject(
 			JSONUtil.put(
 				"mainObjectDefinitionERC", RandomTestUtil.randomString()
 			).put(
 				"name", RandomTestUtil.randomString()
 			).put(
 				"r_apiApplicationToAPISchemas_c_apiApplicationId",
-				RandomTestUtil.randomLong()
+				apiApplicationJSONObject.getLong("id")
+			).toString(),
+			"headless-builder/schemas", Http.Method.POST);
+
+		Assert.assertEquals("BAD_REQUEST", jsonObject.get("status"));
+		Assert.assertEquals(
+			"An API schema must be an existing object definition.",
+			jsonObject.get("title"));
+
+		jsonObject = HTTPTestUtil.invokeToJSONObject(
+			JSONUtil.put(
+				"mainObjectDefinitionERC",
+				_objectDefinition.getExternalReferenceCode()
+			).put(
+				"name", RandomTestUtil.randomString()
 			).toString(),
 			"headless-builder/schemas", Http.Method.POST);
 
@@ -54,19 +94,41 @@ public class APISchemaRelevantObjectEntryModelListenerTest
 			"An API schema must be related to an API application.",
 			jsonObject.get("title"));
 
-		JSONObject apiApplicationJSONObject = HTTPTestUtil.invokeToJSONObject(
+		jsonObject = HTTPTestUtil.invokeToJSONObject(
 			JSONUtil.put(
-				"applicationStatus", "unpublished"
+				"mainObjectDefinitionERC",
+				_objectDefinition.getExternalReferenceCode()
 			).put(
-				"baseURL", RandomTestUtil.randomString()
-			).put(
-				"title", RandomTestUtil.randomString()
+				"name", RandomTestUtil.randomString()
 			).toString(),
-			"headless-builder/applications", Http.Method.POST);
+			"headless-builder/schemas", Http.Method.POST);
+
+		Assert.assertEquals("BAD_REQUEST", jsonObject.get("status"));
+		Assert.assertEquals(
+			"An API schema must be related to an API application.",
+			jsonObject.get("title"));
 
 		jsonObject = HTTPTestUtil.invokeToJSONObject(
 			JSONUtil.put(
-				"mainObjectDefinitionERC", RandomTestUtil.randomString()
+				"mainObjectDefinitionERC",
+				_objectDefinition.getExternalReferenceCode()
+			).put(
+				"name", RandomTestUtil.randomString()
+			).put(
+				"r_apiApplicationToAPISchemas_c_apiApplicationErc",
+				_objectEntry.getExternalReferenceCode()
+			).toString(),
+			"headless-builder/schemas", Http.Method.POST);
+
+		Assert.assertEquals("BAD_REQUEST", jsonObject.get("status"));
+		Assert.assertEquals(
+			"An API schema must be related to an API application.",
+			jsonObject.get("title"));
+
+		jsonObject = HTTPTestUtil.invokeToJSONObject(
+			JSONUtil.put(
+				"mainObjectDefinitionERC",
+				_objectDefinition.getExternalReferenceCode()
 			).put(
 				"name", _API_SCHEMA_NAME
 			).put(
@@ -85,7 +147,25 @@ public class APISchemaRelevantObjectEntryModelListenerTest
 
 		jsonObject = HTTPTestUtil.invokeToJSONObject(
 			JSONUtil.put(
-				"mainObjectDefinitionERC", RandomTestUtil.randomString()
+				"mainObjectDefinitionERC",
+				_objectDefinition.getExternalReferenceCode()
+			).put(
+				"name", RandomTestUtil.randomString()
+			).put(
+				"r_apiApplicationToAPISchemas_c_apiApplicationId",
+				jsonObject.getLong("id")
+			).toString(),
+			"headless-builder/schemas", Http.Method.POST);
+
+		Assert.assertEquals("BAD_REQUEST", jsonObject.get("status"));
+		Assert.assertEquals(
+			"An API schema must be related to an API application.",
+			jsonObject.get("title"));
+
+		jsonObject = HTTPTestUtil.invokeToJSONObject(
+			JSONUtil.put(
+				"mainObjectDefinitionERC",
+				_objectDefinition.getExternalReferenceCode()
 			).put(
 				"name", _API_SCHEMA_NAME
 			).put(
@@ -102,5 +182,10 @@ public class APISchemaRelevantObjectEntryModelListenerTest
 
 	private static final String _API_SCHEMA_NAME =
 		RandomTestUtil.randomString();
+
+	@DeleteAfterTestRun
+	private ObjectDefinition _objectDefinition;
+
+	private ObjectEntry _objectEntry;
 
 }

@@ -1,4 +1,4 @@
-@component-name = "portal-lima"
+@component-name = "portal-content-management"
 definition {
 
 	property ci.retries.disabled = "true";
@@ -73,6 +73,7 @@ definition {
 	test CanAddAnnouncementsEntryFutureDate {
 		property custom.properties = "company.default.time.zone=America/Los_Angeles";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		AnnouncementsNavigator.openToEntriesTab(
 			layoutName = "announcements-page",
@@ -94,7 +95,7 @@ definition {
 
 		// We need to wait for the system time to pass by 2 minutes in order to verify the announcement display date. There is currently no easy way to manipulate the system time in CI for automation. 1 minute is the shortest value we can set while ensuring the stability of the test. See LPS-157957.
 
-		Pause(locator1 = 120000);
+		Pause(value1 = 120000);
 
 		Navigator.gotoPage(pageName = "Announcements Page");
 
@@ -105,7 +106,7 @@ definition {
 			entryURL = "http://www.liferay.com");
 	}
 
-	@priority = 4
+	@priority = 3
 	@refactordone
 	test CanAddAnnouncementsEntryPriorityImportant {
 		JSONAnnouncement.addAnnouncement(
@@ -206,7 +207,7 @@ definition {
 		AnnouncementsEntry.viewNoAdmin();
 	}
 
-	@priority = 4
+	@priority = 3
 	@refactordone
 	test CanViewAnnouncementsEntryWithDistributedScope {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
@@ -430,7 +431,7 @@ definition {
 
 	@description = "This test ensures that the announcement widget follows W3C accessibility standards."
 	@ignore = "true"
-	@priority = 4
+	@priority = 3
 	test WidgetFollowsAccessibilityStandards {
 		JSONLayout.addWidgetToPublicLayout(
 			groupName = "Guest",

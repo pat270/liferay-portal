@@ -1,4 +1,5 @@
 import Card from 'shared/components/Card';
+import ClayLink from '@clayui/link';
 import getCN from 'classnames';
 import getMetricsMapper from 'shared/hoc/mappers/metrics';
 import React from 'react';
@@ -17,7 +18,8 @@ import {RangeSelectors, Router} from 'shared/types';
 import {Routes} from 'shared/util/router';
 import {sub} from 'shared/util/lang';
 import {useParams} from 'react-router-dom';
-import {useQueryPagination, useQueryRangeSelectors} from 'shared/hooks';
+import {useQueryPagination} from 'shared/hooks/useQueryPagination';
+import {useQueryRangeSelectors} from 'shared/hooks/useQueryRangeSelectors';
 import {withBaseResults, withRangeKey} from 'shared/hoc';
 
 const withData = () =>
@@ -48,13 +50,13 @@ const TableWithData: React.FC<ITableWithDataProps> = withRangeKey(
 		emptyDescription: sub(
 			Liferay.Language.get('empty-message-lists'),
 			[
-				<a
+				<ClayLink
 					href={URLConstants.DocumentationLink}
 					key='DOCUMENTATION'
 					target='_blank'
 				>
 					{Liferay.Language.get('documentation').toLowerCase()}
-				</a>
+				</ClayLink>
 			],
 			false
 		),

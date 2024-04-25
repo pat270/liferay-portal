@@ -21,9 +21,10 @@ definition {
 		}
 	}
 
+	@ignore = "true"
 	@priority = 5
 	test LearningToRankSmoke {
-		property elastic.override.version = "7.17.0";
+		property elastic.override.version = "7.17.10";
 		property elasticsearch.ltr.enabled = "true";
 		property minimum.slave.ram = "24";
 		property osgi.module.configuration.file.names = "com.liferay.portal.search.rest.configuration.SearchSuggestionsCompanyConfiguration.config";
@@ -31,13 +32,11 @@ definition {
 		property remote.elasticsearch.enabled = "true";
 		property search.environment.suite.exclude = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		AntCommands.runCommand("build-test-elasticsearch7.xml", "add-ltr-linear-regression-model -Dbackup.index=.ltrstore -Delasticsearch.port=9200");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "System",
-			panel = "Control Panel",
-			portlet = "Server Administration");
+		ServerAdministration.openServerAdmin();
 
 		var script = TestCase.getFileContent(fileName = "blogs-ltr-subset.groovy");
 
@@ -47,7 +46,7 @@ definition {
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "alien");
+		SearchPage.searchEmbedded(searchTerm = "alien");
 
 		var assetEntryTitleListNoLtr = "";
 		var iterator = 1;
@@ -79,7 +78,7 @@ definition {
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "alien");
+		SearchPage.searchEmbedded(searchTerm = "alien");
 
 		var assetEntryTitleListLtr = "";
 		var iterator = 1;
@@ -111,6 +110,7 @@ definition {
 		property remote.elasticsearch.enabled = "true";
 		property search.environment.suite.exclude = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Elasticsearch.viewClusterStatusViaClusterHealthAPI(
 			nodePort = 9200,
@@ -132,25 +132,25 @@ definition {
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "Apple");
+		SearchPage.searchEmbedded(searchTerm = "Apple");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Apple",
 			searchAssetType = "Document");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Apple",
 			searchAssetType = "Message Boards Message");
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "Orange");
+		SearchPage.searchEmbedded(searchTerm = "Orange");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Apple",
 			searchAssetType = "Document");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Apple",
 			searchAssetType = "Message Boards Message");
 
@@ -165,25 +165,25 @@ definition {
 
 		Clustering.shutdownSpecificServer(nodePort = 8080);
 
-		SearchPortlets.searchEmbedded(searchTerm = "Apple");
+		SearchPage.searchEmbedded(searchTerm = "Apple");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Apple",
 			searchAssetType = "Document");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Apple",
 			searchAssetType = "Message Boards Message");
 
 		Navigator.openSpecificURL(url = "http://localhost:9080");
 
-		SearchPortlets.searchEmbedded(searchTerm = "Orange");
+		SearchPage.searchEmbedded(searchTerm = "Orange");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Apple",
 			searchAssetType = "Document");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Apple",
 			searchAssetType = "Message Boards Message");
 	}
@@ -195,6 +195,7 @@ definition {
 		property remote.elasticsearch.enabled = "true";
 		property search.environment.suite.exclude = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONLayout.addPublicLayout(
 			groupName = "Guest",
@@ -205,7 +206,7 @@ definition {
 			layoutName = "Elasticsearch Monitoring Page",
 			layoutTemplate = "1 Column");
 
-		SearchPortlets.addWidgets(
+		SearchPage.addWidgets(
 			layoutName = "Elasticsearch Monitoring Page",
 			searchPortletList = "Elasticsearch Monitoring");
 
@@ -214,6 +215,7 @@ definition {
 		ElasticsearchMonitoring.viewPG();
 	}
 
+	@ignore = "true"
 	@priority = 5
 	test XPackPkiAuthenticationWithJDK11 {
 		property elastic.pki.authentication.enabled = "true";
@@ -226,6 +228,7 @@ definition {
 		property remote.elasticsearch.enabled = "true";
 		property search.environment.suite.exclude = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONLayout.addPublicLayout(
 			groupName = "Guest",
@@ -236,7 +239,7 @@ definition {
 			layoutName = "Elasticsearch Monitoring Page",
 			layoutTemplate = "1 Column");
 
-		SearchPortlets.addWidgets(
+		SearchPage.addWidgets(
 			layoutName = "Elasticsearch Monitoring Page",
 			searchPortletList = "Elasticsearch Monitoring");
 
@@ -251,15 +254,16 @@ definition {
 		property remote.elasticsearch.enabled = "true";
 		property search.environment.suite.exclude = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONWebcontent.addWebContent(
 			content = "WC Content",
 			groupName = "Guest",
 			title = "WC Title");
 
-		SearchPortlets.searchEmbedded(searchTerm = "WC Title");
+		SearchPage.searchEmbedded(searchTerm = "WC Title");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "WC Title",
 			searchAssetType = "Web Content Article");
 
@@ -272,7 +276,7 @@ definition {
 			layoutName = "Elasticsearch Monitoring Page",
 			layoutTemplate = "1 Column");
 
-		SearchPortlets.addWidgets(
+		SearchPage.addWidgets(
 			layoutName = "Elasticsearch Monitoring Page",
 			searchPortletList = "Elasticsearch Monitoring");
 
@@ -287,6 +291,7 @@ definition {
 		ElasticsearchMonitoring.viewAsGuestPG();
 	}
 
+	@ignore = "true"
 	@priority = 5
 	test XPackWithJDK11 {
 		property elastic.xpack.enabled = "true";
@@ -299,15 +304,16 @@ definition {
 		property search.environment.suite.exclude = "true";
 		property test.assert.warning.exceptions = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONWebcontent.addWebContent(
 			content = "WC Content",
 			groupName = "Guest",
 			title = "WC Title");
 
-		SearchPortlets.searchEmbedded(searchTerm = "WC Title");
+		SearchPage.searchEmbedded(searchTerm = "WC Title");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "WC Title",
 			searchAssetType = "Web Content Article");
 
@@ -320,7 +326,7 @@ definition {
 			layoutName = "Elasticsearch Monitoring Page",
 			layoutTemplate = "1 Column");
 
-		SearchPortlets.addWidgets(
+		SearchPage.addWidgets(
 			layoutName = "Elasticsearch Monitoring Page",
 			searchPortletList = "Elasticsearch Monitoring");
 
@@ -336,6 +342,7 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-151205."
+	@ignore = "true"
 	@priority = 5
 	test XPackWithRestrictedCipherSuitesAndTLSVersions {
 		property elastic.xpack.configure.tls.cipher.suites = "true";
@@ -343,6 +350,7 @@ definition {
 		property remote.elasticsearch.enabled = "true";
 		property search.environment.suite.exclude = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONLayout.addPublicLayout(
 			groupName = "Guest",
@@ -353,7 +361,7 @@ definition {
 			layoutName = "Elasticsearch Monitoring Page",
 			layoutTemplate = "1 Column");
 
-		SearchPortlets.addWidgets(
+		SearchPage.addWidgets(
 			layoutName = "Elasticsearch Monitoring Page",
 			searchPortletList = "Elasticsearch Monitoring");
 

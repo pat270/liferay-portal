@@ -6,27 +6,35 @@
 package com.liferay.portal.search.tuning.rankings.web.internal.index;
 
 import com.liferay.json.storage.service.JSONStorageEntryLocalService;
-import com.liferay.osgi.util.service.Snapshot;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.CompanyConstants;
+import com.liferay.portal.kernel.module.service.Snapshot;
+import com.liferay.portal.kernel.search.background.task.ReindexStatusMessageSenderUtil;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
-import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.search.capabilities.SearchCapabilities;
+import com.liferay.portal.search.document.DocumentBuilderFactory;
+import com.liferay.portal.search.engine.adapter.SearchEngineAdapter;
 import com.liferay.portal.search.index.SyncReindexManager;
 import com.liferay.portal.search.spi.reindexer.IndexReindexer;
-import com.liferay.portal.search.tuning.rankings.web.internal.index.name.RankingIndexName;
-import com.liferay.portal.search.tuning.rankings.web.internal.index.name.RankingIndexNameBuilder;
+import com.liferay.portal.search.tuning.rankings.constants.ResultRankingsConstants;
+import com.liferay.portal.search.tuning.rankings.index.Ranking;
+import com.liferay.portal.search.tuning.rankings.index.RankingBuilderFactory;
+import com.liferay.portal.search.tuning.rankings.index.RankingPinBuilderFactory;
+import com.liferay.portal.search.tuning.rankings.index.name.RankingIndexName;
+import com.liferay.portal.search.tuning.rankings.index.name.RankingIndexNameBuilder;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -37,74 +45,82 @@ import org.osgi.service.component.annotations.Reference;
 public class RankingIndexReindexer implements IndexReindexer {
 
 	@Override
-	public void reindex(long[] companyIds) throws Exception {
-		reindex(companyIds, null);
+	public void reindex(long companyId) throws Exception {
+		reindex(companyId, null);
 	}
 
 	@Override
-	public void reindex(long[] companyIds, String executionMode)
-		throws Exception {
+	public void reindex(long companyId, String executionMode) throws Exception {
+		if (!searchCapabilities.isResultRankingsSupported() ||
+			(companyId == CompanyConstants.SYSTEM)) {
 
-		if (!searchCapabilities.isResultRankingsSupported()) {
 			return;
 		}
 
-		for (long companyId : companyIds) {
-			List<Long> classPKs = jsonStorageEntryLocalService.getClassPKs(
-				companyId, classNameLocalService.getClassNameId(Ranking.class),
-				QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+		RankingIndexName rankingIndexName =
+			rankingIndexNameBuilder.getRankingIndexName(companyId);
 
-			RankingIndexName rankingIndexName =
-				rankingIndexNameBuilder.getRankingIndexName(companyId);
+		Date date = null;
 
-			if (ListUtil.isEmpty(classPKs)) {
-				if (_log.isInfoEnabled()) {
-					_log.info(
-						StringBundler.concat(
-							"Not reindexing ", rankingIndexName.getIndexName(),
-							" because the database has no ranking entries"));
-				}
+		if (_isExecuteSyncReindex(executionMode)) {
+			date = new Date();
 
-				continue;
+			Thread.sleep(1000);
+		}
+		else {
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					"Deleting and creating index " +
+						rankingIndexName.getIndexName());
 			}
 
-			Date date = null;
+			try {
+				RankingIndexCreatorUtil.deleteIfExists(
+					_searchEngineAdapter, rankingIndexName);
 
-			if (_isExecuteSyncReindex(executionMode)) {
-				date = new Date();
-
-				Thread.sleep(1000);
+				RankingIndexCreatorUtil.create(
+					_searchEngineAdapter, rankingIndexName);
 			}
-			else {
-				try {
-					rankingIndexCreator.delete(rankingIndexName);
-				}
-				catch (RuntimeException runtimeException) {
-					_log.error(
-						"Unable to delete index " +
-							rankingIndexName.getIndexName(),
-						runtimeException);
-				}
-			}
+			catch (RuntimeException runtimeException) {
+				_log.error(
+					"Unable to delete or create index " +
+						rankingIndexName.getIndexName(),
+					runtimeException);
 
-			if (!_isExecuteSyncReindex(executionMode)) {
-				rankingIndexCreator.create(rankingIndexName);
-			}
-
-			for (long classPK : classPKs) {
-				rankingIndexWriter.create(
-					rankingIndexName, _buildRanking(classPK));
-			}
-
-			if (_isExecuteSyncReindex(executionMode)) {
-				SyncReindexManager syncReindexManager =
-					_syncReindexManagerSnapshot.get();
-
-				syncReindexManager.deleteStaleDocuments(
-					rankingIndexName.getIndexName(), date,
-					Collections.emptySet());
+				return;
 			}
 		}
+
+		List<Long> classPKs = jsonStorageEntryLocalService.getClassPKs(
+			companyId, classNameLocalService.getClassNameId(Ranking.class),
+			QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+
+		int sendStatusInterval = Math.max(100, classPKs.size() / 20);
+
+		for (int i = 0; i < classPKs.size(); i++) {
+			_rankingIndexWriter.create(
+				rankingIndexName, _buildRanking(classPKs.get(i)));
+
+			if ((i % sendStatusInterval) == 0) {
+				ReindexStatusMessageSenderUtil.sendStatusMessage(
+					RankingIndexReindexer.class.getName(), i + 1,
+					classPKs.size());
+			}
+		}
+
+		if (_isExecuteSyncReindex(executionMode)) {
+			SyncReindexManager syncReindexManager =
+				_syncReindexManagerSnapshot.get();
+
+			syncReindexManager.deleteStaleDocuments(
+				rankingIndexName.getIndexName(), date, Collections.emptySet());
+		}
+	}
+
+	@Activate
+	protected void activate() {
+		_rankingIndexWriter = new RankingIndexWriter(
+			_documentBuilderFactory, _searchEngineAdapter);
 	}
 
 	@Reference
@@ -114,13 +130,13 @@ public class RankingIndexReindexer implements IndexReindexer {
 	protected JSONStorageEntryLocalService jsonStorageEntryLocalService;
 
 	@Reference
-	protected RankingIndexCreator rankingIndexCreator;
+	protected RankingBuilderFactory rankingBuilderFactory;
 
 	@Reference
 	protected RankingIndexNameBuilder rankingIndexNameBuilder;
 
 	@Reference
-	protected RankingIndexWriter rankingIndexWriter;
+	protected RankingPinBuilderFactory rankingPinBuilderFactory;
 
 	@Reference
 	protected SearchCapabilities searchCapabilities;
@@ -129,16 +145,16 @@ public class RankingIndexReindexer implements IndexReindexer {
 		JSONObject jsonObject = jsonStorageEntryLocalService.getJSONObject(
 			classNameLocalService.getClassNameId(Ranking.class), classPK);
 
-		Ranking.RankingBuilder rankingBuilder = new Ranking.RankingBuilder();
+		Ranking.Builder rankingBuilder = rankingBuilderFactory.builder();
 
 		rankingBuilder.aliases(
 			JSONUtil.toStringList(jsonObject.getJSONArray("aliases"))
+		).groupExternalReferenceCode(
+			jsonObject.getString("groupExternalReferenceCode")
 		).hiddenDocumentIds(
 			JSONUtil.toStringList(jsonObject.getJSONArray("hiddenDocumentIds"))
 		).rankingDocumentId(
 			jsonObject.getString("rankingDocumentId")
-		).inactive(
-			jsonObject.getBoolean("inactive")
 		).indexName(
 			jsonObject.getString("indexName")
 		).name(
@@ -147,6 +163,10 @@ public class RankingIndexReindexer implements IndexReindexer {
 			_getPins(jsonObject.getJSONArray("pins"))
 		).queryString(
 			jsonObject.getString("queryString")
+		).status(
+			_getStatus(jsonObject)
+		).sxpBlueprintExternalReferenceCode(
+			jsonObject.getString("sxpBlueprintExternalReferenceCode")
 		);
 
 		return rankingBuilder.build();
@@ -158,11 +178,28 @@ public class RankingIndexReindexer implements IndexReindexer {
 		JSONUtil.toList(
 			jsonArray,
 			jsonObject -> pins.add(
-				new Ranking.Pin(
-					jsonObject.getInt("position"),
-					jsonObject.getString("documentId"))));
+				rankingPinBuilderFactory.builder(
+				).documentId(
+					jsonObject.getString("documentId")
+				).position(
+					jsonObject.getInt("position")
+				).build()));
 
 		return pins;
+	}
+
+	private String _getStatus(JSONObject jsonObject) {
+		String status = jsonObject.getString(RankingFields.STATUS);
+
+		if (!Validator.isBlank(status)) {
+			return status;
+		}
+
+		if (jsonObject.getBoolean("inactive")) {
+			return ResultRankingsConstants.STATUS_INACTIVE;
+		}
+
+		return ResultRankingsConstants.STATUS_ACTIVE;
 	}
 
 	private boolean _isExecuteSyncReindex(String executionMode) {
@@ -181,5 +218,13 @@ public class RankingIndexReindexer implements IndexReindexer {
 	private static final Snapshot<SyncReindexManager>
 		_syncReindexManagerSnapshot = new Snapshot<>(
 			RankingIndexReindexer.class, SyncReindexManager.class, null, true);
+
+	@Reference
+	private DocumentBuilderFactory _documentBuilderFactory;
+
+	private RankingIndexWriter _rankingIndexWriter;
+
+	@Reference
+	private SearchEngineAdapter _searchEngineAdapter;
 
 }

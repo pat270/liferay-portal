@@ -13,6 +13,7 @@ import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Address;
+import com.liferay.portal.kernel.model.Country;
 import com.liferay.portal.kernel.model.EmailAddress;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.OrgLabor;
@@ -23,6 +24,7 @@ import com.liferay.portal.kernel.model.PasswordPolicyRel;
 import com.liferay.portal.kernel.model.Phone;
 import com.liferay.portal.kernel.model.Website;
 import com.liferay.portal.kernel.service.AddressLocalService;
+import com.liferay.portal.kernel.service.CountryLocalService;
 import com.liferay.portal.kernel.service.EmailAddressLocalService;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.OrgLaborLocalService;
@@ -35,7 +37,7 @@ import com.liferay.portal.kernel.service.WebsiteLocalService;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.xml.Element;
-import com.liferay.users.admin.kernel.util.UsersAdmin;
+import com.liferay.portlet.usersadmin.util.UsersAdminUtil;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -119,6 +121,7 @@ public class OrganizationStagedModelDataHandler
 			}
 
 			_exportAddresses(portletDataContext, exportedOrganization);
+			_exportCountry(portletDataContext, exportedOrganization);
 			_exportEmailAddresses(portletDataContext, exportedOrganization);
 			_exportOrgLabors(portletDataContext, exportedOrganization);
 			_exportPasswordPolicyRel(portletDataContext, exportedOrganization);
@@ -141,6 +144,8 @@ public class OrganizationStagedModelDataHandler
 	protected void doImportStagedModel(
 			PortletDataContext portletDataContext, Organization organization)
 		throws Exception {
+
+		organization = _importCountry(portletDataContext, organization);
 
 		long userId = portletDataContext.getUserId(organization.getUserUuid());
 
@@ -172,13 +177,14 @@ public class OrganizationStagedModelDataHandler
 			serviceContext.setUuid(organization.getUuid());
 
 			importedOrganization = _organizationLocalService.addOrganization(
-				userId, parentOrganizationId, organization.getName(),
+				null, userId, parentOrganizationId, organization.getName(),
 				organization.getType(), organization.getRegionId(),
 				organization.getCountryId(), organization.getStatusListTypeId(),
 				organization.getComments(), false, serviceContext);
 		}
 		else {
 			importedOrganization = _organizationLocalService.updateOrganization(
+				existingOrganization.getExternalReferenceCode(),
 				portletDataContext.getCompanyId(),
 				existingOrganization.getOrganizationId(), parentOrganizationId,
 				organization.getName(), organization.getType(),
@@ -214,6 +220,9 @@ public class OrganizationStagedModelDataHandler
 				portletDataContext, organization, Organization.class,
 				organization.getParentOrganizationId());
 		}
+
+		StagedModelDataHandlerUtil.importReferenceStagedModel(
+			portletDataContext, Country.class, organization.getCountryId());
 	}
 
 	private void _exportAddresses(
@@ -227,6 +236,20 @@ public class OrganizationStagedModelDataHandler
 		for (Address address : addresses) {
 			StagedModelDataHandlerUtil.exportReferenceStagedModel(
 				portletDataContext, organization, address,
+				PortletDataContext.REFERENCE_TYPE_EMBEDDED);
+		}
+	}
+
+	private void _exportCountry(
+			PortletDataContext portletDataContext, Organization organization)
+		throws Exception {
+
+		if (organization.getCountryId() > 0) {
+			Country country = _countryLocalService.getCountry(
+				organization.getCountryId());
+
+			StagedModelDataHandlerUtil.exportReferenceStagedModel(
+				portletDataContext, organization, country,
 				PortletDataContext.REFERENCE_TYPE_EMBEDDED);
 		}
 	}
@@ -339,9 +362,39 @@ public class OrganizationStagedModelDataHandler
 			addresses.add(address);
 		}
 
-		_usersAdmin.updateAddresses(
+		UsersAdminUtil.updateAddresses(
 			Organization.class.getName(),
 			importedOrganization.getOrganizationId(), addresses);
+	}
+
+	private Organization _importCountry(
+			PortletDataContext portletDataContext, Organization organization)
+		throws Exception {
+
+		List<Element> countryElements =
+			portletDataContext.getReferenceDataElements(
+				organization, Country.class);
+
+		for (Element countryElement : countryElements) {
+			String countryPath = countryElement.attributeValue("path");
+
+			Country country = (Country)portletDataContext.getZipEntryAsObject(
+				countryPath);
+
+			if (country == null) {
+				continue;
+			}
+
+			StagedModelDataHandlerUtil.importStagedModel(
+				portletDataContext, country);
+
+			country = _countryLocalService.getCountryByA2(
+				portletDataContext.getCompanyId(), country.getA2());
+
+			organization.setCountryId(country.getCountryId());
+		}
+
+		return organization;
 	}
 
 	private void _importEmailAddresses(
@@ -381,7 +434,7 @@ public class OrganizationStagedModelDataHandler
 			emailAddresses.add(emailAddress);
 		}
 
-		_usersAdmin.updateEmailAddresses(
+		UsersAdminUtil.updateEmailAddresses(
 			Organization.class.getName(),
 			importedOrganization.getOrganizationId(), emailAddresses);
 	}
@@ -401,7 +454,7 @@ public class OrganizationStagedModelDataHandler
 			orgLabor.setOrgLaborId(0);
 		}
 
-		_usersAdmin.updateOrgLabors(
+		UsersAdminUtil.updateOrgLabors(
 			importedOrganization.getOrganizationId(), orgLabors);
 	}
 
@@ -473,7 +526,7 @@ public class OrganizationStagedModelDataHandler
 			phones.add(phone);
 		}
 
-		_usersAdmin.updatePhones(
+		UsersAdminUtil.updatePhones(
 			Organization.class.getName(),
 			importedOrganization.getOrganizationId(), phones);
 	}
@@ -509,13 +562,16 @@ public class OrganizationStagedModelDataHandler
 			websites.add(website);
 		}
 
-		_usersAdmin.updateWebsites(
+		UsersAdminUtil.updateWebsites(
 			Organization.class.getName(),
 			importedOrganization.getOrganizationId(), websites);
 	}
 
 	@Reference
 	private AddressLocalService _addressLocalService;
+
+	@Reference
+	private CountryLocalService _countryLocalService;
 
 	@Reference
 	private EmailAddressLocalService _emailAddressLocalService;
@@ -537,9 +593,6 @@ public class OrganizationStagedModelDataHandler
 
 	@Reference
 	private PhoneLocalService _phoneLocalService;
-
-	@Reference
-	private UsersAdmin _usersAdmin;
 
 	@Reference
 	private WebsiteLocalService _websiteLocalService;

@@ -7,12 +7,14 @@
 
 <%@ include file="/init.jsp" %>
 
-<% ListTypeDefinition listTypeDefinition = (ListTypeDefinition)request.getAttribute(ObjectWebKeys.LIST_TYPE_DEFINITION);
-	ViewListTypeEntriesDisplayContext viewListTypeEntriesDisplayContext = (ViewListTypeEntriesDisplayContext)request.getAttribute(WebKeys.PORTLET_DISPLAY_CONTEXT);
+<%
+ListTypeDefinition listTypeDefinition = (ListTypeDefinition)request.getAttribute(ObjectWebKeys.LIST_TYPE_DEFINITION);
+
+ViewListTypeEntriesDisplayContext viewListTypeEntriesDisplayContext = (ViewListTypeEntriesDisplayContext)request.getAttribute(WebKeys.PORTLET_DISPLAY_CONTEXT);
 %>
 
 <react:component
-	module="js/components/ListTypeDefinition/EditListTypeDefinition"
+	module="{EditListTypeDefinition} from object-web"
 	props='<%=
 		HashMapBuilder.<String, Object>put(
 			"listTypeDefinitionId", listTypeDefinition.getListTypeDefinitionId()

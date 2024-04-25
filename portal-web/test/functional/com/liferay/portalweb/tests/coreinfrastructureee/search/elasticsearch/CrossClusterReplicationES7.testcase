@@ -29,6 +29,7 @@ definition {
 	@priority = 4
 	test AssertReplicationAfterReindex {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFile(
 			dmDocumentDescription = "DM Description",
@@ -39,9 +40,9 @@ definition {
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "Apple");
+		SearchPage.searchEmbedded(searchTerm = "Apple");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Apple1",
 			searchAssetType = "Document");
 
@@ -54,16 +55,17 @@ definition {
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "Apple");
+		SearchPage.searchEmbedded(searchTerm = "Apple");
 
-		SearchResultPortlet.viewMultipleSearchResults(
-			resultsList = "Apple1/Document,Apple2/Document",
+		SearchResults.viewMultipleSearchResults(
+			resultsList = "Apple1,Apple2",
 			searchTerm = "Apple");
 	}
 
 	@priority = 3
 	test AssertReplicationWithSynonyms {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		CrossClusterReplication.setupCrossClusterReplication();
 
@@ -96,6 +98,7 @@ definition {
 	@priority = 3
 	test BreakWorkflowSLA {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		WorkflowMetrics.setSLADefinitionsJobInterval(
 			definitionsJobInterval = 1,
@@ -165,9 +168,9 @@ definition {
 
 	@priority = 4
 	test CanReindexWithConcurrentExecutionMode {
-		property custom.properties = "feature.flag.LPS-177664=true";
 		property search.environment.suite.exclude = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		CrossClusterReplication.setupCrossClusterReplication();
 
@@ -176,14 +179,14 @@ definition {
 			groupName = "Guest",
 			title = "WC Title");
 
-		SearchAdministration.executeReindex(concurrentReindex = "true");
+		SearchAdministration.executeReindex(reindexMode = "Concurrent");
 
 		task ("Assert that the web content shows up after the concurrent reindex completes") {
 			Navigator.openURL();
 
-			SearchPortlets.searchEmbedded(searchTerm = "WC Title");
+			SearchPage.searchEmbedded(searchTerm = "WC Title");
 
-			SearchResultPortlet.viewSearchResults(
+			SearchResults.viewSearchResults(
 				searchAssetTitle = "WC Title",
 				searchAssetType = "Web Content Article",
 				searchTerm = "WC Title");
@@ -194,6 +197,7 @@ definition {
 	@priority = 3
 	test CleanAndReindexWorkflowMetricsInstances {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		CrossClusterReplication.setupCrossClusterReplication();
 
@@ -220,6 +224,7 @@ definition {
 	@priority = 3
 	test CleanAndReindexWorkflowMetricsNodes {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		CrossClusterReplication.setupCrossClusterReplication();
 
@@ -255,15 +260,13 @@ definition {
 	@priority = 3
 	test CleanAndReindexWorkflowMetricsProcesses {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		CrossClusterReplication.setupCrossClusterReplication();
 
 		CrossClusterReplication.cleanWorkflowIndex(workflowIndexName = "workflow-metrics-processes");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+		Workflow.openWorkflowMetrics();
 
 		AssertTextEquals.assertPartialText(
 			locator1 = "Message#EMPTY_INFO",
@@ -278,15 +281,13 @@ definition {
 	@priority = 3
 	test CleanAndReindexWorkflowMetricsSLAInstanceResults {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		CrossClusterReplication.setupCrossClusterReplication();
 
 		CrossClusterReplication.cleanWorkflowIndex(workflowIndexName = "workflow-metrics-sla-instance-results");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+		Workflow.openWorkflowMetrics();
 
 		AssertElementNotPresent(
 			key_workflowProcessName = "Single Approver",
@@ -301,6 +302,7 @@ definition {
 	@priority = 3
 	test CleanAndReindexWorkflowMetricsSLATaskResults {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		CrossClusterReplication.setupCrossClusterReplication();
 
@@ -327,6 +329,7 @@ definition {
 	@priority = 3
 	test CleanAndReindexWorkflowMetricsTasks {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		CrossClusterReplication.setupCrossClusterReplication();
 
@@ -370,6 +373,7 @@ definition {
 	@priority = 3
 	test CleanAndReindexWorkflowMetricsTransitions {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		CrossClusterReplication.setupCrossClusterReplication();
 
@@ -417,20 +421,15 @@ definition {
 	test CreateBlogsEntryWithNewWorkflow {
 		property portal.upstream = "false";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		CrossClusterReplication.setupCrossClusterReplication();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Workflow.duplicateSingleApproverWorkflow(workflowName = "Copy of Single Approver");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -454,22 +453,29 @@ definition {
 
 		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
 
+		// Workaround for LPS-180801
+
+		var workflowTask = Workflow._matchTaskCase(
+			workflowAssetTitle = "Blogs Entry Title",
+			workflowDefinitionTask = "approve",
+			workflowTask = "review");
+
 		Workflow.assignToMeTaskByActions(
 			workflowAssetTitle = "Blogs Entry Title",
 			workflowAssetType = "Blogs Entry",
-			workflowTask = "review");
+			workflowTask = ${workflowTask});
 
 		Workflow.approveTaskByActions(
 			workflowAssetTitle = "Blogs Entry Title",
 			workflowAssetType = "Blogs Entry",
-			workflowDefinitionTask = "approve",
-			workflowTask = "review");
+			workflowDefinitionTask = ${workflowDefinitionTask},
+			workflowTask = ${workflowTask});
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "Blogs");
+		SearchPage.searchEmbedded(searchTerm = "Blogs");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Blogs Entry Title",
 			searchAssetType = "Blogs Entry",
 			searchTerm = "Blogs");
@@ -478,6 +484,7 @@ definition {
 	@priority = 3
 	test SearchWithResultRankings {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		CrossClusterReplication.setupCrossClusterReplication();
 
@@ -508,11 +515,15 @@ definition {
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "WC Title");
+		SearchPage.configureEmbeddedSearchBar(searchScope = "Everything");
 
-		SearchResultPortlet.viewSearchResultsSpecificOrder(resultsList = "WC Title 3,WC Title 1");
+		SearchPage.searchEmbedded(searchTerm = "WC Title");
 
-		SearchResultPortlet.viewSearchResultNotPresent(
+		Refresh();
+
+		SearchResults.viewSearchResultsSpecificOrder(resultsList = "WC Title 3,WC Title 1");
+
+		SearchResults.viewSearchResultNotPresent(
 			searchAssetTitle = "WC Title 2",
 			searchAssetType = "Web Content Article");
 	}
@@ -520,16 +531,14 @@ definition {
 	@priority = 3
 	test SearchWithVirtualInstance {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFile(
 			dmDocumentDescription = "DM Description",
 			dmDocumentTitle = "Apple 1",
 			groupName = "Guest");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "System",
-			panel = "Control Panel",
-			portlet = "Virtual Instances");
+		PortalInstances.openVirtualInstancesAdmin();
 
 		PortalInstances.addCP(
 			mailDomain = "www.able.com",
@@ -556,35 +565,32 @@ definition {
 
 		Navigator.openSpecificURL(url = "http://www.able.com:8080");
 
-		SearchPortlets.searchEmbedded(searchTerm = "Apple");
+		SearchPage.searchEmbedded(searchTerm = "Apple");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Apple 2",
 			searchAssetType = "Document");
 
-		SearchResultPortlet.viewSearchResultNotPresent(
+		SearchResults.viewSearchResultNotPresent(
 			searchAssetTitle = "Apple 1",
 			searchAssetType = "Document");
 	}
 
 	@priority = 5
 	test Smoke {
-		property osgi.module.configuration.file.names = "com.liferay.portal.bundle.blacklist.internal.configuration.BundleBlacklistConfiguration.config";
-		property osgi.module.configurations = "blacklistBundleSymbolicNames=\"com.liferay.portal.search.tuning.rankings.web\"";
+		property app.server.bundles.size = "1";
+		property cluster.enabled = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
+
+		CrossClusterReplication.setupCrossClusterReplication(portalCluster = "true");
 
 		JSONDocument.addFile(
 			dmDocumentDescription = "DM Description",
 			dmDocumentTitle = "DM Title 1",
 			groupName = "Guest");
 
-		CrossClusterReplication.setupCrossClusterReplication();
-
 		SearchAdministration.openSearchAdmin();
-
-		AssertTextEquals(
-			locator1 = "Portlet#HEADER",
-			value1 = "Search");
 
 		AssertTextEquals.assertPartialText(
 			key_connectionId = "__REMOTE__",
@@ -592,25 +598,10 @@ definition {
 			value1 = "LiferayElasticsearchCluster");
 
 		AssertTextEquals.assertPartialText(
-			key_connectionId = "localcluster",
-			locator1 = "SearchAdmin#CLUSTER_NAME",
-			value1 = "LiferayElasticsearchClusterTwo");
-
-		Navigator.openURL();
-
-		SearchPortlets.searchEmbedded(searchTerm = "DM");
-
-		SearchResultPortlet.viewSearchResults(
-			searchAssetTitle = "DM Title 1",
-			searchAssetType = "Document");
-
-		AntCommands.runCommand("build-test-elasticsearch7.xml", "stop-elasticsearch -Delasticsearch.bundle.number=1");
-
-		SearchAdministration.openSearchAdmin();
-
-		AssertTextEquals(
-			locator1 = "Portlet#HEADER",
-			value1 = "Search");
+			key_clusterMode = "Write",
+			key_connectionId = "__REMOTE__",
+			locator1 = "SearchAdmin#CLUSTER_MODE",
+			value1 = "Write");
 
 		AssertTextEquals.assertPartialText(
 			key_connectionId = "localcluster",
@@ -618,49 +609,33 @@ definition {
 			value1 = "LiferayElasticsearchClusterTwo");
 
 		AssertTextEquals.assertPartialText(
-			locator1 = "Message#ERROR",
-			value1 = "Connection refused");
-
-		AssertElementNotPresent(
-			key_connectionId = "__REMOTE__",
-			locator1 = "SearchAdmin#CLUSTER_NAME");
+			key_clusterMode = "Read",
+			key_connectionId = "localcluster",
+			locator1 = "SearchAdmin#CLUSTER_MODE",
+			value1 = "Read");
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "DM");
+		SearchPage.searchEmbedded(searchTerm = "DM");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "DM Title 1",
 			searchAssetType = "Document");
 
-		AntCommands.runCommand("build-test-elasticsearch7.xml", "start-elasticsearch-node -Delasticsearch.bundle.number=1");
+		User.logoutPG(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
 
-		AntCommands.runCommand("build-test-elasticsearch7.xml", "stop-elasticsearch -Delasticsearch.bundle.number=2");
+		User.loginPG(
+			nodePort = 9080,
+			password = "test",
+			userEmailAddress = "test@liferay.com");
 
-		SearchAdministration.openSearchAdmin();
+		SearchPage.searchEmbedded(searchTerm = "DM");
 
-		AssertTextEquals(
-			locator1 = "Portlet#HEADER",
-			value1 = "Search");
-
-		AssertTextEquals.assertPartialText(
-			key_connectionId = "__REMOTE__",
-			locator1 = "SearchAdmin#CLUSTER_NAME",
-			value1 = "LiferayElasticsearchCluster");
-
-		AssertTextEquals.assertPartialText(
-			locator1 = "Message#ERROR",
-			value1 = "Connection refused");
-
-		AssertElementNotPresent(
-			key_connectionId = "localcluster",
-			locator1 = "SearchAdmin#CLUSTER_NAME");
-
-		Navigator.openURL();
-
-		SearchPortlets.searchEmbedded(searchTerm = "DM");
-
-		SearchResultPortlet.viewSearchResultNotPresent(searchTerm = "DM");
+		SearchResults.viewSearchResults(
+			searchAssetTitle = "DM Title 1",
+			searchAssetType = "Document");
 	}
 
 }

@@ -17,7 +17,9 @@ import com.liferay.fragment.model.FragmentEntry;
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.service.FragmentEntryLinkLocalService;
 import com.liferay.fragment.service.FragmentEntryLocalService;
-import com.liferay.fragment.util.FragmentTestUtil;
+import com.liferay.fragment.test.util.FragmentTestUtil;
+import com.liferay.layout.page.template.constants.LayoutPageTemplateCollectionTypeConstants;
+import com.liferay.layout.page.template.constants.LayoutPageTemplateConstants;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateCollection;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
@@ -25,6 +27,7 @@ import com.liferay.layout.page.template.service.LayoutPageTemplateCollectionLoca
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.configuration.test.util.CompanyConfigurationTemporarySwapper;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -33,12 +36,10 @@ import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutSet;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.LayoutSetLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.settings.SettingsFactoryUtil;
 import com.liferay.portal.kernel.test.portlet.MockLiferayPortletActionResponse;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
@@ -109,7 +110,7 @@ public class FragmentEntryLinkLocalServiceTest {
 			_fragmentCollection.getFragmentCollectionId(), null,
 			"Fragment Name", StringPool.BLANK, "<div>test</div>",
 			StringPool.BLANK, false, _read("configuration-light.json"), null, 0,
-			FragmentConstants.TYPE_SECTION, null,
+			false, FragmentConstants.TYPE_SECTION, null,
 			WorkflowConstants.STATUS_APPROVED, _serviceContext);
 
 		_fragmentEntryWithFreeMarker =
@@ -118,7 +119,7 @@ public class FragmentEntryLinkLocalServiceTest {
 				_fragmentCollection.getFragmentCollectionId(), null,
 				"Fragment Name", StringPool.BLANK,
 				_read("fragment-freemarker.html"), StringPool.BLANK, false,
-				_read("configuration-light.json"), null, 0,
+				_read("configuration-light.json"), null, 0, false,
 				FragmentConstants.TYPE_SECTION, null,
 				WorkflowConstants.STATUS_APPROVED, _serviceContext);
 
@@ -408,6 +409,7 @@ public class FragmentEntryLinkLocalServiceTest {
 		Assert.assertTrue(fragmentEntryLinks.contains(fragmentEntryLink));
 
 		_fragmentEntryLinkLocalService.updateDeleted(
+			TestPropsValues.getUserId(),
 			fragmentEntryLink.getFragmentEntryLinkId(), true);
 
 		fragmentEntryLinks =
@@ -419,6 +421,7 @@ public class FragmentEntryLinkLocalServiceTest {
 		Assert.assertFalse(fragmentEntryLinks.contains(fragmentEntryLink));
 
 		_fragmentEntryLinkLocalService.updateDeleted(
+			TestPropsValues.getUserId(),
 			fragmentEntryLink.getFragmentEntryLinkId(), false);
 
 		fragmentEntryLinks =
@@ -506,7 +509,7 @@ public class FragmentEntryLinkLocalServiceTest {
 			_fragmentEntryLinkLocalService.
 				getLayoutPageTemplateFragmentEntryLinksByFragmentEntryId(
 					_group.getGroupId(), _fragmentEntry.getFragmentEntryId(),
-					LayoutPageTemplateEntryTypeConstants.TYPE_BASIC,
+					LayoutPageTemplateEntryTypeConstants.BASIC,
 					QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
 
 		Assert.assertFalse(fragmentEntryLinks.contains(fragmentEntryLink1));
@@ -525,7 +528,7 @@ public class FragmentEntryLinkLocalServiceTest {
 			_fragmentEntryLinkLocalService.
 				getLayoutPageTemplateFragmentEntryLinksCountByFragmentEntryId(
 					_group.getGroupId(), _fragmentEntry.getFragmentEntryId(),
-					LayoutPageTemplateEntryTypeConstants.TYPE_BASIC));
+					LayoutPageTemplateEntryTypeConstants.BASIC));
 	}
 
 	@Test
@@ -560,6 +563,7 @@ public class FragmentEntryLinkLocalServiceTest {
 
 		fragmentEntryLink1 =
 			_fragmentEntryLinkLocalService.updateFragmentEntryLink(
+				TestPropsValues.getUserId(),
 				fragmentEntryLink1.getFragmentEntryLinkId(), 3);
 
 		Assert.assertEquals(3, fragmentEntryLink1.getPosition());
@@ -592,8 +596,8 @@ public class FragmentEntryLinkLocalServiceTest {
 				_fragmentCollection.getFragmentCollectionId(), null,
 				"Fragment Name", RandomTestUtil.randomString(),
 				"<div>test</div>", RandomTestUtil.randomString(), false,
-				configuration, null, 0, FragmentConstants.TYPE_SECTION, null,
-				WorkflowConstants.STATUS_APPROVED, _serviceContext);
+				configuration, null, 0, false, FragmentConstants.TYPE_SECTION,
+				null, WorkflowConstants.STATUS_APPROVED, _serviceContext);
 
 		FragmentEntryLink fragmentEntryLink =
 			_fragmentEntryLinkLocalService.addFragmentEntryLink(
@@ -610,8 +614,8 @@ public class FragmentEntryLinkLocalServiceTest {
 			fragmentEntry.getFragmentCollectionId(), fragmentEntry.getName(),
 			StringPool.BLANK, StringUtil.randomString(),
 			StringUtil.randomString(), false, _read("configuration-dark.json"),
-			StringPool.BLANK, fragmentEntry.getPreviewFileEntryId(),
-			WorkflowConstants.STATUS_APPROVED);
+			StringPool.BLANK, fragmentEntry.getPreviewFileEntryId(), false,
+			fragmentEntry.getTypeOptions(), WorkflowConstants.STATUS_APPROVED);
 
 		fragmentEntryLink = _fragmentEntryLinkLocalService.getFragmentEntryLink(
 			fragmentEntryLink.getFragmentEntryLinkId());
@@ -646,7 +650,7 @@ public class FragmentEntryLinkLocalServiceTest {
 				_fragmentCollection.getFragmentCollectionId(), null,
 				"Fragment Name", StringPool.BLANK, StringUtil.randomString(),
 				StringPool.BLANK, false, _read("configuration-light.json"),
-				null, 0, FragmentConstants.TYPE_COMPONENT, null,
+				null, 0, false, FragmentConstants.TYPE_COMPONENT, null,
 				WorkflowConstants.STATUS_APPROVED, _serviceContext);
 
 		FragmentEntryLink fragmentEntryLink =
@@ -669,8 +673,8 @@ public class FragmentEntryLinkLocalServiceTest {
 			TestPropsValues.getUserId(), fragmentEntry.getFragmentEntryId(),
 			fragmentEntry.getFragmentCollectionId(), "Fragment Name", newCSS,
 			newHTML, newJS, false, newConfiguration, StringPool.BLANK,
-			fragmentEntry.getPreviewFileEntryId(),
-			WorkflowConstants.STATUS_APPROVED);
+			fragmentEntry.getPreviewFileEntryId(), false,
+			fragmentEntry.getTypeOptions(), WorkflowConstants.STATUS_APPROVED);
 
 		fragmentEntryLink = _fragmentEntryLinkLocalService.getFragmentEntryLink(
 			fragmentEntryLink.getFragmentEntryLinkId());
@@ -700,7 +704,7 @@ public class FragmentEntryLinkLocalServiceTest {
 				_fragmentCollection.getFragmentCollectionId(), null,
 				"Fragment Name", StringPool.BLANK,
 				_read("fragment-configuration.html"), StringPool.BLANK, false,
-				_read("configuration-new-field.json"), null, 0,
+				_read("configuration-new-field.json"), null, 0, false,
 				FragmentConstants.TYPE_COMPONENT, null,
 				WorkflowConstants.STATUS_APPROVED, _serviceContext);
 
@@ -720,8 +724,8 @@ public class FragmentEntryLinkLocalServiceTest {
 			fragmentEntry.getCss(),
 			_read("updated-fragment-configuration.html"), fragmentEntry.getJs(),
 			false, _read("updated-configuration-new-field.json"),
-			StringPool.BLANK, fragmentEntry.getPreviewFileEntryId(),
-			WorkflowConstants.STATUS_APPROVED);
+			StringPool.BLANK, fragmentEntry.getPreviewFileEntryId(), false,
+			fragmentEntry.getTypeOptions(), WorkflowConstants.STATUS_APPROVED);
 
 		_fragmentEntryLinkLocalService.updateLatestChanges(
 			fragmentEntryLink.getFragmentEntryLinkId());
@@ -746,8 +750,9 @@ public class FragmentEntryLinkLocalServiceTest {
 				_fragmentCollection.getFragmentCollectionId(), null,
 				"Fragment Name", StringPool.BLANK,
 				_read("fragment-editable.html"), StringPool.BLANK, false,
-				StringPool.BLANK, null, 0, FragmentConstants.TYPE_COMPONENT,
-				null, WorkflowConstants.STATUS_APPROVED, _serviceContext);
+				StringPool.BLANK, null, 0, false,
+				FragmentConstants.TYPE_COMPONENT, null,
+				WorkflowConstants.STATUS_APPROVED, _serviceContext);
 
 		FragmentEntryLink fragmentEntryLink =
 			_fragmentEntryLinkLocalService.addFragmentEntryLink(
@@ -764,8 +769,8 @@ public class FragmentEntryLinkLocalServiceTest {
 			fragmentEntry.getFragmentCollectionId(), fragmentEntry.getName(),
 			fragmentEntry.getCss(), _read("updated-fragment-editable.html"),
 			fragmentEntry.getJs(), false, fragmentEntry.getConfiguration(),
-			StringPool.BLANK, fragmentEntry.getPreviewFileEntryId(),
-			WorkflowConstants.STATUS_APPROVED);
+			StringPool.BLANK, fragmentEntry.getPreviewFileEntryId(), false,
+			fragmentEntry.getTypeOptions(), WorkflowConstants.STATUS_APPROVED);
 
 		_fragmentEntryLinkLocalService.updateLatestChanges(
 			fragmentEntryLink.getFragmentEntryLinkId());
@@ -790,8 +795,9 @@ public class FragmentEntryLinkLocalServiceTest {
 				_fragmentCollection.getFragmentCollectionId(), null,
 				"Fragment Name", StringPool.BLANK,
 				_read("fragment-editable.html"), StringPool.BLANK, false,
-				StringPool.BLANK, null, 0, FragmentConstants.TYPE_COMPONENT,
-				null, WorkflowConstants.STATUS_APPROVED, _serviceContext);
+				StringPool.BLANK, null, 0, false,
+				FragmentConstants.TYPE_COMPONENT, null,
+				WorkflowConstants.STATUS_APPROVED, _serviceContext);
 
 		FragmentEntryLink fragmentEntryLink =
 			_fragmentEntryLinkLocalService.addFragmentEntryLink(
@@ -804,6 +810,7 @@ public class FragmentEntryLinkLocalServiceTest {
 				fragmentEntry.getType(), _serviceContext);
 
 		_fragmentEntryLinkLocalService.updateFragmentEntryLink(
+			TestPropsValues.getUserId(),
 			fragmentEntryLink.getFragmentEntryLinkId(),
 			_read("updated-editable-values-update-latest-changes.json"));
 
@@ -812,8 +819,8 @@ public class FragmentEntryLinkLocalServiceTest {
 			fragmentEntry.getFragmentCollectionId(), fragmentEntry.getName(),
 			fragmentEntry.getCss(), _read("updated-fragment-editable.html"),
 			fragmentEntry.getJs(), false, fragmentEntry.getConfiguration(),
-			StringPool.BLANK, fragmentEntry.getPreviewFileEntryId(),
-			WorkflowConstants.STATUS_APPROVED);
+			StringPool.BLANK, fragmentEntry.getPreviewFileEntryId(), false,
+			fragmentEntry.getTypeOptions(), WorkflowConstants.STATUS_APPROVED);
 
 		_fragmentEntryLinkLocalService.updateLatestChanges(
 			fragmentEntryLink.getFragmentEntryLinkId());
@@ -849,7 +856,10 @@ public class FragmentEntryLinkLocalServiceTest {
 			_layoutPageTemplateCollectionLocalService.
 				addLayoutPageTemplateCollection(
 					TestPropsValues.getUserId(), _group.getGroupId(),
+					LayoutPageTemplateConstants.
+						PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
 					"Page Template Collection", StringPool.BLANK,
+					LayoutPageTemplateCollectionTypeConstants.BASIC,
 					_serviceContext);
 
 		LayoutPageTemplateEntry layoutPageTemplateEntry =
@@ -857,9 +867,8 @@ public class FragmentEntryLinkLocalServiceTest {
 				_serviceContext.getUserId(), _serviceContext.getScopeGroupId(),
 				layoutPageTemplateCollection.
 					getLayoutPageTemplateCollectionId(),
-				"Page Template One",
-				LayoutPageTemplateEntryTypeConstants.TYPE_BASIC, 0,
-				WorkflowConstants.STATUS_APPROVED, _serviceContext);
+				"Page Template One", LayoutPageTemplateEntryTypeConstants.BASIC,
+				0, WorkflowConstants.STATUS_APPROVED, _serviceContext);
 
 		return _fragmentEntryLinkLocalService.addFragmentEntryLink(
 			TestPropsValues.getUserId(), _group.getGroupId(), 0,
@@ -880,8 +889,7 @@ public class FragmentEntryLinkLocalServiceTest {
 				"configuration.FreeMarkerFragmentEntryProcessorConfiguration",
 			HashMapDictionaryBuilder.<String, Object>put(
 				"enable.freemarker", false
-			).build(),
-			SettingsFactoryUtil.getSettingsFactory());
+			).build());
 	}
 
 	private MockHttpServletRequest _getMockHttpServletRequest()

@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.model.PersistedModel;
 import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
+import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
@@ -43,6 +44,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see CompanyLocalServiceUtil
  * @generated
  */
+@OSGiBeanProperties(
+	property = {"model.class.name=com.liferay.portal.kernel.model.Company"}
+)
 @ProviderType
 @Transactional(
 	isolation = Isolation.PORTAL,
@@ -91,6 +95,10 @@ public interface CompanyLocalService
 			String defaultAdminLastName)
 		throws PortalException;
 
+	public Company addDBPartitionCompany(
+			long companyId, String name, String virtualHostName, String webId)
+		throws PortalException;
+
 	/**
 	 * Returns the company with the web domain.
 	 *
@@ -101,18 +109,6 @@ public interface CompanyLocalService
 	 * @return the company with the web domain
 	 */
 	public Company checkCompany(String webId) throws PortalException;
-
-	/**
-	 * Returns the company with the web domain and mail domain.
-	 *
-	 * The method goes through a series of checks to ensure that the company
-	 * contains default users, groups, etc.
-	 *
-	 * @param webId the company's web domain
-	 * @param mx the company's mail domain
-	 * @return the company with the web domain and mail domain
-	 */
-	public Company checkCompany(String webId, String mx) throws PortalException;
 
 	/**
 	 * Checks if the company has an encryption key. It will create a key if one
@@ -251,6 +247,9 @@ public interface CompanyLocalService
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public long dynamicQueryCount(
 		DynamicQuery dynamicQuery, Projection projection);
+
+	public Company extractDBPartitionCompany(long companyId)
+		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public Company fetchCompany(long companyId);

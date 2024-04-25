@@ -29,8 +29,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -39,6 +37,7 @@ import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.search.test.util.SearchTestRule;
@@ -64,8 +63,6 @@ import java.util.Set;
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-
-import org.apache.commons.lang.time.DateUtils;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -213,7 +210,7 @@ public abstract class BaseOrganizationResourceTestCase {
 					externalReferenceCode, null, null, Pagination.of(1, 10),
 					null);
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if (irrelevantExternalReferenceCode != null) {
 			Organization irrelevantOrganization =
@@ -225,13 +222,12 @@ public abstract class BaseOrganizationResourceTestCase {
 				organizationResource.
 					getAccountByExternalReferenceCodeOrganizationsPage(
 						irrelevantExternalReferenceCode, null, null,
-						Pagination.of(1, 2), null);
+						Pagination.of(1, (int)totalCount + 1), null);
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantOrganization),
-				(List<Organization>)page.getItems());
+			assertContains(
+				irrelevantOrganization, (List<Organization>)page.getItems());
 			assertValid(
 				page,
 				testGetAccountByExternalReferenceCodeOrganizationsPage_getExpectedActions(
@@ -252,11 +248,10 @@ public abstract class BaseOrganizationResourceTestCase {
 					externalReferenceCode, null, null, Pagination.of(1, 10),
 					null);
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(organization1, organization2),
-			(List<Organization>)page.getItems());
+		assertContains(organization1, (List<Organization>)page.getItems());
+		assertContains(organization2, (List<Organization>)page.getItems());
 		assertValid(
 			page,
 			testGetAccountByExternalReferenceCodeOrganizationsPage_getExpectedActions(
@@ -387,6 +382,14 @@ public abstract class BaseOrganizationResourceTestCase {
 		String externalReferenceCode =
 			testGetAccountByExternalReferenceCodeOrganizationsPage_getExternalReferenceCode();
 
+		Page<Organization> organizationPage =
+			organizationResource.
+				getAccountByExternalReferenceCodeOrganizationsPage(
+					externalReferenceCode, null, null, null, null);
+
+		int totalCount = GetterUtil.getInteger(
+			organizationPage.getTotalCount());
+
 		Organization organization1 =
 			testGetAccountByExternalReferenceCodeOrganizationsPage_addOrganization(
 				externalReferenceCode, randomOrganization());
@@ -399,41 +402,84 @@ public abstract class BaseOrganizationResourceTestCase {
 			testGetAccountByExternalReferenceCodeOrganizationsPage_addOrganization(
 				externalReferenceCode, randomOrganization());
 
-		Page<Organization> page1 =
-			organizationResource.
-				getAccountByExternalReferenceCodeOrganizationsPage(
-					externalReferenceCode, null, null, Pagination.of(1, 2),
-					null);
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<Organization> organizations1 =
-			(List<Organization>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			organizations1.toString(), 2, organizations1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<Organization> page1 =
+				organizationResource.
+					getAccountByExternalReferenceCodeOrganizationsPage(
+						externalReferenceCode, null, null,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+							pageSizeLimit),
+						null);
 
-		Page<Organization> page2 =
-			organizationResource.
-				getAccountByExternalReferenceCodeOrganizationsPage(
-					externalReferenceCode, null, null, Pagination.of(2, 2),
-					null);
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(3, page2.getTotalCount());
+			assertContains(organization1, (List<Organization>)page1.getItems());
 
-		List<Organization> organizations2 =
-			(List<Organization>)page2.getItems();
+			Page<Organization> page2 =
+				organizationResource.
+					getAccountByExternalReferenceCodeOrganizationsPage(
+						externalReferenceCode, null, null,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+							pageSizeLimit),
+						null);
 
-		Assert.assertEquals(
-			organizations2.toString(), 1, organizations2.size());
+			assertContains(organization2, (List<Organization>)page2.getItems());
 
-		Page<Organization> page3 =
-			organizationResource.
-				getAccountByExternalReferenceCodeOrganizationsPage(
-					externalReferenceCode, null, null, Pagination.of(1, 3),
-					null);
+			Page<Organization> page3 =
+				organizationResource.
+					getAccountByExternalReferenceCodeOrganizationsPage(
+						externalReferenceCode, null, null,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+							pageSizeLimit),
+						null);
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(organization1, organization2, organization3),
-			(List<Organization>)page3.getItems());
+			assertContains(organization3, (List<Organization>)page3.getItems());
+		}
+		else {
+			Page<Organization> page1 =
+				organizationResource.
+					getAccountByExternalReferenceCodeOrganizationsPage(
+						externalReferenceCode, null, null,
+						Pagination.of(1, totalCount + 2), null);
+
+			List<Organization> organizations1 =
+				(List<Organization>)page1.getItems();
+
+			Assert.assertEquals(
+				organizations1.toString(), totalCount + 2,
+				organizations1.size());
+
+			Page<Organization> page2 =
+				organizationResource.
+					getAccountByExternalReferenceCodeOrganizationsPage(
+						externalReferenceCode, null, null,
+						Pagination.of(2, totalCount + 2), null);
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<Organization> organizations2 =
+				(List<Organization>)page2.getItems();
+
+			Assert.assertEquals(
+				organizations2.toString(), 1, organizations2.size());
+
+			Page<Organization> page3 =
+				organizationResource.
+					getAccountByExternalReferenceCodeOrganizationsPage(
+						externalReferenceCode, null, null,
+						Pagination.of(1, (int)totalCount + 3), null);
+
+			assertContains(organization1, (List<Organization>)page3.getItems());
+			assertContains(organization2, (List<Organization>)page3.getItems());
+			assertContains(organization3, (List<Organization>)page3.getItems());
+		}
 	}
 
 	@Test
@@ -445,7 +491,7 @@ public abstract class BaseOrganizationResourceTestCase {
 			(entityField, organization1, organization2) -> {
 				BeanTestUtil.setProperty(
 					organization1, entityField.getName(),
-					DateUtils.addMinutes(new Date(), -2));
+					new Date(System.currentTimeMillis() - (2 * Time.MINUTE)));
 			});
 	}
 
@@ -562,26 +608,35 @@ public abstract class BaseOrganizationResourceTestCase {
 			testGetAccountByExternalReferenceCodeOrganizationsPage_addOrganization(
 				externalReferenceCode, organization2);
 
+		Page<Organization> page =
+			organizationResource.
+				getAccountByExternalReferenceCodeOrganizationsPage(
+					externalReferenceCode, null, null, null, null);
+
 		for (EntityField entityField : entityFields) {
 			Page<Organization> ascPage =
 				organizationResource.
 					getAccountByExternalReferenceCodeOrganizationsPage(
-						externalReferenceCode, null, null, Pagination.of(1, 2),
+						externalReferenceCode, null, null,
+						Pagination.of(1, (int)page.getTotalCount() + 1),
 						entityField.getName() + ":asc");
 
-			assertEquals(
-				Arrays.asList(organization1, organization2),
-				(List<Organization>)ascPage.getItems());
+			assertContains(
+				organization1, (List<Organization>)ascPage.getItems());
+			assertContains(
+				organization2, (List<Organization>)ascPage.getItems());
 
 			Page<Organization> descPage =
 				organizationResource.
 					getAccountByExternalReferenceCodeOrganizationsPage(
-						externalReferenceCode, null, null, Pagination.of(1, 2),
+						externalReferenceCode, null, null,
+						Pagination.of(1, (int)page.getTotalCount() + 1),
 						entityField.getName() + ":desc");
 
-			assertEquals(
-				Arrays.asList(organization2, organization1),
-				(List<Organization>)descPage.getItems());
+			assertContains(
+				organization2, (List<Organization>)descPage.getItems());
+			assertContains(
+				organization1, (List<Organization>)descPage.getItems());
 		}
 	}
 
@@ -698,6 +753,8 @@ public abstract class BaseOrganizationResourceTestCase {
 		Organization organization =
 			testGraphQLGetAccountByExternalReferenceCodeOrganization_addOrganization();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				organization,
@@ -722,6 +779,36 @@ public abstract class BaseOrganizationResourceTestCase {
 								getGraphQLFields())),
 						"JSONObject/data",
 						"Object/accountByExternalReferenceCodeOrganization"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		Assert.assertTrue(
+			equals(
+				organization,
+				OrganizationSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessAdminUser_v1_0",
+								new GraphQLField(
+									"accountByExternalReferenceCodeOrganization",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"externalReferenceCode",
+												"\"" +
+													testGraphQLGetAccountByExternalReferenceCodeOrganization_getExternalReferenceCode(
+														organization) + "\"");
+
+											put(
+												"organizationId",
+												"\"" + organization.getId() +
+													"\"");
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+						"Object/accountByExternalReferenceCodeOrganization"))));
 	}
 
 	protected String
@@ -741,6 +828,8 @@ public abstract class BaseOrganizationResourceTestCase {
 		String irrelevantOrganizationId =
 			"\"" + RandomTestUtil.randomString() + "\"";
 
+		// No namespace
+
 		Assert.assertEquals(
 			"Not Found",
 			JSONUtil.getValueAsString(
@@ -756,6 +845,30 @@ public abstract class BaseOrganizationResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessAdminUser_v1_0",
+						new GraphQLField(
+							"accountByExternalReferenceCodeOrganization",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"externalReferenceCode",
+										irrelevantExternalReferenceCode);
+									put(
+										"organizationId",
+										irrelevantOrganizationId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -807,7 +920,7 @@ public abstract class BaseOrganizationResourceTestCase {
 			organizationResource.getAccountOrganizationsPage(
 				accountId, null, null, Pagination.of(1, 10), null);
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if (irrelevantAccountId != null) {
 			Organization irrelevantOrganization =
@@ -815,13 +928,13 @@ public abstract class BaseOrganizationResourceTestCase {
 					irrelevantAccountId, randomIrrelevantOrganization());
 
 			page = organizationResource.getAccountOrganizationsPage(
-				irrelevantAccountId, null, null, Pagination.of(1, 2), null);
+				irrelevantAccountId, null, null,
+				Pagination.of(1, (int)totalCount + 1), null);
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantOrganization),
-				(List<Organization>)page.getItems());
+			assertContains(
+				irrelevantOrganization, (List<Organization>)page.getItems());
 			assertValid(
 				page,
 				testGetAccountOrganizationsPage_getExpectedActions(
@@ -839,11 +952,10 @@ public abstract class BaseOrganizationResourceTestCase {
 		page = organizationResource.getAccountOrganizationsPage(
 			accountId, null, null, Pagination.of(1, 10), null);
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(organization1, organization2),
-			(List<Organization>)page.getItems());
+		assertContains(organization1, (List<Organization>)page.getItems());
+		assertContains(organization2, (List<Organization>)page.getItems());
 		assertValid(
 			page,
 			testGetAccountOrganizationsPage_getExpectedActions(accountId));
@@ -965,6 +1077,13 @@ public abstract class BaseOrganizationResourceTestCase {
 
 		Long accountId = testGetAccountOrganizationsPage_getAccountId();
 
+		Page<Organization> organizationPage =
+			organizationResource.getAccountOrganizationsPage(
+				accountId, null, null, null, null);
+
+		int totalCount = GetterUtil.getInteger(
+			organizationPage.getTotalCount());
+
 		Organization organization1 =
 			testGetAccountOrganizationsPage_addOrganization(
 				accountId, randomOrganization());
@@ -977,35 +1096,78 @@ public abstract class BaseOrganizationResourceTestCase {
 			testGetAccountOrganizationsPage_addOrganization(
 				accountId, randomOrganization());
 
-		Page<Organization> page1 =
-			organizationResource.getAccountOrganizationsPage(
-				accountId, null, null, Pagination.of(1, 2), null);
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<Organization> organizations1 =
-			(List<Organization>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			organizations1.toString(), 2, organizations1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<Organization> page1 =
+				organizationResource.getAccountOrganizationsPage(
+					accountId, null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		Page<Organization> page2 =
-			organizationResource.getAccountOrganizationsPage(
-				accountId, null, null, Pagination.of(2, 2), null);
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(3, page2.getTotalCount());
+			assertContains(organization1, (List<Organization>)page1.getItems());
 
-		List<Organization> organizations2 =
-			(List<Organization>)page2.getItems();
+			Page<Organization> page2 =
+				organizationResource.getAccountOrganizationsPage(
+					accountId, null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		Assert.assertEquals(
-			organizations2.toString(), 1, organizations2.size());
+			assertContains(organization2, (List<Organization>)page2.getItems());
 
-		Page<Organization> page3 =
-			organizationResource.getAccountOrganizationsPage(
-				accountId, null, null, Pagination.of(1, 3), null);
+			Page<Organization> page3 =
+				organizationResource.getAccountOrganizationsPage(
+					accountId, null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(organization1, organization2, organization3),
-			(List<Organization>)page3.getItems());
+			assertContains(organization3, (List<Organization>)page3.getItems());
+		}
+		else {
+			Page<Organization> page1 =
+				organizationResource.getAccountOrganizationsPage(
+					accountId, null, null, Pagination.of(1, totalCount + 2),
+					null);
+
+			List<Organization> organizations1 =
+				(List<Organization>)page1.getItems();
+
+			Assert.assertEquals(
+				organizations1.toString(), totalCount + 2,
+				organizations1.size());
+
+			Page<Organization> page2 =
+				organizationResource.getAccountOrganizationsPage(
+					accountId, null, null, Pagination.of(2, totalCount + 2),
+					null);
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<Organization> organizations2 =
+				(List<Organization>)page2.getItems();
+
+			Assert.assertEquals(
+				organizations2.toString(), 1, organizations2.size());
+
+			Page<Organization> page3 =
+				organizationResource.getAccountOrganizationsPage(
+					accountId, null, null,
+					Pagination.of(1, (int)totalCount + 3), null);
+
+			assertContains(organization1, (List<Organization>)page3.getItems());
+			assertContains(organization2, (List<Organization>)page3.getItems());
+			assertContains(organization3, (List<Organization>)page3.getItems());
+		}
 	}
 
 	@Test
@@ -1017,7 +1179,7 @@ public abstract class BaseOrganizationResourceTestCase {
 			(entityField, organization1, organization2) -> {
 				BeanTestUtil.setProperty(
 					organization1, entityField.getName(),
-					DateUtils.addMinutes(new Date(), -2));
+					new Date(System.currentTimeMillis() - (2 * Time.MINUTE)));
 			});
 	}
 
@@ -1130,24 +1292,32 @@ public abstract class BaseOrganizationResourceTestCase {
 		organization2 = testGetAccountOrganizationsPage_addOrganization(
 			accountId, organization2);
 
+		Page<Organization> page =
+			organizationResource.getAccountOrganizationsPage(
+				accountId, null, null, null, null);
+
 		for (EntityField entityField : entityFields) {
 			Page<Organization> ascPage =
 				organizationResource.getAccountOrganizationsPage(
-					accountId, null, null, Pagination.of(1, 2),
+					accountId, null, null,
+					Pagination.of(1, (int)page.getTotalCount() + 1),
 					entityField.getName() + ":asc");
 
-			assertEquals(
-				Arrays.asList(organization1, organization2),
-				(List<Organization>)ascPage.getItems());
+			assertContains(
+				organization1, (List<Organization>)ascPage.getItems());
+			assertContains(
+				organization2, (List<Organization>)ascPage.getItems());
 
 			Page<Organization> descPage =
 				organizationResource.getAccountOrganizationsPage(
-					accountId, null, null, Pagination.of(1, 2),
+					accountId, null, null,
+					Pagination.of(1, (int)page.getTotalCount() + 1),
 					entityField.getName() + ":desc");
 
-			assertEquals(
-				Arrays.asList(organization2, organization1),
-				(List<Organization>)descPage.getItems());
+			assertContains(
+				organization2, (List<Organization>)descPage.getItems());
+			assertContains(
+				organization1, (List<Organization>)descPage.getItems());
 		}
 	}
 
@@ -1241,6 +1411,8 @@ public abstract class BaseOrganizationResourceTestCase {
 		Organization organization =
 			testGraphQLGetAccountOrganization_addOrganization();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				organization,
@@ -1262,6 +1434,34 @@ public abstract class BaseOrganizationResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/accountOrganization"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		Assert.assertTrue(
+			equals(
+				organization,
+				OrganizationSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessAdminUser_v1_0",
+								new GraphQLField(
+									"accountOrganization",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"accountId",
+												testGraphQLGetAccountOrganization_getAccountId());
+
+											put(
+												"organizationId",
+												"\"" + organization.getId() +
+													"\"");
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+						"Object/accountOrganization"))));
 	}
 
 	protected Long testGraphQLGetAccountOrganization_getAccountId()
@@ -1277,6 +1477,8 @@ public abstract class BaseOrganizationResourceTestCase {
 		String irrelevantOrganizationId =
 			"\"" + RandomTestUtil.randomString() + "\"";
 
+		// No namespace
+
 		Assert.assertEquals(
 			"Not Found",
 			JSONUtil.getValueAsString(
@@ -1290,6 +1492,28 @@ public abstract class BaseOrganizationResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessAdminUser_v1_0",
+						new GraphQLField(
+							"accountOrganization",
+							new HashMap<String, Object>() {
+								{
+									put("accountId", irrelevantAccountId);
+									put(
+										"organizationId",
+										irrelevantOrganizationId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -1447,11 +1671,12 @@ public abstract class BaseOrganizationResourceTestCase {
 
 	@Test
 	public void testGetOrganizationsPageWithPagination() throws Exception {
-		Page<Organization> totalPage =
+		Page<Organization> organizationPage =
 			organizationResource.getOrganizationsPage(
 				null, null, null, null, null);
 
-		int totalCount = GetterUtil.getInteger(totalPage.getTotalCount());
+		int totalCount = GetterUtil.getInteger(
+			organizationPage.getTotalCount());
 
 		Organization organization1 = testGetOrganizationsPage_addOrganization(
 			randomOrganization());
@@ -1462,32 +1687,76 @@ public abstract class BaseOrganizationResourceTestCase {
 		Organization organization3 = testGetOrganizationsPage_addOrganization(
 			randomOrganization());
 
-		Page<Organization> page1 = organizationResource.getOrganizationsPage(
-			null, null, null, Pagination.of(1, totalCount + 2), null);
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<Organization> organizations1 =
-			(List<Organization>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			organizations1.toString(), totalCount + 2, organizations1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<Organization> page1 =
+				organizationResource.getOrganizationsPage(
+					null, null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		Page<Organization> page2 = organizationResource.getOrganizationsPage(
-			null, null, null, Pagination.of(2, totalCount + 2), null);
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+			assertContains(organization1, (List<Organization>)page1.getItems());
 
-		List<Organization> organizations2 =
-			(List<Organization>)page2.getItems();
+			Page<Organization> page2 =
+				organizationResource.getOrganizationsPage(
+					null, null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		Assert.assertEquals(
-			organizations2.toString(), 1, organizations2.size());
+			assertContains(organization2, (List<Organization>)page2.getItems());
 
-		Page<Organization> page3 = organizationResource.getOrganizationsPage(
-			null, null, null, Pagination.of(1, totalCount + 3), null);
+			Page<Organization> page3 =
+				organizationResource.getOrganizationsPage(
+					null, null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		assertContains(organization1, (List<Organization>)page3.getItems());
-		assertContains(organization2, (List<Organization>)page3.getItems());
-		assertContains(organization3, (List<Organization>)page3.getItems());
+			assertContains(organization3, (List<Organization>)page3.getItems());
+		}
+		else {
+			Page<Organization> page1 =
+				organizationResource.getOrganizationsPage(
+					null, null, null, Pagination.of(1, totalCount + 2), null);
+
+			List<Organization> organizations1 =
+				(List<Organization>)page1.getItems();
+
+			Assert.assertEquals(
+				organizations1.toString(), totalCount + 2,
+				organizations1.size());
+
+			Page<Organization> page2 =
+				organizationResource.getOrganizationsPage(
+					null, null, null, Pagination.of(2, totalCount + 2), null);
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<Organization> organizations2 =
+				(List<Organization>)page2.getItems();
+
+			Assert.assertEquals(
+				organizations2.toString(), 1, organizations2.size());
+
+			Page<Organization> page3 =
+				organizationResource.getOrganizationsPage(
+					null, null, null, Pagination.of(1, (int)totalCount + 3),
+					null);
+
+			assertContains(organization1, (List<Organization>)page3.getItems());
+			assertContains(organization2, (List<Organization>)page3.getItems());
+			assertContains(organization3, (List<Organization>)page3.getItems());
+		}
 	}
 
 	@Test
@@ -1497,7 +1766,7 @@ public abstract class BaseOrganizationResourceTestCase {
 			(entityField, organization1, organization2) -> {
 				BeanTestUtil.setProperty(
 					organization1, entityField.getName(),
-					DateUtils.addMinutes(new Date(), -2));
+					new Date(System.currentTimeMillis() - (2 * Time.MINUTE)));
 			});
 	}
 
@@ -1600,24 +1869,31 @@ public abstract class BaseOrganizationResourceTestCase {
 
 		organization2 = testGetOrganizationsPage_addOrganization(organization2);
 
+		Page<Organization> page = organizationResource.getOrganizationsPage(
+			null, null, null, null, null);
+
 		for (EntityField entityField : entityFields) {
 			Page<Organization> ascPage =
 				organizationResource.getOrganizationsPage(
-					null, null, null, Pagination.of(1, 2),
+					null, null, null,
+					Pagination.of(1, (int)page.getTotalCount() + 1),
 					entityField.getName() + ":asc");
 
-			assertEquals(
-				Arrays.asList(organization1, organization2),
-				(List<Organization>)ascPage.getItems());
+			assertContains(
+				organization1, (List<Organization>)ascPage.getItems());
+			assertContains(
+				organization2, (List<Organization>)ascPage.getItems());
 
 			Page<Organization> descPage =
 				organizationResource.getOrganizationsPage(
-					null, null, null, Pagination.of(1, 2),
+					null, null, null,
+					Pagination.of(1, (int)page.getTotalCount() + 1),
 					entityField.getName() + ":desc");
 
-			assertEquals(
-				Arrays.asList(organization2, organization1),
-				(List<Organization>)descPage.getItems());
+			assertContains(
+				organization2, (List<Organization>)descPage.getItems());
+			assertContains(
+				organization1, (List<Organization>)descPage.getItems());
 		}
 	}
 
@@ -1642,6 +1918,8 @@ public abstract class BaseOrganizationResourceTestCase {
 			new GraphQLField("items", getGraphQLFields()),
 			new GraphQLField("page"), new GraphQLField("totalCount"));
 
+		// No namespace
+
 		JSONObject organizationsJSONObject = JSONUtil.getValueAsJSONObject(
 			invokeGraphQLQuery(graphQLField), "JSONObject/data",
 			"JSONObject/organizations");
@@ -1655,6 +1933,28 @@ public abstract class BaseOrganizationResourceTestCase {
 
 		organizationsJSONObject = JSONUtil.getValueAsJSONObject(
 			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/organizations");
+
+		Assert.assertEquals(
+			totalCount + 2, organizationsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			organization1,
+			Arrays.asList(
+				OrganizationSerDes.toDTOs(
+					organizationsJSONObject.getString("items"))));
+		assertContains(
+			organization2,
+			Arrays.asList(
+				OrganizationSerDes.toDTOs(
+					organizationsJSONObject.getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		organizationsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
 			"JSONObject/organizations");
 
 		Assert.assertEquals(
@@ -1760,6 +2060,8 @@ public abstract class BaseOrganizationResourceTestCase {
 		Organization organization =
 			testGraphQLGetOrganizationByExternalReferenceCode_addOrganization();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				organization,
@@ -1781,6 +2083,32 @@ public abstract class BaseOrganizationResourceTestCase {
 								getGraphQLFields())),
 						"JSONObject/data",
 						"Object/organizationByExternalReferenceCode"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		Assert.assertTrue(
+			equals(
+				organization,
+				OrganizationSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessAdminUser_v1_0",
+								new GraphQLField(
+									"organizationByExternalReferenceCode",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"externalReferenceCode",
+												"\"" +
+													organization.
+														getExternalReferenceCode() +
+															"\"");
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+						"Object/organizationByExternalReferenceCode"))));
 	}
 
 	@Test
@@ -1789,6 +2117,8 @@ public abstract class BaseOrganizationResourceTestCase {
 
 		String irrelevantExternalReferenceCode =
 			"\"" + RandomTestUtil.randomString() + "\"";
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -1804,6 +2134,27 @@ public abstract class BaseOrganizationResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessAdminUser_v1_0",
+						new GraphQLField(
+							"organizationByExternalReferenceCode",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"externalReferenceCode",
+										irrelevantExternalReferenceCode);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -1937,7 +2288,10 @@ public abstract class BaseOrganizationResourceTestCase {
 
 	@Test
 	public void testGraphQLDeleteOrganization() throws Exception {
-		Organization organization =
+
+		// No namespace
+
+		Organization organization1 =
 			testGraphQLDeleteOrganization_addOrganization();
 
 		Assert.assertTrue(
@@ -1949,11 +2303,12 @@ public abstract class BaseOrganizationResourceTestCase {
 							{
 								put(
 									"organizationId",
-									"\"" + organization.getId() + "\"");
+									"\"" + organization1.getId() + "\"");
 							}
 						})),
 				"JSONObject/data", "Object/deleteOrganization"));
-		JSONArray errorsJSONArray = JSONUtil.getValueAsJSONArray(
+
+		JSONArray errorsJSONArray1 = JSONUtil.getValueAsJSONArray(
 			invokeGraphQLQuery(
 				new GraphQLField(
 					"organization",
@@ -1961,13 +2316,53 @@ public abstract class BaseOrganizationResourceTestCase {
 						{
 							put(
 								"organizationId",
-								"\"" + organization.getId() + "\"");
+								"\"" + organization1.getId() + "\"");
 						}
 					},
 					new GraphQLField("id"))),
 			"JSONArray/errors");
 
-		Assert.assertTrue(errorsJSONArray.length() > 0);
+		Assert.assertTrue(errorsJSONArray1.length() > 0);
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		Organization organization2 =
+			testGraphQLDeleteOrganization_addOrganization();
+
+		Assert.assertTrue(
+			JSONUtil.getValueAsBoolean(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"headlessAdminUser_v1_0",
+						new GraphQLField(
+							"deleteOrganization",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"organizationId",
+										"\"" + organization2.getId() + "\"");
+								}
+							}))),
+				"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+				"Object/deleteOrganization"));
+
+		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessAdminUser_v1_0",
+					new GraphQLField(
+						"organization",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"organizationId",
+									"\"" + organization2.getId() + "\"");
+							}
+						},
+						new GraphQLField("id")))),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray2.length() > 0);
 	}
 
 	protected Organization testGraphQLDeleteOrganization_addOrganization()
@@ -1999,6 +2394,8 @@ public abstract class BaseOrganizationResourceTestCase {
 		Organization organization =
 			testGraphQLGetOrganization_addOrganization();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				organization,
@@ -2016,12 +2413,38 @@ public abstract class BaseOrganizationResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/organization"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		Assert.assertTrue(
+			equals(
+				organization,
+				OrganizationSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessAdminUser_v1_0",
+								new GraphQLField(
+									"organization",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"organizationId",
+												"\"" + organization.getId() +
+													"\"");
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+						"Object/organization"))));
 	}
 
 	@Test
 	public void testGraphQLGetOrganizationNotFound() throws Exception {
 		String irrelevantOrganizationId =
 			"\"" + RandomTestUtil.randomString() + "\"";
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -2035,6 +2458,27 @@ public abstract class BaseOrganizationResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessAdminUser_v1_0",
+						new GraphQLField(
+							"organization",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"organizationId",
+										irrelevantOrganizationId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -2111,7 +2555,7 @@ public abstract class BaseOrganizationResourceTestCase {
 			organizationResource.getOrganizationChildOrganizationsPage(
 				organizationId, null, null, null, Pagination.of(1, 10), null);
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if (irrelevantOrganizationId != null) {
 			Organization irrelevantOrganization =
@@ -2119,14 +2563,13 @@ public abstract class BaseOrganizationResourceTestCase {
 					irrelevantOrganizationId, randomIrrelevantOrganization());
 
 			page = organizationResource.getOrganizationChildOrganizationsPage(
-				irrelevantOrganizationId, null, null, null, Pagination.of(1, 2),
-				null);
+				irrelevantOrganizationId, null, null, null,
+				Pagination.of(1, (int)totalCount + 1), null);
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantOrganization),
-				(List<Organization>)page.getItems());
+			assertContains(
+				irrelevantOrganization, (List<Organization>)page.getItems());
 			assertValid(
 				page,
 				testGetOrganizationChildOrganizationsPage_getExpectedActions(
@@ -2144,11 +2587,10 @@ public abstract class BaseOrganizationResourceTestCase {
 		page = organizationResource.getOrganizationChildOrganizationsPage(
 			organizationId, null, null, null, Pagination.of(1, 10), null);
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(organization1, organization2),
-			(List<Organization>)page.getItems());
+		assertContains(organization1, (List<Organization>)page.getItems());
+		assertContains(organization2, (List<Organization>)page.getItems());
 		assertValid(
 			page,
 			testGetOrganizationChildOrganizationsPage_getExpectedActions(
@@ -2276,6 +2718,13 @@ public abstract class BaseOrganizationResourceTestCase {
 		String organizationId =
 			testGetOrganizationChildOrganizationsPage_getOrganizationId();
 
+		Page<Organization> organizationPage =
+			organizationResource.getOrganizationChildOrganizationsPage(
+				organizationId, null, null, null, null, null);
+
+		int totalCount = GetterUtil.getInteger(
+			organizationPage.getTotalCount());
+
 		Organization organization1 =
 			testGetOrganizationChildOrganizationsPage_addOrganization(
 				organizationId, randomOrganization());
@@ -2288,35 +2737,78 @@ public abstract class BaseOrganizationResourceTestCase {
 			testGetOrganizationChildOrganizationsPage_addOrganization(
 				organizationId, randomOrganization());
 
-		Page<Organization> page1 =
-			organizationResource.getOrganizationChildOrganizationsPage(
-				organizationId, null, null, null, Pagination.of(1, 2), null);
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<Organization> organizations1 =
-			(List<Organization>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			organizations1.toString(), 2, organizations1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<Organization> page1 =
+				organizationResource.getOrganizationChildOrganizationsPage(
+					organizationId, null, null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		Page<Organization> page2 =
-			organizationResource.getOrganizationChildOrganizationsPage(
-				organizationId, null, null, null, Pagination.of(2, 2), null);
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(3, page2.getTotalCount());
+			assertContains(organization1, (List<Organization>)page1.getItems());
 
-		List<Organization> organizations2 =
-			(List<Organization>)page2.getItems();
+			Page<Organization> page2 =
+				organizationResource.getOrganizationChildOrganizationsPage(
+					organizationId, null, null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		Assert.assertEquals(
-			organizations2.toString(), 1, organizations2.size());
+			assertContains(organization2, (List<Organization>)page2.getItems());
 
-		Page<Organization> page3 =
-			organizationResource.getOrganizationChildOrganizationsPage(
-				organizationId, null, null, null, Pagination.of(1, 3), null);
+			Page<Organization> page3 =
+				organizationResource.getOrganizationChildOrganizationsPage(
+					organizationId, null, null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(organization1, organization2, organization3),
-			(List<Organization>)page3.getItems());
+			assertContains(organization3, (List<Organization>)page3.getItems());
+		}
+		else {
+			Page<Organization> page1 =
+				organizationResource.getOrganizationChildOrganizationsPage(
+					organizationId, null, null, null,
+					Pagination.of(1, totalCount + 2), null);
+
+			List<Organization> organizations1 =
+				(List<Organization>)page1.getItems();
+
+			Assert.assertEquals(
+				organizations1.toString(), totalCount + 2,
+				organizations1.size());
+
+			Page<Organization> page2 =
+				organizationResource.getOrganizationChildOrganizationsPage(
+					organizationId, null, null, null,
+					Pagination.of(2, totalCount + 2), null);
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<Organization> organizations2 =
+				(List<Organization>)page2.getItems();
+
+			Assert.assertEquals(
+				organizations2.toString(), 1, organizations2.size());
+
+			Page<Organization> page3 =
+				organizationResource.getOrganizationChildOrganizationsPage(
+					organizationId, null, null, null,
+					Pagination.of(1, (int)totalCount + 3), null);
+
+			assertContains(organization1, (List<Organization>)page3.getItems());
+			assertContains(organization2, (List<Organization>)page3.getItems());
+			assertContains(organization3, (List<Organization>)page3.getItems());
+		}
 	}
 
 	@Test
@@ -2328,7 +2820,7 @@ public abstract class BaseOrganizationResourceTestCase {
 			(entityField, organization1, organization2) -> {
 				BeanTestUtil.setProperty(
 					organization1, entityField.getName(),
-					DateUtils.addMinutes(new Date(), -2));
+					new Date(System.currentTimeMillis() - (2 * Time.MINUTE)));
 			});
 	}
 
@@ -2444,24 +2936,32 @@ public abstract class BaseOrganizationResourceTestCase {
 			testGetOrganizationChildOrganizationsPage_addOrganization(
 				organizationId, organization2);
 
+		Page<Organization> page =
+			organizationResource.getOrganizationChildOrganizationsPage(
+				organizationId, null, null, null, null, null);
+
 		for (EntityField entityField : entityFields) {
 			Page<Organization> ascPage =
 				organizationResource.getOrganizationChildOrganizationsPage(
-					organizationId, null, null, null, Pagination.of(1, 2),
+					organizationId, null, null, null,
+					Pagination.of(1, (int)page.getTotalCount() + 1),
 					entityField.getName() + ":asc");
 
-			assertEquals(
-				Arrays.asList(organization1, organization2),
-				(List<Organization>)ascPage.getItems());
+			assertContains(
+				organization1, (List<Organization>)ascPage.getItems());
+			assertContains(
+				organization2, (List<Organization>)ascPage.getItems());
 
 			Page<Organization> descPage =
 				organizationResource.getOrganizationChildOrganizationsPage(
-					organizationId, null, null, null, Pagination.of(1, 2),
+					organizationId, null, null, null,
+					Pagination.of(1, (int)page.getTotalCount() + 1),
 					entityField.getName() + ":desc");
 
-			assertEquals(
-				Arrays.asList(organization2, organization1),
-				(List<Organization>)descPage.getItems());
+			assertContains(
+				organization2, (List<Organization>)descPage.getItems());
+			assertContains(
+				organization1, (List<Organization>)descPage.getItems());
 		}
 	}
 
@@ -2553,7 +3053,7 @@ public abstract class BaseOrganizationResourceTestCase {
 				parentOrganizationId, null, null, null, Pagination.of(1, 10),
 				null);
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if (irrelevantParentOrganizationId != null) {
 			Organization irrelevantOrganization =
@@ -2563,13 +3063,12 @@ public abstract class BaseOrganizationResourceTestCase {
 
 			page = organizationResource.getOrganizationOrganizationsPage(
 				irrelevantParentOrganizationId, null, null, null,
-				Pagination.of(1, 2), null);
+				Pagination.of(1, (int)totalCount + 1), null);
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantOrganization),
-				(List<Organization>)page.getItems());
+			assertContains(
+				irrelevantOrganization, (List<Organization>)page.getItems());
 			assertValid(
 				page,
 				testGetOrganizationOrganizationsPage_getExpectedActions(
@@ -2587,11 +3086,10 @@ public abstract class BaseOrganizationResourceTestCase {
 		page = organizationResource.getOrganizationOrganizationsPage(
 			parentOrganizationId, null, null, null, Pagination.of(1, 10), null);
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(organization1, organization2),
-			(List<Organization>)page.getItems());
+		assertContains(organization1, (List<Organization>)page.getItems());
+		assertContains(organization2, (List<Organization>)page.getItems());
 		assertValid(
 			page,
 			testGetOrganizationOrganizationsPage_getExpectedActions(
@@ -2718,6 +3216,13 @@ public abstract class BaseOrganizationResourceTestCase {
 		String parentOrganizationId =
 			testGetOrganizationOrganizationsPage_getParentOrganizationId();
 
+		Page<Organization> organizationPage =
+			organizationResource.getOrganizationOrganizationsPage(
+				parentOrganizationId, null, null, null, null, null);
+
+		int totalCount = GetterUtil.getInteger(
+			organizationPage.getTotalCount());
+
 		Organization organization1 =
 			testGetOrganizationOrganizationsPage_addOrganization(
 				parentOrganizationId, randomOrganization());
@@ -2730,38 +3235,78 @@ public abstract class BaseOrganizationResourceTestCase {
 			testGetOrganizationOrganizationsPage_addOrganization(
 				parentOrganizationId, randomOrganization());
 
-		Page<Organization> page1 =
-			organizationResource.getOrganizationOrganizationsPage(
-				parentOrganizationId, null, null, null, Pagination.of(1, 2),
-				null);
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<Organization> organizations1 =
-			(List<Organization>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			organizations1.toString(), 2, organizations1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<Organization> page1 =
+				organizationResource.getOrganizationOrganizationsPage(
+					parentOrganizationId, null, null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		Page<Organization> page2 =
-			organizationResource.getOrganizationOrganizationsPage(
-				parentOrganizationId, null, null, null, Pagination.of(2, 2),
-				null);
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(3, page2.getTotalCount());
+			assertContains(organization1, (List<Organization>)page1.getItems());
 
-		List<Organization> organizations2 =
-			(List<Organization>)page2.getItems();
+			Page<Organization> page2 =
+				organizationResource.getOrganizationOrganizationsPage(
+					parentOrganizationId, null, null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		Assert.assertEquals(
-			organizations2.toString(), 1, organizations2.size());
+			assertContains(organization2, (List<Organization>)page2.getItems());
 
-		Page<Organization> page3 =
-			organizationResource.getOrganizationOrganizationsPage(
-				parentOrganizationId, null, null, null, Pagination.of(1, 3),
-				null);
+			Page<Organization> page3 =
+				organizationResource.getOrganizationOrganizationsPage(
+					parentOrganizationId, null, null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(organization1, organization2, organization3),
-			(List<Organization>)page3.getItems());
+			assertContains(organization3, (List<Organization>)page3.getItems());
+		}
+		else {
+			Page<Organization> page1 =
+				organizationResource.getOrganizationOrganizationsPage(
+					parentOrganizationId, null, null, null,
+					Pagination.of(1, totalCount + 2), null);
+
+			List<Organization> organizations1 =
+				(List<Organization>)page1.getItems();
+
+			Assert.assertEquals(
+				organizations1.toString(), totalCount + 2,
+				organizations1.size());
+
+			Page<Organization> page2 =
+				organizationResource.getOrganizationOrganizationsPage(
+					parentOrganizationId, null, null, null,
+					Pagination.of(2, totalCount + 2), null);
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<Organization> organizations2 =
+				(List<Organization>)page2.getItems();
+
+			Assert.assertEquals(
+				organizations2.toString(), 1, organizations2.size());
+
+			Page<Organization> page3 =
+				organizationResource.getOrganizationOrganizationsPage(
+					parentOrganizationId, null, null, null,
+					Pagination.of(1, (int)totalCount + 3), null);
+
+			assertContains(organization1, (List<Organization>)page3.getItems());
+			assertContains(organization2, (List<Organization>)page3.getItems());
+			assertContains(organization3, (List<Organization>)page3.getItems());
+		}
 	}
 
 	@Test
@@ -2773,7 +3318,7 @@ public abstract class BaseOrganizationResourceTestCase {
 			(entityField, organization1, organization2) -> {
 				BeanTestUtil.setProperty(
 					organization1, entityField.getName(),
-					DateUtils.addMinutes(new Date(), -2));
+					new Date(System.currentTimeMillis() - (2 * Time.MINUTE)));
 			});
 	}
 
@@ -2887,24 +3432,32 @@ public abstract class BaseOrganizationResourceTestCase {
 		organization2 = testGetOrganizationOrganizationsPage_addOrganization(
 			parentOrganizationId, organization2);
 
+		Page<Organization> page =
+			organizationResource.getOrganizationOrganizationsPage(
+				parentOrganizationId, null, null, null, null, null);
+
 		for (EntityField entityField : entityFields) {
 			Page<Organization> ascPage =
 				organizationResource.getOrganizationOrganizationsPage(
-					parentOrganizationId, null, null, null, Pagination.of(1, 2),
+					parentOrganizationId, null, null, null,
+					Pagination.of(1, (int)page.getTotalCount() + 1),
 					entityField.getName() + ":asc");
 
-			assertEquals(
-				Arrays.asList(organization1, organization2),
-				(List<Organization>)ascPage.getItems());
+			assertContains(
+				organization1, (List<Organization>)ascPage.getItems());
+			assertContains(
+				organization2, (List<Organization>)ascPage.getItems());
 
 			Page<Organization> descPage =
 				organizationResource.getOrganizationOrganizationsPage(
-					parentOrganizationId, null, null, null, Pagination.of(1, 2),
+					parentOrganizationId, null, null, null,
+					Pagination.of(1, (int)page.getTotalCount() + 1),
 					entityField.getName() + ":desc");
 
-			assertEquals(
-				Arrays.asList(organization2, organization1),
-				(List<Organization>)descPage.getItems());
+			assertContains(
+				organization2, (List<Organization>)descPage.getItems());
+			assertContains(
+				organization1, (List<Organization>)descPage.getItems());
 		}
 	}
 
@@ -3086,6 +3639,14 @@ public abstract class BaseOrganizationResourceTestCase {
 
 			if (Objects.equals("image", additionalAssertFieldName)) {
 				if (organization.getImage() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("imageId", additionalAssertFieldName)) {
+				if (organization.getImageId() == null) {
 					valid = false;
 				}
 
@@ -3388,6 +3949,14 @@ public abstract class BaseOrganizationResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("imageId", additionalAssertFieldName)) {
+				if (userAccount.getImageId() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("jobTitle", additionalAssertFieldName)) {
 				if (userAccount.getJobTitle() == null) {
 					valid = false;
@@ -3398,6 +3967,24 @@ public abstract class BaseOrganizationResourceTestCase {
 
 			if (Objects.equals("keywords", additionalAssertFieldName)) {
 				if (userAccount.getKeywords() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"languageDisplayName", additionalAssertFieldName)) {
+
+				if (userAccount.getLanguageDisplayName() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("languageId", additionalAssertFieldName)) {
+				if (userAccount.getLanguageId() == null) {
 					valid = false;
 				}
 
@@ -3456,6 +4043,14 @@ public abstract class BaseOrganizationResourceTestCase {
 
 			if (Objects.equals("siteBriefs", additionalAssertFieldName)) {
 				if (userAccount.getSiteBriefs() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("status", additionalAssertFieldName)) {
+				if (userAccount.getStatus() == null) {
 					valid = false;
 				}
 
@@ -3655,6 +4250,17 @@ public abstract class BaseOrganizationResourceTestCase {
 			if (Objects.equals("image", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						organization1.getImage(), organization2.getImage())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("imageId", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						organization1.getImageId(),
+						organization2.getImageId())) {
 
 					return false;
 				}
@@ -4043,6 +4649,16 @@ public abstract class BaseOrganizationResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("imageId", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						userAccount1.getImageId(), userAccount2.getImageId())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("jobTitle", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						userAccount1.getJobTitle(),
@@ -4058,6 +4674,30 @@ public abstract class BaseOrganizationResourceTestCase {
 				if (!Objects.deepEquals(
 						userAccount1.getKeywords(),
 						userAccount2.getKeywords())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"languageDisplayName", additionalAssertFieldName)) {
+
+				if (!Objects.deepEquals(
+						userAccount1.getLanguageDisplayName(),
+						userAccount2.getLanguageDisplayName())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("languageId", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						userAccount1.getLanguageId(),
+						userAccount2.getLanguageId())) {
 
 					return false;
 				}
@@ -4143,6 +4783,16 @@ public abstract class BaseOrganizationResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("status", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						userAccount1.getStatus(), userAccount2.getStatus())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals(
 					"userAccountContactInformation",
 					additionalAssertFieldName)) {
@@ -4178,6 +4828,10 @@ public abstract class BaseOrganizationResourceTestCase {
 
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
+
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
 
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
@@ -4308,22 +4962,20 @@ public abstract class BaseOrganizationResourceTestCase {
 
 		if (entityFieldName.equals("dateCreated")) {
 			if (operator.equals("between")) {
+				Date date = organization.getDateCreated();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							organization.getDateCreated(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							organization.getDateCreated(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -4341,22 +4993,20 @@ public abstract class BaseOrganizationResourceTestCase {
 
 		if (entityFieldName.equals("dateModified")) {
 			if (operator.equals("between")) {
+				Date date = organization.getDateModified();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							organization.getDateModified(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							organization.getDateModified(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -4508,6 +5158,11 @@ public abstract class BaseOrganizationResourceTestCase {
 			}
 
 			return sb.toString();
+		}
+
+		if (entityFieldName.equals("imageId")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
 		}
 
 		if (entityFieldName.equals("keywords")) {
@@ -4706,6 +5361,7 @@ public abstract class BaseOrganizationResourceTestCase {
 					RandomTestUtil.randomString());
 				id = StringUtil.toLowerCase(RandomTestUtil.randomString());
 				image = StringUtil.toLowerCase(RandomTestUtil.randomString());
+				imageId = RandomTestUtil.randomLong();
 				name = StringUtil.toLowerCase(RandomTestUtil.randomString());
 				numberOfAccounts = RandomTestUtil.randomInt();
 				numberOfOrganizations = RandomTestUtil.randomInt();
@@ -4744,7 +5400,10 @@ public abstract class BaseOrganizationResourceTestCase {
 				honorificSuffix = RandomTestUtil.randomString();
 				id = RandomTestUtil.randomLong();
 				image = RandomTestUtil.randomString();
+				imageId = RandomTestUtil.randomLong();
 				jobTitle = RandomTestUtil.randomString();
+				languageDisplayName = RandomTestUtil.randomString();
+				languageId = RandomTestUtil.randomString();
 				lastLoginDate = RandomTestUtil.nextDate();
 				name = RandomTestUtil.randomString();
 				password = RandomTestUtil.randomString();
@@ -4754,9 +5413,9 @@ public abstract class BaseOrganizationResourceTestCase {
 	}
 
 	protected OrganizationResource organizationResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

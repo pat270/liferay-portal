@@ -12,12 +12,11 @@ import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBInspector;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
-import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DataGuard;
-import com.liferay.portal.kernel.test.util.CompanyTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
@@ -78,23 +77,18 @@ public class UpgradeKaleoDefinitionVersionTest {
 
 	@Test
 	public void testCreateKaleoDefinitionVersion() throws Exception {
-		Company company1 = CompanyTestUtil.addCompany();
-		Company company2 = CompanyTestUtil.addCompany();
-
 		_addKaleoDefinition(
-			company1.getCompanyId(), company1.getGroupId(), _name, 1);
+			TestPropsValues.getCompanyId(), TestPropsValues.getGroupId(), _name,
+			1);
 		_addKaleoDefinition(
-			company1.getCompanyId(), company1.getGroupId(), _name, 2);
-		_addKaleoDefinition(
-			company2.getCompanyId(), company2.getGroupId(), _name, 3);
+			TestPropsValues.getCompanyId(), TestPropsValues.getGroupId(), _name,
+			2);
 
 		_kaleoDefinitionVersionUpgradeProcess.upgrade();
 
-		_getKaleoDefinition(company1.getCompanyId(), _name);
-		_getKaleoDefinitionVersion(company1.getCompanyId(), _name, 1);
-		_getKaleoDefinitionVersion(company1.getCompanyId(), _name, 2);
-		_getKaleoDefinition(company2.getCompanyId(), _name);
-		_getKaleoDefinitionVersion(company2.getCompanyId(), _name, 3);
+		_getKaleoDefinition(TestPropsValues.getCompanyId(), _name);
+		_getKaleoDefinitionVersion(TestPropsValues.getCompanyId(), _name, 1);
+		_getKaleoDefinitionVersion(TestPropsValues.getCompanyId(), _name, 2);
 	}
 
 	private void _addColumn(String table, String column) throws Exception {
@@ -144,7 +138,7 @@ public class UpgradeKaleoDefinitionVersionTest {
 			preparedStatement.setString(8, name);
 			preparedStatement.setString(9, StringUtil.randomString());
 			preparedStatement.setString(10, StringUtil.randomString());
-			preparedStatement.setString(11, StringUtil.randomString());
+			preparedStatement.setString(11, "{}");
 			preparedStatement.setInt(12, version);
 			preparedStatement.setBoolean(13, true);
 			preparedStatement.setLong(14, RandomTestUtil.randomLong());
@@ -218,6 +212,9 @@ public class UpgradeKaleoDefinitionVersionTest {
 
 			});
 	}
+
+	@Inject
+	private CompanyLocalService _companyLocalService;
 
 	private DB _db;
 	private DBInspector _dbInspector;

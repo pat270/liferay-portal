@@ -25,6 +25,7 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.search.document.Document;
 import com.liferay.portal.search.document.DocumentBuilder;
 import com.liferay.portal.search.document.DocumentBuilderFactory;
@@ -71,7 +72,6 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -82,7 +82,6 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang.time.DateUtils;
 
 import org.junit.Assert;
 
@@ -247,14 +246,14 @@ public class WorkflowMetricsRESTTestHelper {
 
 	public NodeMetric addNodeMetric(
 			Assignee assignee, long companyId,
-			UnsafeSupplier<Instance, Exception> instanceSuplier, long processId,
-			String status, User user)
+			UnsafeSupplier<Instance, Exception> instanceUnsafeSupplier,
+			long processId, String status, User user)
 		throws Exception {
 
 		String randomString = RandomTestUtil.randomString();
 
 		return addNodeMetric(
-			assignee, companyId, instanceSuplier,
+			assignee, companyId, instanceUnsafeSupplier,
 			new NodeMetric() {
 				{
 					durationAvg =
@@ -276,7 +275,7 @@ public class WorkflowMetricsRESTTestHelper {
 
 	public NodeMetric addNodeMetric(
 			Assignee assignee, long companyId,
-			UnsafeSupplier<Instance, Exception> instanceSuplier,
+			UnsafeSupplier<Instance, Exception> instanceUnsafeSupplier,
 			NodeMetric nodeMetric, long processId, String status, User user,
 			String version)
 		throws Exception {
@@ -288,7 +287,7 @@ public class WorkflowMetricsRESTTestHelper {
 		Long overdueInstanceCount = nodeMetric.getOverdueInstanceCount();
 
 		for (int i = 0; i < nodeMetric.getInstanceCount(); i++) {
-			Instance instance = instanceSuplier.get();
+			Instance instance = instanceUnsafeSupplier.get();
 			Long taskId = RandomTestUtil.nextLong();
 
 			if (onTimeInstanceCount > 0) {
@@ -422,10 +421,12 @@ public class WorkflowMetricsRESTTestHelper {
 					companyId, instance,
 					new SLAResult() {
 						{
-							dateModified = DateUtils.truncate(
-								RandomTestUtil.nextDate(), Calendar.SECOND);
-							dateOverdue = DateUtils.truncate(
-								RandomTestUtil.nextDate(), Calendar.SECOND);
+							dateModified = new Date(
+								(System.currentTimeMillis() / Time.MINUTE) *
+									Time.MINUTE);
+							dateOverdue = new Date(
+								(System.currentTimeMillis() / Time.MINUTE) *
+									Time.MINUTE);
 							id = RandomTestUtil.randomLong();
 							name = null;
 							onTime = true;
@@ -441,10 +442,12 @@ public class WorkflowMetricsRESTTestHelper {
 					companyId, instance,
 					new SLAResult() {
 						{
-							dateModified = DateUtils.truncate(
-								RandomTestUtil.nextDate(), Calendar.SECOND);
-							dateOverdue = DateUtils.truncate(
-								RandomTestUtil.nextDate(), Calendar.SECOND);
+							dateModified = new Date(
+								System.currentTimeMillis() / Time.SECOND *
+									Time.SECOND);
+							dateOverdue = new Date(
+								System.currentTimeMillis() / Time.SECOND *
+									Time.SECOND);
 							id = RandomTestUtil.randomLong();
 							name = null;
 							onTime = false;
@@ -1580,7 +1583,9 @@ public class WorkflowMetricsRESTTestHelper {
 	@Reference
 	private Queries _queries;
 
-	@Reference(target = "(search.engine.impl=Elasticsearch)")
+	@Reference(
+		target = "(|(search.engine.impl=Elasticsearch)(search.engine.impl=OpenSearch))"
+	)
 	private volatile SearchEngineAdapter _searchEngineAdapter;
 
 	@Reference

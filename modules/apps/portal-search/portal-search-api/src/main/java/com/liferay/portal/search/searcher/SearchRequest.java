@@ -7,6 +7,7 @@ package com.liferay.portal.search.searcher;
 
 import com.liferay.portal.search.aggregation.Aggregation;
 import com.liferay.portal.search.aggregation.pipeline.PipelineAggregation;
+import com.liferay.portal.search.collapse.Collapse;
 import com.liferay.portal.search.filter.ComplexQueryPart;
 import com.liferay.portal.search.groupby.GroupByRequest;
 import com.liferay.portal.search.highlight.Highlight;
@@ -30,6 +31,8 @@ import org.osgi.annotation.versioning.ProviderType;
 public interface SearchRequest {
 
 	public Map<String, Aggregation> getAggregationsMap();
+
+	public Collapse getCollapse();
 
 	public List<ComplexQueryPart> getComplexQueryParts();
 
@@ -132,5 +135,7 @@ public interface SearchRequest {
 	 *         <code>false</code> otherwise
 	 */
 	public boolean isIncludeResponseString();
+
+	public boolean isRetainFacetSelections();
 
 }

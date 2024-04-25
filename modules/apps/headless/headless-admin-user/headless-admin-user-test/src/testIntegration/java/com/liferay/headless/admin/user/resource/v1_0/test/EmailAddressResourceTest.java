@@ -5,6 +5,10 @@
 
 package com.liferay.headless.admin.user.resource.v1_0.test;
 
+import com.liferay.account.constants.AccountConstants;
+import com.liferay.account.constants.AccountListTypeConstants;
+import com.liferay.account.model.AccountEntry;
+import com.liferay.account.service.AccountEntryLocalService;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.headless.admin.user.client.dto.v1_0.EmailAddress;
 import com.liferay.portal.kernel.model.Contact;
@@ -18,7 +22,10 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.OrganizationTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.SynchronousMailTestRule;
 
 import java.util.List;
@@ -45,7 +52,16 @@ public class EmailAddressResourceTest extends BaseEmailAddressResourceTestCase {
 		super.setUp();
 
 		_organization = OrganizationTestUtil.addOrganization();
+
 		_user = UserTestUtil.addGroupAdminUser(testGroup);
+
+		_accountEntry = _accountEntryLocalService.addAccountEntry(
+			_user.getUserId(), AccountConstants.PARENT_ACCOUNT_ENTRY_ID_DEFAULT,
+			RandomTestUtil.randomString(), null, null,
+			RandomTestUtil.randomString() + "@liferay.com", null, null,
+			AccountConstants.ACCOUNT_ENTRY_TYPE_GUEST,
+			WorkflowConstants.STATUS_APPROVED,
+			ServiceContextTestUtil.getServiceContext());
 	}
 
 	@Override
@@ -64,6 +80,43 @@ public class EmailAddressResourceTest extends BaseEmailAddressResourceTestCase {
 	}
 
 	@Override
+	protected EmailAddress
+			testGetAccountByExternalReferenceCodeEmailAddressesPage_addEmailAddress(
+				String externalReferenceCode, EmailAddress emailAddress)
+		throws Exception {
+
+		return _addEmailAddress(
+			emailAddress, AccountEntry.class.getName(),
+			_accountEntry.getAccountEntryId(),
+			AccountListTypeConstants.ACCOUNT_ENTRY_EMAIL_ADDRESS);
+	}
+
+	@Override
+	protected String
+			testGetAccountByExternalReferenceCodeEmailAddressesPage_getExternalReferenceCode()
+		throws Exception {
+
+		return _accountEntry.getExternalReferenceCode();
+	}
+
+	@Override
+	protected EmailAddress testGetAccountEmailAddressesPage_addEmailAddress(
+			Long accountId, EmailAddress emailAddress)
+		throws Exception {
+
+		return _addEmailAddress(
+			emailAddress, AccountEntry.class.getName(), accountId,
+			AccountListTypeConstants.ACCOUNT_ENTRY_EMAIL_ADDRESS);
+	}
+
+	@Override
+	protected Long testGetAccountEmailAddressesPage_getAccountId()
+		throws Exception {
+
+		return _accountEntry.getAccountEntryId();
+	}
+
+	@Override
 	protected EmailAddress testGetEmailAddress_addEmailAddress()
 		throws Exception {
 
@@ -74,12 +127,32 @@ public class EmailAddressResourceTest extends BaseEmailAddressResourceTestCase {
 
 	@Override
 	protected EmailAddress
+			testGetOrganizationByExternalReferenceCodeEmailAddressesPage_addEmailAddress(
+				String externalReferenceCode, EmailAddress emailAddress)
+		throws Exception {
+
+		return _addEmailAddress(
+			emailAddress, Organization.class.getName(),
+			_organization.getOrganizationId(),
+			ListTypeConstants.ORGANIZATION_EMAIL_ADDRESS);
+	}
+
+	@Override
+	protected String
+			testGetOrganizationByExternalReferenceCodeEmailAddressesPage_getExternalReferenceCode()
+		throws Exception {
+
+		return _organization.getExternalReferenceCode();
+	}
+
+	@Override
+	protected EmailAddress
 			testGetOrganizationEmailAddressesPage_addEmailAddress(
 				String organizationId, EmailAddress emailAddress)
 		throws Exception {
 
 		return _addEmailAddress(
-			emailAddress, _organization.getModelClassName(),
+			emailAddress, Organization.class.getName(),
 			_organization.getOrganizationId(),
 			ListTypeConstants.ORGANIZATION_EMAIL_ADDRESS);
 	}
@@ -87,6 +160,25 @@ public class EmailAddressResourceTest extends BaseEmailAddressResourceTestCase {
 	@Override
 	protected String testGetOrganizationEmailAddressesPage_getOrganizationId() {
 		return String.valueOf(_organization.getOrganizationId());
+	}
+
+	@Override
+	protected EmailAddress
+			testGetUserAccountByExternalReferenceCodeEmailAddressesPage_addEmailAddress(
+				String externalReferenceCode, EmailAddress emailAddress)
+		throws Exception {
+
+		return _addEmailAddress(
+			emailAddress, Contact.class.getName(), _user.getContactId(),
+			ListTypeConstants.CONTACT_EMAIL_ADDRESS);
+	}
+
+	@Override
+	protected String
+			testGetUserAccountByExternalReferenceCodeEmailAddressesPage_getExternalReferenceCode()
+		throws Exception {
+
+		return _user.getExternalReferenceCode();
 	}
 
 	@Override
@@ -124,7 +216,8 @@ public class EmailAddressResourceTest extends BaseEmailAddressResourceTestCase {
 	}
 
 	private long _getListTypeId(String listTypeId) {
-		List<ListType> listTypes = ListTypeServiceUtil.getListTypes(listTypeId);
+		List<ListType> listTypes = ListTypeServiceUtil.getListTypes(
+			_user.getCompanyId(), listTypeId);
 
 		ListType listType = listTypes.get(0);
 
@@ -143,6 +236,12 @@ public class EmailAddressResourceTest extends BaseEmailAddressResourceTestCase {
 			}
 		};
 	}
+
+	@DeleteAfterTestRun
+	private AccountEntry _accountEntry;
+
+	@Inject
+	private AccountEntryLocalService _accountEntryLocalService;
 
 	@DeleteAfterTestRun
 	private Organization _organization;

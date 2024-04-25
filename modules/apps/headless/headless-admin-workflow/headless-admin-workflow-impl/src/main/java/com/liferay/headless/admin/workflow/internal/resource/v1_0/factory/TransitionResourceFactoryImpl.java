@@ -72,7 +72,12 @@ public class TransitionResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _transitionResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, TransitionResource>
+					transitionResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_transitionResourceProxyProviderFunction;
+
+				return transitionResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -229,9 +234,6 @@ public class TransitionResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, TransitionResource>
-		_transitionResourceProxyProviderFunction = _getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -267,6 +269,14 @@ public class TransitionResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, TransitionResource>
+			_transitionResourceProxyProviderFunction =
+				_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

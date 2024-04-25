@@ -123,6 +123,10 @@ public class IndexWriterHelperImpl implements IndexWriterHelper {
 
 	@Override
 	public void commit() throws SearchException {
+		if (!_commitImmediately) {
+			return;
+		}
+
 		for (Company company : _companyLocalService.getCompanies()) {
 			commit(company.getCompanyId());
 		}
@@ -130,6 +134,10 @@ public class IndexWriterHelperImpl implements IndexWriterHelper {
 
 	@Override
 	public void commit(long companyId) throws SearchException {
+		if (!_commitImmediately) {
+			return;
+		}
+
 		SearchEngine searchEngine = _searchEngineHelper.getSearchEngine();
 
 		IndexWriter indexWriter = searchEngine.getIndexWriter();
@@ -496,7 +504,7 @@ public class IndexWriterHelperImpl implements IndexWriterHelper {
 
 		searchContext.setCompanyId(companyId);
 
-		_setCommitImmediately(searchContext, true);
+		_setCommitImmediately(searchContext, _commitImmediately);
 
 		indexWriter.updateDocument(searchContext, document);
 	}

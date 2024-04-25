@@ -127,8 +127,8 @@ public class FileEntryAnalyticsReportsInfoItemTest {
 				_group.getCreatorUserId(), _group.getGroupId(), 0,
 				_portal.getClassNameId(FileEntry.class.getName()), 0,
 				RandomTestUtil.randomString(),
-				LayoutPageTemplateEntryTypeConstants.TYPE_DISPLAY_PAGE, 0, true,
-				0, 0, 0, 0,
+				LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE, 0, true, 0,
+				0, 0, 0,
 				ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
 		_assetDisplayPageEntryLocalService.addAssetDisplayPageEntry(
@@ -232,7 +232,8 @@ public class FileEntryAnalyticsReportsInfoItemTest {
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			RandomTestUtil.randomString(), ContentTypes.TEXT_PLAIN,
 			RandomTestUtil.randomString(), StringPool.BLANK, StringPool.BLANK,
-			StringPool.BLANK, "liferay".getBytes(), null, null, serviceContext);
+			StringPool.BLANK, "liferay".getBytes(), null, null, null,
+			serviceContext);
 	}
 
 	@Inject(

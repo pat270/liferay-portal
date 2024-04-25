@@ -71,6 +71,15 @@ public class CompanyLocalServiceWrapper
 			defaultAdminMiddleName, defaultAdminLastName);
 	}
 
+	@Override
+	public com.liferay.portal.kernel.model.Company addDBPartitionCompany(
+			long companyId, String name, String virtualHostName, String webId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _companyLocalService.addDBPartitionCompany(
+			companyId, name, virtualHostName, webId);
+	}
+
 	/**
 	 * Returns the company with the web domain.
 	 *
@@ -85,24 +94,6 @@ public class CompanyLocalServiceWrapper
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _companyLocalService.checkCompany(webId);
-	}
-
-	/**
-	 * Returns the company with the web domain and mail domain.
-	 *
-	 * The method goes through a series of checks to ensure that the company
-	 * contains default users, groups, etc.
-	 *
-	 * @param webId the company's web domain
-	 * @param mx the company's mail domain
-	 * @return the company with the web domain and mail domain
-	 */
-	@Override
-	public com.liferay.portal.kernel.model.Company checkCompany(
-			String webId, String mx)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _companyLocalService.checkCompany(webId, mx);
 	}
 
 	/**
@@ -302,6 +293,14 @@ public class CompanyLocalServiceWrapper
 		com.liferay.portal.kernel.dao.orm.Projection projection) {
 
 		return _companyLocalService.dynamicQueryCount(dynamicQuery, projection);
+	}
+
+	@Override
+	public com.liferay.portal.kernel.model.Company extractDBPartitionCompany(
+			long companyId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _companyLocalService.extractDBPartitionCompany(companyId);
 	}
 
 	@Override

@@ -1,6 +1,6 @@
 Bundle-Name: Liferay Document Library Opener OneDrive Web
 Bundle-SymbolicName: com.liferay.document.library.opener.onedrive.web
-Bundle-Version: 3.0.45
+Bundle-Version: 3.0.54
 Import-Package:\
 	!android.os,\
 	\
@@ -8,7 +8,6 @@ Import-Package:\
 	\
 	!com.github.luben.*,\
 	\
-	!com.google.common.util.concurrent.*,\
 	!com.google.errorprone.annotations.*,\
 	\
 	!com.graphbuilder.*,\
@@ -59,5 +58,6 @@ Import-Package:\
 	org.tukaani.*;resolution:=optional,\
 	\
 	*
-Web-ContextPath: /document-library-opener-one-drive-web
+Web-ContextPath: /document-library-opener-onedrive-web
 -dsannotations-options: inherit
+-fixupmessages: "^Classes found in the wrong directory: \\\\{META-INF/versions/9/";is:=warning

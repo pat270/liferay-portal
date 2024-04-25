@@ -1,4 +1,5 @@
 import Card from 'shared/components/Card';
+import ClayLink from '@clayui/link';
 import FormsListQuery from 'shared/queries/FormsListQuery';
 import ListComponent from 'shared/hoc/ListComponent';
 import NoResultsDisplay from 'shared/components/NoResultsDisplay';
@@ -16,7 +17,8 @@ import {Routes} from 'shared/util/router';
 import {Sizes} from 'shared/util/constants';
 import {useParams} from 'react-router-dom';
 import {useQuery} from '@apollo/react-hooks';
-import {useQueryPagination, useQueryRangeSelectors} from 'shared/hooks';
+import {useQueryPagination} from 'shared/hooks/useQueryPagination';
+import {useQueryRangeSelectors} from 'shared/hooks/useQueryRangeSelectors';
 
 const FormsListCard: React.FC = () => {
 	const {delta, orderIOMap, page, query} = useQueryPagination({
@@ -73,7 +75,7 @@ const FormsListCard: React.FC = () => {
 									)}
 								</span>
 
-								<a
+								<ClayLink
 									href={
 										URLConstants.AssetsFormsListDocumentation
 									}
@@ -83,7 +85,7 @@ const FormsListCard: React.FC = () => {
 									{Liferay.Language.get(
 										'learn-more-about-forms'
 									)}
-								</a>
+								</ClayLink>
 							</>
 						}
 						icon={{

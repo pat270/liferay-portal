@@ -71,7 +71,12 @@ public class TermResourceFactoryImpl implements TermResource.Factory {
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _termResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, TermResource>
+					termResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_termResourceProxyProviderFunction;
+
+				return termResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -225,9 +230,6 @@ public class TermResourceFactoryImpl implements TermResource.Factory {
 		}
 	}
 
-	private static final Function<InvocationHandler, TermResource>
-		_termResourceProxyProviderFunction = _getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -262,6 +264,13 @@ public class TermResourceFactoryImpl implements TermResource.Factory {
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, TermResource>
+			_termResourceProxyProviderFunction = _getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

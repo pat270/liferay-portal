@@ -1,0 +1,96 @@
+/**
+ * SPDX-FileCopyrightText: (c) 2000 Liferay, Inc. https://liferay.com
+ * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
+ */
+
+import {useEffect, useMemo, useState} from 'react';
+import {useLocation} from 'react-router-dom';
+import i18n from '~/i18n';
+import {APIResponse} from '~/services/rest';
+import {chartColors} from '~/util/constants';
+import {getRandom} from '~/util/mock';
+
+import {useFetch} from './useFetch';
+
+enum statususes {
+	PASSED = 'passed',
+	FAILED = 'failed',
+	BLOCKED = 'blocked',
+	TEST_FIX = 'testfix',
+	INCOMPLETE = 'incomplete',
+}
+
+const ColumnName = {
+	'case-types': 'testrayCaseTypeName',
+	'components': 'testrayComponentName',
+	'runs': 'testrayRunName',
+	'teams': 'testrayTeamName',
+};
+
+const chartSelectData = [
+	{label: i18n.translate('runs'), value: 'runs'},
+	{label: i18n.translate('teams'), value: 'teams'},
+	{label: i18n.translate('components'), value: 'components'},
+	{label: i18n.translate('case-types'), value: 'case-types'},
+];
+
+const useCaseResultsChart = ({buildId}: {buildId: number}) => {
+	const [entity, setEntity] = useState('');
+	const {pathname} = useLocation();
+
+	useEffect(() => {
+		const path = pathname.split('/').at(-1) as string;
+
+		if (chartSelectData.some(({value}) => value === path)) {
+			return setEntity(path);
+		}
+
+		setEntity('');
+	}, [pathname]);
+
+	const {data, loading} = useFetch<APIResponse<any>>(
+		`/testray-status-metrics/by-testray-buildId/${buildId}/testray-${entity}-metrics`,
+		{
+			params: {
+				pageSize: -1,
+			},
+		}
+	);
+
+	const responseItems = useMemo(() => data?.items || [], [data?.items]);
+
+	const chartData = useMemo(() => {
+		return Object.entries(statususes).map(([key, value]) => {
+			return [
+				key,
+				...responseItems.map(({testrayStatusMetric}) =>
+					key === 'INCOMPLETE'
+						? (testrayStatusMetric.untested || 0) +
+						  (testrayStatusMetric.inProgress || 0)
+						: testrayStatusMetric[value] ?? getRandom(1000)
+				),
+			];
+		});
+	}, [responseItems]);
+
+	const columnNames = useMemo(
+		() =>
+			responseItems.map(
+				(item) => item[ColumnName[entity as keyof typeof ColumnName]]
+			),
+		[entity, responseItems]
+	);
+
+	return {
+		chart: {
+			colors: chartColors,
+			columnNames,
+			columns: chartData,
+			statuses: Object.keys(statususes),
+		},
+		entity,
+		loading,
+	};
+};
+
+export {useCaseResultsChart};

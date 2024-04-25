@@ -32,16 +32,17 @@ import com.liferay.message.boards.service.MBThreadLocalService;
 import com.liferay.message.boards.service.MBThreadService;
 import com.liferay.message.boards.settings.MBGroupServiceSettings;
 import com.liferay.message.boards.web.internal.upload.format.MBMessageFormatUploadHandler;
-import com.liferay.message.boards.web.internal.upload.format.MBMessageFormatUploadHandlerProvider;
+import com.liferay.message.boards.web.internal.upload.format.handlers.MBMessageBBCodeFormatUploadHandler;
+import com.liferay.message.boards.web.internal.upload.format.handlers.MBMessageHTMLFormatUploadHandler;
 import com.liferay.message.boards.web.internal.util.MBAttachmentFileEntryReference;
 import com.liferay.message.boards.web.internal.util.MBAttachmentFileEntryUtil;
 import com.liferay.message.boards.web.internal.util.MBRequestUtil;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.captcha.CaptchaConfigurationException;
 import com.liferay.portal.kernel.captcha.CaptchaException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.portlet.LiferayActionResponse;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
@@ -81,12 +82,16 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.WindowState;
 
+import org.osgi.framework.BundleContext;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -104,6 +109,16 @@ import org.osgi.service.component.annotations.Reference;
 	service = MVCActionCommand.class
 )
 public class EditMessageMVCActionCommand extends BaseMVCActionCommand {
+
+	@Activate
+	protected void activate(BundleContext bundleContext) {
+		_mbMessageFormatUploadHandlers.put(
+			"bbcode",
+			new MBMessageBBCodeFormatUploadHandler(_portletFileRepository));
+		_mbMessageFormatUploadHandlers.put(
+			"html",
+			new MBMessageHTMLFormatUploadHandler(_portletFileRepository));
+	}
 
 	@Override
 	protected void doProcessAction(
@@ -543,7 +558,7 @@ public class EditMessageMVCActionCommand extends BaseMVCActionCommand {
 				}
 
 				MBMessageFormatUploadHandler formatHandler =
-					_formatHandlerProvider.provide(message.getFormat());
+					_mbMessageFormatUploadHandlers.get(message.getFormat());
 
 				if (formatHandler != null) {
 					List<FileEntry> tempMBAttachmentFileEntries =
@@ -566,7 +581,7 @@ public class EditMessageMVCActionCommand extends BaseMVCActionCommand {
 				message = _mbMessageService.getMessage(messageId);
 
 				MBMessageFormatUploadHandler formatHandler =
-					_formatHandlerProvider.provide(message.getFormat());
+					_mbMessageFormatUploadHandlers.get(message.getFormat());
 
 				if (formatHandler != null) {
 					List<FileEntry> tempMBAttachmentFileEntries =
@@ -638,10 +653,10 @@ public class EditMessageMVCActionCommand extends BaseMVCActionCommand {
 	private ConfigurationProvider _configurationProvider;
 
 	@Reference
-	private MBMessageFormatUploadHandlerProvider _formatHandlerProvider;
-
-	@Reference
 	private MBCategoryService _mbCategoryService;
+
+	private final Map<String, MBMessageFormatUploadHandler>
+		_mbMessageFormatUploadHandlers = new HashMap<>();
 
 	@Reference
 	private MBMessageLocalService _mbMessageLocalService;

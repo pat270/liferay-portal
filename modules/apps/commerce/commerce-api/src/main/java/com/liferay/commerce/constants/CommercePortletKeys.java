@@ -35,10 +35,6 @@ public class CommercePortletKeys {
 		"com_liferay_commerce_checkout_web_internal_portlet_" +
 			"CommerceCheckoutPortlet";
 
-	public static final String COMMERCE_COUNTRY =
-		"com_liferay_commerce_address_web_internal_portlet_" +
-			"CommerceCountryPortlet";
-
 	public static final String COMMERCE_DASHBOARD_FORECASTS_CHART =
 		"com_liferay_commerce_dashboard_web_internal_portlet_" +
 			"CommerceDashboardForecastsChartPortlet";
@@ -61,6 +57,17 @@ public class CommercePortletKeys {
 	public static final String COMMERCE_ORDER_TYPE =
 		"com_liferay_commerce_order_web_internal_portlet_" +
 			"CommerceOrderTypePortlet";
+
+	public static final String COMMERCE_PAYMENT =
+		"com_liferay_commerce_payment_web_internal_portlet_" +
+			"CommercePaymentPortlet";
+
+	public static final String COMMERCE_RETURN =
+		"com_liferay_commerce_order_web_internal_portlet_CommerceReturnPortlet";
+
+	public static final String COMMERCE_RETURN_CONTENT =
+		"com_liferay_commerce_order_content_web_internal_portlet_" +
+			"CommerceReturnContentPortlet";
 
 	public static final String COMMERCE_SHIPMENT =
 		"com_liferay_commerce_shipment_web_internal_portlet_" +

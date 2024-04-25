@@ -6,9 +6,15 @@
 package com.liferay.commerce.inventory.web.internal.portlet.action;
 
 import com.liferay.commerce.product.constants.CPPortletKeys;
+import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
+import com.liferay.portal.kernel.theme.PortletDisplay;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.WebKeys;
 
 import javax.portlet.PortletException;
+import javax.portlet.PortletRequest;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
@@ -32,7 +38,24 @@ public class EditCommerceInventoryWarehouseMVCRenderCommand
 			RenderRequest renderRequest, RenderResponse renderResponse)
 		throws PortletException {
 
+		_populatePortletDisplay(renderRequest);
+
 		return "/edit_commerce_inventory_warehouse.jsp";
+	}
+
+	private void _populatePortletDisplay(RenderRequest renderRequest) {
+		ThemeDisplay themeDisplay = (ThemeDisplay)renderRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
+
+		portletDisplay.setShowBackIcon(true);
+		portletDisplay.setURLBack(
+			PortletURLBuilder.create(
+				PortletURLFactoryUtil.create(
+					themeDisplay.getRequest(), CPPortletKeys.COMMERCE_INVENTORY,
+					themeDisplay.getPlid(), PortletRequest.RENDER_PHASE)
+			).buildString());
 	}
 
 }

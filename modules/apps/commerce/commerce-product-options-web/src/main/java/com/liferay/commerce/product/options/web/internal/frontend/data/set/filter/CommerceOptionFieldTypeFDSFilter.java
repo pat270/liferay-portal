@@ -7,28 +7,22 @@ package com.liferay.commerce.product.options.web.internal.frontend.data.set.filt
 
 import com.liferay.commerce.product.configuration.CPOptionConfiguration;
 import com.liferay.commerce.product.constants.CPConstants;
+import com.liferay.commerce.product.option.CommerceOptionType;
+import com.liferay.commerce.product.option.CommerceOptionTypeRegistry;
 import com.liferay.commerce.product.options.web.internal.constants.CommerceOptionFDSNames;
-import com.liferay.commerce.product.util.DDMFormFieldTypeUtil;
-import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldType;
-import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTypeServicesRegistry;
+import com.liferay.commerce.product.util.CommerceOptionTypeUtil;
 import com.liferay.frontend.data.set.filter.BaseSelectionFDSFilter;
 import com.liferay.frontend.data.set.filter.FDSFilter;
 import com.liferay.frontend.data.set.filter.SelectionFDSFilterItem;
-import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.settings.SystemSettingsLocator;
-import com.liferay.portal.kernel.util.MapUtil;
-import com.liferay.portal.kernel.util.ResourceBundleUtil;
-import com.liferay.portal.kernel.util.Validator;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -42,34 +36,9 @@ import org.osgi.service.component.annotations.Reference;
 )
 public class CommerceOptionFieldTypeFDSFilter extends BaseSelectionFDSFilter {
 
-	public String getDDMFormFieldTypeLabel(
-		DDMFormFieldType ddmFormFieldType, Locale locale) {
-
-		String label = MapUtil.getString(
-			_ddmFormFieldTypeServicesRegistry.getDDMFormFieldTypeProperties(
-				ddmFormFieldType.getName()),
-			"ddm.form.field.type.label");
-
-		try {
-			if (Validator.isNotNull(label)) {
-				ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
-					"content.Language", locale, ddmFormFieldType.getClass());
-
-				return _language.get(resourceBundle, label);
-			}
-		}
-		catch (MissingResourceException missingResourceException) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(missingResourceException);
-			}
-		}
-
-		return ddmFormFieldType.getName();
-	}
-
-	public List<DDMFormFieldType> getDDMFormFieldTypes() {
-		List<DDMFormFieldType> ddmFormFieldTypes =
-			_ddmFormFieldTypeServicesRegistry.getDDMFormFieldTypes();
+	public List<CommerceOptionType> getCommerceOptionTypes() {
+		List<CommerceOptionType> commerceOptionTypes =
+			_commerceOptionTypeRegistry.getCommerceOptionTypes();
 
 		CPOptionConfiguration cpOptionConfiguration = null;
 
@@ -82,11 +51,11 @@ public class CommerceOptionFieldTypeFDSFilter extends BaseSelectionFDSFilter {
 			_log.error(configurationException);
 		}
 
-		String[] ddmFormFieldTypesAllowed =
-			cpOptionConfiguration.ddmFormFieldTypesAllowed();
+		String[] allowedCommerceOptionTypes =
+			cpOptionConfiguration.allowedCommerceOptionTypes();
 
-		return DDMFormFieldTypeUtil.getDDMFormFieldTypesAllowed(
-			ddmFormFieldTypes, ddmFormFieldTypesAllowed);
+		return CommerceOptionTypeUtil.getAllowedCommerceOptionTypes(
+			commerceOptionTypes, allowedCommerceOptionTypes);
 	}
 
 	@Override
@@ -106,11 +75,11 @@ public class CommerceOptionFieldTypeFDSFilter extends BaseSelectionFDSFilter {
 		List<SelectionFDSFilterItem> selectionFDSFilterItems =
 			new ArrayList<>();
 
-		for (DDMFormFieldType ddmFormFieldType : getDDMFormFieldTypes()) {
+		for (CommerceOptionType commerceOptionType : getCommerceOptionTypes()) {
 			selectionFDSFilterItems.add(
 				new SelectionFDSFilterItem(
-					getDDMFormFieldTypeLabel(ddmFormFieldType, locale),
-					ddmFormFieldType.getName()));
+					commerceOptionType.getLabel(locale),
+					commerceOptionType.getKey()));
 		}
 
 		return selectionFDSFilterItems;
@@ -125,12 +94,9 @@ public class CommerceOptionFieldTypeFDSFilter extends BaseSelectionFDSFilter {
 		CommerceOptionFieldTypeFDSFilter.class);
 
 	@Reference
+	private CommerceOptionTypeRegistry _commerceOptionTypeRegistry;
+
+	@Reference
 	private ConfigurationProvider _configurationProvider;
-
-	@Reference
-	private DDMFormFieldTypeServicesRegistry _ddmFormFieldTypeServicesRegistry;
-
-	@Reference
-	private Language _language;
 
 }

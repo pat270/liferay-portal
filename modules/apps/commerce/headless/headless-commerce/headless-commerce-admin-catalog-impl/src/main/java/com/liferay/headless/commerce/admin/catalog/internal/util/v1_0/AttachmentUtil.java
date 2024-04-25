@@ -56,6 +56,7 @@ import java.net.URLConnection;
 
 import java.util.Calendar;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -194,6 +195,7 @@ public class AttachmentUtil {
 			expirationDateConfig.getDay(), expirationDateConfig.getYear(),
 			expirationDateConfig.getHour(), expirationDateConfig.getMinute(),
 			GetterUtil.get(attachmentBase64.getNeverExpire(), false),
+			GetterUtil.get(attachmentBase64.getGalleryEnabled(), true),
 			getTitleMap(null, attachmentBase64.getTitle()),
 			_getJSON(
 				cpDefinitionOptionRelService, cpDefinitionOptionValueRelService,
@@ -254,6 +256,7 @@ public class AttachmentUtil {
 			expirationDateConfig.getDay(), expirationDateConfig.getYear(),
 			expirationDateConfig.getHour(), expirationDateConfig.getMinute(),
 			GetterUtil.get(attachmentUrl.getNeverExpire(), false),
+			GetterUtil.get(attachmentUrl.getGalleryEnabled(), true),
 			getTitleMap(null, attachmentUrl.getTitle()),
 			_getJSON(
 				cpDefinitionOptionRelService, cpDefinitionOptionValueRelService,
@@ -276,16 +279,21 @@ public class AttachmentUtil {
 			ServiceContext serviceContext)
 		throws Exception {
 
-		ServiceContext cloneServiceContext =
+		ServiceContext dlFileEntryCloneServiceContext =
 			(ServiceContext)serviceContext.clone();
 
-		cloneServiceContext.setWorkflowAction(WorkflowConstants.ACTION_PUBLISH);
+		dlFileEntryCloneServiceContext.setExpandoBridgeAttributes(
+			new LinkedHashMap<>());
+
+		dlFileEntryCloneServiceContext.setWorkflowAction(
+			WorkflowConstants.ACTION_PUBLISH);
 
 		long fileEntryId = GetterUtil.getLong(attachment.getFileEntryId());
 
 		if (fileEntryId == 0) {
 			FileEntry fileEntry = addFileEntry(
-				attachment, uniqueFileNameProvider, cloneServiceContext);
+				attachment, uniqueFileNameProvider,
+				dlFileEntryCloneServiceContext);
 
 			if (fileEntry != null) {
 				fileEntryId = fileEntry.getFileEntryId();
@@ -297,8 +305,14 @@ public class AttachmentUtil {
 				ActionKeys.VIEW);
 		}
 
+		ServiceContext cloneServiceContext =
+			(ServiceContext)serviceContext.clone();
+
+		cloneServiceContext.setTimeZone(serviceContext.getTimeZone());
+		cloneServiceContext.setWorkflowAction(WorkflowConstants.ACTION_PUBLISH);
+
 		Calendar displayCalendar = CalendarFactoryUtil.getCalendar(
-			serviceContext.getTimeZone());
+			cloneServiceContext.getTimeZone());
 
 		if (attachment.getDisplayDate() != null) {
 			displayCalendar = DateConfigUtil.convertDateToCalendar(
@@ -308,7 +322,7 @@ public class AttachmentUtil {
 		DateConfig displayDateConfig = new DateConfig(displayCalendar);
 
 		Calendar expirationCalendar = CalendarFactoryUtil.getCalendar(
-			serviceContext.getTimeZone());
+			cloneServiceContext.getTimeZone());
 
 		expirationCalendar.add(Calendar.MONTH, 1);
 
@@ -330,6 +344,7 @@ public class AttachmentUtil {
 			expirationDateConfig.getDay(), expirationDateConfig.getYear(),
 			expirationDateConfig.getHour(), expirationDateConfig.getMinute(),
 			GetterUtil.get(attachment.getNeverExpire(), false),
+			GetterUtil.get(attachment.getGalleryEnabled(), true),
 			getTitleMap(null, attachment.getTitle()),
 			_getJSON(
 				cpDefinitionOptionRelService, cpDefinitionOptionValueRelService,
@@ -377,7 +392,7 @@ public class AttachmentUtil {
 			null, serviceContext.getScopeGroupId(),
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID, uniqueFileName,
 			contentType, uniqueFileName, StringPool.BLANK, null,
-			StringPool.BLANK, file, null, null, serviceContext);
+			StringPool.BLANK, file, null, null, null, serviceContext);
 
 		FileUtil.delete(file);
 

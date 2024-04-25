@@ -7,6 +7,7 @@ package com.liferay.commerce.product.internal.upgrade.registry;
 
 import com.liferay.account.settings.AccountEntryGroupSettings;
 import com.liferay.asset.kernel.service.AssetCategoryLocalService;
+import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.commerce.product.internal.upgrade.v1_10_1.CommerceSiteTypeUpgradeProcess;
 import com.liferay.commerce.product.internal.upgrade.v1_11_0.CPAttachmentFileEntryGroupUpgradeProcess;
 import com.liferay.commerce.product.internal.upgrade.v1_11_1.CPDisplayLayoutUpgradeProcess;
@@ -30,13 +31,16 @@ import com.liferay.commerce.product.internal.upgrade.v2_5_0.FriendlyURLEntryUpgr
 import com.liferay.commerce.product.internal.upgrade.v3_9_2.MiniumSiteInitializerUpgradeProcess;
 import com.liferay.commerce.product.internal.upgrade.v4_0_0.util.CommerceChannelAccountEntryRelTable;
 import com.liferay.commerce.product.internal.upgrade.v4_0_2.CommerceRepositoryUpgradeProcess;
+import com.liferay.commerce.product.internal.upgrade.v5_11_0.CPAttachmentFileEntryGalleryEnabledUpgradeProcess;
+import com.liferay.commerce.product.internal.upgrade.v5_11_1.ProductDefinitionConfigurationUpgradeProcess;
+import com.liferay.commerce.product.internal.upgrade.v5_14_0.CPDefinitionSpecificationOptionValueUpgradeProcess;
 import com.liferay.commerce.product.internal.upgrade.v5_4_0.CommercePermissionUpgradeProcess;
 import com.liferay.commerce.product.internal.upgrade.v5_5_0.util.CPInstanceUnitOfMeasureTable;
 import com.liferay.counter.kernel.service.CounterLocalService;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.GroupLocalService;
@@ -44,7 +48,6 @@ import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.RepositoryLocalService;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
-import com.liferay.portal.kernel.settings.SettingsFactory;
 import com.liferay.portal.kernel.upgrade.BaseExternalReferenceCodeUpgradeProcess;
 import com.liferay.portal.kernel.upgrade.BaseUuidUpgradeProcess;
 import com.liferay.portal.kernel.upgrade.CTModelUpgradeProcess;
@@ -53,9 +56,9 @@ import com.liferay.portal.kernel.upgrade.DummyUpgradeStep;
 import com.liferay.portal.kernel.upgrade.MVCCVersionUpgradeProcess;
 import com.liferay.portal.kernel.upgrade.UpgradeProcessFactory;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.uuid.PortalUUID;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
 
+import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -134,7 +137,7 @@ public class CommerceProductServiceUpgradeStepRegistrator
 			"1.10.0", "1.10.1",
 			new CommerceSiteTypeUpgradeProcess(
 				_classNameLocalService, _groupLocalService,
-				_configurationProvider, _settingsFactory));
+				_configurationProvider));
 
 		registry.register(
 			"1.10.1", "1.11.0",
@@ -152,8 +155,7 @@ public class CommerceProductServiceUpgradeStepRegistrator
 
 		registry.register(
 			"1.11.2", "2.0.0", CPInstanceOptionValueRelTable.create(),
-			new CPInstanceOptionValueRelUpgradeProcess(
-				_jsonFactory, _portalUUID));
+			new CPInstanceOptionValueRelUpgradeProcess(_jsonFactory));
 
 		registry.register(
 			"2.0.0", "2.1.0",
@@ -376,6 +378,81 @@ public class CommerceProductServiceUpgradeStepRegistrator
 		registry.register(
 			"5.4.0", "5.5.0", CPInstanceUnitOfMeasureTable.create());
 
+		registry.register(
+			"5.5.0", "5.6.0",
+			UpgradeProcessFactory.addColumns(
+				"CPDefinitionOptionValueRel",
+				"unitOfMeasureKey VARCHAR(75) null"),
+			UpgradeProcessFactory.alterColumnType(
+				"CPDefinitionOptionValueRel", "quantity", "BIGDECIMAL null"));
+
+		registry.register(
+			"5.6.0", "5.7.0",
+			new com.liferay.commerce.product.internal.upgrade.v5_7_0.
+				CPDefinitionLinkUpgradeProcess(_assetEntryLocalService));
+
+		registry.register(
+			"5.7.0", "5.8.0",
+			UpgradeProcessFactory.addColumns(
+				"CPDefinitionOptionRel", "infoItemServiceKey VARCHAR(255)",
+				"definedExternally BOOLEAN", "typeSettings TEXT null"));
+
+		registry.register(
+			"5.8.0", "5.9.0",
+			UpgradeProcessFactory.alterColumnType(
+				"CPDefinitionOptionRel", "typeSettings", "TEXT null"));
+
+		registry.register(
+			"5.9.0", "5.10.0",
+			UpgradeProcessFactory.alterColumnName(
+				"CPDefinitionOptionRel", "DDMFormFieldTypeName",
+				"commerceOptionTypeKey VARCHAR(75) null"),
+			UpgradeProcessFactory.alterColumnName(
+				"CPOption", "DDMFormFieldTypeName",
+				"commerceOptionTypeKey VARCHAR(75) null"));
+
+		registry.register(
+			"5.10.0", "5.11.0",
+			new CPAttachmentFileEntryGalleryEnabledUpgradeProcess());
+
+		registry.register(
+			"5.11.0", "5.11.1",
+			new ProductDefinitionConfigurationUpgradeProcess(
+				_configurationAdmin));
+
+		registry.register(
+			"5.11.1", "5.12.0",
+			new com.liferay.commerce.product.internal.upgrade.v5_12_0.
+				CPAttachmentFileEntryUpgradeProcess(_assetEntryLocalService));
+
+		registry.register(
+			"5.12.0", "5.12.1",
+			new com.liferay.commerce.product.internal.upgrade.v5_12_1.
+				CommerceChannelUpgradeProcess(
+					_accountEntryGroupSettings, _configurationProvider));
+
+		registry.register(
+			"5.12.1", "5.13.0",
+			new BaseExternalReferenceCodeUpgradeProcess() {
+
+				@Override
+				protected String[][] getTableAndPrimaryKeyColumnNames() {
+					return new String[][] {
+						{"CPMeasurementUnit", "CPMeasurementUnitId"}
+					};
+				}
+
+			});
+
+		registry.register(
+			"5.13.0", "5.14.0",
+			new CPDefinitionSpecificationOptionValueUpgradeProcess());
+
+		registry.register(
+			"5.14.0", "5.15.0",
+			UpgradeProcessFactory.addColumns(
+				"CPSpecificationOption", "priority DOUBLE"));
+
 		if (_log.isInfoEnabled()) {
 			_log.info("Commerce product upgrade step registrator finished");
 		}
@@ -391,10 +468,16 @@ public class CommerceProductServiceUpgradeStepRegistrator
 	private AssetCategoryLocalService _assetCategoryLocalService;
 
 	@Reference
+	private AssetEntryLocalService _assetEntryLocalService;
+
+	@Reference
 	private ClassNameLocalService _classNameLocalService;
 
 	@Reference
 	private CompanyLocalService _companyLocalService;
+
+	@Reference
+	private ConfigurationAdmin _configurationAdmin;
 
 	@Reference
 	private ConfigurationProvider _configurationProvider;
@@ -415,9 +498,6 @@ public class CommerceProductServiceUpgradeStepRegistrator
 	private Portal _portal;
 
 	@Reference
-	private PortalUUID _portalUUID;
-
-	@Reference
 	private RepositoryLocalService _repositoryLocalService;
 
 	@Reference
@@ -425,8 +505,5 @@ public class CommerceProductServiceUpgradeStepRegistrator
 
 	@Reference
 	private ResourcePermissionLocalService _resourcePermissionLocalService;
-
-	@Reference
-	private SettingsFactory _settingsFactory;
 
 }

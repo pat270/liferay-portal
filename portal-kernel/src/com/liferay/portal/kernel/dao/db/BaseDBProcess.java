@@ -235,13 +235,6 @@ public abstract class BaseDBProcess implements DBProcess {
 			String tableName, String columnName, String newColumnType)
 		throws Exception {
 
-		String lowerCaseNewColumnType = StringUtil.lowerCase(newColumnType);
-
-		if (lowerCaseNewColumnType.contains(" default ")) {
-			throw new SQLException(
-				"Alter column type with default constraint is not allowed");
-		}
-
 		if (!hasColumn(tableName, columnName)) {
 			throw new SQLException(
 				StringBundler.concat(
@@ -304,7 +297,7 @@ public abstract class BaseDBProcess implements DBProcess {
 	protected boolean doHasTable(String tableName) throws Exception {
 		DBInspector dbInspector = new DBInspector(connection);
 
-		return dbInspector.hasTable(tableName, true);
+		return dbInspector.hasTable(tableName);
 	}
 
 	protected List<IndexMetadata> dropIndexes(
@@ -375,6 +368,12 @@ public abstract class BaseDBProcess implements DBProcess {
 		DBInspector dbInspector = new DBInspector(connection);
 
 		return dbInspector.hasTable(tableName);
+	}
+
+	protected boolean hasView(String viewName) throws Exception {
+		DBInspector dbInspector = new DBInspector(connection);
+
+		return dbInspector.hasView(viewName);
 	}
 
 	protected void process(UnsafeConsumer<Long, Exception> unsafeConsumer)

@@ -1,6 +1,112 @@
 definition {
 
-	macro commerceAdminTearDown {
+	@summary = "Default summary"
+	macro addCP(customBooleanDefaultValue = null, localization = null, baseURL = null, nameLocalization = null, modelResource = null, customInputDataType = null, resourceName = null, customFieldName = null, searchable = null, customFieldType = null, startingValue = null) {
+		var key_resourceName = ${resourceName};
+
+		if (isSet(modelResource)) {
+			CustomFields.openToAddResourceCustomField(
+				baseURL = ${baseURL},
+				modelResource = ${modelResource});
+		}
+		else {
+			AssertClick(
+				key_resourceName = ${resourceName},
+				locator1 = "CommerceEntry#RESOURCE_TABLE_RESOURCE_NAME",
+				value1 = ${resourceName});
+
+			LexiconEntry.gotoAdd();
+		}
+
+		var key_customFieldType = ${customFieldType};
+
+		Click(locator1 = "CustomFields#CUSTOM_FIELD_TYPE");
+
+		var customFieldKey = StringUtil.lowerCase(${customFieldName});
+
+		PortletEntry.inputName(name = ${customFieldKey});
+
+		if (${customFieldType} == "Input Field") {
+			var key_customInputDataType = ${customInputDataType};
+
+			Select(
+				locator1 = "CustomFields#CUSTOM_INPUT_FIELD_DATA_TYPE",
+				value1 = ${customInputDataType});
+
+			if (isSet(startingValue)) {
+				Type(
+					key_fieldLabel = "Starting Value",
+					locator1 = "CustomFields#CUSTOM_INPUT_FIELD",
+					value1 = ${startingValue});
+			}
+		}
+		else if ((${customFieldType} == "Dropdown") || (${customFieldType} == "Checkbox") || (${customFieldType} == "Radio")) {
+			if (isSet(startingValue)) {
+				PortletEntry.inputTextArea(
+					fieldId = "Value",
+					text = ${startingValue});
+			}
+			else {
+				PortletEntry.inputTextArea(
+					fieldId = "Value",
+					text = ${customFieldType});
+			}
+		}
+
+		if (isSet(nameLocalization)) {
+			if (${nameLocalization} == "false") {
+				Click(locator1 = "CustomFields#CUSTOM_FIELDS_ADVANCED_PROPERTIES");
+
+				WaitForElementPresent(
+					key_toggleSwitchLabel = "Localize Field Name",
+					locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+
+				Uncheck.uncheckToggleSwitch(
+					key_toggleSwitchLabel = "Localize Field Name",
+					locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+			}
+			else {
+				Click(locator1 = "CustomFields#CUSTOM_FIELDS_ADVANCED_PROPERTIES");
+
+				WaitForElementPresent(
+					key_toggleSwitchLabel = "Localize Field Name",
+					locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+
+				Check.checkToggleSwitch(
+					key_toggleSwitchLabel = "Localize Field Name",
+					locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+			}
+		}
+
+		if (isSet(customBooleanDefaultValue)) {
+			Select(
+				locator1 = "CustomFields#CUSTOM_BOOLEAN_DEFAULT_VALUE",
+				value1 = ${customBooleanDefaultValue});
+		}
+
+		if (${localization} == "true") {
+			Check(
+				checkboxName = "Make Field Localizable",
+				locator1 = "Checkbox#ANY_CHECKBOX");
+		}
+
+		if (${searchable} == "true") {
+			Check.checkToggleSwitch(
+				key_toggleSwitchLabel = "Searchable",
+				locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+		}
+
+		Button.clickSave();
+
+		var key_customFieldName = ${customFieldName};
+
+		AssertTextEquals(
+			locator1 = "CustomFieldsEditResource#CUSTOM_FIELDS_TABLE_NAME",
+			value1 = ${customFieldName});
+	}
+
+	@summary = "Default summary"
+	macro commerceAdminTearDown() {
 		var emptyCount = 0;
 
 		Navigator.openURL();
@@ -146,16 +252,15 @@ definition {
 		CommerceConfiguration.commerceInitializersTearDown();
 	}
 
-	macro commerceInitializersTearDown {
-		ApplicationsMenu.gotoPortlet(
-			category = "Sites",
-			panel = "Control Panel",
-			portlet = "Sites");
+	@summary = "Default summary"
+	macro commerceInitializersTearDown() {
+		Site.openSitesAdmin();
 
 		CommerceJSONSitesAPI._deleteCommerceSites();
 	}
 
-	macro commerceSetUp {
+	@summary = "Default summary"
+	macro commerceSetUp(moneyOrder = null) {
 		TestCase.setUpPortalInstance();
 
 		User.firstLoginPG();
@@ -179,12 +284,13 @@ definition {
 		}
 	}
 
-	macro commerceStoreFrontSetUp {
+	@summary = "Default summary"
+	macro commerceStoreFrontSetUp() {
 		CommerceNavigator.gotoPortlet(
 			category = "Settings",
 			portlet = "Health Check");
 
-		for (var buttonRowName : list "Service Access Policy,Commerce Countries,Commerce Currencies,Commerce Product Measurement Units,Account Roles,Catalog Base Price Lists/Promotions") {
+		for (var buttonRowName : list "Service Access Policy,Commerce Currencies,Commerce Product Measurement Units,Account Roles,Catalog Base Price Lists/Promotions") {
 			if (!(IsElementPresent(key_buttonRowName = ${buttonRowName}, key_buttonStatus = "disabled", locator1 = "CommerceEntry#FIX_ISSUE_BUTTON_NAME"))) {
 				Click(
 					key_buttonRowName = ${buttonRowName},
@@ -197,9 +303,7 @@ definition {
 			}
 		}
 
-		CommerceNavigator.gotoPortlet(
-			category = "Store Management",
-			portlet = "Channels");
+		CommerceChannels.openChannelsAdmin();
 
 		Click(locator1 = "Button#PLUS");
 
@@ -228,7 +332,8 @@ definition {
 		}
 	}
 
-	macro commerceTearDown {
+	@summary = "Default summary"
+	macro commerceTearDown() {
 		CommerceJSONOrdersAPI._deleteAllCommerceOrdersAndCheck();
 
 		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
@@ -253,7 +358,39 @@ definition {
 		}
 	}
 
-	macro setupB2BGuestCheckout {
+	@summary = "Default summary"
+	macro configureWorkflow(workflowDefinition = null, workflowResourceValue = null) {
+		var key_workflowResourceValue = ${workflowResourceValue};
+
+		if (!(IsElementPresent(locator1 = "Pagination#ICON_DISABLED", type = "angle-right")) && (IsElementPresent(locator1 = "Pagination#FIRST_LINK"))) {
+			Pagination.changePagination(itemsPerPage = 40);
+		}
+
+		AssertClick.pauseAssertTextClickAt(
+			key_rowEntry = ${workflowResourceValue},
+			locator1 = "CommerceEntry#EDIT_ROW",
+			value1 = "Edit");
+
+		WaitForElementPresent(
+			key_rowEntry = ${workflowResourceValue},
+			locator1 = "CommerceEntry#RESOURCE_TABLE_SELECT",
+			value1 = ${workflowDefinition});
+
+		Select(
+			key_rowEntry = ${workflowResourceValue},
+			locator1 = "CommerceEntry#RESOURCE_TABLE_SELECT",
+			value1 = ${workflowDefinition});
+
+		AssertClick(
+			key_rowEntry = ${workflowResourceValue},
+			locator1 = "CommerceEntry#RESOURCE_TABLE_SAVE",
+			value1 = "Save");
+
+		Alert.viewSuccessMessage();
+	}
+
+	@summary = "Default summary"
+	macro setupB2BGuestCheckout(channelName = null) {
 		if (isSet(siteName)) {
 			var siteName = CommerceUtilities.convertStringToKey(string = ${siteName});
 
@@ -283,7 +420,8 @@ definition {
 		}
 	}
 
-	macro setupB2BGuestCheckoutPages {
+	@summary = "Default summary"
+	macro setupB2BGuestCheckoutPages(pageNameList = null, siteName = null) {
 		Variables.assertDefined(parameterList = "${pageNameList},${siteName}");
 
 		PagesAdmin.openPagesAdmin(siteURLKey = ${siteName});
@@ -310,7 +448,8 @@ definition {
 	}
 
 	@description = "Create a Content Page to be used as Catalog page"
-	macro setUpCatalogPage {
+	@summary = "Default summary"
+	macro setUpCatalogPage(pageName = null, facets = null) {
 		var leftColumnWidgets = "Search Bar,Search Options";
 		var rightColumnWidgets = "Sort,Search Results";
 
@@ -352,9 +491,9 @@ definition {
 				position = 1);
 		}
 
-		SearchPortlets.configureSearchBarWidget(searchScope = "Everything");
+		SearchPage.configureSearchBarWidget(searchScope = "Everything");
 
-		SearchPortlets.configureSearchOptions(allowEmptySearches = "true");
+		SearchPage.configureSearchOptions(allowEmptySearches = "true");
 
 		PageEditor.publish();
 	}

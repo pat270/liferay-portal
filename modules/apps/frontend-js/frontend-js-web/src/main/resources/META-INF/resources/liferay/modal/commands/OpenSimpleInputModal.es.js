@@ -33,6 +33,8 @@ function dispose() {
 
 function openSimpleInputModalImplementation({
 	alert,
+	buttonSubmitLabel,
+	center,
 	checkboxFieldLabel,
 	checkboxFieldName,
 	checkboxFieldValue,
@@ -40,19 +42,24 @@ function openSimpleInputModalImplementation({
 	formSubmitURL,
 	idFieldName,
 	idFieldValue,
+	mainFieldComponent,
 	mainFieldLabel,
 	mainFieldName,
+	mainFieldPlaceholder,
 	mainFieldValue,
 	method,
 	namespace,
 	onFormSuccess,
-	placeholder,
+	required,
+	size,
 }) {
 	dispose();
 
 	render(
 		<SimpleInputModal
 			alert={alert}
+			buttonSubmitLabel={buttonSubmitLabel}
+			center={center}
 			checkboxFieldLabel={checkboxFieldLabel}
 			checkboxFieldName={checkboxFieldName}
 			checkboxFieldValue={checkboxFieldValue}
@@ -62,13 +69,16 @@ function openSimpleInputModalImplementation({
 			idFieldName={idFieldName}
 			idFieldValue={idFieldValue}
 			initialVisible="true"
+			mainFieldComponent={mainFieldComponent}
 			mainFieldLabel={mainFieldLabel}
 			mainFieldName={mainFieldName}
+			mainFieldPlaceholder={mainFieldPlaceholder}
 			mainFieldValue={mainFieldValue}
 			method={method}
 			namespace={namespace}
 			onFormSuccess={onFormSuccess}
-			placeholder={placeholder}
+			required={required}
+			size={size}
 		/>,
 		DEFAULT_RENDER_DATA,
 		getDefaultModalContainer()

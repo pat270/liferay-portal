@@ -72,7 +72,12 @@ public class NotificationQueueEntryResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _notificationQueueEntryResourceProxyProviderFunction.
+				Function<InvocationHandler, NotificationQueueEntryResource>
+					notificationQueueEntryResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_notificationQueueEntryResourceProxyProviderFunction;
+
+				return notificationQueueEntryResourceProxyProviderFunction.
 					apply(
 						(proxy, method, arguments) -> _invoke(
 							method, arguments, _checkPermissions,
@@ -237,11 +242,6 @@ public class NotificationQueueEntryResourceFactoryImpl
 		}
 	}
 
-	private static final Function
-		<InvocationHandler, NotificationQueueEntryResource>
-			_notificationQueueEntryResourceProxyProviderFunction =
-				_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -277,6 +277,15 @@ public class NotificationQueueEntryResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function
+			<InvocationHandler, NotificationQueueEntryResource>
+				_notificationQueueEntryResourceProxyProviderFunction =
+					_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

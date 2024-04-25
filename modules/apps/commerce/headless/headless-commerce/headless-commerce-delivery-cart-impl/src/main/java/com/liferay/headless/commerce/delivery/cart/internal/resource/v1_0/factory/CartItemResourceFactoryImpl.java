@@ -71,7 +71,12 @@ public class CartItemResourceFactoryImpl implements CartItemResource.Factory {
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _cartItemResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, CartItemResource>
+					cartItemResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_cartItemResourceProxyProviderFunction;
+
+				return cartItemResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -227,9 +232,6 @@ public class CartItemResourceFactoryImpl implements CartItemResource.Factory {
 		}
 	}
 
-	private static final Function<InvocationHandler, CartItemResource>
-		_cartItemResourceProxyProviderFunction = _getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -264,6 +266,14 @@ public class CartItemResourceFactoryImpl implements CartItemResource.Factory {
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, CartItemResource>
+			_cartItemResourceProxyProviderFunction =
+				_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

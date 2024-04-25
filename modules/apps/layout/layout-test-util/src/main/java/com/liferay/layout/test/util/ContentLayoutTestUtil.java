@@ -110,7 +110,7 @@ public class ContentLayoutTestUtil {
 					StringUtil.randomString(), StringUtil.randomString(),
 					RandomTestUtil.randomString(), inputHTML,
 					RandomTestUtil.randomString(), false, "{fieldSets: []}",
-					null, 0, FragmentConstants.TYPE_INPUT,
+					null, 0, false, FragmentConstants.TYPE_INPUT,
 					JSONUtil.put(
 						"fieldTypes", JSONUtil.put(infoFieldType.getName())
 					).toString(),
@@ -136,7 +136,7 @@ public class ContentLayoutTestUtil {
 					StringUtil.randomString(), StringUtil.randomString(),
 					RandomTestUtil.randomString(), inputHTML,
 					RandomTestUtil.randomString(), false, "{fieldSets: []}",
-					null, 0, FragmentConstants.TYPE_INPUT,
+					null, 0, false, FragmentConstants.TYPE_INPUT,
 					JSONUtil.put(
 						"fieldTypes", JSONUtil.put("captcha")
 					).toString(),
@@ -198,7 +198,7 @@ public class ContentLayoutTestUtil {
 				StringUtil.randomString(), StringUtil.randomString(),
 				RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 				RandomTestUtil.randomString(), false, "{fieldSets: []}", null,
-				0, FragmentConstants.TYPE_COMPONENT, null,
+				0, false, FragmentConstants.TYPE_COMPONENT, null,
 				WorkflowConstants.STATUS_APPROVED,
 				ServiceContextTestUtil.getServiceContext(
 					layout.getGroupId(), TestPropsValues.getUserId()));
@@ -319,9 +319,8 @@ public class ContentLayoutTestUtil {
 
 		JSONObject responseJSONObject = (JSONObject)ReflectionTestUtil.invoke(
 			mvcActionCommand, "_updateItemConfig",
-			new Class<?>[] {ActionRequest.class, ActionResponse.class},
-			mockLiferayPortletActionRequest,
-			new MockLiferayPortletActionResponse());
+			new Class<?>[] {ActionRequest.class},
+			mockLiferayPortletActionRequest);
 
 		jsonObject.put(
 			"layoutData", responseJSONObject.getJSONObject("layoutData")
@@ -342,6 +341,24 @@ public class ContentLayoutTestUtil {
 			getMockLiferayPortletActionRequest(
 				CompanyLocalServiceUtil.getCompany(layout.getCompanyId()),
 				GroupLocalServiceUtil.getGroup(layout.getGroupId()), layout);
+
+		long segmentsExperienceId =
+			SegmentsExperienceLocalServiceUtil.fetchDefaultSegmentsExperienceId(
+				layout.getPlid());
+
+		mockLiferayPortletActionRequest.addParameter(
+			"segmentsExperienceId", String.valueOf(segmentsExperienceId));
+
+		LayoutPageTemplateStructure layoutPageTemplateStructure =
+			LayoutPageTemplateStructureLocalServiceUtil.
+				fetchLayoutPageTemplateStructure(
+					layout.getGroupId(), layout.getPlid());
+
+		LayoutStructure layoutStructure = LayoutStructure.of(
+			layoutPageTemplateStructure.getData(segmentsExperienceId));
+
+		mockLiferayPortletActionRequest.addParameter(
+			"parentItemId", layoutStructure.getMainItemId());
 
 		mockLiferayPortletActionRequest.addParameter("portletId", portletId);
 
@@ -497,15 +514,10 @@ public class ContentLayoutTestUtil {
 			ReflectionTestUtil.invoke(
 				publishLayoutMVCActionCommand, "_publishLayout",
 				new Class<?>[] {
-					ActionRequest.class, ActionResponse.class, Layout.class,
-					Layout.class, ServiceContext.class, long.class
+					Layout.class, Layout.class, ServiceContext.class, long.class
 				},
-				getMockLiferayPortletActionRequest(
-					CompanyLocalServiceUtil.getCompany(layout.getCompanyId()),
-					GroupLocalServiceUtil.getGroup(layout.getGroupId()),
-					layout),
-				new MockLiferayPortletActionResponse(), draftLayout, layout,
-				serviceContext, TestPropsValues.getUserId());
+				draftLayout, layout, serviceContext,
+				TestPropsValues.getUserId());
 		}
 		finally {
 			ServiceContextThreadLocal.popServiceContext();

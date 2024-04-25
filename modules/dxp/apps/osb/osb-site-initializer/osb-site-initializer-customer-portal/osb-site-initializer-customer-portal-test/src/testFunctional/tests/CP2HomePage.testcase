@@ -60,7 +60,9 @@ definition {
 		}
 
 		task ("When I click on the Cookie police link at the bottom of the page") {
-			CP2HomePage.clickAtCookiePoliceLink();
+			ScrollWebElementIntoView(locator1 = "CP2HomePage#COOKIE_LINK");
+
+			CP2HomePage.clickAtCookiePoliceMenu();
 		}
 
 		task ("Then I should be able to assert that the Cookie police page is loaded") {
@@ -78,11 +80,13 @@ definition {
 		}
 
 		task ("When I change the site language") {
-			CP2HomePage.clickAtLanguageButton(language = "português-Brasil");
+			CP2HomePage.clickAtLanguageButton(language = "Português");
 		}
 
 		task ("Then I should be able to assert the selected language") {
-			CP2HomePage.assertLanguageChange(siteTitle = "Bem vindo");
+			CP2HomePage.assertLanguageChange(siteTitle = "Bem vindo,");
+
+			CP2HomePage.clickAtLanguageButton(language = "English");
 		}
 	}
 

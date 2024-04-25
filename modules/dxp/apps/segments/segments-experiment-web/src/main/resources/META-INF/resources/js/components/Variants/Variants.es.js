@@ -18,15 +18,12 @@ import {
 } from '../../state/actions.es';
 import {DispatchContext, StateContext} from '../../state/context.es';
 import {navigateToExperience} from '../../util/navigation.es';
-import {
-	STATUS_FINISHED_NO_WINNER,
-	STATUS_FINISHED_WINNER,
-} from '../../util/statuses.es';
+import {STATUS_DRAFT} from '../../util/statuses.es';
 import {openErrorToast, openSuccessToast} from '../../util/toasts.es';
 import VariantForm from './internal/VariantForm.es';
-import VariantList from './internal/VariantList.es';
+import VariantTable from './internal/VariantTable.es';
 
-function Variants({onVariantPublish, selectedSegmentsExperienceId}) {
+function Variants({selectedSegmentsExperienceId}) {
 	const dispatch = useContext(DispatchContext);
 	const {errors, experiment, variants} = useContext(StateContext);
 	const {APIService, page} = useContext(SegmentsExperimentsContext);
@@ -48,20 +45,18 @@ function Variants({onVariantPublish, selectedSegmentsExperienceId}) {
 		onClose: () => setEditingVariant({active: false}),
 	});
 
-	const publishable =
-		experiment.status.value === STATUS_FINISHED_WINNER ||
-		experiment.status.value === STATUS_FINISHED_NO_WINNER;
-
 	return (
 		<>
 			<h4 className="mb-3 mt-4 sheet-subtitle">
 				{Liferay.Language.get('variants')}
 
-				<ClayIcon
-					className="lexicon-icon-sm ml-1 reference-mark text-warning"
-					style={{verticalAlign: 'super'}}
-					symbol="asterisk"
-				/>
+				{experiment.status.value === STATUS_DRAFT && (
+					<ClayIcon
+						className="lexicon-icon-sm ml-1 reference-mark text-warning"
+						style={{verticalAlign: 'super'}}
+						symbol="asterisk"
+					/>
+				)}
 			</h4>
 
 			{variants.length === 1 && (
@@ -73,9 +68,11 @@ function Variants({onVariantPublish, selectedSegmentsExperienceId}) {
 							)}
 						</b>
 					</p>
+
 					<p className="mb-2 text-secondary">
 						{Liferay.Language.get('variants-help')}
 					</p>
+
 					{errors.variantsError && (
 						<div className="font-weight-semi-bold mb-3 text-danger">
 							<ClayIcon
@@ -88,26 +85,24 @@ function Variants({onVariantPublish, selectedSegmentsExperienceId}) {
 							)}
 						</div>
 					)}
+
+					{experiment.editable && (
+						<ClayButton
+							className="mb-3"
+							data-testid="create-variant"
+							displayType="secondary"
+							onClick={() => setCreatingVariant(!creatingVariant)}
+						>
+							{Liferay.Language.get('create-variant')}
+						</ClayButton>
+					)}
 				</>
 			)}
 
-			{experiment.editable && (
-				<ClayButton
-					className="mb-3"
-					data-testid="create-variant"
-					displayType="secondary"
-					onClick={() => setCreatingVariant(!creatingVariant)}
-				>
-					{Liferay.Language.get('create-variant')}
-				</ClayButton>
-			)}
-
-			<VariantList
-				editable={experiment.editable}
+			<VariantTable
+				experiment={experiment}
 				onVariantDeletion={_handleVariantDeletion}
 				onVariantEdition={_handleVariantEdition}
-				onVariantPublish={onVariantPublish}
-				publishable={publishable}
 				selectedSegmentsExperienceId={selectedSegmentsExperienceId}
 				variants={variants}
 			/>
@@ -243,7 +238,7 @@ function Variants({onVariantPublish, selectedSegmentsExperienceId}) {
 }
 
 Variants.propTypes = {
-	onVariantPublish: PropTypes.func.isRequired,
+	onVariantPublish: PropTypes.func,
 	selectedSegmentsExperienceId: PropTypes.string.isRequired,
 };
 

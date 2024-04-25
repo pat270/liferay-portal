@@ -3,7 +3,7 @@ definition {
 
 	property app.server.bundles.size = "1";
 	property ci.retries.disabled = "true";
-	property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=";
+	property custom.properties = "auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}tunneling.servlet.shared.secret=1234567890123456";
 	property databases.size = "1";
 	property minimum.slave.ram = "24";
 	property portal.release = "true";
@@ -37,10 +37,11 @@ definition {
 		}
 	}
 
-	@description = "This is a use case for LPP-8122. Verify that when remote publishing, the child pages are not published when they are unselected."
+	@description = "This is a use case for LPP-8122 and LPS-190360 TC-2. Verify that when remote publishing, the child pages are not published when they are unselected."
 	@priority = 3
 	test AssertCannotPublishChildPageWhenUnselected {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: Add two children pages for Staging Test Page") {
 			for (var i : list "1,2") {
@@ -58,7 +59,15 @@ definition {
 
 			Staging.gotoPublishToLive();
 
+			AssertTextEquals(
+				locator1 = "Message#WARNING",
+				value1 = "Recommendation:Publish small incremental changes to avoid large publishing processes that can take a long time to execute.");
+
 			Staging.configurePublishToLive(uncheckChildPagesNameList = "Test Child Page 1,Test Child Page 2");
+
+			AssertTextEquals(
+				locator1 = "Message#WARNING",
+				value1 = "Recommendation:Publish small incremental changes to avoid large publishing processes that can take a long time to execute.");
 
 			Staging.publishToLive(remoteStaging = "true");
 		}
@@ -85,9 +94,10 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-154557 TC-1: Verify detailed error message should show up with default configuration."
-	@priority = 4
+	@priority = 3
 	test AssertDetailedErrorMessageWithDefaultConfiguration {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: Delete the remote live site") {
 			JSONGroup.deleteGroupByName(
@@ -112,10 +122,11 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-154557 TC-2: Verify only generic error message should show up when set property to true."
-	@priority = 4
+	@priority = 3
 	test AssertExceptionDataIsHiddenWhenSetPropertyToTrue {
-		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}tunnel.servlet.hide.exception.data=true";
+		property custom.properties = "auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}tunnel.servlet.hide.exception.data=true${line.separator}tunneling.servlet.shared.secret=1234567890123456";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: Delete the remote live site") {
 			JSONGroup.deleteGroupByName(
@@ -140,19 +151,16 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-123156. Verify that the publication process message is shown while the publication is in progress."
-	@priority = 4
+	@priority = 3
 	test AssertLongPublicationProcessMessage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Staging.runGroovyScript();
 
 		Staging.openStagingAdmin(siteURLKey = "site-name");
 
 		MouseOver.mouseOverNotVisible(locator1 = "Button#PLUS");
-
-		AssertTextEquals.assertPartialText(
-			locator1 = "Message#TOOLTIP",
-			value1 = "Custom Publish Process");
 
 		Staging.publishCustomPublication(remoteStaging = "true");
 
@@ -168,6 +176,7 @@ definition {
 	@priority = 3
 	test AssertTemplatesTitleOfScheduledStagingPublishes {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		HeadlessSite.addSite(
 			portalURL = "http://localhost:9080",
@@ -194,15 +203,20 @@ definition {
 			publishTemplateName = "My Template Title",
 			scheduleProcess = "true");
 
+		// Pausing 300 seconds due to LRQA-83187
+
+		Pause(value1 = 300000);
+
 		Staging.openStagingAdmin(siteURLKey = "site-name");
 
 		Staging.viewPublishTask(publicationTitle = "My Publish Title");
 	}
 
 	@description = "This is a use case for LPS-123156. Verify that correct error message will appear when the publishing process encounters an error."
-	@priority = 4
+	@priority = 3
 	test AssertValidationErrors {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		PagesAdmin.openPagesAdmin(siteURLKey = "site-name");
 
@@ -222,10 +236,66 @@ definition {
 			validateErrorMessage = "An unexpected error occurred with the publish process. Please check your portal and publishing configuration.");
 	}
 
+	@description = "This is a use case for LPS-190015, TC6. Canceling the multi publishing of several webcontents to remote site, stops them process properly and no webcontnts are published."
+	@priority = 3
+	test CanceledMultiPublishToRemoteDoesNotPublishAnyWebContent {
+		property custom.properties = "auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}feature.flag.LPS-165481=true${line.separator}tunneling.servlet.shared.secret=1234567890123456";
+		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
+
+		task ("Add web contents") {
+			for (var i : list "1,2,3,4,5") {
+				JSONWebcontent.addWebContent(
+					content = "WC Content ${i}",
+					groupName = "Site Name",
+					title = "WC Title ${i}");
+			}
+		}
+
+		task ("Cancele publication of all web contents") {
+			WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name");
+
+			PortletEntry.selectAll();
+
+			Click(locator1 = "ManagementBar#MORE_ACTIONS_ELLIPSIS");
+
+			MenuItem.click(menuItem = "Publish Selected Elements");
+
+			AssertTextEquals(
+				index = 1,
+				locator1 = "Modal#BODY_MESSAGE",
+				value1 = "Are you sure you want to publish the selected entities?");
+
+			Click(
+				buttonName = "Cancel",
+				locator1 = "Modal#SECONDARY_BUTTON");
+		}
+
+		task ("Assert webcontents are not published") {
+			User.logoutPG();
+
+			User.firstLoginUI(
+				password = "test",
+				specificURL = "http://localhost:9080",
+				userEmailAddress = "test@liferay.com");
+
+			WebContentNavigator.openWebContentAdmin(
+				baseURL = "http://localhost:9080",
+				siteURLKey = "remote-site");
+
+			for (var i : list "1,2,3,4,5") {
+				AssertElementNotPresent(
+					key_webContentTitle = "WC Title ${i}",
+					locator1 = "WC#ENTRY_LIST_TITLE_NAME");
+			}
+		}
+	}
+
 	@description = "This is a use case for LPS-52285. Verify that remote staging can be disabled after shutting down the remote site."
-	@priority = 4
+	@priority = 3
 	test CanDisableRemoteStagingAfterShuttingDownRemoteSite {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("When: Shut down the remote live environment and attempt to disable staging settings") {
 			Clustering.shutdownSpecificServer(nodePort = 9080);
@@ -268,9 +338,10 @@ definition {
 
 	@description = "This test covers LPS-163951. Verify the image thumbnail in asset publisher can be published when using image URL."
 	@ignore = "true"
-	@priority = 4
+	@priority = 3
 	test CanPublishWCWithImagesViaAP {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: Dm image and AP widget on staged site") {
 			JSONDocument.addFileWithUploadedFile(
@@ -374,10 +445,72 @@ definition {
 		}
 	}
 
+	@description = "This is a use case for LPS-189191. TC-3: Verify that the instance setting is able to overwrite the system setting via UI to ignore previews and thumbnails during the remote staging publish process."
+	@priority = 3
+	test InstanceSettingOfPreviewsAndThumbnailsCanOverwriteSystemSetting {
+		property custom.properties = "auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}feature.flag.LPS-189187=true${line.separator}tunneling.servlet.shared.secret=1234567890123456";
+		property test.liferay.virtual.instance = "false";
+
+		task ("Given: Instance setting overwrite system setting via UI") {
+			StagingNavigator.openToConfigInInstanceSettings(portlet = "Export/Import, Staging");
+
+			Uncheck.uncheckNotVisible(
+				key_settingFieldName = "Include Thumbnails And Previews During Staging",
+				locator1 = "SystemSettings#SETTING_FIELD_NAME_CHECKBOX");
+
+			Button.clickSave();
+
+			Alert.viewSuccessMessage();
+
+			StagingNavigator.openToConfigInSystemSettings(portlet = "Export/Import, Staging");
+
+			AssertChecked.assertCheckedNotVisible(
+				key_settingFieldName = "Include Thumbnails And Previews During Staging",
+				locator1 = "SystemSettings#SETTING_FIELD_NAME_CHECKBOX");
+		}
+
+		task ("And: Add a new file to DM") {
+			JSONDocument.addFileWithUploadedFile(
+				dmDocumentDescription = "DM Document Description",
+				dmDocumentTitle = "DM Document Title",
+				groupName = "Site Name",
+				mimeType = "image/jpeg",
+				sourceFileName = "Document_1.jpg");
+		}
+
+		task ("When: Create a new publish process") {
+			Navigator.openSiteURL(siteName = "Site Name");
+
+			Staging.gotoPublishToLive();
+		}
+
+		task ("Then: Assert the Previews and Thumbnails are not displayed under DM item") {
+			Staging.configurePublishToLive(
+				checkContentNameList = "Documents and Media",
+				includeThumbnailsAndPreviewsDuringStaging = "false");
+
+			Staging.publishToLive(remoteStaging = "true");
+
+			User.logoutPG();
+
+			User.firstLoginUI(
+				password = "test",
+				specificURL = "http://localhost:9080",
+				userEmailAddress = "test@liferay.com");
+
+			DMNavigator.openDocumentsAndMediaAdmin(
+				baseURL = "http://localhost:9080",
+				siteURLKey = "remote-site");
+
+			DMDocument.viewPG(dmDocumentTitle = "DM Document Title");
+		}
+	}
+
 	@description = "This is a use case for LPS-146399. In the publish summary of a remote staging site only the previously published pages should be present."
 	@priority = 3
 	test OnlyPublishedPagesShouldBePresentInSummary {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONLayout.addPublicLayout(
 			groupName = "Site Name",
@@ -407,10 +540,109 @@ definition {
 			publicationTitle = "sumCheck");
 	}
 
+	@description = "This is a use case for LPS-190015, TC5. Publishing several webcontents from the first page of wcs by multi publish option to remote site."
+	@priority = 3
+	test PublishMoreWebContentsToRemoteWithMultiPublishOption {
+		property custom.properties = "auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}feature.flag.LPS-165481=true${line.separator}tunneling.servlet.shared.secret=1234567890123456";
+		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
+
+		task ("Add web contents") {
+			for (var i : list "1,2,3,4,5") {
+				JSONWebcontent.addWebContent(
+					content = "WC Content ${i}",
+					groupName = "Site Name",
+					title = "WC Title ${i}");
+			}
+		}
+
+		task ("Publish all web contents from first page") {
+			WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name");
+
+			Pagination.changePagination(itemsPerPage = 4);
+
+			PortletEntry.selectAll();
+
+			Staging.publishWithMultiPublishOption();
+		}
+
+		task ("Assert all selected webcontents are published") {
+			User.logoutPG();
+
+			User.firstLoginUI(
+				password = "test",
+				specificURL = "http://localhost:9080",
+				userEmailAddress = "test@liferay.com");
+
+			WebContentNavigator.openWebContentAdmin(
+				baseURL = "http://localhost:9080",
+				siteURLKey = "remote-site");
+
+			for (var i : list "2,3,4,5") {
+				AssertElementPresent(
+					key_webContentTitle = "WC Title ${i}",
+					locator1 = "WC#ENTRY_LIST_TITLE_NAME");
+			}
+
+			AssertElementNotPresent(
+				key_webContentTitle = "WC Title 1",
+				locator1 = "WC#ENTRY_LIST_TITLE_NAME");
+		}
+	}
+
+	@description = "This is a use case for LPS-190015, TC4. Publishing a single webcontent by multi publish option to remote site."
+	@priority = 3
+	test PublishOneWebContentToRemoteWithMultiPublishOption {
+		property custom.properties = "auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}feature.flag.LPS-165481=true${line.separator}tunneling.servlet.shared.secret=1234567890123456";
+		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
+
+		task ("Add web contents") {
+			for (var i : list "1,2") {
+				JSONWebcontent.addWebContent(
+					content = "WC Content ${i}",
+					groupName = "Site Name",
+					title = "WC Title ${i}");
+			}
+		}
+
+		task ("Publish one web content with multi publish option") {
+			WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name");
+
+			Click(
+				content_title = "WC Title 1",
+				locator1 = "Checkbox#ENTRY_BY_TITLE");
+
+			Staging.publishWithMultiPublishOption();
+		}
+
+		task ("Assert web content is published") {
+			User.logoutPG();
+
+			User.firstLoginUI(
+				password = "test",
+				specificURL = "http://localhost:9080",
+				userEmailAddress = "test@liferay.com");
+
+			WebContentNavigator.openWebContentAdmin(
+				baseURL = "http://localhost:9080",
+				siteURLKey = "remote-site");
+
+			AssertElementPresent(
+				key_webContentTitle = "WC Title 1",
+				locator1 = "WC#ENTRY_LIST_TITLE_NAME");
+
+			AssertElementNotPresent(
+				key_webContentTitle = "WC Title 2",
+				locator1 = "WC#ENTRY_LIST_TITLE_NAME");
+		}
+	}
+
 	@description = "This is a use case for LPS-80494. Documents can be published with link to page fields."
 	@priority = 3
 	test StagingRemoteDMDocumentType {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Navigator.openSiteURL(siteName = "Site Name");
 
@@ -488,10 +720,11 @@ definition {
 			assetTitle = "DM Document Type Title");
 	}
 
-	@description = "Web contents are only published if their content date is in correspondence with the content data range of the publish configuration."
-	@priority = 4
+	@description = "This is a use case for LRQA-7589 and LPS-190360 TC-6. Web contents are only published if their content date is in correspondence with the content data range of the publish configuration."
+	@priority = 3
 	test StagingRemoteLiveWebContent {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONLayout.addWidgetToPublicLayout(
 			groupName = "Site Name",
@@ -553,6 +786,10 @@ definition {
 
 		Staging.addCustomPublication();
 
+		AssertTextEquals(
+			locator1 = "Message#WARNING",
+			value1 = "Recommendation:Publish small incremental changes to avoid large publishing processes that can take a long time to execute.");
+
 		Staging.configurePublishToLive(
 			contentDateRange = "Date Range",
 			dateRangeEndDate = '''10/12/2019''',
@@ -602,11 +839,12 @@ definition {
 			structureName = "Structure Name");
 	}
 
-	@description = "This is a use case for LPS-82839. Web contents can be published on remote staging."
-	@priority = 5
+	@description = "This is a use case for LPS-82839 and LPS-190360 TC-4. Web contents can be published on remote staging."
+	@priority = 3
 	test StagingRemoteLiveWebContentViaPortletCP {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name");
 
@@ -622,7 +860,25 @@ definition {
 
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name");
 
-		Staging.publishToLiveNowViaPortletCP();
+		LexiconEntry.gotoHeaderMenuItem(menuItem = "Staging");
+
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
+
+		AssertTextEquals(
+			locator1 = "Message#WARNING",
+			value1 = "Recommendation:Publish small incremental changes to avoid large publishing processes that can take a long time to execute.");
+
+		ClickNoError(locator1 = "Staging#STAGING_PUBLISH_TO_LIVE_BUTTON");
+
+		Confirm(value1 = "null");
+
+		WaitForElementPresent(locator1 = "Staging#STAGING_STATUS_PORTLET");
+
+		AssertTextEquals(
+			locator1 = "Staging#STAGING_STATUS_PORTLET",
+			value1 = "Successful");
+
+		IFrame.closeFrame();
 
 		User.logoutPG();
 
@@ -641,9 +897,12 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-81950. Web contents can be published via their portlet."
-	@priority = 5
+	@priority = 3
 	test StagingRemoteLiveWebContentViaPortletPG {
+		property osgi.module.configuration.file.names = "com.liferay.staging.configuration.StagingConfiguration.config";
+		property osgi.module.configurations = "publishDisplayedContent=\"true\"";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Navigator.gotoSitePage(
 			pageName = "Staging Test Page",
@@ -710,6 +969,7 @@ definition {
 	@priority = 3
 	test StagingRemoteLiveWebContentWithManualChosenID {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
@@ -789,9 +1049,10 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-178088. Verify the error message displays the missing reference information with the implicated Site's name."
-	@priority = 4
+	@priority = 3
 	test VerifyErrorMessageWithMissingReferenceInformation {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: Add site-name SiteB in 8080 remote-site in 9080 add structureA with image field in site-name") {
 			HeadlessSite.addSite(siteName = "SiteB");
@@ -849,9 +1110,10 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-182704. TC-13: Verify that a confirmation pop-up should show up when Delete Application Data Before Importing checkbox is checked during WCM portlet import process on remote live site"
-	@priority = 5
+	@priority = 3
 	test ViewDeleteApplicationDataPopUpInPortletImportProgressOnRemoteLiveSite {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Export web content from the default site and add a new web content entry") {
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "guest");
@@ -876,13 +1138,11 @@ definition {
 		}
 
 		task ("Export blank Forms lar from the default site and add a form entry") {
-			FormsAdmin.openFormsAdmin(siteURLKey = "guest");
+			FormsAdminNavigator.openFormsAdmin(siteURLKey = "guest");
 
 			LAR.exportPortlet(larFileName = "Forms_blank_portlet.lar");
 
-			FormsAdmin.openFormsAdmin(siteURLKey = "site-name");
-
-			FormsAdminNavigator.gotoAddForm();
+			FormsAdmin.addForm(groupName = "Site Name");
 
 			Form.editName(formName = "Test Form");
 
@@ -935,7 +1195,7 @@ definition {
 				cancelImport = "true",
 				larFileName = "Blogs_blank_portlet.lar");
 
-			FormsAdmin.openFormsAdmin(
+			FormsAdminNavigator.openFormsAdmin(
 				baseURL = "http://localhost:9080",
 				siteURLKey = "remote-site");
 
@@ -961,7 +1221,7 @@ definition {
 
 			Blogs.viewNoEntryCP();
 
-			FormsAdmin.openFormsAdmin(
+			FormsAdminNavigator.openFormsAdmin(
 				baseURL = "http://localhost:9080",
 				siteURLKey = "remote-site");
 
@@ -972,9 +1232,10 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-182704. TC-12: Verify that a confirmation pop-up should show up when Delete Application Data Before Importing checkbox is checked during portlet import process on remote staging site."
-	@priority = 5
+	@priority = 3
 	test ViewDeleteApplicationDataPopUpInPortletImportProgressOnRemoteStagingSite {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Export web content from the default site and add a new web content entry") {
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "guest");
@@ -999,13 +1260,11 @@ definition {
 		}
 
 		task ("Export blank Forms lar from the default site and add a form entry") {
-			FormsAdmin.openFormsAdmin(siteURLKey = "guest");
+			FormsAdminNavigator.openFormsAdmin(siteURLKey = "guest");
 
 			LAR.exportPortlet(larFileName = "Forms_blank_portlet.lar");
 
-			FormsAdmin.openFormsAdmin(siteURLKey = "site-name");
-
-			FormsAdminNavigator.gotoAddForm();
+			FormsAdmin.addForm(groupName = "Site Name");
 
 			Form.editName(formName = "Test Form");
 
@@ -1035,7 +1294,7 @@ definition {
 				cancelImport = "true",
 				larFileName = "Blogs_blank_portlet.lar");
 
-			FormsAdmin.openFormsAdmin(siteURLKey = "site-name");
+			FormsAdminNavigator.openFormsAdmin(siteURLKey = "site-name");
 
 			LAR.importPortletWithDeleteApplicationData(
 				cancelImport = "true",
@@ -1055,7 +1314,7 @@ definition {
 
 			Blogs.viewNoEntryCP();
 
-			FormsAdmin.openFormsAdmin(siteURLKey = "site-name");
+			FormsAdminNavigator.openFormsAdmin(siteURLKey = "site-name");
 
 			LAR.importPortletWithDeleteApplicationData(larFileName = "Forms_blank_portlet.lar");
 
@@ -1064,9 +1323,10 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-74038. Expected error message will appear on the UI when the live instance is not running on remote staging and the link to it is not visible."
-	@priority = 5
+	@priority = 3
 	test ViewInfoMessageAfterShutDownRemoteSite {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Clustering.shutdownSpecificServer(nodePort = 9080);
 
@@ -1082,9 +1342,10 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-81836. Web contents can be published via SAP."
-	@priority = 4
+	@priority = 3
 	test ViewSingleAssetRemotePublication {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name");
 
@@ -1116,6 +1377,152 @@ definition {
 		WebContent.viewTitle(
 			onLive = "true",
 			webContentTitle = "Web Content Title");
+	}
+
+	@description = "This is a use case for LPS-190736. TC3: Verify that the user is notified when choosing ALL in the Advanced Publish Process screen after enabling remote staging."
+	@priority = 3
+	test ViewWarningMessageWhenChooseALL {
+		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
+
+		task ("Given: Navigate to the Advanced Publish Process screen") {
+			Navigator.gotoSitePage(
+				pageName = "Staging Test Page",
+				siteName = "Site Name");
+
+			Staging.gotoPublishToLive();
+		}
+
+		task ("When: Click on ALL in the Content section and click on 'Refresh Counts' button") {
+			Staging.configurePublishToLive(contentDateRange = "All");
+		}
+
+		task ("Then: The warning message should still display") {
+			AssertVisible(
+				key_warningMessage = "Publishing all content or using a wide date range will take some time.",
+				locator1 = "StagingPublishToLive#WARNING_SPECIFIC");
+		}
+
+		task ("When: Click on Last in the Content section") {
+			Click.clickNoMouseOverNoWaitForVisible(locator1 = "StagingPublishToLive#CONTENT_LAST");
+		}
+
+		task ("Then: The warning message should not display") {
+			AssertElementNotPresent(
+				key_warningMessage = "Publishing all content or using a wide date range will take some time.",
+				locator1 = "StagingPublishToLive#WARNING_SPECIFIC");
+		}
+
+		task ("When: Publish from the portlet") {
+			WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name");
+
+			Staging.configurePublishToLiveViaPortletCP(contentDateRange = "All");
+		}
+
+		task ("Then: The warning message should not display") {
+			AssertElementNotPresent(
+				key_warningMessage = "Publishing all content or using a wide date range will take some time.",
+				locator1 = "StagingPublishToLive#WARNING_SPECIFIC");
+		}
+	}
+
+	@description = "This is a use case for LPS-190736. TC4: Verify that the user is notified when choosing Date Range in the Advanced Publish Process screen after enabling remote staging."
+	@priority = 3
+	test ViewWarningMessageWhenChooseDateRange {
+		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
+
+		task ("Given: Navigate to the Advanced Publish Process screen") {
+			Navigator.gotoSitePage(
+				pageName = "Staging Test Page",
+				siteName = "Site Name");
+
+			Staging.gotoPublishToLive();
+		}
+
+		task ("When: Click on Date Range in the Content section and click on 'Refresh Counts' button") {
+			Staging.configurePublishToLive(
+				contentDateRange = "Date Range",
+				dateRangeEndDate = '''10/12/2019''',
+				dateRangeStartDate = '''10/11/2019''');
+		}
+
+		task ("Then: The warning message should still display") {
+			AssertVisible(
+				key_warningMessage = "Publishing all content or using a wide date range will take some time.",
+				locator1 = "StagingPublishToLive#WARNING_SPECIFIC");
+		}
+
+		task ("When: Click on From Last Publish Date in the Content section") {
+			Click.clickNoMouseOverNoWaitForVisible(locator1 = "Radio#CHOOSE_CONTENT_FROM_LAST_PUBLISH_DATE_CHANGE");
+		}
+
+		task ("Then: The warning message should not display") {
+			AssertElementNotPresent(
+				key_warningMessage = "Publishing all content or using a wide date range will take some time.",
+				locator1 = "StagingPublishToLive#WARNING_SPECIFIC");
+		}
+
+		task ("When: Publish from the portlet") {
+			WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name");
+
+			Staging.configurePublishToLiveViaPortletCP(contentDateRange = "Date Range");
+		}
+
+		task ("Then: The warning message should not display") {
+			AssertElementNotPresent(
+				key_warningMessage = "Publishing all content or using a wide date range will take some time.",
+				locator1 = "StagingPublishToLive#WARNING_SPECIFIC");
+		}
+	}
+
+	@description = "This is a use case for LPS-190736. TC6: Verify that the user is notified when choosing ALL or Date Range in the Custom Publish Process screen after enabling remote staging."
+	@priority = 3
+	test ViewWarningMessageWhenPublishFromStagingAdmin {
+		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
+
+		task ("Given: Navigate to the Advanced Publish Process screen") {
+			Staging.openStagingAdmin(siteURLKey = "site-name");
+
+			Staging.addCustomPublication();
+
+			AssertElementNotPresent(
+				key_warningMessage = "Publishing all content or using a wide date range will take some time.",
+				locator1 = "StagingPublishToLive#WARNING_SPECIFIC");
+		}
+
+		task ("When: Click on ALL in the Content section and click on 'Refresh Counts' button") {
+			Staging.configurePublishToLive(contentDateRange = "All");
+		}
+
+		task ("Then: The warning message should still display") {
+			AssertVisible(
+				key_warningMessage = "Publishing all content or using a wide date range will take some time.",
+				locator1 = "StagingPublishToLive#WARNING_SPECIFIC");
+		}
+
+		task ("When: Click on Date Range in the Content section and click on 'Refresh Counts' button") {
+			Click(locator1 = "Radio#CHOOSE_CONTENT_DATE_RANGE_CHANGE");
+
+			ClickNoError(locator1 = "Link#REFRESH_COUNTS");
+		}
+
+		task ("Then: The warning message should still display") {
+			AssertVisible(
+				key_warningMessage = "Publishing all content or using a wide date range will take some time.",
+				locator1 = "StagingPublishToLive#WARNING_SPECIFIC");
+		}
+
+		task ("When: Click on Last in the Content section") {
+			Click.clickNoMouseOverNoWaitForVisible(locator1 = "StagingPublishToLive#CONTENT_LAST");
+		}
+
+		task ("Then: The warning message should not display") {
+			AssertElementNotPresent(
+				key_warningMessage = "Publishing all content or using a wide date range will take some time.",
+				locator1 = "StagingPublishToLive#WARNING_SPECIFIC");
+		}
 	}
 
 }

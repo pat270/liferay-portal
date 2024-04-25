@@ -10,12 +10,17 @@ import com.liferay.account.model.AccountEntry;
 import com.liferay.account.model.AccountEntryOrganizationRel;
 import com.liferay.account.service.AccountEntryLocalService;
 import com.liferay.account.service.AccountEntryOrganizationRelLocalService;
+import com.liferay.object.constants.ObjectActionTriggerConstants;
+import com.liferay.object.model.ObjectAction;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectEntry;
 import com.liferay.object.model.ObjectField;
+import com.liferay.object.service.ObjectActionLocalService;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.object.service.ObjectFieldLocalService;
+import com.liferay.object.service.ObjectRelationshipLocalService;
+import com.liferay.object.tree.TreeFactory;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -55,11 +60,14 @@ public class ObjectEntryModelResourcePermission
 		AccountEntryOrganizationRelLocalService
 			accountEntryOrganizationRelLocalService,
 		GroupLocalService groupLocalService, String modelName,
+		ObjectActionLocalService objectActionLocalService,
 		ObjectDefinitionLocalService objectDefinitionLocalService,
 		ObjectEntryLocalService objectEntryLocalService,
 		ObjectFieldLocalService objectFieldLocalService,
+		ObjectRelationshipLocalService objectRelationshipLocalService,
 		PortletResourcePermission portletResourcePermission,
 		ResourcePermissionLocalService resourcePermissionLocalService,
+		TreeFactory treeFactory,
 		UserGroupRoleLocalService userGroupRoleLocalService) {
 
 		_accountEntryLocalService = accountEntryLocalService;
@@ -67,11 +75,14 @@ public class ObjectEntryModelResourcePermission
 			accountEntryOrganizationRelLocalService;
 		_groupLocalService = groupLocalService;
 		_modelName = modelName;
+		_objectActionLocalService = objectActionLocalService;
 		_objectDefinitionLocalService = objectDefinitionLocalService;
 		_objectEntryLocalService = objectEntryLocalService;
 		_objectFieldLocalService = objectFieldLocalService;
+		_objectRelationshipLocalService = objectRelationshipLocalService;
 		_portletResourcePermission = portletResourcePermission;
 		_resourcePermissionLocalService = resourcePermissionLocalService;
+		_treeFactory = treeFactory;
 		_userGroupRoleLocalService = userGroupRoleLocalService;
 	}
 
@@ -82,8 +93,10 @@ public class ObjectEntryModelResourcePermission
 		throws PortalException {
 
 		if (!contains(permissionChecker, objectEntryId, actionId)) {
-			throw new PrincipalException.MustHavePermission(
-				permissionChecker, _modelName, objectEntryId, actionId);
+			_throwPrincipalException(
+				actionId,
+				_objectEntryLocalService.getObjectEntry(objectEntryId),
+				permissionChecker);
 		}
 	}
 
@@ -94,9 +107,7 @@ public class ObjectEntryModelResourcePermission
 		throws PortalException {
 
 		if (!contains(permissionChecker, objectEntry, actionId)) {
-			throw new PrincipalException.MustHavePermission(
-				permissionChecker, _modelName, objectEntry.getObjectEntryId(),
-				actionId);
+			_throwPrincipalException(actionId, objectEntry, permissionChecker);
 		}
 	}
 
@@ -117,28 +128,43 @@ public class ObjectEntryModelResourcePermission
 			String actionId)
 		throws PortalException {
 
+		if ((objectEntry.getRootObjectEntryId() != 0) &&
+			!_isObjectActionName(
+				actionId, objectEntry.getObjectDefinitionId())) {
+
+			ObjectEntry rootObjectEntry =
+				_objectEntryLocalService.fetchObjectEntry(
+					objectEntry.getRootObjectEntryId());
+
+			if (rootObjectEntry == null) {
+				return true;
+			}
+
+			objectEntry = rootObjectEntry;
+		}
+
 		User user = permissionChecker.getUser();
-
-		if (user.isGuestUser()) {
-			return permissionChecker.hasPermission(
-				objectEntry.getGroupId(), _modelName,
-				objectEntry.getObjectEntryId(), actionId);
-		}
-
-		if (permissionChecker.hasOwnerPermission(
-				permissionChecker.getCompanyId(), _modelName,
-				objectEntry.getObjectEntryId(), objectEntry.getUserId(),
-				actionId) ||
-			permissionChecker.hasPermission(
-				objectEntry.getGroupId(), _modelName,
-				objectEntry.getObjectEntryId(), actionId)) {
-
-			return true;
-		}
 
 		ObjectDefinition objectDefinition =
 			_objectDefinitionLocalService.getObjectDefinition(
 				objectEntry.getObjectDefinitionId());
+
+		if (user.isGuestUser()) {
+			return permissionChecker.hasPermission(
+				objectEntry.getGroupId(), objectDefinition.getClassName(),
+				objectEntry.getObjectEntryId(), actionId);
+		}
+
+		if (permissionChecker.hasOwnerPermission(
+				permissionChecker.getCompanyId(),
+				objectDefinition.getClassName(), objectEntry.getObjectEntryId(),
+				objectEntry.getUserId(), actionId) ||
+			permissionChecker.hasPermission(
+				objectEntry.getGroupId(), objectDefinition.getClassName(),
+				objectEntry.getObjectEntryId(), actionId)) {
+
+			return true;
+		}
 
 		if (!objectDefinition.isAccountEntryRestricted()) {
 			return false;
@@ -163,10 +189,8 @@ public class ObjectEntryModelResourcePermission
 					_accountEntryLocalService.getUserAccountEntries(
 						permissionChecker.getUserId(),
 						AccountConstants.PARENT_ACCOUNT_ENTRY_ID_DEFAULT, null,
-						new String[] {
-							AccountConstants.ACCOUNT_ENTRY_TYPE_BUSINESS,
-							AccountConstants.ACCOUNT_ENTRY_TYPE_PERSON
-						},
+						AccountConstants.
+							ACCOUNT_ENTRY_TYPES_DEFAULT_ALLOWED_TYPES,
 						WorkflowConstants.STATUS_APPROVED, QueryUtil.ALL_POS,
 						QueryUtil.ALL_POS),
 					AccountEntry::getAccountEntryId),
@@ -246,17 +270,52 @@ public class ObjectEntryModelResourcePermission
 		return _portletResourcePermission;
 	}
 
+	private boolean _isObjectActionName(
+		String actionId, long objectDefinitionId) {
+
+		for (ObjectAction objectAction :
+				_objectActionLocalService.getObjectActions(
+					objectDefinitionId,
+					ObjectActionTriggerConstants.KEY_STANDALONE)) {
+
+			if (Objects.equals(objectAction.getName(), actionId)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private void _throwPrincipalException(
+			String actionId, ObjectEntry objectEntry,
+			PermissionChecker permissionChecker)
+		throws PortalException {
+
+		if (objectEntry.getRootObjectEntryId() != 0) {
+			objectEntry = _objectEntryLocalService.getObjectEntry(
+				objectEntry.getRootObjectEntryId());
+		}
+
+		throw new PrincipalException.MustHavePermission(
+			permissionChecker, _modelName, objectEntry.getObjectEntryId(),
+			actionId);
+	}
+
 	private final AccountEntryLocalService _accountEntryLocalService;
 	private final AccountEntryOrganizationRelLocalService
 		_accountEntryOrganizationRelLocalService;
 	private final GroupLocalService _groupLocalService;
 	private final String _modelName;
+	private final ObjectActionLocalService _objectActionLocalService;
 	private final ObjectDefinitionLocalService _objectDefinitionLocalService;
 	private final ObjectEntryLocalService _objectEntryLocalService;
 	private final ObjectFieldLocalService _objectFieldLocalService;
+	private final ObjectRelationshipLocalService
+		_objectRelationshipLocalService;
 	private final PortletResourcePermission _portletResourcePermission;
 	private final ResourcePermissionLocalService
 		_resourcePermissionLocalService;
+	private final TreeFactory _treeFactory;
 	private final UserGroupRoleLocalService _userGroupRoleLocalService;
 
 }

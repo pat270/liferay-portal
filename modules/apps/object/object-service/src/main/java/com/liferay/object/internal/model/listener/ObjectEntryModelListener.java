@@ -12,6 +12,7 @@ import com.liferay.list.type.service.ListTypeEntryLocalService;
 import com.liferay.object.action.engine.ObjectActionEngine;
 import com.liferay.object.constants.ObjectActionTriggerConstants;
 import com.liferay.object.constants.ObjectFieldConstants;
+import com.liferay.object.entry.util.ObjectEntryThreadLocal;
 import com.liferay.object.internal.entry.util.ObjectEntryUtil;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectEntry;
@@ -37,6 +38,7 @@ import com.liferay.portal.kernel.audit.AuditMessage;
 import com.liferay.portal.kernel.audit.AuditRouter;
 import com.liferay.portal.kernel.exception.ModelListenerException;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -45,6 +47,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModelListener;
 import com.liferay.portal.kernel.model.ModelListener;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -198,20 +201,58 @@ public class ObjectEntryModelListener extends BaseModelListener<ObjectEntry> {
 				userId = objectEntry.getUserId();
 			}
 
-			_objectActionEngine.executeObjectActions(
-				objectEntry.getModelClassName(), objectEntry.getCompanyId(),
-				objectActionTriggerKey,
-				ObjectEntryUtil.getPayloadJSONObject(
-					_dtoConverterRegistry, _jsonFactory, objectActionTriggerKey,
-					_objectDefinitionLocalService.getObjectDefinition(
-						objectEntry.getObjectDefinitionId()),
-					objectEntry, originalObjectEntry,
-					_userLocalService.getUser(userId)),
-				userId);
+			User user = _userLocalService.getUser(userId);
+
+			_executeObjectActions(
+				objectActionTriggerKey, originalObjectEntry, objectEntry, user);
+
+			if (!FeatureFlagManagerUtil.isEnabled("LPS-187142")) {
+				return;
+			}
+
+			ObjectDefinition objectDefinition =
+				_objectDefinitionLocalService.getObjectDefinition(
+					objectEntry.getObjectDefinitionId());
+
+			if (!objectDefinition.isRootDescendantNode() &&
+				(!objectDefinition.isRootNode() ||
+				 StringUtil.equals(
+					 objectActionTriggerKey,
+					 ObjectActionTriggerConstants.KEY_ON_AFTER_ADD))) {
+
+				return;
+			}
+
+			objectEntry = _objectEntryLocalService.fetchObjectEntry(
+				objectEntry.getRootObjectEntryId());
+
+			if (objectEntry == null) {
+				return;
+			}
+
+			_executeObjectActions(
+				ObjectActionTriggerConstants.KEY_ON_AFTER_ROOT_UPDATE, null,
+				objectEntry, user);
 		}
 		catch (PortalException portalException) {
 			throw new ModelListenerException(portalException);
 		}
+	}
+
+	private void _executeObjectActions(
+			String objectActionTriggerKey, ObjectEntry originalObjectEntry,
+			ObjectEntry objectEntry, User user)
+		throws PortalException {
+
+		_objectActionEngine.executeObjectActions(
+			objectEntry.getModelClassName(), objectEntry.getCompanyId(),
+			objectActionTriggerKey,
+			() -> ObjectEntryUtil.getPayloadJSONObject(
+				_dtoConverterRegistry, _jsonFactory, objectActionTriggerKey,
+				_objectDefinitionLocalService.getObjectDefinition(
+					objectEntry.getObjectDefinitionId()),
+				objectEntry, originalObjectEntry, user),
+			user.getUserId());
 	}
 
 	private AuditMessage _getAuditMessage(
@@ -418,19 +459,21 @@ public class ObjectEntryModelListener extends BaseModelListener<ObjectEntry> {
 
 			JSONArray newValueJSONArray = new JSONArrayImpl();
 
-			for (int i = 0; i < valueJSONArray.length(); i++) {
-				if (StringUtil.equals(
-						(String)valueJSONArray.get(i),
-						objectEntry.getExternalReferenceCode())) {
+			if (valueJSONArray != null) {
+				for (int i = 0; i < valueJSONArray.length(); i++) {
+					if (StringUtil.equals(
+							(String)valueJSONArray.get(i),
+							objectEntry.getExternalReferenceCode())) {
 
-					if (!StringUtil.equals(
-							externalReferenceCode, StringPool.BLANK)) {
+						if (!StringUtil.equals(
+								externalReferenceCode, StringPool.BLANK)) {
 
-						newValueJSONArray.put(externalReferenceCode);
+							newValueJSONArray.put(externalReferenceCode);
+						}
 					}
-				}
-				else {
-					newValueJSONArray.put((String)valueJSONArray.get(i));
+					else {
+						newValueJSONArray.put((String)valueJSONArray.get(i));
+					}
 				}
 			}
 
@@ -455,6 +498,10 @@ public class ObjectEntryModelListener extends BaseModelListener<ObjectEntry> {
 			ObjectEntry originalObjectEntry, ObjectEntry objectEntry)
 		throws ModelListenerException {
 
+		if (ObjectEntryThreadLocal.isSkipObjectValidationRules()) {
+			return;
+		}
+
 		try {
 			long userId = PrincipalThreadLocal.getUserId();
 
@@ -462,15 +509,21 @@ public class ObjectEntryModelListener extends BaseModelListener<ObjectEntry> {
 				userId = objectEntry.getUserId();
 			}
 
-			_objectValidationRuleLocalService.validate(
-				objectEntry, objectEntry.getObjectDefinitionId(),
-				ObjectEntryUtil.getPayloadJSONObject(
-					_dtoConverterRegistry, _jsonFactory, null,
-					_objectDefinitionLocalService.getObjectDefinition(
-						objectEntry.getObjectDefinitionId()),
-					objectEntry, originalObjectEntry,
-					_userLocalService.getUser(userId)),
-				userId);
+			int count =
+				_objectValidationRuleLocalService.getObjectValidationRulesCount(
+					objectEntry.getObjectDefinitionId(), true);
+
+			if (count > 0) {
+				_objectValidationRuleLocalService.validate(
+					objectEntry, objectEntry.getObjectDefinitionId(),
+					ObjectEntryUtil.getPayloadJSONObject(
+						_dtoConverterRegistry, _jsonFactory, null,
+						_objectDefinitionLocalService.getObjectDefinition(
+							objectEntry.getObjectDefinitionId()),
+						objectEntry, originalObjectEntry,
+						_userLocalService.getUser(userId)),
+					userId);
+			}
 		}
 		catch (PortalException portalException) {
 			throw new ModelListenerException(portalException);

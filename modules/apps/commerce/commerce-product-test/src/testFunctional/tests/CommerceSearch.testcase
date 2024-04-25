@@ -17,7 +17,7 @@ definition {
 	@description = "Verify all products sharing a partial sku are populated in the catalog when the user searches products by partial sku"
 	@priority = 3
 	test AssertMultipleProductsPopulatedSharingSamePartialSKUThatIsSearchedFor {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "false";
 
 		task ("Given a Minium site with a buyer user") {
@@ -68,7 +68,7 @@ definition {
 	@description = "This is a test for COMMERCE-11848. Users can search fields and see the corresponding search suggestions language override (if previously set)"
 	@priority = 5
 	test CanGlobalSearchViewSearchSuggestionsWithLanguageOverride {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "true";
 
 		task ("Given a Minium site with a user without a role is created") {
@@ -121,7 +121,7 @@ definition {
 			for (var suggestionItem : list "Catalog,Accounts,Orders,All Content") {
 				AssertElementPresent(
 					key_entryName = "検索 U-Joint で ${suggestionItem}",
-					locator1 = "Search#GLOBAL_SEARCH_SUGGESTION");
+					locator1 = "Search#GLOBAL_SEARCH_SEARCH_ENTRY_IN_CONTENT");
 			}
 		}
 	}
@@ -129,7 +129,7 @@ definition {
 	@description = "This is a test for COMMERCE-9998 We can see all order results on the Global Search by email"
 	@priority = 3
 	test CanSeeAllOrdersOnTheGlobalSearchByEmail {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "false";
 
 		task ("Given a Minium site with a buyer user") {
@@ -237,6 +237,85 @@ definition {
 		}
 	}
 
+	@description = "This is a test for COMMERCE-11847. Users can search fields and see the corresponding search suggestions in the user language"
+	@priority = 5
+	test CanUserViewGlobalSearchSuggestionsInSetLanguage {
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
+		property portal.acceptance = "true";
+
+		task ("Given a Minium site with a buyer user is created") {
+			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
+
+			CommerceEntry.addAccountEntryUser(
+				accountName = "Commerce Account",
+				accountType = "Business",
+				agreeToTermsAndAnswerReminderQuery = "true",
+				createNewAccount = "true",
+				requireReset = "false",
+				userEmailAddress = "buyer@liferay.com",
+				userFirstName = "Buyer",
+				userLastName = "User",
+				userRole = "Buyer",
+				userScreenName = "buyeruser",
+				userSiteMembership = "Minium");
+		}
+
+		task ("And product short description in pt-BR is set") {
+			CommerceProducts.openProductsAdmin();
+
+			CommerceNavigator.searchEntry(entryName = "ABS Sensor");
+
+			CommerceNavigator.gotoEntry(entryName = "ABS Sensor");
+
+			PortletEntry.changeLocale(
+				fieldName = "Name",
+				locale = "pt-BR");
+
+			Type(
+				locator1 = "TextInput#NAME",
+				value1 = "Sensor ABS");
+
+			Type(
+				locator1 = "CommerceEntry#SHORT_DESCRIPTION_FIELD",
+				value1 = "Produto projetado e fabricado para acomodar aplicações OEM");
+
+			Button.clickPublish();
+		}
+
+		task ("And the user logs into Minium site") {
+			User.logoutAndLoginPG(
+				userLoginEmailAddress = "buyer@liferay.com",
+				userLoginFullName = "Buyer User");
+		}
+
+		task ("And the account changes the language to pt-BR") {
+			UserBar.gotoDropdownItem(dropdownItem = "Account Settings");
+
+			MyAccount.changeUserLanguage(
+				languageName = "português (Brasil)",
+				saveButton = "Save");
+		}
+
+		task ("When the user searches a product in the global search tab") {
+			Navigator.openWithAppendToBaseURL(urlAppend = "web/minium/catalog");
+
+			Click(locator1 = "AppBuilder#SEARCH_BUTTON");
+
+			SelectFrameTop();
+
+			Type.sendKeys(
+				locator1 = "Search#GLOBAL_SEARCH_BAR",
+				value1 = "Sensor ABS");
+		}
+
+		task ("Then the short description is shown in pt-BR") {
+			AssertElementPresent(
+				key_suggestionDescription = "Produto projetado e fabricado para acomodar aplicações OEM",
+				key_suggestionName = "Sensor ABS",
+				locator1 = "Search#GLOBAL_SEARCH_SUGGESTION_PRODUCT_DESCRIPTION");
+		}
+	}
+
 	@description = "COMMERCE-6664. I want to be able to disable Search Results widget pagination"
 	@priority = 3
 	test DisableSearchResultsWidgetPagination {
@@ -298,8 +377,8 @@ definition {
 			value1 = "U-Joint");
 
 		Click(
-			key_suggestionName = "All Content",
-			locator1 = "Search#GLOBAL_SEARCH_SUGGESTIONS");
+			key_entryName = "Search U-Joint in All Content",
+			locator1 = "Search#GLOBAL_SEARCH_SEARCH_ENTRY_IN_CONTENT");
 
 		AssertElementPresent(
 			key_contentName = "U-Joint",
@@ -307,12 +386,12 @@ definition {
 
 		AssertElementPresent(
 			key_contentName = "U-Joint",
-			key_contentType = "Commerce Product",
+			key_contentType = "Product",
 			locator1 = "Search#SEARCH_RESULT_WIDGET");
 
 		AssertElementPresent(
 			key_contentName = "Ball Joint",
-			key_contentType = "Commerce Product",
+			key_contentType = "Product",
 			locator1 = "Search#SEARCH_RESULT_WIDGET");
 	}
 
@@ -334,8 +413,8 @@ definition {
 			value1 = "U-Joint");
 
 		Click(
-			key_entryName = "Search ",
-			locator1 = "Search#GLOBAL_SEARCH_SUGGESTION");
+			key_entryName = "Search U-Joint in Catalog",
+			locator1 = "Search#GLOBAL_SEARCH_SEARCH_ENTRY_IN_CONTENT");
 
 		AssertElementPresent(
 			key_entryName = "U-Joint",
@@ -372,51 +451,29 @@ definition {
 
 		Click(locator1 = "AppBuilder#SEARCH_BUTTON");
 
-		Type(
+		SelectFrameTop();
+
+		Type.sendKeys(
 			locator1 = "Search#GLOBAL_SEARCH_BAR",
 			value1 = "Exhaust System");
 
-		AssertElementPresent(
-			key_errorMessage = "Lift Support",
-			locator1 = "WorkflowMetricsSLA#SLA_ERROR_MESSAGE");
-
-		AssertElementPresent(
-			key_errorMessage = "Muffler/Resonators",
-			locator1 = "WorkflowMetricsSLA#SLA_ERROR_MESSAGE");
-
-		AssertElementPresent(
-			key_errorMessage = "Exhaust Clamps",
-			locator1 = "WorkflowMetricsSLA#SLA_ERROR_MESSAGE");
-
-		AssertElementPresent(
-			key_errorMessage = "Catalytic Converters",
-			locator1 = "WorkflowMetricsSLA#SLA_ERROR_MESSAGE");
+		for (var productName : list "Lift Support,Muffler/Resonators,Exhaust Clamps,Catalytic Converters") {
+			AssertElementPresent(
+				key_suggestionName = ${productName},
+				locator1 = "Search#GLOBAL_SEARCH_SUGGESTION");
+		}
 
 		Click(locator1 = "Search#GLOBAL_SEARCH_CLEAN_BUTTON");
 
-		Type(
+		Type.sendKeys(
 			locator1 = "Search#GLOBAL_SEARCH_BAR",
 			value1 = "Exhaust System, Engine");
 
-		AssertElementPresent(
-			key_errorMessage = "Lift Support",
-			locator1 = "WorkflowMetricsSLA#SLA_ERROR_MESSAGE");
-
-		AssertElementPresent(
-			key_errorMessage = "Muffler/Resonators",
-			locator1 = "WorkflowMetricsSLA#SLA_ERROR_MESSAGE");
-
-		AssertElementPresent(
-			key_errorMessage = "Exhaust Clamps",
-			locator1 = "WorkflowMetricsSLA#SLA_ERROR_MESSAGE");
-
-		AssertElementPresent(
-			key_errorMessage = "Catalytic Converters",
-			locator1 = "WorkflowMetricsSLA#SLA_ERROR_MESSAGE");
-
-		AssertElementPresent(
-			key_errorMessage = "Valve Cover Grommets",
-			locator1 = "WorkflowMetricsSLA#SLA_ERROR_MESSAGE");
+		for (var productName : list "Lift Support,Muffler/Resonators,Exhaust Clamps,Catalytic Converters,Engine Mount") {
+			AssertElementPresent(
+				key_suggestionName = ${productName},
+				locator1 = "Search#GLOBAL_SEARCH_SUGGESTION");
+		}
 	}
 
 	@description = "COMMERCE-6327. As a buyer, I want to search for different products by typing their SKUs in the Global Search and I want to see the products with that SKUs in the suggestions(single SKU, multiple SKUs)"
@@ -439,24 +496,20 @@ definition {
 			value1 = "MIN93015");
 
 		AssertElementPresent(
-			key_entryName = "ABS Sensor",
-			locator1 = "Search#ACCOUNT_SEARCH_SUGGESTION");
+			key_suggestionName = "ABS Sensor",
+			locator1 = "Search#GLOBAL_SEARCH_SUGGESTION");
 
 		Click(locator1 = "Search#GLOBAL_SEARCH_CLEAN_BUTTON");
 
-		SelectFrameTop();
-
-		Type(
+		Type.sendKeys(
 			locator1 = "Search#GLOBAL_SEARCH_BAR",
 			value1 = "MIN93015 MIN55861");
 
-		AssertElementPresent(
-			key_entryName = "ABS Sensor",
-			locator1 = "Search#ACCOUNT_SEARCH_SUGGESTION");
-
-		AssertElementPresent(
-			key_entryName = "U-Joint",
-			locator1 = "Search#ACCOUNT_SEARCH_SUGGESTION");
+		for (var productName : list "ABS Sensor,U-Joint") {
+			AssertElementPresent(
+				key_suggestionName = ${productName},
+				locator1 = "Search#GLOBAL_SEARCH_SUGGESTION");
+		}
 	}
 
 	@description = "COMMERCE-6328. As a buyer, I want to search for products by typing different Specification Values in Global Search and I want to see the products with that specification values in the suggestions(single specification, multiple specifications)"
@@ -474,29 +527,25 @@ definition {
 
 		SelectFrameTop();
 
-		Type(
+		Type.sendKeys(
 			locator1 = "Search#GLOBAL_SEARCH_BAR",
 			value1 = "Plastic");
 
 		AssertElementPresent(
-			key_entryName = "Timing Chain Tensioner",
-			locator1 = "Search#ACCOUNT_SEARCH_SUGGESTION");
+			key_suggestionName = "Timing Chain Tensioner",
+			locator1 = "Search#GLOBAL_SEARCH_SUGGESTION");
 
 		Click(locator1 = "Search#GLOBAL_SEARCH_CLEAN_BUTTON");
 
-		SelectFrameTop();
-
-		Type(
+		Type.sendKeys(
 			locator1 = "Search#GLOBAL_SEARCH_BAR",
 			value1 = "Plastic, Ceramic");
 
-		AssertElementPresent(
-			key_entryName = "Timing Chain Tensioner",
-			locator1 = "Search#ACCOUNT_SEARCH_SUGGESTION");
-
-		AssertElementPresent(
-			key_entryName = "Premium Brake Pads",
-			locator1 = "Search#ACCOUNT_SEARCH_SUGGESTION");
+		for (var productName : list "Timing Chain Tensioner,Premium Brake Pads") {
+			AssertElementPresent(
+				key_suggestionName = ${productName},
+				locator1 = "Search#GLOBAL_SEARCH_SUGGESTION");
+		}
 	}
 
 	@description = "COMMERCE-6320. As a buyer, I want to be able to search an Accounts entry using Global Search and I want to be able to click on a suggested entry and get redirected to that account page"
@@ -522,55 +571,51 @@ definition {
 
 		Click(locator1 = "AppBuilder#SEARCH_BUTTON");
 
-		Type(
+		SelectFrameTop();
+
+		Type.sendKeys(
 			locator1 = "Search#GLOBAL_SEARCH_BAR",
 			value1 = "ABS Sensor");
 
-		AssertElementPresent(
-			key_entryName = "ABS Sensor",
-			locator1 = "Search#ACCOUNT_SEARCH_SUGGESTION");
+		for (var productName : list "ABS Sensor,Wear Sensors") {
+			AssertElementPresent(
+				key_suggestionName = ${productName},
+				locator1 = "Search#GLOBAL_SEARCH_SUGGESTION");
+		}
 
-		AssertElementPresent(
-			key_entryName = "Wear Sensors",
-			locator1 = "Search#ACCOUNT_SEARCH_SUGGESTION");
+		Click(locator1 = "Search#GLOBAL_SEARCH_CLEAN_BUTTON");
 
-		Click(locator1 = "Button#SEARCH_CLOSE");
-
-		Type(
+		Type.sendKeys(
 			locator1 = "Search#GLOBAL_SEARCH_BAR",
 			value1 = "'ABS Sensor'");
 
-		AssertElementPresent(
-			key_entryName = "ABS Sensor",
-			locator1 = "Search#ACCOUNT_SEARCH_SUGGESTION");
+		for (var productName : list "ABS Sensor,Wear Sensors") {
+			AssertElementPresent(
+				key_suggestionName = ${productName},
+				locator1 = "Search#GLOBAL_SEARCH_SUGGESTION");
+		}
 
-		AssertElementPresent(
-			key_entryName = "Wear Sensors",
-			locator1 = "Search#ACCOUNT_SEARCH_SUGGESTION");
+		Click(locator1 = "Search#GLOBAL_SEARCH_CLEAN_BUTTON");
 
-		Click(locator1 = "Button#SEARCH_CLOSE");
+		var searchTerm = '''"ABS Sensor"''';
 
-		var product = '''"ABS Sensor"''';
-
-		Type(
+		Type.sendKeys(
 			locator1 = "Search#GLOBAL_SEARCH_BAR",
-			value1 = ${product});
+			value1 = ${searchTerm});
 
 		AssertElementPresent(
-			key_entryName = "ABS Sensor",
-			locator1 = "Search#ACCOUNT_SEARCH_SUGGESTION");
+			key_suggestionName = "ABS Sensor",
+			locator1 = "Search#GLOBAL_SEARCH_SUGGESTION");
 
-		AssertElementNotPresent(
-			locator1 = "Search#ACCOUNT_SEARCH_SUGGESTION",
-			value1 = "Shock Absorber");
-
-		AssertElementNotPresent(
-			locator1 = "Search#ACCOUNT_SEARCH_SUGGESTION",
-			value1 = "Wear Sensors");
+		for (var productName : list "Shock Absorber,Wear Sensors") {
+			AssertElementNotPresent(
+				key_suggestionName = ${productName},
+				locator1 = "Search#GLOBAL_SEARCH_SUGGESTION");
+		}
 
 		Click(
-			key_entryName = "ABS Sensor",
-			locator1 = "Search#ACCOUNT_SEARCH_SUGGESTION");
+			key_suggestionName = "ABS Sensor",
+			locator1 = "Search#GLOBAL_SEARCH_SUGGESTION");
 
 		AssertTextEquals(
 			locator1 = "CommerceFrontStore#FS_PRODUCT_NAME",
@@ -600,14 +645,9 @@ definition {
 			userLastName = "User",
 			userScreenName = "buyeruser");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
-		Click(locator1 = "Dropdown#FILTER_AND_ORDER");
-
-		MenuItem.click(menuItem = "Account Users");
+		ManagementBar.setFilterAndOrder(filterBy = "Account Users");
 
 		CommerceLogin.editPasswordCP(
 			newPassword = "ttest",
@@ -637,8 +677,7 @@ definition {
 		Click(locator1 = "AppBuilder#SEARCH_BUTTON");
 
 		Type(
-			key_text = "Search",
-			locator1 = "TextInput#CUSTOM_CANONICAL_URL_ENABLED",
+			locator1 = "Search#GLOBAL_SEARCH_BAR",
 			value1 = ${orderId});
 
 		AssertElementPresent(
@@ -648,8 +687,7 @@ definition {
 		Click(locator1 = "Button#SEARCH_CLOSE");
 
 		Type(
-			key_text = "Search",
-			locator1 = "TextInput#CUSTOM_CANONICAL_URL_ENABLED",
+			locator1 = "Search#GLOBAL_SEARCH_BAR",
 			value1 = "buyer@liferay.com");
 
 		AssertElementPresent(
@@ -677,7 +715,7 @@ definition {
 		ApplicationsMenu.gotoSite(site = "Minium");
 
 		Type(
-			locator1 = "Search#EMBEDDED_SEARCH_BAR",
+			locator1 = "Search#SEARCH_BAR_WIDGET",
 			value1 = "ABS Sensor");
 
 		Button.clickSubmitButton();
@@ -708,7 +746,7 @@ definition {
 		ApplicationsMenu.gotoSite(site = "Minium");
 
 		Type(
-			locator1 = "Search#EMBEDDED_SEARCH_BAR",
+			locator1 = "Search#SEARCH_BAR_WIDGET",
 			value1 = ${product});
 
 		Button.clickSubmitButton();
@@ -738,7 +776,7 @@ definition {
 		ApplicationsMenu.gotoSite(site = "Minium");
 
 		Type(
-			locator1 = "Search#EMBEDDED_SEARCH_BAR",
+			locator1 = "Search#SEARCH_BAR_WIDGET",
 			value1 = "'ABS Sensor'");
 
 		Button.clickSubmitButton();
@@ -769,7 +807,7 @@ definition {
 		Navigator.openWithAppendToBaseURL(urlAppend = "web/minium");
 
 		Type(
-			locator1 = "Search#EMBEDDED_SEARCH_BAR",
+			locator1 = "Search#SEARCH_BAR_WIDGET",
 			value1 = "MIN93015");
 
 		Button.clickSubmitButton();
@@ -795,7 +833,7 @@ definition {
 		ApplicationsMenu.gotoSite(site = "Minium");
 
 		Type(
-			locator1 = "Search#EMBEDDED_SEARCH_BAR",
+			locator1 = "Search#SEARCH_BAR_WIDGET",
 			value1 = "Transmission");
 
 		Button.clickSubmitButton();
@@ -823,7 +861,7 @@ definition {
 		ApplicationsMenu.gotoSite(site = "Minium");
 
 		Type(
-			locator1 = "Search#EMBEDDED_SEARCH_BAR",
+			locator1 = "Search#SEARCH_BAR_WIDGET",
 			value1 = "Transmission Engine");
 
 		Button.clickSubmitButton();
@@ -853,7 +891,7 @@ definition {
 		ApplicationsMenu.gotoSite(site = "Minium");
 
 		Type(
-			locator1 = "Search#EMBEDDED_SEARCH_BAR",
+			locator1 = "Search#SEARCH_BAR_WIDGET",
 			value1 = "MIN93015 MIN55861");
 
 		Button.clickSubmitButton();
@@ -884,7 +922,7 @@ definition {
 		ApplicationsMenu.gotoSite(site = "Minium");
 
 		Type(
-			locator1 = "Search#EMBEDDED_SEARCH_BAR",
+			locator1 = "Search#SEARCH_BAR_WIDGET",
 			value1 = "Plastic Ceramic");
 
 		Button.clickSubmitButton();
@@ -930,7 +968,7 @@ definition {
 		ApplicationsMenu.gotoSite(site = "Minium");
 
 		Type(
-			locator1 = "Search#EMBEDDED_SEARCH_BAR",
+			locator1 = "Search#SEARCH_BAR_WIDGET",
 			value1 = "Plastic");
 
 		Button.clickSubmitButton();
@@ -951,7 +989,7 @@ definition {
 	@description = "Verify users can search products by partial SKU in the catalog"
 	@priority = 5
 	test SearchProductsByPartialSKU {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "true";
 
 		task ("Given a Minium site with a buyer user") {
@@ -1111,15 +1149,13 @@ definition {
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceProducts.searchProduct(search = "U-Joint");
 
 		CommerceNavigator.gotoEntry(entryName = "U-Joint");
 
-		var productId = selenium.getText("CommerceEntry#HEADER_ID");
+		var productId = selenium.getAttribute("CommerceEntry#HEADER_ID_DATA_QA_ID");
 
 		ApplicationsMenu.gotoSite(site = "Minium");
 
@@ -1166,10 +1202,17 @@ definition {
 				locator1 = "Link#ANY");
 		}
 
-		Select(
-			key_selectFieldLabel = "Display Template",
-			locator1 = "Select#ANY",
-			value1 = "Search Results Test ADT");
+		WaitForElementPresent(
+			key_fieldLabel = "Display Template",
+			locator1 = "CommerceEntry#COMMERCE_FACET_BUTTON");
+
+		Click(
+			key_fieldLabel = "Display Template",
+			locator1 = "CommerceEntry#COMMERCE_FACET_BUTTON");
+
+		Click(
+			key_entry = "Search Results Test ADT",
+			locator1 = "CommerceEntry#COMMERCE_FACET_DROPDOWN");
 
 		Navigator.gotoNavTab(navTab = "Pagination");
 

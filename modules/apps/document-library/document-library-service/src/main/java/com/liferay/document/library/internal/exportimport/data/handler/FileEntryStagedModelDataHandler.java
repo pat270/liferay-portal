@@ -15,15 +15,14 @@ import com.liferay.document.library.kernel.model.DLFileEntryType;
 import com.liferay.document.library.kernel.model.DLFileVersion;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
+import com.liferay.document.library.kernel.processor.DLProcessorThreadLocal;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
-import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.document.library.kernel.service.DLFileEntryLocalService;
 import com.liferay.document.library.kernel.service.DLFileEntryMetadataLocalService;
 import com.liferay.document.library.kernel.service.DLFileEntryTypeLocalService;
 import com.liferay.document.library.kernel.service.DLFileVersionLocalService;
 import com.liferay.document.library.kernel.service.DLTrashService;
 import com.liferay.document.library.kernel.store.DLStoreUtil;
-import com.liferay.document.library.kernel.util.DLProcessorThreadLocal;
 import com.liferay.document.library.util.DLFileEntryTypeUtil;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerDeserializeRequest;
@@ -34,7 +33,7 @@ import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializerSerializeRespo
 import com.liferay.dynamic.data.mapping.kernel.DDMFormValues;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
-import com.liferay.dynamic.data.mapping.storage.StorageEngine;
+import com.liferay.dynamic.data.mapping.storage.DDMStorageEngineManager;
 import com.liferay.dynamic.data.mapping.util.DDMBeanTranslatorUtil;
 import com.liferay.exportimport.content.processor.ExportImportContentProcessor;
 import com.liferay.exportimport.data.handler.base.BaseStagedModelDataHandler;
@@ -493,6 +492,7 @@ public class FileEntryStagedModelDataHandler
 						fileEntry.getMimeType(), fileEntryTitle,
 						StringPool.BLANK, fileEntry.getDescription(), null,
 						inputStream, fileEntry.getSize(),
+						fileEntry.getDisplayDate(),
 						fileEntry.getExpirationDate(),
 						fileEntry.getReviewDate(), serviceContext);
 
@@ -571,6 +571,7 @@ public class FileEntryStagedModelDataHandler
 									fileEntry.getDescription(), null,
 									DLVersionNumberIncrease.MINOR, inputStream,
 									fileEntry.getSize(),
+									fileEntry.getDisplayDate(),
 									fileEntry.getExpirationDate(),
 									fileEntry.getReviewDate(), serviceContext);
 						}
@@ -641,8 +642,9 @@ public class FileEntryStagedModelDataHandler
 					folderId, fileEntry.getFileName(), fileEntry.getMimeType(),
 					fileEntryTitle, StringPool.BLANK,
 					fileEntry.getDescription(), null, inputStream,
-					fileEntry.getSize(), fileEntry.getExpirationDate(),
-					fileEntry.getReviewDate(), serviceContext);
+					fileEntry.getSize(), fileEntry.getDisplayDate(),
+					fileEntry.getExpirationDate(), fileEntry.getReviewDate(),
+					serviceContext);
 			}
 
 			for (DLPluggableContentDataHandler<?>
@@ -853,7 +855,7 @@ public class FileEntryStagedModelDataHandler
 		structureFields.addAttribute("structureUuid", ddmStructure.getUuid());
 
 		com.liferay.dynamic.data.mapping.storage.DDMFormValues ddmFormValues =
-			_storageEngine.getDDMFormValues(
+			_ddmStorageEngineManager.getDDMFormValues(
 				dlFileEntryMetadata.getDDMStorageId());
 
 		ddmFormValues =
@@ -1264,10 +1266,10 @@ public class FileEntryStagedModelDataHandler
 			_ddmFormValuesExportImportContentProcessor;
 
 	@Reference
-	private DLAppLocalService _dlAppLocalService;
+	private DDMStorageEngineManager _ddmStorageEngineManager;
 
 	@Reference
-	private DLAppService _dlAppService;
+	private DLAppLocalService _dlAppLocalService;
 
 	@Reference
 	private DLFileEntryLocalService _dlFileEntryLocalService;
@@ -1301,9 +1303,6 @@ public class FileEntryStagedModelDataHandler
 
 	private ServiceTrackerList<DLPluggableContentDataHandler<?>>
 		_serviceTrackerList;
-
-	@Reference
-	private StorageEngine _storageEngine;
 
 	@Reference
 	private TrashHelper _trashHelper;

@@ -6,11 +6,11 @@
 package com.liferay.layout.set.prototype.web.internal.portlet;
 
 import com.liferay.application.list.PanelAppRegistry;
-import com.liferay.application.list.PanelCategoryRegistry;
 import com.liferay.application.list.constants.ApplicationListWebKeys;
 import com.liferay.application.list.display.context.logic.PanelCategoryHelper;
 import com.liferay.layout.set.prototype.configuration.LayoutSetPrototypeConfiguration;
 import com.liferay.layout.set.prototype.constants.LayoutSetPrototypePortletKeys;
+import com.liferay.layout.set.prototype.helper.LayoutSetPrototypeHelper;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.exception.NoSuchLayoutSetPrototypeException;
 import com.liferay.portal.kernel.exception.RequiredLayoutSetPrototypeException;
@@ -30,7 +30,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
-import com.liferay.sites.kernel.util.Sites;
 
 import java.io.IOException;
 
@@ -124,7 +123,7 @@ public class LayoutSetPrototypePortlet extends MVCPortlet {
 		long layoutSetPrototypeId = ParamUtil.getLong(
 			actionRequest, "layoutSetPrototypeId");
 
-		sites.setMergeFailCount(
+		layoutSetPrototypeHelper.setMergeFailCount(
 			layoutSetPrototypeService.getLayoutSetPrototype(
 				layoutSetPrototypeId),
 			0);
@@ -256,7 +255,7 @@ public class LayoutSetPrototypePortlet extends MVCPortlet {
 		throws IOException, PortletException {
 
 		PanelCategoryHelper panelCategoryHelper = new PanelCategoryHelper(
-			panelAppRegistry, panelCategoryRegistry);
+			panelAppRegistry);
 
 		renderRequest.setAttribute(
 			ApplicationListWebKeys.PANEL_CATEGORY_HELPER, panelCategoryHelper);
@@ -295,6 +294,9 @@ public class LayoutSetPrototypePortlet extends MVCPortlet {
 	}
 
 	@Reference
+	protected LayoutSetPrototypeHelper layoutSetPrototypeHelper;
+
+	@Reference
 	protected LayoutSetPrototypeService layoutSetPrototypeService;
 
 	@Reference
@@ -302,12 +304,6 @@ public class LayoutSetPrototypePortlet extends MVCPortlet {
 
 	@Reference
 	protected PanelAppRegistry panelAppRegistry;
-
-	@Reference
-	protected PanelCategoryRegistry panelCategoryRegistry;
-
-	@Reference
-	protected Sites sites;
 
 	private void _addSessionMessages(
 		ActionRequest actionRequest, boolean oldReadyForPropagation,

@@ -17,6 +17,7 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.repository.model.Folder;
@@ -67,7 +68,8 @@ public class DLFileEntrySharingTest extends BaseSharingTestCase<DLFileEntry> {
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			StringUtil.randomString(), "text/plain", StringUtil.randomString(),
 			StringUtil.randomString(), StringUtil.randomString(),
-			StringPool.BLANK, "test".getBytes(), null, null, serviceContext);
+			StringPool.BLANK, "test".getBytes(), null, null, null,
+			serviceContext);
 
 		return (DLFileEntry)fileEntry.getModel();
 	}
@@ -120,7 +122,7 @@ public class DLFileEntrySharingTest extends BaseSharingTestCase<DLFileEntry> {
 			RandomTestUtil.randomString(), "text",
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(), StringPool.BLANK,
-			StringPool.SPACE.getBytes(), null, null, serviceContext);
+			StringPool.SPACE.getBytes(), null, null, null, serviceContext);
 
 		FileVersion fileVersion = fileEntry.getFileVersion();
 
@@ -132,7 +134,7 @@ public class DLFileEntrySharingTest extends BaseSharingTestCase<DLFileEntry> {
 
 	@Override
 	protected PermissionSQLContributor getPermissionSQLContributor() {
-		return _permissionSQLContributor;
+		return _permissionSQLContributorSnapshot.get();
 	}
 
 	@Override
@@ -161,10 +163,11 @@ public class DLFileEntrySharingTest extends BaseSharingTestCase<DLFileEntry> {
 	)
 	private ModelResourcePermission<DLFileEntry> _modelResourcePermission;
 
-	@Inject(
-		filter = "model.class.name=com.liferay.document.library.kernel.model.DLFileEntry"
-	)
-	private PermissionSQLContributor _permissionSQLContributor;
+	private final Snapshot<PermissionSQLContributor>
+		_permissionSQLContributorSnapshot = new Snapshot<>(
+			DLFileEntrySharingTest.class, PermissionSQLContributor.class,
+			"(model.class.name=" +
+				"com.liferay.document.library.kernel.model.DLFileEntry)");
 
 	@Inject(
 		filter = "model.class.name=com.liferay.document.library.kernel.model.DLFileEntry"

@@ -21,9 +21,9 @@
 	%>'
 	clearResultsURL="<%= kaleoFormsAdminDisplayContext.getClearResultsURL() %>"
 	creationMenu="<%= kaleoFormsAdminDisplayContext.getCreationMenu() %>"
-	filterDropdownItems="<%= kaleoFormsAdminDisplayContext.getFilterItemsDropdownItems() %>"
 	itemsTotal="<%= kaleoFormsAdminDisplayContext.getTotalItems() %>"
-	propsTransformer="admin/js/KaleoFormsAdminManagementToolbarPropsTransformer"
+	orderDropdownItems="<%= kaleoFormsAdminDisplayContext.getOrderItemsDropdownItems() %>"
+	propsTransformer="{KaleoFormsAdminManagementToolbarPropsTransformer} from portal-workflow-kaleo-forms-web"
 	searchActionURL="<%= kaleoFormsAdminDisplayContext.getSearchActionURL() %>"
 	searchContainerId="<%= kaleoFormsAdminDisplayContext.getSearchContainerId() %>"
 	searchFormName="fm1"

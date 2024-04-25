@@ -5,19 +5,24 @@
 
 import {FormError} from '@liferay/object-js-components-web';
 import React from 'react';
+import './ActionBuilder.scss';
 interface BasicInfoProps {
+	disableGroovyAction: boolean;
 	errors: FormError<ObjectAction & ObjectActionParameters>;
 	handleChange: React.ChangeEventHandler<HTMLInputElement>;
 	isApproved: boolean;
 	readOnly?: boolean;
+	scriptManagementConfigurationPortletURL: string;
 	setValues: (values: Partial<ObjectAction>) => void;
 	values: Partial<ObjectAction>;
 }
 export default function BasicInfo({
+	disableGroovyAction,
 	errors,
 	handleChange,
 	isApproved,
 	readOnly,
+	scriptManagementConfigurationPortletURL,
 	setValues,
 	values,
 }: BasicInfoProps): JSX.Element;

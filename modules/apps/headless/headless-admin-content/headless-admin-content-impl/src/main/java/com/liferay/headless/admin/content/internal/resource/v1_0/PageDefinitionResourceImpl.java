@@ -50,7 +50,6 @@ import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 
 import javax.ws.rs.NotAuthorizedException;
@@ -143,7 +142,7 @@ public class PageDefinitionResourceImpl extends BasePageDefinitionResourceImpl {
 				layout, layoutStructure, layoutStructure.getMainItemId(),
 				objectWriter.writeValueAsString(
 					pageDefinition.getPageElement()),
-				0);
+				0, true);
 		}
 		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
@@ -178,18 +177,11 @@ public class PageDefinitionResourceImpl extends BasePageDefinitionResourceImpl {
 
 		LayoutSet layoutSet = layout.getLayoutSet();
 
-		ServletContext servletContext = ServletContextPool.get(
-			StringPool.BLANK);
-
-		if (contextHttpServletRequest.getAttribute(WebKeys.CTX) == null) {
-			contextHttpServletRequest.setAttribute(WebKeys.CTX, servletContext);
-		}
-
 		Document document = Jsoup.parse(
 			ThemeUtil.include(
-				servletContext, contextHttpServletRequest,
-				contextHttpServletResponse, "portal_normal.ftl",
-				layoutSet.getTheme(), false));
+				ServletContextPool.get(StringPool.BLANK),
+				contextHttpServletRequest, contextHttpServletResponse,
+				"portal_normal.ftl", layoutSet.getTheme(), false));
 
 		_layoutLocalService.deleteLayout(layout.getPlid(), serviceContext);
 

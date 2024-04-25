@@ -44,6 +44,27 @@ public class ProductOptionValue implements Cloneable, Serializable {
 
 	protected Long id;
 
+	public String getInfoMessage() {
+		return infoMessage;
+	}
+
+	public void setInfoMessage(String infoMessage) {
+		this.infoMessage = infoMessage;
+	}
+
+	public void setInfoMessage(
+		UnsafeSupplier<String, Exception> infoMessageUnsafeSupplier) {
+
+		try {
+			infoMessage = infoMessageUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String infoMessage;
+
 	public String getKey() {
 		return key;
 	}
@@ -103,6 +124,48 @@ public class ProductOptionValue implements Cloneable, Serializable {
 
 	protected Boolean preselected;
 
+	public String getPrice() {
+		return price;
+	}
+
+	public void setPrice(String price) {
+		this.price = price;
+	}
+
+	public void setPrice(
+		UnsafeSupplier<String, Exception> priceUnsafeSupplier) {
+
+		try {
+			price = priceUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String price;
+
+	public String getPriceType() {
+		return priceType;
+	}
+
+	public void setPriceType(String priceType) {
+		this.priceType = priceType;
+	}
+
+	public void setPriceType(
+		UnsafeSupplier<String, Exception> priceTypeUnsafeSupplier) {
+
+		try {
+			priceType = priceTypeUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String priceType;
+
 	public Double getPriority() {
 		return priority;
 	}
@@ -123,6 +186,173 @@ public class ProductOptionValue implements Cloneable, Serializable {
 	}
 
 	protected Double priority;
+
+	public Long getProductOptionId() {
+		return productOptionId;
+	}
+
+	public void setProductOptionId(Long productOptionId) {
+		this.productOptionId = productOptionId;
+	}
+
+	public void setProductOptionId(
+		UnsafeSupplier<Long, Exception> productOptionIdUnsafeSupplier) {
+
+		try {
+			productOptionId = productOptionIdUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Long productOptionId;
+
+	public String getQuantity() {
+		return quantity;
+	}
+
+	public void setQuantity(String quantity) {
+		this.quantity = quantity;
+	}
+
+	public void setQuantity(
+		UnsafeSupplier<String, Exception> quantityUnsafeSupplier) {
+
+		try {
+			quantity = quantityUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String quantity;
+
+	public String getRelativePriceFormatted() {
+		return relativePriceFormatted;
+	}
+
+	public void setRelativePriceFormatted(String relativePriceFormatted) {
+		this.relativePriceFormatted = relativePriceFormatted;
+	}
+
+	public void setRelativePriceFormatted(
+		UnsafeSupplier<String, Exception>
+			relativePriceFormattedUnsafeSupplier) {
+
+		try {
+			relativePriceFormatted = relativePriceFormattedUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String relativePriceFormatted;
+
+	public Boolean getSelectable() {
+		return selectable;
+	}
+
+	public void setSelectable(Boolean selectable) {
+		this.selectable = selectable;
+	}
+
+	public void setSelectable(
+		UnsafeSupplier<Boolean, Exception> selectableUnsafeSupplier) {
+
+		try {
+			selectable = selectableUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Boolean selectable;
+
+	public Long getSkuId() {
+		return skuId;
+	}
+
+	public void setSkuId(Long skuId) {
+		this.skuId = skuId;
+	}
+
+	public void setSkuId(UnsafeSupplier<Long, Exception> skuIdUnsafeSupplier) {
+		try {
+			skuId = skuIdUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Long skuId;
+
+	public String getTotalPrice() {
+		return totalPrice;
+	}
+
+	public void setTotalPrice(String totalPrice) {
+		this.totalPrice = totalPrice;
+	}
+
+	public void setTotalPrice(
+		UnsafeSupplier<String, Exception> totalPriceUnsafeSupplier) {
+
+		try {
+			totalPrice = totalPriceUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String totalPrice;
+
+	public String getUnitOfMeasureKey() {
+		return unitOfMeasureKey;
+	}
+
+	public void setUnitOfMeasureKey(String unitOfMeasureKey) {
+		this.unitOfMeasureKey = unitOfMeasureKey;
+	}
+
+	public void setUnitOfMeasureKey(
+		UnsafeSupplier<String, Exception> unitOfMeasureKeyUnsafeSupplier) {
+
+		try {
+			unitOfMeasureKey = unitOfMeasureKeyUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String unitOfMeasureKey;
+
+	public Boolean getVisible() {
+		return visible;
+	}
+
+	public void setVisible(Boolean visible) {
+		this.visible = visible;
+	}
+
+	public void setVisible(
+		UnsafeSupplier<Boolean, Exception> visibleUnsafeSupplier) {
+
+		try {
+			visible = visibleUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Boolean visible;
 
 	@Override
 	public ProductOptionValue clone() throws CloneNotSupportedException {

@@ -26,7 +26,6 @@ import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiServic
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
-import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.version.VersionService;
 import com.liferay.portal.kernel.service.version.VersionServiceListener;
@@ -404,37 +403,41 @@ public abstract class LVEntryLocalServiceBaseImpl
 	/**
 	 */
 	@Override
-	public void addBigDecimalEntryLVEntry(
+	public boolean addBigDecimalEntryLVEntry(
 		long bigDecimalEntryId, long lvEntryId) {
 
-		bigDecimalEntryPersistence.addLVEntry(bigDecimalEntryId, lvEntryId);
+		return bigDecimalEntryPersistence.addLVEntry(
+			bigDecimalEntryId, lvEntryId);
 	}
 
 	/**
 	 */
 	@Override
-	public void addBigDecimalEntryLVEntry(
+	public boolean addBigDecimalEntryLVEntry(
 		long bigDecimalEntryId, LVEntry lvEntry) {
 
-		bigDecimalEntryPersistence.addLVEntry(bigDecimalEntryId, lvEntry);
+		return bigDecimalEntryPersistence.addLVEntry(
+			bigDecimalEntryId, lvEntry);
 	}
 
 	/**
 	 */
 	@Override
-	public void addBigDecimalEntryLVEntries(
+	public boolean addBigDecimalEntryLVEntries(
 		long bigDecimalEntryId, long[] lvEntryIds) {
 
-		bigDecimalEntryPersistence.addLVEntries(bigDecimalEntryId, lvEntryIds);
+		return bigDecimalEntryPersistence.addLVEntries(
+			bigDecimalEntryId, lvEntryIds);
 	}
 
 	/**
 	 */
 	@Override
-	public void addBigDecimalEntryLVEntries(
+	public boolean addBigDecimalEntryLVEntries(
 		long bigDecimalEntryId, List<LVEntry> lvEntries) {
 
-		bigDecimalEntryPersistence.addLVEntries(bigDecimalEntryId, lvEntries);
+		return bigDecimalEntryPersistence.addLVEntries(
+			bigDecimalEntryId, lvEntries);
 	}
 
 	/**
@@ -872,19 +875,12 @@ public abstract class LVEntryLocalServiceBaseImpl
 	}
 
 	public void afterPropertiesSet() {
-		persistedModelLocalServiceRegistry.register(
-			"com.liferay.portal.tools.service.builder.test.model.LVEntry",
-			lvEntryLocalService);
-
 		registerListener(new LVEntryLocalizationVersionServiceListener());
 
 		LVEntryLocalServiceUtil.setService(lvEntryLocalService);
 	}
 
 	public void destroy() {
-		persistedModelLocalServiceRegistry.unregister(
-			"com.liferay.portal.tools.service.builder.test.model.LVEntry");
-
 		LVEntryLocalServiceUtil.setService(null);
 	}
 
@@ -1306,10 +1302,6 @@ public abstract class LVEntryLocalServiceBaseImpl
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		LVEntryLocalServiceBaseImpl.class);
-
-	@ServiceReference(type = PersistedModelLocalServiceRegistry.class)
-	protected PersistedModelLocalServiceRegistry
-		persistedModelLocalServiceRegistry;
 
 	private class LVEntryLocalizationVersionServiceListener
 		implements VersionServiceListener<LVEntry, LVEntryVersion> {

@@ -5,9 +5,12 @@
 
 package com.liferay.headless.commerce.admin.shipment.internal.dto.v1_0.converter;
 
+import com.liferay.commerce.model.CommerceOrderItem;
 import com.liferay.commerce.model.CommerceShipment;
 import com.liferay.commerce.model.CommerceShipmentItem;
+import com.liferay.commerce.service.CommerceOrderItemLocalService;
 import com.liferay.commerce.service.CommerceShipmentItemService;
+import com.liferay.commerce.util.CommerceQuantityFormatter;
 import com.liferay.headless.commerce.admin.shipment.dto.v1_0.ShipmentItem;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
@@ -41,19 +44,30 @@ public class ShipmentItemDTOConverter
 
 		return new ShipmentItem() {
 			{
-				actions = dtoConverterContext.getActions();
-				createDate = commerceShipmentItem.getCreateDate();
-				externalReferenceCode =
-					commerceShipmentItem.getExternalReferenceCode();
-				id = commerceShipmentItem.getCommerceShipmentItemId();
-				modifiedDate = commerceShipmentItem.getModifiedDate();
-				orderItemId = commerceShipmentItem.getCommerceOrderItemId();
-				quantity = commerceShipmentItem.getQuantity();
-				shipmentId = commerceShipmentItem.getCommerceShipmentId();
-				userName = commerceShipmentItem.getUserName();
-				warehouseId =
-					commerceShipmentItem.getCommerceInventoryWarehouseId();
+				setActions(dtoConverterContext::getActions);
+				setCreateDate(commerceShipmentItem::getCreateDate);
+				setExternalReferenceCode(
+					commerceShipmentItem::getExternalReferenceCode);
+				setId(commerceShipmentItem::getCommerceShipmentItemId);
+				setModifiedDate(commerceShipmentItem::getModifiedDate);
+				setOrderItemId(commerceShipmentItem::getCommerceOrderItemId);
+				setQuantity(
+					() -> {
+						CommerceOrderItem commerceOrderItem =
+							_commerceOrderItemLocalService.
+								fetchCommerceOrderItem(
+									commerceShipmentItem.
+										getCommerceOrderItemId());
 
+						if (commerceOrderItem == null) {
+							return null;
+						}
+
+						return _commerceQuantityFormatter.format(
+							commerceOrderItem.getCPInstanceId(),
+							commerceShipmentItem.getQuantity(),
+							commerceOrderItem.getUnitOfMeasureKey());
+					});
 				setShipmentExternalReferenceCode(
 					() -> {
 						CommerceShipment commerceShipment =
@@ -61,9 +75,21 @@ public class ShipmentItemDTOConverter
 
 						return commerceShipment.getExternalReferenceCode();
 					});
+				setShipmentId(commerceShipmentItem::getCommerceShipmentId);
+				setUnitOfMeasureKey(commerceShipmentItem::getUnitOfMeasureKey);
+				setUserName(commerceShipmentItem::getUserName);
+				setWarehouseId(
+					() ->
+						commerceShipmentItem.getCommerceInventoryWarehouseId());
 			}
 		};
 	}
+
+	@Reference
+	private CommerceOrderItemLocalService _commerceOrderItemLocalService;
+
+	@Reference
+	private CommerceQuantityFormatter _commerceQuantityFormatter;
 
 	@Reference
 	private CommerceShipmentItemService _commerceShipmentItemService;

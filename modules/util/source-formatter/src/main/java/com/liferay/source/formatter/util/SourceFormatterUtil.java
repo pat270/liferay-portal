@@ -11,8 +11,10 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.TextFormatter;
+import com.liferay.portal.kernel.util.URLUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.source.formatter.ExcludeSyntax;
 import com.liferay.source.formatter.ExcludeSyntaxPattern;
@@ -36,10 +38,13 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 /**
@@ -50,7 +55,7 @@ import java.util.regex.Pattern;
 public class SourceFormatterUtil {
 
 	public static final String CHECKSTYLE_DOCUMENTATION_URL_BASE =
-		"https://checkstyle.sourceforge.io/";
+		"https://checkstyle.sourceforge.io/checks/";
 
 	public static final String GIT_LIFERAY_PORTAL_BRANCH =
 		"git.liferay.portal.branch";
@@ -218,7 +223,7 @@ public class SourceFormatterUtil {
 		}
 
 		try {
-			return StringUtil.read(url.openStream());
+			return URLUtil.toString(url);
 		}
 		catch (IOException ioException) {
 			if (_log.isDebugEnabled()) {
@@ -324,6 +329,20 @@ public class SourceFormatterUtil {
 		return suppressionsFiles;
 	}
 
+	public static List<String> matchFileContentsForFileNames(
+		List<String> args, String baseDirName, String[] includes) {
+
+		List<String> allArgs = new ArrayList<>();
+
+		allArgs.add("grep");
+		allArgs.add("--untracked");
+		allArgs.add("-l");
+
+		allArgs.addAll(args);
+
+		return _matchFileContentsForFileNames(allArgs, baseDirName, includes);
+	}
+
 	public static void printError(String fileName, File file) {
 		printError(fileName, file.toString());
 	}
@@ -332,7 +351,47 @@ public class SourceFormatterUtil {
 		System.out.println(message);
 	}
 
-	public static List<String> scanForFiles(
+	public static List<String> scanForFileNames(
+		String baseDirName, String[] includes) {
+
+		List<String> deletedFileNames = _scanForFileNames(
+			Arrays.asList("ls-files", "-d", "-z", "--full-name"), baseDirName,
+			new String[0]);
+
+		List<String> fileNames = _scanForFileNames(
+			Arrays.asList("ls-files", "-z", "--full-name"), baseDirName,
+			includes);
+
+		fileNames = ListUtil.filter(
+			fileNames, fileName -> !deletedFileNames.contains(fileName));
+
+		PathMatchers pathMatchers = _getPathMatchers(
+			new String[0], includes, new SourceFormatterExcludes());
+
+		for (String untrackedFileName : _getUntrackedFileNames()) {
+			if (!untrackedFileName.startsWith(baseDirName) ||
+				fileNames.contains(untrackedFileName)) {
+
+				continue;
+			}
+
+			Path path = Paths.get(untrackedFileName);
+
+			for (PathMatcher pathMatcher :
+					pathMatchers.getIncludeFilePathMatchers()) {
+
+				if (pathMatcher.matches(path)) {
+					fileNames.add(untrackedFileName);
+
+					break;
+				}
+			}
+		}
+
+		return fileNames;
+	}
+
+	public static List<String> scanForFileNames(
 			String baseDirName, String[] excludes, String[] includes,
 			SourceFormatterExcludes sourceFormatterExcludes,
 			boolean includeSubrepositories)
@@ -342,7 +401,7 @@ public class SourceFormatterUtil {
 			return new ArrayList<>();
 		}
 
-		return _scanForFiles(
+		return _scanForFileNames(
 			baseDirName,
 			_getPathMatchers(excludes, includes, sourceFormatterExcludes),
 			includeSubrepositories);
@@ -386,6 +445,44 @@ public class SourceFormatterUtil {
 		}
 
 		return sb.toString();
+	}
+
+	private static void _executeGitCommand(
+		List<String> args, String baseDirName, Consumer<String> consumer) {
+
+		List<String> allArgs = new ArrayList<>();
+
+		allArgs.add("git");
+
+		allArgs.addAll(args);
+
+		ProcessBuilder processBuilder = new ProcessBuilder(allArgs);
+
+		if (!Validator.isBlank(baseDirName)) {
+			processBuilder.directory(new File(baseDirName));
+		}
+
+		try {
+			Process process = processBuilder.start();
+
+			Scanner scanner = new Scanner(process.getInputStream());
+
+			if (allArgs.contains("ls-files") && allArgs.contains("-z")) {
+				scanner.useDelimiter("\0");
+			}
+			else {
+				scanner.useDelimiter("\n");
+			}
+
+			while (scanner.hasNext()) {
+				consumer.accept(scanner.next());
+			}
+
+			scanner.close();
+		}
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
+		}
 	}
 
 	private static List<String> _filterRecentChangesFileNames(
@@ -552,7 +649,92 @@ public class SourceFormatterUtil {
 		return pathMatchers;
 	}
 
-	private static List<String> _scanForFiles(
+	private static synchronized List<String> _getUntrackedFileNames() {
+		if (_untrackedFileNames != null) {
+			return _untrackedFileNames;
+		}
+
+		_untrackedFileNames = new ArrayList<>();
+
+		_executeGitCommand(
+			Arrays.asList("add", ".", "--dry-run", "--no-all"),
+			_gitTopLevelFolder,
+			line -> {
+				if (!line.startsWith("add ")) {
+					return;
+				}
+
+				line = line.substring(5, line.length() - 1);
+
+				_untrackedFileNames.add(
+					_gitTopLevelFolder + StringPool.SLASH + line);
+			});
+
+		return _untrackedFileNames;
+	}
+
+	private static List<String> _matchFileContentsForFileNames(
+		List<String> args, String baseDirName, String[] includes) {
+
+		List<String> allArgs = new ArrayList<>(args);
+
+		List<String> filters = new ArrayList<>();
+
+		ArrayUtil.isNotEmptyForEach(
+			includes, includeGlob -> filters.add(":(glob)" + includeGlob));
+
+		if (ListUtil.isNotEmpty(filters)) {
+			allArgs.add("--");
+
+			allArgs.addAll(filters);
+		}
+
+		List<String> fileNames = new ArrayList<>();
+
+		_executeGitCommand(
+			allArgs, baseDirName,
+			line -> fileNames.add(baseDirName + StringPool.SLASH + line));
+
+		return fileNames;
+	}
+
+	private static List<String> _scanForFileNames(
+		List<String> args, String baseDirName, String[] includes) {
+
+		if (_gitTopLevelFolder == null) {
+			List<String> lines = new ArrayList<>();
+
+			_executeGitCommand(
+				Arrays.asList("rev-parse", "--show-toplevel"), baseDirName,
+				lines::add);
+
+			_gitTopLevelFolder = lines.get(0);
+		}
+
+		List<String> allArgs = new ArrayList<>(args);
+
+		List<String> filters = new ArrayList<>();
+
+		ArrayUtil.isNotEmptyForEach(
+			includes, includeGlob -> filters.add(":(glob)" + includeGlob));
+
+		if (ListUtil.isNotEmpty(filters)) {
+			allArgs.add("--");
+
+			allArgs.addAll(filters);
+		}
+
+		List<String> fileNames = new ArrayList<>();
+
+		_executeGitCommand(
+			allArgs, baseDirName,
+			line -> fileNames.add(
+				_gitTopLevelFolder + StringPool.SLASH + line));
+
+		return fileNames;
+	}
+
+	private static List<String> _scanForFileNames(
 			final String baseDirName, final PathMatchers pathMatchers,
 			final boolean includeSubrepositories)
 		throws IOException {
@@ -673,7 +855,11 @@ public class SourceFormatterUtil {
 							continue;
 						}
 
-						fileNames.add(filePath.toString());
+						String fileName = StringUtil.replace(
+							filePath.toString(), CharPool.BACK_SLASH,
+							CharPool.SLASH);
+
+						fileNames.add(fileName);
 
 						return FileVisitResult.CONTINUE;
 					}
@@ -695,6 +881,9 @@ public class SourceFormatterUtil {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		SourceFormatterUtil.class);
+
+	private static String _gitTopLevelFolder;
+	private static List<String> _untrackedFileNames;
 
 	private static class PathMatchers {
 
@@ -825,14 +1014,17 @@ public class SourceFormatterUtil {
 			return _includeFilePathMatchers;
 		}
 
-		private List<PathMatcher> _excludeDirPathMatchers = new ArrayList<>();
-		private Map<String, List<PathMatcher>> _excludeDirPathMatchersMap =
-			new HashMap<>();
-		private List<PathMatcher> _excludeFilePathMatchers = new ArrayList<>();
-		private Map<String, List<PathMatcher>> _excludeFilePathMatchersMap =
-			new HashMap<>();
+		private final List<PathMatcher> _excludeDirPathMatchers =
+			new ArrayList<>();
+		private final Map<String, List<PathMatcher>>
+			_excludeDirPathMatchersMap = new HashMap<>();
+		private final List<PathMatcher> _excludeFilePathMatchers =
+			new ArrayList<>();
+		private final Map<String, List<PathMatcher>>
+			_excludeFilePathMatchersMap = new HashMap<>();
 		private final FileSystem _fileSystem;
-		private List<PathMatcher> _includeFilePathMatchers = new ArrayList<>();
+		private final List<PathMatcher> _includeFilePathMatchers =
+			new ArrayList<>();
 
 	}
 

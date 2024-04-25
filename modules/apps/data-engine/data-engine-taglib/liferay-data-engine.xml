@@ -38,6 +38,12 @@
 				<required>false</required>
 			</attribute>
 			<attribute>
+				<name>displayFieldName</name>
+				<inputType>boolean</inputType>
+				<outputType>boolean</outputType>
+				<required>false</required>
+			</attribute>
+			<attribute>
 				<name>fieldSetContentType</name>
 				<inputType>java.lang.String</inputType>
 				<outputType>java.lang.String</outputType>
@@ -53,12 +59,6 @@
 				<name>localizable</name>
 				<inputType>boolean</inputType>
 				<outputType>boolean</outputType>
-				<required>false</required>
-			</attribute>
-			<attribute>
-				<name>module</name>
-				<inputType>java.lang.String</inputType>
-				<outputType>java.lang.String</outputType>
 				<required>false</required>
 			</attribute>
 			<attribute>
@@ -132,6 +132,12 @@
 			</attribute>
 			<attribute>
 				<name>defaultLanguageId</name>
+				<inputType>java.lang.String</inputType>
+				<outputType>java.lang.String</outputType>
+				<required>false</required>
+			</attribute>
+			<attribute>
+				<name>displayType</name>
 				<inputType>java.lang.String</inputType>
 				<outputType>java.lang.String</outputType>
 				<required>false</required>

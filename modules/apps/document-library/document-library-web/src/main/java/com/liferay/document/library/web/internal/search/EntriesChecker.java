@@ -166,15 +166,25 @@ public class EntriesChecker extends RowChecker {
 		String checkBoxAllRowIds, String checkBoxPostOnClick,
 		Map<String, Object> data) {
 
-		StringBundler sb = new StringBundler(16);
+		StringBundler sb = new StringBundler(21);
 
+		sb.append("<div class=\"custom-checkbox custom-control\"><label>");
 		sb.append("<input ");
+
+		String rowElementId = (String)httpServletRequest.getAttribute(
+			"liferay-ui:search-container-row:rowElementId");
+
+		if (rowElementId != null) {
+			sb.append("aria-labelledby=\"");
+			sb.append(rowElementId);
+			sb.append("\" ");
+		}
 
 		if (checked) {
 			sb.append("checked ");
 		}
 
-		sb.append("class=\"");
+		sb.append("class=\"custom-control-input ");
 		sb.append(getCssClass());
 		sb.append("\" ");
 
@@ -197,7 +207,8 @@ public class EntriesChecker extends RowChecker {
 		}
 
 		sb.append(HtmlUtil.buildData(data));
-		sb.append(">");
+		sb.append("><span class=\"custom-control-label\"></span></label>");
+		sb.append("</div>");
 
 		return sb.toString();
 	}

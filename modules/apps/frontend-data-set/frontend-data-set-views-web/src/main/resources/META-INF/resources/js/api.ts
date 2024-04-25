@@ -3,18 +3,95 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {Renderer} from '@liferay/frontend-data-set-web/src/main/resources/META-INF/resources/utils/renderer';
-import {FDSCellRenderer} from '@liferay/js-api/data-set';
-import {fetch, openToast} from 'frontend-js-web';
+import {
+	FDS_NESTED_FIELD_NAME_DELIMITER,
+	FDS_NESTED_FIELD_NAME_PARENT_SUFFIX,
+} from '@liferay/frontend-data-set-web';
+import {fetch} from 'frontend-js-web';
 
-import {OBJECT_RELATIONSHIP} from './Constants';
 import {FDSViewType} from './FDSViews';
+import {OBJECT_RELATIONSHIP} from './utils/constants';
+import openDefaultFailureToast from './utils/openDefaultFailureToast';
+import {EFieldFormat, EFieldType, IField, IPickList} from './utils/types';
 
-interface IField {
-	format: string;
-	label: string;
-	name: string;
-	type: string;
+const INVALID_FIELDS = ['actions', 'scopeKey', 'x-class-name', 'x-schema-name'];
+
+const LOCALIZABLE_PROPERTY_SUFFIX = '_i18n';
+
+interface IProperty {
+	$ref?: string;
+	format?: EFieldFormat;
+	items?: any;
+	type: EFieldType;
+}
+
+interface IProperties {
+	[key: string]: IProperty;
+}
+
+interface ISchemas {
+	[key: string]: {
+		properties: IProperties;
+		type: string;
+	};
+}
+
+function getValidFields({
+	contextPath,
+	schemaName,
+	schemas,
+}: {
+	contextPath: string;
+	schemaName: string;
+	schemas: ISchemas;
+}): Array<IField> {
+	const fields: Array<IField> = [];
+
+	const properties: IProperties = schemas[schemaName]?.properties;
+
+	Object.keys(properties).map((propertyKey) => {
+		const propertyValue = properties[propertyKey];
+
+		if (INVALID_FIELDS.includes(propertyKey)) {
+			return;
+		}
+
+		if (propertyKey.includes(LOCALIZABLE_PROPERTY_SUFFIX)) {
+			return;
+		}
+
+		const type = propertyValue.type;
+
+		if (type === EFieldType.ARRAY) {
+			if (propertyValue.items && propertyValue.items.$ref) {
+				return;
+			}
+		}
+
+		if (propertyValue.$ref) {
+			fields.push({
+				children: getValidFields({
+					contextPath: `${contextPath}${propertyKey}${FDS_NESTED_FIELD_NAME_DELIMITER}`,
+					schemaName: propertyValue.$ref.replace(/^.*\//, ''),
+					schemas,
+				}),
+				label: propertyKey,
+				name: `${contextPath}${propertyKey}${FDS_NESTED_FIELD_NAME_PARENT_SUFFIX}`,
+				type: type ? type : 'object',
+			});
+
+			return;
+		}
+
+		fields.push({
+			format: propertyValue.format,
+			label: propertyKey,
+			name: `${contextPath}${propertyKey}`,
+			type,
+		});
+	});
+
+	return fields;
 }
 
 export async function getFields(fdsView: FDSViewType) {
@@ -25,83 +102,26 @@ export async function getFields(fdsView: FDSViewType) {
 	const response = await fetch(`/o${restApplication}/openapi.json`);
 
 	if (!response.ok) {
-		openToast({
-			message: Liferay.Language.get('your-request-failed-to-complete'),
-			type: 'danger',
-		});
+		openDefaultFailureToast();
 
 		return [];
 	}
 
 	const responseJSON = await response.json();
 
-	const properties =
-		responseJSON?.components?.schemas[restSchema]?.properties;
+	const schemas = responseJSON?.components?.schemas;
 
-	if (!properties) {
-		openToast({
-			message: Liferay.Language.get('your-request-failed-to-complete'),
-			type: 'danger',
-		});
+	if (!schemas?.[restSchema]?.properties) {
+		openDefaultFailureToast();
 
 		return [];
 	}
 
-	const fieldsArray: Array<IField> = [];
-
-	const isObjectSchema =
-		responseJSON.components.schemas[restSchema].xml.name === 'ObjectEntry';
-
-	Object.keys(properties).map((propertyKey) => {
-		const propertyValue = properties[propertyKey];
-
-		if (isObjectSchema && !propertyValue.extensions) {
-			return;
-		}
-
-		if (propertyKey === 'x-class-name') {
-			return;
-		}
-
-		const type = propertyValue.type;
-
-		if (type === 'object' || type === 'array') {
-			return;
-		}
-
-		if (propertyValue.$ref) {
-			return;
-		}
-
-		fieldsArray.push({
-			format: properties[propertyKey].format || type,
-			label: propertyKey,
-			name: propertyKey,
-			type,
-		});
+	return getValidFields({
+		contextPath: '',
+		schemaName: restSchema,
+		schemas,
 	});
-
-	return fieldsArray;
-}
-
-export interface IPickList {
-	externalReferenceCode: string;
-	id: string;
-	listTypeEntries: IListTypeEntry[];
-	name: string;
-	name_i18n: {
-		[key: string]: string;
-	};
-}
-
-interface IListTypeEntry {
-	externalReferenceCode: string;
-	id: number;
-	key: string;
-	name: string;
-	name_i18n: {
-		[key: string]: string;
-	};
 }
 
 export async function getAllPicklists(
@@ -113,10 +133,7 @@ export async function getAllPicklists(
 	);
 
 	if (!response.ok) {
-		openToast({
-			message: Liferay.Language.get('your-request-failed-to-complete'),
-			type: 'danger',
-		});
+		openDefaultFailureToast();
 
 		return [];
 	}
@@ -130,15 +147,4 @@ export async function getAllPicklists(
 	}
 
 	return items;
-}
-
-export interface IClientExtensionRenderer extends Renderer {
-	erc?: string;
-	label?: string;
-	name?: string;
-	type: 'clientExtension';
-}
-
-export interface IClientExtensionCellRenderer extends IClientExtensionRenderer {
-	renderer: FDSCellRenderer;
 }

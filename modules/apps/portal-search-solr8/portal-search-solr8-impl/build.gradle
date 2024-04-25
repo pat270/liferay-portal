@@ -1,14 +1,14 @@
 String luceneVersion = "8.6.2"
 
 dependencies {
-	compileInclude group: "commons-io", name: "commons-io", version: "2.11.0"
 	compileInclude group: "org.apache.lucene", name: "lucene-analyzers-common", version: luceneVersion
 	compileInclude group: "org.apache.lucene", name: "lucene-core", version: luceneVersion
 	compileInclude group: "org.apache.lucene", name: "lucene-queries", version: luceneVersion
 	compileInclude group: "org.apache.lucene", name: "lucene-queryparser", version: luceneVersion
 	compileInclude group: "org.apache.lucene", name: "lucene-suggest", version: luceneVersion
 	compileInclude group: "org.apache.solr", name: "solr-solrj", version: luceneVersion
-	compileInclude group: "org.apache.zookeeper", name: "zookeeper", version: "3.4.14"
+	compileInclude group: "org.apache.zookeeper", name: "zookeeper", version: "3.8.3"
+	compileInclude group: "org.apache.zookeeper", name: "zookeeper-jute", version: "3.8.3"
 	compileInclude group: "org.codehaus.woodstox", name: "stax2-api", version: "3.1.4"
 	compileInclude group: "org.codehaus.woodstox", name: "woodstox-core-asl", version: "4.4.1"
 	compileInclude group: "org.noggit", name: "noggit", version: "0.6"
@@ -16,6 +16,7 @@ dependencies {
 	compileOnly group: "com.liferay", name: "biz.aQute.bnd.annotation", version: "4.2.0.LIFERAY-PATCHED-2"
 	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.impl", version: "default"
 	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.kernel", version: "default"
+	compileOnly group: "commons-io", name: "commons-io", version: "2.15.1"
 	compileOnly group: "commons-lang", name: "commons-lang", version: "2.6"
 	compileOnly group: "org.apache.httpcomponents", name: "httpclient", version: "4.5.13"
 	compileOnly group: "org.apache.httpcomponents", name: "httpcore", version: "4.4.14"
@@ -30,16 +31,15 @@ dependencies {
 	compileOnly project(":apps:portal-search:portal-search-api")
 	compileOnly project(":apps:portal-search:portal-search-engine-adapter-api")
 	compileOnly project(":apps:portal-search:portal-search-spi")
-	compileOnly project(":apps:static:osgi:osgi-util")
 	compileOnly project(":apps:static:portal-configuration:portal-configuration-metatype-api")
 	compileOnly project(":core:osgi-service-tracker-collections")
 	compileOnly project(":core:petra:petra-function")
 	compileOnly project(":core:petra:petra-io")
 	compileOnly project(":core:petra:petra-string")
 
-	testCompile project(":apps:portal-search:portal-search")
-	testCompile project(":apps:portal-search:portal-search-test-util")
-	testCompile project(":apps:static:portal-configuration:portal-configuration-persistence-api")
+	testImplementation project(":apps:portal-search:portal-search")
+	testImplementation project(":apps:portal-search:portal-search-test-util")
+	testImplementation project(":apps:static:portal-configuration:portal-configuration-persistence-api")
 }
 
 test {

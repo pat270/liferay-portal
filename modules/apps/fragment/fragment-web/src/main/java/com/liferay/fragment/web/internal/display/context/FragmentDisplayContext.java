@@ -17,19 +17,20 @@ import com.liferay.fragment.service.FragmentEntryServiceUtil;
 import com.liferay.fragment.util.comparator.FragmentCollectionContributorNameComparator;
 import com.liferay.fragment.util.comparator.FragmentCompositionFragmentEntryNameComparator;
 import com.liferay.fragment.web.internal.constants.FragmentTypeConstants;
-import com.liferay.fragment.web.internal.constants.FragmentWebKeys;
 import com.liferay.fragment.web.internal.security.permission.resource.FragmentPermission;
 import com.liferay.fragment.web.internal.util.FragmentPortletUtil;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.IconItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItemListBuilder;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.VerticalNavItemList;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
+import com.liferay.portal.kernel.instance.PortalInstancePool;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONUtil;
@@ -51,7 +52,6 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.portal.util.PortalInstances;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -83,7 +83,7 @@ public class FragmentDisplayContext {
 		_fragmentCollectionContributorRegistry =
 			(FragmentCollectionContributorRegistry)
 				httpServletRequest.getAttribute(
-					FragmentWebKeys.FRAGMENT_COLLECTION_CONTRIBUTOR_TRACKER);
+					FragmentCollectionContributorRegistry.class.getName());
 		_themeDisplay = (ThemeDisplay)httpServletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 	}
@@ -191,7 +191,7 @@ public class FragmentDisplayContext {
 					DropdownItemListBuilder.add(
 						dropdownItem -> {
 							dropdownItem.putData("action", "exportCollections");
-							dropdownItem.setIcon("upload");
+							dropdownItem.setIcon("export");
 							dropdownItem.setLabel(
 								LanguageUtil.get(
 									_httpServletRequest, "export"));
@@ -199,23 +199,14 @@ public class FragmentDisplayContext {
 					).add(
 						() -> hasManageFragmentEntriesPermission,
 						dropdownItem -> {
-							if (FeatureFlagManagerUtil.isEnabled(
-									"LPS-174939")) {
-
-								dropdownItem.setHref(
-									PortletURLBuilder.createRenderURL(
-										_renderResponse
-									).setMVCRenderCommandName(
-										"/fragment/view_import"
-									).setParameter(
-										"fragmentCollectionId", 0
-									).buildString());
-							}
-							else {
-								dropdownItem.putData(
-									"action", "openImportView");
-							}
-
+							dropdownItem.setHref(
+								PortletURLBuilder.createRenderURL(
+									_renderResponse
+								).setMVCRenderCommandName(
+									"/fragment/view_import"
+								).setParameter(
+									"fragmentCollectionId", 0
+								).buildString());
 							dropdownItem.setIcon("import");
 							dropdownItem.setLabel(
 								LanguageUtil.get(
@@ -618,6 +609,86 @@ public class FragmentDisplayContext {
 		).buildString();
 	}
 
+	public VerticalNavItemList getVerticalNavItemList(
+		List<FragmentCollection> fragmentCollections) {
+
+		VerticalNavItemList verticalNavItemList = new VerticalNavItemList();
+
+		for (FragmentCollection fragmentCollection : fragmentCollections) {
+			verticalNavItemList.add(
+				verticalNavItem -> {
+					if (isLocked(fragmentCollection)) {
+						verticalNavItem.addIcon(
+							IconItem.of("lock", StringPool.BLANK));
+					}
+
+					verticalNavItem.setActive(
+						fragmentCollection.getFragmentCollectionId() ==
+							getFragmentCollectionId());
+
+					Long fragmentCollectionId =
+						fragmentCollection.getFragmentCollectionId();
+
+					verticalNavItem.setHref(
+						PortletURLBuilder.createRenderURL(
+							_renderResponse
+						).setParameter(
+							"fragmentCollectionId", fragmentCollectionId
+						).buildString());
+					verticalNavItem.setId(String.valueOf(fragmentCollectionId));
+
+					verticalNavItem.setLabel(
+						HtmlUtil.escape(fragmentCollection.getName()));
+				});
+		}
+
+		return verticalNavItemList;
+	}
+
+	public VerticalNavItemList getVerticalNavItemList(
+		List<FragmentCollection> fragmentCollections,
+		List<FragmentCollectionContributor> fragmentCollectionContributors) {
+
+		VerticalNavItemList verticalNavItemList = new VerticalNavItemList();
+
+		for (FragmentCollectionContributor fragmentCollectionContributor :
+				fragmentCollectionContributors) {
+
+			verticalNavItemList.add(
+				verticalNavItem -> {
+					verticalNavItem.addIcon(
+						IconItem.of("lock", StringPool.BLANK));
+
+					verticalNavItem.setActive(
+						Objects.equals(
+							fragmentCollectionContributor.
+								getFragmentCollectionKey(),
+							getFragmentCollectionKey()));
+
+					String fragmentCollectionKey =
+						fragmentCollectionContributor.
+							getFragmentCollectionKey();
+
+					verticalNavItem.setHref(
+						PortletURLBuilder.createRenderURL(
+							_renderResponse
+						).setParameter(
+							"fragmentCollectionKey", fragmentCollectionKey
+						).buildString());
+					verticalNavItem.setId(fragmentCollectionKey);
+
+					verticalNavItem.setLabel(
+						HtmlUtil.escape(
+							fragmentCollectionContributor.getName(
+								_themeDisplay.getLocale())));
+				});
+		}
+
+		verticalNavItemList.addAll(getVerticalNavItemList(fragmentCollections));
+
+		return verticalNavItemList;
+	}
+
 	public boolean hasDeletePermission() {
 		if (hasUpdatePermission() ||
 			(FragmentPermission.contains(
@@ -663,7 +734,7 @@ public class FragmentDisplayContext {
 
 		if ((fragmentCollection.getGroupId() == CompanyConstants.SYSTEM) &&
 			((_themeDisplay.getCompanyId() !=
-				PortalInstances.getDefaultCompanyId()) ||
+				PortalInstancePool.getDefaultCompanyId()) ||
 			 !scopeGroup.isCompany())) {
 
 			return true;

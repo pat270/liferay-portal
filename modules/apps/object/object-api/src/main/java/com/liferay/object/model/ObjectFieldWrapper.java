@@ -567,6 +567,11 @@ public class ObjectFieldWrapper
 		return model.getRequired();
 	}
 
+	@Override
+	public String getSortableDBColumnName() {
+		return model.getSortableDBColumnName();
+	}
+
 	/**
 	 * Returns the state of this object field.
 	 *
@@ -628,6 +633,21 @@ public class ObjectFieldWrapper
 	}
 
 	@Override
+	public boolean hasInsertValues() {
+		return model.hasInsertValues();
+	}
+
+	@Override
+	public boolean hasUniqueValues() {
+		return model.hasUniqueValues();
+	}
+
+	@Override
+	public boolean hasUpdateValues() {
+		return model.hasUpdateValues();
+	}
+
+	@Override
 	public boolean isDeletionAllowed()
 		throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -662,6 +682,11 @@ public class ObjectFieldWrapper
 	@Override
 	public boolean isLocalized() {
 		return model.isLocalized();
+	}
+
+	@Override
+	public boolean isMetadata() {
+		return model.isMetadata();
 	}
 
 	/**

@@ -72,7 +72,12 @@ public class AccountRoleResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _accountRoleResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, AccountRoleResource>
+					accountRoleResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_accountRoleResourceProxyProviderFunction;
+
+				return accountRoleResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -229,9 +234,6 @@ public class AccountRoleResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, AccountRoleResource>
-		_accountRoleResourceProxyProviderFunction = _getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -267,6 +269,14 @@ public class AccountRoleResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, AccountRoleResource>
+			_accountRoleResourceProxyProviderFunction =
+				_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

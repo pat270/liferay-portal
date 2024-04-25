@@ -9,7 +9,6 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFileEntryTypeConstants;
 import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
-import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.document.library.kernel.service.DLFileEntryLocalService;
 import com.liferay.document.library.test.util.BaseDLAppTestCase;
 import com.liferay.friendly.url.model.FriendlyURLEntry;
@@ -73,7 +72,7 @@ public class FriendlyURLDLFileEntryLocalServiceWrapperTest
 			RandomTestUtil.randomString(), "urltitle", StringPool.BLANK,
 			StringPool.BLANK,
 			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT, null,
-			null, inputStream, bytes.length, null, null, serviceContext);
+			null, inputStream, bytes.length, null, null, null, serviceContext);
 
 		FriendlyURLEntry friendlyURLEntry1 =
 			_friendlyURLEntryLocalService.getMainFriendlyURLEntry(
@@ -92,7 +91,7 @@ public class FriendlyURLDLFileEntryLocalServiceWrapperTest
 			RandomTestUtil.randomString(), "urltitle", StringPool.BLANK,
 			StringPool.BLANK,
 			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT, null,
-			null, inputStream, bytes.length, null, null, serviceContext);
+			null, inputStream, bytes.length, null, null, null, serviceContext);
 
 		FriendlyURLEntry friendlyURLEntry2 =
 			_friendlyURLEntryLocalService.getMainFriendlyURLEntry(
@@ -121,7 +120,7 @@ public class FriendlyURLDLFileEntryLocalServiceWrapperTest
 			ContentTypes.APPLICATION_OCTET_STREAM, "title", "urltitle",
 			StringPool.BLANK, StringPool.BLANK,
 			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT, null,
-			null, inputStream, bytes.length, null, null, serviceContext);
+			null, inputStream, bytes.length, null, null, null, serviceContext);
 
 		FriendlyURLEntry friendlyURLEntry1 =
 			_friendlyURLEntryLocalService.getMainFriendlyURLEntry(
@@ -131,7 +130,7 @@ public class FriendlyURLDLFileEntryLocalServiceWrapperTest
 		Assert.assertNotNull(friendlyURLEntry1);
 		Assert.assertEquals("urltitle", friendlyURLEntry1.getUrlTitle());
 
-		Folder folder = _dlAppService.addFolder(
+		Folder folder = dlAppService.addFolder(
 			null, group.getGroupId(), parentFolder.getFolderId(),
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			serviceContext);
@@ -143,7 +142,7 @@ public class FriendlyURLDLFileEntryLocalServiceWrapperTest
 			ContentTypes.APPLICATION_OCTET_STREAM, "title", "urltitle",
 			StringPool.BLANK, StringPool.BLANK,
 			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT, null,
-			null, inputStream, bytes.length, null, null, serviceContext);
+			null, inputStream, bytes.length, null, null, null, serviceContext);
 
 		FriendlyURLEntry friendlyURLEntry2 =
 			_friendlyURLEntryLocalService.getMainFriendlyURLEntry(
@@ -166,6 +165,7 @@ public class FriendlyURLDLFileEntryLocalServiceWrapperTest
 			StringPool.BLANK, StringPool.BLANK,
 			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT, null,
 			null, new ByteArrayInputStream(bytes), bytes.length, null, null,
+			null,
 			ServiceContextTestUtil.getServiceContext(
 				group.getGroupId(), TestPropsValues.getUserId()));
 
@@ -192,6 +192,7 @@ public class FriendlyURLDLFileEntryLocalServiceWrapperTest
 			StringPool.BLANK, StringPool.BLANK,
 			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT, null,
 			null, new ByteArrayInputStream(bytes), bytes.length, null, null,
+			null,
 			ServiceContextTestUtil.getServiceContext(
 				group.getGroupId(), TestPropsValues.getUserId()));
 
@@ -218,6 +219,7 @@ public class FriendlyURLDLFileEntryLocalServiceWrapperTest
 			StringPool.BLANK, StringPool.BLANK,
 			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT, null,
 			null, new ByteArrayInputStream(bytes), bytes.length, null, null,
+			null,
 			ServiceContextTestUtil.getServiceContext(
 				group.getGroupId(), TestPropsValues.getUserId()));
 
@@ -245,6 +247,7 @@ public class FriendlyURLDLFileEntryLocalServiceWrapperTest
 			StringPool.BLANK, StringPool.BLANK,
 			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT, null,
 			null, new ByteArrayInputStream(bytes), bytes.length, null, null,
+			null,
 			ServiceContextTestUtil.getServiceContext(
 				group.getGroupId(), TestPropsValues.getUserId()));
 
@@ -271,6 +274,7 @@ public class FriendlyURLDLFileEntryLocalServiceWrapperTest
 			StringPool.BLANK, StringPool.BLANK,
 			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT, null,
 			null, new ByteArrayInputStream(bytes), bytes.length, null, null,
+			null,
 			ServiceContextTestUtil.getServiceContext(
 				group.getGroupId(), TestPropsValues.getUserId()));
 
@@ -306,7 +310,7 @@ public class FriendlyURLDLFileEntryLocalServiceWrapperTest
 			RandomTestUtil.randomString(), "oldurltitle", StringPool.BLANK,
 			StringPool.BLANK,
 			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT, null,
-			null, inputStream, bytes.length, null, null, serviceContext);
+			null, inputStream, bytes.length, null, null, null, serviceContext);
 
 		dlFileEntry = _dlFileEntryLocalService.updateFileEntry(
 			group.getCreatorUserId(), dlFileEntry.getFileEntryId(),
@@ -314,7 +318,7 @@ public class FriendlyURLDLFileEntryLocalServiceWrapperTest
 			RandomTestUtil.randomString(), "urltitle", StringPool.BLANK,
 			StringPool.BLANK, DLVersionNumberIncrease.MAJOR,
 			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT,
-			Collections.emptyMap(), null, inputStream, 0, null, null,
+			Collections.emptyMap(), null, inputStream, 0, null, null, null,
 			serviceContext);
 
 		FriendlyURLEntry mainFriendlyURLEntry =
@@ -380,7 +384,7 @@ public class FriendlyURLDLFileEntryLocalServiceWrapperTest
 			RandomTestUtil.randomString(), "urltitle", StringPool.BLANK,
 			StringPool.BLANK,
 			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT, null,
-			null, inputStream, bytes.length, null, null, serviceContext);
+			null, inputStream, bytes.length, null, null, null, serviceContext);
 
 		dlFileEntry = _dlFileEntryLocalService.updateFileEntry(
 			group.getCreatorUserId(), dlFileEntry.getFileEntryId(),
@@ -388,7 +392,7 @@ public class FriendlyURLDLFileEntryLocalServiceWrapperTest
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			StringPool.BLANK, StringPool.BLANK, DLVersionNumberIncrease.MAJOR,
 			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT,
-			Collections.emptyMap(), null, inputStream, 0, null, null,
+			Collections.emptyMap(), null, inputStream, 0, null, null, null,
 			serviceContext);
 
 		FriendlyURLEntry mainFriendlyURLEntry =
@@ -452,7 +456,7 @@ public class FriendlyURLDLFileEntryLocalServiceWrapperTest
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			StringPool.BLANK, StringPool.BLANK,
 			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT, null,
-			null, inputStream, bytes.length, null, null, serviceContext);
+			null, inputStream, bytes.length, null, null, null, serviceContext);
 
 		dlFileEntry = _dlFileEntryLocalService.updateFileEntry(
 			group.getCreatorUserId(), dlFileEntry.getFileEntryId(),
@@ -460,7 +464,7 @@ public class FriendlyURLDLFileEntryLocalServiceWrapperTest
 			RandomTestUtil.randomString(), "urltitle", StringPool.BLANK,
 			StringPool.BLANK, DLVersionNumberIncrease.MAJOR,
 			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT,
-			Collections.emptyMap(), null, inputStream, 0, null, null,
+			Collections.emptyMap(), null, inputStream, 0, null, null, null,
 			serviceContext);
 
 		FriendlyURLEntry friendlyURLEntry =
@@ -491,7 +495,7 @@ public class FriendlyURLDLFileEntryLocalServiceWrapperTest
 			RandomTestUtil.randomString(), "urltitle", StringPool.BLANK,
 			StringPool.BLANK,
 			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT, null,
-			null, inputStream, bytes.length, null, null, serviceContext);
+			null, inputStream, bytes.length, null, null, null, serviceContext);
 
 		dlFileEntry = _dlFileEntryLocalService.updateFileEntry(
 			group.getCreatorUserId(), dlFileEntry.getFileEntryId(),
@@ -500,7 +504,7 @@ public class FriendlyURLDLFileEntryLocalServiceWrapperTest
 			StringPool.BLANK, DLVersionNumberIncrease.MAJOR,
 			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT,
 			Collections.emptyMap(), null, inputStream, bytes.length, null, null,
-			serviceContext);
+			null, serviceContext);
 
 		FriendlyURLEntry friendlyURLEntry =
 			_friendlyURLEntryLocalService.getMainFriendlyURLEntry(
@@ -530,7 +534,7 @@ public class FriendlyURLDLFileEntryLocalServiceWrapperTest
 			RandomTestUtil.randomString(), "originalURLTitle", StringPool.BLANK,
 			StringPool.BLANK,
 			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT, null,
-			null, inputStream, bytes.length, null, null, serviceContext);
+			null, inputStream, bytes.length, null, null, null, serviceContext);
 
 		dlFileEntry = _dlFileEntryLocalService.updateFileEntry(
 			group.getCreatorUserId(), dlFileEntry.getFileEntryId(),
@@ -539,7 +543,7 @@ public class FriendlyURLDLFileEntryLocalServiceWrapperTest
 			StringPool.BLANK, DLVersionNumberIncrease.MAJOR,
 			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT,
 			Collections.emptyMap(), null, inputStream, bytes.length, null, null,
-			serviceContext);
+			null, serviceContext);
 
 		FriendlyURLEntry mainFriendlyURLEntry =
 			_friendlyURLEntryLocalService.getMainFriendlyURLEntry(
@@ -578,7 +582,7 @@ public class FriendlyURLDLFileEntryLocalServiceWrapperTest
 			RandomTestUtil.randomString(), "urltitle", StringPool.BLANK,
 			StringPool.BLANK,
 			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT, null,
-			null, inputStream, bytes.length, null, null, serviceContext);
+			null, inputStream, bytes.length, null, null, null, serviceContext);
 
 		dlFileEntry = _dlFileEntryLocalService.updateFileEntry(
 			group.getCreatorUserId(), dlFileEntry.getFileEntryId(),
@@ -587,7 +591,7 @@ public class FriendlyURLDLFileEntryLocalServiceWrapperTest
 			StringPool.BLANK, DLVersionNumberIncrease.MAJOR,
 			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT,
 			Collections.emptyMap(), null, inputStream, bytes.length, null, null,
-			serviceContext);
+			null, serviceContext);
 
 		FriendlyURLEntry friendlyURLEntry =
 			_friendlyURLEntryLocalService.getMainFriendlyURLEntry(
@@ -616,7 +620,7 @@ public class FriendlyURLDLFileEntryLocalServiceWrapperTest
 			ContentTypes.APPLICATION_OCTET_STREAM, "<script>title</script>",
 			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
 			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT, null,
-			null, inputStream, bytes.length, null, null, serviceContext);
+			null, inputStream, bytes.length, null, null, null, serviceContext);
 
 		FriendlyURLEntry mainFriendlyURLEntry =
 			_friendlyURLEntryLocalService.getMainFriendlyURLEntry(
@@ -634,7 +638,7 @@ public class FriendlyURLDLFileEntryLocalServiceWrapperTest
 			DLVersionNumberIncrease.MAJOR,
 			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT,
 			Collections.emptyMap(), null, inputStream, bytes.length, null, null,
-			serviceContext);
+			null, serviceContext);
 
 		mainFriendlyURLEntry =
 			_friendlyURLEntryLocalService.getMainFriendlyURLEntry(
@@ -643,9 +647,6 @@ public class FriendlyURLDLFileEntryLocalServiceWrapperTest
 
 		Assert.assertEquals("url-title", mainFriendlyURLEntry.getUrlTitle());
 	}
-
-	@Inject
-	private static DLAppService _dlAppService;
 
 	@Inject
 	private static DLFileEntryLocalService _dlFileEntryLocalService;

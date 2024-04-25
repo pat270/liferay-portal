@@ -3,26 +3,29 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {CustomItem, SidebarCategory} from '@liferay/object-js-components-web';
+import {SidebarCategory} from '@liferay/object-js-components-web';
 import React from 'react';
 
-import ObjectAction from './index';
+import {ObjectActionContainer} from './ObjectActionContainer';
 
 interface EditObjectActionProps {
+	allowScriptContentToBeExecutedOrIncluded: boolean;
 	isApproved: boolean;
 	objectAction: ObjectAction;
 	objectActionCodeEditorElements: SidebarCategory[];
-	objectActionExecutors: CustomItem[];
-	objectActionTriggers: CustomItem[];
+	objectActionExecutors: ObjectActionTriggerExecutorItem[];
+	objectActionTriggers: ObjectActionTriggerExecutorItem[];
 	objectDefinitionExternalReferenceCode: string;
 	objectDefinitionId: number;
 	objectDefinitionsRelationshipsURL: string;
 	readOnly?: boolean;
+	scriptManagementConfigurationPortletURL: string;
 	systemObject: boolean;
 	validateExpressionURL: string;
 }
 
 export default function EditObjectAction({
+	allowScriptContentToBeExecutedOrIncluded,
 	isApproved,
 	objectAction: {id, ...values},
 	objectActionCodeEditorElements,
@@ -32,11 +35,16 @@ export default function EditObjectAction({
 	objectDefinitionId,
 	objectDefinitionsRelationshipsURL,
 	readOnly,
+	scriptManagementConfigurationPortletURL,
 	systemObject,
 	validateExpressionURL,
 }: EditObjectActionProps) {
 	return (
-		<ObjectAction
+		<ObjectActionContainer
+			allowScriptContentToBeExecutedOrIncluded={
+				allowScriptContentToBeExecutedOrIncluded
+			}
+			editingObjectAction
 			isApproved={isApproved}
 			objectAction={values}
 			objectActionCodeEditorElements={objectActionCodeEditorElements}
@@ -49,11 +57,14 @@ export default function EditObjectAction({
 			objectDefinitionsRelationshipsURL={
 				objectDefinitionsRelationshipsURL
 			}
-			readOnly={readOnly}
+			readOnly={readOnly || values.system}
 			requestParams={{
 				method: 'PUT',
 				url: `/o/object-admin/v1.0/object-actions/${id}`,
 			}}
+			scriptManagementConfigurationPortletURL={
+				scriptManagementConfigurationPortletURL
+			}
 			successMessage={Liferay.Language.get(
 				'the-object-action-was-updated-successfully'
 			)}

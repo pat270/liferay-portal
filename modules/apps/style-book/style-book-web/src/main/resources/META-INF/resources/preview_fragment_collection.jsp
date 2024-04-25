@@ -11,9 +11,15 @@
 PreviewFragmentCollectionDisplayContext previewFragmentCollectionDisplayContext = new PreviewFragmentCollectionDisplayContext(request);
 %>
 
+<liferay-util:html-top
+	outputKey="com.liferay.style.book.web#/preview_fragment_collection.jsp"
+>
+	<link href="<%= PortalUtil.getStaticResourceURL(request, PortalUtil.getPathProxy() + application.getContextPath() + "/css/FragmentCollectionPreview.css") %>" rel="stylesheet" type="text/css" />
+</liferay-util:html-top>
+
 <div>
 	<react:component
-		module="js/fragment-collection-preview/FragmentCollectionPreview"
+		module="{FragmentCollectionPreview} from style-book-web"
 		props='<%=
 			HashMapBuilder.<String, Object>put(
 				"fragmentCollectionKey", previewFragmentCollectionDisplayContext.getFragmentCollectionKey()

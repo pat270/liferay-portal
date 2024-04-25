@@ -1,11 +1,16 @@
 definition {
 
-	macro addTemplate {
+	@summary = "Default summary"
+	macro addTemplate(fieldName = null, gitHash = null, routineName = null, description = null, dropdownItem = null, caseList = null) {
+		WaitForElementPresent(
+			key_pageTabTitle = "Build History",
+			locator1 = "Testray#PAGE_TAB_TITLE");
+
 		Click(locator1 = "Button#PLUS");
 
 		Click.javaScriptClick(
-			key_picklistOption = ${dropdownItem},
-			locator1 = "TestrayDropdown#PICKLIST_KEBAB_MENU_OPTION");
+			key_menuItem = ${dropdownItem},
+			locator1 = "MenuItem#ANY_MENU_ITEM");
 
 		if (isSet(fieldName)) {
 			Type(
@@ -16,7 +21,8 @@ definition {
 
 		if (isSet(routineName)) {
 			Select(
-				locator1 = "TestrayBuild#ROUTINE_ID",
+				locator1 = "Select#SELECT_ID",
+				selectFieldId = "routineId",
 				value1 = ${routineName});
 		}
 
@@ -33,18 +39,26 @@ definition {
 				value1 = ${description});
 		}
 
-		Button.clickSave();
+		if (isSet(caseList)) {
+			Testray.selectCheckboxOptions(
+				buttonText = "Select Cases",
+				checkboxNameList = ${caseList},
+				linkText = "Add Cases");
+		}
+
+		if (isSet(duplicate)) {
+			Button.clickSave();
+		}
+
+		if (!(isSet(duplicate))) {
+			Button.clickSave();
+
+			Alert.viewSuccessMessage();
+		}
 	}
 
-	macro assertTemplateName {
-		Click(locator1 = "Button#PLUS");
-
-		AssertElementPresent(
-			locator1 = "TestrayTemplate#SEARCH_TEMPLATE",
-			templateName = ${templateName});
-	}
-
-	macro goToBuildTemplate {
+	@summary = "Default summary"
+	macro goToBuildTemplate(templateName = null) {
 		Click(locator1 = "Button#PLUS");
 
 		Click.javaScriptClick(
@@ -52,11 +66,20 @@ definition {
 			locator1 = "TestrayDropdown#TEMPLATE_DROPDOWN");
 	}
 
-	macro viewTemplateDetails {
-		AssertElementPresent(
-			locator1 = "TestrayTemplate#TEMPLATE_DETAILS",
-			templateName = ${templateName},
-			templateStatus = ${templateStatus});
+	@summary = "Default summary"
+	macro searchTemplateName(templateName = null) {
+		Click(locator1 = "Button#PLUS");
+
+		TestrayFilter.searchFilter(filterName = ${templateName});
+	}
+
+	@summary = "Default summary"
+	macro viewTemplateName(templateList = null) {
+		for (var templateName : list ${templateList}) {
+			AssertElementPresent(
+				locator1 = "TestrayDropdown#SEARCH_TEMPLATE",
+				templateName = ${templateName});
+		}
 	}
 
 }

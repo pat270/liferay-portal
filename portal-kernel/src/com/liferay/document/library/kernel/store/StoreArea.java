@@ -13,6 +13,7 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -185,15 +186,18 @@ public enum StoreArea {
 		StringBundler sb = new StringBundler(
 			5 + (ArrayUtil.getLength(path) * 2));
 
-		sb.append(_namespace);
-		sb.append(StringPool.SLASH);
+		if (Validator.isNotNull(_namespace)) {
+			sb.append(_namespace);
+			sb.append(StringPool.SLASH);
+		}
+
 		sb.append(String.valueOf(companyId));
 		sb.append(StringPool.SLASH);
 		sb.append(String.valueOf(repositoryId));
 
 		if (ArrayUtil.isNotEmpty(path)) {
 			sb.append(StringPool.SLASH);
-			sb.append(StringUtil.merge(path, StringPool.SLASH));
+			sb.append(_join(path, StringPool.SLASH));
 		}
 
 		return sb.toString();
@@ -209,6 +213,44 @@ public enum StoreArea {
 
 	private StoreArea(String namespace) {
 		_namespace = namespace;
+	}
+
+	private <T> String _join(T[] array, String delimiter) {
+		if (array == null) {
+			return null;
+		}
+
+		if (array.length == 0) {
+			return StringPool.BLANK;
+		}
+
+		if (array.length == 1) {
+			return String.valueOf(array[0]);
+		}
+
+		StringBundler sb = new StringBundler((2 * array.length) - 1);
+
+		for (int i = 0; i < array.length; i++) {
+			String value = StringUtil.trim(String.valueOf(array[i]));
+
+			if ((i != 0) && StringUtil.startsWith(value, delimiter)) {
+				value = value.substring(1);
+			}
+
+			if ((i != (array.length - 1)) &&
+				StringUtil.endsWith(value, delimiter)) {
+
+				value = value.substring(0, value.length() - 1);
+			}
+
+			if (i != 0) {
+				sb.append(delimiter);
+			}
+
+			sb.append(value);
+		}
+
+		return sb.toString();
 	}
 
 	private static final ThreadLocal<StoreArea> _storeAreaThreadLocal =

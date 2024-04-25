@@ -27,6 +27,7 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryDefinition;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.test.rule.DataGuard;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
@@ -72,6 +73,7 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 /**
  * @author Ivica Cardic
  */
+@DataGuard(scope = DataGuard.Scope.METHOD)
 @RunWith(Arquillian.class)
 public class BatchEngineImportTaskExecutorTest
 	extends BaseBatchEngineTaskExecutorTest {
@@ -312,11 +314,22 @@ public class BatchEngineImportTaskExecutorTest
 
 		String content = sb.toString();
 
-		_importBlogPostings(
-			BatchEngineTaskOperation.CREATE,
-			_compressContent(content.getBytes(StandardCharsets.UTF_8), "CSV"),
-			"CSV", null,
-			BatchEngineImportTaskConstants.IMPORT_STRATEGY_ON_ERROR_CONTINUE);
+		try (LogCapture logCapture1 = LoggerTestUtil.configureLog4JLogger(
+				"com.liferay.batch.engine.internal.strategy." +
+					"OnErrorContinueBatchEngineImportStrategy",
+				LoggerTestUtil.ERROR);
+			LogCapture logCapture2 = LoggerTestUtil.configureLog4JLogger(
+				_CLASS_NAME_BATCH_ENGINE_IMPORT_TASK_EXECUTOR_IMPL,
+				LoggerTestUtil.ERROR)) {
+
+			_importBlogPostings(
+				BatchEngineTaskOperation.CREATE,
+				_compressContent(
+					content.getBytes(StandardCharsets.UTF_8), "CSV"),
+				"CSV", null,
+				BatchEngineImportTaskConstants.
+					IMPORT_STRATEGY_ON_ERROR_CONTINUE);
+		}
 
 		_assertInvalidFileImportWithOnErrorContinueStrategy(
 			Arrays.asList(
@@ -470,16 +483,16 @@ public class BatchEngineImportTaskExecutorTest
 
 		Account account1 = new Account() {
 			{
-				setExternalReferenceCode(RandomTestUtil.randomString());
-				setName(RandomTestUtil.randomString());
-				setType(Account.Type.PERSON);
+				externalReferenceCode = RandomTestUtil.randomString();
+				name = RandomTestUtil.randomString();
+				type = Account.Type.PERSON;
 			}
 		};
 		Account account2 = new Account() {
 			{
-				setExternalReferenceCode(RandomTestUtil.randomString());
-				setName(RandomTestUtil.randomString());
-				setType(Account.Type.PERSON);
+				externalReferenceCode = RandomTestUtil.randomString();
+				name = RandomTestUtil.randomString();
+				type = Account.Type.PERSON;
 			}
 		};
 		int integerFieldValue1 = RandomTestUtil.randomInt();
@@ -553,9 +566,9 @@ public class BatchEngineImportTaskExecutorTest
 
 		account1 = new Account() {
 			{
-				setExternalReferenceCode(RandomTestUtil.randomString());
-				setName(RandomTestUtil.randomString());
-				setType(Account.Type.PERSON);
+				externalReferenceCode = RandomTestUtil.randomString();
+				name = RandomTestUtil.randomString();
+				type = Account.Type.PERSON;
 			}
 		};
 
@@ -567,18 +580,24 @@ public class BatchEngineImportTaskExecutorTest
 			)
 		).toString();
 
-		_batchEngineImportTask =
-			_batchEngineImportTaskLocalService.addBatchEngineImportTask(
-				null, TestPropsValues.getCompanyId(), user.getUserId(),
-				_BATCH_SIZE, null,
-				"com.liferay.headless.admin.user.dto.v1_0.Account",
-				_compressContent(json.getBytes(), "JSON"), "JSON",
-				BatchEngineTaskExecuteStatus.INITIAL.name(), null,
-				BatchEngineImportTaskConstants.IMPORT_STRATEGY_ON_ERROR_FAIL,
-				BatchEngineTaskOperation.CREATE.toString(), new HashMap<>(),
-				null);
+		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+				_CLASS_NAME_BATCH_ENGINE_IMPORT_TASK_EXECUTOR_IMPL,
+				LoggerTestUtil.ERROR)) {
 
-		_batchEngineImportTaskExecutor.execute(_batchEngineImportTask);
+			_batchEngineImportTask =
+				_batchEngineImportTaskLocalService.addBatchEngineImportTask(
+					null, TestPropsValues.getCompanyId(), user.getUserId(),
+					_BATCH_SIZE, null,
+					"com.liferay.headless.admin.user.dto.v1_0.Account",
+					_compressContent(json.getBytes(), "JSON"), "JSON",
+					BatchEngineTaskExecuteStatus.INITIAL.name(), null,
+					BatchEngineImportTaskConstants.
+						IMPORT_STRATEGY_ON_ERROR_FAIL,
+					BatchEngineTaskOperation.CREATE.toString(), new HashMap<>(),
+					null);
+
+			_batchEngineImportTaskExecutor.execute(_batchEngineImportTask);
+		}
 
 		Assert.assertEquals(
 			BatchEngineTaskExecuteStatus.FAILED.toString(),
@@ -712,20 +731,21 @@ public class BatchEngineImportTaskExecutorTest
 		assertBlogsEntriesCount();
 
 		List<BlogsEntry> blogsEntries = new ArrayList<>(
-			blogsEntryLocalService.getGroupEntriesCount(
+			blogsEntryLocalService.getGroupEntries(
 				TestPropsValues.getGroupId(),
-				new QueryDefinition<>(WorkflowConstants.STATUS_APPROVED)));
+				new QueryDefinition<>(WorkflowConstants.STATUS_ANY)));
 
 		blogsEntries.sort(Comparator.comparingLong(BlogsEntry::getEntryId));
 
-		for (int i = 0; i < blogsEntries.size(); i++) {
-			BlogsEntry blogsEntry = blogsEntries.get(i);
+		for (int i = 0; i < ROWS_COUNT; i++) {
+			BlogsEntry blogsEntry = blogsEntries.get(i + initialCount);
 
 			Assert.assertEquals(
 				"alternativeHeadline" + i, blogsEntry.getSubtitle());
 			Assert.assertEquals("articleBody" + i, blogsEntry.getContent());
 			Assert.assertEquals(
-				_toTime(baseDate, i), _toTime(blogsEntry.getDisplayDate(), 0));
+				_toTime(baseDate, i - 1000),
+				_toTime(blogsEntry.getDisplayDate(), 0));
 			Assert.assertEquals("headline" + i, blogsEntry.getTitle());
 		}
 	}
@@ -734,10 +754,10 @@ public class BatchEngineImportTaskExecutorTest
 		Assert.assertEquals(
 			ROWS_COUNT, _batchEngineImportTask.getProcessedItemsCount());
 		Assert.assertEquals(
-			0,
+			initialCount,
 			blogsEntryLocalService.getGroupEntriesCount(
 				TestPropsValues.getGroupId(),
-				new QueryDefinition<>(WorkflowConstants.STATUS_APPROVED)));
+				new QueryDefinition<>(WorkflowConstants.STATUS_ANY)));
 	}
 
 	private void _assertInvalidFileImportWithOnErrorContinueStrategy(
@@ -752,10 +772,8 @@ public class BatchEngineImportTaskExecutorTest
 		Assert.assertEquals(
 			itemsCount, _batchEngineImportTask.getTotalItemsCount());
 		Assert.assertEquals(
-			itemsCount - invalidItemRowNumbers.size(),
-			blogsEntryLocalService.getGroupEntriesCount(
-				TestPropsValues.getGroupId(),
-				new QueryDefinition<>(WorkflowConstants.STATUS_APPROVED)));
+			initialCount + itemsCount - invalidItemRowNumbers.size(),
+			getBlogEntriesCount());
 
 		List<BatchEngineImportTaskError> batchEngineImportTaskErrors =
 			_batchEngineImportTaskErrorLocalService.
@@ -803,11 +821,7 @@ public class BatchEngineImportTaskExecutorTest
 		Assert.assertEquals(
 			invalidItemRowNumber, batchEngineImportTaskError.getItemIndex());
 
-		Assert.assertEquals(
-			0,
-			blogsEntryLocalService.getGroupEntriesCount(
-				TestPropsValues.getGroupId(),
-				new QueryDefinition<>(WorkflowConstants.STATUS_APPROVED)));
+		Assert.assertEquals(initialCount, getBlogEntriesCount());
 
 		List<LogEntry> logEntries = logCapture.getLogEntries();
 
@@ -826,27 +840,25 @@ public class BatchEngineImportTaskExecutorTest
 	private void _assertUpdatedBlogPostings() throws Exception {
 		Assert.assertEquals(
 			ROWS_COUNT, _batchEngineImportTask.getProcessedItemsCount());
-		Assert.assertEquals(
-			ROWS_COUNT,
-			blogsEntryLocalService.getGroupEntriesCount(
-				TestPropsValues.getGroupId(),
-				new QueryDefinition<>(WorkflowConstants.STATUS_SCHEDULED)));
+
+		assertBlogsEntriesCount();
 
 		List<BlogsEntry> blogsEntries = new ArrayList<>(
-			blogsEntryLocalService.getGroupEntriesCount(
+			blogsEntryLocalService.getGroupEntries(
 				TestPropsValues.getGroupId(),
-				new QueryDefinition<>(WorkflowConstants.STATUS_SCHEDULED)));
+				new QueryDefinition<>(WorkflowConstants.STATUS_ANY)));
 
 		blogsEntries.sort(Comparator.comparingLong(BlogsEntry::getEntryId));
 
-		for (int i = 0; i < blogsEntries.size(); i++) {
-			BlogsEntry blogsEntry = blogsEntries.get(i);
+		for (int i = 0; i < ROWS_COUNT; i++) {
+			BlogsEntry blogsEntry = blogsEntries.get(i + initialCount);
 
 			Assert.assertEquals(
 				"alternativeHeadline" + i + i, blogsEntry.getSubtitle());
 			Assert.assertEquals("articleBody" + i + i, blogsEntry.getContent());
 			Assert.assertEquals(
-				_toTime(baseDate, i), _toTime(blogsEntry.getDisplayDate(), 0));
+				_toTime(baseDate, i + 100),
+				_toTime(blogsEntry.getDisplayDate(), 0));
 			Assert.assertEquals("headline" + i + i, blogsEntry.getTitle());
 		}
 	}

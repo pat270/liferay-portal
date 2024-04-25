@@ -52,7 +52,6 @@ import java.util.Objects;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
 
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -136,11 +135,6 @@ public class LayoutPageTemplateEntryItemSelectorView
 	@Reference
 	private SegmentsExperienceLocalService _segmentsExperienceLocalService;
 
-	@Reference(
-		target = "(osgi.web.symbolicname=com.liferay.layout.page.template.item.selector.web)"
-	)
-	private ServletContext _servletContext;
-
 	private class LayoutPageTemplateEntryItemDescriptor
 		implements ItemSelectorViewDescriptor.ItemDescriptor {
 
@@ -180,8 +174,7 @@ public class LayoutPageTemplateEntryItemSelectorView
 				"previewURL",
 				() -> {
 					if (_layoutPageTemplateEntry.getType() ==
-							LayoutPageTemplateEntryTypeConstants.
-								TYPE_DISPLAY_PAGE) {
+							LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE) {
 
 						String previewURL = HttpComponentsUtil.addParameters(
 							_themeDisplay.getPortalURL() +
@@ -234,7 +227,7 @@ public class LayoutPageTemplateEntryItemSelectorView
 		public String getSubtitle(Locale locale) {
 			if (Objects.equals(
 					_layoutPageTemplateEntry.getType(),
-					LayoutPageTemplateEntryTypeConstants.TYPE_DISPLAY_PAGE)) {
+					LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE)) {
 
 				String typeLabel = _getTypeLabel();
 
@@ -261,8 +254,7 @@ public class LayoutPageTemplateEntryItemSelectorView
 			}
 			else if (Objects.equals(
 						_layoutPageTemplateEntry.getType(),
-						LayoutPageTemplateEntryTypeConstants.
-							TYPE_MASTER_LAYOUT)) {
+						LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT)) {
 
 				return _language.format(
 					_httpServletRequest, "x-usages",

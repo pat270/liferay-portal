@@ -1,7 +1,8 @@
 definition {
 
-	macro assertResponseStatus {
-		var actualStatus = HttpRequestUtil.getStatusCode(${response});
+	@summary = "Default summary"
+	macro assertResponseStatus(response = null,expectedStatus = null) {
+		var actualStatus = HttpRequestUtil.getResponseStatusCode(${response});
 
 		if (${expectedStatus} != ${actualStatus}) {
 			var body = HttpRequestUtil.getResponseBody(${response});
@@ -12,22 +13,34 @@ definition {
 		}
 	}
 
-	macro getGoogleResponse {
+	@summary = "Default summary"
+	macro getGoogleResponse() {
 		var response = HttpRequestUtil.get("Poshi.NULL", "Poshi.NULL", "http://www.google.com");
 
 		HttpRequester.getResponse(response = ${response});
+
+		HttpRequestUtil.assertResponseStatusCode(${response}, 200);
+
+		HttpRequestUtil.assertResponseDuration(${response}, 10000);
 	}
 
-	macro getResponse {
-		var status = HttpRequestUtil.getStatusCode(${response});
+	@summary = "Default summary"
+	macro getResponse(response = null) {
+		var status = HttpRequestUtil.getResponseStatusCode(${response});
 		var body = HttpRequestUtil.getResponseBody(${response});
 		var errorMessage = HttpRequestUtil.getResponseErrorMessage(${response});
+		var responseDuration = HttpRequestUtil.getResponseDuration(${response});
+		var responseHeaders = HttpRequestUtil.getResponseHeaderFields(${response});
 
 		echo("Response Code: ${status}");
 
 		echo("Response: ${body}");
 
 		echo("Error: ${errorMessage}");
+
+		echo("Response Duration: ${responseDuration}");
+
+		echo("Headers: ${responseHeaders}");
 	}
 
 }

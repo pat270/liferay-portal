@@ -52,12 +52,12 @@ import com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil;
 import com.liferay.portal.kernel.workflow.WorkflowInstance;
 import com.liferay.portal.kernel.workflow.WorkflowInstanceManagerUtil;
 import com.liferay.portal.kernel.workflow.WorkflowLog;
-import com.liferay.portal.kernel.workflow.WorkflowLogManagerUtil;
 import com.liferay.portal.kernel.workflow.WorkflowTask;
 import com.liferay.portal.kernel.workflow.WorkflowTaskManagerUtil;
 import com.liferay.portal.kernel.workflow.WorkflowTransition;
 import com.liferay.portal.kernel.workflow.search.WorkflowModelSearchResult;
 import com.liferay.portal.workflow.comparator.WorkflowComparatorFactory;
+import com.liferay.portal.workflow.manager.WorkflowLogManager;
 import com.liferay.portal.workflow.task.web.internal.display.context.helper.WorkflowTaskRequestHelper;
 import com.liferay.portal.workflow.task.web.internal.search.WorkflowTaskSearch;
 import com.liferay.portal.workflow.task.web.internal.util.WorkflowTaskPortletUtil;
@@ -88,11 +88,13 @@ public class WorkflowTaskDisplayContext {
 	public WorkflowTaskDisplayContext(
 		LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse,
-		WorkflowComparatorFactory workflowComparatorFactory) {
+		WorkflowComparatorFactory workflowComparatorFactory,
+		WorkflowLogManager workflowLogManager) {
 
 		_liferayPortletRequest = liferayPortletRequest;
 		_liferayPortletResponse = liferayPortletResponse;
 		_workflowComparatorFactory = workflowComparatorFactory;
+		_workflowLogManager = workflowLogManager;
 
 		_httpServletRequest = PortalUtil.getHttpServletRequest(
 			liferayPortletRequest);
@@ -101,7 +103,7 @@ public class WorkflowTaskDisplayContext {
 			(ThemeDisplay)liferayPortletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
-		_dateFormatDateTime = FastDateFormatFactoryUtil.getDateTime(
+		_dateTimeFormat = FastDateFormatFactoryUtil.getDateTime(
 			themeDisplay.getLocale(), themeDisplay.getTimeZone());
 
 		_workflowTaskRequestHelper = new WorkflowTaskRequestHelper(
@@ -201,11 +203,11 @@ public class WorkflowTaskDisplayContext {
 	}
 
 	public String getCreateDateString(WorkflowLog workflowLog) {
-		return _dateFormatDateTime.format(workflowLog.getCreateDate());
+		return _dateTimeFormat.format(workflowLog.getCreateDate());
 	}
 
 	public String getCreateDateString(WorkflowTask workflowTask) {
-		return _dateFormatDateTime.format(workflowTask.getCreateDate());
+		return _dateTimeFormat.format(workflowTask.getCreateDate());
 	}
 
 	public String getCurrentURL() {
@@ -238,7 +240,7 @@ public class WorkflowTaskDisplayContext {
 				_workflowTaskRequestHelper.getRequest(), "never");
 		}
 
-		return _dateFormatDateTime.format(workflowTask.getDueDate());
+		return _dateTimeFormat.format(workflowTask.getDueDate());
 	}
 
 	public DropdownItemList getFilterOptions() {
@@ -535,7 +537,7 @@ public class WorkflowTaskDisplayContext {
 			}
 		};
 
-		return WorkflowLogManagerUtil.getWorkflowLogsByWorkflowTask(
+		return _workflowLogManager.getWorkflowLogsByWorkflowTask(
 			_workflowTaskRequestHelper.getCompanyId(),
 			workflowTask.getWorkflowTaskId(), logTypes, QueryUtil.ALL_POS,
 			QueryUtil.ALL_POS,
@@ -940,7 +942,7 @@ public class WorkflowTaskDisplayContext {
 		throws PortalException {
 
 		List<WorkflowLog> workflowLogs =
-			WorkflowLogManagerUtil.getWorkflowLogsByWorkflowTask(
+			_workflowLogManager.getWorkflowLogsByWorkflowTask(
 				_workflowTaskRequestHelper.getCompanyId(),
 				workflowTask.getWorkflowTaskId(), null, 0, 1,
 				_workflowComparatorFactory.getLogCreateDateComparator(false));
@@ -1036,7 +1038,7 @@ public class WorkflowTaskDisplayContext {
 
 	private static final String[] _DISPLAY_VIEWS = {"descriptive", "list"};
 
-	private final Format _dateFormatDateTime;
+	private final Format _dateTimeFormat;
 	private String _displayStyle;
 	private final HttpServletRequest _httpServletRequest;
 	private final LiferayPortletRequest _liferayPortletRequest;
@@ -1049,6 +1051,7 @@ public class WorkflowTaskDisplayContext {
 	private Boolean _showExtraInfo;
 	private final Map<Long, User> _users = new HashMap<>();
 	private final WorkflowComparatorFactory _workflowComparatorFactory;
+	private final WorkflowLogManager _workflowLogManager;
 	private WorkflowModelSearchResult<WorkflowTask> _workflowModelSearchResult;
 	private final WorkflowTaskRequestHelper _workflowTaskRequestHelper;
 	private WorkflowTaskSearch _workflowTaskSearch;

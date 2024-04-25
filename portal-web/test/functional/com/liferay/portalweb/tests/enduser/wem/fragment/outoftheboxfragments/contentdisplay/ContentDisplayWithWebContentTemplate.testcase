@@ -1,10 +1,10 @@
-@component-name = "portal-wcm"
+@component-name = "portal-content-management"
 definition {
 
 	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Fragments";
+	property testray.main.component.name = "Web Content Display";
 
 	setUp {
 		task ("Set up instance and sign in") {
@@ -147,7 +147,7 @@ definition {
 				fragmentName = "Content Display",
 				text = ${siteId});
 
-			AssertTextNotEquals.assertNotPartialText(
+			AssertTextNotEquals.assertNotPartialMatch(
 				assetType = "journal",
 				index = 1,
 				locator1 = "Fragment#CONTENT_DISPLAY_TEXT",

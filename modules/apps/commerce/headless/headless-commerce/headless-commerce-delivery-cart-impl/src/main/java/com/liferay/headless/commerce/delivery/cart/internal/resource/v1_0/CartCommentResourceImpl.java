@@ -5,6 +5,7 @@
 
 package com.liferay.headless.commerce.delivery.cart.internal.resource.v1_0;
 
+import com.liferay.commerce.exception.NoSuchOrderException;
 import com.liferay.commerce.model.CommerceOrder;
 import com.liferay.commerce.model.CommerceOrderNote;
 import com.liferay.commerce.service.CommerceOrderNoteService;
@@ -18,7 +19,6 @@ import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.fields.NestedField;
 import com.liferay.portal.vulcan.fields.NestedFieldId;
-import com.liferay.portal.vulcan.fields.NestedFieldSupport;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 
@@ -34,15 +34,40 @@ import org.osgi.service.component.annotations.ServiceScope;
  */
 @Component(
 	properties = "OSGI-INF/liferay/rest/v1_0/cart-comment.properties",
-	scope = ServiceScope.PROTOTYPE,
-	service = {CartCommentResource.class, NestedFieldSupport.class}
+	property = "nested.field.support=true", scope = ServiceScope.PROTOTYPE,
+	service = CartCommentResource.class
 )
-public class CartCommentResourceImpl
-	extends BaseCartCommentResourceImpl implements NestedFieldSupport {
+public class CartCommentResourceImpl extends BaseCartCommentResourceImpl {
 
 	@Override
 	public void deleteCartComment(Long commentId) throws Exception {
 		_commerceOrderNoteService.deleteCommerceOrderNote(commentId);
+	}
+
+	@Override
+	public Page<CartComment> getCartByExternalReferenceCodeCommentsPage(
+			String externalReferenceCode, Pagination pagination)
+		throws Exception {
+
+		CommerceOrder commerceOrder =
+			_commerceOrderService.fetchByExternalReferenceCode(
+				externalReferenceCode, contextCompany.getCompanyId());
+
+		if (commerceOrder == null) {
+			throw new NoSuchOrderException(
+				"Unable to find order with external reference code " +
+					externalReferenceCode);
+		}
+
+		return Page.of(
+			_toOrderNotes(
+				_commerceOrderNoteService.getCommerceOrderNotes(
+					commerceOrder.getCommerceOrderId(), false,
+					pagination.getStartPosition(),
+					pagination.getEndPosition())),
+			pagination,
+			_commerceOrderNoteService.getCommerceOrderNotesCount(
+				commerceOrder.getCommerceOrderId(), false));
 	}
 
 	@Override
@@ -56,15 +81,32 @@ public class CartCommentResourceImpl
 			@NestedFieldId("id") Long cartId, Pagination pagination)
 		throws Exception {
 
-		int totalItems = _commerceOrderNoteService.getCommerceOrderNotesCount(
-			cartId, false);
-
 		return Page.of(
 			_toOrderNotes(
 				_commerceOrderNoteService.getCommerceOrderNotes(
 					cartId, false, pagination.getStartPosition(),
 					pagination.getEndPosition())),
-			pagination, totalItems);
+			pagination,
+			_commerceOrderNoteService.getCommerceOrderNotesCount(
+				cartId, false));
+	}
+
+	@Override
+	public CartComment postCartByExternalReferenceCodeComment(
+			String externalReferenceCode, CartComment cartComment)
+		throws Exception {
+
+		CommerceOrder commerceOrder =
+			_commerceOrderService.fetchByExternalReferenceCode(
+				externalReferenceCode, contextCompany.getCompanyId());
+
+		if (commerceOrder == null) {
+			throw new NoSuchOrderException(
+				"Unable to find order with external reference code " +
+					externalReferenceCode);
+		}
+
+		return _addOrUpdateOrderNote(commerceOrder, cartComment);
 	}
 
 	@Override
@@ -85,7 +127,7 @@ public class CartCommentResourceImpl
 		CommerceOrder commerceOrder = _commerceOrderService.getCommerceOrder(
 			commerceOrderNote.getCommerceOrderId());
 
-		cartComment.setId(commentId);
+		cartComment.setId(() -> commentId);
 
 		return _addOrUpdateOrderNote(commerceOrder, cartComment);
 	}

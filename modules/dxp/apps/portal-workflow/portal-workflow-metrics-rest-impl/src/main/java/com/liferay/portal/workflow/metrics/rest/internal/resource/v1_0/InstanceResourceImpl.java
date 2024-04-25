@@ -346,16 +346,19 @@ public class InstanceResourceImpl extends BaseInstanceResourceImpl {
 	}
 
 	private Assignee _createAssignee(boolean reviewer) {
-		Assignee assignee = new Assignee();
+		Assignee assignee = new Assignee() {
+			{
+				setId(() -> -1L);
+				setName(
+					() -> _language.get(
+						ResourceBundleUtil.getModuleAndPortalResourceBundle(
+							contextAcceptLanguage.getPreferredLocale(),
+							InstanceResourceImpl.class),
+						"unassigned"));
+			}
+		};
 
-		assignee.setId(-1L);
-		assignee.setName(
-			_language.get(
-				ResourceBundleUtil.getModuleAndPortalResourceBundle(
-					contextAcceptLanguage.getPreferredLocale(),
-					InstanceResourceImpl.class),
-				"unassigned"));
-		assignee.setReviewer(reviewer);
+		assignee.setReviewer(() -> reviewer);
 
 		return assignee;
 	}
@@ -399,19 +402,24 @@ public class InstanceResourceImpl extends BaseInstanceResourceImpl {
 	private Instance _createInstance(Document document) {
 		Instance instance = new Instance() {
 			{
-				assetTitle = document.getString(
-					_getLocalizedName("assetTitle"));
-				assetType = document.getString(_getLocalizedName("assetType"));
-				classPK = document.getLong("classPK");
-				completed = document.getBoolean("completed");
-				creator = _toCreator(document.getLong("userId"));
-				dateCompletion = _parseDate(document.getDate("completionDate"));
-				dateCreated = _parseDate(document.getDate("createDate"));
-				dateModified = _parseDate(document.getDate("modifiedDate"));
-				id = document.getLong("instanceId");
-				processId = document.getLong("processId");
-				slaStatus = Instance.SLAStatus.create(
-					document.getString("slaStatus"));
+				setAssetTitle(
+					() -> document.getString(_getLocalizedName("assetTitle")));
+				setAssetType(
+					() -> document.getString(_getLocalizedName("assetType")));
+				setClassPK(() -> document.getLong("classPK"));
+				setCompleted(() -> document.getBoolean("completed"));
+				setCreator(() -> _toCreator(document.getLong("userId")));
+				setDateCompletion(
+					() -> _parseDate(document.getDate("completionDate")));
+				setDateCreated(
+					() -> _parseDate(document.getDate("createDate")));
+				setDateModified(
+					() -> _parseDate(document.getDate("modifiedDate")));
+				setId(() -> document.getLong("instanceId"));
+				setProcessId(() -> document.getLong("processId"));
+				setSLAStatus(
+					() -> Instance.SLAStatus.create(
+						document.getString("slaStatus")));
 			}
 		};
 
@@ -935,14 +943,14 @@ public class InstanceResourceImpl extends BaseInstanceResourceImpl {
 					(String)task.get("taskName")));
 		}
 
-		instance.setAssignees(assignees.toArray(new Assignee[0]));
-		instance.setTaskNames(taskNames.toArray(new String[0]));
+		instance.setAssignees(() -> assignees.toArray(new Assignee[0]));
+		instance.setTaskNames(() -> taskNames.toArray(new String[0]));
 
 		if ((assignees.size() == 1) && (taskNames.size() == 1)) {
 			Assignee assignee = assignees.first();
 
 			if (Objects.equals(assignee.getId(), contextUser.getUserId())) {
-				instance.setTransitions(_toTransitions(instance));
+				instance.setTransitions(() -> _toTransitions(instance));
 			}
 		}
 	}
@@ -954,7 +962,7 @@ public class InstanceResourceImpl extends BaseInstanceResourceImpl {
 			return;
 		}
 
-		instance.setAssignees(assignees.toArray(new Assignee[0]));
+		instance.setAssignees(() -> assignees.toArray(new Assignee[0]));
 	}
 
 	private void _setSLAResults(Bucket bucket, Instance instance) {
@@ -969,7 +977,7 @@ public class InstanceResourceImpl extends BaseInstanceResourceImpl {
 		SearchHits searchHits = topHitsAggregationResult.getSearchHits();
 
 		instance.setSlaResults(
-			transformToArray(
+			() -> transformToArray(
 				searchHits.getSearchHits(),
 				searchHit -> SLAResultUtil.toSLAResult(
 					searchHit.getSourcesMap(),
@@ -1011,7 +1019,7 @@ public class InstanceResourceImpl extends BaseInstanceResourceImpl {
 
 		termsQuery.addValues(
 			transformToArray(
-				instancesMap.keySet(), String::valueOf, Object.class));
+				instancesMap.keySet(), String::valueOf, String.class));
 
 		filterBooleanQuery.addMustQueryClauses(
 			_queries.term("blocked", Boolean.FALSE),
@@ -1044,7 +1052,7 @@ public class InstanceResourceImpl extends BaseInstanceResourceImpl {
 			SearchHits searchHits = topHitsAggregationResult.getSearchHits();
 
 			instance.setSlaResults(
-				transformToArray(
+				() -> transformToArray(
 					searchHits.getSearchHits(),
 					searchHit -> SLAResultUtil.toSLAResult(
 						searchHit.getSourcesMap(),
@@ -1061,7 +1069,7 @@ public class InstanceResourceImpl extends BaseInstanceResourceImpl {
 			return;
 		}
 
-		instance.setTaskNames(taskNames.toArray(new String[0]));
+		instance.setTaskNames(() -> taskNames.toArray(new String[0]));
 	}
 
 	private void _setTransitions(Instance instance) {
@@ -1077,7 +1085,7 @@ public class InstanceResourceImpl extends BaseInstanceResourceImpl {
 			return;
 		}
 
-		instance.setTransitions(_toTransitions(instance));
+		instance.setTransitions(() -> _toTransitions(instance));
 	}
 
 	private Creator _toCreator(Long userId) {
@@ -1089,8 +1097,7 @@ public class InstanceResourceImpl extends BaseInstanceResourceImpl {
 
 		return new Creator() {
 			{
-				id = userId;
-
+				setId(() -> userId);
 				setName(
 					() -> {
 						if (user == null) {
@@ -1165,17 +1172,17 @@ public class InstanceResourceImpl extends BaseInstanceResourceImpl {
 	}
 
 	private Transition _toTransition(String name) {
-		Transition transition = new Transition();
-
-		transition.setLabel(
-			_language.get(
-				ResourceBundleUtil.getModuleAndPortalResourceBundle(
-					contextAcceptLanguage.getPreferredLocale(),
-					InstanceResourceImpl.class),
-				name));
-		transition.setName(name);
-
-		return transition;
+		return new Transition() {
+			{
+				setLabel(
+					() -> _language.get(
+						ResourceBundleUtil.getModuleAndPortalResourceBundle(
+							contextAcceptLanguage.getPreferredLocale(),
+							InstanceResourceImpl.class),
+						name));
+				setName(() -> name);
+			}
+		};
 	}
 
 	private Transition[] _toTransitions(Instance instance) {

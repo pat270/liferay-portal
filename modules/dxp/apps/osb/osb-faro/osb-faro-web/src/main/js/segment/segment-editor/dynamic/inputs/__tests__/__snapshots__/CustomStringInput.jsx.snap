@@ -25,6 +25,7 @@ exports[`CustomStringInput should render 1`] = `
       >
         <button
           aria-activedescendant="eq"
+          aria-controls="clay-id-2"
           aria-expanded="true"
           aria-haspopup="listbox"
           aria-owns="clay-id-2"
@@ -43,30 +44,39 @@ exports[`CustomStringInput should render 1`] = `
         data-aria-hidden="true"
       >
         <div
-          aria-haspopup="true"
-          class="input-group base-select-input-root select-input-root"
+          class="input-group select-input-root"
         >
           <div
             class="input-group-item"
           >
             <input
+              aria-autocomplete="list"
+              aria-controls="clay-id-3"
+              aria-labelledby="clay-autocomplete-label-1"
               autocomplete="off"
-              class="input-root form-control input-group-inset input-group-inset-after"
-              placeholder=""
+              autocorrect="off"
+              class="form-control input-group-inset input-group-inset-after"
+              id="clay-autocomplete-1"
+              role="combobox"
+              spellcheck="false"
               type="text"
               value=""
             />
             <div
+              aria-label="Loading"
+              aria-valuemax="100"
+              aria-valuemin="0"
               class="input-group-inset-item input-group-inset-item-after"
+              role="progressbar"
             >
-              <svg
-                class="lexicon-icon lexicon-icon-caret-bottom icon-root"
-                role="presentation"
+              <span
+                class="inline-item inline-item-middle"
               >
-                <use
-                  xlink:href="#caret-bottom"
+                <span
+                  aria-hidden="true"
+                  class="loading-animation loading-animation-sm"
                 />
-              </svg>
+              </span>
             </div>
           </div>
         </div>
@@ -101,9 +111,10 @@ exports[`CustomStringInput should render with data 1`] = `
       >
         <button
           aria-activedescendant="eq"
+          aria-controls="clay-id-6"
           aria-expanded="true"
           aria-haspopup="listbox"
-          aria-owns="clay-id-4"
+          aria-owns="clay-id-6"
           class="form-control form-control-select form-control-select-secondary show"
           role="combobox"
           style=""
@@ -119,30 +130,39 @@ exports[`CustomStringInput should render with data 1`] = `
         data-aria-hidden="true"
       >
         <div
-          aria-haspopup="true"
-          class="input-group base-select-input-root select-input-root"
+          class="input-group select-input-root"
         >
           <div
             class="input-group-item"
           >
             <input
+              aria-autocomplete="list"
+              aria-controls="clay-id-7"
+              aria-labelledby="clay-autocomplete-label-1"
               autocomplete="off"
-              class="input-root form-control input-group-inset input-group-inset-after"
-              placeholder=""
+              autocorrect="off"
+              class="form-control input-group-inset input-group-inset-after"
+              id="clay-autocomplete-1"
+              role="combobox"
+              spellcheck="false"
               type="text"
               value="123 West Road"
             />
             <div
+              aria-label="Loading"
+              aria-valuemax="100"
+              aria-valuemin="0"
               class="input-group-inset-item input-group-inset-item-after"
+              role="progressbar"
             >
-              <svg
-                class="lexicon-icon lexicon-icon-caret-bottom icon-root"
-                role="presentation"
+              <span
+                class="inline-item inline-item-middle"
               >
-                <use
-                  xlink:href="#caret-bottom"
+                <span
+                  aria-hidden="true"
+                  class="loading-animation loading-animation-sm"
                 />
-              </svg>
+              </span>
             </div>
           </div>
         </div>

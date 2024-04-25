@@ -119,8 +119,10 @@ renderResponse.setTitle(oAuth2Application.getName());
 					<%
 					Date expirationDate = oAuth2Authorization.getRefreshTokenExpirationDate();
 
-					if (expirationDate == null) {
-						expirationDate = oAuth2Authorization.getAccessTokenExpirationDate();
+					Date accessTokenExpirationDate = oAuth2Authorization.getAccessTokenExpirationDate();
+
+					if ((expirationDate == null) || expirationDate.before(accessTokenExpirationDate)) {
+						expirationDate = accessTokenExpirationDate;
 					}
 					%>
 
@@ -139,7 +141,7 @@ renderResponse.setTitle(oAuth2Application.getName());
 	</aui:form>
 </clay:container-fluid>
 
-<script>
+<aui:script>
 	var removeAccessButton = document.getElementById(
 		'<portlet:namespace />removeAccess'
 	);
@@ -157,4 +159,4 @@ renderResponse.setTitle(oAuth2Application.getName());
 			});
 		});
 	}
-</script>
+</aui:script>

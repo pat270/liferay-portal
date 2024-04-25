@@ -9,11 +9,13 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Address;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.service.permission.CommonPermissionUtil;
 import com.liferay.portal.service.base.AddressServiceBaseImpl;
+import com.liferay.portal.service.permission.CommonPermissionUtil;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Brian Wing Shun Chan
@@ -23,28 +25,49 @@ public class AddressServiceImpl extends AddressServiceBaseImpl {
 
 	@Override
 	public Address addAddress(
-			String className, long classPK, String street1, String street2,
+			String externalReferenceCode, String className, long classPK,
+			String name, String description, String street1, String street2,
 			String street3, String city, String zip, long regionId,
 			long countryId, long listTypeId, boolean mailing, boolean primary,
-			ServiceContext serviceContext)
+			String phoneNumber, ServiceContext serviceContext)
 		throws PortalException {
 
+		PermissionChecker permissionChecker = getPermissionChecker();
+
+		String actionId = ActionKeys.UPDATE;
+
+		if (Objects.equals(
+				className, "com.liferay.account.model.AccountEntry")) {
+
+			actionId = "MANAGE_ADDRESSES";
+		}
+
 		CommonPermissionUtil.check(
-			getPermissionChecker(), className, classPK, ActionKeys.UPDATE);
+			permissionChecker, className, classPK, actionId);
 
 		return addressLocalService.addAddress(
-			null, getUserId(), className, classPK, null, null, street1, street2,
-			street3, city, zip, regionId, countryId, listTypeId, mailing,
-			primary, null, serviceContext);
+			externalReferenceCode, permissionChecker.getUserId(), className,
+			classPK, name, description, street1, street2, street3, city, zip,
+			regionId, countryId, listTypeId, mailing, primary, phoneNumber,
+			serviceContext);
 	}
 
 	@Override
 	public void deleteAddress(long addressId) throws PortalException {
 		Address address = addressPersistence.findByPrimaryKey(addressId);
 
+		String actionId = ActionKeys.UPDATE;
+
+		if (Objects.equals(
+				address.getClassName(),
+				"com.liferay.account.model.AccountEntry")) {
+
+			actionId = "MANAGE_ADDRESSES";
+		}
+
 		CommonPermissionUtil.check(
 			getPermissionChecker(), address.getClassNameId(),
-			address.getClassPK(), ActionKeys.UPDATE);
+			address.getClassPK(), actionId);
 
 		addressLocalService.deleteAddress(address);
 	}
@@ -74,21 +97,45 @@ public class AddressServiceImpl extends AddressServiceBaseImpl {
 	}
 
 	@Override
+	public List<Address> getListTypeAddresses(
+			String className, long classPK, long[] listTypeIds)
+		throws PortalException {
+
+		CommonPermissionUtil.check(
+			getPermissionChecker(), className, classPK, ActionKeys.VIEW);
+
+		User user = getUser();
+
+		return addressLocalService.getListTypeAddresses(
+			user.getCompanyId(), className, classPK, listTypeIds);
+	}
+
+	@Override
 	public Address updateAddress(
-			long addressId, String street1, String street2, String street3,
-			String city, String zip, long regionId, long countryId,
-			long listTypeId, boolean mailing, boolean primary)
+			long addressId, String name, String description, String street1,
+			String street2, String street3, String city, String zip,
+			long regionId, long countryId, long listTypeId, boolean mailing,
+			boolean primary, String phoneNumber)
 		throws PortalException {
 
 		Address address = addressPersistence.findByPrimaryKey(addressId);
 
+		String actionId = ActionKeys.UPDATE;
+
+		if (Objects.equals(
+				address.getClassName(),
+				"com.liferay.account.model.AccountEntry")) {
+
+			actionId = "MANAGE_ADDRESSES";
+		}
+
 		CommonPermissionUtil.check(
 			getPermissionChecker(), address.getClassNameId(),
-			address.getClassPK(), ActionKeys.UPDATE);
+			address.getClassPK(), actionId);
 
 		return addressLocalService.updateAddress(
-			addressId, street1, street2, street3, city, zip, regionId,
-			countryId, listTypeId, mailing, primary);
+			addressId, name, description, street1, street2, street3, city, zip,
+			regionId, countryId, listTypeId, mailing, primary, phoneNumber);
 	}
 
 }

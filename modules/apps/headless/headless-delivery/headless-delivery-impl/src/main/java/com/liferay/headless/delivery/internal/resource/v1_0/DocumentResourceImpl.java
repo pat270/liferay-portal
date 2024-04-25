@@ -7,13 +7,13 @@ package com.liferay.headless.delivery.internal.resource.v1_0;
 
 import com.liferay.asset.kernel.service.AssetCategoryLocalService;
 import com.liferay.asset.kernel.service.AssetTagLocalService;
+import com.liferay.depot.group.provider.SiteConnectedGroupGroupProvider;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFileEntryType;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.document.library.kernel.service.DLAppService;
-import com.liferay.document.library.kernel.service.DLFileEntryLocalService;
 import com.liferay.document.library.kernel.service.DLFileEntryService;
 import com.liferay.document.library.kernel.service.DLFileEntryTypeLocalService;
 import com.liferay.document.library.util.DLFileEntryTypeUtil;
@@ -27,7 +27,7 @@ import com.liferay.expando.kernel.service.ExpandoColumnLocalService;
 import com.liferay.expando.kernel.service.ExpandoTableLocalService;
 import com.liferay.headless.common.spi.odata.entity.EntityFieldsUtil;
 import com.liferay.headless.common.spi.resource.SPIRatingResource;
-import com.liferay.headless.common.spi.service.context.ServiceContextRequestUtil;
+import com.liferay.headless.common.spi.service.context.ServiceContextBuilder;
 import com.liferay.headless.delivery.dto.v1_0.ContentField;
 import com.liferay.headless.delivery.dto.v1_0.CustomField;
 import com.liferay.headless.delivery.dto.v1_0.Document;
@@ -397,6 +397,7 @@ public class DocumentResourceImpl extends BaseDocumentResourceImpl {
 				documentId, fileName, binaryFile.getContentType(), title, null,
 				description, null, DLVersionNumberIncrease.AUTOMATIC,
 				binaryFile.getInputStream(), binaryFile.getSize(),
+				existingFileEntry.getDisplayDate(),
 				existingFileEntry.getExpirationDate(),
 				existingFileEntry.getReviewDate(),
 				_createServiceContext(
@@ -564,6 +565,7 @@ public class DocumentResourceImpl extends BaseDocumentResourceImpl {
 				externalReferenceCode, repositoryId, documentFolderId, fileName,
 				binaryFile.getContentType(), title, null, description, null,
 				binaryFile.getInputStream(), binaryFile.getSize(), null, null,
+				null,
 				_createServiceContext(
 					Constants.ADD, () -> new Long[0], () -> new String[0],
 					documentFolderId, document, groupId)));
@@ -623,13 +625,17 @@ public class DocumentResourceImpl extends BaseDocumentResourceImpl {
 			viewableBy = Document.ViewableBy.OWNER.getValue();
 		}
 
-		ServiceContext serviceContext =
-			ServiceContextRequestUtil.createServiceContext(
-				assetCategoryIds, assetTagNames,
-				CustomFieldsUtil.toMap(
-					DLFileEntry.class.getName(), contextCompany.getCompanyId(),
-					customFields, contextAcceptLanguage.getPreferredLocale()),
-				groupId, contextHttpServletRequest, viewableBy);
+		ServiceContext serviceContext = ServiceContextBuilder.create(
+			groupId, contextHttpServletRequest, viewableBy
+		).assetCategoryIds(
+			assetCategoryIds
+		).assetTagNames(
+			assetTagNames
+		).expandoBridgeAttributes(
+			CustomFieldsUtil.toMap(
+				DLFileEntry.class.getName(), contextCompany.getCompanyId(),
+				customFields, contextAcceptLanguage.getPreferredLocale())
+		).build();
 
 		serviceContext.setCommand(command);
 		serviceContext.setCompanyId(contextCompany.getCompanyId());
@@ -729,7 +735,9 @@ public class DocumentResourceImpl extends BaseDocumentResourceImpl {
 		try {
 			for (DLFileEntryType dlFileEntryType :
 					_dlFileEntryTypeLocalService.getFolderFileEntryTypes(
-						new long[] {groupId}, documentFolderId, true)) {
+						_siteConnectedGroupGroupProvider.
+							getAncestorSiteAndDepotGroupIds(groupId, true),
+						documentFolderId, true)) {
 
 				if (name.equals(
 						dlFileEntryType.getName(
@@ -975,8 +983,8 @@ public class DocumentResourceImpl extends BaseDocumentResourceImpl {
 				fileEntry.getFileEntryId(), fileName,
 				binaryFile.getContentType(), title, null, description, null,
 				DLVersionNumberIncrease.AUTOMATIC, binaryFile.getInputStream(),
-				binaryFile.getSize(), fileEntry.getExpirationDate(),
-				fileEntry.getReviewDate(),
+				binaryFile.getSize(), fileEntry.getDisplayDate(),
+				fileEntry.getExpirationDate(), fileEntry.getReviewDate(),
 				_createServiceContext(
 					Constants.UPDATE, () -> new Long[0], () -> new String[0],
 					fileEntry.getFolderId(), document,
@@ -1009,9 +1017,6 @@ public class DocumentResourceImpl extends BaseDocumentResourceImpl {
 
 	@Reference
 	private DLAppService _dlAppService;
-
-	@Reference
-	private DLFileEntryLocalService _dlFileEntryLocalService;
 
 	@Reference
 	private DLFileEntryService _dlFileEntryService;
@@ -1068,6 +1073,9 @@ public class DocumentResourceImpl extends BaseDocumentResourceImpl {
 
 	@Reference
 	private SearchRequestBuilderFactory _searchRequestBuilderFactory;
+
+	@Reference
+	private SiteConnectedGroupGroupProvider _siteConnectedGroupGroupProvider;
 
 	@Reference
 	private Sorts _sorts;

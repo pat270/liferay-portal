@@ -24,9 +24,8 @@ describe('DatePicker', () => {
 		render(<DatePicker label="Date picker" />);
 
 		const allByText = screen.getAllByText('Date picker');
-		expect(allByText).toHaveLength(2);
+		expect(allByText).toHaveLength(1);
 		expect(allByText[0]).toBeInTheDocument();
-		expect(allByText[1]).toBeInTheDocument();
 	});
 
 	it('renders the predefined value', () => {
@@ -38,7 +37,7 @@ describe('DatePicker', () => {
 	it('expands the datepicker on calendar icon click', () => {
 		render(<DatePicker />);
 
-		const [button] = screen.getAllByLabelText('Choose date');
+		const [button] = screen.getAllByLabelText('select-date');
 
 		userEvent.click(button);
 
@@ -50,10 +49,10 @@ describe('DatePicker', () => {
 	it('fills the input with the date selected on Date Picker', () => {
 		const {getByLabelText} = render(<DatePicker onChange={() => {}} />);
 
-		const [button] = screen.getAllByLabelText('Choose date');
+		const [button] = screen.getAllByLabelText('select-date');
 
 		userEvent.click(button);
-		fireEvent.click(getByLabelText('Select current date'));
+		fireEvent.click(getByLabelText('select-current-date'));
 
 		expect(screen.getByRole('textbox', {hidden: true})).toHaveValue(
 			moment().format('MM/DD/YYYY')
@@ -65,10 +64,10 @@ describe('DatePicker', () => {
 
 		render(<DatePicker onChange={onChange} />);
 
-		const [button] = screen.getAllByLabelText('Choose date');
+		const [button] = screen.getAllByLabelText('select-date');
 
 		userEvent.click(button);
-		fireEvent.click(screen.getByLabelText('Select current date'));
+		fireEvent.click(screen.getByLabelText('select-current-date'));
 
 		expect(onChange).toHaveBeenCalledWith(
 			{},
@@ -79,10 +78,10 @@ describe('DatePicker', () => {
 	it('fills the input date according to the locale', () => {
 		render(<DatePicker locale="ja_JP" onChange={() => {}} />);
 
-		const [button] = screen.getAllByLabelText('Choose date');
+		const [button] = screen.getAllByLabelText('select-date');
 
 		userEvent.click(button);
-		fireEvent.click(screen.getByLabelText('Select current date'));
+		fireEvent.click(screen.getByLabelText('select-current-date'));
 
 		expect(screen.getByRole('textbox', {hidden: true})).toHaveValue(
 			moment().format('YYYY/MM/DD')

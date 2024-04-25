@@ -1,5 +1,6 @@
 {
 	"pageElement": {
+		"id": "item1",
 		"pageElements": [
 			{
 				"definition": {
@@ -37,20 +38,10 @@
 					},
 					"indexed": true,
 					"layout": {
-						"borderWidth": 0,
-						"marginBottom": 0,
-						"marginLeft": 0,
-						"marginRight": 0,
-						"marginTop": 0,
-						"opacity": 100,
-						"paddingBottom": 0,
-						"paddingLeft": 0,
-						"paddingRight": 0,
-						"paddingTop": 0,
-						"shadow": "None",
-						"widthType": "Fluid"
+						"shadow": "None"
 					}
 				},
+				"id": "item2",
 				"type": "Section"
 			}
 		],

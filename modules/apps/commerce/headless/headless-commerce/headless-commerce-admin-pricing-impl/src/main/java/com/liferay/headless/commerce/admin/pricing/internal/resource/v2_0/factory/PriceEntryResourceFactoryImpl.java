@@ -72,7 +72,12 @@ public class PriceEntryResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _priceEntryResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, PriceEntryResource>
+					priceEntryResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_priceEntryResourceProxyProviderFunction;
+
+				return priceEntryResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -229,9 +234,6 @@ public class PriceEntryResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, PriceEntryResource>
-		_priceEntryResourceProxyProviderFunction = _getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -267,6 +269,14 @@ public class PriceEntryResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, PriceEntryResource>
+			_priceEntryResourceProxyProviderFunction =
+				_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

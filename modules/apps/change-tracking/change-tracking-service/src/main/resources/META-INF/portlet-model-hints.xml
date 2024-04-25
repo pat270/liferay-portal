@@ -23,12 +23,15 @@
 		<field name="userId" type="long" />
 		<field name="createDate" type="Date" />
 		<field name="modifiedDate" type="Date" />
+		<field name="ctRemoteId" type="long" />
 		<field name="schemaVersionId" type="long" />
 		<field name="name" type="String" />
 		<field name="description" type="String">
 			<hint-collection name="TEXTAREA" />
 			<hint name="max-length">200</hint>
 		</field>
+		<field name="onDemandUserId" type="long" />
+		<field name="shareable" type="boolean" />
 		<field name="status" type="int" />
 		<field name="statusByUserId" type="long" />
 		<field name="statusDate" type="Date" />
@@ -41,7 +44,10 @@
 		<field name="createDate" type="Date" />
 		<field name="modifiedDate" type="Date" />
 		<field name="name" type="String" />
-		<field name="description" type="String" />
+		<field name="description" type="String">
+			<hint-collection name="TEXTAREA" />
+			<hint name="max-length">200</hint>
+		</field>
 	</model>
 	<model name="com.liferay.change.tracking.model.CTComment">
 		<field name="mvccVersion" type="long" />
@@ -58,6 +64,8 @@
 	</model>
 	<model name="com.liferay.change.tracking.model.CTEntry">
 		<field name="mvccVersion" type="long" />
+		<field name="uuid" type="String" />
+		<field name="externalReferenceCode" type="String" />
 		<field name="ctEntryId" type="long" />
 		<field name="companyId" type="long" />
 		<field name="userId" type="long" />
@@ -107,6 +115,8 @@
 		<field name="name" type="String" />
 		<field name="description" type="String" />
 		<field name="url" type="String" />
+		<field name="clientId" type="String" />
+		<field name="clientSecret" type="String" />
 	</model>
 	<model name="com.liferay.change.tracking.model.CTSchemaVersion">
 		<field name="mvccVersion" type="long" />

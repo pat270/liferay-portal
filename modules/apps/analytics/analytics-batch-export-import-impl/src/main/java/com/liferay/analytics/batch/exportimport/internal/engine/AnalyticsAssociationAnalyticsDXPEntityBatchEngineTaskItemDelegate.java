@@ -16,15 +16,10 @@ import com.liferay.batch.engine.pagination.Page;
 import com.liferay.batch.engine.pagination.Pagination;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.search.Query;
 import com.liferay.portal.kernel.search.Sort;
-import com.liferay.portal.kernel.search.TermRangeQuery;
 import com.liferay.portal.kernel.search.filter.Filter;
-import com.liferay.portal.kernel.search.filter.QueryFilter;
 import com.liferay.portal.kernel.service.UserLocalService;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 
@@ -65,7 +60,7 @@ public class AnalyticsAssociationAnalyticsDXPEntityBatchEngineTaskItemDelegate
 		List<AnalyticsAssociation> analyticsAssociations = null;
 		int totalCount = 0;
 
-		Date modifiedDate = _getModifiedDate(filter);
+		Date modifiedDate = _getModifiedDate(parameters);
 
 		if (modifiedDate != null) {
 			analyticsAssociations =
@@ -97,8 +92,14 @@ public class AnalyticsAssociationAnalyticsDXPEntityBatchEngineTaskItemDelegate
 		for (AnalyticsAssociation analyticsAssociation :
 				analyticsAssociations) {
 
-			User user = _userLocalService.getUser(
+			User user = _userLocalService.fetchUser(
 				analyticsAssociation.getAssociationClassPK());
+
+			if (user == null) {
+				totalCount--;
+
+				continue;
+			}
 
 			user.setModifiedDate(analyticsAssociation.getModifiedDate());
 
@@ -108,28 +109,15 @@ public class AnalyticsAssociationAnalyticsDXPEntityBatchEngineTaskItemDelegate
 		return Page.of(dxpEntities, pagination, totalCount);
 	}
 
-	private Date _getModifiedDate(Filter filter) {
-		if (!(filter instanceof QueryFilter)) {
-			return null;
+	private Date _getModifiedDate(Map<String, Serializable> parameters) {
+		Serializable resourceLastModifiedDate = parameters.get(
+			"resourceLastModifiedDate");
+
+		if (resourceLastModifiedDate != null) {
+			return (Date)resourceLastModifiedDate;
 		}
 
-		QueryFilter queryFilter = (QueryFilter)filter;
-
-		Query query = queryFilter.getQuery();
-
-		if (!(query instanceof TermRangeQuery)) {
-			return null;
-		}
-
-		TermRangeQuery termRangeQuery = (TermRangeQuery)query;
-
-		if (!StringUtil.startsWith(termRangeQuery.getField(), "modified")) {
-			return null;
-		}
-
-		String lowerTerm = termRangeQuery.getLowerTerm();
-
-		return new Date(GetterUtil.getLong(lowerTerm));
+		return null;
 	}
 
 	private static final EntityModel _entityModel =

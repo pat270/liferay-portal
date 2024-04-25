@@ -16,6 +16,8 @@ import com.liferay.info.localized.InfoLocalizedValue;
 import com.liferay.info.localized.bundle.ModelResourceLocalizedValue;
 import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.knowledge.base.web.internal.info.item.KBArticleInfoItemFields;
+import com.liferay.layout.page.template.info.item.provider.DisplayPageInfoItemFieldSetProvider;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.template.info.item.provider.TemplateInfoItemFieldSetProvider;
 
@@ -37,7 +39,10 @@ public class KBArticleInfoItemFormProvider
 	public InfoForm getInfoForm() {
 		return _getInfoForm(
 			_assetEntryInfoItemFieldSetProvider.getInfoFieldSet(
-				KBArticle.class.getName()));
+				KBArticle.class.getName()),
+			_displayPageInfoItemFieldSetProvider.getInfoFieldSet(
+				KBArticle.class.getName(), StringPool.BLANK,
+				KBArticle.class.getSimpleName(), 0));
 	}
 
 	@Override
@@ -47,7 +52,10 @@ public class KBArticleInfoItemFormProvider
 				_assetEntryInfoItemFieldSetProvider.getInfoFieldSet(
 					_assetEntryLocalService.getEntry(
 						KBArticle.class.getName(),
-						kbArticle.getResourcePrimKey())));
+						kbArticle.getResourcePrimKey())),
+				_displayPageInfoItemFieldSetProvider.getInfoFieldSet(
+					KBArticle.class.getName(), StringPool.BLANK,
+					KBArticle.class.getSimpleName(), 0));
 		}
 		catch (PortalException portalException) {
 			throw new RuntimeException(
@@ -61,7 +69,10 @@ public class KBArticleInfoItemFormProvider
 	public InfoForm getInfoForm(String formVariationKey, long groupId) {
 		return _getInfoForm(
 			_assetEntryInfoItemFieldSetProvider.getInfoFieldSet(
-				KBArticle.class.getName(), 0, groupId));
+				KBArticle.class.getName(), 0, groupId),
+			_displayPageInfoItemFieldSetProvider.getInfoFieldSet(
+				KBArticle.class.getName(), StringPool.BLANK,
+				KBArticle.class.getSimpleName(), groupId));
 	}
 
 	private InfoFieldSet _getBasicInformationInfoFieldSet() {
@@ -101,7 +112,10 @@ public class KBArticleInfoItemFormProvider
 		).build();
 	}
 
-	private InfoForm _getInfoForm(InfoFieldSet assetEntryInfoFieldSet) {
+	private InfoForm _getInfoForm(
+		InfoFieldSet assetEntryInfoFieldSet,
+		InfoFieldSet displayPageInfoFieldSet) {
+
 		return InfoForm.builder(
 		).infoFieldSetEntry(
 			_getBasicInformationInfoFieldSet()
@@ -115,6 +129,8 @@ public class KBArticleInfoItemFormProvider
 				KBArticle.class.getName())
 		).infoFieldSetEntry(
 			_getConfigurationInfoFieldSet()
+		).infoFieldSetEntry(
+			displayPageInfoFieldSet
 		).infoFieldSetEntry(
 			assetEntryInfoFieldSet
 		).infoFieldSetEntry(
@@ -133,6 +149,10 @@ public class KBArticleInfoItemFormProvider
 
 	@Reference
 	private AssetEntryLocalService _assetEntryLocalService;
+
+	@Reference
+	private DisplayPageInfoItemFieldSetProvider
+		_displayPageInfoItemFieldSetProvider;
 
 	@Reference
 	private ExpandoInfoItemFieldSetProvider _expandoInfoItemFieldSetProvider;

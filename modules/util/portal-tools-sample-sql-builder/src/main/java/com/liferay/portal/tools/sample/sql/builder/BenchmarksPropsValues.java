@@ -8,7 +8,6 @@ package com.liferay.portal.tools.sample.sql.builder;
 import com.liferay.portal.kernel.dao.db.DBType;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.kernel.util.Validator;
 
 import java.io.FileReader;
 import java.io.Reader;
@@ -212,8 +211,11 @@ public class BenchmarksPropsValues {
 	public static final int MAX_SEGMENTS_ENTRY_COUNT = GetterUtil.getInteger(
 		PropertiesHolder._get(BenchmarksPropsKeys.MAX_SEGMENTS_ENTRY_COUNT));
 
-	public static final int MAX_USER_COUNT = GetterUtil.getInteger(
-		PropertiesHolder._get(BenchmarksPropsKeys.MAX_USER_COUNT));
+	public static final int MAX_SEGMENTS_ENTRY_SEGMENTS_EXPERIENCE_COUNT =
+		GetterUtil.getInteger(
+			PropertiesHolder._get(
+				BenchmarksPropsKeys.
+					MAX_SEGMENTS_ENTRY_SEGMENTS_EXPERIENCE_COUNT));
 
 	public static final int MAX_USER_TO_GROUP_COUNT = GetterUtil.getInteger(
 		PropertiesHolder._get(BenchmarksPropsKeys.MAX_USER_TO_GROUP_COUNT));
@@ -261,19 +263,7 @@ public class BenchmarksPropsValues {
 
 				properties.load(reader);
 
-				String timeZoneId = properties.getProperty(
-					"sample.sql.db.time.zone");
-
-				if (Validator.isNull(timeZoneId)) {
-					TimeZone timeZone = TimeZone.getDefault();
-
-					properties.setProperty(
-						"sample.sql.db.time.zone", timeZone.getID());
-				}
-				else {
-					TimeZone.setDefault(
-						TimeZone.getTimeZone(ZoneId.of(timeZoneId)));
-				}
+				TimeZone.setDefault(TimeZone.getTimeZone(ZoneId.of("GMT")));
 			}
 			catch (Exception exception) {
 				throw new ExceptionInInitializerError(exception);

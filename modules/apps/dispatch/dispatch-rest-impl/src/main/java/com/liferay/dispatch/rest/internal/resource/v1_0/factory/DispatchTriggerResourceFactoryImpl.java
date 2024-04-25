@@ -72,7 +72,12 @@ public class DispatchTriggerResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _dispatchTriggerResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, DispatchTriggerResource>
+					dispatchTriggerResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_dispatchTriggerResourceProxyProviderFunction;
+
+				return dispatchTriggerResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -231,10 +236,6 @@ public class DispatchTriggerResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, DispatchTriggerResource>
-		_dispatchTriggerResourceProxyProviderFunction =
-			_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -270,6 +271,15 @@ public class DispatchTriggerResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function
+			<InvocationHandler, DispatchTriggerResource>
+				_dispatchTriggerResourceProxyProviderFunction =
+					_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

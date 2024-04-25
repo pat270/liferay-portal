@@ -34,7 +34,6 @@ import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiServic
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
-import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.service.persistence.BasePersistence;
@@ -486,35 +485,35 @@ public abstract class UserLocalServiceBaseImpl
 	/**
 	 */
 	@Override
-	public void addGroupUser(long groupId, long userId) {
-		groupPersistence.addUser(groupId, userId);
+	public boolean addGroupUser(long groupId, long userId) {
+		return groupPersistence.addUser(groupId, userId);
 	}
 
 	/**
 	 */
 	@Override
-	public void addGroupUser(long groupId, User user) {
-		groupPersistence.addUser(groupId, user);
-	}
-
-	/**
-	 * @throws PortalException
-	 */
-	@Override
-	public void addGroupUsers(long groupId, long[] userIds)
-		throws PortalException {
-
-		groupPersistence.addUsers(groupId, userIds);
+	public boolean addGroupUser(long groupId, User user) {
+		return groupPersistence.addUser(groupId, user);
 	}
 
 	/**
 	 * @throws PortalException
 	 */
 	@Override
-	public void addGroupUsers(long groupId, List<User> users)
+	public boolean addGroupUsers(long groupId, long[] userIds)
 		throws PortalException {
 
-		groupPersistence.addUsers(groupId, users);
+		return groupPersistence.addUsers(groupId, userIds);
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public boolean addGroupUsers(long groupId, List<User> users)
+		throws PortalException {
+
+		return groupPersistence.addUsers(groupId, users);
 	}
 
 	/**
@@ -622,35 +621,35 @@ public abstract class UserLocalServiceBaseImpl
 	/**
 	 */
 	@Override
-	public void addOrganizationUser(long organizationId, long userId) {
-		organizationPersistence.addUser(organizationId, userId);
+	public boolean addOrganizationUser(long organizationId, long userId) {
+		return organizationPersistence.addUser(organizationId, userId);
 	}
 
 	/**
 	 */
 	@Override
-	public void addOrganizationUser(long organizationId, User user) {
-		organizationPersistence.addUser(organizationId, user);
-	}
-
-	/**
-	 * @throws PortalException
-	 */
-	@Override
-	public void addOrganizationUsers(long organizationId, long[] userIds)
-		throws PortalException {
-
-		organizationPersistence.addUsers(organizationId, userIds);
+	public boolean addOrganizationUser(long organizationId, User user) {
+		return organizationPersistence.addUser(organizationId, user);
 	}
 
 	/**
 	 * @throws PortalException
 	 */
 	@Override
-	public void addOrganizationUsers(long organizationId, List<User> users)
+	public boolean addOrganizationUsers(long organizationId, long[] userIds)
 		throws PortalException {
 
-		organizationPersistence.addUsers(organizationId, users);
+		return organizationPersistence.addUsers(organizationId, userIds);
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public boolean addOrganizationUsers(long organizationId, List<User> users)
+		throws PortalException {
+
+		return organizationPersistence.addUsers(organizationId, users);
 	}
 
 	/**
@@ -759,35 +758,35 @@ public abstract class UserLocalServiceBaseImpl
 	/**
 	 */
 	@Override
-	public void addRoleUser(long roleId, long userId) {
-		rolePersistence.addUser(roleId, userId);
+	public boolean addRoleUser(long roleId, long userId) {
+		return rolePersistence.addUser(roleId, userId);
 	}
 
 	/**
 	 */
 	@Override
-	public void addRoleUser(long roleId, User user) {
-		rolePersistence.addUser(roleId, user);
-	}
-
-	/**
-	 * @throws PortalException
-	 */
-	@Override
-	public void addRoleUsers(long roleId, long[] userIds)
-		throws PortalException {
-
-		rolePersistence.addUsers(roleId, userIds);
+	public boolean addRoleUser(long roleId, User user) {
+		return rolePersistence.addUser(roleId, user);
 	}
 
 	/**
 	 * @throws PortalException
 	 */
 	@Override
-	public void addRoleUsers(long roleId, List<User> users)
+	public boolean addRoleUsers(long roleId, long[] userIds)
 		throws PortalException {
 
-		rolePersistence.addUsers(roleId, users);
+		return rolePersistence.addUsers(roleId, userIds);
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public boolean addRoleUsers(long roleId, List<User> users)
+		throws PortalException {
+
+		return rolePersistence.addUsers(roleId, users);
 	}
 
 	/**
@@ -898,35 +897,35 @@ public abstract class UserLocalServiceBaseImpl
 	/**
 	 */
 	@Override
-	public void addTeamUser(long teamId, long userId) {
-		teamPersistence.addUser(teamId, userId);
+	public boolean addTeamUser(long teamId, long userId) {
+		return teamPersistence.addUser(teamId, userId);
 	}
 
 	/**
 	 */
 	@Override
-	public void addTeamUser(long teamId, User user) {
-		teamPersistence.addUser(teamId, user);
-	}
-
-	/**
-	 * @throws PortalException
-	 */
-	@Override
-	public void addTeamUsers(long teamId, long[] userIds)
-		throws PortalException {
-
-		teamPersistence.addUsers(teamId, userIds);
+	public boolean addTeamUser(long teamId, User user) {
+		return teamPersistence.addUser(teamId, user);
 	}
 
 	/**
 	 * @throws PortalException
 	 */
 	@Override
-	public void addTeamUsers(long teamId, List<User> users)
+	public boolean addTeamUsers(long teamId, long[] userIds)
 		throws PortalException {
 
-		teamPersistence.addUsers(teamId, users);
+		return teamPersistence.addUsers(teamId, userIds);
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public boolean addTeamUsers(long teamId, List<User> users)
+		throws PortalException {
+
+		return teamPersistence.addUsers(teamId, users);
 	}
 
 	/**
@@ -1030,35 +1029,35 @@ public abstract class UserLocalServiceBaseImpl
 	/**
 	 */
 	@Override
-	public void addUserGroupUser(long userGroupId, long userId) {
-		userGroupPersistence.addUser(userGroupId, userId);
+	public boolean addUserGroupUser(long userGroupId, long userId) {
+		return userGroupPersistence.addUser(userGroupId, userId);
 	}
 
 	/**
 	 */
 	@Override
-	public void addUserGroupUser(long userGroupId, User user) {
-		userGroupPersistence.addUser(userGroupId, user);
-	}
-
-	/**
-	 * @throws PortalException
-	 */
-	@Override
-	public void addUserGroupUsers(long userGroupId, long[] userIds)
-		throws PortalException {
-
-		userGroupPersistence.addUsers(userGroupId, userIds);
+	public boolean addUserGroupUser(long userGroupId, User user) {
+		return userGroupPersistence.addUser(userGroupId, user);
 	}
 
 	/**
 	 * @throws PortalException
 	 */
 	@Override
-	public void addUserGroupUsers(long userGroupId, List<User> users)
+	public boolean addUserGroupUsers(long userGroupId, long[] userIds)
 		throws PortalException {
 
-		userGroupPersistence.addUsers(userGroupId, users);
+		return userGroupPersistence.addUsers(userGroupId, userIds);
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public boolean addUserGroupUsers(long userGroupId, List<User> users)
+		throws PortalException {
+
+		return userGroupPersistence.addUsers(userGroupId, users);
 	}
 
 	/**
@@ -1247,16 +1246,10 @@ public abstract class UserLocalServiceBaseImpl
 	}
 
 	public void afterPropertiesSet() {
-		persistedModelLocalServiceRegistry.register(
-			"com.liferay.portal.kernel.model.User", userLocalService);
-
 		UserLocalServiceUtil.setService(userLocalService);
 	}
 
 	public void destroy() {
-		persistedModelLocalServiceRegistry.unregister(
-			"com.liferay.portal.kernel.model.User");
-
 		UserLocalServiceUtil.setService(null);
 	}
 
@@ -1348,9 +1341,5 @@ public abstract class UserLocalServiceBaseImpl
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		UserLocalServiceBaseImpl.class);
-
-	@BeanReference(type = PersistedModelLocalServiceRegistry.class)
-	protected PersistedModelLocalServiceRegistry
-		persistedModelLocalServiceRegistry;
 
 }

@@ -1,5 +1,8 @@
 apply plugin: "com.liferay.maven.plugin.builder"
 
+sourceCompatibility = "1.8"
+targetCompatibility = "1.8"
+
 buildPluginDescriptor {
 	ext {
 		autoClean = false
@@ -14,24 +17,28 @@ configurations {
 	mavenDistribution
 }
 
+copyCSS {
+	mustRunAfter buildPluginDescriptor
+}
+
 dependencies {
-	compile group: "com.google.template", name: "soy", version: "2015-04-10"
-	compile group: "org.codehaus.plexus", name: "plexus-utils", transitive: false, version: "3.0.15"
-	compile group: "org.sonatype.plexus", name: "plexus-build-api", transitive: false, version: "0.0.7"
+	api group: "com.google.template", name: "soy", version: "2019-03-07"
+	api group: "org.codehaus.plexus", name: "plexus-utils", transitive: false, version: "3.0.24"
+	api group: "org.sonatype.plexus", name: "plexus-build-api", transitive: false, version: "0.0.7"
 
 	compileInclude group: "com.beust", name: "jcommander", version: "1.48"
 	compileInclude group: "com.liferay", name: "com.liferay.petra.lang", version: "5.0.0"
 	compileInclude group: "com.liferay", name: "com.liferay.petra.string", version: "5.0.0"
 
 	compileOnly group: "org.apache.ant", name: "ant", transitive: false, version: "1.10.11"
-	compileOnly group: "org.apache.maven", name: "maven-artifact", version: "3.2.5"
-	compileOnly group: "org.apache.maven", name: "maven-core", version: "3.2.5"
-	compileOnly group: "org.apache.maven", name: "maven-plugin-api", transitive: false, version: "3.0.4"
+	compileOnly group: "org.apache.maven", name: "maven-artifact", version: "3.8.1"
+	compileOnly group: "org.apache.maven", name: "maven-core", version: "3.8.1"
+	compileOnly group: "org.apache.maven", name: "maven-plugin-api", transitive: false, version: "3.8.1"
 
 	mavenDistribution classifier: "bin", ext: "zip", group: "org.apache.maven", name: "apache-maven", version: "3.3.9"
 
-	testCompile group: "com.liferay", name: "com.liferay.maven.executor", version: "1.0.2"
-	testCompile group: "org.apache.ant", name: "ant-testutil", version: "1.9.7"
+	testImplementation group: "com.liferay", name: "com.liferay.maven.executor", version: "1.0.2"
+	testImplementation group: "org.apache.ant", name: "ant-testutil", version: "1.9.7"
 }
 
 liferayOSGi {
@@ -39,7 +46,7 @@ liferayOSGi {
 }
 
 test {
-	dependsOn install
+	dependsOn publishToMavenLocal
 
 	doFirst {
 		systemProperty "maven.distribution.file.name", configurations.mavenDistribution.singleFile
@@ -50,5 +57,5 @@ test {
 	systemProperty "maven.debug", System.properties["maven.debug"]
 	systemProperty "maven.repo.local", System.properties["maven.repo.local"]
 	systemProperty "repository.url", System.properties["repository.url"]
-	systemProperty "soy.builder.version", jar.version
+	systemProperty "soy.builder.version", jar.archiveVersion
 }

@@ -5,6 +5,7 @@
 
 package com.liferay.portal.search.tuning.rankings.web.internal.display.context;
 
+import com.liferay.portal.search.tuning.rankings.constants.ResultRankingsConstants;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 
 import org.junit.Assert;
@@ -27,16 +28,23 @@ public class RankingEntryDisplayContextTest {
 		_rankingEntryDisplayContext = new RankingEntryDisplayContext();
 
 		_rankingEntryDisplayContext.setAliases("aliases");
+		_rankingEntryDisplayContext.setGroupExternalReferenceCode(
+			"groupExternalReferenceCode");
 		_rankingEntryDisplayContext.setHiddenResultsCount("hiddenResultsCount");
-		_rankingEntryDisplayContext.setInactive(false);
 		_rankingEntryDisplayContext.setIndex("index");
 		_rankingEntryDisplayContext.setKeywords("keywords");
 		_rankingEntryDisplayContext.setPinnedResultsCount("pinnedResultsCount");
+		_rankingEntryDisplayContext.setStatus(
+			ResultRankingsConstants.STATUS_ACTIVE);
+		_rankingEntryDisplayContext.setSXPBlueprintExternalReferenceCode(
+			"sxpBlueprintExternalReferenceCode");
 		_rankingEntryDisplayContext.setUid("uid");
 
 		Assert.assertEquals(
 			"aliases", _rankingEntryDisplayContext.getAliases());
-		Assert.assertFalse(_rankingEntryDisplayContext.getInactive());
+		Assert.assertEquals(
+			"groupExternalReferenceCode",
+			_rankingEntryDisplayContext.getGroupExternalReferenceCode());
 		Assert.assertEquals(
 			"hiddenResultsCount",
 			_rankingEntryDisplayContext.getHiddenResultsCount());
@@ -46,6 +54,12 @@ public class RankingEntryDisplayContextTest {
 		Assert.assertEquals(
 			"pinnedResultsCount",
 			_rankingEntryDisplayContext.getPinnedResultsCount());
+		Assert.assertEquals(
+			ResultRankingsConstants.STATUS_ACTIVE,
+			_rankingEntryDisplayContext.getStatus());
+		Assert.assertEquals(
+			"sxpBlueprintExternalReferenceCode",
+			_rankingEntryDisplayContext.getSXPBlueprintExternalReferenceCode());
 		Assert.assertEquals("uid", _rankingEntryDisplayContext.getUid());
 	}
 

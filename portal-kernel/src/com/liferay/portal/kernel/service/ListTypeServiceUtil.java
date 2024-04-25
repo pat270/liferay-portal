@@ -33,12 +33,18 @@ public class ListTypeServiceUtil {
 		return getService().getListType(listTypeId);
 	}
 
-	public static ListType getListType(String name, String type) {
-		return getService().getListType(name, type);
+	public static ListType getListType(
+		long companyId, String name, String type) {
+
+		return getService().getListType(companyId, name, type);
 	}
 
-	public static List<ListType> getListTypes(String type) {
-		return getService().getListTypes(type);
+	public static long getListTypeId(long companyId, String name, String type) {
+		return getService().getListTypeId(companyId, name, type);
+	}
+
+	public static List<ListType> getListTypes(long companyId, String type) {
+		return getService().getListTypes(companyId, type);
 	}
 
 	/**

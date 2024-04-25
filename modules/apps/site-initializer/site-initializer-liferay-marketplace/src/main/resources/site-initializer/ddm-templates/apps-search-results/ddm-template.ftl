@@ -1,53 +1,80 @@
 <style type="text/css">
-	.adt-apps-search-results .cards-container {
-		display: grid;
-		grid-column-gap: 1rem;
-		grid-row-gap: 1.5rem;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-	}
-
 	.adt-apps-search-results .app-search-results-card:hover {
 		color: var(--black);
 	}
 
+	.lfr-layout-structure-item-com-liferay-site-navigation-breadcrumb-web-portlet-sitenavigationbreadcrumbportlet {
+		background: #ffffff;
+		border-radius: 10px;
+		height: 40px;
+		padding: 0px 16px;
+	}
+
 	.adt-apps-search-results .card-image-title-container .image-container {
 		height: 3rem;
-	  	min-width: 3rem;
 	}
 
-	.adt-apps-search-results .labels .category-names {
-		background-color: #2c3a4b;
-		bottom: 26px;
-		display: none;
-		width: 14.5rem;
+	.adt-apps-search-results .card-image-title-container .title-container {
+		word-break: break-word;
+		word-wrap: break-word;
 	}
 
-	.adt-apps-search-results .labels .category-names::after {
-		border-left: 9px solid transparent;
-		border-right: 9px solid transparent;
-		border-top: 8px solid var(--neutral-1);
-		bottom: -7px;
-		content:'';
-		left: 0;
-		margin: 0 auto;
-		position: absolute;
-		right: 0;
-		width: 0;
-	}
-
-	.adt-apps-search-results .labels .category-label {
-		background-color: #ebeef2;
-		color: #545D69;
+	.adt-apps-search-results .cards-container .app-search-results-card .card-image-title-container .image-container .app-search-image {
+		height: 48px;
+		object-fit: contain;
+		width: 48px;
 	}
 
 	.adt-apps-search-results .labels .category-label-remainder:hover .category-names {
 		display: block;
 	}
 
+	.app-search-results-card {
+		border-radius: 10px;
+		border: 1px solid #E7EFFF;
+		display: flex;
+		height: 289px;
+		padding: 16px;
+	}
+
+	.banner__product-tag {
+		background-color: #e6ebf5;
+		color: #1c3667;
+		font-size: 0.8125rem;
+		white-space: nowrap;
+		width: fit-content;
+	}
+
+	.cards-container {
+		display: grid;
+		grid-column-gap: 1rem;
+		grid-row-gap: 1.5rem;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.card-image-title-container {
+		height: 48px;
+		margin-bottom: 18px;
+	}
+
+	.developer-name {
+		color: #54555F;
+		font-size: 13px;
+		font-weight: 400;
+		line-height: 16px;
+	}
+
+	.title-container {
+		font-size: 18px;
+		font-weight: 600;
+		line-height: 20px;
+	}
+
 	@media screen and (max-width: 599px) {
 		.adt-apps-search-results .cards-container {
-			grid-row-gap: 1rem;
-			grid-template-columns: 288px;
+			grid-column-gap: .5rem;
+			grid-row-gap: .5rem;
+			grid-template-columns: 293px;
 			justify-content: center;
 		}
 
@@ -58,114 +85,166 @@
 
 	@media screen and (min-width:600px) and (max-width: 899px) {
 		.adt-apps-search-results .cards-container {
+			grid-column-gap: .5rem;
+			grid-row-gap: 1.5rem;
 			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
 	}
 </style>
 
-<#function getFilterByUrlParams>
-	<#assign
-		siteURL = (themeDisplay.getURLCurrent()?keep_after("?"))!
-		urlParams = ""
-	/>
-
-	<#list siteURL?split("&") as params>
-		<#assign categoryId = params?keep_after("=") />
-		<#if categoryId?has_content>
-			<#assign urlParams = urlParams + " (params eq '" + categoryId + "') and" />
-		</#if>
-	</#list>
-
-	<#return urlParams?keep_before_last(" ")?trim />
-</#function>
-
-<#assign
-	productsList = restClient.get("/headless-commerce-admin-catalog/v1.0/products?pageSize=-1").items
-	numberFilteredProducts = 0
-	filterCategoriesByUrlParams = getFilterByUrlParams()
-/>
-
-<#if filterCategoriesByUrlParams?has_content>
-	<#assign
-		productsList = restClient.get("/headless-commerce-admin-catalog/v1.0/products?filter=categoryIds/any(params:${filterCategoriesByUrlParams})&pageSize=-1").items
-	/>
+<#if searchContainer?has_content>
+	<div class="color-neutral-3 d-md-block d-none pb-4 pt-2">
+		<strong class="color-black">
+			${searchContainer.getTotal()}
+		</strong>
+		Applications Available
+	</div>
 </#if>
 
-<#function filterProductsByAppCategory productsList>
-	<#return productsList.categories?filter(category -> stringUtil.equals(category.name, "App"))>
-</#function>
+<#if themeDisplay?has_content>
+	<#assign scopeGroupId = themeDisplay.getScopeGroupId() />
+</#if>
 
-<#list productsList as product>
-	<#list filterProductsByAppCategory(product) as product>
-		<#assign numberFilteredProducts = numberFilteredProducts + 1 />
-	</#list>
-</#list>
+<#assign
+	channel = restClient.get("/headless-commerce-delivery-catalog/v1.0/channels?accountId=-1&filter=name eq 'Marketplace Channel' and siteGroupId eq '${scopeGroupId}'")
+	productThumbnail1 = "/o/commerce-media/default/?groupId=${scopeGroupId}"
+/>
+
+<#if channel?has_content>
+	<#assign channelId = channel.items[0].id />
+</#if>
 
 <div class="adt-apps-search-results">
-	<#if productsList?has_content>
-		<div class="color-neutral-3 d-md-block d-none pb-4">
-			<strong class='color-black'>${numberFilteredProducts!}</strong> Apps Available
-		</div>
+	<div class="cards-container pb-6">
+		<#if entries?has_content>
+			<#list entries as entry>
+				<#if entry?has_content>
+					<#assign
+						portalURL = portalUtil.getLayoutURL(themeDisplay)
+						productId = entry.getClassPK() + 1
+						product = restClient.get("/headless-commerce-delivery-catalog/v1.0/channels/"+ channelId +"/products/"+ productId +"?accountId=-1&images.accountId=-1&nestedFields=productSpecifications,categories,images")
+						productImage = (product.images![])?filter(item -> item.tags?seq_contains("app icon"))![]
+						remainingCategoriesText = []
+					/>
 
-		<div class="cards-container pb-6">
-			<#list productsList as product>
-				<#assign
-					productCategories = product.categories
-					productDescription = stringUtil.shorten(htmlUtil.stripHtml(product.description.en_US), 150, "...")
-					portalURL = portalUtil.getLayoutURL(themeDisplay)
-					productURL = portalURL?replace("home", "p") + "/" + product.urls.en_US
-				/>
+					<#if product.categories?has_content && product.productSpecifications?has_content>
+						<#assign
+								productCategories = product.categories?filter(productCategory -> productCategory.vocabulary == "marketplace app category")![]
+								categoriesListSize = productCategories?size-1
+								productSpecifications = product.productSpecifications![]
+						/>
+					</#if>
 
-				<#list filterProductsByAppCategory(product) as category>
-				 	<a class="app-search-results-card bg-white border-radius-medium d-flex flex-column mb-0 p-3 text-dark text-decoration-none" href=${productURL}>
-						<div class="align-items-center card-image-title-container d-flex pb-3">
-							<div class="image-container rounded">
-								<img
-									alt=${product.name.en_US}
-									class="h-100 mw-100"
-									src="${product.thumbnail}"
-								/>
+					<#if product.name?has_content>
+						<#assign productName = product.name />
+						<#else>
+							<#assign productName = "" />
+					</#if>
+
+					<#if product.description?has_content>
+						<#assign productDescription = stringUtil.shorten(htmlUtil.stripHtml(product.description!""), 150, "...") />
+						<#else>
+							<#assign productDescription = "" />
+					</#if>
+
+					<#if product.urls?has_content>
+						<#assign productURL = portalURL?replace("home", "p") + "/" + product.urls.en_US />
+						<#else>
+							<#assign productURL = "" />
+					</#if>
+
+					<#if productImage?has_content>
+						<#assign productThumbnail = productImage[0].src?split("/o") />
+						<#if productThumbnail?has_content && productThumbnail?size gte 2>
+							<#assign productThumbnail1 = "/o/${productThumbnail[1]}" !"" />
+						</#if>
+
+					<#else>
+						<#if product.urlImage?has_content>
+							<#assign productThumbnail = product.urlImage?split("/o") />
+							<#if productThumbnail?has_content && productThumbnail?size gte 2>
+								<#assign productThumbnail1 = "/o/${productThumbnail[1]}" !"" />
+							</#if>
+						</#if>
+					</#if>
+
+					<a class="app-search-results-card bg-white border-radius-medium d-flex flex-column mb-0 text-dark text-decoration-none" href=${productURL}>
+						<div class="align-items-center card-image-title-container d-flex">
+							<div class="image-container mr-2 rounded">
+								<img alt="${productName}" class="app-search-image" src="${productThumbnail1}" />
 							</div>
 
-							<div class="pl-2">
-								<div class="font-weight-semi-bold h2 mt-1">
-									${product.name.en_US}
+							<div>
+								<div class="title-container">
+									${productName}
 								</div>
+
+								<#if productSpecifications?has_content>
+									<#assign productDeveloperName = productSpecifications?filter(item -> item.specificationKey == "developer-name") />
+									<#list productDeveloperName as developerNameItem>
+										<#if developerNameItem.value?has_content>
+											<#assign developerName = developerNameItem.value />
+										<#else>
+											<#assign developerName = "" />
+										</#if>
+
+										<div class="developer-name mt-1">
+											${developerName}
+										</div>
+									</#list>
+								</#if>
 							</div>
-				 		</div>
+						</div>
 
 						<div class="d-flex flex-column font-size-paragraph-small h-100 justify-content-between">
-				  			<div>
-								<div class="font-weight-normal mb-2">
-						  			${productDescription}
-						 		</div>
+							<div class="font-weight-normal mb-2 text-break">
+								${productDescription}
+							</div>
+
+							<div class="d-flex flex-column">
+								<#if productSpecifications?has_content>
+									<#assign productPriceModels = productSpecifications?filter(item -> item.specificationKey == "price-model") />
+									<#list productPriceModels as productPriceModel>
+										<#if productPriceModel.value?has_content>
+											<#assign priceModel = productPriceModel.value />
+										<#else>
+											<#assign priceModel = "" />
+										</#if>
+
+										<div class="font-weight-semi-bold mb-2 mt-1 text-capitalize">
+											${priceModel}
+										</div>
+									</#list>
+								</#if>
 
 								<#if productCategories?has_content>
-									<div class="align-center d-flex labels">
-										<div class="border-radius-small category-label font-size-paragraph-small font-weight-semi-bold px-1">
-											${productCategories[0].name}
-										</div>
+									<#assign
+										principalCategory = productCategories[0]
+										remainingCategories = productCategories?filter(category -> category.name != principalCategory.name)
+									/>
 
-										<#if (productCategories?size > 1)>
-											<div class="category-label-remainder pl-2 position-relative text-primary">
-												+${productCategories?size - 1}
+									<#list remainingCategories as category>
+										<#assign remainingCategoriesText = remainingCategoriesText + [category.name] />
+									</#list>
+								</#if>
 
-												<div class="category-names font-size-paragraph-base p-4 position-absolute rounded text-white">
-													<#list productCategories as category>
-														<#if !category?is_first>
-															${category.name}<#sep>, </#sep>
-														</#if>
-													</#list>
-												</div>
-											</div>
+								<#if principalCategory?has_content>
+									<div>
+										<span class="banner__product-tag rounded py-1 px-2 mr-2" title="${principalCategory.name}">
+											${principalCategory.name}
+										</span>
+										<#if categoriesListSize?has_content && remainingCategoriesText?has_content>
+											<span class="banner__product-tag rounded py-1 px-2" title="${remainingCategoriesText?join('\n')}">
+												+ ${categoriesListSize}
+											</span>
 										</#if>
 									</div>
 								</#if>
-					 		</div>
-				  		</div>
-				 	</a>
-				</#list>
+							</div>
+						</div>
+					</a>
+				</#if>
 			</#list>
-		</div>
-	</#if>
+		</#if>
+	</div>
 </div>

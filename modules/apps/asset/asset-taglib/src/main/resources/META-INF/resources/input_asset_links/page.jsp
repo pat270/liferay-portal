@@ -15,17 +15,24 @@
 	/>
 </liferay-util:buffer>
 
+<%
+List<DropdownItem> dropdownItems = inputAssetLinksDisplayContext.getActionDropdownItems();
+%>
+
 <clay:dropdown-menu
 	additionalProps='<%=
 		HashMapBuilder.<String, Object>put(
 			"removeIcon", removeLinkIcon
 		).build()
 	%>'
+	alignmentByViewport='<%= true %>'
+	alignmentPosition='<%= 6 %>'
 	aria-label='<%= LanguageUtil.get(request, "select-items") %>'
 	cssClass="btn btn-secondary"
-	dropdownItems="<%= inputAssetLinksDisplayContext.getActionDropdownItems() %>"
+	dropdownItems="<%= dropdownItems %>"
 	label='<%= LanguageUtil.get(request, "select") %>'
-	propsTransformer="js/InputAssetLinkDropdownDefaultPropsTransformer"
+	propsTransformer="{InputAssetLinkDropdownDefaultPropsTransformer} from asset-taglib"
+	searchable="<%= dropdownItems.size() > 7 %>"
 />
 
 <liferay-ui:search-container
@@ -39,7 +46,7 @@
 	/>
 
 	<liferay-ui:search-container-row
-		className="com.liferay.asset.kernel.model.AssetLink"
+		className="com.liferay.asset.link.model.AssetLink"
 		keyProperty="entryId2"
 		modelVar="assetLink"
 	>
@@ -72,7 +79,7 @@
 				data-rowId="<%= assetLinkEntry.getEntryId() %>"
 				displayType="secondary"
 				icon="times-circle"
-				title='<%= LanguageUtil.get(request, "remove") %>'
+				title="remove"
 				type="button"
 			/>
 		</liferay-ui:search-container-column-text>

@@ -5,25 +5,24 @@
 
 package com.liferay.jethr0.jenkins;
 
-import com.liferay.jethr0.build.Build;
-import com.liferay.jethr0.build.queue.BuildQueue;
-import com.liferay.jethr0.build.repository.BuildRepository;
-import com.liferay.jethr0.build.repository.BuildRunRepository;
-import com.liferay.jethr0.build.run.BuildRun;
-import com.liferay.jethr0.jenkins.node.JenkinsNode;
-import com.liferay.jethr0.jenkins.repository.JenkinsNodeRepository;
-import com.liferay.jethr0.jenkins.repository.JenkinsServerRepository;
-import com.liferay.jethr0.jenkins.server.JenkinsServer;
-import com.liferay.jethr0.jms.JMSEventHandler;
+import com.liferay.jethr0.bui1d.BuildEntity;
+import com.liferay.jethr0.bui1d.queue.BuildQueue;
+import com.liferay.jethr0.bui1d.repository.BuildEntityRepository;
+import com.liferay.jethr0.bui1d.repository.BuildRunEntityRepository;
+import com.liferay.jethr0.bui1d.run.BuildRunEntity;
+import com.liferay.jethr0.event.jenkins.JenkinsEventProcessor;
+import com.liferay.jethr0.jenkins.node.JenkinsNodeEntity;
+import com.liferay.jethr0.jenkins.repository.JenkinsServerEntityRepository;
+import com.liferay.jethr0.jenkins.server.JenkinsServerEntity;
 import com.liferay.jethr0.util.StringUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 
-import java.net.URL;
+import java.util.Date;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -36,81 +35,80 @@ import org.springframework.scheduling.annotation.Scheduled;
 public class JenkinsQueue {
 
 	public void initialize() {
-		if ((_jenkinsServerURLs != null) && !_jenkinsServerURLs.isEmpty()) {
-			for (String jenkinsServerURL : _jenkinsServerURLs.split(",")) {
-				URL url = StringUtil.toURL(jenkinsServerURL);
+		update();
 
-				JenkinsServer jenkinsServer = _jenkinsServerRepository.getByURL(
-					url);
-
-				if (jenkinsServer != null) {
-					continue;
-				}
-
-				jenkinsServer = _jenkinsServerRepository.add(url);
-
-				_jenkinsNodeRepository.addAll(jenkinsServer);
-			}
-		}
-
-		for (JenkinsServer jenkinsServer : _jenkinsServerRepository.getAll()) {
-			for (JenkinsNode jenkinsNode :
-					_jenkinsNodeRepository.getAll(jenkinsServer)) {
-
-				jenkinsServer.addJenkinsNode(jenkinsNode);
-
-				jenkinsNode.setJenkinsServer(jenkinsServer);
-			}
-
-			jenkinsServer.update();
-		}
-
-		invoke();
+		_initialized = true;
 	}
 
 	public void invoke() {
 		update();
 	}
 
+	public boolean isInitialized() {
+		return _initialized;
+	}
+
 	@Scheduled(cron = "${liferay.jethr0.jenkins.queue.update.cron}")
 	public void scheduledUpdate() {
 		if (_log.isInfoEnabled()) {
-			_log.info("Updating Jenkins queue");
+			_log.info(
+				"Updating Jenkins queue at " + StringUtil.toString(new Date()));
 		}
 
 		update();
 	}
 
-	public void setJmsEventHandler(JMSEventHandler jmsEventHandler) {
-		_jmsEventHandler = jmsEventHandler;
+	public void setJenkinsEventProcessor(
+		JenkinsEventProcessor jenkinsEventProcessor) {
+
+		_jenkinsEventProcessor = jenkinsEventProcessor;
 	}
 
 	public void update() {
+		for (JenkinsServerEntity jenkinsServerEntity :
+				_jenkinsServerEntityRepository.getAll()) {
+
+			jenkinsServerEntity.update();
+		}
+
 		_buildQueue.sort();
 
-		for (JenkinsServer jenkinsServer : _jenkinsServerRepository.getAll()) {
-			for (JenkinsNode jenkinsNode : jenkinsServer.getJenkinsNodes()) {
-				if (!jenkinsNode.isAvailable()) {
+		for (JenkinsServerEntity jenkinsServerEntity :
+				_jenkinsServerEntityRepository.getAll()) {
+
+			for (JenkinsNodeEntity jenkinsNodeEntity :
+					jenkinsServerEntity.getJenkinsNodeEntities()) {
+
+				if (!jenkinsNodeEntity.isAvailable()) {
 					continue;
 				}
 
-				Build build = _buildQueue.nextBuild(jenkinsNode);
+				BuildEntity buildEntity = _buildQueue.nextBuildEntity(
+					jenkinsNodeEntity);
 
-				if (build == null) {
+				if (buildEntity == null) {
 					continue;
 				}
 
-				build.setState(Build.State.QUEUED);
+				buildEntity.setState(BuildEntity.State.QUEUED);
 
-				BuildRun buildRun = _buildRunRepository.add(
-					build, BuildRun.State.QUEUED);
+				BuildRunEntity buildRunEntity =
+					buildEntity.getLatestBuildRunEntity();
 
-				_jmsEventHandler.send(
-					jenkinsServer,
-					String.valueOf(buildRun.getInvokeJSONObject()));
+				if (buildRunEntity == null) {
+					buildRunEntity = _buildRunEntityRepository.create(
+						buildEntity, BuildRunEntity.State.QUEUED);
+				}
 
-				_buildRepository.update(build);
-				_buildRunRepository.update(buildRun);
+				_jenkinsEventProcessor.sendMessage(
+					String.valueOf(
+						buildRunEntity.getInvokeJSONObject(jenkinsNodeEntity)),
+					HashMapBuilder.put(
+						"jenkinsMasterName", jenkinsServerEntity.getName()
+					).build());
+
+				_buildEntityRepository.update(buildEntity);
+				_buildRunEntityRepository.update(buildRunEntity);
 			}
 		}
 	}
@@ -118,23 +116,18 @@ public class JenkinsQueue {
 	private static final Log _log = LogFactory.getLog(JenkinsQueue.class);
 
 	@Autowired
+	private BuildEntityRepository _buildEntityRepository;
+
+	@Autowired
 	private BuildQueue _buildQueue;
 
 	@Autowired
-	private BuildRepository _buildRepository;
+	private BuildRunEntityRepository _buildRunEntityRepository;
+
+	private boolean _initialized;
+	private JenkinsEventProcessor _jenkinsEventProcessor;
 
 	@Autowired
-	private BuildRunRepository _buildRunRepository;
-
-	@Autowired
-	private JenkinsNodeRepository _jenkinsNodeRepository;
-
-	@Autowired
-	private JenkinsServerRepository _jenkinsServerRepository;
-
-	@Value("${jenkins.server.urls}")
-	private String _jenkinsServerURLs;
-
-	private JMSEventHandler _jmsEventHandler;
+	private JenkinsServerEntityRepository _jenkinsServerEntityRepository;
 
 }

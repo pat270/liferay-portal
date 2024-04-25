@@ -6,11 +6,13 @@
 import {FormError} from '@liferay/object-js-components-web';
 import {ChangeEventHandler} from 'react';
 interface ObjectDataContainerProps {
-	dbTableName: string;
+	dbTableName: string | undefined;
 	errors: FormError<ObjectDefinition>;
 	handleChange: ChangeEventHandler<HTMLInputElement>;
 	hasUpdateObjectDefinitionPermission: boolean;
 	isApproved: boolean;
+	isLinkedObjectDefinition?: boolean;
+	onSubmit?: (editedObjectDefinition?: Partial<ObjectDefinition>) => void;
 	setValues: (values: Partial<ObjectDefinition>) => void;
 	values: Partial<ObjectDefinition>;
 }
@@ -20,6 +22,8 @@ export declare function ObjectDataContainer({
 	handleChange,
 	hasUpdateObjectDefinitionPermission,
 	isApproved,
+	isLinkedObjectDefinition,
+	onSubmit,
 	setValues,
 	values,
 }: ObjectDataContainerProps): JSX.Element;

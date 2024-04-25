@@ -98,7 +98,11 @@ DLPortletInstanceSettingsHelper dlPortletInstanceSettingsHelper = new DLPortletI
 								<div class="aspect-ratio card-item-first">
 									<c:choose>
 										<c:when test="<%= Validator.isNull(thumbnailSrc) %>">
-											<aui:icon cssClass="aspect-ratio-item-center-middle aspect-ratio-item-fluid card-type-asset-icon" image="documents-and-media" markupView="lexicon" />
+											<span class="aspect-ratio-item-center-middle aspect-ratio-item-fluid card-type-asset-icon">
+												<clay:icon
+													symbol="documents-and-media"
+												/>
+											</span>
 										</c:when>
 										<c:otherwise>
 											<img alt="<%= description %>" class="aspect-ratio-item-center-middle aspect-ratio-item-fluid" src="<%= thumbnailSrc %>" />
@@ -131,7 +135,7 @@ DLPortletInstanceSettingsHelper dlPortletInstanceSettingsHelper = new DLPortletI
 												<clay:dropdown-actions
 													aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 													dropdownItems="<%= igViewFileVersionDisplayContext.getActionDropdownItems() %>"
-													propsTransformer="document_library/js/DLFileEntryDropdownPropsTransformer"
+													propsTransformer="{DLFileEntryDropdownPropsTransformer} from document-library-web"
 												/>
 											</div>
 										</div>
@@ -160,7 +164,7 @@ DLPortletInstanceSettingsHelper dlPortletInstanceSettingsHelper = new DLPortletI
 				<liferay-ui:search-container-column-text>
 					<clay:horizontal-card
 						horizontalCard="<%= new FolderHorizontalCard(dlPortletInstanceSettingsHelper, dlTrashHelper, curFolder, request, renderResponse, null, viewFolderURL) %>"
-						propsTransformer="document_library/js/DLFolderDropdownPropsTransformer"
+						propsTransformer="{DLFolderDropdownPropsTransformer} from document-library-web"
 					/>
 				</liferay-ui:search-container-column-text>
 			</c:otherwise>

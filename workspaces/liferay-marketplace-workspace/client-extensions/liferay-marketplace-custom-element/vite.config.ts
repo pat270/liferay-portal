@@ -4,9 +4,8 @@
  */
 
 import react from '@vitejs/plugin-react';
+import path from 'path';
 import {defineConfig} from 'vite';
-
-const SERVER_PORT = 3000;
 
 export default defineConfig({
 	build: {
@@ -33,8 +32,12 @@ export default defineConfig({
 		},
 	},
 	plugins: [react()],
+	resolve: {
+		alias: {
+			'~': path.resolve(__dirname, './src/'),
+		},
+	},
 	server: {
-		origin: `http://localhost:${SERVER_PORT}`,
-		port: SERVER_PORT,
+		origin: 'http://localhost:5173',
 	},
 });

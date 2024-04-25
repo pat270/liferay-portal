@@ -13,7 +13,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.security.ldap.LDAPSettings;
-import com.liferay.portal.security.exportimport.UserImporter;
+import com.liferay.portal.security.ldap.exportimport.LDAPUserImporter;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -36,7 +36,7 @@ public class LDAPPortalInstanceLifecycleListener
 
 		if (_ldapSettings.isImportOnStartup(company.getCompanyId())) {
 			try {
-				_userImporter.importUsers(company.getCompanyId());
+				_ldapUserImporter.importUsers(company.getCompanyId());
 			}
 			catch (Exception exception) {
 				_log.error(
@@ -64,6 +64,6 @@ public class LDAPPortalInstanceLifecycleListener
 		policy = ReferencePolicy.DYNAMIC,
 		policyOption = ReferencePolicyOption.GREEDY
 	)
-	private volatile UserImporter _userImporter;
+	private volatile LDAPUserImporter _ldapUserImporter;
 
 }

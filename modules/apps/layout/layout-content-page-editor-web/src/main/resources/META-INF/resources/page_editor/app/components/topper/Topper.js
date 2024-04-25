@@ -8,10 +8,10 @@ import ClayButton from '@clayui/button';
 import ClayIcon from '@clayui/icon';
 import {useIsMounted} from '@liferay/frontend-js-react-web';
 import classNames from 'classnames';
+import {useId} from 'frontend-js-components-web';
 import PropTypes from 'prop-types';
 import React, {useEffect} from 'react';
 
-import {useId} from '../../../common/hooks/useId';
 import {getLayoutDataItemPropTypes} from '../../../prop_types/index';
 import {ITEM_ACTIVATION_ORIGINS} from '../../config/constants/itemActivationOrigins';
 import {LAYOUT_DATA_ITEM_TYPES} from '../../config/constants/layoutDataItemTypes';
@@ -35,6 +35,7 @@ import {
 	useSelector,
 	useSelectorCallback,
 } from '../../contexts/StoreContext';
+import {useLayoutKeyboardNavigation} from '../../hooks/app_hooks/useLayoutKeyboardNavigation';
 import selectCanUpdateItemConfiguration from '../../selectors/selectCanUpdateItemConfiguration';
 import selectCanUpdatePageStructure from '../../selectors/selectCanUpdatePageStructure';
 import selectLayoutDataItemLabel from '../../selectors/selectLayoutDataItemLabel';
@@ -184,10 +185,10 @@ function TopperContent({
 		topperIsDraggingSource ||
 		keyboardMovementSource?.itemId === item.itemId;
 
+	const {elementRef, isFocusable} = useLayoutKeyboardNavigation(item);
+
 	return (
 		<div
-			aria-label={name}
-			aria-labelledby={isActive ? topperLabelId : null}
 			className={classNames(className, 'page-editor__topper', {
 				'active': isActive,
 				'drag-over-bottom':
@@ -208,10 +209,15 @@ function TopperContent({
 				'highlighted': isHighlighted,
 				'hovered': isHovered,
 			})}
+			data-name={name}
 			onClick={(event) => {
 				event.stopPropagation();
 
 				if (isDraggingSource) {
+					return;
+				}
+
+				if (!isSelectionAllowed(event.target)) {
 					return;
 				}
 
@@ -237,7 +243,14 @@ function TopperContent({
 
 				hoverItem(item.itemId);
 			}}
-			ref={canBeDragged ? itemHandlerRef : null}
+			ref={(element) => {
+				if (canBeDragged) {
+					itemHandlerRef(element);
+				}
+
+				elementRef.current = element;
+			}}
+			tabIndex={isFocusable ? 0 : -1}
 		>
 			{isActive || isHighlighted ? (
 				<TopperLabel
@@ -381,4 +394,12 @@ class TopperErrorBoundary extends React.Component {
 			this.props.children
 		);
 	}
+}
+
+function isSelectionAllowed(element) {
+	if (element.closest('.portlet-options')) {
+		return false;
+	}
+
+	return true;
 }

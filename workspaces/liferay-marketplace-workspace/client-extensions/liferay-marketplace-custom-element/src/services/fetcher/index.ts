@@ -8,27 +8,9 @@ import FetcherError from './FetcherError';
 
 const liferayHost = window.location.origin;
 
-const headlessAdminUserAPIs = ['account', 'accounts', 'roles', 'user-groups'];
-
-const headlessDeliveryAPIs = [
-	'message-board-messages',
-	'message-board-threads',
-];
-
 function changeResource(resource: RequestInfo) {
-	const getIsResourceFromAPI = (apis: string[]) =>
-		apis.some((api) => resource.toString().includes(api));
-
 	if (resource.toString().startsWith('http')) {
 		return resource;
-	}
-
-	if (getIsResourceFromAPI(headlessDeliveryAPIs)) {
-		return `${liferayHost}/o/headless-delivery/v1.0${resource}`;
-	}
-
-	if (getIsResourceFromAPI(headlessAdminUserAPIs)) {
-		return `${liferayHost}/o/headless-admin-user/v1.0${resource}`;
 	}
 
 	return `${liferayHost}/${resource}`;
@@ -37,13 +19,13 @@ function changeResource(resource: RequestInfo) {
 const fetcher = async <T = any>(
 	resource: RequestInfo,
 	options?: RequestInit
-): Promise<T | undefined> => {
+): Promise<T> => {
 	const response = await fetch(changeResource(resource), {
 		...options,
 		headers: {
-			...options?.headers,
 			'Content-Type': 'application/json',
 			'x-csrf-token': Liferay.authToken,
+			...options?.headers,
 		},
 	});
 
@@ -57,9 +39,50 @@ const fetcher = async <T = any>(
 		throw error;
 	}
 
-	if (options?.method !== 'DELETE' && response.status !== 204) {
-		return response.json();
+	if (
+		options?.method === 'DELETE' ||
+		response.status === 204 ||
+		response.headers.get('Content-Length') === '0'
+	) {
+		return {} as T;
 	}
+
+	return response.json();
 };
+
+fetcher.delete = (resource: RequestInfo) =>
+	fetcher(resource, {
+		method: 'DELETE',
+	});
+
+fetcher.patch = (resource: RequestInfo, data: unknown, options?: RequestInit) =>
+	fetcher(resource, {
+		...options,
+		body: JSON.stringify(data),
+		method: 'PATCH',
+	});
+
+fetcher.post = <T = any>(
+	resource: RequestInfo,
+	data?: unknown,
+	options?: RequestInit & {shouldStringify?: boolean}
+) =>
+	fetcher<T>(resource, {
+		...options,
+		body:
+			options?.shouldStringify ?? true
+				? data
+					? JSON.stringify(data)
+					: null
+				: (data as BodyInit),
+		method: 'POST',
+	}) as Promise<T>;
+
+fetcher.put = (resource: RequestInfo, data: unknown, options?: RequestInit) =>
+	fetcher(resource, {
+		...options,
+		body: JSON.stringify(data),
+		method: 'PUT',
+	});
 
 export default fetcher;

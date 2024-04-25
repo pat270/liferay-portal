@@ -6,6 +6,8 @@
 package com.liferay.journal.model.impl;
 
 import com.liferay.document.library.kernel.model.DLFolderConstants;
+import com.liferay.document.library.kernel.service.DLAppLocalServiceUtil;
+import com.liferay.document.library.util.DLURLHelperUtil;
 import com.liferay.dynamic.data.mapping.model.DDMFieldAttribute;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
@@ -22,9 +24,9 @@ import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.friendly.url.model.FriendlyURLEntry;
 import com.liferay.friendly.url.model.FriendlyURLEntryLocalization;
 import com.liferay.friendly.url.service.FriendlyURLEntryLocalServiceUtil;
+import com.liferay.journal.constants.JournalArticleConstants;
 import com.liferay.journal.constants.JournalConstants;
 import com.liferay.journal.constants.JournalFolderConstants;
-import com.liferay.journal.internal.transformer.LocaleTransformerListener;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalArticleResource;
 import com.liferay.journal.model.JournalFolder;
@@ -79,23 +81,6 @@ import java.util.TreeSet;
 @JSON(strict = true)
 public class JournalArticleImpl extends JournalArticleBaseImpl {
 
-	public static String getContentByLocale(
-		Document document, String languageId) {
-
-		return getContentByLocale(document, languageId, null);
-	}
-
-	public static String getContentByLocale(
-		Document document, String languageId, Map<String, String> tokens) {
-
-		if (_localeTransformerListener != null) {
-			document = _localeTransformerListener.onXml(
-				document.clone(), languageId, tokens);
-		}
-
-		return document.asXML();
-	}
-
 	public static void setDDMFormValuesToFieldsConverter(
 		DDMFormValuesToFieldsConverter ddmFormValuesToFieldsConverter) {
 
@@ -104,12 +89,6 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 
 	public static void setJournalConverter(JournalConverter journalConverter) {
 		_journalConverter = journalConverter;
-	}
-
-	public static void setLocaleTransformerListener(
-		LocaleTransformerListener localeTransformerListener) {
-
-		_localeTransformerListener = localeTransformerListener;
 	}
 
 	@Override
@@ -165,14 +144,49 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 			return null;
 		}
 
-		if (Validator.isNotNull(getSmallImageURL())) {
+		if (getSmallImageSource() ==
+				JournalArticleConstants.
+					SMALL_IMAGE_SOURCE_DOCUMENTS_AND_MEDIA) {
+
+			long smallImageId = getSmallImageId();
+
+			if (smallImageId <= 0) {
+				return null;
+			}
+
+			try {
+				FileEntry fileEntry = DLAppLocalServiceUtil.getFileEntry(
+					smallImageId);
+
+				return DLURLHelperUtil.getPreviewURL(
+					fileEntry, fileEntry.getFileVersion(), themeDisplay,
+					StringPool.BLANK);
+			}
+			catch (PortalException portalException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(portalException);
+				}
+			}
+
+			return null;
+		}
+
+		if (getSmallImageSource() ==
+				JournalArticleConstants.SMALL_IMAGE_SOURCE_URL) {
+
 			return getSmallImageURL();
 		}
 
-		return StringBundler.concat(
-			themeDisplay.getPathImage(), "/journal/article?img_id=",
-			getSmallImageId(), "&t=",
-			WebServerServletTokenUtil.getToken(getSmallImageId()));
+		if (getSmallImageSource() ==
+				JournalArticleConstants.SMALL_IMAGE_SOURCE_USER_COMPUTER) {
+
+			return StringBundler.concat(
+				themeDisplay.getPathImage(), "/journal/article?img_id=",
+				getSmallImageId(), "&t=",
+				WebServerServletTokenUtil.getToken(getSmallImageId()));
+		}
+
+		return null;
 	}
 
 	@Override
@@ -227,21 +241,24 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 
 	@Override
 	public String getContentByLocale(String languageId) {
-		Map<String, String> tokens = new HashMap<>();
+		Document document = getDocumentByLocale(languageId);
 
-		DDMStructure ddmStructure = getDDMStructure();
-
-		if (ddmStructure != null) {
-			tokens.put(
-				"ddm_structure_id",
-				String.valueOf(ddmStructure.getStructureId()));
-		}
-
-		return getContentByLocale(getDocument(), languageId, tokens);
+		return document.asXML();
 	}
 
 	@Override
 	public DDMFormValues getDDMFormValues() {
+		if (_ddmFormValues == null) {
+			_ddmFormValues = getDDMFormValues(true);
+		}
+
+		return _ddmFormValues;
+	}
+
+	@Override
+	public DDMFormValues getDDMFormValues(
+		boolean addMissingDDMFormFieldValues) {
+
 		DDMStructure ddmStructure = getDDMStructure();
 
 		if (ddmStructure == null) {
@@ -253,7 +270,7 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 		DDMFormValues ddmFormValues = DDMFieldLocalServiceUtil.getDDMFormValues(
 			ddmForm, getId());
 
-		if (ddmFormValues != null) {
+		if ((ddmFormValues != null) && addMissingDDMFormFieldValues) {
 			ddmFormValues.setDDMFormFieldValues(
 				DDMFormValuesConverterUtil.addMissingDDMFormFieldValues(
 					ddmForm.getDDMFormFields(),
@@ -268,6 +285,7 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 		return DDMStructureLocalServiceUtil.fetchStructure(getDDMStructureId());
 	}
 
+	@Override
 	public String getDDMStructureKey() {
 		DDMStructure ddmStructure = getDDMStructure();
 
@@ -486,14 +504,14 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 				locale, friendlyURLEntryLocalization.getUrlTitle());
 		}
 
-		Locale defaultSiteLocale = LocaleUtil.getSiteDefault();
+		Locale defaultLocale = LocaleUtil.fromLanguageId(
+			getDefaultLanguageId());
 
-		if (Validator.isNull(friendlyURLMap.get(defaultSiteLocale))) {
-			Locale defaultLocale = LocaleUtil.fromLanguageId(
-				getDefaultLanguageId());
+		if (Validator.isNull(friendlyURLMap.get(defaultLocale))) {
+			Locale defaultSiteLocale = LocaleUtil.getSiteDefault();
 
 			friendlyURLMap.put(
-				defaultSiteLocale, friendlyURLMap.get(defaultLocale));
+				defaultLocale, friendlyURLMap.get(defaultSiteLocale));
 		}
 
 		return friendlyURLMap;
@@ -815,9 +833,8 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 	private static volatile DDMFormValuesToFieldsConverter
 		_ddmFormValuesToFieldsConverter;
 	private static volatile JournalConverter _journalConverter;
-	private static volatile LocaleTransformerListener
-		_localeTransformerListener;
 
+	private DDMFormValues _ddmFormValues;
 	private Map<Locale, String> _descriptionMap;
 	private Document _document;
 	private Map<String, Document> _documentMap;

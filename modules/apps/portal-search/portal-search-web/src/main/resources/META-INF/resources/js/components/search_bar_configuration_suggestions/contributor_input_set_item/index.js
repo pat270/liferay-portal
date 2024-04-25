@@ -15,7 +15,7 @@ function ContributorInputSetItem({index, onInputSetItemChange, value = {}}) {
 	const [touched, setTouched] = useState({
 		displayGroupName: false,
 		size: false,
-		sxpBlueprintId: false,
+		sxpBlueprintExternalReferenceCode: false,
 	});
 
 	const _handleBlur = (field) => () => {
@@ -24,10 +24,14 @@ function ContributorInputSetItem({index, onInputSetItemChange, value = {}}) {
 
 	return (
 		<ClayInput.GroupItem>
-			{(value.contributorName ===
-				CONTRIBUTOR_TYPES.ASAH_RECENT_SEARCH_KEYWORDS ||
-				value.contributorName ===
-					CONTRIBUTOR_TYPES.ASAH_TOP_SEARCH_KEYWORDS) && (
+			{[
+				CONTRIBUTOR_TYPES.ASAH_RECENT_ASSETS_USER_ACTIVITY,
+				CONTRIBUTOR_TYPES.ASAH_RECENT_PAGES_USER_ACTIVITY,
+				CONTRIBUTOR_TYPES.ASAH_RECENT_SEARCH_SITE_ACTIVITY,
+				CONTRIBUTOR_TYPES.ASAH_RECENT_SEARCHES_USER_ACTIVITY,
+				CONTRIBUTOR_TYPES.ASAH_RECENT_SITES_USER_ACTIVITY,
+				CONTRIBUTOR_TYPES.ASAH_TOP_SEARCH_SITE_ACTIVITY,
+			].includes(value.contributorName) && (
 				<SiteActivitiesInputs
 					index={index}
 					onBlur={_handleBlur}
@@ -38,6 +42,16 @@ function ContributorInputSetItem({index, onInputSetItemChange, value = {}}) {
 			)}
 
 			{value.contributorName === CONTRIBUTOR_TYPES.BASIC && (
+				<BasicAttributes
+					index={index}
+					onBlur={_handleBlur}
+					onInputSetItemChange={onInputSetItemChange}
+					touched={touched}
+					value={value}
+				/>
+			)}
+
+			{value.contributorName === CONTRIBUTOR_TYPES.COMMERCE && (
 				<BasicAttributes
 					index={index}
 					onBlur={_handleBlur}

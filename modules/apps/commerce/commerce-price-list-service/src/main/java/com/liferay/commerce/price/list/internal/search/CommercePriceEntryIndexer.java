@@ -9,6 +9,7 @@ import com.liferay.commerce.price.list.model.CommercePriceEntry;
 import com.liferay.commerce.price.list.service.CommercePriceEntryLocalService;
 import com.liferay.commerce.product.model.CPDefinition;
 import com.liferay.commerce.product.model.CPInstance;
+import com.liferay.commerce.product.service.CPInstanceLocalService;
 import com.liferay.portal.kernel.dao.orm.IndexableActionableDynamicQuery;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
@@ -117,7 +118,7 @@ public class CommercePriceEntryIndexer extends BaseIndexer<CommercePriceEntry> {
 		throws Exception {
 
 		if (_log.isDebugEnabled()) {
-			_log.debug("Indexing price entry " + commercePriceEntry);
+			_log.debug("Indexing commerce price entry " + commercePriceEntry);
 		}
 
 		Document document = getBaseModelDocument(
@@ -130,21 +131,27 @@ public class CommercePriceEntryIndexer extends BaseIndexer<CommercePriceEntry> {
 			FIELD_EXTERNAL_REFERENCE_CODE,
 			commercePriceEntry.getExternalReferenceCode());
 
-		CPInstance cpInstance = commercePriceEntry.getCPInstance();
+		CPInstance cpInstance = _cpInstanceLocalService.fetchCPInstance(
+			commercePriceEntry.getCProductId(),
+			commercePriceEntry.getCPInstanceUuid());
 
-		document.addKeyword("cpInstanceId", cpInstance.getCPInstanceId());
-		document.addKeyword("sku", cpInstance.getSku());
-		document.addKeyword(
-			"skuExternalReferenceCode", cpInstance.getExternalReferenceCode());
+		if (cpInstance != null) {
+			document.addKeyword("cpInstanceId", cpInstance.getCPInstanceId());
+			document.addKeyword("sku", cpInstance.getSku());
+			document.addKeyword(
+				"skuExternalReferenceCode",
+				cpInstance.getExternalReferenceCode());
 
-		CPDefinition cpDefinition = cpInstance.getCPDefinition();
+			CPDefinition cpDefinition = cpInstance.getCPDefinition();
 
-		document.addLocalizedKeyword(
-			"cpDefinitionName", cpDefinition.getNameMap());
+			document.addLocalizedKeyword(
+				"cpDefinitionName", cpDefinition.getNameMap());
+		}
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
-				"Document " + commercePriceEntry + " indexed successfully");
+				"Commerce price entry " + commercePriceEntry +
+					" indexed successfully");
 		}
 
 		return document;
@@ -201,7 +208,7 @@ public class CommercePriceEntryIndexer extends BaseIndexer<CommercePriceEntry> {
 					if (_log.isWarnEnabled()) {
 						_log.warn(
 							"Unable to index commerce price entry " +
-								commercePriceEntry.getCommercePriceEntryId(),
+								commercePriceEntry,
 							portalException);
 					}
 				}
@@ -215,6 +222,9 @@ public class CommercePriceEntryIndexer extends BaseIndexer<CommercePriceEntry> {
 
 	@Reference
 	private CommercePriceEntryLocalService _commercePriceEntryLocalService;
+
+	@Reference
+	private CPInstanceLocalService _cpInstanceLocalService;
 
 	@Reference
 	private IndexWriterHelper _indexWriterHelper;

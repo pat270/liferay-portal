@@ -10,20 +10,19 @@ import com.liferay.adaptive.media.AdaptiveMedia;
 import com.liferay.adaptive.media.image.mime.type.AMImageMimeTypeProvider;
 import com.liferay.adaptive.media.image.service.AMImageEntryLocalService;
 import com.liferay.adaptive.media.image.validator.AMImageValidator;
-import com.liferay.document.library.configuration.DLFileEntryConfiguration;
+import com.liferay.document.library.configuration.DLFileEntryConfigurationProvider;
 import com.liferay.document.library.kernel.model.DLFileEntryMetadata;
+import com.liferay.document.library.kernel.processor.RawMetadataProcessor;
 import com.liferay.document.library.kernel.service.DLFileEntryMetadataLocalService;
-import com.liferay.document.library.kernel.util.RawMetadataProcessor;
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldValueValidationException;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.Value;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
-import com.liferay.dynamic.data.mapping.storage.StorageEngine;
+import com.liferay.dynamic.data.mapping.storage.DDMStorageEngineManager;
 import com.liferay.dynamic.data.mapping.util.comparator.StructureStructureKeyComparator;
 import com.liferay.petra.string.StringBundler;
-import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -39,43 +38,35 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Sergio González
  * @author Roberto Díaz
  */
-@Component(
-	configurationPid = "com.liferay.document.library.configuration.DLFileEntryConfiguration",
-	service = AMImageValidator.class
-)
+@Component(service = AMImageValidator.class)
 public class AMImageValidatorImpl implements AMImageValidator {
 
 	@Override
 	public <T> boolean isProcessingRequired(
 		AdaptiveMedia<T> adaptiveMedia, FileVersion fileVersion) {
 
-		if (!isProcessingSupported(fileVersion)) {
-			return false;
-		}
-
 		String configurationUuid = adaptiveMedia.getValue(
 			AMAttribute.getConfigurationUuidAMAttribute());
 
-		if (configurationUuid == null) {
-			return true;
-		}
-
-		if (_amImageEntryLocalService.hasAMImageEntryContent(
+		if ((configurationUuid != null) &&
+			_amImageEntryLocalService.hasAMImageEntryContent(
 				configurationUuid, fileVersion)) {
 
 			return false;
 		}
 
-		return true;
+		if (isProcessingSupported(fileVersion)) {
+			return true;
+		}
+
+		return false;
 	}
 
 	@Override
@@ -102,7 +93,8 @@ public class AMImageValidatorImpl implements AMImageValidator {
 	@Override
 	public boolean isValid(FileVersion fileVersion) {
 		long previewableProcessorMaxSize =
-			_dlFileEntryConfiguration.previewableProcessorMaxSize();
+			_dlFileEntryConfigurationProvider.
+				getGroupPreviewableProcessorMaxSize(fileVersion.getGroupId());
 
 		if ((previewableProcessorMaxSize != -1) &&
 			((previewableProcessorMaxSize == 0) ||
@@ -134,13 +126,6 @@ public class AMImageValidatorImpl implements AMImageValidator {
 		return true;
 	}
 
-	@Activate
-	@Modified
-	protected void activate(Map<String, Object> properties) {
-		_dlFileEntryConfiguration = ConfigurableUtil.createConfigurable(
-			DLFileEntryConfiguration.class, properties);
-	}
-
 	protected void setAMImageEntryLocalService(
 		AMImageEntryLocalService amImageEntryLocalService) {
 
@@ -167,8 +152,13 @@ public class AMImageValidatorImpl implements AMImageValidator {
 			}
 
 			try {
-				DDMFormValues ddmFormValues = _storageEngine.getDDMFormValues(
-					fileEntryMetadata.getDDMStorageId());
+				DDMFormValues ddmFormValues =
+					_ddmStorageEngineManager.getDDMFormValues(
+						fileEntryMetadata.getDDMStorageId());
+
+				if (ddmFormValues == null) {
+					continue;
+				}
 
 				Map<String, List<DDMFormFieldValue>> ddmFormFieldValuesMap =
 					ddmFormValues.getDDMFormFieldValuesMap(true);
@@ -281,17 +271,18 @@ public class AMImageValidatorImpl implements AMImageValidator {
 	private AMImageMimeTypeProvider _amImageMimeTypeProvider;
 
 	@Reference
+	private DDMStorageEngineManager _ddmStorageEngineManager;
+
+	@Reference
 	private DDMStructureLocalService _ddmStructureLocalService;
 
-	private volatile DLFileEntryConfiguration _dlFileEntryConfiguration;
+	@Reference
+	private DLFileEntryConfigurationProvider _dlFileEntryConfigurationProvider;
 
 	@Reference
 	private DLFileEntryMetadataLocalService _dlFileEntryMetadataLocalService;
 
 	@Reference
 	private Portal _portal;
-
-	@Reference
-	private StorageEngine _storageEngine;
 
 }

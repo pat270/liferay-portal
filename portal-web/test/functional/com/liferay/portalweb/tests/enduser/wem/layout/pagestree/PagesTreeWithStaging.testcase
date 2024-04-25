@@ -4,7 +4,6 @@ definition {
 	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testcase.url = "http://localhost:8080";
 	property testray.main.component.name = "Pages Tree";
 
 	static var randomSiteName = StringUtil.randomString(8);
@@ -12,6 +11,10 @@ definition {
 	static var randomSiteURLKey = StringUtil.toLowerCase(${randomSiteName});
 
 	setUp {
+		task ("Set up virtual instance") {
+			TestCase.setUpPortalInstance();
+		}
+
 		task ("Sign in") {
 			User.firstLoginPG();
 		}
@@ -21,9 +24,7 @@ definition {
 		}
 
 		task ("Activate local live staging") {
-			Staging.openStagingAdmin(siteURLKey = ${randomSiteURLKey});
-
-			Staging.activateStagingCP(siteName = ${randomSiteName});
+			JSONStaging.enableLocalStaging(groupName = ${randomSiteName});
 		}
 	}
 
@@ -155,9 +156,7 @@ definition {
 		}
 
 		task ("Enable Local Live") {
-			Staging.openStagingAdmin(siteURLKey = ${siteURLKey});
-
-			Staging.activateStagingCP(siteName = ${siteName});
+			JSONStaging.enableLocalStaging(groupName = ${siteName});
 		}
 
 		task ("Assert can reorganize pages via Page Tree panel in Staging site") {

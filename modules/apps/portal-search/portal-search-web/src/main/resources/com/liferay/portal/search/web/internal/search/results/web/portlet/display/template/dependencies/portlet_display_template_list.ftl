@@ -126,7 +126,7 @@
 									</div>
 
 									<div class="hide search-results-list table-details table-responsive">
-										<table class="table table-sm">
+										<table class="table table-head-bordered table-hover table-sm table-striped">
 											<thead>
 												<tr>
 													<th class="table-cell-expand-smaller table-cell-text-end">
@@ -158,6 +158,24 @@
 							</div>
 						</section>
 					</div>
+
+					<#if entry.isAssetRendererURLDownloadVisible()>
+						<div class="autofit-col">
+							<span
+								class="c-mt-2 lfr-portal-tooltip"
+								title="${languageUtil.format(locale, 'download-x', ['(' + languageUtil.formatStorageSize(entry.getAssetRendererDownloadSize(), locale) + ')'])}"
+							>
+								<@clay.link
+									aria\-label="${languageUtil.format(locale, 'download-x', [entry.getTitle()])}"
+									cssClass="link-monospaced link-outline link-outline-borderless link-outline-secondary"
+									displayType="secondary"
+									href="${entry.getAssetRendererURLDownload()}"
+								>
+									<@clay.icon symbol="download" />
+								</@clay.link>
+							</span>
+						</div>
+					</#if>
 				</li>
 			</#list>
 		</#if>

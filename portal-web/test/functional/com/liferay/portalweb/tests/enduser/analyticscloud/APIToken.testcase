@@ -26,6 +26,15 @@ definition {
 
 		ACUtils.tearDownDXP();
 
+		if (${testPortalInstance} == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			JSONUser.tearDownNonAdminUsers();
+
+			JSONGroup.deleteGroupByName(groupName = "Site Name");
+		}
+
 		ACUtils.launchAC();
 
 		ACNavigation.goToSettings();
@@ -36,17 +45,32 @@ definition {
 
 		ACUtils.clickAnyButton(button = "Continue");
 
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
+		ACUtils.tearDownAC();
+	}
 
-		//ACUtils.tearDownAC();
+	@description = "Feature ID: LRAC-13255 | Automation ID: LRAC-13691 | Test Summary: Can revoke token and generate a new one"
+	@priority = 3
+	test CanRevokeTokenAndGenerateNewOne {
+		task ("Given: An API token with 30 day expiration date is generated") {
+			ACApi.configureExpirationDate(expirationDate = "30 Days");
 
-		if (${testPortalInstance} == "true") {
-			PortalInstances.tearDownCP();
+			ACUtils.clickAnyButton(button = "Generate Token");
+
+			Alert.viewSuccessMessage();
 		}
-		else {
-			JSONUser.tearDownNonAdminUsers();
 
-			JSONGroup.deleteGroupByName(groupName = "Site Name");
+		task ("When: The token is revoked and a new token is generated") {
+			ACUtils.clickAnyButton(button = "Revoke");
+
+			ACUtils.clickAnyButton(button = "Continue");
+
+			ACApi.configureExpirationDate(expirationDate = "30 Days");
+
+			ACUtils.clickAnyButton(button = "Generate Token");
+		}
+
+		task ("Then: The new token was generated success message appears") {
+			Alert.viewSuccessMessage();
 		}
 	}
 
@@ -66,6 +90,8 @@ definition {
 		}
 
 		task ("Create a query using the revoked API token") {
+			var analyticsCloudURL = PropsUtil.get("analytics.cloud.url");
+
 			var curl = '''
 				${analyticsCloudURL}/api/reports/${type} \
 					-H "Authorization: Bearer ${token}" -i

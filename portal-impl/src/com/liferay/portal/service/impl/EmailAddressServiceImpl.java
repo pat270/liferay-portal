@@ -10,10 +10,11 @@ import com.liferay.portal.kernel.model.EmailAddress;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.service.permission.CommonPermissionUtil;
 import com.liferay.portal.service.base.EmailAddressServiceBaseImpl;
+import com.liferay.portal.service.permission.CommonPermissionUtil;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Brian Wing Shun Chan
@@ -27,8 +28,16 @@ public class EmailAddressServiceImpl extends EmailAddressServiceBaseImpl {
 			boolean primary, ServiceContext serviceContext)
 		throws PortalException {
 
+		String actionId = ActionKeys.UPDATE;
+
+		if (Objects.equals(
+				className, "com.liferay.account.model.AccountEntry")) {
+
+			actionId = "MANAGE_ADDRESSES";
+		}
+
 		CommonPermissionUtil.check(
-			getPermissionChecker(), className, classPK, ActionKeys.UPDATE);
+			getPermissionChecker(), className, classPK, actionId);
 
 		return emailAddressLocalService.addEmailAddress(
 			getUserId(), className, classPK, address, typeId, primary,
@@ -40,9 +49,18 @@ public class EmailAddressServiceImpl extends EmailAddressServiceBaseImpl {
 		EmailAddress emailAddress = emailAddressPersistence.findByPrimaryKey(
 			emailAddressId);
 
+		String actionId = ActionKeys.UPDATE;
+
+		if (Objects.equals(
+				emailAddress.getClassName(),
+				"com.liferay.account.model.AccountEntry")) {
+
+			actionId = "MANAGE_ADDRESSES";
+		}
+
 		CommonPermissionUtil.check(
 			getPermissionChecker(), emailAddress.getClassNameId(),
-			emailAddress.getClassPK(), ActionKeys.UPDATE);
+			emailAddress.getClassPK(), actionId);
 
 		emailAddressLocalService.deleteEmailAddress(emailAddress);
 	}
@@ -106,9 +124,18 @@ public class EmailAddressServiceImpl extends EmailAddressServiceBaseImpl {
 		EmailAddress emailAddress = emailAddressPersistence.findByPrimaryKey(
 			emailAddressId);
 
+		String actionId = ActionKeys.UPDATE;
+
+		if (Objects.equals(
+				emailAddress.getClassName(),
+				"com.liferay.account.model.AccountEntry")) {
+
+			actionId = "MANAGE_ADDRESSES";
+		}
+
 		CommonPermissionUtil.check(
 			getPermissionChecker(), emailAddress.getClassNameId(),
-			emailAddress.getClassPK(), ActionKeys.UPDATE);
+			emailAddress.getClassPK(), actionId);
 
 		return emailAddressLocalService.updateEmailAddress(
 			emailAddressId, address, typeId, primary);

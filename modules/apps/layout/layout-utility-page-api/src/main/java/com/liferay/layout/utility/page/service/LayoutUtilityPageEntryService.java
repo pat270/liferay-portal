@@ -49,8 +49,8 @@ public interface LayoutUtilityPageEntryService extends BaseService {
 	public LayoutUtilityPageEntry addLayoutUtilityPageEntry(
 			String externalReferenceCode, long groupId, long plid,
 			long previewFileEntryId, boolean defaultLayoutUtilityPageEntry,
-			String name, String type, long masterLayoutPlid,
-			ServiceContext serviceContext)
+			String name, String type, long masterLayoutPlid, String friendlyURL,
+			boolean privateLayout, ServiceContext serviceContext)
 		throws PortalException;
 
 	public LayoutUtilityPageEntry copyLayoutUtilityPageEntry(
@@ -86,7 +86,15 @@ public interface LayoutUtilityPageEntryService extends BaseService {
 		OrderByComparator<LayoutUtilityPageEntry> orderByComparator);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<LayoutUtilityPageEntry> getLayoutUtilityPageEntries(
+		long groupId, String[] types, int start, int end,
+		OrderByComparator<LayoutUtilityPageEntry> orderByComparator);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getLayoutUtilityPageEntriesCount(long groupId);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getLayoutUtilityPageEntriesCount(long groupId, String[] types);
 
 	/**
 	 * Returns the OSGi service identifier.

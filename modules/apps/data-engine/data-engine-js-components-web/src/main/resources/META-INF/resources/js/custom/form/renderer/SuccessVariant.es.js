@@ -14,6 +14,19 @@ import {useForm, useFormState} from '../../../core/hooks/useForm.es';
 import {setValue} from '../../../utils/i18n.es';
 import {EVENT_TYPES} from '../eventTypes';
 
+const getValue = (defaultLanguageId, editingLanguageId, localizedValue) => {
+	if (!localizedValue) {
+		return '';
+	}
+
+	return (
+		localizedValue[editingLanguageId] ||
+		localizedValue[defaultLanguageId] ||
+		localizedValue[Liferay.ThemeDisplay.getLanguageId()] ||
+		''
+	);
+};
+
 export function Container({children, pages, strings = {}}) {
 	const {editingLanguageId} = useFormState();
 	const dispatch = useForm();
@@ -76,16 +89,16 @@ export function Page({page: {successPageSettings}}) {
 	const prevEditingLanguageId = usePrevious(editingLanguageId);
 
 	const {initialBody, initialTitle} = {
-		initialBody:
-			(successPageSettings.body &&
-				(successPageSettings.body[editingLanguageId] ||
-					successPageSettings.body[defaultLanguageId])) ||
-			'',
-		initialTitle:
-			(successPageSettings.title &&
-				(successPageSettings.title[editingLanguageId] ||
-					successPageSettings.title[defaultLanguageId])) ||
-			'',
+		initialBody: getValue(
+			defaultLanguageId,
+			editingLanguageId,
+			successPageSettings.body
+		),
+		initialTitle: getValue(
+			defaultLanguageId,
+			editingLanguageId,
+			successPageSettings.title
+		),
 	};
 
 	const [body, setBody] = useState(initialBody);
@@ -114,7 +127,7 @@ export function Page({page: {successPageSettings}}) {
 		<div className="active ddm-form-page form-builder-success-page lfr-ddm-form-page">
 			<input
 				className="form-builder-page-header-title form-control p-0"
-				maxLength="120"
+				maxLength="255"
 				onChange={(event) => {
 					setTitle(event.target.value);
 					onChange(event, 'title');
@@ -125,7 +138,7 @@ export function Page({page: {successPageSettings}}) {
 
 			<input
 				className="form-builder-page-header-description form-control p-0"
-				maxLength="120"
+				maxLength="255"
 				onChange={(event) => {
 					setBody(event.target.value);
 					onChange(event, 'body');

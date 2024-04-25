@@ -72,7 +72,12 @@ public class AdminAccountGroupResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _adminAccountGroupResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, AdminAccountGroupResource>
+					adminAccountGroupResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_adminAccountGroupResourceProxyProviderFunction;
+
+				return adminAccountGroupResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -232,10 +237,6 @@ public class AdminAccountGroupResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, AdminAccountGroupResource>
-		_adminAccountGroupResourceProxyProviderFunction =
-			_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -271,6 +272,15 @@ public class AdminAccountGroupResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function
+			<InvocationHandler, AdminAccountGroupResource>
+				_adminAccountGroupResourceProxyProviderFunction =
+					_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

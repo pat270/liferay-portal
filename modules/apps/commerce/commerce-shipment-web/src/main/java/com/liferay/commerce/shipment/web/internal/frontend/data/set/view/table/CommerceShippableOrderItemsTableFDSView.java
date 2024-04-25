@@ -38,6 +38,8 @@ public class CommerceShippableOrderItemsTableFDSView extends BaseTableFDSView {
 		).add(
 			"quantity", "outstanding-quantity"
 		).add(
+			"unitOfMeasureKey", "uom"
+		).add(
 			"available", "available"
 		).add(
 			"icon", "address-matches-shipment"

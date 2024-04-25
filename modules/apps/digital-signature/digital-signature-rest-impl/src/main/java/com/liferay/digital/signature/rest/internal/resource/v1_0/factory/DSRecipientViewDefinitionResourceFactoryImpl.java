@@ -72,7 +72,12 @@ public class DSRecipientViewDefinitionResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _dsRecipientViewDefinitionResourceProxyProviderFunction.
+				Function<InvocationHandler, DSRecipientViewDefinitionResource>
+					dsRecipientViewDefinitionResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_dsRecipientViewDefinitionResourceProxyProviderFunction;
+
+				return dsRecipientViewDefinitionResourceProxyProviderFunction.
 					apply(
 						(proxy, method, arguments) -> _invoke(
 							method, arguments, _checkPermissions,
@@ -241,11 +246,6 @@ public class DSRecipientViewDefinitionResourceFactoryImpl
 		}
 	}
 
-	private static final Function
-		<InvocationHandler, DSRecipientViewDefinitionResource>
-			_dsRecipientViewDefinitionResourceProxyProviderFunction =
-				_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -281,6 +281,15 @@ public class DSRecipientViewDefinitionResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function
+			<InvocationHandler, DSRecipientViewDefinitionResource>
+				_dsRecipientViewDefinitionResourceProxyProviderFunction =
+					_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

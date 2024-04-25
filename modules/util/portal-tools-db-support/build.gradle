@@ -1,5 +1,8 @@
 apply plugin: "com.liferay.maven.plugin.builder"
 
+sourceCompatibility = "1.8"
+targetCompatibility = "1.8"
+
 String h2Version = "2.1.212"
 
 buildPluginDescriptor {
@@ -16,6 +19,10 @@ configurations {
 	mavenDistribution
 }
 
+copyCSS {
+	mustRunAfter buildPluginDescriptor
+}
+
 dependencies {
 	compileInclude group: "com.beust", name: "jcommander", version: "1.58"
 
@@ -25,9 +32,9 @@ dependencies {
 
 	mavenDistribution classifier: "bin", ext: "zip", group: "org.apache.maven", name: "apache-maven", version: "3.3.9"
 
-	testCompile group: "com.h2database", name: "h2", version: h2Version
-	testCompile group: "com.liferay", name: "com.liferay.maven.executor", version: "1.0.2"
-	testCompile group: "org.apache.ant", name: "ant-testutil", version: "1.9.7"
+	testImplementation group: "com.h2database", name: "h2", version: h2Version
+	testImplementation group: "com.liferay", name: "com.liferay.maven.executor", version: "1.0.2"
+	testImplementation group: "org.apache.ant", name: "ant-testutil", version: "1.9.7"
 }
 
 javadoc {
@@ -39,13 +46,13 @@ liferayOSGi {
 }
 
 test {
-	dependsOn install
+	dependsOn publishToMavenLocal
 
 	doFirst {
 		systemProperty "maven.distribution.file.name", configurations.mavenDistribution.singleFile
 	}
 
-	systemProperty "db.support.version", jar.version
+	systemProperty "db.support.version", jar.archiveVersion
 	systemProperty "h2.version", h2Version
 	systemProperty "http.proxyHost", System.properties["http.proxyHost"]
 	systemProperty "http.proxyPort", System.properties["http.proxyPort"]

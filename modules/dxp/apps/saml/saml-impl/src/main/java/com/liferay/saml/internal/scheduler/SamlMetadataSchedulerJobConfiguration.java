@@ -7,6 +7,8 @@ package com.liferay.saml.internal.scheduler;
 
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeRunnable;
+import com.liferay.petra.lang.SafeCloseable;
+import com.liferay.petra.lang.ThreadContextClassLoaderUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -61,14 +63,17 @@ public class SamlMetadataSchedulerJobConfiguration
 
 	@Override
 	public TriggerConfiguration getTriggerConfiguration() {
-		return TriggerConfiguration.createTriggerConfiguration(
-			_samlConfiguration.getMetadataRefreshInterval(), TimeUnit.SECOND);
+		return _triggerConfiguration;
 	}
 
 	@Activate
 	protected void activate(Map<String, Object> properties) {
-		_samlConfiguration = ConfigurableUtil.createConfigurable(
-			SamlConfiguration.class, properties);
+		SamlConfiguration samlConfiguration =
+			ConfigurableUtil.createConfigurable(
+				SamlConfiguration.class, properties);
+
+		_triggerConfiguration = TriggerConfiguration.createTriggerConfiguration(
+			samlConfiguration.getMetadataRefreshInterval(), TimeUnit.SECOND);
 	}
 
 	private void _updateIdpMetadata(long companyId) {
@@ -103,13 +108,8 @@ public class SamlMetadataSchedulerJobConfiguration
 	}
 
 	private void _updateMetadata(long companyId) {
-		Thread currentThread = Thread.currentThread();
-
-		ClassLoader classLoader = currentThread.getContextClassLoader();
-
-		try {
-			currentThread.setContextClassLoader(
-				SamlMetadataSchedulerJobConfiguration.class.getClassLoader());
+		try (SafeCloseable safeCloseable = ThreadContextClassLoaderUtil.swap(
+				SamlMetadataSchedulerJobConfiguration.class.getClassLoader())) {
 
 			if (!_samlProviderConfigurationHelper.isEnabled()) {
 				return;
@@ -135,9 +135,6 @@ public class SamlMetadataSchedulerJobConfiguration
 					_log.warn(msg);
 				}
 			}
-		}
-		finally {
-			currentThread.setContextClassLoader(classLoader);
 		}
 	}
 
@@ -178,8 +175,6 @@ public class SamlMetadataSchedulerJobConfiguration
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
-	private SamlConfiguration _samlConfiguration;
-
 	@Reference
 	private SamlIdpSpConnectionLocalService _samlIdpSpConnectionLocalService;
 
@@ -188,5 +183,7 @@ public class SamlMetadataSchedulerJobConfiguration
 
 	@Reference
 	private SamlSpIdpConnectionLocalService _samlSpIdpConnectionLocalService;
+
+	private TriggerConfiguration _triggerConfiguration;
 
 }

@@ -4,7 +4,7 @@ definition {
 	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Fragments";
+	property testray.main.component.name = "Fragment Administration";
 
 	setUp {
 		task ("Set up instance and sign in") {
@@ -15,21 +15,6 @@ definition {
 
 		task ("Add a new site") {
 			HeadlessSite.addSite(siteName = "Test Site Name");
-		}
-	}
-
-	tearDown {
-		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
-
-		if (${testLiferayVirtualInstance} == "true") {
-			PortalInstances.tearDownCP();
-		}
-		else {
-			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
-
-			ObjectAdmin.deleteAllCustomObjectsViaAPI();
-
-			JSONUser.tearDownNonAdminUsers();
 		}
 	}
 
@@ -292,7 +277,8 @@ definition {
 	@description = "This is a test for LPS-169924. The user without View permission for object cannot see Form Container at view and perview mode."
 	@priority = 5
 	test CannotSeeFormContainerAtViewAndPreviewModeAsUserWithoutViewPermissionForObject {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}feature.flag.LPS-169923=true";
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+		property portal.acceptance = "true";
 
 		task ("Given a user doesn't have view permission for custom object") {
 			ObjectAdmin.addObjectViaAPI(
@@ -385,6 +371,73 @@ definition {
 		}
 	}
 
+	@description = "This is a test for LPS-194108. View Unique Field Value error when submitting a form."
+	@priority = 4
+	test CannotSubmitSameValueWithExistingEntryToUniqueField {
+		task ("Given a page creator has a content page with a Text Input fragment mapped to an unique field") {
+			ObjectAdmin.addObjectViaAPI(
+				labelName = "Purchase Order",
+				objectName = "PurchaseOrder",
+				pluralLabelName = "Purchase Orders");
+
+			ObjectAdmin.openObjectAdmin();
+
+			ObjectPortlet.selectCustomObject(label = "Purchase Order");
+
+			ObjectAdmin.goToFieldsTab();
+
+			ObjectAdmin.addObjectFieldViaUI(
+				acceptUniqueValuesOnly = "true",
+				fieldLabel = "Email Address",
+				fieldType = "Text");
+
+			ObjectAdmin.publishObjectViaAPI(objectName = "PurchaseOrder");
+
+			JSONLayout.addPublicLayout(
+				groupName = "Test Site Name",
+				layoutName = "Test Page Name",
+				type = "content");
+
+			ContentPagesNavigator.openEditContentPage(
+				pageName = "Test Page Name",
+				siteName = "Test Site Name");
+
+			PageEditor.addFragment(
+				collectionName = "Form Components",
+				fragmentName = "Form Container");
+
+			PageEditor.mapFormContainerToObject(contentType = "Purchase Order");
+
+			PageEditor.publish();
+		}
+
+		task ("When the page creator submits a form") {
+			Type(
+				key_text = "Email Address",
+				locator1 = "TextInput#ANY",
+				value1 = "test@liferay.com");
+
+			Button.clickSubmitButton();
+
+			AssertTextPresent(value1 = "Thank you. Your information was successfully received.");
+		}
+
+		task ("When the page creator cannot submit another form with same value") {
+			ContentPagesNavigator.openViewContentPage(
+				pageName = "Test Page Name",
+				siteName = "Test Site Name");
+
+			Type(
+				key_text = "Email Address",
+				locator1 = "TextInput#ANY",
+				value1 = "test@liferay.com");
+
+			Button.clickSubmitButton();
+
+			Alert.viewErrorMessage(errorMessage = "The Email Address is already in use. Please enter a unique Email Address.");
+		}
+	}
+
 	@description = "This is a test for LPS-162848. The Form Components should be available to Fragments admin and style book by default."
 	@priority = 4
 	test ViewFormComponentsInFragmentsAdminAndStyleBook {
@@ -399,7 +452,7 @@ definition {
 		task ("Then the site designer can see the Form Components fragment set") {
 			FragmentsAdminNavigator.gotoCollection(collectionName = "Form Components");
 
-			for (var fragmentName : list "CAPTCHA,Checkbox,Date,File Upload,Numeric Input,Select from List,Submit Button,Text Input") {
+			for (var fragmentName : list "CAPTCHA,Checkbox,Date,File Upload,Numeric,Select,Submit Button,Text") {
 				FragmentsAdmin.viewEntryPresent(entry = ${fragmentName});
 			}
 		}
@@ -426,7 +479,7 @@ definition {
 				id = "submit-button-text",
 				text = "Submit");
 
-			ScrollBy(value1 = "0, 500");
+			ScrollBy(value1 = "0, 1200");
 
 			AssertVisible(
 				index = 1,
@@ -459,7 +512,7 @@ definition {
 			AssertVisible(
 				index = 1,
 				locator1 = "Fragment#INPUT_FIELD",
-				type = "numeric-input");
+				type = "numeric");
 
 			ScrollBy(value1 = "0, 300");
 
@@ -472,14 +525,14 @@ definition {
 			AssertVisible(
 				index = 1,
 				locator1 = "Fragment#INPUT_TOGGLE",
-				type = "select-from-list");
+				type = "select");
 
 			ScrollBy(value1 = "0, 300");
 
 			AssertVisible(
 				index = 1,
 				locator1 = "Fragment#INPUT_FIELD",
-				type = "text-input");
+				type = "text");
 
 			ScrollBy(value1 = "0, 300");
 
@@ -570,7 +623,7 @@ definition {
 	@description = "This is a test for LPS-169924. The user with Add Object Entry but without View permission for object should see Form Container at view and preview mode."
 	@priority = 4
 	test ViewFormContainerAtViewAndPreviewModeAsUserWithAddObjectEntryPermissionWithoutViewPermissionForObject {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}feature.flag.LPS-169923=true";
+		property custom.properties = "jsonws.web.service.paths.excludes=";
 
 		task ("Given a user doesn't have view permission for custom object") {
 			ObjectAdmin.addObjectViaAPI(
@@ -682,7 +735,7 @@ definition {
 		}
 	}
 
-	@description = "This is a test for LPS-151157. The fragment admin could see the supported field types in read-only mode."
+	@description = "This is a test for LPS-151157 and LPS-175242. The fragment admin could see the supported field types in read-only mode."
 	@priority = 4
 	test ViewSupportedFieldTypesInReadOnlyMode {
 		task ("Given a fragment admin has a read-only fragment with field type") {
@@ -708,9 +761,37 @@ definition {
 		task ("Given a fragment admin has a read-only fragment without field type") {
 			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "test-site-name");
 
-			FragmentsAdmin.importCollectionFromDependenciesFolder(collectionZipFile = "form-fragments.zip");
+			FragmentsAdminNavigator.gotoImportCollection();
 
+			WaitForPageLoad();
+
+			UploadDependencyFile.uploadArchiveFile(fileName = "form-fragments.zip");
+
+			Button.clickImport();
+
+			AssertTextEquals(
+				locator1 = "Message#WARNING_IMPORT",
+				value1 = "1 item was imported with warnings.");
+
+			AssertTextEquals.assertPartialText(
+				itemName = "Fragment Example",
+				locator1 = "Message#WARNING_IMPORT_SUBTEXT",
+				value1 = "Fragment type input must have at least one field type");
+
+			Button.clickDone();
+		}
+
+		task ("When the fragment admin accesses to the fragment set") {
 			FragmentsAdminNavigator.gotoCollection(collectionName = "Form Fragments");
+		}
+
+		task ("Then the fragment admin sees the warning label on fragment card") {
+			LexiconCard.viewCardLabel(
+				card = "Fragment Example",
+				cardLabel = "Warnings",
+				index = 2);
+
+			AssertElementAccessible(locator1 = "//div[contains(@class,'card')][contains(.,'Fragment Example')]//span[contains(@class,'label-warning')]");
 		}
 
 		task ("When the fragment admin accesses to fragment in read-only mode") {

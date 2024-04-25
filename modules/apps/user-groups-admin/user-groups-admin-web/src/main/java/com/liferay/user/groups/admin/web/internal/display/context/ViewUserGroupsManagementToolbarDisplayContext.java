@@ -25,9 +25,9 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portlet.usersadmin.util.UsersAdminUtil;
 import com.liferay.user.groups.admin.constants.UserGroupsAdminPortletKeys;
 import com.liferay.user.groups.admin.web.internal.search.UserGroupChecker;
-import com.liferay.users.admin.kernel.util.UsersAdminUtil;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -88,24 +88,6 @@ public class ViewUserGroupsManagementToolbarDisplayContext {
 		).build();
 	}
 
-	public List<DropdownItem> getFilterDropdownItems() {
-		return DropdownItemListBuilder.addGroup(
-			dropdownGroupItem -> {
-				dropdownGroupItem.setDropdownItems(
-					_getFilterNavigationDropdownItems());
-				dropdownGroupItem.setLabel(
-					LanguageUtil.get(
-						_httpServletRequest, "filter-by-navigation"));
-			}
-		).addGroup(
-			dropdownGroupItem -> {
-				dropdownGroupItem.setDropdownItems(_getOrderByDropdownItems());
-				dropdownGroupItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "order-by"));
-			}
-		).build();
-	}
-
 	public String getKeywords() {
 		if (Validator.isNull(_keywords)) {
 			_keywords = ParamUtil.getString(_httpServletRequest, "keywords");
@@ -124,6 +106,17 @@ public class ViewUserGroupsManagementToolbarDisplayContext {
 			"view-user-groups-order-by-col", "name");
 
 		return _orderByCol;
+	}
+
+	public List<DropdownItem> getOrderByDropdownItems() {
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.setActive(Objects.equals(getOrderByCol(), "name"));
+				dropdownItem.setHref(getPortletURL(), "orderByCol", "name");
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "name"));
+			}
+		).build();
 	}
 
 	public String getOrderByType() {
@@ -254,28 +247,6 @@ public class ViewUserGroupsManagementToolbarDisplayContext {
 
 	public boolean showCreationMenu() throws PortalException {
 		return _hasAddUserGroupPermission();
-	}
-
-	private List<DropdownItem> _getFilterNavigationDropdownItems() {
-		return DropdownItemListBuilder.add(
-			dropdownItem -> {
-				dropdownItem.setActive(true);
-				dropdownItem.setHref(StringPool.BLANK);
-				dropdownItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "all"));
-			}
-		).build();
-	}
-
-	private List<DropdownItem> _getOrderByDropdownItems() {
-		return DropdownItemListBuilder.add(
-			dropdownItem -> {
-				dropdownItem.setActive(Objects.equals(getOrderByCol(), "name"));
-				dropdownItem.setHref(getPortletURL(), "orderByCol", "name");
-				dropdownItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "name"));
-			}
-		).build();
 	}
 
 	private boolean _hasAddUserGroupPermission() {

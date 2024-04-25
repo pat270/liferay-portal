@@ -19,6 +19,7 @@ import com.liferay.headless.commerce.delivery.order.client.pagination.Page;
 import com.liferay.headless.commerce.delivery.order.client.pagination.Pagination;
 import com.liferay.headless.commerce.delivery.order.client.resource.v1_0.PlacedOrderItemResource;
 import com.liferay.headless.commerce.delivery.order.client.serdes.v1_0.PlacedOrderItemSerDes;
+import com.liferay.petra.function.UnsafeTriConsumer;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
@@ -26,15 +27,15 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.test.rule.Inject;
@@ -172,11 +173,13 @@ public abstract class BasePlacedOrderItemResourceTestCase {
 		PlacedOrderItem placedOrderItem = randomPlacedOrderItem();
 
 		placedOrderItem.setAdaptiveMediaImageHTMLTag(regex);
+		placedOrderItem.setExternalReferenceCode(regex);
 		placedOrderItem.setName(regex);
 		placedOrderItem.setOptions(regex);
 		placedOrderItem.setReplacedSku(regex);
 		placedOrderItem.setSku(regex);
 		placedOrderItem.setThumbnail(regex);
+		placedOrderItem.setUnitOfMeasureKey(regex);
 
 		String json = PlacedOrderItemSerDes.toJSON(placedOrderItem);
 
@@ -186,11 +189,150 @@ public abstract class BasePlacedOrderItemResourceTestCase {
 
 		Assert.assertEquals(
 			regex, placedOrderItem.getAdaptiveMediaImageHTMLTag());
+		Assert.assertEquals(regex, placedOrderItem.getExternalReferenceCode());
 		Assert.assertEquals(regex, placedOrderItem.getName());
 		Assert.assertEquals(regex, placedOrderItem.getOptions());
 		Assert.assertEquals(regex, placedOrderItem.getReplacedSku());
 		Assert.assertEquals(regex, placedOrderItem.getSku());
 		Assert.assertEquals(regex, placedOrderItem.getThumbnail());
+		Assert.assertEquals(regex, placedOrderItem.getUnitOfMeasureKey());
+	}
+
+	@Test
+	public void testGetPlacedOrderItemByExternalReferenceCode()
+		throws Exception {
+
+		PlacedOrderItem postPlacedOrderItem =
+			testGetPlacedOrderItemByExternalReferenceCode_addPlacedOrderItem();
+
+		PlacedOrderItem getPlacedOrderItem =
+			placedOrderItemResource.getPlacedOrderItemByExternalReferenceCode(
+				postPlacedOrderItem.getExternalReferenceCode());
+
+		assertEquals(postPlacedOrderItem, getPlacedOrderItem);
+		assertValid(getPlacedOrderItem);
+	}
+
+	protected PlacedOrderItem
+			testGetPlacedOrderItemByExternalReferenceCode_addPlacedOrderItem()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGraphQLGetPlacedOrderItemByExternalReferenceCode()
+		throws Exception {
+
+		PlacedOrderItem placedOrderItem =
+			testGraphQLGetPlacedOrderItemByExternalReferenceCode_addPlacedOrderItem();
+
+		// No namespace
+
+		Assert.assertTrue(
+			equals(
+				placedOrderItem,
+				PlacedOrderItemSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"placedOrderItemByExternalReferenceCode",
+								new HashMap<String, Object>() {
+									{
+										put(
+											"externalReferenceCode",
+											"\"" +
+												placedOrderItem.
+													getExternalReferenceCode() +
+														"\"");
+									}
+								},
+								getGraphQLFields())),
+						"JSONObject/data",
+						"Object/placedOrderItemByExternalReferenceCode"))));
+
+		// Using the namespace headlessCommerceDeliveryOrder_v1_0
+
+		Assert.assertTrue(
+			equals(
+				placedOrderItem,
+				PlacedOrderItemSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceDeliveryOrder_v1_0",
+								new GraphQLField(
+									"placedOrderItemByExternalReferenceCode",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"externalReferenceCode",
+												"\"" +
+													placedOrderItem.
+														getExternalReferenceCode() +
+															"\"");
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceDeliveryOrder_v1_0",
+						"Object/placedOrderItemByExternalReferenceCode"))));
+	}
+
+	@Test
+	public void testGraphQLGetPlacedOrderItemByExternalReferenceCodeNotFound()
+		throws Exception {
+
+		String irrelevantExternalReferenceCode =
+			"\"" + RandomTestUtil.randomString() + "\"";
+
+		// No namespace
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"placedOrderItemByExternalReferenceCode",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"externalReferenceCode",
+									irrelevantExternalReferenceCode);
+							}
+						},
+						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceDeliveryOrder_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceDeliveryOrder_v1_0",
+						new GraphQLField(
+							"placedOrderItemByExternalReferenceCode",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"externalReferenceCode",
+										irrelevantExternalReferenceCode);
+								}
+							},
+							getGraphQLFields()))),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+	}
+
+	protected PlacedOrderItem
+			testGraphQLGetPlacedOrderItemByExternalReferenceCode_addPlacedOrderItem()
+		throws Exception {
+
+		return testGraphQLPlacedOrderItem_addPlacedOrderItem();
 	}
 
 	@Test
@@ -218,6 +360,8 @@ public abstract class BasePlacedOrderItemResourceTestCase {
 		PlacedOrderItem placedOrderItem =
 			testGraphQLGetPlacedOrderItem_addPlacedOrderItem();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				placedOrderItem,
@@ -235,11 +379,37 @@ public abstract class BasePlacedOrderItemResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/placedOrderItem"))));
+
+		// Using the namespace headlessCommerceDeliveryOrder_v1_0
+
+		Assert.assertTrue(
+			equals(
+				placedOrderItem,
+				PlacedOrderItemSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceDeliveryOrder_v1_0",
+								new GraphQLField(
+									"placedOrderItem",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"placedOrderItemId",
+												placedOrderItem.getId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceDeliveryOrder_v1_0",
+						"Object/placedOrderItem"))));
 	}
 
 	@Test
 	public void testGraphQLGetPlacedOrderItemNotFound() throws Exception {
 		Long irrelevantPlacedOrderItemId = RandomTestUtil.randomLong();
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -257,12 +427,405 @@ public abstract class BasePlacedOrderItemResourceTestCase {
 						getGraphQLFields())),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
+
+		// Using the namespace headlessCommerceDeliveryOrder_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceDeliveryOrder_v1_0",
+						new GraphQLField(
+							"placedOrderItem",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"placedOrderItemId",
+										irrelevantPlacedOrderItemId);
+								}
+							},
+							getGraphQLFields()))),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
 	}
 
 	protected PlacedOrderItem testGraphQLGetPlacedOrderItem_addPlacedOrderItem()
 		throws Exception {
 
 		return testGraphQLPlacedOrderItem_addPlacedOrderItem();
+	}
+
+	@Test
+	public void testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPage_getExternalReferenceCode();
+		String irrelevantExternalReferenceCode =
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPage_getIrrelevantExternalReferenceCode();
+
+		Page<PlacedOrderItem> page =
+			placedOrderItemResource.
+				getPlacedOrderByExternalReferenceCodePlacedOrderItemsPage(
+					externalReferenceCode, null, null, Pagination.of(1, 10),
+					null);
+
+		long totalCount = page.getTotalCount();
+
+		if (irrelevantExternalReferenceCode != null) {
+			PlacedOrderItem irrelevantPlacedOrderItem =
+				testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPage_addPlacedOrderItem(
+					irrelevantExternalReferenceCode,
+					randomIrrelevantPlacedOrderItem());
+
+			page =
+				placedOrderItemResource.
+					getPlacedOrderByExternalReferenceCodePlacedOrderItemsPage(
+						irrelevantExternalReferenceCode, null, null,
+						Pagination.of(1, (int)totalCount + 1), null);
+
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
+
+			assertContains(
+				irrelevantPlacedOrderItem,
+				(List<PlacedOrderItem>)page.getItems());
+			assertValid(
+				page,
+				testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPage_getExpectedActions(
+					irrelevantExternalReferenceCode));
+		}
+
+		PlacedOrderItem placedOrderItem1 =
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPage_addPlacedOrderItem(
+				externalReferenceCode, randomPlacedOrderItem());
+
+		PlacedOrderItem placedOrderItem2 =
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPage_addPlacedOrderItem(
+				externalReferenceCode, randomPlacedOrderItem());
+
+		page =
+			placedOrderItemResource.
+				getPlacedOrderByExternalReferenceCodePlacedOrderItemsPage(
+					externalReferenceCode, null, null, Pagination.of(1, 10),
+					null);
+
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
+
+		assertContains(
+			placedOrderItem1, (List<PlacedOrderItem>)page.getItems());
+		assertContains(
+			placedOrderItem2, (List<PlacedOrderItem>)page.getItems());
+		assertValid(
+			page,
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPage_getExpectedActions(
+				externalReferenceCode));
+	}
+
+	protected Map<String, Map<String, String>>
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPage_getExpectedActions(
+				String externalReferenceCode)
+		throws Exception {
+
+		Map<String, Map<String, String>> expectedActions = new HashMap<>();
+
+		return expectedActions;
+	}
+
+	@Test
+	public void testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPageWithPagination()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPage_getExternalReferenceCode();
+
+		Page<PlacedOrderItem> placedOrderItemPage =
+			placedOrderItemResource.
+				getPlacedOrderByExternalReferenceCodePlacedOrderItemsPage(
+					externalReferenceCode, null, null, null, null);
+
+		int totalCount = GetterUtil.getInteger(
+			placedOrderItemPage.getTotalCount());
+
+		PlacedOrderItem placedOrderItem1 =
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPage_addPlacedOrderItem(
+				externalReferenceCode, randomPlacedOrderItem());
+
+		PlacedOrderItem placedOrderItem2 =
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPage_addPlacedOrderItem(
+				externalReferenceCode, randomPlacedOrderItem());
+
+		PlacedOrderItem placedOrderItem3 =
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPage_addPlacedOrderItem(
+				externalReferenceCode, randomPlacedOrderItem());
+
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
+
+		int pageSizeLimit = 500;
+
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<PlacedOrderItem> page1 =
+				placedOrderItemResource.
+					getPlacedOrderByExternalReferenceCodePlacedOrderItemsPage(
+						externalReferenceCode, null, null,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+							pageSizeLimit),
+						null);
+
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
+
+			assertContains(
+				placedOrderItem1, (List<PlacedOrderItem>)page1.getItems());
+
+			Page<PlacedOrderItem> page2 =
+				placedOrderItemResource.
+					getPlacedOrderByExternalReferenceCodePlacedOrderItemsPage(
+						externalReferenceCode, null, null,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+							pageSizeLimit),
+						null);
+
+			assertContains(
+				placedOrderItem2, (List<PlacedOrderItem>)page2.getItems());
+
+			Page<PlacedOrderItem> page3 =
+				placedOrderItemResource.
+					getPlacedOrderByExternalReferenceCodePlacedOrderItemsPage(
+						externalReferenceCode, null, null,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+							pageSizeLimit),
+						null);
+
+			assertContains(
+				placedOrderItem3, (List<PlacedOrderItem>)page3.getItems());
+		}
+		else {
+			Page<PlacedOrderItem> page1 =
+				placedOrderItemResource.
+					getPlacedOrderByExternalReferenceCodePlacedOrderItemsPage(
+						externalReferenceCode, null, null,
+						Pagination.of(1, totalCount + 2), null);
+
+			List<PlacedOrderItem> placedOrderItems1 =
+				(List<PlacedOrderItem>)page1.getItems();
+
+			Assert.assertEquals(
+				placedOrderItems1.toString(), totalCount + 2,
+				placedOrderItems1.size());
+
+			Page<PlacedOrderItem> page2 =
+				placedOrderItemResource.
+					getPlacedOrderByExternalReferenceCodePlacedOrderItemsPage(
+						externalReferenceCode, null, null,
+						Pagination.of(2, totalCount + 2), null);
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<PlacedOrderItem> placedOrderItems2 =
+				(List<PlacedOrderItem>)page2.getItems();
+
+			Assert.assertEquals(
+				placedOrderItems2.toString(), 1, placedOrderItems2.size());
+
+			Page<PlacedOrderItem> page3 =
+				placedOrderItemResource.
+					getPlacedOrderByExternalReferenceCodePlacedOrderItemsPage(
+						externalReferenceCode, null, null,
+						Pagination.of(1, (int)totalCount + 3), null);
+
+			assertContains(
+				placedOrderItem1, (List<PlacedOrderItem>)page3.getItems());
+			assertContains(
+				placedOrderItem2, (List<PlacedOrderItem>)page3.getItems());
+			assertContains(
+				placedOrderItem3, (List<PlacedOrderItem>)page3.getItems());
+		}
+	}
+
+	@Test
+	public void testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPageWithSortDateTime()
+		throws Exception {
+
+		testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPageWithSort(
+			EntityField.Type.DATE_TIME,
+			(entityField, placedOrderItem1, placedOrderItem2) -> {
+				BeanTestUtil.setProperty(
+					placedOrderItem1, entityField.getName(),
+					new Date(System.currentTimeMillis() - (2 * Time.MINUTE)));
+			});
+	}
+
+	@Test
+	public void testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPageWithSortDouble()
+		throws Exception {
+
+		testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPageWithSort(
+			EntityField.Type.DOUBLE,
+			(entityField, placedOrderItem1, placedOrderItem2) -> {
+				BeanTestUtil.setProperty(
+					placedOrderItem1, entityField.getName(), 0.1);
+				BeanTestUtil.setProperty(
+					placedOrderItem2, entityField.getName(), 0.5);
+			});
+	}
+
+	@Test
+	public void testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPageWithSortInteger()
+		throws Exception {
+
+		testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPageWithSort(
+			EntityField.Type.INTEGER,
+			(entityField, placedOrderItem1, placedOrderItem2) -> {
+				BeanTestUtil.setProperty(
+					placedOrderItem1, entityField.getName(), 0);
+				BeanTestUtil.setProperty(
+					placedOrderItem2, entityField.getName(), 1);
+			});
+	}
+
+	@Test
+	public void testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPageWithSortString()
+		throws Exception {
+
+		testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPageWithSort(
+			EntityField.Type.STRING,
+			(entityField, placedOrderItem1, placedOrderItem2) -> {
+				Class<?> clazz = placedOrderItem1.getClass();
+
+				String entityFieldName = entityField.getName();
+
+				Method method = clazz.getMethod(
+					"get" + StringUtil.upperCaseFirstLetter(entityFieldName));
+
+				Class<?> returnType = method.getReturnType();
+
+				if (returnType.isAssignableFrom(Map.class)) {
+					BeanTestUtil.setProperty(
+						placedOrderItem1, entityFieldName,
+						Collections.singletonMap("Aaa", "Aaa"));
+					BeanTestUtil.setProperty(
+						placedOrderItem2, entityFieldName,
+						Collections.singletonMap("Bbb", "Bbb"));
+				}
+				else if (entityFieldName.contains("email")) {
+					BeanTestUtil.setProperty(
+						placedOrderItem1, entityFieldName,
+						"aaa" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()) +
+									"@liferay.com");
+					BeanTestUtil.setProperty(
+						placedOrderItem2, entityFieldName,
+						"bbb" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()) +
+									"@liferay.com");
+				}
+				else {
+					BeanTestUtil.setProperty(
+						placedOrderItem1, entityFieldName,
+						"aaa" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()));
+					BeanTestUtil.setProperty(
+						placedOrderItem2, entityFieldName,
+						"bbb" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()));
+				}
+			});
+	}
+
+	protected void
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPageWithSort(
+				EntityField.Type type,
+				UnsafeTriConsumer
+					<EntityField, PlacedOrderItem, PlacedOrderItem, Exception>
+						unsafeTriConsumer)
+		throws Exception {
+
+		List<EntityField> entityFields = getEntityFields(type);
+
+		if (entityFields.isEmpty()) {
+			return;
+		}
+
+		String externalReferenceCode =
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPage_getExternalReferenceCode();
+
+		PlacedOrderItem placedOrderItem1 = randomPlacedOrderItem();
+		PlacedOrderItem placedOrderItem2 = randomPlacedOrderItem();
+
+		for (EntityField entityField : entityFields) {
+			unsafeTriConsumer.accept(
+				entityField, placedOrderItem1, placedOrderItem2);
+		}
+
+		placedOrderItem1 =
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPage_addPlacedOrderItem(
+				externalReferenceCode, placedOrderItem1);
+
+		placedOrderItem2 =
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPage_addPlacedOrderItem(
+				externalReferenceCode, placedOrderItem2);
+
+		Page<PlacedOrderItem> page =
+			placedOrderItemResource.
+				getPlacedOrderByExternalReferenceCodePlacedOrderItemsPage(
+					externalReferenceCode, null, null, null, null);
+
+		for (EntityField entityField : entityFields) {
+			Page<PlacedOrderItem> ascPage =
+				placedOrderItemResource.
+					getPlacedOrderByExternalReferenceCodePlacedOrderItemsPage(
+						externalReferenceCode, null, null,
+						Pagination.of(1, (int)page.getTotalCount() + 1),
+						entityField.getName() + ":asc");
+
+			assertContains(
+				placedOrderItem1, (List<PlacedOrderItem>)ascPage.getItems());
+			assertContains(
+				placedOrderItem2, (List<PlacedOrderItem>)ascPage.getItems());
+
+			Page<PlacedOrderItem> descPage =
+				placedOrderItemResource.
+					getPlacedOrderByExternalReferenceCodePlacedOrderItemsPage(
+						externalReferenceCode, null, null,
+						Pagination.of(1, (int)page.getTotalCount() + 1),
+						entityField.getName() + ":desc");
+
+			assertContains(
+				placedOrderItem2, (List<PlacedOrderItem>)descPage.getItems());
+			assertContains(
+				placedOrderItem1, (List<PlacedOrderItem>)descPage.getItems());
+		}
+	}
+
+	protected PlacedOrderItem
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPage_addPlacedOrderItem(
+				String externalReferenceCode, PlacedOrderItem placedOrderItem)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected String
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPage_getExternalReferenceCode()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected String
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPage_getIrrelevantExternalReferenceCode()
+		throws Exception {
+
+		return null;
 	}
 
 	@Test
@@ -274,9 +837,9 @@ public abstract class BasePlacedOrderItemResourceTestCase {
 
 		Page<PlacedOrderItem> page =
 			placedOrderItemResource.getPlacedOrderPlacedOrderItemsPage(
-				placedOrderId, null, Pagination.of(1, 10));
+				placedOrderId, null, null, Pagination.of(1, 10), null);
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if (irrelevantPlacedOrderId != null) {
 			PlacedOrderItem irrelevantPlacedOrderItem =
@@ -284,12 +847,13 @@ public abstract class BasePlacedOrderItemResourceTestCase {
 					irrelevantPlacedOrderId, randomIrrelevantPlacedOrderItem());
 
 			page = placedOrderItemResource.getPlacedOrderPlacedOrderItemsPage(
-				irrelevantPlacedOrderId, null, Pagination.of(1, 2));
+				irrelevantPlacedOrderId, null, null,
+				Pagination.of(1, (int)totalCount + 1), null);
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantPlacedOrderItem),
+			assertContains(
+				irrelevantPlacedOrderItem,
 				(List<PlacedOrderItem>)page.getItems());
 			assertValid(
 				page,
@@ -306,13 +870,14 @@ public abstract class BasePlacedOrderItemResourceTestCase {
 				placedOrderId, randomPlacedOrderItem());
 
 		page = placedOrderItemResource.getPlacedOrderPlacedOrderItemsPage(
-			placedOrderId, null, Pagination.of(1, 10));
+			placedOrderId, null, null, Pagination.of(1, 10), null);
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(placedOrderItem1, placedOrderItem2),
-			(List<PlacedOrderItem>)page.getItems());
+		assertContains(
+			placedOrderItem1, (List<PlacedOrderItem>)page.getItems());
+		assertContains(
+			placedOrderItem2, (List<PlacedOrderItem>)page.getItems());
 		assertValid(
 			page,
 			testGetPlacedOrderPlacedOrderItemsPage_getExpectedActions(
@@ -336,6 +901,13 @@ public abstract class BasePlacedOrderItemResourceTestCase {
 		Long placedOrderId =
 			testGetPlacedOrderPlacedOrderItemsPage_getPlacedOrderId();
 
+		Page<PlacedOrderItem> placedOrderItemPage =
+			placedOrderItemResource.getPlacedOrderPlacedOrderItemsPage(
+				placedOrderId, null, null, null, null);
+
+		int totalCount = GetterUtil.getInteger(
+			placedOrderItemPage.getTotalCount());
+
 		PlacedOrderItem placedOrderItem1 =
 			testGetPlacedOrderPlacedOrderItemsPage_addPlacedOrderItem(
 				placedOrderId, randomPlacedOrderItem());
@@ -348,35 +920,239 @@ public abstract class BasePlacedOrderItemResourceTestCase {
 			testGetPlacedOrderPlacedOrderItemsPage_addPlacedOrderItem(
 				placedOrderId, randomPlacedOrderItem());
 
-		Page<PlacedOrderItem> page1 =
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
+
+		int pageSizeLimit = 500;
+
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<PlacedOrderItem> page1 =
+				placedOrderItemResource.getPlacedOrderPlacedOrderItemsPage(
+					placedOrderId, null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
+
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
+
+			assertContains(
+				placedOrderItem1, (List<PlacedOrderItem>)page1.getItems());
+
+			Page<PlacedOrderItem> page2 =
+				placedOrderItemResource.getPlacedOrderPlacedOrderItemsPage(
+					placedOrderId, null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
+
+			assertContains(
+				placedOrderItem2, (List<PlacedOrderItem>)page2.getItems());
+
+			Page<PlacedOrderItem> page3 =
+				placedOrderItemResource.getPlacedOrderPlacedOrderItemsPage(
+					placedOrderId, null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
+
+			assertContains(
+				placedOrderItem3, (List<PlacedOrderItem>)page3.getItems());
+		}
+		else {
+			Page<PlacedOrderItem> page1 =
+				placedOrderItemResource.getPlacedOrderPlacedOrderItemsPage(
+					placedOrderId, null, null, Pagination.of(1, totalCount + 2),
+					null);
+
+			List<PlacedOrderItem> placedOrderItems1 =
+				(List<PlacedOrderItem>)page1.getItems();
+
+			Assert.assertEquals(
+				placedOrderItems1.toString(), totalCount + 2,
+				placedOrderItems1.size());
+
+			Page<PlacedOrderItem> page2 =
+				placedOrderItemResource.getPlacedOrderPlacedOrderItemsPage(
+					placedOrderId, null, null, Pagination.of(2, totalCount + 2),
+					null);
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<PlacedOrderItem> placedOrderItems2 =
+				(List<PlacedOrderItem>)page2.getItems();
+
+			Assert.assertEquals(
+				placedOrderItems2.toString(), 1, placedOrderItems2.size());
+
+			Page<PlacedOrderItem> page3 =
+				placedOrderItemResource.getPlacedOrderPlacedOrderItemsPage(
+					placedOrderId, null, null,
+					Pagination.of(1, (int)totalCount + 3), null);
+
+			assertContains(
+				placedOrderItem1, (List<PlacedOrderItem>)page3.getItems());
+			assertContains(
+				placedOrderItem2, (List<PlacedOrderItem>)page3.getItems());
+			assertContains(
+				placedOrderItem3, (List<PlacedOrderItem>)page3.getItems());
+		}
+	}
+
+	@Test
+	public void testGetPlacedOrderPlacedOrderItemsPageWithSortDateTime()
+		throws Exception {
+
+		testGetPlacedOrderPlacedOrderItemsPageWithSort(
+			EntityField.Type.DATE_TIME,
+			(entityField, placedOrderItem1, placedOrderItem2) -> {
+				BeanTestUtil.setProperty(
+					placedOrderItem1, entityField.getName(),
+					new Date(System.currentTimeMillis() - (2 * Time.MINUTE)));
+			});
+	}
+
+	@Test
+	public void testGetPlacedOrderPlacedOrderItemsPageWithSortDouble()
+		throws Exception {
+
+		testGetPlacedOrderPlacedOrderItemsPageWithSort(
+			EntityField.Type.DOUBLE,
+			(entityField, placedOrderItem1, placedOrderItem2) -> {
+				BeanTestUtil.setProperty(
+					placedOrderItem1, entityField.getName(), 0.1);
+				BeanTestUtil.setProperty(
+					placedOrderItem2, entityField.getName(), 0.5);
+			});
+	}
+
+	@Test
+	public void testGetPlacedOrderPlacedOrderItemsPageWithSortInteger()
+		throws Exception {
+
+		testGetPlacedOrderPlacedOrderItemsPageWithSort(
+			EntityField.Type.INTEGER,
+			(entityField, placedOrderItem1, placedOrderItem2) -> {
+				BeanTestUtil.setProperty(
+					placedOrderItem1, entityField.getName(), 0);
+				BeanTestUtil.setProperty(
+					placedOrderItem2, entityField.getName(), 1);
+			});
+	}
+
+	@Test
+	public void testGetPlacedOrderPlacedOrderItemsPageWithSortString()
+		throws Exception {
+
+		testGetPlacedOrderPlacedOrderItemsPageWithSort(
+			EntityField.Type.STRING,
+			(entityField, placedOrderItem1, placedOrderItem2) -> {
+				Class<?> clazz = placedOrderItem1.getClass();
+
+				String entityFieldName = entityField.getName();
+
+				Method method = clazz.getMethod(
+					"get" + StringUtil.upperCaseFirstLetter(entityFieldName));
+
+				Class<?> returnType = method.getReturnType();
+
+				if (returnType.isAssignableFrom(Map.class)) {
+					BeanTestUtil.setProperty(
+						placedOrderItem1, entityFieldName,
+						Collections.singletonMap("Aaa", "Aaa"));
+					BeanTestUtil.setProperty(
+						placedOrderItem2, entityFieldName,
+						Collections.singletonMap("Bbb", "Bbb"));
+				}
+				else if (entityFieldName.contains("email")) {
+					BeanTestUtil.setProperty(
+						placedOrderItem1, entityFieldName,
+						"aaa" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()) +
+									"@liferay.com");
+					BeanTestUtil.setProperty(
+						placedOrderItem2, entityFieldName,
+						"bbb" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()) +
+									"@liferay.com");
+				}
+				else {
+					BeanTestUtil.setProperty(
+						placedOrderItem1, entityFieldName,
+						"aaa" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()));
+					BeanTestUtil.setProperty(
+						placedOrderItem2, entityFieldName,
+						"bbb" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()));
+				}
+			});
+	}
+
+	protected void testGetPlacedOrderPlacedOrderItemsPageWithSort(
+			EntityField.Type type,
+			UnsafeTriConsumer
+				<EntityField, PlacedOrderItem, PlacedOrderItem, Exception>
+					unsafeTriConsumer)
+		throws Exception {
+
+		List<EntityField> entityFields = getEntityFields(type);
+
+		if (entityFields.isEmpty()) {
+			return;
+		}
+
+		Long placedOrderId =
+			testGetPlacedOrderPlacedOrderItemsPage_getPlacedOrderId();
+
+		PlacedOrderItem placedOrderItem1 = randomPlacedOrderItem();
+		PlacedOrderItem placedOrderItem2 = randomPlacedOrderItem();
+
+		for (EntityField entityField : entityFields) {
+			unsafeTriConsumer.accept(
+				entityField, placedOrderItem1, placedOrderItem2);
+		}
+
+		placedOrderItem1 =
+			testGetPlacedOrderPlacedOrderItemsPage_addPlacedOrderItem(
+				placedOrderId, placedOrderItem1);
+
+		placedOrderItem2 =
+			testGetPlacedOrderPlacedOrderItemsPage_addPlacedOrderItem(
+				placedOrderId, placedOrderItem2);
+
+		Page<PlacedOrderItem> page =
 			placedOrderItemResource.getPlacedOrderPlacedOrderItemsPage(
-				placedOrderId, null, Pagination.of(1, 2));
+				placedOrderId, null, null, null, null);
 
-		List<PlacedOrderItem> placedOrderItems1 =
-			(List<PlacedOrderItem>)page1.getItems();
+		for (EntityField entityField : entityFields) {
+			Page<PlacedOrderItem> ascPage =
+				placedOrderItemResource.getPlacedOrderPlacedOrderItemsPage(
+					placedOrderId, null, null,
+					Pagination.of(1, (int)page.getTotalCount() + 1),
+					entityField.getName() + ":asc");
 
-		Assert.assertEquals(
-			placedOrderItems1.toString(), 2, placedOrderItems1.size());
+			assertContains(
+				placedOrderItem1, (List<PlacedOrderItem>)ascPage.getItems());
+			assertContains(
+				placedOrderItem2, (List<PlacedOrderItem>)ascPage.getItems());
 
-		Page<PlacedOrderItem> page2 =
-			placedOrderItemResource.getPlacedOrderPlacedOrderItemsPage(
-				placedOrderId, null, Pagination.of(2, 2));
+			Page<PlacedOrderItem> descPage =
+				placedOrderItemResource.getPlacedOrderPlacedOrderItemsPage(
+					placedOrderId, null, null,
+					Pagination.of(1, (int)page.getTotalCount() + 1),
+					entityField.getName() + ":desc");
 
-		Assert.assertEquals(3, page2.getTotalCount());
-
-		List<PlacedOrderItem> placedOrderItems2 =
-			(List<PlacedOrderItem>)page2.getItems();
-
-		Assert.assertEquals(
-			placedOrderItems2.toString(), 1, placedOrderItems2.size());
-
-		Page<PlacedOrderItem> page3 =
-			placedOrderItemResource.getPlacedOrderPlacedOrderItemsPage(
-				placedOrderId, null, Pagination.of(1, 3));
-
-		assertEqualsIgnoringOrder(
-			Arrays.asList(placedOrderItem1, placedOrderItem2, placedOrderItem3),
-			(List<PlacedOrderItem>)page3.getItems());
+			assertContains(
+				placedOrderItem2, (List<PlacedOrderItem>)descPage.getItems());
+			assertContains(
+				placedOrderItem1, (List<PlacedOrderItem>)descPage.getItems());
+		}
 	}
 
 	protected PlacedOrderItem
@@ -519,6 +1295,16 @@ public abstract class BasePlacedOrderItemResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals(
+					"externalReferenceCode", additionalAssertFieldName)) {
+
+				if (placedOrderItem.getExternalReferenceCode() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("name", additionalAssertFieldName)) {
 				if (placedOrderItem.getName() == null) {
 					valid = false;
@@ -643,6 +1429,14 @@ public abstract class BasePlacedOrderItemResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("unitOfMeasureKey", additionalAssertFieldName)) {
+				if (placedOrderItem.getUnitOfMeasureKey() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("valid", additionalAssertFieldName)) {
 				if (placedOrderItem.getValid() == null) {
 					valid = false;
@@ -653,6 +1447,14 @@ public abstract class BasePlacedOrderItemResourceTestCase {
 
 			if (Objects.equals("virtualItemURLs", additionalAssertFieldName)) {
 				if (placedOrderItem.getVirtualItemURLs() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("virtualItems", additionalAssertFieldName)) {
+				if (placedOrderItem.getVirtualItems() == null) {
 					valid = false;
 				}
 
@@ -807,6 +1609,19 @@ public abstract class BasePlacedOrderItemResourceTestCase {
 				if (!Objects.deepEquals(
 						placedOrderItem1.getErrorMessages(),
 						placedOrderItem2.getErrorMessages())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"externalReferenceCode", additionalAssertFieldName)) {
+
+				if (!Objects.deepEquals(
+						placedOrderItem1.getExternalReferenceCode(),
+						placedOrderItem2.getExternalReferenceCode())) {
 
 					return false;
 				}
@@ -992,6 +1807,17 @@ public abstract class BasePlacedOrderItemResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("unitOfMeasureKey", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						placedOrderItem1.getUnitOfMeasureKey(),
+						placedOrderItem2.getUnitOfMeasureKey())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("valid", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						placedOrderItem1.getValid(),
@@ -1007,6 +1833,17 @@ public abstract class BasePlacedOrderItemResourceTestCase {
 				if (!Objects.deepEquals(
 						placedOrderItem1.getVirtualItemURLs(),
 						placedOrderItem2.getVirtualItemURLs())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("virtualItems", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						placedOrderItem1.getVirtualItems(),
+						placedOrderItem2.getVirtualItems())) {
 
 					return false;
 				}
@@ -1050,6 +1887,10 @@ public abstract class BasePlacedOrderItemResourceTestCase {
 
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
+
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
 
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
@@ -1172,6 +2013,52 @@ public abstract class BasePlacedOrderItemResourceTestCase {
 		if (entityFieldName.equals("errorMessages")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
+		}
+
+		if (entityFieldName.equals("externalReferenceCode")) {
+			Object object = placedOrderItem.getExternalReferenceCode();
+
+			String value = String.valueOf(object);
+
+			if (operator.equals("contains")) {
+				sb = new StringBundler();
+
+				sb.append("contains(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 2)) {
+					sb.append(value.substring(1, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else if (operator.equals("startswith")) {
+				sb = new StringBundler();
+
+				sb.append("startswith(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 1)) {
+					sb.append(value.substring(0, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else {
+				sb.append("'");
+				sb.append(value);
+				sb.append("'");
+			}
+
+			return sb.toString();
 		}
 
 		if (entityFieldName.equals("id")) {
@@ -1302,9 +2189,8 @@ public abstract class BasePlacedOrderItemResourceTestCase {
 		}
 
 		if (entityFieldName.equals("quantity")) {
-			sb.append(String.valueOf(placedOrderItem.getQuantity()));
-
-			return sb.toString();
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
 		}
 
 		if (entityFieldName.equals("replacedSku")) {
@@ -1460,12 +2346,63 @@ public abstract class BasePlacedOrderItemResourceTestCase {
 			return sb.toString();
 		}
 
+		if (entityFieldName.equals("unitOfMeasureKey")) {
+			Object object = placedOrderItem.getUnitOfMeasureKey();
+
+			String value = String.valueOf(object);
+
+			if (operator.equals("contains")) {
+				sb = new StringBundler();
+
+				sb.append("contains(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 2)) {
+					sb.append(value.substring(1, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else if (operator.equals("startswith")) {
+				sb = new StringBundler();
+
+				sb.append("startswith(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 1)) {
+					sb.append(value.substring(0, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else {
+				sb.append("'");
+				sb.append(value);
+				sb.append("'");
+			}
+
+			return sb.toString();
+		}
+
 		if (entityFieldName.equals("valid")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
 		}
 
 		if (entityFieldName.equals("virtualItemURLs")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
+		if (entityFieldName.equals("virtualItems")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
 		}
@@ -1516,18 +2453,21 @@ public abstract class BasePlacedOrderItemResourceTestCase {
 			{
 				adaptiveMediaImageHTMLTag = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
+				externalReferenceCode = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
 				id = RandomTestUtil.randomLong();
 				name = StringUtil.toLowerCase(RandomTestUtil.randomString());
 				options = StringUtil.toLowerCase(RandomTestUtil.randomString());
 				parentOrderItemId = RandomTestUtil.randomLong();
 				productId = RandomTestUtil.randomLong();
-				quantity = RandomTestUtil.randomInt();
 				replacedSku = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
 				sku = StringUtil.toLowerCase(RandomTestUtil.randomString());
 				skuId = RandomTestUtil.randomLong();
 				subscription = RandomTestUtil.randomBoolean();
 				thumbnail = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
+				unitOfMeasureKey = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
 				valid = RandomTestUtil.randomBoolean();
 			}
@@ -1548,9 +2488,9 @@ public abstract class BasePlacedOrderItemResourceTestCase {
 	}
 
 	protected PlacedOrderItemResource placedOrderItemResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

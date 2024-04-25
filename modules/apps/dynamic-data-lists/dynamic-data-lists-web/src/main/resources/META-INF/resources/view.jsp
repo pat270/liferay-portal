@@ -17,6 +17,8 @@ String displayStyle = ddlDisplayContext.getDisplayStyle();
 
 <liferay-util:include page="/management_bar.jsp" servletContext="<%= application %>" />
 
+<%@ include file="/deprecated_warning.jspf" %>
+
 <clay:container-fluid
 	id='<%= liferayPortletResponse.getNamespace() + "formContainer" %>'
 >
@@ -27,7 +29,7 @@ String displayStyle = ddlDisplayContext.getDisplayStyle();
 		<liferay-ui:search-container
 			id="ddlRecordSet"
 			rowChecker="<%= new EmptyOnClickRowChecker(renderResponse) %>"
-			searchContainer="<%= ddlDisplayContext.getSearch() %>"
+			searchContainer="<%= ddlDisplayContext.getSearchContainer() %>"
 		>
 
 			<%
@@ -55,7 +57,7 @@ String displayStyle = ddlDisplayContext.getDisplayStyle();
 				<c:choose>
 					<c:when test='<%= displayStyle.equals("descriptive") %>'>
 						<liferay-ui:search-container-column-text>
-							<liferay-ui:user-portrait
+							<liferay-user:user-portrait
 								userId="<%= recordSet.getUserId() %>"
 							/>
 						</liferay-ui:search-container-column-text>

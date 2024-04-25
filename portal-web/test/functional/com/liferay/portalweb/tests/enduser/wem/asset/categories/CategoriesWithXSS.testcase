@@ -1,6 +1,7 @@
-@component-name = "portal-wcm"
+@component-name = "portal-content-management"
 definition {
 
+	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Categories";
@@ -35,10 +36,7 @@ definition {
 		var siteName = '''<script>alert(123)</script>''';
 
 		task ("Add a site with XSS name") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Sites",
-				panel = "Control Panel",
-				portlet = "Sites");
+			Site.openSitesAdmin();
 
 			Site.addBlankCP(siteName = ${siteName});
 		}

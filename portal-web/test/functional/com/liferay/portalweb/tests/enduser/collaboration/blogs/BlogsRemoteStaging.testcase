@@ -1,4 +1,4 @@
-@component-name = "portal-lima"
+@component-name = "portal-content-management"
 definition {
 
 	property portal.acceptance = "true";
@@ -41,8 +41,9 @@ definition {
 	@priority = 5
 	@refactordone
 	test CanPublishApprovedEntry {
-		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=";
+		property custom.properties = "auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}tunneling.servlet.shared.secret=1234567890123456";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		SearchAdministration.executeReindex();
 
@@ -50,10 +51,7 @@ definition {
 
 		Staging.remoteStagingSetUp(siteName = "Site Name");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		NavItem.gotoConfiguration();
 
@@ -116,10 +114,11 @@ definition {
 	@refactordone
 	test CanPublishEntry {
 		property app.server.bundles.size = "1";
-		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=";
+		property custom.properties = "auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}tunneling.servlet.shared.secret=1234567890123456";
 		property databases.size = "1";
 		property minimum.slave.ram = "24";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Staging.remoteStagingSetUpViaJson(
 			groupName = "Site Name",
@@ -165,10 +164,11 @@ definition {
 	@priority = 3
 	test CanPublishScheduledEntry {
 		property app.server.bundles.size = "1";
-		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}company.default.time.zone=America/Los_Angeles";
+		property custom.properties = "auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}company.default.time.zone=America/Los_Angeles${line.separator}tunneling.servlet.shared.secret=1234567890123456";
 		property databases.size = "1";
 		property minimum.slave.ram = "24";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var portalURL = PropsUtil.get("portal.url");
 
@@ -213,7 +213,7 @@ definition {
 
 		// We need to wait for the system time to pass by 2.5 minutes in order for a scheduled blog entry to be published. There is currently no easy way to manipulate the system time in CI for automation. 2 minutes is the shortest value we can set while ensuring the stability of the test. See LPS-157957.
 
-		Pause(locator1 = 150000);
+		Pause(value1 = 150000);
 
 		Refresh();
 
@@ -226,10 +226,11 @@ definition {
 	@priority = 3
 	test CanPublishSmallImage {
 		property app.server.bundles.size = "1";
-		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=";
+		property custom.properties = "auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}tunneling.servlet.shared.secret=1234567890123456";
 		property databases.size = "1";
 		property minimum.slave.ram = "24";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Staging.remoteStagingSetUpViaJson(
 			groupName = "Site Name",
@@ -296,8 +297,9 @@ definition {
 	@priority = 5
 	@refactordone
 	test CanPublishUpdatedCoverImage {
-		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=";
+		property custom.properties = "auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}tunneling.servlet.shared.secret=1234567890123456";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
@@ -373,13 +375,14 @@ definition {
 	}
 
 	@description = "This test covers LPS-154428. It asserts that an external video with a custom friendlyURL added in the Blog content field can be rendered properly on a site after its friendlyURL is edited and republished."
-	@priority = 5
+	@priority = 4
 	test CanViewExternalVideoInContentFieldAfterFriendlyURLIsUpdated {
 		property app.server.bundles.size = "1";
-		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=";
+		property custom.properties = "auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}tunneling.servlet.shared.secret=1234567890123456";
 		property databases.size = "1";
 		property minimum.slave.ram = "24";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Staging.remoteStagingSetUpViaJson(
 			groupName = "Site Name",
@@ -460,10 +463,11 @@ definition {
 	@priority = 4
 	test CanViewExternalVideotInContentFieldAfterPublish {
 		property app.server.bundles.size = "1";
-		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=";
+		property custom.properties = "auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}tunneling.servlet.shared.secret=1234567890123456";
 		property databases.size = "1";
 		property minimum.slave.ram = "24";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Staging.remoteStagingSetUpViaJson(
 			groupName = "Site Name",
@@ -524,13 +528,14 @@ definition {
 	}
 
 	@description = "This test covers LPS-154427. It ensures that an image with a custom friendlyURL added in the Blog content field can be rendered properly on a site after its friendlyURL is edited and republished."
-	@priority = 5
+	@priority = 4
 	test CanViewImageInContentFieldAfterFriendlyURLIsUpdated {
 		property app.server.bundles.size = "1";
-		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=";
+		property custom.properties = "auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}tunneling.servlet.shared.secret=1234567890123456";
 		property databases.size = "1";
 		property minimum.slave.ram = "24";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Staging.remoteStagingSetUpViaJson(
 			groupName = "Site Name",
@@ -618,10 +623,11 @@ definition {
 	@priority = 5
 	test CanViewSmallImageAfterFriendlyURLIsUpdated {
 		property app.server.bundles.size = "1";
-		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=";
+		property custom.properties = "auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}tunneling.servlet.shared.secret=1234567890123456";
 		property databases.size = "1";
 		property minimum.slave.ram = "24";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Staging.remoteStagingSetUpViaJson(
 			groupName = "Site Name",

@@ -13,14 +13,17 @@ import updatePreviewImage from '../../../app/actions/updatePreviewImage';
 import {config} from '../../../app/config/index';
 import {useDispatch, useSelector} from '../../../app/contexts/StoreContext';
 import selectLanguageId from '../../../app/selectors/selectLanguageId';
+import selectSegmentsExperienceId from '../../../app/selectors/selectSegmentsExperienceId';
 import FragmentService from '../../../app/services/FragmentService';
 import ImageService from '../../../app/services/ImageService';
+import {clearPageContents} from '../../../app/utils/usePageContents';
 
 export function updateFragmentsPreviewImage({
 	dispatch,
 	fileEntryId,
 	fragmentEntryLinks,
 	languageId,
+	segmentsExperienceId,
 }) {
 	const fragmentsToUpdate = Object.values(fragmentEntryLinks).filter(
 		(fragmentEntryLink) => {
@@ -47,20 +50,24 @@ export function updateFragmentsPreviewImage({
 		fileEntryId,
 	});
 
-	const getFragmentEntryLinkContentPromises = fragmentsToUpdate.map(
-		({fragmentEntryLinkId}) =>
-			FragmentService.renderFragmentEntryLinkContent({
-				fragmentEntryLinkId,
-			}).then(({content}) => ({content, fragmentEntryLinkId}))
-	);
-
 	return Promise.all([
 		getFileEntryPromise,
-		...getFragmentEntryLinkContentPromises,
-	]).then(([{fileEntryURL}, ...contents]) => {
+		FragmentService.renderFragmentEntryLinksContent({
+			data: fragmentsToUpdate.map(({fragmentEntryLinkId}) => ({
+				fragmentEntryLinkId,
+			})),
+			languageId,
+			segmentsExperienceId,
+		}),
+	]).then(([{fileEntryURL}, response]) => {
+		clearPageContents();
+
 		dispatch(
 			updatePreviewImage({
-				contents,
+				contents: response.map(({content, fragmentEntryLinkId}) => ({
+					content,
+					fragmentEntryLinkId,
+				})),
 				fileEntryId,
 				previewURL: fileEntryURL,
 			})
@@ -77,6 +84,7 @@ export default function ImageEditorModal({
 }) {
 	const dispatch = useDispatch();
 	const languageId = useSelector(selectLanguageId);
+	const segmentsExperienceId = useSelector(selectSegmentsExperienceId);
 
 	const {observer, onClose} = useModal({
 		onClose: onCloseModal,
@@ -91,6 +99,7 @@ export default function ImageEditorModal({
 				fileEntryId,
 				fragmentEntryLinks,
 				languageId,
+				segmentsExperienceId,
 			});
 		}
 	};

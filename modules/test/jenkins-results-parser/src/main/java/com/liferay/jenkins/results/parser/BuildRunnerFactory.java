@@ -20,6 +20,14 @@ public class BuildRunnerFactory {
 
 		BuildRunner<?> buildRunner = null;
 
+		if (jobName.equals("generate-reports")) {
+			buildRunner = new GenerateReportsBuildRunner(buildData);
+		}
+
+		if (jobName.equals("generate-reports-controller")) {
+			buildRunner = new GenerateReportsControllerBuildRunner(buildData);
+		}
+
 		if (jobName.equals("root-cause-analysis-tool")) {
 			buildRunner = new RootCauseAnalysisToolTopLevelBuildRunner(
 				(PortalTopLevelBuildData)buildData);
@@ -46,6 +54,13 @@ public class BuildRunnerFactory {
 				buildRunner = new PortalTestSuiteUpstreamControllerBuildRunner(
 					(PortalTestSuiteUpstreamControllerBuildData)buildData);
 			}
+		}
+
+		if ((buildRunner == null) &&
+			jobName.startsWith("test-portal-upstream-controller(")) {
+
+			buildRunner = new PortalUpstreamControllerSingleSuiteBuildRunner(
+				(PortalTestSuiteUpstreamControllerBuildData)buildData);
 		}
 
 		if ((buildRunner == null) && jobName.equals("test-poshi-release")) {

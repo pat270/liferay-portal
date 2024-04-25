@@ -13,11 +13,16 @@
 	</label>
 
 	<div>
-		<button
-		class="dropdown-toggle form-control form-control-select form-control-sm text-left w-100" disabled="disabled"><liferay-ui:message key="select" /></button
-	>
+		<clay:button
+			cssClass="dropdown-toggle form-control form-control-select form-control-sm text-left w-100"
+			disabled="<%= true %>"
+			displayType="secondary"
+			label="select"
+			small="<%= true %>"
+		/>
+
 		<react:component
-			module="js/SelectCategory.es"
+			module="{SelectCategory} from fragment-collection-filter-category"
 			props="<%= fragmentCollectionFilterCategoryDisplayContext.getProps() %>"
 		/>
 	</div>

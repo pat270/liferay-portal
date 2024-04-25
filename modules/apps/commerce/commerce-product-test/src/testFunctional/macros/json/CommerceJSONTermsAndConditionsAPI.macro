@@ -1,10 +1,11 @@
 definition {
 
-	macro _addCommerceTermsAndConditions {
+	@summary = "Default summary"
+	macro _addCommerceTermsAndConditions(termsType = null) {
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		if (!(isSet(termsCount))) {
@@ -45,11 +46,12 @@ definition {
 		}
 	}
 
-	macro _deleteAllCommerceTermsAndConditions {
+	@summary = "Default summary"
+	macro _deleteAllCommerceTermsAndConditions() {
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var termsAndConditionsCount = CommerceJSONTermsAndConditionsAPI._getCommerceTermsAndConditionsCount();
@@ -76,11 +78,12 @@ definition {
 		}
 	}
 
-	macro _getCommerceTermsAndConditionsCount {
+	@summary = "Default summary"
+	macro _getCommerceTermsAndConditionsCount() {
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var userLoginInfo = JSONUtil2.formatJSONUser();
@@ -98,11 +101,12 @@ definition {
 		return ${termsAndConditionsCount};
 	}
 
-	macro _getCommerceTermsAndConditionsIdByName {
+	@summary = "Default summary"
+	macro _getCommerceTermsAndConditionsIdByName(termsAndConditionsName = null) {
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		if (isSet(termsAndConditionsCount)) {
@@ -127,11 +131,12 @@ definition {
 		return ${termsAndConditionsId};
 	}
 
-	macro _getCommerceTermsAndConditionsIds {
+	@summary = "Default summary"
+	macro _getCommerceTermsAndConditionsIds() {
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		if (isSet(termsAndConditionsCount)) {

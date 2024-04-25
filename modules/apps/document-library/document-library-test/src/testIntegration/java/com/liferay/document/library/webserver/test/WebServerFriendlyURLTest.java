@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.webdav.methods.Method;
@@ -70,17 +71,69 @@ public class WebServerFriendlyURLTest extends BaseWebServerTestCase {
 	}
 
 	@Test
+	public void testHasFilesWithFileEntryNameHasPlusSign() throws Exception {
+		String nameBase = RandomTestUtil.randomString();
+
+		String fileURL = nameBase + "%2B.txt";
+		String fileName = nameBase + "+.txt";
+
+		Assert.assertFalse(
+			WebServerServlet.hasFiles(
+				_createMockHttpServletRequest(
+					String.format("/%s/0/%s", group.getGroupId(), fileURL))));
+
+		_addFileEntry(fileName, RandomTestUtil.randomString());
+
+		Assert.assertTrue(
+			WebServerServlet.hasFiles(
+				_createMockHttpServletRequest(
+					String.format("/%s/0/%s", group.getGroupId(), fileURL))));
+		Assert.assertFalse(
+			WebServerServlet.hasFiles(
+				_createMockHttpServletRequest(
+					String.format("/%s/0/%s", group.getGroupId(), fileName))));
+	}
+
+	@Test
+	public void testHasFilesWithFileEntryNameHasSpaces() throws Exception {
+		String nameBase = RandomTestUtil.randomString();
+
+		String fileURL = nameBase + "+.txt";
+		String fileName = nameBase + " .txt";
+
+		Assert.assertFalse(
+			WebServerServlet.hasFiles(
+				_createMockHttpServletRequest(
+					String.format("/%s/0/%s", group.getGroupId(), fileURL))));
+
+		_addFileEntry(fileName, RandomTestUtil.randomString());
+
+		Assert.assertTrue(
+			WebServerServlet.hasFiles(
+				_createMockHttpServletRequest(
+					String.format("/%s/0/%s", group.getGroupId(), fileURL))));
+		Assert.assertTrue(
+			WebServerServlet.hasFiles(
+				_createMockHttpServletRequest(
+					String.format(
+						"/%s/0/%s", group.getGroupId(),
+						nameBase + "%20.txt"))));
+	}
+
+	@Test
 	public void testHasFilesWithFileEntryNameHasSpecialChars()
 		throws Exception {
 
-		String fileName = RandomTestUtil.randomString() + "+ .txt";
+		String fileName = RandomTestUtil.randomString() + "%2B .txt";
 
 		Assert.assertFalse(
 			WebServerServlet.hasFiles(
 				_createMockHttpServletRequest(
 					String.format("/%s/0/%s", group.getGroupId(), fileName))));
 
-		_addFileEntry(fileName, RandomTestUtil.randomString());
+		_addFileEntry(
+			HttpComponentsUtil.decodeURL(fileName),
+			RandomTestUtil.randomString());
 
 		Assert.assertTrue(
 			WebServerServlet.hasFiles(
@@ -146,7 +199,7 @@ public class WebServerFriendlyURLTest extends BaseWebServerTestCase {
 			ContentTypes.APPLICATION_OCTET_STREAM,
 			RandomTestUtil.randomString(), urlTitle,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
-			(byte[])null, null, null,
+			(byte[])null, null, null, null,
 			ServiceContextTestUtil.getServiceContext(group.getGroupId()));
 	}
 

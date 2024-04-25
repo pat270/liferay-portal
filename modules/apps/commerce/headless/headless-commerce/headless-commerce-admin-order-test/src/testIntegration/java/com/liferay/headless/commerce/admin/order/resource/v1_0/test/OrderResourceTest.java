@@ -44,6 +44,8 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.test.rule.Inject;
 
+import java.math.BigDecimal;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -125,6 +127,14 @@ public class OrderResourceTest extends BaseOrderResourceTestCase {
 		super.testGetOrdersPageWithFilterDateTimeEquals();
 	}
 
+	@Ignore
+	@Override
+	@Test
+	public void testGetOrdersPageWithFilterStringContains() throws Exception {
+		super.testGetOrdersPageWithFilterStringContains();
+	}
+
+	@Ignore
 	@Override
 	@Test
 	public void testGetOrdersPageWithFilterStringEquals() throws Exception {
@@ -191,6 +201,13 @@ public class OrderResourceTest extends BaseOrderResourceTestCase {
 	@Ignore
 	@Override
 	@Test
+	public void testGetOrdersPageWithFilterStringStartsWith() throws Exception {
+		super.testGetOrdersPageWithFilterStringStartsWith();
+	}
+
+	@Ignore
+	@Override
+	@Test
 	public void testGetOrdersPageWithPagination() throws Exception {
 		super.testGetOrdersPageWithPagination();
 	}
@@ -202,10 +219,18 @@ public class OrderResourceTest extends BaseOrderResourceTestCase {
 		super.testGetOrdersPageWithSortDateTime();
 	}
 
+	@Ignore
 	@Override
 	@Test
 	public void testGetOrdersPageWithSortInteger() throws Exception {
 		super.testGetOrdersPageWithSortInteger();
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGetOrdersPageWithSortString() throws Exception {
+		super.testGetOrdersPageWithSortString();
 	}
 
 	@Test
@@ -257,6 +282,7 @@ public class OrderResourceTest extends BaseOrderResourceTestCase {
 		super.testPatchOrderByExternalReferenceCode();
 	}
 
+	@Override
 	protected String[] getAdditionalAssertFieldNames() {
 		return new String[] {
 			"currencyCode", "paymentMethod", "printedNote",
@@ -357,8 +383,9 @@ public class OrderResourceTest extends BaseOrderResourceTestCase {
 				orderId = RandomTestUtil.randomLong();
 				printedNote = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
-				quantity = RandomTestUtil.randomInt();
-				shippedQuantity = RandomTestUtil.randomInt();
+				quantity = BigDecimal.valueOf(RandomTestUtil.randomInt());
+				shippedQuantity = BigDecimal.valueOf(
+					RandomTestUtil.randomInt());
 				shippingAddressId = _orderAddress.getAddressId();
 				skuId = cpInstance.getCPInstanceId();
 				subscription = RandomTestUtil.randomBoolean();

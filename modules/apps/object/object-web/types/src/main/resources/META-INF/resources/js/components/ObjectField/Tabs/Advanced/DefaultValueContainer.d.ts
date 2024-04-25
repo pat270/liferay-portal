@@ -6,13 +6,14 @@
 /// <reference types="react" />
 
 import {SidebarCategory} from '@liferay/object-js-components-web';
+import {ILearnResourceContext} from 'frontend-js-components-web';
 import {ObjectFieldErrors} from '../../ObjectFieldFormBase';
 interface DefaultValueContainerProps {
 	creationLanguageId: Liferay.Language.Locale;
-	disabled?: boolean;
 	errors: ObjectFieldErrors;
-	objectFieldBusinessType: ObjectFieldBusinessType;
-	objectFieldSettings: ObjectFieldSetting[];
+	learnResources: ILearnResourceContext;
+	modelBuilder?: boolean;
+	onSubmit?: (values?: Partial<ObjectField>) => void;
 	setValues: (value: Partial<ObjectField>) => void;
 	sidebarElements: SidebarCategory[];
 	values: Partial<ObjectField>;
@@ -22,6 +23,7 @@ export interface InputAsValueFieldComponentProps {
 	defaultValue?: ObjectFieldSettingValue;
 	error?: string;
 	label: string;
+	onSubmit?: (values?: Partial<ObjectField>) => void;
 	placeholder?: string;
 	required?: boolean;
 	setValues: (values: Partial<ObjectField>) => void;
@@ -30,6 +32,9 @@ export interface InputAsValueFieldComponentProps {
 export declare function DefaultValueContainer({
 	creationLanguageId,
 	errors,
+	learnResources,
+	modelBuilder,
+	onSubmit,
 	setValues,
 	sidebarElements,
 	values,

@@ -5,10 +5,9 @@
 
 package com.liferay.portal.workflow.metrics.internal.background.task;
 
-import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
-import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
 import com.liferay.petra.concurrent.NoticeableFuture;
 import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskExecutor;
@@ -18,9 +17,16 @@ import com.liferay.portal.kernel.backgroundtask.BackgroundTaskThreadLocal;
 import com.liferay.portal.kernel.backgroundtask.BaseBackgroundTaskExecutor;
 import com.liferay.portal.kernel.backgroundtask.constants.BackgroundTaskConstants;
 import com.liferay.portal.kernel.backgroundtask.display.BackgroundTaskDisplay;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.Message;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.search.capabilities.SearchCapabilities;
+import com.liferay.portal.search.engine.adapter.SearchEngineAdapter;
+import com.liferay.portal.search.index.IndexNameBuilder;
+import com.liferay.portal.search.query.Queries;
 import com.liferay.portal.workflow.metrics.internal.background.task.constants.WorkflowMetricsReindexBackgroundTaskConstants;
 import com.liferay.portal.workflow.metrics.internal.petra.executor.WorkflowMetricsPortalExecutor;
 import com.liferay.portal.workflow.metrics.internal.search.index.WorkflowMetricsIndex;
@@ -35,10 +41,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-import org.osgi.framework.BundleContext;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 
 /**
@@ -78,11 +81,11 @@ public class WorkflowMetricsReindexBackgroundTaskExecutor
 
 		for (String indexEntityName : indexEntityNames) {
 			WorkflowMetricsIndex workflowMetricsIndex =
-				_serviceTrackerMap.getService(indexEntityName);
+				WorkflowMetricsIndex.toWorkflowMetricsIndex(indexEntityName);
 
-			workflowMetricsIndex.removeIndex(backgroundTask.getCompanyId());
-
-			workflowMetricsIndex.createIndex(backgroundTask.getCompanyId());
+			workflowMetricsIndex.deleteAllDocuments(
+				_searchCapabilities, _searchEngineAdapter, _queries,
+				_indexNameBuilder, backgroundTask.getCompanyId());
 		}
 
 		List<NoticeableFuture<?>> noticeableFutures = new ArrayList<>();
@@ -98,8 +101,13 @@ public class WorkflowMetricsReindexBackgroundTaskExecutor
 							_workflowMetricsReindexerRegistry.
 								getWorkflowMetricsReindexer(indexEntityName);
 
-						workflowMetricsReindexer.reindex(
-							backgroundTask.getCompanyId());
+						try (SafeCloseable safeCloseable =
+								CompanyThreadLocal.setWithSafeCloseable(
+									backgroundTask.getCompanyId())) {
+
+							workflowMetricsReindexer.reindex(
+								backgroundTask.getCompanyId());
+						}
 
 						_workflowMetricsReindexStatusMessageSender.
 							sendStatusMessage(
@@ -126,18 +134,6 @@ public class WorkflowMetricsReindexBackgroundTaskExecutor
 		return null;
 	}
 
-	@Activate
-	protected void activate(BundleContext bundleContext) {
-		_serviceTrackerMap = ServiceTrackerMapFactory.openSingleValueMap(
-			bundleContext, WorkflowMetricsIndex.class,
-			"workflow.metrics.index.entity.name");
-	}
-
-	@Deactivate
-	protected void deactivate() {
-		_serviceTrackerMap.close();
-	}
-
 	private String[] _getIndexEntityNames(BackgroundTask backgroundTask) {
 		Map<String, Serializable> taskContextMap =
 			backgroundTask.getTaskContextMap();
@@ -147,10 +143,22 @@ public class WorkflowMetricsReindexBackgroundTaskExecutor
 				(String[])taskContextMap.get(
 					"workflow.metrics.index.entity.names"),
 				name -> {
-					if (_serviceTrackerMap.containsKey(name) &&
-						_workflowMetricsReindexerRegistry.containsKey(name)) {
+					try {
+						WorkflowMetricsIndex workflowMetricsIndex =
+							WorkflowMetricsIndex.toWorkflowMetricsIndex(name);
 
-						return name;
+						if (_workflowMetricsReindexerRegistry.containsKey(
+								workflowMetricsIndex.name())) {
+
+							return name;
+						}
+
+						return null;
+					}
+					catch (IllegalArgumentException illegalArgumentException) {
+						_log.error(
+							"Unknown workflow metrics index: " + name,
+							illegalArgumentException);
 					}
 
 					return null;
@@ -190,11 +198,24 @@ public class WorkflowMetricsReindexBackgroundTaskExecutor
 			message);
 	}
 
+	private static final Log _log = LogFactoryUtil.getLog(
+		WorkflowMetricsReindexBackgroundTaskExecutor.class);
+
 	@Reference
 	private BackgroundTaskStatusMessageSender
 		_backgroundTaskStatusMessageSender;
 
-	private ServiceTrackerMap<String, WorkflowMetricsIndex> _serviceTrackerMap;
+	@Reference
+	private IndexNameBuilder _indexNameBuilder;
+
+	@Reference
+	private Queries _queries;
+
+	@Reference
+	private SearchCapabilities _searchCapabilities;
+
+	@Reference
+	private SearchEngineAdapter _searchEngineAdapter;
 
 	@Reference
 	private WorkflowMetricsPortalExecutor _workflowMetricsPortalExecutor;

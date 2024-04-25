@@ -6,7 +6,6 @@
 package com.liferay.document.library.kernel.store;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 import java.io.File;
 import java.io.InputStream;
@@ -105,6 +104,22 @@ public class DLStoreUtil {
 		throws PortalException {
 
 		_store.deleteDirectory(companyId, repositoryId, dirName);
+	}
+
+	/**
+	 * Deletes a file. If a file has multiple versions, all versions will be
+	 * deleted.
+	 *
+	 * @param companyId the primary key of the company
+	 * @param repositoryId the primary key of the data repository (optionally
+	 *        {@link com.liferay.portal.kernel.model.CompanyConstants#SYSTEM})
+	 * @param fileName the file's name
+	 */
+	public static void deleteFile(
+			long companyId, long repositoryId, String fileName)
+		throws PortalException {
+
+		_store.deleteFile(companyId, repositoryId, fileName);
 	}
 
 	/**
@@ -265,8 +280,6 @@ public class DLStoreUtil {
 		_store = store;
 	}
 
-	private static volatile DLStore _store =
-		ServiceProxyFactory.newServiceTrackedInstance(
-			DLStore.class, DLStoreUtil.class, "_store", true);
+	private static DLStore _store;
 
 }

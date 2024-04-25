@@ -13,6 +13,7 @@ import com.liferay.petra.memory.FinalizeManager;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.aop.AopService;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.json.JSONArray;
@@ -24,7 +25,6 @@ import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.scheduler.SchedulerEngineHelper;
 import com.liferay.portal.kernel.scheduler.StorageType;
 import com.liferay.portal.kernel.scheduler.Trigger;
@@ -199,8 +199,8 @@ public class EntryLocalServiceImpl extends EntryLocalServiceBaseImpl {
 		// Scheduler
 
 		if (entry.isRepeating()) {
-			_schedulerEngineHelper.unschedule(
-				entry.getJobName(), entry.getSchedulerRequestName(),
+			_schedulerEngineHelper.delete(
+				_getSchedulerJobName(entry), entry.getSchedulerRequestName(),
 				StorageType.PERSISTED);
 		}
 
@@ -355,8 +355,8 @@ public class EntryLocalServiceImpl extends EntryLocalServiceBaseImpl {
 
 		entry = entryPersistence.update(entry);
 
-		_schedulerEngineHelper.unschedule(
-			entry.getJobName(), entry.getSchedulerRequestName(),
+		_schedulerEngineHelper.delete(
+			_getSchedulerJobName(entry), entry.getSchedulerRequestName(),
 			StorageType.PERSISTED);
 	}
 
@@ -433,6 +433,11 @@ public class EntryLocalServiceImpl extends EntryLocalServiceBaseImpl {
 			ReportsGroupServiceEmailConfiguration.class,
 			new GroupServiceSettingsLocator(
 				groupId, ReportsEngineConsoleConstants.SERVICE_NAME));
+	}
+
+	private String _getSchedulerJobName(Entry entry) {
+		return StringBundler.concat(
+			entry.getJobName(), StringPool.AT, entry.getCompanyId());
 	}
 
 	private byte[] _getTemplateFileBytes(
@@ -561,7 +566,7 @@ public class EntryLocalServiceImpl extends EntryLocalServiceBaseImpl {
 		throws PortalException {
 
 		Trigger trigger = _triggerFactory.createTrigger(
-			entry.getJobName(), entry.getSchedulerRequestName(),
+			_getSchedulerJobName(entry), entry.getSchedulerRequestName(),
 			entry.getStartDate(), entry.getEndDate(), entry.getRecurrence());
 
 		Message message = new Message();

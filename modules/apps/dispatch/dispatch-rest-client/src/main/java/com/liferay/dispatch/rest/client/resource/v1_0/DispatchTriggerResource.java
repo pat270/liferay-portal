@@ -11,6 +11,8 @@ import com.liferay.dispatch.rest.client.pagination.Page;
 import com.liferay.dispatch.rest.client.problem.Problem;
 import com.liferay.dispatch.rest.client.serdes.v1_0.DispatchTriggerSerDes;
 
+import java.net.URL;
+
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -116,6 +118,10 @@ public interface DispatchTriggerResource {
 			_scheme = scheme;
 
 			return this;
+		}
+
+		public Builder endpoint(URL url) {
+			return endpoint(url.getHost(), url.getPort(), url.getProtocol());
 		}
 
 		public Builder header(String key, String value) {
@@ -332,6 +338,8 @@ public interface DispatchTriggerResource {
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body("[]", "application/json");
 
 			if (_builder._locale != null) {
 				httpInvoker.header(
@@ -648,6 +656,8 @@ public interface DispatchTriggerResource {
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body("[]", "application/json");
 
 			if (_builder._locale != null) {
 				httpInvoker.header(

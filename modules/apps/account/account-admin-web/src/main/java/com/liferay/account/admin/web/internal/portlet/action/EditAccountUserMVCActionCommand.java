@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.service.ListTypeLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.Validator;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -83,24 +84,29 @@ public class EditAccountUserMVCActionCommand
 
 		accountUserContact.setPrefixListTypeId(
 			_getListTypeId(
-				actionRequest, "prefixListTypeValue",
-				ListTypeConstants.CONTACT_PREFIX));
+				accountUser.getCompanyId(), actionRequest,
+				"prefixListTypeValue", ListTypeConstants.CONTACT_PREFIX));
 		accountUserContact.setSuffixListTypeId(
 			_getListTypeId(
-				actionRequest, "suffixListTypeValue",
-				ListTypeConstants.CONTACT_SUFFIX));
+				accountUser.getCompanyId(), actionRequest,
+				"suffixListTypeValue", ListTypeConstants.CONTACT_SUFFIX));
 
 		_contactLocalService.updateContact(accountUserContact);
 	}
 
 	private long _getListTypeId(
-		PortletRequest portletRequest, String parameterName, String type) {
+		long companyId, PortletRequest portletRequest, String parameterName,
+		String type) {
 
 		String parameterValue = ParamUtil.getString(
 			portletRequest, parameterName);
 
+		if (Validator.isNull(parameterValue)) {
+			return 0;
+		}
+
 		ListType listType = _listTypeLocalService.addListType(
-			parameterValue, type);
+			companyId, parameterValue, type);
 
 		return listType.getListTypeId();
 	}

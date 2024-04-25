@@ -18,12 +18,15 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.BasePlugin;
+import org.gradle.api.plugins.JavaLibraryPlugin;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.PluginContainer;
 import org.gradle.api.plugins.WarPlugin;
 import org.gradle.api.plugins.WarPluginConvention;
+import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskInputs;
@@ -41,7 +44,7 @@ public class XSDBuilderPlugin implements Plugin<Project> {
 
 	@Override
 	public void apply(Project project) {
-		GradleUtil.applyPlugin(project, JavaPlugin.class);
+		GradleUtil.applyPlugin(project, JavaLibraryPlugin.class);
 
 		addConfigurationXSDBuilder(project);
 
@@ -92,9 +95,13 @@ public class XSDBuilderPlugin implements Plugin<Project> {
 
 		buildXSDTask.setDescription(
 			"Generates XMLBeans bindings and compiles them in a JAR file.");
-		buildXSDTask.setDestinationDir(project.file("lib"));
 		buildXSDTask.setGroup(BasePlugin.BUILD_GROUP);
 		buildXSDTask.setInputDir("xsd");
+
+		DirectoryProperty directoryProperty =
+			buildXSDTask.getDestinationDirectory();
+
+		directoryProperty.set(project.file("lib"));
 
 		PluginContainer pluginContainer = project.getPlugins();
 
@@ -131,7 +138,10 @@ public class XSDBuilderPlugin implements Plugin<Project> {
 		File tmpBinDir = new File(
 			project.getBuildDir(), buildXSDTask.getName() + "/bin");
 
-		javaCompile.setDestinationDir(tmpBinDir);
+		DirectoryProperty directoryProperty =
+			javaCompile.getDestinationDirectory();
+
+		directoryProperty.set(tmpBinDir);
 
 		javaCompile.setSource(generateTask.getOutputs());
 
@@ -143,6 +153,14 @@ public class XSDBuilderPlugin implements Plugin<Project> {
 
 		JavaExec javaExec = GradleUtil.addTask(
 			project, buildXSDTask.getName() + "Generate", JavaExec.class);
+
+		javaExec.setDescription(
+			"Invokes the XMLBeans Schema Compiler in order to generate Java " +
+				"types from XML Schema.");
+
+		Property<String> mainClass = javaExec.getMainClass();
+
+		mainClass.set("org.apache.xmlbeans.impl.tool.SchemaCompiler");
 
 		File tmpSrcDir = new File(
 			project.getBuildDir(), buildXSDTask.getName() + "/src");
@@ -163,10 +181,6 @@ public class XSDBuilderPlugin implements Plugin<Project> {
 
 		javaExec.setClasspath(
 			GradleUtil.getConfiguration(project, CONFIGURATION_NAME));
-		javaExec.setDescription(
-			"Invokes the XMLBeans Schema Compiler in order to generate Java " +
-				"types from XML Schema.");
-		javaExec.setMain("org.apache.xmlbeans.impl.tool.SchemaCompiler");
 
 		TaskInputs taskInputs = javaExec.getInputs();
 
@@ -197,7 +211,7 @@ public class XSDBuilderPlugin implements Plugin<Project> {
 		TaskOutputs taskOutputs = buildXSDTask.getOutputs();
 
 		GradleUtil.addDependency(
-			buildXSDTask.getProject(), JavaPlugin.COMPILE_CONFIGURATION_NAME,
+			buildXSDTask.getProject(), JavaPlugin.API_CONFIGURATION_NAME,
 			taskOutputs.getFiles());
 	}
 

@@ -107,15 +107,15 @@ public class CacheMissPersistenceImplTest {
 	@Test
 	public void testCacheMissIfCTProductionModeDisabled() throws Throwable {
 		_ctCollection = _ctCollectionLocalService.addCTCollection(
-			TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
-			CacheMissPersistenceImplTest.class.getSimpleName(), null);
+			null, TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
+			0, CacheMissPersistenceImplTest.class.getSimpleName(), null);
 
 		try (SafeCloseable safeCloseable =
 				CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
 					_ctCollection.getCtCollectionId())) {
 
 			_ctEntryLocalService.addCTEntry(
-				_ctCollection.getCtCollectionId(),
+				null, _ctCollection.getCtCollectionId(),
 				_classNameLocalService.getClassNameId(
 					CacheMissEntry.class.getName()),
 				CacheMissEntryUtil.create(RandomTestUtil.nextLong()),

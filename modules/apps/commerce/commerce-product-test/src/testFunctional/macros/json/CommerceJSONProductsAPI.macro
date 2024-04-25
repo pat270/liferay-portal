@@ -1,6 +1,7 @@
 definition {
 
-	macro _addCommerceProduct {
+	@summary = "Default summary"
+	macro _addCommerceProduct(specifications = null, productName = null, catalogName = null, replacementSKU = null) {
 		Variables.assertDefined(parameterList = "${catalogName},${productName},${productType}");
 
 		var productType = StringUtil.lowerCase(${productType});
@@ -11,7 +12,7 @@ definition {
 		}
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		if (!(isSet(cost))) {
@@ -325,8 +326,9 @@ definition {
 		com.liferay.poshi.runner.util.JSONCurlUtil.post(${curl});
 	}
 
-	macro _addCommerceProductImage {
-		var baseURL = PropsUtil.get("portal.url");
+	@summary = "Default summary"
+	macro _addCommerceProductImage() {
+		var baseURL = JSONCompany.getPortalURL();
 
 		if (!(isSet(catalogName))) {
 			var catalogName = "Master";
@@ -380,10 +382,11 @@ definition {
 		com.liferay.poshi.runner.util.JSONCurlUtil.post(${curl});
 	}
 
-	macro _addCommerceProductImageLinkedToOptionValue {
+	@summary = "Default summary"
+	macro _addCommerceProductImageLinkedToOptionValue(optionValue = null, productERC = null, optionName = null) {
 		Variables.assertDefined(parameterList = "${productERC},${optionName},${optionValue}");
 
-		var baseURL = PropsUtil.get("portal.url");
+		var baseURL = JSONCompany.getPortalURL();
 
 		if (!(isSet(imageTitle))) {
 			var imageTitle = "Simple Image Title API";
@@ -416,13 +419,14 @@ definition {
 		return ${responseBody};
 	}
 
-	macro _addCommerceProductSku {
+	@summary = "Default summary"
+	macro _addCommerceProductSku(skuName = null, productName = null) {
 		Variables.assertDefined(parameterList = "${productName},${skuName}");
 
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		if (!(isSet(cost))) {
@@ -468,14 +472,49 @@ definition {
 		return ${responseBody};
 	}
 
-	macro _addDiagramPin {
+	@summary = "Default summary"
+	macro _addCommerceProductSpecifications(specificationKey = null, value = null, productName = null) {
+		Variables.assertDefined(parameterList = "${productName},${specificationKey},${value}");
+
+		var baseURL = ${baseURL};
+
+		if (!(isSet(baseURL))) {
+			var baseURL = JSONCompany.getPortalURL();
+		}
+
+		if (!(isSet(priority))) {
+			var priority = 0;
+		}
+
+		var productId = CommerceJSONProductsAPI._getProductId(productName = ${productName});
+		var userLoginInfo = JSONUtil2.formatJSONUser();
+
+		var curl = '''
+			${baseURL}/o/headless-commerce-admin-catalog/v1.0/products/${productId}/productSpecifications \
+				-u ${userLoginInfo} \
+				-H 'accept: application/json' \
+				-H 'Content-Type: application/json' \
+				-d '{
+					"priority": ${priority},
+					"specificationKey": "${specificationKey}",
+					"value": {
+						"en_US": "${value}"
+					}
+				}'
+		''';
+
+		JSONCurlUtil.post(${curl});
+	}
+
+	@summary = "Default summary"
+	macro _addDiagramPin(quantity = null, label = null, positionX = null, positionY = null, diagram = null, linkedDiagram = null, linkedSKU = null, position = null) {
 		Variables.assertDefined(parameterList = "${pinType},${position},${positionX},${positionY},${quantity},${diagram}");
 
 		var baseURL = ${baseURL};
 		var diagramProductId = CommerceJSONProductsAPI._getProductId(productName = ${diagram});
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		if (${pinType} == "Linked to a SKU") {
@@ -531,11 +570,12 @@ definition {
 		com.liferay.poshi.runner.util.JSONCurlUtil.post(${curl});
 	}
 
-	macro _deleteAllCommerceProducts {
+	@summary = "Default summary"
+	macro _deleteAllCommerceProducts() {
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var productsCount = CommerceJSONProductsAPI._getCommerceProductsCount();
@@ -562,7 +602,35 @@ definition {
 		}
 	}
 
-	macro _getCommerceFieldValue {
+	@summary = "Default summary"
+	macro _deleteCommerceProductAttachment(attachmentName = null, type = null, productName = null) {
+		Variables.assertDefined(parameterList = "${attachmentName},${productName},${type}");
+
+		var baseURL = JSONCompany.getPortalURL();
+
+		if (!(isSet(baseURL))) {
+			var baseURL = JSONCompany.getPortalURL();
+		}
+
+		var attachmentId = CommerceJSONProductsAPI.getCommerceProductMediaFieldValues(
+			jsonPath = "$.items[?(@['title']['en_US'] == '${attachmentName}')].['id']",
+			productName = ${productName},
+			type = ${type});
+		var userLoginInfo = JSONUtil2.formatJSONUser();
+
+		var curl = '''
+			${baseURL}/o/headless-commerce-admin-catalog/v1.0/attachment/${attachmentId} \
+				-u ${userLoginInfo} \
+				-H 'accept: application/json' \
+		''';
+
+		JSONCurlUtil.delete(${curl});
+
+		echo("Deleting Commerce Product Attachment with id: ${attachmentId}");
+	}
+
+	@summary = "Default summary"
+	macro _getCommerceFieldValue(groupName = null, field = null) {
 		var portalURL = JSONCompany.getPortalURL();
 		var title = StringUtil.replace(${title}, " ", "%20");
 		var siteId = JSONGroupAPI._getSiteIdByGroupKey(groupName = ${groupName});
@@ -581,13 +649,14 @@ definition {
 		return ${curl};
 	}
 
-	macro _getCommerceProductAttachments {
+	@summary = "Default summary"
+	macro _getCommerceProductAttachments(productName = null) {
 		Variables.assertDefined(parameterList = ${productName});
 
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var productId = CommerceJSONProductsAPI._getProductId(productName = ${productName});
@@ -604,10 +673,11 @@ definition {
 		return ${responseBody};
 	}
 
-	macro _getCommerceProductCategoryUsingProductERC {
+	@summary = "Default summary"
+	macro _getCommerceProductCategoryUsingProductERC(productERC = null) {
 		Variables.assertDefined(parameterList = ${productERC});
 
-		var baseURL = PropsUtil.get("portal.url");
+		var baseURL = JSONCompany.getPortalURL();
 
 		if (!(isSet(userEmailAddress))) {
 			var userEmailAddress = "test@liferay.com";
@@ -628,11 +698,12 @@ definition {
 		return ${response};
 	}
 
-	macro _getCommerceProductIds {
+	@summary = "Default summary"
+	macro _getCommerceProductIds(prodCount = null) {
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		if (isSet(prodCount)) {
@@ -655,13 +726,14 @@ definition {
 		return ${productIds};
 	}
 
-	macro _getCommerceProductImageIds {
+	@summary = "Default summary"
+	macro _getCommerceProductImageIds(productName = null) {
 		Variables.assertDefined(parameterList = ${productName});
 
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var productId = CommerceJSONProductsAPI._getProductId(productName = ${productName});
@@ -682,13 +754,14 @@ definition {
 		return ${productImageIds};
 	}
 
-	macro _getCommerceProductImages {
+	@summary = "Default summary"
+	macro _getCommerceProductImages(productName = null) {
 		Variables.assertDefined(parameterList = ${productName});
 
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var productId = CommerceJSONProductsAPI._getProductId(productName = ${productName});
@@ -705,13 +778,14 @@ definition {
 		return ${responseBody};
 	}
 
-	macro _getCommerceProductImageURL {
+	@summary = "Default summary"
+	macro _getCommerceProductImageURL(productId = null, channelId = null) {
 		Variables.assertDefined(parameterList = "${channelId},${productId}");
 
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var userLoginInfo = JSONUtil2.formatJSONUser();
@@ -727,13 +801,14 @@ definition {
 		return ${productImageURL};
 	}
 
-	macro _getCommerceProductOptionId {
+	@summary = "Default summary"
+	macro _getCommerceProductOptionId(productOptionName = null, productName = null) {
 		Variables.assertDefined(parameterList = "${productName},${productOptionName}");
 
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var productId = CommerceJSONProductsAPI._getProductId(productName = ${productName});
@@ -750,13 +825,14 @@ definition {
 		return ${productOptionId};
 	}
 
-	macro _getCommerceProductOptions {
+	@summary = "Default summary"
+	macro _getCommerceProductOptions(productName = null) {
 		Variables.assertDefined(parameterList = ${productName});
 
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var productId = CommerceJSONProductsAPI._getProductId(productName = ${productName});
@@ -773,13 +849,14 @@ definition {
 		return ${productOptions};
 	}
 
-	macro _getCommerceProductOptionValues {
+	@summary = "Default summary"
+	macro _getCommerceProductOptionValues(productOptionId = null) {
 		Variables.assertDefined(parameterList = ${productOptionId});
 
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var userLoginInfo = JSONUtil2.formatJSONUser();
@@ -795,11 +872,12 @@ definition {
 		return ${productOptionValues};
 	}
 
-	macro _getCommerceProducts {
+	@summary = "Default summary"
+	macro _getCommerceProducts(prodCount = null) {
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		if (isSet(prodCount)) {
@@ -822,11 +900,12 @@ definition {
 		return ${responseBody};
 	}
 
-	macro _getCommerceProductsCount {
+	@summary = "Default summary"
+	macro _getCommerceProductsCount() {
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var userLoginInfo = JSONUtil2.formatJSONUser();
@@ -844,13 +923,14 @@ definition {
 		return ${productsCount};
 	}
 
-	macro _getCommerceProductSpecifications {
+	@summary = "Default summary"
+	macro _getCommerceProductSpecifications(productName = null) {
 		Variables.assertDefined(parameterList = ${productName});
 
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var productId = CommerceJSONProductsAPI._getProductId(productName = ${productName});
@@ -898,13 +978,14 @@ definition {
 		echo("${productName} Specifications:${productSpecifications}");
 	}
 
-	macro _getCPDefinitionId {
+	@summary = "Default summary"
+	macro _getCPDefinitionId(productName = null) {
 		Variables.assertDefined(parameterList = ${productName});
 
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var productId = CommerceJSONProductsAPI._getProductId(productName = ${productName});
@@ -921,13 +1002,14 @@ definition {
 		return ${cpDefinitionId};
 	}
 
-	macro _getProductById {
+	@summary = "Default summary"
+	macro _getProductById(productName = null) {
 		Variables.assertDefined(parameterList = ${productName});
 
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var productId = CommerceJSONProductsAPI._getProductId(productName = ${productName});
@@ -944,7 +1026,8 @@ definition {
 		return ${responseBody};
 	}
 
-	macro _getProductId {
+	@summary = "Default summary"
+	macro _getProductId(productSKU = null, productName = null) {
 		if (isSet(productSKU)) {
 			var search = ${productSKU};
 		}
@@ -957,7 +1040,7 @@ definition {
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var userLoginInfo = JSONUtil2.formatJSONUser();
@@ -979,13 +1062,14 @@ definition {
 		return ${productId};
 	}
 
-	macro _getSKUId {
+	@summary = "Default summary"
+	macro _getSKUId(productSKU = null) {
 		Variables.assertDefined(parameterList = ${productSKU});
 
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var userLoginInfo = JSONUtil2.formatJSONUser();
@@ -1005,7 +1089,58 @@ definition {
 		return ${skuId};
 	}
 
-	macro _patchCommerceProductConfiguration {
+	@summary = "Default summary"
+	macro _patchCommerceProductAttachmentUsingERC(customFieldContent = null, productERC = null, customFieldName = null, customFieldType = null) {
+		Variables.assertDefined(parameterList = ${productERC});
+
+		var baseURL = JSONCompany.getPortalURL();
+
+		if (!(isSet(attachment))) {
+			var attachment = "";
+		}
+
+		if (!(isSet(attachmentTitle))) {
+			var attachmentTitle = "Simple Attachment Title API";
+		}
+
+		if (isSet(customFieldName)) {
+			var customFields = '''
+				{
+					"customValue": {
+						"data": "${customFieldContent}"
+					},
+					"dataType": "${customFieldType}",
+					"name": "${customFieldName}"
+				}
+			''';
+		}
+		else {
+			var customFields = "";
+		}
+
+		var userLoginInfo = JSONUtil2.formatJSONUser();
+
+		var curl = '''
+			${baseURL}/o/headless-commerce-admin-catalog/v1.0/products/by-externalReferenceCode/${productERC}/attachments \
+				-u ${userLoginInfo} \
+				-H 'accept: application/json' \
+				-H 'Content-Type: application/json' \
+				-d '{
+					"attachment": "${attachment}",
+					"customFields": [${customFields}],
+					"title": {
+						"en_US": "${attachmentTitle}"
+					}
+				}'
+		''';
+
+		var responseBody = JSONCurlUtil.post(${curl});
+
+		return ${responseBody};
+	}
+
+	@summary = "Default summary"
+	macro _patchCommerceProductConfiguration(productName = null) {
 		Variables.assertDefined(parameterList = ${productName});
 
 		var baseURL = ${baseURL};
@@ -1013,7 +1148,7 @@ definition {
 		var productId = CommerceJSONProductsAPI._getProductId(productName = ${productName});
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		if (isSet(allowBackOrder)) {
@@ -1094,10 +1229,11 @@ definition {
 		com.liferay.poshi.runner.util.JSONCurlUtil.patch(${curl});
 	}
 
-	macro _patchCommerceProductImageUsingERC {
+	@summary = "Default summary"
+	macro _patchCommerceProductImageUsingERC(productERC = null) {
 		Variables.assertDefined(parameterList = ${productERC});
 
-		var baseURL = PropsUtil.get("portal.url");
+		var baseURL = JSONCompany.getPortalURL();
 
 		if (!(isSet(cdnEnabled))) {
 			var cdnEnabled = "false";
@@ -1169,13 +1305,14 @@ definition {
 		return ${responseBody};
 	}
 
-	macro _patchCommerceProductRelations {
+	@summary = "Default summary"
+	macro _patchCommerceProductRelations(productRelations = null, baseProductName = null) {
 		Variables.assertDefined(parameterList = "${baseProductName},${productRelations}");
 
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var payload = "";
@@ -1227,14 +1364,123 @@ definition {
 		JSONCurlUtil.patch(${curl});
 	}
 
-	macro _patchCommerceSku {
+	@summary = "Update a product's subscriptions configuration using JSON APIs"
+	macro _patchCommerceProductSubscriptionConfiguration(productName = null) {
+		Variables.assertDefined(parameterList = ${productName});
+
+		var baseURL = ${baseURL};
+		var fieldsList = ListUtil.newList();
+
+		if (!(isSet(baseURL))) {
+			var baseURL = JSONCompany.getPortalURL();
+		}
+
+		if (isSet(deliverySubscriptionEnabled)) {
+			var deliverySubscriptionEnabled = '''"deliverySubscriptionEnable": ${deliverySubscriptionEnabled}''';
+
+			ListUtil.add(${fieldsList}, ${deliverySubscriptionEnabled});
+		}
+
+		if (isSet(deliverySubscriptionLength)) {
+			var deliverySubscriptionLength = '''"deliverySubscriptionLength": ${deliverySubscriptionLength}''';
+
+			ListUtil.add(${fieldsList}, ${deliverySubscriptionLength});
+		}
+
+		if (isSet(deliverySubscriptionNumberOfLength)) {
+			var deliverySubscriptionNumberOfLength = '''"deliverySubscriptionNumberOfLength": ${deliverySubscriptionNumberOfLength}''';
+
+			ListUtil.add(${fieldsList}, ${deliverySubscriptionNumberOfLength});
+		}
+
+		if (isSet(deliverySubscriptionType)) {
+			var deliverySubscriptionType = '''"deliverySubscriptionType": "${deliverySubscriptionType}"''';
+
+			ListUtil.add(${fieldsList}, ${deliverySubscriptionType});
+		}
+
+		if (isSet(deliverySubscriptionTypeSettings)) {
+			var deliveryMonthDay = StringUtil.extractFirst(${deliverySubscriptionTypeSettings}, ",");
+			var deliveryMonthlyMode = StringUtil.extractLast(${deliverySubscriptionTypeSettings}, ",");
+			var deliveryMonthDay = StringUtil.extractLast(${deliveryMonthDay}, ":");
+			var deliveryMonthlyMode = StringUtil.extractLast(${deliveryMonthlyMode}, ":");
+
+			var deliverySubscriptionTypeSettings = '''"deliverySubscriptionTypeSettings": {
+				"deliveryMonthDay": ${deliveryMonthDay},
+				"deliveryMonthlyMode": ${deliveryMonthlyMode}
+			}''';
+
+			ListUtil.add(${fieldsList}, ${deliverySubscriptionTypeSettings});
+		}
+
+		if (isSet(paymentSubscriptionEnabled)) {
+			var paymentSubscriptionEnabled = '''"enable": ${paymentSubscriptionEnabled}''';
+
+			ListUtil.add(${fieldsList}, ${paymentSubscriptionEnabled});
+		}
+
+		if (isSet(paymentSubscriptionLength)) {
+			var paymentSubscriptionLength = '''"length": ${paymentSubscriptionLength}''';
+
+			ListUtil.add(${fieldsList}, ${paymentSubscriptionLength});
+		}
+
+		if (isSet(paymentSubscriptionNumberOfLength)) {
+			var paymentSubscriptionNumberOfLength = '''"numberOfLength": ${paymentSubscriptionNumberOfLength}''';
+
+			ListUtil.add(${fieldsList}, ${paymentSubscriptionNumberOfLength});
+		}
+
+		if (isSet(paymentSubscriptionType)) {
+			var paymentSubscriptionType = '''"subscriptionType": "${paymentSubscriptionType}"''';
+
+			ListUtil.add(${fieldsList}, ${paymentSubscriptionType});
+		}
+
+		if (isSet(paymentSubscriptionTypeSettings)) {
+			var paymentMonthDay = StringUtil.extractFirst(${paymentSubscriptionTypeSettings}, ",");
+			var paymentMonthlyMode = StringUtil.extractLast(${paymentSubscriptionTypeSettings}, ",");
+			var paymentMonthDay = StringUtil.extractLast(${paymentMonthDay}, ":");
+			var paymentMonthlyMode = StringUtil.extractLast(${paymentMonthlyMode}, ":");
+
+			var paymentSubscriptionTypeSettings = '''"subscriptionTypeSettings": {
+				"monthDay": ${paymentMonthDay},
+				"monthlyMode": ${paymentMonthlyMode}
+			}''';
+
+			ListUtil.add(${fieldsList}, ${paymentSubscriptionTypeSettings});
+		}
+
+		var fieldsList = ListUtil.toString(${fieldsList});
+
+		var payload = CommerceUtilities.getPayloadFromFieldsList(fieldsList = ${fieldsList});
+		var productId = CommerceJSONProductsAPI._getProductId(productName = ${productName});
+		var userLoginInfo = JSONUtil2.formatJSONUser();
+
+		var curl = '''
+			${baseURL}/o/headless-commerce-admin-catalog/v1.0/products/${productId}/subscriptionConfiguration \
+				-u ${userLoginInfo} \
+				-H 'accept: application/json' \
+				-H 'Content-Type: application/json' \
+				-d '{
+					${payload}
+				}'
+		''';
+
+		var responseBody = JSONCurlUtil.patch(${curl});
+
+		return ${responseBody};
+	}
+
+	@summary = "Default summary"
+	macro _patchCommerceSku(replacementSku = null, productSku = null) {
 		Variables.assertDefined(parameterList = ${productSku});
 
 		var baseURL = ${baseURL};
 		var fieldsList = ListUtil.newList();
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		if (isSet(discontinued)) {
@@ -1315,14 +1561,15 @@ definition {
 		com.liferay.poshi.runner.util.JSONCurlUtil.patch(${curl});
 	}
 
-	macro _patchCommerceVirtualProductSku {
+	@summary = "Default summary"
+	macro _patchCommerceVirtualProductSku(productSku = null) {
 		Variables.assertDefined(parameterList = ${productSku});
 
 		var baseURL = ${baseURL};
 		var fieldsList = ListUtil.newList();
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		if (!(isSet(override))) {
@@ -1355,14 +1602,15 @@ definition {
 		com.liferay.poshi.runner.util.JSONCurlUtil.patch(${curl});
 	}
 
-	macro _updateCommerceProduct {
+	@summary = "Default summary"
+	macro _updateCommerceProduct(productName = null, increaseMinutes = null) {
 		Variables.assertDefined(parameterList = ${productName});
 
 		var baseURL = ${baseURL};
 		var cpDefinitionId = CommerceJSONProductsAPI._getCPDefinitionId(productName = ${productName});
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		if (!(isSet(neverExpire))) {
@@ -1450,7 +1698,8 @@ definition {
 		com.liferay.poshi.runner.util.JSONCurlUtil.post(${curl});
 	}
 
-	macro addCommerceProductSku {
+	@summary = "Default summary"
+	macro addCommerceProductSku(skuName = null, promoPrice = null, purchasable = null, cost = null, price = null, published = null, productName = null) {
 		Variables.assertDefined(parameterList = "${productName},${skuName}");
 
 		var responseBody = CommerceJSONProductsAPI._addCommerceProductSku(
@@ -1467,7 +1716,8 @@ definition {
 		return ${skuId};
 	}
 
-	macro getCommerceProductMediaFieldValues {
+	@summary = "Default summary"
+	macro getCommerceProductMediaFieldValues(jsonPath = null, type = null, productName = null) {
 		Variables.assertDefined(parameterList = "${jsonPath},${productName}");
 
 		if (${type} == "images") {
@@ -1485,7 +1735,8 @@ definition {
 		return ${fieldValues};
 	}
 
-	macro getProductField {
+	@summary = "Default summary"
+	macro getProductField(jsonPath = null, productName = null) {
 		Variables.assertDefined(parameterList = "${jsonPath},${productName}");
 
 		var responseBody = CommerceJSONProductsAPI._getProductById(productName = ${productName});
@@ -1497,7 +1748,8 @@ definition {
 		return ${fieldValue};
 	}
 
-	macro getProductIdsByName {
+	@summary = "Default summary"
+	macro getProductIdsByName(productNames = null) {
 		Variables.assertDefined(parameterList = ${productNames});
 
 		if (!(isSet(responseBody))) {

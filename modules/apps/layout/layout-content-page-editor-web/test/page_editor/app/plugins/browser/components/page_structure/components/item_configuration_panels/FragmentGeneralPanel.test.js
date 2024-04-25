@@ -24,7 +24,6 @@ jest.mock(
 jest.mock(
 	'../../../../../../../../../src/main/resources/META-INF/resources/page_editor/app/services/FragmentService',
 	() => ({
-		renderFragmentEntryLinkContent: jest.fn(() => Promise.resolve({})),
 		updateConfigurationValues: jest.fn(() => Promise.resolve({})),
 	})
 );
@@ -140,17 +139,8 @@ const renderGeneralPanel = ({
 };
 
 describe('FragmentGeneralPanel', () => {
-	beforeAll(() => {
-		Liferay.FeatureFlags['LPS-169923'] = true;
-	});
-
-	afterAll(() => {
-		Liferay.FeatureFlags['LPS-169923'] = false;
-	});
-
 	afterEach(() => {
 		FragmentService.updateConfigurationValues.mockClear();
-		FragmentService.renderFragmentEntryLinkContent.mockClear();
 	});
 
 	it('does not prefix values with segments if we do not have experiences', async () => {

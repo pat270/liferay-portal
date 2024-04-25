@@ -7,23 +7,23 @@ package com.liferay.object.rest.internal.filter.factory;
 
 import com.liferay.object.constants.ObjectDefinitionConstants;
 import com.liferay.object.field.business.type.ObjectFieldBusinessTypeRegistry;
+import com.liferay.object.model.ObjectDefinition;
+import com.liferay.object.odata.filter.expression.field.predicate.provider.FieldPredicateProvider;
 import com.liferay.object.related.models.ObjectRelatedModelsPredicateProviderRegistry;
 import com.liferay.object.rest.filter.factory.BaseFilterFactory;
 import com.liferay.object.rest.filter.factory.FilterFactory;
 import com.liferay.object.rest.internal.odata.filter.expression.PredicateExpressionVisitorImpl;
-import com.liferay.object.rest.internal.odata.filter.expression.field.predicate.provider.FieldPredicateProviderTracker;
-import com.liferay.object.rest.odata.entity.v1_0.ObjectEntryEntityModel;
 import com.liferay.object.service.ObjectFieldLocalService;
+import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
+import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
 import com.liferay.petra.sql.dsl.expression.Predicate;
-import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
-import com.liferay.portal.odata.filter.InvalidFilterException;
-import com.liferay.portal.odata.filter.expression.Expression;
-import com.liferay.portal.odata.filter.expression.ExpressionVisitException;
+import com.liferay.portal.odata.filter.expression.ExpressionVisitor;
 
-import javax.ws.rs.ServerErrorException;
-
+import org.osgi.framework.BundleContext;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 
 /**
@@ -35,63 +35,29 @@ import org.osgi.service.component.annotations.Reference;
 	service = FilterFactory.class
 )
 public class DefaultFilterFactoryImpl
-	extends BaseFilterFactory implements FilterFactory<Predicate> {
+	extends BaseFilterFactory<Predicate> implements FilterFactory<Predicate> {
 
 	@Override
-	public Predicate create(
-		EntityModel entityModel, String filterString, long objectDefinitionId) {
+	public ExpressionVisitor<Object> getExpressionVisitor(
+		EntityModel entityModel, ObjectDefinition objectDefinition) {
 
-		if (Validator.isNull(filterString)) {
-			return null;
-		}
-
-		try {
-			Expression expression = getExpression(entityModel, filterString);
-
-			return (Predicate)expression.accept(
-				new PredicateExpressionVisitorImpl(
-					entityModel, _fieldPredicateProviderTracker,
-					objectDefinitionId, _objectFieldBusinessTypeRegistry,
-					_objectFieldLocalService,
-					_objectRelatedModelsPredicateProviderRegistry));
-		}
-		catch (ExpressionVisitException expressionVisitException) {
-			throw new InvalidFilterException(
-				expressionVisitException.getMessage(),
-				expressionVisitException);
-		}
-		catch (InvalidFilterException invalidFilterException) {
-			throw invalidFilterException;
-		}
-		catch (Exception exception) {
-			throw new ServerErrorException(500, exception);
-		}
+		return new PredicateExpressionVisitorImpl(
+			entityModel, entityModelProvider, objectDefinition,
+			_objectFieldBusinessTypeRegistry, _objectFieldLocalService,
+			_objectRelatedModelsPredicateProviderRegistry, _serviceTrackerMap);
 	}
 
-	@Override
-	public Predicate create(String filterString, long objectDefinitionId) {
-		try {
-			EntityModel entityModel = new ObjectEntryEntityModel(
-				objectDefinitionId,
-				_objectFieldLocalService.getObjectFields(objectDefinitionId));
-
-			return create(entityModel, filterString, objectDefinitionId);
-		}
-		catch (ExpressionVisitException expressionVisitException) {
-			throw new InvalidFilterException(
-				expressionVisitException.getMessage(),
-				expressionVisitException);
-		}
-		catch (InvalidFilterException invalidFilterException) {
-			throw invalidFilterException;
-		}
-		catch (Exception exception) {
-			throw new ServerErrorException(500, exception);
-		}
+	@Activate
+	protected void activate(BundleContext bundleContext) {
+		_serviceTrackerMap = ServiceTrackerMapFactory.openSingleValueMap(
+			bundleContext, FieldPredicateProvider.class,
+			"field.predicate.provider.key");
 	}
 
-	@Reference
-	private FieldPredicateProviderTracker _fieldPredicateProviderTracker;
+	@Deactivate
+	protected void deactivate() {
+		_serviceTrackerMap.close();
+	}
 
 	@Reference
 	private ObjectFieldBusinessTypeRegistry _objectFieldBusinessTypeRegistry;
@@ -102,5 +68,8 @@ public class DefaultFilterFactoryImpl
 	@Reference
 	private ObjectRelatedModelsPredicateProviderRegistry
 		_objectRelatedModelsPredicateProviderRegistry;
+
+	private ServiceTrackerMap<String, FieldPredicateProvider>
+		_serviceTrackerMap;
 
 }

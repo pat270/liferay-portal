@@ -30,6 +30,7 @@ import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.test.constants.TestDataConstants;
+import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
@@ -41,6 +42,8 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.test.rule.Inject;
+import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.ratings.kernel.service.RatingsEntryLocalService;
 
 import java.io.File;
@@ -49,6 +52,8 @@ import java.util.Arrays;
 import java.util.Map;
 
 import org.junit.Assert;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -57,6 +62,13 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class DocumentResourceTest extends BaseDocumentResourceTestCase {
+
+	@ClassRule
+	@Rule
+	public static final AggregateTestRule aggregateTestRule =
+		new AggregateTestRule(
+			new LiferayIntegrationTestRule(),
+			PermissionCheckerMethodTestRule.INSTANCE);
 
 	@Override
 	@Test
@@ -91,6 +103,7 @@ public class DocumentResourceTest extends BaseDocumentResourceTestCase {
 			testGroup.getGroupId(), randomDocument(), getMultipartFiles());
 
 		Assert.assertTrue(Validator.isNotNull(document1.getContentUrl()));
+		Assert.assertTrue(Validator.isNotNull(document1.getFriendlyUrlPath()));
 
 		Document document2 = documentResource.postSiteDocument(
 			testGroup.getGroupId(), randomDocument(),
@@ -99,6 +112,7 @@ public class DocumentResourceTest extends BaseDocumentResourceTestCase {
 			).build());
 
 		Assert.assertTrue(Validator.isNull(document2.getContentUrl()));
+		Assert.assertTrue(Validator.isNotNull(document2.getFriendlyUrlPath()));
 
 		Role guestRole = _roleLocalService.getRole(
 			testCompany.getCompanyId(), RoleConstants.GUEST);
@@ -127,6 +141,7 @@ public class DocumentResourceTest extends BaseDocumentResourceTestCase {
 		document1 = regularUserDocumentResource.getDocument(document1.getId());
 
 		Assert.assertTrue(Validator.isNull(document1.getContentUrl()));
+		Assert.assertTrue(Validator.isNotNull(document1.getFriendlyUrlPath()));
 	}
 
 	@Override
@@ -141,8 +156,8 @@ public class DocumentResourceTest extends BaseDocumentResourceTestCase {
 				testGroup.getCreatorUserId(), testGroup.getGroupId(), 0,
 				_portal.getClassNameId(FileEntry.class.getName()), 0,
 				RandomTestUtil.randomString(),
-				LayoutPageTemplateEntryTypeConstants.TYPE_DISPLAY_PAGE, 0,
-				false, 0, 0, 0, WorkflowConstants.STATUS_APPROVED,
+				LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE, 0, false, 0,
+				0, 0, WorkflowConstants.STATUS_APPROVED,
 				ServiceContextTestUtil.getServiceContext(
 					testGroup.getGroupId()));
 

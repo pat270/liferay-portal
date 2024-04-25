@@ -1,6 +1,7 @@
 definition {
 
-	macro _changePermisionScope {
+	@summary = "Default summary"
+	macro _changePermisionScope(permissionValue = null, assetLibrariesScope = null, siteNameScope = null, permissionSheetSubtitle = null, removeSiteScope = null) {
 		if (isSet(siteNameScope)) {
 			AssertClick(
 				key_permissionSheetSubtitle = ${permissionSheetSubtitle},
@@ -47,7 +48,8 @@ definition {
 		}
 	}
 
-	macro _goToRoleAssigneeType {
+	@summary = "Default summary"
+	macro _goToRoleAssigneeType(roleTitle = null, assigneeType = null) {
 		LexiconEntry.gotoEntry(rowEntry = ${roleTitle});
 
 		Navigator.gotoNavItem(navItem = "Assignees");
@@ -55,7 +57,8 @@ definition {
 		Navigator.gotoNavItem(navItem = ${assigneeType});
 	}
 
-	macro add {
+	@summary = "Default summary"
+	macro add(roleTitle = null, roleKey = null, roleDescription = null) {
 		if (!(isSet(roleKey)) && !(isSet(roleTitle))) {
 			fail("Please declear the roleKey or roleTitle when refering this macro.");
 		}
@@ -87,7 +90,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro addAssignee {
+	@summary = "Default summary"
+	macro addAssignee(roleTitle = null, assigneeName = null, assigneeType = null) {
 		Role._goToRoleAssigneeType(
 			assigneeType = ${assigneeType},
 			roleTitle = ${roleTitle});
@@ -113,7 +117,36 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro definePermissionPG {
+	@summary = "Default summary"
+	macro addAssigneeInKaleoForms(roleTitle = null, assigneeName = null, assigneeType = null) {
+		Role._goToRoleAssigneeType(
+			assigneeType = ${assigneeType},
+			roleTitle = ${roleTitle});
+
+		LexiconEntry.gotoAdd();
+
+		WaitForLiferayEvent.initializeLiferayEventLog();
+
+		SelectFrame(locator1 = "IFrame#SELECT_ASSIGNEES");
+
+		var key_userScreenName = ${assigneeName};
+		var key_assigneeName = ${assigneeName};
+
+		AssertTextEquals(
+			locator1 = "RolesAssignMembers#USER_TABLE_SCREEN_NAME",
+			value1 = ${assigneeName});
+
+		Check(locator1 = "RolesAssignMembers#ADD_ASSIGNEE_TABLE_CHECKBOX");
+
+		SelectFrameTop(value1 = "relative=top");
+
+		Button.clickAdd();
+
+		Alert.viewSuccessMessage();
+	}
+
+	@summary = "Default summary"
+	macro definePermissionPG(permissionsList = null, roleTitle = null) {
 		var key_roleTitle = StringUtil.replace(${roleTitle}, " ", "-");
 
 		var key_roleTitle = StringUtil.lowerCase(${key_roleTitle});
@@ -144,7 +177,8 @@ definition {
 		AssertChecked.assertCheckedNotVisible(locator1 = "Permissions#${permissionDefinitionKey}");
 	}
 
-	macro editPermissionCP {
+	@summary = "Default summary"
+	macro editPermissionCP(assetLibrariesScope = null, siteNameScope = null, permissionNavItem = null, permissionSheetSubtitle = null, define = null, removeSiteScope = null, permissionNavHeader = null, remove = null) {
 		if (!(isSet(navItem))) {
 			var navItem = "Define Permissions";
 		}
@@ -210,7 +244,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro editRole {
+	@summary = "Default summary"
+	macro editRole(roleDescriptionEdit = null, roleKeyEdit = null, roleTitleEdit = null) {
 		if (isSet(roleTitleEdit)) {
 			PortletEntry.inputTitle(title = ${roleTitleEdit});
 		}
@@ -232,11 +267,15 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro openRolesAdmin {
-		Navigator.openWithAppendToBaseURL(urlAppend = "group/control_panel/manage?p_p_id=com_liferay_roles_admin_web_portlet_RolesAdminPortlet");
+	@summary = "Default summary"
+	macro openRolesAdmin(baseURL = null) {
+		Navigator.openWithAppendToBaseURL(
+			baseURL = ${baseURL},
+			urlAppend = "group/control_panel/manage?p_p_id=com_liferay_roles_admin_web_portlet_RolesAdminPortlet");
 	}
 
-	macro removeAssignee {
+	@summary = "Default summary"
+	macro removeAssignee(roleTitle = null, assigneeName = null, assigneeType = null) {
 		Role.openRolesAdmin();
 
 		Role._goToRoleAssigneeType(
@@ -245,10 +284,13 @@ definition {
 
 		LexiconEntry.selectEntry(key_rowEntry = ${assigneeName});
 
-		ClickNoError(locator1 = "Icon#DELETE");
+		ClickNoError(
+			key_text = "times-circle",
+			locator1 = "ManagementBar#ANY_ICON");
 	}
 
-	macro removePermissionPG {
+	@summary = "Default summary"
+	macro removePermissionPG(permissionDefinitionKey = null, roleTitle = null) {
 		var key_roleTitle = StringUtil.replace(${roleTitle}, " ", "-");
 
 		var key_roleTitle = StringUtil.lowerCase(${key_roleTitle});
@@ -282,7 +324,8 @@ definition {
 		AssertNotChecked.assertNotCheckedNotVisible(locator1 = "Permissions#${permissionDefinitionKey}");
 	}
 
-	macro tearDownCP {
+	@summary = "Default summary"
+	macro tearDownCP() {
 		Role.openRolesAdmin();
 
 		Search.searchCP(searchTerm = "Name");
@@ -298,7 +341,8 @@ definition {
 		}
 	}
 
-	macro viewAssignee {
+	@summary = "Default summary"
+	macro viewAssignee(roleTitle = null, assigneeName = null, assigneeType = null) {
 		Role._goToRoleAssigneeType(
 			assigneeType = ${assigneeType},
 			roleTitle = ${roleTitle});
@@ -306,7 +350,8 @@ definition {
 		LexiconEntry.viewEntryName(rowEntry = ${assigneeName});
 	}
 
-	macro viewCP {
+	@summary = "Default summary"
+	macro viewCP(toolTip = null, roleType = null, roleDescription = null) {
 		if (contains("Asset Library,Organization,Site", ${roleType})) {
 			Navigator.gotoNavItem(navItem = "${roleType} Roles");
 		}
@@ -356,7 +401,8 @@ definition {
 			value1 = ${roleKey});
 	}
 
-	macro viewDefaultCP {
+	@summary = "Default summary"
+	macro viewDefaultCP() {
 		Search.searchCP(searchTerm = "Name");
 
 		AssertTextEquals.assertPartialText(
@@ -364,7 +410,22 @@ definition {
 			value1 = "No roles were found.");
 	}
 
-	macro viewPermissionCP {
+	@summary = "Default summary"
+	macro viewNoPermissionCP(siteNameScope = null, permissionDefinitionValue = null, permissionNavigationValue = null) {
+		var key_permissionDefinitionValue = ${permissionDefinitionValue};
+		var key_permissionNavigationValue = ${permissionNavigationValue};
+
+		AssertElementNotPresent(locator1 = "RolesPermissionsSummary#PERMISSION_TABLE_PERMISSIONS");
+
+		if (isSet(siteNameScope)) {
+			AssertElementNotPresent(
+				key_siteNameScope = ${siteNameScope},
+				locator1 = "RolesPermissionsSummary#PERMISSION_TABLE_SCOPE");
+		}
+	}
+
+	@summary = "Default summary"
+	macro viewPermissionCP(siteNameScope = null, permissionDefinitionValue = null, permissionNavigationValue = null) {
 		var key_permissionDefinitionValue = ${permissionDefinitionValue};
 		var key_permissionNavigationValue = ${permissionNavigationValue};
 
@@ -384,7 +445,8 @@ definition {
 		}
 	}
 
-	macro viewPermissionPG {
+	@summary = "Default summary"
+	macro viewPermissionPG(permissionDefinitionKey = null, roleTitle = null, permissionFlagged = null) {
 		var key_roleTitle = StringUtil.replace(${roleTitle}, " ", "-");
 
 		var key_roleTitle = StringUtil.lowerCase(${key_roleTitle});
@@ -397,7 +459,8 @@ definition {
 		}
 	}
 
-	macro viewPermissionSubdirectory {
+	@summary = "Default summary"
+	macro viewPermissionSubdirectory(navItem = null, subItemList = null) {
 		var key_navItem = ${navItem};
 
 		if (IsElementPresent(locator1 = "RolesPermissionsNavigation#PERMISSIONS_NAVITEM_COLLAPSED")) {

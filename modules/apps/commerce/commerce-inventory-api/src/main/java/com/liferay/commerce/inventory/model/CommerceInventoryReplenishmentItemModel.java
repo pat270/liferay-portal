@@ -7,9 +7,12 @@ package com.liferay.commerce.inventory.model;
 
 import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.ExternalReferenceCodeModel;
 import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.model.StagedAuditedModel;
+
+import java.math.BigDecimal;
 
 import java.util.Date;
 
@@ -28,8 +31,9 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface CommerceInventoryReplenishmentItemModel
-	extends BaseModel<CommerceInventoryReplenishmentItem>, MVCCModel,
-			ShardedModel, StagedAuditedModel {
+	extends BaseModel<CommerceInventoryReplenishmentItem>,
+			ExternalReferenceCodeModel, MVCCModel, ShardedModel,
+			StagedAuditedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -90,6 +94,7 @@ public interface CommerceInventoryReplenishmentItemModel
 	 * @return the external reference code of this commerce inventory replenishment item
 	 */
 	@AutoEscape
+	@Override
 	public String getExternalReferenceCode();
 
 	/**
@@ -97,6 +102,7 @@ public interface CommerceInventoryReplenishmentItemModel
 	 *
 	 * @param externalReferenceCode the external reference code of this commerce inventory replenishment item
 	 */
+	@Override
 	public void setExternalReferenceCode(String externalReferenceCode);
 
 	/**
@@ -245,14 +251,14 @@ public interface CommerceInventoryReplenishmentItemModel
 	 *
 	 * @return the quantity of this commerce inventory replenishment item
 	 */
-	public int getQuantity();
+	public BigDecimal getQuantity();
 
 	/**
 	 * Sets the quantity of this commerce inventory replenishment item.
 	 *
 	 * @param quantity the quantity of this commerce inventory replenishment item
 	 */
-	public void setQuantity(int quantity);
+	public void setQuantity(BigDecimal quantity);
 
 	/**
 	 * Returns the sku of this commerce inventory replenishment item.

@@ -1,6 +1,7 @@
 definition {
 
-	macro configureDisplaySettings {
+	@summary = "Default summary"
+	macro configureDisplaySettings(uncheckSetting = null) {
 		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		for (var settingName : list ${uncheckSetting}) {
@@ -14,10 +15,9 @@ definition {
 		SelectFrame(value1 = "relative=top");
 	}
 
-	macro configureEmailCP {
+	@summary = "Default summary"
+	macro configureEmailCP(bodyContent = null) {
 		Portlet.gotoPortletOptions(portletOption = "Configuration");
-
-		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		if (isSet(pageAddedEmail)) {
 			AssertClick(
@@ -32,13 +32,12 @@ definition {
 
 			SelectFrame(value1 = "relative=top");
 
-			SelectFrame(locator1 = "IFrame#MODAL_BODY");
-
 			PortletEntry.save();
 		}
 	}
 
-	macro subscribeToNodeCP {
+	@summary = "Default summary"
+	macro subscribeToNodeCP(wikiNodeName = null) {
 		var key_wikiNodeName = ${wikiNodeName};
 
 		Click.waitForMenuToggleJSClick(locator1 = "Wiki#NODE_TABLE_ACTIONS_DROPDOWN");
@@ -54,7 +53,8 @@ definition {
 		MenuItem.viewPresent(menuItem = "Unsubscribe");
 	}
 
-	macro tearDownCP {
+	@summary = "Default summary"
+	macro tearDownCP() {
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
@@ -72,7 +72,8 @@ definition {
 		MenuItem.viewPresent(menuItem = "Subscribe");
 	}
 
-	macro viewConfigurationTabs {
+	@summary = "Default summary"
+	macro viewConfigurationTabs() {
 		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		for (var isPresent : list ${isPresent}) {
@@ -86,7 +87,8 @@ definition {
 		SelectFrame(value1 = "relative=top");
 	}
 
-	macro viewDisplaySettings {
+	@summary = "Default summary"
+	macro viewDisplaySettings(uncheckedSetting = null) {
 		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		for (var settingName : list ${uncheckedSetting}) {
@@ -94,10 +96,9 @@ definition {
 		}
 	}
 
-	macro viewEmailCP {
+	@summary = "Default summary"
+	macro viewEmailCP(bodyContent = null) {
 		Portlet.gotoPortletOptions(portletOption = "Configuration");
-
-		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		if (isSet(pageAddedEmail)) {
 			AssertClick(
@@ -109,12 +110,11 @@ definition {
 			AssertTextEquals.assertPartialText(
 				locator1 = "CKEditor#BODY",
 				value1 = ${bodyContent});
-
-			SelectFrame(value1 = "relative=top");
 		}
 	}
 
-	macro viewNoPermissionCP {
+	@summary = "Default summary"
+	macro viewNoPermissionCP() {
 		SiteAdmin.viewPortletTitle(portletTitle = "Wiki");
 
 		AssertElementNotPresent(locator1 = "Button#ADD_WIKI");

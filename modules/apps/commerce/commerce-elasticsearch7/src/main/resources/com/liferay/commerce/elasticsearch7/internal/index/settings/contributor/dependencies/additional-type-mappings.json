@@ -56,6 +56,10 @@
 			"store": true,
 			"type": "keyword"
 		},
+		"assetCategoryNames": {
+			"store": true,
+			"type": "keyword"
+		},
 		"basePrice": {
 			"store": true,
 			"type": "double"
@@ -108,7 +112,19 @@
 			"store": true,
 			"type": "keyword"
 		},
+		"orderTypeId": {
+			"store": true,
+			"type": "keyword"
+		},
 		"productTypeName": {
+			"store": true,
+			"type": "keyword"
+		},
+		"replacementCPInstanceUuid": {
+			"store": true,
+			"type": "keyword"
+		},
+		"replacementCProductId": {
 			"store": true,
 			"type": "keyword"
 		},

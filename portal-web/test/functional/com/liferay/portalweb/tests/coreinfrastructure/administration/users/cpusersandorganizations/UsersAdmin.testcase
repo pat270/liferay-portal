@@ -1,4 +1,4 @@
-@component-name = "portal-security"
+@component-name = "portal-user-management"
 definition {
 
 	property portal.release = "true";
@@ -35,7 +35,7 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-119168."
-	@priority = 5
+	@priority = 4
 	test AddUser {
 		property testray.component.names = "Training";
 
@@ -52,10 +52,7 @@ definition {
 
 		Alert.viewSuccessMessage();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.viewCP(
 			userEmailAddress = "userea@liferay.com",
@@ -83,10 +80,7 @@ definition {
 
 		Alert.viewInfoMessageSpecific(infoMessage = "There are no results.");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea@liferay.com",
@@ -207,12 +201,9 @@ definition {
 			userLoginFullName = "test test");
 	}
 
-	@priority = 3
+	@priority = 4
 	test AddUserEmailAddressAt {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea@@liferay.com",
@@ -231,12 +222,9 @@ definition {
 			userScreenName = "usersn");
 	}
 
-	@priority = 3
+	@priority = 4
 	test AddUserEmailAddressBackSlash {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea\@liferay.com",
@@ -246,12 +234,9 @@ definition {
 			userScreenName = "usersn");
 	}
 
-	@priority = 3
+	@priority = 4
 	test AddUserEmailAddressBackTick {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea`@liferay.com",
@@ -260,12 +245,9 @@ definition {
 			userScreenName = "usersn");
 	}
 
-	@priority = 3
+	@priority = 4
 	test AddUserEmailAddressCaret {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea^@liferay.com",
@@ -274,12 +256,9 @@ definition {
 			userScreenName = "usersn");
 	}
 
-	@priority = 3
+	@priority = 4
 	test AddUserEmailAddressCloseBracket {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea]@liferay.com",
@@ -289,12 +268,9 @@ definition {
 			userScreenName = "usersn");
 	}
 
-	@priority = 3
+	@priority = 4
 	test AddUserEmailAddressCloseCurlyBrace {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea}@liferay.com",
@@ -303,12 +279,9 @@ definition {
 			userScreenName = "usersn");
 	}
 
-	@priority = 3
+	@priority = 4
 	test AddUserEmailAddressCloseParenthesis {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea)@liferay.com",
@@ -318,12 +291,9 @@ definition {
 			userScreenName = "usersn");
 	}
 
-	@priority = 3
+	@priority = 4
 	test AddUserEmailAddressColon {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea:@liferay.com",
@@ -333,12 +303,9 @@ definition {
 			userScreenName = "usersn");
 	}
 
-	@priority = 3
+	@priority = 4
 	test AddUserEmailAddressDash {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea-@liferay.com",
@@ -347,12 +314,9 @@ definition {
 			userScreenName = "usersn");
 	}
 
-	@priority = 3
+	@priority = 4
 	test AddUserEmailAddressEqual {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea=@liferay.com",
@@ -360,10 +324,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.viewCP(
 			userEmailAddress = "userea=@liferay.com",
@@ -372,12 +333,9 @@ definition {
 			userScreenName = "usersn");
 	}
 
-	@priority = 3
+	@priority = 4
 	test AddUserEmailAddressGreaterThan {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea>@liferay.com",
@@ -387,12 +345,9 @@ definition {
 			userScreenName = "usersn");
 	}
 
-	@priority = 3
+	@priority = 4
 	test AddUserEmailAddressMinus {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea-@liferay.com",
@@ -401,12 +356,9 @@ definition {
 			userScreenName = "usersn");
 	}
 
-	@priority = 3
+	@priority = 4
 	test AddUserEmailAddressNull {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "",
@@ -416,12 +368,9 @@ definition {
 			userScreenName = "usersn");
 	}
 
-	@priority = 3
+	@priority = 4
 	test AddUserEmailAddressOpenBracket {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea[@liferay.com",
@@ -431,12 +380,9 @@ definition {
 			userScreenName = "usersn");
 	}
 
-	@priority = 3
+	@priority = 4
 	test AddUserEmailAddressOpenCurlyBrace {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea{@liferay.com",
@@ -445,12 +391,9 @@ definition {
 			userScreenName = "usersn");
 	}
 
-	@priority = 3
+	@priority = 4
 	test AddUserEmailAddressOpenParenthesis {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea(@liferay.com",
@@ -462,10 +405,7 @@ definition {
 
 	@priority = 4
 	test AddUserEmailAddressPeriod {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea.@liferay.com",
@@ -484,12 +424,9 @@ definition {
 			userScreenName = "usersn");
 	}
 
-	@priority = 3
+	@priority = 4
 	test AddUserEmailAddressRoot {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "root@liferay.com",
@@ -499,12 +436,9 @@ definition {
 			userScreenName = "usersn");
 	}
 
-	@priority = 3
+	@priority = 4
 	test AddUserEmailAddressSemicolon {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea;@liferay.com",
@@ -514,12 +448,9 @@ definition {
 			userScreenName = "usersn");
 	}
 
-	@priority = 3
+	@priority = 4
 	test AddUserEmailAddressUnderline {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea_@liferay.com",
@@ -527,10 +458,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.viewCP(
 			userEmailAddress = "userea_@liferay.com",
@@ -544,10 +472,7 @@ definition {
 		var count = 1;
 
 		while (${count} != 4) {
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Users and Organizations");
+			User.openUsersAdmin();
 
 			User.addCP(
 				userEmailAddress = "userea${count}@liferay.com",
@@ -561,10 +486,7 @@ definition {
 		var count = 1;
 
 		while (${count} != 4) {
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Users and Organizations");
+			User.openUsersAdmin();
 
 			User.viewCP(
 				userEmailAddress = "userea${count}@liferay.com",
@@ -576,12 +498,9 @@ definition {
 		}
 	}
 
-	@priority = 3
+	@priority = 4
 	test AddUserScreenNameInvalid {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea@liferay.com",
@@ -600,14 +519,11 @@ definition {
 			userScreenNameVariation = "Invalid");
 	}
 
-	@priority = 3
+	@priority = 4
 	test AddUserScreenNameNumber {
 		property custom.properties = "users.screen.name.allow.numeric=true";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea@liferay.com",
@@ -615,10 +531,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = 11111);
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.viewCP(
 			userEmailAddress = "userea@liferay.com",
@@ -637,10 +550,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.viewCP(
 			userEmailAddress = "userea@liferay.com",
@@ -648,20 +558,14 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		JSONUser.setFirstPassword(
 			agreeToTermsAndAnswerReminderQuery = "true",
 			requireReset = "false",
 			userEmailAddress = "userea@liferay.com");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.assignRegularRoleCP(
 			roleTitle = "Administrator",
@@ -681,7 +585,7 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-130750."
-	@priority = 2
+	@priority = 4
 	test AssertRelevanceSortOptionDisplaysWhenSearching {
 		JSONUser.addUser(
 			userEmailAddress = "userea1@liferay.com",
@@ -810,7 +714,7 @@ definition {
 	}
 
 	@description = "This is a use case for can add comment for user."
-	@priority = 2
+	@priority = 4
 	test CanAddComment {
 		User.openUsersAdmin();
 
@@ -858,7 +762,7 @@ definition {
 		Portlet.viewDefaultTitle(portletName = "Asset Publisher");
 	}
 
-	@priority = 3
+	@priority = 4
 	test CanBulkActivateUsers {
 		for (var userNum : list "1,2,3,4,5") {
 			JSONUser.addUser(
@@ -898,7 +802,7 @@ definition {
 	}
 
 	@description = "This test changes to cards view for users."
-	@priority = 2
+	@priority = 4
 	test CanChangeToCardsView {
 		JSONUser.addUser(
 			userEmailAddress = "userea1@liferay.com",
@@ -918,7 +822,7 @@ definition {
 	}
 
 	@description = "This test changes to list view for users."
-	@priority = 2
+	@priority = 4
 	test CanChangeToListView {
 		JSONUser.addUser(
 			userEmailAddress = "userea1@liferay.com",
@@ -942,10 +846,7 @@ definition {
 	test CanExportUsersWithDirectServletContextDisabled {
 		property custom.properties = "direct.servlet.context.enabled=false";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		AssertVisible(locator1 = "Icon#HEADER_VERTICAL_ELLIPSIS");
 
@@ -956,6 +857,218 @@ definition {
 		AssertConfirm(value1 = "Warning: This CSV file contains user supplied inputs. Opening a CSV file in a spreadsheet program may be dangerous.");
 
 		AssertConsoleTextNotPresent(value1 = "javax.servlet.ServletException");
+	}
+
+	@description = "LPS-196309 | As an admin, I can assert that if the account the user is associated is deleted, the user will be listed again by using the filter type 'Unassociated Users'."
+	@priority = 4
+	test CanFilterByUnassociatedUsersAfterDeletingTheAssociatedAccount {
+		property portal.acceptance = "false";
+
+		task ("Given an account with an account user") {
+			JSONAccountEntry.addAccountEntry(
+				accountEntryName = "Test Account",
+				accountEntryType = "Business");
+
+			JSONUser.addUser(
+				userEmailAddress = "user1@liferay.com",
+				userFirstName = "user1",
+				userLastName = "user1",
+				userScreenName = "user1");
+
+			JSONAccountEntryUser.addExistUsertoAccount(
+				accountEntryName = "Test Account",
+				userEmailAddress = "user1@liferay.com");
+		}
+
+		task ("When the admin navigates to the Users and Organizations page") {
+			User.openUsersAdmin();
+		}
+
+		task ("When the admin sets the filter to view Unassociated Users") {
+			ManagementBar.setFilterAndOrder(filterBy = "Unassociated Users");
+		}
+
+		task ("Then can assert that only the test user is listed") {
+			LexiconEntry.viewEntryName(rowEntry = "test");
+
+			LexiconEntry.viewNoEntry(rowEntry = "user1");
+		}
+
+		task ("When the account is deleted") {
+			Account.openAccountsAdmin();
+
+			Account.deleteAccount(accountName = "Test Account");
+
+			LexiconEntry.viewNoEntry(rowEntry = "Test Account");
+		}
+
+		task ("Then the admin can assert that both users are listed") {
+			User.openUsersAdmin();
+
+			ManagementBar.setFilterAndOrder(filterBy = "Unassociated Users");
+
+			for (var userName : list "test,user1") {
+				LexiconEntry.viewEntryName(rowEntry = ${userName});
+			}
+		}
+	}
+
+	@description = "LPS-196309 | As an admin, I can assert that if the user is removed from the organization, will be listed again by using the filter type 'Unassociated Users'."
+	@priority = 4
+	test CanFilterByUnassociatedUsersAfterRemovingUserFromOrganization {
+		property portal.acceptance = "false";
+
+		task ("Given a user and an organization is created and the user is linked to the organization") {
+			JSONUser.addUser(
+				userEmailAddress = "user1@liferay.com",
+				userFirstName = "user1",
+				userLastName = "user1",
+				userScreenName = "user1");
+
+			JSONOrganization.addOrganization(organizationName = "Org1");
+
+			JSONOrganization.assignUserToOrganization(
+				organizationName = "Org1",
+				userEmailAddress = "user1@liferay.com");
+		}
+
+		task ("When the admin navigates to the Users and Organizations page") {
+			User.openUsersAdmin();
+		}
+
+		task ("And the admin sets the filter to view Unassociated Users") {
+			ManagementBar.setFilterAndOrder(filterBy = "Unassociated Users");
+		}
+
+		task ("Then can assert that only the test user is listed") {
+			LexiconEntry.viewEntryName(rowEntry = "test");
+
+			LexiconEntry.viewNoEntry(rowEntry = "user1");
+		}
+
+		task ("When the admin removes user from the organization") {
+			User.openUsersAdmin();
+
+			UserNavigator.gotoUser(userScreenName = "user1");
+
+			UserNavigator.gotoOrganizations();
+
+			Click(locator1 = "Icon#DELETE");
+
+			Click(locator1 = "Icon#BACK");
+		}
+
+		task ("Then can assert that both users are listed") {
+			ManagementBar.setFilterAndOrder(filterBy = "Unassociated Users");
+
+			for (var userName : list "test,user1") {
+				LexiconEntry.viewEntryName(rowEntry = ${userName});
+			}
+		}
+	}
+
+	@description = "LPS-196309 | As an admin, I can filter users that do not belong to an account or organization by using the filter type 'Unassociated Users'."
+	@priority = 5
+	test CanFilterUsersByUnassociatedUsers {
+		property portal.acceptance = "true";
+
+		task ("Given an account with an account user") {
+			JSONAccountEntry.addAccountEntry(
+				accountEntryName = "Test Account",
+				accountEntryType = "Business");
+
+			JSONUser.addUser(
+				userEmailAddress = "user1@liferay.com",
+				userFirstName = "user1",
+				userLastName = "user1",
+				userScreenName = "user1");
+
+			JSONAccountEntryUser.addExistUsertoAccount(
+				accountEntryName = "Test Account",
+				userEmailAddress = "user1@liferay.com");
+		}
+
+		task ("And 2 users not associated to the account but one of them is associated to an organization") {
+			for (var newUsers : list "2,3") {
+				JSONUser.addUser(
+					userEmailAddress = "user${newUsers}@liferay.com",
+					userFirstName = "user${newUsers}",
+					userLastName = "user${newUsers}",
+					userScreenName = "user${newUsers}");
+			}
+
+			JSONOrganization.addOrganization(organizationName = "Org1");
+
+			JSONOrganization.assignUserToOrganization(
+				organizationName = "Org1",
+				userEmailAddress = "user2@liferay.com");
+		}
+
+		task ("When the admin navigates to the Users and Organizations page") {
+			User.openUsersAdmin();
+		}
+
+		task ("Then can assert that all of the users are listed") {
+			for (var userName : list "test,user1,user2,user3") {
+				LexiconEntry.viewEntryName(rowEntry = ${userName});
+			}
+		}
+
+		task ("When the admin sets the filter to view Unassociated Users") {
+			ManagementBar.setFilterAndOrder(filterBy = "Unassociated Users");
+		}
+
+		task ("Then can assert that only the users that are not associated to the account and organization are listed") {
+			for (var userName : list "test,user3") {
+				LexiconEntry.viewEntryName(rowEntry = ${userName});
+			}
+
+			for (var userName : list "user1,user2") {
+				LexiconEntry.viewNoEntry(rowEntry = ${userName});
+			}
+		}
+	}
+
+	@description = "This is a use case for LPS-202027. As and admin i cannot create a new user with a date of birth in the future."
+	@priority = 4
+	test CannotAddUserWithDateOfBirthInTheFuture {
+		task ("Given an User with a date of birth in the future") {
+			ApplicationsMenu.gotoPortlet(
+				category = "Users",
+				panel = "Control Panel",
+				portlet = "Users and Organizations");
+
+			User.addCP(
+				userBirthday = "1/1/2099",
+				userEmailAddress = "userea@liferay.com",
+				userFirstName = "userfn",
+				userLastName = "userln",
+				userScreenName = "usersn");
+		}
+
+		task ("When an error message appears") {
+			Alert.viewErrorMessage(errorMessage = "Error:Please enter a valid date.");
+		}
+
+		task ("And the date of birth is changed with the correct date") {
+			Type(
+				locator1 = "UsersAndOrganizationsEditUser#DETAILS_BIRTHDAY_FIELD",
+				value1 = "1/1/1970");
+
+			AssertClick(
+				locator1 = "Button#SUBMIT",
+				value1 = "Save");
+
+			Alert.viewSuccessMessage();
+
+			Navigator.gotoBack();
+		}
+
+		task ("Then the user is created correctly") {
+			AssertElementPresent(
+				key_rowEntry = "userfn userln",
+				locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME");
+		}
 	}
 
 	@priority = 4
@@ -971,7 +1084,137 @@ definition {
 			locator1 = "ProductMenu#PORTLET");
 	}
 
+	@description = "This is a test for LPS-200153. As an admin, I can receive a notification after creating a new user when the Single Approver workflow is applied to User"
 	@priority = 5
+	test CanReceiveNewUserNotificationsWhenSingleApproverWorkflowIsAppliedToUser {
+		property portal.acceptance = "true";
+
+		task ("Given Workflow is configured to Single Approver for User") {
+			Workflow.openWorkflowListView();
+
+			Navigator.gotoNavItem(navItem = "Configuration");
+
+			Workflow.configureWorkflow(
+				workflowDefinition = "Single Approver",
+				workflowResourceValue = "User");
+		}
+
+		task ("When a new user is created") {
+			User.openUsersAdmin();
+
+			User.addCP(
+				userEmailAddress = "userea@liferay.com",
+				userFirstName = "userfn",
+				userLastName = "userln",
+				userScreenName = "usersn");
+		}
+
+		task ("Then a notification is sent to the Admin User containing the new user") {
+			Navigator.openURL();
+
+			Notifications.viewBadgeCount(notificationCount = 1);
+
+			Notifications.gotoNotifications();
+
+			WorkflowAsset.viewNotification(contentBody = "Test Test sent you a User for review in the workflow.");
+		}
+	}
+
+	@description = "LPS-201007. As an admin, I can share documents with users of the same user group that has a site membership."
+	@priority = 5
+	test CanShareDocumentWithSiteMemberUserGroupUser {
+		property portal.acceptance = "true";
+
+		task ("Given a user group with two new users is created") {
+			for (var newUser : list "abc,user1") {
+				JSONUser.addUser(
+					userEmailAddress = "${newUser}@liferay.com",
+					userFirstName = ${newUser},
+					userLastName = ${newUser},
+					userScreenName = ${newUser});
+
+				JSONUser.setFirstPassword(
+					agreeToTermsAndAnswerReminderQuery = "true",
+					requireReset = "false",
+					userEmailAddress = "${newUser}@liferay.com");
+			}
+
+			JSONUserGroup.addUserGroup(
+				userGroupDescription = "UG1 Name Description",
+				userGroupName = "UG1");
+
+			UserGroup.openUserGroupsAdmin();
+
+			for (var userName : list "abc,user1") {
+				UserGroup.assignMemberCP(
+					userGroupName = "UG1",
+					userScreenName = ${userName});
+
+				Navigator.gotoBack();
+			}
+		}
+
+		task ("And the user group is assigned to the site") {
+			Site.openSiteSettingsAdmin(siteURLKey = "guest");
+
+			Site.manageMembershipOptions(
+				allowManualMembershipManagement = "true",
+				membershipType = "Open",
+				selectMembershipType = "true");
+
+			Site.openSiteMembershipsAdmin(siteURLKey = "guest");
+
+			Site.assignUserGroupAsMemberCP(userGroupName = "UG1");
+		}
+
+		task ("And Site Administrator role is given to the user1") {
+			JSONRole.assignSiteRoleToUser(
+				groupName = "Guest",
+				roleTitle = "Site Administrator",
+				userEmailAddress = "user1@liferay.com");
+		}
+
+		task ("When the user1 uploads a document in Documents and Media page") {
+			User.logoutAndLoginPG(
+				userLoginEmailAddress = "user1@liferay.com",
+				userLoginFullName = "user1 user1");
+
+			DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+			DMNavigator.gotoAddDocumentTypeCP(dmDocumentTypeName = "File Upload");
+
+			UploadDependencyFile.uploadFile(fileName = "Document_1.pdf");
+
+			PortletEntry.inputTitle(title = "Document1");
+
+			PortletEntry.publish();
+		}
+
+		task ("Then can share the document with user 'abc'") {
+			DMNavigator.gotoShareInfoPanel(dmDocumentTitle = "Document1");
+
+			DMDocument.shareWithNoSharingPermissionsUser(userEmailAddress = "abc@liferay.com");
+
+			Alert.viewSuccessMessage();
+		}
+
+		task ("And the user 'abc' can view the notification and the shared document when logs in") {
+			User.logoutAndLoginPG(
+				userLoginEmailAddress = "abc@liferay.com",
+				userLoginFullName = "abc abc");
+
+			Notifications.viewBadgeCount(notificationCount = 1);
+
+			Notifications.gotoNotifications();
+
+			Notifications.viewNewSharedContent(
+				contentSharingPermission = "viewing",
+				contentTitle = "Document1",
+				ownerName = "user1 user1");
+		}
+	}
+
+	@priority = 4
 	test ChangeUserPassword {
 		property portal.acceptance = "true";
 
@@ -1000,10 +1243,7 @@ definition {
 
 	@priority = 4
 	test ChangeUserPasswordInvalid {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea@liferay.com",
@@ -1011,10 +1251,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.editPasswordCP(
 			userEmailAddress = "userea@liferay.com",
@@ -1034,7 +1271,7 @@ definition {
 	}
 
 	@description = "This test changes password through the API Explorer GUI."
-	@priority = 3
+	@priority = 4
 	test ChangeUserPasswordViaAPIExplorerGUI {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
 
@@ -1068,7 +1305,7 @@ definition {
 			''';
 			var value = JSONUserAPI._getUserIdByEmailAddress(userEmailAddress = "userea1@liferay.com");
 
-			APIExplorer.executeAPIMethodWithParameters(
+			APIExplorer.executeAPIMethod(
 				method = "patchUserAccount",
 				parameter = "userAccountId",
 				requestBody = ${requestBody},
@@ -1108,7 +1345,7 @@ definition {
 	}
 
 	@description = "This test changes password through the Password Reset link sent in email."
-	@priority = 5
+	@priority = 4
 	test ChangingPasswordIsSuccessfulViaPasswordResetLink {
 		property custom.properties = "mail.send.blacklist=noreply@liferay.com,noreply@domain.invalid,test@domain.invalid";
 		property test.smtp.server.enabled = "true";
@@ -1124,10 +1361,7 @@ definition {
 			emailAddress = "test@liferay.com",
 			emailSenderName = "Joe Bloggs");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea@liferay.com",
@@ -1155,14 +1389,11 @@ definition {
 			userEmailAddress = "userea@liferay.com");
 	}
 
-	@priority = 5
+	@priority = 4
 	test DeleteUser {
 		property portal.acceptance = "true";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea@liferay.com",
@@ -1190,9 +1421,7 @@ definition {
 
 		User.openUsersAdmin();
 
-		Click(locator1 = "Dropdown#FILTER_AND_ORDER");
-
-		MenuItem.click(menuItem = "Inactive");
+		ManagementBar.setFilterAndOrder(filterBy = "Inactive");
 
 		User.searchCP(searchTerm = "usersn");
 
@@ -1200,7 +1429,7 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-121271."
-	@priority = 3
+	@priority = 4
 	test EditAlertsandAnnouncementsDelivery {
 		property portal.acceptance = "true";
 
@@ -1415,7 +1644,7 @@ definition {
 		User.viewIsPrimary(primaryValue = "1400 Montefino Ave");
 	}
 
-	@priority = 3
+	@priority = 4
 	test EditUserDisplaySettings {
 		property portal.acceptance = "true";
 
@@ -1528,7 +1757,7 @@ definition {
 			searchContainerType = "phonesSearchContainer");
 	}
 
-	@priority = 5
+	@priority = 4
 	test EditUserSite {
 		property app.server.types = "jboss,tcserver,tomcat,weblogic,websphere,wildfly";
 		property database.types = "db2,hypersonic,mariadb,mysql,oracle,postgresql,sqlserver,sybase";
@@ -1543,6 +1772,10 @@ definition {
 			userScreenName = "usersn");
 
 		HeadlessSite.addSite(siteName = "Site Name");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "site-name");
+
+		Site.manageMembershipOptions(allowManualMembershipManagement = "true");
 
 		User.openUsersAdmin();
 
@@ -1656,6 +1889,7 @@ definition {
 	@priority = 4
 	test ImpersonatingAdministratorandOwner {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var siteName = TestCase.getSiteName(siteName = ${siteName});
 
@@ -1704,10 +1938,7 @@ definition {
 			userLastName = "userln3",
 			userScreenName = "usersn3");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.editPasswordCP(
 			userEmailAddress = "userea1@liferay.com",
@@ -1721,19 +1952,13 @@ definition {
 			roleTitle = "Administrator",
 			userEmailAddress = "userea3@liferay.com");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.editPasswordCP(
 			userEmailAddress = "userea2@liferay.com",
 			userScreenName = "usersn2");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.editPasswordCP(
 			userEmailAddress = "userea3@liferay.com",
@@ -1743,10 +1968,7 @@ definition {
 			userLoginEmailAddress = "userea1@liferay.com",
 			userLoginFullName = "userfn1 userln1");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.impersonateCP(
 			siteName = ${siteName},
@@ -1754,22 +1976,16 @@ definition {
 
 		Close.closeWindow(locator1 = "title=Welcome - ${siteName}");
 
-		SelectWindow(locator1 = "title=Users and Organizations - ${siteName}");
+		SelectWindow(value1 = "title=Users - Users - Users and Organizations - ${siteName}");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.attemptImpersonateCP(
 			notAdmin = "true",
 			siteName = ${siteName},
 			userScreenName = "usersn3");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.attemptImpersonateCP(
 			notAdmin = "true",
@@ -1788,10 +2004,7 @@ definition {
 			userLoginEmailAddress = "userea1@liferay.com",
 			userLoginFullName = "userfn1 userln1");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.impersonateCP(
 			siteName = ${siteName},
@@ -1799,12 +2012,9 @@ definition {
 
 		Close.closeWindow(locator1 = "title=Welcome - ${siteName}");
 
-		SelectWindow(locator1 = "title=Users and Organizations - ${siteName}");
+		SelectWindow(value1 = "title=Users - Users - Users and Organizations - ${siteName}");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.impersonateCP(
 			siteName = ${siteName},
@@ -1812,12 +2022,9 @@ definition {
 
 		Close.closeWindow(locator1 = "title=Welcome - ${siteName}");
 
-		SelectWindow(locator1 = "title=Users and Organizations - ${siteName}");
+		SelectWindow(value1 = "title=Users - Users - Users and Organizations - ${siteName}");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.impersonateCP(
 			siteName = ${siteName},
@@ -1825,11 +2032,11 @@ definition {
 
 		Close.closeWindow(locator1 = "title=Welcome - ${siteName}");
 
-		SelectWindow(locator1 = "title=Users and Organizations - ${siteName}");
+		SelectWindow(value1 = "title=Users - Users - Users and Organizations - ${siteName}");
 	}
 
 	@description = "This is a use case for LPS-145025. No redirect and language is changed when change the language in password reset page."
-	@priority = 3
+	@priority = 4
 	test LanguageChangedAndNoRedirectWhenChangeLanguageInPasswordResetPage {
 		property custom.properties = "mail.send.blacklist=noreply@liferay.com,noreply@domain.invalid,test@domain.invalid";
 		property test.smtp.server.enabled = "true";
@@ -1887,10 +2094,7 @@ definition {
 
 	@priority = 4
 	test LoginUser {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea@liferay.com",
@@ -1898,10 +2102,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.editPasswordCP(
 			userEmailAddress = "userea@liferay.com",
@@ -1919,7 +2120,7 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-121270."
-	@priority = 3
+	@priority = 4
 	test LoginUserWithProfileSite {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
 
@@ -1936,10 +2137,7 @@ definition {
 			requireReset = "false",
 			userEmailAddress = "userea@liferay.com");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addPersonalSiteCP(
 			personalSite = "Public",
@@ -1983,19 +2181,19 @@ definition {
 		User.viewLoggedOutPG();
 	}
 
-	@priority = 3
+	@priority = 4
 	test OnlyGlobalTagCanbeAssociatedToUser {
 		JSONAssettag.addTag(
 			groupName = "Guest",
-			tagName = "Default Site Tag Name");
+			tagName = "default site tag name");
 
 		JSONAssettag.addTag(
 			groupName = "Global",
-			tagName = "Global Tag Name 1");
+			tagName = "global tag name 1");
 
 		JSONAssettag.addTag(
 			groupName = "Global",
-			tagName = "Global Tag Name 2");
+			tagName = "global tag name 2");
 
 		JSONUser.addUser(
 			userEmailAddress = "userea@liferay.com",
@@ -2007,16 +2205,14 @@ definition {
 
 		User.editUserTagCP(
 			addTagMethod = "Select",
-			tagNameList = "Global Tag Name 1,Global Tag Name 2",
+			tagNameList = "global tag name 1,global tag name 2",
 			userName = "userfn userln");
 
 		User.openUsersAdmin();
 
 		UserNavigator.gotoUser(userScreenName = "usersn");
 
-		for (var tagName : list "Global Tag Name 1,Global Tag Name 2") {
-			var tagName = StringUtil.lowerCase(${tagName});
-
+		for (var tagName : list "global tag name 1,global tag name 2") {
 			AssetCategorization.viewTag(tagName = ${tagName});
 		}
 
@@ -2029,7 +2225,7 @@ definition {
 
 		var rowEntry = StringUtil.lowerCase(${rowEntry});
 
-		LexiconEntry.viewNoEntry(rowEntry = StringUtil.lowerCase("Default Site Tag Name"));
+		LexiconEntry.viewNoEntry(rowEntry = StringUtil.lowerCase("default site tag name"));
 
 		// Additional steps to cover LPS-111656
 
@@ -2045,9 +2241,7 @@ definition {
 
 		UserNavigator.gotoUser(userScreenName = "usersn");
 
-		for (var tagName : list "Global Tag Name 1,Global Tag Name 2") {
-			var tagName = StringUtil.lowerCase(${tagName});
-
+		for (var tagName : list "global tag name 1,global tag name 2") {
 			AssetCategorization.viewTag(tagName = ${tagName});
 		}
 	}
@@ -2065,10 +2259,7 @@ definition {
 
 		var userId = JSONUserSetter.setUserId(userEmailAddress = "userea@liferay.com");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		LexiconEntry.gotoAdd();
 
@@ -2094,10 +2285,7 @@ definition {
 			locator1 = "Message#ERROR_1",
 			value1 = "The screen name cannot contain only numeric values.");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.viewCP(
 			userEmailAddress = "userea1@liferay.com",
@@ -2107,7 +2295,7 @@ definition {
 			userScreenNameVariation = "Invalid");
 	}
 
-	@priority = 5
+	@priority = 4
 	test SearchUser {
 		property portal.acceptance = "true";
 
@@ -2128,12 +2316,9 @@ definition {
 		Search.clearSearchResult();
 	}
 
-	@priority = 3
+	@priority = 4
 	test SearchUserFullName {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea@liferay.com",
@@ -2141,10 +2326,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.basicSearchCP(
 			userBasicSearch = "Full Name",
@@ -2155,12 +2337,9 @@ definition {
 			userScreenName = "usersn");
 	}
 
-	@priority = 3
+	@priority = 4
 	test SearchUserQuotes {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea1@liferay.com",
@@ -2168,10 +2347,7 @@ definition {
 			userLastName = "userln1",
 			userScreenName = "usersn1");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea2@liferay.com",
@@ -2179,10 +2355,7 @@ definition {
 			userLastName = "userln2",
 			userScreenName = "usersn2");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		var key_userScreenName = "usersn1";
 
@@ -2251,17 +2424,11 @@ definition {
 			emailAddress = "test@liferay.com",
 			emailSenderName = "Joe Bloggs");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Security",
-			panel = "Control Panel",
-			portlet = "Password Policies");
+		PasswordPolicies.openPasswordPoliciesAdmin();
 
 		PasswordPolicies.enableSyntaxChecking(passwordPolicyName = "Default Password Policy");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea@liferay.com",
@@ -2287,7 +2454,7 @@ definition {
 			value1 = "Please enter the same value again.");
 	}
 
-	@priority = 3
+	@priority = 4
 	test TestRequiredFields {
 		User.openUsersAdmin();
 
@@ -2305,9 +2472,10 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-104643."
-	@priority = 3
+	@priority = 4
 	test UpdateExistUserEmailAddressByScript {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONUser.addUser(
 			userEmailAddress = "userea@liferay.com",
@@ -2335,11 +2503,9 @@ definition {
 	@priority = 4
 	test UpdateUserInformation {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		UserNavigator.gotoUser(userScreenName = "test");
 
@@ -2370,6 +2536,7 @@ definition {
 	@priority = 4
 	test ValidateRegExPasswordPolicyCP {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONUser.addUser(
 			userEmailAddress = "test1@liferay.com",
@@ -2377,19 +2544,13 @@ definition {
 			userLastName = "test1",
 			userScreenName = "test1");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Security",
-			panel = "Control Panel",
-			portlet = "Password Policies");
+		PasswordPolicies.openPasswordPoliciesAdmin();
 
 		PasswordPolicies.enableSyntaxChecking(
 			allowDictionaryWords = "false",
 			passwordPolicyName = "Default Password Policy");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Security",
-			panel = "Control Panel",
-			portlet = "Password Policies");
+		PasswordPolicies.openPasswordPoliciesAdmin();
 
 		PasswordPolicies.enableSyntaxChecking(
 			minimumAlphaNumeric = 0,
@@ -2401,10 +2562,7 @@ definition {
 			passwordPolicyName = "Default Password Policy",
 			regularExpression = "(?=.{4})(?:[a-zA-Z]*)");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.editPasswordInvalidCP(
 			newPassword = "NO1else",
@@ -2412,46 +2570,31 @@ definition {
 			userEmailAddress = "test1@liferay.com",
 			userScreenName = "test1");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		UserNavigator.gotoUser(userScreenName = "test1");
 
 		User.editPassword(newPassword = "tryingHARD");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Security",
-			panel = "Control Panel",
-			portlet = "Password Policies");
+		PasswordPolicies.openPasswordPoliciesAdmin();
 
 		PasswordPolicies.enableSyntaxChecking(
 			passwordPolicyName = "Default Password Policy",
 			regularExpression = "(?=.{6})(?:[a-zA-Z0-9]*)");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		UserNavigator.gotoUser(userScreenName = "test1");
 
 		User.editPassword(newPassword = "abcABC");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		UserNavigator.gotoUser(userScreenName = "test1");
 
 		User.editPassword(newPassword = "123ABC");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.editPasswordInvalidCP(
 			newPassword = "1-2-3ABC",
@@ -2459,19 +2602,13 @@ definition {
 			userEmailAddress = "test1@liferay.com",
 			userScreenName = "test1");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Security",
-			panel = "Control Panel",
-			portlet = "Password Policies");
+		PasswordPolicies.openPasswordPoliciesAdmin();
 
 		PasswordPolicies.enableSyntaxChecking(
 			minimumNumbers = 2,
 			passwordPolicyName = "Default Password Policy");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.editPasswordInvalidCP(
 			minimumNumbers = 2,
@@ -2479,10 +2616,7 @@ definition {
 			userEmailAddress = "test1@liferay.com",
 			userScreenName = "test1");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.editPasswordInvalidCP(
 			newPassword = "12AB",
@@ -2490,10 +2624,7 @@ definition {
 			userEmailAddress = "test1@liferay.com",
 			userScreenName = "test1");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		UserNavigator.gotoUser(userScreenName = "test1");
 
@@ -2501,7 +2632,7 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-111656"
-	@priority = 3
+	@priority = 4
 	test ViewCategoryAssociatedToUser {
 		JSONCategory.addVocabulary(
 			groupName = "Global",
@@ -2548,19 +2679,17 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-176074. TC-2: Email verification notification template could be set to include user's first name."
-	@priority = 3
+	@priority = 4
 	test ViewEmailVerificationNotificationTemplateUpdated {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=true${line.separator}mail.send.blacklist=noreply@liferay.com,noreply@domain.invalid,test@domain.invalid";
+		property custom.properties = "company.security.strangers.verify=true${line.separator}jsonws.web.service.paths.excludes=${line.separator}mail.send.blacklist=noreply@liferay.com,noreply@domain.invalid,test@domain.invalid";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 		property test.smtp.server.enabled = "true";
 
 		task ("Given: Add a new user and add the user's first name in the email verification notification template") {
 			var portalURL = PropsUtil.get("portal.url");
 
-			ApplicationsMenu.gotoPortlet(
-				category = "Configuration",
-				panel = "Control Panel",
-				portlet = "Instance Settings");
+			PortalSettings.openInstanceSettingsAdmin();
 
 			SystemSettings.gotoConfiguration(
 				configurationCategory = "User Authentication",
@@ -2646,6 +2775,7 @@ definition {
 	test ViewEmailWithPasswordSetupLinkSendToNewUser {
 		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}mail.send.blacklist=noreply@liferay.com,noreply@domain.invalid,test@domain.invalid";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 		property test.smtp.server.enabled = "true";
 
 		task ("Given: Add the user's first name in the account created notification template") {
@@ -2678,10 +2808,7 @@ definition {
 		}
 
 		task ("When: Add a new user") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Users and Organizations");
+			User.openUsersAdmin();
 
 			User.addCP(
 				userEmailAddress = "userea@liferay.com",
@@ -2716,10 +2843,7 @@ definition {
 
 	@priority = 4
 	test ViewInvalidLoginForDeactivatedUserViaActionsMenu {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea@liferay.com",
@@ -2727,19 +2851,13 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.editPasswordCP(
 			userEmailAddress = "userea@liferay.com",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.deactivateCP(
 			deactivateType = "Actions",
@@ -2754,9 +2872,12 @@ definition {
 		User.loginUserPG();
 	}
 
-	@priority = 5
+	@priority = 4
 	test ViewLoginForActivatedUser {
+		property app.server.types = "jboss,tcserver,tomcat,weblogic,websphere,wildfly";
+		property database.types = "db2,hypersonic,mariadb,mysql,oracle,postgresql,sqlserver,sybase";
 		property portal.acceptance = "true";
+		property test.liferay.virtual.instance = "false";
 		property testray.component.names = "Training";
 
 		JSONUser.addUser(
@@ -2813,10 +2934,7 @@ definition {
 			requireReset = "false",
 			userEmailAddress = "userea@liferay.com");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.deactivateCP(userFirstName = "userfn");
 
@@ -2831,7 +2949,7 @@ definition {
 			userEmailAddress = "test@liferay.com");
 	}
 
-	@priority = 3
+	@priority = 4
 	test ViewPageRenderedProperlyAfterBeYourselfAgain {
 		var siteName = TestCase.getSiteName(siteName = ${siteName});
 
@@ -2841,10 +2959,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.impersonateCP(
 			siteName = ${siteName},
@@ -2855,23 +2970,20 @@ definition {
 			locator1 = "UserBar#USER_AVATAR_DROPDOWN_ITEM",
 			value1 = "My Profile");
 
-		SearchPortlets.viewUserResultDetails(
+		SearchPage.viewUserResultDetails(
 			pageName = "My Profile",
 			userName = "userfn userln");
 
 		UserBar.gotoDropdownItem(dropdownItem = "Be yourself again.");
 
-		SearchPortlets.viewUserResultDetails(
+		SearchPage.viewUserResultDetails(
 			pageName = "My Profile",
 			userName = "Test Test");
 	}
 
 	@priority = 4
 	test ViewUpdateUserViaJSONWS {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		var userId = JSONUserSetter.setUserId(userEmailAddress = "test@liferay.com");
 
@@ -2891,12 +3003,7 @@ definition {
 			userScreenName = "test1",
 			userSuffixId = 0);
 
-		Navigator.openURL();
-
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.viewCP(
 			userBirthday = "11/24/1984",
@@ -2944,10 +3051,11 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-111136"
-	@priority = 3
+	@priority = 4
 	test WelcomeEmailContainsVirtualHostSendToNewUser {
-		property custom.properties = "virtual.hosts.valid.hosts=localhost,127.0.0.1,www.able.com${line.separator}mail.send.blacklist=noreply@liferay.com,noreply@domain.invalid,test@domain.invalid";
+		property custom.properties = "mail.send.blacklist=noreply@liferay.com,noreply@domain.invalid,test@domain.invalid${line.separator}virtual.hosts.valid.hosts=localhost,127.0.0.1,www.able.com";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 		property test.smtp.server.enabled = "true";
 
 		PortalSettings.gotoConfiguration(

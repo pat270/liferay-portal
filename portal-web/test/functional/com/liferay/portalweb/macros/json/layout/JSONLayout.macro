@@ -1,14 +1,18 @@
 definition {
 
-	macro addPrivateLayout {
-		Variables.assertDefined(parameterList = "${groupName},${layoutName}");
+	@summary = "Default summary"
+	macro addPrivateLayout(grandParentGroupName = null, workflowAction = null, parentGroupName = null, layoutName = null, groupName = null, site = null, assetCategoryIds = null, parentLayoutName = null, assetTagNames = null) {
+		Variables.assertDefined(parameterList = ${layoutName});
 
 		var friendlyURL = JSONLayoutSetter.setFriendlyURL(friendlyURL = ${friendlyURL});
-		var groupId = JSONLayoutSetter.setGroupId(
-			grandParentGroupName = ${grandParentGroupName},
-			groupName = ${groupName},
-			parentGroupName = ${parentGroupName},
-			site = ${site});
+
+		if (!(isSet(groupId))) {
+			var groupId = JSONLayoutSetter.setGroupId(
+				grandParentGroupName = ${grandParentGroupName},
+				groupName = ${groupName},
+				parentGroupName = ${parentGroupName},
+				site = ${site});
+		}
 
 		var parentLayoutId = JSONLayoutSetter.setParentLayoutId(
 			groupId = ${groupId},
@@ -33,15 +37,19 @@ definition {
 		return ${plid};
 	}
 
-	macro addPublicLayout {
-		Variables.assertDefined(parameterList = "${groupName},${layoutName}");
+	@summary = "Default summary"
+	macro addPublicLayout(grandParentGroupName = null, workflowAction = null, parentGroupName = null, layoutName = null, groupName = null, site = null, assetCategoryIds = null, parentLayoutName = null, assetTagNames = null) {
+		Variables.assertDefined(parameterList = ${layoutName});
 
 		var friendlyURL = JSONLayoutSetter.setFriendlyURL(friendlyURL = ${friendlyURL});
-		var groupId = JSONLayoutSetter.setGroupId(
-			grandParentGroupName = ${grandParentGroupName},
-			groupName = ${groupName},
-			parentGroupName = ${parentGroupName},
-			site = ${site});
+
+		if (!(isSet(groupId))) {
+			var groupId = JSONLayoutSetter.setGroupId(
+				grandParentGroupName = ${grandParentGroupName},
+				groupName = ${groupName},
+				parentGroupName = ${parentGroupName},
+				site = ${site});
+		}
 
 		var parentLayoutId = JSONLayoutSetter.setParentLayoutId(
 			groupId = ${groupId},
@@ -66,14 +74,17 @@ definition {
 		return ${plid};
 	}
 
-	macro addWidgetToPrivateLayout {
-		Variables.assertDefined(parameterList = "${groupName},${layoutName},${widgetName}");
+	@summary = "Default summary"
+	macro addWidgetToPrivateLayout(widgetName = null, groupName = null, site = null, grandParentGroupName = null, parentGroupName = null, layoutName = null) {
+		Variables.assertDefined(parameterList = "${layoutName},${widgetName}");
 
-		var groupId = JSONLayoutSetter.setGroupId(
-			grandParentGroupName = ${grandParentGroupName},
-			groupName = ${groupName},
-			parentGroupName = ${parentGroupName},
-			site = ${site});
+		if (!(isSet(groupId))) {
+			var groupId = JSONLayoutSetter.setGroupId(
+				grandParentGroupName = ${grandParentGroupName},
+				groupName = ${groupName},
+				parentGroupName = ${parentGroupName},
+				site = ${site});
+		}
 
 		var layoutId = JSONLayoutSetter.setLayoutId(
 			groupId = ${groupId},
@@ -92,18 +103,21 @@ definition {
 			typeSettings = ${typeSettings});
 	}
 
-	macro addWidgetToPublicLayout {
-		Variables.assertDefined(parameterList = "${groupName},${layoutName},${widgetName}");
+	@summary = "Default summary"
+	macro addWidgetToPublicLayout(remoteAppEntryId = null, widgetName = null, groupName = null, grandParentGroupName = null, column = null, parentGroupName = null, layoutName = null) {
+		Variables.assertDefined(parameterList = "${layoutName},${widgetName}");
 
 		if (!(isSet(site))) {
 			var site = "true";
 		}
 
-		var groupId = JSONLayoutSetter.setGroupId(
-			grandParentGroupName = ${grandParentGroupName},
-			groupName = ${groupName},
-			parentGroupName = ${parentGroupName},
-			site = ${site});
+		if (!(isSet(groupId))) {
+			var groupId = JSONLayoutSetter.setGroupId(
+				grandParentGroupName = ${grandParentGroupName},
+				groupName = ${groupName},
+				parentGroupName = ${parentGroupName},
+				site = ${site});
+		}
 
 		var layoutId = JSONLayoutSetter.setLayoutId(
 			groupId = ${groupId},
@@ -124,7 +138,8 @@ definition {
 			typeSettings = ${typeSettings});
 	}
 
-	macro deletePublicLayout {
+	@summary = "Default summary"
+	macro deletePublicLayout(groupName = null, assetCategoryIds = null, assetTagNames = null, workflowAction = null, layoutName = null) {
 		Variables.assertDefined(parameterList = "${groupName},${layoutName}");
 
 		var groupId = JSONLayoutSetter.setGroupId(groupName = ${groupName});
@@ -146,7 +161,22 @@ definition {
 			serviceContext = ${serviceContext});
 	}
 
-	macro getPageScopeIdByGroupName {
+	@summary = "Default summary"
+	macro getLayoutIdByName(groupName = null, layoutName = null) {
+		if (!(isSet(groupId))) {
+			var groupId = JSONLayoutSetter.setGroupId(groupName = ${groupName});
+		}
+
+		var layoutId = JSONLayoutAPI._getLayoutIdByName(
+			groupId = ${groupId},
+			layoutName = ${layoutName},
+			privateLayout = "false");
+
+		return ${layoutId};
+	}
+
+	@summary = "Default summary"
+	macro getPageScopeIdByGroupName(groupName = null) {
 		Variables.assertDefined(parameterList = ${groupName});
 
 		var groupId = JSONLayoutSetter.setGroupId(groupName = ${groupName});
@@ -156,7 +186,8 @@ definition {
 			privateLayout = "false");
 	}
 
-	macro getPlid {
+	@summary = "Default summary"
+	macro getPlid(groupName = null, portalURL = null, layoutName = null) {
 		Variables.assertDefined(parameterList = "${groupName},${layoutName}");
 
 		if (!(isSet(site))) {
@@ -179,7 +210,8 @@ definition {
 			privateLayout = ${privateLayout});
 	}
 
-	macro publishLayout {
+	@summary = "Default summary"
+	macro publishLayout(groupName = null, site = null, privateLayout = null, layoutName = null) {
 		Variables.assertDefined(parameterList = "${groupName},${layoutName}");
 
 		var plid = JSONLayout.getPlid(
@@ -191,16 +223,19 @@ definition {
 		JSONLayoutAPI._publishLayoutByPlid(plid = ${plid});
 	}
 
-	macro updateLayoutTemplateOfPublicLayout {
-		Variables.assertDefined(parameterList = "${groupName},${layoutName},${layoutTemplate}");
+	@summary = "Default summary"
+	macro updateLayoutTemplateOfPublicLayout(groupName = null, column = null, layoutTemplate = null, layoutName = null) {
+		Variables.assertDefined(parameterList = "${layoutName},${layoutTemplate}");
 
 		if (!(isSet(site))) {
 			var site = "true";
 		}
 
-		var groupId = JSONLayoutSetter.setGroupId(
-			groupName = ${groupName},
-			site = ${site});
+		if (!(isSet(groupId))) {
+			var groupId = JSONLayoutSetter.setGroupId(
+				groupName = ${groupName},
+				site = ${site});
+		}
 
 		var layoutId = JSONLayoutSetter.setLayoutId(
 			groupId = ${groupId},
@@ -220,7 +255,8 @@ definition {
 			typeSettings = ${typeSettings});
 	}
 
-	macro updateTypeSettings {
+	@summary = "Default summary"
+	macro updateTypeSettings(groupName = null, column = null, embeddedLayoutURL = null, layoutTemplate = null, layoutName = null) {
 		Variables.assertDefined(parameterList = "${groupName},${layoutName}");
 
 		if (!(isSet(site))) {

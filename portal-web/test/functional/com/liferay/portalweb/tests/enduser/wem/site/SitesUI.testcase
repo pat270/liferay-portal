@@ -1,10 +1,9 @@
 @component-name = "portal-wcm"
 definition {
 
+	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testcase.url = "http://localhost:8080";
-	property testray.component.names = "Sites Administration";
 	property testray.main.component.name = "Sites Administration";
 
 	static var randomSiteName = StringUtil.randomString(8);
@@ -12,14 +11,19 @@ definition {
 	var siteURLKey = StringUtil.toLowerCase(${randomSiteName});
 
 	setUp {
-		User.firstLoginPG();
+		task ("Set up virtual instance") {
+			TestCase.setUpPortalInstance();
+		}
+
+		task ("Sign in") {
+			User.firstLoginPG();
+		}
 	}
 
 	@description = "This is a test for LPS-112992. The user could add a child site in Sites admin."
 	@priority = 5
 	test AddChildSite {
 		property portal.acceptance = "true";
-		property testray.component.names = "Training";
 
 		var childSiteName = StringUtil.randomString(8);
 
@@ -28,10 +32,7 @@ definition {
 		}
 
 		task ("Add a child site") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Sites",
-				panel = "Control Panel",
-				portlet = "Sites");
+			Site.openSitesAdmin();
 
 			Site.addBlankCP(
 				parentSiteName = ${randomSiteName},
@@ -39,10 +40,7 @@ definition {
 		}
 
 		task ("View child site added") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Sites",
-				panel = "Control Panel",
-				portlet = "Sites");
+			Site.openSitesAdmin();
 
 			Site.viewChildCP(
 				childSiteName = ${childSiteName},
@@ -57,7 +55,10 @@ definition {
 		var randomSiteTemplateName = StringUtil.randomString(8);
 
 		task ("Add a blank site") {
-			Site.openSitesAdmin();
+			ApplicationsMenu.gotoPortlet(
+				category = "Sites",
+				panel = "Control Panel",
+				portlet = "Sites");
 
 			Site.addBlankCP(siteName = "${randomSiteName}1");
 		}

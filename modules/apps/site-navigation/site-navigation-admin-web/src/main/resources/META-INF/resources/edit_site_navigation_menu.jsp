@@ -12,6 +12,7 @@ String redirect = ParamUtil.getString(request, "redirect");
 
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(redirect);
+portletDisplay.setURLBackTitle(portletDisplay.getPortletDisplayName());
 
 renderResponse.setTitle(siteNavigationAdminDisplayContext.getSiteNavigationMenuName());
 %>
@@ -21,7 +22,7 @@ renderResponse.setTitle(siteNavigationAdminDisplayContext.getSiteNavigationMenuN
 <c:if test="<%= siteNavigationAdminDisplayContext.hasUpdatePermission() %>">
 	<react:component
 		componentId="siteNavigationMenuEditor"
-		module="site_navigation_menu_editor/index"
+		module="{App} from site-navigation-admin-web"
 		props="<%= siteNavigationAdminDisplayContext.getSiteNavigationContext() %>"
 	/>
 </c:if>

@@ -73,21 +73,19 @@ Map<String, String> contextParams = HashMapBuilder.<String, String>put(
 
 				</aui:select>
 
-				<c:if test='<%= FeatureFlagManagerUtil.isEnabled("COMMERCE-10890") %>'>
-					<aui:select disabled="<%= !commerceChannelDisplayContext.hasManageLinkSupplierPermission() %>" label="link-channel-to-a-supplier" name="accountEntryId" showEmptyOption="<%= true %>">
+				<aui:select disabled="<%= !commerceChannelDisplayContext.hasManageLinkSupplierPermission() %>" label="link-channel-to-a-supplier" name="accountEntryId" showEmptyOption="<%= true %>">
 
-						<%
-						for (AccountEntry accountEntry : commerceChannelDisplayContext.getSupplierAccountEntries()) {
-						%>
+					<%
+					for (AccountEntry accountEntry : commerceChannelDisplayContext.getSupplierAccountEntries()) {
+					%>
 
-							<aui:option label="<%= accountEntry.getName() %>" selected="<%= (commerceChannel != null) && (accountEntry.getAccountEntryId() == commerceChannel.getAccountEntryId()) %>" value="<%= accountEntry.getAccountEntryId() %>" />
+						<aui:option label="<%= accountEntry.getName() %>" selected="<%= (commerceChannel != null) && (accountEntry.getAccountEntryId() == commerceChannel.getAccountEntryId()) %>" value="<%= accountEntry.getAccountEntryId() %>" />
 
-						<%
-						}
-						%>
+					<%
+					}
+					%>
 
-					</aui:select>
-				</c:if>
+				</aui:select>
 			</commerce-ui:panel>
 		</div>
 
@@ -164,11 +162,9 @@ Map<String, String> contextParams = HashMapBuilder.<String, String>put(
 						<aui:input checked="<%= commerceChannelDisplayContext.isGuestCheckoutEnabled() %>" helpMessage="configures-whether-a-guest-may-checkout-by-providing-an-email-address-or-if-they-must-sign-in" label="guest-checkout" labelOff="disabled" labelOn="enabled" name="settings--guestCheckoutEnabled--" type="toggle-switch" />
 					</div>
 
-					<c:if test='<%= FeatureFlagManagerUtil.isEnabled("COMMERCE-11028") %>'>
-						<div class="col-lg-6">
-							<aui:input checked="<%= commerceChannelDisplayContext.isRequestQuoteEnabled() %>" helpMessage="allow-buyers-to-request-a-quote-when-no-product-in-the-cart-is-priced-as-price-on-application" label="allow-request-a-quote-on-a-fully-priced-cart" labelOff="disabled" labelOn="enabled" name="orderSettings--requestQuoteEnabled--" type="toggle-switch" />
-						</div>
-					</c:if>
+					<div class="col-lg-6">
+						<aui:input checked="<%= commerceChannelDisplayContext.isRequestQuoteEnabled() %>" helpMessage="allow-buyers-to-request-a-quote-when-no-product-in-the-cart-is-priced-as-price-on-application" label="allow-request-a-quote-on-a-fully-priced-cart" labelOff="disabled" labelOn="enabled" name="orderSettings--requestQuoteEnabled--" type="toggle-switch" />
+					</div>
 				</div>
 
 				<div class="row">
@@ -205,10 +201,20 @@ Map<String, String> contextParams = HashMapBuilder.<String, String>put(
 							<p class="mb-0 ml-3 text-3">
 								<span id="<portlet:namespace />fileEntryNameInput"><a><%= (fileEntry != null) ? fileEntry.getFileName() : "" %></a></span>
 								<span class="<%= (fileEntry != null) ? "" : "hide" %>" id="<portlet:namespace />fileEntryRemoveIcon" role="button">
-									<aui:icon cssClass="icon-monospaced" image="times-circle-full" markupView="lexicon" />
+									<clay:button
+										aria-label='<%= LanguageUtil.format(locale, "remove-x", "file") %>'
+										cssClass="lfr-portal-tooltip"
+										displayType="unstyled"
+										icon="times-circle-full"
+										title="remove"
+									/>
 								</span>
 							</p>
 						</div>
+					</div>
+
+					<div class="col-lg-6">
+						<aui:input checked="<%= commerceChannelDisplayContext.isShowSeparateOrderItems() %>" helpMessage="show-separate-order-items-help" label="show-separate-order-items" labelOff="disabled" labelOn="enabled" name="settings--showSeparateOrderItems--" type="toggle-switch" />
 					</div>
 				</div>
 			</commerce-ui:panel>
@@ -285,33 +291,15 @@ if (shippingTaxCategory != null) {
 }
 %>
 
-<aui:script require="commerce-frontend-js/components/autocomplete/entry as autocomplete, commerce-frontend-js/utilities/eventsDefinitions as events">
-	autocomplete.default('autocomplete', 'autocomplete-root', {
-		apiUrl: '/o/headless-commerce-admin-channel/v1.0/tax-categories',
-		initialLabel: '<%= HtmlUtil.escapeJS(shippingTaxCategoryLabel) %>',
-		initialValue: '<%= shippingTaxCategoryId %>',
-		inputId: 'shippingTaxCategoryId',
-		inputName:
-			'<%= liferayPortletResponse.getNamespace() %>shippingTaxSettings--taxCategoryId--',
-		itemsKey: 'id',
-		itemsLabel: ['name', 'LANG'],
-		onValueUpdated: function (value, shippingTaxData) {
-			if (value) {
-				window.document.querySelector('#shippingTaxCategoryId').value =
-					shippingTaxData.id;
-			}
-			else {
-				window.document.querySelector('#shippingTaxCategoryId').value = 0;
-			}
-		},
-	});
-</aui:script>
-
 <liferay-frontend:component
 	context='<%=
 		HashMapBuilder.<String, Object>put(
+			"autocompleteInitialLabel", shippingTaxCategoryLabel
+		).put(
+			"autocompleteInitialValue", shippingTaxCategoryId
+		).put(
 			"itemSelectorURL", commerceChannelDisplayContext.getImageItemSelectorURL()
 		).build()
 	%>'
-	module="js/CommerceChannelGeneral"
+	module="{CommerceChannelGeneral} from commerce-channel-web"
 />

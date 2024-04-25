@@ -13,7 +13,7 @@ TrashManagementToolbarDisplayContext trashManagementToolbarDisplayContext = new 
 
 <clay:management-toolbar
 	managementToolbarDisplayContext="<%= trashManagementToolbarDisplayContext %>"
-	propsTransformer="js/TrashManagementToolbarPropsTransformer"
+	propsTransformer="{TrashManagementToolbarPropsTransformer} from trash-web"
 />
 
 <liferay-util:include page="/restore_path.jsp" servletContext="<%= application %>" />
@@ -148,9 +148,9 @@ TrashManagementToolbarDisplayContext trashManagementToolbarDisplayContext = new 
 							<liferay-ui:search-container-column-text
 								colspan="<%= 2 %>"
 							>
-								<h6 class="text-default">
-									<liferay-ui:message arguments="<%= dateFormatDateTime.format(trashEntry.getCreateDate()) %>" key="removed-x" />
-								</h6>
+								<div class="h6 text-default">
+									<liferay-ui:message arguments="<%= dateTimeFormat.format(trashEntry.getCreateDate()) %>" key="removed-x" />
+								</div>
 
 								<h5>
 									<aui:a href="<%= viewContentURLString %>">
@@ -158,9 +158,9 @@ TrashManagementToolbarDisplayContext trashManagementToolbarDisplayContext = new 
 									</aui:a>
 								</h5>
 
-								<h6 class="text-default">
+								<div class="h6 text-default">
 									<strong><liferay-ui:message key="type" />:</strong> <%= ResourceActionsUtil.getModelResource(locale, trashEntry.getClassName()) %>
-								</h6>
+								</div>
 							</liferay-ui:search-container-column-text>
 
 							<liferay-ui:search-container-column-text>
@@ -169,14 +169,14 @@ TrashManagementToolbarDisplayContext trashManagementToolbarDisplayContext = new 
 										<clay:dropdown-actions
 											aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 											dropdownItems="<%= trashDisplayContext.getTrashEntryActionDropdownItems(trashEntry) %>"
-											propsTransformer="js/EntriesPropsTransformer"
+											propsTransformer="{EntriesPropsTransformer} from trash-web"
 										/>
 									</c:when>
 									<c:otherwise>
 										<clay:dropdown-actions
 											aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 											dropdownItems="<%= trashDisplayContext.getTrashViewContentActionDropdownItems(trashRenderer.getClassName(), trashRenderer.getClassPK()) %>"
-											propsTransformer="js/EntriesPropsTransformer"
+											propsTransformer="{EntriesPropsTransformer} from trash-web"
 										/>
 									</c:otherwise>
 								</c:choose>
@@ -185,7 +185,7 @@ TrashManagementToolbarDisplayContext trashManagementToolbarDisplayContext = new 
 						<c:when test="<%= trashDisplayContext.isIconView() %>">
 							<liferay-ui:search-container-column-text>
 								<clay:vertical-card
-									propsTransformer="js/EntriesPropsTransformer"
+									propsTransformer="{EntriesPropsTransformer} from trash-web"
 									verticalCard="<%= new TrashEntryVerticalCard(trashEntry, trashRenderer, liferayPortletResponse, renderRequest, searchContainer.getRowChecker(), viewContentURLString) %>"
 								/>
 							</liferay-ui:search-container-column-text>
@@ -260,14 +260,14 @@ TrashManagementToolbarDisplayContext trashManagementToolbarDisplayContext = new 
 										<clay:dropdown-actions
 											aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 											dropdownItems="<%= trashDisplayContext.getTrashEntryActionDropdownItems(trashEntry) %>"
-											propsTransformer="js/EntriesPropsTransformer"
+											propsTransformer="{EntriesPropsTransformer} from trash-web"
 										/>
 									</c:when>
 									<c:otherwise>
 										<clay:dropdown-actions
 											aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 											dropdownItems="<%= trashDisplayContext.getTrashViewContentActionDropdownItems(trashRenderer.getClassName(), trashRenderer.getClassPK()) %>"
-											propsTransformer="js/EntriesPropsTransformer"
+											propsTransformer="{EntriesPropsTransformer} from trash-web"
 										/>
 									</c:otherwise>
 								</c:choose>

@@ -21,7 +21,6 @@
 		<suppress checks="ComponentExposureCheck" files="frontend-taglib/frontend-taglib-clay/src/main/java/com/liferay/frontend/taglib/clay/internal/js/loader/modules/extender/npm/NPMResolverProvider\.java" />
 		<suppress checks="ComponentExposureCheck" files="frontend-taglib/frontend-taglib-clay/src/main/java/com/liferay/frontend/taglib/clay/internal/servlet/ServletContextUtil\.java" />
 		<suppress checks="ComponentExposureCheck" files="frontend-taglib/frontend-taglib-dynamic-section/src/main/java/com/liferay/frontend/taglib/dynamic/section/internal/util/DynamicSectionUtil\.java" />
-		<suppress checks="ComponentExposureCheck" files="frontend-taglib/frontend-taglib-soy/src/main/java/com/liferay/frontend/taglib/soy/internal/util/SoyComponentRendererProvider\.java" />
 		<suppress checks="ComponentExposureCheck" files="frontend-taglib/frontend-taglib/src/main/java/com/liferay/frontend/taglib/internal/servlet/ServletContextUtil\.java" />
 		<suppress checks="ComponentExposureCheck" files="image-uploader/image-uploader-web/src/main/java/com/liferay/image/uploader/web/internal/util/UploadImageUtil\.java" />
 		<suppress checks="ComponentExposureCheck" files="info/info-taglib/src/main/java/com/liferay/info/taglib/internal/servlet/ServletContextUtil\.java" />
@@ -42,7 +41,7 @@
 		<suppress checks="ComponentExposureCheck" files="rss/rss-taglib/src/main/java/com/liferay/rss/taglib/internal/servlet/ServletContextUtil\.java" />
 		<suppress checks="ComponentExposureCheck" files="segments/segments-web/src/main/java/com/liferay/segments/web/internal/util/SegmentsSourceDetailsProviderUtil\.java" />
 		<suppress checks="ComponentExposureCheck" files="site-navigation/site-navigation-taglib/src/main/java/com/liferay/site/navigation/taglib/internal/servlet/ServletContextUtil\.java" />
-		<suppress checks="ComponentExposureCheck" files="site-navigation/site-navigation-taglib/src/main/java/com/liferay/site/navigation/taglib/internal/util/NavItemUtil\.java" />
+		<suppress checks="ComponentExposureCheck" files="site-navigation/site-navigation-taglib/src/main/java/com/liferay/site/navigation/taglib/servlet/taglib/util/NavItemUtil\.java" />
 		<suppress checks="ComponentExposureCheck" files="social/social-bookmarks-taglib/src/main/java/com/liferay/social/bookmarks/taglib/internal/util/SocialBookmarksRegistryUtil\.java" />
 		<suppress checks="ComponentExposureCheck" files="staging/staging-taglib/src/main/java/com/liferay/staging/taglib/internal/servlet/ServletContextUtil\.java" />
 		<suppress checks="ComponentExposureCheck" files="template/template-taglib/src/main/java/com/liferay/template/taglib/internal/servlet/ServletContextUtil\.java" />

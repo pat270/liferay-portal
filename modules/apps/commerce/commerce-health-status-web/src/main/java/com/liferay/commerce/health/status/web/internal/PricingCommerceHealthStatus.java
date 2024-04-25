@@ -17,16 +17,17 @@ import com.liferay.commerce.pricing.configuration.CommercePricingConfiguration;
 import com.liferay.commerce.pricing.constants.CommercePricingConstants;
 import com.liferay.commerce.product.model.CPDefinition;
 import com.liferay.commerce.product.model.CPInstance;
+import com.liferay.commerce.product.model.CPInstanceUnitOfMeasure;
 import com.liferay.commerce.product.model.CommerceCatalog;
 import com.liferay.commerce.product.service.CPDefinitionLocalService;
 import com.liferay.commerce.product.service.CPInstanceLocalService;
 import com.liferay.commerce.product.service.CommerceCatalogLocalService;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.settings.SystemSettingsLocator;
@@ -178,11 +179,29 @@ public class PricingCommerceHealthStatus implements CommerceHealthStatus {
 				price = cpInstance.getPromoPrice();
 			}
 
-			_commercePriceEntryLocalService.addCommercePriceEntry(
-				null, cpDefinition.getCProductId(),
-				cpInstance.getCPInstanceUuid(),
-				commercePriceList.getCommercePriceListId(), price, false,
-				BigDecimal.ZERO, null, serviceContext);
+			List<CPInstanceUnitOfMeasure> cpInstanceUnitOfMeasures =
+				cpInstance.getCPInstanceUnitOfMeasures(
+					QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+
+			if (cpInstanceUnitOfMeasures.isEmpty()) {
+				_commercePriceEntryLocalService.addCommercePriceEntry(
+					null, cpDefinition.getCProductId(),
+					cpInstance.getCPInstanceUuid(),
+					commercePriceList.getCommercePriceListId(), price, false,
+					BigDecimal.ZERO, null, serviceContext);
+			}
+			else {
+				for (CPInstanceUnitOfMeasure cpInstanceUnitOfMeasure :
+						cpInstanceUnitOfMeasures) {
+
+					_commercePriceEntryLocalService.addCommercePriceEntry(
+						null, cpDefinition.getCProductId(),
+						cpInstance.getCPInstanceUuid(),
+						commercePriceList.getCommercePriceListId(), price,
+						false, BigDecimal.ZERO,
+						cpInstanceUnitOfMeasure.getKey(), serviceContext);
+				}
+			}
 		}
 	}
 

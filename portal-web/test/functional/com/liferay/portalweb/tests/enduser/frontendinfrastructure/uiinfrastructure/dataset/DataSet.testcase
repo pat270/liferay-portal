@@ -1,8 +1,7 @@
 @component-name = "portal-frontend-infrastructure"
 definition {
 
-	property custom.properties = "feature.flag.LPS-164563=true${line.separator}feature.flag.LPS-167253=true";
-	property portal.acceptance = "true";
+	property custom.properties = "feature.flag.LPS-164563=true";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.component.names = "Frontend Data Set";
@@ -14,10 +13,7 @@ definition {
 		User.firstLoginPG();
 
 		task ("Given access to the Data Sets admin page") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Object",
-				panel = "Control Panel",
-				portlet = "Data Sets");
+			DataSetAdmin.goToDataSetAdminPage();
 		}
 	}
 
@@ -28,6 +24,870 @@ definition {
 
 		if (${testLiferayVirtualInstance} == "true") {
 			PortalInstances.tearDownCP();
+		}
+	}
+
+	@description = "LPS-178858 Confirm the empty message on the Data Set administration page"
+	@priority = 3
+	test AssertEmptyMessageInDSAdmin {
+		task ("And the text “No Datasets Created. Start creating one to show your data.” is present on the page") {
+			AssertTextPresent(
+				locator1 = "ObjectCustomViews#VIEW_BUILDER_EMPTY_STATE_TEXT",
+				value1 = "No Data Sets Created");
+
+			AssertTextPresent(
+				locator1 = "ObjectCustomViews#VIEW_BUILDER_EMPTY_STATE_TEXT",
+				value1 = "Start creating one to show your data.");
+		}
+
+		task ("And “New Dataset” button is present on the page") {
+			CustomerPortal.assertButtonIsVisible(text = "New Data Set");
+		}
+	}
+
+	@description = "LPS-178858 Confirm that the new Data Set Modal is displayed by clicking on the add button"
+	@priority = 3
+	test AssertNewDataSetModal {
+		task ("When the user clicks on “Create Dataset” button") {
+			LexiconEntry.gotoAdd();
+		}
+
+		task ("Then the New Dataset modal is displayed") {
+			AssertElementPresent(
+				key_modal_title = "New Data Set",
+				locator1 = "AccessibilityMenu#MODAL_TITLE");
+		}
+	}
+
+	@description = "LPS-188818 Test to check and cover bug in pagination administration page"
+	@priority = 3
+	test AssertNewPaginationValues {
+		task ("Given the creation of a new data set") {
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Data Set Test",
+				restApplication = "/data-set-manager/entries");
+
+			Refresh();
+		}
+
+		task ("When go to the View page of the data set created.") {
+			DataSetAdmin.goToViews(dataSetName = "Data Set Test");
+		}
+
+		task ("And adding a dataset view") {
+			DataSetAdmin.createDataSetView(
+				description = "Description",
+				key_name = "View Fields Test");
+		}
+
+		task ("When go to the View page of the data set created.") {
+			DataSetAdmin.goToSpecificViewPage(
+				dataSetName = "Data Set Test",
+				key_viewName = "View Fields Test");
+		}
+
+		task ("And the user accesses the Details tab, edit the description to "description 2" and save.") {
+			DataSetAdmin.goToTab(tabName = "Details");
+
+			Type(
+				labelTitle = "Description",
+				locator1 = "Masterclass#SIGN_IN_FORM",
+				value1 = "Description 2");
+
+			Button.clickSave();
+		}
+
+		task ("And go to the Pagination tab, edit the value of the “items per page list” to (4, 8, 20, 40, 50), and the “default items per page”, and save.") {
+			DataSetAdmin.goToTab(tabName = "Pagination");
+
+			Type(
+				key_label = "List of Items per Page",
+				locator1 = "DataSet#EDIT_DATA_SET_ITEMS",
+				value1 = "4, 8, 20, 40, 50");
+
+			Type(
+				key_type = "Default Items per Page",
+				locator1 = "DataSet#EDIT_DATA_SET_VIEW",
+				value1 = 4);
+
+			Button.clickSave();
+		}
+
+		task ("And the user accesses the Details tab, edit the description to "description 23" and save.") {
+			DataSetAdmin.goToTab(tabName = "Details");
+
+			Type(
+				labelTitle = "Description",
+				locator1 = "Masterclass#SIGN_IN_FORM",
+				value1 = "Description 23");
+
+			Button.clickSave();
+		}
+
+		task ("Then go to the Pagination and Details tab are in accordance with your change") {
+			DataSetAdmin.goToTab(tabName = "Pagination");
+
+			AssertElementPresent(
+				key_label = "4, 8, 20, 40, 50",
+				locator1 = "TextArea#ANY_LABELED");
+		}
+	}
+
+	@description = "LPS-181546 Confirm that the data set information is created and displayed correctly"
+	@priority = 5
+	test AssertTheInformationsInDataSet {
+		task ("When the user creates a new data entry") {
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Blog Posts Posts",
+				restApplication = "/headless-delivery/v1.0",
+				restEndpoint = "/v1.0/sites/{siteId}/blog-postings",
+				restSchema = "BlogPosting");
+
+			Refresh();
+		}
+
+		task ("Then confirm that the Data Set has been created and the information is shown correctly.") {
+			AssertElementPresent(
+				key_text = "Blog Posts Posts",
+				locator1 = "CP2Utils#ANY_TEXT");
+
+			AssertElementPresent(
+				key_text = "/headless-delivery/v1.0",
+				locator1 = "CP2Utils#ANY_TEXT");
+
+			AssertElementPresent(
+				key_text = "/v1.0/sites/{siteId}/blog-postings",
+				locator1 = "CP2Utils#ANY_TEXT");
+		}
+	}
+
+	@description = "LPS-181546 Confirm that the new data set information is created and displayed correctly in the page content"
+	@priority = 5
+	test AssertTheValueInFieldsName {
+		property portal.acceptance = "true";
+
+		task ("And create a user creates a new data Set entry") {
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Blog Posts Posts",
+				restApplication = "/headless-delivery/v1.0",
+				restEndpoint = "/v1.0/sites/{siteId}/blog-postings",
+				restSchema = "BlogPosting");
+
+			Refresh();
+		}
+
+		task ("And Add a view //Name: Blogs posting view") {
+			DataSetAdmin.goToViews(dataSetName = "Blog Posts Posts");
+
+			DataSetAdmin.createDataSetView(
+				description = "Description",
+				key_name = "Blog Posting View");
+		}
+
+		task ("When go to the View page of the data set created.") {
+			DataSetAdmin.goToSpecificViewPage(
+				dataSetName = "Blog Posts Posts",
+				key_viewName = "Blog Posting View");
+		}
+
+		task ("When goes to Fields Tab.") {
+			DataSetAdmin.goToTab(tabName = "Fields");
+		}
+
+		task ("And Add some fields //Add headline, id and Siteid") {
+			DataSetAdmin.addFields(key_fieldList = "headline,id,siteId");
+		}
+
+		task ("And change the fields names /headline to Title /id to Blog Id /Siteid to Site Id") {
+			Click(
+				key_fieldName = "headline",
+				locator1 = "DataSet#VERTICAL_ELLIPSIS_BY_FIELDS_NAME");
+
+			MenuItem.click(menuItem = "Edit");
+
+			Type(
+				key_text = "Label",
+				locator1 = "TextInput#ANY",
+				value1 = "Title");
+
+			Click(
+				key_text = "Save",
+				locator1 = "CP2ActivationKeys#KEY_DEACTIVATION_TERMS");
+
+			Click(
+				key_fieldName = "id",
+				locator1 = "DataSet#VERTICAL_ELLIPSIS_BY_FIELDS_NAME");
+
+			MenuItem.click(menuItem = "Edit");
+
+			Type(
+				key_text = "Label",
+				locator1 = "TextInput#ANY",
+				value1 = "Blog Id");
+
+			Click(
+				key_text = "Save",
+				locator1 = "CP2ActivationKeys#KEY_DEACTIVATION_TERMS");
+
+			Click(
+				key_fieldName = "siteId",
+				locator1 = "DataSet#VERTICAL_ELLIPSIS_BY_FIELDS_NAME");
+
+			MenuItem.click(menuItem = "Edit");
+
+			Type(
+				key_text = "Label",
+				locator1 = "TextInput#ANY",
+				value1 = "Site Id");
+
+			Click(
+				key_text = "Save",
+				locator1 = "CP2ActivationKeys#KEY_DEACTIVATION_TERMS");
+		}
+
+		task ("And add a new content page and Add a data set fragment to content page created") {
+			Navigator.openURL();
+
+			ContentPages.addPage(pageName = "Test Page Name");
+
+			PageEditor.addFragment(
+				collectionName = "Content Display",
+				fragmentName = "Data Set");
+		}
+
+		task ("And selected Blogs posting view") {
+			Click(locator1 = "ReportsAdminViewReportEntry#INFO_MESSAGE");
+
+			Click.javaScriptClick(
+				key_value = "Select Data Set View",
+				locator1 = "Button#SECONDARY_BY_TITLE");
+
+			SelectFrame(
+				key_title = "Select",
+				locator1 = "IFrame#MODAL_ANY");
+
+			Click.clickAtNotVisible(
+				key_radioOption = "Blog Posting View",
+				locator1 = "CommerceEntry#RADIO_BUTTON");
+
+			Button.clickSave();
+		}
+
+		task ("And publishes the page") {
+			SelectFrame(locator1 = "DataSet#DEFOCUS");
+
+			Click.javaScriptClick(locator1 = "WorkflowMetricsIndex#METRICS_REINDEX_ALL_BUTTON");
+		}
+
+		task ("And Add a new blog /Title: New Blog /Description: Description test") {
+			Navigator.openURL();
+
+			ProductMenu.gotoPortlet(
+				category = "Content & Data",
+				panel = "Site Administration",
+				portlet = "Blogs");
+
+			Blogs.addEntry(
+				entryContent = "Description test",
+				entryTitle = "New Blogs");
+		}
+
+		task ("Then confirm that the information of the blog created and the site ID is displayed") {
+			Navigator.openURL();
+
+			Navigator.gotoPage(pageName = "Test Page Name");
+
+			AssertElementPresent(
+				key_sortFieldName = "Blog Id",
+				locator1 = "CommerceNavigation#SORT_FIELD");
+
+			AssertElementPresent(
+				key_sortFieldName = "Site Id",
+				locator1 = "CommerceNavigation#SORT_FIELD");
+		}
+	}
+
+	@description = "LPS-185990 Confirm that when creating a filter and selecting a picklist item, the item's checkbox remains selected when you click elsewhere and return to dropdown items"
+	@priority = 5
+	test CanAssertTheCheckBoxItemIsChecked {
+		property portal.acceptance = "true";
+
+		task ("Given the creation of a new data set") {
+			DataSetAdmin.goToDataSetAdminPage();
+
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Data Set Test",
+				restApplication = "/data-set-manager/fields",
+				restEndpoint = "/",
+				restSchema = "FDSField");
+
+			DataSetAdmin.createFDSViewViaAPI(
+				dataSetName = "Data Set Test",
+				dataSetViewDescription = "FDSViewDescription",
+				key_dataSetViewNameList = "View Test");
+
+			DataSetAdmin.goToSpecificViewPage(
+				dataSetName = "Data Set Test",
+				key_viewName = "View Test");
+		}
+
+		task ("And creating a picklist and Items bike,car,bus") {
+			Picklist.addPicklistViaAPI(picklistName = "Transport");
+
+			Picklist.addPicklistItemViaAPI(
+				itemKey = "bike",
+				itemName = "bike",
+				picklistName = "Transport");
+
+			Picklist.addPicklistItemViaAPI(
+				itemKey = "car",
+				itemName = "car",
+				picklistName = "Transport");
+
+			Picklist.addPicklistItemViaAPI(
+				itemKey = "bus",
+				itemName = "bus",
+				picklistName = "Transport");
+		}
+
+		task ("When the user creates a new filter //Name: Filter test //Filter by: creator //Source option: Transport the selection is multiple") {
+			DataSetAdmin.goToTab(tabName = "Filters");
+
+			LexiconEntry.gotoAdd();
+
+			Click(
+				key_menuItem = "Selection",
+				locator1 = "MenuItem#ANY_MENU_ITEM");
+
+			Type(
+				key_text = "Name",
+				locator1 = "TextInput#ANY",
+				value1 = "Filter test");
+
+			Click(
+				key_class = "btn-secondary",
+				key_index = 3,
+				locator1 = "Button#ANY_WITH_CLASS_AND_INDEX");
+
+			SelectFrameTop();
+
+			Click.javaScriptClick(
+				key_sortOption = "creator",
+				locator1 = "DataSet#SELECT_SORT_OPTION");
+
+			Select(
+				locator1 = "DataSet#SOURCE_OPTIONS_SELECT",
+				value1 = "Transport");
+
+			Click.clickAtNotVisible(
+				locator1 = "Radio#ANY",
+				radioLabel = "Multiple");
+		}
+
+		task ("And chooses one of the values displayed in the dropdown of Preselected Values field//car") {
+			Click(
+				key_fieldName = "Select a default value for your filter",
+				locator1 = "DataSet#PRESELECT_VALUE_INPUT");
+
+			Click(
+				key_sortOption = "car",
+				locator1 = "DataSet#SELECT_SORT_OPTION");
+		}
+
+		task ("Then the value already chosen is not present in the dropdown, the checkbox is checked") {
+			Click(
+				locator1 = "Portlet#MODAL_TITLE",
+				value1 = "New Selection Filter");
+
+			Click(
+				key_label = "Preselected Values",
+				locator1 = "DataSet#SELECT_VALUE");
+
+			AssertChecked.assertCheckedNotVisible(
+				key_name = "car",
+				locator1 = "DataSet#SPECIFIC_CHECKBOX_CHECKED");
+		}
+	}
+
+	@description = "LPS-178858 Confirm that the modal data set view is displayed"
+	@priority = 3
+	test CanAssertTheDataSetViewCanBeCreated {
+		task ("Given the creation of a new dataset") {
+			DataSetAdmin.createDataSet(
+				key_name = "DataSet Test",
+				key_type = "/data-set-manager/fields");
+		}
+
+		task ("When the user goes to the Views admin page of the new dataset") {
+			DataSetAdmin.goToViews(dataSetName = "DataSet Test");
+		}
+
+		task ("And clicks on the “New Dataset View” button") {
+			LexiconEntry.gotoAdd();
+		}
+
+		task ("Then the “New Dataset View” modal is displayed") {
+			AssertElementPresent(
+				key_modal_title = "New Data Set View",
+				locator1 = "AccessibilityMenu#MODAL_TITLE");
+		}
+	}
+
+	@description = "LPS-178858 Confirm the empty message in the Data Set View admin page"
+	@priority = 3
+	test CanAssertTheEmptyMessageInDataSetView {
+		task ("Given the creation of a new dataset") {
+			DataSetAdmin.createDataSet(
+				key_name = "DataSet Test",
+				key_type = "/data-set-manager/fields");
+		}
+
+		task ("When the user goes to the Views admin page of the new dataset") {
+			DataSetAdmin.goToViews(dataSetName = "DataSet Test");
+		}
+
+		task ("And the text “No Views Created. Start creating one view to show your data” is present on the page") {
+			AssertTextPresent(
+				locator1 = "ObjectCustomViews#VIEW_BUILDER_EMPTY_STATE_TEXT",
+				value1 = "No Views Created");
+
+			AssertTextPresent(
+				locator1 = "ObjectCustomViews#VIEW_BUILDER_EMPTY_STATE_TEXT",
+				value1 = "Start creating one to show your data.");
+		}
+
+		task ("And “New Dataset View” button is present on the page") {
+			CustomerPortal.assertButtonIsVisible(text = "New Data Set View");
+		}
+	}
+
+	@description = "LPS-181546 Confirm that the rest app /scopes/{scopeKey} is displayed in the data set, and the other information"
+	@priority = 5
+	test CanAssertTheEndpointObjectInDataSetCreated {
+		property portal.acceptance = "true";
+
+		task ("Given an object definition 'Student' with name field and Scope: Site created") {
+			DataSetAdmin.setUpObjectForDataSet(
+				fieldBusinessType = "Text",
+				fieldLabelName = "Custom Field",
+				fieldName = "customObjectField",
+				fieldType = "String",
+				labelName = "Student",
+				objectName = "Student",
+				pluralLabelName = "Student",
+				scope = "site");
+		}
+
+		task ("And the Data Set admin page and fill in the fields Name, REST App and REST Schema") {
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Students",
+				restApplication = "/c/Student",
+				restEndpoint = "/scopes/{scopeKey}",
+				restSchema = "Student");
+
+			Refresh();
+		}
+
+		task ("Then confirm that the option /scopes/{scopeKey} is displayed") {
+			AssertElementPresent(
+				key_text = "/scopes/{scopeKey}",
+				locator1 = "CP2Utils#ANY_TEXT");
+		}
+	}
+
+	@description = "LPS-181546 Confirm that the rest endpoint /scopes/{scopeKey} is displayed in the data set"
+	@priority = 3
+	test CanAssertTheEndpointObjectInDataSetModal {
+		task ("Given an object definition 'Student' with name field and Scope: Site created") {
+			DataSetAdmin.setUpObjectForDataSet(
+				fieldBusinessType = "Text",
+				fieldLabelName = "Custom Field",
+				fieldName = "customObjectField",
+				fieldType = "String",
+				labelName = "Student",
+				objectName = "Student",
+				pluralLabelName = "Student",
+				scope = "site");
+		}
+
+		task ("And the Data Set admin page and fill in the fields Name, REST App and REST Schema") {
+			Refresh();
+
+			LexiconEntry.gotoAdd();
+
+			Type(
+				locator1 = "TextInput#NAME",
+				value1 = "Data Set Test");
+
+			DataSetAdmin.selectProvider(key_type = "/c/student");
+		}
+
+		task ("Then confirm that the option /scopes/{scopeKey} is displayed") {
+			AssertElementPresent(
+				dropdownLabel = "/scopes/{scopeKey}",
+				locator1 = "ObjectField#ANY_DROPDOWN_LABEL");
+		}
+	}
+
+	@description = "LPS-185990 Confirm that when creating a filter, items added to the picklist appear in preselect value selecting Multiple radio button"
+	@priority = 3
+	test CanAssertTheItemsInPreselectValueMultiple {
+		task ("Given the creation of a new data set") {
+			DataSetAdmin.goToDataSetAdminPage();
+
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Data Set Test",
+				restApplication = "/data-set-manager/fields",
+				restEndpoint = "/",
+				restSchema = "FDSField");
+
+			DataSetAdmin.createFDSViewViaAPI(
+				dataSetName = "Data Set Test",
+				dataSetViewDescription = "FDSViewDescription",
+				key_dataSetViewNameList = "View Test");
+
+			DataSetAdmin.goToSpecificViewPage(
+				dataSetName = "Data Set Test",
+				key_viewName = "View Test");
+		}
+
+		task ("And creating a picklist and Items bike,car,bus") {
+			Picklist.addPicklistViaAPI(picklistName = "Transport");
+
+			Picklist.addPicklistItemViaAPI(
+				itemKey = "bike",
+				itemName = "bike",
+				picklistName = "Transport");
+
+			Picklist.addPicklistItemViaAPI(
+				itemKey = "car",
+				itemName = "car",
+				picklistName = "Transport");
+
+			Picklist.addPicklistItemViaAPI(
+				itemKey = "bus",
+				itemName = "bus",
+				picklistName = "Transport");
+		}
+
+		task ("When the user creates a new filter //Name: Filter test //Filter by: creator //Source option: Transport the selection is multiple") {
+			DataSetAdmin.goToTab(tabName = "Filters");
+
+			LexiconEntry.gotoAdd();
+
+			Click(
+				key_menuItem = "Selection",
+				locator1 = "MenuItem#ANY_MENU_ITEM");
+
+			Type(
+				key_text = "Name",
+				locator1 = "TextInput#ANY",
+				value1 = "Filter test");
+
+			Click(
+				key_class = "btn-secondary",
+				key_index = 3,
+				locator1 = "Button#ANY_WITH_CLASS_AND_INDEX");
+
+			SelectFrameTop();
+
+			Click.javaScriptClick(
+				key_sortOption = "creator",
+				locator1 = "DataSet#SELECT_SORT_OPTION");
+
+			Select(
+				locator1 = "DataSet#SOURCE_OPTIONS_SELECT",
+				value1 = "Transport");
+
+			Click.clickAtNotVisible(
+				locator1 = "Radio#ANY",
+				radioLabel = "Multiple");
+
+			Click(
+				key_fieldName = "Select a default value for your filter",
+				locator1 = "DataSet#PRESELECT_VALUE_INPUT");
+		}
+
+		task ("Then a dropdown is shown displaying the available values of the selected picklist//displaying bus, car and bike") {
+			for (var asserttransport : list "car,bike,bus") {
+				AssertElementPresent(
+					key_sortOption = ${asserttransport},
+					locator1 = "DataSet#SELECT_SORT_OPTION");
+			}
+		}
+	}
+
+	@description = "LPS-185990 Confirm that when creating a filter, items added to the picklist appear in preselect value selecting Single radio button"
+	@priority = 3
+	test CanAssertTheItemsInPreselectValueSingle {
+		task ("Given the creation of a new data set") {
+			DataSetAdmin.goToDataSetAdminPage();
+
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Data Set Test",
+				restApplication = "/data-set-manager/fields",
+				restEndpoint = "/",
+				restSchema = "FDSField");
+
+			DataSetAdmin.createFDSViewViaAPI(
+				dataSetName = "Data Set Test",
+				dataSetViewDescription = "FDSViewDescription",
+				key_dataSetViewNameList = "View Test");
+
+			DataSetAdmin.goToSpecificViewPage(
+				dataSetName = "Data Set Test",
+				key_viewName = "View Test");
+		}
+
+		task ("And creating a picklist and Items bike,car,bus") {
+			Picklist.addPicklistViaAPI(picklistName = "Transport");
+
+			Picklist.addPicklistItemViaAPI(
+				itemKey = "bike",
+				itemName = "bike",
+				picklistName = "Transport");
+
+			Picklist.addPicklistItemViaAPI(
+				itemKey = "car",
+				itemName = "car",
+				picklistName = "Transport");
+
+			Picklist.addPicklistItemViaAPI(
+				itemKey = "bus",
+				itemName = "bus",
+				picklistName = "Transport");
+		}
+
+		task ("When the user creates a new filter //Name: Filter test //Filter by: creator //Source option: Transport the selection is multiple") {
+			DataSetAdmin.goToTab(tabName = "Filters");
+
+			LexiconEntry.gotoAdd();
+
+			Click(
+				key_menuItem = "Selection",
+				locator1 = "MenuItem#ANY_MENU_ITEM");
+
+			Type(
+				key_text = "Name",
+				locator1 = "TextInput#ANY",
+				value1 = "Filter test");
+
+			Click(
+				key_class = "btn-secondary",
+				key_index = 3,
+				locator1 = "Button#ANY_WITH_CLASS_AND_INDEX");
+
+			SelectFrameTop();
+
+			Click.javaScriptClick(
+				key_sortOption = "creator",
+				locator1 = "DataSet#SELECT_SORT_OPTION");
+
+			Select(
+				locator1 = "DataSet#SOURCE_OPTIONS_SELECT",
+				value1 = "Transport");
+
+			Click.clickAtNotVisible(
+				locator1 = "Radio#ANY",
+				radioLabel = "Multiple");
+
+			Click(
+				key_fieldName = "Select a default value for your filter",
+				locator1 = "DataSet#PRESELECT_VALUE_INPUT");
+		}
+
+		task ("Then a dropdown is shown displaying the available values of the selected picklist//displaying bus, car and bike") {
+			for (var asserttransport : list "car,bike,bus") {
+				AssertElementPresent(
+					key_sortOption = ${asserttransport},
+					locator1 = "DataSet#SELECT_SORT_OPTION");
+			}
+		}
+	}
+
+	@description = "LPS-185990 Confirm that when going to the filter creation page, the option "Select default value for your filter" is present"
+	@priority = 3
+	test CanAssertThePreselectedValueArePresent {
+		task ("Given the creation of a new data set") {
+			DataSetAdmin.goToDataSetAdminPage();
+
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Data Set Test",
+				restApplication = "/data-set-manager/fields",
+				restEndpoint = "/",
+				restSchema = "FDSField");
+
+			DataSetAdmin.createFDSViewViaAPI(
+				dataSetName = "Data Set Test",
+				dataSetViewDescription = "FDSViewDescription",
+				key_dataSetViewNameList = "View Test");
+
+			DataSetAdmin.goToSpecificViewPage(
+				dataSetName = "Data Set Test",
+				key_viewName = "View Test");
+		}
+
+		task ("And creating a picklist and Items bike,car,bus") {
+			Picklist.addPicklistViaAPI(picklistName = "Transport");
+
+			Picklist.addPicklistItemViaAPI(
+				itemKey = "bike",
+				itemName = "bike",
+				picklistName = "Transport");
+
+			Picklist.addPicklistItemViaAPI(
+				itemKey = "car",
+				itemName = "car",
+				picklistName = "Transport");
+
+			Picklist.addPicklistItemViaAPI(
+				itemKey = "bus",
+				itemName = "bus",
+				picklistName = "Transport");
+		}
+
+		task ("When the user creates a new filter //Name: Filter test //Filter by: creator //Source option: Transport the selection is multiple") {
+			DataSetAdmin.goToTab(tabName = "Filters");
+
+			LexiconEntry.gotoAdd();
+
+			Click(
+				key_menuItem = "Selection",
+				locator1 = "MenuItem#ANY_MENU_ITEM");
+
+			Type(
+				key_text = "Name",
+				locator1 = "TextInput#ANY",
+				value1 = "Filter test");
+
+			Click(
+				key_class = "btn-secondary",
+				key_index = 3,
+				locator1 = "Button#ANY_WITH_CLASS_AND_INDEX");
+
+			SelectFrameTop();
+
+			Click.javaScriptClick(
+				key_sortOption = "creator",
+				locator1 = "DataSet#SELECT_SORT_OPTION");
+
+			Select(
+				locator1 = "DataSet#SOURCE_OPTIONS_SELECT",
+				value1 = "Transport");
+
+			Click.clickAtNotVisible(
+				locator1 = "Radio#ANY",
+				radioLabel = "Multiple");
+		}
+
+		task ("Then the Selection and Preselected Values option are displayed") {
+			AssertElementPresent(
+				key_fieldName = "Select a default value for your filter",
+				locator1 = "DataSet#PRESELECT_VALUE_INPUT");
+		}
+	}
+
+	@description = "LPS-181546 Confirm that the /v1.0/sites/{siteId}/blog-postings endpoint is displayed correctly when creating the data set"
+	@priority = 5
+	test CanAssertTheRestEndpointIsCorrect {
+		property portal.acceptance = "true";
+
+		task ("When the user creates a new data entry") {
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Data Set Test",
+				restApplication = "/headless-delivery/v1.0",
+				restEndpoint = "/v1.0/sites/{siteId}/blog-postings",
+				restSchema = "BlogPosting");
+
+			Refresh();
+		}
+
+		task ("Then confirm that the option /v1.0/sites/{siteid}/blog-postings is displayed") {
+			AssertElementPresent(
+				key_text = "/v1.0/sites/{siteId}/blog-postings",
+				locator1 = "CP2Utils#ANY_TEXT");
+		}
+	}
+
+	@description = "LPS-185990 Confirm that when creating a filter within the view, there is a search bar field to preselect values"
+	@priority = 3
+	test CanAssertTheSearchBarField {
+		task ("Given the creation of a new data set") {
+			DataSetAdmin.goToDataSetAdminPage();
+
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Data Set Test",
+				restApplication = "/data-set-manager/fields",
+				restEndpoint = "/",
+				restSchema = "FDSField");
+
+			DataSetAdmin.createFDSViewViaAPI(
+				dataSetName = "Data Set Test",
+				dataSetViewDescription = "FDSViewDescription",
+				key_dataSetViewNameList = "View Test");
+
+			DataSetAdmin.goToSpecificViewPage(
+				dataSetName = "Data Set Test",
+				key_viewName = "View Test");
+		}
+
+		task ("And creating a picklist and Items bike,car,bus") {
+			Picklist.addPicklistViaAPI(picklistName = "Transport");
+
+			Picklist.addPicklistItemViaAPI(
+				itemKey = "bike",
+				itemName = "bike",
+				picklistName = "Transport");
+
+			Picklist.addPicklistItemViaAPI(
+				itemKey = "car",
+				itemName = "car",
+				picklistName = "Transport");
+
+			Picklist.addPicklistItemViaAPI(
+				itemKey = "bus",
+				itemName = "bus",
+				picklistName = "Transport");
+		}
+
+		task ("When the user creates a new filter //Name: Filter test //Filter by: creator //Source option: Transport the selection is multiple") {
+			DataSetAdmin.goToTab(tabName = "Filters");
+
+			LexiconEntry.gotoAdd();
+
+			Click(
+				key_menuItem = "Selection",
+				locator1 = "MenuItem#ANY_MENU_ITEM");
+
+			Type(
+				key_text = "Name",
+				locator1 = "TextInput#ANY",
+				value1 = "Filter test");
+
+			Click(
+				key_class = "btn-secondary",
+				key_index = 3,
+				locator1 = "Button#ANY_WITH_CLASS_AND_INDEX");
+
+			SelectFrameTop();
+
+			Click.javaScriptClick(
+				key_sortOption = "creator",
+				locator1 = "DataSet#SELECT_SORT_OPTION");
+
+			Select(
+				locator1 = "DataSet#SOURCE_OPTIONS_SELECT",
+				value1 = "Transport");
+
+			Click.clickAtNotVisible(
+				locator1 = "Radio#ANY",
+				radioLabel = "Single");
+		}
+
+		task ("Then there is a search in the Preselected Values dropdown") {
+			AssertElementPresent(
+				key_fieldName = "Select a default value for your filter",
+				locator1 = "DataSet#PRESELECT_VALUE_INPUT");
 		}
 	}
 
@@ -62,31 +922,11 @@ definition {
 		}
 	}
 
-	@description = "LPS-175990. Confirm that the user can create a data set entry"
-	@priority = 5
-	test CanCreateDataSet {
-		task ("When Create a DataSet ") {
-			DataSetAdmin.createDataSet(
-				key_name = "Test Data Set",
-				key_type = "/data-set-manager/entries");
-		}
-
-		task ("Then Confirm the name as expected") {
-			AssertElementPresent(
-				key_itemName = "Test Data Set",
-				locator1 = "DataSet#TABLE_CELL");
-		}
-
-		task ("And Confirm the Provider as expected") {
-			AssertElementPresent(
-				key_itemName = "/data-set-manager/entries",
-				locator1 = "DataSet#TABLE_CELL");
-		}
-	}
-
 	@description = "LPS-172398. Confirm that the data set can be deleted"
 	@priority = 5
 	test CanDeleteDataSet {
+		property portal.acceptance = "true";
+
 		task ("When the user goes to add data sets") {
 			DataSetAdmin.createDataSet(
 				key_name = "Test Data Set",
@@ -107,7 +947,9 @@ definition {
 	@description = "LPS-172882: Display a list of headless resources in new FDS View modal"
 	@priority = 5
 	test CanDisplayHeadlessDeliveryAPIResources {
+		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("When go to add data sets") {
 			LexiconEntry.gotoAdd();
@@ -166,6 +1008,7 @@ definition {
 	@priority = 3
 	test CanReturnAMatchedResult {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("When go to add data sets") {
 			LexiconEntry.gotoAdd();
@@ -197,6 +1040,583 @@ definition {
 
 		task ("Then suggested list contains 0 results") {
 			AssertElementNotPresent(locator1 = "FrontendDataSet#DROPDOWN_LIST");
+		}
+	}
+
+	@description = "LPS-185990 Confirm that when searching for a valid item value, it is displayed in the drop-down menu"
+	@priority = 4
+	test CanSearchASpecificItemCreated {
+		task ("Given the creation of a new data set") {
+			DataSetAdmin.goToDataSetAdminPage();
+
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Data Set Test",
+				restApplication = "/data-set-manager/fields",
+				restEndpoint = "/",
+				restSchema = "FDSField");
+
+			DataSetAdmin.createFDSViewViaAPI(
+				dataSetName = "Data Set Test",
+				dataSetViewDescription = "FDSViewDescription",
+				key_dataSetViewNameList = "View Test");
+
+			DataSetAdmin.goToSpecificViewPage(
+				dataSetName = "Data Set Test",
+				key_viewName = "View Test");
+		}
+
+		task ("And creating a picklist and Items bike,car,bus") {
+			Picklist.addPicklistViaAPI(picklistName = "Transport");
+
+			Picklist.addPicklistItemViaAPI(
+				itemKey = "bike",
+				itemName = "bike",
+				picklistName = "Transport");
+
+			Picklist.addPicklistItemViaAPI(
+				itemKey = "car",
+				itemName = "car",
+				picklistName = "Transport");
+
+			Picklist.addPicklistItemViaAPI(
+				itemKey = "bus",
+				itemName = "bus",
+				picklistName = "Transport");
+		}
+
+		task ("When the user creates a new filter //Name: Filter test //Filter by: creator //Source option: Transport the selection is multiple") {
+			DataSetAdmin.goToTab(tabName = "Filters");
+
+			LexiconEntry.gotoAdd();
+
+			Click(
+				key_menuItem = "Selection",
+				locator1 = "MenuItem#ANY_MENU_ITEM");
+
+			Type(
+				key_text = "Name",
+				locator1 = "TextInput#ANY",
+				value1 = "Filter test");
+
+			Click(
+				key_class = "btn-secondary",
+				key_index = 3,
+				locator1 = "Button#ANY_WITH_CLASS_AND_INDEX");
+
+			SelectFrameTop();
+
+			Click.javaScriptClick(
+				key_sortOption = "creator",
+				locator1 = "DataSet#SELECT_SORT_OPTION");
+
+			Select(
+				locator1 = "DataSet#SOURCE_OPTIONS_SELECT",
+				value1 = "Transport");
+
+			Click.clickAtNotVisible(
+				locator1 = "Radio#ANY",
+				radioLabel = "Single");
+		}
+
+		task ("And types an existing value in Preselected Values dropdown search") {
+			Type(
+				key_fieldName = "Select a default value for your filter",
+				locator1 = "DataSet#PRESELECT_VALUE_INPUT",
+				value1 = "bike");
+		}
+
+		task ("Then only the existing value is displayed in the dropdown") {
+			AssertElementPresent(
+				key_sortOption = "bike",
+				locator1 = "DataSet#SELECT_SORT_OPTION");
+		}
+	}
+
+	@description = "LPS-185990 Confirm that when searching for a invalid item value, it is not displayed in the drop-down menu"
+	@priority = 4
+	test CanSearchASpecificItemNotCreated {
+		task ("Given the creation of a new data set") {
+			DataSetAdmin.goToDataSetAdminPage();
+
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Data Set Test",
+				restApplication = "/data-set-manager/fields",
+				restEndpoint = "/",
+				restSchema = "FDSField");
+
+			DataSetAdmin.createFDSViewViaAPI(
+				dataSetName = "Data Set Test",
+				dataSetViewDescription = "FDSViewDescription",
+				key_dataSetViewNameList = "View Test");
+
+			DataSetAdmin.goToSpecificViewPage(
+				dataSetName = "Data Set Test",
+				key_viewName = "View Test");
+		}
+
+		task ("And creating a picklist and Items bike,car,bus") {
+			Picklist.addPicklistViaAPI(picklistName = "Transport");
+
+			Picklist.addPicklistItemViaAPI(
+				itemKey = "bike",
+				itemName = "bike",
+				picklistName = "Transport");
+
+			Picklist.addPicklistItemViaAPI(
+				itemKey = "car",
+				itemName = "car",
+				picklistName = "Transport");
+
+			Picklist.addPicklistItemViaAPI(
+				itemKey = "bus",
+				itemName = "bus",
+				picklistName = "Transport");
+		}
+
+		task ("When the user creates a new filter //Name: Filter test //Filter by: creator //Source option: Transport the selection is multiple") {
+			DataSetAdmin.goToTab(tabName = "Filters");
+
+			LexiconEntry.gotoAdd();
+
+			Click(
+				key_menuItem = "Selection",
+				locator1 = "MenuItem#ANY_MENU_ITEM");
+
+			Type(
+				key_text = "Name",
+				locator1 = "TextInput#ANY",
+				value1 = "Filter test");
+
+			Click(
+				key_class = "btn-secondary",
+				key_index = 3,
+				locator1 = "Button#ANY_WITH_CLASS_AND_INDEX");
+
+			SelectFrameTop();
+
+			Click.javaScriptClick(
+				key_sortOption = "creator",
+				locator1 = "DataSet#SELECT_SORT_OPTION");
+
+			Select(
+				locator1 = "DataSet#SOURCE_OPTIONS_SELECT",
+				value1 = "Transport");
+
+			Click.clickAtNotVisible(
+				locator1 = "Radio#ANY",
+				radioLabel = "Single");
+		}
+
+		task ("And types a non existing value in Preselected Values dropdown search") {
+			Type(
+				key_fieldName = "Select a default value for your filter",
+				locator1 = "DataSet#PRESELECT_VALUE_INPUT",
+				value1 = "plane");
+		}
+
+		task ("Then the Preselected Values dropdown doesn't display any value") {
+			AssertElementNotPresent(
+				key_sortOption = "plane",
+				locator1 = "DataSet#SELECT_SORT_OPTION");
+		}
+	}
+
+	@description = "LPS-183502. Confirm that the user can sort Data Set entries by Date"
+	@priority = 5
+	test CanSortByDate {
+		property portal.acceptance = "true";
+
+		task ("Given two datasets entries via API:") {
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "FDSEntry",
+				restApplication = "/data-set-manager/entries",
+				restEndpoint = "/",
+				restSchema = "FDSEntry");
+
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "FDSField",
+				restApplication = "/data-set-manager/fields",
+				restEndpoint = "/",
+				restSchema = "FDSField");
+		}
+
+		task ("And Create a Dataset Entry via UI") {
+			DataSetAdmin.createDataSet(
+				key_name = "FDSSort",
+				key_type = "/data-set-manager/sorts");
+		}
+
+		task ("Then Confirm that the last entry is at the top of the list") {
+			AssertElementPresent(
+				key_labelName = "FDSSort",
+				key_rowPosition = 1,
+				locator1 = "DataSet#VIEW_LABEL_POSITION");
+		}
+
+		task ("When ordered in descending order by Date") {
+			while (IsElementNotPresent(key_labelName = "FDSSort", key_rowPosition = 3, locator1 = "DataSet#VIEW_LABEL_POSITION")) {
+				Click(
+					key_labelName = "Date",
+					locator1 = "DataSet#SORT_ICON");
+			}
+		}
+
+		task ("Then confirm that the list is in descending order") {
+			AssertElementPresent(
+				key_labelName = "FDSSort",
+				key_rowPosition = 3,
+				locator1 = "DataSet#VIEW_LABEL_POSITION");
+		}
+	}
+
+	@description = "LPS-183502. Confirm that the user can sort Data Set entries by Name"
+	@priority = 4
+	test CanSortByName {
+		task ("Given three datasets entries via API") {
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Sku",
+				restApplication = "/headless-commerce-admin-catalog/v1.0",
+				restEndpoint = "/v1.0/skus",
+				restSchema = "Sku");
+
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Product",
+				restApplication = "/headless-commerce-admin-catalog/v1.0",
+				restEndpoint = "/v1.0/products",
+				restSchema = "Product");
+
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Catalog",
+				restApplication = "/headless-commerce-admin-catalog/v1.0",
+				restEndpoint = "/v1.0/catalogs",
+				restSchema = "Catalog");
+
+			Refresh();
+		}
+
+		task ("And sort the list by name in ascending order") {
+			AssertElementPresent(
+				key_labelName = "Catalog",
+				key_rowPosition = 1,
+				locator1 = "DataSet#VIEW_LABEL_POSITION");
+		}
+
+		task ("When ordered in descending order by Name") {
+			while (IsElementNotPresent(key_labelName = "Catalog", key_rowPosition = 3, locator1 = "DataSet#VIEW_LABEL_POSITION")) {
+				Click(
+					key_labelName = "Name",
+					locator1 = "DataSet#SORT_ICON");
+			}
+		}
+
+		task ("Then confirm that the list is in descending order") {
+			AssertElementPresent(
+				key_labelName = "Catalog",
+				key_rowPosition = 3,
+				locator1 = "DataSet#VIEW_LABEL_POSITION");
+		}
+	}
+
+	@description = "LPS-183502. Confirm that the user can sort Data Set entries by REST Application"
+	@priority = 4
+	test CanSortByRESTApplication {
+		task ("Given three datasets entries via API") {
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Sku",
+				restApplication = "/headless-commerce-admin-catalog/v1.0",
+				restEndpoint = "/v1.0/skus",
+				restSchema = "Sku");
+
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Product",
+				restApplication = "/headless-commerce-admin-catalog/v1.0",
+				restEndpoint = "/v1.0/products",
+				restSchema = "Product");
+
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Catalog",
+				restApplication = "/headless-commerce-admin-catalog/v1.0",
+				restEndpoint = "/v1.0/catalogs",
+				restSchema = "Catalog");
+
+			Refresh();
+		}
+
+		task ("Then confirm that the list is ordered increasing") {
+			AssertElementPresent(
+				key_labelName = "Sku",
+				key_rowPosition = 3,
+				locator1 = "DataSet#VIEW_LABEL_POSITION");
+		}
+
+		task ("When ordered in descending order by REST Application") {
+			while (IsElementNotPresent(key_labelName = "Sku", key_rowPosition = 1, locator1 = "DataSet#VIEW_LABEL_POSITION")) {
+				Click(
+					key_labelName = "REST Application",
+					locator1 = "DataSet#SORT_ICON");
+			}
+		}
+
+		task ("Then confirm that the list is in descending order") {
+			AssertElementPresent(
+				key_labelName = "Sku",
+				key_rowPosition = 1,
+				locator1 = "DataSet#VIEW_LABEL_POSITION");
+		}
+	}
+
+	@description = "LPS-183502. Confirm that the user can sort Data Set entries by REST Endpoint"
+	@priority = 4
+	test CanSortByRESTEndpoint {
+		task ("Given three datasets entries via API") {
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Sku",
+				restApplication = "/headless-commerce-admin-catalog/v1.0",
+				restEndpoint = "/v1.0/skus",
+				restSchema = "Sku");
+
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Product",
+				restApplication = "/headless-commerce-admin-catalog/v1.0",
+				restEndpoint = "/v1.0/products",
+				restSchema = "Product");
+
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Catalog",
+				restApplication = "/headless-commerce-admin-catalog/v1.0",
+				restEndpoint = "/v1.0/catalogs",
+				restSchema = "Catalog");
+		}
+
+		task ("Then confirm that the list is ordered increasing") {
+			Refresh();
+
+			AssertElementPresent(
+				key_labelName = "Catalog",
+				key_rowPosition = 1,
+				locator1 = "DataSet#VIEW_LABEL_POSITION");
+		}
+
+		task ("When ordered in descending order by REST Endpoint") {
+			while (IsElementNotPresent(key_labelName = "Catalog", key_rowPosition = 3, locator1 = "DataSet#VIEW_LABEL_POSITION")) {
+				Click(
+					key_labelName = "REST Endpoint",
+					locator1 = "DataSet#SORT_ICON");
+			}
+		}
+
+		task ("Then confirm that the list is in descending order") {
+			AssertElementPresent(
+				key_labelName = "Catalog",
+				key_rowPosition = 3,
+				locator1 = "DataSet#VIEW_LABEL_POSITION");
+		}
+	}
+
+	@description = "LPS-183502. Confirm that the user can sort Data Set entries by REST Schema"
+	@priority = 4
+	test CanSortByRESTSchema {
+		task ("Given three datasets entries via API") {
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Sku",
+				restApplication = "/headless-commerce-admin-catalog/v1.0",
+				restEndpoint = "/v1.0/skus",
+				restSchema = "Sku");
+
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Product",
+				restApplication = "/headless-commerce-admin-catalog/v1.0",
+				restEndpoint = "/v1.0/products",
+				restSchema = "Product");
+
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Catalog",
+				restApplication = "/headless-commerce-admin-catalog/v1.0",
+				restEndpoint = "/v1.0/catalogs",
+				restSchema = "Catalog");
+
+			Refresh();
+		}
+
+		task ("Then confirm that the list is ordered increasing") {
+			AssertElementPresent(
+				key_labelName = "Catalog",
+				key_rowPosition = 1,
+				locator1 = "DataSet#VIEW_LABEL_POSITION");
+		}
+
+		task ("When ordered in descending order by REST Schema") {
+			while (IsElementNotPresent(key_labelName = "Catalog", key_rowPosition = 3, locator1 = "DataSet#VIEW_LABEL_POSITION")) {
+				Click(
+					key_labelName = "REST Schema",
+					locator1 = "DataSet#SORT_ICON");
+			}
+		}
+
+		task ("Then confirm that the list is in descending order") {
+			AssertElementPresent(
+				key_labelName = "Catalog",
+				key_rowPosition = 3,
+				locator1 = "DataSet#VIEW_LABEL_POSITION");
+		}
+	}
+
+	@description = "LPS-187312 Confirm the creation of new translations, right after translating the page"
+	@priority = 5
+	test ConfirmThatTheCreatedTranslationWorks {
+		property portal.acceptance = "quarantine";
+
+		task ("Given object created via API") {
+			ObjectAdmin.openObjectAdmin();
+
+			ObjectAdmin.addObjectViaAPI(
+				labelName = "Language",
+				objectName = "Language",
+				pluralLabelName = "Language");
+
+			Refresh();
+		}
+
+		task ("When the name field and enable translation entry") {
+			ACUtils.waitForScrollDown();
+
+			Click(
+				key_labelName = "Language",
+				locator1 = "CreateObject#OBJECT_NAME");
+
+			Click(
+				key_text = "",
+				locator1 = "DataSet#SELECT_PANEL_LINK");
+
+			Click(
+				key_menuItem = "Control Panel > Object",
+				locator1 = "MenuItem#MENU_ITEM_SPECIFIC");
+
+			Check.checkNotVisible(
+				checkboxName = "Enable Entry Translation",
+				locator1 = "Checkbox#ANY_CHECKBOX");
+
+			Button.clickSave();
+		}
+
+		task ("And add a new field "language" in Object") {
+			ObjectAdmin.goToFieldsTab();
+
+			Refresh();
+
+			ObjectAdmin.addObjectFieldViaUI(
+				fieldLabel = "language",
+				fieldType = "Text");
+
+			ObjectCustomValidation.gotoTab(tabName = "Details");
+
+			Button.clickPublish();
+		}
+
+		task ("And go to the Language portlet") {
+			Navigator.openURL();
+
+			ApplicationsMenu.gotoPortlet(
+				category = "Object",
+				panel = "Control Panel",
+				portlet = "Language");
+		}
+
+		task ("And create a new laguages in Object created") {
+			ObjectAdmin.addLanguageForOBJ(
+				key_label = "language",
+				key_menuItem = "português (Brasil)",
+				key_text1 = "English",
+				key_text2 = "Portugues",
+				key_type = "language");
+		}
+
+		task ("And create a user creates a new data Set entry") {
+			Navigator.openURL();
+
+			DataSetAdmin.goToDataSetAdminPage();
+
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "languages",
+				restApplication = "/c/languages",
+				restEndpoint = "/",
+				restSchema = "Language");
+
+			Refresh();
+		}
+
+		task ("And Add a view //Name: languages view") {
+			DataSetAdmin.goToViews(dataSetName = "languages");
+
+			DataSetAdmin.createDataSetView(
+				description = "Description",
+				key_name = "languages view");
+		}
+
+		task ("When go to the View page of the data set created.") {
+			DataSetAdmin.goToSpecificViewPage(
+				dataSetName = "languages",
+				key_viewName = "languages view");
+		}
+
+		task ("When goes to Fields Tab.") {
+			DataSetAdmin.goToTab(tabName = "Fields");
+		}
+
+		task ("And Add some fields //Add id and language") {
+			DataSetAdmin.addFields(key_fieldList = "id,language");
+		}
+
+		task ("And add a new content page and Add a data set fragment to content page created") {
+			Navigator.openURL();
+
+			ContentPages.addPage(pageName = "Test Page Name");
+
+			PageEditor.addFragment(
+				collectionName = "Content Display",
+				fragmentName = "Data Set");
+		}
+
+		task ("And selected view") {
+			Click(locator1 = "ReportsAdminViewReportEntry#INFO_MESSAGE");
+
+			Click.javaScriptClick(
+				key_value = "Select Data Set View",
+				locator1 = "Button#SECONDARY_BY_TITLE");
+
+			SelectFrame(
+				key_title = "Select",
+				locator1 = "IFrame#MODAL_ANY");
+
+			Click.clickAtNotVisible(
+				key_radioOption = "languages view",
+				locator1 = "CommerceEntry#RADIO_BUTTON");
+
+			Button.clickSave();
+		}
+
+		task ("And publishes the page") {
+			SelectFrame(locator1 = "DataSet#DEFOCUS");
+
+			Click.javaScriptClick(locator1 = "WorkflowMetricsIndex#METRICS_REINDEX_ALL_BUTTON");
+		}
+
+		task ("And go to the page created") {
+			Navigator.openURL();
+
+			Click(
+				key_pageName = "Test Page Name",
+				locator1 = "Home#PAGE");
+		}
+
+		task ("And change the URL page adding /pr/ and confirm the "Portugues"") {
+			var portalURL = PropsUtil.get("portal.url");
+
+			Navigator.openSpecificURL(url = "${portalURL}/pt/test-page-name");
+
+			AssertElementPresent(
+				key_addressType = "Portugues",
+				locator1 = "CommerceAccelerators#ACCOUNT_MANAGEMENT_ADDRESS_TYPE");
 		}
 	}
 
@@ -266,8 +1686,192 @@ definition {
 		}
 	}
 
+	@description = "LPS-185990 Confirm that when selecting the single option in the created filter, it is possible to preselect an item value"
+	@priority = 3
+	test IsOnlyPossibleToSelectOneItem {
+		task ("Given the creation of a new data set") {
+			DataSetAdmin.goToDataSetAdminPage();
+
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Data Set Test",
+				restApplication = "/data-set-manager/fields",
+				restEndpoint = "/",
+				restSchema = "FDSField");
+
+			DataSetAdmin.createFDSViewViaAPI(
+				dataSetName = "Data Set Test",
+				dataSetViewDescription = "FDSViewDescription",
+				key_dataSetViewNameList = "View Test");
+
+			DataSetAdmin.goToSpecificViewPage(
+				dataSetName = "Data Set Test",
+				key_viewName = "View Test");
+		}
+
+		task ("And creating a picklist and Items bike,car,bus") {
+			Picklist.addPicklistViaAPI(picklistName = "Transport");
+
+			Picklist.addPicklistItemViaAPI(
+				itemKey = "bike",
+				itemName = "bike",
+				picklistName = "Transport");
+
+			Picklist.addPicklistItemViaAPI(
+				itemKey = "car",
+				itemName = "car",
+				picklistName = "Transport");
+
+			Picklist.addPicklistItemViaAPI(
+				itemKey = "bus",
+				itemName = "bus",
+				picklistName = "Transport");
+		}
+
+		task ("When the user creates a new filter //Name: Filter test //Filter by: creator //Source option: Transport the selection is multiple") {
+			DataSetAdmin.goToTab(tabName = "Filters");
+
+			LexiconEntry.gotoAdd();
+
+			Click(
+				key_menuItem = "Selection",
+				locator1 = "MenuItem#ANY_MENU_ITEM");
+
+			Type(
+				key_text = "Name",
+				locator1 = "TextInput#ANY",
+				value1 = "Filter test");
+
+			Click(
+				key_class = "btn-secondary",
+				key_index = 3,
+				locator1 = "Button#ANY_WITH_CLASS_AND_INDEX");
+
+			SelectFrameTop();
+
+			Click.javaScriptClick(
+				key_sortOption = "creator",
+				locator1 = "DataSet#SELECT_SORT_OPTION");
+
+			Select(
+				locator1 = "DataSet#SOURCE_OPTIONS_SELECT",
+				value1 = "Transport");
+
+			Click.clickAtNotVisible(
+				key_radioOption = "Single",
+				locator1 = "CommerceEntry#RADIO_BUTTON");
+
+			Click(
+				key_fieldName = "Select a default value for your filter",
+				locator1 = "DataSet#PRESELECT_VALUE_INPUT");
+		}
+
+		task ("Then the text “Select a value“ is present in the Preselected Values field, It is only possible to add one item") {
+			for (var asserttransport : list "car,bike") {
+				Click(
+					key_sortOption = ${asserttransport},
+					locator1 = "DataSet#SELECT_SORT_OPTION");
+			}
+
+			Click(
+				key_modal_title = "New Selection Filter",
+				locator1 = "AccessibilityMenu#MODAL_TITLE");
+
+			AssertElementPresent(
+				key_helpText = "Only one value is allowed in",
+				locator1 = "ObjectField#HELP_TEXT");
+		}
+	}
+
+	@description = "LPS-194126 Confirm that when creating an object field with translation, a new view fields value is not displayed"
+	@priority = 3
+	test NewFieldValueIsNotDisplayed {
+		task ("Given an object with name field 'custom Text Entry' and Add a translation to the added field title") {
+			ObjectAdmin.addObjectViaAPI(
+				labelName = "DataSetObject",
+				objectName = "DataSetObject",
+				pluralLabelName = "DataSetObjects");
+
+			ObjectAdmin.openObjectAdmin();
+
+			ObjectPortlet.selectCustomObject(label = "DataSetObject");
+
+			ObjectAdmin.goToFieldsTab();
+
+			ObjectAdmin.addObjectFieldViaUI(
+				fieldLabel = "Text Entry",
+				fieldType = "Text");
+
+			ObjectAdmin.goToFieldsDetails(label = "Text Entry");
+
+			ObjectAdmin.chooseAnyLanguage(
+				newLanguage = "pt_BR",
+				symbolName = "");
+
+			Type(
+				key_placeHolder = "Text to translate",
+				locator1 = "TextInput#ANY_PLACEHOLDER",
+				value1 = "Portugues");
+
+			CreateObject.saveObject();
+
+			ObjectAdmin.goToDetailsTab();
+
+			ObjectAdmin.selectDropdownItem(
+				labelName = "Panel Link",
+				optionName = "Object");
+
+			Check.checkNotVisible(
+				checkboxName = "Enable Entry Translation",
+				locator1 = "Checkbox#ANY_CHECKBOX");
+
+			Button.clickSave();
+
+			PortletEntry.publish();
+		}
+
+		task ("Given a new data set entry //Name: Data Set Test //REST Application: /c/datasetobjects //REST Schema: DataSetObject //REST Endpoint:/ ") {
+			Navigator.openURL();
+
+			DataSetAdmin.goToDataSetAdminPage();
+
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Data Set Test",
+				restApplication = "/c/datasetobjects",
+				restEndpoint = "/",
+				restSchema = "DataSetObject");
+
+			Refresh();
+		}
+
+		task ("And go to views tab on data set created") {
+			DataSetAdmin.goToViews(dataSetName = "Data Set Test");
+
+			DataSetAdmin.createDataSetView(
+				description = "Description",
+				key_name = "Data Set View");
+		}
+
+		task ("When go to the View page of the data set created.") {
+			DataSetAdmin.goToSpecificViewPage(
+				dataSetName = "Data Set Test",
+				key_viewName = "Data Set View");
+		}
+
+		task ("When goes to Fields Tab.") {
+			DataSetAdmin.goToTab(tabName = "Fields");
+		}
+
+		task ("Then there is not any “Text Entry_i18n” field available") {
+			LexiconEntry.gotoAdd();
+
+			AssertElementNotPresent(
+				key_columnName = "Text Entry_i18n",
+				locator1 = "DataSet#NEW_FIELD_OPTION");
+		}
+	}
+
 	@description = "LPS-175990. Confirm that the user can cancel the creation of a data set entry"
-	@priority = 5
+	@priority = 4
 	test NotCreatedAfterCancel {
 		task ("When The user goes to add data sets") {
 			LexiconEntry.gotoAdd();
@@ -295,7 +1899,7 @@ definition {
 	}
 
 	@description = "LPS-172398. Confirm that the data set was not deleted after clicking CANCEL in the modal"
-	@priority = 5
+	@priority = 3
 	test NotDeleteDataSetAfterCancel {
 		task ("When the user goes to add data sets") {
 			DataSetAdmin.createDataSet(
@@ -325,7 +1929,7 @@ definition {
 	}
 
 	@description = "LPS-172398. Confirm that the data set was not deleted after clicking clicks on the 'X' button in the modal"
-	@priority = 5
+	@priority = 3
 	test NotDeleteDataSetAfterCloseButton {
 		task ("When The user goes to add a new data set") {
 			DataSetAdmin.createDataSet(
@@ -358,8 +1962,247 @@ definition {
 		}
 	}
 
-	@description = "Needs refactor after LPS-183512 is fixed | LPS-175990. Confirm that the user can create a data set entry with special chatacters"
+	@description = "LPS-194126 Confirm that translated object entries are displayed in the page fragment, and translated when adding pt to the page url"
 	@priority = 5
+	test TheFieldsAreTranslatedOnPage {
+		property portal.acceptance = "true";
+
+		task ("Given an object with name field 'custom Text Entry' and Add a translation to the added field title") {
+			ObjectAdmin.addObjectViaAPI(
+				labelName = "DataSetObject",
+				objectName = "DataSetObject",
+				pluralLabelName = "DataSetObjects");
+
+			ObjectAdmin.openObjectAdmin();
+
+			ObjectPortlet.selectCustomObject(label = "DataSetObject");
+
+			ObjectAdmin.selectDropdownItem(
+				labelName = "Panel Link",
+				optionName = "Object");
+
+			Check.checkNotVisible(
+				checkboxName = "Enable Entry Translation",
+				locator1 = "Checkbox#ANY_CHECKBOX");
+
+			Button.clickSave();
+
+			Refresh();
+
+			ObjectAdmin.goToFieldsTab();
+
+			ObjectAdmin.addAOBJFieldWithTranslation(
+				fieldLabel = "Text Entry",
+				fieldType = "Text",
+				key_newLabel = "Portugues",
+				key_placeHolder = "Text to translate",
+				newLanguage = "pt_BR");
+
+			ObjectAdmin.goToDetailsTab();
+
+			PortletEntry.publish();
+		}
+
+		task ("And go to the Language portlet") {
+			Navigator.openURL();
+
+			ApplicationsMenu.gotoPortlet(
+				category = "Object",
+				panel = "Control Panel",
+				portlet = "DataSetObjects");
+		}
+
+		task ("And create a new laguages in Object created") {
+			ObjectAdmin.addLanguageForOBJ(
+				key_label = "text",
+				key_menuItem = "português (Brasil)",
+				key_text1 = "First Text",
+				key_text2 = "First Text Translated",
+				key_type = "text");
+
+			Navigator.gotoBack();
+
+			ObjectAdmin.addLanguageForOBJ(
+				key_label = "text",
+				key_menuItem = "português (Brasil)",
+				key_text1 = "Second Text",
+				key_text2 = "Second Text Translated",
+				key_type = "text");
+		}
+
+		task ("Given a new data set entry //Name: Data Set Test //REST Application: /c/datasetobjects //REST Schema: DataSetObject //REST Endpoint:/ ") {
+			Navigator.openURL();
+
+			DataSetAdmin.goToDataSetAdminPage();
+
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Data Set Test",
+				restApplication = "/c/datasetobjects",
+				restEndpoint = "/",
+				restSchema = "DataSetObject");
+
+			Refresh();
+		}
+
+		task ("And go to views tab and add textEntry,id,siteId fields for view created") {
+			DataSetAdmin.goToViews(dataSetName = "Data Set Test");
+
+			DataSetAdmin.createDataSetView(
+				description = "Description",
+				key_name = "Data Set View");
+
+			DataSetAdmin.goToSpecificViewPage(
+				dataSetName = "Data Set Test",
+				key_viewName = "Data Set View");
+
+			DataSetAdmin.goToTab(tabName = "Fields");
+
+			DataSetAdmin.addFields(key_fieldList = "textEntry,id,status");
+		}
+
+		task ("And add a new content page and Add a data set fragment to content page created") {
+			Navigator.openURL();
+
+			ContentPages.addPage(pageName = "Test Page Name");
+
+			PageEditor.addFragment(
+				collectionName = "Content Display",
+				fragmentName = "Data Set");
+		}
+
+		task ("And selected and add a view create to page") {
+			DataSetAdmin.selectDataSetFragmentView(
+				key_modalTitle = "Select",
+				key_selectView = "Select Data Set View",
+				key_viewName = "Data Set View");
+
+			SelectFrame(locator1 = "DataSet#DEFOCUS");
+
+			Button.click(button = "Publish");
+		}
+
+		task ("Then Confirm the “First Text“ field is shown in the fragment") {
+			Navigator.openURL();
+
+			Navigator.gotoPage(pageName = "Test Page Name");
+
+			AssertElementPresent(
+				accountName = "First Text",
+				locator1 = "DataSet#ACCOUNT_ORDER_NAME");
+		}
+
+		task ("Then Confirm the “First Text Translated“ field is shown in the fragment") {
+			var portalURL = PropsUtil.get("portal.url");
+
+			Navigator.openSpecificURL(url = "${portalURL}/pt/data-set-test");
+
+			Navigator.gotoPage(pageName = "Test Page Name");
+
+			AssertElementPresent(
+				accountName = "First Text Translated",
+				locator1 = "DataSet#ACCOUNT_ORDER_NAME");
+		}
+	}
+
+	@description = "LPS-194126 Confirm that when creating a field with a pt-BR translation, the label is translated when pt is added to the page URL"
+	@priority = 4
+	test TheFieldValueIsTranslated {
+		task ("Given a product created and a data set entry with app:/headless-commerce-admin-catalog/v1.0") {
+			ApplicationsMenu.gotoPortlet(
+				category = "Product Management",
+				panel = "Commerce",
+				portlet = "Products");
+
+			LexiconEntry.gotoAdd();
+
+			Click(
+				key_menuItem = "Simple",
+				locator1 = "MenuItem#MENU_ITEM_SPECIFIC");
+
+			CommerceEntry.addProductsEntry(
+				compileDescription = "true",
+				productCatalog = "Master",
+				productFullDescription = "test",
+				productName = "Product FDS",
+				productShortDescription = "Test",
+				publishProduct = "Approved");
+
+			DataSetAdmin.goToDataSetAdminPage();
+
+			DataSetAdmin.createDataSetEntryViaAPI(
+				dataSetName = "Data Set Test",
+				restApplication = "/headless-commerce-admin-catalog/v1.0",
+				restEndpoint = "/v1.0/products",
+				restSchema = "Product");
+		}
+
+		task ("And a data set view created via api") {
+			DataSetAdmin.createFDSViewViaAPI(
+				dataSetName = "Data Set Test",
+				dataSetViewDescription = "FDSViewDescription",
+				key_dataSetViewNameList = "View Test");
+		}
+
+		task ("When go to the View page of the data set created.") {
+			DataSetAdmin.goToSpecificViewPage(
+				dataSetName = "Data Set Test",
+				key_viewName = "View Test");
+		}
+
+		task ("When goes to Fields Tab.") {
+			DataSetAdmin.goToTab(tabName = "Fields");
+		}
+
+		task ("And adds a field name") {
+			DataSetAdmin.addFields(key_fieldList = "name");
+		}
+
+		task ("And clicks on ellipsis button on name field and add a new translation") {
+			DataSetAdmin.addAFDSFieldWithTranslation(
+				dropdownMenuItem = "Edit",
+				key_fieldName = "name",
+				key_newLabel = "Nome",
+				selectLanguage = "pt_BR");
+		}
+
+		task ("When the user adds a widget page and add a fragment Data Set") {
+			Navigator.openURL();
+
+			ContentPages.addPage(pageName = "Data Set Test");
+
+			PageEditor.addFragment(
+				collectionName = "Content Display",
+				fragmentName = "Data Set");
+		}
+
+		task ("And viewing the configuration menu of the portlet And selects View Fields Test") {
+			DataSetAdmin.selectDataSetFragmentView(
+				key_modalTitle = "Select",
+				key_selectView = "Select Data Set View",
+				key_viewName = "View Test");
+		}
+
+		task ("And publishes the page") {
+			SelectFrame(locator1 = "DataSet#DEFOCUS");
+
+			Button.click(button = "Publish");
+		}
+
+		task ("And go to the page created, and put a "pt" in URL page") {
+			var portalURL = PropsUtil.get("portal.url");
+
+			Navigator.openSpecificURL(url = "${portalURL}/pt/data-set-test");
+
+			Navigator.gotoPage(pageName = "Data Set Test");
+
+			AssertElementPresent(
+				key_column = "Nome",
+				locator1 = "DataSet#ENTRY_COLUMN_NAME");
+		}
+	}
+
+	@description = "Needs refactor after LPS-183512 is fixed | LPS-175990. Confirm that the user can create a data set entry with special chatacters"
+	@priority = 3
 	test WithSpecialCharacters {
 		task ("When Create a DataSet") {
 			DataSetAdmin.createDataSet(

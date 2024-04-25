@@ -10,6 +10,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -20,7 +23,7 @@ import org.json.JSONException;
  */
 public class ListUtil {
 
-	public static void add(List<String> list, String item) {
+	public static <T> void add(List<T> list, T item) {
 		list.add(item);
 	}
 
@@ -32,15 +35,64 @@ public class ListUtil {
 		return new ArrayList<>(master);
 	}
 
-	public static String get(List<String> list, Integer index) {
+	public static <T> List<T> filter(
+		List<? extends T> inputList, List<T> outputList,
+		Predicate<T> predicate) {
+
+		for (T item : inputList) {
+			if (predicate.test(item)) {
+				outputList.add(item);
+			}
+		}
+
+		return outputList;
+	}
+
+	public static <T> List<T> filter(
+		List<? extends T> inputList, Predicate<T> predicate) {
+
+		return filter(inputList, new ArrayList<T>(inputList.size()), predicate);
+	}
+
+	public static <T> List<T> filter(
+		List<T> list, BiFunction<Integer, Integer, List<T>> listBiFunction,
+		Supplier<Integer> countSupplier, Predicate<T> predicate, int start,
+		int end) {
+
+		list = filter(list, predicate);
+
+		int count = countSupplier.get();
+		int delta = end - start;
+
+		int pageCount = (count / delta) + (((count % delta) == 0) ? 0 : 1);
+		int pageIndex = (int)Math.ceil((double)start / delta);
+
+		int pageSize = end - start;
+
+		while ((list.size() < pageSize) && (pageIndex < pageCount)) {
+			pageIndex++;
+
+			start += delta;
+			end += delta;
+
+			list.addAll(
+				sublist(
+					filter(listBiFunction.apply(start, end), predicate), 0,
+					pageSize - list.size()));
+		}
+
+		return list;
+	}
+
+	public static <T> T get(List<T> list, Integer index) {
 		return list.get(index);
 	}
 
-	public static String get(List<String> list, Long index) {
+	public static <T> T get(List<T> list, Long index) {
 		return list.get(Math.toIntExact(index));
 	}
 
-	public static String get(List<String> list, String index) {
+	public static <T> T get(List<T> list, String index) {
 		try {
 			return list.get(Integer.parseInt(index));
 		}
@@ -95,11 +147,15 @@ public class ListUtil {
 		return list;
 	}
 
-	public static void remove(List<String> list, String item) {
+	public static List<Object> newObjectList() {
+		return new ArrayList<>();
+	}
+
+	public static <T> void remove(List<T> list, T item) {
 		list.remove(item);
 	}
 
-	public static String size(List<String> list) {
+	public static <T> String size(List<T> list) {
 		int size = list.size();
 
 		return String.valueOf(size);
@@ -127,6 +183,22 @@ public class ListUtil {
 		List<String> list = Arrays.asList(s.split(delimiter));
 
 		return toString(sort(list), delimiter);
+	}
+
+	public static <E> List<E> sublist(List<E> list, int start, int end) {
+		if (start < 0) {
+			start = 0;
+		}
+
+		if ((end < 0) || (end > list.size())) {
+			end = list.size();
+		}
+
+		if (start < end) {
+			return list.subList(start, end);
+		}
+
+		return Collections.emptyList();
 	}
 
 	public static String toString(List<?> list) {

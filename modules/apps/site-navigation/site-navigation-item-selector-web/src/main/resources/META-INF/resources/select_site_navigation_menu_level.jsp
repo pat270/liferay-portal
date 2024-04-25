@@ -29,7 +29,7 @@ SelectSiteNavigationMenuDisplayContext selectSiteNavigationMenuDisplayContext = 
 			data-site-navigation-menu-id="<%= selectSiteNavigationMenuDisplayContext.getSiteNavigationMenuId() %>"
 			data-title="<%= selectSiteNavigationMenuDisplayContext.getCurrentLevelTitle() %>"
 			displayType="primary"
-			label='<%= LanguageUtil.get(resourceBundle, "select-this-level") %>'
+			label="select-this-level"
 			small="<%= true %>"
 		/>
 	</div>
@@ -70,5 +70,5 @@ SelectSiteNavigationMenuDisplayContext selectSiteNavigationMenuDisplayContext = 
 <liferay-frontend:component
 	componentId="SelectEntityHandler"
 	context="<%= selectSiteNavigationMenuDisplayContext.getContext(liferayPortletResponse) %>"
-	module="js/SelectEntityHandler"
+	module="{SelectEntityHandler} from site-navigation-item-selector-web"
 />

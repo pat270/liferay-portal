@@ -8,7 +8,7 @@ import React from 'react';
 import {act} from 'react-dom/test-utils';
 
 import TYPES from '../../src/main/resources/META-INF/resources/js/RATINGS_TYPES';
-import Ratings from '../../src/main/resources/META-INF/resources/js/Ratings';
+import {Ratings} from '../../src/main/resources/META-INF/resources/js/index';
 import {formDataToObj} from '../utils';
 
 const baseProps = {
@@ -282,6 +282,17 @@ describe('RatingsSelectStars', () => {
 					expect(starsButtons[5]).toHaveProperty('disabled', true);
 				});
 			});
+		});
+	});
+
+	describe('when a decimal score is set from the API', () => {
+		it('it rounds the score to the nearest valid rating', () => {
+			const result = renderComponent({
+				userScore: 0.5,
+			});
+			const starsDropdownToggle = result.getAllByRole('button')[0];
+
+			expect(starsDropdownToggle.value).toBe('3');
 		});
 	});
 });

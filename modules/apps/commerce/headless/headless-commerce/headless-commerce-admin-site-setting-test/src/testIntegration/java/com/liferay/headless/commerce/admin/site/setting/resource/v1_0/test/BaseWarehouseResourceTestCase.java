@@ -27,13 +27,12 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
@@ -203,7 +202,7 @@ public abstract class BaseWarehouseResourceTestCase {
 			warehouseResource.getCommerceAdminSiteSettingGroupWarehousePage(
 				groupId, null, Pagination.of(1, 10));
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if (irrelevantGroupId != null) {
 			Warehouse irrelevantWarehouse =
@@ -212,13 +211,13 @@ public abstract class BaseWarehouseResourceTestCase {
 
 			page =
 				warehouseResource.getCommerceAdminSiteSettingGroupWarehousePage(
-					irrelevantGroupId, null, Pagination.of(1, 2));
+					irrelevantGroupId, null,
+					Pagination.of(1, (int)totalCount + 1));
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantWarehouse),
-				(List<Warehouse>)page.getItems());
+			assertContains(
+				irrelevantWarehouse, (List<Warehouse>)page.getItems());
 			assertValid(
 				page,
 				testGetCommerceAdminSiteSettingGroupWarehousePage_getExpectedActions(
@@ -236,11 +235,10 @@ public abstract class BaseWarehouseResourceTestCase {
 		page = warehouseResource.getCommerceAdminSiteSettingGroupWarehousePage(
 			groupId, null, Pagination.of(1, 10));
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(warehouse1, warehouse2),
-			(List<Warehouse>)page.getItems());
+		assertContains(warehouse1, (List<Warehouse>)page.getItems());
+		assertContains(warehouse2, (List<Warehouse>)page.getItems());
 		assertValid(
 			page,
 			testGetCommerceAdminSiteSettingGroupWarehousePage_getExpectedActions(
@@ -268,6 +266,12 @@ public abstract class BaseWarehouseResourceTestCase {
 		Long groupId =
 			testGetCommerceAdminSiteSettingGroupWarehousePage_getGroupId();
 
+		Page<Warehouse> warehousePage =
+			warehouseResource.getCommerceAdminSiteSettingGroupWarehousePage(
+				groupId, null, null);
+
+		int totalCount = GetterUtil.getInteger(warehousePage.getTotalCount());
+
 		Warehouse warehouse1 =
 			testGetCommerceAdminSiteSettingGroupWarehousePage_addWarehouse(
 				groupId, randomWarehouse());
@@ -280,31 +284,68 @@ public abstract class BaseWarehouseResourceTestCase {
 			testGetCommerceAdminSiteSettingGroupWarehousePage_addWarehouse(
 				groupId, randomWarehouse());
 
-		Page<Warehouse> page1 =
-			warehouseResource.getCommerceAdminSiteSettingGroupWarehousePage(
-				groupId, null, Pagination.of(1, 2));
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<Warehouse> warehouses1 = (List<Warehouse>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(warehouses1.toString(), 2, warehouses1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<Warehouse> page1 =
+				warehouseResource.getCommerceAdminSiteSettingGroupWarehousePage(
+					groupId, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+						pageSizeLimit));
 
-		Page<Warehouse> page2 =
-			warehouseResource.getCommerceAdminSiteSettingGroupWarehousePage(
-				groupId, null, Pagination.of(2, 2));
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(3, page2.getTotalCount());
+			assertContains(warehouse1, (List<Warehouse>)page1.getItems());
 
-		List<Warehouse> warehouses2 = (List<Warehouse>)page2.getItems();
+			Page<Warehouse> page2 =
+				warehouseResource.getCommerceAdminSiteSettingGroupWarehousePage(
+					groupId, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+						pageSizeLimit));
 
-		Assert.assertEquals(warehouses2.toString(), 1, warehouses2.size());
+			assertContains(warehouse2, (List<Warehouse>)page2.getItems());
 
-		Page<Warehouse> page3 =
-			warehouseResource.getCommerceAdminSiteSettingGroupWarehousePage(
-				groupId, null, Pagination.of(1, 3));
+			Page<Warehouse> page3 =
+				warehouseResource.getCommerceAdminSiteSettingGroupWarehousePage(
+					groupId, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+						pageSizeLimit));
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(warehouse1, warehouse2, warehouse3),
-			(List<Warehouse>)page3.getItems());
+			assertContains(warehouse3, (List<Warehouse>)page3.getItems());
+		}
+		else {
+			Page<Warehouse> page1 =
+				warehouseResource.getCommerceAdminSiteSettingGroupWarehousePage(
+					groupId, null, Pagination.of(1, totalCount + 2));
+
+			List<Warehouse> warehouses1 = (List<Warehouse>)page1.getItems();
+
+			Assert.assertEquals(
+				warehouses1.toString(), totalCount + 2, warehouses1.size());
+
+			Page<Warehouse> page2 =
+				warehouseResource.getCommerceAdminSiteSettingGroupWarehousePage(
+					groupId, null, Pagination.of(2, totalCount + 2));
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<Warehouse> warehouses2 = (List<Warehouse>)page2.getItems();
+
+			Assert.assertEquals(warehouses2.toString(), 1, warehouses2.size());
+
+			Page<Warehouse> page3 =
+				warehouseResource.getCommerceAdminSiteSettingGroupWarehousePage(
+					groupId, null, Pagination.of(1, (int)totalCount + 3));
+
+			assertContains(warehouse1, (List<Warehouse>)page3.getItems());
+			assertContains(warehouse2, (List<Warehouse>)page3.getItems());
+			assertContains(warehouse3, (List<Warehouse>)page3.getItems());
+		}
 	}
 
 	protected Warehouse
@@ -377,7 +418,10 @@ public abstract class BaseWarehouseResourceTestCase {
 
 	@Test
 	public void testGraphQLDeleteWarehouse() throws Exception {
-		Warehouse warehouse = testGraphQLDeleteWarehouse_addWarehouse();
+
+		// No namespace
+
+		Warehouse warehouse1 = testGraphQLDeleteWarehouse_addWarehouse();
 
 		Assert.assertTrue(
 			JSONUtil.getValueAsBoolean(
@@ -386,23 +430,60 @@ public abstract class BaseWarehouseResourceTestCase {
 						"deleteWarehouse",
 						new HashMap<String, Object>() {
 							{
-								put("id", warehouse.getId());
+								put("id", warehouse1.getId());
 							}
 						})),
 				"JSONObject/data", "Object/deleteWarehouse"));
-		JSONArray errorsJSONArray = JSONUtil.getValueAsJSONArray(
+
+		JSONArray errorsJSONArray1 = JSONUtil.getValueAsJSONArray(
 			invokeGraphQLQuery(
 				new GraphQLField(
 					"warehouse",
 					new HashMap<String, Object>() {
 						{
-							put("id", warehouse.getId());
+							put("id", warehouse1.getId());
 						}
 					},
 					new GraphQLField("id"))),
 			"JSONArray/errors");
 
-		Assert.assertTrue(errorsJSONArray.length() > 0);
+		Assert.assertTrue(errorsJSONArray1.length() > 0);
+
+		// Using the namespace headlessCommerceAdminSiteSetting_v1_0
+
+		Warehouse warehouse2 = testGraphQLDeleteWarehouse_addWarehouse();
+
+		Assert.assertTrue(
+			JSONUtil.getValueAsBoolean(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"headlessCommerceAdminSiteSetting_v1_0",
+						new GraphQLField(
+							"deleteWarehouse",
+							new HashMap<String, Object>() {
+								{
+									put("id", warehouse2.getId());
+								}
+							}))),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminSiteSetting_v1_0",
+				"Object/deleteWarehouse"));
+
+		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminSiteSetting_v1_0",
+					new GraphQLField(
+						"warehouse",
+						new HashMap<String, Object>() {
+							{
+								put("id", warehouse2.getId());
+							}
+						},
+						new GraphQLField("id")))),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray2.length() > 0);
 	}
 
 	protected Warehouse testGraphQLDeleteWarehouse_addWarehouse()
@@ -431,6 +512,8 @@ public abstract class BaseWarehouseResourceTestCase {
 	public void testGraphQLGetWarehouse() throws Exception {
 		Warehouse warehouse = testGraphQLGetWarehouse_addWarehouse();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				warehouse,
@@ -446,11 +529,35 @@ public abstract class BaseWarehouseResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/warehouse"))));
+
+		// Using the namespace headlessCommerceAdminSiteSetting_v1_0
+
+		Assert.assertTrue(
+			equals(
+				warehouse,
+				WarehouseSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminSiteSetting_v1_0",
+								new GraphQLField(
+									"warehouse",
+									new HashMap<String, Object>() {
+										{
+											put("id", warehouse.getId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminSiteSetting_v1_0",
+						"Object/warehouse"))));
 	}
 
 	@Test
 	public void testGraphQLGetWarehouseNotFound() throws Exception {
 		Long irrelevantId = RandomTestUtil.randomLong();
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -464,6 +571,25 @@ public abstract class BaseWarehouseResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminSiteSetting_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminSiteSetting_v1_0",
+						new GraphQLField(
+							"warehouse",
+							new HashMap<String, Object>() {
+								{
+									put("id", irrelevantId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -1001,6 +1127,10 @@ public abstract class BaseWarehouseResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -1426,9 +1556,9 @@ public abstract class BaseWarehouseResourceTestCase {
 	}
 
 	protected WarehouseResource warehouseResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

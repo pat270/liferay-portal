@@ -789,6 +789,27 @@ public class UserNotificationEventLocalServiceWrapper
 			userId, deliveryType, start, end);
 	}
 
+	@Override
+	public java.util.List<com.liferay.portal.kernel.model.UserNotificationEvent>
+		getUserNotificationEvents(
+			long userId, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.portal.kernel.model.UserNotificationEvent>
+					orderByComparator) {
+
+		return _userNotificationEventLocalService.getUserNotificationEvents(
+			userId, start, end, orderByComparator);
+	}
+
+	@Override
+	public java.util.List<com.liferay.portal.kernel.model.UserNotificationEvent>
+		getUserNotificationEvents(
+			long userId, String type, long timestamp, boolean delivered) {
+
+		return _userNotificationEventLocalService.getUserNotificationEvents(
+			userId, type, timestamp, delivered);
+	}
+
 	/**
 	 * Returns the number of user notification events.
 	 *

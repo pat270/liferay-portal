@@ -9,6 +9,7 @@ import {useEffect, useState} from 'react';
 
 import {useAppPropertiesContext} from '~/common/contexts/AppPropertiesContext';
 import PopoverIconButton from '~/routes/customer-portal/components/PopoverIconButton';
+import { getProperProductNames } from '~/routes/customer-portal/utils/getProperProductNames';
 import i18n from '../../../../../../common/I18n';
 import {
 	DXPIcon,
@@ -17,9 +18,10 @@ import {
 import {FORMAT_DATE_TYPES} from '../../../../../../common/utils/constants';
 import getDateCustomFormat from '../../../../../../common/utils/getDateCustomFormat';
 import {PRODUCT_TYPES} from '../../../../utils/constants';
+import {getLicenseKeyPermanentStatus} from '../../../GenerateNewKey/utils/licenseKeyPermanentStatus';
 import {
 	getEnvironmentType,
-	getFormatedProductName,
+	getFormattedProductName,
 	getInstanceSize,
 	getProductDescription,
 	getStatusActivationTag,
@@ -30,37 +32,32 @@ const HOST_NAME = i18n.translate('host-name');
 const IP_ADDRESSES = i18n.translate('ip-addresses');
 const MAC_ADDRESSES = i18n.translate('mac-addresses');
 
-const YEARS_FOR_PERMANENT_KEYS = 90;
-
 const TableKeyDetails = ({currentActivationKey, setValueToCopyToClipboard}) => {
 	const [actionToCopy, setActionToCopy] = useState('');
 	const instanceSizeFormated = getInstanceSize(currentActivationKey.sizing);
 
 	const {articleWhatIsMyInstanceSizingValueURL} = useAppPropertiesContext();
 
-	const now = new Date();
-
 	const hasVirtualClusterForActivationKeys = hasVirtualCluster(
 		currentActivationKey?.licenseEntryType
 	);
 	const statusActivationTag = getStatusActivationTag(currentActivationKey);
 
-	const unlimitedLicenseDate = now.setFullYear(
-		now.getFullYear() + YEARS_FOR_PERMANENT_KEYS
+	const isPermanentLicenseKey = getLicenseKeyPermanentStatus(
+		undefined,
+		currentActivationKey?.expirationDate
 	);
 
-	const formatedProductName = getFormatedProductName(
+	const formattedProductName = getFormattedProductName(
 		currentActivationKey?.productName
 	);
 
-	const handleExpiredDate =
-		new Date(currentActivationKey.expirationDate) >=
-		new Date(unlimitedLicenseDate)
-			? i18n.translate('does-not-expire')
-			: getDateCustomFormat(
-					currentActivationKey.expirationDate,
-					FORMAT_DATE_TYPES.day2DMonthSYearN
-			  );
+	const handleExpiredDate = isPermanentLicenseKey
+		? i18n.translate('does-not-expire')
+		: getDateCustomFormat(
+				currentActivationKey.expirationDate,
+				FORMAT_DATE_TYPES.day2DMonthSYearN
+		  );
 
 	useEffect(() => {
 		if (actionToCopy) {
@@ -73,7 +70,7 @@ const TableKeyDetails = ({currentActivationKey, setValueToCopyToClipboard}) => {
 	};
 
 	const Logo =
-		formatedProductName === PRODUCT_TYPES.portal ? PortalIcon : DXPIcon;
+		formattedProductName === PRODUCT_TYPES.portal ? PortalIcon : DXPIcon;
 
 	return (
 		<div className="container">
@@ -119,10 +116,14 @@ const TableKeyDetails = ({currentActivationKey, setValueToCopyToClipboard}) => {
 
 			<div className="row">
 				<div className="col-2">
-					<p className="align-items-center bg-brand-primary-lighten-5 cp-key-details-paragraph d-flex px-3 py-2 rounded">
+					<p className={classNames('align-items-center bg-brand-primary-lighten-5 cp-key-details-paragraph px-3 py-2 rounded', {
+							'': formattedProductName === 'DXP',
+							'd-flex': formattedProductName === 'Portal',
+						})}
+					>
 						<Logo className="mr-2" />
 
-						{formatedProductName}
+						{getProperProductNames(formattedProductName)}
 					</p>
 				</div>
 

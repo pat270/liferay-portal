@@ -60,11 +60,11 @@ public class CommercePaymentEntryKeywordQueryContributor
 		_queryHelper.addSearchTerm(
 			booleanQuery, searchContext, Field.USER_NAME, false);
 		_queryHelper.addSearchTerm(
+			booleanQuery, searchContext, "classPK", false);
+		_queryHelper.addSearchTerm(
 			booleanQuery, searchContext, "currencyCode", false);
 		_queryHelper.addSearchTerm(
-			booleanQuery, searchContext, "paymentMethodName", false);
-		_queryHelper.addSearchTerm(
-			booleanQuery, searchContext, "paymentStatus", false);
+			booleanQuery, searchContext, "externalReferenceCode", false);
 		_queryHelper.addSearchTerm(
 			booleanQuery, searchContext, "transactionCode", false);
 	}

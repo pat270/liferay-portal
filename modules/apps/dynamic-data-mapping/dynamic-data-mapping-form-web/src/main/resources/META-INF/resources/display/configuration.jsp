@@ -50,9 +50,21 @@ DDMFormInstance selFormInstance = DDMFormInstanceServiceUtil.fetchFormInstance(f
 							total="<%= DDMFormInstanceServiceUtil.searchCount(company.getCompanyId(), scopeGroupId, keywords, WorkflowConstants.STATUS_APPROVED) %>"
 						>
 							<div class="form-search input-append">
-								<liferay-ui:input-search
-									placeholder='<%= LanguageUtil.get(request, "keywords") %>'
-								/>
+								<div class="input-group">
+									<div class="input-group-item">
+										<input aria-label="<%= LanguageUtil.get(request, "search") %>" class="form-control input-group-inset input-group-inset-after search-query" data-qa-id="searchInput" id="<portlet:namespace />keywords" name="<portlet:namespace />keywords" placeholder="<%= LanguageUtil.get(request, "keywords") %>" title="<%= LanguageUtil.get(request, "search") %>" type="text" value="<%= HtmlUtil.escapeAttribute(ParamUtil.getString(request, "keywords")) %>" />
+
+										<div class="input-group-inset-item input-group-inset-item-after">
+											<clay:button
+												data-qa-id="searchButton"
+												icon="search"
+												displayType="unstyled"
+												monospaced="<%= false %>"
+												type="submit"
+											/>
+										</div>
+									</div>
+								</div>
 							</div>
 
 							<liferay-ui:search-container-results
@@ -136,30 +148,34 @@ DDMFormInstance selFormInstance = DDMFormInstanceServiceUtil.fetchFormInstance(f
 		window,
 		'<portlet:namespace />selectFormInstance',
 		(formInstanceId, formInstanceName) => {
-			var A = AUI();
+			document.getElementById(
+				'<portlet:namespace />formInstanceId'
+			).value = formInstanceId;
 
-			document.<portlet:namespace />fm.<portlet:namespace />formInstanceId.value = formInstanceId;
-
-			var formInstanceHolder = A.one('.displaying-form-instance-id-holder');
-
-			if (formInstanceHolder) {
-				formInstanceHolder.show();
-			}
-
-			var messageHolder = A.one('.displaying-help-message-holder');
-
-			if (messageHolder) {
-				messageHolder.hide();
-			}
-
-			var displayFormInstanceId = A.one('.displaying-form-instance-id');
-
-			displayFormInstanceId.set(
-				'innerHTML',
-				formInstanceName + ' (<liferay-ui:message key="modified" />)'
+			const formInstanceHolder = document.querySelector(
+				'.displaying-form-instance-id-holder'
 			);
 
-			displayFormInstanceId.addClass('modified');
+			if (formInstanceHolder) {
+				formInstanceHolder.classList.remove('hide');
+			}
+
+			const messageHolder = document.querySelector(
+				'.displaying-help-message-holder'
+			);
+
+			if (messageHolder) {
+				messageHolder.classList.add('hide');
+			}
+
+			const displayFormInstanceId = document.querySelector(
+				'.displaying-form-instance-id'
+			);
+
+			displayFormInstanceId.innerHTML =
+				formInstanceName + ' (<liferay-ui:message key="modified" />)';
+
+			displayFormInstanceId.classList.add('modified');
 		},
 		['aui-base']
 	);

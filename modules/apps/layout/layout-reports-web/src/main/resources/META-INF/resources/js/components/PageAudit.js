@@ -3,67 +3,90 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayTabs from '@clayui/tabs';
+import ClayAlert from '@clayui/alert';
+import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {fetch} from 'frontend-js-web';
 import React, {useContext, useEffect, useState} from 'react';
 
 import {ConstantsContext} from '../context/ConstantsContext';
-import LayoutReports from './layout_reports/LayoutReports';
-import RenderTimes from './render_times/RenderTimes';
+import {StoreDispatchContext, StoreStateContext} from '../context/StoreContext';
+import ItemDetail from './ItemDetail';
+import {SidebarBody, SidebarHeader} from './Sidebar';
+import Tabs from './Tabs';
 
 import './PageAudit.scss';
+import {SET_SELECTED_ITEM} from '../constants/actionTypes';
 
-export default function PageAudit({layoutReportsEventTriggered, panelIsOpen}) {
+export default function PageAudit({panelIsOpen}) {
+	const [data, setData] = useState(null);
+	const [loading, setLoading] = useState(true);
 	const [activeTab, setActiveTab] = useState(0);
-	const [tabs, setTabs] = useState([]);
-	const {layoutReportsTabsURL} = useContext(ConstantsContext);
+
+	const {layoutReportsDataURL} = useContext(ConstantsContext);
+	const {selectedItem} = useContext(StoreStateContext);
+	const dispatch = useContext(StoreDispatchContext);
 
 	useEffect(() => {
-		if (panelIsOpen && layoutReportsTabsURL) {
-			fetch(layoutReportsTabsURL, {method: 'GET'})
+		if (panelIsOpen && layoutReportsDataURL) {
+			fetch(layoutReportsDataURL)
 				.then((response) => response.json())
-				.then((tabs) => setTabs(tabs))
-				.catch((error) => console.error(error));
+				.then((data) => setData(data))
+				.catch((error) => console.error(error))
+				.finally(() => setLoading(false));
 		}
-	}, [layoutReportsTabsURL, panelIsOpen]);
+	}, [layoutReportsDataURL, panelIsOpen]);
 
-	return tabs.length ? (
-		<>
-			<ClayTabs
-				active={activeTab}
-				className="px-2"
-				onActiveChange={setActiveTab}
+	useEffect(() => {
+		if (selectedItem) {
+			document.querySelector('.lfr-layout-reports-panel')?.focus();
+		}
+	}, [selectedItem]);
+
+	if (loading) {
+		return <ClayLoadingIndicator displayType="secondary" size="sm" />;
+	}
+
+	if (!data) {
+		return (
+			<ClayAlert
+				displayType="danger"
+				title={Liferay.Language.get('error')}
 			>
-				{tabs.map((tab, index) => (
-					<ClayTabs.Item
-						id={`tab-${tab.id}`}
-						innerProps={{
-							'aria-controls': `tabpanel-${index}`,
-						}}
-						key={tab.id}
-					>
-						{Liferay.Language.get(tab.name)}
-					</ClayTabs.Item>
-				))}
-			</ClayTabs>
-			<ClayTabs.Content activeIndex={activeTab} fade>
-				{tabs.map((tab) => (
-					<ClayTabs.TabPane
-						aria-labelledby={`tab-${tab.id}`}
-						className="p-3"
-						key={tab.id}
-					>
-						{tab.id === 'render-times' ? (
-							<RenderTimes url={tab.url} />
-						) : (
-							<LayoutReports
-								eventTriggered={layoutReportsEventTriggered}
-								url={tab.url}
-							/>
-						)}
-					</ClayTabs.TabPane>
-				))}
-			</ClayTabs.Content>
+				{Liferay.Language.get('an-unexpected-error-occurred')}
+			</ClayAlert>
+		);
+	}
+
+	const onBack = () => {
+		dispatch({
+			item: null,
+			type: SET_SELECTED_ITEM,
+		});
+	};
+
+	return (
+		<>
+			<SidebarHeader
+				onBackButtonClick={selectedItem ? onBack : null}
+				title={
+					selectedItem
+						? selectedItem.title
+						: Liferay.Language.get('page-audit')
+				}
+			/>
+
+			<SidebarBody>
+				{selectedItem ? (
+					<ItemDetail selectedItem={selectedItem} />
+				) : (
+					<Tabs
+						activeTab={activeTab}
+						segments={data.segmentsExperienceSelectorData}
+						setActiveTab={setActiveTab}
+						tabs={data.tabsData}
+					/>
+				)}
+			</SidebarBody>
 		</>
-	) : null;
+	);
 }

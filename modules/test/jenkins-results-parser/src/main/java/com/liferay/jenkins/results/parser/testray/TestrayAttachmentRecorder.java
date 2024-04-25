@@ -62,10 +62,12 @@ public class TestrayAttachmentRecorder {
 				_recordJenkinsReport();
 			}
 			else {
+				_recordDockerLogs();
 				_recordFailureMessages();
 				_recordGradlePluginsFiles();
 				_recordLiferayLogs();
 				_recordLiferayOSGiLogs();
+				_recordPlaywrightReportFile();
 				_recordPoshiReportFiles();
 				_recordWarnings();
 			}
@@ -359,6 +361,31 @@ public class TestrayAttachmentRecorder {
 		}
 		catch (IOException ioException) {
 			throw new RuntimeException(ioException);
+		}
+	}
+
+	private void _recordDockerLogs() {
+		File sourceDockerLogsDir = new File(
+			System.getenv("BUILD_DIR"), "docker-logs");
+
+		if (!sourceDockerLogsDir.exists()) {
+			return;
+		}
+
+		File destinationDockerLogsDir = new File(
+			_getRecordedFilesBuildDir(), "docker-logs");
+
+		for (File sourceDockerLogFile : sourceDockerLogsDir.listFiles()) {
+			try {
+				JenkinsResultsParserUtil.copy(
+					sourceDockerLogFile,
+					new File(
+						destinationDockerLogsDir,
+						sourceDockerLogFile.getName() + ".txt"));
+			}
+			catch (IOException ioException) {
+				throw new RuntimeException(ioException);
+			}
 		}
 	}
 
@@ -673,6 +700,33 @@ public class TestrayAttachmentRecorder {
 					liferayOSGiLogFile, liferayOSGiLogFileContent);
 			}
 			catch (IOException ioException) {
+			}
+		}
+	}
+
+	private void _recordPlaywrightReportFile() {
+		PortalGitWorkingDirectory portalGitWorkingDirectory =
+			_getPortalGitWorkingDirectory();
+
+		if (portalGitWorkingDirectory != null) {
+			File playwrightReportFile = new File(
+				portalGitWorkingDirectory.getWorkingDirectory(),
+				"modules/test/playwright/playwright-report/index.html");
+
+			if (playwrightReportFile.exists()) {
+				File sourceReportDir = playwrightReportFile.getParentFile();
+
+				File recordedFilesBuildDir = _getRecordedFilesBuildDir();
+
+				try {
+					JenkinsResultsParserUtil.copy(
+						sourceReportDir,
+						new File(
+							recordedFilesBuildDir, sourceReportDir.getName()));
+				}
+				catch (IOException ioException) {
+					throw new RuntimeException(ioException);
+				}
 			}
 		}
 	}

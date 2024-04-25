@@ -11,7 +11,7 @@
 long classPK = ParamUtil.getLong(request, "classPK");
 String displayStyle = ParamUtil.getString(request, "displayStyle", "list");
 
-SearchContainer<DDMStructure> structureSearch = ddmDisplayContext.getStructureSearch();
+SearchContainer<DDMStructure> structureSearchContainer = ddmDisplayContext.getDDMStructureSearchContainer();
 %>
 
 <liferay-util:include page="/structure_navigation_bar.jsp" servletContext="<%= application %>" />
@@ -20,8 +20,8 @@ SearchContainer<DDMStructure> structureSearch = ddmDisplayContext.getStructureSe
 	clearResultsURL="<%= ddmDisplayContext.getClearResultsURL() %>"
 	creationMenu="<%= ddmDisplayContext.getSelectStructureCreationMenu() %>"
 	disabled="<%= ddmDisplayContext.isDisabledManagementBar(DDMWebKeys.DYNAMIC_DATA_MAPPING_STRUCTURE) %>"
-	filterDropdownItems="<%= ddmDisplayContext.getFilterItemsDropdownItems() %>"
 	itemsTotal="<%= ddmDisplayContext.getTotalItems(DDMWebKeys.DYNAMIC_DATA_MAPPING_STRUCTURE) %>"
+	orderDropdownItems="<%= ddmDisplayContext.getOrderItemsDropdownItems() %>"
 	searchActionURL="<%= ddmDisplayContext.getSelectStructureSearchActionURL() %>"
 	searchContainerId="<%= ddmDisplayContext.getStructureSearchContainerId() %>"
 	searchFormName="searchForm"
@@ -32,7 +32,7 @@ SearchContainer<DDMStructure> structureSearch = ddmDisplayContext.getStructureSe
 
 <aui:form action="<%= ddmDisplayContext.getSelectStructureSearchActionURL() %>" cssClass="container-fluid container-fluid-max-xl" method="post" name="selectStructureFm">
 	<liferay-ui:search-container
-		searchContainer="<%= structureSearch %>"
+		searchContainer="<%= structureSearchContainer %>"
 	>
 		<liferay-ui:search-container-row
 			className="com.liferay.dynamic.data.mapping.model.DDMStructure"
@@ -65,11 +65,11 @@ SearchContainer<DDMStructure> structureSearch = ddmDisplayContext.getStructureSe
 						%>
 
 						<aui:a cssClass="selector-button" data="<%= data %>" href="javascript:void(0);">
-							<%= HtmlUtil.escape(structure.getUnambiguousName(structureSearch.getResults(), themeDisplay.getScopeGroupId(), locale)) %>
+							<%= HtmlUtil.escape(structure.getUnambiguousName(structureSearchContainer.getResults(), themeDisplay.getScopeGroupId(), locale)) %>
 						</aui:a>
 					</c:when>
 					<c:otherwise>
-						<%= HtmlUtil.escape(structure.getUnambiguousName(structureSearch.getResults(), themeDisplay.getScopeGroupId(), locale)) %>
+						<%= HtmlUtil.escape(structure.getUnambiguousName(structureSearchContainer.getResults(), themeDisplay.getScopeGroupId(), locale)) %>
 					</c:otherwise>
 				</c:choose>
 			</liferay-ui:search-container-column-text>

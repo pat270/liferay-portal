@@ -1,28 +1,19 @@
-apply plugin: "org.ysb33r.gradletest"
+sourceCompatibility = "1.8"
+targetCompatibility = "1.8"
 
-task copyGradleTestDependencies(type: Copy)
+String gradleVersion = "8.5"
 
-String gradleVersion = "6.9.2"
+if (Boolean.getBoolean("gradle.test.enabled")) {
+	apply from: "test.gradle"
+}
 
 tasks.eclipse {
 	ext.gradleVersion = gradleVersion
 }
 
-copyGradleTestDependencies {
-	from configurations.compile
-	into jar.destinationDir
-}
-
 dependencies {
-	compile group: "com.liferay", name: "com.liferay.gradle.util", version: "1.0.47"
+	api group: "com.liferay", name: "com.liferay.gradle.util", version: "1.0.49"
 
 	compileOnly fileTree(builtBy: [rootProject.tasks.getByName("extractGradleApi" + gradleVersion.replace(".", ""))], dir: new File(rootProject.buildDir, "gradle-${gradleVersion}"))
 	compileOnly group: "com.liferay", name: "com.liferay.portal.tools.upgrade.table.builder", version: "1.0.11"
-}
-
-gradleTest {
-	dependsOn copyGradleTestDependencies
-	dependsOn jar
-
-	versions "5.6.4", gradleVersion
 }

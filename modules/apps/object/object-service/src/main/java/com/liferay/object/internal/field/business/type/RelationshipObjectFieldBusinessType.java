@@ -10,7 +10,6 @@ import com.liferay.object.constants.ObjectFieldSettingConstants;
 import com.liferay.object.constants.ObjectRelationshipConstants;
 import com.liferay.object.dynamic.data.mapping.form.field.type.constants.ObjectDDMFormFieldTypeConstants;
 import com.liferay.object.field.business.type.ObjectFieldBusinessType;
-import com.liferay.object.field.render.ObjectFieldRenderingContext;
 import com.liferay.object.field.setting.util.ObjectFieldSettingUtil;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectEntry;
@@ -25,7 +24,6 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.vulcan.extension.PropertyDefinition;
@@ -69,28 +67,6 @@ public class RelationshipObjectFieldBusinessType
 	}
 
 	@Override
-	public Map<String, Object> getProperties(
-			ObjectField objectField,
-			ObjectFieldRenderingContext objectFieldRenderingContext)
-		throws PortalException {
-
-		return HashMapBuilder.<String, Object>put(
-			"accountEntryRestrictedObjectField",
-			() -> {
-				ObjectDefinition objectDefinition =
-					_objectDefinitionLocalService.getObjectDefinition(
-						objectField.getObjectDefinitionId());
-
-				return objectDefinition.isAccountEntryRestricted() &&
-					   Objects.equals(
-						   objectDefinition.
-							   getAccountEntryRestrictedObjectFieldId(),
-						   objectField.getObjectFieldId());
-			}
-		).build();
-	}
-
-	@Override
 	public PropertyDefinition.PropertyType getPropertyType() {
 		return PropertyDefinition.PropertyType.LONG;
 	}
@@ -115,7 +91,43 @@ public class RelationshipObjectFieldBusinessType
 				ObjectRelationshipConstants.TYPE_ONE_TO_MANY) ||
 			values.containsKey(objectField.getName())) {
 
-			return values.get(objectField.getName());
+			Object value = values.get(objectField.getName());
+
+			Long valueLong = GetterUtil.getLong(value);
+
+			if (Validator.isNull(valueLong)) {
+				return value;
+			}
+
+			ObjectRelationship objectRelationship =
+				_objectRelationshipLocalService.
+					fetchObjectRelationshipByObjectFieldId2(
+						objectField.getObjectFieldId());
+
+			ObjectDefinition objectDefinition =
+				_objectDefinitionLocalService.getObjectDefinition(
+					objectRelationship.getObjectDefinitionId1());
+
+			if (objectDefinition.isUnmodifiableSystemObject()) {
+				SystemObjectDefinitionManager systemObjectDefinitionManager =
+					_systemObjectDefinitionManagerRegistry.
+						getSystemObjectDefinitionManager(
+							objectDefinition.getName());
+
+				BaseModel<?> baseModel =
+					systemObjectDefinitionManager.
+						getBaseModelByExternalReferenceCode(
+							systemObjectDefinitionManager.
+								getBaseModelExternalReferenceCode(valueLong),
+							objectDefinition.getCompanyId());
+
+				return baseModel.getPrimaryKeyObj();
+			}
+
+			ObjectEntry objectEntry = _objectEntryLocalService.getObjectEntry(
+				valueLong);
+
+			return objectEntry.getObjectEntryId();
 		}
 
 		String objectRelationshipERCObjectFieldName =

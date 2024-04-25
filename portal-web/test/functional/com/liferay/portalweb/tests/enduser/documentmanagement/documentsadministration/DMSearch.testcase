@@ -1,7 +1,7 @@
 @component-name = "portal-document-management"
 definition {
 
-	property custom.properties = "default.layout.template.id=1_column${line.separator}dl.actions.visible=true${line.separator}feature.flag.LPS-84424=true";
+	property custom.properties = "default.layout.template.id=1_column${line.separator}dl.actions.visible=true";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Document Management";
@@ -59,7 +59,7 @@ definition {
 
 		Search.searchCP(searchTerm = "Document");
 
-		ManagementBar.setFilterAndOrder(menuItem = "Mine");
+		ManagementBar.setFilterAndOrder(filterBy = "Mine");
 
 		LexiconEntry.changeDisplayStyle(displayStyle = "cards");
 
@@ -92,9 +92,9 @@ definition {
 
 		Search.searchCP(searchTerm = "Document");
 
-		ManagementBar.setFilterAndOrder(menuItem = "Mine");
+		ManagementBar.setFilterAndOrder(filterBy = "Mine");
 
-		ManagementBar.setFilterAndOrder(filterBy = "Tags...");
+		ManagementBar.setFilterAndOrder(filterBy = "Tags");
 
 		DMDocument.selectTags(tagNameList = "tag1");
 
@@ -117,13 +117,13 @@ definition {
 			authorName = "Test Test",
 			contextualBreadcrumb = "Home",
 			dmDocumentTitle = "DM Document 1",
-			workflowStatus = "approved");
+			workflowStatus = "Approved");
 
 		DMDocument.viewDocumentDetailsInListView(
 			authorName = "Test Test",
 			contextualBreadcrumb = "Home",
 			dmDocumentTitle = "DM Document 2",
-			workflowStatus = "approved");
+			workflowStatus = "Approved");
 	}
 
 	@priority = 5
@@ -160,11 +160,11 @@ definition {
 
 		Search.searchCP(searchTerm = "Document");
 
-		ManagementBar.setFilterAndOrder(menuItem = "Categories...");
+		ManagementBar.setFilterAndOrder(filterBy = "Categories");
 
 		DMDocument.selectFilterItems(categories = "Filtering");
 
-		ManagementBar.setFilterAndOrder(menuItem = "Extension...");
+		ManagementBar.setFilterAndOrder(filterBy = "Extension");
 
 		DMDocument.selectFilterItems(categories = "Text (1 Item)");
 
@@ -198,7 +198,7 @@ definition {
 
 		Search.searchCP(searchTerm = "DM Folder");
 
-		ManagementBar.setFilterAndOrder(menuItem = "Mine");
+		ManagementBar.setFilterAndOrder(filterBy = "Mine");
 
 		ManagementBar.setFilterAndOrder(orderBy = "Name");
 
@@ -230,9 +230,9 @@ definition {
 
 		Search.searchCP(searchTerm = "Test");
 
-		ManagementBar.setFilterAndOrder(menuItem = "Recent");
+		ManagementBar.setFilterAndOrder(filterBy = "Recent");
 
-		ManagementBar.setFilterAndOrder(filterBy = "Type...");
+		ManagementBar.setFilterAndOrder(filterBy = "Type");
 
 		IFrame.selectDocumentType(dmDocumentType = "External Video Shortcut");
 
@@ -244,7 +244,7 @@ definition {
 			authorName = "Test Test",
 			contextualBreadcrumb = "Home",
 			dmDocumentTitle = "Test External Video",
-			workflowStatus = "approved");
+			workflowStatus = "Approved");
 
 		AssertElementNotPresent(
 			key_dmDocumentTitle = "Test Document",
@@ -256,13 +256,13 @@ definition {
 			authorName = "Test Test",
 			contextualBreadcrumb = "Home",
 			dmDocumentTitle = "Test External Video",
-			workflowStatus = "approved");
+			workflowStatus = "Approved");
 
 		DMDocument.viewDocumentDetailsInListView(
 			authorName = "Test Test",
 			contextualBreadcrumb = "Home",
 			dmDocumentTitle = "Test Document",
-			workflowStatus = "approved");
+			workflowStatus = "Approved");
 	}
 
 	@description = "This is a test for LPS-98063. It checks that a user can search for document by synonyms."
@@ -282,9 +282,9 @@ definition {
 
 		Navigator.openURL();
 
-		SearchPortlets.searchEmbedded(searchTerm = "fruit");
+		SearchPage.searchEmbedded(searchTerm = "fruit");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "apple",
 			searchAssetType = "Document");
 	}
@@ -311,9 +311,9 @@ definition {
 
 		DMNavigator.gotoFolder(dmFolderName = "DM Folder Name");
 
-		SearchPortlets.searchEmbedded(searchTerm = "DM Document Title");
+		SearchPage.searchEmbedded(searchTerm = "DM Document Title");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "DM Document Title",
 			searchAssetType = "Document");
 	}
@@ -332,9 +332,9 @@ definition {
 
 		Navigator.gotoPage(pageName = "Documents and Media Page");
 
-		SearchPortlets.searchEmbedded(searchTerm = "This is a *.doc file.");
+		SearchPage.searchEmbedded(searchTerm = "This is a *.doc file.");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetSummary = "This is a *.doc file.",
 			searchAssetTitle = "DM Document Title",
 			searchAssetType = "Document");
@@ -378,9 +378,9 @@ definition {
 
 		Navigator.gotoPage(pageName = "Documents and Media Page");
 
-		SearchPortlets.searchEmbedded(searchTerm = "DM Document Title");
+		SearchPage.searchEmbedded(searchTerm = "DM Document Title");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "DM Document Title",
 			searchAssetType = "Document");
 	}
@@ -410,7 +410,7 @@ definition {
 
 		Search.searchCP(searchTerm = "DM Asset");
 
-		ManagementBar.setFilterAndOrder(menuItem = "Mine");
+		ManagementBar.setFilterAndOrder(filterBy = "Mine");
 
 		DMDocument.viewFilterSummaryResults(
 			filterScope = "Owner: Test Test",
@@ -420,7 +420,7 @@ definition {
 			authorName = "Test Test",
 			contextualBreadcrumb = "Home > Folder 1",
 			dmDocumentTitle = "DM Asset",
-			workflowStatus = "approved");
+			workflowStatus = "Approved");
 
 		DMFolder.viewDetailsInListView(
 			authorName = "Test Test",

@@ -8,10 +8,10 @@ package com.liferay.calendar.web.internal.portlet;
 import com.liferay.asset.kernel.exception.AssetCategoryException;
 import com.liferay.asset.kernel.exception.AssetTagException;
 import com.liferay.asset.kernel.model.AssetEntry;
-import com.liferay.asset.kernel.model.AssetLink;
 import com.liferay.asset.kernel.model.AssetVocabulary;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
-import com.liferay.asset.kernel.service.AssetLinkLocalService;
+import com.liferay.asset.link.model.AssetLink;
+import com.liferay.asset.link.service.AssetLinkLocalService;
 import com.liferay.calendar.constants.CalendarBookingConstants;
 import com.liferay.calendar.constants.CalendarNotificationTemplateConstants;
 import com.liferay.calendar.constants.CalendarPortletKeys;
@@ -112,7 +112,7 @@ import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.util.comparator.UserFirstNameComparator;
-import com.liferay.portal.kernel.uuid.PortalUUID;
+import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.rss.util.RSSUtil;
 
@@ -482,8 +482,8 @@ public class CalendarPortlet extends MVCPortlet {
 			_calendarResourceService.addCalendarResource(
 				serviceContext.getScopeGroupId(),
 				_portal.getClassNameId(CalendarResource.class), 0,
-				_portalUUID.generate(), code, nameMap, descriptionMap, active,
-				serviceContext);
+				PortalUUIDUtil.generate(), code, nameMap, descriptionMap,
+				active, serviceContext);
 		}
 		else {
 			_calendarResourceService.updateCalendarResource(
@@ -1196,14 +1196,14 @@ public class CalendarPortlet extends MVCPortlet {
 	}
 
 	private TimeZone _getTimeZone(PortletRequest portletRequest) {
-		PortletPreferences preferences = portletRequest.getPreferences();
+		PortletPreferences portletPreferences = portletRequest.getPreferences();
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
 		User user = themeDisplay.getUser();
 
-		String timeZoneId = preferences.getValue(
+		String timeZoneId = portletPreferences.getValue(
 			"timeZoneId", user.getTimeZoneId());
 
 		if (Validator.isNull(timeZoneId)) {
@@ -1860,9 +1860,6 @@ public class CalendarPortlet extends MVCPortlet {
 
 	@Reference
 	private Portal _portal;
-
-	@Reference
-	private PortalUUID _portalUUID;
 
 	@Reference(
 		target = "(&(release.bundle.symbolic.name=com.liferay.calendar.web)(&(release.schema.version>=1.1.0)(!(release.schema.version>=2.0.0))))"

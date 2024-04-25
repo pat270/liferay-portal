@@ -5,11 +5,10 @@
 
 package com.liferay.search.experiences.internal.blueprint.parameter.contributor;
 
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.json.JSONUtil;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
-import com.liferay.portal.kernel.webcache.WebCachePool;
 import com.liferay.portal.kernel.webcache.WebCachePoolUtil;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 import com.liferay.search.experiences.blueprint.parameter.SXPParameter;
@@ -27,6 +26,7 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 /**
@@ -66,7 +66,7 @@ public class IpstackSXPParameterContributorTest {
 		_setUpSearchContext("");
 
 		_ipstackSXPParameterContributor.contribute(
-			Mockito.mock(ExceptionListener.class), _searchContext, null,
+			Mockito.mock(ExceptionListener.class), _searchContext,
 			_sxpParameters);
 
 		Mockito.verify(
@@ -88,8 +88,7 @@ public class IpstackSXPParameterContributorTest {
 		RuntimeException runtimeException = new RuntimeException();
 
 		_ipstackSXPParameterContributor.contribute(
-			runtimeException::addSuppressed, _searchContext, null,
-			_sxpParameters);
+			runtimeException::addSuppressed, _searchContext, _sxpParameters);
 
 		Throwable[] throwables = runtimeException.getSuppressed();
 
@@ -114,7 +113,7 @@ public class IpstackSXPParameterContributorTest {
 		_setUpIPStackConfiguration(false);
 
 		_ipstackSXPParameterContributor.contribute(
-			Mockito.mock(ExceptionListener.class), _searchContext, null,
+			Mockito.mock(ExceptionListener.class), _searchContext,
 			_sxpParameters);
 
 		Mockito.verify(
@@ -129,14 +128,11 @@ public class IpstackSXPParameterContributorTest {
 		_setUpIPStackConfiguration(true);
 		_setUpSearchContext("www.liferay.com");
 
-		WebCachePool webCachePool = Mockito.mock(WebCachePool.class);
+		MockedStatic<WebCachePoolUtil> mockedStatic = Mockito.mockStatic(
+			WebCachePoolUtil.class);
 
-		WebCachePoolUtil webCachePoolUtil = new WebCachePoolUtil();
-
-		webCachePoolUtil.setWebCachePool(webCachePool);
-
-		Mockito.when(
-			webCachePool.get(Mockito.anyString(), Mockito.any())
+		mockedStatic.when(
+			() -> WebCachePoolUtil.get(Mockito.anyString(), Mockito.any())
 		).thenReturn(
 			JSONUtil.put("city", "Diamond Bar")
 		);
@@ -144,11 +140,13 @@ public class IpstackSXPParameterContributorTest {
 		Set<SXPParameter> sxpParameters = new HashSet<>();
 
 		_ipstackSXPParameterContributor.contribute(
-			Mockito.mock(ExceptionListener.class), _searchContext, null,
+			Mockito.mock(ExceptionListener.class), _searchContext,
 			sxpParameters);
 
 		Assert.assertEquals(
 			Arrays.toString(sxpParameters.toArray()), 10, sxpParameters.size());
+
+		mockedStatic.close();
 	}
 
 	private void _setUpIPStackConfiguration(boolean enabled) {

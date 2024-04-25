@@ -166,7 +166,7 @@ definition {
 
 		KaleoFormsNewSubmissions.viewOrderTable(fieldNameList = "Process B,Process A");
 
-		ManagementBar.setFilterAndOrder(filterBy = "Create Date");
+		ManagementBar.setFilterAndOrder(orderBy = "Create Date");
 
 		KaleoFormsNewSubmissions.viewOrderTable(fieldNameList = "Process A,Process B");
 	}
@@ -190,7 +190,7 @@ definition {
 
 		KaleoFormsAdmin.saveProcessRecord();
 
-		ManagementBar.setFilterAndOrder(filterBy = "Modified Date");
+		ManagementBar.setFilterAndOrder(orderBy = "Modified Date");
 
 		KaleoFormsNewSubmissions.viewOrderTable(fieldNameList = "Process A,Process B");
 
@@ -274,6 +274,8 @@ definition {
 	@description = "Verify that the user can reverse the order of submissions."
 	@priority = 3
 	test CanOrderSubmissions {
+		property portal.upstream = "quarantine";
+
 		KaleoFormsAdmin.submitNewProcess(kfProcessName = "Kaleo Forms Process");
 
 		KaleoFormsNewSubmissions.addNewContacts(ddlCompany = "Process A");
@@ -290,7 +292,7 @@ definition {
 
 		KaleoFormsAdmin.saveProcessRecord();
 
-		ManagementBar.setFilterAndOrder(filterBy = "Create Date");
+		ManagementBar.setFilterAndOrder(orderBy = "Create Date");
 
 		KaleoFormsNewSubmissions.viewOrderTable(fieldNameList = "Process A,Process B");
 

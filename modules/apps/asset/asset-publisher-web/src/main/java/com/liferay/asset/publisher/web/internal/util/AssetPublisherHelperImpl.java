@@ -26,6 +26,7 @@ import com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSele
 import com.liferay.asset.publisher.web.internal.configuration.AssetPublisherWebConfiguration;
 import com.liferay.asset.publisher.web.internal.constants.AssetPublisherSelectionStyleConstants;
 import com.liferay.asset.util.AssetHelper;
+import com.liferay.info.pagination.InfoPage;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -66,7 +67,6 @@ import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import com.liferay.segments.SegmentsEntryRetriever;
 import com.liferay.segments.constants.SegmentsWebKeys;
 import com.liferay.segments.context.RequestContextMapper;
-import com.liferay.sites.kernel.util.Sites;
 
 import java.io.Serializable;
 
@@ -337,9 +337,13 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 				portletRequest.getAttribute(
 					SegmentsWebKeys.SEGMENTS_ANONYMOUS_USER_ID));
 
-			return _assetListAssetEntryProvider.getAssetEntries(
-				assetListEntry, segmentsEntryIds, null, null, StringPool.BLANK,
-				acClientUserId, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+			InfoPage<AssetEntry> infoPage =
+				_assetListAssetEntryProvider.getAssetEntriesInfoPage(
+					assetListEntry, segmentsEntryIds, null, null,
+					StringPool.BLANK, acClientUserId, QueryUtil.ALL_POS,
+					QueryUtil.ALL_POS);
+
+			return (List<AssetEntry>)infoPage.getPageItems();
 		}
 
 		List<AssetEntry> assetEntries = getAssetEntries(
@@ -797,7 +801,7 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 
 			Group parentGroup = _groupLocalService.getGroup(parentGroupId);
 
-			if (!_sites.isContentSharingWithChildrenEnabled(parentGroup)) {
+			if (!parentGroup.isContentSharingWithChildrenEnabled()) {
 				throw new PrincipalException();
 			}
 
@@ -889,7 +893,7 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 			Group scopeGroup = _groupLocalService.fetchGroup(scopeGroupId);
 
 			if (scopeGroup.hasAncestor(group.getGroupId()) &&
-				_sites.isContentSharingWithChildrenEnabled(group)) {
+				group.isContentSharingWithChildrenEnabled()) {
 
 				key = SCOPE_ID_PARENT_GROUP_PREFIX + group.getGroupId();
 			}
@@ -1170,7 +1174,8 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 		return _segmentsEntryRetriever.getSegmentsEntryIds(
 			themeDisplay.getScopeGroupId(), themeDisplay.getUserId(),
 			_requestContextMapper.map(
-				_portal.getHttpServletRequest(portletRequest)));
+				_portal.getHttpServletRequest(portletRequest)),
+			new long[0]);
 	}
 
 	private long[] _getSiteGroupIds(long[] groupIds) {
@@ -1216,8 +1221,7 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 		}
 
 		for (int i = 0; i < assetTagNames.length; i++) {
-			assetTagNames[i] = StringUtil.toLowerCase(
-				StringUtil.trim(assetTagNames[i]));
+			assetTagNames[i] = StringUtil.trim(assetTagNames[i]);
 		}
 
 		return assetTagNames;
@@ -1450,8 +1454,5 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 
 	@Reference
 	private SegmentsEntryRetriever _segmentsEntryRetriever;
-
-	@Reference
-	private Sites _sites;
 
 }

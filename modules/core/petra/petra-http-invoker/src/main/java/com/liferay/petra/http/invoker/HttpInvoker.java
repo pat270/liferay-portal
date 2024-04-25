@@ -15,21 +15,17 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 
 /**
  * @author Brian Wing Shun Chan
@@ -38,8 +34,6 @@ import java.util.logging.Logger;
 public class HttpInvoker {
 
 	public static HttpInvoker newHttpInvoker() {
-		_updateHttpURLConnectionClass();
-
 		return new HttpInvoker();
 	}
 
@@ -205,35 +199,6 @@ public class HttpInvoker {
 
 	}
 
-	private static void _updateHttpURLConnectionClass() {
-		try {
-			Field methodsField = HttpURLConnection.class.getDeclaredField(
-				"methods");
-
-			methodsField.setAccessible(true);
-
-			Field modifiersField = Field.class.getDeclaredField("modifiers");
-
-			modifiersField.setAccessible(true);
-			modifiersField.setInt(
-				methodsField, methodsField.getModifiers() & ~Modifier.FINAL);
-
-			Set<String> methodsFieldValue = new LinkedHashSet<>(
-				Arrays.asList((String[])methodsField.get(null)));
-
-			if (methodsFieldValue.contains("PATCH")) {
-				return;
-			}
-
-			methodsFieldValue.add("PATCH");
-
-			methodsField.set(null, methodsFieldValue.toArray(new String[0]));
-		}
-		catch (IllegalAccessException | NoSuchFieldException exception) {
-			_logger.warning("Unable to update HttpURLConnection class");
-		}
-	}
-
 	private HttpInvoker() {
 	}
 
@@ -342,7 +307,12 @@ public class HttpInvoker {
 		HttpURLConnection httpURLConnection =
 			(HttpURLConnection)url.openConnection();
 
-		httpURLConnection.setRequestMethod(_httpMethod.name());
+		try {
+			_methodField.set(httpURLConnection, _httpMethod.name());
+		}
+		catch (ReflectiveOperationException reflectiveOperationException) {
+			throw new IOException(reflectiveOperationException);
+		}
 
 		if (_encodedUserNameAndPassword != null) {
 			httpURLConnection.setRequestProperty(
@@ -438,8 +408,18 @@ public class HttpInvoker {
 		}
 	}
 
-	private static final Logger _logger = Logger.getLogger(
-		HttpInvoker.class.getName());
+	private static final Field _methodField;
+
+	static {
+		try {
+			_methodField = HttpURLConnection.class.getDeclaredField("method");
+
+			_methodField.setAccessible(true);
+		}
+		catch (Exception exception) {
+			throw new ExceptionInInitializerError(exception);
+		}
+	}
 
 	private String _body;
 	private String _contentType;

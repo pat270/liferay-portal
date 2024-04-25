@@ -1,0 +1,71 @@
+<html>
+<head>
+<title>ObjectModelBuilder</title>
+</head>
+
+<body>
+<table border="1" cellpadding="1" cellspacing="1">
+<thead>
+<tr><td rowspan="1" colspan="3">ObjectModelBuilder</td></tr>
+</thead>
+
+<tbody>
+	<tr>
+		<td>CONFIRM_PUBLISHING_OBJECT_DEFINITION_INPUT</td>
+		<td>//*[contains(@class,'list-group-item') and contains(.,'${objectDefinition}')] //input</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>OBJECT_CARD_LABEL</td>
+		<td>//*[contains(@class,'objectDefinitionNode')][contains(.,'${objectDefinition}')] //*[contains(@class,'label-item')][normalize-space(text())='${labelText}']</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>OBJECT_DEFINITION_NODE</td>
+		<td>//div[contains(@class, 'model-builder-node')]//span[text()='${objectLabel}']</td>
+		<td></td>
+	</tr>
+	 <tr>
+		<td>OBJECT_FIELD_NODE</td>
+		<td>//div[contains(@class, 'node-field-label')]//span[text()='${fieldLabel}']</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>OBJECT_REJECTED_ERROR_MESSAGE</td>
+		<td>//*[text()='${objectDefinition}']/../following-sibling::span[contains(@class, 'rejected')]</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>MODEL_BUILDER_CHANGES_SAVED</td>
+		<td>//span[text()='Changes Saved']</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>SELECT_OBJECT_IN_LEFT_SIDEBAR</td>
+		<td>//div[@id = '${key_folderLabel}']//span[contains(@class,'c-inner') and contains(.,'${key_objectLabel}')]</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>SIDEBAR_FOLDER_BY_INDEX</td>
+		<td>xpath=(//div[contains(@class,'object-folder-content-title')])[${key_index}]</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>LINKED_OBJECT_IN_OTHER_FOLDERS</td>
+		<td>//div[@id='${key_folderLabel}']//*[contains(@class, 'icon-link')]/../../following-sibling::div//span[text()='${key_objectLabel}']</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>OBJECT_IN_LEFT_SIDEBAR_KEBAB_MENU</td>
+		<td>//span[normalize-space()='${key_objectLabel}']//following-sibling::div//button[contains(@class,'dropdown-toggle')]</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>OBJECT_DEFINITONS_KEBAB</td>
+		<td>//div[contains(@class,"view-object-definitions-actions")]</td>
+		<td></td>
+	</tr>
+</tbody>
+</table>
+</body>
+</html>

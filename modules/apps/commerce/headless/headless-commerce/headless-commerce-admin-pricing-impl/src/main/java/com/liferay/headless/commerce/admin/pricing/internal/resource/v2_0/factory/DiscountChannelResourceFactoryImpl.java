@@ -72,7 +72,12 @@ public class DiscountChannelResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _discountChannelResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, DiscountChannelResource>
+					discountChannelResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_discountChannelResourceProxyProviderFunction;
+
+				return discountChannelResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -231,10 +236,6 @@ public class DiscountChannelResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, DiscountChannelResource>
-		_discountChannelResourceProxyProviderFunction =
-			_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -270,6 +271,15 @@ public class DiscountChannelResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function
+			<InvocationHandler, DiscountChannelResource>
+				_discountChannelResourceProxyProviderFunction =
+					_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

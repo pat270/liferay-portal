@@ -5,21 +5,24 @@
 
 /// <reference types="react" />
 
-import {CustomItem, SidebarCategory} from '@liferay/object-js-components-web';
+import {SidebarCategory} from '@liferay/object-js-components-web';
 interface EditObjectActionProps {
+	allowScriptContentToBeExecutedOrIncluded: boolean;
 	isApproved: boolean;
 	objectAction: ObjectAction;
 	objectActionCodeEditorElements: SidebarCategory[];
-	objectActionExecutors: CustomItem[];
-	objectActionTriggers: CustomItem[];
+	objectActionExecutors: ObjectActionTriggerExecutorItem[];
+	objectActionTriggers: ObjectActionTriggerExecutorItem[];
 	objectDefinitionExternalReferenceCode: string;
 	objectDefinitionId: number;
 	objectDefinitionsRelationshipsURL: string;
 	readOnly?: boolean;
+	scriptManagementConfigurationPortletURL: string;
 	systemObject: boolean;
 	validateExpressionURL: string;
 }
 export default function EditObjectAction({
+	allowScriptContentToBeExecutedOrIncluded,
 	isApproved,
 	objectAction: {id, ...values},
 	objectActionCodeEditorElements,
@@ -29,6 +32,7 @@ export default function EditObjectAction({
 	objectDefinitionId,
 	objectDefinitionsRelationshipsURL,
 	readOnly,
+	scriptManagementConfigurationPortletURL,
 	systemObject,
 	validateExpressionURL,
 }: EditObjectActionProps): JSX.Element;

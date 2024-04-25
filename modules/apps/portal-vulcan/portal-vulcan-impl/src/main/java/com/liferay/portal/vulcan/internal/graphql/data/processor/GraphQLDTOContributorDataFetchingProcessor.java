@@ -6,7 +6,6 @@
 package com.liferay.portal.vulcan.internal.graphql.data.processor;
 
 import com.liferay.portal.kernel.language.Language;
-import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.util.HashMapBuilder;
@@ -25,9 +24,9 @@ import com.liferay.portal.vulcan.graphql.dto.GraphQLDTOProperty;
 import com.liferay.portal.vulcan.internal.accept.language.AcceptLanguageImpl;
 import com.liferay.portal.vulcan.internal.jaxrs.context.provider.AggregationContextProvider;
 import com.liferay.portal.vulcan.internal.jaxrs.context.provider.FilterContextProvider;
-import com.liferay.portal.vulcan.internal.jaxrs.context.provider.SortContextProvider;
 import com.liferay.portal.vulcan.pagination.Page;
-import com.liferay.portal.vulcan.pagination.Pagination;
+import com.liferay.portal.vulcan.pagination.provider.PaginationProvider;
+import com.liferay.portal.vulcan.util.SortUtil;
 
 import java.io.Serializable;
 
@@ -36,14 +35,26 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-
 /**
  * @author Carlos Correa
  */
-@Component(service = GraphQLDTOContributorDataFetchingProcessor.class)
 public class GraphQLDTOContributorDataFetchingProcessor {
+
+	public GraphQLDTOContributorDataFetchingProcessor(
+		DTOConverterRegistry dtoConverterRegistry,
+		ExpressionConvert<Filter> expressionConvert,
+		FilterParserProvider filterParserProvider, Language language,
+		PaginationProvider paginationProvider, Portal portal,
+		SortParserProvider sortParserProvider) {
+
+		_dtoConverterRegistry = dtoConverterRegistry;
+		_expressionConvert = expressionConvert;
+		_filterParserProvider = filterParserProvider;
+		_language = language;
+		_paginationProvider = paginationProvider;
+		_portal = portal;
+		_sortParserProvider = sortParserProvider;
+	}
 
 	public Object create(
 			Object dto, GraphQLDTOContributor graphQLDTOContributor,
@@ -117,9 +128,13 @@ public class GraphQLDTOContributorDataFetchingProcessor {
 			_getFilter(
 				acceptLanguage, graphQLDTOContributor.getEntityModel(),
 				filterString),
-			Pagination.of(page, pageSize), search,
-			_getSorts(
+			_paginationProvider.getPagination(
+				_portal.getCompanyId(httpServletRequest), page, pageSize),
+			search,
+			SortUtil.getSorts(
 				acceptLanguage, graphQLDTOContributor.getEntityModel(),
+				_sortParserProvider.provide(
+					graphQLDTOContributor.getEntityModel()),
 				sortsString));
 	}
 
@@ -182,35 +197,12 @@ public class GraphQLDTOContributorDataFetchingProcessor {
 			acceptLanguage, entityModel, filterString);
 	}
 
-	private Sort[] _getSorts(
-		AcceptLanguage acceptLanguage, EntityModel entityModel,
-		String sortsString) {
-
-		SortContextProvider sortContextProvider = new SortContextProvider(
-			_language, _portal, _sortParserProvider);
-
-		return sortContextProvider.createContext(
-			acceptLanguage, entityModel, sortsString);
-	}
-
-	@Reference
-	private DTOConverterRegistry _dtoConverterRegistry;
-
-	@Reference(
-		target = "(result.class.name=com.liferay.portal.kernel.search.filter.Filter)"
-	)
-	private ExpressionConvert<Filter> _expressionConvert;
-
-	@Reference
-	private FilterParserProvider _filterParserProvider;
-
-	@Reference
-	private Language _language;
-
-	@Reference
-	private Portal _portal;
-
-	@Reference
-	private SortParserProvider _sortParserProvider;
+	private final DTOConverterRegistry _dtoConverterRegistry;
+	private final ExpressionConvert<Filter> _expressionConvert;
+	private final FilterParserProvider _filterParserProvider;
+	private final Language _language;
+	private final PaginationProvider _paginationProvider;
+	private final Portal _portal;
+	private final SortParserProvider _sortParserProvider;
 
 }

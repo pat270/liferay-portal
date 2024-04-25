@@ -57,7 +57,7 @@
 </tr>
 <tr>
 	<td>GRID_OPTION</td>
-	<td>//legend[normalize-space(text())='${key_fieldFieldLabel}']//following-sibling::div//tbody/tr[${key_row}]/td[${key_column}]//input</td>
+	<td>//label[normalize-space(text())='${key_fieldFieldLabel}']//following-sibling::div//tbody/tr[${key_row}]/td[${key_column}]//input</td>
 	<td></td>
 </tr>
 <tr>
@@ -85,7 +85,7 @@
 </tr>
 <tr>
 	<td>FEATURED_IMAGE_URL_INPUT</td>
-	<td>//div[contains(@class,'input-String-wrapper')]/input[contains(@id,'URL')]</td>
+	<td>//input[contains(@id,'smallImageURL')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -110,22 +110,22 @@
 </tr>
 <tr>
 	<td>SELECT_FEATURED_IMAGE_TYPE</td>
-	<td>//div[contains(@class,'input-select-wrapper')]/select[contains(@id,'smallImageSource')]</td>
+	<td>//select[contains(@id,'smallImageSource')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SELECT_FEATURED_IMAGE_INPUT</td>
-	<td>//div[contains(@id,'smallFileContainer')]//input[contains(@id,'smallFile')]</td>
+	<td>//div[contains(@id,'featuredImageContent')]//input[contains(@id,'smallFile')] | //input[contains(@id,'smallImageId')][contains(@type,'text')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SELECT_FIELD_TRIGGER</td>
-	<td>//label[normalize-space(text())='${key_fieldFieldLabel}']//..//div[contains(@class,'select-field')]//div[contains(@class,'select-field-trigger')]</td>
+	<td>//label[normalize-space(text())='${key_fieldFieldLabel}']//following-sibling::div/button[contains(@class, 'select')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SELECT_FIELD_TRIGGER_2</td>
-	<td>xpath=(//label[normalize-space(text())='${key_fieldFieldLabel}']//..//div[contains(@class,'select-field')]//div[contains(@class,'select-field-trigger')])[2]</td>
+	<td>xpath=(//div[contains(@class,'ddm-field')][.//label[normalize-space(text())='${key_fieldFieldLabel}']]//button[@role='combobox'])[2]</td>
 	<td></td>
 </tr>
 <tr>
@@ -140,7 +140,7 @@
 </tr>
 <tr>
 	<td>SELECTION_OPTION</td>
-	<td>//legend[normalize-space(text())='${key_fieldFieldLabel}']//following-sibling::div//input//following-sibling::span[normalize-space()='${key_optionValue}']//preceding-sibling::input</td>
+	<td>//label[normalize-space(text())='${key_fieldFieldLabel}']//following-sibling::div//input//following-sibling::span[normalize-space()='${key_optionValue}']//preceding-sibling::input</td>
 	<td></td>
 </tr>
 <tr>
@@ -221,7 +221,7 @@
 </tr>
 <tr>
 	<td>REPEATED_FIELD_IN_FIELDS_GROUP</td>
-	<td>xpath=(//div[contains(@data-field-name, '${key_fieldName}')]//div[contains(@class,'repeatable')])[${key_index}]</td>
+	<td>xpath=(//div[contains(@data-field-name, '${key_fieldName}')]/div[contains(@class,'repeatable')][@draggable='true'])[${key_index}]</td>
 	<td></td>
 </tr>
 <tr>
@@ -235,6 +235,14 @@
 <tr>
 	<td>REPEATED_FIELD_BY_INDEX</td>
 	<td>xpath=//div[contains(@class,'ddm-field') and contains(@data-field-name,'${key_fieldReference}')][${key_index}]</td>
+	<td></td>
+</tr>
+
+<!--CHECKBOX_WEB_CONTENT_ENTRY-->
+
+<tr>
+	<td>SELECT_CHECKBOX_WC</td>
+	<td>//dd[contains(@class,'list-group-item list-group-item-flex') and contains(.,'${key_title}')]//div[@class="checkbox"]</td>
 	<td></td>
 </tr>
 </tbody>

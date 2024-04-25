@@ -15,7 +15,6 @@ import com.liferay.portal.kernel.portlet.LiferayResourceResponse;
 import com.liferay.portal.kernel.portlet.PortletResponseUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCResourceCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCResourceCommand;
-import com.liferay.portal.kernel.service.permission.PortalPermission;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -28,7 +27,6 @@ import com.liferay.portal.kernel.util.ProgressTracker;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.security.audit.AuditEvent;
-import com.liferay.portal.security.audit.storage.service.AuditEventLocalService;
 import com.liferay.portal.security.audit.web.internal.constants.AuditPortletKeys;
 import com.liferay.portal.security.audit.web.internal.display.context.AuditDisplayContext;
 
@@ -179,9 +177,6 @@ public class ExportAuditEventsMVCResourceCommand
 	private static final Log _log = LogFactoryUtil.getLog(
 		ExportAuditEventsMVCResourceCommand.class);
 
-	@Reference
-	private AuditEventLocalService _auditEventLocalService;
-
 	private final LinkedHashMap<String, Function<AuditEvent, String>>
 		_functions =
 			LinkedHashMapBuilder.<String, Function<AuditEvent, String>>put(
@@ -217,8 +212,5 @@ public class ExportAuditEventsMVCResourceCommand
 
 	@Reference
 	private Portal _portal;
-
-	@Reference
-	private PortalPermission _portalPermission;
 
 }

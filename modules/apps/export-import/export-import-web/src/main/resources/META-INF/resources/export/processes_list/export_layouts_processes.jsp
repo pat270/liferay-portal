@@ -40,7 +40,7 @@ PortletURL portletURL = exportLayoutsProcessesDisplayContext.getPortletURL();
 			<c:choose>
 				<c:when test='<%= Objects.equals(exportLayoutsProcessesDisplayContext.getDisplayStyle(), "descriptive") %>'>
 					<liferay-ui:search-container-column-text>
-						<liferay-ui:user-portrait
+						<liferay-user:user-portrait
 							userId="<%= backgroundTask.getUserId() %>"
 						/>
 					</liferay-ui:search-container-column-text>
@@ -162,10 +162,7 @@ PortletURL portletURL = exportLayoutsProcessesDisplayContext.getPortletURL();
 					<liferay-ui:search-container-column-text
 						name="user"
 					>
-						<liferay-ui:user-display
-							displayStyle="3"
-							showUserDetails="<%= false %>"
-							showUserName="<%= false %>"
+						<liferay-user:user-portrait
 							userId="<%= backgroundTask.getUserId() %>"
 						/>
 					</liferay-ui:search-container-column-text>
@@ -295,7 +292,7 @@ int incompleteBackgroundTasksCount = BackgroundTaskManagerUtil.getBackgroundTask
 	</liferay-util:include>
 </div>
 
-<script>
+<aui:script>
 	function <portlet:namespace />viewBackgroundTaskDetails(backgroundTaskId) {
 		var title = '';
 
@@ -312,4 +309,4 @@ int incompleteBackgroundTasksCount = BackgroundTaskManagerUtil.getBackgroundTask
 			title: title,
 		});
 	}
-</script>
+</aui:script>

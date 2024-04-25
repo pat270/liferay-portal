@@ -72,7 +72,12 @@ public class DataLayoutResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _dataLayoutResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, DataLayoutResource>
+					dataLayoutResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_dataLayoutResourceProxyProviderFunction;
+
+				return dataLayoutResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -229,9 +234,6 @@ public class DataLayoutResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, DataLayoutResource>
-		_dataLayoutResourceProxyProviderFunction = _getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -267,6 +269,14 @@ public class DataLayoutResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, DataLayoutResource>
+			_dataLayoutResourceProxyProviderFunction =
+				_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

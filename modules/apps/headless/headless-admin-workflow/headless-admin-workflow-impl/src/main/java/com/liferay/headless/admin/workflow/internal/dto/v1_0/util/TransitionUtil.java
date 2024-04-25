@@ -28,17 +28,14 @@ public class TransitionUtil {
 	public static Transition toTransition(
 		Locale locale, WorkflowTransition workflowTransition) {
 
-		Transition transition = new Transition();
-
-		transition.setLabel(
-			LabelUtil.getLabel(
-				workflowTransition.getName(), workflowTransition.getLabelMap(),
-				locale));
-		transition.setName(workflowTransition.getName());
-		transition.setSourceNodeName(workflowTransition.getSourceNodeName());
-		transition.setTargetNodeName(workflowTransition.getTargetNodeName());
-
-		return transition;
+		return new Transition() {
+			{
+				setLabel(() -> workflowTransition.getLabel(locale));
+				setName(workflowTransition::getName);
+				setSourceNodeName(workflowTransition::getSourceNodeName);
+				setTargetNodeName(workflowTransition::getTargetNodeName);
+			}
+		};
 	}
 
 }

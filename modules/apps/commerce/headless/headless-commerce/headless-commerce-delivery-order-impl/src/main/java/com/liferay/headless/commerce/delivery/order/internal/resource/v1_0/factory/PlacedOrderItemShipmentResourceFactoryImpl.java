@@ -72,7 +72,12 @@ public class PlacedOrderItemShipmentResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _placedOrderItemShipmentResourceProxyProviderFunction.
+				Function<InvocationHandler, PlacedOrderItemShipmentResource>
+					placedOrderItemShipmentResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_placedOrderItemShipmentResourceProxyProviderFunction;
+
+				return placedOrderItemShipmentResourceProxyProviderFunction.
 					apply(
 						(proxy, method, arguments) -> _invoke(
 							method, arguments, _checkPermissions,
@@ -239,11 +244,6 @@ public class PlacedOrderItemShipmentResourceFactoryImpl
 		}
 	}
 
-	private static final Function
-		<InvocationHandler, PlacedOrderItemShipmentResource>
-			_placedOrderItemShipmentResourceProxyProviderFunction =
-				_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -279,6 +279,15 @@ public class PlacedOrderItemShipmentResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function
+			<InvocationHandler, PlacedOrderItemShipmentResource>
+				_placedOrderItemShipmentResourceProxyProviderFunction =
+					_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

@@ -14,16 +14,17 @@ LayoutInformationMessagesDisplayContext layoutInformationMessagesDisplayContext 
 <li class="control-menu-nav-item lfr-portal-tooltip">
 	<clay:button
 		aria-label='<%= LanguageUtil.get(request, "additional-information") %>'
+		cssClass="control-menu-nav-link"
 		data-qa-id="info"
 		displayType="unstyled"
 		monospaced="<%= true %>"
 		small="<%= true %>"
 		symbol="information-live"
-		title='<%= LanguageUtil.get(request, "additional-information") %>'
+		title="additional-information"
 	/>
 
 	<react:component
 		data="<%= layoutInformationMessagesDisplayContext.getData() %>"
-		module="js/dynamic_include/InformationMessages"
+		module="{InformationMessages} from layout-admin-web"
 	/>
 </li>

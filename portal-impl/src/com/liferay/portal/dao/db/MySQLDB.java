@@ -66,6 +66,39 @@ public class MySQLDB extends BaseDB {
 	}
 
 	@Override
+	public void alterTableDropColumn(
+			Connection connection, String tableName, String columnName)
+		throws Exception {
+
+		String[] primaryKeyColumnNames = getPrimaryKeyColumnNames(
+			connection, tableName);
+
+		boolean primaryKey = ArrayUtil.contains(
+			primaryKeyColumnNames, columnName);
+
+		if (primaryKey && (primaryKeyColumnNames.length > 1)) {
+			removePrimaryKey(connection, tableName);
+
+			addPrimaryKey(
+				connection, tableName,
+				ArrayUtil.remove(primaryKeyColumnNames, columnName));
+		}
+
+		List<IndexMetadata> indexMetadatas = getIndexes(
+			connection, tableName, columnName, false);
+
+		for (IndexMetadata indexMetadata : indexMetadatas) {
+			String[] columnNames = indexMetadata.getColumnNames();
+
+			if (columnNames.length > 1) {
+				runSQL(indexMetadata.getDropSQL());
+			}
+		}
+
+		super.alterTableDropColumn(connection, tableName, columnName);
+	}
+
+	@Override
 	public String buildSQL(String template) throws IOException {
 		template = replaceTemplate(template);
 
@@ -118,13 +151,18 @@ public class MySQLDB extends BaseDB {
 	}
 
 	@Override
+	public boolean isSupportsDBPartition() {
+		return true;
+	}
+
+	@Override
 	public boolean isSupportsNewUuidFunction() {
-		return _SUPPORTS_NEW_UUID_FUNCTION;
+		return true;
 	}
 
 	@Override
 	public boolean isSupportsUpdateWithInnerJoin() {
-		return _SUPPORTS_UPDATE_WITH_INNER_JOIN;
+		return true;
 	}
 
 	protected MySQLDB(DBType dbType, int majorVersion, int minorVersion) {
@@ -183,19 +221,33 @@ public class MySQLDB extends BaseDB {
 				else if (line.startsWith(ALTER_COLUMN_NAME)) {
 					String[] template = buildColumnNameTokens(line);
 
-					line = StringUtil.replace(
-						"alter table @table@ change column @old-column@ " +
-							"@new-column@ @type@;",
-						REWORD_TEMPLATE, template);
+					String defaultValue = template[template.length - 2];
+
+					if (!Validator.isBlank(defaultValue)) {
+						line = StringUtil.replace(
+							"alter table @table@ change column @old-column@ " +
+								"@new-column@ @type@ default @default@ " +
+									"@nullable@;",
+							REWORD_TEMPLATE, template);
+					}
+					else {
+						line = StringUtil.replace(
+							"alter table @table@ change column @old-column@ " +
+								"@new-column@ @type@ @nullable@;",
+							REWORD_TEMPLATE, template);
+
+						line = StringUtil.replace(line, " ;", ";");
+					}
 				}
 				else if (line.startsWith(ALTER_COLUMN_TYPE)) {
 					String[] template = buildColumnTypeTokens(line);
 
-					String nullable = template[template.length - 1];
+					String defaultValue = template[template.length - 2];
 
-					if (Validator.isBlank(nullable)) {
+					if (!Validator.isBlank(defaultValue)) {
 						line = StringUtil.replace(
-							"alter table @table@ modify @old-column@ @type@;",
+							"alter table @table@ modify @old-column@ @type@ " +
+								"default @default@ @nullable@;",
 							REWORD_TEMPLATE, template);
 					}
 					else {
@@ -203,6 +255,8 @@ public class MySQLDB extends BaseDB {
 							"alter table @table@ modify @old-column@ @type@ " +
 								"@nullable@;",
 							REWORD_TEMPLATE, template);
+
+						line = StringUtil.replace(line, " ;", ";");
 					}
 				}
 				else if (line.startsWith(ALTER_TABLE_NAME)) {
@@ -233,18 +287,15 @@ public class MySQLDB extends BaseDB {
 
 	private static final String[] _MYSQL = {
 		"##", "1", "0", "'1970-01-01'", "now()", " longblob", " longblob",
-		" tinyint", " datetime(6)", " double", " integer", " bigint",
-		" longtext", " longtext", " varchar", "  auto_increment", "commit"
+		" decimal(30, 16)", " tinyint", " datetime(6)", " double", " integer",
+		" bigint", " longtext", " longtext", " varchar", "  auto_increment",
+		"commit"
 	};
 
 	private static final int[] _SQL_TYPES = {
-		Types.LONGVARBINARY, Types.LONGVARBINARY, Types.TINYINT,
+		Types.LONGVARBINARY, Types.LONGVARBINARY, Types.DECIMAL, Types.TINYINT,
 		Types.TIMESTAMP, Types.DOUBLE, Types.INTEGER, Types.BIGINT,
 		Types.LONGVARCHAR, Types.LONGVARCHAR, Types.VARCHAR
 	};
-
-	private static final boolean _SUPPORTS_NEW_UUID_FUNCTION = true;
-
-	private static final boolean _SUPPORTS_UPDATE_WITH_INNER_JOIN = true;
 
 }

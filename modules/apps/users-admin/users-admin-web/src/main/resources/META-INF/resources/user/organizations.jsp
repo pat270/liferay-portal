@@ -22,7 +22,7 @@ currentURLObj.setParameter("historyKey", liferayPortletResponse.getNamespace() +
 	value="organizations"
 />
 
-<liferay-ui:membership-policy-error />
+<liferay-site:membership-policy-error />
 
 <clay:content-row
 	containerElement="div"
@@ -95,7 +95,7 @@ currentURLObj.setParameter("historyKey", liferayPortletResponse.getNamespace() +
 		<liferay-ui:search-container-column-text
 			cssClass="table-cell-expand"
 			name="roles"
-			value="<%= HtmlUtil.escape(UsersAdminUtil.getUserColumnText(locale, userGroupRoles, UsersAdmin.USER_GROUP_ROLE_TITLE_ACCESSOR, userGroupRolesCount)) %>"
+			value="<%= HtmlUtil.escape(UsersAdminUtil.getUserColumnText(locale, userGroupRoles, UsersAdminUtil.USER_GROUP_ROLE_TITLE_ACCESSOR, userGroupRolesCount)) %>"
 		/>
 
 		<c:if test="<%= !portletName.equals(myAccountPortletId) && ((selUser == null) || !OrganizationMembershipPolicyUtil.isMembershipProtected(permissionChecker, selUser.getUserId(), organization.getOrganizationId())) %>">
@@ -138,12 +138,12 @@ currentURLObj.setParameter("historyKey", liferayPortletResponse.getNamespace() +
 			'.modify-link'
 		);
 
-		var selectOrganizationLink = A.one(
-			'#<portlet:namespace />selectOrganizationLink'
+		const selectOrganizationLink = document.getElementById(
+			'<portlet:namespace />selectOrganizationLink'
 		);
 
 		if (selectOrganizationLink) {
-			selectOrganizationLink.on('click', (event) => {
+			selectOrganizationLink.addEventListener('click', (event) => {
 				Liferay.Util.openSelectionModal({
 					multiple: true,
 					onSelect(data) {

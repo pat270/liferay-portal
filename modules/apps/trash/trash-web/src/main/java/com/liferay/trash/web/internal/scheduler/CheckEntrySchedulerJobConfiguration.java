@@ -24,7 +24,7 @@ import org.osgi.service.component.annotations.Reference;
  *
  * @author Eudaldo Alonso
  */
-@Component(service = SchedulerJobConfiguration.class)
+@Component(enabled = false, service = SchedulerJobConfiguration.class)
 public class CheckEntrySchedulerJobConfiguration
 	implements SchedulerJobConfiguration {
 

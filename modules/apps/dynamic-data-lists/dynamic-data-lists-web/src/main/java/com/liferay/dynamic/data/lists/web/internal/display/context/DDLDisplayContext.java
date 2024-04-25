@@ -27,9 +27,9 @@ import com.liferay.dynamic.data.mapping.model.DDMTemplate;
 import com.liferay.dynamic.data.mapping.security.permission.DDMPermissionSupport;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateLocalService;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
-import com.liferay.dynamic.data.mapping.storage.StorageEngine;
+import com.liferay.dynamic.data.mapping.storage.DDMStorageEngineManager;
 import com.liferay.dynamic.data.mapping.util.DDMDisplay;
-import com.liferay.dynamic.data.mapping.util.DDMDisplayRegistry;
+import com.liferay.dynamic.data.mapping.util.DDMDisplayRegistryUtil;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
@@ -82,10 +82,9 @@ public class DDLDisplayContext {
 			RenderRequest renderRequest, RenderResponse renderResponse, DDL ddl,
 			DDLRecordSetLocalService ddlRecordSetLocalService,
 			DDLWebConfiguration ddlWebConfiguration,
-			DDMDisplayRegistry ddmDisplayRegistry,
 			DDMPermissionSupport ddmPermissionSupport,
-			DDMTemplateLocalService ddmTemplateLocalService,
-			StorageEngine storageEngine)
+			DDMStorageEngineManager ddmStorageEngineManager,
+			DDMTemplateLocalService ddmTemplateLocalService)
 		throws PortalException {
 
 		_renderRequest = renderRequest;
@@ -93,10 +92,9 @@ public class DDLDisplayContext {
 		_ddl = ddl;
 		_ddlRecordSetLocalService = ddlRecordSetLocalService;
 		_ddlWebConfiguration = ddlWebConfiguration;
-		_ddmDisplayRegistry = ddmDisplayRegistry;
 		_ddmPermissionSupport = ddmPermissionSupport;
+		_ddmStorageEngineManager = ddmStorageEngineManager;
 		_ddmTemplateLocalService = ddmTemplateLocalService;
-		_storageEngine = storageEngine;
 
 		_ddlRequestHelper = new DDLRequestHelper(
 			PortalUtil.getHttpServletRequest(renderRequest));
@@ -206,7 +204,7 @@ public class DDLDisplayContext {
 	}
 
 	public DDMFormValues getDDMFormValues(long classPK) throws PortalException {
-		return _storageEngine.getDDMFormValues(classPK);
+		return _ddmStorageEngineManager.getDDMFormValues(classPK);
 	}
 
 	public long getDisplayDDMTemplateId() {
@@ -226,8 +224,7 @@ public class DDLDisplayContext {
 
 			if (Validator.isNull(_ddlRecordDisplayStyle)) {
 				_ddlRecordDisplayStyle = portalPreferences.getValue(
-					DDLPortletKeys.DYNAMIC_DATA_LISTS, "display-style",
-					_ddlWebConfiguration.defaultDisplayView());
+					DDLPortletKeys.DYNAMIC_DATA_LISTS, "display-style", "list");
 			}
 			else if (ArrayUtil.contains(
 						getDisplayViews(), _ddlRecordDisplayStyle)) {
@@ -278,26 +275,6 @@ public class DDLDisplayContext {
 			recordSet.getDDMStructure(), _fetchFormDDMTemplate(), getLocale());
 	}
 
-	public List<DropdownItem> getFilterItemsDropdownItems() {
-		HttpServletRequest httpServletRequest = _ddlRequestHelper.getRequest();
-
-		return DropdownItemListBuilder.addGroup(
-			dropdownGroupItem -> {
-				dropdownGroupItem.setDropdownItems(
-					getFilterNavigationDropdownItems());
-				dropdownGroupItem.setLabel(
-					LanguageUtil.get(
-						httpServletRequest, "filter-by-navigation"));
-			}
-		).addGroup(
-			dropdownGroupItem -> {
-				dropdownGroupItem.setDropdownItems(getOrderByDropdownItems());
-				dropdownGroupItem.setLabel(
-					LanguageUtil.get(httpServletRequest, "order-by"));
-			}
-		).build();
-	}
-
 	public long getFormDDMTemplateId() {
 		return PrefsParamUtil.getLong(
 			_ddlRequestHelper.getPortletPreferences(),
@@ -339,6 +316,16 @@ public class DDLDisplayContext {
 			_renderRequest, DDLPortletKeys.DYNAMIC_DATA_LISTS, "asc");
 
 		return _orderByType;
+	}
+
+	public List<DropdownItem> getOrderItemsDropdownItems() {
+		return DropdownItemListBuilder.add(
+			getOrderByDropdownItem("create-date")
+		).add(
+			getOrderByDropdownItem("modified-date")
+		).add(
+			getOrderByDropdownItem("name")
+		).build();
 	}
 
 	public PortletURL getPortletURL() {
@@ -444,7 +431,7 @@ public class DDLDisplayContext {
 		return _ddl.getRecordsJSONArray(records, latestRecordVersion, locale);
 	}
 
-	public SearchContainer<?> getSearch() {
+	public SearchContainer<?> getSearchContainer() {
 		PortletURL portletURL = PortletURLBuilder.create(
 			getPortletURL()
 		).setParameter(
@@ -504,7 +491,7 @@ public class DDLDisplayContext {
 	}
 
 	public int getTotalItems() {
-		SearchContainer<?> searchContainer = getSearch();
+		SearchContainer<?> searchContainer = getSearchContainer();
 
 		return searchContainer.getTotal();
 	}
@@ -754,16 +741,6 @@ public class DDLDisplayContext {
 		};
 	}
 
-	protected List<DropdownItem> getOrderByDropdownItems() {
-		return DropdownItemListBuilder.add(
-			getOrderByDropdownItem("create-date")
-		).add(
-			getOrderByDropdownItem("modified-date")
-		).add(
-			getOrderByDropdownItem("name")
-		).build();
-	}
-
 	protected PermissionChecker getPermissionChecker() {
 		return _ddlRequestHelper.getPermissionChecker();
 	}
@@ -815,7 +792,7 @@ public class DDLDisplayContext {
 	}
 
 	private DDMDisplay _getDDMDisplay() {
-		return _ddmDisplayRegistry.getDDMDisplay(
+		return DDMDisplayRegistryUtil.getDDMDisplay(
 			DDLPortletKeys.DYNAMIC_DATA_LISTS);
 	}
 
@@ -901,8 +878,8 @@ public class DDLDisplayContext {
 	private final DDLRecordSetLocalService _ddlRecordSetLocalService;
 	private final DDLRequestHelper _ddlRequestHelper;
 	private final DDLWebConfiguration _ddlWebConfiguration;
-	private final DDMDisplayRegistry _ddmDisplayRegistry;
 	private final DDMPermissionSupport _ddmPermissionSupport;
+	private final DDMStorageEngineManager _ddmStorageEngineManager;
 	private final DDMTemplateLocalService _ddmTemplateLocalService;
 	private DDMTemplate _displayDDMTemplate;
 	private DDMTemplate _formDDMTemplate;
@@ -919,6 +896,5 @@ public class DDLDisplayContext {
 	private final RenderRequest _renderRequest;
 	private final RenderResponse _renderResponse;
 	private Boolean _showConfigurationIcon;
-	private final StorageEngine _storageEngine;
 
 }

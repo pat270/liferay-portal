@@ -103,24 +103,57 @@ else {
 </c:if>
 
 <span class="file-entry-status">
-	<aui:workflow-status showIcon="<%= false %>" showLabel="<%= false %>" status="<%= latestFileVersion.getStatus() %>" />
+	<c:if test='<%= FeatureFlagManagerUtil.isEnabled(latestFileVersion.getCompanyId(), "LPD-10701") && !latestFileVersion.isApproved() && dlViewFileVersionDisplayContext.hasApprovedVersion() %>'>
+		<liferay-portal-workflow:status
+			showStatusLabel="<%= false %>"
+			status="<%= WorkflowConstants.STATUS_APPROVED %>"
+		/>
+	</c:if>
+
+	<liferay-portal-workflow:status
+		showStatusLabel="<%= false %>"
+		status="<%= latestFileVersion.getStatus() %>"
+	/>
+
+	<c:if test='<%= FeatureFlagManagerUtil.isEnabled(latestFileVersion.getCompanyId(), "LPD-10701") && latestFileVersion.isScheduled() %>'>
+
+		<%
+		String displayDateString = StringPool.BLANK;
+
+		if (latestFileVersion.getDisplayDate() != null) {
+			displayDateString = dateTimeFormat.format(latestFileVersion.getDisplayDate());
+		}
+		%>
+
+		<span aria-label="<%= displayDateString %>" class="lfr-portal-tooltip" tabindex="0" title="<%= displayDateString %>">
+			<clay:icon
+				symbol="question-circle-full"
+			/>
+		</span>
+	</c:if>
 
 	<c:choose>
 		<c:when test="<%= fileShortcut != null %>">
-			<span class="inline-item inline-item-after state-icon">
-				<aui:icon image="shortcut" markupView="lexicon" message="shortcut" />
-			</span>
+			<clay:icon
+				cssClass="inline-item inline-item-after state-icon"
+				symbol="shortcut"
+			/>
 		</c:when>
 		<c:when test="<%= fileEntry.hasLock() || fileEntry.isCheckedOut() %>">
-			<span class="inline-item inline-item-after state-icon">
-				<aui:icon image="lock" markupView="lexicon" message="locked" />
+			<span class="lfr-portal-tooltip" title="<%= LanguageUtil.get(request, "locked-document") %>">
+				<clay:icon
+					aria-label="<%= LanguageUtil.get(request, "locked-document") %>"
+					cssClass="inline-item inline-item-after state-icon"
+					symbol="lock"
+				/>
 			</span>
 		</c:when>
 	</c:choose>
 
 	<c:if test="<%= dlViewFileVersionDisplayContext.isShared() %>">
-		<span class="inline-item inline-item-after lfr-portal-tooltip state-icon" title="<%= LanguageUtil.get(request, "shared") %>">
-			<aui:icon image="users" markupView="lexicon" message="shared" />
-		</span>
+		<clay:icon
+			cssClass="inline-item inline-item-after lfr-portal-tooltip state-icon"
+			symbol="users"
+		/>
 	</c:if>
 </span>

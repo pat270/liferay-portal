@@ -13,6 +13,7 @@ import com.liferay.commerce.product.model.CPInstance;
 import com.liferay.commerce.product.service.CPInstanceService;
 import com.liferay.headless.commerce.admin.pricing.dto.v2_0.DiscountSku;
 import com.liferay.headless.commerce.core.util.LanguageUtils;
+import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
 
@@ -52,19 +53,37 @@ public class DiscountSkuDTOConverter
 
 		return new DiscountSku() {
 			{
-				actions = dtoConverterContext.getActions();
-				discountExternalReferenceCode =
-					commerceDiscount.getExternalReferenceCode();
-				discountId = commerceDiscount.getCommerceDiscountId();
-				discountSkuId = commerceDiscountRel.getCommerceDiscountRelId();
-				productId = cpDefinition.getCPDefinitionId();
-				productName = LanguageUtils.getLanguageIdMap(
-					cpDefinition.getNameMap());
-				skuExternalReferenceCode =
-					cpInstance.getExternalReferenceCode();
-				skuId = cpInstance.getCPInstanceId();
+				setActions(dtoConverterContext::getActions);
+				setDiscountExternalReferenceCode(
+					commerceDiscount::getExternalReferenceCode);
+				setDiscountId(commerceDiscount::getCommerceDiscountId);
+				setDiscountSkuId(commerceDiscountRel::getCommerceDiscountRelId);
+				setProductId(cpDefinition::getCPDefinitionId);
+				setProductName(
+					() -> LanguageUtils.getLanguageIdMap(
+						cpDefinition.getNameMap()));
+				setSkuExternalReferenceCode(
+					cpInstance::getExternalReferenceCode);
+				setSkuId(cpInstance::getCPInstanceId);
+				setUnitOfMeasureKey(
+					() -> _getUnitOfMeasureKey(
+						commerceDiscountRel.
+							getTypeSettingsUnicodeProperties()));
 			}
 		};
+	}
+
+	private String _getUnitOfMeasureKey(
+		UnicodeProperties typeSettingsUnicodeProperties) {
+
+		if ((typeSettingsUnicodeProperties != null) &&
+			typeSettingsUnicodeProperties.containsKey("unitOfMeasureKey")) {
+
+			return typeSettingsUnicodeProperties.getProperty(
+				"unitOfMeasureKey");
+		}
+
+		return null;
 	}
 
 	@Reference

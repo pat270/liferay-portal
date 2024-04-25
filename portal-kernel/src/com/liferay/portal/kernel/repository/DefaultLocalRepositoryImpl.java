@@ -47,8 +47,8 @@ public class DefaultLocalRepositoryImpl implements LocalRepository {
 	public FileEntry addFileEntry(
 		String externalReferenceCode, long userId, long folderId,
 		String sourceFileName, String mimeType, String title, String urlTitle,
-		String description, String changeLog, File file, Date expirationDate,
-		Date reviewDate, ServiceContext serviceContext) {
+		String description, String changeLog, File file, Date displayDate,
+		Date expirationDate, Date reviewDate, ServiceContext serviceContext) {
 
 		throw new UnsupportedOperationException();
 	}
@@ -58,7 +58,7 @@ public class DefaultLocalRepositoryImpl implements LocalRepository {
 		String externalReferenceCode, long userId, long folderId,
 		String sourceFileName, String mimeType, String title, String urlTitle,
 		String description, String changeLog, InputStream inputStream,
-		long size, Date expirationDate, Date reviewDate,
+		long size, Date displayDate, Date expirationDate, Date reviewDate,
 		ServiceContext serviceContext) {
 
 		throw new UnsupportedOperationException();
@@ -379,7 +379,8 @@ public class DefaultLocalRepositoryImpl implements LocalRepository {
 		long userId, long fileEntryId, String sourceFileName, String mimeType,
 		String title, String urlTitle, String description, String changeLog,
 		DLVersionNumberIncrease dlVersionNumberIncrease, File file,
-		Date expirationDate, Date reviewDate, ServiceContext serviceContext) {
+		Date displayDate, Date expirationDate, Date reviewDate,
+		ServiceContext serviceContext) {
 
 		throw new UnsupportedOperationException();
 	}
@@ -389,8 +390,8 @@ public class DefaultLocalRepositoryImpl implements LocalRepository {
 		long userId, long fileEntryId, String sourceFileName, String mimeType,
 		String title, String urlTitle, String description, String changeLog,
 		DLVersionNumberIncrease dlVersionNumberIncrease,
-		InputStream inputStream, long size, Date expirationDate,
-		Date reviewDate, ServiceContext serviceContext) {
+		InputStream inputStream, long size, Date displayDate,
+		Date expirationDate, Date reviewDate, ServiceContext serviceContext) {
 
 		throw new UnsupportedOperationException();
 	}

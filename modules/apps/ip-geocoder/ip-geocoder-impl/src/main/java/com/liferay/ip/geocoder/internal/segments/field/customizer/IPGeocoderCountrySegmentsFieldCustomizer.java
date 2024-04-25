@@ -13,6 +13,7 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.segments.field.Field;
 import com.liferay.segments.field.customizer.SegmentsFieldCustomizer;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -45,6 +46,7 @@ public class IPGeocoderCountrySegmentsFieldCustomizer
 		return IPGeocoderCountrySegmentsFieldCustomizer.KEY;
 	}
 
+	@Override
 	public String getLabel(String fieldName, Locale locale) {
 		return _language.get(locale, "ip-geocoder-country");
 	}
@@ -52,8 +54,12 @@ public class IPGeocoderCountrySegmentsFieldCustomizer
 	@Override
 	public List<Field.Option> getOptions(Locale locale) {
 		return TransformUtil.transform(
-			_countryService.getCompanyCountries(
-				CompanyThreadLocal.getCompanyId()),
+			ListUtil.sort(
+				_countryService.getCompanyCountries(
+					CompanyThreadLocal.getCompanyId()),
+				Comparator.comparing(
+					country -> country.getName(locale),
+					String::compareToIgnoreCase)),
 			country -> new Field.Option(
 				country.getName(locale), country.getA2()));
 	}

@@ -12,7 +12,7 @@ import {
 	API,
 	FormError,
 	Input,
-	REQUIRED_MSG,
+	constantsUtils,
 	useForm,
 } from '@liferay/object-js-components-web';
 import React, {useState} from 'react';
@@ -45,7 +45,11 @@ export function ModalBasicWithFieldName({
 
 	const onSubmit = async ({name}: TInitialValues) => {
 		try {
-			await API.save(apiURL, {name: {[defaultLanguageId]: name}}, 'POST');
+			await API.save({
+				item: {name: {[defaultLanguageId]: name}},
+				method: 'POST',
+				url: apiURL,
+			});
 
 			onClose();
 			window.location.reload();
@@ -59,7 +63,7 @@ export function ModalBasicWithFieldName({
 		const errors: FormError<TInitialValues> = {};
 
 		if (name[defaultLanguageId] === '') {
-			errors.name = REQUIRED_MSG;
+			errors.name = constantsUtils.REQUIRED_MSG;
 		}
 
 		return errors;

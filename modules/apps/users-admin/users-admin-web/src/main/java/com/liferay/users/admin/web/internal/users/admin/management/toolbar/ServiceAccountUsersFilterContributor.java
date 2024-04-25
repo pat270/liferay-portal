@@ -20,7 +20,10 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Pei-Jung Lan
  */
-@Component(service = FilterContributor.class)
+@Component(
+	property = "filter.contributor.key=" + UsersAdminManagementToolbarKeys.VIEW_SERVICE_ACCOUNTS,
+	service = FilterContributor.class
+)
 public class ServiceAccountUsersFilterContributor implements FilterContributor {
 
 	@Override
@@ -31,11 +34,6 @@ public class ServiceAccountUsersFilterContributor implements FilterContributor {
 	@Override
 	public String getLabel(Locale locale) {
 		return _getMessage(locale, "filter-by-type");
-	}
-
-	@Override
-	public String getManagementToolbarKey() {
-		return UsersAdminManagementToolbarKeys.VIEW_SERVICE_ACCOUNTS;
 	}
 
 	@Override

@@ -10,24 +10,37 @@
 <%
 ViewChangesDisplayContext viewChangesDisplayContext = (ViewChangesDisplayContext)request.getAttribute(CTWebKeys.VIEW_CHANGES_DISPLAY_CONTEXT);
 
-renderResponse.setTitle(LanguageUtil.get(request, "review-changes"));
+if (!user.isOnDemandUser()) {
+	portletDisplay.setURLBack(viewChangesDisplayContext.getBackURL());
+	portletDisplay.setShowBackIcon(true);
+}
+else {
+	portletDisplay.setBeta(true);
+	portletDisplay.setShowBackIcon(false);
+}
 
-portletDisplay.setURLBack(viewChangesDisplayContext.getBackURL());
-portletDisplay.setShowBackIcon(true);
+renderResponse.setTitle(LanguageUtil.get(request, "review-changes"));
 %>
 
 <div class="publications-view-changes-wrapper">
 	<div>
 		<react:component
-			module="publications/js/views/ChangeTrackingChangesToolbar"
-			props="<%= viewChangesDisplayContext.getReactData() %>"
+			module="{ChangeTrackingChangesToolbar} from change-tracking-web"
+			props="<%= viewChangesDisplayContext.getToolbarReactData() %>"
 		/>
 	</div>
 
-	<div class="sidenav-content">
-		<react:component
-			module="publications/js/views/ChangeTrackingChangesView"
-			props="<%= viewChangesDisplayContext.getReactData() %>"
+	<clay:container-fluid>
+		<clay:navigation-bar
+			navigationItems="<%= viewChangesDisplayContext.getViewNavigationItems() %>"
 		/>
-	</div>
+
+		<frontend-data-set:headless-display
+			apiURL="<%= viewChangesDisplayContext.getAPIURL() %>"
+			fdsActionDropdownItems="<%= viewChangesDisplayContext.getFDSActionDropdownItems() %>"
+			fdsFilters="<%= viewChangesDisplayContext.getFDSFilters() %>"
+			fdsSortItemList="<%= viewChangesDisplayContext.getFDSSortItemList() %>"
+			id="<%= PublicationsFDSNames.PUBLICATIONS_CHANGES %>"
+		/>
+	</clay:container-fluid>
 </div>

@@ -25,8 +25,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -227,6 +225,8 @@ public abstract class BaseProductTaxConfigurationResourceTestCase {
 		ProductTaxConfiguration productTaxConfiguration =
 			testGraphQLGetProductByExternalReferenceCodeTaxConfiguration_addProductTaxConfiguration();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				productTaxConfiguration,
@@ -247,6 +247,32 @@ public abstract class BaseProductTaxConfigurationResourceTestCase {
 								getGraphQLFields())),
 						"JSONObject/data",
 						"Object/productByExternalReferenceCodeTaxConfiguration"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		Assert.assertTrue(
+			equals(
+				productTaxConfiguration,
+				ProductTaxConfigurationSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminCatalog_v1_0",
+								new GraphQLField(
+									"productByExternalReferenceCodeTaxConfiguration",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"externalReferenceCode",
+												"\"" +
+													testGraphQLGetProductByExternalReferenceCodeTaxConfiguration_getExternalReferenceCode() +
+														"\"");
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminCatalog_v1_0",
+						"Object/productByExternalReferenceCodeTaxConfiguration"))));
 	}
 
 	protected String
@@ -264,6 +290,8 @@ public abstract class BaseProductTaxConfigurationResourceTestCase {
 		String irrelevantExternalReferenceCode =
 			"\"" + RandomTestUtil.randomString() + "\"";
 
+		// No namespace
+
 		Assert.assertEquals(
 			"Not Found",
 			JSONUtil.getValueAsString(
@@ -278,6 +306,27 @@ public abstract class BaseProductTaxConfigurationResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0",
+						new GraphQLField(
+							"productByExternalReferenceCodeTaxConfiguration",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"externalReferenceCode",
+										irrelevantExternalReferenceCode);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -330,6 +379,8 @@ public abstract class BaseProductTaxConfigurationResourceTestCase {
 		ProductTaxConfiguration productTaxConfiguration =
 			testGraphQLGetProductIdTaxConfiguration_addProductTaxConfiguration();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				productTaxConfiguration,
@@ -349,6 +400,31 @@ public abstract class BaseProductTaxConfigurationResourceTestCase {
 								getGraphQLFields())),
 						"JSONObject/data",
 						"Object/productIdTaxConfiguration"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		Assert.assertTrue(
+			equals(
+				productTaxConfiguration,
+				ProductTaxConfigurationSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminCatalog_v1_0",
+								new GraphQLField(
+									"productIdTaxConfiguration",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"id",
+												testGraphQLGetProductIdTaxConfiguration_getId(
+													productTaxConfiguration));
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminCatalog_v1_0",
+						"Object/productIdTaxConfiguration"))));
 	}
 
 	protected Long testGraphQLGetProductIdTaxConfiguration_getId(
@@ -364,6 +440,8 @@ public abstract class BaseProductTaxConfigurationResourceTestCase {
 
 		Long irrelevantId = RandomTestUtil.randomLong();
 
+		// No namespace
+
 		Assert.assertEquals(
 			"Not Found",
 			JSONUtil.getValueAsString(
@@ -376,6 +454,25 @@ public abstract class BaseProductTaxConfigurationResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0",
+						new GraphQLField(
+							"productIdTaxConfiguration",
+							new HashMap<String, Object>() {
+								{
+									put("id", irrelevantId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -705,6 +802,10 @@ public abstract class BaseProductTaxConfigurationResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -900,9 +1001,9 @@ public abstract class BaseProductTaxConfigurationResourceTestCase {
 	}
 
 	protected ProductTaxConfigurationResource productTaxConfigurationResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

@@ -1,3 +1,4 @@
+import ClayLink from '@clayui/link';
 import DistributionCard from 'contacts/components/distribution-card';
 import NoResultsDisplay from 'shared/components/NoResultsDisplay';
 import React from 'react';
@@ -5,6 +6,7 @@ import URLConstants from 'shared/util/url-constants';
 import {connect, ConnectedProps} from 'react-redux';
 import {fetchIndividualsDistribution} from 'shared/actions/distributions';
 import {Routes, toRoute} from 'shared/util/router';
+import {toPromise} from 'shared/util/validators';
 import {useParams} from 'react-router-dom';
 
 const connector = connect(null, {
@@ -31,7 +33,7 @@ const IndividualsDistributionCard: React.FC<IIndividualsDistributionCardProps> =
 		<DistributionCard
 			channelId={channelId}
 			distributionKey='individualsDashboard'
-			fetchDistribution={fetchDistribution}
+			fetchDistribution={name => toPromise(fetchDistribution(name))}
 			groupId={groupId}
 			id={id}
 			noResultsRenderer={() => (
@@ -42,7 +44,7 @@ const IndividualsDistributionCard: React.FC<IIndividualsDistributionCardProps> =
 								'try-choosing-a-different-breakdown'
 							)}
 
-							<a
+							<ClayLink
 								className='d-block'
 								href={
 									URLConstants.IndividualsDashboardBreakdownDocumentation
@@ -53,7 +55,7 @@ const IndividualsDistributionCard: React.FC<IIndividualsDistributionCardProps> =
 								{Liferay.Language.get(
 									'learn-more-about-distribution'
 								)}
-							</a>
+							</ClayLink>
 						</>
 					}
 					title={Liferay.Language.get('there-are-no-results-found')}

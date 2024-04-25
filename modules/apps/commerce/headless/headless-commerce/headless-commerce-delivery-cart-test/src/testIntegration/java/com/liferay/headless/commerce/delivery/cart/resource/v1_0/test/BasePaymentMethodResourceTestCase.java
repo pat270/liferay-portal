@@ -25,8 +25,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -185,6 +183,100 @@ public abstract class BasePaymentMethodResourceTestCase {
 	}
 
 	@Test
+	public void testGetCartByExternalReferenceCodePaymentMethodsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetCartByExternalReferenceCodePaymentMethodsPage_getExternalReferenceCode();
+		String irrelevantExternalReferenceCode =
+			testGetCartByExternalReferenceCodePaymentMethodsPage_getIrrelevantExternalReferenceCode();
+
+		Page<PaymentMethod> page =
+			paymentMethodResource.
+				getCartByExternalReferenceCodePaymentMethodsPage(
+					externalReferenceCode);
+
+		long totalCount = page.getTotalCount();
+
+		if (irrelevantExternalReferenceCode != null) {
+			PaymentMethod irrelevantPaymentMethod =
+				testGetCartByExternalReferenceCodePaymentMethodsPage_addPaymentMethod(
+					irrelevantExternalReferenceCode,
+					randomIrrelevantPaymentMethod());
+
+			page =
+				paymentMethodResource.
+					getCartByExternalReferenceCodePaymentMethodsPage(
+						irrelevantExternalReferenceCode);
+
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
+
+			assertContains(
+				irrelevantPaymentMethod, (List<PaymentMethod>)page.getItems());
+			assertValid(
+				page,
+				testGetCartByExternalReferenceCodePaymentMethodsPage_getExpectedActions(
+					irrelevantExternalReferenceCode));
+		}
+
+		PaymentMethod paymentMethod1 =
+			testGetCartByExternalReferenceCodePaymentMethodsPage_addPaymentMethod(
+				externalReferenceCode, randomPaymentMethod());
+
+		PaymentMethod paymentMethod2 =
+			testGetCartByExternalReferenceCodePaymentMethodsPage_addPaymentMethod(
+				externalReferenceCode, randomPaymentMethod());
+
+		page =
+			paymentMethodResource.
+				getCartByExternalReferenceCodePaymentMethodsPage(
+					externalReferenceCode);
+
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
+
+		assertContains(paymentMethod1, (List<PaymentMethod>)page.getItems());
+		assertContains(paymentMethod2, (List<PaymentMethod>)page.getItems());
+		assertValid(
+			page,
+			testGetCartByExternalReferenceCodePaymentMethodsPage_getExpectedActions(
+				externalReferenceCode));
+	}
+
+	protected Map<String, Map<String, String>>
+			testGetCartByExternalReferenceCodePaymentMethodsPage_getExpectedActions(
+				String externalReferenceCode)
+		throws Exception {
+
+		Map<String, Map<String, String>> expectedActions = new HashMap<>();
+
+		return expectedActions;
+	}
+
+	protected PaymentMethod
+			testGetCartByExternalReferenceCodePaymentMethodsPage_addPaymentMethod(
+				String externalReferenceCode, PaymentMethod paymentMethod)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected String
+			testGetCartByExternalReferenceCodePaymentMethodsPage_getExternalReferenceCode()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected String
+			testGetCartByExternalReferenceCodePaymentMethodsPage_getIrrelevantExternalReferenceCode()
+		throws Exception {
+
+		return null;
+	}
+
+	@Test
 	public void testGetCartPaymentMethodsPage() throws Exception {
 		Long cartId = testGetCartPaymentMethodsPage_getCartId();
 		Long irrelevantCartId =
@@ -193,7 +285,7 @@ public abstract class BasePaymentMethodResourceTestCase {
 		Page<PaymentMethod> page =
 			paymentMethodResource.getCartPaymentMethodsPage(cartId);
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if (irrelevantCartId != null) {
 			PaymentMethod irrelevantPaymentMethod =
@@ -203,11 +295,10 @@ public abstract class BasePaymentMethodResourceTestCase {
 			page = paymentMethodResource.getCartPaymentMethodsPage(
 				irrelevantCartId);
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantPaymentMethod),
-				(List<PaymentMethod>)page.getItems());
+			assertContains(
+				irrelevantPaymentMethod, (List<PaymentMethod>)page.getItems());
 			assertValid(
 				page,
 				testGetCartPaymentMethodsPage_getExpectedActions(
@@ -224,11 +315,10 @@ public abstract class BasePaymentMethodResourceTestCase {
 
 		page = paymentMethodResource.getCartPaymentMethodsPage(cartId);
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(paymentMethod1, paymentMethod2),
-			(List<PaymentMethod>)page.getItems());
+		assertContains(paymentMethod1, (List<PaymentMethod>)page.getItems());
+		assertContains(paymentMethod2, (List<PaymentMethod>)page.getItems());
 		assertValid(
 			page, testGetCartPaymentMethodsPage_getExpectedActions(cartId));
 	}
@@ -548,6 +638,10 @@ public abstract class BasePaymentMethodResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -815,9 +909,9 @@ public abstract class BasePaymentMethodResourceTestCase {
 	}
 
 	protected PaymentMethodResource paymentMethodResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

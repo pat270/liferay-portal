@@ -50,7 +50,11 @@ public class AssetCategoryLocalServiceWrapper
 		);
 
 		return _assetCategoryLocalService.dslQuery(
-			_getGroupByStep(classNameId, classPK, joinStep));
+			_getGroupByStep(
+				classNameId, classPK, joinStep
+			).limit(
+				start, end
+			));
 	}
 
 	@Override
@@ -69,7 +73,7 @@ public class AssetCategoryLocalServiceWrapper
 		long groupId, String name, String[] categoryProperties, int start,
 		int end) {
 
-		JoinStep joinStep = DSLQueryFactoryUtil.selectDistinct(
+		JoinStep joinStep = DSLQueryFactoryUtil.select(
 			AssetCategoryTable.INSTANCE
 		).from(
 			AssetCategoryTable.INSTANCE
@@ -135,7 +139,10 @@ public class AssetCategoryLocalServiceWrapper
 					}
 
 					return predicate;
-				}));
+				}
+			).limit(
+				start, end
+			));
 	}
 
 	private GroupByStep _getGroupByStep(

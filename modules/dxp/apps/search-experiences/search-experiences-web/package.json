@@ -1,25 +1,60 @@
 {
 	"dependencies": {
+		"@clayui/alert": "3.111.0",
+		"@clayui/autocomplete": "3.113.0",
+		"@clayui/button": "3.113.0",
+		"@clayui/data-provider": "3.113.0",
+		"@clayui/date-picker": "3.113.0",
+		"@clayui/drop-down": "3.113.0",
+		"@clayui/empty-state": "3.111.0",
+		"@clayui/form": "3.113.0",
+		"@clayui/icon": "3.111.0",
+		"@clayui/label": "3.111.0",
+		"@clayui/layout": "3.111.0",
+		"@clayui/link": "3.111.0",
+		"@clayui/list": "3.113.0",
+		"@clayui/loading-indicator": "3.111.0",
+		"@clayui/localized-input": "3.113.0",
+		"@clayui/modal": "3.113.0",
+		"@clayui/multi-select": "3.113.0",
+		"@clayui/nav": "3.113.0",
+		"@clayui/navigation-bar": "3.113.0",
+		"@clayui/pagination": "3.113.0",
+		"@clayui/pagination-bar": "3.113.0",
+		"@clayui/panel": "3.113.0",
+		"@clayui/shared": "3.113.0",
+		"@clayui/slider": "3.113.0",
+		"@clayui/sticker": "3.111.0",
+		"@clayui/table": "3.111.0",
+		"@clayui/toolbar": "3.113.0",
+		"@clayui/tooltip": "3.113.0",
+		"@liferay/frontend-js-codemirror-web": "*",
+		"@liferay/frontend-js-react-web": "*",
+		"classnames": "2.3.1",
 		"clipboard": "2.0.4",
-		"codemirror": "^5.59.0",
 		"date-fns": "2.29.3",
+		"formik": "2.1.4",
+		"frontend-js-components-web": "*",
 		"frontend-js-web": "*",
 		"fuzzy": "0.1.3",
 		"moment": "2.29.4",
+		"prop-types": "15.7.2",
 		"react": "16.12.0"
 	},
 	"jest": {
 		"setupFilesAfterEnv": [
-			"<rootDir>/test/js/mocks/fetch.js"
+			"<rootDir>/test/js/mocks/fetch.js",
+			"<rootDir>/test/js/setup.js"
 		],
 		"testPathIgnorePatterns": [
-			"<rootDir>/test/js/mocks/*"
+			"<rootDir>/test/js/mocks/*",
+			"<rootDir>/test/js/setup.js"
 		],
 		"transformIgnorePatterns": [
 			"<rootDir>/.*\\.json$"
 		]
 	},
-	"main": "js/index.es.js",
+	"main": "js/index.js",
 	"name": "@liferay/search-experiences-web",
 	"private": true,
 	"scripts": {
@@ -28,5 +63,5 @@
 		"format": "liferay-npm-scripts fix",
 		"test": "liferay-npm-scripts test"
 	},
-	"version": "3.0.46"
+	"version": "3.0.64"
 }

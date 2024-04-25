@@ -4,7 +4,7 @@ definition {
 	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Fragments";
+	property testray.main.component.name = "Fragment Administration";
 
 	setUp {
 		task ("Set up instance and sign in") {
@@ -18,9 +18,7 @@ definition {
 		}
 
 		task ("Activate local live staging") {
-			Staging.openStagingAdmin(siteURLKey = "test-site-name");
-
-			Staging.activateStagingCP(siteName = "Test Site Name");
+			JSONStaging.enableLocalStaging(groupName = "Test Site Name");
 		}
 	}
 
@@ -298,6 +296,7 @@ definition {
 	@priority = 4
 	test ViewChangesOfFragmentOnContentPagePersistInStagingAndLiveSiteAfterOverwriteTheFragment {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Enable Propagate Fragment Changes Automatically in System Settings") {
 			ApplicationsMenu.gotoPortlet(
@@ -396,7 +395,7 @@ definition {
 		task ("Import the fragment collection") {
 			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "test-site-name-staging");
 
-			FragmentsAdmin.importCollectionFromTempFolder();
+			FragmentsAdmin.importCollectionFromTempFolder(importOption = "Overwrite Existing Items");
 		}
 
 		task ("Publish to Live via Staging admin") {

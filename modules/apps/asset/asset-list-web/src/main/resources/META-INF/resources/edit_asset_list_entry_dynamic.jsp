@@ -9,6 +9,7 @@
 
 <%
 portletDisplay.setURLBack(editAssetListDisplayContext.getBackURL());
+portletDisplay.setURLBackTitle(ParamUtil.getString(request, "backURLTitle"));
 
 AssetListEntry assetListEntry = assetListDisplayContext.getAssetListEntry();
 %>
@@ -52,7 +53,7 @@ AssetListEntry assetListEntry = assetListDisplayContext.getAssetListEntry();
 					<clay:dropdown-actions
 						aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 						dropdownItems="<%= assetListEntryVariationActionDropdownItemsProvider.getActionDropdownItems() %>"
-						propsTransformer="js/AssetListEntryVariationDefaultPropsTransformer"
+						propsTransformer="{AssetListEntryVariationDefaultPropsTransformer} from asset-list-web"
 						title='<%= LanguageUtil.get(request, "show-actions") %>'
 					/>
 				</clay:content-col>

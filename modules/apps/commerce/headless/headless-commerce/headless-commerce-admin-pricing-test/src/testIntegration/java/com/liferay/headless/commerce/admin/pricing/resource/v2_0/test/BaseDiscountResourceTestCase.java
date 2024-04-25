@@ -28,8 +28,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -38,6 +36,7 @@ import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.search.test.util.SearchTestRule;
@@ -63,8 +62,6 @@ import java.util.Set;
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-
-import org.apache.commons.lang.time.DateUtils;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -311,10 +308,10 @@ public abstract class BaseDiscountResourceTestCase {
 
 	@Test
 	public void testGetDiscountsPageWithPagination() throws Exception {
-		Page<Discount> totalPage = discountResource.getDiscountsPage(
+		Page<Discount> discountPage = discountResource.getDiscountsPage(
 			null, null, null, null);
 
-		int totalCount = GetterUtil.getInteger(totalPage.getTotalCount());
+		int totalCount = GetterUtil.getInteger(discountPage.getTotalCount());
 
 		Discount discount1 = testGetDiscountsPage_addDiscount(randomDiscount());
 
@@ -322,29 +319,65 @@ public abstract class BaseDiscountResourceTestCase {
 
 		Discount discount3 = testGetDiscountsPage_addDiscount(randomDiscount());
 
-		Page<Discount> page1 = discountResource.getDiscountsPage(
-			null, null, Pagination.of(1, totalCount + 2), null);
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<Discount> discounts1 = (List<Discount>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			discounts1.toString(), totalCount + 2, discounts1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<Discount> page1 = discountResource.getDiscountsPage(
+				null, null,
+				Pagination.of(
+					(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+					pageSizeLimit),
+				null);
 
-		Page<Discount> page2 = discountResource.getDiscountsPage(
-			null, null, Pagination.of(2, totalCount + 2), null);
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+			assertContains(discount1, (List<Discount>)page1.getItems());
 
-		List<Discount> discounts2 = (List<Discount>)page2.getItems();
+			Page<Discount> page2 = discountResource.getDiscountsPage(
+				null, null,
+				Pagination.of(
+					(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+					pageSizeLimit),
+				null);
 
-		Assert.assertEquals(discounts2.toString(), 1, discounts2.size());
+			assertContains(discount2, (List<Discount>)page2.getItems());
 
-		Page<Discount> page3 = discountResource.getDiscountsPage(
-			null, null, Pagination.of(1, totalCount + 3), null);
+			Page<Discount> page3 = discountResource.getDiscountsPage(
+				null, null,
+				Pagination.of(
+					(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+					pageSizeLimit),
+				null);
 
-		assertContains(discount1, (List<Discount>)page3.getItems());
-		assertContains(discount2, (List<Discount>)page3.getItems());
-		assertContains(discount3, (List<Discount>)page3.getItems());
+			assertContains(discount3, (List<Discount>)page3.getItems());
+		}
+		else {
+			Page<Discount> page1 = discountResource.getDiscountsPage(
+				null, null, Pagination.of(1, totalCount + 2), null);
+
+			List<Discount> discounts1 = (List<Discount>)page1.getItems();
+
+			Assert.assertEquals(
+				discounts1.toString(), totalCount + 2, discounts1.size());
+
+			Page<Discount> page2 = discountResource.getDiscountsPage(
+				null, null, Pagination.of(2, totalCount + 2), null);
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<Discount> discounts2 = (List<Discount>)page2.getItems();
+
+			Assert.assertEquals(discounts2.toString(), 1, discounts2.size());
+
+			Page<Discount> page3 = discountResource.getDiscountsPage(
+				null, null, Pagination.of(1, (int)totalCount + 3), null);
+
+			assertContains(discount1, (List<Discount>)page3.getItems());
+			assertContains(discount2, (List<Discount>)page3.getItems());
+			assertContains(discount3, (List<Discount>)page3.getItems());
+		}
 	}
 
 	@Test
@@ -354,7 +387,7 @@ public abstract class BaseDiscountResourceTestCase {
 			(entityField, discount1, discount2) -> {
 				BeanTestUtil.setProperty(
 					discount1, entityField.getName(),
-					DateUtils.addMinutes(new Date(), -2));
+					new Date(System.currentTimeMillis() - (2 * Time.MINUTE)));
 			});
 	}
 
@@ -452,22 +485,23 @@ public abstract class BaseDiscountResourceTestCase {
 
 		discount2 = testGetDiscountsPage_addDiscount(discount2);
 
+		Page<Discount> page = discountResource.getDiscountsPage(
+			null, null, null, null);
+
 		for (EntityField entityField : entityFields) {
 			Page<Discount> ascPage = discountResource.getDiscountsPage(
-				null, null, Pagination.of(1, 2),
+				null, null, Pagination.of(1, (int)page.getTotalCount() + 1),
 				entityField.getName() + ":asc");
 
-			assertEquals(
-				Arrays.asList(discount1, discount2),
-				(List<Discount>)ascPage.getItems());
+			assertContains(discount1, (List<Discount>)ascPage.getItems());
+			assertContains(discount2, (List<Discount>)ascPage.getItems());
 
 			Page<Discount> descPage = discountResource.getDiscountsPage(
-				null, null, Pagination.of(1, 2),
+				null, null, Pagination.of(1, (int)page.getTotalCount() + 1),
 				entityField.getName() + ":desc");
 
-			assertEquals(
-				Arrays.asList(discount2, discount1),
-				(List<Discount>)descPage.getItems());
+			assertContains(discount2, (List<Discount>)descPage.getItems());
+			assertContains(discount1, (List<Discount>)descPage.getItems());
 		}
 	}
 
@@ -491,6 +525,8 @@ public abstract class BaseDiscountResourceTestCase {
 			new GraphQLField("items", getGraphQLFields()),
 			new GraphQLField("page"), new GraphQLField("totalCount"));
 
+		// No namespace
+
 		JSONObject discountsJSONObject = JSONUtil.getValueAsJSONObject(
 			invokeGraphQLQuery(graphQLField), "JSONObject/data",
 			"JSONObject/discounts");
@@ -502,6 +538,27 @@ public abstract class BaseDiscountResourceTestCase {
 
 		discountsJSONObject = JSONUtil.getValueAsJSONObject(
 			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/discounts");
+
+		Assert.assertEquals(
+			totalCount + 2, discountsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			discount1,
+			Arrays.asList(
+				DiscountSerDes.toDTOs(discountsJSONObject.getString("items"))));
+		assertContains(
+			discount2,
+			Arrays.asList(
+				DiscountSerDes.toDTOs(discountsJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceAdminPricing_v2_0
+
+		discountsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminPricing_v2_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminPricing_v2_0",
 			"JSONObject/discounts");
 
 		Assert.assertEquals(
@@ -596,6 +653,8 @@ public abstract class BaseDiscountResourceTestCase {
 		Discount discount =
 			testGraphQLGetDiscountByExternalReferenceCode_addDiscount();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				discount,
@@ -617,6 +676,33 @@ public abstract class BaseDiscountResourceTestCase {
 								getGraphQLFields())),
 						"JSONObject/data",
 						"Object/discountByExternalReferenceCode"))));
+
+		// Using the namespace headlessCommerceAdminPricing_v2_0
+
+		Assert.assertTrue(
+			equals(
+				discount,
+				DiscountSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminPricing_v2_0",
+								new GraphQLField(
+									"discountByExternalReferenceCode",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"externalReferenceCode",
+												"\"" +
+													discount.
+														getExternalReferenceCode() +
+															"\"");
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminPricing_v2_0",
+						"Object/discountByExternalReferenceCode"))));
 	}
 
 	@Test
@@ -625,6 +711,8 @@ public abstract class BaseDiscountResourceTestCase {
 
 		String irrelevantExternalReferenceCode =
 			"\"" + RandomTestUtil.randomString() + "\"";
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -640,6 +728,27 @@ public abstract class BaseDiscountResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminPricing_v2_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminPricing_v2_0",
+						new GraphQLField(
+							"discountByExternalReferenceCode",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"externalReferenceCode",
+										irrelevantExternalReferenceCode);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -704,7 +813,10 @@ public abstract class BaseDiscountResourceTestCase {
 
 	@Test
 	public void testGraphQLDeleteDiscount() throws Exception {
-		Discount discount = testGraphQLDeleteDiscount_addDiscount();
+
+		// No namespace
+
+		Discount discount1 = testGraphQLDeleteDiscount_addDiscount();
 
 		Assert.assertTrue(
 			JSONUtil.getValueAsBoolean(
@@ -713,23 +825,60 @@ public abstract class BaseDiscountResourceTestCase {
 						"deleteDiscount",
 						new HashMap<String, Object>() {
 							{
-								put("id", discount.getId());
+								put("id", discount1.getId());
 							}
 						})),
 				"JSONObject/data", "Object/deleteDiscount"));
-		JSONArray errorsJSONArray = JSONUtil.getValueAsJSONArray(
+
+		JSONArray errorsJSONArray1 = JSONUtil.getValueAsJSONArray(
 			invokeGraphQLQuery(
 				new GraphQLField(
 					"discount",
 					new HashMap<String, Object>() {
 						{
-							put("id", discount.getId());
+							put("id", discount1.getId());
 						}
 					},
 					new GraphQLField("id"))),
 			"JSONArray/errors");
 
-		Assert.assertTrue(errorsJSONArray.length() > 0);
+		Assert.assertTrue(errorsJSONArray1.length() > 0);
+
+		// Using the namespace headlessCommerceAdminPricing_v2_0
+
+		Discount discount2 = testGraphQLDeleteDiscount_addDiscount();
+
+		Assert.assertTrue(
+			JSONUtil.getValueAsBoolean(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"headlessCommerceAdminPricing_v2_0",
+						new GraphQLField(
+							"deleteDiscount",
+							new HashMap<String, Object>() {
+								{
+									put("id", discount2.getId());
+								}
+							}))),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminPricing_v2_0",
+				"Object/deleteDiscount"));
+
+		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminPricing_v2_0",
+					new GraphQLField(
+						"discount",
+						new HashMap<String, Object>() {
+							{
+								put("id", discount2.getId());
+							}
+						},
+						new GraphQLField("id")))),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray2.length() > 0);
 	}
 
 	protected Discount testGraphQLDeleteDiscount_addDiscount()
@@ -758,6 +907,8 @@ public abstract class BaseDiscountResourceTestCase {
 	public void testGraphQLGetDiscount() throws Exception {
 		Discount discount = testGraphQLGetDiscount_addDiscount();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				discount,
@@ -773,11 +924,35 @@ public abstract class BaseDiscountResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/discount"))));
+
+		// Using the namespace headlessCommerceAdminPricing_v2_0
+
+		Assert.assertTrue(
+			equals(
+				discount,
+				DiscountSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminPricing_v2_0",
+								new GraphQLField(
+									"discount",
+									new HashMap<String, Object>() {
+										{
+											put("id", discount.getId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminPricing_v2_0",
+						"Object/discount"))));
 	}
 
 	@Test
 	public void testGraphQLGetDiscountNotFound() throws Exception {
 		Long irrelevantId = RandomTestUtil.randomLong();
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -791,6 +966,25 @@ public abstract class BaseDiscountResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminPricing_v2_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminPricing_v2_0",
+						new GraphQLField(
+							"discount",
+							new HashMap<String, Object>() {
+								{
+									put("id", irrelevantId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -1082,6 +1276,14 @@ public abstract class BaseDiscountResourceTestCase {
 					"maximumDiscountAmount", additionalAssertFieldName)) {
 
 				if (discount.getMaximumDiscountAmount() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("modifiedDate", additionalAssertFieldName)) {
+				if (discount.getModifiedDate() == null) {
 					valid = false;
 				}
 
@@ -1542,6 +1744,17 @@ public abstract class BaseDiscountResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("modifiedDate", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						discount1.getModifiedDate(),
+						discount2.getModifiedDate())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("neverExpire", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						discount1.getNeverExpire(),
@@ -1697,6 +1910,10 @@ public abstract class BaseDiscountResourceTestCase {
 
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
+
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
 
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
@@ -1913,20 +2130,20 @@ public abstract class BaseDiscountResourceTestCase {
 
 		if (entityFieldName.equals("displayDate")) {
 			if (operator.equals("between")) {
+				Date date = discount.getDisplayDate();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(discount.getDisplayDate(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(discount.getDisplayDate(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -1944,21 +2161,20 @@ public abstract class BaseDiscountResourceTestCase {
 
 		if (entityFieldName.equals("expirationDate")) {
 			if (operator.equals("between")) {
+				Date date = discount.getExpirationDate();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							discount.getExpirationDate(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(discount.getExpirationDate(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -2132,6 +2348,37 @@ public abstract class BaseDiscountResourceTestCase {
 		if (entityFieldName.equals("maximumDiscountAmount")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
+		}
+
+		if (entityFieldName.equals("modifiedDate")) {
+			if (operator.equals("between")) {
+				Date date = discount.getModifiedDate();
+
+				sb = new StringBundler();
+
+				sb.append("(");
+				sb.append(entityFieldName);
+				sb.append(" gt ");
+				sb.append(
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
+				sb.append(" and ");
+				sb.append(entityFieldName);
+				sb.append(" lt ");
+				sb.append(
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
+				sb.append(")");
+			}
+			else {
+				sb.append(entityFieldName);
+
+				sb.append(" ");
+				sb.append(operator);
+				sb.append(" ");
+
+				sb.append(_dateFormat.format(discount.getModifiedDate()));
+			}
+
+			return sb.toString();
 		}
 
 		if (entityFieldName.equals("neverExpire")) {
@@ -2331,6 +2578,7 @@ public abstract class BaseDiscountResourceTestCase {
 				limitationTimesPerAccount = RandomTestUtil.randomInt();
 				limitationType = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
+				modifiedDate = RandomTestUtil.nextDate();
 				neverExpire = RandomTestUtil.randomBoolean();
 				numberOfUse = RandomTestUtil.randomInt();
 				rulesConjunction = RandomTestUtil.randomBoolean();
@@ -2353,9 +2601,9 @@ public abstract class BaseDiscountResourceTestCase {
 	}
 
 	protected DiscountResource discountResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

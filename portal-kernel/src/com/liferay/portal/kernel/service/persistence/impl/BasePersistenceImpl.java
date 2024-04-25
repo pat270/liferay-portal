@@ -29,7 +29,6 @@ import com.liferay.petra.sql.dsl.spi.query.Select;
 import com.liferay.petra.sql.dsl.spi.query.SetOperation;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.configuration.Filter;
 import com.liferay.portal.kernel.dao.db.DB;
@@ -221,9 +220,7 @@ public class BasePersistenceImpl<T extends BaseModel<T>>
 
 		Object cacheResult = finderCache.getResult(finderPath, arguments, this);
 
-		boolean productionMode = CTCollectionThreadLocal.isProductionMode();
-
-		if ((cacheResult != null) && productionMode) {
+		if (cacheResult != null) {
 			return (R)cacheResult;
 		}
 
@@ -298,9 +295,7 @@ public class BasePersistenceImpl<T extends BaseModel<T>>
 					defaultASTNodeListener.getEnd());
 			}
 
-			if (productionMode) {
-				finderCache.putResult(finderPath, arguments, result);
-			}
+			finderCache.putResult(finderPath, arguments, result);
 
 			return (R)result;
 		}
@@ -597,7 +592,7 @@ public class BasePersistenceImpl<T extends BaseModel<T>>
 	@Override
 	public DB getDB() {
 		if (_db == null) {
-			_db = DBManagerUtil.getDB(_dialect, _dataSource);
+			_db = DBManagerUtil.getDB(getDialect(), _dataSource);
 		}
 
 		return _db;
@@ -605,7 +600,7 @@ public class BasePersistenceImpl<T extends BaseModel<T>>
 
 	@Override
 	public Dialect getDialect() {
-		return _dialect;
+		return _sessionFactory.getDialect();
 	}
 
 	@Override
@@ -707,9 +702,7 @@ public class BasePersistenceImpl<T extends BaseModel<T>>
 	public void setSessionFactory(SessionFactory sessionFactory) {
 		_sessionFactory = sessionFactory;
 
-		_dialect = _sessionFactory.getDialect();
-
-		DBType dbType = DBManagerUtil.getDBType(_dialect);
+		DBType dbType = DBManagerUtil.getDBType(_dataSource);
 
 		_databaseOrderByMaxColumns = GetterUtil.getInteger(
 			PropsUtil.get(
@@ -1226,7 +1219,6 @@ public class BasePersistenceImpl<T extends BaseModel<T>>
 	private DataSource _dataSource;
 	private DB _db;
 	private Map<String, String> _dbColumnNames = Collections.emptyMap();
-	private Dialect _dialect;
 	private Class<T> _modelClass;
 	private Class<? extends T> _modelImplClass;
 	private ModelPKType _modelPKType = ModelPKType.COMPOUND;

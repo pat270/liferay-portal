@@ -45,7 +45,6 @@ default.landing.page.path
 default.regular.color.scheme.id
 default.regular.theme.id
 dl.file.entry.drafts.enabled
-dl.file.entry.processors
 dl.repository.impl
 dl.store.antivirus.enabled
 dl.store.antivirus.impl
@@ -129,7 +128,6 @@ theme.portlet.decorate.default
 theme.portlet.sharing.default
 theme.shortcut.icon
 time.zones
-upgrade.processes
 user.notification.event.confirmation.enabled
 users.email.address.generator
 users.email.address.required

@@ -57,7 +57,9 @@ definition {
 			key_option = "Sample 1",
 			locator1 = "ClaySamplePortlet#SELECTOR_OPTION");
 
-		RobotType.robotTypeShortcut(locator1 = "Ctrl");
+		Type.sendKeys(
+			locator1 = "//body",
+			value1 = "Ctrl");
 
 		Click(
 			key_label = "Multiple Select Element",
@@ -66,7 +68,9 @@ definition {
 
 		takeScreenshot();
 
-		SikuliAssertElementPresent(locator1 = "ClaySamplePortlet#SELECTOR_MULTIPLE_PNG");
+		// Temporarily remove sikuli assertion until fix in LRQA-65984
+
+		//SikuliAssertElementPresent(locator1 = "ClaySamplePortlet#SELECTOR_MULTIPLE_PNG");
 
 		AssertNotEditable(
 			key_label = "Disabled Multiple Select Element",

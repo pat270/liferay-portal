@@ -68,9 +68,9 @@ public class OrganizationServiceWrapper
 	 */
 	@Override
 	public Organization addOrganization(
-			long parentOrganizationId, String name, String type, long regionId,
-			long countryId, long statusListTypeId, String comments,
-			boolean site,
+			String externalReferenceCode, long parentOrganizationId,
+			String name, String type, long regionId, long countryId,
+			long statusListTypeId, String comments, boolean site,
 			java.util.List<com.liferay.portal.kernel.model.Address> addresses,
 			java.util.List<com.liferay.portal.kernel.model.EmailAddress>
 				emailAddresses,
@@ -81,9 +81,9 @@ public class OrganizationServiceWrapper
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _organizationService.addOrganization(
-			parentOrganizationId, name, type, regionId, countryId,
-			statusListTypeId, comments, site, addresses, emailAddresses,
-			orgLabors, phones, websites, serviceContext);
+			externalReferenceCode, parentOrganizationId, name, type, regionId,
+			countryId, statusListTypeId, comments, site, addresses,
+			emailAddresses, orgLabors, phones, websites, serviceContext);
 	}
 
 	/**
@@ -111,14 +111,15 @@ public class OrganizationServiceWrapper
 	 */
 	@Override
 	public Organization addOrganization(
-			long parentOrganizationId, String name, String type, long regionId,
-			long countryId, long statusListTypeId, String comments,
-			boolean site, ServiceContext serviceContext)
+			String externalReferenceCode, long parentOrganizationId,
+			String name, String type, long regionId, long countryId,
+			long statusListTypeId, String comments, boolean site,
+			ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _organizationService.addOrganization(
-			parentOrganizationId, name, type, regionId, countryId,
-			statusListTypeId, comments, site, serviceContext);
+			externalReferenceCode, parentOrganizationId, name, type, regionId,
+			countryId, statusListTypeId, comments, site, serviceContext);
 	}
 
 	@Override
@@ -226,6 +227,15 @@ public class OrganizationServiceWrapper
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _organizationService.fetchOrganization(organizationId);
+	}
+
+	@Override
+	public Organization fetchOrganizationByExternalReferenceCode(
+			String externalReferenceCode, long companyId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _organizationService.fetchOrganizationByExternalReferenceCode(
+			externalReferenceCode, companyId);
 	}
 
 	@Override
@@ -484,9 +494,10 @@ public class OrganizationServiceWrapper
 	 */
 	@Override
 	public Organization updateOrganization(
-			long organizationId, long parentOrganizationId, String name,
-			String type, long regionId, long countryId, long statusListTypeId,
-			String comments, boolean hasLogo, byte[] logoBytes, boolean site,
+			String externalReferenceCode, long organizationId,
+			long parentOrganizationId, String name, String type, long regionId,
+			long countryId, long statusListTypeId, String comments,
+			boolean hasLogo, byte[] logoBytes, boolean site,
 			java.util.List<com.liferay.portal.kernel.model.Address> addresses,
 			java.util.List<com.liferay.portal.kernel.model.EmailAddress>
 				emailAddresses,
@@ -497,10 +508,10 @@ public class OrganizationServiceWrapper
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _organizationService.updateOrganization(
-			organizationId, parentOrganizationId, name, type, regionId,
-			countryId, statusListTypeId, comments, hasLogo, logoBytes, site,
-			addresses, emailAddresses, orgLabors, phones, websites,
-			serviceContext);
+			externalReferenceCode, organizationId, parentOrganizationId, name,
+			type, regionId, countryId, statusListTypeId, comments, hasLogo,
+			logoBytes, site, addresses, emailAddresses, orgLabors, phones,
+			websites, serviceContext);
 	}
 
 	/**
@@ -525,14 +536,16 @@ public class OrganizationServiceWrapper
 	 */
 	@Override
 	public Organization updateOrganization(
-			long organizationId, long parentOrganizationId, String name,
-			String type, long regionId, long countryId, long statusListTypeId,
-			String comments, boolean site, ServiceContext serviceContext)
+			String externalReferenceCode, long organizationId,
+			long parentOrganizationId, String name, String type, long regionId,
+			long countryId, long statusListTypeId, String comments,
+			boolean site, ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _organizationService.updateOrganization(
-			organizationId, parentOrganizationId, name, type, regionId,
-			countryId, statusListTypeId, comments, site, serviceContext);
+			externalReferenceCode, organizationId, parentOrganizationId, name,
+			type, regionId, countryId, statusListTypeId, comments, site,
+			serviceContext);
 	}
 
 	@Override

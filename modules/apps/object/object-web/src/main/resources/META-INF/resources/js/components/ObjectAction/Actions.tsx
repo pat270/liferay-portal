@@ -9,9 +9,8 @@ import {
 	// @ts-ignore
 
 } from '@liferay/frontend-data-set-web';
-import {API, getLocalizableLabel} from '@liferay/object-js-components-web';
 import classNames from 'classnames';
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 
 import {
 	IFDSTableProps,
@@ -19,6 +18,7 @@ import {
 	fdsItem,
 	formatActionURL,
 } from '../../utils/fds';
+import LabelRenderer from '../LabelRenderer';
 
 type Status = {
 	code: number;
@@ -31,6 +31,53 @@ interface ItemData {
 	id: number;
 	label: LocalizedValue<string>;
 	status: Status;
+	system: boolean;
+}
+
+function ObjectActionActiveDataRenderer({itemData}: {itemData: ItemData}) {
+	return itemData.active
+		? Liferay.Language.get('yes')
+		: Liferay.Language.get('no');
+}
+
+function ObjectActionLastExecutionDataRenderer({
+	itemData,
+}: {
+	itemData: ItemData;
+}) {
+	return (
+		<strong
+			className={classNames(
+				'label',
+				itemData.status.label === 'never-ran'
+					? 'label-info'
+					: itemData.status.label === 'failed'
+					? 'label-danger'
+					: 'label-success'
+			)}
+		>
+			{itemData.status.label === 'never-ran'
+				? Liferay.Language.get('never-ran')
+				: itemData.status.label === 'failed'
+				? Liferay.Language.get('failed')
+				: Liferay.Language.get('success')}
+		</strong>
+	);
+}
+
+function ObjectActionSourceDataRenderer({itemData}: {itemData: ItemData}) {
+	return (
+		<strong
+			className={classNames(
+				itemData.system ? 'label-info' : 'label-warning',
+				'label'
+			)}
+		>
+			{itemData.system
+				? Liferay.Language.get('system')
+				: Liferay.Language.get('custom')}
+		</strong>
+	);
 }
 
 export default function Actions({
@@ -39,77 +86,23 @@ export default function Actions({
 	formName,
 	id,
 	items,
-	objectDefinitionExternalReferenceCode,
 	style,
 	url,
 }: IFDSTableProps) {
-	const [creationLanguageId, setCreationLanguageId] = useState<
-		Liferay.Language.Locale
-	>();
-
-	useEffect(() => {
-		const makeFetch = async () => {
-			const objectDefinition = await API.getObjectDefinitionByExternalReferenceCode(
-				objectDefinitionExternalReferenceCode
-			);
-
-			setCreationLanguageId(objectDefinition.defaultLanguageId);
-		};
-
-		makeFetch();
-	}, [objectDefinitionExternalReferenceCode]);
-
-	function objectActionActiveDataRenderer({itemData}: {itemData: ItemData}) {
-		return itemData.active
-			? Liferay.Language.get('yes')
-			: Liferay.Language.get('no');
-	}
-
-	function objectActionLabelDataRenderer({
+	function ObjectActionLabelDataRenderer({
 		itemData,
 		openSidePanel,
 		value,
 	}: fdsItem<ItemData>) {
-		const handleEditAction = () => {
-			openSidePanel({
-				url: formatActionURL(url, itemData.id),
-			});
-		};
-
 		return (
-			<div className="table-list-title">
-				<a href="#" onClick={handleEditAction}>
-					{getLocalizableLabel(
-						creationLanguageId as Liferay.Language.Locale,
-						value
-					)}
-				</a>
-			</div>
-		);
-	}
-
-	function objectActionLastExecutionDataRenderer({
-		itemData,
-	}: {
-		itemData: ItemData;
-	}) {
-		return (
-			<strong
-				className={classNames(
-					'label',
-					itemData.status.label === 'never-ran'
-						? 'label-info'
-						: itemData.status.label === 'failed'
-						? 'label-danger'
-						: 'label-success'
-				)}
-			>
-				{itemData.status.label === 'never-ran'
-					? Liferay.Language.get('never-ran')
-					: itemData.status.label === 'failed'
-					? Liferay.Language.get('failed')
-					: Liferay.Language.get('success')}
-			</strong>
+			<LabelRenderer
+				onClick={() => {
+					openSidePanel({
+						url: formatActionURL(url, itemData.id),
+					});
+				}}
+				value={value}
+			/>
 		);
 	}
 
@@ -118,9 +111,10 @@ export default function Actions({
 		apiURL,
 		creationMenu,
 		customDataRenderers: {
-			objectActionActiveDataRenderer,
-			objectActionLabelDataRenderer,
-			objectActionLastExecutionDataRenderer,
+			ObjectActionActiveDataRenderer,
+			ObjectActionLabelDataRenderer,
+			ObjectActionLastExecutionDataRenderer,
+			ObjectActionSourceDataRenderer,
 		},
 		formName,
 		id,
@@ -138,12 +132,12 @@ export default function Actions({
 				schema: {
 					fields: [
 						{
-							contentRenderer: 'objectActionLabelDataRenderer',
+							contentRenderer: 'ObjectActionLabelDataRenderer',
 							expand: false,
 							fieldName: 'label',
 							label: Liferay.Language.get('label'),
 							localizeLabel: true,
-							sortable: false,
+							sortable: true,
 						},
 						{
 							expand: false,
@@ -153,7 +147,7 @@ export default function Actions({
 							sortable: false,
 						},
 						{
-							contentRenderer: 'objectActionActiveDataRenderer',
+							contentRenderer: 'ObjectActionActiveDataRenderer',
 							expand: false,
 							fieldName: 'active',
 							label: Liferay.Language.get('active'),
@@ -161,8 +155,16 @@ export default function Actions({
 							sortable: false,
 						},
 						{
+							contentRenderer: 'ObjectActionSourceDataRenderer',
+							expand: false,
+							fieldName: 'source',
+							label: Liferay.Language.get('source'),
+							localizeLabel: true,
+							sortable: false,
+						},
+						{
 							contentRenderer:
-								'objectActionLastExecutionDataRenderer',
+								'ObjectActionLastExecutionDataRenderer',
 							expand: false,
 							fieldName: 'status',
 							label: Liferay.Language.get('last-execution'),

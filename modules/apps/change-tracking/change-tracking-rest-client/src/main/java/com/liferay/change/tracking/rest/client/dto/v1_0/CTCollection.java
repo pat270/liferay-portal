@@ -133,6 +133,27 @@ public class CTCollection implements Cloneable, Serializable {
 
 	protected String description;
 
+	public String getExternalReferenceCode() {
+		return externalReferenceCode;
+	}
+
+	public void setExternalReferenceCode(String externalReferenceCode) {
+		this.externalReferenceCode = externalReferenceCode;
+	}
+
+	public void setExternalReferenceCode(
+		UnsafeSupplier<String, Exception> externalReferenceCodeUnsafeSupplier) {
+
+		try {
+			externalReferenceCode = externalReferenceCodeUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String externalReferenceCode;
+
 	public Long getId() {
 		return id;
 	}
@@ -212,6 +233,27 @@ public class CTCollection implements Cloneable, Serializable {
 	}
 
 	protected Status status;
+
+	public String getStatusMessage() {
+		return statusMessage;
+	}
+
+	public void setStatusMessage(String statusMessage) {
+		this.statusMessage = statusMessage;
+	}
+
+	public void setStatusMessage(
+		UnsafeSupplier<String, Exception> statusMessageUnsafeSupplier) {
+
+		try {
+			statusMessage = statusMessageUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String statusMessage;
 
 	@Override
 	public CTCollection clone() throws CloneNotSupportedException {

@@ -6,10 +6,11 @@
 package com.liferay.gradle.plugins.defaults.task;
 
 import com.liferay.gradle.plugins.defaults.internal.util.GradleUtil;
+import com.liferay.gradle.util.hash.HashUtil;
+import com.liferay.gradle.util.hash.HashValue;
 
 import groovy.lang.Closure;
 
-import groovy.util.AntBuilder;
 import groovy.util.CharsetToolkit;
 
 import java.io.File;
@@ -27,21 +28,18 @@ import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.file.CopySpec;
+import org.gradle.api.internal.project.DefaultAntBuilder;
 import org.gradle.api.invocation.Gradle;
-import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputDirectory;
-import org.gradle.api.tasks.OutputDirectory;
+import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
-import org.gradle.internal.hash.HashUtil;
-import org.gradle.internal.hash.HashValue;
 
 /**
  * @author Andrea Di Giorgi
  */
-@CacheableTask
 public class InstallCacheTask extends DefaultTask {
 
 	public InstallCacheTask() {
@@ -77,7 +75,7 @@ public class InstallCacheTask extends DefaultTask {
 		return GradleUtil.toString(_artifactVersion);
 	}
 
-	@OutputDirectory
+	@Internal
 	public File getCacheDestinationDir() {
 		CacheFormat cacheFormat = getCacheFormat();
 
@@ -98,8 +96,7 @@ public class InstallCacheTask extends DefaultTask {
 		return _cacheFormat;
 	}
 
-	@Input
-	@PathSensitive(PathSensitivity.RELATIVE)
+	@Internal
 	public File getCacheRootDir() {
 		return GradleUtil.toFile(getProject(), _cacheRootDir);
 	}
@@ -115,7 +112,7 @@ public class InstallCacheTask extends DefaultTask {
 				getArtifactVersion());
 	}
 
-	@Input
+	@InputDirectory
 	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getMavenRootDir() {
 		return GradleUtil.toFile(getProject(), _mavenRootDir);
@@ -218,7 +215,7 @@ public class InstallCacheTask extends DefaultTask {
 			new Closure<Void>(project) {
 
 				@SuppressWarnings("unused")
-				public void doCall(AntBuilder antBuilder) {
+				public void doCall(DefaultAntBuilder defaultAntBuilder) {
 					Map<String, Object> args = new HashMap<>();
 
 					args.put("encoding", charset.name());
@@ -227,7 +224,7 @@ public class InstallCacheTask extends DefaultTask {
 					args.put("fixlast", false);
 					args.put("outputencoding", StandardCharsets.UTF_8);
 
-					antBuilder.invokeMethod("fixcrlf", args);
+					defaultAntBuilder.invokeMethod("fixcrlf", args);
 				}
 
 			});

@@ -7,11 +7,11 @@ package com.liferay.document.library.item.selector.web.internal.display.context;
 
 import com.liferay.asset.kernel.model.AssetVocabulary;
 import com.liferay.asset.kernel.service.AssetVocabularyService;
-import com.liferay.depot.model.DepotEntry;
-import com.liferay.depot.service.DepotEntryServiceUtil;
+import com.liferay.depot.util.SiteConnectedGroupGroupProviderUtil;
 import com.liferay.document.library.constants.DLPortletKeys;
 import com.liferay.document.library.item.selector.web.internal.DLItemSelectorView;
 import com.liferay.document.library.item.selector.web.internal.criterion.DLItemSelectorCriterionCreationMenuRestrictionUtil;
+import com.liferay.document.library.item.selector.web.internal.file.DLCustomFileItemSelectorView;
 import com.liferay.document.library.kernel.model.DLFileEntryConstants;
 import com.liferay.document.library.kernel.model.DLFileEntryType;
 import com.liferay.document.library.kernel.model.DLFileEntryTypeConstants;
@@ -23,12 +23,13 @@ import com.liferay.document.library.kernel.service.DLFileEntryTypeLocalService;
 import com.liferay.document.library.kernel.service.DLFileEntryTypeLocalServiceUtil;
 import com.liferay.document.library.kernel.service.DLFolderLocalServiceUtil;
 import com.liferay.document.library.kernel.util.DLUtil;
+import com.liferay.document.library.kernel.util.DLValidatorUtil;
 import com.liferay.item.selector.ItemSelectorCriterion;
 import com.liferay.item.selector.ItemSelectorReturnTypeResolver;
 import com.liferay.item.selector.ItemSelectorReturnTypeResolverHandler;
+import com.liferay.item.selector.criteria.file.criterion.CustomFileItemSelectorCriterion;
 import com.liferay.item.selector.criteria.info.item.criterion.InfoItemItemSelectorCriterion;
 import com.liferay.item.selector.taglib.servlet.taglib.util.RepositoryEntryBrowserTagUtil;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.dao.search.SearchPaginationUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -55,7 +56,7 @@ import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -63,6 +64,7 @@ import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.util.RepositoryUtil;
 import com.liferay.staging.StagingGroupHelper;
 
 import java.util.ArrayList;
@@ -132,6 +134,13 @@ public class DLItemSelectorViewDisplayContext<T extends ItemSelectorCriterion> {
 	}
 
 	public String[] getExtensions() {
+		if (_itemSelectorCriterion instanceof CustomFileItemSelectorCriterion) {
+			CustomFileItemSelectorCriterion customFileItemSelectorCriterion =
+				(CustomFileItemSelectorCriterion)_itemSelectorCriterion;
+
+			return customFileItemSelectorCriterion.getExtensions();
+		}
+
 		return _dlItemSelectorView.getExtensions();
 	}
 
@@ -153,6 +162,20 @@ public class DLItemSelectorViewDisplayContext<T extends ItemSelectorCriterion> {
 		return _itemSelectorReturnTypeResolverHandler.
 			getItemSelectorReturnTypeResolver(
 				_itemSelectorCriterion, _dlItemSelectorView, FileEntry.class);
+	}
+
+	public long getMaxFileSize() {
+		if (_itemSelectorCriterion instanceof DLCustomFileItemSelectorView) {
+			CustomFileItemSelectorCriterion customFileItemSelectorCriterion =
+				(CustomFileItemSelectorCriterion)_itemSelectorCriterion;
+
+			return DLValidatorUtil.getMaxAllowableSize(
+				_themeDisplay.getScopeGroupId(), null,
+				customFileItemSelectorCriterion.getMaxFileSize());
+		}
+
+		return DLValidatorUtil.getMaxAllowableSize(
+			_themeDisplay.getScopeGroupId(), null);
 	}
 
 	public String getMimeTypeRestriction() {
@@ -277,8 +300,8 @@ public class DLItemSelectorViewDisplayContext<T extends ItemSelectorCriterion> {
 		}
 
 		return DLAppServiceUtil.getFoldersAndFileEntriesAndFileShortcutsCount(
-			_getStagingAwareGroupId(), getFolderId(),
-			WorkflowConstants.STATUS_APPROVED, _getMimeTypes(), false, false);
+			_repository.getRepositoryId(), getFolderId(),
+			WorkflowConstants.STATUS_APPROVED, _getMimeTypes(), true, false);
 	}
 
 	public String getTitle() {
@@ -307,7 +330,8 @@ public class DLItemSelectorViewDisplayContext<T extends ItemSelectorCriterion> {
 
 			for (AssetVocabulary assetVocabulary : assetVocabularies) {
 				if (assetVocabulary.isRequired(
-						classNameId, defaultFileEntryTypeId)) {
+						classNameId, defaultFileEntryTypeId,
+						_themeDisplay.getScopeGroupId())) {
 
 					return null;
 				}
@@ -337,7 +361,9 @@ public class DLItemSelectorViewDisplayContext<T extends ItemSelectorCriterion> {
 			_showDragAndDropZone = false;
 		}
 		else {
-			if (DLUtil.hasWorkflowDefinitionLink(
+			if (RepositoryUtil.isExternalRepository(
+					_repository.getRepositoryId()) ||
+				DLUtil.hasWorkflowDefinitionLink(
 					_themeDisplay.getCompanyId(),
 					_themeDisplay.getScopeGroupId(), getFolderId(),
 					DLFileEntryTypeLocalServiceUtil.getDefaultFileEntryTypeId(
@@ -425,14 +451,9 @@ public class DLItemSelectorViewDisplayContext<T extends ItemSelectorCriterion> {
 
 	private long[] _getGroupIds() throws PortalException {
 		if (_isEverywhereScopeFilter()) {
-			return ArrayUtil.append(
-				PortalUtil.getCurrentAndAncestorSiteGroupIds(
-					_themeDisplay.getScopeGroupId()),
-				ListUtil.toLongArray(
-					DepotEntryServiceUtil.getGroupConnectedDepotEntries(
-						_themeDisplay.getScopeGroupId(), QueryUtil.ALL_POS,
-						QueryUtil.ALL_POS),
-					DepotEntry::getGroupId));
+			return SiteConnectedGroupGroupProviderUtil.
+				getCurrentAndAncestorSiteAndDepotGroupIds(
+					_themeDisplay.getScopeGroupId());
 		}
 
 		return PortalUtil.getCurrentAndAncestorSiteGroupIds(
@@ -459,7 +480,27 @@ public class DLItemSelectorViewDisplayContext<T extends ItemSelectorCriterion> {
 
 		ItemSelectorCriterion itemSelectorCriterion = _itemSelectorCriterion;
 
-		if (itemSelectorCriterion instanceof InfoItemItemSelectorCriterion) {
+		if (itemSelectorCriterion instanceof CustomFileItemSelectorCriterion) {
+			String[] customFileItemSelectorMimeTypes = new String[0];
+
+			CustomFileItemSelectorCriterion customFileItemSelectorCriterion =
+				(CustomFileItemSelectorCriterion)itemSelectorCriterion;
+
+			for (String extension :
+					customFileItemSelectorCriterion.getExtensions()) {
+
+				customFileItemSelectorMimeTypes = ArrayUtil.append(
+					customFileItemSelectorMimeTypes,
+					MimeTypesUtil.getExtensionContentType(extension));
+			}
+
+			if (ArrayUtil.isNotEmpty(customFileItemSelectorMimeTypes)) {
+				mimeTypes = customFileItemSelectorMimeTypes;
+			}
+		}
+		else if (itemSelectorCriterion instanceof
+					InfoItemItemSelectorCriterion) {
+
 			InfoItemItemSelectorCriterion infoItemItemSelectorCriterion =
 				(InfoItemItemSelectorCriterion)itemSelectorCriterion;
 

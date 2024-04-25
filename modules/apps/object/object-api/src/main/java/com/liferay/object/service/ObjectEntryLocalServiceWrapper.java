@@ -492,9 +492,29 @@ public class ObjectEntryLocalServiceWrapper
 	}
 
 	@Override
+	public long getObjectEntriesCount(
+			long userId, java.util.Date createDate, long objectDefinitionId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _objectEntryLocalService.getObjectEntriesCount(
+			userId, createDate, objectDefinitionId);
+	}
+
+	@Override
 	public int getObjectEntriesCount(long groupId, long objectDefinitionId) {
 		return _objectEntryLocalService.getObjectEntriesCount(
 			groupId, objectDefinitionId);
+	}
+
+	@Override
+	public long getObjectEntriesCount(
+			long groupId,
+			com.liferay.object.model.ObjectDefinition objectDefinition,
+			com.liferay.petra.sql.dsl.expression.Predicate predicate)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _objectEntryLocalService.getObjectEntriesCount(
+			groupId, objectDefinition, predicate);
 	}
 
 	/**
@@ -639,13 +659,12 @@ public class ObjectEntryLocalServiceWrapper
 				long objectDefinitionId,
 				com.liferay.petra.sql.dsl.expression.Predicate predicate,
 				String search, int start, int end,
-				com.liferay.petra.sql.dsl.query.sort.OrderByExpression[]
-					orderByExpressions)
+				com.liferay.portal.kernel.search.Sort[] sorts)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _objectEntryLocalService.getValuesList(
 			groupId, companyId, userId, objectDefinitionId, predicate, search,
-			start, end, orderByExpressions);
+			start, end, sorts);
 	}
 
 	@Override

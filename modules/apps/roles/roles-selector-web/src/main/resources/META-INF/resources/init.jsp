@@ -12,6 +12,7 @@
 <%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %><%@
 taglib uri="http://liferay.com/tld/clay" prefix="clay" %><%@
 taglib uri="http://liferay.com/tld/frontend" prefix="liferay-frontend" %><%@
+taglib uri="http://liferay.com/tld/site" prefix="liferay-site" %><%@
 taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %><%@
 taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %><%@
 taglib uri="http://liferay.com/tld/util" prefix="liferay-util" %>
@@ -38,11 +39,11 @@ page import="com.liferay.portal.kernel.util.HtmlUtil" %><%@
 page import="com.liferay.portal.kernel.util.ParamUtil" %><%@
 page import="com.liferay.portal.kernel.util.Validator" %><%@
 page import="com.liferay.portal.service.persistence.constants.UserGroupFinderConstants" %><%@
+page import="com.liferay.portlet.usersadmin.util.UsersAdminUtil" %><%@
 page import="com.liferay.roles.selector.web.internal.constants.RolesSelectorPortletKeys" %><%@
 page import="com.liferay.roles.selector.web.internal.display.context.EditRolesDisplayContext" %><%@
 page import="com.liferay.roles.selector.web.internal.display.context.EditRolesUsersDisplayContext" %><%@
-page import="com.liferay.site.search.UserGroupGroupRoleUserGroupChecker" %><%@
-page import="com.liferay.users.admin.kernel.util.UsersAdminUtil" %>
+page import="com.liferay.site.search.UserGroupGroupRoleUserGroupChecker" %>
 
 <%@ page import="java.util.LinkedHashMap" %>
 

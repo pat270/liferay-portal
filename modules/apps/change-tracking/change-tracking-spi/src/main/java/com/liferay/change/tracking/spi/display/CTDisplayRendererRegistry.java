@@ -41,6 +41,8 @@ public interface CTDisplayRendererRegistry {
 		long ctCollectionId, CTSQLModeThreadLocal.CTSQLMode ctSQLMode, T model,
 		long modelClassNameId);
 
+	public <T extends BaseModel<T>> int getChangeType(CTEntry ctEntry, T model);
+
 	public long getCtCollectionId(CTCollection ctCollection, CTEntry ctEntry)
 		throws PortalException;
 
@@ -79,5 +81,11 @@ public interface CTDisplayRendererRegistry {
 
 	public <T extends BaseModel<T>> boolean isHideable(
 		T model, long modelClassNameId);
+
+	public <T extends BaseModel<T>> boolean isMovable(
+		T model, long modelClassNameId);
+
+	public <T extends BaseModel<T>> boolean isWorkflowEnabled(
+		CTEntry ctEntry, T model);
 
 }

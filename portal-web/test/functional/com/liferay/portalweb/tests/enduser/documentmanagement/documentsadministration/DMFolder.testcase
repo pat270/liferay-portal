@@ -156,6 +156,54 @@ definition {
 		DMFolder.viewEntryPresent(dmFolderName = "DM SubFolder2 Name");
 	}
 
+	@description = "This test ensures that Users can copy multiple folders with documents at the same time."
+	@priority = 5
+	test CanBulkCopyFoldersWithFiles {
+		HeadlessSite.addSite(siteName = "Site Name");
+
+		for (var entryCount : list "1,2,3") {
+			JSONFolder.addFolder(
+				dmFolderDescription = "DM Folder Description",
+				dmFolderName = "DM Folder Name ${entryCount}",
+				groupName = "Guest");
+		}
+
+		for (var entryCount : list "1,2,3") {
+			JSONDocument.addFileWithUploadedFile(
+				dmDocumentDescription = "DM Document Description",
+				dmDocumentTitle = "DM Document Title",
+				folderName = "DM Folder Name ${entryCount}",
+				groupName = "Guest",
+				mimeType = "application/msword",
+				sourceFileName = "Document_1.doc");
+		}
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMFolder.deleteCP(dmFolderName = "Provided by Liferay");
+
+		PortletEntry.selectAll();
+
+		DMNavigator.gotoItemViaManagementBar(
+			item = "dropdownMenu",
+			menuItem = "Copy To");
+
+		DMFolder.copy(
+			bulkCopy = "true",
+			homeFolder = "true",
+			siteName = "Site Name");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "site-name");
+
+		for (var entryCount : list "1,2,3") {
+			DMNavigator.gotoFolder(dmFolderName = "DM Folder Name ${entryCount}");
+
+			LexiconEntry.viewEntryName(rowEntry = "DM Document Title");
+
+			DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "site-name");
+		}
+	}
+
 	@priority = 3
 	test CanChangeRatingTypeForFolder {
 		var responseFromFolder = DocumentFolderAPI.addDocumentFolder(
@@ -182,8 +230,6 @@ definition {
 	@description = "This test ensures that a folder can be copied to the global site folder."
 	@priority = 5
 	test CanCopyFolderToGlobalSite {
-		property custom.properties = "feature.flag.LPS-182512=true";
-
 		JSONFolder.addFolder(
 			dmFolderDescription = "DM Folder Description",
 			dmFolderName = "DM Folder Name",
@@ -270,7 +316,7 @@ definition {
 		DMFolder.deletePG(dmFolderName = "DM Folder Name");
 	}
 
-	@priority = 5
+	@priority = 3
 	test CanDeleteRatingForFolder {
 		var responseFromFolder = DocumentFolderAPI.addDocumentFolder(
 			groupName = "Guest",
@@ -287,11 +333,10 @@ definition {
 		Ratings.revokeStarsRating();
 	}
 
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanDeleteSubFolderInSite {
 		property custom.properties = "dl.actions.visible=true";
-		property portal.acceptance = "true";
 
 		JSONFolder.addFolder(
 			dmFolderDescription = "DM Folder Description",
@@ -336,7 +381,7 @@ definition {
 		DMFolder.viewCP(dmFolderName = "DM Folder Name Name");
 	}
 
-	@priority = 5
+	@priority = 3
 	test CanEditRatingForFolder {
 		var responseFromFolder = DocumentFolderAPI.addDocumentFolder(
 			groupName = "Guest",
@@ -562,8 +607,6 @@ definition {
 	@description = "This test ensures that an error is displayed when copying a duplicated folder."
 	@priority = 4
 	test CannotCopyDuplicatedDocument {
-		property custom.properties = "feature.flag.LPS-182512=true";
-
 		HeadlessSite.addSite(siteName = "Site Name");
 
 		JSONFolder.addFolder(

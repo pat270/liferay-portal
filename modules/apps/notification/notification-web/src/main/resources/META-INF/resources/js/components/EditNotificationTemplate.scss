@@ -1,4 +1,10 @@
+@import 'atlas-variables';
+
 .lfr__notification-template {
+	&-basic-info {
+		display: grid;
+	}
+
 	&-container {
 		background-color: #f1f2f5;
 	}
@@ -11,6 +17,15 @@
 	&-card {
 		display: grid;
 		margin-top: 5rem;
+	}
+
+	&-email-notification-settings-tooltip-icon {
+		color: $secondary-l1;
+		cursor: pointer;
+	}
+
+	&-email-notification-settings-tooltip-icon:hover {
+		color: $secondary-d1;
 	}
 
 	&-label {

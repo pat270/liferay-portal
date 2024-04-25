@@ -167,7 +167,7 @@ definition {
 	@description = "COMMERCE-10841. Verify that using the impersonate feature the context is saved on Minium"
 	@priority = 3
 	test CanAssertImpersonatingOnMiniumMaintainsContext {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "false";
 
 		task ("Given a Minium Site is created") {
@@ -224,26 +224,17 @@ definition {
 		}
 
 		task ("When the user Test Test goes into User and Organizations") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Users and Organizations");
+			User.openUsersAdmin();
 		}
 
 		task ("And impersonates the user Administrator") {
 			User.impersonateCP(userName = "Administrator");
 
-			SelectWindow(locator1 = "title=Home - ${siteName}");
+			SelectWindow(value1 = "title=Home - ${siteName}");
 		}
 
 		task ("And navigates on Minium") {
-			ScrollWebElementIntoView(
-				key_dropdownItem = "My Sites",
-				locator1 = "UserBar#USER_AVATAR_DROPDOWN_ITEM");
-
-			Click(
-				key_dropdownItem = "My Sites",
-				locator1 = "UserBar#USER_AVATAR_DROPDOWN_ITEM");
+			UserBar.gotoDropdownItem(dropdownItem = "My Sites");
 
 			SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
@@ -257,14 +248,13 @@ definition {
 				key_userName = "Administrator Administrator",
 				locator1 = "CommerceAccelerators#MINIUM_SIDEBAR_USER_NAME");
 
-			Close.closeWindow(locator1 = "title=Users and Organizations - ${siteName}");
+			Close.closeWindow(locator1 = "title=Users - Users - Users and Organizations - ${siteName}");
 		}
 	}
 
 	@description = "This is a test case for COMMERCE-10840. The all types of accounts can be created via API"
 	@priority = 3
 	test CanCreateAllTypesOfAccountsViaAPI {
-		property custom.properties = "feature.flag.COMMERCE-10890=true";
 		property portal.acceptance = "false";
 
 		task ("When a 'Guest' type of account is post and passed via API") {

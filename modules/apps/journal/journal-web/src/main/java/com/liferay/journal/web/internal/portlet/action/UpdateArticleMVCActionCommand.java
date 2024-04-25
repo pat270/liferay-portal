@@ -15,6 +15,7 @@ import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.dynamic.data.mapping.storage.Fields;
 import com.liferay.dynamic.data.mapping.util.DDMFormValuesToFieldsConverter;
+import com.liferay.journal.constants.JournalArticleConstants;
 import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.exception.ArticleContentSizeException;
 import com.liferay.journal.model.JournalArticle;
@@ -28,12 +29,14 @@ import com.liferay.layout.service.LayoutClassedModelUsageLocalService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Portlet;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
@@ -50,7 +53,7 @@ import com.liferay.portal.kernel.upload.UploadException;
 import com.liferay.portal.kernel.upload.UploadPortletRequest;
 import com.liferay.portal.kernel.util.FriendlyURLNormalizer;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.kernel.util.Html;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -69,6 +72,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -136,7 +140,16 @@ public class UpdateArticleMVCActionCommand extends BaseMVCActionCommand {
 			actionRequest, ActionRequest.ACTION_NAME);
 
 		long groupId = ParamUtil.getLong(uploadPortletRequest, "groupId");
+
 		long folderId = ParamUtil.getLong(uploadPortletRequest, "folderId");
+
+		long newFolderId = ParamUtil.getLong(
+			uploadPortletRequest, "newFolderId");
+
+		if (newFolderId > 0) {
+			folderId = newFolderId;
+		}
+
 		String articleId = ParamUtil.getString(
 			uploadPortletRequest, "articleId");
 
@@ -174,14 +187,14 @@ public class UpdateArticleMVCActionCommand extends BaseMVCActionCommand {
 		String layoutUuid = ParamUtil.getString(
 			uploadPortletRequest, "layoutUuid");
 
+		JournalArticle latestArticle = _journalArticleService.fetchArticle(
+			groupId, articleId);
+
 		if ((displayPageType == AssetDisplayPageConstants.TYPE_DEFAULT) ||
 			(displayPageType == AssetDisplayPageConstants.TYPE_SPECIFIC)) {
 
 			Layout targetLayout = _journalHelper.getArticleLayout(
 				layoutUuid, groupId);
-
-			JournalArticle latestArticle = _journalArticleService.fetchArticle(
-				groupId, articleId);
 
 			if ((displayPageType == AssetDisplayPageConstants.TYPE_SPECIFIC) &&
 				(targetLayout == null) && (latestArticle != null) &&
@@ -273,20 +286,45 @@ public class UpdateArticleMVCActionCommand extends BaseMVCActionCommand {
 		boolean indexable = ParamUtil.getBoolean(
 			uploadPortletRequest, "indexable");
 
-		String smallImageSource = ParamUtil.getString(
-			uploadPortletRequest, "smallImageSource", "none");
+		int smallImageSource = ParamUtil.getInteger(
+			uploadPortletRequest, "smallImageSource",
+			JournalArticleConstants.SMALL_IMAGE_SOURCE_NONE);
 
-		boolean smallImage = !Objects.equals(smallImageSource, "none");
+		boolean smallImage = false;
 
+		if (smallImageSource !=
+				JournalArticleConstants.SMALL_IMAGE_SOURCE_NONE) {
+
+			smallImage = true;
+		}
+
+		long smallImageId = 0;
 		String smallImageURL = StringPool.BLANK;
 		File smallFile = null;
 
-		if (Objects.equals(smallImageSource, "url")) {
+		if (smallImageSource ==
+				JournalArticleConstants.
+					SMALL_IMAGE_SOURCE_DOCUMENTS_AND_MEDIA) {
+
+			smallImageId = ParamUtil.getLong(
+				uploadPortletRequest, "smallImageId");
+		}
+		else if (smallImageSource ==
+					JournalArticleConstants.SMALL_IMAGE_SOURCE_URL) {
+
 			smallImageURL = ParamUtil.getString(
 				uploadPortletRequest, "smallImageURL");
 		}
-		else if (Objects.equals(smallImageSource, "file")) {
+		else if (smallImageSource ==
+					JournalArticleConstants.SMALL_IMAGE_SOURCE_USER_COMPUTER) {
+
 			smallFile = uploadPortletRequest.getFile("smallFile");
+
+			if (((smallFile == null) || (smallFile.length() == 0)) &&
+				(latestArticle != null)) {
+
+				smallImageId = latestArticle.getSmallImageId();
+			}
 		}
 
 		String articleURL = ParamUtil.getString(
@@ -318,8 +356,9 @@ public class UpdateArticleMVCActionCommand extends BaseMVCActionCommand {
 				expirationDateDay, expirationDateYear, expirationDateHour,
 				expirationDateMinute, neverExpire, reviewDateMonth,
 				reviewDateDay, reviewDateYear, reviewDateHour, reviewDateMinute,
-				neverReview, indexable, smallImage, smallImageURL, smallFile,
-				null, articleURL, serviceContext);
+				neverReview, indexable, smallImage, smallImageId,
+				smallImageSource, smallImageURL, smallFile, null, articleURL,
+				serviceContext);
 		}
 		else {
 
@@ -343,8 +382,8 @@ public class UpdateArticleMVCActionCommand extends BaseMVCActionCommand {
 					expirationDateHour, expirationDateMinute, neverExpire,
 					reviewDateMonth, reviewDateDay, reviewDateYear,
 					reviewDateHour, reviewDateMinute, neverReview, indexable,
-					smallImage, smallImageURL, smallFile, null, articleURL,
-					serviceContext);
+					smallImage, smallImageId, smallImageSource, smallImageURL,
+					smallFile, null, articleURL, serviceContext);
 			}
 
 			if (!tempOldUrlTitle.equals(article.getUrlTitle())) {
@@ -414,6 +453,56 @@ public class UpdateArticleMVCActionCommand extends BaseMVCActionCommand {
 				MultiSessionMessages.add(
 					actionRequest, portletResource + "requestProcessed");
 			}
+
+			if (FeatureFlagManagerUtil.isEnabled("LPD-15596")) {
+				if (article.isPending()) {
+					ThemeDisplay themeDisplay =
+						(ThemeDisplay)actionRequest.getAttribute(
+							WebKeys.THEME_DISPLAY);
+
+					User user = themeDisplay.getUser();
+
+					Date displayDate = _portal.getDate(
+						displayDateMonth, displayDateDay, displayDateYear,
+						displayDateHour, displayDateMinute, user.getTimeZone(),
+						null);
+
+					if (displayDate != null) {
+						MultiSessionMessages.add(
+							actionRequest, "articlePendingScheduled",
+							article.getId());
+					}
+					else {
+						MultiSessionMessages.add(
+							actionRequest, "articlePending", article.getId());
+					}
+				}
+				else if (article.isScheduled()) {
+					MultiSessionMessages.add(
+						actionRequest, "articleScheduled", article.getId());
+				}
+				else {
+					if (actionName.equals("/journal/add_article")) {
+						MultiSessionMessages.add(
+							actionRequest, "articleCreated", article.getId());
+					}
+					else {
+						MultiSessionMessages.add(
+							actionRequest, "articleUpdated", article.getId());
+					}
+				}
+			}
+		}
+
+		if (!FeatureFlagManagerUtil.isEnabled("LPD-15596")) {
+			if (actionName.equals("/journal/add_article")) {
+				MultiSessionMessages.add(
+					actionRequest, "articleCreated", article.getId());
+			}
+			else {
+				MultiSessionMessages.add(
+					actionRequest, "articleUpdated", article.getId());
+			}
 		}
 
 		HttpServletRequest httpServletRequest = _portal.getHttpServletRequest(
@@ -444,6 +533,8 @@ public class UpdateArticleMVCActionCommand extends BaseMVCActionCommand {
 				_portal.getPortletId(actionRequest) +
 					SessionMessages.KEY_SUFFIX_HIDE_DEFAULT_SUCCESS_MESSAGE);
 		}
+
+		hideDefaultSuccessMessage(actionRequest);
 	}
 
 	private Map<String, String> _getFriendlyURLWarningMessages(
@@ -495,8 +586,9 @@ public class UpdateArticleMVCActionCommand extends BaseMVCActionCommand {
 						httpServletRequest, "for-locale-x-x-was-changed-to-x",
 						new Object[] {
 							"<strong>" + locale.getLanguage() + "</strong>",
-							"<strong>" + _html.escapeURL(originalFriendlyURL) +
-								"</strong>",
+							"<strong>" +
+								HtmlUtil.escapeURL(originalFriendlyURL) +
+									"</strong>",
 							"<strong>" + currentFriendlyURL + "</strong>"
 						}));
 			}
@@ -631,8 +723,8 @@ public class UpdateArticleMVCActionCommand extends BaseMVCActionCommand {
 			PortletURLFactoryUtil.create(
 				actionRequest, JournalPortletKeys.JOURNAL,
 				PortletRequest.RENDER_PHASE)
-		).setMVCPath(
-			"/edit_article.jsp"
+		).setMVCRenderCommandName(
+			"/journal/edit_article"
 		).setRedirect(
 			redirect
 		).setPortletResource(
@@ -778,9 +870,6 @@ public class UpdateArticleMVCActionCommand extends BaseMVCActionCommand {
 
 	@Reference
 	private FriendlyURLNormalizer _friendlyURLNormalizer;
-
-	@Reference
-	private Html _html;
 
 	@Reference
 	private JournalArticleLocalService _journalArticleLocalService;

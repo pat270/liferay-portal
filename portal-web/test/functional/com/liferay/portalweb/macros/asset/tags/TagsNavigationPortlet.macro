@@ -1,6 +1,7 @@
 definition {
 
-	macro clickTagView {
+	@summary = "Default summary"
+	macro clickTagView(tagAssetCount = null, tagName = null) {
 		var key_tagName = ${tagName};
 
 		if (isSet(tagAssetCount)) {
@@ -14,7 +15,8 @@ definition {
 			value1 = ${tagName});
 	}
 
-	macro configureDisplayStylePG {
+	@summary = "Default summary"
+	macro configureDisplayStylePG(displayTemplate = null) {
 		Portlet.gotoPortletOptions(
 			portletName = "Tag Filter",
 			portletOption = "Configuration");
@@ -22,15 +24,19 @@ definition {
 		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		if (isSet(displayTemplate)) {
-			Select(
-				locator1 = "Select#DISPLAY_TEMPLATE",
-				value1 = ${displayTemplate});
+			Click(
+				key_class = "display-template-selector",
+				key_index = 1,
+				locator1 = "Button#ANY_WITH_CLASS_AND_INDEX");
+
+			MenuItem.click(menuItem = ${displayTemplate});
 		}
 
 		PortletEntry.save();
 	}
 
-	macro configureFlaggableSettingsPG {
+	@summary = "Default summary"
+	macro configureFlaggableSettingsPG(showAssetCount = null, showUnusedTags = null) {
 		Portlet.gotoPortletOptions(
 			portletName = "Tag Filter",
 			portletOption = "Configuration");
@@ -52,7 +58,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro viewADTColorByPopularityPG {
+	@summary = "Default summary"
+	macro viewADTColorByPopularityPG(adtTagColor = null, tagName = null) {
 		var key_adtTagColor = ${adtTagColor};
 		var key_tagName = ${tagName};
 
@@ -61,7 +68,8 @@ definition {
 			value1 = ${tagName});
 	}
 
-	macro viewDefaultPG {
+	@summary = "Default summary"
+	macro viewDefaultPG(tagNameList = null) {
 		for (var tagName : list ${tagNameList}) {
 			var key_tagName = ${tagName};
 
@@ -71,7 +79,8 @@ definition {
 		}
 	}
 
-	macro viewTagCloud {
+	@summary = "Default summary"
+	macro viewTagCloud(tagPopularityLevel = null, tagName = null) {
 		var key_tagPopularityLevel = ${tagPopularityLevel};
 
 		AssertTextEquals(
@@ -79,7 +88,8 @@ definition {
 			value1 = ${tagName});
 	}
 
-	macro viewTagCloudConfiguration {
+	@summary = "Default summary"
+	macro viewTagCloudConfiguration(displayTemplate = null, showAssetCount = null, showUnusedTags = null) {
 		Portlet.gotoPortletOptions(
 			portletName = "Tag Cloud",
 			portletOption = "Configuration");
@@ -87,7 +97,7 @@ definition {
 		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		if (isSet(displayTemplate)) {
-			AssertSelectedLabel(
+			AssertTextEquals(
 				locator1 = "Select#DISPLAY_TEMPLATE",
 				value1 = ${displayTemplate});
 		}

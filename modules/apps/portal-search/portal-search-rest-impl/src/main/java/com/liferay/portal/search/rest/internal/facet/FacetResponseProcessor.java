@@ -18,6 +18,7 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
@@ -86,6 +87,25 @@ public class FacetResponseProcessor {
 		return null;
 	}
 
+	private String _getDateRangeDisplayName(
+		FacetConfiguration facetConfiguration, Locale locale, String term) {
+
+		Map<String, Object> attributes = facetConfiguration.getAttributes();
+
+		JSONArray rangesJSONArray = _jsonFactory.createJSONArray(
+			(List<Map<String, Object>>)attributes.get("ranges"));
+
+		for (int i = 0; i < rangesJSONArray.length(); i++) {
+			JSONObject jsonObject = rangesJSONArray.getJSONObject(i);
+
+			if (StringUtil.equals(jsonObject.getString("range"), term)) {
+				return _language.get(locale, jsonObject.getString("label"));
+			}
+		}
+
+		return term;
+	}
+
 	private String _getDisplayName(
 		long companyId, FacetConfiguration facetConfiguration, Locale locale,
 		String term, long userId) {
@@ -102,6 +122,11 @@ public class FacetResponseProcessor {
 
 			return _getAssetCategoryDisplayName(
 				locale, GetterUtil.getLong(term));
+		}
+		else if (StringUtil.equals(
+					"date-range", facetConfiguration.getName())) {
+
+			return _getDateRangeDisplayName(facetConfiguration, locale, term);
 		}
 		else if (StringUtil.equals("folder", facetConfiguration.getName())) {
 			return _getFolderDisplayName(
@@ -157,6 +182,10 @@ public class FacetResponseProcessor {
 
 	private String _getSiteDisplayName(long groupId, Locale locale) {
 		Group group = _groupLocalService.fetchGroup(groupId);
+
+		if (group == null) {
+			return null;
+		}
 
 		try {
 			String name = group.getDescriptiveName(locale);
@@ -357,8 +386,16 @@ public class FacetResponseProcessor {
 
 		for (FacetConfiguration facetConfiguration : facetConfigurations) {
 			Facet facet = searchResponse.withFacetContextGet(
-				facetContext -> facetContext.getFacet(
-					facetConfiguration.getName()));
+				facetContext -> {
+					if (Validator.isNotNull(
+							facetConfiguration.getAggregationName())) {
+
+						return facetContext.getFacet(
+							facetConfiguration.getAggregationName());
+					}
+
+					return facetContext.getFacet(facetConfiguration.getName());
+				});
 
 			if (facet == null) {
 				continue;

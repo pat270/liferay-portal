@@ -7,10 +7,10 @@ import {Text} from '@clayui/core';
 import {
 	Card,
 	FormError,
-	InputLocalized,
 	RichTextLocalized,
 	SingleSelect,
 } from '@liferay/object-js-components-web';
+import {InputLocalized} from 'frontend-js-components-web';
 import React from 'react';
 
 import {Attachments} from './Attachments';
@@ -25,11 +25,7 @@ const EDITOR_TYPES = [
 		label: Liferay.Language.get('rich-text'),
 		value: 'richText',
 	},
-];
-
-interface EditorType extends LabelValueObject {
-	value: editorTypeOptions;
-}
+] as LabelValueObject<EditorTypeOptions>[];
 
 interface ContentContainerProps {
 	baseResourceURL: string;
@@ -66,6 +62,7 @@ export default function ContentContainer({
 				{...(values.type === 'userNotification' && {
 					component: 'textarea',
 				})}
+				disabled={values.system}
 				error={errors.subject}
 				label={Liferay.Language.get('subject')}
 				name="subject"
@@ -83,21 +80,18 @@ export default function ContentContainer({
 
 			{values.type === 'email' && (
 				<>
-					<SingleSelect<EditorType>
+					<SingleSelect<LabelValueObject<EditorTypeOptions>>
+						disabled={values.system}
+						items={EDITOR_TYPES}
 						label={Liferay.Language.get('editor-type')}
-						onChange={({value}: EditorType) => {
+						onSelectionChange={(value) => {
 							setValues({
 								...values,
-								editorType: value,
+								editorType: value as EditorTypeOptions,
 							});
 						}}
-						options={EDITOR_TYPES as EditorType[]}
 						required
-						value={
-							EDITOR_TYPES.find(
-								({value}) => value === values.editorType
-							)?.label
-						}
+						selectedKey={values.editorType}
 					/>
 
 					{values.editorType === 'richText' ? (
@@ -114,6 +108,7 @@ export default function ContentContainer({
 									body: translation,
 								});
 							}}
+							readOnly={values.system}
 							selectedLocale={selectedLocale}
 							translations={values.body}
 						/>
@@ -139,7 +134,11 @@ export default function ContentContainer({
 			)}
 
 			{values.type === 'email' && (
-				<Attachments setValues={setValues} values={values} />
+				<Attachments
+					objectDefinitions={objectDefinitions}
+					setValues={setValues}
+					values={values}
+				/>
 			)}
 		</Card>
 	);

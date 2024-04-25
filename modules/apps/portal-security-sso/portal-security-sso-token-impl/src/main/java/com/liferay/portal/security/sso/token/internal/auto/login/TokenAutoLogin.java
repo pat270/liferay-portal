@@ -9,11 +9,11 @@ import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.security.auto.login.AutoLogin;
 import com.liferay.portal.kernel.security.auto.login.BaseAutoLogin;
 import com.liferay.portal.kernel.service.UserLocalService;
@@ -22,7 +22,7 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PrefsPropsUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.security.exportimport.UserImporter;
+import com.liferay.portal.security.ldap.exportimport.LDAPUserImporter;
 import com.liferay.portal.security.sso.token.configuration.TokenConfiguration;
 import com.liferay.portal.security.sso.token.constants.TokenConstants;
 import com.liferay.portal.security.sso.token.security.auth.TokenRetriever;
@@ -135,11 +135,11 @@ public class TokenAutoLogin extends BaseAutoLogin {
 		if (tokenConfiguration.importFromLDAP()) {
 			try {
 				if (authType.equals(CompanyConstants.AUTH_TYPE_SN)) {
-					user = _userImporter.importUser(
+					user = _ldapUserImporter.importUser(
 						companyId, StringPool.BLANK, login);
 				}
 				else if (authType.equals(CompanyConstants.AUTH_TYPE_EA)) {
-					user = _userImporter.importUser(
+					user = _ldapUserImporter.importUser(
 						companyId, login, StringPool.BLANK);
 				}
 				else {
@@ -192,12 +192,12 @@ public class TokenAutoLogin extends BaseAutoLogin {
 	private ConfigurationProvider _configurationProvider;
 
 	@Reference
+	private LDAPUserImporter _ldapUserImporter;
+
+	@Reference
 	private Portal _portal;
 
 	private ServiceTrackerMap<String, TokenRetriever> _serviceTrackerMap;
-
-	@Reference
-	private UserImporter _userImporter;
 
 	@Reference
 	private UserLocalService _userLocalService;

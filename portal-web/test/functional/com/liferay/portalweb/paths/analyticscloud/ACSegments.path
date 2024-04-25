@@ -64,6 +64,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>CRITERIA_ELLIPSIS_OPTION_OPEN</td>
+	<td>xpath=(//div[contains(@class,'criterion')][.//div[contains(@class,'display-value')][normalize-space(.)='${criteriaName}']]//button[contains(@class,'dropdown-toggle') and @aria-expanded='true'])</td>
+	<td></td>
+</tr>
+<tr>
 	<td>SEGMENT_TABLE_TOTAL_ACTIVITIES_NAME_AND_VALUE</td>
 	<td>//a[contains(text(),'${segmentName}')]//ancestor::tr//td[contains(@class,'table-column-text-end') and contains(text(),'${totalActivitiesNumber}')][2]]</td>
 	<td></td>
@@ -90,7 +95,7 @@
 </tr>
 <tr>
 	<td>DELETE_SEGMENT</td>
-	<td>//div[contains(@class,'dropdown')]/button[contains(@class,'item')]</td>
+	<td>//div[contains(@class,'dropdown')]//button[contains(@class,'item') and text()='Delete']</td>
 	<td></td>
 </tr>
 <tr>
@@ -160,7 +165,7 @@
 </tr>
 <tr>
 	<td>OCCURENCE_SELECT</td>
-	<td>xpath=(//div[(@class='criterion')])[${key_indexField}]//select[@class='form-control operator-input']</td>
+	<td>xpath=((//div[(@class='criterion')])[${key_indexField}]//button[contains(@class,'operator-input')])[2]</td>
 	<td></td>
 </tr>
 <tr>
@@ -333,7 +338,7 @@
 </tr>
 <tr>
 	<td>SEGMENT_AUTOCOMPLETE_DROPDOWN</td>
-	<td>//ul[contains(@class,'dropdown-menu')]/li/button[text()='${key_autocompleteText}'] | //ul[contains(@class,'dropdown-menu')]/li/button</td>
+	<td>//div[contains(@class,'dropdown-menu')]//li//button[contains(text(),'${key_autocompleteText}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -343,7 +348,7 @@
 </tr>
 <tr>
 	<td>SEGMENT_AUTOCOMPLETE_DROPDOWN_BY_INDEX</td>
-	<td>xpath=(//ul[contains(@class,'dropdown-menu')]/li)[${key_index}]</td>
+	<td>xpath=(//div[contains(@class,'dropdown-menu-select')]//li)[${key_index}]</td>
 	<td></td>
 </tr>
 <tr>
@@ -382,28 +387,23 @@
 	<td></td>
 </tr>
 <tr>
-	<td>FORM_CONTROL_CRITERION</td>
-	<td>//div[contains(@class,'form-group-item')and text()='${key_criterion}']/..//select[contains(@class,'form-control')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>FORM_CONTROL_CRITERION_OPTION</td>
-	<td>//div[contains(@class,'form-group-item')and text()='${key_criterion}']/..//select[contains(@class,'form-control')]//option[text()='${key_option}']</td>
-	<td></td>
-</tr>
-<tr>
 	<td>ACTIVITIES_CRITERION</td>
-	<td>xpath=(//div[contains(@class,'criteria-statement')]//select[contains(@class,'form-control')])[${key_indexField}]</td>
+	<td>xpath=(//div[contains(@class,'criteria-statement')]//button[contains(@class,'form-control')])[${key_indexField}]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CRITERION_DROPDOWN_VALUE</td>
+	<td>//button[contains(@class,'dropdown-item') and text()='${operator}']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>TIME_INPUT_CRITERION_CONJUNCTION</td>
-	<td>xpath=(//select[@data-testid='conjunction-input'])[${key_indexField}]</td>
+	<td>xpath=(//button[@data-testid='conjunction-input'])[${key_indexField}]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>TIME_INPUT_CRITERION</td>
-	<td>xpath=(//select[@data-testid='clay-select'])[${key_indexField}]</td>
+	<td>xpath=(//button[@data-testid='clay-select'])[${key_indexField}]</td>
 	<td></td>
 </tr>
 <tr>
@@ -476,7 +476,7 @@
 </tr>
 <tr>
 	<td>ADD_MEMBERS_SORT_BUTTON</td>
-	<td>//button[contains(@class,'button-root btn btn-unstyled nav-link')]</td>
+	<td>//button[contains(@class,'nav-link-monospaced')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -494,12 +494,12 @@
 
 <tr>
 	<td>FILTER_AND_ORDER_BUTTON</td>
-	<td>//button[contains(@data-testid,'filter-and-order-button')]/span[@class='text-truncate' and text()='${key_dropdownName}']</td>
+	<td>//div[contains(@class,'filter-and-order-root')]//button[text()='${key_dropdownName}']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>FILTER_DROPDOWN_OPTION</td>
-	<td>//div[contains(@class,'dropdown-item')]//label/input//following-sibling::span/span[text()='${key_filterName}']</td>
+	<td>//span[contains(@class,'dropdown-item')]//label/input//following-sibling::span/span[text()='${key_filterName}']</td>
 	<td></td>
 </tr>
 
@@ -507,7 +507,7 @@
 
 <tr>
 	<td>ATTRIBUTE_DROPDOWN_MENU_ITEM</td>
-	<td>//ul[contains(@class,'dropdown-menu')][contains(@class,'show')]//button[.//span[normalize-space(text())='${menuItem}']]</td>
+	<td>//div[contains(@class,'dropdown-menu')][contains(@class,'show')]//button[.//span[normalize-space(text())='${menuItem}']]</td>
 	<td></td>
 </tr>
 <tr>
@@ -517,7 +517,7 @@
 </tr>
 <tr>
 	<td>BREAKDOWN_CHART</td>
-	<td>//div[contains(@class,'chart-container')]</td>
+	<td>//div[contains(@class,'chart-container')]//div[@class='recharts-responsive-container']</td>
 	<td></td>
 </tr>
 

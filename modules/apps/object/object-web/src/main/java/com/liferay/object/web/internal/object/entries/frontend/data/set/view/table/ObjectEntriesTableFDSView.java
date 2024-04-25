@@ -110,8 +110,8 @@ public class ObjectEntriesTableFDSView extends BaseTableFDSView {
 				objectViewColumn.getLabel(locale, false),
 				objectField.getLabel(locale, false));
 
-			if ((objectField == null) || objectField.isSystem()) {
-				_addSystemObjectField(
+			if ((objectField == null) || objectField.isMetadata()) {
+				_addMetadataObjectField(
 					fdsTableSchemaBuilder, label,
 					objectViewColumn.getObjectFieldName());
 			}
@@ -124,8 +124,7 @@ public class ObjectEntriesTableFDSView extends BaseTableFDSView {
 							objectField.getDefaultLanguageId()));
 				}
 
-				_addCustomObjectField(
-					fdsTableSchemaBuilder, label, objectField);
+				_addObjectField(fdsTableSchemaBuilder, label, objectField);
 			}
 		}
 
@@ -147,38 +146,209 @@ public class ObjectEntriesTableFDSView extends BaseTableFDSView {
 		}
 
 		if (_objectDefinition.isDefaultStorageType()) {
-			_addSystemObjectField(
+			_addMetadataObjectField(
 				fdsTableSchemaBuilder, systemObjectFieldLabels.get("id"), "id");
 		}
 		else {
-			_addSystemObjectField(
+			_addMetadataObjectField(
 				fdsTableSchemaBuilder,
 				systemObjectFieldLabels.get("externalReferenceCode"),
 				"externalReferenceCode");
 		}
 
-		for (ObjectField customObjectField :
+		for (ObjectField objectField :
 				_objectFieldLocalService.getObjectFields(
-					_objectDefinition.getObjectDefinitionId(), false)) {
+					_objectDefinition.getObjectDefinitionId())) {
 
-			_addCustomObjectField(
-				fdsTableSchemaBuilder, customObjectField.getLabel(locale, true),
-				customObjectField);
+			_addObjectField(
+				fdsTableSchemaBuilder, objectField.getLabel(locale, true),
+				objectField);
 		}
 
-		_addSystemObjectField(
+		_addMetadataObjectField(
 			fdsTableSchemaBuilder, systemObjectFieldLabels.get("status"),
 			"status");
-		_addSystemObjectField(
+		_addMetadataObjectField(
 			fdsTableSchemaBuilder, systemObjectFieldLabels.get("creator"),
 			"creator");
 	}
 
-	private void _addCustomObjectField(
+	private void _addFDSTableSchemaField(
+		String businessType, String contentRenderer, String dbType,
+		FDSTableSchemaBuilder fdsTableSchemaBuilder, String fieldName,
+		String label, boolean localizeLabel,
+		List<ObjectFieldSetting> objectFieldSettings, boolean sortable) {
+
+		FDSTableSchemaField fdsTableSchemaField = new FDSTableSchemaField();
+
+		fdsTableSchemaField.setLocalizeLabel(localizeLabel);
+
+		if (Objects.equals(
+				businessType, ObjectFieldConstants.BUSINESS_TYPE_ATTACHMENT) ||
+			Objects.equals(dbType, ObjectFieldConstants.DB_TYPE_CLOB) ||
+			Objects.equals(dbType, ObjectFieldConstants.DB_TYPE_STRING)) {
+
+			StringFDSTableSchemaField stringFDSTableSchemaField =
+				new StringFDSTableSchemaField();
+
+			if (Objects.equals(
+					businessType,
+					ObjectFieldConstants.BUSINESS_TYPE_ATTACHMENT)) {
+
+				stringFDSTableSchemaField.setContentRenderer("link");
+			}
+			else if (Objects.equals(
+						businessType,
+						ObjectFieldConstants.
+							BUSINESS_TYPE_MULTISELECT_PICKLIST)) {
+
+				stringFDSTableSchemaField.setContentRenderer(
+					"multiselectPicklistDataRenderer");
+			}
+
+			stringFDSTableSchemaField.setFieldName(
+				fieldName
+			).setLabel(
+				label
+			).setLocalizeLabel(
+				localizeLabel
+			);
+			stringFDSTableSchemaField.setTruncate(true);
+
+			fdsTableSchemaBuilder.add(stringFDSTableSchemaField);
+
+			fdsTableSchemaField = stringFDSTableSchemaField;
+		}
+		else if (Objects.equals(
+					businessType, ObjectFieldConstants.BUSINESS_TYPE_DATE)) {
+
+			DateFDSTableSchemaField dateFDSTableSchemaField =
+				new DateFDSTableSchemaField();
+
+			dateFDSTableSchemaField.setFieldName(fieldName);
+			dateFDSTableSchemaField.setFormat(
+				_getFormatJSONObject(businessType, null));
+			dateFDSTableSchemaField.setLabel(
+				label
+			).setLocalizeLabel(
+				localizeLabel
+			);
+
+			fdsTableSchemaBuilder.add(dateFDSTableSchemaField);
+
+			fdsTableSchemaField = dateFDSTableSchemaField;
+		}
+		else if (Objects.equals(
+					businessType,
+					ObjectFieldConstants.BUSINESS_TYPE_DATE_TIME)) {
+
+			DateTimeFDSTableSchemaField dateTimeFDSTableSchemaField =
+				new DateTimeFDSTableSchemaField();
+
+			dateTimeFDSTableSchemaField.setFieldName(fieldName);
+
+			User user = null;
+
+			try {
+				user = _userLocalService.getUser(
+					PrincipalThreadLocal.getUserId());
+			}
+			catch (PortalException portalException) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(portalException);
+				}
+			}
+
+			dateTimeFDSTableSchemaField.setFormat(
+				_getFormatJSONObject(
+					businessType,
+					ObjectFieldSettingUtil.getTimeZoneId(
+						objectFieldSettings, user)));
+			dateTimeFDSTableSchemaField.setLabel(
+				label
+			).setLocalizeLabel(
+				localizeLabel
+			);
+
+			fdsTableSchemaBuilder.add(dateTimeFDSTableSchemaField);
+
+			fdsTableSchemaField = dateTimeFDSTableSchemaField;
+		}
+		else {
+			fdsTableSchemaField.setFieldName(
+				fieldName
+			).setLabel(
+				label
+			);
+
+			fdsTableSchemaBuilder.add(fdsTableSchemaField);
+
+			if (Objects.equals(dbType, ObjectFieldConstants.DB_TYPE_BOOLEAN)) {
+				fdsTableSchemaField.setContentRenderer("boolean");
+			}
+		}
+
+		if (Validator.isNotNull(contentRenderer)) {
+			fdsTableSchemaField.setContentRenderer(contentRenderer);
+		}
+
+		if (!Objects.equals(
+				businessType, ObjectFieldConstants.BUSINESS_TYPE_AGGREGATION) &&
+			!Objects.equals(
+				businessType, ObjectFieldConstants.BUSINESS_TYPE_ATTACHMENT) &&
+			!Objects.equals(
+				businessType, ObjectFieldConstants.BUSINESS_TYPE_RICH_TEXT) &&
+			!Objects.equals(dbType, ObjectFieldConstants.DB_TYPE_BLOB) &&
+			sortable) {
+
+			fdsTableSchemaField.setSortable(true);
+		}
+
+		fdsTableSchemaBuilder.add(fdsTableSchemaField);
+	}
+
+	private void _addMetadataObjectField(
+		FDSTableSchemaBuilder fdsTableSchemaBuilder, String fieldLabel,
+		String fieldName) {
+
+		if (Objects.equals(fieldName, "createDate")) {
+			_addFDSTableSchemaField(
+				"DateTime", null, "Date", fdsTableSchemaBuilder, "dateCreated",
+				_getLabel(fieldLabel, "create-date"), true, null, true);
+		}
+		else if (Objects.equals(fieldName, "creator")) {
+			_addFDSTableSchemaField(
+				null, null, null, fdsTableSchemaBuilder, fieldName + ".name",
+				_getLabel(fieldLabel, "author"), true, null, true);
+		}
+		else if (Objects.equals(fieldName, "externalReferenceCode")) {
+			_addFDSTableSchemaField(
+				null, "actionLink", null, fdsTableSchemaBuilder, fieldName,
+				_getLabel(fieldLabel, "external-reference-code"), true, null,
+				true);
+		}
+		else if (Objects.equals(fieldName, "id")) {
+			_addFDSTableSchemaField(
+				null, "actionLink", null, fdsTableSchemaBuilder, "id",
+				_getLabel(fieldLabel, "id"), true, null, true);
+		}
+		else if (Objects.equals(fieldName, "modifiedDate")) {
+			_addFDSTableSchemaField(
+				"DateTime", null, "Date", fdsTableSchemaBuilder, "dateModified",
+				_getLabel(fieldLabel, "modified-date"), true, null, true);
+		}
+		else if (Objects.equals(fieldName, "status")) {
+			_addFDSTableSchemaField(
+				null, "statusDataRenderer", null, fdsTableSchemaBuilder,
+				fieldName, _getLabel(fieldLabel, "status"), true, null, true);
+		}
+	}
+
+	private void _addObjectField(
 		FDSTableSchemaBuilder fdsTableSchemaBuilder, String label,
 		ObjectField objectField) {
 
-		if (objectField.isSystem()) {
+		if (objectField.isMetadata()) {
 			return;
 		}
 
@@ -229,164 +399,6 @@ public class ObjectEntriesTableFDSView extends BaseTableFDSView {
 					label, false, titleObjectField.getObjectFieldSettings(),
 					false);
 			}
-		}
-	}
-
-	private void _addFDSTableSchemaField(
-		String businessType, String contentRenderer, String dbType,
-		FDSTableSchemaBuilder fdsTableSchemaBuilder, String fieldName,
-		String label, boolean localizeLabel,
-		List<ObjectFieldSetting> objectFieldSettings, boolean sortable) {
-
-		FDSTableSchemaField fdsTableSchemaField = new FDSTableSchemaField();
-
-		fdsTableSchemaField.setLocalizeLabel(localizeLabel);
-
-		if (Objects.equals(
-				businessType, ObjectFieldConstants.BUSINESS_TYPE_ATTACHMENT) ||
-			Objects.equals(dbType, ObjectFieldConstants.DB_TYPE_CLOB) ||
-			Objects.equals(dbType, ObjectFieldConstants.DB_TYPE_STRING)) {
-
-			StringFDSTableSchemaField stringFDSTableSchemaField =
-				new StringFDSTableSchemaField();
-
-			if (Objects.equals(
-					businessType,
-					ObjectFieldConstants.BUSINESS_TYPE_ATTACHMENT)) {
-
-				stringFDSTableSchemaField.setContentRenderer("link");
-			}
-			else if (Objects.equals(
-						businessType,
-						ObjectFieldConstants.
-							BUSINESS_TYPE_MULTISELECT_PICKLIST)) {
-
-				stringFDSTableSchemaField.setContentRenderer(
-					"multiselectPicklistDataRenderer");
-			}
-
-			stringFDSTableSchemaField.setFieldName(fieldName);
-			stringFDSTableSchemaField.setLabel(label);
-			stringFDSTableSchemaField.setLocalizeLabel(localizeLabel);
-			stringFDSTableSchemaField.setTruncate(true);
-
-			fdsTableSchemaBuilder.add(stringFDSTableSchemaField);
-
-			fdsTableSchemaField = stringFDSTableSchemaField;
-		}
-		else if (Objects.equals(
-					businessType, ObjectFieldConstants.BUSINESS_TYPE_DATE)) {
-
-			DateFDSTableSchemaField dateFDSTableSchemaField =
-				new DateFDSTableSchemaField();
-
-			dateFDSTableSchemaField.setFieldName(fieldName);
-			dateFDSTableSchemaField.setFormat(
-				_getFormatJSONObject(businessType, null));
-			dateFDSTableSchemaField.setLabel(label);
-			dateFDSTableSchemaField.setLocalizeLabel(localizeLabel);
-
-			fdsTableSchemaBuilder.add(dateFDSTableSchemaField);
-
-			fdsTableSchemaField = dateFDSTableSchemaField;
-		}
-		else if (Objects.equals(
-					businessType,
-					ObjectFieldConstants.BUSINESS_TYPE_DATE_TIME)) {
-
-			DateTimeFDSTableSchemaField dateTimeFDSTableSchemaField =
-				new DateTimeFDSTableSchemaField();
-
-			dateTimeFDSTableSchemaField.setFieldName(fieldName);
-
-			User user = null;
-
-			try {
-				user = _userLocalService.getUser(
-					PrincipalThreadLocal.getUserId());
-			}
-			catch (PortalException portalException) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(portalException);
-				}
-			}
-
-			dateTimeFDSTableSchemaField.setFormat(
-				_getFormatJSONObject(
-					businessType,
-					ObjectFieldSettingUtil.getTimeZoneId(
-						objectFieldSettings, user)));
-			dateTimeFDSTableSchemaField.setLabel(label);
-			dateTimeFDSTableSchemaField.setLocalizeLabel(localizeLabel);
-
-			fdsTableSchemaBuilder.add(dateTimeFDSTableSchemaField);
-
-			fdsTableSchemaField = dateTimeFDSTableSchemaField;
-		}
-		else {
-			fdsTableSchemaField.setFieldName(fieldName);
-			fdsTableSchemaField.setLabel(label);
-
-			fdsTableSchemaBuilder.add(fdsTableSchemaField);
-
-			if (Objects.equals(dbType, ObjectFieldConstants.DB_TYPE_BOOLEAN)) {
-				fdsTableSchemaField.setContentRenderer("boolean");
-			}
-		}
-
-		if (Validator.isNotNull(contentRenderer)) {
-			fdsTableSchemaField.setContentRenderer(contentRenderer);
-		}
-
-		if (!Objects.equals(
-				businessType, ObjectFieldConstants.BUSINESS_TYPE_AGGREGATION) &&
-			!Objects.equals(
-				businessType, ObjectFieldConstants.BUSINESS_TYPE_ATTACHMENT) &&
-			!Objects.equals(
-				businessType, ObjectFieldConstants.BUSINESS_TYPE_RICH_TEXT) &&
-			!Objects.equals(dbType, ObjectFieldConstants.DB_TYPE_BLOB) &&
-			sortable) {
-
-			fdsTableSchemaField.setSortable(true);
-		}
-
-		fdsTableSchemaBuilder.add(fdsTableSchemaField);
-	}
-
-	private void _addSystemObjectField(
-		FDSTableSchemaBuilder fdsTableSchemaBuilder, String fieldLabel,
-		String fieldName) {
-
-		if (Objects.equals(fieldName, "createDate")) {
-			_addFDSTableSchemaField(
-				"DateTime", null, "Date", fdsTableSchemaBuilder, "dateCreated",
-				_getLabel(fieldLabel, "create-date"), true, null, true);
-		}
-		else if (Objects.equals(fieldName, "creator")) {
-			_addFDSTableSchemaField(
-				null, null, null, fdsTableSchemaBuilder, fieldName + ".name",
-				_getLabel(fieldLabel, "author"), true, null, true);
-		}
-		else if (Objects.equals(fieldName, "externalReferenceCode")) {
-			_addFDSTableSchemaField(
-				null, "actionLink", null, fdsTableSchemaBuilder, fieldName,
-				_getLabel(fieldLabel, "external-reference-code"), true, null,
-				true);
-		}
-		else if (Objects.equals(fieldName, "id")) {
-			_addFDSTableSchemaField(
-				null, "actionLink", null, fdsTableSchemaBuilder, "id",
-				_getLabel(fieldLabel, "id"), true, null, true);
-		}
-		else if (Objects.equals(fieldName, "modifiedDate")) {
-			_addFDSTableSchemaField(
-				"DateTime", null, "Date", fdsTableSchemaBuilder, "dateModified",
-				_getLabel(fieldLabel, "modified-date"), true, null, true);
-		}
-		else if (Objects.equals(fieldName, "status")) {
-			_addFDSTableSchemaField(
-				null, "status", null, fdsTableSchemaBuilder, fieldName,
-				_getLabel(fieldLabel, "status"), true, null, true);
 		}
 	}
 

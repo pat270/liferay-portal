@@ -34,6 +34,7 @@ definition {
 		property osgi.module.configuration.file.names = "com.liferay.portal.security.audit.router.configuration.CSVLogMessageFormatterConfiguration.config:com.liferay.portal.security.audit.router.configuration.LoggingAuditMessageProcessorConfiguration.config";
 		property osgi.module.configurations = "columns=[\"eventType\",\"userId\",\"userName\"]:enabled=B\"true\"${line.separator}logMessageFormat=\"CSV\"${line.separator}outputToConsole=B\"true\"";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var userId = JSONUserAPI._getUserIdByEmailAddress(userEmailAddress = "test@liferay.com");
 
@@ -67,6 +68,7 @@ definition {
 		property osgi.module.configuration.file.names = "com.liferay.portal.security.audit.configuration.AuditConfiguration.config";
 		property osgi.module.configurations = "enabled=\"false\"";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
@@ -80,10 +82,7 @@ definition {
 
 		FormFields.viewCheckboxNotChecked(fieldName = "Enabled");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Security",
-			panel = "Control Panel",
-			portlet = "Audit");
+		Audit.openAuditAdmin();
 
 		AssertElementNotPresent(locator1 = "AuditReports#REPORTS_TABLE_RESOURCE_ACTION");
 
@@ -107,10 +106,7 @@ definition {
 			password = "test",
 			userEmailAddress = "test@liferay.com");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Security",
-			panel = "Control Panel",
-			portlet = "Audit");
+		Audit.openAuditAdmin();
 
 		AssertTextEquals(
 			key_resourceAction = "LOGIN",
@@ -125,6 +121,7 @@ definition {
 		property osgi.module.configuration.file.names = "com.liferay.portal.security.audit.router.configuration.PersistentAuditMessageProcessorConfiguration.config";
 		property osgi.module.configurations = "enabled=\"false\"";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
@@ -140,7 +137,7 @@ definition {
 
 		SignOut.signOut();
 
-		var auditTablePersistenceDisabled = SQL.executeMySQLStatement(mysqlStatement = "SELECT COUNT(*) FROM Audit_AuditEvent;");
+		var auditTablePersistenceDisabled = SQL.executeSQLStatement(sqlStatement = "SELECT COUNT(*) FROM Audit_AuditEvent;");
 
 		echo("Audit table: ${auditTablePersistenceDisabled}");
 
@@ -172,7 +169,7 @@ definition {
 			password = "test",
 			userEmailAddress = "test@liferay.com");
 
-		var auditTablePersistenceEnabled = SQL.executeMySQLStatement(mysqlStatement = "SELECT COUNT(*) FROM Audit_AuditEvent;");
+		var auditTablePersistenceEnabled = SQL.executeSQLStatement(sqlStatement = "SELECT COUNT(*) FROM Audit_AuditEvent;");
 
 		echo("Audit table: ${auditTablePersistenceEnabled}");
 

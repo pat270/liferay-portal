@@ -98,7 +98,9 @@ definition {
 
 	@priority = 3
 	test AddProcessWithNewFieldSetAndWorkflowViaSourceTab {
+		property portal.upstream = "quarantine";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Navigator.openURL();
 
@@ -162,142 +164,6 @@ definition {
 			portlet = "Kaleo Forms Admin");
 
 		KaleoFormsAdmin.viewProcess(kfProcessName = "Kaleo Forms Process");
-	}
-
-	@ignore = "true"
-	@priority = 5
-	test DeactivateAndActivateWorkflowDefinition {
-		property ci.retries.disabled = "true";
-		property portal.acceptance = "quarantine";
-		property test.liferay.virtual.instance = "false";
-
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content & Data",
-			portlet = "Kaleo Forms Admin");
-
-		KaleoFormsAdmin.addFieldSet(
-			kfFieldSetName = "New Kaleo Field Set",
-			kfProcessName = "Kaleo Forms Process");
-
-		DynamicDataMapping.addField(
-			field = "Text",
-			fieldFieldLabel = "Text",
-			fieldName = "Text");
-
-		KaleoFormsAdmin.saveFieldSet();
-
-		KaleoFormsAdmin.addProcess();
-
-		KaleoFormsAdmin.addProcessDetails(
-			kfProcessDescription = "Kaleo Forms Process Description",
-			kfProcessName = "Kaleo Forms Process");
-
-		KaleoFormsAdmin.next();
-
-		KaleoFormsAdmin.chooseFieldSet(
-			kfFieldSetName = "New Kaleo Field Set",
-			kfProcessName = "Kaleo Forms Process");
-
-		KaleoFormsAdmin.next();
-
-		KaleoFormsAdmin.deactivateWorkflow(workflowDefinitionTitle = "Single Approver");
-
-		KaleoFormsAdmin.viewNoPublishedWorkflowDefinitions();
-
-		KaleoFormsAdmin.viewUnpublishedWorkflowDefinitions();
-
-		AssertTextEquals(
-			key_workflowDefinitionTitle = "Single Approver",
-			locator1 = "KaleoFormsAdminEditProcess#WORKFLOW_TABLE_TITLE",
-			value1 = "Single Approver");
-
-		KaleoFormsAdmin.reactivateInactiveWorkflowDefinition(workflowDefinitionTitle = "Single Approver");
-
-		KaleoFormsAdmin.viewPublishedWorkflowDefinitions();
-
-		AssertTextEquals(
-			key_workflowDefinitionTitle = "Single Approver",
-			locator1 = "KaleoFormsAdminEditProcess#WORKFLOW_TABLE_TITLE",
-			value1 = "Single Approver");
-
-		KaleoFormsAdmin.viewNoUnpublishedWorkflowDefinitions();
-	}
-
-	@ignore = "true"
-	@priority = 5
-	test DeactivateAndDeleteWorkflowDefinition {
-		property ci.retries.disabled = "true";
-		property portal.acceptance = "quarantine";
-		property test.liferay.virtual.instance = "false";
-
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content & Data",
-			portlet = "Kaleo Forms Admin");
-
-		KaleoFormsAdmin.addFieldSet(
-			kfFieldSetName = "New Kaleo Field Set",
-			kfProcessName = "Kaleo Forms Process");
-
-		DynamicDataMapping.addField(
-			field = "Text",
-			fieldFieldLabel = "Text",
-			fieldName = "Text");
-
-		KaleoFormsAdmin.saveFieldSet();
-
-		KaleoFormsAdmin.addProcess();
-
-		KaleoFormsAdmin.addProcessDetails(
-			kfProcessDescription = "Kaleo Forms Process Description",
-			kfProcessName = "Kaleo Forms Process");
-
-		KaleoFormsAdmin.next();
-
-		KaleoFormsAdmin.chooseFieldSet(
-			kfFieldSetName = "New Kaleo Field Set",
-			kfProcessName = "Kaleo Forms Process");
-
-		KaleoFormsAdmin.next();
-
-		KaleoFormsAdmin.addWorkflow(
-			kfProcessName = "Kaleo Forms Process",
-			workflowDefinitionTitle = "Workflow Definition Title");
-
-		KaleoDesigner.addSourceXMLBasicDefinition();
-
-		KaleoFormsAdmin.publishWorkflow(workflowDefinitionTitle = "Workflow Definition Title");
-
-		for (var workflowDefinitionTitle : list "Single Approver,Workflow Definition Title") {
-			KaleoFormsAdmin.deactivateWorkflow(workflowDefinitionTitle = ${workflowDefinitionTitle});
-		}
-
-		KaleoFormsAdmin.viewNoPublishedWorkflowDefinitions();
-
-		KaleoFormsAdmin.viewUnpublishedWorkflowDefinitions();
-
-		for (var workflowDefinitionTitle : list "Single Approver,Workflow Definition Title") {
-			AssertTextEquals(
-				key_workflowDefinitionTitle = ${workflowDefinitionTitle},
-				locator1 = "KaleoFormsAdminEditProcess#WORKFLOW_TABLE_TITLE",
-				value1 = ${workflowDefinitionTitle});
-		}
-
-		KaleoFormsAdmin.deleteWorkflowDraft(workflowDefinitionTitle = "Workflow Definition Title");
-
-		KaleoFormsAdmin.reactivateInactiveWorkflowDefinition(workflowDefinitionTitle = "Single Approver");
-
-		KaleoFormsAdmin.viewPublishedWorkflowDefinitions();
-
-		AssertTextEquals(
-			key_workflowDefinitionTitle = "Single Approver",
-			locator1 = "KaleoFormsAdminEditProcess#WORKFLOW_TABLE_TITLE",
-			value1 = "Single Approver");
-
-		KaleoFormsAdmin.viewNoUnpublishedWorkflowDefinitions();
 	}
 
 	@ignore = "true"
@@ -1062,6 +928,7 @@ definition {
 	test EditProcessFieldSetPaginationAndViewSelectedForm {
 		property portal.upstream = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		for (var kfFieldSetName : list "Field1,Field2,Field3,Field4,Field5,Field6") {
 			ProductMenu.gotoPortlet(
@@ -1446,6 +1313,7 @@ definition {
 		property ci.retries.disabled = "true";
 		property portal.acceptance = "quarantine";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Navigator.openURL();
 
@@ -1596,6 +1464,7 @@ definition {
 	test EditSingleApproverWorkflowViaSourceTabViaAddProcess {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Navigator.openURL();
 
@@ -1663,93 +1532,13 @@ definition {
 		KaleoFormsAdmin.viewProcess(kfProcessName = "Kaleo Forms Process");
 	}
 
-	@ignore = "true"
-	@priority = 3
-	test EditSingleApproverWorkflowViaViewTabViaAddProcess {
-		property ci.retries.disabled = "true";
-		property test.liferay.virtual.instance = "false";
-
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content & Data",
-			portlet = "Kaleo Forms Admin");
-
-		KaleoFormsAdmin.addFieldSet(
-			kfFieldSetName = "New Kaleo Field Set",
-			kfProcessName = "Kaleo Forms Process");
-
-		DynamicDataMapping.addField(
-			field = "Text",
-			fieldFieldLabel = "Text",
-			fieldName = "Text");
-
-		KaleoFormsAdmin.saveFieldSet();
-
-		KaleoFormsAdmin.addProcess();
-
-		KaleoFormsAdmin.addProcessDetails(
-			kfProcessDescription = "Kaleo Forms Process Description",
-			kfProcessName = "Kaleo Forms Process");
-
-		KaleoFormsAdmin.next();
-
-		KaleoFormsAdmin.chooseFieldSet(
-			kfFieldSetName = "New Kaleo Field Set",
-			kfProcessName = "Kaleo Forms Process");
-
-		KaleoFormsAdmin.next();
-
-		KaleoFormsAdmin.editWorkflow(
-			kfProcessName = "Kaleo Forms Process",
-			workflowDefinitionTitle = "Single Approver",
-			workflowDefinitionTitleEdit = "Edited Workflow Definition");
-
-		KaleoDesigner.deleteNodeInKaleoForms(nodeNodeLabel = "update");
-
-		KaleoFormsAdmin.updateWorkflow();
-
-		KaleoFormsAdmin.chooseWorkflow(
-			edit = "true",
-			kfProcessName = "Kaleo Forms Process",
-			workflowDefinitionTitle = "Edited Workflow Definition");
-
-		KaleoFormsAdmin.next();
-
-		KaleoFormsAdmin.assignForm(
-			kfProcessName = "Kaleo Forms Process",
-			workflowTask = "create");
-
-		KaleoFormsAdmin.addForm(kfFormName = "Created Task Form");
-
-		KaleoFormsAdmin.saveForm();
-
-		KaleoFormsAdmin.chooseForm(kfFormName = "Created Task Form");
-
-		KaleoFormsAdmin.viewTaskPresent(workflowTask = "create");
-
-		KaleoFormsAdmin.viewTaskPresent(workflowTask = "review");
-
-		KaleoFormsAdmin.viewTaskNotPresent(workflowTask = "update");
-
-		KaleoFormsAdmin.saveProcess(kfProcessName = "Kaleo Forms Process");
-
-		ProductMenu.gotoPortlet(
-			category = "Content & Data",
-			portlet = "Kaleo Forms Admin");
-
-		KaleoFormsAdmin.viewProcess(kfProcessName = "Kaleo Forms Process");
-	}
-
 	@priority = 4
 	test EditUploadedWorkflowViaViewTabViaAddProcess {
 		property ci.retries.disabled = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Workflow.addNewDefinition(workflowDefinitionTitle = "Uploaded Definition");
 
@@ -2836,6 +2625,8 @@ definition {
 
 	@priority = 3
 	test ViewUnpublishedWorkflowDefinitionsMenulist {
+		property portal.upstream = "quarantine";
+
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(

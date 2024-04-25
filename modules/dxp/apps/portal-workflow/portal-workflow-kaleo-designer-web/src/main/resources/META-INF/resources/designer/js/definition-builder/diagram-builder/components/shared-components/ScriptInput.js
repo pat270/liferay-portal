@@ -5,9 +5,11 @@
 
 import ClayForm, {ClayInput, ClaySelect} from '@clayui/form';
 import PropTypes from 'prop-types';
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 
+import {DefinitionBuilderContext} from '../../../DefinitionBuilderContext';
 import {DEFAULT_LANGUAGE} from '../../../source-builder/constants';
+import {filterGroovyOption} from '../../util/filterGroovyOption';
 
 const scriptLanguageOptions = [
 	{
@@ -26,9 +28,19 @@ const ScriptInput = ({
 	inputValue,
 	updateSelectedItem,
 }) => {
+	const {
+		allowScriptContentToBeExecutedOrIncluded,
+		hadGroovyScriptBefore,
+	} = useContext(DefinitionBuilderContext);
 	const [script, setScript] = useState(inputValue);
 	const [scriptLanguage, setScriptLanguage] = useState(
 		defaultScriptLanguage || DEFAULT_LANGUAGE
+	);
+
+	const filteredScriptLanguageOptions = filterGroovyOption(
+		allowScriptContentToBeExecutedOrIncluded,
+		hadGroovyScriptBefore,
+		scriptLanguageOptions
 	);
 
 	return (
@@ -46,7 +58,7 @@ const ScriptInput = ({
 				}}
 				onClickCapture={() => handleClickCapture(scriptLanguage)}
 			>
-				{scriptLanguageOptions.map((item) => (
+				{filteredScriptLanguageOptions.map((item) => (
 					<ClaySelect.Option
 						key={item.value}
 						label={item.label}

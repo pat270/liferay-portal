@@ -5,11 +5,12 @@
 
 /// <reference types="react" />
 
-import {OBJECT_RELATIONSHIP} from './Constants';
 import {FDSEntryType} from './FDSEntries';
+import {OBJECT_RELATIONSHIP} from './utils/constants';
 declare type FDSViewType = {
 	[OBJECT_RELATIONSHIP.FDS_ENTRY_FDS_VIEW]: FDSEntryType;
 	defaultItemsPerPage: number;
+	defaultVisualizationMode: string;
 	description: string;
 	externalReferenceCode: string;
 	fdsFiltersOrder: string;

@@ -4,7 +4,9 @@ definition {
 	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Upgrades WEM";
+	property test.liferay.virtual.instance = "false";
+	property test.run.type = "single";
+	property testray.main.component.name = "Upgrades Content Management";
 
 	setUp {
 		SignIn.signIn();

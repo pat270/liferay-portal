@@ -21,52 +21,21 @@ definition {
 			ACUtils.launchDXP();
 		}
 
-		task ("Create DXP Site with Commerce") {
-			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
-		}
-
-		task ("Connect Commerce and AC") {
+		task ("Connect AC to DXP") {
 			ACDXPSettings.connectAnalyticsCloud();
 		}
 
-		task ("Get the property name to enable commerce on the right one") {
-			var channelName = "Minium Portal";
-			var siteName = "Minium";
-
-			ACDXPSettings.getAssignedPropertyName();
-		}
-
-		task ("Enable commerce and sync the commerce channel and the related site") {
-			ACDXPSettings.syncChannel(
-				channelName = ${channelName},
-				propertyName = ${assignedPropertyName});
-
-			ACDXPSettings.syncSites(
-				propertyName = ${assignedPropertyName},
-				siteName = ${siteName});
-		}
-
-		task ("Go to the next page to configure people data") {
-			Click(
-				key_text = "Next",
-				locator1 = "Button#ANY");
-		}
-
-		task ("Click on sync all contacts and accounts") {
-			ACDXPSettings.syncContactsAndAccountstData();
-		}
-
-		task ("Go to the next page to configure attributes") {
-			Click(locator1 = "ACDXPSettings#AC_GENERIC_ADD_OR_CONFIRMATION_BUTTON");
+		task ("Go to the Attributes step in the wizard") {
+			for (var n : list "1,2") {
+				Click(
+					key_text = "Next",
+					locator1 = "Button#ANY");
+			}
 		}
 	}
 
 	tearDown {
 		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
-
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
-		//ACUtils.tearDownAC();
 
 		ACUtils.tearDownDXP();
 
@@ -78,6 +47,8 @@ definition {
 
 			ACUtils.tearDownCommerce();
 		}
+
+		ACUtils.tearDownAC();
 	}
 
 	@description = "Story: LRAC-10867 | Automation ID: LRAC-12909 | Test Summary: Check that all attributes for Orders are marked as required"
@@ -197,7 +168,7 @@ definition {
 		}
 
 		task ("Change filter to Data type") {
-			ManagementBar.setFilterAndOrder(orderBy = "Data Type");
+			KaleoFormsManageFieldSets.clickFilterAndOrderBy(filterOption = "Data Type");
 		}
 
 		task ("Change the pagination to 5") {
@@ -232,8 +203,8 @@ definition {
 	@description = "Story: LRAC-10866 | Automation ID: LRAC-12904 | Test Summary: Check that it is possible to make pagination in the Attribute for Product list"
 	@priority = 3
 	test CanPaginateInProductAttributeList {
-		var firstPageList = "catalogId,categoryIds,createDate,currencyCode,customFields";
-		var lastPageList = "tags,type,urls,vocabulary";
+		var firstPageList = "catalogId,categoryIds,cost,createDate,currencyCode";
+		var lastPageList = "value,values,vocabulary";
 
 		task ("Click to select attribute for products") {
 			ACDXPSettings.clickToSelectAttributes(attributeCategory = "Products");
@@ -242,7 +213,7 @@ definition {
 		task ("Change the pagination to 5") {
 			ACUtils.changePagination(itemsPerPage = 5);
 
-			ACUtils.viewResultsMessage(results = "Showing 1 to 5 of 34 entries.");
+			ACUtils.viewResultsMessage(results = "Showing 1 to 5 of 48 entries.");
 		}
 
 		task ("Check that 5 attributes for products appear on the first page") {
@@ -254,9 +225,9 @@ definition {
 		}
 
 		task ("Click to navigate for the last page") {
-			ACUtils.checkAnyPage(pageNumber = 7);
+			ACUtils.checkAnyPage(pageNumber = 10);
 
-			ACUtils.viewResultsMessage(results = "Showing 31 to 34 of 34 entries.");
+			ACUtils.viewResultsMessage(results = "Showing 46 to 48 of 48 entries.");
 		}
 
 		task ("Check that 2 attributes for products appear on the last page") {
@@ -580,7 +551,7 @@ definition {
 		}
 
 		task ("See that the list is sorted by attributes in the ascending order") {
-			ManagementBar.setFilterAndOrder(orderBy = "Attribute");
+			KaleoFormsManageFieldSets.clickFilterAndOrderBy(filterOption = "Attribute");
 
 			ACDXPSettings.setSortDirection(sortDirection = "up");
 
@@ -590,7 +561,7 @@ definition {
 		}
 
 		task ("See that the list is sorted by attributes in the descending order") {
-			ManagementBar.setFilterAndOrder(orderBy = "Attribute");
+			KaleoFormsManageFieldSets.clickFilterAndOrderBy(filterOption = "Attribute");
 
 			ACDXPSettings.setSortDirection(sortDirection = "down");
 
@@ -600,7 +571,7 @@ definition {
 		}
 
 		task ("See that the list is sorted by the data type of the attributes in ascending order") {
-			ManagementBar.setFilterAndOrder(orderBy = "Data Type");
+			KaleoFormsManageFieldSets.clickFilterAndOrderBy(filterOption = "Data Type");
 
 			ACDXPSettings.setSortDirection(sortDirection = "up");
 
@@ -669,7 +640,7 @@ definition {
 		}
 
 		task ("See that the list is sorted by attributes in the ascending order") {
-			ManagementBar.setFilterAndOrder(orderBy = "Attribute");
+			KaleoFormsManageFieldSets.clickFilterAndOrderBy(filterOption = "Attribute");
 
 			ACDXPSettings.setSortDirection(sortDirection = "up");
 
@@ -687,7 +658,7 @@ definition {
 		}
 
 		task ("See that the list is sorted by attributes in the descending order") {
-			ManagementBar.setFilterAndOrder(orderBy = "Attribute");
+			KaleoFormsManageFieldSets.clickFilterAndOrderBy(filterOption = "Attribute");
 
 			ACDXPSettings.setSortDirection(sortDirection = "down");
 
@@ -705,7 +676,7 @@ definition {
 		}
 
 		task ("See that the list is sorted by the data type of the attributes in ascending order") {
-			ManagementBar.setFilterAndOrder(orderBy = "Data Type");
+			KaleoFormsManageFieldSets.clickFilterAndOrderBy(filterOption = "Data Type");
 
 			ACDXPSettings.setSortDirection(sortDirection = "up");
 
@@ -778,7 +749,7 @@ definition {
 		}
 
 		task ("Sort the list by the Attribute Name column (Ascending)") {
-			ManagementBar.setFilterAndOrder(orderBy = "Attribute");
+			KaleoFormsManageFieldSets.clickFilterAndOrderBy(filterOption = "Attribute");
 
 			ACDXPSettings.setSortDirection(sortDirection = "up");
 		}
@@ -800,7 +771,7 @@ definition {
 		}
 
 		task ("Sort the list by the Data Type column (Ascending)") {
-			ManagementBar.setFilterAndOrder(orderBy = "Data Type");
+			KaleoFormsManageFieldSets.clickFilterAndOrderBy(filterOption = "Data Type");
 
 			ACDXPSettings.setSortDirection(sortDirection = "up");
 		}
@@ -825,30 +796,30 @@ definition {
 	@description = "Story: LRAC-10866 | Automation ID: LRAC-12905 | Test Summary: Check that it is possible to sort the Attribute for Product list by Attribute Name and Data Type"
 	@priority = 3
 	test CanSortProductListByAttribute {
-		var indexList = "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34";
+		var indexList = "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48";
 		var attributesAscendingProduct = '''
-			catalogId,categoryIds,createDate,currencyCode,customFields,description,displayDate,expirationDate,
-			externalReferenceCode,externalReferenceCode,externalReferenceCode,id,id,id,metaDescription,
-			metaKeyword,metaTitle,modifiedDate,name,name,name,productChannelIds,productId,productOptions,
-			productSpecifications,productType,siteId,skus,status,subscriptionEnabled,tags,type,urls,vocabulary
+			catalogId,categoryIds,cost,createDate,currencyCode,customFields,description,discontinued,displayDate,expirationDate,
+			expirationDate,externalReferenceCode,externalReferenceCode,externalReferenceCode,gtin,id,id,id,key,manufacturerPartNumber,metaDescription,
+			metaKeyword,metaTitle,modifiedDate,name,name,name,optionCategoryId,optionKey,productChannelIds,productId,productOptions,
+			productSpecifications,productType,published,purchasable,siteId,sku,skus,specificationKey,status,subscriptionEnabled,tags,type,urls,value,values,vocabulary
 		''';
 		var attributesDescendingProduct = '''
-			vocabulary,urls,type,tags,subscriptionEnabled,status,skus,siteId,productType,productSpecifications,
-			productOptions,productId,productChannelIds,name,name,name,modifiedDate,metaTitle,metaKeyword,
-			metaDescription,id,id,id,externalReferenceCode,externalReferenceCode,externalReferenceCode,
-			expirationDate,displayDate,description,customFields,currencyCode,createDate,categoryIds,catalogId
+			vocabulary,values,value,urls,type,tags,subscriptionEnabled,status,specificationKey,skus,sku,siteId,purchasable,published,productType,productSpecifications,
+			productOptions,productId,productChannelIds,optionKey,optionCategoryId,name,name,name,modifiedDate,metaTitle,metaKeyword,
+			metaDescription,manufacturerPartNumber,key,id,id,id,gtin,externalReferenceCode,externalReferenceCode,externalReferenceCode,
+			expirationDate,expirationDate,displayDate,discontinued,description,customFields,currencyCode,createDate,cost,categoryIds,catalogId
 		''';
 		var attributesDataTypeAscending = '''
-			categoryIds,productChannelIds,productOptions,productSpecifications,skus,tags,subscriptionEnabled,id,siteId,catalogId,id,
-			productId,status,id,customFields,description,metaDescription,metaKeyword,metaTitle,name,urls,
-			externalReferenceCode,name,vocabulary,createDate,displayDate,expirationDate,externalReferenceCode,
-			modifiedDate,productType,currencyCode,externalReferenceCode,name,type
+			categoryIds,productChannelIds,productOptions,productSpecifications,skus,tags,discontinued,published,purchasable,subscriptionEnabled,id,siteId,catalogId,id,
+			optionCategoryId,productId,status,id,cost,customFields,description,metaDescription,metaKeyword,metaTitle,name,urls,values,
+			externalReferenceCode,name,vocabulary,createDate,displayDate,expirationDate,expirationDate,externalReferenceCode,gtin,key,manufacturerPartNumber,
+			modifiedDate,optionKey,productType,sku,specificationKey,value,currencyCode,externalReferenceCode,name,type
 		''';
 		var attributesDataTypeDescending = '''
-			externalReferenceCode,name,vocabulary,createDate,displayDate,expirationDate,
-			externalReferenceCode,modifiedDate,productType,currencyCode,externalReferenceCode,name,type,
-			customFields,description,metaDescription,metaKeyword,metaTitle,name,urls,id,siteId,catalogId,
-			id,productId,status,id,subscriptionEnabled,categoryIds,productChannelIds,productOptions,productSpecifications,
+			externalReferenceCode,name,vocabulary,createDate,displayDate,expirationDate,expirationDate,
+			externalReferenceCode,gtin,key,manufacturerPartNumber,modifiedDate,optionKey,productType,sku,specificationKey,value,currencyCode,externalReferenceCode,name,type,
+			customFields,description,metaDescription,metaKeyword,metaTitle,name,urls,values,cost,id,siteId,catalogId,
+			id,optionCategoryId,productId,status,id,discontinued,published,purchasable,subscriptionEnabled,categoryIds,productChannelIds,productOptions,productSpecifications,
 			skus,tags
 		''';
 
@@ -859,7 +830,7 @@ definition {
 		}
 
 		task ("Sort the list by the Attribute Name column (Ascending)") {
-			ManagementBar.setFilterAndOrder(orderBy = "Attribute");
+			KaleoFormsManageFieldSets.clickFilterAndOrderBy(filterOption = "Attribute");
 
 			ACDXPSettings.setSortDirection(sortDirection = "up");
 		}
@@ -881,7 +852,7 @@ definition {
 		}
 
 		task ("Sort the list by the Data Type column (Ascending)") {
-			ManagementBar.setFilterAndOrder(orderBy = "Data Type");
+			KaleoFormsManageFieldSets.clickFilterAndOrderBy(filterOption = "Data Type");
 
 			ACDXPSettings.setSortDirection(sortDirection = "up");
 		}

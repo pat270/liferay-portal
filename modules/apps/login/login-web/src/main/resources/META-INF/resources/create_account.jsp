@@ -21,7 +21,7 @@ birthdayCalendar.set(Calendar.YEAR, 1970);
 renderResponse.setTitle(LanguageUtil.get(request, "create-account"));
 %>
 
-<portlet:actionURL name="/login/create_account" secure="<%= PropsValues.COMPANY_SECURITY_AUTH_REQUIRES_HTTPS || request.isSecure() %>" var="createAccountURL" windowState="<%= LiferayWindowState.MAXIMIZED.toString() %>">
+<portlet:actionURL name="/login/create_account" secure="<%= request.isSecure() %>" var="createAccountURL" windowState="<%= LiferayWindowState.MAXIMIZED.toString() %>">
 	<portlet:param name="mvcRenderCommandName" value="/login/create_account" />
 </portlet:actionURL>
 
@@ -61,7 +61,6 @@ renderResponse.setTitle(LanguageUtil.get(request, "create-account"));
 	<liferay-ui:error exception="<%= PhoneNumberExtensionException.class %>" message="please-enter-a-valid-phone-number-extension" />
 	<liferay-ui:error exception="<%= RequiredFieldException.class %>" message="please-fill-out-all-required-fields" />
 	<liferay-ui:error exception="<%= TermsOfUseException.class %>" message="you-must-agree-to-the-terms-of-use" />
-	<liferay-ui:error exception="<%= UserEmailAddressException.MustNotBeDuplicate.class %>" message="the-email-address-you-requested-is-already-taken" />
 	<liferay-ui:error exception="<%= UserEmailAddressException.MustNotBeNull.class %>" message="please-enter-an-email-address" />
 	<liferay-ui:error exception="<%= UserEmailAddressException.MustNotBePOP3User.class %>" message="the-email-address-you-requested-is-reserved" />
 	<liferay-ui:error exception="<%= UserEmailAddressException.MustNotBeReserved.class %>" message="the-email-address-you-requested-is-reserved" />
@@ -183,7 +182,7 @@ renderResponse.setTitle(LanguageUtil.get(request, "create-account"));
 					<clay:col
 						md="6"
 					>
-						<liferay-ui:user-name-fields />
+						<liferay-user:user-name-fields />
 					</clay:col>
 
 					<clay:col

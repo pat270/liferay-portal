@@ -2,7 +2,6 @@
 
 @import 'LayoutPageTemplateEntryCard';
 
-@import 'miller_columns/DragPreview';
 @import 'miller_columns/MillerColumns';
 
 @import '../js/layout/look_and_feel/GlobalCSSCETsConfiguration';
@@ -23,9 +22,5 @@
 
 	.add-layout-form .sheet-footer {
 		position: absolute;
-	}
-
-	.nav-tabs + .tab-content .tab-pane {
-		padding: 1rem;
 	}
 }

@@ -31,7 +31,9 @@ import com.liferay.commerce.product.catalog.CPQuery;
 import com.liferay.commerce.product.catalog.CPSku;
 import com.liferay.commerce.product.data.source.CPDataSourceResult;
 import com.liferay.commerce.product.model.CPInstance;
+import com.liferay.commerce.product.model.CPInstanceUnitOfMeasure;
 import com.liferay.commerce.product.service.CPInstanceLocalService;
+import com.liferay.commerce.product.service.CPInstanceUnitOfMeasureLocalService;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.commerce.product.util.CPDefinitionHelper;
 import com.liferay.commerce.service.CPDefinitionInventoryLocalService;
@@ -67,11 +69,15 @@ import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.TransactionConfig;
 import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
+import com.liferay.portal.kernel.util.BigDecimalUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.io.Serializable;
+
+import java.math.BigDecimal;
 
 import java.util.List;
 import java.util.Random;
@@ -257,25 +263,39 @@ public class CommerceOrderGenerator {
 				_cpDefinitionInventoryEngineRegistry.
 					getCPDefinitionInventoryEngine(cpDefinitionInventory);
 
-			int maxOrderQuantity = _getMaxOrderQuantity(
+			BigDecimal maxOrderQuantity = _getMaxOrderQuantity(
 				cpInstance, cpDefinitionInventoryEngine);
 
-			if (maxOrderQuantity < 1) {
+			if (BigDecimalUtil.lt(maxOrderQuantity, BigDecimal.ZERO)) {
 				continue;
 			}
 
 			// Add commerce order item
 
 			try {
-				int quantity = _randomInt(
-					cpDefinitionInventoryEngine.getMinOrderQuantity(cpInstance),
-					maxOrderQuantity);
+				BigDecimal minOrderQuantity =
+					cpDefinitionInventoryEngine.getMinOrderQuantity(cpInstance);
+
+				if (BigDecimalUtil.lt(maxOrderQuantity, minOrderQuantity)) {
+					continue;
+				}
+
+				List<CPInstanceUnitOfMeasure> cpInstanceUnitOfMeasures =
+					_cpInstanceUnitOfMeasureLocalService.
+						getCPInstanceUnitOfMeasures(
+							cpInstance.getCompanyId(), cpInstance.getSku());
+
+				BigDecimal quantity = _randomQuantity(
+					minOrderQuantity, maxOrderQuantity,
+					ListUtil.isEmpty(cpInstanceUnitOfMeasures) ? null :
+						cpInstanceUnitOfMeasures.get(0));
 
 				_commerceOrderItemLocalService.addCommerceOrderItem(
 					commerceOrder.getUserId(),
 					commerceOrder.getCommerceOrderId(),
-					cpInstance.getCPInstanceId(), null, quantity, 0, 0,
-					StringPool.BLANK, commerceContext, serviceContext);
+					cpInstance.getCPInstanceId(), null, quantity, 0,
+					BigDecimal.ZERO, StringPool.BLANK, commerceContext,
+					serviceContext);
 			}
 			catch (Exception exception) {
 				_log.error(exception);
@@ -421,19 +441,19 @@ public class CommerceOrderGenerator {
 		return commerceShippingMethod.getCommerceShippingMethodId();
 	}
 
-	private int _getMaxOrderQuantity(
+	private BigDecimal _getMaxOrderQuantity(
 			CPInstance cpInstance,
 			CPDefinitionInventoryEngine cpDefinitionInventoryEngine)
 		throws PortalException {
 
-		int stockQuantity = _commerceInventoryEngine.getStockQuantity(
+		BigDecimal stockQuantity = _commerceInventoryEngine.getStockQuantity(
 			cpInstance.getCompanyId(), cpInstance.getGroupId(),
-			cpInstance.getSku());
+			cpInstance.getSku(), StringPool.BLANK);
 
-		int maxOrderQuantity = cpDefinitionInventoryEngine.getMaxOrderQuantity(
-			cpInstance);
+		BigDecimal maxOrderQuantity =
+			cpDefinitionInventoryEngine.getMaxOrderQuantity(cpInstance);
 
-		if (stockQuantity < maxOrderQuantity) {
+		if (BigDecimalUtil.lt(stockQuantity, maxOrderQuantity)) {
 			return stockQuantity;
 		}
 
@@ -487,6 +507,31 @@ public class CommerceOrderGenerator {
 		}
 
 		return Math.floorMod(value, range) + min;
+	}
+
+	private BigDecimal _randomQuantity(
+		BigDecimal min, BigDecimal max,
+		CPInstanceUnitOfMeasure cpInstanceUnitOfMeasure) {
+
+		if (BigDecimalUtil.lt(max, min)) {
+			throw new IllegalArgumentException(
+				"Max value must be greater than or equal to the min value");
+		}
+
+		int randomInt = _random.nextInt();
+
+		if (cpInstanceUnitOfMeasure == null) {
+			int range = max.intValue() + 1 - min.intValue();
+
+			return BigDecimal.valueOf(
+				Math.floorMod(randomInt, range) + min.intValue());
+		}
+
+		BigDecimal incrementalOrderQuantity =
+			cpInstanceUnitOfMeasure.getIncrementalOrderQuantity();
+
+		return max.min(
+			incrementalOrderQuantity.multiply(BigDecimal.valueOf(randomInt)));
 	}
 
 	private void _setPermissionChecker(Group group) throws Exception {
@@ -571,6 +616,10 @@ public class CommerceOrderGenerator {
 
 	@Reference
 	private CPInstanceLocalService _cpInstanceLocalService;
+
+	@Reference
+	private CPInstanceUnitOfMeasureLocalService
+		_cpInstanceUnitOfMeasureLocalService;
 
 	@Reference
 	private GroupLocalService _groupLocalService;

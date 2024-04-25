@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutRevision;
 import com.liferay.portal.kernel.model.LayoutStagingHandler;
@@ -86,6 +87,10 @@ public class PortletPreferencesLocalServiceImpl
 
 		PortletPreferences portletPreferences =
 			portletPreferencesPersistence.create(portletPreferencesId);
+
+		if (portletPreferences.getCompanyId() == CompanyConstants.SYSTEM) {
+			portletPreferences.setCompanyId(companyId);
+		}
 
 		portletPreferences.setOwnerId(ownerId);
 		portletPreferences.setOwnerType(ownerType);
@@ -172,14 +177,11 @@ public class PortletPreferencesLocalServiceImpl
 			long portletPreferencesId)
 		throws PortalException {
 
-		for (PortletPreferenceValue portletPreferenceValue :
-				_portletPreferenceValuePersistence.findByPortletPreferencesId(
-					portletPreferencesId)) {
+		PortletPreferences portletPreferences =
+			portletPreferencesPersistence.findByPrimaryKey(
+				portletPreferencesId);
 
-			_portletPreferenceValuePersistence.remove(portletPreferenceValue);
-		}
-
-		return super.deletePortletPreferences(portletPreferencesId);
+		return deletePortletPreferences(portletPreferences);
 	}
 
 	@Override
@@ -218,10 +220,17 @@ public class PortletPreferencesLocalServiceImpl
 			portletPreferencesPersistence.findByO_O_P_P(
 				ownerId, ownerType, plid, portletId);
 
+		deletePortletPreferences(portletPreferences);
+	}
+
+	@Override
+	public PortletPreferences deletePortletPreferences(
+		PortletPreferences portletPreferences) {
+
 		_portletPreferenceValuePersistence.removeByPortletPreferencesId(
 			portletPreferences.getPortletPreferencesId());
 
-		portletPreferencesPersistence.remove(portletPreferences);
+		return portletPreferencesPersistence.remove(portletPreferences);
 	}
 
 	@Override
@@ -448,6 +457,13 @@ public class PortletPreferencesLocalServiceImpl
 	}
 
 	@Override
+	public List<PortletPreferences> getPortletPreferencesByPortletId(
+		String portletId) {
+
+		return portletPreferencesFinder.findByPortletId(portletId);
+	}
+
+	@Override
 	public long getPortletPreferencesCount(
 		int ownerType, long plid, String portletId) {
 
@@ -488,6 +504,14 @@ public class PortletPreferencesLocalServiceImpl
 
 		return portletPreferencesFinder.countByO_O_P(
 			ownerId, ownerType, portletId, excludeDefaultPreferences);
+	}
+
+	@Override
+	public int getPortletPreferencesCount(
+		long companyId, long ownerId, int ownerType, String portletId) {
+
+		return portletPreferencesPersistence.countByC_O_O_LikeP(
+			companyId, ownerId, ownerType, portletId);
 	}
 
 	@Override

@@ -9,9 +9,9 @@ import com.liferay.petra.function.UnsafeBiConsumer;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.GroupedModel;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
@@ -19,10 +19,12 @@ import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.kernel.servlet.ServletContextPool;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.odata.filter.ExpressionConvert;
 import com.liferay.portal.odata.filter.FilterParser;
@@ -486,7 +488,140 @@ public abstract class BaseSXPBlueprintResourceImpl
 			SXPBlueprint sxpBlueprint)
 		throws Exception {
 
+		SXPBlueprint existingSXPBlueprint = getSXPBlueprint(sxpBlueprintId);
+
+		if (sxpBlueprint.getCreateDate() != null) {
+			existingSXPBlueprint.setCreateDate(sxpBlueprint.getCreateDate());
+		}
+
+		if (sxpBlueprint.getDescription() != null) {
+			existingSXPBlueprint.setDescription(sxpBlueprint.getDescription());
+		}
+
+		if (sxpBlueprint.getDescription_i18n() != null) {
+			existingSXPBlueprint.setDescription_i18n(
+				sxpBlueprint.getDescription_i18n());
+		}
+
+		if (sxpBlueprint.getExternalReferenceCode() != null) {
+			existingSXPBlueprint.setExternalReferenceCode(
+				sxpBlueprint.getExternalReferenceCode());
+		}
+
+		if (sxpBlueprint.getModifiedDate() != null) {
+			existingSXPBlueprint.setModifiedDate(
+				sxpBlueprint.getModifiedDate());
+		}
+
+		if (sxpBlueprint.getSchemaVersion() != null) {
+			existingSXPBlueprint.setSchemaVersion(
+				sxpBlueprint.getSchemaVersion());
+		}
+
+		if (sxpBlueprint.getTitle() != null) {
+			existingSXPBlueprint.setTitle(sxpBlueprint.getTitle());
+		}
+
+		if (sxpBlueprint.getTitle_i18n() != null) {
+			existingSXPBlueprint.setTitle_i18n(sxpBlueprint.getTitle_i18n());
+		}
+
+		if (sxpBlueprint.getUserName() != null) {
+			existingSXPBlueprint.setUserName(sxpBlueprint.getUserName());
+		}
+
+		if (sxpBlueprint.getVersion() != null) {
+			existingSXPBlueprint.setVersion(sxpBlueprint.getVersion());
+		}
+
+		preparePatch(sxpBlueprint, existingSXPBlueprint);
+
+		return putSXPBlueprint(sxpBlueprintId, existingSXPBlueprint);
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'PUT' 'http://localhost:8080/o/search-experiences-rest/v1.0/sxp-blueprints/{sxpBlueprintId}' -d $'{"configuration": ___, "createDate": ___, "description": ___, "description_i18n": ___, "elementInstances": ___, "externalReferenceCode": ___, "id": ___, "modifiedDate": ___, "schemaVersion": ___, "title": ___, "title_i18n": ___, "userName": ___, "version": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 */
+	@io.swagger.v3.oas.annotations.Parameters(
+		value = {
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
+				name = "sxpBlueprintId"
+			)
+		}
+	)
+	@io.swagger.v3.oas.annotations.tags.Tags(
+		value = {@io.swagger.v3.oas.annotations.tags.Tag(name = "SXPBlueprint")}
+	)
+	@javax.ws.rs.Consumes({"application/json", "application/xml"})
+	@javax.ws.rs.Path("/sxp-blueprints/{sxpBlueprintId}")
+	@javax.ws.rs.Produces({"application/json", "application/xml"})
+	@javax.ws.rs.PUT
+	@Override
+	public SXPBlueprint putSXPBlueprint(
+			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
+			@javax.validation.constraints.NotNull
+			@javax.ws.rs.PathParam("sxpBlueprintId")
+			Long sxpBlueprintId,
+			SXPBlueprint sxpBlueprint)
+		throws Exception {
+
 		return new SXPBlueprint();
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'PUT' 'http://localhost:8080/o/search-experiences-rest/v1.0/sxp-blueprints/{sxpBlueprintId}/batch' -d $'{"configuration": ___, "createDate": ___, "description": ___, "description_i18n": ___, "elementInstances": ___, "externalReferenceCode": ___, "id": ___, "modifiedDate": ___, "schemaVersion": ___, "title": ___, "title_i18n": ___, "userName": ___, "version": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 */
+	@io.swagger.v3.oas.annotations.Parameters(
+		value = {
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
+				name = "sxpBlueprintId"
+			),
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
+				name = "callbackURL"
+			)
+		}
+	)
+	@io.swagger.v3.oas.annotations.tags.Tags(
+		value = {@io.swagger.v3.oas.annotations.tags.Tag(name = "SXPBlueprint")}
+	)
+	@javax.ws.rs.Consumes("application/json")
+	@javax.ws.rs.Path("/sxp-blueprints/{sxpBlueprintId}/batch")
+	@javax.ws.rs.Produces("application/json")
+	@javax.ws.rs.PUT
+	@Override
+	public Response putSXPBlueprintBatch(
+			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
+			@javax.validation.constraints.NotNull
+			@javax.ws.rs.PathParam("sxpBlueprintId")
+			Long sxpBlueprintId,
+			SXPBlueprint sxpBlueprint,
+			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
+			@javax.ws.rs.QueryParam("callbackURL")
+			String callbackURL,
+			Object object)
+		throws Exception {
+
+		vulcanBatchEngineImportTaskResource.setContextAcceptLanguage(
+			contextAcceptLanguage);
+		vulcanBatchEngineImportTaskResource.setContextCompany(contextCompany);
+		vulcanBatchEngineImportTaskResource.setContextHttpServletRequest(
+			contextHttpServletRequest);
+		vulcanBatchEngineImportTaskResource.setContextUriInfo(contextUriInfo);
+		vulcanBatchEngineImportTaskResource.setContextUser(contextUser);
+
+		Response.ResponseBuilder responseBuilder = Response.accepted();
+
+		return responseBuilder.entity(
+			vulcanBatchEngineImportTaskResource.putImportTask(
+				SXPBlueprint.class.getName(), callbackURL, object)
+		).build();
 	}
 
 	/**
@@ -573,6 +708,12 @@ public abstract class BaseSXPBlueprintResourceImpl
 			String updateStrategy = (String)parameters.getOrDefault(
 				"updateStrategy", "UPDATE");
 
+			if (StringUtil.equalsIgnoreCase(updateStrategy, "UPDATE")) {
+				sxpBlueprintUnsafeFunction =
+					sxpBlueprint -> putSXPBlueprintByExternalReferenceCode(
+						sxpBlueprint.getExternalReferenceCode(), sxpBlueprint);
+			}
+
 			if (StringUtil.equalsIgnoreCase(updateStrategy, "PARTIAL_UPDATE")) {
 				sxpBlueprintUnsafeFunction = sxpBlueprint -> {
 					SXPBlueprint persistedSXPBlueprint = null;
@@ -632,11 +773,11 @@ public abstract class BaseSXPBlueprintResourceImpl
 	}
 
 	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray("UPSERT", "INSERT");
+		return SetUtil.fromArray("INSERT", "UPSERT");
 	}
 
 	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray("PARTIAL_UPDATE");
+		return SetUtil.fromArray("PARTIAL_UPDATE", "UPDATE");
 	}
 
 	@Override
@@ -708,6 +849,13 @@ public abstract class BaseSXPBlueprintResourceImpl
 				sxpBlueprint);
 		}
 
+		if (StringUtil.equalsIgnoreCase(updateStrategy, "UPDATE")) {
+			sxpBlueprintUnsafeFunction = sxpBlueprint -> putSXPBlueprint(
+				sxpBlueprint.getId() != null ? sxpBlueprint.getId() :
+					_parseLong((String)parameters.get("sxpBlueprintId")),
+				sxpBlueprint);
+		}
+
 		if (sxpBlueprintUnsafeFunction == null) {
 			throw new NotSupportedException(
 				"Update strategy \"" + updateStrategy +
@@ -766,6 +914,13 @@ public abstract class BaseSXPBlueprintResourceImpl
 
 	public void setContextHttpServletRequest(
 		HttpServletRequest contextHttpServletRequest) {
+
+		if ((contextHttpServletRequest != null) &&
+			(contextHttpServletRequest.getAttribute(WebKeys.CTX) == null)) {
+
+			contextHttpServletRequest.setAttribute(
+				WebKeys.CTX, ServletContextPool.get(StringPool.BLANK));
+		}
 
 		this.contextHttpServletRequest = contextHttpServletRequest;
 	}
@@ -904,7 +1059,9 @@ public abstract class BaseSXPBlueprintResourceImpl
 	}
 
 	protected Map<String, String> addAction(
-		String actionName, GroupedModel groupedModel, String methodName) {
+		String actionName,
+		com.liferay.portal.kernel.model.GroupedModel groupedModel,
+		String methodName) {
 
 		return ActionUtil.addAction(
 			actionName, getClass(), groupedModel, methodName,
@@ -937,6 +1094,10 @@ public abstract class BaseSXPBlueprintResourceImpl
 			actionName, siteId, methodName, null, permissionName, siteId);
 	}
 
+	protected void preparePatch(
+		SXPBlueprint sxpBlueprint, SXPBlueprint existingSxpBlueprint) {
+	}
+
 	protected <T, R, E extends Throwable> List<R> transform(
 		Collection<T> collection, UnsafeFunction<T, R, E> unsafeFunction) {
 
@@ -944,14 +1105,15 @@ public abstract class BaseSXPBlueprintResourceImpl
 	}
 
 	protected <T, R, E extends Throwable> R[] transform(
-		T[] array, UnsafeFunction<T, R, E> unsafeFunction, Class<?> clazz) {
+		T[] array, UnsafeFunction<T, R, E> unsafeFunction,
+		Class<? extends R> clazz) {
 
 		return TransformUtil.transform(array, unsafeFunction, clazz);
 	}
 
 	protected <T, R, E extends Throwable> R[] transformToArray(
 		Collection<T> collection, UnsafeFunction<T, R, E> unsafeFunction,
-		Class<?> clazz) {
+		Class<? extends R> clazz) {
 
 		return TransformUtil.transformToArray(
 			collection, unsafeFunction, clazz);
@@ -977,7 +1139,8 @@ public abstract class BaseSXPBlueprintResourceImpl
 	}
 
 	protected <T, R, E extends Throwable> R[] unsafeTransform(
-			T[] array, UnsafeFunction<T, R, E> unsafeFunction, Class<?> clazz)
+			T[] array, UnsafeFunction<T, R, E> unsafeFunction,
+			Class<? extends R> clazz)
 		throws E {
 
 		return TransformUtil.unsafeTransform(array, unsafeFunction, clazz);
@@ -985,7 +1148,7 @@ public abstract class BaseSXPBlueprintResourceImpl
 
 	protected <T, R, E extends Throwable> R[] unsafeTransformToArray(
 			Collection<T> collection, UnsafeFunction<T, R, E> unsafeFunction,
-			Class<?> clazz)
+			Class<? extends R> clazz)
 		throws E {
 
 		return TransformUtil.unsafeTransformToArray(

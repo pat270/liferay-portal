@@ -99,6 +99,11 @@ public final class Experiment {
 		return _id;
 	}
 
+	@JsonProperty("metrics")
+	public List<Metric> getMetrics() {
+		return _metrics;
+	}
+
 	@JsonFormat(
 		pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
 		shape = JsonFormat.Shape.STRING, timezone = "UTC"
@@ -127,6 +132,10 @@ public final class Experiment {
 		return _pageURL;
 	}
 
+	public Boolean getPublishable() {
+		return _publishable;
+	}
+
 	public String getPublishedDXPVariantId() {
 		return _publishedDXPVariantId;
 	}
@@ -141,6 +150,11 @@ public final class Experiment {
 		}
 
 		return new Date(_startedDate.getTime());
+	}
+
+	@JsonProperty("winnerDXPVariantId")
+	public String getWinnerDXPVariantId() {
+		return _winnerDXPVariantId;
 	}
 
 	public void setChannelId(String channelId) {
@@ -209,6 +223,10 @@ public final class Experiment {
 		_id = id;
 	}
 
+	public void setMetrics(List<Metric> metrics) {
+		_metrics = metrics;
+	}
+
 	public void setModifiedDate(Date modifiedDate) {
 		if (modifiedDate != null) {
 			_modifiedDate = new Date(modifiedDate.getTime());
@@ -231,6 +249,10 @@ public final class Experiment {
 		_pageURL = pageURL;
 	}
 
+	public void setPublishable(Boolean publishable) {
+		_publishable = publishable;
+	}
+
 	public void setPublishedDXPVariantId(String publishedDXPVariantId) {
 		_publishedDXPVariantId = publishedDXPVariantId;
 	}
@@ -239,6 +261,10 @@ public final class Experiment {
 		if (startedDate != null) {
 			_startedDate = new Date(startedDate.getTime());
 		}
+	}
+
+	public void setWinnerDXPVariantId(String winnerDXPVariantId) {
+		_winnerDXPVariantId = winnerDXPVariantId;
 	}
 
 	private String _channelId;
@@ -257,12 +283,15 @@ public final class Experiment {
 	private ExperimentType _experimentType = ExperimentType.AB;
 	private Goal _goal;
 	private String _id;
+	private List<Metric> _metrics;
 	private Date _modifiedDate;
 	private String _name;
 	private String _pageRelativePath;
 	private String _pageTitle;
 	private String _pageURL;
+	private Boolean _publishable;
 	private String _publishedDXPVariantId;
 	private Date _startedDate;
+	private String _winnerDXPVariantId;
 
 }

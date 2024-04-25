@@ -107,12 +107,12 @@
 </tr>
 <tr>
 	<td>CURRENT_DISPLAY_STYLE</td>
-	<td>//ul[@class='navbar-nav'][2]//li[contains(@class,'nav-item')]//button[contains(@class,'dropdown-toggle') and contains(@class,'nav-link-monospaced')]</td>
+	<td>//ul[@class='navbar-nav'][2]//li[contains(@class,'nav-item')]//button[contains(@class,'dropdown-toggle') and contains(@class,'nav-link')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CURRENT_DISPLAY_STYLE_ACTIVE</td>
-	<td>//ul[@class='navbar-nav'][2]//li[contains(@class,'nav-item')]//button[contains(@class,'dropdown-toggle') and contains(@class,'nav-link-monospaced')][*[name()='svg'][contains(@class,'${key_displayStyle}')]]</td>
+	<td>//ul[@class='navbar-nav'][2]//li[contains(@class,'nav-item')]//button[contains(@class,'dropdown-toggle') and contains(@class,'nav-link')][*[name()='svg'][contains(@class,'${key_displayStyle}')]]</td>
 	<td></td>
 </tr>
 <tr>
@@ -266,11 +266,6 @@
 	<td></td>
 </tr>
 <tr>
-	<td>FLAG_AND_LANGUAGE</td>
-	<td>//*[name()='svg']//*[contains(@href,'${key_flagID}')]//..//..//following-sibling::span[contains(text(),'${key_languageID}')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>FLIP_DISABLED</td>
 	<td>//button[contains(@class,'btn') and .//*[contains(@class,'lexicon-icon-change')]][@disabled]</td>
 	<td></td>
@@ -307,12 +302,17 @@
 </tr>
 <tr>
 	<td>MOVE_TO_RECYCLE_BIN</td>
-	<td>//*[*[name()='svg'][contains(@class,'icon-trash')]]</td>
+	<td>//button[contains(@class,'inline')][.//*[name()='svg'][contains(@class,'icon-trash')]]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>OK</td>
-	<td>//*[name()='svg'][contains(@class,'check')]</td>
+	<td>//div[contains(@class,'toolbar')]//*[name()='svg'][contains(@class,'check')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ORDER_ARROW_UP</td>
+	<td>//*[contains(@class, 'lexicon-icon lexicon-icon-order-arrow-up')]</td>
 	<td></td>
 </tr>
 <tr>

@@ -9,9 +9,12 @@ import com.liferay.list.type.exception.DuplicateListTypeEntryException;
 import com.liferay.list.type.exception.DuplicateListTypeEntryExternalReferenceCodeException;
 import com.liferay.list.type.exception.ListTypeEntryKeyException;
 import com.liferay.list.type.exception.ListTypeEntryNameException;
+import com.liferay.list.type.internal.definition.util.ListTypeDefinitionUtil;
+import com.liferay.list.type.model.ListTypeDefinition;
 import com.liferay.list.type.model.ListTypeEntry;
 import com.liferay.list.type.service.base.ListTypeEntryLocalServiceBaseImpl;
 import com.liferay.list.type.service.persistence.ListTypeDefinitionPersistence;
+import com.liferay.object.definition.util.ObjectDefinitionUtil;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
@@ -19,6 +22,7 @@ import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.List;
@@ -45,6 +49,14 @@ public class ListTypeEntryLocalServiceImpl
 			long listTypeDefinitionId, String key, Map<Locale, String> nameMap)
 		throws PortalException {
 
+		ListTypeDefinition listTypeDefinition =
+			_listTypeDefinitionPersistence.findByPrimaryKey(
+				listTypeDefinitionId);
+
+		ListTypeDefinitionUtil.validateInvokerBundle(
+			"Only allowed bundles can add system list type entries",
+			listTypeDefinition.isSystem());
+
 		User user = _userLocalService.getUser(userId);
 
 		_validateExternalReferenceCode(
@@ -68,9 +80,37 @@ public class ListTypeEntryLocalServiceImpl
 		return listTypeEntryPersistence.update(listTypeEntry);
 	}
 
+	@Indexable(type = IndexableType.DELETE)
+	@Override
+	public ListTypeEntry deleteListTypeEntry(ListTypeEntry listTypeEntry)
+		throws PortalException {
+
+		ListTypeDefinition listTypeDefinition =
+			_listTypeDefinitionPersistence.findByPrimaryKey(
+				listTypeEntry.getListTypeDefinitionId());
+
+		ListTypeDefinitionUtil.validateInvokerBundle(
+			"Only allowed bundles can delete system list type entries",
+			listTypeDefinition.isSystem());
+
+		return listTypeEntryPersistence.remove(listTypeEntry);
+	}
+
+	@Indexable(type = IndexableType.DELETE)
+	@Override
+	public ListTypeEntry deleteListTypeEntry(long listTypeEntryId)
+		throws PortalException {
+
+		ListTypeEntry listTypeEntry = listTypeEntryPersistence.findByPrimaryKey(
+			listTypeEntryId);
+
+		return deleteListTypeEntry(listTypeEntry);
+	}
+
 	@Override
 	public void deleteListTypeEntryByListTypeDefinitionId(
-		long listTypeDefinitionId) {
+			long listTypeDefinitionId)
+		throws PortalException {
 
 		for (ListTypeEntry listTypeEntry :
 				listTypeEntryPersistence.findByListTypeDefinitionId(
@@ -112,6 +152,15 @@ public class ListTypeEntryLocalServiceImpl
 	}
 
 	@Override
+	public List<ListTypeEntry> getListTypeEntries(
+		long listTypeDefinitionId, int start, int end,
+		OrderByComparator<ListTypeEntry> orderByComparator) {
+
+		return listTypeEntryPersistence.findByListTypeDefinitionId(
+			listTypeDefinitionId, start, end, orderByComparator);
+	}
+
+	@Override
 	public int getListTypeEntriesCount(long listTypeDefinitionId) {
 		return listTypeEntryPersistence.countByListTypeDefinitionId(
 			listTypeDefinitionId);
@@ -141,17 +190,28 @@ public class ListTypeEntryLocalServiceImpl
 			Map<Locale, String> nameMap)
 		throws PortalException {
 
+		_validateName(nameMap);
+
 		ListTypeEntry listTypeEntry = listTypeEntryPersistence.findByPrimaryKey(
 			listTypeEntryId);
+
+		listTypeEntry.setNameMap(nameMap);
+
+		ListTypeDefinition listTypeDefinition =
+			_listTypeDefinitionPersistence.findByPrimaryKey(
+				listTypeEntry.getListTypeDefinitionId());
+
+		if (listTypeDefinition.isSystem() &&
+			!ObjectDefinitionUtil.isInvokerBundleAllowed()) {
+
+			return listTypeEntryPersistence.update(listTypeEntry);
+		}
 
 		_validateExternalReferenceCode(
 			externalReferenceCode, listTypeEntry.getCompanyId(),
 			listTypeEntry.getListTypeDefinitionId(), listTypeEntryId);
 
-		_validateName(nameMap);
-
 		listTypeEntry.setExternalReferenceCode(externalReferenceCode);
-		listTypeEntry.setNameMap(nameMap);
 
 		return listTypeEntryPersistence.update(listTypeEntry);
 	}

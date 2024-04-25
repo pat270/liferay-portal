@@ -11,7 +11,7 @@ import com.liferay.data.engine.model.DEDataDefinitionFieldLink;
 import com.liferay.data.engine.model.DEDataListView;
 import com.liferay.data.engine.rest.dto.v2_0.DataListView;
 import com.liferay.data.engine.rest.internal.odata.entity.v2_0.DataDefinitionEntityModel;
-import com.liferay.data.engine.rest.internal.security.permission.resource.DataDefinitionModelResourcePermission;
+import com.liferay.data.engine.rest.internal.security.permission.resource.util.DataDefinitionPermissionUtil;
 import com.liferay.data.engine.rest.resource.v2_0.DataListViewResource;
 import com.liferay.data.engine.service.DEDataDefinitionFieldLinkLocalService;
 import com.liferay.data.engine.service.DEDataListViewLocalService;
@@ -26,7 +26,6 @@ import com.liferay.portal.kernel.change.tracking.CTAware;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
-import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
@@ -54,7 +53,6 @@ import java.util.Set;
 
 import javax.validation.ValidationException;
 
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.MultivaluedMap;
 
 import org.osgi.service.component.annotations.Component;
@@ -85,9 +83,9 @@ public class DataListViewResourceImpl extends BaseDataListViewResourceImpl {
 
 	@Override
 	public void deleteDataListView(Long dataListViewId) throws Exception {
-		_dataDefinitionModelResourcePermission.check(
+		DataDefinitionPermissionUtil.check(
 			PermissionThreadLocal.getPermissionChecker(),
-			_getDDMStructureId(
+			_getDDMStructure(
 				_deDataListViewLocalService.getDEDataListView(dataListViewId)),
 			ActionKeys.DELETE);
 
@@ -99,13 +97,6 @@ public class DataListViewResourceImpl extends BaseDataListViewResourceImpl {
 			Long dataDefinitionId, String keywords, Pagination pagination,
 			Sort[] sorts)
 		throws Exception {
-
-		if (pagination.getPageSize() > 250) {
-			throw new BadRequestException(
-				_language.format(
-					contextAcceptLanguage.getPreferredLocale(),
-					"page-size-is-greater-than-x", 250));
-		}
 
 		if (ArrayUtil.isEmpty(sorts)) {
 			sorts = new Sort[] {
@@ -159,9 +150,9 @@ public class DataListViewResourceImpl extends BaseDataListViewResourceImpl {
 
 	@Override
 	public DataListView getDataListView(Long dataListViewId) throws Exception {
-		_dataDefinitionModelResourcePermission.check(
+		DataDefinitionPermissionUtil.check(
 			PermissionThreadLocal.getPermissionChecker(),
-			_getDDMStructureId(
+			_getDDMStructure(
 				_deDataListViewLocalService.getDEDataListView(dataListViewId)),
 			ActionKeys.VIEW);
 
@@ -188,7 +179,7 @@ public class DataListViewResourceImpl extends BaseDataListViewResourceImpl {
 		DDMStructure ddmStructure = _ddmStructureLocalService.getStructure(
 			dataDefinitionId);
 
-		_dataDefinitionModelResourcePermission.checkPortletPermission(
+		DataDefinitionPermissionUtil.checkPortletPermission(
 			PermissionThreadLocal.getPermissionChecker(), ddmStructure,
 			DataActionKeys.ADD_DATA_DEFINITION);
 
@@ -213,9 +204,9 @@ public class DataListViewResourceImpl extends BaseDataListViewResourceImpl {
 			Long dataListViewId, DataListView dataListView)
 		throws Exception {
 
-		_dataDefinitionModelResourcePermission.check(
+		DataDefinitionPermissionUtil.check(
 			PermissionThreadLocal.getPermissionChecker(),
-			_getDDMStructureId(
+			_getDDMStructure(
 				_deDataListViewLocalService.getDEDataListView(dataListViewId)),
 			ActionKeys.UPDATE);
 
@@ -319,8 +310,11 @@ public class DataListViewResourceImpl extends BaseDataListViewResourceImpl {
 		return _portal.getClassNameId(DEDataListView.class);
 	}
 
-	private long _getDDMStructureId(DEDataListView deDataListView) {
-		return deDataListView.getDdmStructureId();
+	private DDMStructure _getDDMStructure(DEDataListView deDataListView)
+		throws Exception {
+
+		return _ddmStructureLocalService.getDDMStructure(
+			deDataListView.getDdmStructureId());
 	}
 
 	private DataListView _toDataListView(DEDataListView deDataListView)
@@ -328,19 +322,22 @@ public class DataListViewResourceImpl extends BaseDataListViewResourceImpl {
 
 		return new DataListView() {
 			{
-				appliedFilters = _toMap(deDataListView.getAppliedFilters());
-				dataDefinitionId = deDataListView.getDdmStructureId();
-				dateCreated = deDataListView.getCreateDate();
-				dateModified = deDataListView.getModifiedDate();
-				fieldNames = JSONUtil.toStringArray(
-					_jsonFactory.createJSONArray(
-						deDataListView.getFieldNames()));
-				id = deDataListView.getPrimaryKey();
-				name = LocalizedValueUtil.toStringObjectMap(
-					deDataListView.getNameMap());
-				siteId = deDataListView.getGroupId();
-				sortField = deDataListView.getSortField();
-				userId = deDataListView.getUserId();
+				setAppliedFilters(
+					() -> _toMap(deDataListView.getAppliedFilters()));
+				setDataDefinitionId(deDataListView::getDdmStructureId);
+				setDateCreated(deDataListView::getCreateDate);
+				setDateModified(deDataListView::getModifiedDate);
+				setFieldNames(
+					() -> JSONUtil.toStringArray(
+						_jsonFactory.createJSONArray(
+							deDataListView.getFieldNames())));
+				setId(deDataListView::getPrimaryKey);
+				setName(
+					() -> LocalizedValueUtil.toStringObjectMap(
+						deDataListView.getNameMap()));
+				setSiteId(deDataListView::getGroupId);
+				setSortField(deDataListView::getSortField);
+				setUserId(deDataListView::getUserId);
 			}
 		};
 	}
@@ -406,10 +403,6 @@ public class DataListViewResourceImpl extends BaseDataListViewResourceImpl {
 		new DataDefinitionEntityModel();
 
 	@Reference
-	private DataDefinitionModelResourcePermission
-		_dataDefinitionModelResourcePermission;
-
-	@Reference
 	private DDMStructureLocalService _ddmStructureLocalService;
 
 	@Reference
@@ -421,9 +414,6 @@ public class DataListViewResourceImpl extends BaseDataListViewResourceImpl {
 
 	@Reference
 	private JSONFactory _jsonFactory;
-
-	@Reference
-	private Language _language;
 
 	@Reference
 	private Portal _portal;

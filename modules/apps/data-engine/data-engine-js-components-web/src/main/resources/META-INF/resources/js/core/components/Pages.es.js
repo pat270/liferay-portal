@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import './PageRenderer.soy';
-
 import classNames from 'classnames';
 import React, {useRef} from 'react';
 
@@ -59,6 +57,13 @@ const Pages = React.forwardRef(
 				ref={containerElementRef}
 				role="group"
 			>
+				<input
+					key={portletNamespace + 'activePage'}
+					name={portletNamespace + 'activePage'}
+					type="hidden"
+					value={activePage}
+				/>
+
 				<input
 					key={portletNamespace + 'persistDefaultValues'}
 					name={portletNamespace + 'persistDefaultValues'}

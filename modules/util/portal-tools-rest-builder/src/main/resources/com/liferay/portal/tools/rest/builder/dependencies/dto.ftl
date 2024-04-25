@@ -14,11 +14,13 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import com.liferay.petra.function.UnsafeSupplier;
 import com.liferay.petra.string.StringBundler;
@@ -26,6 +28,7 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLField;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLName;
+import com.liferay.portal.vulcan.jackson.databind.deser.JSONStringStdDeserializer;
 import com.liferay.portal.vulcan.util.ObjectMapperUtil;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -43,6 +46,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import javax.annotation.Generated;
 
@@ -126,13 +130,14 @@ public class ${schemaName} <#if dtoParentClassName?has_content>extends ${dtoPare
 	}
 
 	<#assign
-		enumSchemas = freeMarkerTool.getDTOEnumSchemas(openAPIYAML, schema)
-		properties = freeMarkerTool.getDTOProperties(configYAML, openAPIYAML, schema)
+		enumSchemas = freeMarkerTool.getDTOEnumSchemas(configYAML, openAPIYAML, schema)
+		jsonMapPropertyNames = []
+		properties = freeMarkerTool.getDTOProperties(configYAML, openAPIYAML, schema, allSchemas)
 	/>
 
 	<#list properties?keys as propertyName>
 		<#assign
-			propertySchema = freeMarkerTool.getDTOPropertySchema(propertyName, schema)
+			propertySchema = freeMarkerTool.getDTOPropertySchema(configYAML, propertyName, schema, allSchemas)
 			propertyType = properties[propertyName]
 			sizeParameters = []
 		/>
@@ -147,6 +152,8 @@ public class ${schemaName} <#if dtoParentClassName?has_content>extends ${dtoPare
 
 		<#if propertySchema.jsonMap>
 			@JsonAnyGetter
+
+			<#assign jsonMapPropertyNames = jsonMapPropertyNames + [propertyName] />
 		</#if>
 
 		<#if propertySchema.maxLength??>
@@ -190,15 +197,25 @@ public class ${schemaName} <#if dtoParentClassName?has_content>extends ${dtoPare
 
 		<#if enumSchemas?keys?seq_contains(propertyType)>
 			<#assign capitalizedPropertyName = propertyType />
+
+			@JsonGetter("${propertyName}")
 		</#if>
 
 		public ${propertyType} get${capitalizedPropertyName}() {
+			if (_${propertyName}Supplier != null) {
+				${propertyName} = _${propertyName}Supplier.get();
+
+				_${propertyName}Supplier = null;
+			}
+
 			return ${propertyName};
 		}
 
 		<#if enumSchemas?keys?seq_contains(propertyType)>
 			@JsonIgnore
 			public String get${capitalizedPropertyName}AsString() {
+				${propertyType} ${propertyName} = get${capitalizedPropertyName}();
+
 				if (${propertyName} == null) {
 					return null;
 				}
@@ -209,19 +226,35 @@ public class ${schemaName} <#if dtoParentClassName?has_content>extends ${dtoPare
 
 		public void set${capitalizedPropertyName}(${propertyType} ${propertyName}) {
 			this.${propertyName} = ${propertyName};
+
+			_${propertyName}Supplier = null;
 		}
 
 		@JsonIgnore
 		public void set${capitalizedPropertyName}(UnsafeSupplier<${propertyType}, Exception> ${propertyName}UnsafeSupplier) {
-			try {
-				${propertyName} = ${propertyName}UnsafeSupplier.get();
-			}
-			catch (RuntimeException re) {
-				throw re;
-			}
-			catch (Exception e) {
-				throw new RuntimeException(e);
-			}
+			<#if propertySchema.jsonMap>
+				try {
+					${propertyName} = ${propertyName}UnsafeSupplier.get();
+				}
+				catch (RuntimeException runtimeException) {
+					throw runtimeException;
+				}
+				catch (Exception exception) {
+					throw new RuntimeException(exception);
+				}
+			<#else>
+				_${propertyName}Supplier = () -> {
+					try {
+						return ${propertyName}UnsafeSupplier.get();
+					}
+					catch (RuntimeException runtimeException) {
+						throw runtimeException;
+					}
+					catch (Exception exception) {
+						throw new RuntimeException(exception);
+					}
+				};
+			</#if>
 		}
 
 		<#if propertySchema.deprecated>
@@ -234,6 +267,9 @@ public class ${schemaName} <#if dtoParentClassName?has_content>extends ${dtoPare
 		)
 		<#if propertySchema.jsonMap>
 			@JsonAnySetter
+		</#if>
+		<#if freeMarkerTool.isVersionCompatible(configYAML, 3) && propertySchema.jsonString>
+			@JsonDeserialize(using = JSONStringStdDeserializer.class)
 		</#if>
 		@JsonProperty(
 			<#if propertySchema.readOnly>
@@ -259,6 +295,9 @@ public class ${schemaName} <#if dtoParentClassName?has_content>extends ${dtoPare
 			</#if>
 		</#if>
 		protected ${propertyType} ${propertyName}<#if propertySchema.jsonMap> = new HashMap<>()</#if>;
+
+		@JsonIgnore
+		private Supplier<${propertyType}> _${propertyName}Supplier;
 	</#list>
 
 	@Override
@@ -275,6 +314,39 @@ public class ${schemaName} <#if dtoParentClassName?has_content>extends ${dtoPare
 
 		return Objects.equals(toString(), ${schemaVarName}.toString());
 	}
+
+	<#if jsonMapPropertyNames?has_content>
+		public Object getPropertyValue(String propertyName) {
+			<#list properties?keys as propertyName>
+				<#if jsonMapPropertyNames?seq_contains(propertyName)>
+					<#continue>
+				</#if>
+
+				<#assign capitalizedPropertyName = propertyName?cap_first />
+
+				<#if enumSchemas?keys?seq_contains(propertyType)>
+					<#assign capitalizedPropertyName = propertyType />
+				</#if>
+
+				if (Objects.equals(propertyName, "${propertyName}")) {
+					return get${capitalizedPropertyName}();
+				}
+				else
+			</#list>
+
+			{
+				<#list jsonMapPropertyNames as propertyName>
+					Map<String, Object> ${propertyName} = get${propertyName?cap_first}();
+
+					if (${propertyName}.containsKey(propertyName)) {
+						return ${propertyName}.get(propertyName);
+					}
+				</#list>
+			}
+
+			return null;
+		}
+	</#if>
 
 	@Override
 	public int hashCode() {
@@ -300,9 +372,16 @@ public class ${schemaName} <#if dtoParentClassName?has_content>extends ${dtoPare
 
 		<#list properties?keys as propertyName>
 			<#assign
-				propertySchema = freeMarkerTool.getDTOPropertySchema(propertyName, schema)
+				capitalizedPropertyName = propertyName?cap_first
+				propertySchema = freeMarkerTool.getDTOPropertySchema(configYAML, propertyName, schema, allSchemas)
 				propertyType = properties[propertyName]
 			/>
+
+			<#if enumSchemas?keys?seq_contains(propertyType)>
+				<#assign capitalizedPropertyName = propertyType />
+			</#if>
+
+			${propertyType} ${propertyName} = get${capitalizedPropertyName}();
 
 			if (${propertyName} != null) {
 				if (sb.length() > 1) {

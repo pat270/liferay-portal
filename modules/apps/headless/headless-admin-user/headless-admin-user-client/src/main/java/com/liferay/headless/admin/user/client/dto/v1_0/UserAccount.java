@@ -404,6 +404,27 @@ public class UserAccount implements Cloneable, Serializable {
 
 	protected String image;
 
+	public Long getImageId() {
+		return imageId;
+	}
+
+	public void setImageId(Long imageId) {
+		this.imageId = imageId;
+	}
+
+	public void setImageId(
+		UnsafeSupplier<Long, Exception> imageIdUnsafeSupplier) {
+
+		try {
+			imageId = imageIdUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Long imageId;
+
 	public String getJobTitle() {
 		return jobTitle;
 	}
@@ -445,6 +466,48 @@ public class UserAccount implements Cloneable, Serializable {
 	}
 
 	protected String[] keywords;
+
+	public String getLanguageDisplayName() {
+		return languageDisplayName;
+	}
+
+	public void setLanguageDisplayName(String languageDisplayName) {
+		this.languageDisplayName = languageDisplayName;
+	}
+
+	public void setLanguageDisplayName(
+		UnsafeSupplier<String, Exception> languageDisplayNameUnsafeSupplier) {
+
+		try {
+			languageDisplayName = languageDisplayNameUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String languageDisplayName;
+
+	public String getLanguageId() {
+		return languageId;
+	}
+
+	public void setLanguageId(String languageId) {
+		this.languageId = languageId;
+	}
+
+	public void setLanguageId(
+		UnsafeSupplier<String, Exception> languageIdUnsafeSupplier) {
+
+		try {
+			languageId = languageIdUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String languageId;
 
 	public Date getLastLoginDate() {
 		return lastLoginDate;
@@ -592,6 +655,35 @@ public class UserAccount implements Cloneable, Serializable {
 
 	protected SiteBrief[] siteBriefs;
 
+	public Status getStatus() {
+		return status;
+	}
+
+	public String getStatusAsString() {
+		if (status == null) {
+			return null;
+		}
+
+		return status.toString();
+	}
+
+	public void setStatus(Status status) {
+		this.status = status;
+	}
+
+	public void setStatus(
+		UnsafeSupplier<Status, Exception> statusUnsafeSupplier) {
+
+		try {
+			status = statusUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Status status;
+
 	public UserAccountContactInformation getUserAccountContactInformation() {
 		return userAccountContactInformation;
 	}
@@ -668,6 +760,39 @@ public class UserAccount implements Cloneable, Serializable {
 
 	public String toString() {
 		return UserAccountSerDes.toJSON(this);
+	}
+
+	public static enum Status {
+
+		ACTIVE("Active"), INACTIVE("Inactive");
+
+		public static Status create(String value) {
+			for (Status status : values()) {
+				if (Objects.equals(status.getValue(), value) ||
+					Objects.equals(status.name(), value)) {
+
+					return status;
+				}
+			}
+
+			return null;
+		}
+
+		public String getValue() {
+			return _value;
+		}
+
+		@Override
+		public String toString() {
+			return _value;
+		}
+
+		private Status(String value) {
+			_value = value;
+		}
+
+		private final String _value;
+
 	}
 
 }

@@ -27,8 +27,8 @@ import java.security.CodeSource;
 import java.security.ProtectionDomain;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -66,20 +66,24 @@ public class DBUpgradeClient {
 				return;
 			}
 
-			String jvmOpts = null;
+			List<String> jvmOpts = new ArrayList<>();
 
 			if (commandLine.hasOption("jvm-opts")) {
-				jvmOpts = commandLine.getOptionValue("jvm-opts");
+				String optionValue = commandLine.getOptionValue("jvm-opts");
+
+				Collections.addAll(jvmOpts, optionValue.split(" "));
 			}
 			else {
-				jvmOpts =
-					"-Dfile.encoding=UTF8 -Duser.country=US " +
-						"-Duser.language=en -Duser.timezone=GMT -Xmx2048m";
+				jvmOpts.add("-Dfile.encoding=UTF8");
+				jvmOpts.add("-Duser.country=US");
+				jvmOpts.add("-Duser.language=en");
+				jvmOpts.add("-Duser.timezone=GMT");
+				jvmOpts.add("-Xmx2048m");
 			}
 
 			if (commandLine.hasOption("debug")) {
-				jvmOpts = jvmOpts.concat(
-					" -agentlib:jdwp=transport=dt_socket,address=8001,server=" +
+				jvmOpts.add(
+					"-agentlib:jdwp=transport=dt_socket,address=8001,server=" +
 						"y,suspend=y");
 			}
 
@@ -137,7 +141,7 @@ public class DBUpgradeClient {
 		}
 	}
 
-	public DBUpgradeClient(String jvmOpts, File logFile, boolean shell)
+	public DBUpgradeClient(List<String> jvmOpts, File logFile, boolean shell)
 		throws IOException {
 
 		_jvmOpts = jvmOpts;
@@ -172,26 +176,28 @@ public class DBUpgradeClient {
 
 		List<String> commands = new ArrayList<>();
 
-		if (_JAVA_HOME != null) {
-			commands.add(_JAVA_HOME + "/bin/java");
+		String javaHome = _JAVA_HOME;
+
+		if (javaHome == null) {
+			javaHome = System.getProperty("java.home");
 		}
-		else {
-			commands.add("java");
-		}
+
+		commands.add(javaHome + "/bin/java");
+
+		_jvmOpts.add("-Dexternal-properties=portal-upgrade.properties");
+		_jvmOpts.add(
+			"-Dliferay.shielded.container.lib.portal.dir=" +
+				_appServer.getPortalShieldedContainerLibDir());
+		_jvmOpts.add(
+			"-Dserver.detector.server.id=" +
+				_appServer.getServerDetectorServerId());
 
 		commands.add("-cp");
 		commands.add(_getBootstrapClassPath());
 
-		String jvmOptsCommands = _jvmOpts.concat(
-			" -Dexternal-properties=portal-upgrade.properties " +
-				"-Dserver.detector.server.id=" +
-					_appServer.getServerDetectorServerId() +
-						" -Dliferay.shielded.container.lib.portal.dir=" +
-							_appServer.getPortalShieldedContainerLibDir());
+		System.out.println("JVM arguments: " + _jvmOpts.toString());
 
-		System.out.println("JVM arguments: " + jvmOptsCommands);
-
-		Collections.addAll(commands, jvmOptsCommands.split(" "));
+		commands.addAll(_jvmOpts);
 
 		commands.add(DBUpgraderLauncher.class.getName());
 
@@ -199,6 +205,12 @@ public class DBUpgradeClient {
 		processBuilder.directory(_jarDir);
 
 		processBuilder.redirectErrorStream(true);
+
+		Map<String, String> environment = processBuilder.environment();
+
+		if (_isGTJDK8()) {
+			environment.put("JDK_JAVA_OPTIONS", _buildJDKJavaOptions());
+		}
 
 		Process process = processBuilder.start();
 
@@ -218,7 +230,9 @@ public class DBUpgradeClient {
 			String line = null;
 
 			while ((line = bufferedReader.readLine()) != null) {
-				if (line.contains("UpgradeRecorder") && line.contains("fail")) {
+				if (line.contains("UpgradeRecorder") &&
+					(line.contains("fail") || line.contains("unresolved"))) {
+
 					upgradeFailed = true;
 				}
 
@@ -265,7 +279,8 @@ public class DBUpgradeClient {
 					}
 				}
 			}
-			catch (Exception exception) {
+			catch (IOException ioException) {
+				ioException.printStackTrace();
 			}
 		}
 
@@ -289,9 +304,11 @@ public class DBUpgradeClient {
 		}
 
 		try {
-			_verifyAppServerProperties();
-			_verifyPortalUpgradeDatabaseProperties();
 			_verifyPortalUpgradeExtProperties();
+
+			_verifyAppServerProperties();
+
+			_verifyPortalUpgradeDatabaseProperties();
 
 			_saveProperties();
 		}
@@ -344,6 +361,21 @@ public class DBUpgradeClient {
 		for (File dir : dirs) {
 			_appendClassPath(sb, dir);
 		}
+	}
+
+	private String _buildJDKJavaOptions() {
+		StringBuilder sb = new StringBuilder();
+
+		for (String reflectionOpen : _reflectionOpens) {
+			sb.append(reflectionOpen);
+			sb.append(' ');
+		}
+
+		if (!_reflectionOpens.isEmpty()) {
+			sb.setLength(sb.length() - 1);
+		}
+
+		return sb.toString();
 	}
 
 	private void _close(Closeable closeable) throws IOException {
@@ -404,6 +436,19 @@ public class DBUpgradeClient {
 		int port = Integer.parseInt(matcher.group(2));
 
 		return new GogoShellClient(host, port);
+	}
+
+	private boolean _isGTJDK8() {
+		String javaVersion = System.getProperty("java.version");
+
+		int majorVersion = Integer.parseInt(
+			javaVersion.substring(0, javaVersion.indexOf('.')));
+
+		if (majorVersion > 8) {
+			return true;
+		}
+
+		return false;
 	}
 
 	private boolean _isPortalUpgradeFinished(GogoShellClient gogoShellClient)
@@ -494,8 +539,8 @@ public class DBUpgradeClient {
 			while (_appServer == null) {
 				System.out.print("[ ");
 
-				for (String appServer : _appServers.keySet()) {
-					System.out.print(appServer + " ");
+				for (String appServerName : _APP_SERVER_NAMES) {
+					System.out.print(appServerName + " ");
 				}
 
 				System.out.println("]");
@@ -508,7 +553,11 @@ public class DBUpgradeClient {
 					response = "tomcat";
 				}
 
-				_appServer = _appServers.get(response);
+				_appServer = AppServer.getAppServer(
+					new File(
+						_portalUpgradeExtProperties.getProperty(
+							"liferay.home")),
+					response);
 
 				if (_appServer == null) {
 					System.err.println(
@@ -607,8 +656,8 @@ public class DBUpgradeClient {
 		while (dataSource == null) {
 			System.out.print("[ ");
 
-			for (String database : _databases.keySet()) {
-				System.out.print(database + " ");
+			for (String databaseType : _DATABASE_TYPES) {
+				System.out.print(databaseType + " ");
 			}
 
 			System.out.println("]");
@@ -621,7 +670,7 @@ public class DBUpgradeClient {
 				response = "mysql";
 			}
 
-			dataSource = _databases.get(response);
+			dataSource = Database.getDatabase(response);
 
 			if (dataSource == null) {
 				System.err.println(response + " is an unsupported database.");
@@ -680,13 +729,13 @@ public class DBUpgradeClient {
 		}
 
 		System.out.println(
-			"Please enter your database name (" + dataSource.getDatabaseName() +
+			"Please enter your database name (" + dataSource.getSchemaName() +
 				"): ");
 
 		response = _consoleReader.readLine();
 
 		if (!response.isEmpty()) {
-			dataSource.setDatabaseName(response);
+			dataSource.setSchemaName(response);
 		}
 
 		System.out.println("Please enter your database username: ");
@@ -739,36 +788,28 @@ public class DBUpgradeClient {
 			"liferay.home", liferayHome.getCanonicalPath());
 	}
 
+	private static final String[] _APP_SERVER_NAMES = {
+		"jboss", "tomcat", "weblogic", "websphere", "wildfly"
+	};
+
+	private static final String[] _DATABASE_TYPES = {
+		"db2", "mariadb", "mysql", "oracle", "postgresql", "sqlserver"
+	};
+
 	private static final String _GOGO_SHELL_PREFIX = "g! ";
 
 	private static final String _JAVA_HOME = System.getenv("JAVA_HOME");
 
-	private static final Map<String, AppServer> _appServers =
-		new LinkedHashMap<String, AppServer>() {
-			{
-				put("jboss", AppServer.getJBossEAPAppServer());
-				put("tcserver", AppServer.getTCServerAppServer());
-				put("tomcat", AppServer.getTomcatAppServer());
-				put("weblogic", AppServer.getWebLogicAppServer());
-				put("websphere", AppServer.getWebSphereAppServer());
-				put("wildfly", AppServer.getWildFlyAppServer());
-			}
-		};
-	private static final Map<String, Database> _databases =
-		new LinkedHashMap<String, Database>() {
-			{
-				put("db2", Database.getDB2Database());
-				put("mariadb", Database.getMariaDBDatabase());
-				put("mysql", Database.getMySQLDatabase());
-				put("oracle", Database.getOracleDataSource());
-				put("postgresql", Database.getPostgreSQLDatabase());
-				put("sqlserver", Database.getSQLServerDatabase());
-				put("sybase", Database.getSybaseDatabase());
-			}
-		};
 	private static final Pattern _gogoShellAddressPattern = Pattern.compile(
 		"^([^\\:]+):([0-9]{1,5})$");
 	private static File _jarDir;
+	private static final List<String> _reflectionOpens = Arrays.asList(
+		"--add-opens=java.base/java.lang=ALL-UNNAMED",
+		"--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
+		"--add-opens=java.base/java.net=ALL-UNNAMED",
+		"--add-opens=java.base/sun.net.www.protocol.http=ALL-UNNAMED",
+		"--add-opens=java.base/sun.util.calendar=ALL-UNNAMED",
+		"--add-opens=jdk.zipfs/jdk.nio.zipfs=ALL-UNNAMED");
 
 	static {
 		ProtectionDomain protectionDomain =
@@ -795,7 +836,7 @@ public class DBUpgradeClient {
 	private final File _appServerPropertiesFile;
 	private final ConsoleReader _consoleReader = new ConsoleReader();
 	private final FileOutputStream _fileOutputStream;
-	private final String _jvmOpts;
+	private List<String> _jvmOpts = new ArrayList<>();
 	private final File _logFile;
 	private final Properties _portalUpgradeDatabaseProperties;
 	private final File _portalUpgradeDatabasePropertiesFile;

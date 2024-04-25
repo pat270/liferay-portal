@@ -77,7 +77,7 @@
 
 			<exec dir="${liferay.ldap.dependency.dir}" executable="/bin/bash">
 				<arg value="-c" />
-				<arg value="ldapadd -v -h 0.0.0.0:10389 -c -x -D uid=admin,ou=system -w secret -f ${ldifName}.ldif" />
+				<arg value="ldapadd -v -H ldap://0.0.0.0:10389 -c -x -D uid=admin,ou=system -w secret -f ${ldifName}.ldif" />
 			</exec>
 		</sequential>
 	</macrodef>
@@ -94,10 +94,10 @@
 	</macrodef>
 
 	<target name="get-apacheds-commands">
-		<install-apacheds-utils/>
+		<install-apacheds-utils />
 	</target>
 	<target name="search-apacheds">
-		<search-apacheds-data/>
+		<search-apacheds-data />
 	</target>
 	<target name="start-apacheds">
 		<unzip-apacheds />
@@ -188,6 +188,6 @@
 		</if>
 	</target>
 	<target name="update-apacheds">
-		<update-apacheds-data/>
+		<update-apacheds-data />
 	</target>
 </project>

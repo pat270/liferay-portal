@@ -1,4 +1,4 @@
-@component-name = "OSB Site Initializer Partner Portal"
+@component-name = "portal-solutions"
 definition {
 
 	property custom.properties = "feature.flag.LPS-135430=true";
@@ -6,6 +6,7 @@ definition {
 	property portal.release = "false";
 	property portal.upstream = "true";
 	property release.feature.flags.disable.DISABLE_PRIVATE_LAYOUTS = "true";
+	property test.liferay.virtual.instance = "true";
 	property testray.main.component.name = "OSB Site Initializer Partner Portal";
 
 	setUp {
@@ -67,6 +68,7 @@ definition {
 	@priority = 5
 	test CanRemoveActivityWhileEditing {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given that the PMU creates a new MDF Request") {
 			var requestId = JSONPRM.createMDFRequest(
@@ -104,6 +106,7 @@ definition {
 	@priority = 5
 	test CanRemoveBudgetWhileEditing {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given that the PMU creates a new MDF Request") {
 			var requestId = JSONPRM.createMDFRequest(
@@ -168,6 +171,7 @@ definition {
 	@priority = 5
 	test CMMCanEditMDFInApprovedStatus {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given that the CMM goes to the submitted MDF") {
 			User.logoutAndLoginPG(
@@ -207,6 +211,7 @@ definition {
 	@priority = 5
 	test CMMCanEditMDFInCanceledStatus {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given that the CMM goes to the submitted MDF") {
 			User.logoutAndLoginPG(
@@ -246,6 +251,7 @@ definition {
 	@priority = 5
 	test CMMCanEditMDFInMarketingDirectorReviewStatus {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given that the CMM goes to the submitted MDF") {
 			User.logoutAndLoginPG(
@@ -285,6 +291,7 @@ definition {
 	@priority = 5
 	test CMMCanEditMDFInPendingMarketingReviewStatus {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given that the CMM goes to the submitted MDF, which is as 'Pending Marketing Review'") {
 			User.logoutAndLoginPG(
@@ -320,6 +327,7 @@ definition {
 	@priority = 5
 	test CMMCanEditMDFInRejectedStatus {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given that the CMM goes to the submitted MDF") {
 			User.logoutAndLoginPG(
@@ -358,7 +366,9 @@ definition {
 	@description = "This is a test for LPS-187090. Verify that the PMU can edit an MDF in 'Draft' Status"
 	@priority = 5
 	test PMUCanEditMDFInDraftStatus {
+		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given that a MDF Request is saved as draft") {
 			PRMNavigator.openSitePage(pageName = "MDF Requests");
@@ -391,6 +401,8 @@ definition {
 				newActivity = "Activity Name Added",
 				tactic = "Other",
 				typeOfActivity = "Miscellaneous Marketing");
+
+			Button.click(button = "See MDF Home");
 		}
 
 		task ("Then the MDF information will be updated") {
@@ -409,6 +421,7 @@ definition {
 	@priority = 5
 	test PMUCanEditMDFInRequestMoreInfoStatus {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given that the CMM changes the MDF status to 'More Info Requested'") {
 			JSONPRM.changeMDFStatus(
@@ -429,6 +442,8 @@ definition {
 				campaignName = "Campaign Name Edited",
 				newActivityName = "Activity Name Edited",
 				newBugdetValue = 2000);
+
+			Button.click(button = "See MDF Home");
 		}
 
 		task ("Then the information will be updated") {

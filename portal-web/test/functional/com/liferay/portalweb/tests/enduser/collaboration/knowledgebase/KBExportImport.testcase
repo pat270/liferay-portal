@@ -46,7 +46,7 @@ definition {
 	}
 
 	@description = "This test ensures that users can import content to a KB folder rom the navigation pane."
-	@priority = 5
+	@priority = 4
 	test CanImportArticleViaNavigationPane {
 		JSONKnowledgeBase.addkBFolder(
 			groupName = "Guest",
@@ -156,6 +156,7 @@ definition {
 	@refactorneeded
 	test ViewImportedKBArticleWithSourceURLMetadata {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONLayout.addPublicLayout(
 			groupName = "Guest",

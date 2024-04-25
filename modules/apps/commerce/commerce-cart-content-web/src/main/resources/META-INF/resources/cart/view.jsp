@@ -96,10 +96,11 @@ Map<Long, List<CommerceOrderValidatorResult>> commerceOrderValidatorResultsMap =
 							<span class="sticker-overlay">
 								<c:choose>
 									<c:when test="<%= Validator.isNotNull(cpInstanceCDNURL) %>">
-										<img class="sticker-img" src="<%= cpInstanceCDNURL %>" />
+										<img alt="thumbnail" class="sticker-img" src="<%= cpInstanceCDNURL %>" />
 									</c:when>
 									<c:otherwise>
 										<liferay-adaptive-media:img
+											alt="thumbnail"
 											class="sticker-img"
 											fileVersion="<%= commerceCartContentDisplayContext.getCPInstanceImageFileVersion(commerceOrderItem) %>"
 										/>
@@ -116,9 +117,9 @@ Map<Long, List<CommerceOrderValidatorResult>> commerceOrderValidatorResultsMap =
 							<%= HtmlUtil.escape(commerceOrderItem.getName(languageId)) %>
 						</a>
 
-						<h6 class="text-default">
+						<div class="h6 text-default">
 							<%= HtmlUtil.escape(stringJoiner.toString()) %>
-						</h6>
+						</div>
 
 						<c:if test="<%= !commerceOrderValidatorResultsMap.isEmpty() %>">
 
@@ -221,6 +222,6 @@ Map<Long, List<CommerceOrderValidatorResult>> commerceOrderValidatorResultsMap =
 	</div>
 
 	<liferay-frontend:component
-		module="js/cart_total/view"
+		module="{cartView} from commerce-cart-content-web"
 	/>
 </liferay-ddm:template-renderer>

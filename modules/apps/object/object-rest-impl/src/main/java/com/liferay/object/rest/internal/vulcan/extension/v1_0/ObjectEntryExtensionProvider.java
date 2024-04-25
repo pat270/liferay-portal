@@ -5,7 +5,6 @@
 
 package com.liferay.object.rest.internal.vulcan.extension.v1_0;
 
-import com.liferay.dynamic.data.mapping.expression.DDMExpressionFactory;
 import com.liferay.object.constants.ObjectFieldSettingConstants;
 import com.liferay.object.constants.ObjectRelationshipConstants;
 import com.liferay.object.field.business.type.ObjectFieldBusinessType;
@@ -16,12 +15,9 @@ import com.liferay.object.model.ObjectField;
 import com.liferay.object.rest.internal.util.ObjectEntryValuesUtil;
 import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.object.service.ObjectFieldLocalService;
-import com.liferay.object.service.ObjectFieldSettingLocalService;
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.vulcan.extension.ExtensionProvider;
 import com.liferay.portal.vulcan.extension.PropertyDefinition;
 
@@ -39,14 +35,12 @@ import org.osgi.service.component.annotations.Reference;
  * @author Carlos Correa
  * @author Javier de Arcos
  */
-@Component(
-	service = {ExtensionProvider.class, ObjectEntryExtensionProvider.class}
-)
+@Component(service = ExtensionProvider.class)
 public class ObjectEntryExtensionProvider extends BaseObjectExtensionProvider {
 
 	@Override
 	public Map<String, Serializable> getExtendedProperties(
-		long companyId, String className, Object entity) {
+		long companyId, long userId, String className, Object entity) {
 
 		try {
 			ObjectDefinition objectDefinition = fetchObjectDefinition(
@@ -71,9 +65,9 @@ public class ObjectEntryExtensionProvider extends BaseObjectExtensionProvider {
 
 			return values;
 		}
-		catch (PortalException portalException) {
+		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(portalException);
+				_log.debug(exception);
 			}
 
 			return Collections.emptyMap();
@@ -164,18 +158,15 @@ public class ObjectEntryExtensionProvider extends BaseObjectExtensionProvider {
 						}
 					});
 		}
-		catch (PortalException portalException) {
+		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(portalException);
+				_log.debug(exception);
 			}
 		}
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		ObjectEntryExtensionProvider.class);
-
-	@Reference
-	private DDMExpressionFactory _ddmExpressionFactory;
 
 	@Reference
 	private ObjectEntryLocalService _objectEntryLocalService;
@@ -185,11 +176,5 @@ public class ObjectEntryExtensionProvider extends BaseObjectExtensionProvider {
 
 	@Reference
 	private ObjectFieldLocalService _objectFieldLocalService;
-
-	@Reference
-	private ObjectFieldSettingLocalService _objectFieldSettingLocalService;
-
-	@Reference
-	private UserLocalService _userLocalService;
 
 }

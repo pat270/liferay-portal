@@ -5,9 +5,10 @@
 
 package com.liferay.portal.vulcan.internal.jaxrs.context.provider;
 
-import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.vulcan.pagination.Pagination;
+import com.liferay.portal.vulcan.pagination.provider.PaginationProvider;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -22,21 +23,37 @@ import org.apache.cxf.message.Message;
 @Provider
 public class PaginationContextProvider implements ContextProvider<Pagination> {
 
+	public PaginationContextProvider(
+		PaginationProvider paginationProvider, Portal portal) {
+
+		_paginationProvider = paginationProvider;
+		_portal = portal;
+	}
+
 	@Override
 	public Pagination createContext(Message message) {
 		HttpServletRequest httpServletRequest =
 			ContextProviderUtil.getHttpServletRequest(message);
 
-		String page = httpServletRequest.getParameter("page");
-		String pageSize = httpServletRequest.getParameter("pageSize");
+		return _paginationProvider.getPagination(
+			_portal.getCompanyId(httpServletRequest),
+			_getIntegerValue(httpServletRequest, "page"),
+			_getIntegerValue(httpServletRequest, "pageSize"));
+	}
 
-		if (StringUtil.equals(page, "0") || StringUtil.equals(pageSize, "0")) {
-			return null;
+	private Integer _getIntegerValue(
+		HttpServletRequest httpServletRequest, String key) {
+
+		String value = httpServletRequest.getParameter(key);
+
+		if (Validator.isNotNull(value)) {
+			return Integer.valueOf(value);
 		}
 
-		return Pagination.of(
-			GetterUtil.getInteger(page, 1),
-			GetterUtil.getInteger(pageSize, 20));
+		return null;
 	}
+
+	private final PaginationProvider _paginationProvider;
+	private final Portal _portal;
 
 }

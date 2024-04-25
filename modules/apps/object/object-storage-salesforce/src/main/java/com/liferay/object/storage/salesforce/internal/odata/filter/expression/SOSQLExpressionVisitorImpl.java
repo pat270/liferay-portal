@@ -9,7 +9,9 @@ import com.liferay.list.type.entry.util.ListTypeEntryUtil;
 import com.liferay.object.constants.ObjectFieldConstants;
 import com.liferay.object.model.ObjectField;
 import com.liferay.object.service.ObjectFieldLocalService;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.filter.expression.BinaryExpression;
@@ -46,10 +48,10 @@ public class SOSQLExpressionVisitorImpl implements ExpressionVisitor<Object> {
 		StringBuilder sb = new StringBuilder();
 
 		if (Objects.equals(BinaryExpression.Operation.AND, operation)) {
-			_buildBinaryOperation(left, " AND ", right, sb);
+			_buildBinaryOperationAndOr(left, " AND ", right, sb);
 		}
 		else if (Objects.equals(BinaryExpression.Operation.OR, operation)) {
-			_buildBinaryOperation(left, " OR ", right, sb);
+			_buildBinaryOperationAndOr(left, " OR ", right, sb);
 		}
 		else {
 			ObjectField objectField = _objectFieldLocalService.fetchObjectField(
@@ -107,15 +109,38 @@ public class SOSQLExpressionVisitorImpl implements ExpressionVisitor<Object> {
 	public Object visitLiteralExpression(LiteralExpression literalExpression)
 		throws ExpressionVisitException {
 
+		if (Objects.equals(null, literalExpression.getType())) {
+			return null;
+		}
+
 		if (!Objects.equals(
+				LiteralExpression.Type.BOOLEAN, literalExpression.getType()) &&
+			!Objects.equals(
+				LiteralExpression.Type.DATE, literalExpression.getType()) &&
+			!Objects.equals(
+				LiteralExpression.Type.DATE_TIME,
+				literalExpression.getType()) &&
+			!Objects.equals(
 				LiteralExpression.Type.STRING, literalExpression.getType())) {
 
 			throw new UnsupportedOperationException();
 		}
 
-		return StringUtil.replace(
-			literalExpression.getText(), StringPool.DOUBLE_APOSTROPHE,
-			StringPool.APOSTROPHE);
+		if (Objects.equals(
+				LiteralExpression.Type.BOOLEAN, literalExpression.getType())) {
+
+			return GetterUtil.getBoolean(literalExpression.getText());
+		}
+
+		if (Objects.equals(
+				LiteralExpression.Type.STRING, literalExpression.getType())) {
+
+			return StringUtil.replace(
+				literalExpression.getText(), StringPool.DOUBLE_APOSTROPHE,
+				StringPool.APOSTROPHE);
+		}
+
+		return literalExpression.getText();
 	}
 
 	@Override
@@ -149,6 +174,20 @@ public class SOSQLExpressionVisitorImpl implements ExpressionVisitor<Object> {
 		sb.append(left);
 		sb.append(operator);
 		sb.append(right);
+	}
+
+	private void _buildBinaryOperationAndOr(
+		Object left, String operator, Object right, StringBuilder sb) {
+
+		_buildBinaryOperation(
+			StringBundler.concat(
+				StringPool.OPEN_PARENTHESIS, left,
+				StringPool.CLOSE_PARENTHESIS),
+			operator,
+			StringBundler.concat(
+				StringPool.OPEN_PARENTHESIS, right,
+				StringPool.CLOSE_PARENTHESIS),
+			sb);
 	}
 
 	private final long _objectDefinitionId;

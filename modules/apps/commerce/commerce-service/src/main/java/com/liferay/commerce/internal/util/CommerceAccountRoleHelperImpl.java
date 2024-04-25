@@ -11,6 +11,7 @@ import com.liferay.account.constants.AccountRoleConstants;
 import com.liferay.account.model.AccountEntry;
 import com.liferay.account.model.AccountRole;
 import com.liferay.account.service.AccountRoleLocalService;
+import com.liferay.commerce.constants.CommerceAccountActionKeys;
 import com.liferay.commerce.constants.CommerceActionKeys;
 import com.liferay.commerce.constants.CommercePortletKeys;
 import com.liferay.commerce.notification.constants.CommerceNotificationActionKeys;
@@ -20,6 +21,11 @@ import com.liferay.commerce.pricing.constants.CommercePricingPortletKeys;
 import com.liferay.commerce.product.constants.CPActionKeys;
 import com.liferay.commerce.product.constants.CPPortletKeys;
 import com.liferay.commerce.util.CommerceAccountRoleHelper;
+import com.liferay.object.constants.ObjectActionKeys;
+import com.liferay.object.model.ObjectDefinition;
+import com.liferay.object.service.ObjectDefinitionLocalService;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.db.partition.util.DBPartitionUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.model.GroupConstants;
@@ -31,6 +37,7 @@ import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
 
 import java.util.Arrays;
@@ -56,18 +63,29 @@ public class CommerceAccountRoleHelperImpl
 		_checkAccountRole(
 			AccountRoleConstants.REQUIRED_ROLE_NAME_ACCOUNT_ADMINISTRATOR,
 			serviceContext);
+		_checkRole(
+			AccountRoleConstants.REQUIRED_ROLE_NAME_ACCOUNT_MANAGER,
+			RoleConstants.TYPE_ORGANIZATION, serviceContext);
+		_checkAccountRole(
+			AccountRoleConstants.REQUIRED_ROLE_NAME_ACCOUNT_MEMBER,
+			serviceContext);
 		_checkAccountRole(
 			AccountRoleConstants.ROLE_NAME_ACCOUNT_BUYER, serviceContext);
 		_checkAccountRole(
 			AccountRoleConstants.ROLE_NAME_ACCOUNT_ORDER_MANAGER,
 			serviceContext);
+		_checkAccountRole(
+			AccountRoleConstants.ROLE_NAME_ACCOUNT_SUPPLIER, serviceContext);
 
-		if (FeatureFlagManagerUtil.isEnabled("COMMERCE-10890")) {
-			_checkAccountRole(
-				AccountRoleConstants.ROLE_NAME_ACCOUNT_SUPPLIER,
-				serviceContext);
-			_checkRole(AccountRoleConstants.ROLE_NAME_SUPPLIER, serviceContext);
+		if (FeatureFlagManagerUtil.isEnabled("LPD-10562")) {
+			_checkRole(
+				AccountRoleConstants.ROLE_NAME_RETURNS_MANAGER,
+				RoleConstants.TYPE_REGULAR, serviceContext);
 		}
+
+		_checkRole(
+			AccountRoleConstants.ROLE_NAME_SUPPLIER, RoleConstants.TYPE_REGULAR,
+			serviceContext);
 	}
 
 	private void _checkAccountRole(String name, ServiceContext serviceContext)
@@ -87,15 +105,17 @@ public class CommerceAccountRoleHelperImpl
 
 			_setRolePermissions(role, serviceContext);
 		}
-
-		if (AccountRoleConstants.REQUIRED_ROLE_NAME_ACCOUNT_ADMINISTRATOR.
-				equals(name)) {
+		else if (AccountRoleConstants.REQUIRED_ROLE_NAME_ACCOUNT_ADMINISTRATOR.
+					equals(name) ||
+				 GetterUtil.getBoolean(
+					 serviceContext.getAttribute("forceReloadPermissions"))) {
 
 			_setRolePermissions(role, serviceContext);
 		}
 	}
 
-	private void _checkRole(String name, ServiceContext serviceContext)
+	private void _checkRole(
+			String name, int type, ServiceContext serviceContext)
 		throws PortalException {
 
 		Role role = _roleLocalService.fetchRole(
@@ -105,8 +125,12 @@ public class CommerceAccountRoleHelperImpl
 			role = _roleLocalService.addRole(
 				serviceContext.getUserId(), null, 0, name,
 				Collections.singletonMap(serviceContext.getLocale(), name),
-				Collections.emptyMap(), RoleConstants.TYPE_REGULAR, null,
-				serviceContext);
+				Collections.emptyMap(), type, null, serviceContext);
+
+			_setRolePermissions(role, serviceContext);
+		}
+		else if (GetterUtil.getBoolean(
+					serviceContext.getAttribute("forceReloadPermissions"))) {
 
 			_setRolePermissions(role, serviceContext);
 		}
@@ -118,8 +142,14 @@ public class CommerceAccountRoleHelperImpl
 		throws PortalException {
 
 		for (Map.Entry<String, String[]> entry : resourceActionIds.entrySet()) {
-			_resourceActionLocalService.checkResourceActions(
-				entry.getKey(), Arrays.asList(entry.getValue()));
+			try {
+				DBPartitionUtil.forEachCompanyId(
+					company -> _resourceActionLocalService.checkResourceActions(
+						entry.getKey(), Arrays.asList(entry.getValue())));
+			}
+			catch (Exception exception) {
+				throw new PortalException(exception);
+			}
 
 			for (String actionId : entry.getValue()) {
 				_resourcePermissionLocalService.addResourcePermission(
@@ -148,11 +178,18 @@ public class CommerceAccountRoleHelperImpl
 			groupResourceActionIds.put(
 				AccountEntry.class.getName(),
 				new String[] {
+					ActionKeys.UPDATE, ActionKeys.MANAGE_USERS, ActionKeys.VIEW,
+					AccountActionKeys.ASSIGN_USERS,
 					AccountActionKeys.MANAGE_ADDRESSES,
-					AccountActionKeys.ASSIGN_USERS, ActionKeys.UPDATE,
-					ActionKeys.VIEW, AccountActionKeys.VIEW_ADDRESSES,
-					AccountActionKeys.VIEW_USERS
+					AccountActionKeys.VIEW_ADDRESSES,
+					AccountActionKeys.VIEW_ACCOUNT_ROLES,
+					AccountActionKeys.VIEW_ORGANIZATIONS,
+					AccountActionKeys.VIEW_USERS,
+					CommerceAccountActionKeys.MANAGE_CHANNEL_DEFAULTS,
+					CommerceAccountActionKeys.VIEW_CHANNEL_DEFAULTS
 				});
+			groupResourceActionIds.put(
+				AccountRole.class.getName(), new String[] {ActionKeys.VIEW});
 			groupResourceActionIds.put(
 				"com.liferay.commerce.order",
 				new String[] {
@@ -160,11 +197,36 @@ public class CommerceAccountRoleHelperImpl
 					"CHECKOUT_OPEN_COMMERCE_ORDERS", "DELETE_COMMERCE_ORDERS",
 					"MANAGE_COMMERCE_ORDER_DELIVERY_TERMS",
 					"MANAGE_COMMERCE_ORDER_PAYMENT_METHODS",
+					"MANAGE_COMMERCE_ORDER_PAYMENT_STATUSES",
 					"MANAGE_COMMERCE_ORDER_PAYMENT_TERMS",
 					"MANAGE_COMMERCE_ORDER_SHIPPING_OPTIONS",
 					"MANAGE_COMMERCE_ORDERS", "VIEW_BILLING_ADDRESS",
 					"VIEW_COMMERCE_ORDERS", "VIEW_OPEN_COMMERCE_ORDERS"
 				});
+		}
+		else if (name.equals(
+					AccountRoleConstants.REQUIRED_ROLE_NAME_ACCOUNT_MANAGER)) {
+
+			groupResourceActionIds.put(
+				AccountEntry.class.getName(),
+				new String[] {
+					ActionKeys.UPDATE, ActionKeys.MANAGE_USERS, ActionKeys.VIEW,
+					AccountActionKeys.MANAGE_ADDRESSES,
+					AccountActionKeys.VIEW_ADDRESSES,
+					AccountActionKeys.VIEW_ACCOUNT_ROLES,
+					AccountActionKeys.VIEW_ORGANIZATIONS,
+					AccountActionKeys.VIEW_USERS,
+					CommerceAccountActionKeys.MANAGE_CHANNEL_DEFAULTS,
+					CommerceAccountActionKeys.VIEW_CHANNEL_DEFAULTS
+				});
+			groupResourceActionIds.put(
+				AccountRole.class.getName(), new String[] {ActionKeys.VIEW});
+		}
+		else if (name.equals(
+					AccountRoleConstants.REQUIRED_ROLE_NAME_ACCOUNT_MEMBER)) {
+
+			groupResourceActionIds.put(
+				AccountEntry.class.getName(), new String[] {ActionKeys.VIEW});
 		}
 		else if (name.equals(AccountRoleConstants.ROLE_NAME_ACCOUNT_BUYER)) {
 			companyResourceActionIds.put(
@@ -203,6 +265,7 @@ public class CommerceAccountRoleHelperImpl
 					"CHECKOUT_OPEN_COMMERCE_ORDERS", "DELETE_COMMERCE_ORDERS",
 					"MANAGE_COMMERCE_ORDER_DELIVERY_TERMS",
 					"MANAGE_COMMERCE_ORDER_PAYMENT_METHODS",
+					"MANAGE_COMMERCE_ORDER_PAYMENT_STATUSES",
 					"MANAGE_COMMERCE_ORDER_PAYMENT_TERMS",
 					"MANAGE_COMMERCE_ORDER_SHIPPING_OPTIONS",
 					"MANAGE_COMMERCE_ORDERS", "VIEW_BILLING_ADDRESS",
@@ -239,6 +302,7 @@ public class CommerceAccountRoleHelperImpl
 					"MANAGE_COMMERCE_ORDER_DELIVERY_TERMS",
 					"MANAGE_COMMERCE_ORDER_NOTES",
 					"MANAGE_COMMERCE_ORDER_PAYMENT_METHODS",
+					"MANAGE_COMMERCE_ORDER_PAYMENT_STATUSES",
 					"MANAGE_COMMERCE_ORDER_PAYMENT_TERMS",
 					"MANAGE_COMMERCE_ORDER_PRICES",
 					"MANAGE_COMMERCE_ORDER_RESTRICTED_NOTES",
@@ -269,6 +333,15 @@ public class CommerceAccountRoleHelperImpl
 					CPActionKeys.VIEW_COMMERCE_PRODUCT_IMAGES
 				});
 			companyResourceActionIds.put(
+				"com.liferay.commerce.product.model.CPOption",
+				new String[] {ActionKeys.VIEW});
+			companyResourceActionIds.put(
+				"com.liferay.commerce.product.model.CPOptionCategory",
+				new String[] {ActionKeys.VIEW});
+			companyResourceActionIds.put(
+				"com.liferay.commerce.product.model.CPSpecificationOption",
+				new String[] {ActionKeys.VIEW});
+			companyResourceActionIds.put(
 				"com.liferay.commerce.shipment",
 				new String[] {CommerceActionKeys.MANAGE_COMMERCE_SHIPMENTS});
 			companyResourceActionIds.put(
@@ -276,6 +349,53 @@ public class CommerceAccountRoleHelperImpl
 				new String[] {
 					CPActionKeys.VIEW_COMMERCE_PRODUCT_TAX_CATEGORIES
 				});
+			companyResourceActionIds.put(
+				"com.liferay.document.library",
+				new String[] {ActionKeys.ADD_DOCUMENT});
+			companyResourceActionIds.put(
+				"com.liferay.expando.kernel.model.ExpandoColumn",
+				new String[] {ActionKeys.VIEW});
+		}
+		else if (name.equals(AccountRoleConstants.ROLE_NAME_RETURNS_MANAGER)) {
+			for (String portletId :
+					_RETURNS_MANAGER_CONTROL_PANEL_PORTLET_IDS) {
+
+				companyResourceActionIds.put(
+					portletId,
+					new String[] {ActionKeys.ACCESS_IN_CONTROL_PANEL});
+			}
+
+			companyResourceActionIds.put(
+				PortletKeys.PORTAL,
+				new String[] {ActionKeys.VIEW_CONTROL_PANEL});
+
+			for (String objectDefinitionName :
+					_RETURNS_MANAGER_OBJECT_DEFINITION_NAMES) {
+
+				ObjectDefinition objectDefinition =
+					_objectDefinitionLocalService.fetchObjectDefinition(
+						role.getCompanyId(), objectDefinitionName);
+
+				if (objectDefinition != null) {
+					companyResourceActionIds.put(
+						"com.liferay.object#" +
+							objectDefinition.getObjectDefinitionId(),
+						new String[] {ObjectActionKeys.ADD_OBJECT_ENTRY});
+					companyResourceActionIds.put(
+						"com.liferay.object.model.ObjectDefinition#" +
+							objectDefinition.getObjectDefinitionId(),
+						new String[] {
+							ActionKeys.DELETE, ActionKeys.PERMISSIONS,
+							ActionKeys.UPDATE, ActionKeys.VIEW
+						});
+					companyResourceActionIds.put(
+						StringBundler.concat(
+							"com_liferay_object_web_internal_object_",
+							"definitions_portlet_ObjectDefinitionsPortlet_",
+							objectDefinition.getObjectDefinitionId()),
+						new String[] {ActionKeys.VIEW});
+				}
+			}
 		}
 
 		_setRolePermissions(
@@ -289,6 +409,14 @@ public class CommerceAccountRoleHelperImpl
 			ResourceConstants.SCOPE_GROUP_TEMPLATE);
 	}
 
+	private static final String[] _RETURNS_MANAGER_CONTROL_PANEL_PORTLET_IDS = {
+		CommercePortletKeys.COMMERCE_RETURN
+	};
+
+	private static final String[] _RETURNS_MANAGER_OBJECT_DEFINITION_NAMES = {
+		"CommerceReturn", "CommerceReturnItem"
+	};
+
 	private static final String[] _SUPPLIER_CONTROL_PANEL_PORTLET_IDS = {
 		CommercePortletKeys.COMMERCE_ORDER,
 		CommercePricingPortletKeys.COMMERCE_PRICE_LIST,
@@ -299,6 +427,9 @@ public class CommerceAccountRoleHelperImpl
 
 	@Reference
 	private AccountRoleLocalService _accountRoleLocalService;
+
+	@Reference
+	private ObjectDefinitionLocalService _objectDefinitionLocalService;
 
 	@Reference
 	private ResourceActionLocalService _resourceActionLocalService;

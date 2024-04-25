@@ -7,6 +7,8 @@ package com.liferay.portal.dao.orm.hibernate.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.portal.dao.orm.hibernate.RestrictionsFactoryImpl;
+import com.liferay.portal.kernel.dao.db.DBManager;
+import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.OrderFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.Property;
@@ -15,9 +17,14 @@ import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactory;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.model.ClassName;
+import com.liferay.portal.kernel.model.Role;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
+import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
+import com.liferay.portal.kernel.test.util.RoleTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
@@ -94,40 +101,66 @@ public class DynamicQueryTest {
 
 	@Test
 	public void testInRestrictionCriterionWithMoreThanDatabaseInMaxParametersValue() {
-		RestrictionsFactory restrictionsFactory = new RestrictionsFactoryImpl();
+		DBManager dbManager = (DBManager)ReflectionTestUtil.getFieldValue(
+			DBManagerUtil.class, "_dbManager");
 
-		ReflectionTestUtil.setFieldValue(
-			restrictionsFactory, "_databaseInMaxParameters",
-			_DATABASE_IN_MAX_PARAMETERS);
+		int databaseInMaxParameters = ReflectionTestUtil.getAndSetFieldValue(
+			dbManager, "_databaseInMaxParameters", _DATABASE_IN_MAX_PARAMETERS);
 
-		DynamicQuery dynamicQuery = _classNameLocalService.dynamicQuery();
+		try {
+			DynamicQuery dynamicQuery = _classNameLocalService.dynamicQuery();
 
-		List<Long> values = new ArrayList<>(_DATABASE_IN_MAX_PARAMETERS + 1);
+			List<Long> values = new ArrayList<>(
+				_DATABASE_IN_MAX_PARAMETERS + 1);
 
-		ClassName className1 = _allClassNames.get(1);
-		ClassName className2 = _allClassNames.get(2);
+			ClassName className1 = _allClassNames.get(1);
+			ClassName className2 = _allClassNames.get(2);
 
-		values.add(className1.getClassNameId());
+			values.add(className1.getClassNameId());
 
-		for (long i = 1; i < _DATABASE_IN_MAX_PARAMETERS; i++) {
-			values.add(-i);
+			for (long i = 1; i < _DATABASE_IN_MAX_PARAMETERS; i++) {
+				values.add(-i);
+			}
+
+			values.add(className2.getClassNameId());
+
+			Assert.assertEquals(
+				values.toString(), _DATABASE_IN_MAX_PARAMETERS + 1,
+				values.size());
+
+			RestrictionsFactory restrictionsFactory =
+				new RestrictionsFactoryImpl();
+
+			dynamicQuery.add(restrictionsFactory.in("classNameId", values));
+
+			List<ClassName> classNames = _classNameLocalService.dynamicQuery(
+				dynamicQuery);
+
+			Assert.assertEquals(classNames.toString(), 2, classNames.size());
+			Assert.assertTrue(
+				classNames.toString(), classNames.contains(className1));
+			Assert.assertTrue(
+				classNames.toString(), classNames.contains(className2));
 		}
+		finally {
+			ReflectionTestUtil.getAndSetFieldValue(
+				dbManager, "_databaseInMaxParameters", databaseInMaxParameters);
+		}
+	}
 
-		values.add(className2.getClassNameId());
+	@Test
+	public void testLikeEscapeSQLRestriction() throws Exception {
+		_role = RoleTestUtil.addRole("Role%Name", RoleConstants.TYPE_REGULAR);
 
-		Assert.assertEquals(
-			values.toString(), _DATABASE_IN_MAX_PARAMETERS + 1, values.size());
+		DynamicQuery dynamicQuery = _roleLocalService.dynamicQuery();
 
-		dynamicQuery.add(restrictionsFactory.in("classNameId", values));
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.sqlRestriction(
+				"name like 'Role=%%' ESCAPE '=' and roleId > 0"));
 
-		List<ClassName> classNames = _classNameLocalService.dynamicQuery(
-			dynamicQuery);
+		List<Role> roles = _roleLocalService.dynamicQuery(dynamicQuery);
 
-		Assert.assertEquals(classNames.toString(), 2, classNames.size());
-		Assert.assertTrue(
-			classNames.toString(), classNames.contains(className1));
-		Assert.assertTrue(
-			classNames.toString(), classNames.contains(className2));
+		Assert.assertTrue(roles.contains(_role));
 	}
 
 	@Test
@@ -225,6 +258,21 @@ public class DynamicQueryTest {
 	}
 
 	@Test
+	public void testNotLikeSQLRestriction() throws Exception {
+		_role = RoleTestUtil.addRole("RoleName", RoleConstants.TYPE_REGULAR);
+
+		DynamicQuery dynamicQuery = _roleLocalService.dynamicQuery();
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.sqlRestriction(
+				"name not like 'RoleNam%' and roleId > 0"));
+
+		List<Role> roles = _roleLocalService.dynamicQuery(dynamicQuery);
+
+		Assert.assertFalse(roles.contains(_role));
+	}
+
+	@Test
 	public void testOrderBy() {
 		DynamicQuery dynamicQuery = _classNameLocalService.dynamicQuery();
 
@@ -296,5 +344,11 @@ public class DynamicQueryTest {
 
 	@Inject
 	private ClassNameLocalService _classNameLocalService;
+
+	@DeleteAfterTestRun
+	private Role _role;
+
+	@Inject
+	private RoleLocalService _roleLocalService;
 
 }

@@ -22,8 +22,8 @@ import com.liferay.commerce.price.list.service.persistence.CommercePriceEntryPer
 import com.liferay.commerce.price.list.util.comparator.CommerceTierPriceEntryMinQuantityComparator;
 import com.liferay.commerce.product.model.CPInstance;
 import com.liferay.commerce.product.model.CPInstanceUnitOfMeasure;
+import com.liferay.commerce.product.service.CPInstanceLocalService;
 import com.liferay.commerce.product.service.CPInstanceUnitOfMeasureLocalService;
-import com.liferay.commerce.util.CommerceBigDecimalUtil;
 import com.liferay.expando.kernel.service.ExpandoRowLocalService;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
@@ -50,6 +50,7 @@ import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
+import com.liferay.portal.kernel.util.BigDecimalUtil;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
@@ -178,8 +179,8 @@ public class CommerceTierPriceEntryLocalServiceImpl
 		commerceTierPriceEntry.setDiscountLevel4(discountLevel4);
 		commerceTierPriceEntry.setMinQuantity(
 			_normalizeMinQuantity(commercePriceEntry, minQuantity));
-		commerceTierPriceEntry.setExpandoBridgeAttributes(serviceContext);
 		commerceTierPriceEntry.setDisplayDate(displayDate);
+		commerceTierPriceEntry.setExpandoBridgeAttributes(serviceContext);
 
 		if ((expirationDate == null) || expirationDate.after(date)) {
 			commerceTierPriceEntry.setStatus(WorkflowConstants.STATUS_DRAFT);
@@ -684,15 +685,15 @@ public class CommerceTierPriceEntryLocalServiceImpl
 
 		commerceTierPriceEntry.setPrice(price);
 		commerceTierPriceEntry.setPromoPrice(promoPrice);
-		commerceTierPriceEntry.setMinQuantity(
-			_normalizeMinQuantity(commercePriceEntry, minQuantity));
-		commerceTierPriceEntry.setExpandoBridgeAttributes(serviceContext);
 		commerceTierPriceEntry.setDiscountDiscovery(discountDiscovery);
 		commerceTierPriceEntry.setDiscountLevel1(discountLevel1);
 		commerceTierPriceEntry.setDiscountLevel2(discountLevel2);
 		commerceTierPriceEntry.setDiscountLevel3(discountLevel3);
 		commerceTierPriceEntry.setDiscountLevel4(discountLevel4);
+		commerceTierPriceEntry.setMinQuantity(
+			_normalizeMinQuantity(commercePriceEntry, minQuantity));
 		commerceTierPriceEntry.setDisplayDate(displayDate);
+		commerceTierPriceEntry.setExpandoBridgeAttributes(serviceContext);
 
 		if ((expirationDate == null) || expirationDate.after(date)) {
 			commerceTierPriceEntry.setStatus(WorkflowConstants.STATUS_DRAFT);
@@ -724,15 +725,15 @@ public class CommerceTierPriceEntryLocalServiceImpl
 	@Override
 	public CommerceTierPriceEntry updateCommerceTierPriceEntry(
 			long commerceTierPriceEntryId, BigDecimal price,
-			BigDecimal promoPrice, BigDecimal minQuantity,
+			BigDecimal promoPrice, BigDecimal minQuantity, boolean bulkPricing,
 			ServiceContext serviceContext)
 		throws PortalException {
 
 		Calendar now = new GregorianCalendar();
 
 		return commerceTierPriceEntryLocalService.updateCommerceTierPriceEntry(
-			commerceTierPriceEntryId, price, promoPrice, minQuantity, true,
-			true, null, null, null, null, now.get(Calendar.MONTH),
+			commerceTierPriceEntryId, price, promoPrice, minQuantity,
+			bulkPricing, true, null, null, null, null, now.get(Calendar.MONTH),
 			now.get(Calendar.DAY_OF_MONTH), now.get(Calendar.YEAR),
 			now.get(Calendar.HOUR), now.get(Calendar.MINUTE), 0, 0, 0, 0, 0,
 			true, serviceContext);
@@ -977,7 +978,9 @@ public class CommerceTierPriceEntryLocalServiceImpl
 
 		int unitOfMeasurePrecision = 0;
 
-		CPInstance cpInstance = commercePriceEntry.getCPInstance();
+		CPInstance cpInstance = _cpInstanceLocalService.fetchCProductInstance(
+			commercePriceEntry.getCProductId(),
+			commercePriceEntry.getCPInstanceUuid());
 
 		if (cpInstance != null) {
 			CPInstanceUnitOfMeasure cpInstanceUnitOfMeasure =
@@ -1093,34 +1096,40 @@ public class CommerceTierPriceEntryLocalServiceImpl
 			return;
 		}
 
-		if (CommerceBigDecimalUtil.lte(minQuantity, BigDecimal.ZERO)) {
+		if (BigDecimalUtil.lte(minQuantity, BigDecimal.ZERO)) {
 			throw new CommerceTierPriceEntryMinQuantityException(
 				"The min quantity must be greater than zero");
 		}
 
-		CPInstance cpInstance = commercePriceEntry.getCPInstance();
+		CPInstance cpInstance = _cpInstanceLocalService.fetchCProductInstance(
+			commercePriceEntry.getCProductId(),
+			commercePriceEntry.getCPInstanceUuid());
 
-		CPInstanceUnitOfMeasure cpInstanceUnitOfMeasure =
-			_cpInstanceUnitOfMeasureLocalService.fetchCPInstanceUnitOfMeasure(
-				cpInstance.getCPInstanceId(),
-				commercePriceEntry.getUnitOfMeasureKey());
+		if (cpInstance != null) {
+			CPInstanceUnitOfMeasure cpInstanceUnitOfMeasure =
+				_cpInstanceUnitOfMeasureLocalService.
+					fetchCPInstanceUnitOfMeasure(
+						cpInstance.getCPInstanceId(),
+						commercePriceEntry.getUnitOfMeasureKey());
 
-		if (cpInstanceUnitOfMeasure != null) {
-			int unitOfMeasurePrecision = cpInstanceUnitOfMeasure.getPrecision();
+			if (cpInstanceUnitOfMeasure != null) {
+				int unitOfMeasurePrecision =
+					cpInstanceUnitOfMeasure.getPrecision();
 
-			if (minQuantity.scale() > unitOfMeasurePrecision) {
-				throw new CommerceTierPriceEntryMinQuantityException(
-					"It does not have the same precision as the unit of " +
-						"measure quantity");
-			}
+				if (minQuantity.scale() > unitOfMeasurePrecision) {
+					throw new CommerceTierPriceEntryMinQuantityException(
+						"It does not have the same precision as the unit of " +
+							"measure quantity");
+				}
 
-			BigDecimal remainder = minQuantity.remainder(
-				cpInstanceUnitOfMeasure.getIncrementalOrderQuantity());
+				BigDecimal remainder = minQuantity.remainder(
+					cpInstanceUnitOfMeasure.getIncrementalOrderQuantity());
 
-			if (remainder.compareTo(BigDecimal.ZERO) != 0) {
-				throw new CommerceTierPriceEntryMinQuantityException(
-					"It is not a multiple of the incremental order quantity " +
-						"of the unit of measure");
+				if (remainder.compareTo(BigDecimal.ZERO) != 0) {
+					throw new CommerceTierPriceEntryMinQuantityException(
+						"It is not a multiple of the incremental order " +
+							"quantity of the unit of measure");
+				}
 			}
 		}
 	}
@@ -1137,6 +1146,9 @@ public class CommerceTierPriceEntryLocalServiceImpl
 
 	@Reference
 	private CommercePriceEntryPersistence _commercePriceEntryPersistence;
+
+	@Reference
+	private CPInstanceLocalService _cpInstanceLocalService;
 
 	@Reference
 	private CPInstanceUnitOfMeasureLocalService

@@ -69,8 +69,8 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portlet.InvokerPortletUtil;
 import com.liferay.portlet.admin.util.AdminUtil;
+import com.liferay.portlet.usersadmin.util.UsersAdminUtil;
 import com.liferay.users.admin.constants.UsersAdminPortletKeys;
-import com.liferay.users.admin.kernel.util.UsersAdmin;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -305,6 +305,10 @@ public class EditUserMVCActionCommand
 						return;
 					}
 				}
+
+				actionResponse.setRenderParameter("mvcPath", mvcPath);
+
+				throw exception;
 			}
 			else if (exception instanceof ModelListenerException) {
 				if (exception.getCause() instanceof PortalException) {
@@ -496,13 +500,14 @@ public class EditUserMVCActionCommand
 		int birthdayYear = ParamUtil.getInteger(actionRequest, "birthdayYear");
 		String comments = ParamUtil.getString(actionRequest, "comments");
 		String jobTitle = ParamUtil.getString(actionRequest, "jobTitle");
-		long[] organizationIds = _usersAdmin.getOrganizationIds(actionRequest);
+		long[] organizationIds = UsersAdminUtil.getOrganizationIds(
+			actionRequest);
 		boolean sendEmail = true;
 
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(
 			User.class.getName(), actionRequest);
 
-		User user = _userService.addUser(
+		User user = _userService.addUserWithWorkflow(
 			themeDisplay.getCompanyId(), true, null, null, autoScreenName,
 			screenName, emailAddress, LocaleUtil.fromLanguageId(languageId),
 			firstName, middleName, lastName, prefixListTypeId, suffixListTypeId,
@@ -547,14 +552,19 @@ public class EditUserMVCActionCommand
 	}
 
 	private long _getListTypeId(
-			PortletRequest portletRequest, String parameterName, String type)
+			long companyId, PortletRequest portletRequest, String parameterName,
+			String type)
 		throws Exception {
 
 		String parameterValue = ParamUtil.getString(
 			portletRequest, parameterName);
 
+		if (Validator.isNull(parameterValue)) {
+			return 0;
+		}
+
 		ListType listType = _listTypeLocalService.addListType(
-			parameterValue, type);
+			companyId, parameterValue, type);
 
 		return listType.getListTypeId();
 	}
@@ -585,15 +595,17 @@ public class EditUserMVCActionCommand
 		DynamicActionRequest dynamicActionRequest = new DynamicActionRequest(
 			actionRequest);
 
+		long companyId = _portal.getCompanyId(actionRequest);
+
 		long prefixListTypeId = _getListTypeId(
-			actionRequest, "prefixListTypeValue",
+			companyId, actionRequest, "prefixListTypeValue",
 			ListTypeConstants.CONTACT_PREFIX);
 
 		dynamicActionRequest.setParameter(
 			"prefixListTypeId", String.valueOf(prefixListTypeId));
 
 		long suffixListTypeId = _getListTypeId(
-			actionRequest, "suffixListTypeValue",
+			companyId, actionRequest, "suffixListTypeValue",
 			ListTypeConstants.CONTACT_SUFFIX);
 
 		dynamicActionRequest.setParameter(
@@ -616,9 +628,6 @@ public class EditUserMVCActionCommand
 
 	@Reference
 	private UserLocalService _userLocalService;
-
-	@Reference
-	private UsersAdmin _usersAdmin;
 
 	@Reference
 	private UserService _userService;

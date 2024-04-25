@@ -16,9 +16,6 @@
 						includes="*-ext/**,*-ext.war/**,*-hook/**,*-hook.war/**,*-layouttpl/**,*-layouttpl.war/**,*-portlet/**,*-portlet.war/**,*-theme/**,*-theme.war/**,*-web/**,*-web.war/**"
 					/>
 					<fileset
-						dir="${app.server.lib.global.dir}"
-					/>
-					<fileset
 						dir="${liferay.home}"
 						includes=".liferay-home"
 					/>
@@ -370,6 +367,8 @@ message.
 
 		<touch file="${liferay.home}/.liferay-home" />
 
+		<mkdir dir="${liferay.home}/deploy" />
+
 		<ant dir="sql" inheritAll="false" target="build-db" />
 
 		<deploy-properties />
@@ -417,20 +416,27 @@ message.
 				<if>
 					<equals arg1="${marker.files.lfrbuild.ci.enabled}" arg2="true" />
 					<then>
-						<if>
-							<resourcecount count="0" when="gt">
+						<sequential>
+							<for param="lfrbuild.file">
 								<fileset
 									dir="${project.dir}/modules"
 									includes="**/.lfrbuild-ci"
 								/>
-							</resourcecount>
-							<then>
-								<gradle-execute dir="${project.dir}/modules" task="deploy">
-									<arg value="--parallel" />
-									<arg value="-Ddeploy.only.profile=ci" />
-								</gradle-execute>
-							</then>
-						</if>
+								<sequential>
+									<local name="lfrbuild.dir" />
+
+									<antelope:stringutil property="lfrbuild.dir" string="@{lfrbuild.file}">
+										<antelope:replace regex="\\" replacement="/" />
+									</antelope:stringutil>
+
+									<antelope:stringutil property="lfrbuild.dir" string="${lfrbuild.dir}">
+										<antelope:replace regex="(.+)\/\.lfrbuild-ci" replacement="$1" />
+									</antelope:stringutil>
+
+									<gradle-execute dir="${lfrbuild.dir}" task="deploy" />
+								</sequential>
+							</for>
+						</sequential>
 					</then>
 				</if>
 			</then>
@@ -924,7 +930,7 @@ This target has been renamed to "snapshot-bundle". Please call "snapshot-bundle"
 				<dirset
 					dir="${project.dir}/workspaces"
 				>
-					<include name="liferay-sample-workspace" />
+					<include name="${workspace.name}" />
 				</dirset>
 			</path>
 			<sequential>
@@ -994,7 +1000,10 @@ This target has been renamed to "snapshot-bundle". Please call "snapshot-bundle"
 		<local name="setup.profile.dxp.git.url" />
 
 		<if>
-			<isset property="env.JENKINS_HOME" />
+			<or>
+				<matches pattern="http://release-1" string="${env.JENKINS_URL}" />
+				<matches pattern="http:\/\/test-\d?-\d+/" string="${env.JENKINS_URL}" />
+			</or>
 			<then>
 				<property name="setup.profile.dxp.git.url" value="git@github-dev.liferay.com:liferay/liferay-portal-ee.git" />
 			</then>
@@ -1018,9 +1027,19 @@ This target has been renamed to "snapshot-bundle". Please call "snapshot-bundle"
 			todir="."
 		/>
 
-		<setup-profile-dxp
-			to.branch.name="${git.working.branch.name}-private"
-		/>
+		<if>
+			<matches pattern="release-\d{4}\.[q][1234]" string="${git.working.branch.name}" />
+			<then>
+				<setup-profile-dxp
+					to.branch.name="release-private"
+				/>
+			</then>
+			<else>
+				<setup-profile-dxp
+					to.branch.name="${git.working.branch.name}-private"
+				/>
+			</else>
+		</if>
 
 		<delete dir="git-clone-profile-dxp" />
 		<delete file="working.dir.properties" />
@@ -1345,24 +1364,25 @@ print AdminControl.invoke(appManager, 'startApplication', 'liferay-portal')
 	</target>
 
 	<target name="update-portal-osgi-configuration-properties">
-		<pathconvert pathsep="," property="configuration.java.files">
-			<fileset
-				dir="modules"
-				excludes=""
-				includes="**/apps/**/configuration/*Configuration.java"
-			>
-			</fileset>
-		</pathconvert>
+		<exec dir="${project.dir}" executable="git" outputproperty="configuration.java.files">
+			<arg line="ls-files --full-name -- ':(glob)**/apps/**/configuration/**/*Configuration.java' ':!:**/*-test/**'" />
+		</exec>
+
+		<exec dir="${project.dir}" executable="git" outputproperty="language.properties.file">
+			<arg line="ls-files --full-name -- '**/portal-language-lang/**/Language.properties'" />
+		</exec>
 
 		<java
 			classname="com.liferay.portal.tools.ConfigurationEnvBuilder"
 			classpathref="project.classpath"
-			dir="${project.dir}/modules"
+			dir="${project.dir}"
 			fork="${fork.mode}"
 			newenvironment="true"
 		>
 			<arg value="configuration.java.files=${configuration.java.files}" />
-			<arg value="output.file=${project.dir}/portal-impl/src/portal-osgi-configuration.properties" />
+			<arg value="json.schema.output.file=${project.dir}/modules/sdk/gradle-plugins-workspace/src/main/resources/schemas/client-extension-type-instance-settings.schema.json" />
+			<arg value="language.properties.file=${project.dir}/${language.properties.file}" />
+			<arg value="properties.output.file=${project.dir}/portal-impl/src/portal-osgi-configuration.properties" />
 			<jvmarg if:true="${jvm.debug}" line="${jpda.settings}" />
 		</java>
 	</target>

@@ -1,7 +1,7 @@
 @component-name = "portal-calendar"
 definition {
 
-	property custom.properties = "default.layout.template.id=1_column${line.separator}company.default.time.zone=America/Los_Angeles";
+	property custom.properties = "company.default.time.zone=America/Los_Angeles${line.separator}default.layout.template.id=1_column";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Calendar";
@@ -84,10 +84,7 @@ definition {
 
 	@priority = 4
 	test AddUserCalendarToOtherCalendars {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea@liferay.com",
@@ -329,13 +326,15 @@ definition {
 
 		Navigator.gotoNavNested(navNested = "Display Settings");
 
-		PortalSettings.configureTimeZone(timeZone = "(UTC -02:00) Fernando de Noronha Time");
+		Click.clickNoMouseOver(locator1 = "//option[@value='America/Noronha']");
+
+		PortalSettings._saveDisplaySettings();
 
 		Navigator.gotoPage(pageName = "Calendar Page");
 
 		CalendarNavigator.gotoAddMyCalendars();
 
-		Calendar.viewSelectedTimeZone(timeZone = "(UTC -02:00) Fernando de Noronha Time");
+		AssertElementPresent(locator1 = "//option[@value='America/Noronha' and @selected]");
 	}
 
 	@description = "LRQA-71360 - Verify that the name field is required"
@@ -415,10 +414,7 @@ definition {
 	@description = "LRQA-71601 - Verify that the translation icon has the Instance Language by default"
 	@priority = 4
 	test TranslationIconHasInstanceLanguageByDefault {
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Instance Settings");
+		PortalSettings.openInstanceSettingsAdmin();
 
 		SystemSettings.gotoConfiguration(
 			configurationCategory = "Localization",
@@ -468,14 +464,13 @@ definition {
 			key_roleTitle = "site-member",
 			locator1 = "Permissions#CONTENT_PERMISSIONS_UPDATE_DISCUSSION_CHECKBOX");
 
-		PortletEntry.save();
+		Click.clickNoMouseOverNoWaitForVisible(
+			key_text = "Save",
+			locator1 = "Button#ANY");
 
 		Navigator.openURL();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Roles");
+		Role.openRolesAdmin();
 
 		RoleNavigator.gotoViewNotHaveRolePermissions(
 			roleTitle = "Site Member",

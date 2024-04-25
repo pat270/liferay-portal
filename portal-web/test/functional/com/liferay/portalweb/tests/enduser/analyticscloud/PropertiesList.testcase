@@ -15,10 +15,6 @@ definition {
 	tearDown {
 		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
 
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
-		//ACUtils.tearDownAC();
-
 		ACUtils.tearDownDXP();
 
 		if (${testLiferayVirtualInstance} == "true") {
@@ -27,6 +23,8 @@ definition {
 		else {
 			JSONGroup.deleteGroupByName(groupName = "Site Name");
 		}
+
+		ACUtils.tearDownAC();
 	}
 
 	@description = "Bug: LRAC-11360 | Automation ID: LRAC-11361 | Test Summary: Paginate property list"
@@ -44,14 +42,14 @@ definition {
 			}
 		}
 
-		task ("Change the pagination to 5") {
+		task ("Change the pagination to 4") {
 			ACSettings.goToProperties();
 
 			ACUtils.changePagination(itemsPerPage = 4);
 		}
 
 		task ("Check first 4 properties appear on first page") {
-			var propertyList1 = "Property Name 2,Property Name 3,Property Name 4,Property Name 5";
+			var propertyList1 = "Property Name 6,Property Name 5,Property Name 4,Property Name 3";
 
 			ACUtils.assertItemsName(itemList = ${propertyList1});
 		}
@@ -61,7 +59,9 @@ definition {
 		}
 
 		task ("Check last property appear on second page") {
-			ACUtils.assertItemsName(itemList = "Property Name 1");
+			var propertyList2 = "Property Name 2,Property Name 1";
+
+			ACUtils.assertItemsName(itemList = ${propertyList2});
 		}
 	}
 
@@ -144,15 +144,109 @@ definition {
 		}
 	}
 
+	@description = "Feature ID: LRAC-14082 | Automation ID: LRAC-14648 | Test Summary: Check that a message appears if you don't put text or the expected text in the delete modal"
+	@priority = 2
+	test CheckMessageAppearsIfNotPutTextOrExpectedTextOnDeleteModal {
+		property analytics.cloud.release = "false";
+		property portal.upstream = "false";
+
+		var propertyName = "Property CheckMessageAppearsIfNotPutTextOrExpectedTextOnDeleteModal";
+
+		task ("Go to properties page and add new property") {
+			ACNavigation.goToSettings();
+
+			ACSettings.goToProperties();
+
+			ACProperties.addNewProperty(propertyName = ${propertyName});
+		}
+
+		task ("Check that the created property is present in the list") {
+			ACSettings.goToProperties();
+
+			ACUtils.assertItemsName(itemList = ${propertyName});
+		}
+
+		task ("Open the property deletion modal") {
+			ACUtils.searchBar(searchItem = ${propertyName});
+
+			ACUtils.clickKebab();
+
+			MenuItem.clickNoError(menuItem = "Delete");
+		}
+
+		task ("Click on the text field to write the deletion confirmation and then click on another part of the modal to remove the focus of the field") {
+			Click(locator1 = "ACSettings#DELETE_CONFIRMATION_INPUT");
+
+			Click(locator1 = "ACSettings#DELETE_CONFIRMATION_MESSAGE");
+		}
+
+		task ("Check that a UI feedback appears because the field is empty") {
+			AssertTextEquals(
+				locator1 = "Message#WARNING_FEEDBACK",
+				value1 = "String does not match.");
+		}
+
+		task ("Write a different value than expected in the deletion confirmation field") {
+			Type(
+				locator1 = "ACSettings#DELETE_CONFIRMATION_INPUT",
+				value1 = ${propertyName});
+
+			Click(locator1 = "ACSettings#DELETE_CONFIRMATION_MESSAGE");
+		}
+
+		task ("Check that a UI feedback appears if the field value is not equal to what was expected") {
+			AssertTextEquals(
+				locator1 = "Message#WARNING_FEEDBACK",
+				value1 = "String does not match.");
+		}
+
+		task ("Write the expected value in the delete confirmation field") {
+			Type(
+				locator1 = "ACSettings#DELETE_CONFIRMATION_INPUT",
+				value1 = "Delete ${propertyName}");
+		}
+
+		task ("Check that a UI feedback does not appear") {
+			AssertElementNotPresent(locator1 = "Message#WARNING_FEEDBACK");
+		}
+	}
+
+	@description = "Feature ID: LRAC-14082 | Automation ID: LRAC-14649 | Test Summary: Check that a successful alert appears if the property is deleted correctly"
+	@priority = 2
+	test CheckSuccessfulAlertAppearsIfPropertyDeleted {
+		property analytics.cloud.release = "false";
+		property portal.upstream = "false";
+
+		var propertyName = "Property CheckSuccessfulAlertAppearsIfPropertyDeleted";
+
+		task ("Go to properties page and add new property") {
+			ACNavigation.goToSettings();
+
+			ACSettings.goToProperties();
+
+			ACProperties.addNewProperty(propertyName = ${propertyName});
+		}
+
+		task ("Check that the created property is present in the list") {
+			ACSettings.goToProperties();
+
+			ACUtils.assertItemsName(itemList = ${propertyName});
+		}
+
+		task ("Delete the property use ellipse") {
+			ACSettings.deletePropertyByEllipse(propertyName = ${propertyName});
+		}
+
+		task ("Check that the success alert with the correct message appears after deletion") {
+			Alert.viewSuccessMessageText(successMessage = "Success:1 property has been deleted");
+		}
+	}
+
 	@description = "Bug: LRAC-10602 | Automation ID: LRAC-11055 | Test Summary: Deleted properties don't appear as an option to sync sites"
-	@ignore = "true"
 	@priority = 2
 	test DeletedPropertiesNotAppearAsOptionInSyncSites {
-
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
 		task ("Go to properties page and add 2 new properties") {
-			var propertyList = "Property DeletedPropertiesNotAppearAsOptionInSyncSites 1,Property DeletedPropertiesNotAppearAsOptionInSyncSites 2";
+			var propertyList = "DeletedProperty 1,DeletedProperty 2";
 
 			ACNavigation.goToSettings();
 
@@ -166,8 +260,7 @@ definition {
 		task ("Delete a property") {
 			ACSettings.goToProperties();
 
-			//ACSettings.deletePropertyByCheckbox(propertyName = "Property DeletedPropertiesNotAppearAsOptionInSyncSites 2");
-
+			ACSettings.deletePropertyByCheckbox(propertyName = "DeletedProperty 2");
 		}
 
 		task ("Copy the token from AC") {
@@ -187,46 +280,15 @@ definition {
 		}
 
 		task ("Check that the existing properties in the AC appear in the list") {
-			ACUtils.assertItemsName(itemList = "Property DeletedPropertiesNotAppearAsOptionInSyncSites 1");
+			ACDXPSettings.viewGenericListItem(itemValueList = "DeletedProperty 1");
 		}
 
 		task ("Check that the deleted AC properties do not appear in the list") {
-			ACUtils.assertItemsNameNotPresent(itemList = "Property DeletedPropertiesNotAppearAsOptionInSyncSites 2");
+			ACDXPSettings.viewGenericListItemNotPresent(itemValueList = "DeletedProperty 2");
 		}
 
 		task ("Disconnect the DXP to AC") {
 			ACDXPSettings.disconnectDXPFromAnalyticsCloud();
-		}
-	}
-
-	@description = "Feature ID: Legacy | Automation ID: LRAC-9120 | Test Summary: Property field is displayed in empty state when no property is available"
-	@ignore = "true"
-	@priority = 3
-	test ViewPropertyListDefault {
-
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
-		task ("Go to properties") {
-			ACNavigation.goToSettings();
-
-			ACSettings.goToProperties();
-		}
-
-		task ("Assert empty state on properties page") {
-
-			//if (IsElementNotPresent(key_textValue = "No Properties Found", locator1 = "ACUtils#GENERIC_TEXT")) {
-			//	ACSettings.deleteAllProperties();
-			//}
-
-			ACProperties.assertNoProperties();
-		}
-
-		task ("Assert that there are no more properties on the sites page") {
-			Navigator.gotoBack();
-
-			AssertElementPresent(locator1 = "ACSidebar#PROPERTY_MENU_NO_PROPERTIES");
-
-			AssertElementPresent(locator1 = "TextInput#NO_PROPERTIES_AVAILABLE_TEXT");
 		}
 	}
 

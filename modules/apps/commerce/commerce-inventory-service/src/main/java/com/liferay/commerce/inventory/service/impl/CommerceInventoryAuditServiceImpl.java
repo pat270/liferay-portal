@@ -13,6 +13,7 @@ import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.osgi.service.component.annotations.Component;
@@ -34,27 +35,37 @@ public class CommerceInventoryAuditServiceImpl
 
 	@Override
 	public List<CommerceInventoryAudit> getCommerceInventoryAudits(
-			long companyId, String sku, int start, int end)
+			long companyId, String sku, String unitOfMeasureKey, int start,
+			int end)
 		throws PortalException {
 
-		_portletResourcePermission.check(
-			getPermissionChecker(), null,
-			CommerceInventoryActionKeys.MANAGE_INVENTORY);
+		if (_portletResourcePermission.contains(
+				getPermissionChecker(), null,
+				CommerceInventoryActionKeys.MANAGE_INVENTORY)) {
 
-		return commerceInventoryAuditLocalService.getCommerceInventoryAudits(
-			companyId, sku, start, end);
+			return commerceInventoryAuditLocalService.
+				getCommerceInventoryAudits(
+					companyId, sku, unitOfMeasureKey, start, end);
+		}
+
+		return Collections.emptyList();
 	}
 
 	@Override
-	public int getCommerceInventoryAuditsCount(long companyId, String sku)
+	public int getCommerceInventoryAuditsCount(
+			long companyId, String sku, String unitOfMeasureKey)
 		throws PortalException {
 
-		_portletResourcePermission.check(
-			getPermissionChecker(), null,
-			CommerceInventoryActionKeys.MANAGE_INVENTORY);
+		if (_portletResourcePermission.contains(
+				getPermissionChecker(), null,
+				CommerceInventoryActionKeys.MANAGE_INVENTORY)) {
 
-		return commerceInventoryAuditLocalService.
-			getCommerceInventoryAuditsCount(companyId, sku);
+			return commerceInventoryAuditLocalService.
+				getCommerceInventoryAuditsCount(
+					companyId, sku, unitOfMeasureKey);
+		}
+
+		return 0;
 	}
 
 	@Reference(

@@ -14,7 +14,10 @@ definition {
 
 		User.firstLoginPG();
 
-		Raylife.createRaylifeSite(siteName = ${testSiteName});
+		HeadlessSite.addSite(
+			siteName = ${testSiteName},
+			templateName = "Raylife D2C",
+			templateType = "Site Initializer");
 	}
 
 	tearDown {
@@ -34,6 +37,7 @@ definition {
 	@priority = 4
 	test ArePasswordTheSame {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
@@ -82,6 +86,7 @@ definition {
 	@priority = 3
 	test CreateAccountSectionCompleted {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
@@ -109,17 +114,24 @@ definition {
 
 		Type(
 			locator1 = "RaylifeCreateAccount#EMAIL_FIELD",
-			value1 = "test@liferay.com");
+			value1 = "test1@liferay.com");
 
 		Type(
 			label = "password",
 			locator1 = "RaylifeCreateAccount#PASSWORD_FIELD",
 			value1 = "test@123");
 
+		Button.click(button = "CREATE NEW ACCOUNT");
+
 		Type(
 			label = "rePassword",
 			locator1 = "RaylifeCreateAccount#PASSWORD_FIELD",
 			value1 = "test@123");
+
+		Type(
+			inputFieldId = "input-captcha",
+			locator1 = "TextInput#INPUT_ID",
+			value1 = "a");
 
 		Click(locator1 = "RaylifeCreateAccount#CREATE_ACCOUNT");
 
@@ -132,6 +144,7 @@ definition {
 	@priority = 5
 	test ErrorMessageAppearInEmailField {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
@@ -169,6 +182,7 @@ definition {
 	test IsCreateAccountButtonActive {
 		property solutions.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given I go through all the forms Raylife basic, commercial, employees and properties") {
 			ApplicationsMenu.gotoSite(key_site = ${testSiteName});
@@ -209,6 +223,7 @@ definition {
 	@priority = 3
 	test IsCreateAccountButtonDisabled {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
@@ -245,6 +260,7 @@ definition {
 	@priority = 4
 	test IsEightCharactersRequired {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
@@ -275,20 +291,18 @@ definition {
 			locator1 = "RaylifeCreateAccount#PASSWORD_FIELD",
 			value1 = "test@12");
 
-		Type(
-			label = "rePassword",
-			locator1 = "RaylifeCreateAccount#PASSWORD_FIELD",
-			value1 = "test@12");
+		Button.click(button = "CREATE NEW ACCOUNT");
 
 		AssertElementPresent(
 			locator1 = "RaylifeCreateAccount#VALIDATION_UNCHECKED",
-			text = "8 characters");
+			text = "At least 8 characters");
 	}
 
 	@description = "LPS-144336 - Verify that when entering a password with repeated numbers and letters the message 'At least 5 unique characters' is highlighted"
 	@priority = 4
 	test IsFiveUniqueCharactersRequired {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
@@ -317,15 +331,12 @@ definition {
 		Type(
 			label = "password",
 			locator1 = "RaylifeCreateAccount#PASSWORD_FIELD",
-			value1 = "test@12");
+			value1 = "test1");
 
-		Type(
-			label = "rePassword",
-			locator1 = "RaylifeCreateAccount#PASSWORD_FIELD",
-			value1 = "test@12");
+		Button.click(button = "CREATE NEW ACCOUNT");
 
 		AssertElementPresent(
-			locator1 = "RaylifeCreateAccount#VALIDATION_CHECKED",
+			locator1 = "RaylifeCreateAccount#VALIDATION_UNCHECKED",
 			text = "5 unique characters");
 	}
 
@@ -333,6 +344,7 @@ definition {
 	@priority = 4
 	test IsOneSymbolRequired {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
@@ -361,12 +373,9 @@ definition {
 		Type(
 			label = "password",
 			locator1 = "RaylifeCreateAccount#PASSWORD_FIELD",
-			value1 = "test1234");
+			value1 = "Test1234");
 
-		Type(
-			label = "rePassword",
-			locator1 = "RaylifeCreateAccount#PASSWORD_FIELD",
-			value1 = "test1234");
+		Button.click(button = "CREATE NEW ACCOUNT");
 
 		AssertElementPresent(
 			locator1 = "RaylifeCreateAccount#VALIDATION_UNCHECKED",
@@ -377,6 +386,7 @@ definition {
 	@priority = 4
 	test NoSpacesAreAllowed {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 

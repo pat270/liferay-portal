@@ -17,7 +17,7 @@
 </tr>
 <tr>
 	<td>ADAPTIVE_MEDIA_IMAGE</td>
-	<td>//td[contains(.,'${key_imageName}')]//..//td/input[contains(@type,'checkbox')]</td>
+	<td>//td[contains(.,'${key_imageName}')]//..//input[contains(@type,'checkbox')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -88,6 +88,11 @@
 <tr>
 	<td>CHECKBOX_DISABLED</td>
 	<td>//label[contains(.,'${key_checkboxName}')]/input[@type='checkbox' and contains(@class,'disabled')] | //label[contains(@class,'disabled')][contains(.,'${key_checkboxName}')]//input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CHECKBOX_ID</td>
+	<td>//input[contains(@type,'checkbox')][contains(@id,'${checkboxId}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -268,6 +273,11 @@
 <tr>
 	<td>ENABLED_ON_PUBLIC_PAGES</td>
 	<td>//input[contains(@id,'branchingPublic')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ENTRY_BY_TITLE</td>
+	<td>//dd[@data-title='${content_title}']//input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>

@@ -1,0 +1,28 @@
+<%--
+/**
+ * SPDX-FileCopyrightText: (c) 2023 Liferay, Inc. https://liferay.com
+ * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
+ */
+--%>
+
+<aui:model-context bean="<%= article %>" defaultLanguageId="<%= journalEditArticleDisplayContext.getDefaultArticleLanguageId() %>" model="<%= JournalArticle.class %>" />
+
+<liferay-data-engine:data-layout-renderer
+	containerId='<%= liferayPortletResponse.getNamespace() + "dataEngineLayoutRenderer" %>'
+	contentType="journal"
+	dataDefinitionId="<%= ddmStructure.getStructureId() %>"
+	dataRecordValues="<%= journalEditArticleDisplayContext.getValues() %>"
+	defaultLanguageId="<%= journalEditArticleDisplayContext.getDefaultArticleLanguageId() %>"
+	displayType='<%= FeatureFlagManagerUtil.isEnabled("LPS-114700") ? "borderless" : StringPool.BLANK %>'
+	languageId="<%= journalEditArticleDisplayContext.getSelectedLanguageId() %>"
+	namespace="<%= liferayPortletResponse.getNamespace() %>"
+	persisted="<%= article != null %>"
+	submittable="<%= false %>"
+/>
+
+<liferay-frontend:component
+	componentId='<%= liferayPortletResponse.getNamespace() + "DataEngineLayoutRendererLanguageProxy" %>'
+	context="<%= journalEditArticleDisplayContext.getDataEngineLayoutRendererComponentContext() %>"
+	module="{DataEngineLayoutRendererLanguageProxy} from journal-web"
+	servletContext="<%= application %>"
+/>

@@ -7,18 +7,21 @@ package com.liferay.layout.content.page.editor.web.internal.portlet.action;
 
 import com.liferay.fragment.entry.processor.constants.FragmentEntryProcessorConstants;
 import com.liferay.fragment.exception.NoSuchEntryLinkException;
+import com.liferay.fragment.listener.FragmentEntryLinkListener;
+import com.liferay.fragment.listener.FragmentEntryLinkListenerRegistry;
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.service.FragmentEntryLinkLocalService;
 import com.liferay.fragment.service.FragmentEntryLinkService;
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortletKeys;
 import com.liferay.layout.content.page.editor.web.internal.exception.NoninstanceablePortletException;
-import com.liferay.layout.content.page.editor.web.internal.util.ContentManager;
-import com.liferay.layout.content.page.editor.web.internal.util.FragmentEntryLinkManager;
+import com.liferay.layout.content.page.editor.web.internal.manager.ContentManager;
+import com.liferay.layout.content.page.editor.web.internal.manager.FragmentEntryLinkManager;
 import com.liferay.layout.content.page.editor.web.internal.util.layout.structure.LayoutStructureUtil;
 import com.liferay.layout.util.structure.FragmentStyledLayoutStructureItem;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.layout.util.structure.LayoutStructureItem;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.exception.LockedLayoutException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
@@ -50,8 +53,9 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.portlet.ActionRequest;
@@ -94,6 +98,10 @@ public class DuplicateItemMVCActionCommand
 	@Override
 	protected JSONObject processException(
 		ActionRequest actionRequest, Exception exception) {
+
+		if (exception instanceof LockedLayoutException) {
+			return processLockedLayoutException(actionRequest);
+		}
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
@@ -146,52 +154,82 @@ public class DuplicateItemMVCActionCommand
 			actionRequest, "segmentsExperienceId");
 		String itemId = ParamUtil.getString(actionRequest, "itemId");
 
-		Set<Long> duplicatedFragmentEntryLinkIds = new HashSet<>();
+		Map<Long, Long> duplicatedFragmentEntryLinkIdsMap = new HashMap<>();
 		List<String> duplicatedLayoutStructureItemIds = new ArrayList<>();
 
-		JSONObject layoutDataJSONObject =
-			LayoutStructureUtil.updateLayoutPageTemplateData(
-				themeDisplay.getScopeGroupId(), segmentsExperienceId,
-				themeDisplay.getPlid(),
-				layoutStructure -> {
-					List<LayoutStructureItem> duplicatedLayoutStructureItems =
-						layoutStructure.duplicateLayoutStructureItem(itemId);
+		LayoutStructureUtil.updateLayoutPageTemplateData(
+			themeDisplay.getScopeGroupId(), segmentsExperienceId,
+			themeDisplay.getPlid(),
+			layoutStructure -> {
+				List<LayoutStructureItem> duplicatedLayoutStructureItems =
+					layoutStructure.duplicateLayoutStructureItem(itemId);
 
-					for (LayoutStructureItem duplicatedLayoutStructureItem :
-							duplicatedLayoutStructureItems) {
+				for (LayoutStructureItem duplicatedLayoutStructureItem :
+						duplicatedLayoutStructureItems) {
 
-						duplicatedLayoutStructureItemIds.add(
-							duplicatedLayoutStructureItem.getItemId());
+					duplicatedLayoutStructureItemIds.add(
+						duplicatedLayoutStructureItem.getItemId());
 
-						if (!(duplicatedLayoutStructureItem instanceof
-								FragmentStyledLayoutStructureItem)) {
+					if (!(duplicatedLayoutStructureItem instanceof
+							FragmentStyledLayoutStructureItem)) {
 
-							continue;
-						}
-
-						FragmentStyledLayoutStructureItem
-							fragmentStyledLayoutStructureItem =
-								(FragmentStyledLayoutStructureItem)
-									duplicatedLayoutStructureItem;
-
-						long fragmentEntryLinkId = _duplicateFragmentEntryLink(
-							actionRequest,
-							fragmentStyledLayoutStructureItem.
-								getFragmentEntryLinkId());
-
-						layoutStructure.updateItemConfig(
-							JSONUtil.put(
-								"fragmentEntryLinkId", fragmentEntryLinkId),
-							duplicatedLayoutStructureItem.getItemId());
-
-						duplicatedFragmentEntryLinkIds.add(fragmentEntryLinkId);
+						continue;
 					}
-				});
+
+					FragmentStyledLayoutStructureItem
+						fragmentStyledLayoutStructureItem =
+							(FragmentStyledLayoutStructureItem)
+								duplicatedLayoutStructureItem;
+
+					long originalFragmentEntryLinkId =
+						fragmentStyledLayoutStructureItem.
+							getFragmentEntryLinkId();
+
+					long fragmentEntryLinkId = _duplicateFragmentEntryLink(
+						actionRequest, originalFragmentEntryLinkId);
+
+					layoutStructure.updateItemConfig(
+						JSONUtil.put(
+							"fragmentEntryLinkId", fragmentEntryLinkId),
+						duplicatedLayoutStructureItem.getItemId());
+
+					duplicatedFragmentEntryLinkIdsMap.put(
+						fragmentEntryLinkId, originalFragmentEntryLinkId);
+				}
+			});
+
+		for (Map.Entry<Long, Long> entry :
+				duplicatedFragmentEntryLinkIdsMap.entrySet()) {
+
+			FragmentEntryLink duplicatedFragmentEntryLink =
+				_fragmentEntryLinkLocalService.getFragmentEntryLink(
+					entry.getKey());
+
+			FragmentEntryLink originalFragmentEntryLink =
+				_fragmentEntryLinkLocalService.getFragmentEntryLink(
+					entry.getValue());
+
+			for (FragmentEntryLinkListener fragmentEntryLinkListener :
+					_fragmentEntryLinkListenerRegistry.
+						getFragmentEntryLinkListeners()) {
+
+				fragmentEntryLinkListener.onDuplicateFragmentEntryLink(
+					duplicatedFragmentEntryLink, originalFragmentEntryLink);
+			}
+		}
+
+		LayoutStructure layoutStructure =
+			LayoutStructureUtil.getLayoutStructure(
+				themeDisplay.getScopeGroupId(), themeDisplay.getPlid(),
+				segmentsExperienceId);
+
+		JSONObject layoutDataJSONObject = layoutStructure.toJSONObject();
 
 		return JSONUtil.put(
 			"duplicatedFragmentEntryLinks",
 			_getDuplicatedFragmentEntryLinksJSONArray(
-				actionRequest, actionResponse, duplicatedFragmentEntryLinkIds,
+				actionRequest, actionResponse,
+				duplicatedFragmentEntryLinkIdsMap.keySet(),
 				segmentsExperienceId, themeDisplay)
 		).put(
 			"duplicatedItemId",
@@ -321,8 +359,7 @@ public class DuplicateItemMVCActionCommand
 
 		FragmentEntryLink duplicatedFragmentEntryLink =
 			_fragmentEntryLinkService.addFragmentEntryLink(
-				fragmentEntryLink.getGroupId(),
-				fragmentEntryLink.getOriginalFragmentEntryLinkId(),
+				fragmentEntryLink.getGroupId(), 0,
 				fragmentEntryLink.getFragmentEntryId(),
 				fragmentEntryLink.getSegmentsExperienceId(),
 				fragmentEntryLink.getPlid(), fragmentEntryLink.getCss(),
@@ -363,6 +400,10 @@ public class DuplicateItemMVCActionCommand
 
 	@Reference
 	private ContentManager _contentManager;
+
+	@Reference
+	private FragmentEntryLinkListenerRegistry
+		_fragmentEntryLinkListenerRegistry;
 
 	@Reference
 	private FragmentEntryLinkLocalService _fragmentEntryLinkLocalService;

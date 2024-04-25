@@ -29,10 +29,6 @@ definition {
 	tearDown {
 		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
 
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
-		//ACUtils.tearDownAC();
-
 		ACUtils.tearDownDXP();
 
 		if (${testLiferayVirtualInstance} == "true") {
@@ -41,6 +37,8 @@ definition {
 		else {
 			JSONGroup.deleteGroupByName(groupName = "Site Name");
 		}
+
+		ACUtils.tearDownAC();
 	}
 
 	@description = "Feature ID: Legacy | Automation ID: LRAC-9037 | Test Summary: As an Business User, a Property with a duplicate name should have an incrementing identifier appended to it's name"
@@ -91,7 +89,7 @@ definition {
 	@priority = 3
 	test CanCreatePropertiesWhenNoDataSourceIsCreatedYet {
 
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
+		// It is not possible to delete data source after LRAC-13389. This functionality must be returned by a story that has not yet been created
 
 		task ("Remove all data sources present") {
 			ACUtils.launchAC();
@@ -182,7 +180,7 @@ definition {
 	@description = "Bug: LRAC-7916 | Automation ID: LRAC-11529 | Test Summary: It is possible to create multiple properties in different workspaces"
 	@priority = 4
 	test CanCreateSamePropertyNameInDifferentWorkspaces {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var acProperty = "AC Property Name";
 		var acWorkspace = "New AC Workspace";
@@ -376,6 +374,8 @@ definition {
 	@description = "Feature ID: Legacy | Automation ID: LRAC-9103 | Test Summary: [AC] Properties created when no data source was connected, and then the admin connect data sources to workspace"
 	@priority = 3
 	test CreatePropertiesWhenNoDataSourceIsConnected {
+		property test.run.type = "single";
+
 		task ("Add a new property on AC") {
 			ACUtils.launchAC();
 
@@ -508,11 +508,7 @@ definition {
 
 		ACWorkspace.signOut();
 
-		ACLogin.loginAs(
-			emailAddress = "corbin.murakami@faro.io",
-			password = "test");
-
-		ACWorkspace.openWorkspace();
+		ACUtils.launchAC(emailAddress = "corbin.murakami@faro.io");
 
 		ACNavigation.goToSettings();
 
@@ -522,11 +518,7 @@ definition {
 
 		ACWorkspace.signOut();
 
-		ACLogin.loginAs(
-			emailAddress = "michelle.hoshi@faro.io",
-			password = "test");
-
-		ACWorkspace.openWorkspace();
+		ACUtils.launchAC(emailAddress = "michelle.hoshi@faro.io");
 
 		ACNavigation.goToSettings();
 
@@ -563,7 +555,7 @@ definition {
 		}
 
 		task ("Go to property via URL") {
-			Open(locator1 = ${propertyURL});
+			Open(value1 = ${propertyURL});
 
 			ACProperties.assertNewCreatedProperty(propertyName = ${myProperty});
 		}

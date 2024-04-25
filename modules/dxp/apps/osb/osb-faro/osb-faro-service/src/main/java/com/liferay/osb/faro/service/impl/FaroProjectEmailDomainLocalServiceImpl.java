@@ -14,7 +14,6 @@ import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
-import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.io.IOException;
@@ -27,7 +26,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Matthew Kong
@@ -40,6 +38,7 @@ public class FaroProjectEmailDomainLocalServiceImpl
 	extends FaroProjectEmailDomainLocalServiceBaseImpl {
 
 	@Indexable(type = IndexableType.REINDEX)
+	@Override
 	public FaroProjectEmailDomain addFaroProjectEmailDomain(
 		long groupId, long faroProjectId, String emailDomain) {
 
@@ -55,6 +54,7 @@ public class FaroProjectEmailDomainLocalServiceImpl
 		return faroProjectEmailDomainPersistence.update(faroProjectEmailDomain);
 	}
 
+	@Override
 	public void addFaroProjectEmailDomains(
 		long groupId, long faroProjectId, List<String> emailAddressDomains) {
 
@@ -68,10 +68,6 @@ public class FaroProjectEmailDomainLocalServiceImpl
 	}
 
 	public void afterPropertiesSet() {
-		persistedModelLocalServiceRegistry.register(
-			"com.liferay.osb.faro.model.FaroProjectEmailDomain",
-			faroProjectEmailDomainLocalService);
-
 		_setLocalServiceUtilService(faroProjectEmailDomainLocalService);
 
 		ClassLoader classLoader = getClassLoader();
@@ -88,6 +84,7 @@ public class FaroProjectEmailDomainLocalServiceImpl
 		}
 	}
 
+	@Override
 	public List<FaroProjectEmailDomain>
 		getFaroProjectEmailDomainsByFaroProjectId(long faroProjectId) {
 
@@ -95,15 +92,12 @@ public class FaroProjectEmailDomainLocalServiceImpl
 			faroProjectId);
 	}
 
+	@Override
 	public List<FaroProjectEmailDomain> getFaroProjectEmailDomainsByGroupId(
 		long groupId) {
 
 		return faroProjectEmailDomainPersistence.findByGroupId(groupId);
 	}
-
-	@Reference
-	protected PersistedModelLocalServiceRegistry
-		persistedModelLocalServiceRegistry;
 
 	private void _setLocalServiceUtilService(
 		FaroProjectEmailDomainLocalService faroProjectEmailDomainLocalService) {

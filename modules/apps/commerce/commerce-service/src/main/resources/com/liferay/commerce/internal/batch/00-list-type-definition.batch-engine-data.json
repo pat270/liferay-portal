@@ -1,0 +1,88 @@
+{
+	"configuration": {
+		"className": "com.liferay.headless.admin.list.type.dto.v1_0.ListTypeDefinition",
+		"multiCompany": true,
+		"parameters": {
+			"containsHeaders": "true",
+			"createStrategy": "UPSERT",
+			"featureFlag": "LPD-10562",
+			"importStrategy": "ON_ERROR_FAIL",
+			"updateStrategy": "UPDATE"
+		},
+		"taskItemDelegateName": "DEFAULT",
+		"userId": 0,
+		"version": "v1.0"
+	},
+	"items": [
+		{
+			"externalReferenceCode": "L_COMMERCE_RETURN_REASONS",
+			"listTypeEntries": [
+				{
+					"externalReferenceCode": "CHANGE_OF_MIND",
+					"key": "changeOfMind",
+					"name": "Change Of Mind",
+					"name_i18n": {
+						"en-US": "Change Of Mind"
+					}
+				},
+				{
+					"externalReferenceCode": "PRODUCT_DEFECT",
+					"key": "productDefect",
+					"name": "Product Defect",
+					"name_i18n": {
+						"en-US": "Product Defect"
+					}
+				}
+			],
+			"name": "Commerce Return Reasons",
+			"name_i18n": {
+				"en-US": "Commerce Return Reasons"
+			},
+			"system": true
+		},
+		{
+			"externalReferenceCode": "L_COMMERCE_RETURN_RESOLUTION_METHODS",
+			"listTypeEntries": [
+				{
+					"externalReferenceCode": "REFUND",
+					"key": "refund",
+					"name": "Refund",
+					"name_i18n": {
+						"en-US": "Refund"
+					}
+				}
+			],
+			"name": "Commerce Return Resolution Methods",
+			"name_i18n": {
+				"en-US": "Commerce Return Resolution Methods"
+			},
+			"system": true
+		},
+		{
+			"externalReferenceCode": "L_COMMERCE_RETURN_STATUSES",
+			"listTypeEntries": [
+				{
+					"externalReferenceCode": "COMPLETED",
+					"key": "completed",
+					"name": "completed",
+					"name_i18n": {
+						"en-US": "Completed"
+					}
+				},
+				{
+					"externalReferenceCode": "DRAFT",
+					"key": "draft",
+					"name": "draft",
+					"name_i18n": {
+						"en-US": "Draft"
+					}
+				}
+			],
+			"name": "Commerce Return Statuses",
+			"name_i18n": {
+				"en-US": "Commerce Return Statuses"
+			},
+			"system": true
+		}
+	]
+}

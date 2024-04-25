@@ -29,8 +29,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
@@ -38,8 +36,10 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.RoleTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.test.rule.Inject;
@@ -64,8 +64,6 @@ import java.util.Set;
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-
-import org.apache.commons.lang.time.DateUtils;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -210,7 +208,7 @@ public abstract class BaseDataDefinitionResourceTestCase {
 					contentType, RandomTestUtil.randomString(),
 					Pagination.of(1, 10), null);
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if (irrelevantContentType != null) {
 			DataDefinition irrelevantDataDefinition =
@@ -220,12 +218,13 @@ public abstract class BaseDataDefinitionResourceTestCase {
 			page =
 				dataDefinitionResource.
 					getDataDefinitionByContentTypeContentTypePage(
-						irrelevantContentType, null, Pagination.of(1, 2), null);
+						irrelevantContentType, null,
+						Pagination.of(1, (int)totalCount + 1), null);
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantDataDefinition),
+			assertContains(
+				irrelevantDataDefinition,
 				(List<DataDefinition>)page.getItems());
 			assertValid(
 				page,
@@ -246,11 +245,10 @@ public abstract class BaseDataDefinitionResourceTestCase {
 				getDataDefinitionByContentTypeContentTypePage(
 					contentType, null, Pagination.of(1, 10), null);
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(dataDefinition1, dataDefinition2),
-			(List<DataDefinition>)page.getItems());
+		assertContains(dataDefinition1, (List<DataDefinition>)page.getItems());
+		assertContains(dataDefinition2, (List<DataDefinition>)page.getItems());
 		assertValid(
 			page,
 			testGetDataDefinitionByContentTypeContentTypePage_getExpectedActions(
@@ -278,6 +276,14 @@ public abstract class BaseDataDefinitionResourceTestCase {
 		String contentType =
 			testGetDataDefinitionByContentTypeContentTypePage_getContentType();
 
+		Page<DataDefinition> dataDefinitionPage =
+			dataDefinitionResource.
+				getDataDefinitionByContentTypeContentTypePage(
+					contentType, null, null, null);
+
+		int totalCount = GetterUtil.getInteger(
+			dataDefinitionPage.getTotalCount());
+
 		DataDefinition dataDefinition1 =
 			testGetDataDefinitionByContentTypeContentTypePage_addDataDefinition(
 				contentType, randomDataDefinition());
@@ -290,38 +296,90 @@ public abstract class BaseDataDefinitionResourceTestCase {
 			testGetDataDefinitionByContentTypeContentTypePage_addDataDefinition(
 				contentType, randomDataDefinition());
 
-		Page<DataDefinition> page1 =
-			dataDefinitionResource.
-				getDataDefinitionByContentTypeContentTypePage(
-					contentType, null, Pagination.of(1, 2), null);
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<DataDefinition> dataDefinitions1 =
-			(List<DataDefinition>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			dataDefinitions1.toString(), 2, dataDefinitions1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<DataDefinition> page1 =
+				dataDefinitionResource.
+					getDataDefinitionByContentTypeContentTypePage(
+						contentType, null,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+							pageSizeLimit),
+						null);
 
-		Page<DataDefinition> page2 =
-			dataDefinitionResource.
-				getDataDefinitionByContentTypeContentTypePage(
-					contentType, null, Pagination.of(2, 2), null);
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(3, page2.getTotalCount());
+			assertContains(
+				dataDefinition1, (List<DataDefinition>)page1.getItems());
 
-		List<DataDefinition> dataDefinitions2 =
-			(List<DataDefinition>)page2.getItems();
+			Page<DataDefinition> page2 =
+				dataDefinitionResource.
+					getDataDefinitionByContentTypeContentTypePage(
+						contentType, null,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+							pageSizeLimit),
+						null);
 
-		Assert.assertEquals(
-			dataDefinitions2.toString(), 1, dataDefinitions2.size());
+			assertContains(
+				dataDefinition2, (List<DataDefinition>)page2.getItems());
 
-		Page<DataDefinition> page3 =
-			dataDefinitionResource.
-				getDataDefinitionByContentTypeContentTypePage(
-					contentType, null, Pagination.of(1, 3), null);
+			Page<DataDefinition> page3 =
+				dataDefinitionResource.
+					getDataDefinitionByContentTypeContentTypePage(
+						contentType, null,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+							pageSizeLimit),
+						null);
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(dataDefinition1, dataDefinition2, dataDefinition3),
-			(List<DataDefinition>)page3.getItems());
+			assertContains(
+				dataDefinition3, (List<DataDefinition>)page3.getItems());
+		}
+		else {
+			Page<DataDefinition> page1 =
+				dataDefinitionResource.
+					getDataDefinitionByContentTypeContentTypePage(
+						contentType, null, Pagination.of(1, totalCount + 2),
+						null);
+
+			List<DataDefinition> dataDefinitions1 =
+				(List<DataDefinition>)page1.getItems();
+
+			Assert.assertEquals(
+				dataDefinitions1.toString(), totalCount + 2,
+				dataDefinitions1.size());
+
+			Page<DataDefinition> page2 =
+				dataDefinitionResource.
+					getDataDefinitionByContentTypeContentTypePage(
+						contentType, null, Pagination.of(2, totalCount + 2),
+						null);
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<DataDefinition> dataDefinitions2 =
+				(List<DataDefinition>)page2.getItems();
+
+			Assert.assertEquals(
+				dataDefinitions2.toString(), 1, dataDefinitions2.size());
+
+			Page<DataDefinition> page3 =
+				dataDefinitionResource.
+					getDataDefinitionByContentTypeContentTypePage(
+						contentType, null,
+						Pagination.of(1, (int)totalCount + 3), null);
+
+			assertContains(
+				dataDefinition1, (List<DataDefinition>)page3.getItems());
+			assertContains(
+				dataDefinition2, (List<DataDefinition>)page3.getItems());
+			assertContains(
+				dataDefinition3, (List<DataDefinition>)page3.getItems());
+		}
 	}
 
 	@Test
@@ -333,7 +391,7 @@ public abstract class BaseDataDefinitionResourceTestCase {
 			(entityField, dataDefinition1, dataDefinition2) -> {
 				BeanTestUtil.setProperty(
 					dataDefinition1, entityField.getName(),
-					DateUtils.addMinutes(new Date(), -2));
+					new Date(System.currentTimeMillis() - (2 * Time.MINUTE)));
 			});
 	}
 
@@ -450,26 +508,35 @@ public abstract class BaseDataDefinitionResourceTestCase {
 			testGetDataDefinitionByContentTypeContentTypePage_addDataDefinition(
 				contentType, dataDefinition2);
 
+		Page<DataDefinition> page =
+			dataDefinitionResource.
+				getDataDefinitionByContentTypeContentTypePage(
+					contentType, null, null, null);
+
 		for (EntityField entityField : entityFields) {
 			Page<DataDefinition> ascPage =
 				dataDefinitionResource.
 					getDataDefinitionByContentTypeContentTypePage(
-						contentType, null, Pagination.of(1, 2),
+						contentType, null,
+						Pagination.of(1, (int)page.getTotalCount() + 1),
 						entityField.getName() + ":asc");
 
-			assertEquals(
-				Arrays.asList(dataDefinition1, dataDefinition2),
-				(List<DataDefinition>)ascPage.getItems());
+			assertContains(
+				dataDefinition1, (List<DataDefinition>)ascPage.getItems());
+			assertContains(
+				dataDefinition2, (List<DataDefinition>)ascPage.getItems());
 
 			Page<DataDefinition> descPage =
 				dataDefinitionResource.
 					getDataDefinitionByContentTypeContentTypePage(
-						contentType, null, Pagination.of(1, 2),
+						contentType, null,
+						Pagination.of(1, (int)page.getTotalCount() + 1),
 						entityField.getName() + ":desc");
 
-			assertEquals(
-				Arrays.asList(dataDefinition2, dataDefinition1),
-				(List<DataDefinition>)descPage.getItems());
+			assertContains(
+				dataDefinition2, (List<DataDefinition>)descPage.getItems());
+			assertContains(
+				dataDefinition1, (List<DataDefinition>)descPage.getItems());
 		}
 	}
 
@@ -554,7 +621,10 @@ public abstract class BaseDataDefinitionResourceTestCase {
 
 	@Test
 	public void testGraphQLDeleteDataDefinition() throws Exception {
-		DataDefinition dataDefinition =
+
+		// No namespace
+
+		DataDefinition dataDefinition1 =
 			testGraphQLDeleteDataDefinition_addDataDefinition();
 
 		Assert.assertTrue(
@@ -564,23 +634,66 @@ public abstract class BaseDataDefinitionResourceTestCase {
 						"deleteDataDefinition",
 						new HashMap<String, Object>() {
 							{
-								put("dataDefinitionId", dataDefinition.getId());
+								put(
+									"dataDefinitionId",
+									dataDefinition1.getId());
 							}
 						})),
 				"JSONObject/data", "Object/deleteDataDefinition"));
-		JSONArray errorsJSONArray = JSONUtil.getValueAsJSONArray(
+
+		JSONArray errorsJSONArray1 = JSONUtil.getValueAsJSONArray(
 			invokeGraphQLQuery(
 				new GraphQLField(
 					"dataDefinition",
 					new HashMap<String, Object>() {
 						{
-							put("dataDefinitionId", dataDefinition.getId());
+							put("dataDefinitionId", dataDefinition1.getId());
 						}
 					},
 					new GraphQLField("id"))),
 			"JSONArray/errors");
 
-		Assert.assertTrue(errorsJSONArray.length() > 0);
+		Assert.assertTrue(errorsJSONArray1.length() > 0);
+
+		// Using the namespace dataEngine_v2_0
+
+		DataDefinition dataDefinition2 =
+			testGraphQLDeleteDataDefinition_addDataDefinition();
+
+		Assert.assertTrue(
+			JSONUtil.getValueAsBoolean(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"dataEngine_v2_0",
+						new GraphQLField(
+							"deleteDataDefinition",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"dataDefinitionId",
+										dataDefinition2.getId());
+								}
+							}))),
+				"JSONObject/data", "JSONObject/dataEngine_v2_0",
+				"Object/deleteDataDefinition"));
+
+		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"dataEngine_v2_0",
+					new GraphQLField(
+						"dataDefinition",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"dataDefinitionId",
+									dataDefinition2.getId());
+							}
+						},
+						new GraphQLField("id")))),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray2.length() > 0);
 	}
 
 	protected DataDefinition testGraphQLDeleteDataDefinition_addDataDefinition()
@@ -614,6 +727,8 @@ public abstract class BaseDataDefinitionResourceTestCase {
 		DataDefinition dataDefinition =
 			testGraphQLGetDataDefinition_addDataDefinition();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				dataDefinition,
@@ -631,11 +746,36 @@ public abstract class BaseDataDefinitionResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/dataDefinition"))));
+
+		// Using the namespace dataEngine_v2_0
+
+		Assert.assertTrue(
+			equals(
+				dataDefinition,
+				DataDefinitionSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"dataEngine_v2_0",
+								new GraphQLField(
+									"dataDefinition",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"dataDefinitionId",
+												dataDefinition.getId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data", "JSONObject/dataEngine_v2_0",
+						"Object/dataDefinition"))));
 	}
 
 	@Test
 	public void testGraphQLGetDataDefinitionNotFound() throws Exception {
 		Long irrelevantDataDefinitionId = RandomTestUtil.randomLong();
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -651,6 +791,27 @@ public abstract class BaseDataDefinitionResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace dataEngine_v2_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"dataEngine_v2_0",
+						new GraphQLField(
+							"dataDefinition",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"dataDefinitionId",
+										irrelevantDataDefinitionId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -824,7 +985,7 @@ public abstract class BaseDataDefinitionResourceTestCase {
 					siteId, contentType, RandomTestUtil.randomString(),
 					Pagination.of(1, 10), null);
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if ((irrelevantSiteId != null) && (irrelevantContentType != null)) {
 			DataDefinition irrelevantDataDefinition =
@@ -836,12 +997,12 @@ public abstract class BaseDataDefinitionResourceTestCase {
 				dataDefinitionResource.
 					getSiteDataDefinitionByContentTypeContentTypePage(
 						irrelevantSiteId, irrelevantContentType, null,
-						Pagination.of(1, 2), null);
+						Pagination.of(1, (int)totalCount + 1), null);
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantDataDefinition),
+			assertContains(
+				irrelevantDataDefinition,
 				(List<DataDefinition>)page.getItems());
 			assertValid(
 				page,
@@ -862,11 +1023,10 @@ public abstract class BaseDataDefinitionResourceTestCase {
 				getSiteDataDefinitionByContentTypeContentTypePage(
 					siteId, contentType, null, Pagination.of(1, 10), null);
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(dataDefinition1, dataDefinition2),
-			(List<DataDefinition>)page.getItems());
+		assertContains(dataDefinition1, (List<DataDefinition>)page.getItems());
+		assertContains(dataDefinition2, (List<DataDefinition>)page.getItems());
 		assertValid(
 			page,
 			testGetSiteDataDefinitionByContentTypeContentTypePage_getExpectedActions(
@@ -896,6 +1056,14 @@ public abstract class BaseDataDefinitionResourceTestCase {
 		String contentType =
 			testGetSiteDataDefinitionByContentTypeContentTypePage_getContentType();
 
+		Page<DataDefinition> dataDefinitionPage =
+			dataDefinitionResource.
+				getSiteDataDefinitionByContentTypeContentTypePage(
+					siteId, contentType, null, null, null);
+
+		int totalCount = GetterUtil.getInteger(
+			dataDefinitionPage.getTotalCount());
+
 		DataDefinition dataDefinition1 =
 			testGetSiteDataDefinitionByContentTypeContentTypePage_addDataDefinition(
 				siteId, contentType, randomDataDefinition());
@@ -908,38 +1076,90 @@ public abstract class BaseDataDefinitionResourceTestCase {
 			testGetSiteDataDefinitionByContentTypeContentTypePage_addDataDefinition(
 				siteId, contentType, randomDataDefinition());
 
-		Page<DataDefinition> page1 =
-			dataDefinitionResource.
-				getSiteDataDefinitionByContentTypeContentTypePage(
-					siteId, contentType, null, Pagination.of(1, 2), null);
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<DataDefinition> dataDefinitions1 =
-			(List<DataDefinition>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			dataDefinitions1.toString(), 2, dataDefinitions1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<DataDefinition> page1 =
+				dataDefinitionResource.
+					getSiteDataDefinitionByContentTypeContentTypePage(
+						siteId, contentType, null,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+							pageSizeLimit),
+						null);
 
-		Page<DataDefinition> page2 =
-			dataDefinitionResource.
-				getSiteDataDefinitionByContentTypeContentTypePage(
-					siteId, contentType, null, Pagination.of(2, 2), null);
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(3, page2.getTotalCount());
+			assertContains(
+				dataDefinition1, (List<DataDefinition>)page1.getItems());
 
-		List<DataDefinition> dataDefinitions2 =
-			(List<DataDefinition>)page2.getItems();
+			Page<DataDefinition> page2 =
+				dataDefinitionResource.
+					getSiteDataDefinitionByContentTypeContentTypePage(
+						siteId, contentType, null,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+							pageSizeLimit),
+						null);
 
-		Assert.assertEquals(
-			dataDefinitions2.toString(), 1, dataDefinitions2.size());
+			assertContains(
+				dataDefinition2, (List<DataDefinition>)page2.getItems());
 
-		Page<DataDefinition> page3 =
-			dataDefinitionResource.
-				getSiteDataDefinitionByContentTypeContentTypePage(
-					siteId, contentType, null, Pagination.of(1, 3), null);
+			Page<DataDefinition> page3 =
+				dataDefinitionResource.
+					getSiteDataDefinitionByContentTypeContentTypePage(
+						siteId, contentType, null,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+							pageSizeLimit),
+						null);
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(dataDefinition1, dataDefinition2, dataDefinition3),
-			(List<DataDefinition>)page3.getItems());
+			assertContains(
+				dataDefinition3, (List<DataDefinition>)page3.getItems());
+		}
+		else {
+			Page<DataDefinition> page1 =
+				dataDefinitionResource.
+					getSiteDataDefinitionByContentTypeContentTypePage(
+						siteId, contentType, null,
+						Pagination.of(1, totalCount + 2), null);
+
+			List<DataDefinition> dataDefinitions1 =
+				(List<DataDefinition>)page1.getItems();
+
+			Assert.assertEquals(
+				dataDefinitions1.toString(), totalCount + 2,
+				dataDefinitions1.size());
+
+			Page<DataDefinition> page2 =
+				dataDefinitionResource.
+					getSiteDataDefinitionByContentTypeContentTypePage(
+						siteId, contentType, null,
+						Pagination.of(2, totalCount + 2), null);
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<DataDefinition> dataDefinitions2 =
+				(List<DataDefinition>)page2.getItems();
+
+			Assert.assertEquals(
+				dataDefinitions2.toString(), 1, dataDefinitions2.size());
+
+			Page<DataDefinition> page3 =
+				dataDefinitionResource.
+					getSiteDataDefinitionByContentTypeContentTypePage(
+						siteId, contentType, null,
+						Pagination.of(1, (int)totalCount + 3), null);
+
+			assertContains(
+				dataDefinition1, (List<DataDefinition>)page3.getItems());
+			assertContains(
+				dataDefinition2, (List<DataDefinition>)page3.getItems());
+			assertContains(
+				dataDefinition3, (List<DataDefinition>)page3.getItems());
+		}
 	}
 
 	@Test
@@ -951,7 +1171,7 @@ public abstract class BaseDataDefinitionResourceTestCase {
 			(entityField, dataDefinition1, dataDefinition2) -> {
 				BeanTestUtil.setProperty(
 					dataDefinition1, entityField.getName(),
-					DateUtils.addMinutes(new Date(), -2));
+					new Date(System.currentTimeMillis() - (2 * Time.MINUTE)));
 			});
 	}
 
@@ -1071,26 +1291,35 @@ public abstract class BaseDataDefinitionResourceTestCase {
 			testGetSiteDataDefinitionByContentTypeContentTypePage_addDataDefinition(
 				siteId, contentType, dataDefinition2);
 
+		Page<DataDefinition> page =
+			dataDefinitionResource.
+				getSiteDataDefinitionByContentTypeContentTypePage(
+					siteId, contentType, null, null, null);
+
 		for (EntityField entityField : entityFields) {
 			Page<DataDefinition> ascPage =
 				dataDefinitionResource.
 					getSiteDataDefinitionByContentTypeContentTypePage(
-						siteId, contentType, null, Pagination.of(1, 2),
+						siteId, contentType, null,
+						Pagination.of(1, (int)page.getTotalCount() + 1),
 						entityField.getName() + ":asc");
 
-			assertEquals(
-				Arrays.asList(dataDefinition1, dataDefinition2),
-				(List<DataDefinition>)ascPage.getItems());
+			assertContains(
+				dataDefinition1, (List<DataDefinition>)ascPage.getItems());
+			assertContains(
+				dataDefinition2, (List<DataDefinition>)ascPage.getItems());
 
 			Page<DataDefinition> descPage =
 				dataDefinitionResource.
 					getSiteDataDefinitionByContentTypeContentTypePage(
-						siteId, contentType, null, Pagination.of(1, 2),
+						siteId, contentType, null,
+						Pagination.of(1, (int)page.getTotalCount() + 1),
 						entityField.getName() + ":desc");
 
-			assertEquals(
-				Arrays.asList(dataDefinition2, dataDefinition1),
-				(List<DataDefinition>)descPage.getItems());
+			assertContains(
+				dataDefinition2, (List<DataDefinition>)descPage.getItems());
+			assertContains(
+				dataDefinition1, (List<DataDefinition>)descPage.getItems());
 		}
 	}
 
@@ -1195,6 +1424,8 @@ public abstract class BaseDataDefinitionResourceTestCase {
 		DataDefinition dataDefinition =
 			testGraphQLGetSiteDataDefinitionByContentTypeByDataDefinitionKey_addDataDefinition();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				dataDefinition,
@@ -1228,6 +1459,45 @@ public abstract class BaseDataDefinitionResourceTestCase {
 								getGraphQLFields())),
 						"JSONObject/data",
 						"Object/dataDefinitionByContentTypeByDataDefinitionKey"))));
+
+		// Using the namespace dataEngine_v2_0
+
+		Assert.assertTrue(
+			equals(
+				dataDefinition,
+				DataDefinitionSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"dataEngine_v2_0",
+								new GraphQLField(
+									"dataDefinitionByContentTypeByDataDefinitionKey",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"siteKey",
+												"\"" +
+													testGraphQLGetSiteDataDefinitionByContentTypeByDataDefinitionKey_getSiteId(
+														dataDefinition) + "\"");
+
+											put(
+												"contentType",
+												"\"" +
+													dataDefinition.
+														getContentType() +
+															"\"");
+
+											put(
+												"dataDefinitionKey",
+												"\"" +
+													dataDefinition.
+														getDataDefinitionKey() +
+															"\"");
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data", "JSONObject/dataEngine_v2_0",
+						"Object/dataDefinitionByContentTypeByDataDefinitionKey"))));
 	}
 
 	protected Long
@@ -1247,6 +1517,8 @@ public abstract class BaseDataDefinitionResourceTestCase {
 		String irrelevantDataDefinitionKey =
 			"\"" + RandomTestUtil.randomString() + "\"";
 
+		// No namespace
+
 		Assert.assertEquals(
 			"Not Found",
 			JSONUtil.getValueAsString(
@@ -1265,6 +1537,32 @@ public abstract class BaseDataDefinitionResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace dataEngine_v2_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"dataEngine_v2_0",
+						new GraphQLField(
+							"dataDefinitionByContentTypeByDataDefinitionKey",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"siteKey",
+										"\"" + irrelevantGroup.getGroupId() +
+											"\"");
+									put("contentType", irrelevantContentType);
+									put(
+										"dataDefinitionKey",
+										irrelevantDataDefinitionKey);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -1802,6 +2100,10 @@ public abstract class BaseDataDefinitionResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -1978,22 +2280,20 @@ public abstract class BaseDataDefinitionResourceTestCase {
 
 		if (entityFieldName.equals("dateCreated")) {
 			if (operator.equals("between")) {
+				Date date = dataDefinition.getDateCreated();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							dataDefinition.getDateCreated(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							dataDefinition.getDateCreated(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -2011,22 +2311,20 @@ public abstract class BaseDataDefinitionResourceTestCase {
 
 		if (entityFieldName.equals("dateModified")) {
 			if (operator.equals("between")) {
+				Date date = dataDefinition.getDateModified();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							dataDefinition.getDateModified(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							dataDefinition.getDateModified(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -2238,9 +2536,9 @@ public abstract class BaseDataDefinitionResourceTestCase {
 	}
 
 	protected DataDefinitionResource dataDefinitionResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

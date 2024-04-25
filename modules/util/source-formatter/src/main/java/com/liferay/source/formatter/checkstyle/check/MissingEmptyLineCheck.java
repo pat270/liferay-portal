@@ -73,7 +73,8 @@ public class MissingEmptyLineCheck extends BaseCheck {
 		DetailAST parentDetailAST = detailAST.getParent();
 
 		_checkMissingEmptyLineAfterReferencingVariable(
-			parentDetailAST, variableName, getEndLineNumber(detailAST));
+			parentDetailAST, variableName, detailAST,
+			getEndLineNumber(detailAST));
 		_checkMissingEmptyLineBetweenAssigningAndUsingVariable(
 			parentDetailAST, variableName, getEndLineNumber(detailAST));
 	}
@@ -122,7 +123,7 @@ public class MissingEmptyLineCheck extends BaseCheck {
 			}
 		}
 
-		if (_containsVariableName(nextSiblingDetailAST, variableName)) {
+		if (containsVariableName(nextSiblingDetailAST, variableName, null)) {
 			log(
 				endLineNumber, _MSG_MISSING_EMPTY_LINE_LINE_NUMBER, "after",
 				endLineNumber);
@@ -130,7 +131,8 @@ public class MissingEmptyLineCheck extends BaseCheck {
 	}
 
 	private void _checkMissingEmptyLineAfterReferencingVariable(
-		DetailAST detailAST, String variableName, int endLineNumber) {
+		DetailAST detailAST, String variableName, DetailAST assignDetailAST,
+		int endLineNumber) {
 
 		String lastAssignedVariableName = null;
 		DetailAST previousDetailAST = null;
@@ -155,7 +157,9 @@ public class MissingEmptyLineCheck extends BaseCheck {
 				return;
 			}
 
-			if (!_containsVariableName(nextSiblingDetailAST, variableName)) {
+			if (!containsVariableName(
+					nextSiblingDetailAST, variableName, assignDetailAST)) {
+
 				if (!referenced) {
 					return;
 				}
@@ -167,10 +171,12 @@ public class MissingEmptyLineCheck extends BaseCheck {
 					return;
 				}
 
-				if (!_containsVariableName(
-						previousDetailAST, lastAssignedVariableName) ||
-					!_containsVariableName(
-						nextSiblingDetailAST, lastAssignedVariableName)) {
+				if (!containsVariableName(
+						previousDetailAST, lastAssignedVariableName,
+						assignDetailAST) ||
+					!containsVariableName(
+						nextSiblingDetailAST, lastAssignedVariableName,
+						assignDetailAST)) {
 
 					log(
 						nextExpressionStartLineNumber,
@@ -363,7 +369,9 @@ public class MissingEmptyLineCheck extends BaseCheck {
 			}
 		}
 
-		if (_containsVariableName(previousSiblingDetailAST, variableName)) {
+		if (containsVariableName(
+				previousSiblingDetailAST, variableName, null)) {
+
 			log(
 				startLineNumber, _MSG_MISSING_EMPTY_LINE_LINE_NUMBER, "before",
 				startLineNumber);
@@ -564,15 +572,6 @@ public class MissingEmptyLineCheck extends BaseCheck {
 	}
 
 	private boolean _containsVariableName(
-		DetailAST detailAST, String variableName) {
-
-		List<DetailAST> identDetailASTList = getAllChildTokens(
-			detailAST, true, TokenTypes.IDENT);
-
-		return _containsVariableName(identDetailASTList, variableName);
-	}
-
-	private boolean _containsVariableName(
 		List<DetailAST> identDetailASTList, DetailAST assignDetailAST) {
 
 		String variableName = _getVariableName(assignDetailAST);
@@ -581,25 +580,8 @@ public class MissingEmptyLineCheck extends BaseCheck {
 			return false;
 		}
 
-		return _containsVariableName(identDetailASTList, variableName);
-	}
-
-	private boolean _containsVariableName(
-		List<DetailAST> identDetailASTList, String variableName) {
-
-		if (variableName == null) {
-			return false;
-		}
-
-		for (DetailAST identDetailAST : identDetailASTList) {
-			if (!isMethodNameDetailAST(identDetailAST) &&
-				variableName.equals(identDetailAST.getText())) {
-
-				return true;
-			}
-		}
-
-		return false;
+		return containsVariableName(
+			identDetailASTList, variableName, assignDetailAST);
 	}
 
 	private List<DetailAST> _getAdjacentAssignDetailASTList(

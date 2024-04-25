@@ -5,6 +5,7 @@
 
 import {fetch} from 'frontend-js-web';
 
+import getValueFromItem from './getValueFromItem';
 import createOdataFilter from './odata';
 
 export function getData(apiURL, query) {
@@ -25,15 +26,6 @@ export function getSchemaString(object, path) {
 	}
 	else {
 		return path.reduce((acc, path) => acc[path], object);
-	}
-}
-
-export function liferayNavigate(url) {
-	if (Liferay.SPA) {
-		Liferay.SPA.app.navigate(url);
-	}
-	else {
-		window.location.href = url;
 	}
 }
 
@@ -60,78 +52,6 @@ export function isValuesArrayChanged(prevValue = [], newValue = []) {
 	return changed;
 }
 
-export function getValueFromItem(item, fieldName) {
-	if (!fieldName) {
-		return null;
-	}
-	if (Array.isArray(fieldName)) {
-		return fieldName.reduce((acc, key) => {
-			if (key === 'LANG') {
-				return (
-					acc[Liferay.ThemeDisplay.getLanguageId()] ||
-					acc[
-						Liferay.ThemeDisplay.getDefaultLanguageId() ||
-							acc[Liferay.ThemeDisplay.getBCP47LanguageId()]
-					]
-				);
-			}
-
-			return acc[key];
-		}, item);
-	}
-
-	return item[fieldName];
-}
-
-export function getValueDetailsFromItem(item, fieldName) {
-	if (!fieldName) {
-		return null;
-	}
-
-	let rootPropertyName = fieldName;
-	const valuePath = [];
-	let navigatedValue = item;
-
-	if (Array.isArray(fieldName)) {
-		rootPropertyName = fieldName[0];
-
-		fieldName.forEach((property) => {
-			let formattedProperty = property;
-
-			if (property === 'LANG') {
-				const languageId = Liferay.ThemeDisplay.getLanguageId();
-				const BCP47LanguageId = Liferay.ThemeDisplay.getBCP47LanguageId();
-
-				if (navigatedValue[languageId]) {
-					formattedProperty = languageId;
-				}
-				else if (navigatedValue[BCP47LanguageId]) {
-					formattedProperty = BCP47LanguageId;
-				}
-				else {
-					formattedProperty = Liferay.ThemeDisplay.getDefaultLanguageId();
-				}
-			}
-
-			valuePath.push(formattedProperty);
-
-			if (navigatedValue) {
-				navigatedValue = navigatedValue[formattedProperty];
-			}
-		});
-	}
-	else {
-		valuePath.push(fieldName);
-		navigatedValue = navigatedValue[fieldName];
-	}
-
-	return {
-		rootPropertyName,
-		value: navigatedValue,
-		valuePath,
-	};
-}
-
 export function formatItemChanges(itemChanges) {
 	const formattedChanges = Object.values(itemChanges).reduce(
 		(changes, {value, valuePath}) => {
@@ -148,30 +68,6 @@ export function formatItemChanges(itemChanges) {
 	);
 
 	return formattedChanges;
-}
-
-export function formatActionURL(url, item) {
-	if (!url) {
-		return '';
-	}
-
-	const replacedURL = url.replace(new RegExp('{(.*?)}', 'mg'), (matched) =>
-		getValueFromItem(
-			item,
-			matched.substring(1, matched.length - 1).split('.')
-		)
-	);
-
-	return replacedURL.replace(new RegExp('(%7B.*?%7D)', 'mg'), (matched) =>
-		getValueFromItem(
-			item,
-			matched.substring(3, matched.length - 3).split('.')
-		)
-	);
-}
-
-export function getRandomId() {
-	return Math.random().toString(36).substr(2, 9);
 }
 
 export function createSortingString(values) {
@@ -215,7 +111,7 @@ export async function loadData(
 	searchParam,
 	delta,
 	page = 1,
-	sorting = []
+	sorts = []
 ) {
 	const fullUrl = apiURL.startsWith('/')
 		? themeDisplay.getPortalURL() + themeDisplay.getPathContext() + apiURL
@@ -249,10 +145,10 @@ export async function loadData(
 		url.searchParams.append('search', searchParam);
 	}
 
-	if (sorting.length) {
+	if (sorts.length) {
 		url.searchParams.append(
 			'sort',
-			sorting.map((item) => `${item.key}:${item.direction}`).join(',')
+			sorts.map((item) => `${item.key}:${item.direction}`).join(',')
 		);
 	}
 

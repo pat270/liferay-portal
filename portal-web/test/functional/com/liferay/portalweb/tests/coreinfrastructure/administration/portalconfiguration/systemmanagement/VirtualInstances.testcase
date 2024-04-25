@@ -28,6 +28,7 @@ definition {
 	test CanAddAndDeletePortalInstance {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "sequential";
 
 		ApplicationsMenu.gotoPortlet(
 			category = "System",
@@ -48,12 +49,10 @@ definition {
 	@priority = 4
 	test CanConfigureEmailSettingsInVirtualInstance {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "sequential";
 
 		task ("Given a new Virtual Instance is created") {
-			ApplicationsMenu.gotoPortlet(
-				category = "System",
-				panel = "Control Panel",
-				portlet = "Virtual Instances");
+			PortalInstances.openVirtualInstancesAdmin();
 
 			PortalInstances.addCP(
 				mailDomain = "www.able.com",
@@ -92,6 +91,7 @@ definition {
 	test NonAdminUserCanCreateUserInUserLimitedVirtualInstance {
 		property test.assert.warning.exceptions = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "sequential";
 
 		task ("Given a user limited virtual instance") {
 			PortalInstances.openVirtualInstancesAdmin();
@@ -159,11 +159,9 @@ definition {
 	@priority = 4
 	test PermissionCheckPortalInstances {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "sequential";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "System",
-			panel = "Control Panel",
-			portlet = "Virtual Instances");
+		PortalInstances.openVirtualInstancesAdmin();
 
 		PortalInstances.addCP(
 			mailDomain = "www.able.com",
@@ -216,6 +214,7 @@ definition {
 	@priority = 5
 	test ViewDeactivatedPortalInstance {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
@@ -231,10 +230,7 @@ definition {
 
 		SystemSettings.saveConfiguration();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "System",
-			panel = "Control Panel",
-			portlet = "Virtual Instances");
+		PortalInstances.openVirtualInstancesAdmin();
 
 		PortalInstances.addCP(
 			mailDomain = "www.able.com",
@@ -314,10 +310,7 @@ definition {
 
 		User.loginPG();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "System",
-			panel = "Control Panel",
-			portlet = "Virtual Instances");
+		PortalInstances.openVirtualInstancesAdmin();
 
 		PortalInstances.deactivatePortalInstance(virtualHost = "www.able.com");
 
@@ -332,6 +325,7 @@ definition {
 		property custom.properties = "virtual.hosts.valid.hosts=localhost,127.0.0.1,www.able.com,www.baker.com,www.charlie.com";
 		property release.feature.flags.disable.DISABLE_PRIVATE_LAYOUTS = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "Instance Configuration",
@@ -386,6 +380,7 @@ definition {
 	@priority = 4
 	test ViewVirtualInstanceInheritsSystemSettings {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "Users",
@@ -406,12 +401,7 @@ definition {
 
 		PortalSettings.editConfigurationUsersPersonalMenuShowInControlMenu(toggleSwitchLabel = "Show in Control Menu");
 
-		Navigator.openURL();
-
-		ApplicationsMenu.gotoPortlet(
-			category = "System",
-			panel = "Control Panel",
-			portlet = "Virtual Instances");
+		PortalInstances.openVirtualInstancesAdmin();
 
 		PortalInstances.addCP(
 			mailDomain = "www.able.com",

@@ -26,13 +26,12 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
@@ -198,7 +197,7 @@ public abstract class BaseTransitionResourceTestCase {
 			transitionResource.getWorkflowInstanceNextTransitionsPage(
 				workflowInstanceId, Pagination.of(1, 10));
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if (irrelevantWorkflowInstanceId != null) {
 			Transition irrelevantTransition =
@@ -206,13 +205,13 @@ public abstract class BaseTransitionResourceTestCase {
 					irrelevantWorkflowInstanceId, randomIrrelevantTransition());
 
 			page = transitionResource.getWorkflowInstanceNextTransitionsPage(
-				irrelevantWorkflowInstanceId, Pagination.of(1, 2));
+				irrelevantWorkflowInstanceId,
+				Pagination.of(1, (int)totalCount + 1));
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantTransition),
-				(List<Transition>)page.getItems());
+			assertContains(
+				irrelevantTransition, (List<Transition>)page.getItems());
 			assertValid(
 				page,
 				testGetWorkflowInstanceNextTransitionsPage_getExpectedActions(
@@ -230,11 +229,10 @@ public abstract class BaseTransitionResourceTestCase {
 		page = transitionResource.getWorkflowInstanceNextTransitionsPage(
 			workflowInstanceId, Pagination.of(1, 10));
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(transition1, transition2),
-			(List<Transition>)page.getItems());
+		assertContains(transition1, (List<Transition>)page.getItems());
+		assertContains(transition2, (List<Transition>)page.getItems());
 		assertValid(
 			page,
 			testGetWorkflowInstanceNextTransitionsPage_getExpectedActions(
@@ -258,6 +256,12 @@ public abstract class BaseTransitionResourceTestCase {
 		Long workflowInstanceId =
 			testGetWorkflowInstanceNextTransitionsPage_getWorkflowInstanceId();
 
+		Page<Transition> transitionPage =
+			transitionResource.getWorkflowInstanceNextTransitionsPage(
+				workflowInstanceId, null);
+
+		int totalCount = GetterUtil.getInteger(transitionPage.getTotalCount());
+
 		Transition transition1 =
 			testGetWorkflowInstanceNextTransitionsPage_addTransition(
 				workflowInstanceId, randomTransition());
@@ -270,31 +274,69 @@ public abstract class BaseTransitionResourceTestCase {
 			testGetWorkflowInstanceNextTransitionsPage_addTransition(
 				workflowInstanceId, randomTransition());
 
-		Page<Transition> page1 =
-			transitionResource.getWorkflowInstanceNextTransitionsPage(
-				workflowInstanceId, Pagination.of(1, 2));
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<Transition> transitions1 = (List<Transition>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(transitions1.toString(), 2, transitions1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<Transition> page1 =
+				transitionResource.getWorkflowInstanceNextTransitionsPage(
+					workflowInstanceId,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+						pageSizeLimit));
 
-		Page<Transition> page2 =
-			transitionResource.getWorkflowInstanceNextTransitionsPage(
-				workflowInstanceId, Pagination.of(2, 2));
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(3, page2.getTotalCount());
+			assertContains(transition1, (List<Transition>)page1.getItems());
 
-		List<Transition> transitions2 = (List<Transition>)page2.getItems();
+			Page<Transition> page2 =
+				transitionResource.getWorkflowInstanceNextTransitionsPage(
+					workflowInstanceId,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+						pageSizeLimit));
 
-		Assert.assertEquals(transitions2.toString(), 1, transitions2.size());
+			assertContains(transition2, (List<Transition>)page2.getItems());
 
-		Page<Transition> page3 =
-			transitionResource.getWorkflowInstanceNextTransitionsPage(
-				workflowInstanceId, Pagination.of(1, 3));
+			Page<Transition> page3 =
+				transitionResource.getWorkflowInstanceNextTransitionsPage(
+					workflowInstanceId,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+						pageSizeLimit));
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(transition1, transition2, transition3),
-			(List<Transition>)page3.getItems());
+			assertContains(transition3, (List<Transition>)page3.getItems());
+		}
+		else {
+			Page<Transition> page1 =
+				transitionResource.getWorkflowInstanceNextTransitionsPage(
+					workflowInstanceId, Pagination.of(1, totalCount + 2));
+
+			List<Transition> transitions1 = (List<Transition>)page1.getItems();
+
+			Assert.assertEquals(
+				transitions1.toString(), totalCount + 2, transitions1.size());
+
+			Page<Transition> page2 =
+				transitionResource.getWorkflowInstanceNextTransitionsPage(
+					workflowInstanceId, Pagination.of(2, totalCount + 2));
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<Transition> transitions2 = (List<Transition>)page2.getItems();
+
+			Assert.assertEquals(
+				transitions2.toString(), 1, transitions2.size());
+
+			Page<Transition> page3 =
+				transitionResource.getWorkflowInstanceNextTransitionsPage(
+					workflowInstanceId, Pagination.of(1, (int)totalCount + 3));
+
+			assertContains(transition1, (List<Transition>)page3.getItems());
+			assertContains(transition2, (List<Transition>)page3.getItems());
+			assertContains(transition3, (List<Transition>)page3.getItems());
+		}
 	}
 
 	protected Transition
@@ -332,7 +374,7 @@ public abstract class BaseTransitionResourceTestCase {
 			transitionResource.getWorkflowTaskNextTransitionsPage(
 				workflowTaskId, Pagination.of(1, 10));
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if (irrelevantWorkflowTaskId != null) {
 			Transition irrelevantTransition =
@@ -340,13 +382,13 @@ public abstract class BaseTransitionResourceTestCase {
 					irrelevantWorkflowTaskId, randomIrrelevantTransition());
 
 			page = transitionResource.getWorkflowTaskNextTransitionsPage(
-				irrelevantWorkflowTaskId, Pagination.of(1, 2));
+				irrelevantWorkflowTaskId,
+				Pagination.of(1, (int)totalCount + 1));
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantTransition),
-				(List<Transition>)page.getItems());
+			assertContains(
+				irrelevantTransition, (List<Transition>)page.getItems());
 			assertValid(
 				page,
 				testGetWorkflowTaskNextTransitionsPage_getExpectedActions(
@@ -364,11 +406,10 @@ public abstract class BaseTransitionResourceTestCase {
 		page = transitionResource.getWorkflowTaskNextTransitionsPage(
 			workflowTaskId, Pagination.of(1, 10));
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(transition1, transition2),
-			(List<Transition>)page.getItems());
+		assertContains(transition1, (List<Transition>)page.getItems());
+		assertContains(transition2, (List<Transition>)page.getItems());
 		assertValid(
 			page,
 			testGetWorkflowTaskNextTransitionsPage_getExpectedActions(
@@ -392,6 +433,12 @@ public abstract class BaseTransitionResourceTestCase {
 		Long workflowTaskId =
 			testGetWorkflowTaskNextTransitionsPage_getWorkflowTaskId();
 
+		Page<Transition> transitionPage =
+			transitionResource.getWorkflowTaskNextTransitionsPage(
+				workflowTaskId, null);
+
+		int totalCount = GetterUtil.getInteger(transitionPage.getTotalCount());
+
 		Transition transition1 =
 			testGetWorkflowTaskNextTransitionsPage_addTransition(
 				workflowTaskId, randomTransition());
@@ -404,31 +451,69 @@ public abstract class BaseTransitionResourceTestCase {
 			testGetWorkflowTaskNextTransitionsPage_addTransition(
 				workflowTaskId, randomTransition());
 
-		Page<Transition> page1 =
-			transitionResource.getWorkflowTaskNextTransitionsPage(
-				workflowTaskId, Pagination.of(1, 2));
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<Transition> transitions1 = (List<Transition>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(transitions1.toString(), 2, transitions1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<Transition> page1 =
+				transitionResource.getWorkflowTaskNextTransitionsPage(
+					workflowTaskId,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+						pageSizeLimit));
 
-		Page<Transition> page2 =
-			transitionResource.getWorkflowTaskNextTransitionsPage(
-				workflowTaskId, Pagination.of(2, 2));
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(3, page2.getTotalCount());
+			assertContains(transition1, (List<Transition>)page1.getItems());
 
-		List<Transition> transitions2 = (List<Transition>)page2.getItems();
+			Page<Transition> page2 =
+				transitionResource.getWorkflowTaskNextTransitionsPage(
+					workflowTaskId,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+						pageSizeLimit));
 
-		Assert.assertEquals(transitions2.toString(), 1, transitions2.size());
+			assertContains(transition2, (List<Transition>)page2.getItems());
 
-		Page<Transition> page3 =
-			transitionResource.getWorkflowTaskNextTransitionsPage(
-				workflowTaskId, Pagination.of(1, 3));
+			Page<Transition> page3 =
+				transitionResource.getWorkflowTaskNextTransitionsPage(
+					workflowTaskId,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+						pageSizeLimit));
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(transition1, transition2, transition3),
-			(List<Transition>)page3.getItems());
+			assertContains(transition3, (List<Transition>)page3.getItems());
+		}
+		else {
+			Page<Transition> page1 =
+				transitionResource.getWorkflowTaskNextTransitionsPage(
+					workflowTaskId, Pagination.of(1, totalCount + 2));
+
+			List<Transition> transitions1 = (List<Transition>)page1.getItems();
+
+			Assert.assertEquals(
+				transitions1.toString(), totalCount + 2, transitions1.size());
+
+			Page<Transition> page2 =
+				transitionResource.getWorkflowTaskNextTransitionsPage(
+					workflowTaskId, Pagination.of(2, totalCount + 2));
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<Transition> transitions2 = (List<Transition>)page2.getItems();
+
+			Assert.assertEquals(
+				transitions2.toString(), 1, transitions2.size());
+
+			Page<Transition> page3 =
+				transitionResource.getWorkflowTaskNextTransitionsPage(
+					workflowTaskId, Pagination.of(1, (int)totalCount + 3));
+
+			assertContains(transition1, (List<Transition>)page3.getItems());
+			assertContains(transition2, (List<Transition>)page3.getItems());
+			assertContains(transition3, (List<Transition>)page3.getItems());
+		}
 	}
 
 	protected Transition testGetWorkflowTaskNextTransitionsPage_addTransition(
@@ -754,6 +839,10 @@ public abstract class BaseTransitionResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -1069,9 +1158,9 @@ public abstract class BaseTransitionResourceTestCase {
 	}
 
 	protected TransitionResource transitionResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

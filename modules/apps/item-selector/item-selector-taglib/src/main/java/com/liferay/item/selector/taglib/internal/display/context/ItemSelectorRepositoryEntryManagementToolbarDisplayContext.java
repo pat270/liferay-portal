@@ -18,13 +18,14 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemListBuilder
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItemList;
 import com.liferay.item.selector.taglib.servlet.taglib.RepositoryEntryBrowserTag;
 import com.liferay.item.selector.taglib.servlet.taglib.util.RepositoryEntryBrowserTagUtil;
-import com.liferay.osgi.util.service.Snapshot;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.PortalPreferences;
@@ -33,7 +34,9 @@ import com.liferay.portal.kernel.portlet.PortletURLUtil;
 import com.liferay.portal.kernel.portlet.toolbar.contributor.PortletToolbarContributor;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.repository.model.Folder;
+import com.liferay.portal.kernel.servlet.taglib.ui.JavaScriptMenuItem;
 import com.liferay.portal.kernel.servlet.taglib.ui.Menu;
+import com.liferay.portal.kernel.servlet.taglib.ui.MenuItem;
 import com.liferay.portal.kernel.servlet.taglib.ui.URLMenuItem;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -116,12 +119,31 @@ public class ItemSelectorRepositoryEntryManagementToolbarDisplayContext {
 		}
 
 		for (Menu menu : menus) {
-			List<URLMenuItem> urlMenuItems =
-				(List<URLMenuItem>)(List<?>)menu.getMenuItems();
+			List<MenuItem> menuItems = menu.getMenuItems();
 
-			for (URLMenuItem urlMenuItem : urlMenuItems) {
-				if (allowedCreationMenuUIItemKeys.contains(
-						urlMenuItem.getKey())) {
+			for (MenuItem menuItem : menuItems) {
+				if (!allowedCreationMenuUIItemKeys.contains(
+						menuItem.getKey())) {
+
+					continue;
+				}
+
+				if (menuItem instanceof JavaScriptMenuItem) {
+					JavaScriptMenuItem javaScriptMenuItem =
+						(JavaScriptMenuItem)menuItem;
+
+					creationMenu.addDropdownItem(
+						dropdownItem -> {
+							dropdownItem.setData(javaScriptMenuItem.getData());
+							dropdownItem.setIcon(javaScriptMenuItem.getIcon());
+							dropdownItem.setLabel(
+								javaScriptMenuItem.getLabel());
+							dropdownItem.setSeparator(
+								javaScriptMenuItem.hasSeparator());
+						});
+				}
+				else if (menuItem instanceof URLMenuItem) {
+					URLMenuItem urlMenuItem = (URLMenuItem)menuItem;
 
 					creationMenu.addDropdownItem(
 						dropdownItem -> {
@@ -190,12 +212,6 @@ public class ItemSelectorRepositoryEntryManagementToolbarDisplayContext {
 					LanguageUtil.get(
 						_httpServletRequest, "filter-by-location"));
 			}
-		).addGroup(
-			dropdownGroupItem -> {
-				dropdownGroupItem.setDropdownItems(_getOrderByDropdownItems());
-				dropdownGroupItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "order-by"));
-			}
 		).build();
 	}
 
@@ -226,6 +242,40 @@ public class ItemSelectorRepositoryEntryManagementToolbarDisplayContext {
 						_getScopeLabel(scope)));
 			}
 		).build();
+	}
+
+	public List<DropdownItem> getOrderByDropdownItems() {
+		return new DropdownItemList() {
+			{
+				Map<String, String> orderColumnsMap = HashMapBuilder.put(
+					"modifiedDate", "modified-date"
+				).put(
+					"size", "size"
+				).put(
+					"title", "title"
+				).build();
+
+				for (Map.Entry<String, String> orderByColEntry :
+						orderColumnsMap.entrySet()) {
+
+					add(
+						dropdownItem -> {
+							String orderByCol = orderByColEntry.getKey();
+
+							dropdownItem.setActive(
+								orderByCol.equals(_getOrderByCol()));
+							dropdownItem.setHref(
+								getCurrentSortingURL(), "orderByCol",
+								orderByCol);
+
+							dropdownItem.setLabel(
+								LanguageUtil.get(
+									_httpServletRequest,
+									orderByColEntry.getValue()));
+						});
+				}
+			}
+		};
 	}
 
 	public String getOrderByType() {
@@ -303,6 +353,12 @@ public class ItemSelectorRepositoryEntryManagementToolbarDisplayContext {
 					"allowedCreationMenuUIItemKeys");
 
 		if (allowedCreationMenuUIItemKeys == null) {
+			if (FeatureFlagManagerUtil.isEnabled("LPD-10793")) {
+				return SetUtil.fromArray(
+					DLUIItemKeys.ADD_FOLDER, DLUIItemKeys.AI_CREATOR,
+					DLUIItemKeys.UPLOAD);
+			}
+
 			return SetUtil.fromArray(
 				DLUIItemKeys.ADD_FOLDER, DLUIItemKeys.UPLOAD);
 		}
@@ -374,40 +430,6 @@ public class ItemSelectorRepositoryEntryManagementToolbarDisplayContext {
 			_httpServletRequest, _portalPreferences);
 
 		return _orderByCol;
-	}
-
-	private List<DropdownItem> _getOrderByDropdownItems() {
-		return new DropdownItemList() {
-			{
-				Map<String, String> orderColumnsMap = HashMapBuilder.put(
-					"modifiedDate", "modified-date"
-				).put(
-					"size", "size"
-				).put(
-					"title", "title"
-				).build();
-
-				for (Map.Entry<String, String> orderByColEntry :
-						orderColumnsMap.entrySet()) {
-
-					add(
-						dropdownItem -> {
-							String orderByCol = orderByColEntry.getKey();
-
-							dropdownItem.setActive(
-								orderByCol.equals(_getOrderByCol()));
-							dropdownItem.setHref(
-								getCurrentSortingURL(), "orderByCol",
-								orderByCol);
-
-							dropdownItem.setLabel(
-								LanguageUtil.get(
-									_httpServletRequest,
-									orderByColEntry.getValue()));
-						});
-				}
-			}
-		};
 	}
 
 	private PortletURL _getPortletURL() {

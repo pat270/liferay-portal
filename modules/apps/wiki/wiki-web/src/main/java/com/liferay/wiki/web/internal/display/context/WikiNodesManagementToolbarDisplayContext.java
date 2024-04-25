@@ -155,16 +155,6 @@ public class WikiNodesManagementToolbarDisplayContext {
 		return _displayStyle;
 	}
 
-	public List<DropdownItem> getFilterDropdownItems() {
-		return DropdownItemListBuilder.addGroup(
-			dropdownGroupItem -> {
-				dropdownGroupItem.setDropdownItems(_getOrderByDropdownItems());
-				dropdownGroupItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "order-by"));
-			}
-		).build();
-	}
-
 	public String getOrderByCol() {
 		if (Validator.isNotNull(_orderByCol)) {
 			return _orderByCol;
@@ -175,6 +165,36 @@ public class WikiNodesManagementToolbarDisplayContext {
 			"nodes-order-by-col", "lastPostDate");
 
 		return _orderByCol;
+	}
+
+	public List<DropdownItem> getOrderByDropdownItems() {
+		return new DropdownItemList() {
+			{
+				final Map<String, String> orderColumns = HashMapBuilder.put(
+					"lastPostDate", "last-post-date"
+				).put(
+					"name", "name"
+				).build();
+
+				for (Map.Entry<String, String> orderByColEntry :
+						orderColumns.entrySet()) {
+
+					String orderByCol = orderByColEntry.getKey();
+
+					add(
+						dropdownItem -> {
+							dropdownItem.setActive(
+								orderByCol.equals(getOrderByCol()));
+							dropdownItem.setHref(
+								getPortletURL(), "orderByCol", orderByCol);
+							dropdownItem.setLabel(
+								LanguageUtil.get(
+									_httpServletRequest,
+									orderByColEntry.getValue()));
+						});
+				}
+			}
+		};
 	}
 
 	public String getOrderByType() {
@@ -280,36 +300,6 @@ public class WikiNodesManagementToolbarDisplayContext {
 
 	public boolean isShowSearch() {
 		return false;
-	}
-
-	private List<DropdownItem> _getOrderByDropdownItems() {
-		return new DropdownItemList() {
-			{
-				final Map<String, String> orderColumns = HashMapBuilder.put(
-					"lastPostDate", "last-post-date"
-				).put(
-					"name", "name"
-				).build();
-
-				for (Map.Entry<String, String> orderByColEntry :
-						orderColumns.entrySet()) {
-
-					String orderByCol = orderByColEntry.getKey();
-
-					add(
-						dropdownItem -> {
-							dropdownItem.setActive(
-								orderByCol.equals(getOrderByCol()));
-							dropdownItem.setHref(
-								getPortletURL(), "orderByCol", orderByCol);
-							dropdownItem.setLabel(
-								LanguageUtil.get(
-									_httpServletRequest,
-									orderByColEntry.getValue()));
-						});
-				}
-			}
-		};
 	}
 
 	private boolean _isTrashEnabled() {

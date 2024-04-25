@@ -8,6 +8,7 @@ package com.liferay.journal.model;
 import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.model.AttachedModel;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.ExternalReferenceCodeModel;
 import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ResourcedModel;
 import com.liferay.portal.kernel.model.ShardedModel;
@@ -34,8 +35,8 @@ import org.osgi.annotation.versioning.ProviderType;
 @ProviderType
 public interface JournalArticleModel
 	extends AttachedModel, BaseModel<JournalArticle>, CTModel<JournalArticle>,
-			MVCCModel, ResourcedModel, ShardedModel, StagedGroupedModel,
-			TrashedModel, WorkflowedModel {
+			ExternalReferenceCodeModel, MVCCModel, ResourcedModel, ShardedModel,
+			StagedGroupedModel, TrashedModel, WorkflowedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -260,6 +261,7 @@ public interface JournalArticleModel
 	 * @return the external reference code of this journal article
 	 */
 	@AutoEscape
+	@Override
 	public String getExternalReferenceCode();
 
 	/**
@@ -267,6 +269,7 @@ public interface JournalArticleModel
 	 *
 	 * @param externalReferenceCode the external reference code of this journal article
 	 */
+	@Override
 	public void setExternalReferenceCode(String externalReferenceCode);
 
 	/**
@@ -540,6 +543,20 @@ public interface JournalArticleModel
 	 * @param smallImageId the small image ID of this journal article
 	 */
 	public void setSmallImageId(long smallImageId);
+
+	/**
+	 * Returns the small image source of this journal article.
+	 *
+	 * @return the small image source of this journal article
+	 */
+	public int getSmallImageSource();
+
+	/**
+	 * Sets the small image source of this journal article.
+	 *
+	 * @param smallImageSource the small image source of this journal article
+	 */
+	public void setSmallImageSource(int smallImageSource);
 
 	/**
 	 * Returns the small image url of this journal article.

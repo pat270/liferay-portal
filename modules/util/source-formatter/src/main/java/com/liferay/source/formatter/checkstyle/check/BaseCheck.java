@@ -42,7 +42,6 @@ import com.puppycrawl.tools.checkstyle.api.FullIdent;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
 import java.io.File;
-import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -99,6 +98,55 @@ public abstract class BaseCheck extends AbstractCheck {
 
 		DebugUtil.increaseProcessingTime(
 			clazz.getSimpleName(), endTime - startTime);
+	}
+
+	protected boolean containsVariableName(
+		DetailAST detailAST, String variableName, DetailAST assignDetailAST) {
+
+		List<DetailAST> identDetailASTList = getAllChildTokens(
+			detailAST, true, TokenTypes.IDENT);
+
+		return containsVariableName(
+			identDetailASTList, variableName, assignDetailAST);
+	}
+
+	protected boolean containsVariableName(
+		List<DetailAST> identDetailASTList, String variableName,
+		DetailAST assignDetailAST) {
+
+		if (variableName == null) {
+			return false;
+		}
+
+		for (DetailAST identDetailAST : identDetailASTList) {
+			if (!variableName.equals(identDetailAST.getText())) {
+				continue;
+			}
+
+			DetailAST parentDetailAST = identDetailAST.getParent();
+
+			if (parentDetailAST.getType() == TokenTypes.VARIABLE_DEF) {
+				return false;
+			}
+
+			if (assignDetailAST != null) {
+				DetailAST instanceInitDetailAST = getParentWithTokenType(
+					identDetailAST, TokenTypes.INSTANCE_INIT);
+
+				if ((instanceInitDetailAST != null) &&
+					(getEndLineNumber(assignDetailAST) < getStartLineNumber(
+						instanceInitDetailAST))) {
+
+					return false;
+				}
+			}
+
+			if (!isMethodNameDetailAST(identDetailAST)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	protected abstract void doVisitToken(DetailAST detailAST);
@@ -644,6 +692,40 @@ public abstract class BaseCheck extends AbstractCheck {
 		return startLineNumber;
 	}
 
+	protected DetailAST getTypeArgumentsDetailAST(DetailAST detailAST) {
+		DetailAST parentDetailAST = detailAST.getParent();
+
+		if ((parentDetailAST.getType() == TokenTypes.EXTENDS_CLAUSE) ||
+			(parentDetailAST.getType() == TokenTypes.IMPLEMENTS_CLAUSE)) {
+
+			if (detailAST.getType() == TokenTypes.DOT) {
+				return detailAST.findFirstToken(TokenTypes.TYPE_ARGUMENTS);
+			}
+
+			DetailAST nextSiblingDetailAST = detailAST.getNextSibling();
+
+			if ((nextSiblingDetailAST != null) &&
+				(nextSiblingDetailAST.getType() == TokenTypes.TYPE_ARGUMENTS)) {
+
+				return nextSiblingDetailAST;
+			}
+
+			return null;
+		}
+
+		DetailAST childDetailAST = detailAST.getFirstChild();
+
+		if (childDetailAST == null) {
+			return null;
+		}
+
+		if (childDetailAST.getType() == TokenTypes.DOT) {
+			return childDetailAST.findFirstToken(TokenTypes.TYPE_ARGUMENTS);
+		}
+
+		return detailAST.findFirstToken(TokenTypes.TYPE_ARGUMENTS);
+	}
+
 	protected String getTypeName(
 		DetailAST detailAST, boolean includeTypeArguments) {
 
@@ -994,8 +1076,18 @@ public abstract class BaseCheck extends AbstractCheck {
 		DetailAST dotDetailAST = methodCallDetailAST.findFirstToken(
 			TokenTypes.DOT);
 
-		if (dotDetailAST == null) {
-			return null;
+		while (true) {
+			if (dotDetailAST == null) {
+				return null;
+			}
+
+			DetailAST firstChildDetailAST = dotDetailAST.getFirstChild();
+
+			if (firstChildDetailAST.getType() != TokenTypes.METHOD_CALL) {
+				break;
+			}
+
+			dotDetailAST = firstChildDetailAST.findFirstToken(TokenTypes.DOT);
 		}
 
 		return getName(dotDetailAST);
@@ -1467,17 +1559,10 @@ public abstract class BaseCheck extends AbstractCheck {
 		File file = new File(fileName);
 
 		if (file.exists()) {
-			try {
-				List<String> curImportNames =
-					JSPImportsFormatter.getImportNames(FileUtil.read(file));
+			List<String> curImportNames = JSPImportsFormatter.getImportNames(
+				FileUtil.read(file));
 
-				importNames.addAll(curImportNames);
-			}
-			catch (IOException ioException) {
-				if (_log.isDebugEnabled()) {
-					_log.debug(ioException);
-				}
-			}
+			importNames.addAll(curImportNames);
 		}
 
 		int x = directoryName.lastIndexOf(CharPool.SLASH);

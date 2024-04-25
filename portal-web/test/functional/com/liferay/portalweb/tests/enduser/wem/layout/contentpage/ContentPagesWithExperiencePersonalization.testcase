@@ -4,7 +4,6 @@ definition {
 	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testcase.url = "http://localhost:8080";
 	property testray.main.component.name = "Content Pages";
 
 	static var randomSiteName = StringUtil.randomString(8);
@@ -12,6 +11,10 @@ definition {
 	var siteURLKey = StringUtil.toLowerCase(${randomSiteName});
 
 	setUp {
+		task ("Set up virtual instance") {
+			TestCase.setUpPortalInstance();
+		}
+
 		task ("Sign in") {
 			User.firstLoginPG();
 		}
@@ -172,7 +175,7 @@ definition {
 				menuItem = "Preview Draft",
 				pageName = "Test Page Name");
 
-			SelectWindow.selectPopUp(locator1 = "null");
+			SelectWindow.selectPopUp(value1 = "null");
 
 			ControlMenu.viewHeaderDraftTitle(headerTitle = "Test Page Name");
 
@@ -189,6 +192,38 @@ definition {
 					ariaLabel = "${action} Experience",
 					locator1 = "Button#ANY_WITH_ARIA_LABEL");
 			}
+		}
+	}
+
+	@description = "This is a test for LPS-110227. Categories Navigation portlet can be seen within the Section where it was placed and can be opened/configured."
+	@priority = 4
+	test ConfigureCategoryFilterInNewExperience {
+		task ("Given a user has a content page with Category Filter") {
+			ContentPagesNavigator.openEditContentPage(
+				pageName = "Test Page Name",
+				siteName = ${randomSiteName});
+
+			PageEditor.addWidget(portletName = "Asset Publisher");
+
+			PageEditor.addWidget(
+				portletName = "Category Filter",
+				targetFragmentName = "Asset Publisher");
+		}
+
+		task ("When the user adds a new experience") {
+			PageEditor.addExperience(
+				experienceName = "New Experience",
+				segmentName = "Anyone");
+		}
+
+		task ("Then the category filter configuration modal can be opened in new experience") {
+			Portlet.gotoPortletOptions(
+				portletName = "Category Filter",
+				portletOption = "Configuration");
+
+			AssertTextEquals(
+				locator1 = "Modal#HEADER",
+				value1 = "Category Filter - Configuration");
 		}
 	}
 
@@ -239,61 +274,6 @@ definition {
 			PageTemplatesAdmin.gotoPageTemplate(pageTemplateName = "Test Page Name - Page Template");
 
 			PageEditor.viewFragment(fragmentName = "Heading");
-		}
-	}
-
-	@description = "This is a test for LPS-143321. After clicking on discard draft the page continues to run."
-	@priority = 5
-	test DiscardContentPageDraft {
-		task ("Given a page designer has a content page with draft and experience") {
-			ContentPagesNavigator.openEditContentPage(
-				pageName = "Test Page Name",
-				siteName = ${randomSiteName});
-
-			PageEditor.addFragment(
-				collectionName = "Basic Components",
-				fragmentName = "Heading");
-
-			PageEditor.addFragment(
-				collectionName = "Basic Components",
-				fragmentName = "Paragraph",
-				targetFragmentName = "Heading");
-
-			PageEditor.publish();
-
-			PagesAdmin.openPagesAdmin(siteURLKey = ${randomSiteName});
-
-			PagesAdmin.gotoPageEllipsisMenuItem(
-				menuItem = "Edit",
-				pageName = "Test Page Name");
-
-			PageEditor.addExperience(
-				experienceName = "Experience Name",
-				segmentName = "Anyone");
-
-			PageEditor.clickBack();
-		}
-
-		task ("When the page designer discards draft via Pages admin") {
-			PagesAdmin.discardDraft(pageName = "Test Page Name");
-
-			Alert.viewSuccessMessage();
-		}
-
-		task ("Then the page editor should be rendered well") {
-			PagesAdmin.gotoPageEllipsisMenuItem(
-				menuItem = "Edit",
-				pageName = "Test Page Name");
-
-			ContentPages.viewFragmentText(
-				fragmentName = "heading",
-				id = "element-text",
-				text = "Heading Example");
-
-			PageEditor.viewFragmentEditableText(
-				editableText = "A paragraph is a self-contained unit of a discourse in writing dealing with a particular point or idea. Paragraphs are usually an expected part of formal writing, used to organize longer prose.",
-				fragmentName = "Paragraph",
-				id = "element-text");
 		}
 	}
 
@@ -533,7 +513,7 @@ definition {
 				menuItem = "Preview Draft",
 				pageName = "Test Page Name");
 
-			SelectWindow.selectPopUp(locator1 = "null");
+			SelectWindow.selectPopUp(value1 = "null");
 
 			ControlMenu.viewHeaderDraftTitle(headerTitle = "Test Page Name");
 
@@ -615,150 +595,56 @@ definition {
 		}
 	}
 
-	@description = "This is a test for LPS-128810. View collection items on content page when select segment."
+	@description = "This is a test for LPS-127109. Segments with both context and model criteria are correctly evaluated with guest users."
 	@priority = 4
-	test ViewCollectionItemsOnContentPageWhenSelectSegment {
-		property ci.retries.disabled = "true";
-
-		task ("Add a segment with a Regular Role field") {
-			var roleId = JSONPermissionSetter.setRoleId(roleTitle = "Owner");
-
-			JSONSegmentsentry.addSegment(
-				fieldName = "Regular Role",
+	test ViewContentFromCorrectExperienceAsGuestUser {
+		task ("Given create Segments with two properties") {
+			JSONSegmentsentry.addSegmentWithProperties(
+				contentTypeList = "Session,User",
+				filterStringList = "(languageId eq 'en_US'):(contains(emailAddress, 'liferay.com'))",
 				groupName = ${randomSiteName},
-				operator = "equals",
-				segmentName = "New Segment",
-				text = ${roleId});
-		}
+				segmentName = "Test Segment Name");
 
-		task ("Add a web content without tag") {
-			JSONWebcontent.addWebContent(
-				content = "Web Content Content",
-				groupName = ${randomSiteName},
-				title = "Web Content Title 1");
-		}
-
-		task ("Add a web content with tag") {
-			JSONWebcontent.addWebContent(
-				assetTagNames = "tag name",
-				content = "Web Content Content",
-				groupName = ${randomSiteName},
-				title = "Web Content Title 2");
-		}
-
-		task ("Add a dynamic collection for Web Content Article and Basic Web Content") {
-			JSONAssetlist.addDynamicAssetListEntryWithItemType(
-				groupName = ${randomSiteName},
-				itemSubtype = "Basic Web Content",
-				itemType = "Web Content Article",
-				title = "Dynamic Collection");
-		}
-
-		task ("Add a new personalized variation with new segment") {
-			AssetListsAdmin.openAssetListsAdmin(siteURLKey = ${siteURLKey});
-
-			AssetListsAdmin.editAssetList(assetListTitle = "Dynamic Collection");
-
-			AssetListsAdmin.addPersonalizedVariation(segmentName = "New Segment");
-		}
-
-		task ("Select the Web Content Article item type and Basic Web Content item subtype") {
-			AssetListsAdmin.configureItemTypeInDynamicCollection(
-				itemSubtype = "Basic Web Content",
-				itemType = "Web Content Article");
-		}
-
-		task ("Add a tag filter") {
-			AssetListsAdmin.addTagsFilter(tagNameList = "tag name");
-		}
-
-		task ("View both web contents shown in collection items when select Anyone personalized variation") {
-			AssetListsAdmin.viewContent(
-				assetTitleList = "Web Content Title 1,Web Content Title 2",
-				personalizedVariation = "Anyone");
-		}
-
-		task ("View only the web content with tag is shown in collection items when select New Segment personalized variation") {
-			AssetListsAdmin.viewContent(
-				assetTitle = "Web Content Title 2",
-				assetType = "Web Content Article",
-				personalizedVariation = "New Segment");
-
-			AssetListsAdmin.viewNoContent(
-				assetTitle = "Web Content Title 1",
-				assetType = "Web Content Article",
-				personalizedVariation = "New Segment");
-
-			AssetListsAdmin.prioritizeVariation(variationTitle = "New Segment");
-		}
-
-		task ("Add a Collection Display fragment to content page") {
 			ContentPagesNavigator.openEditContentPage(
 				pageName = "Test Page Name",
 				siteName = ${randomSiteName});
 
 			PageEditor.addFragment(
-				collectionName = "Content Display",
-				fragmentName = "Collection Display");
-		}
-
-		task ("Select the dynamic collection in Collection Display") {
-			PageEditor.editCollectionDisplay(
-				assetListName = "Dynamic Collection",
-				fragmentName = "Collection Display");
-		}
-
-		task ("Add a Heading fragment into Collection Display") {
-			PageEditor.addFragmentToCollectionDisplay(
 				collectionName = "Basic Components",
-				entryTitle = "Web Content Title 2",
 				fragmentName = "Heading");
-		}
 
-		task ("Map the Title field to editable field of Heading") {
-			PageEditorMapping.mapEditableFieldToCollectionItems(
-				field = "Title",
+			PageEditor.editFragmentText(
 				fragmentName = "Heading",
-				id = "element-text");
+				id = "element-text",
+				text = "Default");
+
+			PageEditor.addExperience(
+				experienceName = "New Experience",
+				segmentName = "Test Segment Name");
+
+			PageEditor.editFragmentText(
+				fragmentName = "Heading",
+				id = "element-text",
+				text = "EMEA Guild");
+
+			PageEditor.prioritizeExperience(experienceName = "New Experience");
 
 			PageEditor.publish();
 		}
 
-		task ("View both web contents shown in simulation modal by default") {
+		task ("When the guest user accesses to the content page") {
+			User.logoutPG();
+
 			ContentPagesNavigator.openViewContentPage(
 				pageName = "Test Page Name",
 				siteName = ${randomSiteName});
-
-			MobileDevice.previewPG();
-
-			var n = 1;
-
-			for (var title : list "Web Content Title 2,Web Content Title 1") {
-				ContentPages.viewFragmentTextInCollectionDisplay(
-					row = ${n},
-					text = ${title});
-
-				var n = ${n} + 1;
-			}
-
-			SelectFrameTop();
 		}
 
-		task ("Select the segment on Simulation panel") {
-			Check.checkNotVisible(
-				checkboxName = "New Segment",
-				locator1 = "Checkbox#ANY_CHECKBOX");
-		}
-
-		task ("View only the web content with tag shown in simulation modal when select segment") {
-			SelectFrame.selectFrameNoLoading(locator1 = "ControlMenuPreviewPanel#PREVIEW_DEVICE_GENERAL_IFRAME");
-
-			ContentPages.viewFragmentTextInCollectionDisplay(text = "Web Content Title 2");
-
-			AssertElementNotPresent(
-				column = 1,
-				locator1 = "Fragment#FRAGMENT_TEXT_IN_COLLECTION_DISPLAY",
-				row = 2);
+		task ("Then the guest user should view the content from Default experience") {
+			ContentPages.viewFragmentText(
+				fragmentName = "heading",
+				id = "element-text",
+				text = "Default");
 		}
 	}
 
@@ -938,7 +824,7 @@ definition {
 		}
 
 		task ("Change to new experience and view the new experience shown in experience selector") {
-			SelectWindow.selectPopUp(locator1 = "null");
+			SelectWindow.selectPopUp(value1 = "null");
 
 			ContentPages.changeExperience(experienceName = "New Experience");
 
@@ -964,7 +850,7 @@ definition {
 		task ("Back to view page mode and view the new experience still selected in experience selector") {
 			Close.closeWindow();
 
-			SelectWindow.selectPopUp(locator1 = "null");
+			SelectWindow.selectPopUp(value1 = "null");
 
 			PageEditor.clickBack();
 

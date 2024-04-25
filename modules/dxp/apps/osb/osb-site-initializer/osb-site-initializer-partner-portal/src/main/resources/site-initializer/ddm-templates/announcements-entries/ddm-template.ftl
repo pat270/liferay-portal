@@ -30,23 +30,29 @@
 			max-width: inherit;
 		}
 	}
-
-	.partner-portal-announcements p {
-		display: contents;
-	}
 </style>
 
 <div>
 	<#if entries?has_content>
 		<#list entries as curEntry>
+			<#assign
+				entryDate = dateUtil.getDate(curEntry.getDisplayDate(), "MMM dd, yyyy", locale)
+				summary = curEntry.getContent()
+				title = curEntry.getTitle()
+			/>
+
 			<div class="border border-neutral-3 d-flex justify-content-between mb-3 p-3 rounded">
 				<div class="mr-4 pr-2 text-left text-wrap">
-					<h6 class="font-weight-bold mb-1 partner-portal-announcements-title text-neutral-10" onclick="handleClick(this)">
-						${htmlUtil.escape(curEntry.getTitle(locale))}
-					</h6>
+					<div class="font-weight-bold h6 mb-1 partner-portal-announcements-title text-neutral-10" onclick="handleClick(this)">
+						${htmlUtil.escape(title)}
+					</div>
+
+					<div class="hide">
+						${summary}
+					</div>
 
 					<div class="partner-portal-announcements text-neutral-8 text-paragraph-sm">
-						<@liferay_asset["asset-display"] assetEntry=curEntry />
+						${stringUtil.shorten(htmlUtil.stripHtml(summary), 200)}
 					</div>
 				</div>
 
@@ -63,7 +69,7 @@
 						</div>
 
 						<div class="text-neutral-8 text-paragraph-xxs">
-							${dateUtil.getDate(curEntry.getPublishDate(), "MMM dd, yyyy", locale)}
+							${entryDate}
 						</div>
 					</div>
 				</div>

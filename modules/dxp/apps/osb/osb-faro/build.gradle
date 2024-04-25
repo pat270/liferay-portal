@@ -6,11 +6,27 @@ import com.bmuschko.gradle.docker.tasks.container.extras.DockerWaitHealthyContai
 
 buildscript {
 	dependencies {
-		classpath group: "com.bmuschko", name: "gradle-docker-plugin", version: "3.4.4"
-		classpath group: "gradle.plugin.com.liferay", name: "gradle-plugins-app-docker", version: "latest.release"
+		classpath group: "com.bmuschko", name: "gradle-docker-plugin", version: "6.7.0"
+		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.app.docker", version: "1.0.14"
 	}
 
 	repositories {
+		File dir = rootProject.projectDir
+
+		while (dir != null) {
+			File tmpMavenRepositoryDir = new File(dir, ".m2-tmp")
+
+			if (tmpMavenRepositoryDir.exists()) {
+				maven {
+					url tmpMavenRepositoryDir
+
+					println tmpMavenRepositoryDir
+				}
+			}
+
+			dir = dir.getParentFile();
+		}
+
 		maven {
 			url "https://repository-cdn.liferay.com/nexus/content/groups/public"
 		}
@@ -29,21 +45,22 @@ task startDocker(type: DockerStartContainer)
 task stopDocker(type: DockerStopContainer)
 
 def dockerContainerId = "faro"
-def dockerImageUser = "liferay"
-def dockerImageId = "com-liferay-osb-faro"
 
 ext.faroEnvironmentName = System.getenv().get("FARO_ENVIRONMENT_NAME") ?: "local"
 ext.faroImageTag = project.hasProperty("docker.image.tag") ? project.getProperty("docker.image.tag") : "latest"
 
 appDocker {
-	imageName dockerImageId
-	imageUser dockerImageUser
+	imageName "liferay/com-liferay-osb-faro"
 	imageTags = [faroEnvironmentName.equals("prd") ? "prd-" + new Date().format("yyyyMMdd") : faroImageTag]
 	inputDir "osb-faro-docker/" + faroEnvironmentName
 
 	onlyIf {
 		false
 	}
+}
+
+buildAppDockerImage {
+	mustRunAfter copyDockerResources
 }
 
 checkDocker {
@@ -61,10 +78,10 @@ createDocker {
 	dependsOn buildAppDockerImage, removeDocker
 
 	containerName = dockerContainerId
-	portBindings = ["8000:8000", "8080:8080", "11311:11311"]
+	hostConfig.portBindings = ["8000:8000", "8080:8080", "11311:11311"]
 
 	targetImageId {
-		dockerImageUser + "/" + dockerImageId
+		appDocker.imageName
 	}
 
 	def envFile = file("${rootDir}/local.env")
@@ -83,6 +100,8 @@ createDocker {
 }
 
 buildAppDockerImage {
+	images.add(appDocker.imageName + ":" + appDocker.imageTags[0])
+
 	def LABEL_BUILD_DATE = ('git log -1 --format=%cd').execute().text.trim()
 	def LABEL_VCS_REF = ('git rev-parse --short=7 HEAD').execute().text.trim()
 	buildArgs = ['LABEL_BUILD_DATE': LABEL_BUILD_DATE, 'LABEL_VCS_REF': LABEL_VCS_REF]
@@ -144,6 +163,21 @@ stopDocker {
 
 	targetContainerId {
 		dockerContainerId
+	}
+}
+
+configure(project(":dxp:apps:osb:osb-faro:osb-faro-dependencies")) {
+	task copyCloudResources(type: Copy)
+
+	String deployDir = "../osb-faro-docker/cloud/modules"
+
+	copyCloudResources {
+		doFirst {
+			delete file(deployDir)
+		}
+
+		from configurations.compileOnly
+		into deployDir
 	}
 }
 

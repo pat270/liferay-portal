@@ -5,14 +5,17 @@
 
 package com.liferay.portal.search.tuning.rankings.web.internal.portlet.action;
 
+import com.liferay.item.selector.ItemSelector;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
 import com.liferay.portal.search.tuning.rankings.web.internal.constants.ResultRankingsPortletKeys;
+import com.liferay.portal.search.tuning.rankings.web.internal.display.context.AddRankingDisplayContext;
 
 import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Kevin Tan
@@ -31,7 +34,15 @@ public class AddResultsRankingsMVCRenderCommand implements MVCRenderCommand {
 			RenderRequest renderRequest, RenderResponse renderResponse)
 		throws PortletException {
 
+		renderRequest.setAttribute(
+			AddRankingDisplayContext.class.getName(),
+			new AddRankingDisplayContext(
+				_itemSelector, renderRequest, renderResponse));
+
 		return "/add_results_rankings.jsp";
 	}
+
+	@Reference
+	private ItemSelector _itemSelector;
 
 }

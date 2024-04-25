@@ -14,8 +14,11 @@ import com.liferay.commerce.context.CommerceContext;
 import com.liferay.commerce.exception.CommerceOrderPaymentMethodException;
 import com.liferay.commerce.model.CommerceOrder;
 import com.liferay.commerce.payment.engine.CommercePaymentEngine;
+import com.liferay.commerce.payment.integration.CommercePaymentIntegrationRegistry;
+import com.liferay.commerce.payment.method.CommercePaymentMethodRegistry;
+import com.liferay.commerce.payment.service.CommercePaymentMethodGroupRelLocalService;
+import com.liferay.commerce.payment.service.CommercePaymentMethodGroupRelQualifierLocalService;
 import com.liferay.commerce.service.CommerceOrderLocalService;
-import com.liferay.commerce.service.CommerceOrderService;
 import com.liferay.commerce.util.BaseCommerceCheckoutStep;
 import com.liferay.commerce.util.CommerceCheckoutStep;
 import com.liferay.frontend.taglib.servlet.taglib.util.JSPRenderer;
@@ -103,7 +106,10 @@ public class PaymentMethodCommerceCheckoutStep
 		PaymentMethodCheckoutStepDisplayContext
 			paymentMethodCheckoutStepDisplayContext =
 				new PaymentMethodCheckoutStepDisplayContext(
-					_commercePaymentEngine, httpServletRequest);
+					_commercePaymentEngine, _commercePaymentIntegrationRegistry,
+					_commercePaymentMethodGroupRelLocalService,
+					_commercePaymentMethodGroupRelQualifierLocalService,
+					_commercePaymentMethodRegistry, httpServletRequest);
 
 		httpServletRequest.setAttribute(
 			CommerceCheckoutWebKeys.COMMERCE_CHECKOUT_STEP_DISPLAY_CONTEXT,
@@ -124,19 +130,11 @@ public class PaymentMethodCommerceCheckoutStep
 			throw new CommerceOrderPaymentMethodException();
 		}
 
+		CommerceOrder commerceOrder = (CommerceOrder)actionRequest.getAttribute(
+			CommerceCheckoutWebKeys.COMMERCE_ORDER);
+
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
-
-		String commerceOrderUuid = ParamUtil.getString(
-			actionRequest, "commerceOrderUuid");
-
-		CommerceContext commerceContext =
-			(CommerceContext)actionRequest.getAttribute(
-				CommerceWebKeys.COMMERCE_CONTEXT);
-
-		CommerceOrder commerceOrder =
-			_commerceOrderService.getCommerceOrderByUuidAndGroupId(
-				commerceOrderUuid, commerceContext.getCommerceChannelGroupId());
 
 		if (!_commerceOrderModelResourcePermission.contains(
 				themeDisplay.getPermissionChecker(), commerceOrder,
@@ -144,6 +142,10 @@ public class PaymentMethodCommerceCheckoutStep
 
 			return;
 		}
+
+		CommerceContext commerceContext =
+			(CommerceContext)actionRequest.getAttribute(
+				CommerceWebKeys.COMMERCE_CONTEXT);
 
 		commerceOrder = _commerceOrderLocalService.updateCommerceOrder(
 			null, commerceOrder.getCommerceOrderId(),
@@ -176,10 +178,22 @@ public class PaymentMethodCommerceCheckoutStep
 		_commerceOrderModelResourcePermission;
 
 	@Reference
-	private CommerceOrderService _commerceOrderService;
+	private CommercePaymentEngine _commercePaymentEngine;
 
 	@Reference
-	private CommercePaymentEngine _commercePaymentEngine;
+	private CommercePaymentIntegrationRegistry
+		_commercePaymentIntegrationRegistry;
+
+	@Reference
+	private CommercePaymentMethodGroupRelLocalService
+		_commercePaymentMethodGroupRelLocalService;
+
+	@Reference
+	private CommercePaymentMethodGroupRelQualifierLocalService
+		_commercePaymentMethodGroupRelQualifierLocalService;
+
+	@Reference
+	private CommercePaymentMethodRegistry _commercePaymentMethodRegistry;
 
 	@Reference
 	private JSPRenderer _jspRenderer;

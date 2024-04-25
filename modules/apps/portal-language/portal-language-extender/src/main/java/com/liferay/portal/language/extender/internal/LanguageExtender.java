@@ -5,21 +5,23 @@
 
 package com.liferay.portal.language.extender.internal;
 
+import com.liferay.portal.kernel.dependency.manager.DependencyManagerSyncUtil;
+import com.liferay.portal.kernel.resource.bundle.CacheResourceBundleLoader;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.language.LanguageResources;
 
 import java.util.List;
+import java.util.ResourceBundle;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceListener;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
-import org.osgi.service.component.annotations.Reference;
 import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
 
@@ -79,18 +81,29 @@ public class LanguageExtender
 		_bundleTracker = new BundleTracker<>(
 			bundleContext, Bundle.ACTIVE, this);
 
-		_bundleTracker.open();
+		DependencyManagerSyncUtil.registerSyncCallable(
+			() -> {
+				bundleContext.addServiceListener(
+					_serviceListener,
+					"(&(!(javax.portlet.name=*))(language.id=*)(objectClass=" +
+						ResourceBundle.class.getName() + "))");
+
+				_bundleTracker.open();
+
+				return null;
+			});
 	}
 
 	@Deactivate
 	protected void deactivate() {
+		_bundleContext.removeServiceListener(_serviceListener);
+
 		_bundleTracker.close();
 	}
 
 	private BundleContext _bundleContext;
 	private BundleTracker<?> _bundleTracker;
-
-	@Reference
-	private LanguageResources _languageResources;
+	private final ServiceListener _serviceListener =
+		serviceEvent -> CacheResourceBundleLoader.clearCache();
 
 }

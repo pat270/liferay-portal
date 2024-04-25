@@ -19,6 +19,7 @@ import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -151,12 +152,30 @@ public class DDMDataProviderInvokerImpl implements DDMDataProviderInvoker {
 					ddmDataProviderInstance,
 					DDMRESTDataProviderSettings.class));
 
-		return ddmDataProviderInvokeCommand.execute();
+		DDMDataProviderResponse ddmDataProviderResponse =
+			ddmDataProviderInvokeCommand.execute();
+
+		try {
+			deactivate();
+		}
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception);
+			}
+			else if (_log.isWarnEnabled()) {
+				_log.warn("Unable to deactivate", exception);
+			}
+		}
+
+		return ddmDataProviderResponse;
 	}
 
 	protected DDMDataProviderInstance fetchDDMDataProviderInstance(
 			String ddmDataProviderInstanceId)
 		throws PortalException {
+
+		DDMDataProviderInstanceService ddmDataProviderInstanceService =
+			ddmDataProviderInstanceServiceSnapshot.get();
 
 		DDMDataProviderInstance ddmDataProviderInstance =
 			ddmDataProviderInstanceService.fetchDataProviderInstanceByUuid(
@@ -195,8 +214,10 @@ public class DDMDataProviderInvokerImpl implements DDMDataProviderInvoker {
 		return hystrixRuntimeException.getFailureType();
 	}
 
-	@Reference
-	protected DDMDataProviderInstanceService ddmDataProviderInstanceService;
+	protected static final Snapshot<DDMDataProviderInstanceService>
+		ddmDataProviderInstanceServiceSnapshot = new Snapshot<>(
+			DDMDataProviderInvokerImpl.class,
+			DDMDataProviderInstanceService.class, null, true);
 
 	@Reference
 	protected DDMDataProviderInstanceSettings ddmDataProviderInstanceSettings;

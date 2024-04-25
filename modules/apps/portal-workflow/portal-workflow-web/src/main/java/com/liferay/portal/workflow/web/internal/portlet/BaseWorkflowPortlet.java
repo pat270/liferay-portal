@@ -5,13 +5,12 @@
 
 package com.liferay.portal.workflow.web.internal.portlet;
 
-import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
-import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.workflow.constants.WorkflowWebKeys;
 import com.liferay.portal.workflow.portlet.tab.WorkflowPortletTab;
+import com.liferay.portal.workflow.portlet.tab.WorkflowPortletTabRegistry;
 
 import java.io.IOException;
 
@@ -23,9 +22,7 @@ import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
-import org.osgi.framework.BundleContext;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Adam Brandizzi
@@ -43,7 +40,7 @@ public abstract class BaseWorkflowPortlet extends MVCPortlet {
 	public List<WorkflowPortletTab> getWorkflowPortletTabs() {
 		return TransformUtil.transform(
 			getWorkflowPortletTabNames(),
-			_workflowPortletTabServiceTrackerMap::getService);
+			workflowPortletTabRegistry::getWorkflowPortletTab);
 	}
 
 	@Override
@@ -73,25 +70,12 @@ public abstract class BaseWorkflowPortlet extends MVCPortlet {
 		super.render(renderRequest, renderResponse);
 	}
 
-	@Activate
-	protected void activate(BundleContext bundleContext) {
-		_workflowPortletTabServiceTrackerMap =
-			ServiceTrackerMapFactory.openSingleValueMap(
-				bundleContext, WorkflowPortletTab.class,
-				"portal.workflow.tabs.name");
-	}
-
 	protected void addRenderRequestAttributes(RenderRequest renderRequest) {
 		renderRequest.setAttribute(
 			WorkflowWebKeys.SELECTED_WORKFLOW_PORTLET_TAB,
 			_getSelectedWorkflowPortletTab(renderRequest));
 		renderRequest.setAttribute(
 			WorkflowWebKeys.WORKFLOW_PORTLET_TABS, getWorkflowPortletTabs());
-	}
-
-	@Deactivate
-	protected void deactivate() {
-		_workflowPortletTabServiceTrackerMap.close();
 	}
 
 	@Override
@@ -106,17 +90,17 @@ public abstract class BaseWorkflowPortlet extends MVCPortlet {
 		super.doDispatch(renderRequest, renderResponse);
 	}
 
+	@Reference
+	protected WorkflowPortletTabRegistry workflowPortletTabRegistry;
+
 	private WorkflowPortletTab _getSelectedWorkflowPortletTab(
 		RenderRequest renderRequest) {
 
 		String workflowPortletTabName = ParamUtil.get(
 			renderRequest, "tab", getDefaultWorkflowPortletTabName());
 
-		return _workflowPortletTabServiceTrackerMap.getService(
+		return workflowPortletTabRegistry.getWorkflowPortletTab(
 			workflowPortletTabName);
 	}
-
-	private ServiceTrackerMap<String, WorkflowPortletTab>
-		_workflowPortletTabServiceTrackerMap;
 
 }

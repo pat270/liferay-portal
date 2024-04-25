@@ -10,7 +10,7 @@ To use the plugin, include it in your build script:
 ```gradle
 buildscript {
 	dependencies {
-		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.poshi.runner", version: "3.0.74"
+		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.poshi.runner", version: "4.0.17"
 	}
 
 	repositories {
@@ -43,7 +43,9 @@ Moreover, it is possible to use Closures and Callables as values for `String`,
 to defer evaluation until execution.
 
 ### Setting a specific version of Poshi Runner
+
 In your `build.gradle`, after applying the plugin:
+
 ```gradle
 poshiRunner {
 	version = "1.0.311"
@@ -63,6 +65,7 @@ Name | Depends On | Type | Description
 `writePoshiProperties` | \- | [`JavaExec`](https://docs.gradle.org/current/dsl/org.gradle.api.tasks.JavaExec.html) | Generates properties using meta data from Poshi files in the project.
 
 # Poshi Runner Resources Gradle Plugin
+
 The Poshi Runner Resources Gradle plugin lets you use Poshi resource jars in your Poshi project or publish them.
 
 ## Usage
@@ -72,7 +75,7 @@ To use the plugin, include it in your build script:
 ```gradle
 buildscript {
 	dependencies {
-		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.poshi.runner", version: "3.0.74"
+		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.poshi.runner", version: "34.0.0
 	}
 
 	repositories {
@@ -86,6 +89,7 @@ apply plugin: "com.liferay.poshi.runner.resources.defaults"
 ```
 
 To use a specific Poshi Resource JAR, add the following applying the plugin (where `GROUP`, `NAME` and `VERSION` refer to a maven dependency):
+
 ```gradle
 dependencies {
 	poshiRunnerResources group: "GROUP", name: "NAME", version: "VERSION"
@@ -93,6 +97,7 @@ dependencies {
 ```
 
 For example (this resource is already configured in the plugin by default):
+
 ```gradle
 dependencies {
 	poshiRunnerResources group: "com.liferay", name: "com.liferay.poshi.runner.resources", version: "latest.release"
@@ -119,4 +124,3 @@ The plugin adds a series of tasks to your project:
 Name | Depends On | Type | Description
 ---- | ---------- | ---- | -----------
 `jarPoshiRunnerResources` | \- | [`Jar`](https://docs.gradle.org/6.6/dsl/org.gradle.api.tasks.bundling.Jar.html) | Creates a Poshi resource jar.
-`uploadPoshiRunnerResources` | \- | [`Upload`](https://docs.gradle.org/6.6/javadoc/org/gradle/api/tasks/Upload.html) | Uploads all Poshi resource artifacts.

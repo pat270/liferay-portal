@@ -15,6 +15,8 @@ import com.liferay.dynamic.data.lists.model.DDLRecordSetTable;
 import com.liferay.dynamic.data.lists.model.DDLRecordTable;
 import com.liferay.dynamic.data.lists.model.DDLRecordVersionTable;
 import com.liferay.dynamic.data.lists.service.persistence.DDLRecordPersistence;
+import com.liferay.dynamic.data.mapping.model.DDMFieldTable;
+import com.liferay.dynamic.data.mapping.model.DDMStorageLinkTable;
 import com.liferay.portal.kernel.model.ClassNameTable;
 import com.liferay.portal.kernel.service.persistence.BasePersistence;
 
@@ -49,6 +51,38 @@ public class DDLRecordTableReferenceDefinition
 				).and(
 					ClassNameTable.INSTANCE.classNameId.eq(
 						AssetEntryTable.INSTANCE.classNameId)
+				)
+			)
+		).referenceInnerJoin(
+			fromStep -> fromStep.from(
+				DDMFieldTable.INSTANCE
+			).innerJoinON(
+				DDLRecordTable.INSTANCE,
+				DDLRecordTable.INSTANCE.companyId.eq(
+					DDMFieldTable.INSTANCE.companyId)
+			).innerJoinON(
+				DDLRecordVersionTable.INSTANCE,
+				DDLRecordVersionTable.INSTANCE.recordId.eq(
+					DDLRecordTable.INSTANCE.recordId
+				).and(
+					DDLRecordTable.INSTANCE.DDMStorageId.eq(
+						DDMFieldTable.INSTANCE.storageId)
+				)
+			)
+		).referenceInnerJoin(
+			fromStep -> fromStep.from(
+				DDMStorageLinkTable.INSTANCE
+			).innerJoinON(
+				DDLRecordTable.INSTANCE,
+				DDLRecordTable.INSTANCE.companyId.eq(
+					DDMStorageLinkTable.INSTANCE.companyId)
+			).innerJoinON(
+				DDLRecordVersionTable.INSTANCE,
+				DDLRecordVersionTable.INSTANCE.recordId.eq(
+					DDLRecordTable.INSTANCE.recordId
+				).and(
+					DDLRecordTable.INSTANCE.DDMStorageId.eq(
+						DDMStorageLinkTable.INSTANCE.classPK)
 				)
 			)
 		).singleColumnReference(

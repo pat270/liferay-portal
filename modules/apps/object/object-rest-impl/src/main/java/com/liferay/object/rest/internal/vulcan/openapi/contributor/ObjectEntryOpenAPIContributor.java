@@ -6,15 +6,20 @@
 package com.liferay.object.rest.internal.vulcan.openapi.contributor;
 
 import com.liferay.object.constants.ObjectActionTriggerConstants;
+import com.liferay.object.constants.ObjectFieldConstants;
 import com.liferay.object.constants.ObjectRelationshipConstants;
+import com.liferay.object.field.util.ObjectFieldUtil;
 import com.liferay.object.model.ObjectAction;
 import com.liferay.object.model.ObjectDefinition;
+import com.liferay.object.model.ObjectField;
 import com.liferay.object.model.ObjectRelationship;
+import com.liferay.object.relationship.util.ObjectRelationshipUtil;
+import com.liferay.object.rest.dto.v1_0.ListEntry;
 import com.liferay.object.rest.internal.vulcan.openapi.contributor.util.OpenAPIContributorUtil;
 import com.liferay.object.rest.openapi.v1_0.ObjectEntryOpenAPIResource;
 import com.liferay.object.rest.openapi.v1_0.ObjectEntryOpenAPIResourceProvider;
 import com.liferay.object.service.ObjectActionLocalService;
-import com.liferay.object.service.ObjectDefinitionLocalService;
+import com.liferay.object.service.ObjectFieldLocalService;
 import com.liferay.object.service.ObjectRelationshipLocalService;
 import com.liferay.object.system.SystemObjectDefinitionManagerRegistry;
 import com.liferay.petra.string.StringBundler;
@@ -22,6 +27,8 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.MapUtil;
+import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.openapi.OpenAPIContext;
@@ -48,6 +55,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import org.osgi.framework.BundleContext;
 
@@ -61,9 +69,8 @@ public class ObjectEntryOpenAPIContributor extends BaseOpenAPIContributor {
 		DTOConverterRegistry dtoConverterRegistry,
 		ObjectActionLocalService objectActionLocalService,
 		ObjectDefinition objectDefinition,
-		ObjectDefinitionLocalService objectDefinitionLocalService,
-		ObjectEntryOpenAPIResource objectEntryOpenAPIResource,
 		ObjectEntryOpenAPIResourceProvider objectEntryOpenAPIResourceProvider,
+		ObjectFieldLocalService objectFieldLocalService,
 		ObjectRelationshipLocalService objectRelationshipLocalService,
 		OpenAPIResource openAPIResource,
 		SystemObjectDefinitionManagerRegistry
@@ -73,10 +80,9 @@ public class ObjectEntryOpenAPIContributor extends BaseOpenAPIContributor {
 		_bundleContext = bundleContext;
 		_objectActionLocalService = objectActionLocalService;
 		_objectDefinition = objectDefinition;
-		_objectDefinitionLocalService = objectDefinitionLocalService;
-		_objectEntryOpenAPIResource = objectEntryOpenAPIResource;
 		_objectEntryOpenAPIResourceProvider =
 			objectEntryOpenAPIResourceProvider;
+		_objectFieldLocalService = objectFieldLocalService;
 		_objectRelationshipLocalService = objectRelationshipLocalService;
 		_openAPIResource = openAPIResource;
 
@@ -94,9 +100,17 @@ public class ObjectEntryOpenAPIContributor extends BaseOpenAPIContributor {
 		Map<ObjectRelationship, ObjectDefinition> relatedObjectDefinitionsMap =
 			_getRelatedObjectDefinitionsMap();
 
+		Map<String, Schema> schemas = _getSchemas(openAPI);
+
+		Schema objectDefinitionSchema = schemas.get(
+			_objectDefinition.getShortName());
+
+		Map<String, Schema> objectDefinitionSchemaProperties =
+			objectDefinitionSchema.getProperties();
+
 		Paths paths = openAPI.getPaths();
 
-		for (String key : new ArrayList<>(paths.keySet())) {
+		for (String key : ListUtil.fromMapKeys(paths)) {
 			if (!key.contains("objectActionName") &&
 				!key.contains("objectRelationshipName")) {
 
@@ -113,9 +127,13 @@ public class ObjectEntryOpenAPIContributor extends BaseOpenAPIContributor {
 				for (Map.Entry<ObjectRelationship, ObjectDefinition> entry :
 						relatedObjectDefinitionsMap.entrySet()) {
 
-					ObjectRelationship objectRelationship = entry.getKey();
-
 					ObjectDefinition relatedObjectDefinition = entry.getValue();
+
+					if (!relatedObjectDefinition.isActive()) {
+						continue;
+					}
+
+					ObjectRelationship objectRelationship = entry.getKey();
 
 					String relatedSchemaName = getSchemaName(
 						relatedObjectDefinition);
@@ -143,26 +161,14 @@ public class ObjectEntryOpenAPIContributor extends BaseOpenAPIContributor {
 						_setSchemaDescription(
 							objectRelationship, openAPI, relatedSchemaName);
 
-						openAPI.getComponents(
-						).getSchemas(
-						).get(
-							_objectDefinition.getShortName()
-						).getProperties(
-						).put(
+						objectDefinitionSchemaProperties.put(
 							objectRelationship.getName(),
-							_getSchema(objectRelationship, relatedSchemaName)
-						);
+							_getSchema(objectRelationship, relatedSchemaName));
 					}
 					else {
-						openAPI.getComponents(
-						).getSchemas(
-						).get(
-							_objectDefinition.getShortName()
-						).getProperties(
-						).put(
+						objectDefinitionSchemaProperties.put(
 							objectRelationship.getName(),
-							_getSchema(objectRelationship, null)
-						);
+							_getSchema(objectRelationship, null));
 					}
 				}
 			}
@@ -171,19 +177,9 @@ public class ObjectEntryOpenAPIContributor extends BaseOpenAPIContributor {
 		}
 
 		if (!_objectDefinition.isEnableCategorization()) {
-			Components components = openAPI.getComponents();
-
-			Map<String, Schema> schemas = components.getSchemas();
-
-			Schema objectDefinitionSchema = schemas.get(
-				_objectDefinition.getShortName());
-
-			Map<String, Schema> properties =
-				objectDefinitionSchema.getProperties();
-
-			properties.remove("keywords");
-			properties.remove("taxonomyCategoryBriefs");
-			properties.remove("taxonomyCategoryIds");
+			objectDefinitionSchemaProperties.remove("keywords");
+			objectDefinitionSchemaProperties.remove("taxonomyCategoryBriefs");
+			objectDefinitionSchemaProperties.remove("taxonomyCategoryIds");
 
 			schemas.remove("TaxonomyCategoryBrief");
 		}
@@ -215,6 +211,10 @@ public class ObjectEntryOpenAPIContributor extends BaseOpenAPIContributor {
 				_getIndividualActionSchemas(
 					openAPIContext, openAPI.getPaths()));
 		}
+
+		_setBatchUnsupportedFormats(objectDefinitionSchemaProperties);
+		_setListEntryRef(schemas);
+		_setReadOnlyProperties(schemas);
 	}
 
 	private void _addObjectActionPathItem(
@@ -288,6 +288,14 @@ public class ObjectEntryOpenAPIContributor extends BaseOpenAPIContributor {
 		OpenAPIContributorUtil.copySchemas(
 			schemaName, sourceSchemas,
 			objectDefinition.isUnmodifiableSystemObject(), openAPI);
+	}
+
+	private void _addSchemas(
+		Class<?> entityClass, Map<String, Schema> schemas) {
+
+		if (!schemas.containsKey(entityClass.getSimpleName())) {
+			schemas.putAll(_openAPIResource.getSchemas(entityClass));
+		}
 	}
 
 	private String _buildActionsURL(
@@ -640,20 +648,6 @@ public class ObjectEntryOpenAPIContributor extends BaseOpenAPIContributor {
 		return parameters;
 	}
 
-	private ObjectDefinition _getRelatedObjectDefinition(
-		ObjectRelationship objectRelationship) {
-
-		if (_objectDefinition.getObjectDefinitionId() ==
-				objectRelationship.getObjectDefinitionId2()) {
-
-			return _objectDefinitionLocalService.fetchObjectDefinition(
-				objectRelationship.getObjectDefinitionId1());
-		}
-
-		return _objectDefinitionLocalService.fetchObjectDefinition(
-			objectRelationship.getObjectDefinitionId2());
-	}
-
 	private Map<ObjectRelationship, ObjectDefinition>
 			_getRelatedObjectDefinitionsMap()
 		throws Exception {
@@ -668,7 +662,8 @@ public class ObjectEntryOpenAPIContributor extends BaseOpenAPIContributor {
 		for (ObjectRelationship objectRelationship : objectRelationships) {
 			relatedObjectDefinitionsMap.put(
 				objectRelationship,
-				_getRelatedObjectDefinition(objectRelationship));
+				ObjectRelationshipUtil.getRelatedObjectDefinition(
+					_objectDefinition, objectRelationship));
 		}
 
 		return relatedObjectDefinitionsMap;
@@ -701,6 +696,34 @@ public class ObjectEntryOpenAPIContributor extends BaseOpenAPIContributor {
 		objectSchema.setDescription(_getDescription(objectRelationship));
 
 		return objectSchema;
+	}
+
+	private Map<String, Schema> _getSchemas(OpenAPI openAPI) {
+		Components components = openAPI.getComponents();
+
+		return components.getSchemas();
+	}
+
+	private void _setBatchUnsupportedFormats(Map<String, Schema> properties) {
+		for (Map.Entry<String, Schema> entry : properties.entrySet()) {
+			if (!_batchUnsupportedFormats.containsKey(entry.getKey())) {
+				continue;
+			}
+
+			Schema schema = entry.getValue();
+
+			Map<String, Object> extensions = schema.getExtensions();
+
+			if (MapUtil.isEmpty(extensions)) {
+				extensions = new HashMap<>();
+			}
+
+			extensions.put(
+				"x-batch-unsupported-formats",
+				_batchUnsupportedFormats.get(entry.getKey()));
+
+			schema.setExtensions(extensions);
+		}
 	}
 
 	private void _setCollectionActionSchemas(
@@ -791,6 +814,107 @@ public class ObjectEntryOpenAPIContributor extends BaseOpenAPIContributor {
 		}
 	}
 
+	private void _setListEntryRef(Map<String, Schema> schemas) {
+		Map<String, ObjectField> objectFields =
+			ObjectFieldUtil.toObjectFieldsMap(
+				_objectFieldLocalService.getObjectFields(
+					_objectDefinition.getObjectDefinitionId()));
+
+		Schema objectDefinitionSchema = schemas.get(
+			_objectDefinition.getShortName());
+
+		Map<String, Schema> properties = objectDefinitionSchema.getProperties();
+
+		for (Map.Entry<String, Schema> entry : properties.entrySet()) {
+			String key = entry.getKey();
+
+			ObjectField objectField = objectFields.get(key);
+
+			if (objectField == null) {
+				continue;
+			}
+
+			if (Objects.equals(
+					objectField.getBusinessType(),
+					ObjectFieldConstants.BUSINESS_TYPE_PICKLIST)) {
+
+				_addSchemas(ListEntry.class, schemas);
+
+				Schema schema = entry.getValue();
+
+				schema.$ref(ListEntry.class.getSimpleName());
+			}
+
+			if (Objects.equals(
+					objectField.getBusinessType(),
+					ObjectFieldConstants.BUSINESS_TYPE_MULTISELECT_PICKLIST)) {
+
+				_addSchemas(ListEntry.class, schemas);
+
+				Schema schema = entry.getValue();
+
+				properties.put(
+					key,
+					new ArraySchema() {
+						{
+							setExtensions(schema.getExtensions());
+							setItems(
+								new Schema() {
+									{
+										set$ref(
+											ListEntry.class.getSimpleName());
+									}
+								});
+						}
+					});
+			}
+		}
+	}
+
+	private void _setReadOnlyProperties(Map<String, Schema> schemas) {
+		Map<String, ObjectField> objectFields =
+			ObjectFieldUtil.toObjectFieldsMap(
+				_objectFieldLocalService.getObjectFields(
+					_objectDefinition.getObjectDefinitionId()));
+
+		Schema objectDefinitionSchema = schemas.get(
+			_objectDefinition.getShortName());
+
+		Map<String, Schema> properties = objectDefinitionSchema.getProperties();
+
+		for (Map.Entry<String, Schema> entry : properties.entrySet()) {
+			String key = entry.getKey();
+
+			objectDefinitionSchema = entry.getValue();
+
+			if (_readOnlyFieldNames.contains(key)) {
+				objectDefinitionSchema.readOnly(true);
+
+				continue;
+			}
+
+			ObjectField objectField = objectFields.get(key);
+
+			if (objectField == null) {
+				continue;
+			}
+
+			if (Objects.equals(
+					objectField.getReadOnly(),
+					ObjectFieldConstants.READ_ONLY_CONDITIONAL) ||
+				Objects.equals(
+					objectField.getReadOnly(),
+					ObjectFieldConstants.READ_ONLY_FALSE)) {
+
+				objectDefinitionSchema.readOnly(false);
+
+				continue;
+			}
+
+			objectDefinitionSchema.readOnly(true);
+		}
+	}
+
 	private void _setSchemaDescription(
 		ObjectRelationship objectRelationship, OpenAPI openAPI,
 		String relatedSchemaName) {
@@ -801,9 +925,7 @@ public class ObjectEntryOpenAPIContributor extends BaseOpenAPIContributor {
 			(objectRelationship.getObjectDefinitionId2() ==
 				_objectDefinition.getObjectDefinitionId())) {
 
-			Components components = openAPI.getComponents();
-
-			Map<String, Schema> schemas = components.getSchemas();
+			Map<String, Schema> schemas = _getSchemas(openAPI);
 
 			Schema schema = schemas.get(relatedSchemaName);
 
@@ -812,15 +934,32 @@ public class ObjectEntryOpenAPIContributor extends BaseOpenAPIContributor {
 	}
 
 	private final boolean _addRelatedSchemas;
+	private final Map<String, String> _batchUnsupportedFormats =
+		HashMapBuilder.put(
+			"actions", "CSV"
+		).put(
+			"auditEvents", "CSV"
+		).put(
+			"creator", "CSV"
+		).put(
+			"keywords", "CSV"
+		).put(
+			"status", "CSV"
+		).put(
+			"taxonomyCategoryBriefs", "CSV"
+		).put(
+			"taxonomyCategoryIds", "CSV"
+		).build();
 	private final BundleContext _bundleContext;
 	private final ObjectActionLocalService _objectActionLocalService;
 	private final ObjectDefinition _objectDefinition;
-	private final ObjectDefinitionLocalService _objectDefinitionLocalService;
-	private final ObjectEntryOpenAPIResource _objectEntryOpenAPIResource;
 	private final ObjectEntryOpenAPIResourceProvider
 		_objectEntryOpenAPIResourceProvider;
+	private final ObjectFieldLocalService _objectFieldLocalService;
 	private final ObjectRelationshipLocalService
 		_objectRelationshipLocalService;
 	private final OpenAPIResource _openAPIResource;
+	private final Set<String> _readOnlyFieldNames = SetUtil.fromArray(
+		"dateCreated", "dateModified");
 
 }

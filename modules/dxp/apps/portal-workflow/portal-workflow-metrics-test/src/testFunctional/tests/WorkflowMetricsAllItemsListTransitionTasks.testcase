@@ -15,10 +15,7 @@ definition {
 
 		Navigator.openURL();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+		Workflow.openWorkflowMetrics();
 	}
 
 	tearDown {
@@ -32,10 +29,7 @@ definition {
 	@description = "LPS-105495 - Verify that the user can transition tasks adding a comment to it"
 	@priority = 4
 	test CanAddCommentToATransitionTask {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -56,7 +50,7 @@ definition {
 
 		WorkflowMetrics.goToWorkflowAllItems(workflowProcessName = "Single Approver");
 
-		WorkflowMetrics.goToBulkTransitionSelectTasks();
+		WorkflowMetrics.goToTransitionSteps();
 
 		WorkflowMetrics.selectAllTransitionTasks();
 
@@ -75,10 +69,7 @@ definition {
 	@description = "LPS-108138 - Verify that users can bulk-transition pending tasks assigned to themselves from more than 1 instance via Workflow Metrics"
 	@priority = 4
 	test CanBulkTransitionPendingTasksFromMultipleInstances {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -108,7 +99,7 @@ definition {
 
 		WorkflowMetrics.goToWorkflowAllItems(workflowProcessName = "Single Approver");
 
-		WorkflowMetrics.goToBulkTransitionSelectTasks();
+		WorkflowMetrics.goToTransitionSteps();
 
 		WorkflowMetrics.selectAllTransitionTasks();
 
@@ -124,8 +115,6 @@ definition {
 	@description = "LPS-108138 - Verify that tasks that are not assigned to the current users can't be transitioned via bulk transition action"
 	@priority = 4
 	test CanNotBulkTransitionTasksNotAssignedToCurrentUser {
-		property portal.upstream = "quarantine";
-
 		var siteName = TestCase.getSiteName(siteName = ${siteName});
 
 		JSONUser.addUser(
@@ -148,7 +137,7 @@ definition {
 			site = ${siteName});
 
 		Workflow.configureWorkflow(
-			workflowDefinition = "Default: Single Approver",
+			workflowDefinition = "Single Approver",
 			workflowResourceValue = "Blogs Entry");
 
 		JSONBlog.addEntry(
@@ -176,13 +165,13 @@ definition {
 			key_orderBy = "Creation Date",
 			locator1 = "WorkflowAllItems#WORKFLOW_ALL_ITEMS_ORDER_BY");
 
-		WorkflowMetrics.selectTransitionTask(task = 1);
+		WorkflowMetrics.goToReassignTask(itemSubject = "Blogs Entry: Blog Entry 1");
 
 		WorkflowMetrics.selectNewAssignee(
 			nameOfAssignee = "User Test",
 			taskList = "Blogs Entry: Blog Entry 1");
 
-		WorkflowMetrics.selectTransitionTask(task = 2);
+		WorkflowMetrics.goToReassignTask(itemSubject = "Blogs Entry: Blog Entry 2");
 
 		WorkflowMetrics.selectNewAssignee(
 			nameOfAssignee = "Test Test",
@@ -235,10 +224,7 @@ definition {
 	test MessageIsDisplayedWhenSeveralStepsAreTransitionedAtOnce {
 		WorkflowMetrics.executeIndexActions(actionDescription = "Workflow Indexes");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -300,10 +286,7 @@ definition {
 	@description = "LPS-108138 - Verify that the message -Select a transition- and -All steps require a transition to be selected to complete this action.- are displayed when the user clicks on Done without selecting all transitions"
 	@priority = 3
 	test MessageIsDisplayedWhenSomeTransitionIsNotSelected {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -333,7 +316,7 @@ definition {
 
 		WorkflowMetrics.goToWorkflowAllItems(workflowProcessName = "Single Approver");
 
-		WorkflowMetrics.goToBulkTransitionSelectTasks();
+		WorkflowMetrics.goToTransitionSteps();
 
 		WorkflowMetrics.selectAllTransitionTasks();
 
@@ -347,10 +330,7 @@ definition {
 	@description = "LPS-108138 - Verify that, in -Choose Transition Per Step- modal, the user can add comments when transitioning tasks"
 	@priority = 4
 	test OnChooseTransitionPerStepCanAddCommentToATransitionTask {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -380,7 +360,7 @@ definition {
 
 		WorkflowMetrics.goToWorkflowAllItems(workflowProcessName = "Single Approver");
 
-		WorkflowMetrics.goToBulkTransitionSelectTasks();
+		WorkflowMetrics.goToTransitionSteps();
 
 		WorkflowMetrics.selectAllTransitionTasks();
 
@@ -405,10 +385,7 @@ definition {
 	@description = "LPS-108138 - Verify that users can filter the tasks to be transitioned by steps"
 	@priority = 3
 	test OnChooseTransitionPerStepCanFilterByStep {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -442,10 +419,7 @@ definition {
 			workflowAssetType = "Blogs Entry",
 			workflowTask = "Review");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+		Workflow.openWorkflowMetrics();
 
 		WorkflowMetrics.goToWorkflowProcessMetrics(workflowProcessName = "Single Approver");
 
@@ -456,7 +430,7 @@ definition {
 			workflowMetricsTab = "DASHBOARD",
 			workflowProcess = "Single Approver");
 
-		WorkflowMetrics.goToBulkTransitionSelectTasks();
+		WorkflowMetrics.goToTransitionSteps();
 
 		Click(locator1 = "WorkflowReassignModal#PROCESS_STEP_DROPDOWN");
 
@@ -496,10 +470,7 @@ definition {
 	@description = "LPS-108138 - Verify that only the tasks selected on -Select Steps to Transition- are being considered to be transitioned in the -Choose Transition Per Step- step"
 	@priority = 4
 	test OnlySelectedTasksAreConsideredToBeTransitioned {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -532,7 +503,7 @@ definition {
 			workflowMetricsTab = "DASHBOARD",
 			workflowProcess = "Single Approver");
 
-		WorkflowMetrics.goToTransitionTasks();
+		WorkflowMetrics.goToTransitionSteps();
 
 		Click(
 			key_task = 1,
@@ -552,10 +523,7 @@ definition {
 	@description = "LPS-108138 - Verify that when there are 11 or more instances to be transitioned with the same step, only the first 10 instances are displayed with the -Show All/Show Less- buttons available to be selected"
 	@priority = 3
 	test ShowAllLessButtonAvailable {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -590,7 +558,7 @@ definition {
 
 		Click(locator1 = "WorkflowMetrics#DASHBOARD_TOTAL_PENDING_ITEMS_VALUE");
 
-		WorkflowMetrics.goToBulkTransitionSelectTasks();
+		WorkflowMetrics.goToTransitionSteps();
 
 		Click(locator1 = "WorkflowMetricsAllItemsListTransitionTasks#SELECT_ALL_TRANSITION_TASKS");
 
@@ -640,11 +608,9 @@ definition {
 	test TasksAreGroupedByVersionedTasks {
 		property portal.upstream = "quarantine";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -653,13 +619,10 @@ definition {
 			workflowResourceValue = "Blogs Entry");
 
 		JSONBlog.addEntry(
-			entryContent = "Blogs Entry Content",
-			entryTitle = "Blogs Entry Title");
+			entryContent = "Blogs Entry Content 18432",
+			entryTitle = "Blogs Entry Title 18432");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Workflow.gotoEditWorkflowDefinition(workflowDefinitionTitle = "Single Approver");
 
@@ -670,41 +633,33 @@ definition {
 		Button.click(button = "Update");
 
 		JSONBlog.addEntry(
-			entryContent = "Blogs Entry Content",
-			entryTitle = "Blogs Entry Title 2");
+			entryContent = "Blogs Entry Content 2 18432",
+			entryTitle = "Blogs Entry Title 2 18432");
 
 		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
 
 		Workflow.assignToMeTaskByActions(
-			workflowAssetTitle = "Blogs Entry Title",
+			workflowAssetTitle = "Blogs Entry Title 18432",
 			workflowAssetType = "Blogs Entry",
 			workflowTask = "Review");
 
 		Workflow.assignToMeTaskByActions(
-			workflowAssetTitle = "Blogs Entry Title 2",
+			workflowAssetTitle = "Blogs Entry Title 2 18432",
 			workflowAssetType = "Blogs Entry",
 			workflowTask = "review");
 
 		WorkflowMetrics.goToWorkflowAllItems(workflowProcessName = "Single Approver");
 
-		if (IsNotChecked.isNotCheckedNotVisible(locator1 = "Checkbox#LEXICON_SELECT_ALL_INPUT")) {
-			Click(locator1 = "Checkbox#LEXICON_SELECT_ALL_CONTAINER");
-		}
-
-		Click(
-			locator1 = "WorkflowAllItems#KEBAB_DROPDOWN",
-			task = 1);
-
-		Click(locator1 = "WorkflowAllItems#TRANSITION_DROPDOWN");
+		WorkflowMetrics.goToTransitionSteps();
 
 		WorkflowMetrics.selectAllTransitionTasks();
 
 		AssertElementPresent(
-			key_taskName = "Blogs Entry Title",
+			key_taskName = "Blogs Entry Title 18432",
 			locator1 = "WorkflowTransitionModal#TRANSITION_MODAL_ASSERT_REVIEW_TASK_1");
 
 		AssertElementPresent(
-			key_taskName = "Blogs Entry Title 2",
+			key_taskName = "Blogs Entry Title 2 18432",
 			locator1 = "WorkflowTransitionModal#TRANSITION_MODAL_ASSERT_REVIEW_TASK_2");
 	}
 
@@ -712,11 +667,9 @@ definition {
 	@priority = 3
 	test TasksWithMoreThan10PossibleTransitionsHasScroll {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Workflow.addNewDefinition(workflowDefinitionTitle = "Transitions Definition");
 
@@ -743,7 +696,7 @@ definition {
 		Workflow.assignToMeTaskByActions(
 			workflowAssetTitle = "Blogs Entry Title",
 			workflowAssetType = "Blogs Entry",
-			workflowTask = "Review");
+			workflowTask = "review");
 
 		WorkflowMetrics.goToDashboardAllItemsWithFilter(
 			workflowFilterOption = "PENDING",

@@ -4,7 +4,7 @@ definition {
 	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Fragments";
+	property testray.main.component.name = "Fragment Administration";
 
 	setUp {
 		task ("Set up instance and sign in") {
@@ -225,12 +225,12 @@ definition {
 
 			AssertTextEquals(
 				ariaLabel = "Radio del borde",
-				locator1 = "TextInput#ANY_WITH_AIRA_LABEL",
+				locator1 = "TextInput#ANY_WITH_ARIA_LABEL",
 				value1 = 0);
 
 			AssertTextEquals(
 				ariaLabel = "Sombra",
-				locator1 = "TextInput#ANY_WITH_AIRA_LABEL",
+				locator1 = "TextInput#ANY_WITH_ARIA_LABEL",
 				value1 = "none");
 		}
 	}

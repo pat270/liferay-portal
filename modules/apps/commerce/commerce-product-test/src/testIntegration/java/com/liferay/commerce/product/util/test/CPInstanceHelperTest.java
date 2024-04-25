@@ -6,7 +6,6 @@
 package com.liferay.commerce.product.util.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-import com.liferay.commerce.product.exception.CPDefinitionIgnoreSKUCombinationsException;
 import com.liferay.commerce.product.model.CPDefinition;
 import com.liferay.commerce.product.model.CPDefinitionOptionRel;
 import com.liferay.commerce.product.model.CPDefinitionOptionValueRel;
@@ -33,6 +32,7 @@ import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
@@ -112,13 +112,13 @@ public class CPInstanceHelperTest {
 			"There is only CP instance A that represents SKU value " +
 				"combination Option_1_Value_2, Option_2_Value_1"
 		).and(
-			"serialized DDM form values contains combination " +
+			"serialized form field values contains combination " +
 				"Option_1_Value_2, Option_2_Value_1"
 		).then(
 			"CP instance A must be fetched"
 		).but(
 			StringBundler.concat(
-				"If serialized DDM form values contains combination other ",
+				"If serialized form field values contains combination other ",
 				"than Option_1_Value_2, Option_2_Value_1 nothing should be ",
 				"fetched")
 		);
@@ -147,7 +147,7 @@ public class CPInstanceHelperTest {
 
 		CPInstance cpInstanceA = cpDefinitionInstances.get(2);
 
-		List<String> deletedCPInstanceDDMFormSerializedValues =
+		List<String> deletedCPInstanceFormFieldSerializedValues =
 			new ArrayList<>();
 
 		for (CPInstance cpDefinitionInstance : cpDefinitionInstances) {
@@ -157,8 +157,8 @@ public class CPInstanceHelperTest {
 				continue;
 			}
 
-			deletedCPInstanceDDMFormSerializedValues.add(
-				_getSerializedDDMFormValues(cpDefinitionInstance));
+			deletedCPInstanceFormFieldSerializedValues.add(
+				_getSerializedFormFieldValues(cpDefinitionInstance));
 
 			_cpInstanceLocalService.deleteCPInstance(cpDefinitionInstance);
 		}
@@ -174,7 +174,7 @@ public class CPInstanceHelperTest {
 
 		CPInstance fetchCPInstance = _cpInstanceHelper.fetchCPInstance(
 			cpDefinition.getCPDefinitionId(),
-			_getSerializedDDMFormValues(cpInstanceA));
+			_getSerializedFormFieldValues(cpInstanceA));
 
 		Assert.assertNotNull("Fetched CP instance exist", fetchCPInstance);
 
@@ -182,16 +182,17 @@ public class CPInstanceHelperTest {
 			"Fetched CP instance equals CP instance A",
 			cpInstanceA.getCPInstanceId(), fetchCPInstance.getCPInstanceId());
 
-		for (String deletedCPInstanceDDMFormSerializedValue :
-				deletedCPInstanceDDMFormSerializedValues) {
+		for (String deletedCPInstanceFormFieldSerializedValue :
+				deletedCPInstanceFormFieldSerializedValues) {
 
 			Assert.assertNull(
 				_cpInstanceHelper.fetchCPInstance(
 					cpDefinition.getCPDefinitionId(),
-					deletedCPInstanceDDMFormSerializedValue));
+					deletedCPInstanceFormFieldSerializedValue));
 		}
 	}
 
+	@FeatureFlags("LPD-10887")
 	@Test
 	public void testFetchCPInstanceIgnoreSkuCombinationsTrue()
 		throws Exception {
@@ -298,7 +299,7 @@ public class CPInstanceHelperTest {
 			defaultCPInstance.getCPInstanceId());
 	}
 
-	@Test(expected = CPDefinitionIgnoreSKUCombinationsException.class)
+	@Test
 	public void testGetDefaultCPInstanceIfSKUContributorOptionPresent()
 		throws Exception {
 
@@ -358,8 +359,10 @@ public class CPInstanceHelperTest {
 			"Product approved instances count", 1,
 			approvedCPDefinitionInstances.size());
 
-		_cpInstanceHelper.getDefaultCPInstance(
-			cpDefinition.getCPDefinitionId());
+		Assert.assertEquals(
+			_cpInstanceHelper.getDefaultCPInstance(
+				cpDefinition.getCPDefinitionId()),
+			approvedCPDefinitionInstances.get(0));
 	}
 
 	@Test
@@ -483,7 +486,7 @@ public class CPInstanceHelperTest {
 	@Rule
 	public final FrutillaRule frutillaRule = new FrutillaRule();
 
-	private String _getSerializedDDMFormValues(CPInstance cpInstance)
+	private String _getSerializedFormFieldValues(CPInstance cpInstance)
 		throws Exception {
 
 		Map<String, List<String>>

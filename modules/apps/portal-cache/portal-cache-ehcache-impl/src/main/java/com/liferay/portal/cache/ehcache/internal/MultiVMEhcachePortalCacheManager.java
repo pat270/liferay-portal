@@ -5,15 +5,19 @@
 
 package com.liferay.portal.cache.ehcache.internal;
 
-import com.liferay.portal.cache.ehcache.internal.configurator.BaseEhcachePortalCacheManagerConfigurator;
-import com.liferay.portal.cache.ehcache.internal.configurator.MultiVMEhcachePortalCacheManagerConfigurator;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.cache.PortalCacheManager;
 import com.liferay.portal.kernel.cache.PortalCacheManagerNames;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
 
 import java.io.Serializable;
+
+import java.util.Properties;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
@@ -36,6 +40,13 @@ public class MultiVMEhcachePortalCacheManager
 	protected void activate(BundleContext bundleContext) {
 		this.bundleContext = bundleContext;
 
+		clusterEnabled = GetterUtil.getBoolean(
+			_props.get(PropsKeys.CLUSTER_LINK_ENABLED));
+		_defaultReplicatorPropertiesString = _getPortalPropertiesString(
+			PropsKeys.EHCACHE_REPLICATOR_PROPERTIES_DEFAULT);
+		_replicatorProperties = _props.getProperties(
+			PropsKeys.EHCACHE_REPLICATOR_PROPERTIES + StringPool.PERIOD, true);
+
 		setConfigFile(props.get(PropsKeys.EHCACHE_MULTI_VM_CONFIG_LOCATION));
 		setDefaultConfigFile(_DEFAULT_CONFIG_FILE_NAME);
 		setPortalCacheManagerName(PortalCacheManagerNames.MULTI_VM);
@@ -52,11 +63,45 @@ public class MultiVMEhcachePortalCacheManager
 		destroy();
 	}
 
-	@Override
-	protected BaseEhcachePortalCacheManagerConfigurator
-		getBaseEhcachePortalCacheManagerConfigurator() {
+	protected String getDefaultReplicatorPropertiesString() {
+		if (clusterEnabled) {
+			return _defaultReplicatorPropertiesString;
+		}
 
-		return _multiVMEhcachePortalCacheManagerConfigurator;
+		return null;
+	}
+
+	protected Properties getReplicatorProperties() {
+		if (clusterEnabled) {
+			return _replicatorProperties;
+		}
+
+		return null;
+	}
+
+	protected boolean clusterEnabled;
+
+	private String _getPortalPropertiesString(String portalPropertyKey) {
+		String[] array = _props.getArray(portalPropertyKey);
+
+		if (array.length == 0) {
+			return null;
+		}
+
+		if (array.length == 1) {
+			return array[0];
+		}
+
+		StringBundler sb = new StringBundler(array.length * 2);
+
+		for (String value : array) {
+			sb.append(value);
+			sb.append(StringPool.COMMA);
+		}
+
+		sb.setIndex(sb.index() - 1);
+
+		return sb.toString();
 	}
 
 	private static final String _DEFAULT_CONFIG_FILE_NAME =
@@ -65,8 +110,11 @@ public class MultiVMEhcachePortalCacheManager
 	private static final Log _log = LogFactoryUtil.getLog(
 		MultiVMEhcachePortalCacheManager.class);
 
+	private String _defaultReplicatorPropertiesString;
+
 	@Reference
-	private MultiVMEhcachePortalCacheManagerConfigurator
-		_multiVMEhcachePortalCacheManagerConfigurator;
+	private Props _props;
+
+	private Properties _replicatorProperties;
 
 }

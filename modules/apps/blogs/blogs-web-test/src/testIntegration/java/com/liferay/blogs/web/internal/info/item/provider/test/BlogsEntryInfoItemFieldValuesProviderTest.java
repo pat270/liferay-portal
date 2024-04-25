@@ -147,7 +147,7 @@ public class BlogsEntryInfoItemFieldValuesProviderTest {
 			WebImage webImage = (WebImage)previewImageInfoFieldValue.getValue();
 
 			Assert.assertEquals(
-				blogsEntry.getCoverImageURL(themeDisplay), webImage.getUrl());
+				blogsEntry.getCoverImageURL(themeDisplay), webImage.getURL());
 		}
 		finally {
 			ServiceContextThreadLocal.pushServiceContext(
@@ -194,9 +194,9 @@ public class BlogsEntryInfoItemFieldValuesProviderTest {
 			WebImage webImage = (WebImage)previewImageInfoFieldValue.getValue();
 
 			Assert.assertEquals(
-				blogsEntry.getCoverImageURL(themeDisplay), webImage.getUrl());
+				blogsEntry.getCoverImageURL(themeDisplay), webImage.getURL());
 			Assert.assertNotEquals(
-				blogsEntry.getSmallImageURL(themeDisplay), webImage.getUrl());
+				blogsEntry.getSmallImageURL(themeDisplay), webImage.getURL());
 		}
 		finally {
 			ServiceContextThreadLocal.pushServiceContext(
@@ -241,7 +241,7 @@ public class BlogsEntryInfoItemFieldValuesProviderTest {
 			WebImage webImage = (WebImage)previewImageInfoFieldValue.getValue();
 
 			Assert.assertEquals(
-				blogsEntry.getSmallImageURL(themeDisplay), webImage.getUrl());
+				blogsEntry.getSmallImageURL(themeDisplay), webImage.getURL());
 		}
 		finally {
 			ServiceContextThreadLocal.pushServiceContext(
@@ -290,6 +290,8 @@ public class BlogsEntryInfoItemFieldValuesProviderTest {
 
 		themeDisplay.setRequest(mockHttpServletRequest);
 
+		themeDisplay.setScopeGroupId(_group.getGroupId());
+		themeDisplay.setSiteGroupId(_group.getGroupId());
 		themeDisplay.setURLCurrent("http://localhost:8080/currentURL");
 
 		return themeDisplay;

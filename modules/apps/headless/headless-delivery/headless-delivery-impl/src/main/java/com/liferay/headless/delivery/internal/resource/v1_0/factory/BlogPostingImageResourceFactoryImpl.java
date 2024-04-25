@@ -72,7 +72,12 @@ public class BlogPostingImageResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _blogPostingImageResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, BlogPostingImageResource>
+					blogPostingImageResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_blogPostingImageResourceProxyProviderFunction;
+
+				return blogPostingImageResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -231,10 +236,6 @@ public class BlogPostingImageResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, BlogPostingImageResource>
-		_blogPostingImageResourceProxyProviderFunction =
-			_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -270,6 +271,15 @@ public class BlogPostingImageResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function
+			<InvocationHandler, BlogPostingImageResource>
+				_blogPostingImageResourceProxyProviderFunction =
+					_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

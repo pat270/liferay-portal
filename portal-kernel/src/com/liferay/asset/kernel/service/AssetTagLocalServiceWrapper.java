@@ -32,25 +32,25 @@ public class AssetTagLocalServiceWrapper
 	}
 
 	@Override
-	public void addAssetEntryAssetTag(long entryId, AssetTag assetTag) {
-		_assetTagLocalService.addAssetEntryAssetTag(entryId, assetTag);
+	public boolean addAssetEntryAssetTag(long entryId, AssetTag assetTag) {
+		return _assetTagLocalService.addAssetEntryAssetTag(entryId, assetTag);
 	}
 
 	@Override
-	public void addAssetEntryAssetTag(long entryId, long tagId) {
-		_assetTagLocalService.addAssetEntryAssetTag(entryId, tagId);
+	public boolean addAssetEntryAssetTag(long entryId, long tagId) {
+		return _assetTagLocalService.addAssetEntryAssetTag(entryId, tagId);
 	}
 
 	@Override
-	public void addAssetEntryAssetTags(
+	public boolean addAssetEntryAssetTags(
 		long entryId, java.util.List<AssetTag> assetTags) {
 
-		_assetTagLocalService.addAssetEntryAssetTags(entryId, assetTags);
+		return _assetTagLocalService.addAssetEntryAssetTags(entryId, assetTags);
 	}
 
 	@Override
-	public void addAssetEntryAssetTags(long entryId, long[] tagIds) {
-		_assetTagLocalService.addAssetEntryAssetTags(entryId, tagIds);
+	public boolean addAssetEntryAssetTags(long entryId, long[] tagIds) {
+		return _assetTagLocalService.addAssetEntryAssetTags(entryId, tagIds);
 	}
 
 	/**
@@ -662,24 +662,6 @@ public class AssetTagLocalServiceWrapper
 		return _assetTagLocalService.getPersistedModel(primaryKeyObj);
 	}
 
-	@Override
-	public java.util.List<AssetTag> getSocialActivityCounterOffsetTags(
-		long groupId, String socialActivityCounterName, int startOffset,
-		int endOffset) {
-
-		return _assetTagLocalService.getSocialActivityCounterOffsetTags(
-			groupId, socialActivityCounterName, startOffset, endOffset);
-	}
-
-	@Override
-	public java.util.List<AssetTag> getSocialActivityCounterPeriodTags(
-		long groupId, String socialActivityCounterName, int startPeriod,
-		int endPeriod) {
-
-		return _assetTagLocalService.getSocialActivityCounterPeriodTags(
-			groupId, socialActivityCounterName, startPeriod, endPeriod);
-	}
-
 	/**
 	 * Returns the asset tag with the primary key.
 	 *
@@ -840,11 +822,6 @@ public class AssetTagLocalServiceWrapper
 	@Override
 	public int getTagsSize(long groupId, long classNameId, String name) {
 		return _assetTagLocalService.getTagsSize(groupId, classNameId, name);
-	}
-
-	@Override
-	public int getTagsSize(long groupId, String name) {
-		return _assetTagLocalService.getTagsSize(groupId, name);
 	}
 
 	@Override

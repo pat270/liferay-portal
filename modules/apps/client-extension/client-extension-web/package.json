@@ -1,7 +1,19 @@
 {
 	"dependencies": {
-		"frontend-js-web": "*"
+		"@clayui/alert": "3.111.0",
+		"@clayui/button": "3.113.0",
+		"@clayui/core": "3.113.0",
+		"@clayui/form": "3.113.0",
+		"@clayui/icon": "3.111.0",
+		"@clayui/layout": "3.111.0",
+		"@clayui/modal": "3.113.0",
+		"classnames": "2.3.1",
+		"frontend-js-components-web": "*",
+		"frontend-js-web": "*",
+		"react": "16.12.0",
+		"uuid": "^9.0.1"
 	},
+	"main": "js/index.ts",
 	"name": "@liferay/client-extension-web",
 	"private": true,
 	"scripts": {
@@ -10,5 +22,5 @@
 		"format": "liferay-npm-scripts fix",
 		"test": "liferay-npm-scripts test"
 	},
-	"version": "1.0.43"
+	"version": "1.0.60"
 }

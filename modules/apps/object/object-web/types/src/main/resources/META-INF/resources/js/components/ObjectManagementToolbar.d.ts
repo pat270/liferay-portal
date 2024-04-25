@@ -7,30 +7,30 @@
 
 interface ObjectManagementToolbarProps {
 	backURL: string;
-	externalReferenceCode: string;
 	hasPublishObjectPermission: boolean;
 	hasUpdateObjectDefinitionPermission: boolean;
 	isApproved: boolean;
+	isRootDescendantNode: boolean;
 	label: string;
+	objectDefinitionExternalReferenceCode: string;
 	objectDefinitionId: number;
 	onSubmit: (draft: boolean) => void;
 	portletNamespace: string;
 	screenNavigationCategoryKey: string;
-	setValues: (values: Partial<ObjectDefinition>) => void;
 	system: boolean;
 }
 export default function ObjectManagementToolbar({
 	backURL,
-	externalReferenceCode,
 	hasPublishObjectPermission,
 	hasUpdateObjectDefinitionPermission,
 	isApproved,
+	isRootDescendantNode,
 	label,
+	objectDefinitionExternalReferenceCode,
 	objectDefinitionId,
 	onSubmit,
 	portletNamespace,
 	screenNavigationCategoryKey,
-	setValues,
 	system,
 }: ObjectManagementToolbarProps): JSX.Element;
 export {};

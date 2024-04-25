@@ -1,6 +1,7 @@
 /**
  * SPDX-FileCopyrightText: (c) 2000 Liferay, Inc. https://liferay.com
- * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
+ * SPDX-License-Identifier: LGPL-2.1-or-later OR
+ * LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
 package com.liferay.change.tracking.web.internal.portlet.action;
@@ -19,11 +20,13 @@ import com.liferay.change.tracking.web.internal.util.PublicationsPortletURLUtil;
 import com.liferay.diff.DiffHtml;
 import com.liferay.petra.io.unsync.UnsyncStringWriter;
 import com.liferay.petra.lang.SafeCloseable;
+import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
 import com.liferay.portal.kernel.change.tracking.sql.CTSQLModeThreadLocal;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
@@ -33,24 +36,52 @@ import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.GroupedModel;
+import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.model.WorkflowInstanceLink;
 import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
+import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCResourceCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCResourceCommand;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
+import com.liferay.portal.kernel.service.WorkflowInstanceLinkLocalService;
 import com.liferay.portal.kernel.servlet.PipingServletResponse;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
+import com.liferay.portal.kernel.util.HtmlUtil;
+import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.kernel.workflow.WorkflowTask;
+import com.liferay.portal.kernel.workflow.WorkflowTaskManager;
+import com.liferay.segments.constants.SegmentsExperienceConstants;
+import com.liferay.segments.model.SegmentsEntry;
+import com.liferay.segments.model.SegmentsExperience;
+import com.liferay.segments.model.SegmentsExperienceModel;
+import com.liferay.segments.model.SegmentsExperienceTable;
+import com.liferay.segments.service.SegmentsEntryLocalService;
+import com.liferay.segments.service.SegmentsExperienceLocalService;
 
+import java.text.Format;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 
 import javax.portlet.ActionRequest;
+import javax.portlet.PortletRequest;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 
@@ -175,22 +206,26 @@ public class GetEntryRenderDataMVCResourceCommand
 				ctEntry.getModelClassPK());
 
 			if (rightModel != null) {
-				String editURL = _ctDisplayRendererRegistry.getEditURL(
-					ctCollectionId, ctSQLMode, httpServletRequest, rightModel,
-					ctEntry.getModelClassNameId());
+				if (ctCollection.getStatus() ==
+						WorkflowConstants.STATUS_DRAFT) {
 
-				if (Validator.isNotNull(editURL)) {
-					editInPublicationJSONObject = _getEditJSONObject(
-						_language.format(
-							httpServletRequest,
-							"you-are-currently-working-on-production.-work-" +
-								"on-x",
-							new Object[] {ctCollection.getName()}, false),
-						ctCollection.getCtCollectionId(), editURL,
-						_language.format(
-							httpServletRequest, "edit-in-x",
-							new Object[] {ctCollection.getName()}, false),
-						resourceRequest, resourceResponse);
+					String editURL = _ctDisplayRendererRegistry.getEditURL(
+						ctCollectionId, ctSQLMode, httpServletRequest,
+						rightModel, ctEntry.getModelClassNameId());
+
+					if (Validator.isNotNull(editURL)) {
+						editInPublicationJSONObject = _getEditJSONObject(
+							_language.format(
+								httpServletRequest,
+								"you-are-currently-working-on-production.-" +
+									"work-on-x",
+								new Object[] {ctCollection.getName()}, false),
+							ctCollection.getCtCollectionId(), editURL,
+							_language.format(
+								httpServletRequest, "edit-in-x",
+								new Object[] {ctCollection.getName()}, false),
+							resourceRequest, resourceResponse);
+					}
 				}
 
 				if (localize) {
@@ -573,6 +608,26 @@ public class GetEntryRenderDataMVCResourceCommand
 					new UnsyncStringReader(rightPreview)));
 		}
 
+		String workflowView = null;
+
+		Map<String, String> workflowData = new LinkedHashMap<>();
+
+		if (_ctDisplayRendererRegistry.isWorkflowEnabled(ctEntry, rightModel) &&
+			(ctEntry.getChangeType() != CTConstants.CT_CHANGE_TYPE_DELETION)) {
+
+			workflowData = _getWorkflowData(ctEntry, rightModel, themeDisplay);
+		}
+
+		if (!workflowData.isEmpty()) {
+			workflowView = _getWorkflowViewHTML(themeDisplay, workflowData);
+		}
+
+		if ((workflowView != null) &&
+			FeatureFlagManagerUtil.isEnabled("LPD-10703")) {
+
+			jsonObject.put("workflowView", workflowView);
+		}
+
 		if (ctDisplayRenderer.showPreviewDiff() &&
 			(leftLocalizedPreviewJSONObject != null) &&
 			(rightLocalizedPreviewJSONObject != null)) {
@@ -637,17 +692,28 @@ public class GetEntryRenderDataMVCResourceCommand
 		}
 
 		if (ArrayUtil.isNotEmpty(availableLanguageIds)) {
-			JSONArray localesJSONArray = _jsonFactory.createJSONArray();
+			JSONArray jsonArray = _jsonFactory.createJSONArray();
 
 			for (String languageId : availableLanguageIds) {
-				localesJSONArray.put(_getLocaleJSONObject(languageId));
+				jsonArray.put(_getLocaleJSONObject(languageId));
 			}
 
 			jsonObject.put(
-				"locales", localesJSONArray
+				"locales", jsonArray
 			).put(
 				"localizedTitles", localizedTitlesJSONObject
 			);
+		}
+
+		if (ctEntry.getModelClassNameId() ==
+				_classNameLocalService.getClassNameId(Layout.class)) {
+
+			try (SafeCloseable safeCloseable =
+					CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
+						ctEntry.getCtCollectionId())) {
+
+				_getSegmentExperiences(ctEntry, httpServletRequest, jsonObject);
+			}
 		}
 
 		return jsonObject;
@@ -879,6 +945,243 @@ public class GetEntryRenderDataMVCResourceCommand
 		}
 	}
 
+	private void _getSegmentExperiences(
+		CTEntry ctEntry, HttpServletRequest httpServletRequest,
+		JSONObject jsonObject) {
+
+		JSONArray jsonArray = _jsonFactory.createJSONArray();
+
+		List<SegmentsExperience> segmentsExperiences = new ArrayList<>(
+			_segmentsExperienceLocalService.dslQuery(
+				DSLQueryFactoryUtil.select(
+					SegmentsExperienceTable.INSTANCE
+				).from(
+					SegmentsExperienceTable.INSTANCE
+				).where(
+					SegmentsExperienceTable.INSTANCE.plid.eq(
+						ctEntry.getModelClassPK())
+				)));
+
+		if (segmentsExperiences.isEmpty()) {
+			return;
+		}
+
+		segmentsExperiences.sort(
+			Comparator.comparingInt(SegmentsExperienceModel::getPriority));
+
+		SegmentsExperience highestPrioritySegmentsExperience =
+			segmentsExperiences.get(segmentsExperiences.size() - 1);
+
+		long highestPrioritySegmentsExperienceId =
+			highestPrioritySegmentsExperience.getSegmentsExperienceId();
+
+		for (SegmentsExperience segmentsExperience : segmentsExperiences) {
+			jsonArray.put(
+				JSONUtil.put(
+					"active",
+					() -> {
+						if (segmentsExperience.getSegmentsExperienceId() ==
+								highestPrioritySegmentsExperienceId) {
+
+							return true;
+						}
+
+						return false;
+					}
+				).put(
+					"id", segmentsExperience.getSegmentsExperienceId()
+				).put(
+					"isDefault",
+					Objects.equals(
+						segmentsExperience.getSegmentsExperienceKey(),
+						SegmentsExperienceConstants.KEY_DEFAULT) &&
+					(segmentsExperience.getSegmentsEntryId() == 0)
+				).put(
+					"name",
+					segmentsExperience.getName(httpServletRequest.getLocale())
+				).put(
+					"segmentName",
+					() -> {
+						if (segmentsExperience.getSegmentsEntryId() == 0) {
+							return _language.get(httpServletRequest, "anyone");
+						}
+
+						SegmentsEntry segmentsEntry =
+							_segmentsEntryLocalService.getSegmentsEntry(
+								segmentsExperience.getSegmentsEntryId());
+
+						return segmentsEntry.getName(
+							httpServletRequest.getLocale());
+					}
+				));
+
+			if (segmentsExperience.getSegmentsExperienceId() ==
+					highestPrioritySegmentsExperienceId) {
+
+				jsonObject.put(
+					"activeSegmentsExperience",
+					jsonArray.get(jsonArray.length() - 1));
+			}
+		}
+
+		jsonObject.put("segmentsExperiences", jsonArray);
+	}
+
+	private <T extends BaseModel<T>> Map<String, String> _getWorkflowData(
+			CTEntry ctEntry, T model, ThemeDisplay themeDisplay)
+		throws Exception {
+
+		long groupId = 0;
+
+		if (model instanceof GroupedModel) {
+			GroupedModel groupedModel = (GroupedModel)model;
+
+			groupId = groupedModel.getGroupId();
+		}
+
+		WorkflowInstanceLink workflowInstanceLink =
+			_workflowInstanceLinkLocalService.fetchWorkflowInstanceLink(
+				ctEntry.getCompanyId(), groupId,
+				_portal.getClassName(ctEntry.getModelClassNameId()),
+				ctEntry.getModelClassPK());
+
+		if (workflowInstanceLink == null) {
+			return new LinkedHashMap<>();
+		}
+
+		List<WorkflowTask> workflowTasks =
+			_workflowTaskManager.getWorkflowTasksByWorkflowInstance(
+				ctEntry.getCompanyId(), null,
+				workflowInstanceLink.getWorkflowInstanceId(), false, 0, 1,
+				null);
+
+		if (workflowTasks.isEmpty()) {
+			return new LinkedHashMap<>();
+		}
+
+		Format format = FastDateFormatFactoryUtil.getDateTime(
+			themeDisplay.getLocale(), themeDisplay.getTimeZone());
+		WorkflowTask workflowTask = workflowTasks.get(0);
+
+		return LinkedHashMapBuilder.put(
+			"status",
+			() -> {
+				Map<String, Object> modelAttributes =
+					model.getModelAttributes();
+
+				return String.valueOf(modelAttributes.get("status"));
+			}
+		).put(
+			"assigned-to",
+			() -> {
+				if (!workflowTask.isAssignedToSingleUser()) {
+					return _language.get(themeDisplay.getLocale(), "nobody");
+				}
+
+				return _portal.getUserName(
+					workflowTask.getAssigneeUserId(),
+					String.valueOf(workflowTask.getAssigneeUserId()));
+			}
+		).put(
+			"task-name", workflowTask.getLabel(themeDisplay.getLocale())
+		).put(
+			"create-date", format.format(workflowTask.getCreateDate())
+		).put(
+			"due-date",
+			() -> {
+				if (workflowTask.getDueDate() != null) {
+					return format.format(workflowTask.getDueDate());
+				}
+
+				return _language.get(themeDisplay.getLocale(), "never");
+			}
+		).put(
+			"usages",
+			() -> {
+				HttpServletRequest httpServletRequest =
+					themeDisplay.getRequest();
+
+				return PortletURLBuilder.create(
+					PortletURLFactoryUtil.create(
+						httpServletRequest, PortletKeys.MY_WORKFLOW_TASK,
+						PortletRequest.RENDER_PHASE)
+				).setMVCPath(
+					"/view_layout_classed_model_usages.jsp"
+				).setRedirect(
+					PortletURLBuilder.create(
+						PortletURLFactoryUtil.create(
+							httpServletRequest, CTPortletKeys.PUBLICATIONS,
+							PortletRequest.RENDER_PHASE)
+					).setMVCRenderCommandName(
+						"/change_tracking/view_change"
+					).setParameter(
+						"ctCollectionId", ctEntry.getCtCollectionId()
+					).setParameter(
+						"ctEntryId", ctEntry.getCtEntryId()
+					).buildString()
+				).setParameter(
+					"className", workflowInstanceLink.getClassName()
+				).setParameter(
+					"classPK", workflowInstanceLink.getClassPK()
+				).setParameter(
+					"workflowTaskId", workflowTask.getWorkflowTaskId()
+				).buildString();
+			}
+		).build();
+	}
+
+	private String _getWorkflowViewHTML(
+		ThemeDisplay themeDisplay, Map<String, String> workflowData) {
+
+		StringBundler sb = new StringBundler();
+
+		sb.append("<div class=\"table-responsive\"><table class=\"");
+		sb.append("publications-render-table table table-autofit ");
+		sb.append("table-nowrap\">");
+
+		for (Map.Entry<String, String> entry : workflowData.entrySet()) {
+			sb.append("<tr><td class=\"publications-key-td ");
+			sb.append("table-cell-expand-small\">");
+			sb.append(_language.get(themeDisplay.getLocale(), entry.getKey()));
+			sb.append("</td><td class=\"table-cell-expand\">");
+
+			if (Objects.equals(entry.getKey(), "status")) {
+				int status = Integer.valueOf(entry.getValue());
+
+				sb.append("<span class=\"label label-");
+				sb.append(WorkflowConstants.getStatusStyle(status));
+				sb.append("\"");
+				sb.append("<span class=\"label-item label-item-expand\">");
+				sb.append(
+					_language.get(
+						themeDisplay.getLocale(),
+						WorkflowConstants.getStatusLabel(status)));
+				sb.append("</span");
+				sb.append("</span");
+			}
+
+			if (Objects.equals(entry.getKey(), "usages")) {
+				String url = entry.getValue();
+
+				sb.append("<a href=\"");
+				sb.append(HtmlUtil.escape(url));
+				sb.append("\">");
+				sb.append(
+					_language.get(themeDisplay.getLocale(), "view-usages"));
+				sb.append("</a>");
+			}
+			else {
+				sb.append(HtmlUtil.escape(String.valueOf(entry.getValue())));
+			}
+
+			sb.append("</td></tr>");
+		}
+
+		sb.append("</table></div>");
+
+		return sb.toString();
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		GetEntryRenderDataMVCResourceCommand.class);
 
@@ -908,5 +1211,17 @@ public class GetEntryRenderDataMVCResourceCommand
 
 	@Reference
 	private Portal _portal;
+
+	@Reference
+	private SegmentsEntryLocalService _segmentsEntryLocalService;
+
+	@Reference
+	private SegmentsExperienceLocalService _segmentsExperienceLocalService;
+
+	@Reference
+	private WorkflowInstanceLinkLocalService _workflowInstanceLinkLocalService;
+
+	@Reference
+	private WorkflowTaskManager _workflowTaskManager;
 
 }

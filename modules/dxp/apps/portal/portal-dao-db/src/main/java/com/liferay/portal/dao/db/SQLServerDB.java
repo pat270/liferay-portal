@@ -14,6 +14,7 @@ import com.liferay.portal.kernel.dao.db.IndexMetadata;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -28,6 +29,7 @@ import java.sql.Types;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -62,6 +64,8 @@ public class SQLServerDB extends BaseDB {
 		if (primaryKey) {
 			removePrimaryKey(connection, tableName);
 		}
+
+		_dropDefaultConstraint(connection, tableName, columnName);
 
 		super.alterColumnType(connection, tableName, columnName, newColumnType);
 
@@ -136,7 +140,7 @@ public class SQLServerDB extends BaseDB {
 			while (resultSet.next()) {
 				String indexName = resultSet.getString("index_name");
 				String tableName = resultSet.getString("table_name");
-				boolean unique = !resultSet.getBoolean("is_unique");
+				boolean unique = resultSet.getBoolean("is_unique");
 
 				indexes.add(new Index(indexName, tableName, unique));
 			}
@@ -164,7 +168,7 @@ public class SQLServerDB extends BaseDB {
 
 	@Override
 	public boolean isSupportsNewUuidFunction() {
-		return _SUPPORTS_NEW_UUID_FUNCTION;
+		return true;
 	}
 
 	@Override
@@ -261,7 +265,8 @@ public class SQLServerDB extends BaseDB {
 			String targetTableName, String triggerName,
 			String[] sourceColumnNames, String[] targetColumnNames,
 			String[] sourcePrimaryKeyColumnNames,
-			String[] targetPrimaryKeyColumnNames)
+			String[] targetPrimaryKeyColumnNames,
+			Map<String, String> defaultValuesMap)
 		throws Exception {
 
 		StringBundler sb = new StringBundler();
@@ -281,9 +286,21 @@ public class SQLServerDB extends BaseDB {
 				sb.append(", ");
 			}
 
+			String defaultValue = defaultValuesMap.get(targetColumnNames[i]);
+
+			if (defaultValue != null) {
+				sb.append("COALESCE(");
+			}
+
 			sb.append(sourceTableName);
 			sb.append(StringPool.PERIOD);
 			sb.append(sourceColumnNames[i]);
+
+			if (defaultValue != null) {
+				sb.append(", ");
+				sb.append(defaultValue);
+				sb.append(")");
+			}
 		}
 
 		sb.append(" from ");
@@ -311,7 +328,8 @@ public class SQLServerDB extends BaseDB {
 			String targetTableName, String triggerName,
 			String[] sourceColumnNames, String[] targetColumnNames,
 			String[] sourcePrimaryKeyColumnNames,
-			String[] targetPrimaryKeyColumnNames)
+			String[] targetPrimaryKeyColumnNames,
+			Map<String, String> defaultValuesMap)
 		throws Exception {
 
 		StringBundler sb = new StringBundler();
@@ -332,8 +350,22 @@ public class SQLServerDB extends BaseDB {
 			sb.append(targetTableName);
 			sb.append(StringPool.PERIOD);
 			sb.append(targetColumnNames[i]);
-			sb.append(" = res.");
+			sb.append(" = ");
+
+			String defaultValue = defaultValuesMap.get(targetColumnNames[i]);
+
+			if (defaultValue != null) {
+				sb.append("COALESCE(");
+			}
+
+			sb.append("res.");
 			sb.append(sourceColumnNames[i]);
+
+			if (defaultValue != null) {
+				sb.append(", ");
+				sb.append(defaultValue);
+				sb.append(")");
+			}
 		}
 
 		sb.append(" from (select ");
@@ -364,11 +396,25 @@ public class SQLServerDB extends BaseDB {
 			sb.append(sourcePrimaryKeyColumnNames[i]);
 		}
 
-		sb.append(") as res");
+		sb.append(") as res where ");
+
+		for (int i = 0; i < sourcePrimaryKeyColumnNames.length; i++) {
+			if (i > 0) {
+				sb.append(" and ");
+			}
+
+			sb.append("res.");
+			sb.append(sourcePrimaryKeyColumnNames[i]);
+			sb.append(" = ");
+			sb.append(targetTableName);
+			sb.append(StringPool.PERIOD);
+			sb.append(targetPrimaryKeyColumnNames[i]);
+		}
 
 		runSQL(connection, sb.toString());
 	}
 
+	@Override
 	protected String getCopyTableStructureSQL(
 		String tableName, String newTableName) {
 
@@ -377,6 +423,7 @@ public class SQLServerDB extends BaseDB {
 			" where 1 = 0");
 	}
 
+	@Override
 	protected String getRenameTableSQL(
 		String oldTableName, String newTableName) {
 
@@ -390,8 +437,12 @@ public class SQLServerDB extends BaseDB {
 	}
 
 	@Override
-	protected int[] getSQLVarcharSizes() {
-		return _SQL_VARCHAR_SIZES;
+	protected Map<String, Integer> getSQLVarcharSizes() {
+		return HashMapBuilder.put(
+			"STRING", _SQL_STRING_SIZE
+		).put(
+			"TEXT", SQL_VARCHAR_MAX_SIZE
+		).build();
 	}
 
 	@Override
@@ -426,6 +477,17 @@ public class SQLServerDB extends BaseDB {
 						REWORD_TEMPLATE, template);
 
 					line = StringUtil.replace(line, " ;", ";");
+
+					String defaultValue = template[template.length - 2];
+
+					if (!Validator.isBlank(defaultValue)) {
+						line = line.concat(
+							StringUtil.replace(
+								"alter table @table@ add constraint " +
+									"@old-column@_default default @default@ " +
+										"for @old-column@;",
+								REWORD_TEMPLATE, template));
+					}
 				}
 				else if (line.startsWith(ALTER_TABLE_NAME)) {
 					String[] template = buildTableNameTokens(line);
@@ -488,15 +550,17 @@ public class SQLServerDB extends BaseDB {
 		}
 
 		runSQL(
+			connection,
 			StringBundler.concat(
 				"alter table ", tableName, " drop constraint ",
 				defaultConstraintName));
 	}
 
 	private static final String[] _SQL_SERVER = {
-		"--", "1", "0", "'19700101'", "GetDate()", " image", " image", " bit",
-		" datetime2(6)", " float", " int", " bigint", " nvarchar(4000)",
-		" nvarchar(max)", " nvarchar", "  identity(1,1)", "go"
+		"--", "1", "0", "'19700101'", "GetDate()", " image", " image",
+		" decimal(30, 16)", " bit", " datetime2(6)", " float", " int",
+		" bigint", " nvarchar(4000)", " nvarchar(max)", " nvarchar",
+		"  identity(1,1)", "go"
 	};
 
 	private static final int _SQL_SERVER_2000 = 8;
@@ -504,16 +568,10 @@ public class SQLServerDB extends BaseDB {
 	private static final int _SQL_STRING_SIZE = 4000;
 
 	private static final int[] _SQL_TYPES = {
-		Types.LONGVARBINARY, Types.LONGVARBINARY, Types.BIT, Types.TIMESTAMP,
-		Types.DOUBLE, Types.INTEGER, Types.BIGINT, Types.NVARCHAR,
-		Types.NVARCHAR, Types.NVARCHAR
+		Types.LONGVARBINARY, Types.LONGVARBINARY, Types.DECIMAL, Types.BIT,
+		Types.TIMESTAMP, Types.DOUBLE, Types.INTEGER, Types.BIGINT,
+		Types.NVARCHAR, Types.NVARCHAR, Types.NVARCHAR
 	};
-
-	private static final int[] _SQL_VARCHAR_SIZES = {
-		_SQL_STRING_SIZE, SQL_VARCHAR_MAX_SIZE
-	};
-
-	private static final boolean _SUPPORTS_NEW_UUID_FUNCTION = true;
 
 	private static final Pattern _defaultValuePattern = Pattern.compile(
 		"^\\('(.*)'\\)|\\(\\((\\d*)\\)\\)", Pattern.CASE_INSENSITIVE);

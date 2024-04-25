@@ -41,7 +41,6 @@ import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.WindowStateFactory;
 import com.liferay.portal.kernel.portlet.async.PortletAsyncScopeManager;
 import com.liferay.portal.kernel.portlet.configuration.icon.PortletConfigurationIconMenu;
-import com.liferay.portal.kernel.portlet.toolbar.PortletToolbar;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.PortletPreferencesLocalServiceUtil;
@@ -57,6 +56,7 @@ import com.liferay.portal.kernel.servlet.TransferHeadersHelperUtil;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -260,16 +260,6 @@ public class PortletContainerImpl implements PortletContainer {
 
 				return null;
 			});
-	}
-
-	public void setPortletConfigurationIconMenu(
-		PortletConfigurationIconMenu portletConfigurationIconMenu) {
-
-		_portletConfigurationIconMenu = portletConfigurationIconMenu;
-	}
-
-	public void setPortletToolbar(PortletToolbar portletToolbar) {
-		_portletToolbar = portletToolbar;
 	}
 
 	protected long getScopeGroupId(
@@ -532,34 +522,45 @@ public class PortletContainerImpl implements PortletContainer {
 			String redirectLocation =
 				liferayActionResponse.getRedirectLocation();
 
-			if (Validator.isNull(redirectLocation) &&
-				portlet.isActionURLRedirect()) {
+			if (Validator.isNotNull(redirectLocation)) {
+				if (!GetterUtil.getBoolean(
+						liferayActionResponse.getProperty(
+							LiferayActionResponse.SKIP_ESCAPE_REDIRECT))) {
 
-				PortletURL portletURL = null;
-
-				if (portletApp.getSpecMajorVersion() < 3) {
-					portletURL = PortletURLFactoryUtil.create(
-						liferayActionRequest, portlet, layout,
-						PortletRequest.RENDER_PHASE);
-
-					Map<String, String[]> renderParameters =
-						liferayActionResponse.getRenderParameterMap();
-
-					for (Map.Entry<String, String[]> entry :
-							renderParameters.entrySet()) {
-
-						portletURL.setParameter(
-							entry.getKey(), entry.getValue());
-					}
-				}
-				else {
-					portletURL = PortletURLFactoryUtil.create(
-						liferayActionRequest, portlet, layout.getPlid(),
-						PortletRequest.RENDER_PHASE, MimeResponse.Copy.ALL);
+					redirectLocation = PortalUtil.escapeRedirect(
+						redirectLocation);
 				}
 
-				redirectLocation = portletURL.toString();
+				return new ActionResult(events, redirectLocation);
 			}
+
+			if (!portlet.isActionURLRedirect()) {
+				return new ActionResult(events, null);
+			}
+
+			PortletURL portletURL = null;
+
+			if (portletApp.getSpecMajorVersion() < 3) {
+				portletURL = PortletURLFactoryUtil.create(
+					liferayActionRequest, portlet, layout,
+					PortletRequest.RENDER_PHASE);
+
+				Map<String, String[]> renderParameters =
+					liferayActionResponse.getRenderParameterMap();
+
+				for (Map.Entry<String, String[]> entry :
+						renderParameters.entrySet()) {
+
+					portletURL.setParameter(entry.getKey(), entry.getValue());
+				}
+			}
+			else {
+				portletURL = PortletURLFactoryUtil.create(
+					liferayActionRequest, portlet, layout.getPlid(),
+					PortletRequest.RENDER_PHASE, MimeResponse.Copy.ALL);
+			}
+
+			redirectLocation = portletURL.toString();
 
 			return new ActionResult(events, redirectLocation);
 		}
@@ -819,13 +820,8 @@ public class PortletContainerImpl implements PortletContainer {
 
 		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
 
-		_portletConfigurationIconMenu.setComparator(
+		PortletConfigurationIconMenu.INSTANCE.setComparator(
 			PortletConfigurationIconComparator.INSTANCE);
-
-		portletDisplay.setPortletConfigurationIconMenu(
-			_portletConfigurationIconMenu);
-
-		portletDisplay.setPortletToolbar(_portletToolbar);
 
 		PortletDisplay portletDisplayClone = PortletDisplayFactory.create();
 
@@ -1138,8 +1134,5 @@ public class PortletContainerImpl implements PortletContainer {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		PortletContainerImpl.class);
-
-	private PortletConfigurationIconMenu _portletConfigurationIconMenu;
-	private PortletToolbar _portletToolbar;
 
 }

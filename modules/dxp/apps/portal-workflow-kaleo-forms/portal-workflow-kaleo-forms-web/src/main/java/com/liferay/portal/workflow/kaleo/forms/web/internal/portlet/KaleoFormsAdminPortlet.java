@@ -8,11 +8,9 @@ package com.liferay.portal.workflow.kaleo.forms.web.internal.portlet;
 import com.liferay.dynamic.data.lists.exporter.DDLExporter;
 import com.liferay.dynamic.data.lists.exporter.DDLExporterFactory;
 import com.liferay.dynamic.data.lists.service.DDLRecordLocalService;
-import com.liferay.dynamic.data.mapping.storage.StorageEngine;
-import com.liferay.dynamic.data.mapping.util.DDMDisplayRegistry;
+import com.liferay.dynamic.data.mapping.storage.DDMStorageEngineManager;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
-import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.Language;
@@ -39,7 +37,6 @@ import com.liferay.portal.workflow.kaleo.forms.constants.KaleoFormsWebKeys;
 import com.liferay.portal.workflow.kaleo.forms.exception.NoSuchKaleoProcessException;
 import com.liferay.portal.workflow.kaleo.forms.model.KaleoProcess;
 import com.liferay.portal.workflow.kaleo.forms.service.KaleoProcessService;
-import com.liferay.portal.workflow.kaleo.forms.web.internal.configuration.KaleoFormsWebConfiguration;
 import com.liferay.portal.workflow.kaleo.forms.web.internal.display.context.KaleoFormsAdminDisplayContext;
 import com.liferay.portal.workflow.kaleo.model.KaleoDefinitionVersion;
 import com.liferay.portal.workflow.kaleo.service.KaleoDefinitionVersionLocalService;
@@ -78,10 +75,10 @@ import org.osgi.service.component.annotations.Reference;
 	property = {
 		"com.liferay.portlet.css-class-wrapper=kaleo-forms-admin-portlet",
 		"com.liferay.portlet.display-category=category.hidden",
-		"com.liferay.portlet.footer-portal-javascript=/o/dynamic-data-mapping-web/js/custom_fields.js",
-		"com.liferay.portlet.footer-portal-javascript=/o/dynamic-data-mapping-web/js/main.js",
-		"com.liferay.portlet.footer-portlet-javascript=/admin/js/components.js",
-		"com.liferay.portlet.footer-portlet-javascript=/admin/js/main.js",
+		"com.liferay.portlet.footer-portal-javascript=/o/dynamic-data-mapping-web/js/legacy/custom_fields.js",
+		"com.liferay.portlet.footer-portal-javascript=/o/dynamic-data-mapping-web/js/legacy/main.js",
+		"com.liferay.portlet.footer-portlet-javascript=/js/legacy/components.js",
+		"com.liferay.portlet.footer-portlet-javascript=/js/legacy/main.js",
 		"com.liferay.portlet.header-portal-css=/o/dynamic-data-mapping-web/css/main.css",
 		"com.liferay.portlet.header-portlet-css=/admin/css/main.css",
 		"com.liferay.portlet.preferences-owned-by-group=true",
@@ -197,9 +194,6 @@ public class KaleoFormsAdminPortlet extends MVCPortlet {
 			_parameterNames.add(
 				"name" + LocaleUtil.toLanguageId(availableLocale));
 		}
-
-		_kaleoFormsWebConfiguration = ConfigurableUtil.createConfigurable(
-			KaleoFormsWebConfiguration.class, properties);
 	}
 
 	@Override
@@ -220,9 +214,6 @@ public class KaleoFormsAdminPortlet extends MVCPortlet {
 			super.doDispatch(renderRequest, renderResponse);
 		}
 	}
-
-	@Reference
-	protected StorageEngine storageEngine;
 
 	/**
 	 * Stores the Kaleo process, workflow instance, and workflow task as
@@ -335,7 +326,7 @@ public class KaleoFormsAdminPortlet extends MVCPortlet {
 					serviceContext.getCompanyId(), name, version);
 
 			jsonObject.put(
-				"content", kaleoDefinitionVersion.getContent()
+				"content", kaleoDefinitionVersion.getContentAsXML()
 			).put(
 				"name", kaleoDefinitionVersion.getName()
 			).put(
@@ -413,10 +404,9 @@ public class KaleoFormsAdminPortlet extends MVCPortlet {
 
 		KaleoFormsAdminDisplayContext kaleoFormsAdminDisplayContext =
 			new KaleoFormsAdminDisplayContext(
-				_ddlRecordLocalService, _ddmDisplayRegistry, _htmlParser,
-				_kaleoDefinitionVersionLocalService,
-				_kaleoFormsWebConfiguration, renderRequest, renderResponse,
-				storageEngine);
+				_ddlRecordLocalService, _ddmStorageEngineManager, _htmlParser,
+				_kaleoDefinitionVersionLocalService, renderRequest,
+				renderResponse);
 
 		renderRequest.setAttribute(
 			WebKeys.PORTLET_DISPLAY_CONTEXT, kaleoFormsAdminDisplayContext);
@@ -429,7 +419,7 @@ public class KaleoFormsAdminPortlet extends MVCPortlet {
 	private DDLRecordLocalService _ddlRecordLocalService;
 
 	@Reference
-	private DDMDisplayRegistry _ddmDisplayRegistry;
+	private DDMStorageEngineManager _ddmStorageEngineManager;
 
 	@Reference
 	private HtmlParser _htmlParser;
@@ -440,8 +430,6 @@ public class KaleoFormsAdminPortlet extends MVCPortlet {
 	@Reference
 	private KaleoDefinitionVersionLocalService
 		_kaleoDefinitionVersionLocalService;
-
-	private volatile KaleoFormsWebConfiguration _kaleoFormsWebConfiguration;
 
 	@Reference
 	private KaleoProcessService _kaleoProcessService;

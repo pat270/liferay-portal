@@ -227,7 +227,7 @@ public class RevertFileVersionContentDashboardItemVersionActionProviderTest {
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			RandomTestUtil.randomString() + "." + ContentTypes.IMAGE_JPEG,
 			MimeTypesUtil.getExtensionContentType(ContentTypes.IMAGE_JPEG),
-			new byte[0], null, null, serviceContext);
+			new byte[0], null, null, null, serviceContext);
 
 		if (numVersions > 1) {
 			for (int i = 1; i < numVersions; i++) {
@@ -237,8 +237,9 @@ public class RevertFileVersionContentDashboardItemVersionActionProviderTest {
 					fileEntry.getTitle(), StringUtil.randomString(),
 					fileEntry.getDescription(), RandomTestUtil.randomString(),
 					DLVersionNumberIncrease.MINOR, fileEntry.getContentStream(),
-					fileEntry.getSize(), fileEntry.getExpirationDate(),
-					fileEntry.getReviewDate(), serviceContext);
+					fileEntry.getSize(), fileEntry.getDisplayDate(),
+					fileEntry.getExpirationDate(), fileEntry.getReviewDate(),
+					serviceContext);
 			}
 		}
 

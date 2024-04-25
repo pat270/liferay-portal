@@ -1,6 +1,21 @@
 definition {
 
-	macro assertElementNotFocused {
+	@summary = "Default summary"
+	macro assertContain(actual = null, expected = null) {
+		echo(${expected});
+
+		echo(${actual});
+
+		if (contains(${actual}, ${expected})) {
+			echo("PASSED");
+		}
+		else {
+			TestUtils.fail(message = "FAILED: '${actual}' doesn't contain expected text '${expected}'");
+		}
+	}
+
+	@summary = "Default summary"
+	macro assertElementNotFocused(element = null) {
 		var javascript = '''
 var e = document.evaluate("${element}", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
 
@@ -16,7 +31,8 @@ return	aE.isEqualNode(e).toString();
 		}
 	}
 
-	macro assertEquals {
+	@summary = "Default summary"
+	macro assertEquals(actual = null, expected = null) {
 		echo(${expected});
 
 		echo(${actual});
@@ -29,7 +45,8 @@ return	aE.isEqualNode(e).toString();
 		}
 	}
 
-	macro assertNotContain {
+	@summary = "Default summary"
+	macro assertNotContain(actual = null, expected = null) {
 		echo(${expected});
 
 		echo(${actual});
@@ -42,7 +59,8 @@ return	aE.isEqualNode(e).toString();
 		}
 	}
 
-	macro assertNotEquals {
+	@summary = "Default summary"
+	macro assertNotEquals(actual = null, expected = null) {
 		echo(${expected});
 
 		echo(${actual});
@@ -55,7 +73,8 @@ return	aE.isEqualNode(e).toString();
 		}
 	}
 
-	macro assertPartialAttributeValue {
+	@summary = "Default summary"
+	macro assertPartialAttributeValue(attribute = null, value = null, element = null) {
 		var attributeValue = selenium.getAttribute("${element}@${attribute}");
 
 		if (contains(${attributeValue}, ${value})) {
@@ -66,7 +85,8 @@ return	aE.isEqualNode(e).toString();
 		}
 	}
 
-	macro assertPartialEquals {
+	@summary = "Default summary"
+	macro assertPartialEquals(actual = null, expected = null) {
 		echo(${expected});
 
 		echo(${actual});
@@ -79,7 +99,8 @@ return	aE.isEqualNode(e).toString();
 		}
 	}
 
-	macro assertTruncatedText {
+	@summary = "Default summary"
+	macro assertTruncatedText() {
 		WaitForSPARefresh();
 
 		var javascript = '''
@@ -96,7 +117,19 @@ return (element.offsetWidth < element.scrollWidth).toString();
 		}
 	}
 
-	macro fail {
+	@summary = "Default summary"
+	macro changeElementValueById(elementId = null, newValue = null) {
+		WaitForSPARefresh();
+
+		var javascript = '''
+document.getElementById('${elementId}').value = '${newValue}';
+		''';
+
+		var response = selenium.getEval(${javascript});
+	}
+
+	@summary = "Default summary"
+	macro fail() {
 		if (!(isSet(message))) {
 			var message = "FAIL";
 		}
@@ -108,7 +141,8 @@ return (element.offsetWidth < element.scrollWidth).toString();
 		fail(${message});
 	}
 
-	macro getElementTextContent {
+	@summary = "Default summary"
+	macro getElementTextContent() {
 		WaitForSPARefresh();
 
 		var javascript = '''
@@ -122,7 +156,25 @@ return element.textContent;
 		return ${textContent};
 	}
 
-	macro getScreenHeight {
+	@summary = "Default summary"
+	macro getElementWidth() {
+		var javascript = '''
+		let element = document.querySelector('.content-renderer-actionLink');
+
+		let width = element.offsetWidth;
+
+		let element_width = Math.round(width).toString();
+
+		return element_width;
+		''';
+
+		var element_width = selenium.getEval(${javascript});
+
+		return ${element_width};
+	}
+
+	@summary = "Default summary"
+	macro getScreenHeight() {
 		WaitForSPARefresh();
 
 		var screenHeight = selenium.getEval("return	screen.height.toString();");
@@ -130,7 +182,8 @@ return element.textContent;
 		return ${screenHeight};
 	}
 
-	macro getScreenWidth {
+	@summary = "Default summary"
+	macro getScreenWidth() {
 		WaitForSPARefresh();
 
 		var screenWidth = selenium.getEval("return screen.width.toString();");
@@ -138,20 +191,26 @@ return element.textContent;
 		return ${screenWidth};
 	}
 
-	macro hardRefresh {
+	@summary = "Default summary"
+	macro hardRefresh() {
 		var mac = OSDetector.isApple();
 
 		if (${mac} == "true") {
-			RobotType.robotTypeShortcut(locator1 = "Shift + Command + r");
+			Type.sendKeys(
+				locator1 = "//body",
+				value1 = "Shift + Command + r");
 		}
 		else {
-			RobotType.robotTypeShortcut(locator1 = "Ctrl + Shift + r");
+			Type.sendKeys(
+				locator1 = "//body",
+				value1 = "Ctrl + Shift + r");
 		}
 
 		WaitForPageLoad();
 	}
 
-	macro isGreaterThan {
+	@summary = "Default summary"
+	macro isGreaterThan(actual = null, expected = null) {
 		echo(${expected});
 
 		echo(${actual});
@@ -166,7 +225,8 @@ return element.textContent;
 		}
 	}
 
-	macro isLessThan {
+	@summary = "Default summary"
+	macro isLessThan(actual = null, expected = null) {
 		echo(${expected});
 
 		echo(${actual});
@@ -181,7 +241,8 @@ return element.textContent;
 		}
 	}
 
-	macro pass {
+	@summary = "Default summary"
+	macro pass() {
 		if (!(isSet(message))) {
 			var message = "PASS";
 		}
@@ -189,7 +250,8 @@ return element.textContent;
 		echo(${message});
 	}
 
-	macro typeIntoField {
+	@summary = "Default summary"
+	macro typeIntoField() {
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(

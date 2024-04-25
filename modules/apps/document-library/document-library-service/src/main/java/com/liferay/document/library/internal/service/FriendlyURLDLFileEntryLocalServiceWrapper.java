@@ -47,15 +47,15 @@ public class FriendlyURLDLFileEntryLocalServiceWrapper
 			String mimeType, String title, String urlTitle, String description,
 			String changeLog, long fileEntryTypeId,
 			Map<String, DDMFormValues> ddmFormValuesMap, File file,
-			InputStream inputStream, long size, Date expirationDate,
-			Date reviewDate, ServiceContext serviceContext)
+			InputStream inputStream, long size, Date displayDate,
+			Date expirationDate, Date reviewDate, ServiceContext serviceContext)
 		throws PortalException {
 
 		DLFileEntry dlFileEntry = super.addFileEntry(
 			externalReferenceCode, userId, groupId, repositoryId, folderId,
 			sourceFileName, mimeType, title, urlTitle, description, changeLog,
 			fileEntryTypeId, ddmFormValuesMap, file, inputStream, size,
-			expirationDate, reviewDate, serviceContext);
+			displayDate, expirationDate, reviewDate, serviceContext);
 
 		if (!ExportImportThreadLocal.isImportInProcess()) {
 			_addFriendlyURLEntry(dlFileEntry, _getUrlTitle(title, urlTitle));
@@ -84,15 +84,15 @@ public class FriendlyURLDLFileEntryLocalServiceWrapper
 			String mimeType, String title, String urlTitle, String description,
 			String changeLog, DLVersionNumberIncrease dlVersionNumberIncrease,
 			long fileEntryTypeId, Map<String, DDMFormValues> ddmFormValuesMap,
-			File file, InputStream inputStream, long size, Date expirationDate,
-			Date reviewDate, ServiceContext serviceContext)
+			File file, InputStream inputStream, long size, Date displayDate,
+			Date expirationDate, Date reviewDate, ServiceContext serviceContext)
 		throws PortalException {
 
 		DLFileEntry dlFileEntry = super.updateFileEntry(
 			userId, fileEntryId, sourceFileName, mimeType, title, urlTitle,
 			description, changeLog, dlVersionNumberIncrease, fileEntryTypeId,
-			ddmFormValuesMap, file, inputStream, size, expirationDate,
-			reviewDate, serviceContext);
+			ddmFormValuesMap, file, inputStream, size, displayDate,
+			expirationDate, reviewDate, serviceContext);
 
 		if (!ExportImportThreadLocal.isImportInProcess()) {
 			_updateFriendlyURL(dlFileEntry, title, urlTitle);

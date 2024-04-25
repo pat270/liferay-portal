@@ -28,8 +28,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -38,6 +36,7 @@ import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.search.test.util.SearchTestRule;
@@ -63,8 +62,6 @@ import java.util.Set;
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-
-import org.apache.commons.lang.time.DateUtils;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -352,11 +349,12 @@ public abstract class BaseNotificationTemplateResourceTestCase {
 	public void testGetNotificationTemplatesPageWithPagination()
 		throws Exception {
 
-		Page<NotificationTemplate> totalPage =
+		Page<NotificationTemplate> notificationTemplatePage =
 			notificationTemplateResource.getNotificationTemplatesPage(
 				null, null, null, null, null);
 
-		int totalCount = GetterUtil.getInteger(totalPage.getTotalCount());
+		int totalCount = GetterUtil.getInteger(
+			notificationTemplatePage.getTotalCount());
 
 		NotificationTemplate notificationTemplate1 =
 			testGetNotificationTemplatesPage_addNotificationTemplate(
@@ -370,43 +368,89 @@ public abstract class BaseNotificationTemplateResourceTestCase {
 			testGetNotificationTemplatesPage_addNotificationTemplate(
 				randomNotificationTemplate());
 
-		Page<NotificationTemplate> page1 =
-			notificationTemplateResource.getNotificationTemplatesPage(
-				null, null, null, Pagination.of(1, totalCount + 2), null);
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<NotificationTemplate> notificationTemplates1 =
-			(List<NotificationTemplate>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			notificationTemplates1.toString(), totalCount + 2,
-			notificationTemplates1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<NotificationTemplate> page1 =
+				notificationTemplateResource.getNotificationTemplatesPage(
+					null, null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		Page<NotificationTemplate> page2 =
-			notificationTemplateResource.getNotificationTemplatesPage(
-				null, null, null, Pagination.of(2, totalCount + 2), null);
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+			assertContains(
+				notificationTemplate1,
+				(List<NotificationTemplate>)page1.getItems());
 
-		List<NotificationTemplate> notificationTemplates2 =
-			(List<NotificationTemplate>)page2.getItems();
+			Page<NotificationTemplate> page2 =
+				notificationTemplateResource.getNotificationTemplatesPage(
+					null, null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		Assert.assertEquals(
-			notificationTemplates2.toString(), 1,
-			notificationTemplates2.size());
+			assertContains(
+				notificationTemplate2,
+				(List<NotificationTemplate>)page2.getItems());
 
-		Page<NotificationTemplate> page3 =
-			notificationTemplateResource.getNotificationTemplatesPage(
-				null, null, null, Pagination.of(1, totalCount + 3), null);
+			Page<NotificationTemplate> page3 =
+				notificationTemplateResource.getNotificationTemplatesPage(
+					null, null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		assertContains(
-			notificationTemplate1,
-			(List<NotificationTemplate>)page3.getItems());
-		assertContains(
-			notificationTemplate2,
-			(List<NotificationTemplate>)page3.getItems());
-		assertContains(
-			notificationTemplate3,
-			(List<NotificationTemplate>)page3.getItems());
+			assertContains(
+				notificationTemplate3,
+				(List<NotificationTemplate>)page3.getItems());
+		}
+		else {
+			Page<NotificationTemplate> page1 =
+				notificationTemplateResource.getNotificationTemplatesPage(
+					null, null, null, Pagination.of(1, totalCount + 2), null);
+
+			List<NotificationTemplate> notificationTemplates1 =
+				(List<NotificationTemplate>)page1.getItems();
+
+			Assert.assertEquals(
+				notificationTemplates1.toString(), totalCount + 2,
+				notificationTemplates1.size());
+
+			Page<NotificationTemplate> page2 =
+				notificationTemplateResource.getNotificationTemplatesPage(
+					null, null, null, Pagination.of(2, totalCount + 2), null);
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<NotificationTemplate> notificationTemplates2 =
+				(List<NotificationTemplate>)page2.getItems();
+
+			Assert.assertEquals(
+				notificationTemplates2.toString(), 1,
+				notificationTemplates2.size());
+
+			Page<NotificationTemplate> page3 =
+				notificationTemplateResource.getNotificationTemplatesPage(
+					null, null, null, Pagination.of(1, (int)totalCount + 3),
+					null);
+
+			assertContains(
+				notificationTemplate1,
+				(List<NotificationTemplate>)page3.getItems());
+			assertContains(
+				notificationTemplate2,
+				(List<NotificationTemplate>)page3.getItems());
+			assertContains(
+				notificationTemplate3,
+				(List<NotificationTemplate>)page3.getItems());
+		}
 	}
 
 	@Test
@@ -418,7 +462,7 @@ public abstract class BaseNotificationTemplateResourceTestCase {
 			(entityField, notificationTemplate1, notificationTemplate2) -> {
 				BeanTestUtil.setProperty(
 					notificationTemplate1, entityField.getName(),
-					DateUtils.addMinutes(new Date(), -2));
+					new Date(System.currentTimeMillis() - (2 * Time.MINUTE)));
 			});
 	}
 
@@ -534,23 +578,35 @@ public abstract class BaseNotificationTemplateResourceTestCase {
 			testGetNotificationTemplatesPage_addNotificationTemplate(
 				notificationTemplate2);
 
+		Page<NotificationTemplate> page =
+			notificationTemplateResource.getNotificationTemplatesPage(
+				null, null, null, null, null);
+
 		for (EntityField entityField : entityFields) {
 			Page<NotificationTemplate> ascPage =
 				notificationTemplateResource.getNotificationTemplatesPage(
-					null, null, null, Pagination.of(1, 2),
+					null, null, null,
+					Pagination.of(1, (int)page.getTotalCount() + 1),
 					entityField.getName() + ":asc");
 
-			assertEquals(
-				Arrays.asList(notificationTemplate1, notificationTemplate2),
+			assertContains(
+				notificationTemplate1,
+				(List<NotificationTemplate>)ascPage.getItems());
+			assertContains(
+				notificationTemplate2,
 				(List<NotificationTemplate>)ascPage.getItems());
 
 			Page<NotificationTemplate> descPage =
 				notificationTemplateResource.getNotificationTemplatesPage(
-					null, null, null, Pagination.of(1, 2),
+					null, null, null,
+					Pagination.of(1, (int)page.getTotalCount() + 1),
 					entityField.getName() + ":desc");
 
-			assertEquals(
-				Arrays.asList(notificationTemplate2, notificationTemplate1),
+			assertContains(
+				notificationTemplate2,
+				(List<NotificationTemplate>)descPage.getItems());
+			assertContains(
+				notificationTemplate1,
 				(List<NotificationTemplate>)descPage.getItems());
 		}
 	}
@@ -577,6 +633,8 @@ public abstract class BaseNotificationTemplateResourceTestCase {
 			new GraphQLField("items", getGraphQLFields()),
 			new GraphQLField("page"), new GraphQLField("totalCount"));
 
+		// No namespace
+
 		JSONObject notificationTemplatesJSONObject =
 			JSONUtil.getValueAsJSONObject(
 				invokeGraphQLQuery(graphQLField), "JSONObject/data",
@@ -591,6 +649,29 @@ public abstract class BaseNotificationTemplateResourceTestCase {
 
 		notificationTemplatesJSONObject = JSONUtil.getValueAsJSONObject(
 			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/notificationTemplates");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			notificationTemplatesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			notificationTemplate1,
+			Arrays.asList(
+				NotificationTemplateSerDes.toDTOs(
+					notificationTemplatesJSONObject.getString("items"))));
+		assertContains(
+			notificationTemplate2,
+			Arrays.asList(
+				NotificationTemplateSerDes.toDTOs(
+					notificationTemplatesJSONObject.getString("items"))));
+
+		// Using the namespace notification_v1_0
+
+		notificationTemplatesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("notification_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/notification_v1_0",
 			"JSONObject/notificationTemplates");
 
 		Assert.assertEquals(
@@ -669,6 +750,8 @@ public abstract class BaseNotificationTemplateResourceTestCase {
 		NotificationTemplate notificationTemplate =
 			testGraphQLGetNotificationTemplateByExternalReferenceCode_addNotificationTemplate();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				notificationTemplate,
@@ -690,6 +773,32 @@ public abstract class BaseNotificationTemplateResourceTestCase {
 								getGraphQLFields())),
 						"JSONObject/data",
 						"Object/notificationTemplateByExternalReferenceCode"))));
+
+		// Using the namespace notification_v1_0
+
+		Assert.assertTrue(
+			equals(
+				notificationTemplate,
+				NotificationTemplateSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"notification_v1_0",
+								new GraphQLField(
+									"notificationTemplateByExternalReferenceCode",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"externalReferenceCode",
+												"\"" +
+													notificationTemplate.
+														getExternalReferenceCode() +
+															"\"");
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data", "JSONObject/notification_v1_0",
+						"Object/notificationTemplateByExternalReferenceCode"))));
 	}
 
 	@Test
@@ -698,6 +807,8 @@ public abstract class BaseNotificationTemplateResourceTestCase {
 
 		String irrelevantExternalReferenceCode =
 			"\"" + RandomTestUtil.randomString() + "\"";
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -713,6 +824,27 @@ public abstract class BaseNotificationTemplateResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace notification_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"notification_v1_0",
+						new GraphQLField(
+							"notificationTemplateByExternalReferenceCode",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"externalReferenceCode",
+										irrelevantExternalReferenceCode);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -822,7 +954,10 @@ public abstract class BaseNotificationTemplateResourceTestCase {
 
 	@Test
 	public void testGraphQLDeleteNotificationTemplate() throws Exception {
-		NotificationTemplate notificationTemplate =
+
+		// No namespace
+
+		NotificationTemplate notificationTemplate1 =
 			testGraphQLDeleteNotificationTemplate_addNotificationTemplate();
 
 		Assert.assertTrue(
@@ -834,11 +969,12 @@ public abstract class BaseNotificationTemplateResourceTestCase {
 							{
 								put(
 									"notificationTemplateId",
-									notificationTemplate.getId());
+									notificationTemplate1.getId());
 							}
 						})),
 				"JSONObject/data", "Object/deleteNotificationTemplate"));
-		JSONArray errorsJSONArray = JSONUtil.getValueAsJSONArray(
+
+		JSONArray errorsJSONArray1 = JSONUtil.getValueAsJSONArray(
 			invokeGraphQLQuery(
 				new GraphQLField(
 					"notificationTemplate",
@@ -846,13 +982,53 @@ public abstract class BaseNotificationTemplateResourceTestCase {
 						{
 							put(
 								"notificationTemplateId",
-								notificationTemplate.getId());
+								notificationTemplate1.getId());
 						}
 					},
 					new GraphQLField("id"))),
 			"JSONArray/errors");
 
-		Assert.assertTrue(errorsJSONArray.length() > 0);
+		Assert.assertTrue(errorsJSONArray1.length() > 0);
+
+		// Using the namespace notification_v1_0
+
+		NotificationTemplate notificationTemplate2 =
+			testGraphQLDeleteNotificationTemplate_addNotificationTemplate();
+
+		Assert.assertTrue(
+			JSONUtil.getValueAsBoolean(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"notification_v1_0",
+						new GraphQLField(
+							"deleteNotificationTemplate",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"notificationTemplateId",
+										notificationTemplate2.getId());
+								}
+							}))),
+				"JSONObject/data", "JSONObject/notification_v1_0",
+				"Object/deleteNotificationTemplate"));
+
+		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"notification_v1_0",
+					new GraphQLField(
+						"notificationTemplate",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"notificationTemplateId",
+									notificationTemplate2.getId());
+							}
+						},
+						new GraphQLField("id")))),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray2.length() > 0);
 	}
 
 	protected NotificationTemplate
@@ -888,6 +1064,8 @@ public abstract class BaseNotificationTemplateResourceTestCase {
 		NotificationTemplate notificationTemplate =
 			testGraphQLGetNotificationTemplate_addNotificationTemplate();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				notificationTemplate,
@@ -905,11 +1083,36 @@ public abstract class BaseNotificationTemplateResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/notificationTemplate"))));
+
+		// Using the namespace notification_v1_0
+
+		Assert.assertTrue(
+			equals(
+				notificationTemplate,
+				NotificationTemplateSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"notification_v1_0",
+								new GraphQLField(
+									"notificationTemplate",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"notificationTemplateId",
+												notificationTemplate.getId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data", "JSONObject/notification_v1_0",
+						"Object/notificationTemplate"))));
 	}
 
 	@Test
 	public void testGraphQLGetNotificationTemplateNotFound() throws Exception {
 		Long irrelevantNotificationTemplateId = RandomTestUtil.randomLong();
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -925,6 +1128,27 @@ public abstract class BaseNotificationTemplateResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace notification_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"notification_v1_0",
+						new GraphQLField(
+							"notificationTemplate",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"notificationTemplateId",
+										irrelevantNotificationTemplateId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -1264,6 +1488,14 @@ public abstract class BaseNotificationTemplateResourceTestCase {
 
 			if (Objects.equals("subject", additionalAssertFieldName)) {
 				if (notificationTemplate.getSubject() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("system", additionalAssertFieldName)) {
+				if (notificationTemplate.getSystem() == null) {
 					valid = false;
 				}
 
@@ -1610,6 +1842,17 @@ public abstract class BaseNotificationTemplateResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("system", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						notificationTemplate1.getSystem(),
+						notificationTemplate2.getSystem())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("type", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						notificationTemplate1.getType(),
@@ -1668,6 +1911,10 @@ public abstract class BaseNotificationTemplateResourceTestCase {
 
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
+
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
 
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
@@ -1760,22 +2007,20 @@ public abstract class BaseNotificationTemplateResourceTestCase {
 
 		if (entityFieldName.equals("dateCreated")) {
 			if (operator.equals("between")) {
+				Date date = notificationTemplate.getDateCreated();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							notificationTemplate.getDateCreated(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							notificationTemplate.getDateCreated(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -1794,22 +2039,20 @@ public abstract class BaseNotificationTemplateResourceTestCase {
 
 		if (entityFieldName.equals("dateModified")) {
 			if (operator.equals("between")) {
+				Date date = notificationTemplate.getDateModified();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							notificationTemplate.getDateModified(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							notificationTemplate.getDateModified(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -2087,6 +2330,11 @@ public abstract class BaseNotificationTemplateResourceTestCase {
 				"Invalid entity field " + entityFieldName);
 		}
 
+		if (entityFieldName.equals("system")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
 		if (entityFieldName.equals("type")) {
 			Object object = notificationTemplate.getType();
 
@@ -2238,6 +2486,7 @@ public abstract class BaseNotificationTemplateResourceTestCase {
 				objectDefinitionId = RandomTestUtil.randomLong();
 				recipientType = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
+				system = RandomTestUtil.randomBoolean();
 				type = StringUtil.toLowerCase(RandomTestUtil.randomString());
 				typeLabel = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
@@ -2261,9 +2510,9 @@ public abstract class BaseNotificationTemplateResourceTestCase {
 	}
 
 	protected NotificationTemplateResource notificationTemplateResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

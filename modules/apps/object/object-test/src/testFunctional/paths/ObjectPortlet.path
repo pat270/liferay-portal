@@ -57,7 +57,7 @@
 	</tr>
 	<tr>
 		<td>ENTRY_STATUS</td>
-		<td>//*[contains(text(),'${key_entry}')]/parent::div/following-sibling::div//span[contains(@class,'workflow-status')]//strong[contains(text(),'${key_status}')]</td>
+		<td>//*[text()='${key_entry}']/../following-sibling::div//*[text()='${key_status}']</td>
 		<td></td>
 	</tr>
 	<tr>
@@ -146,6 +146,11 @@
 		<td></td>
 	</tr>
 	<tr>
+		<td>SELECT_OBJECT_FOLDER</td>
+		<td>//li[contains(@class,'object-folder-list-item') and (.='${key_label}')]</td>
+		<td></td>
+	</tr>
+	<tr>
 		<td>SELECT_OBJECT</td>
 		<td>//div[(@class='table-list-title')]//a[text()= '${label}']</td>
 		<td></td>
@@ -192,7 +197,7 @@
 	</tr>
 	<tr>
 		<td>VIEW_FIELD_ON_MENU</td>
-		<td>//span[contains(@class,'c-inner') and contains(text(),'${key_itemMenu}')]</td>
+		<td>//span[text()='${key_itemMenu}']</td>
 		<td></td>
 	</tr>
 	<tr>
@@ -206,18 +211,18 @@
 		<td></td>
 	</tr>
 	<tr>
-		<td>VIEW_WIDGET_BUTTON</td>
-		<td>//span[text()='Show Widget']/preceding-sibling::span/input</td>
+		<td>VIEW_WIDGET_IN_PAGE_BUILDER_TOGGLE</td>
+		<td>//span[text()='Show Widget in Page Builder']/preceding-sibling::span/input</td>
 		<td></td>
 	</tr>
 	<tr>
 		<td>ENABLE_CATEGORIZATION_BUTTON</td>
-		<td>//span[text()='Enable Categorization']/preceding-sibling::span/input</td>
+		<td>//span[text()='Enable Categorization of Object entries']/preceding-sibling::span/input</td>
 		<td></td>
 	</tr>
 	<tr>
-		<td>ENABLE_ENTRY_HISTORY_BUTTON</td>
-		<td>//span[text()='Enable Entry History']/preceding-sibling::span/input</td>
+		<td>ENABLE_ENTRY_HISTORY_IN_AUDIT_FRAMEWORK_BUTTON</td>
+		<td>//span[text()='Enable Entry History in Audit Framework']/preceding-sibling::span/input</td>
 		<td></td>
 	</tr>
 	<tr>
@@ -251,7 +256,7 @@
 		<td></td>
 	</tr>
 	<tr>
-		<td>RELATIONSHIP_ENTRY_READ_ONLY</td>
+		<td>ENTRY_READ_ONLY</td>
 		<td>//div[contains(@class,'ddm-field')]//input[contains(@value, '${key_entry}') and @readonly]</td>
 		<td></td>
 	</tr>

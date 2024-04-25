@@ -10,12 +10,14 @@ import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.CSVUtil;
+import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,10 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.CreationHelper;
-import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -92,7 +91,7 @@ public class XLSBatchEngineExportTaskItemWriterImplTest
 		try (Workbook workbook = new XSSFWorkbook()) {
 			Sheet sheet = workbook.createSheet();
 
-			_populateRow(sheet.createRow(0), workbook, fieldNames);
+			_populateRow(sheet.createRow(0), fieldNames);
 
 			for (int i = 0; i < items.size(); i++) {
 				Item item = items.get(i);
@@ -103,22 +102,28 @@ public class XLSBatchEngineExportTaskItemWriterImplTest
 					int index = fieldName.indexOf(CharPool.UNDERLINE);
 
 					if (index == -1) {
-						Field field = fieldsMap.get(fieldName);
+						ObjectValuePair<Field, Method> objectValuePair =
+							fieldNameObjectValuePairs.get(fieldName);
 
-						values.add(field.get(item));
+						Method method = objectValuePair.getValue();
+
+						values.add(method.invoke(item));
 					}
 					else {
-						Field field = fieldsMap.get(
-							fieldName.substring(0, index));
+						ObjectValuePair<Field, Method> objectValuePair =
+							fieldNameObjectValuePairs.get(
+								fieldName.substring(0, index));
 
-						Map<?, ?> valueMap = (Map<?, ?>)field.get(item);
+						Method method = objectValuePair.getValue();
+
+						Map<?, ?> valueMap = (Map<?, ?>)method.invoke(item);
 
 						values.add(
 							valueMap.get(fieldName.substring(index + 1)));
 					}
 				}
 
-				_populateRow(sheet.createRow(i + 1), workbook, values);
+				_populateRow(sheet.createRow(i + 1), values);
 			}
 
 			ByteArrayOutputStream byteArrayOutputStream =
@@ -142,7 +147,7 @@ public class XLSBatchEngineExportTaskItemWriterImplTest
 		return expectedSheet.rowIterator();
 	}
 
-	private void _populateRow(Row row, Workbook workbook, List<?> cellValues) {
+	private void _populateRow(Row row, List<?> cellValues) {
 		for (int i = 0; i < cellValues.size(); i++) {
 			Object value = cellValues.get(i);
 
@@ -152,18 +157,7 @@ public class XLSBatchEngineExportTaskItemWriterImplTest
 				cell.setCellValue((Boolean)value);
 			}
 			else if (value instanceof Date) {
-				CellStyle cellStyle = workbook.createCellStyle();
-
-				CreationHelper creationHelper = workbook.getCreationHelper();
-
-				DataFormat dataFormat = creationHelper.createDataFormat();
-
-				cellStyle.setDataFormat(
-					dataFormat.getFormat("yyyy-mm-dd hh:mm:ss"));
-
-				cell.setCellStyle(cellStyle);
-
-				cell.setCellValue((Date)value);
+				cell.setCellValue(dateFormat.format(value));
 			}
 			else if (value instanceof Map) {
 				Map<?, ?> map = (Map<?, ?>)value;
@@ -220,7 +214,8 @@ public class XLSBatchEngineExportTaskItemWriterImplTest
 		try (XLSBatchEngineExportTaskItemWriterImpl
 				xlsBatchEngineExportTaskItemWriterImpl =
 					new XLSBatchEngineExportTaskItemWriterImpl(
-						fieldsMap, fieldNames, unsyncByteArrayOutputStream)) {
+						null, 0, fieldNameObjectValuePairs, fieldNames,
+						unsyncByteArrayOutputStream, null)) {
 
 			for (Item[] items : getItemGroups()) {
 				xlsBatchEngineExportTaskItemWriterImpl.write(

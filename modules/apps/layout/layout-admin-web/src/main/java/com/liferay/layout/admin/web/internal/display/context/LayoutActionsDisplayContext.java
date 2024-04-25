@@ -13,8 +13,6 @@ import com.liferay.layout.admin.web.internal.security.permission.resource.Layout
 import com.liferay.layout.page.template.constants.LayoutPageTemplateActionKeys;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalServiceUtil;
-import com.liferay.layout.utility.page.model.LayoutUtilityPageEntry;
-import com.liferay.layout.utility.page.service.LayoutUtilityPageEntryLocalServiceUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -23,6 +21,7 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
+import com.liferay.portal.kernel.service.permission.LayoutPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -80,9 +79,13 @@ public class LayoutActionsDisplayContext {
 							dropdownItem.setLabel(
 								LanguageUtil.get(
 									_httpServletRequest, "configure"));
-							dropdownItem.setTarget("_blank");
 						}
 					).add(
+						() ->
+							LayoutPermissionUtil.
+								containsLayoutPreviewDraftPermission(
+									_themeDisplay.getPermissionChecker(),
+									layout),
 						dropdownItem -> {
 							String previewLayoutURL = _getPreviewLayoutURL(
 								layout);
@@ -200,22 +203,13 @@ public class LayoutActionsDisplayContext {
 		).setBackURL(
 			currentURL
 		).setParameter(
+			"backURLTitle", layout.getName(_themeDisplay.getLocale())
+		).setParameter(
 			"groupId", layout.getGroupId()
 		).setParameter(
 			"privateLayout", layout.isPrivateLayout()
 		).setParameter(
-			"selPlid",
-			() -> {
-				if (layout.isTypeAssetDisplay() && !layout.isDraftLayout()) {
-					Layout draftLayout = layout.fetchDraftLayout();
-
-					if (draftLayout != null) {
-						return draftLayout.getPlid();
-					}
-				}
-
-				return layout.getPlid();
-			}
+			"selPlid", layout.getPlid()
 		).buildPortletURL(
 		).toString();
 	}
@@ -330,11 +324,7 @@ public class LayoutActionsDisplayContext {
 		}
 
 		if (layoutPageTemplateEntry == null) {
-			LayoutUtilityPageEntry layoutUtilityPageEntry =
-				LayoutUtilityPageEntryLocalServiceUtil.
-					fetchLayoutUtilityPageEntryByPlid(layout.getPlid());
-
-			if (layoutUtilityPageEntry != null) {
+			if (layout.isTypeUtility()) {
 				_contentLayout = false;
 			}
 			else {

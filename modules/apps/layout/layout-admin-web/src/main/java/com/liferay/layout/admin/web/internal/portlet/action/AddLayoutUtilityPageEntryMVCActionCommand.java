@@ -6,12 +6,13 @@
 package com.liferay.layout.admin.web.internal.portlet.action;
 
 import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
-import com.liferay.layout.admin.web.internal.handler.LayoutUtilityPageEntryPortalExceptionRequestHandler;
+import com.liferay.layout.admin.web.internal.handler.LayoutUtilityPageEntryPortalExceptionRequestHandlerUtil;
 import com.liferay.layout.utility.page.model.LayoutUtilityPageEntry;
 import com.liferay.layout.utility.page.service.LayoutUtilityPageEntryLocalService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
@@ -71,7 +72,7 @@ public class AddLayoutUtilityPageEntryMVCActionCommand
 		catch (PortalException portalException) {
 			hideDefaultErrorMessage(actionRequest);
 
-			_layoutUtilityPageEntryPortalExceptionRequestHandler.
+			LayoutUtilityPageEntryPortalExceptionRequestHandlerUtil.
 				handlePortalException(
 					actionRequest, actionResponse, portalException);
 		}
@@ -91,7 +92,8 @@ public class AddLayoutUtilityPageEntryMVCActionCommand
 
 		return _layoutUtilityPageEntryLocalService.addLayoutUtilityPageEntry(
 			null, serviceContext.getUserId(), serviceContext.getScopeGroupId(),
-			0, 0, false, name, type, masterLayoutPlid, serviceContext);
+			0, 0, false, name, type, masterLayoutPlid, null, true,
+			serviceContext);
 	}
 
 	private String _getRedirectURL(
@@ -105,22 +107,22 @@ public class AddLayoutUtilityPageEntryMVCActionCommand
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		String layoutFullURL = _portal.getLayoutFullURL(
-			draftLayout, themeDisplay);
-
-		layoutFullURL = HttpComponentsUtil.setParameter(
-			layoutFullURL, "p_l_back_url",
+		return HttpComponentsUtil.addParameters(
+			_portal.getLayoutFullURL(draftLayout, themeDisplay), "p_l_back_url",
 			PortletURLBuilder.create(
 				PortletURLFactoryUtil.create(
 					actionRequest, LayoutAdminPortletKeys.GROUP_PAGES,
 					PortletRequest.RENDER_PHASE)
 			).setTabs1(
 				"utility-pages"
-			).buildString());
-
-		return HttpComponentsUtil.setParameter(
-			layoutFullURL, "p_l_mode", Constants.EDIT);
+			).buildString(),
+			"p_l_back_url_title",
+			_language.get(themeDisplay.getLocale(), "pages"), "p_l_mode",
+			Constants.EDIT);
 	}
+
+	@Reference
+	private Language _language;
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;
@@ -128,10 +130,6 @@ public class AddLayoutUtilityPageEntryMVCActionCommand
 	@Reference
 	private LayoutUtilityPageEntryLocalService
 		_layoutUtilityPageEntryLocalService;
-
-	@Reference
-	private LayoutUtilityPageEntryPortalExceptionRequestHandler
-		_layoutUtilityPageEntryPortalExceptionRequestHandler;
 
 	@Reference
 	private Portal _portal;

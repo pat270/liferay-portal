@@ -10,7 +10,7 @@
 <%
 JournalArticle article = journalDisplayContext.getArticle();
 
-JournalEditArticleDisplayContext journalEditArticleDisplayContext = new JournalEditArticleDisplayContext(request, liferayPortletResponse, article);
+JournalEditArticleDisplayContext journalEditArticleDisplayContext = (JournalEditArticleDisplayContext)request.getAttribute(JournalEditArticleDisplayContext.class.getName());
 
 DDMStructure ddmStructure = journalEditArticleDisplayContext.getDDMStructure();
 DDMTemplate ddmTemplate = journalEditArticleDisplayContext.getDDMTemplate();
@@ -24,7 +24,7 @@ DDMTemplate ddmTemplate = journalEditArticleDisplayContext.getDDMTemplate();
 
 		<div class="form-group input-group mb-2">
 			<div class="input-group-item">
-				<input class="field form-control lfr-input-text lfr-portal-tooltip" id="<portlet:namespace />ddmTemplateName" readonly="readonly" title="<%= LanguageUtil.get(request, "template-name") %>" type="text" value="<%= (ddmTemplate != null) ? HtmlUtil.escape(ddmTemplate.getName(locale)) : LanguageUtil.get(request, "no-template") %>" />
+				<input aria-label="<%= LanguageUtil.get(request, "template-name") %>" class="field form-control lfr-input-text lfr-portal-tooltip" id="<portlet:namespace />ddmTemplateName" readonly="readonly" type="text" value="<%= (ddmTemplate != null) ? HtmlUtil.escape(ddmTemplate.getName(locale)) : LanguageUtil.get(request, "no-template") %>" />
 			</div>
 
 			<c:if test="<%= (article != null) && !article.isNew() && (journalEditArticleDisplayContext.getClassNameId() == JournalArticleConstants.CLASS_NAME_ID_DEFAULT) %>">
@@ -66,7 +66,7 @@ DDMTemplate ddmTemplate = journalEditArticleDisplayContext.getDDMTemplate();
 		<liferay-frontend:component
 			componentId='<%= liferayPortletResponse.getNamespace() + "selectStructureField" %>'
 			context="<%= journalEditArticleDisplayContext.getTemplateComponentContext() %>"
-			module="js/article/Template"
+			module="{Template} from journal-web"
 		/>
 	</c:when>
 	<c:otherwise>

@@ -6,31 +6,23 @@
 package com.liferay.search.experiences.internal.suggestions.spi;
 
 import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
-import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
-import com.liferay.asset.kernel.service.AssetEntryLocalService;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
-import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.SearchContext;
-import com.liferay.portal.kernel.service.LayoutLocalService;
-import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.search.asset.AssetURLViewProvider;
 import com.liferay.portal.search.constants.SearchContextAttributes;
 import com.liferay.portal.search.document.Document;
 import com.liferay.portal.search.hits.SearchHit;
@@ -47,7 +39,6 @@ import com.liferay.portal.search.suggestions.SuggestionBuilder;
 import com.liferay.portal.search.suggestions.SuggestionBuilderFactory;
 import com.liferay.portal.search.suggestions.SuggestionsContributorResults;
 import com.liferay.portal.search.suggestions.SuggestionsContributorResultsBuilderFactory;
-import com.liferay.portal.search.web.constants.SearchResultsPortletKeys;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,12 +46,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
-import javax.portlet.MutableRenderParameters;
-import javax.portlet.PortletMode;
-import javax.portlet.PortletRequest;
-import javax.portlet.PortletURL;
-import javax.portlet.WindowState;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -88,11 +73,14 @@ public class SXPBlueprintSuggestionsContributor
 			(Map<String, Object>)
 				suggestionsContributorConfiguration.getAttributes();
 
-		if ((attributes == null) || !attributes.containsKey("sxpBlueprintId")) {
+		if ((attributes == null) ||
+			(!attributes.containsKey("sxpBlueprintExternalReferenceCode") &&
+			 !attributes.containsKey("sxpBlueprintId"))) {
+
 			if (_log.isDebugEnabled()) {
 				_log.debug(
 					"Attributes do not contain search experiences blueprint " +
-						"ID");
+						"External Reference Code or ID");
 			}
 
 			return null;
@@ -109,6 +97,8 @@ public class SXPBlueprintSuggestionsContributor
 				searchContext,
 				GetterUtil.getInteger(
 					suggestionsContributorConfiguration.getSize(), 5),
+				MapUtil.getString(
+					attributes, "sxpBlueprintExternalReferenceCode"),
 				MapUtil.getLong(attributes, "sxpBlueprintId")));
 
 		SearchHits searchHits = searchResponse.getSearchHits();
@@ -144,18 +134,6 @@ public class SXPBlueprintSuggestionsContributor
 		return false;
 	}
 
-	private Layout _fetchLayoutByFriendlyURL(long groupId, String friendlyURL) {
-		Layout layout = _layoutLocalService.fetchLayoutByFriendlyURL(
-			groupId, false, friendlyURL);
-
-		if (layout != null) {
-			return layout;
-		}
-
-		return _layoutLocalService.fetchLayoutByFriendlyURL(
-			groupId, true, friendlyURL);
-	}
-
 	private AssetRenderer<?> _getAssetRenderer(
 		AssetRendererFactory<?> assetRendererFactory, long entryClassPK) {
 
@@ -167,73 +145,6 @@ public class SXPBlueprintSuggestionsContributor
 
 			return null;
 		}
-	}
-
-	private String _getAssetURL(
-		AssetRenderer<?> assetRenderer,
-		AssetRendererFactory<?> assetRendererFactory, String entryClassName,
-		long entryClassPK, Layout layout,
-		LiferayPortletRequest liferayPortletRequest,
-		LiferayPortletResponse liferayPortletResponse) {
-
-		try {
-			if (layout == null) {
-				return StringPool.BLANK;
-			}
-
-			String viewURL = null;
-
-			PortletURL viewContentURL =
-				PortletURLBuilder.createLiferayPortletURL(
-					liferayPortletResponse, layout.getPlid(),
-					SearchResultsPortletKeys.SEARCH_RESULTS,
-					PortletRequest.RENDER_PHASE
-				).setPortletMode(
-					PortletMode.VIEW
-				).setWindowState(
-					WindowState.MAXIMIZED
-				).buildPortletURL();
-
-			MutableRenderParameters mutableRenderParameters =
-				viewContentURL.getRenderParameters();
-
-			mutableRenderParameters.setValue("mvcPath", "/view_content.jsp");
-
-			AssetEntry assetEntry = _assetEntryLocalService.getEntry(
-				entryClassName, entryClassPK);
-
-			mutableRenderParameters.setValue(
-				"assetEntryId", String.valueOf(assetEntry.getEntryId()));
-
-			mutableRenderParameters.setValue(
-				"type", assetRendererFactory.getType());
-
-			if (assetRenderer != null) {
-				viewURL = assetRenderer.getURLViewInContext(
-					liferayPortletRequest, liferayPortletResponse,
-					viewContentURL.toString());
-			}
-
-			if (Validator.isNull(viewURL)) {
-				viewURL = viewContentURL.toString();
-			}
-
-			ThemeDisplay themeDisplay =
-				(ThemeDisplay)liferayPortletRequest.getAttribute(
-					WebKeys.THEME_DISPLAY);
-
-			return HttpComponentsUtil.setParameter(
-				viewURL, "p_l_back_url", themeDisplay.getURLCurrent());
-		}
-		catch (Exception exception) {
-			_log.error(
-				StringBundler.concat(
-					"Unable to get view URL for class ", entryClassName,
-					" with primary key ", entryClassPK),
-				exception);
-		}
-
-		return StringPool.BLANK;
 	}
 
 	private int _getCharacterThreshold(Map<String, Object> attributes) {
@@ -273,7 +184,8 @@ public class SXPBlueprintSuggestionsContributor
 	}
 
 	private SearchRequest _getSearchRequest(
-		SearchContext searchContext1, int size, long sxpBlueprintId) {
+		SearchContext searchContext1, int size,
+		String sxpBlueprintExternalReferenceCode, long sxpBlueprintId) {
 
 		SearchRequestBuilder searchRequestBuilder =
 			_searchRequestBuilderFactory.builder();
@@ -290,6 +202,11 @@ public class SXPBlueprintSuggestionsContributor
 					SearchContextAttributes.ATTRIBUTE_KEY_EMPTY_SEARCH,
 					searchContext1.getAttribute(
 						SearchContextAttributes.ATTRIBUTE_KEY_EMPTY_SEARCH));
+				searchContext2.setAttribute(
+					"search.contribute.tuning.rankings", Boolean.TRUE);
+				searchContext2.setAttribute(
+					"search.experiences.blueprint.external.reference.code",
+					sxpBlueprintExternalReferenceCode);
 				searchContext2.setAttribute(
 					"search.experiences.blueprint.id", sxpBlueprintId);
 				searchContext2.setAttribute(
@@ -316,8 +233,7 @@ public class SXPBlueprintSuggestionsContributor
 
 	private Suggestion _getSuggestion(
 		List<String> fieldNames, boolean includeAssetSearchSummary,
-		boolean includeAssetURL, Layout layout,
-		LiferayPortletRequest liferayPortletRequest,
+		boolean includeAssetURL, LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse,
 		SearchContext searchContext, SearchHit searchHit, String text,
 		boolean useAssetTitle) {
@@ -364,15 +280,16 @@ public class SXPBlueprintSuggestionsContributor
 		if (includeAssetSearchSummary) {
 			suggestionBuilder.attribute(
 				"assetSearchSummary",
-				assetRenderer.getSearchSummary(searchContext.getLocale()));
+				assetRenderer.getSummary(
+					liferayPortletRequest, liferayPortletResponse));
 		}
 
 		if (includeAssetURL) {
 			suggestionBuilder.attribute(
 				"assetURL",
-				_getAssetURL(
+				_assetURLViewProvider.getAssetURLView(
 					assetRenderer, assetRendererFactory, entryClassName,
-					entryClassPK, layout, liferayPortletRequest,
+					entryClassPK, liferayPortletRequest,
 					liferayPortletResponse));
 		}
 
@@ -400,16 +317,6 @@ public class SXPBlueprintSuggestionsContributor
 		boolean includeAssetURL = MapUtil.getBoolean(
 			attributes, "includeAssetURL", true);
 
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)liferayPortletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
-		Layout layout = _fetchLayoutByFriendlyURL(
-			themeDisplay.getScopeGroupId(),
-			GetterUtil.getString(
-				searchContext.getAttribute(
-					"search.suggestions.destination.friendly.url")));
-
 		String textFieldName = MapUtil.getString(attributes, "textField");
 
 		for (SearchHit searchHit : searchHits) {
@@ -419,7 +326,7 @@ public class SXPBlueprintSuggestionsContributor
 				suggestions.add(
 					_getSuggestion(
 						fieldNames, includeAssetSearchSummary, includeAssetURL,
-						layout, liferayPortletRequest, liferayPortletResponse,
+						liferayPortletRequest, liferayPortletResponse,
 						searchContext, searchHit, StringPool.BLANK, true));
 
 				continue;
@@ -438,7 +345,7 @@ public class SXPBlueprintSuggestionsContributor
 						suggestions.add(
 							_getSuggestion(
 								fieldNames, includeAssetSearchSummary,
-								includeAssetURL, layout, liferayPortletRequest,
+								includeAssetURL, liferayPortletRequest,
 								liferayPortletResponse, searchContext,
 								searchHit, part, false));
 					}
@@ -447,7 +354,7 @@ public class SXPBlueprintSuggestionsContributor
 					suggestions.add(
 						_getSuggestion(
 							fieldNames, includeAssetSearchSummary,
-							includeAssetURL, layout, liferayPortletRequest,
+							includeAssetURL, liferayPortletRequest,
 							liferayPortletResponse, searchContext, searchHit,
 							text, false));
 				}
@@ -476,10 +383,7 @@ public class SXPBlueprintSuggestionsContributor
 		SXPBlueprintSuggestionsContributor.class);
 
 	@Reference
-	private AssetEntryLocalService _assetEntryLocalService;
-
-	@Reference
-	private LayoutLocalService _layoutLocalService;
+	private AssetURLViewProvider _assetURLViewProvider;
 
 	@Reference
 	private Searcher _searcher;

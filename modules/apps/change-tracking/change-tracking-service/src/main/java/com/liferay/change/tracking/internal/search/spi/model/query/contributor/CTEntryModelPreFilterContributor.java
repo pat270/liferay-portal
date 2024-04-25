@@ -61,6 +61,21 @@ public class CTEntryModelPreFilterContributor
 
 		_addTermsFilter(
 			booleanFilter, Field.USER_ID, ArrayUtil.toStringArray(userIds));
+
+		boolean showHideable = GetterUtil.getBoolean(
+			searchContext.getAttribute("showHideable"));
+
+		if (!showHideable) {
+			booleanFilter.addRequiredTerm("hideable", false);
+		}
+
+		int[] statuses = GetterUtil.getIntegerValues(
+			searchContext.getAttribute(Field.STATUS));
+
+		if (ArrayUtil.isNotEmpty(statuses)) {
+			_addTermsFilter(
+				booleanFilter, Field.STATUS, ArrayUtil.toStringArray(statuses));
+		}
 	}
 
 	private void _addTermsFilter(

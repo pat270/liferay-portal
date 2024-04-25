@@ -1,7 +1,7 @@
 @component-name = "portal-commerce"
 definition {
 
-	property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+	property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property release.feature.flags.disable.DISABLE_PRIVATE_LAYOUTS = "true";
@@ -56,9 +56,7 @@ definition {
 		}
 
 		task ("And creates a SKU Contributor option with type Select from List and 3 values for the option") {
-			CommerceNavigator.gotoPortlet(
-				category = "Product Management",
-				portlet = "Products");
+			CommerceProducts.openProductsAdmin();
 
 			CommerceProducts.searchAndGoToProductEntry(entryProductName = "Simple Jeans");
 
@@ -118,7 +116,7 @@ definition {
 
 		task ("And creates a new DPT with 'Commerce Product' as content type") {
 			JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
-				contentType = "Commerce Product",
+				contentType = "Product",
 				displayPageTemplateEntryName = "Test Commerce Product Display Page Template",
 				groupName = "Minium");
 		}
@@ -166,16 +164,19 @@ definition {
 
 		task ("Then the values are shown with the respective delta price") {
 			AssertElementPresent(
-				key_optionValue = "Value MIN93017",
-				locator1 = "CommerceFrontStore#FS_PRODUCT_OPTION");
+				key_fieldLabel = "Option Select from List",
+				key_value = "Value MIN93017",
+				locator1 = "Select#GENERIC_SELECT_VALUE");
 
 			AssertElementPresent(
-				key_optionValue = "Value MIN93018 + $ 10.00",
-				locator1 = "CommerceFrontStore#FS_PRODUCT_OPTION");
+				key_fieldLabel = "Option Select from List",
+				key_value = "Value MIN93018 + $ 10.00",
+				locator1 = "Select#GENERIC_SELECT_VALUE");
 
 			AssertElementPresent(
-				key_optionValue = "Value MIN93019 + $ 20.00",
-				locator1 = "CommerceFrontStore#FS_PRODUCT_OPTION");
+				key_fieldLabel = "Option Select from List",
+				key_value = "Value MIN93019 + $ 20.00",
+				locator1 = "Select#GENERIC_SELECT_VALUE");
 		}
 	}
 
@@ -227,9 +228,7 @@ definition {
 		}
 
 		task ("And generates all SKUs combinations from the 'SKUs' tab") {
-			CommerceNavigator.gotoPortlet(
-				category = "Product Management",
-				portlet = "Products");
+			CommerceProducts.openProductsAdmin();
 
 			CommerceProducts.searchAndGoToProductEntry(entryProductName = "Simple Jeans");
 
@@ -257,7 +256,7 @@ definition {
 
 		task ("And creates a new DPT with 'Commerce Product' as content type") {
 			JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
-				contentType = "Commerce Product",
+				contentType = "Product",
 				displayPageTemplateEntryName = "Test Commerce Product Display Page Template",
 				groupName = "Minium");
 		}

@@ -1,6 +1,7 @@
 import BaseCard from 'shared/components/base-card';
 import Card from 'shared/components/Card';
 import CardTabs from 'shared/components/CardTabs';
+import ClayLink from '@clayui/link';
 import OperatingSystem from 'shared/components/OperatingSystem';
 import React, {useCallback, useState} from 'react';
 import WebBrowser from 'shared/components/WebBrowser';
@@ -90,7 +91,7 @@ Tabs.propTypes = propTypes;
  */
 const withDevicesCard = (
 	withDevices,
-	{documentationTitle = '', documentationUrl = '', title = ''} = {}
+	{documentationTitle, documentationUrl, id, title} = {}
 ) => {
 	const TabsWithDevices = compose(
 		withDevices(),
@@ -105,13 +106,13 @@ const withDevicesCard = (
 						)}
 					</span>
 
-					<a
+					<ClayLink
 						href={documentationUrl}
 						key='DOCUMENTATION'
 						target='_blank'
 					>
 						{documentationTitle}
-					</a>
+					</ClayLink>
 				</>
 			),
 			title
@@ -145,6 +146,7 @@ const withDevicesCard = (
 		return (
 			<BaseCard
 				className={className}
+				id={id}
 				label={label}
 				legacyDropdownRangeKey={legacyDropdownRangeKey}
 				minHeight={536}

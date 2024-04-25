@@ -5,7 +5,10 @@
 
 package com.liferay.source.formatter.processor;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.source.formatter.SourceFormatterArgs;
+import com.liferay.source.formatter.check.JSONUpgradeLiferayThemePackageJSONCheck;
+import com.liferay.source.formatter.check.UpgradeCatchAllCheck;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +26,15 @@ public class UpgradeSourceProcessorTest extends BaseSourceProcessorTestCase {
 	}
 
 	@Test
+	public void testJSONUpgradeLiferayThemePackageJSONCheck() throws Exception {
+		JSONUpgradeLiferayThemePackageJSONCheck.setTestMode(true);
+
+		test(
+			"upgrade/json-upgrade-liferay-theme-package-json-check/package." +
+				"testjson");
+	}
+
+	@Test
 	public void testPropertiesUpgradeLiferayPluginPackageFileCheck()
 		throws Exception {
 
@@ -35,16 +47,12 @@ public class UpgradeSourceProcessorTest extends BaseSourceProcessorTestCase {
 	}
 
 	@Test
-	public void testUpgradeGetImagePreviewURLMethodCheck() throws Exception {
-		test("upgrade/UpgradeJavaGetImagePreviewURLMethodCheck.testjava");
-		test("upgrade/UpgradeJSPGetImagePreviewURLMethodCheck.testjsp");
-	}
-
-	@Test
-	public void testUpgradeGetPortletGroupIdMethodCheck() throws Exception {
-		test("upgrade/UpgradeFTLGetPortletGroupIdMethodCheck.testftl");
-		test("upgrade/UpgradeJavaGetPortletGroupIdMethodCheck.testjava");
-		test("upgrade/UpgradeJSPGetPortletGroupIdMethodCheck.testjsp");
+	public void testUpgradeCatchAllCheck() throws Exception {
+		_testUpgradeCatchAllCheck("upgrade/UpgradeCatchAllCheck.testftl");
+		_testUpgradeCatchAllCheck("upgrade/UpgradeCatchAllCheck.testjava");
+		_testUpgradeCatchAllCheck("upgrade/UpgradeCatchAllCheck.testjsp");
+		_testUpgradeCatchAllCheck("upgrade/UpgradeCatchAllCheck.testjspf");
+		_testUpgradeCatchAllCheck("upgrade/UpgradeCatchAllCheck.testscss");
 	}
 
 	@Test
@@ -58,20 +66,22 @@ public class UpgradeSourceProcessorTest extends BaseSourceProcessorTestCase {
 	}
 
 	@Test
-	public void testUpgradeJavaAddFDSTableSchemaFieldCheck() throws Exception {
-		test("upgrade/UpgradeJavaAddFDSTableSchemaFieldCheck.testjava");
-	}
-
-	@Test
-	public void testUpgradeJavaAddFolderParameterCheck() throws Exception {
-		test("upgrade/UpgradeJavaAddFolderParameterCheck.testjava");
-	}
-
-	@Test
 	public void testUpgradeJavaAssetEntryAssetCategoriesCheck()
 		throws Exception {
 
 		test("upgrade/UpgradeJavaAssetEntryAssetCategoriesCheck.testjava");
+	}
+
+	@Test
+	public void testUpgradeJavaBaseModelListenerCheck() throws Exception {
+		test("upgrade/UpgradeJavaBaseModelListenerCheck.testjava");
+	}
+
+	@Test
+	public void testUpgradeJavaBasePanelAppExtendedClassesCheck()
+		throws Exception {
+
+		test("upgrade/UpgradeJavaBasePanelAppExtendedClassesCheck.testjava");
 	}
 
 	@Test
@@ -80,23 +90,20 @@ public class UpgradeSourceProcessorTest extends BaseSourceProcessorTestCase {
 	}
 
 	@Test
-	public void testUpgradeJavaCommerceCountryCheck() throws Exception {
-		test("upgrade/UpgradeJavaCommerceCountryCheck.testjava");
+	public void testUpgradeJavaCommerceOrderValidatorCheck() throws Exception {
+		test("upgrade/UpgradeJavaCommerceOrderValidatorCheck.testjava");
 	}
 
 	@Test
-	public void testUpgradeJavaCommerceCountryServiceCheck() throws Exception {
-		test("upgrade/UpgradeJavaCommerceCountryServiceCheck.testjava");
+	public void testUpgradeJavaDDMFormValuesSerializerTrackerCheck()
+		throws Exception {
+
+		test("upgrade/UpgradeJavaDDMFormValuesSerializerTrackerCheck.testjava");
 	}
 
 	@Test
-	public void testUpgradeJavaCommerceRegionCheck() throws Exception {
-		test("upgrade/UpgradeJavaCommerceRegionCheck.testjava");
-	}
-
-	@Test
-	public void testUpgradeJavaExtractTextMethodCheck() throws Exception {
-		test("upgrade/UpgradeJavaExtractTextMethodCheck.testjava");
+	public void testUpgradeJavaFacetedSearcherCheck() throws Exception {
+		test("upgrade/UpgradeJavaFacetedSearcherCheck.testjava");
 	}
 
 	@Test
@@ -110,8 +117,35 @@ public class UpgradeSourceProcessorTest extends BaseSourceProcessorTestCase {
 	}
 
 	@Test
+	public void testUpgradeJavaGetFDSTableSchemaParameterCheck()
+		throws Exception {
+
+		test("upgrade/UpgradeJavaGetFDSTableSchemaParameterCheck.testjava");
+	}
+
+	@Test
 	public void testUpgradeJavaGetFileMethodCheck() throws Exception {
 		test("upgrade/UpgradeJavaGetFileMethodCheck.testjava");
+	}
+
+	@Test
+	public void testUpgradeJavaGetLayoutDisplayPageObjectProviderCheck()
+		throws Exception {
+
+		test(
+			"upgrade/UpgradeJavaGetLayoutDisplayPageObjectProviderCheck." +
+				"testjava",
+			StringBundler.concat(
+				"Could not resolve variable className for new ",
+				"InfoItemReference(). Replace 'TO_BE_REPLACED_FOR_CLASSNAME' ",
+				"with the correct type"));
+	}
+
+	@Test
+	public void testUpgradeJavaGetLayoutDisplayPageProviderCheck()
+		throws Exception {
+
+		test("upgrade/UpgradeJavaGetLayoutDisplayPageProviderCheck.testjava");
 	}
 
 	@Test
@@ -128,8 +162,8 @@ public class UpgradeSourceProcessorTest extends BaseSourceProcessorTestCase {
 	}
 
 	@Test
-	public void testUpgradeJavaOnAfterUpdateParameterCheck() throws Exception {
-		test("upgrade/UpgradeJavaOnAfterUpdateParameterCheck.testjava");
+	public void testUpgradeJavaPortletIdMethodCheck() throws Exception {
+		test("upgrade/UpgradeJavaPortletIdMethodCheck.testjava");
 	}
 
 	@Test
@@ -147,6 +181,11 @@ public class UpgradeSourceProcessorTest extends BaseSourceProcessorTestCase {
 	}
 
 	@Test
+	public void testUpgradeJavaScreenContributorClassCheck() throws Exception {
+		test("upgrade/UpgradeJavaScreenContributorClassCheck.testjava");
+	}
+
+	@Test
 	public void testUpgradeJavaServiceReferenceAnnotationCheck()
 		throws Exception {
 
@@ -154,13 +193,38 @@ public class UpgradeSourceProcessorTest extends BaseSourceProcessorTestCase {
 	}
 
 	@Test
-	public void testUpgradeJavaServiceTrackerListCheck() throws Exception {
-		test("upgrade/UpgradeJavaServiceTrackerListCheck.testjava");
+	public void testUpgradeJavaStorageTypeAwareCheck() throws Exception {
+		test("upgrade/UpgradeJavaStorageTypeAwareCheck.testjava");
+	}
+
+	@Test
+	public void testUpgradeJSPFieldSetGroupCheck() throws Exception {
+		test("upgrade/UpgradeJSPFieldSetGroupCheck.testjsp");
+	}
+
+	@Test
+	public void testUpgradePortletFTLCheck() throws Exception {
+		test("upgrade/UpgradeFTLPortletFTLCheck.testftl");
 	}
 
 	@Test
 	public void testUpgradeRejectedExecutionHandlerCheck() throws Exception {
 		test("upgrade/UpgradeRejectedExecutionHandlerCheck.testjava");
+	}
+
+	@Test
+	public void testUpgradeSCSSMixinsCheck() throws Exception {
+		test(
+			"upgrade/UpgradeSCSSMixinsCheck.testscss",
+			StringBundler.concat(
+				"Do not use 'media-query' mixing, replace with its equivalent ",
+				"(e.g., media-breakpoint-up, media-breakpoint-only, ",
+				"media-breakpoint-down, etc.), see LPS-194507."));
+	}
+
+	@Test
+	public void testUpgradeSCSSNodeSassPatternsCheck() throws Exception {
+		test("upgrade/UpgradeSCSSNodeSassPatternsCheck.testscss");
 	}
 
 	@Test
@@ -178,6 +242,11 @@ public class UpgradeSourceProcessorTest extends BaseSourceProcessorTestCase {
 			).setExpectedFileName(
 				"upgrade/migrated/UpgradeVelocityMigrationCheck.testftl"
 			));
+	}
+
+	@Test
+	public void testXMLUpgradeCompatibilityVersionCheck() throws Exception {
+		test("upgrade/XMLUpgradeCompatibilityVersionCheck.testxml");
 	}
 
 	@Test
@@ -205,6 +274,17 @@ public class UpgradeSourceProcessorTest extends BaseSourceProcessorTestCase {
 			sourceFormatterProperties);
 
 		return sourceFormatterArgs;
+	}
+
+	private void _testUpgradeCatchAllCheck(String fileName) throws Exception {
+		UpgradeCatchAllCheck.setTestMode(true);
+
+		if (fileName.endsWith(".testjava")) {
+			test(fileName, UpgradeCatchAllCheck.getExpectedMessages());
+		}
+		else {
+			test(fileName);
+		}
 	}
 
 	private static final String _UPGRADE_TO_VERSION = "7.4.13.u27";

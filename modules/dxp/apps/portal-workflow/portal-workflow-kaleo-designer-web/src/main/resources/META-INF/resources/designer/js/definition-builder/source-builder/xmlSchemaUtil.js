@@ -54,7 +54,6 @@ function getLocationValue(field, context) {
 			0,
 			null
 		);
-
 		while ((res = result.iterateNext())) {
 			const resNodesAttributes = getChildAttributes(res.childNodes);
 
@@ -88,6 +87,7 @@ function getLocationValue(field, context) {
 							if (item.children.length) {
 								let childNodesAttributes = [];
 								let grandChildren = [];
+								let grandGrandChildren = [];
 								let currentTagName;
 
 								for (const itemChild of item.children) {
@@ -140,7 +140,8 @@ function getLocationValue(field, context) {
 
 										break;
 									}
-									else if (itemChild.children.length) {
+
+									if (itemChild.children.length) {
 										if (!currentTagName) {
 											currentTagName = itemChild.tagName;
 										}
@@ -156,21 +157,96 @@ function getLocationValue(field, context) {
 											if (
 												itemGrandChild.children.length
 											) {
+												grandGrandChildren = [];
+
 												for (const grandGrand of itemGrandChild.children) {
 													const grandGrandContent = {};
 
-													grandGrandContent[
-														grandGrand.tagName
-													] = grandGrand.textContent;
-													grandChildren.push(
+													if (
+														grandGrand.children
+															.length
+													) {
+														grandGrandContent[
+															grandGrand.tagName
+														] = {};
+
+														for (const grandGrandChild of grandGrand.children) {
+															if (
+																!grandGrandChild
+																	.children
+																	.length
+															) {
+																fillContent(
+																	grandGrandChild.tagName,
+																	grandGrandContent[
+																		grandGrand
+																			.tagName
+																	],
+																	grandGrandChild.textContent
+																);
+															}
+															else {
+																for (const grandGrandGrandChild of grandGrandChild.children) {
+																	if (
+																		!grandGrandContent[
+																			grandGrand
+																				.tagName
+																		][
+																			grandGrandGrandChild
+																				.tagName
+																		]
+																	) {
+																		grandGrandContent[
+																			grandGrand.tagName
+																		][
+																			grandGrandGrandChild.tagName
+																		] = [];
+																	}
+
+																	grandGrandContent[
+																		grandGrand
+																			.tagName
+																	][
+																		grandGrandGrandChild
+																			.tagName
+																	].push(
+																		grandGrandGrandChild.textContent
+																	);
+																}
+															}
+														}
+													}
+													else {
+														grandGrandContent[
+															grandGrand.tagName
+														] =
+															grandGrand.textContent;
+													}
+
+													grandGrandChildren.push(
 														grandGrandContent
 													);
 												}
+
+												fillContent(
+													itemGrandChild.tagName,
+													subItemContent,
+													grandGrandChildren
+												);
 											}
 											else {
+												fillContent(
+													itemGrandChild.tagName,
+													subItemContent,
+													itemGrandChild.textContent
+												);
+											}
+
+											for (const itemGrandChildAttribute of itemGrandChild.attributes) {
 												subItemContent[
-													itemGrandChild.tagName
-												] = itemGrandChild.textContent;
+													itemGrandChildAttribute.name
+												] =
+													itemGrandChildAttribute.value;
 											}
 										}
 										grandChildren.push(subItemContent);
@@ -230,27 +306,11 @@ function getLocationValue(field, context) {
 									itemContent = item.textContent;
 								}
 
-								if (childContent[item.tagName]) {
-									if (
-										Array.isArray(
-											childContent[item.tagName]
-										)
-									) {
-										childContent[item.tagName] = [
-											...childContent[item.tagName],
-											itemContent,
-										];
-									}
-									else {
-										childContent[item.tagName] = [
-											childContent[item.tagName],
-											itemContent,
-										];
-									}
-								}
-								else {
-									childContent[item.tagName] = itemContent;
-								}
+								fillContent(
+									item.tagName,
+									childContent,
+									itemContent
+								);
 							}
 						}
 					}
@@ -269,6 +329,25 @@ function getLocationValue(field, context) {
 	return parse(value, field);
 }
 
+function fillContent(index, item, content) {
+	if (!item[index]) {
+		item[index] = content;
+
+		return;
+	}
+
+	if (!Array.isArray(item[index])) {
+		item[index] = [item[index], content];
+
+		return;
+	}
+	if (Array.isArray(content)) {
+		item[index] = item[index].concat(content);
+	}
+	else {
+		item[index] = item[index].push(content);
+	}
+}
 function parseMeta(metaFields, xmldoc_in, data_out) {
 	if (isObject(metaFields)) {
 		let key;

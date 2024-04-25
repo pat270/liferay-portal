@@ -7,13 +7,13 @@ package com.liferay.layout.content.page.editor.web.internal.portlet.action;
 
 import com.liferay.frontend.token.definition.FrontendTokenDefinition;
 import com.liferay.frontend.token.definition.FrontendTokenDefinitionRegistry;
+import com.liferay.layout.constants.LayoutTypeSettingsConstants;
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortletKeys;
 import com.liferay.layout.content.page.editor.web.internal.util.StyleBookEntryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.LayoutSetLocalService;
@@ -70,7 +70,8 @@ public class ChangeStyleBookEntryMVCActionCommand
 				layout.getTypeSettingsProperties();
 
 			layoutTypeSettingsUnicodeProperties.put(
-				"designConfigurationModified", Boolean.TRUE.toString());
+				LayoutTypeSettingsConstants.KEY_DESIGN_CONFIGURATION_MODIFIED,
+				Boolean.TRUE.toString());
 
 			updatedLayout = _layoutLocalService.updateLayout(
 				layout.getGroupId(), layout.isPrivateLayout(),
@@ -80,12 +81,11 @@ public class ChangeStyleBookEntryMVCActionCommand
 
 		Group group = themeDisplay.getScopeGroup();
 
-		LayoutSet layoutSet = _layoutSetLocalService.fetchLayoutSet(
-			themeDisplay.getSiteGroupId(), group.isLayoutSetPrototype());
-
 		FrontendTokenDefinition frontendTokenDefinition =
 			_frontendTokenDefinitionRegistry.getFrontendTokenDefinition(
-				layoutSet.getThemeId());
+				_layoutSetLocalService.fetchLayoutSet(
+					themeDisplay.getSiteGroupId(),
+					group.isLayoutSetPrototype()));
 
 		StyleBookEntry styleBookEntry = null;
 
@@ -103,6 +103,11 @@ public class ChangeStyleBookEntryMVCActionCommand
 			StyleBookEntryUtil.getFrontendTokensValues(
 				frontendTokenDefinition, themeDisplay.getLocale(),
 				styleBookEntry));
+	}
+
+	@Override
+	protected boolean isLayoutLockRequired() {
+		return false;
 	}
 
 	@Reference

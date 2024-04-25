@@ -11,7 +11,9 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.NaturalOrderStringComparator;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.tools.ToolsUtil;
+import com.liferay.source.formatter.check.util.JSPSourceUtil;
 import com.liferay.source.formatter.check.util.JavaSourceUtil;
+import com.liferay.source.formatter.processor.JSPSourceProcessor;
 
 import java.util.List;
 import java.util.Objects;
@@ -360,11 +362,14 @@ public class MethodCallsOrderCheck extends BaseFileCheck {
 			content, "setGlobalParameter", 2, "PortletURLBuilder");
 		content = _sortChainedMethodCalls(
 			content, "setParameter", 2, "PortletURLBuilder");
+		content = _sortChainedMethodCalls(
+			content, "setProperty", 2, "UnicodePropertiesBuilder");
 
 		content = _sortMethodCallsByMethodName(
 			content, "DDMFormFieldRenderingContext", "DropdownItem",
-			"LabelItem", "NavigationItem", "SearchContext", "SearchEntry",
-			"ServiceContext", "ThemeDisplay");
+			"LabelItem", "NavigationItem", "SearchContainer", "SearchContext",
+			"SearchEntry", "ServiceContext", "SiteItemSelectorCriterion",
+			"ThemeDisplay");
 
 		content = _sortMethodCallsByParameter(
 			content, "add", "ConcurrentSkipListSet", "HashSet", "TreeSet");
@@ -391,6 +396,12 @@ public class MethodCallsOrderCheck extends BaseFileCheck {
 			Matcher matcher = pattern.matcher(content);
 
 			while (matcher.find()) {
+				if ((getSourceProcessor() instanceof JSPSourceProcessor) &&
+					JSPSourceUtil.isJSSource(content, matcher.start())) {
+
+					continue;
+				}
+
 				String methodCall1 = _getMethodCall(content, matcher.start(1));
 
 				if (methodCall1 == null) {

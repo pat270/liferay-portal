@@ -77,9 +77,11 @@ definition {
 			fieldName = "Date Field",
 			fieldValue = ${displayFutureDate});
 
+		Click(locator1 = "FormPortlet#FORM_CONTAINER");
+
 		FormPortlet.submitSuccessfully();
 
-		FormsAdmin.openFormsAdmin(siteURLKey = "guest");
+		FormsAdminNavigator.openFormsAdmin(siteURLKey = "guest");
 
 		FormsAdminNavigator.gotoViewEntries();
 
@@ -138,7 +140,7 @@ definition {
 
 		FormPortlet.submitSuccessfully();
 
-		FormsAdmin.openFormsAdmin(siteURLKey = "guest");
+		FormsAdminNavigator.openFormsAdmin(siteURLKey = "guest");
 
 		FormsAdminNavigator.gotoViewEntries();
 
@@ -293,6 +295,7 @@ definition {
 		property portal.acceptance = "true";
 		property portal.upstream = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		FormsAdmin.addForm();
 
@@ -559,7 +562,7 @@ definition {
 
 		FormPortlet.submitSuccessfully();
 
-		FormsAdmin.openFormsAdmin(siteURLKey = "guest");
+		FormsAdminNavigator.openFormsAdmin(siteURLKey = "guest");
 
 		FormsAdminNavigator.gotoViewEntries();
 
@@ -1361,7 +1364,7 @@ definition {
 
 		FormPortlet.submitSuccessfully();
 
-		FormsAdmin.openFormsAdmin(siteURLKey = "guest");
+		FormsAdminNavigator.openFormsAdmin(siteURLKey = "guest");
 
 		FormsAdminNavigator.gotoViewEntries();
 
@@ -1438,6 +1441,8 @@ definition {
 			fieldName = "Date",
 			fieldValue = "01/01/${futureYear}");
 
+		Click(locator1 = "FormPortlet#FORM_CONTAINER");
+
 		FormPortlet.submitSuccessfully();
 
 		Refresh();
@@ -1448,11 +1453,15 @@ definition {
 			fieldName = "Date",
 			fieldValue = "01/01/${pastYear}");
 
+		Click(locator1 = "FormPortlet#FORM_CONTAINER");
+
 		FormPortlet.viewValidationErrorMessage(validationErrorMessage = "Esse campo e invalido.");
 
 		FormFields.editDate(
 			fieldName = "Date",
 			fieldValue = "01/01/${futureYear}");
+
+		Click(locator1 = "FormPortlet#FORM_CONTAINER");
 
 		FormPortlet.submitSuccessfully();
 	}
@@ -1493,6 +1502,8 @@ definition {
 		FormFields.editDate(
 			fieldName = "Date",
 			fieldValue = "01/01/2030");
+
+		Click(locator1 = "FormPortlet#FORM_CONTAINER");
 
 		FormPortlet.submitSuccessfullyAndViewSuccessPage();
 	}
@@ -1536,7 +1547,7 @@ definition {
 
 		FormPortlet.submitSuccessfully();
 
-		FormsAdmin.openFormsAdmin(siteURLKey = "guest");
+		FormsAdminNavigator.openFormsAdmin(siteURLKey = "guest");
 
 		FormsAdminNavigator.gotoViewEntries();
 

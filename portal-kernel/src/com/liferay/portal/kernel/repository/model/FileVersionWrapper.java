@@ -91,6 +91,11 @@ public class FileVersionWrapper
 	}
 
 	@Override
+	public Date getDisplayDate() {
+		return _fileVersion.getDisplayDate();
+	}
+
+	@Override
 	public ExpandoBridge getExpandoBridge() {
 		return _fileVersion.getExpandoBridge();
 	}
@@ -293,6 +298,11 @@ public class FileVersionWrapper
 	@Override
 	public boolean isPending() {
 		return _fileVersion.isPending();
+	}
+
+	@Override
+	public boolean isScheduled() {
+		return _fileVersion.isScheduled();
 	}
 
 	@Override

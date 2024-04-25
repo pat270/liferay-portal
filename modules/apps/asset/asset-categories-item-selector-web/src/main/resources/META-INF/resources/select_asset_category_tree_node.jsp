@@ -28,7 +28,7 @@ SelectAssetCategoryTreeNodeDisplayContext selectAssetCategoryTreeNodeDisplayCont
 			data-category-tree-node-type="<%= selectAssetCategoryTreeNodeDisplayContext.getAssetCategoryTreeNodeType() %>"
 			data-title="<%= selectAssetCategoryTreeNodeDisplayContext.getAssetCategoryTreeNodeName() %>"
 			displayType="primary"
-			label='<%= LanguageUtil.get(resourceBundle, "select-this-level") %>'
+			label="select-this-level"
 			small="<%= true %>"
 		/>
 	</div>
@@ -69,5 +69,5 @@ SelectAssetCategoryTreeNodeDisplayContext selectAssetCategoryTreeNodeDisplayCont
 <liferay-frontend:component
 	componentId="SelectEntityHandler"
 	context="<%= selectAssetCategoryTreeNodeDisplayContext.getContext(liferayPortletResponse) %>"
-	module="js/SelectEntityHandler"
+	module="{SelectEntityHandler} from asset-categories-item-selector-web"
 />

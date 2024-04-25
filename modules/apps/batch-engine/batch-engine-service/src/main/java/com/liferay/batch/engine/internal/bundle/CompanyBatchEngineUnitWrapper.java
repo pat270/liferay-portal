@@ -7,15 +7,19 @@ package com.liferay.batch.engine.internal.bundle;
 
 import com.liferay.batch.engine.unit.BatchEngineUnit;
 import com.liferay.batch.engine.unit.BatchEngineUnitConfiguration;
+import com.liferay.batch.engine.unit.BatchEngineUnitMetaInfo;
+import com.liferay.batch.engine.unit.BundleBatchEngineUnit;
 import com.liferay.portal.kernel.model.Company;
 
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.osgi.framework.Bundle;
+
 /**
  * @author Alejandro Tardín
  */
-public class CompanyBatchEngineUnitWrapper implements BatchEngineUnit {
+public class CompanyBatchEngineUnitWrapper implements BundleBatchEngineUnit {
 
 	public CompanyBatchEngineUnitWrapper(
 		BatchEngineUnit batchEngineUnit, Company company) {
@@ -46,6 +50,32 @@ public class CompanyBatchEngineUnitWrapper implements BatchEngineUnit {
 				setVersion(batchEngineUnitConfiguration.getVersion());
 			}
 		};
+	}
+
+	@Override
+	public BatchEngineUnitMetaInfo getBatchEngineUnitMetaInfo()
+		throws IOException {
+
+		BatchEngineUnitMetaInfo batchEngineUnitMetaInfo =
+			_batchEngineUnit.getBatchEngineUnitMetaInfo();
+
+		return new BatchEngineUnitMetaInfo(
+			batchEngineUnitMetaInfo.isAdvanced(), _company.getCompanyId(),
+			batchEngineUnitMetaInfo.getFeatureFlag(),
+			batchEngineUnitMetaInfo.isMultiCompany(),
+			batchEngineUnitMetaInfo.getPaths());
+	}
+
+	@Override
+	public Bundle getBundle() {
+		if (_batchEngineUnit instanceof BundleBatchEngineUnit) {
+			BundleBatchEngineUnit bundleBatchEngineUnit =
+				(BundleBatchEngineUnit)_batchEngineUnit;
+
+			return bundleBatchEngineUnit.getBundle();
+		}
+
+		return null;
 	}
 
 	@Override

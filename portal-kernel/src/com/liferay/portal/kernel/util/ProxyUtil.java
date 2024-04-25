@@ -16,6 +16,7 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
@@ -99,7 +100,13 @@ public class ProxyUtil {
 			}
 		}
 
-		_constructorReferences.putIfAbsent(clazz, new ConstructorReference());
+		ConstructorReference constructorReference = _constructorReferences.get(
+			clazz);
+
+		if (constructorReference == null) {
+			_constructorReferences.putIfAbsent(
+				clazz, new ConstructorReference());
+		}
 
 		return clazz;
 	}
@@ -229,11 +236,16 @@ public class ProxyUtil {
 
 			Method delegateMethod = _delegateMethods.get(method);
 
-			if (delegateMethod != null) {
-				return delegateMethod.invoke(_delegateObject, args);
-			}
+			try {
+				if (delegateMethod != null) {
+					return delegateMethod.invoke(_delegateObject, args);
+				}
 
-			return method.invoke(_defaultObject, args);
+				return method.invoke(_defaultObject, args);
+			}
+			catch (InvocationTargetException invocationTargetException) {
+				throw invocationTargetException.getTargetException();
+			}
 		}
 
 		private DelegateInvocationHandler(

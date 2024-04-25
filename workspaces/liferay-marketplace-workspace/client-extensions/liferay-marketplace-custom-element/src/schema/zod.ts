@@ -6,32 +6,94 @@
 import {zodResolver} from '@hookform/resolvers/zod';
 import {z} from 'zod';
 
+import i18n from '../i18n';
+
 const zodSchema = {
 	accountCreator: z.object({
-		agreeToTermsAndConditions: z.boolean(),
+		accounts: z.any().array().optional(),
 		companyName: z
 			.string()
-			.nonempty({message: 'Please enter a company name to continue'}),
-		emailAddress: z.string().email('Please fill in valid email'),
-		extension: z.string().optional(),
-		familyName: z.string().nonempty({message: 'This field is required'}),
-		givenName: z.string(),
-		industry: z
+			.min(1, {message: 'Please enter a company name to continue'}),
+		country: z
 			.string()
-			.nonempty({message: 'Please select an industry to continue'}),
+			.min(2, {message: 'Please select the country to continue'}),
+		emailAddress: z
+			.string()
+			.email(i18n.translate('this-field-is-required')),
+		extension: z.string().optional(),
+		familyName: z
+			.string()
+			.min(3, {message: i18n.translate('this-field-is-required')}),
+		givenName: z.string(),
 		phone: z.object({
 			code: z.string(),
 			flag: z.string(),
 		}),
 		phoneNumber: z
 			.string()
-			.nonempty()
-			.refine(
-				(value) => /^(\+)?[\d\s]+$/.test(value),
-				'Please enter a phone number to continue.'
-			),
+			.min(1, {message: 'Please enter a phone number to continue.'}),
 	}),
-
+	becomePublisherForm: z.object({
+		emailAddress: z.string().email('Please fill in valid email'),
+		extension: z.string().optional(),
+		firstName: z.string().min(3, 'First name is required'),
+		lastName: z.string().min(3, 'Last name is required'),
+		phone: z
+			.object({
+				code: z.string(),
+				flag: z.string(),
+			})
+			.optional(),
+		phoneNumber: z
+			.string()
+			.min(1, {message: i18n.translate('this-field-is-required')}),
+		requestDescription: z
+			.string()
+			.min(3, {message: 'Request Description is required'}),
+	}),
+	billingAddress: z.object({
+		city: z.string().min(1),
+		country: z.string().min(1),
+		countryISOCode: z.string().optional(),
+		name: z.string().min(1),
+		phoneNumber: z.string().min(1),
+		regionISOCode: z.string().optional(),
+		street1: z.string().min(1),
+		street2: z.string().optional(),
+		zip: z.string().min(1),
+	}),
+	contactSales: z.object({
+		accountName: z
+			.string()
+			.min(3, i18n.sub('x-is-required', 'account-name')),
+		additionalAppsRequested: z.string(),
+		comments: z.string(),
+		email: z.string().email(i18n.translate('please-fill-in-a-valid-email')),
+		name: z.string().min(3, i18n.sub('x-is-required', 'name')),
+	}),
+	generateLicenseKey: z.object({
+		description: z.string().max(100, {message: 'Invalid license name'}),
+		hostname: z.string(),
+		ipAddress: z.string(),
+		macAddress: z.string(),
+		subscription: z
+			.object({
+				name: z.string(),
+				productPurchasedKey: z.string(),
+				productVersion: z.string(),
+				skuId: z.number(),
+			})
+			.optional(),
+	}),
+	invitedNewMember: z.object({
+		emailAddress: z
+			.string()
+			.min(5, 'Please enter an email')
+			.email('Invalid email address'),
+		firstName: z.string().min(3, 'Please enter member name'),
+		lastName: z.string().min(3, 'Last name is required'),
+		roles: z.string().array().min(5, 'Please select at least one role'),
+	}),
 	newCustomer: z.object({
 		accountBriefs: z.any().optional(),
 		alternateName: z.string().optional(),

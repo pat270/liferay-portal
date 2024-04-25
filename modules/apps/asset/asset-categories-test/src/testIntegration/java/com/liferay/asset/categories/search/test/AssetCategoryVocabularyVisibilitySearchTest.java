@@ -26,7 +26,6 @@ import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.QueryConfig;
 import com.liferay.portal.kernel.search.SearchContext;
-import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
@@ -39,7 +38,6 @@ import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.workflow.WorkflowThreadLocal;
-import com.liferay.portal.search.localization.SearchLocalizationHelper;
 import com.liferay.portal.search.test.util.DocumentsAssert;
 import com.liferay.portal.search.test.util.SearchContextTestUtil;
 import com.liferay.portal.search.test.util.SearchTestRule;
@@ -100,10 +98,12 @@ public class AssetCategoryVocabularyVisibilitySearchTest {
 		_addJournalArticle(assetCategory, keyword);
 
 		_assertSearchInternalFields(
-			keyword, _getAssetCategoryIds(assetCategory),
-			_getAssetCategoryTitles(assetCategory));
+			keyword, Arrays.asList(assetCategory.getCategoryId()),
+			_getAssetCategoryTitles(assetCategory),
+			Arrays.asList(assetCategory.getVocabularyId()));
 		_assertSearchPublicFields(
-			keyword, Collections.emptyList(), Collections.emptyList());
+			keyword, Collections.emptyList(), Collections.emptyList(),
+			Collections.emptyList());
 	}
 
 	@Test
@@ -116,10 +116,12 @@ public class AssetCategoryVocabularyVisibilitySearchTest {
 		_addJournalArticle(assetCategory, keyword);
 
 		_assertSearchInternalFields(
-			keyword, Collections.emptyList(), Collections.emptyList());
+			keyword, Collections.emptyList(), Collections.emptyList(),
+			Collections.emptyList());
 		_assertSearchPublicFields(
-			keyword, _getAssetCategoryIds(assetCategory),
-			_getAssetCategoryTitles(assetCategory));
+			keyword, Arrays.asList(assetCategory.getCategoryId()),
+			_getAssetCategoryTitles(assetCategory),
+			Arrays.asList(assetCategory.getVocabularyId()));
 	}
 
 	@Rule
@@ -206,10 +208,12 @@ public class AssetCategoryVocabularyVisibilitySearchTest {
 
 	private void _assertSearch(
 			String keyword, String assetCategoryIdsFieldName,
+			String assetVocabularyIdsFieldName,
 			List<Long> expectedAssetCategoryIds,
 			String assetCategoryTitlesFieldName,
-			List<String> expectedAssetCategoryTitles)
-		throws Exception, SearchException {
+			List<String> expectedAssetCategoryTitles,
+			List<Long> expectedAssetVocabularyIds)
+		throws Exception {
 
 		SearchContext searchContext = SearchContextTestUtil.getSearchContext(
 			_group.getGroupId());
@@ -227,37 +231,39 @@ public class AssetCategoryVocabularyVisibilitySearchTest {
 			(String)searchContext.getAttribute("queryString"), hits.getDocs(),
 			assetCategoryIdsFieldName,
 			TransformUtil.transform(expectedAssetCategoryIds, String::valueOf));
-
 		DocumentsAssert.assertValuesIgnoreRelevance(
 			(String)searchContext.getAttribute("queryString"), hits.getDocs(),
 			assetCategoryTitlesFieldName, expectedAssetCategoryTitles);
+		DocumentsAssert.assertValuesIgnoreRelevance(
+			(String)searchContext.getAttribute("queryString"), hits.getDocs(),
+			assetVocabularyIdsFieldName,
+			TransformUtil.transform(
+				expectedAssetVocabularyIds, String::valueOf));
 	}
 
 	private void _assertSearchInternalFields(
 			String keyword, List<Long> assetCategoryIds,
-			List<String> assetCategoryTitles)
-		throws Exception, SearchException {
+			List<String> assetCategoryTitles, List<Long> assetVocabularyIds)
+		throws Exception {
 
 		_assertSearch(
-			keyword, Field.ASSET_INTERNAL_CATEGORY_IDS, assetCategoryIds,
+			keyword, Field.ASSET_INTERNAL_CATEGORY_IDS,
+			Field.ASSET_INTERNAL_VOCABULARY_IDS, assetCategoryIds,
 			Field.getLocalizedName(
 				LocaleUtil.US, Field.ASSET_INTERNAL_CATEGORY_TITLES),
-			assetCategoryTitles);
+			assetCategoryTitles, assetVocabularyIds);
 	}
 
 	private void _assertSearchPublicFields(
 			String keyword, List<Long> assetCategoryIds,
-			List<String> assetCategoryTitles)
-		throws Exception, SearchException {
+			List<String> assetCategoryTitles, List<Long> assetVocabularyIds)
+		throws Exception {
 
 		_assertSearch(
-			keyword, Field.ASSET_CATEGORY_IDS, assetCategoryIds,
+			keyword, Field.ASSET_CATEGORY_IDS, Field.ASSET_VOCABULARY_IDS,
+			assetCategoryIds,
 			Field.getLocalizedName(LocaleUtil.US, Field.ASSET_CATEGORY_TITLES),
-			assetCategoryTitles);
-	}
-
-	private List<Long> _getAssetCategoryIds(AssetCategory assetCategory) {
-		return Arrays.asList(assetCategory.getCategoryId());
+			assetCategoryTitles, assetVocabularyIds);
 	}
 
 	private List<String> _getAssetCategoryTitles(AssetCategory assetCategory) {
@@ -298,8 +304,5 @@ public class AssetCategoryVocabularyVisibilitySearchTest {
 	private JournalArticleLocalService _journalArticleLocalService;
 
 	private JournalArticleSearchFixture _journalArticleSearchFixture;
-
-	@Inject
-	private SearchLocalizationHelper _searchLocalizationHelper;
 
 }

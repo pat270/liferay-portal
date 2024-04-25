@@ -14,7 +14,7 @@ ObjectView objectView = (ObjectView)request.getAttribute(ObjectWebKeys.OBJECT_VI
 %>
 
 <react:component
-	module="js/components/ObjectView/index"
+	module="{ObjectView} from object-web"
 	props='<%=
 		HashMapBuilder.<String, Object>put(
 			"filterOperators", LocalizedJSONArrayUtil.getFilterOperatorsJSONObject(locale)
@@ -25,7 +25,7 @@ ObjectView objectView = (ObjectView)request.getAttribute(ObjectWebKeys.OBJECT_VI
 		).put(
 			"objectViewId", objectView.getObjectViewId()
 		).put(
-			"workflowStatusJSONArray", LocalizedJSONArrayUtil.getWorkflowStatusJSONArray(locale)
+			"workflowStatuses", LocalizedJSONArrayUtil.getWorkflowStatusJSONArray(locale)
 		).build()
 	%>'
 />

@@ -216,7 +216,8 @@ public class ModulesStructureTest {
 							}
 						}
 
-						if (!dirName.endsWith("poshi-standalone") &&
+						if (!dirName.endsWith("playwright") &&
+							!dirName.endsWith("poshi-standalone") &&
 							!liferaySpringBootDefaultsPlugin) {
 
 							Assert.assertFalse(
@@ -224,7 +225,9 @@ public class ModulesStructureTest {
 								Files.deleteIfExists(gradlePropertiesPath));
 						}
 
-						if (!dirName.endsWith("poshi-standalone")) {
+						if (!dirName.endsWith("playwright") &&
+							!dirName.endsWith("poshi-standalone")) {
+
 							Path settingsGradlePath = dirPath.resolve(
 								"settings.gradle");
 
@@ -927,13 +930,13 @@ public class ModulesStructureTest {
 		String configuration, boolean hasSrcTestDir,
 		boolean hasSrcTestIntegrationDir) {
 
-		if (configuration.equals("testCompile") && !hasSrcTestDir &&
+		if (configuration.equals("testImplementation") && !hasSrcTestDir &&
 			!hasSrcTestIntegrationDir) {
 
 			return true;
 		}
 
-		if (configuration.equals("testRuntime") && !hasSrcTestDir &&
+		if (configuration.equals("testRuntimeOnly") && !hasSrcTestDir &&
 			!hasSrcTestIntegrationDir) {
 
 			return true;
@@ -981,6 +984,7 @@ public class ModulesStructureTest {
 		if (dirName.endsWith("poshi-standalone") ||
 			name.equals("com.liferay.ant.bnd") ||
 			name.equals("com.liferay.arquillian.extension.junit.bridge") ||
+			name.equals("com.liferay.gradle.plugins.app.docker") ||
 			name.equals("com.liferay.gradle.plugins.defaults") ||
 			name.equals("com.liferay.portal.cache.test.util") ||
 			name.equals("com.liferay.poshi.core") ||
@@ -1412,19 +1416,19 @@ public class ModulesStructureTest {
 		}
 
 		Map<String, Boolean> allowedConfigurationsMap = TreeMapBuilder.put(
-			"compile", mainConfigurationsAllowed
+			"api", mainConfigurationsAllowed
 		).put(
 			"compileOnly", mainConfigurationsAllowed
 		).put(
 			"provided", mainConfigurationsAllowed
 		).put(
-			"testCompile", hasSrcTestDir
+			"testImplementation", hasSrcTestDir
 		).put(
-			"testIntegrationCompile", hasSrcTestIntegrationDir
+			"testIntegrationImplementation", hasSrcTestIntegrationDir
 		).put(
-			"testIntegrationRuntime", hasSrcTestIntegrationDir
+			"testIntegrationRuntimeOnly", hasSrcTestIntegrationDir
 		).put(
-			"testRuntime", hasSrcTestDir
+			"testRuntimeOnly", hasSrcTestDir
 		).build();
 
 		for (GradleDependency gradleDependency : gradleDependencies) {
@@ -1696,8 +1700,9 @@ public class ModulesStructureTest {
 				"org.gradle.parallel", "pom.scm.connection",
 				"pom.scm.developerConnection", "pom.scm.url"));
 	private static final List<String> _gradleConfigurations = Arrays.asList(
-		"compileOnly", "provided", "compile", "runtime", "testCompile",
-		"testRuntime", "testIntegrationCompile", "testIntegrationRuntime");
+		"api", "compileOnly", "provided", "runtimeOnly", "testImplementation",
+		"testIntegrationImplementation", "testIntegrationRuntimeOnly",
+		"testRuntimeOnly");
 	private static final Pattern _jsonVersionPattern = Pattern.compile(
 		"\\n(\\t|  )\"version\": \"(.+)\"");
 	private static boolean _masterBranch;

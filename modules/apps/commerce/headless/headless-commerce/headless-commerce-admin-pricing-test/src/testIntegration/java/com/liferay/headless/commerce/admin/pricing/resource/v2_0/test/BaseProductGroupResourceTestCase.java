@@ -25,8 +25,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -212,6 +210,8 @@ public abstract class BaseProductGroupResourceTestCase {
 		ProductGroup productGroup =
 			testGraphQLGetDiscountProductGroupProductGroup_addProductGroup();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				productGroup,
@@ -230,6 +230,30 @@ public abstract class BaseProductGroupResourceTestCase {
 								getGraphQLFields())),
 						"JSONObject/data",
 						"Object/discountProductGroupProductGroup"))));
+
+		// Using the namespace headlessCommerceAdminPricing_v2_0
+
+		Assert.assertTrue(
+			equals(
+				productGroup,
+				ProductGroupSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminPricing_v2_0",
+								new GraphQLField(
+									"discountProductGroupProductGroup",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"discountProductGroupId",
+												testGraphQLGetDiscountProductGroupProductGroup_getDiscountProductGroupId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminPricing_v2_0",
+						"Object/discountProductGroupProductGroup"))));
 	}
 
 	protected Long
@@ -246,6 +270,8 @@ public abstract class BaseProductGroupResourceTestCase {
 
 		Long irrelevantDiscountProductGroupId = RandomTestUtil.randomLong();
 
+		// No namespace
+
 		Assert.assertEquals(
 			"Not Found",
 			JSONUtil.getValueAsString(
@@ -260,6 +286,27 @@ public abstract class BaseProductGroupResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminPricing_v2_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminPricing_v2_0",
+						new GraphQLField(
+							"discountProductGroupProductGroup",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"discountProductGroupId",
+										irrelevantDiscountProductGroupId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -309,6 +356,8 @@ public abstract class BaseProductGroupResourceTestCase {
 		ProductGroup productGroup =
 			testGraphQLGetPriceModifierProductGroupProductGroup_addProductGroup();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				productGroup,
@@ -327,6 +376,30 @@ public abstract class BaseProductGroupResourceTestCase {
 								getGraphQLFields())),
 						"JSONObject/data",
 						"Object/priceModifierProductGroupProductGroup"))));
+
+		// Using the namespace headlessCommerceAdminPricing_v2_0
+
+		Assert.assertTrue(
+			equals(
+				productGroup,
+				ProductGroupSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminPricing_v2_0",
+								new GraphQLField(
+									"priceModifierProductGroupProductGroup",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"priceModifierProductGroupId",
+												testGraphQLGetPriceModifierProductGroupProductGroup_getPriceModifierProductGroupId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminPricing_v2_0",
+						"Object/priceModifierProductGroupProductGroup"))));
 	}
 
 	protected Long
@@ -344,6 +417,8 @@ public abstract class BaseProductGroupResourceTestCase {
 		Long irrelevantPriceModifierProductGroupId =
 			RandomTestUtil.randomLong();
 
+		// No namespace
+
 		Assert.assertEquals(
 			"Not Found",
 			JSONUtil.getValueAsString(
@@ -358,6 +433,27 @@ public abstract class BaseProductGroupResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminPricing_v2_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminPricing_v2_0",
+						new GraphQLField(
+							"priceModifierProductGroupProductGroup",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"priceModifierProductGroupId",
+										irrelevantPriceModifierProductGroupId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -658,6 +754,10 @@ public abstract class BaseProductGroupResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -801,9 +901,9 @@ public abstract class BaseProductGroupResourceTestCase {
 	}
 
 	protected ProductGroupResource productGroupResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

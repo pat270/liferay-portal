@@ -6,13 +6,13 @@
 import React from 'react';
 import {createRoot} from 'react-dom/client';
 
-import Comic from './common/components/Comic';
-import DadJoke from './common/components/DadJoke';
-import api from './common/services/liferay/api';
-import {Liferay} from './common/services/liferay/liferay';
-import HelloBar from './routes/hello-bar/pages/HelloBar';
-import HelloFoo from './routes/hello-foo/pages/HelloFoo';
-import HelloWorld from './routes/hello-world/pages/HelloWorld';
+import Comic from './common/components/Comic.js';
+import DadJoke from './common/components/DadJoke.js';
+import api from './common/services/liferay/api.js';
+import {Liferay} from './common/services/liferay/liferay.js';
+import HelloBar from './routes/hello-bar/pages/HelloBar.js';
+import HelloFoo from './routes/hello-foo/pages/HelloFoo.js';
+import HelloWorld from './routes/hello-world/pages/HelloWorld.js';
 
 import './common/styles/index.scss';
 
@@ -44,18 +44,18 @@ const App = ({route}) => {
 
 class WebComponent extends HTMLElement {
 	connectedCallback() {
-		createRoot(this).render(
-			<App route={this.getAttribute('route')} />,
-			this
-		);
+		this.root = createRoot(this);
+
+		this.root.render(<App route={this.getAttribute('route')} />, this);
 
 		if (Liferay.ThemeDisplay.isSignedIn()) {
 			api('o/headless-admin-user/v1.0/my-user-account')
 				.then((response) => response.json())
 				.then((response) => {
 					if (response.givenName) {
-						const nameElements =
-							document.getElementsByClassName('hello-world-name');
+						const nameElements = document.getElementsByClassName(
+							'hello-world-name'
+						);
 
 						if (nameElements.length) {
 							nameElements[0].innerHTML = response.givenName;
@@ -67,6 +67,22 @@ class WebComponent extends HTMLElement {
 					console.log(error);
 				});
 		}
+	}
+
+	disconnectedCallback() {
+
+		//
+		// Unmount React tree to prevent memory leaks.
+		//
+		// See React documentation at
+		//
+		//     https://react.dev/reference/react-dom/client/createRoot#root-unmount
+		//
+		// for more information.
+		//
+
+		this.root.unmount();
+		delete this.root;
 	}
 }
 

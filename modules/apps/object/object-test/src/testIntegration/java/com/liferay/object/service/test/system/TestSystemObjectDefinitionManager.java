@@ -5,6 +5,8 @@
 
 package com.liferay.object.service.test.system;
 
+import com.liferay.object.constants.ObjectDefinitionConstants;
+import com.liferay.object.model.ObjectEntryTable;
 import com.liferay.object.model.ObjectField;
 import com.liferay.object.system.BaseSystemObjectDefinitionManager;
 import com.liferay.object.system.JaxRsApplicationDescriptor;
@@ -16,9 +18,9 @@ import com.liferay.petra.string.StringUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -49,6 +51,7 @@ public class TestSystemObjectDefinitionManager
 		return null;
 	}
 
+	@Override
 	public BaseModel<?> fetchBaseModelByExternalReferenceCode(
 		String externalReferenceCode, long companyId) {
 
@@ -89,8 +92,12 @@ public class TestSystemObjectDefinitionManager
 	}
 
 	@Override
-	public Map<Locale, String> getLabelMap() {
-		return null;
+	public Map<String, String> getLabelKeys() {
+		return HashMapBuilder.put(
+			"label", "test"
+		).put(
+			"pluralLabel", "tests"
+		).build();
 	}
 
 	@Override
@@ -109,23 +116,18 @@ public class TestSystemObjectDefinitionManager
 	}
 
 	@Override
-	public Map<Locale, String> getPluralLabelMap() {
-		return null;
-	}
-
-	@Override
 	public Column<?, Long> getPrimaryKeyColumn() {
-		return null;
+		return ObjectEntryTable.INSTANCE.objectEntryId;
 	}
 
 	@Override
 	public String getScope() {
-		return null;
+		return ObjectDefinitionConstants.SCOPE_COMPANY;
 	}
 
 	@Override
 	public Table getTable() {
-		return null;
+		return ObjectEntryTable.INSTANCE;
 	}
 
 	@Override
@@ -139,6 +141,7 @@ public class TestSystemObjectDefinitionManager
 		throws Exception {
 	}
 
+	@Override
 	public long upsertBaseModel(
 		String externalReferenceCode, long companyId, User user,
 		Map<String, Object> values) {

@@ -1,4 +1,4 @@
-@component-name = "portal-lima"
+@component-name = "portal-content-management"
 definition {
 
 	property ci.retries.disabled = "true";
@@ -51,7 +51,7 @@ definition {
 	}
 
 	@description = "This test covers LPS-67664. It ensures that a user can order blog entries by display date."
-	@priority = 4
+	@priority = 3
 	test CanOrderByDisplayDate {
 		JSONBlog.addEntry(
 			entryContent = "Blogs Entry Content",
@@ -63,9 +63,9 @@ definition {
 
 		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
-		ManagementBar.setFilterAndOrder(menuItem = "Display Date");
+		ManagementBar.setFilterAndOrder(orderBy = "Display Date");
 
-		Click(locator1 = "ManagementBar#ORDER_ICON_GENERIC");
+		ManagementBar.sortAssets(sortDirection = "Descending");
 
 		Blogs.viewEntryTitle(
 			entryTitle = "Test Title",
@@ -87,8 +87,8 @@ definition {
 			entryTitle = "Unique Title");
 
 		JSONBlog.addEntry(
-			entryContent = "Blogs Entry Text",
-			entryTitle = "Blogs Entry Title");
+			entryContent = "Some Text",
+			entryTitle = "Some Title");
 
 		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 

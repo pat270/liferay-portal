@@ -21,9 +21,7 @@ definition {
 
 		// TODO Review
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CPCommerceCatalog.newProductsEntry(
 			productCatalog = "Master",
@@ -52,15 +50,6 @@ definition {
 			locator1 = "CommerceEntry#TABLE_LIST_TITLE");
 	}
 
-	@description = "This is a test for COMMERCE-6021. AddASKU"
-	@ignore = "true"
-	@priority = 3
-	test AddASKU {
-
-		// TODO COMMERCE-6021 AddASKU
-
-	}
-
 	@description = "This is a test for COMMERCE-6287. AddASpecificationAndVerifyIfIsPresent"
 	@priority = 3
 	test AddASpecificationAndVerifyIfIsPresent {
@@ -70,9 +59,7 @@ definition {
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CPCommerceCatalog.newProductsEntry(
 			productCatalog = "Master",
@@ -129,9 +116,7 @@ definition {
 
 		// TODO Review
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CPCommerceCatalog.newProductsEntry(
 			productCatalog = "Master",
@@ -184,9 +169,7 @@ definition {
 
 		Button.clickSave();
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CPCommerceCatalog.newProductsEntry(
 			productCatalog = "Master",
@@ -208,12 +191,13 @@ definition {
 			key_toggleSwitchLabel = "Purchasable",
 			locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
 
-		Type(
-			key_fieldLabel = "Base Price",
-			locator1 = "TextInput#GENERIC_TEXT_INPUT",
-			value1 = "50.0");
-
 		Button.clickPublish();
+
+		CommerceEntry.gotoMenuTab(menuTab = "Price");
+
+		CommerceSKUs.addSKUPriceEntry(
+			priceList = "Master Base Price List",
+			unitPrice = 50);
 
 		Refresh();
 
@@ -248,22 +232,22 @@ definition {
 			locator1 = "TextInput#GENERIC_TEXT_INPUT",
 			value1 = "BLACKSKU");
 
-		Click(locator1 = "Dropdown#TRIGGER");
-
-		Click(
-			key_fieldName = "Black",
-			locator1 = "FormViewBuilder#OBJECT_FIELD_BUTTON_DROPDOWN");
+		Select(
+			key_optionName = "Color",
+			locator1 = "CommerceFrontStore#FS_PRODUCT_OPTIONS_SELECT",
+			value1 = "Black");
 
 		Check.checkToggleSwitch(
 			key_toggleSwitchLabel = "Purchasable",
 			locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
 
-		Type(
-			key_fieldLabel = "Base Price",
-			locator1 = "TextInput#GENERIC_TEXT_INPUT",
-			value1 = "10.0");
-
 		Button.click(button = "Publish");
+
+		CommerceEntry.gotoMenuTab(menuTab = "Price");
+
+		CommerceSKUs.addSKUPriceEntry(
+			priceList = "Master Base Price List",
+			unitPrice = 10);
 
 		Refresh();
 
@@ -321,9 +305,7 @@ definition {
 		}
 
 		task ("And the admin goes into the Product and verifies if the Trash icon is not present in the header") {
-			CommerceNavigator.gotoPortlet(
-				category = "Product Management",
-				portlet = "Products");
+			CommerceProducts.openProductsAdmin();
 
 			AssertElementNotPresent(locator1 = "Button#TRASH_ENABLED");
 		}
@@ -369,9 +351,7 @@ definition {
 		// TODO Review
 
 		task ("Given a new virtual product is added") {
-			CommerceNavigator.gotoPortlet(
-				category = "Product Management",
-				portlet = "Products");
+			CommerceProducts.openProductsAdmin();
 
 			CPCommerceCatalog.newProductsEntry(
 				productCatalog = "Master",
@@ -421,9 +401,7 @@ definition {
 			productStatusCode = 9,
 			productType = "simple");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceProducts.checkProductStatusAfterDuplicationAndConvertionToDraft(
 			checkProductFields = "true",
@@ -439,9 +417,7 @@ definition {
 	test CanCheckApprovedProductDuplication {
 		property portal.acceptance = "true";
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CPCommerceCatalog.newProductsEntry(
 			productCatalog = "Master",
@@ -465,9 +441,7 @@ definition {
 	test CanCheckApprovedProductSaveAsDraft {
 		property portal.acceptance = "false";
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CPCommerceCatalog.newProductsEntry(
 			productCatalog = "Master",
@@ -515,9 +489,7 @@ definition {
 			productStatusCode = 0,
 			productType = "simple");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceProducts.checkProductStatusAfterDuplicationAndConvertionToDraft(
 			checkProductFields = "true",
@@ -531,7 +503,7 @@ definition {
 	@description = "This is a test for COMMERCE-9253. CanCheckTheApprovedStatusForSingleApproverWorkflow"
 	@priority = 5
 	test CanCheckApprovedProductWorkflowStatusWithSingleApproverWorkflow {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "true";
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
@@ -548,10 +520,7 @@ definition {
 			userScreenName = "categorymanager",
 			userSiteMembership = "Minium");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.assignRegularRoleCP(
 			roleTitle = "Category Manager",
@@ -566,9 +535,7 @@ definition {
 			urlAppend = "web/minium",
 			userEmailAddress = "categorymanager@liferay.com");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CPCommerceCatalog.newProductsEntry(
 			compileDescription = "false",
@@ -599,9 +566,7 @@ definition {
 			urlAppend = "web/minium",
 			userEmailAddress = "categorymanager@liferay.com");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		AppBuilderAdmin.searchByItem(itemName = "Simple T-Shirt");
 
@@ -638,9 +603,7 @@ definition {
 			productStatusCode = 4,
 			productType = "simple");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceProducts.checkProductStatusAfterDuplicationAndConvertionToDraft(
 			checkProductFields = "true",
@@ -656,9 +619,7 @@ definition {
 	test CanCheckDraftProductDuplication {
 		property portal.acceptance = "false";
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CPCommerceCatalog.newProductsEntry(
 			compileDescription = "false",
@@ -684,9 +645,7 @@ definition {
 	test CanCheckDraftProductSaveAsDraft {
 		property portal.acceptance = "false";
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CPCommerceCatalog.newProductsEntry(
 			compileDescription = "false",
@@ -717,9 +676,7 @@ definition {
 	test CanCheckDraftProductStatus {
 		property portal.acceptance = "true";
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CPCommerceCatalog.newProductsEntry(
 			compileDescription = "false",
@@ -742,20 +699,15 @@ definition {
 	test CanCheckDraftProductStatusWithWorkflow {
 		property portal.acceptance = "false";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		CommerceEntry.gotoMenuTab(menuTab = "Configuration");
 
 		Workflow.configureWorkflow(
 			workflowDefinition = "Single Approver",
-			workflowResourceValue = "Commerce Product");
+			workflowResourceValue = "Product");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CPCommerceCatalog.newProductsEntry(
 			compileDescription = "false",
@@ -765,23 +717,20 @@ definition {
 			publishProduct = "false");
 
 		task ("Disable Single Approver for avoid issue on CI") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Workflow",
-				panel = "Applications",
-				portlet = "Process Builder");
+			Workflow.openWorkflowListView();
 
 			CommerceEntry.gotoMenuTab(menuTab = "Configuration");
 
 			Workflow.configureWorkflow(
 				workflowDefinition = "No Workflow",
-				workflowResourceValue = "Commerce Product");
+				workflowResourceValue = "Product");
 		}
 	}
 
 	@description = "This is a test for COMMERCE-9182. VerifyDraftProductNotAppearOnMiniumCatalogPage"
 	@priority = 5
 	test CanCheckDraftProductVisibilityOnMiniumCatalogPage {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "true";
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
@@ -801,9 +750,7 @@ definition {
 			userScreenName = "buyeruser",
 			userSiteMembership = "Minium");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CPCommerceCatalog.newProductsEntry(
 			productCatalog = "Minium",
@@ -827,7 +774,7 @@ definition {
 			userEmailAddress = "buyer@liferay.com");
 
 		Type(
-			locator1 = "Search#EMBEDDED_SEARCH_BAR",
+			locator1 = "Search#SEARCH_BAR_WIDGET",
 			value1 = "Simple T-Shirt");
 
 		Button.clickSubmitButton();
@@ -840,9 +787,7 @@ definition {
 
 		User.firstLoginPG();
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		AppBuilderAdmin.searchByItem(itemName = "Simple T-Shirt");
 
@@ -866,7 +811,7 @@ definition {
 			userEmailAddress = "buyer@liferay.com");
 
 		Type(
-			locator1 = "Search#EMBEDDED_SEARCH_BAR",
+			locator1 = "Search#SEARCH_BAR_WIDGET",
 			value1 = "Simple T-Shirt");
 
 		Button.clickSubmitButton();
@@ -886,9 +831,7 @@ definition {
 			productStatusCode = 2,
 			productType = "simple");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceProducts.checkProductStatusAfterDuplicationAndConvertionToDraft(
 			checkProductFields = "true",
@@ -902,7 +845,7 @@ definition {
 	@description = "This is a test for COMMERCE-9290. CanCheckTheDraftStatusForSingleApproverWorkflow"
 	@priority = 5
 	test CanCheckDraftProductWorkflowStatusWithSingleApproverWorkflow {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "true";
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
@@ -919,10 +862,7 @@ definition {
 			userScreenName = "categorymanager",
 			userSiteMembership = "Minium");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.assignRegularRoleCP(
 			roleTitle = "Category Manager",
@@ -937,9 +877,7 @@ definition {
 			urlAppend = "web/minium",
 			userEmailAddress = "categorymanager@liferay.com");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CPCommerceCatalog.newProductsEntry(
 			compileDescription = "false",
@@ -975,9 +913,7 @@ definition {
 			productStatusCode = 3,
 			productType = "simple");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceProducts.checkProductStatusAfterDuplicationAndConvertionToDraft(
 			checkProductFields = "true",
@@ -998,9 +934,7 @@ definition {
 			productStatusCode = 5,
 			productType = "simple");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceProducts.checkProductStatusAfterDuplicationAndConvertionToDraft(
 			checkProductFields = "true",
@@ -1021,9 +955,7 @@ definition {
 			productStatusCode = 6,
 			productType = "simple");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceProducts.checkProductStatusAfterDuplicationAndConvertionToDraft(
 			checkProductFields = "true",
@@ -1044,9 +976,7 @@ definition {
 			productStatusCode = 8,
 			productType = "simple");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceProducts.checkProductStatusAfterDuplicationAndConvertionToDraft(
 			checkProductFields = "true",
@@ -1067,9 +997,7 @@ definition {
 			productStatusCode = 1,
 			productType = "simple");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceProducts.checkProductStatusAfterDuplicationAndConvertionToDraft(
 			checkProductFields = "true",
@@ -1083,7 +1011,7 @@ definition {
 	@description = "This is a test for COMMERCE-9292. CanCheckThePendingReviewStatusForSingleApproverWorkflow"
 	@priority = 5
 	test CanCheckPendingProductWorkflowStatusWithSingleApproverWorkflow {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "true";
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
@@ -1100,10 +1028,7 @@ definition {
 			userScreenName = "categorymanager",
 			userSiteMembership = "Minium");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.assignRegularRoleCP(
 			roleTitle = "Category Manager",
@@ -1118,9 +1043,7 @@ definition {
 			urlAppend = "web/minium",
 			userEmailAddress = "categorymanager@liferay.com");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CPCommerceCatalog.newProductsEntry(
 			compileDescription = "false",
@@ -1150,9 +1073,7 @@ definition {
 			urlAppend = "web/minium",
 			userEmailAddress = "categorymanager@liferay.com");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		AppBuilderAdmin.searchByItem(itemName = "Simple T-Shirt");
 
@@ -1188,9 +1109,7 @@ definition {
 	test CanCheckProductPublication {
 		property portal.acceptance = "false";
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CPCommerceCatalog.newProductsEntry(
 			productCatalog = "Master",
@@ -1208,9 +1127,7 @@ definition {
 			productStatusCode = 7,
 			productType = "simple");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceProducts.checkProductStatusAfterDuplicationAndConvertionToDraft(
 			checkProductFields = "true",
@@ -1306,7 +1223,7 @@ definition {
 	@description = "This is a test for the COMMERCE-10763, to verify that a buyer user can download the virtual product by the URL retrieved using API"
 	@priority = 4
 	test CanDownloadConfiguredVirtualProduct {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "false";
 
 		var baseURL = PropsUtil.get("portal.url");
@@ -1339,6 +1256,12 @@ definition {
 				productType = "Virtual");
 
 			CommerceEntry.gotoMenuTab(menuTab = "Virtual");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Options");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Virtual");
+
+			Button.clickSave();
 
 			CommerceProducts.configureVirtualProduct(
 				activationStatus = "Pending",
@@ -1454,7 +1377,7 @@ definition {
 	@description = "This is a test for the COMMERCE-10763, to verify that a buyer user can not download the virtual product by the URL retrieved using API without permissions"
 	@priority = 4
 	test CanDownloadConfiguredVirtualProductWithoutPermissions {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "false";
 
 		var baseURL = PropsUtil.get("portal.url");
@@ -1492,6 +1415,12 @@ definition {
 
 			CommerceEntry.gotoMenuTab(menuTab = "Virtual");
 
+			CommerceEntry.gotoMenuTab(menuTab = "Options");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Virtual");
+
+			Button.clickSave();
+
 			CommerceProducts.configureVirtualProduct(
 				activationStatus = "Pending",
 				assertUploaded = "true",
@@ -1523,7 +1452,11 @@ definition {
 				productQuantity = 1);
 		}
 
-		task ("When the buyer call the Order API to retrieve the URL") {
+		task ("When the order status is updated from Processing to Completed via API") {
+			CommerceJSONOrdersAPI._patchCommerceOrder(orderStatus = 0);
+		}
+
+		task ("And the buyer call the Order API to retrieve the URL") {
 			var virtualItemURLs = CommerceJSONOrdersAPI.getOrderField(
 				email = "buyer@liferay.com",
 				jsonPath = "$..virtualItemURLs[:1]",
@@ -1642,13 +1575,6 @@ definition {
 		}
 
 		task ("Then the date of the new entry is using the correct format") {
-			var imageDiplayDate = CommerceJSONProductsAPI.getCommerceProductMediaFieldValues(
-				jsonPath = "$..['displayDate']",
-				productName = "Simple Product",
-				type = "images");
-
-			var imageDiplayDate = DateUtil.format(${imageDiplayDate}, "yyyy-MM-dd'T'HH:mm:ss'Z'", "MMM d, yyyy");
-
 			for (var dateKeyWords : list "Seconds,Minutes,Hours,Days,Months") {
 				AssertElementNotPresent(
 					key_columnNumber = 3,
@@ -1657,11 +1583,17 @@ definition {
 					locator1 = "CommerceEntry#TABLE_SEARCH_BY_NAME_AND_COLUMN_CONTENT");
 			}
 
-			AssertElementPresent(
-				key_columnNumber = 3,
-				key_productName = "Commerce_Black",
-				key_value = ${imageDiplayDate},
-				locator1 = "CommerceEntry#TABLE_SEARCH_BY_NAME_AND_COLUMN_CONTENT");
+			var imageDisplayDate = CommerceJSONProductsAPI.getCommerceProductMediaFieldValues(
+				jsonPath = "$..['displayDate']",
+				productName = "Simple Product",
+				type = "images");
+
+			// TODO Clean up after CLDR update is finished
+
+			var imageDisplayDateYYYY = DateUtil.format(${imageDisplayDate}, "yyyy-MM-dd'T'HH:mm:ss'Z'", "MMM d, yyyy");
+			var imageDisplayDateYY = DateUtil.format(${imageDisplayDate}, "yyyy-MM-dd'T'HH:mm:ss'Z'", "MMM d, yy");
+
+			AssertElementPresent(locator1 = "//div[@class='dnd-td' and contains(.,'Commerce_Black')]/following-sibling::div[3][contains(text(),'${imageDisplayDateYYYY}') or contains(text(), '${imageDisplayDateYY}')]");
 		}
 
 		task ("And a new attachment is added") {
@@ -1669,13 +1601,6 @@ definition {
 		}
 
 		task ("Then the date of the new entry is using the correct format") {
-			var attachmentDiplayDate = CommerceJSONProductsAPI.getCommerceProductMediaFieldValues(
-				jsonPath = "$..['displayDate']",
-				productName = "Simple Product",
-				type = "attachment");
-
-			var attachmentDiplayDate = DateUtil.format(${attachmentDiplayDate}, "yyyy-MM-dd'T'HH:mm:ss'Z'", "MMM d, yyyy");
-
 			for (var dateKeyWords : list "Seconds,Minutes,Hours,Days,Months") {
 				AssertElementNotPresent(
 					key_columnNumber = 3,
@@ -1684,11 +1609,17 @@ definition {
 					locator1 = "CommerceEntry#TABLE_SEARCH_BY_NAME_AND_COLUMN_CONTENT");
 			}
 
-			AssertElementPresent(
-				key_columnNumber = 3,
-				key_productName = "Commerce_White",
-				key_value = ${attachmentDiplayDate},
-				locator1 = "CommerceEntry#TABLE_SEARCH_BY_NAME_AND_COLUMN_CONTENT");
+			var attachmentDisplayDate = CommerceJSONProductsAPI.getCommerceProductMediaFieldValues(
+				jsonPath = "$..['displayDate']",
+				productName = "Simple Product",
+				type = "attachment");
+
+			// TODO Clean up after CLDR update is finished
+
+			var attachmentDisplayDateYYYY = DateUtil.format(${attachmentDisplayDate}, "yyyy-MM-dd'T'HH:mm:ss'Z'", "MMM d, yyyy");
+			var attachmentDisplayDateYY = DateUtil.format(${attachmentDisplayDate}, "yyyy-MM-dd'T'HH:mm:ss'Z'", "MMM d, yy");
+
+			AssertElementPresent(locator1 = "//div[@class='dnd-td' and contains(.,'Commerce_White')]/following-sibling::div[3][contains(text(),'${attachmentDisplayDateYYYY}') or contains(text(),'${attachmentDisplayDateYY}')]");
 		}
 
 		task ("And during the process to add a new product relation") {
@@ -1812,6 +1743,131 @@ definition {
 		}
 	}
 
+	@description = "COMMERCE-12182 This is a test to verify that Tier Price Settings remain unchanged after an entry is created"
+	@priority = 5
+	test CanTierPriceSettingsDoesNotChangeAfterCreatingATierPriceEntry {
+		property portal.acceptance = "true";
+
+		task ("Given a Minium site is created") {
+			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
+		}
+
+		task ("And the Price Lists tab for the product ABS Sensor is open") {
+			CommerceProducts.openProductsAdmin();
+
+			CommerceNavigator.gotoEntry(entryName = "ABS Sensor");
+
+			CommerceEntry.gotoMenuTab(menuTab = "SKUs");
+
+			CommerceNavigator.gotoEntry(entryName = "MIN93015");
+
+			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Price");
+		}
+
+		task ("And the admin goes into Minium Base Price List") {
+			CommerceNavigator.gotoEntry(entryName = "Minium Base Price List");
+		}
+
+		task ("When the admin creates a new Tier Price Entry with the Bulk Pricing") {
+			CommercePriceLists.createTierPriceEntryDirectlyInsideProductSKU(
+				price = 10,
+				quantity = 1,
+				tierPriceSetting = "Bulk Pricing");
+
+			SelectFrameTop();
+		}
+
+		task ("And goes back into the Details tab") {
+			CommerceEntry.gotoMenuTab(menuTab = "SKUs");
+
+			CommerceNavigator.gotoEntry(entryName = "MIN93015");
+
+			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Price");
+
+			CommerceNavigator.gotoEntry(entryName = "Minium Base Price List");
+
+			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+		}
+
+		task ("Then the Tier Price Settings remain Bulk Pricing") {
+			AssertChecked.assertCheckedNotVisible(
+				key_radioOption = "Bulk Pricing",
+				locator1 = "CommerceEntry#RADIO_BUTTON");
+
+			AssertNotChecked.assertNotCheckedNotVisible(
+				key_radioOption = "Tiered Pricing",
+				locator1 = "CommerceEntry#RADIO_BUTTON");
+		}
+
+		task ("When the admin goes into the Price Lists section") {
+			CommercePriceLists.openPriceListsAdmin();
+
+			CommerceNavigator.gotoEntry(entryName = "Minium Base Price List");
+		}
+
+		task ("And the admin opened MIN93015") {
+			CommerceEntry.gotoMenuTab(menuTab = "Entries");
+
+			CommerceNavigator.gotoEntry(entryName = "MIN93015");
+
+			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+		}
+
+		task ("And change the Tier Price Settings in Tiered Pricing") {
+			Click(
+				key_radioOption = "Tiered Pricing",
+				locator1 = "CommerceEntry#RADIO_BUTTON");
+
+			Button.clickSave();
+		}
+
+		task ("Then a new entry is created again inside the product the Tier Price Settings remain Tiered Pricing") {
+			CommerceProducts.openProductsAdmin();
+
+			CommerceNavigator.gotoEntry(entryName = "ABS Sensor");
+
+			CommerceEntry.gotoMenuTab(menuTab = "SKUs");
+
+			CommerceNavigator.gotoEntry(entryName = "MIN93015");
+
+			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Price");
+
+			CommerceNavigator.gotoEntry(entryName = "Minium Base Price List");
+
+			CommercePriceLists.createTierPriceEntryDirectlyInsideProductSKU(
+				price = 20,
+				quantity = 2);
+
+			SelectFrameTop();
+
+			CommerceEntry.gotoMenuTab(menuTab = "SKUs");
+
+			CommerceNavigator.gotoEntry(entryName = "MIN93015");
+
+			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Price");
+
+			CommerceNavigator.gotoEntry(entryName = "Minium Base Price List");
+
+			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+			AssertChecked.assertCheckedNotVisible(
+				key_radioOption = "Tiered Pricing",
+				locator1 = "CommerceEntry#RADIO_BUTTON");
+
+			AssertNotChecked.assertNotCheckedNotVisible(
+				key_radioOption = "Bulk Pricing",
+				locator1 = "CommerceEntry#RADIO_BUTTON");
+		}
+	}
+
 	@description = "This is a test for bug COMMERCE-9546. Verify a product image converted in base64 can be uploaded via headless API with the extension setted"
 	@priority = 4
 	test CanUploadProductBase64ImageViaAPI {
@@ -1928,8 +1984,9 @@ definition {
 
 			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
 
-			AssertTextEquals(
-				locator1 = "Dropdown#SELECTED_VALUE",
+			AssertSelectedLabel(
+				key_optionName = "Package Quantity",
+				locator1 = "CommerceFrontStore#FS_PRODUCT_OPTIONS_SELECT",
 				value1 = 112);
 		}
 	}
@@ -1999,7 +2056,7 @@ definition {
 	@description = "This is a test for bug COMMERCE-9999. Verify a product image can be uploaded via headless API with CDN."
 	@priority = 3
 	test CanUploadProductImageViaAPIUsingCDN {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "false";
 
 		task ("Given a Minium Site is created") {
@@ -2094,7 +2151,7 @@ definition {
 			AssertElementPresent(
 				key_image = "Commerce_Black.jpg",
 				key_productName = "abs-sensor",
-				locator1 = "CommerceFrontStore#PRODUCT_CARD_IMAGE_SPECIFIC");
+				locator1 = "CommerceFrontStore#PRODUCT_CARD_IMAGE_SPECIFIC_IN_MINI_CART");
 		}
 	}
 
@@ -2281,9 +2338,7 @@ definition {
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CPCommerceCatalog.newProductsEntry(
 			productCatalog = "Minium",
@@ -2292,9 +2347,17 @@ definition {
 
 		CommerceEntry.gotoMenuTab(menuTab = "Virtual");
 
-		Click(locator1 = "FormFields#SELECT_UPLOAD_FIELD");
+		CommerceEntry.gotoMenuTab(menuTab = "Options");
 
-		SelectFrameTop();
+		CommerceEntry.gotoMenuTab(menuTab = "Virtual");
+
+		Button.clickSave();
+
+		Click(locator1 = "Button#PLUS");
+
+		SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+		Click(locator1 = "FormFields#SELECT_UPLOAD_FIELD");
 
 		SelectFrame(
 			key_frameTitle = "Select File",
@@ -2307,6 +2370,14 @@ definition {
 		Click(
 			key_filterOption = "Add",
 			locator1 = "AppBuilder#CHOOSE_SEARCH_FILTER_BY_OPTION");
+
+		SelectFrameTop();
+
+		SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+		Button.clickSave();
+
+		Click(locator1 = "Icon#CLOSE");
 
 		SelectFrameTop();
 
@@ -2358,11 +2429,11 @@ definition {
 		Refresh();
 
 		AssertElementPresent(
-			key_index = "Commerce_Black.jpg",
-			locator1 = "WorkflowMetrics#SEARCH_FIELD_MAPPINGS_METRICS_INDEXES");
+			columnName = "Commerce_Black.jpg",
+			locator1 = "FrontendDataSet#COLUMN_NAME");
 
 		AssertElementPresent(
-			key_index = "Commerce_Black (1).jpg",
+			key_index = "Commerce_Black.jpg",
 			locator1 = "WorkflowMetrics#SEARCH_FIELD_MAPPINGS_METRICS_INDEXES");
 
 		AssertTextEquals(
@@ -2397,9 +2468,7 @@ definition {
 			optionEntryName = "Color",
 			optionValuesList = "Black:1");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CPCommerceCatalog.newProductsEntry(
 			productCatalog = "Master",
@@ -2410,11 +2479,10 @@ definition {
 
 		CommerceSKUs.addSKU(
 			noOption = "true",
-			optionValuesList = "Shoes:50.0");
+			optionValuesList = "Shoes:50.0",
+			priceList = "Master Base Price List");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CPCommerceCatalog.newProductsEntry(
 			productCatalog = "Master",
@@ -2429,7 +2497,9 @@ definition {
 
 		CommerceEntry.gotoMenuTab(menuTab = "SKUs");
 
-		CommerceSKUs.addSKU(optionValuesList = "Black:10.0");
+		CommerceSKUs.addSKU(
+			optionValuesList = "Black:10.0",
+			priceList = "Master Base Price List");
 
 		CommerceEntry.gotoMenuTab(menuTab = "Options");
 
@@ -2492,9 +2562,7 @@ definition {
 
 		Button.clickSave();
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CPCommerceCatalog.newProductsEntry(
 			productCatalog = "Master",
@@ -2516,12 +2584,13 @@ definition {
 			key_toggleSwitchLabel = "Purchasable",
 			locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
 
-		Type(
-			key_fieldLabel = "Base Price",
-			locator1 = "TextInput#GENERIC_TEXT_INPUT",
-			value1 = "50.0");
-
 		Button.clickPublish();
+
+		CommerceEntry.gotoMenuTab(menuTab = "Price");
+
+		CommerceSKUs.addSKUPriceEntry(
+			priceList = "Master Base Price List",
+			unitPrice = 50);
 
 		Refresh();
 
@@ -2556,22 +2625,22 @@ definition {
 			locator1 = "TextInput#GENERIC_TEXT_INPUT",
 			value1 = "BLACKSKU");
 
-		Click(locator1 = "Dropdown#TRIGGER");
-
-		Click(
-			key_fieldName = "Black",
-			locator1 = "FormViewBuilder#OBJECT_FIELD_BUTTON_DROPDOWN");
+		Select(
+			key_optionName = "Color",
+			locator1 = "CommerceFrontStore#FS_PRODUCT_OPTIONS_SELECT",
+			value1 = "Black");
 
 		Check.checkToggleSwitch(
 			key_toggleSwitchLabel = "Purchasable",
 			locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
 
-		Type(
-			key_fieldLabel = "Base Price",
-			locator1 = "TextInput#GENERIC_TEXT_INPUT",
-			value1 = "10.0");
-
 		Button.click(button = "Publish");
+
+		CommerceEntry.gotoMenuTab(menuTab = "Price");
+
+		CommerceSKUs.addSKUPriceEntry(
+			priceList = "Master Base Price List",
+			unitPrice = 10);
 
 		Refresh();
 
@@ -2621,9 +2690,7 @@ definition {
 		}
 
 		task ("When I duplicate ABS Sensor") {
-			CommerceNavigator.gotoPortlet(
-				category = "Product Management",
-				portlet = "Products");
+			CommerceProducts.openProductsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "ABS Sensor");
 
@@ -2636,9 +2703,7 @@ definition {
 		}
 
 		task ("And if I change the SKU price of the original product") {
-			CommerceNavigator.gotoPortlet(
-				category = "Product Management",
-				portlet = "Products");
+			CommerceProducts.openProductsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "ABS Sensor");
 
@@ -2648,17 +2713,17 @@ definition {
 
 			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
 
-			CommerceSKUs.addPriceToSKU(price = "60.00");
+			CommerceEntry.gotoMenuTab(menuTab = "Price");
 
-			Button.clickPublish();
+			CommerceSKUs.addSKUPriceEntry(
+				priceList = "Minium Base Price List",
+				unitPrice = "60.00");
 
 			Refresh();
 		}
 
 		task ("Then if I go back to the duplicate product the price hasn't changed") {
-			CommerceNavigator.gotoPortlet(
-				category = "Product Management",
-				portlet = "Products");
+			CommerceProducts.openProductsAdmin();
 
 			CommerceNavigator.searchEntry(entryName = "Copy of ABS Sensor");
 
@@ -2670,9 +2735,13 @@ definition {
 
 			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
 
+			CommerceEntry.gotoMenuTab(menuTab = "Price");
+
 			AssertTextEquals(
-				locator1 = "CommerceEntry#PRICE_FIELD",
-				value1 = "50.00");
+				key_columnIndex = 4,
+				key_rowIndex = 1,
+				locator1 = "CommerceEntry#TABLE_ENTRY_ROW_FIELD_GENERIC",
+				value1 = "$ 50.00");
 
 			echo("The price hasn't changed");
 		}
@@ -2685,9 +2754,7 @@ definition {
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceNavigator.gotoEntry(entryName = "ABS Sensor");
 
@@ -2704,15 +2771,6 @@ definition {
 			value1 = "ABS");
 	}
 
-	@description = "This is a test for COMMERCE-6022. EditASKU"
-	@ignore = "true"
-	@priority = 3
-	test EditASKU {
-
-		// TODO COMMERCE-6022 EditASKU
-
-	}
-
 	@description = "This is a test for COMMERCE-5807. EditSkuAndDelete"
 	@priority = 5
 	test EditSkuAndDelete {
@@ -2720,9 +2778,7 @@ definition {
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceEntry.gotoMenuTab(menuTab = "SKUs");
 
@@ -2746,23 +2802,18 @@ definition {
 
 		CommerceNavigator.searchEntry(entryName = "MIN930178");
 
-		if (IsElementPresent(locator1 = "CommerceNavigation#ANY_ENTRY_NAME")) {
-			CommerceEntry.deleteCommerceEntry();
-
-			AssertVisible(locator1 = "Message#SUCCESS");
-		}
+		CommerceEntry.deleteCommerceEntry(entryName = "MIN930178");
 	}
 
+	@priority = 5
 	test ProductPublishing {
 		property environment.acceptance = "true";
 		property operating.system.types = "alpine,amazonlinux,centos,debian,fedora,orcllinux,osx,redhat,rockylinux,solaris,suse,ubuntu,windows";
-		property portal.acceptance = "false";
+		property portal.acceptance = "true";
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CPCommerceCatalog.newProductsEntry(
 			productCatalog = "Minium",
@@ -2777,7 +2828,9 @@ definition {
 
 		CommerceEntry.gotoMenuTab(menuTab = "SKUs");
 
-		CommerceSKUs.addSKU(optionValuesList = "6:10.0,12:20.0,24:30.0,48:40.0,112:50.0");
+		CommerceSKUs.addSKU(
+			optionValuesList = "6:10.0,12:20.0,24:30.0,48:40.0,112:50.0",
+			priceList = "Minium Base Price List");
 
 		CommerceEntry.gotoMenuTab(menuTab = "Media");
 
@@ -2805,9 +2858,7 @@ definition {
 			specificationGroupTitle = "SpecificationGroups",
 			specificationTitle = "SpecificationLabel");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		WaitForElementPresent(locator1 = "CommerceNavigation#SEARCH_FIELD");
 
@@ -2830,14 +2881,13 @@ definition {
 		CommerceEntry.viewProductSkus(skusList = "6:10.00,12:20.00,24:30.00,48:40.00,112:50.00");
 	}
 
+	@priority = 5
 	test TranslateProductName {
-		property portal.acceptance = "false";
+		property portal.acceptance = "true";
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceNavigator.searchEntry(entryName = "Shock Absorber");
 
@@ -2871,9 +2921,7 @@ definition {
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		Click(locator1 = "CommerceEntry#FILTER_DROPDOWN_MENU");
 
@@ -2971,9 +3019,7 @@ definition {
 	test UseFriendlyURL {
 		property portal.acceptance = "true";
 
-		CommerceNavigator.gotoPortlet(
-			category = "Store Management",
-			portlet = "Channels");
+		CommerceChannels.openChannelsAdmin();
 
 		CommerceNavigator.gotoEntry(entryName = "Test Channel");
 
@@ -2987,9 +3033,7 @@ definition {
 			}
 		}
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CPCommerceCatalog.newProductsEntry(
 			productCatalog = "Master",
@@ -3014,9 +3058,7 @@ definition {
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		AppBuilderAdmin.searchByItem(itemName = '''"Brake Fluid"''');
 
@@ -3056,9 +3098,7 @@ definition {
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		Click(locator1 = "ACUtils#NEXT_PAGES");
 
@@ -3084,9 +3124,7 @@ definition {
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceEntry.gotoMenuTab(menuTab = "SKUs");
 
@@ -3108,9 +3146,7 @@ definition {
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceNavigator.sortField(sortFieldName = "Name");
 

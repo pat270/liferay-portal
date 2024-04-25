@@ -1,7 +1,10 @@
 {
 	"hidden": false,
 	"name_i18n": {
-		"en_US": "Home"
+		"en_US": "Home",
+		"es_ES": "Página de inicio",
+		"ja_JP": "ホームページ",
+		"pt_BR": "Página inicial"
 	},
 	"permissions": [
 		{
@@ -14,14 +17,14 @@
 			"actionIds": [
 				"VIEW"
 			],
-			"roleName": "User",
+			"roleName": "Site Member",
 			"scope": 4
 		},
 		{
 			"actionIds": [
 				"VIEW"
 			],
-			"roleName": "Site Member",
+			"roleName": "User",
 			"scope": 4
 		}
 	],

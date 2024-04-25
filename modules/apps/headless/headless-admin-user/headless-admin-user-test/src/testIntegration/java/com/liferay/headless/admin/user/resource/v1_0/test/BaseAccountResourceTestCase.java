@@ -28,8 +28,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -38,6 +36,7 @@ import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.search.test.util.SearchTestRule;
@@ -63,8 +62,6 @@ import java.util.Set;
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-
-import org.apache.commons.lang.time.DateUtils;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -303,10 +300,10 @@ public abstract class BaseAccountResourceTestCase {
 
 	@Test
 	public void testGetAccountsPageWithPagination() throws Exception {
-		Page<Account> totalPage = accountResource.getAccountsPage(
+		Page<Account> accountPage = accountResource.getAccountsPage(
 			null, null, null, null);
 
-		int totalCount = GetterUtil.getInteger(totalPage.getTotalCount());
+		int totalCount = GetterUtil.getInteger(accountPage.getTotalCount());
 
 		Account account1 = testGetAccountsPage_addAccount(randomAccount());
 
@@ -314,29 +311,65 @@ public abstract class BaseAccountResourceTestCase {
 
 		Account account3 = testGetAccountsPage_addAccount(randomAccount());
 
-		Page<Account> page1 = accountResource.getAccountsPage(
-			null, null, Pagination.of(1, totalCount + 2), null);
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<Account> accounts1 = (List<Account>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			accounts1.toString(), totalCount + 2, accounts1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<Account> page1 = accountResource.getAccountsPage(
+				null, null,
+				Pagination.of(
+					(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+					pageSizeLimit),
+				null);
 
-		Page<Account> page2 = accountResource.getAccountsPage(
-			null, null, Pagination.of(2, totalCount + 2), null);
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+			assertContains(account1, (List<Account>)page1.getItems());
 
-		List<Account> accounts2 = (List<Account>)page2.getItems();
+			Page<Account> page2 = accountResource.getAccountsPage(
+				null, null,
+				Pagination.of(
+					(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+					pageSizeLimit),
+				null);
 
-		Assert.assertEquals(accounts2.toString(), 1, accounts2.size());
+			assertContains(account2, (List<Account>)page2.getItems());
 
-		Page<Account> page3 = accountResource.getAccountsPage(
-			null, null, Pagination.of(1, totalCount + 3), null);
+			Page<Account> page3 = accountResource.getAccountsPage(
+				null, null,
+				Pagination.of(
+					(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+					pageSizeLimit),
+				null);
 
-		assertContains(account1, (List<Account>)page3.getItems());
-		assertContains(account2, (List<Account>)page3.getItems());
-		assertContains(account3, (List<Account>)page3.getItems());
+			assertContains(account3, (List<Account>)page3.getItems());
+		}
+		else {
+			Page<Account> page1 = accountResource.getAccountsPage(
+				null, null, Pagination.of(1, totalCount + 2), null);
+
+			List<Account> accounts1 = (List<Account>)page1.getItems();
+
+			Assert.assertEquals(
+				accounts1.toString(), totalCount + 2, accounts1.size());
+
+			Page<Account> page2 = accountResource.getAccountsPage(
+				null, null, Pagination.of(2, totalCount + 2), null);
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<Account> accounts2 = (List<Account>)page2.getItems();
+
+			Assert.assertEquals(accounts2.toString(), 1, accounts2.size());
+
+			Page<Account> page3 = accountResource.getAccountsPage(
+				null, null, Pagination.of(1, (int)totalCount + 3), null);
+
+			assertContains(account1, (List<Account>)page3.getItems());
+			assertContains(account2, (List<Account>)page3.getItems());
+			assertContains(account3, (List<Account>)page3.getItems());
+		}
 	}
 
 	@Test
@@ -346,7 +379,7 @@ public abstract class BaseAccountResourceTestCase {
 			(entityField, account1, account2) -> {
 				BeanTestUtil.setProperty(
 					account1, entityField.getName(),
-					DateUtils.addMinutes(new Date(), -2));
+					new Date(System.currentTimeMillis() - (2 * Time.MINUTE)));
 			});
 	}
 
@@ -444,22 +477,23 @@ public abstract class BaseAccountResourceTestCase {
 
 		account2 = testGetAccountsPage_addAccount(account2);
 
+		Page<Account> page = accountResource.getAccountsPage(
+			null, null, null, null);
+
 		for (EntityField entityField : entityFields) {
 			Page<Account> ascPage = accountResource.getAccountsPage(
-				null, null, Pagination.of(1, 2),
+				null, null, Pagination.of(1, (int)page.getTotalCount() + 1),
 				entityField.getName() + ":asc");
 
-			assertEquals(
-				Arrays.asList(account1, account2),
-				(List<Account>)ascPage.getItems());
+			assertContains(account1, (List<Account>)ascPage.getItems());
+			assertContains(account2, (List<Account>)ascPage.getItems());
 
 			Page<Account> descPage = accountResource.getAccountsPage(
-				null, null, Pagination.of(1, 2),
+				null, null, Pagination.of(1, (int)page.getTotalCount() + 1),
 				entityField.getName() + ":desc");
 
-			assertEquals(
-				Arrays.asList(account2, account1),
-				(List<Account>)descPage.getItems());
+			assertContains(account2, (List<Account>)descPage.getItems());
+			assertContains(account1, (List<Account>)descPage.getItems());
 		}
 	}
 
@@ -483,6 +517,8 @@ public abstract class BaseAccountResourceTestCase {
 			new GraphQLField("items", getGraphQLFields()),
 			new GraphQLField("page"), new GraphQLField("totalCount"));
 
+		// No namespace
+
 		JSONObject accountsJSONObject = JSONUtil.getValueAsJSONObject(
 			invokeGraphQLQuery(graphQLField), "JSONObject/data",
 			"JSONObject/accounts");
@@ -494,6 +530,26 @@ public abstract class BaseAccountResourceTestCase {
 
 		accountsJSONObject = JSONUtil.getValueAsJSONObject(
 			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/accounts");
+
+		Assert.assertEquals(
+			totalCount + 2, accountsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			account1,
+			Arrays.asList(
+				AccountSerDes.toDTOs(accountsJSONObject.getString("items"))));
+		assertContains(
+			account2,
+			Arrays.asList(
+				AccountSerDes.toDTOs(accountsJSONObject.getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		accountsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
 			"JSONObject/accounts");
 
 		Assert.assertEquals(
@@ -584,6 +640,8 @@ public abstract class BaseAccountResourceTestCase {
 		Account account =
 			testGraphQLGetAccountByExternalReferenceCode_addAccount();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				account,
@@ -605,6 +663,32 @@ public abstract class BaseAccountResourceTestCase {
 								getGraphQLFields())),
 						"JSONObject/data",
 						"Object/accountByExternalReferenceCode"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		Assert.assertTrue(
+			equals(
+				account,
+				AccountSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessAdminUser_v1_0",
+								new GraphQLField(
+									"accountByExternalReferenceCode",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"externalReferenceCode",
+												"\"" +
+													account.
+														getExternalReferenceCode() +
+															"\"");
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+						"Object/accountByExternalReferenceCode"))));
 	}
 
 	@Test
@@ -613,6 +697,8 @@ public abstract class BaseAccountResourceTestCase {
 
 		String irrelevantExternalReferenceCode =
 			"\"" + RandomTestUtil.randomString() + "\"";
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -628,6 +714,27 @@ public abstract class BaseAccountResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessAdminUser_v1_0",
+						new GraphQLField(
+							"accountByExternalReferenceCode",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"externalReferenceCode",
+										irrelevantExternalReferenceCode);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -741,7 +848,10 @@ public abstract class BaseAccountResourceTestCase {
 
 	@Test
 	public void testGraphQLDeleteAccount() throws Exception {
-		Account account = testGraphQLDeleteAccount_addAccount();
+
+		// No namespace
+
+		Account account1 = testGraphQLDeleteAccount_addAccount();
 
 		Assert.assertTrue(
 			JSONUtil.getValueAsBoolean(
@@ -750,23 +860,59 @@ public abstract class BaseAccountResourceTestCase {
 						"deleteAccount",
 						new HashMap<String, Object>() {
 							{
-								put("accountId", account.getId());
+								put("accountId", account1.getId());
 							}
 						})),
 				"JSONObject/data", "Object/deleteAccount"));
-		JSONArray errorsJSONArray = JSONUtil.getValueAsJSONArray(
+
+		JSONArray errorsJSONArray1 = JSONUtil.getValueAsJSONArray(
 			invokeGraphQLQuery(
 				new GraphQLField(
 					"account",
 					new HashMap<String, Object>() {
 						{
-							put("accountId", account.getId());
+							put("accountId", account1.getId());
 						}
 					},
 					new GraphQLField("id"))),
 			"JSONArray/errors");
 
-		Assert.assertTrue(errorsJSONArray.length() > 0);
+		Assert.assertTrue(errorsJSONArray1.length() > 0);
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		Account account2 = testGraphQLDeleteAccount_addAccount();
+
+		Assert.assertTrue(
+			JSONUtil.getValueAsBoolean(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"headlessAdminUser_v1_0",
+						new GraphQLField(
+							"deleteAccount",
+							new HashMap<String, Object>() {
+								{
+									put("accountId", account2.getId());
+								}
+							}))),
+				"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+				"Object/deleteAccount"));
+
+		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessAdminUser_v1_0",
+					new GraphQLField(
+						"account",
+						new HashMap<String, Object>() {
+							{
+								put("accountId", account2.getId());
+							}
+						},
+						new GraphQLField("id")))),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray2.length() > 0);
 	}
 
 	protected Account testGraphQLDeleteAccount_addAccount() throws Exception {
@@ -792,6 +938,8 @@ public abstract class BaseAccountResourceTestCase {
 	public void testGraphQLGetAccount() throws Exception {
 		Account account = testGraphQLGetAccount_addAccount();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				account,
@@ -807,11 +955,34 @@ public abstract class BaseAccountResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/account"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		Assert.assertTrue(
+			equals(
+				account,
+				AccountSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessAdminUser_v1_0",
+								new GraphQLField(
+									"account",
+									new HashMap<String, Object>() {
+										{
+											put("accountId", account.getId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+						"Object/account"))));
 	}
 
 	@Test
 	public void testGraphQLGetAccountNotFound() throws Exception {
 		Long irrelevantAccountId = RandomTestUtil.randomLong();
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -825,6 +996,25 @@ public abstract class BaseAccountResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessAdminUser_v1_0",
+						new GraphQLField(
+							"account",
+							new HashMap<String, Object>() {
+								{
+									put("accountId", irrelevantAccountId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -968,7 +1158,7 @@ public abstract class BaseAccountResourceTestCase {
 		Page<Account> page = accountResource.getOrganizationAccountsPage(
 			organizationId, null, null, Pagination.of(1, 10), null);
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if (irrelevantOrganizationId != null) {
 			Account irrelevantAccount =
@@ -976,14 +1166,12 @@ public abstract class BaseAccountResourceTestCase {
 					irrelevantOrganizationId, randomIrrelevantAccount());
 
 			page = accountResource.getOrganizationAccountsPage(
-				irrelevantOrganizationId, null, null, Pagination.of(1, 2),
-				null);
+				irrelevantOrganizationId, null, null,
+				Pagination.of(1, (int)totalCount + 1), null);
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantAccount),
-				(List<Account>)page.getItems());
+			assertContains(irrelevantAccount, (List<Account>)page.getItems());
 			assertValid(
 				page,
 				testGetOrganizationAccountsPage_getExpectedActions(
@@ -999,10 +1187,10 @@ public abstract class BaseAccountResourceTestCase {
 		page = accountResource.getOrganizationAccountsPage(
 			organizationId, null, null, Pagination.of(1, 10), null);
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(account1, account2), (List<Account>)page.getItems());
+		assertContains(account1, (List<Account>)page.getItems());
+		assertContains(account2, (List<Account>)page.getItems());
 		assertValid(
 			page,
 			testGetOrganizationAccountsPage_getExpectedActions(organizationId));
@@ -1124,6 +1312,11 @@ public abstract class BaseAccountResourceTestCase {
 		String organizationId =
 			testGetOrganizationAccountsPage_getOrganizationId();
 
+		Page<Account> accountPage = accountResource.getOrganizationAccountsPage(
+			organizationId, null, null, null, null);
+
+		int totalCount = GetterUtil.getInteger(accountPage.getTotalCount());
+
 		Account account1 = testGetOrganizationAccountsPage_addAccount(
 			organizationId, randomAccount());
 
@@ -1133,28 +1326,68 @@ public abstract class BaseAccountResourceTestCase {
 		Account account3 = testGetOrganizationAccountsPage_addAccount(
 			organizationId, randomAccount());
 
-		Page<Account> page1 = accountResource.getOrganizationAccountsPage(
-			organizationId, null, null, Pagination.of(1, 2), null);
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<Account> accounts1 = (List<Account>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(accounts1.toString(), 2, accounts1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<Account> page1 = accountResource.getOrganizationAccountsPage(
+				organizationId, null, null,
+				Pagination.of(
+					(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+					pageSizeLimit),
+				null);
 
-		Page<Account> page2 = accountResource.getOrganizationAccountsPage(
-			organizationId, null, null, Pagination.of(2, 2), null);
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(3, page2.getTotalCount());
+			assertContains(account1, (List<Account>)page1.getItems());
 
-		List<Account> accounts2 = (List<Account>)page2.getItems();
+			Page<Account> page2 = accountResource.getOrganizationAccountsPage(
+				organizationId, null, null,
+				Pagination.of(
+					(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+					pageSizeLimit),
+				null);
 
-		Assert.assertEquals(accounts2.toString(), 1, accounts2.size());
+			assertContains(account2, (List<Account>)page2.getItems());
 
-		Page<Account> page3 = accountResource.getOrganizationAccountsPage(
-			organizationId, null, null, Pagination.of(1, 3), null);
+			Page<Account> page3 = accountResource.getOrganizationAccountsPage(
+				organizationId, null, null,
+				Pagination.of(
+					(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+					pageSizeLimit),
+				null);
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(account1, account2, account3),
-			(List<Account>)page3.getItems());
+			assertContains(account3, (List<Account>)page3.getItems());
+		}
+		else {
+			Page<Account> page1 = accountResource.getOrganizationAccountsPage(
+				organizationId, null, null, Pagination.of(1, totalCount + 2),
+				null);
+
+			List<Account> accounts1 = (List<Account>)page1.getItems();
+
+			Assert.assertEquals(
+				accounts1.toString(), totalCount + 2, accounts1.size());
+
+			Page<Account> page2 = accountResource.getOrganizationAccountsPage(
+				organizationId, null, null, Pagination.of(2, totalCount + 2),
+				null);
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<Account> accounts2 = (List<Account>)page2.getItems();
+
+			Assert.assertEquals(accounts2.toString(), 1, accounts2.size());
+
+			Page<Account> page3 = accountResource.getOrganizationAccountsPage(
+				organizationId, null, null,
+				Pagination.of(1, (int)totalCount + 3), null);
+
+			assertContains(account1, (List<Account>)page3.getItems());
+			assertContains(account2, (List<Account>)page3.getItems());
+			assertContains(account3, (List<Account>)page3.getItems());
+		}
 	}
 
 	@Test
@@ -1166,7 +1399,7 @@ public abstract class BaseAccountResourceTestCase {
 			(entityField, account1, account2) -> {
 				BeanTestUtil.setProperty(
 					account1, entityField.getName(),
-					DateUtils.addMinutes(new Date(), -2));
+					new Date(System.currentTimeMillis() - (2 * Time.MINUTE)));
 			});
 	}
 
@@ -1275,23 +1508,26 @@ public abstract class BaseAccountResourceTestCase {
 		account2 = testGetOrganizationAccountsPage_addAccount(
 			organizationId, account2);
 
+		Page<Account> page = accountResource.getOrganizationAccountsPage(
+			organizationId, null, null, null, null);
+
 		for (EntityField entityField : entityFields) {
 			Page<Account> ascPage = accountResource.getOrganizationAccountsPage(
-				organizationId, null, null, Pagination.of(1, 2),
+				organizationId, null, null,
+				Pagination.of(1, (int)page.getTotalCount() + 1),
 				entityField.getName() + ":asc");
 
-			assertEquals(
-				Arrays.asList(account1, account2),
-				(List<Account>)ascPage.getItems());
+			assertContains(account1, (List<Account>)ascPage.getItems());
+			assertContains(account2, (List<Account>)ascPage.getItems());
 
 			Page<Account> descPage =
 				accountResource.getOrganizationAccountsPage(
-					organizationId, null, null, Pagination.of(1, 2),
+					organizationId, null, null,
+					Pagination.of(1, (int)page.getTotalCount() + 1),
 					entityField.getName() + ":desc");
 
-			assertEquals(
-				Arrays.asList(account2, account1),
-				(List<Account>)descPage.getItems());
+			assertContains(account2, (List<Account>)descPage.getItems());
+			assertContains(account1, (List<Account>)descPage.getItems());
 		}
 	}
 
@@ -1486,6 +1722,16 @@ public abstract class BaseAccountResourceTestCase {
 
 		for (String additionalAssertFieldName :
 				getAdditionalAssertFieldNames()) {
+
+			if (Objects.equals(
+					"accountContactInformation", additionalAssertFieldName)) {
+
+				if (account.getAccountContactInformation() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
 
 			if (Objects.equals(
 					"accountUserAccounts", additionalAssertFieldName)) {
@@ -1755,6 +2001,19 @@ public abstract class BaseAccountResourceTestCase {
 				getAdditionalAssertFieldNames()) {
 
 			if (Objects.equals(
+					"accountContactInformation", additionalAssertFieldName)) {
+
+				if (!Objects.deepEquals(
+						account1.getAccountContactInformation(),
+						account2.getAccountContactInformation())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
 					"accountUserAccounts", additionalAssertFieldName)) {
 
 				if (!Objects.deepEquals(
@@ -2018,6 +2277,10 @@ public abstract class BaseAccountResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -2084,6 +2347,11 @@ public abstract class BaseAccountResourceTestCase {
 		sb.append(operator);
 		sb.append(" ");
 
+		if (entityFieldName.equals("accountContactInformation")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
 		if (entityFieldName.equals("accountUserAccounts")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
@@ -2101,20 +2369,20 @@ public abstract class BaseAccountResourceTestCase {
 
 		if (entityFieldName.equals("dateCreated")) {
 			if (operator.equals("between")) {
+				Date date = account.getDateCreated();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(account.getDateCreated(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(account.getDateCreated(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -2132,20 +2400,20 @@ public abstract class BaseAccountResourceTestCase {
 
 		if (entityFieldName.equals("dateModified")) {
 			if (operator.equals("between")) {
+				Date date = account.getDateModified();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(account.getDateModified(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(account.getDateModified(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -2523,9 +2791,9 @@ public abstract class BaseAccountResourceTestCase {
 	}
 
 	protected AccountResource accountResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

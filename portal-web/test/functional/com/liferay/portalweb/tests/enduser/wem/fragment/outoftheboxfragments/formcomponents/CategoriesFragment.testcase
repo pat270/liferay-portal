@@ -4,14 +4,17 @@ definition {
 	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testcase.url = "http://localhost:8080";
-	property testray.main.component.name = "Fragments";
+	property testray.main.component.name = "Fragment Administration";
 
 	static var randomSiteName = StringUtil.randomString(8);
 
 	var siteURLKey = StringUtil.toLowerCase(${randomSiteName});
 
 	setUp {
+		task ("Set up virtual instance") {
+			TestCase.setUpPortalInstance();
+		}
+
 		task ("Sign in") {
 			User.firstLoginPG();
 		}
@@ -149,12 +152,12 @@ definition {
 			PageEditor.viewInputStyle(
 				label = "Name",
 				showLabel = "true",
-				type = "text-input");
+				type = "text");
 
 			PageEditor.addFragmentToFormContainer(
 				collectionName = "Form Components",
 				fragmentName = "Categories",
-				targetFragmentName = "Text Input");
+				targetFragmentName = "Text");
 
 			MastersPageTemplates.publishMaster();
 		}
@@ -351,12 +354,12 @@ definition {
 			PageEditor.viewInputStyle(
 				label = "Name",
 				showLabel = "true",
-				type = "text-input");
+				type = "text");
 
 			PageEditor.addFragmentToFormContainer(
 				collectionName = "Form Components",
 				fragmentName = "Categories",
-				targetFragmentName = "Text Input");
+				targetFragmentName = "Text");
 
 			PageEditor.publish();
 		}
@@ -543,12 +546,12 @@ definition {
 			PageEditor.viewInputStyle(
 				label = "Name",
 				showLabel = "true",
-				type = "text-input");
+				type = "text");
 
 			PageEditor.addFragmentToFormContainer(
 				collectionName = "Form Components",
 				fragmentName = "Categories",
-				targetFragmentName = "Text Input");
+				targetFragmentName = "Text");
 
 			PageEditor.clickConfigurableField(
 				fragmentName = "Categories",
@@ -563,7 +566,7 @@ definition {
 			PageEditor.addFragmentToFormContainer(
 				collectionName = "Form Components",
 				fragmentName = "Categories",
-				targetFragmentName = "Text Input");
+				targetFragmentName = "Text");
 
 			PageEditor.clickConfigurableField(
 				fragmentName = "Categories",
@@ -854,12 +857,12 @@ definition {
 			PageEditor.viewInputStyle(
 				label = "Name",
 				showLabel = "true",
-				type = "text-input");
+				type = "text");
 
 			PageEditor.addFragmentToFormContainer(
 				collectionName = "Form Components",
 				fragmentName = "Categories",
-				targetFragmentName = "Text Input");
+				targetFragmentName = "Text");
 
 			PageEditor.clickConfigurableField(
 				fragmentName = "Categories",
@@ -876,7 +879,7 @@ definition {
 			PageEditor.addFragmentToFormContainer(
 				collectionName = "Form Components",
 				fragmentName = "Categories",
-				targetFragmentName = "Text Input");
+				targetFragmentName = "Text");
 
 			PageEditor.clickConfigurableField(
 				fragmentName = "Categories",
@@ -893,7 +896,7 @@ definition {
 			PageEditor.addFragmentToFormContainer(
 				collectionName = "Form Components",
 				fragmentName = "Categories",
-				targetFragmentName = "Text Input");
+				targetFragmentName = "Text");
 
 			PageEditor.clickConfigurableField(
 				fragmentName = "Categories",
@@ -1046,7 +1049,7 @@ definition {
 			PageEditor.addFragmentToFormContainer(
 				collectionName = "Form Components",
 				fragmentName = "Categories",
-				targetFragmentName = "Text Input");
+				targetFragmentName = "Text");
 		}
 
 		task ("Then a warning message is shown") {

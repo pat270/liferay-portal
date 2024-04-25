@@ -91,7 +91,7 @@ definition {
 	}
 
 	@description = "This test ensures that users can subscribe to the KB home folder from the navigation pane."
-	@priority = 5
+	@priority = 4
 	test CanSubscribeToHomeFolderViaNavigationPane {
 		var siteName = TestCase.getSiteName(siteName = ${siteName});
 
@@ -105,6 +105,10 @@ definition {
 			agreeToTermsAndAnswerReminderQuery = "true",
 			requireReset = "false",
 			userEmailAddress = "userea@liferay.com");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "guest");
+
+		Site.manageMembershipOptions(allowManualMembershipManagement = "true");
 
 		User.openUsersAdmin();
 
@@ -169,10 +173,7 @@ definition {
 			groupName = "Guest",
 			layoutName = "Knowledge Base Display Page");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		JSONUser.addUser(
 			userEmailAddress = "userea@liferay.com",
@@ -185,19 +186,17 @@ definition {
 			requireReset = "false",
 			userEmailAddress = "userea@liferay.com");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		Site.openSiteSettingsAdmin(siteURLKey = "guest");
+
+		Site.manageMembershipOptions(allowManualMembershipManagement = "true");
+
+		User.openUsersAdmin();
 
 		User.editUserSiteCP(
 			siteName = ${siteName},
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.assignSiteRoleCP(
 			siteRoleName = "Site Administrator",

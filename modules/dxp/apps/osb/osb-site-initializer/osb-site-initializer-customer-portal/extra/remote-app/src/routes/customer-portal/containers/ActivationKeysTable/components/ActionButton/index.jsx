@@ -17,14 +17,17 @@ import {getActivationKeysDownloadItems} from '../../utils/getActivationKeysDownl
 const ActionButton = ({
 	activationKeysByStatusPaginatedChecked,
 	filterCheckedActivationKeys,
+	hasRenewalSubscription,
+	identifier,
 	isAbleToDownloadAggregateKeys,
 	isAdminOrPartnerManager,
+	isAdminUserAccount,
 	productName,
 	project,
 	sessionId,
 	setStatus,
 }) => {
-	const {provisioningServerAPI} = useAppPropertiesContext();
+	const {featureFlags, provisioningServerAPI} = useAppPropertiesContext();
 	const navigate = useNavigate();
 
 	const allowSelfProvisioning = project.allowSelfProvisioning;
@@ -60,7 +63,8 @@ const ActionButton = ({
 			handleMultipleAlertStatus,
 			handleAlertStatus,
 			activationKeysByStatusPaginatedChecked,
-			project.name
+			project.name,
+			featureFlags
 		);
 
 		return (
@@ -78,7 +82,7 @@ const ActionButton = ({
 		return (
 			<Button
 				className="btn btn-primary"
-				onClick={async () =>
+				onClick={() =>
 					getActivationKeyDownload(
 						provisioningServerAPI,
 						sessionId,
@@ -93,8 +97,24 @@ const ActionButton = ({
 		);
 	}
 
-	const handleRedirectPage = () => navigate('new');
+	const handleRedirectPage = () => {
+		navigate('new', {
+			state: {
+				activationKeys: [],
+				id: identifier,
+			},
+		});
+	};
 	const handleDeactivatePage = () => navigate('deactivate');
+
+	const handleRedirectRenewPage = () => {
+		navigate(`${productName.toLowerCase()}-renew`, {
+			state: {
+				activationKeys: [],
+				id: identifier,
+			},
+		});
+	};
 
 	const activationKeysActionsItems = getActivationKeysActionsItems(
 		project?.accountKey,
@@ -104,7 +124,9 @@ const ActionButton = ({
 		handleRedirectPage,
 		handleDeactivatePage,
 		productName,
-		allowSelfProvisioning
+		allowSelfProvisioning,
+		hasRenewalSubscription,
+		handleRedirectRenewPage
 	);
 
 	const filteredKeysActionsItems = getFilteredKeysActionsItems(
@@ -115,7 +137,7 @@ const ActionButton = ({
 		productName
 	);
 
-	if (isAdminOrPartnerManager) {
+	if (isAdminUserAccount || isAdminOrPartnerManager) {
 		return (
 			<ButtonDropDown
 				items={activationKeysActionsItems}
@@ -126,17 +148,16 @@ const ActionButton = ({
 			/>
 		);
 	}
-	else {
-		return (
-			<ButtonDropDown
-				items={filteredKeysActionsItems}
-				label={i18n.translate('actions')}
-				menuElementAttrs={{
-					className: 'p-0',
-				}}
-			/>
-		);
-	}
+
+	return (
+		<ButtonDropDown
+			items={filteredKeysActionsItems}
+			label={i18n.translate('actions')}
+			menuElementAttrs={{
+				className: 'p-0',
+			}}
+		/>
+	);
 };
 
 export default ActionButton;

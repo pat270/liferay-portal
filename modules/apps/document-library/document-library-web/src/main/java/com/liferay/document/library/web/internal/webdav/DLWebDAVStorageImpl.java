@@ -6,11 +6,11 @@
 package com.liferay.document.library.web.internal.webdav;
 
 import com.liferay.asset.kernel.model.AssetEntry;
-import com.liferay.asset.kernel.model.AssetLink;
 import com.liferay.asset.kernel.service.AssetCategoryLocalService;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
-import com.liferay.asset.kernel.service.AssetLinkLocalService;
 import com.liferay.asset.kernel.service.AssetTagLocalService;
+import com.liferay.asset.link.model.AssetLink;
+import com.liferay.asset.link.service.AssetLinkLocalService;
 import com.liferay.document.library.constants.DLPortletKeys;
 import com.liferay.document.library.kernel.exception.DuplicateFileEntryException;
 import com.liferay.document.library.kernel.exception.DuplicateFolderNameException;
@@ -63,13 +63,13 @@ import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.webdav.BaseResourceImpl;
-import com.liferay.portal.kernel.webdav.BaseWebDAVStorageImpl;
 import com.liferay.portal.kernel.webdav.Resource;
 import com.liferay.portal.kernel.webdav.Status;
 import com.liferay.portal.kernel.webdav.WebDAVException;
 import com.liferay.portal.kernel.webdav.WebDAVRequest;
 import com.liferay.portal.kernel.webdav.WebDAVStorage;
 import com.liferay.portal.kernel.webdav.WebDAVUtil;
+import com.liferay.portal.webdav.BaseWebDAVStorageImpl;
 import com.liferay.portal.webdav.LockException;
 import com.liferay.portlet.documentlibrary.webdav.DLFileEntryResourceImpl;
 import com.liferay.portlet.documentlibrary.webdav.DLWebDAVUtil;
@@ -218,7 +218,7 @@ public class DLWebDAVStorageImpl extends BaseWebDAVStorageImpl {
 				null, groupId, parentFolderId, fileName,
 				fileEntry.getMimeType(), FileUtil.stripExtension(fileName),
 				StringPool.BLANK, fileEntry.getDescription(), StringPool.BLANK,
-				file, null, null, serviceContext);
+				file, null, null, null, serviceContext);
 
 			return status;
 		}
@@ -455,7 +455,7 @@ public class DLWebDAVStorageImpl extends BaseWebDAVStorageImpl {
 				FileEntry fileEntry = _dlAppService.addFileEntry(
 					null, webDAVRequest.getGroupId(), parentFolderId, fileName,
 					contentType, title, StringPool.BLANK, StringPool.BLANK,
-					StringPool.BLANK, file, null, null, serviceContext);
+					StringPool.BLANK, file, null, null, null, serviceContext);
 
 				resource = _toResource(webDAVRequest, fileEntry, false);
 			}
@@ -693,6 +693,7 @@ public class DLWebDAVStorageImpl extends BaseWebDAVStorageImpl {
 						destFileEntry.getTitle(),
 						destFileEntry.getDescription(), StringPool.BLANK,
 						DLVersionNumberIncrease.MINOR, file,
+						destFileEntry.getDisplayDate(),
 						destFileEntry.getExpirationDate(),
 						destFileEntry.getReviewDate(), serviceContext);
 
@@ -713,7 +714,7 @@ public class DLWebDAVStorageImpl extends BaseWebDAVStorageImpl {
 				fileEntry.getFileEntryId(), fileName, fileEntry.getMimeType(),
 				fileEntry.getTitle(), fileEntry.getTitle(),
 				fileEntry.getDescription(), StringPool.BLANK,
-				DLVersionNumberIncrease.MINOR, file,
+				DLVersionNumberIncrease.MINOR, file, fileEntry.getDisplayDate(),
 				fileEntry.getExpirationDate(), fileEntry.getReviewDate(),
 				serviceContext);
 
@@ -799,8 +800,8 @@ public class DLWebDAVStorageImpl extends BaseWebDAVStorageImpl {
 					fileEntry.getTitle(), fileEntry.getTitle(),
 					fileEntry.getDescription(), StringPool.BLANK,
 					DLVersionNumberIncrease.MINOR, file,
-					fileEntry.getExpirationDate(), fileEntry.getReviewDate(),
-					serviceContext);
+					fileEntry.getDisplayDate(), fileEntry.getExpirationDate(),
+					fileEntry.getReviewDate(), serviceContext);
 			}
 			catch (NoSuchFileEntryException noSuchFileEntryException) {
 				if (_log.isDebugEnabled()) {
@@ -814,7 +815,7 @@ public class DLWebDAVStorageImpl extends BaseWebDAVStorageImpl {
 				_dlAppService.addFileEntry(
 					null, webDAVRequest.getGroupId(), parentFolderId, fileName,
 					contentType, title, StringPool.BLANK, StringPool.BLANK,
-					StringPool.BLANK, file, null, null, serviceContext);
+					StringPool.BLANK, file, null, null, null, serviceContext);
 			}
 
 			if (_log.isInfoEnabled()) {

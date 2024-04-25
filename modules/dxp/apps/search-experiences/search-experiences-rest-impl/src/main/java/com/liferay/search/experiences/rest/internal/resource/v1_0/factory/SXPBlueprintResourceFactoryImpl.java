@@ -72,7 +72,12 @@ public class SXPBlueprintResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _sxpBlueprintResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, SXPBlueprintResource>
+					sxpBlueprintResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_sxpBlueprintResourceProxyProviderFunction;
+
+				return sxpBlueprintResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -229,10 +234,6 @@ public class SXPBlueprintResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, SXPBlueprintResource>
-		_sxpBlueprintResourceProxyProviderFunction =
-			_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -268,6 +269,14 @@ public class SXPBlueprintResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, SXPBlueprintResource>
+			_sxpBlueprintResourceProxyProviderFunction =
+				_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

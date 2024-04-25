@@ -120,19 +120,43 @@ public class KBTemplatesManagementToolbarDisplayContext
 	}
 
 	@Override
-	public List<DropdownItem> getFilterDropdownItems() {
-		return DropdownItemListBuilder.addGroup(
-			dropdownGroupItem -> {
-				dropdownGroupItem.setDropdownItems(_getOrderByDropdownItems());
-				dropdownGroupItem.setLabel(
-					LanguageUtil.get(httpServletRequest, "order-by"));
-			}
-		).build();
-	}
-
-	@Override
 	public int getItemsTotal() {
 		return searchContainer.getTotal();
+	}
+
+	public List<DropdownItem> getOrderByDropdownItems() {
+		return new DropdownItemList() {
+			{
+				Map<String, String> orderColumnsMap = HashMapBuilder.put(
+					"create-date", "create-date"
+				).put(
+					"modified-date", "modified-date"
+				).put(
+					"title", "title"
+				).put(
+					"user-name", "user-name"
+				).build();
+
+				for (Map.Entry<String, String> orderByColEntry :
+						orderColumnsMap.entrySet()) {
+
+					add(
+						dropdownItem -> {
+							String orderByCol = orderByColEntry.getKey();
+
+							dropdownItem.setActive(
+								orderByCol.equals(_getOrderByCol()));
+
+							dropdownItem.setHref(
+								_getCurrentSortingURL(), "orderByCol",
+								orderByColEntry.getValue());
+							dropdownItem.setLabel(
+								LanguageUtil.get(
+									httpServletRequest, orderByCol));
+						});
+				}
+			}
+		};
 	}
 
 	@Override
@@ -190,41 +214,6 @@ public class KBTemplatesManagementToolbarDisplayContext
 
 	private String _getOrderByCol() {
 		return searchContainer.getOrderByCol();
-	}
-
-	private List<DropdownItem> _getOrderByDropdownItems() {
-		return new DropdownItemList() {
-			{
-				final Map<String, String> orderColumnsMap = HashMapBuilder.put(
-					"create-date", "create-date"
-				).put(
-					"modified-date", "modified-date"
-				).put(
-					"title", "title"
-				).put(
-					"user-name", "user-name"
-				).build();
-
-				for (Map.Entry<String, String> orderByColEntry :
-						orderColumnsMap.entrySet()) {
-
-					add(
-						dropdownItem -> {
-							String orderByCol = orderByColEntry.getKey();
-
-							dropdownItem.setActive(
-								orderByCol.equals(_getOrderByCol()));
-
-							dropdownItem.setHref(
-								_getCurrentSortingURL(), "orderByCol",
-								orderByColEntry.getValue());
-							dropdownItem.setLabel(
-								LanguageUtil.get(
-									httpServletRequest, orderByCol));
-						});
-				}
-			}
-		};
 	}
 
 	private final PortletURL _currentURLObj;

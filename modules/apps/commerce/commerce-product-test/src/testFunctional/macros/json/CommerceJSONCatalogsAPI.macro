@@ -1,6 +1,7 @@
 definition {
 
-	macro _addCatalog {
+	@summary = "Default summary"
+	macro _addCatalog(catalogName = null) {
 		Variables.assertDefined(parameterList = ${catalogName});
 
 		var portalURL = JSONCompany.getPortalURL();
@@ -32,11 +33,12 @@ definition {
 		JSONCurlUtil.post(${curl});
 	}
 
-	macro _deleteAllNoSystemCommerceCatalogs {
+	@summary = "Default summary"
+	macro _deleteAllNoSystemCommerceCatalogs() {
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var catalogIds = CommerceJSONCatalogsAPI._getCommerceNoSystemCatalogIds();
@@ -59,11 +61,12 @@ definition {
 		}
 	}
 
-	macro _getCommerceAccountIdByCatalogId {
+	@summary = "Default summary"
+	macro _getCommerceAccountIdByCatalogId(catalogName = null) {
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var catalogId = CommerceJSONCatalogsAPI._getCommerceCatalogIdByName(catalogName = ${catalogName});
@@ -80,14 +83,15 @@ definition {
 		return ${accountId};
 	}
 
-	macro _getCommerceCatalogIdByName {
+	@summary = "Default summary"
+	macro _getCommerceCatalogIdByName(catalogName = null, catalogCount = null) {
 		Variables.assertDefined(parameterList = ${catalogName});
 
 		var baseURL = ${baseURL};
 		var masterCatalogName = "Master";
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		if (!(isSet(userEmailAddress))) {
@@ -118,12 +122,13 @@ definition {
 		return ${catalogIds};
 	}
 
-	macro _getCommerceNoSystemCatalogIds {
+	@summary = "Default summary"
+	macro _getCommerceNoSystemCatalogIds(catalogCount = null) {
 		var baseURL = ${baseURL};
 		var masterCatalogName = "Master";
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		if (isSet(catalogCount)) {
@@ -146,7 +151,8 @@ definition {
 		return ${catalogIds};
 	}
 
-	macro _patchCommerceCatalog {
+	@summary = "Default summary"
+	macro _patchCommerceCatalog(accountIdByName = null, catalogName = null, newCatalogName = null) {
 		Variables.assertDefined(parameterList = ${catalogName});
 
 		var baseURL = ${baseURL};
@@ -154,7 +160,7 @@ definition {
 		var catalogId = CommerceJSONCatalogsAPI._getCommerceCatalogIdByName(catalogName = ${catalogName});
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		if (isSet(accountId)) {

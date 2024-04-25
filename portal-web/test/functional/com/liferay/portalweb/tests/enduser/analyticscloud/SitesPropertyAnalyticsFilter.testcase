@@ -21,10 +21,6 @@ definition {
 	tearDown {
 		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
 
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
-		//ACUtils.tearDownAC();
-
 		ACUtils.tearDownDXP();
 
 		if (${testLiferayVirtualInstance} == "true") {
@@ -33,180 +29,13 @@ definition {
 		else {
 			JSONGroup.deleteGroupByName(groupName = "Site Name");
 		}
-	}
 
-	@description = "Feature ID: Legacy | Automation ID: LRAC-8319 | Test Summary: Custom Range time period filter in Sites"
-	@ignore = "true"
-	@priority = 5
-	test CustomRangeTimePeriodFilterSites {
-
-		// AC Refactor: the test needs data from a past date
-		// AC Refactor ticket: LRAC-8744
-
-		task ("Site and page creation and connection with AC") {
-			ACUtils.addSiteAndPage();
-
-			var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
-		}
-
-		task ("Interation with page") {
-			ACUtils.navigateToSitePage(
-				pageName = "AC Page",
-				siteName = "Site Name");
-
-			ACUtils.closeAllSessionsAndWait();
-		}
-
-		task ("AC launch") {
-			ACUtils.launchAC();
-
-			ACProperties.switchProperty(propertyName = ${propertyName});
-		}
-
-		task ("Asset Custom Range time period filter") {
-
-			// It is not possible to perform the assert because this test needs data from the past
-
-			var displayDateDay = DateUtil.getCurrentDate();
-			var displayMonth = DateUtil.getCurrentMonth();
-			var displayDateMonth = DateUtil.getCurrentMonthName();
-			var displayDateYear = DateUtil.getCurrentYear();
-			var previousDay = DateUtil.getFormattedDate("-1", "d");
-			var previousMonth = DateUtil.getFormattedDate("-1", "MMMM");
-			var previousYear = DateUtil.getFormattedDate("-1", "yyyy");
-
-			ACNavigation.switchTab(tabName = "Overview");
-
-			var cardNameList = "${propertyName} Activities,Top Pages,Acquisitions,Visitors by Day and Time,Search Terms,Interests,Sessions by Location,Session Technology";
-
-			for (var cardName : list ${cardNameList}) {
-				ACTimeFilter.setCustomRange(
-					cardName = ${cardName},
-					endDay = ${displayDateDay},
-					endMonth = ${displayDateMonth},
-					endYear = ${displayDateYear},
-					startDay = ${previousDay},
-					startMonth = ${previousMonth},
-					startYear = ${previousYear});
-			}
-		}
-	}
-
-	@description = "Feature ID: Legacy | Automation ID: LRAC-8317 | Test Summary: 180 Days time period filter in Sites"
-	@ignore = "true"
-	@priority = 3
-	test PeriodFilter180Days {
-
-		// AC Refactor: the test needs data from a past date
-		// AC Refactor ticket: LRAC-8723
-
-		task ("Site and blogs creation and connection with AC") {
-			ACUtils.addSiteAndPage();
-
-			ACUtils.createBlogsAndAddToPage(entryTitle = "Test 2");
-
-			var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
-		}
-
-		task ("Interation with pages") {
-			ACUtils.navigateToSitePage(
-				actionType = "View Blog",
-				documentTitleList = "Test 2",
-				pageName = "AC Page",
-				siteName = "Site Name");
-
-			ACUtils.closeAllSessionsAndWait();
-		}
-
-		task ("AC launch") {
-			ACUtils.launchAC();
-
-			ACProperties.switchProperty(propertyName = ${propertyName});
-		}
-
-		task ("Asset 180 Days time period filter") {
-
-			// It is not possible to perform the assert because this test needs data from the past
-
-			ACNavigation.switchTab(tabName = "Overview");
-
-			ACTimeFilter.clickTimeFilterButton(cardName = "${propertyName} Activities");
-
-			ACTimeFilter.setLast180Days();
-
-			ACUtils.assertXAxisTimedGraph(parentName = "${propertyName} Activities");
-
-			for (var cardTitle : list "Top Pages,Acquisitions,Visitors by Day and Time,Search Terms,Interests,Sessions by Location,Session Technology") {
-				ACCards.viewCards(cardTitle = ${cardTitle});
-
-				ACTimeFilter.clickTimeFilterButton(cardName = ${cardTitle});
-
-				ACTimeFilter.setLast180Days();
-			}
-		}
-	}
-
-	@description = "Feature ID: Legacy | Automation ID: LRAC-8318 | Test Summary: Last Year time period filter in Sites"
-	@ignore = "true"
-	@priority = 3
-	test PeriodFilterLastYear {
-
-		// AC Refactor: the test needs data from a past date
-		// AC Refactor ticket: LRAC-8726
-
-		task ("Site and blogs creation and connection with AC") {
-			ACUtils.addSiteAndPage();
-
-			ACUtils.createBlogsAndAddToPage(entryTitle = "Test 2");
-
-			var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
-		}
-
-		task ("Interation with pages") {
-			ACUtils.navigateToSitePage(
-				actionType = "View Blog",
-				documentTitleList = "Test 2",
-				pageName = "AC Page",
-				siteName = "Site Name");
-
-			ACUtils.closeAllSessionsAndWait();
-		}
-
-		task ("AC launch") {
-			ACUtils.launchAC();
-
-			ACProperties.switchProperty(propertyName = ${propertyName});
-		}
-
-		task ("Asset Last Year time period filter") {
-
-			// It is not possible to perform the assert because this test needs data from the past
-
-			ACNavigation.switchTab(tabName = "Overview");
-
-			ACTimeFilter.clickTimeFilterButton(cardName = "${propertyName} Activities");
-
-			ACTimeFilter.setLastYear();
-
-			ACUtils.assertXAxisTimedGraph(parentName = "${propertyName} Activities");
-
-			for (var cardTitle : list "Top Pages,Acquisitions,Visitors by Day and Time,Search Terms,Interests,Sessions by Location,Session Technology") {
-				ACCards.viewCards(cardTitle = ${cardTitle});
-
-				ACTimeFilter.clickTimeFilterButton(cardName = ${cardTitle});
-
-				ACTimeFilter.setLastYear();
-			}
-		}
+		ACUtils.tearDownAC();
 	}
 
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8323 | Test Summary: A user lost access to a given property (because the admin removed the user's access or someone deleted the property of the system)"
-	@ignore = "true"
 	@priority = 4
 	test UserLostAccess {
-
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
 		task ("AC launch and go to the porpreties menu") {
 			ACUtils.launchAC();
 
@@ -226,11 +55,7 @@ definition {
 		task ("Log in as the user corbin.murakami@faro.io and go to the properties menu") {
 			ACWorkspace.signOut();
 
-			ACLogin.loginAs(
-				emailAddress = "corbin.murakami@faro.io",
-				password = "test");
-
-			ACWorkspace.openWorkspace();
+			ACUtils.launchAC(emailAddress = "corbin.murakami@faro.io");
 
 			ACNavigation.goToSettings();
 
@@ -244,28 +69,19 @@ definition {
 		task ("Log in as the user test@liferay.com, go to the properties menu and delete all properties") {
 			ACWorkspace.signOut();
 
-			ACLogin.loginAs(
-				emailAddress = "test@liferay.com",
-				password = "test");
-
-			ACWorkspace.openWorkspace();
+			ACUtils.launchAC(emailAddress = "test@liferay.com");
 
 			ACNavigation.goToSettings();
 
 			ACSettings.goToProperties();
 
-			//ACSettings.deleteAllProperties();
-
+			ACSettings.deleteAllProperties();
 		}
 
 		task ("Log in as the user corbin.murakami@faro.io, go to the properties menu and checks if the property has been deleted for the user") {
 			ACWorkspace.signOut();
 
-			ACLogin.loginAs(
-				emailAddress = "corbin.murakami@faro.io",
-				password = "test");
-
-			ACWorkspace.openWorkspace();
+			ACUtils.launchAC(emailAddress = "corbin.murakami@faro.io");
 
 			ACNavigation.goToSettings();
 
@@ -317,11 +133,7 @@ definition {
 		task ("Log in as the user corbin.murakami@faro.io and go to the properties menu") {
 			ACWorkspace.signOut();
 
-			ACLogin.loginAs(
-				emailAddress = "corbin.murakami@faro.io",
-				password = "test");
-
-			ACWorkspace.openWorkspace();
+			ACUtils.launchAC(emailAddress = "corbin.murakami@faro.io");
 
 			ACNavigation.goToSettings();
 
@@ -330,6 +142,8 @@ definition {
 
 		task ("Checks if only property 2 and property 3 are present") {
 			ACProperties.assertPropertyNotPresent(propertyName = "Property Name 1");
+
+			ACUtils.searchBar(searchItem = "Property Name");
 
 			ACProperties.assertPropertyTitleList(propertyName = "Property Name 2");
 

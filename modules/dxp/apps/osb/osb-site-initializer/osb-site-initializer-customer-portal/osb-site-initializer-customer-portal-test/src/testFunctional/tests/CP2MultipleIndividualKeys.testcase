@@ -89,7 +89,7 @@ definition {
 	@description = "Story ID: LPS-146061 | Test summary: Verify that user can see the correct option of download when they select two keys with different expiration dates"
 	@ignore = "true"
 	@priority = 5
-	test AssertThatMultipleIndividualKeysNotAgregatedDowloadOptions {
+	test AssertThatMultipleIndividualKeysNotAgregatedDownloadOptions {
 		property portal.upstream = "quarantine";
 
 		task ("Given I go to the test account") {
@@ -138,7 +138,7 @@ definition {
 	@description = "Story ID: LPS-146061 | Test Summary: Verify that user can see the correct option of download when they select two keys with the same expiration date."
 	@ignore = "true"
 	@priority = 5
-	test AssertThetMultipleIndividualKeysAgregatedDowloadOptions {
+	test AssertThetMultipleIndividualKeysAgregatedDownloadOptions {
 		property portal.upstream = "quarantine";
 
 		task ("Given the user go to the test account") {
@@ -183,6 +183,34 @@ definition {
 
 		task ("Then assert that the alert with the message 'Activation Key Was Downloaded Successfully' is visible") {
 			CustomerPortal.viewAlert(alertText = "Activation Key was downloaded successfully");
+		}
+	}
+
+	@description = "Story ID: LPS-140168 | Test Summary: Verify that projects that do not have keys show a warning message 'Could not download key, try again' when the user clicks on Export all key details (csv)."
+	@priority = 3
+	test ErrorMessageFromIndividualKeysDownload {
+		task ("Given the user go to the test account") {
+			CustomerPortal.search(searchItem = "Test Account QA 7.4");
+
+			CustomerPortal.enterOnProject(title = "Test Account QA 7.4");
+		}
+
+		task ("And goes to DXP product") {
+			CP2NavigationMenu.goToProductActivation();
+
+			CP2NavigationMenu.clickOnProductButton(product = ${testProduct});
+		}
+
+		task ("And click at the Actions button") {
+			CustomerPortal.clickAtButton(text = "Actions");
+		}
+
+		task ("When click at the 'Export All Key Details (csv)") {
+			CP2ActivationKeys.clickAtDropdownItem(dropdownItem = "Export All Key Details (csv)");
+		}
+
+		task ("Then assert that the alert with the message 'Unable to export keys, please try again.' is visible") {
+			CustomerPortal.viewAlert(alertText = "Unable to export keys, please try again.");
 		}
 	}
 

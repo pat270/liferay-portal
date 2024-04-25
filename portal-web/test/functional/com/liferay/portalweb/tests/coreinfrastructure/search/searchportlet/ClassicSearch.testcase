@@ -4,7 +4,7 @@ definition {
 	property osgi.module.configuration.file.names = "com.liferay.portal.search.web.internal.configuration.SearchWebConfiguration.config";
 	property osgi.module.configurations = "classicSearchPortletInFrontPage=\"true\"";
 	property portal.release = "true";
-	property portal.suite.search.engine = "elasticsearch7";
+	property portal.suite.search.engine = "elasticsearch7,solr";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Web Search";
 
@@ -69,14 +69,14 @@ definition {
 			var key_searchAssetTitle = ${searchAssetTitle};
 
 			AssertTextEquals(
-				locator1 = "SearchResults#CLASSIC_ASSET_ENTRY_TABLE_TITLE",
+				locator1 = "ClassicSearch#CLASSIC_ASSET_ENTRY_TABLE_TITLE",
 				value1 = ${searchAssetTitle});
 		}
 
 		for (var searchAssetTitle : list "Blogs Entry2 Title,WC WebContent1 Title,Wiki Page1 Title") {
 			var key_searchAssetTitle = ${searchAssetTitle};
 
-			AssertElementNotPresent(locator1 = "SearchResults#CLASSIC_ASSET_ENTRY_TABLE_TITLE");
+			AssertElementNotPresent(locator1 = "ClassicSearch#CLASSIC_ASSET_ENTRY_TABLE_TITLE");
 		}
 
 		ClassicSearch.viewAssetTypeFacetPG(
@@ -92,14 +92,14 @@ definition {
 			var key_searchAssetTitle = ${searchAssetTitle};
 
 			AssertTextEquals(
-				locator1 = "SearchResults#CLASSIC_ASSET_ENTRY_TABLE_TITLE",
+				locator1 = "ClassicSearch#CLASSIC_ASSET_ENTRY_TABLE_TITLE",
 				value1 = ${searchAssetTitle});
 		}
 
 		for (var searchAssetTitle : list "Blogs Entry2 Title,WC WebContent1 Title,Wiki Page1 Title") {
 			var key_searchAssetTitle = ${searchAssetTitle};
 
-			AssertElementNotPresent(locator1 = "SearchResults#CLASSIC_ASSET_ENTRY_TABLE_TITLE");
+			AssertElementNotPresent(locator1 = "ClassicSearch#CLASSIC_ASSET_ENTRY_TABLE_TITLE");
 		}
 	}
 
@@ -115,6 +115,10 @@ definition {
 			userFirstName = "userfn",
 			userLastName = "userln",
 			userScreenName = "usersn");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "guest");
+
+		Site.manageMembershipOptions(allowManualMembershipManagement = "true");
 
 		Site.openSiteMembershipsAdmin(siteURLKey = "guest");
 
@@ -176,9 +180,9 @@ definition {
 			searchAssetSummary = "Blogs User Entry Content",
 			searchAssetTitle = "Blogs User Entry Title");
 
-		AssertClick(
-			locator1 = "SearchResults#USER_FACET_ANY_USER",
-			value1 = "Any User");
+		Click(
+			key_term = "Any User",
+			locator1 = "SearchPage#USER_FACET_TERM");
 
 		ClassicSearch.viewUserFacetPG(
 			facetFrequency = 1,
@@ -197,7 +201,9 @@ definition {
 
 		ClassicSearch.search(searchTerm = "Entry");
 
-		AssertElementNotPresent(locator1 = "SearchResults#USER_FACET_ANY_USER");
+		AssertElementNotPresent(
+			key_term = "Any User",
+			locator1 = "SearchPage#USER_FACET_TERM");
 	}
 
 	@priority = 5

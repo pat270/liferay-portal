@@ -2,13 +2,20 @@
  * SPDX-FileCopyrightText: (c) 2000 Liferay, Inc. https://liferay.com
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
+
+import {sub} from 'frontend-js-web';
+
 interface IErrorMessage {
 	[key: string]: string;
 }
+
+const fieldLengthErrorMessage = sub(
+	Liferay.Language.get('only-x-characters-are-allowed-in-the-x-field'),
+	['41', 'name']
+);
+
 export const ERRORS: IErrorMessage = {
-	'ObjectDefinitionNameException.MustBeLessThan41Characters': Liferay.Language.get(
-		'only-41-characters-are-allowed'
-	),
+	'ObjectDefinitionNameException.MustBeLessThan41Characters': fieldLengthErrorMessage,
 	'ObjectDefinitionNameException.MustBeginWithUpperCaseLetter': Liferay.Language.get(
 		'the-first-character-of-a-name-must-be-an-upper-case-letter'
 	),
@@ -27,9 +34,7 @@ export const ERRORS: IErrorMessage = {
 	'ObjectDefinitionNameException.MustStartWithCAndUnderscoreForCustomObject': Liferay.Language.get(
 		'custom-object-definition-names-must-start-with-c'
 	),
-	'ObjectFieldNameException.MustBeLessThan41Characters': Liferay.Language.get(
-		'only-41-characters-are-allowed'
-	),
+	'ObjectFieldNameException.MustBeLessThan41Characters': fieldLengthErrorMessage,
 	'ObjectFieldNameException.MustBeginWithLowerCaseLetter': Liferay.Language.get(
 		'the-first-character-of-a-name-must-be-an-lower-case-letter'
 	),
@@ -47,5 +52,12 @@ export const ERRORS: IErrorMessage = {
 	),
 	'ObjectFieldSettingValueException.MustBeLessThan256Characters': Liferay.Language.get(
 		'storage-folder-path-cannot-be-greater-than-255-characters'
+	),
+	'ObjectFolderNameException.MustBeLessThan41Characters': fieldLengthErrorMessage,
+	'ObjectFolderNameException.MustNotBeDuplicate': Liferay.Language.get(
+		'this-name-is-already-in-use-try-another-one'
+	),
+	'ObjectFolderNameException.MustOnlyContainLettersAndDigits': Liferay.Language.get(
+		'name-must-only-contain-letters-and-digits'
 	),
 };

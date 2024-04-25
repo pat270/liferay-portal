@@ -6,12 +6,9 @@
 package com.liferay.search.experiences.rest.internal.resource.v1_0;
 
 import com.liferay.petra.string.StringBundler;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.Language;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
@@ -19,6 +16,7 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
@@ -29,26 +27,29 @@ import com.liferay.portal.vulcan.pagination.Pagination;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
 import com.liferay.search.experiences.constants.SXPActionKeys;
 import com.liferay.search.experiences.constants.SXPConstants;
+import com.liferay.search.experiences.exception.DuplicateSXPElementExternalReferenceCodeException;
+import com.liferay.search.experiences.exception.SXPElementTitleException;
 import com.liferay.search.experiences.rest.dto.v1_0.ElementDefinition;
-import com.liferay.search.experiences.rest.dto.v1_0.FieldSet;
 import com.liferay.search.experiences.rest.dto.v1_0.SXPElement;
-import com.liferay.search.experiences.rest.dto.v1_0.UiConfiguration;
 import com.liferay.search.experiences.rest.dto.v1_0.util.ElementDefinitionUtil;
 import com.liferay.search.experiences.rest.dto.v1_0.util.SXPElementUtil;
+import com.liferay.search.experiences.rest.internal.dto.v1_0.converter.util.SXPDTOConverterUtil;
 import com.liferay.search.experiences.rest.internal.odata.entity.v1_0.SXPElementEntityModel;
+import com.liferay.search.experiences.rest.internal.resource.v1_0.util.DecodeSXPUtil;
 import com.liferay.search.experiences.rest.internal.resource.v1_0.util.SearchUtil;
 import com.liferay.search.experiences.rest.internal.resource.v1_0.util.TitleMapUtil;
 import com.liferay.search.experiences.rest.resource.v1_0.SXPElementResource;
+import com.liferay.search.experiences.service.SXPElementLocalService;
 import com.liferay.search.experiences.service.SXPElementService;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-
-import org.apache.commons.lang.StringUtils;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -124,6 +125,10 @@ public class SXPElementResourceImpl extends BaseSXPElementResourceImpl {
 			).put(
 				"externalReferenceCode", sxpElement.getExternalReferenceCode()
 			).put(
+				"fallbackDescription", sxpElement.getFallbackDescription()
+			).put(
+				"fallbackTitle", sxpElement.getFallbackTitle()
+			).put(
 				"schemaVersion", sxpElement.getSchemaVersion()
 			).put(
 				"title_i18n",
@@ -189,7 +194,7 @@ public class SXPElementResourceImpl extends BaseSXPElementResourceImpl {
 						getName();
 
 				sxpElement.setActions(
-					HashMapBuilder.put(
+					() -> HashMapBuilder.put(
 						"create",
 						() -> addAction(
 							SXPActionKeys.ADD_SXP_ELEMENT, "postSXPElement",
@@ -213,9 +218,15 @@ public class SXPElementResourceImpl extends BaseSXPElementResourceImpl {
 							sxpElementId)
 					).put(
 						"update",
-						() -> addAction(
-							ActionKeys.UPDATE, "patchSXPElement",
-							permissionName, sxpElementId)
+						() -> {
+							if (sxpElement.getReadOnly()) {
+								return null;
+							}
+
+							return addAction(
+								ActionKeys.UPDATE, "putSXPElement",
+								permissionName, sxpElementId);
+						}
 					).build());
 
 				return sxpElement;
@@ -223,31 +234,11 @@ public class SXPElementResourceImpl extends BaseSXPElementResourceImpl {
 	}
 
 	@Override
-	public SXPElement patchSXPElement(Long sxpElementId, SXPElement sxpElement)
-		throws Exception {
-
-		return _sxpElementDTOConverter.toDTO(
-			new DefaultDTOConverterContext(
-				contextAcceptLanguage.isAcceptAllLanguages(), new HashMap<>(),
-				_dtoConverterRegistry, contextHttpServletRequest,
-				sxpElement.getId(), contextAcceptLanguage.getPreferredLocale(),
-				contextUriInfo, contextUser),
-			_sxpElementService.updateSXPElement(
-				sxpElementId,
-				LocalizedMapUtil.getLocalizedMap(
-					contextAcceptLanguage.getPreferredLocale(),
-					sxpElement.getDescription(),
-					sxpElement.getDescription_i18n()),
-				_getElementDefinitionJSON(sxpElement), _getSchemaVersion(),
-				GetterUtil.getBoolean(sxpElement.getHidden()),
-				LocalizedMapUtil.getLocalizedMap(
-					contextAcceptLanguage.getPreferredLocale(),
-					sxpElement.getTitle(), sxpElement.getTitle_i18n()),
-				ServiceContextFactory.getInstance(contextHttpServletRequest)));
-	}
-
-	@Override
 	public SXPElement postSXPElement(SXPElement sxpElement) throws Exception {
+		DecodeSXPUtil.decodeSXPElement(sxpElement);
+
+		_validateTitleI18n(sxpElement.getTitle_i18n());
+
 		return _sxpElementDTOConverter.toDTO(
 			new DefaultDTOConverterContext(
 				contextAcceptLanguage.isAcceptAllLanguages(), new HashMap<>(),
@@ -260,8 +251,9 @@ public class SXPElementResourceImpl extends BaseSXPElementResourceImpl {
 					contextAcceptLanguage.getPreferredLocale(),
 					sxpElement.getDescription(),
 					sxpElement.getDescription_i18n()),
-				_getElementDefinitionJSON(sxpElement), false,
-				_getSchemaVersion(),
+				_getElementDefinitionJSON(sxpElement),
+				sxpElement.getFallbackDescription(),
+				sxpElement.getFallbackTitle(), false, _getSchemaVersion(),
 				LocalizedMapUtil.getLocalizedMap(
 					contextAcceptLanguage.getPreferredLocale(),
 					sxpElement.getTitle(), sxpElement.getTitle_i18n()),
@@ -283,8 +275,12 @@ public class SXPElementResourceImpl extends BaseSXPElementResourceImpl {
 				contextUser),
 			_sxpElementService.addSXPElement(
 				null, sxpElement.getDescriptionMap(),
-				sxpElement.getElementDefinitionJSON(), false,
-				sxpElement.getSchemaVersion(),
+				sxpElement.getElementDefinitionJSON(),
+				sxpElement.getFallbackDescription(),
+				_language.format(
+					LocaleUtil.getDefault(), "copy-of-x",
+					sxpElement.getFallbackTitle()),
+				false, sxpElement.getSchemaVersion(),
 				TitleMapUtil.copy(sxpElement.getTitleMap()),
 				sxpElement.getType(),
 				ServiceContextFactory.getInstance(contextHttpServletRequest)));
@@ -294,18 +290,53 @@ public class SXPElementResourceImpl extends BaseSXPElementResourceImpl {
 	public SXPElement postSXPElementPreview(SXPElement sxpElement)
 		throws Exception {
 
+		DecodeSXPUtil.decodeSXPElement(sxpElement);
+
+		Locale locale = LocaleUtil.fromLanguageId(
+			contextAcceptLanguage.getPreferredLanguageId());
+
 		sxpElement.setDescription(
-			_getLocalization(sxpElement.getDescription_i18n()));
+			() -> SXPDTOConverterUtil.translate(
+				sxpElement.getFallbackDescription(), _language, locale,
+				LocalizedMapUtil.getLocalizedMap(
+					sxpElement.getDescription_i18n())));
+
+		ElementDefinition elementDefinition = sxpElement.getElementDefinition();
+
 		sxpElement.setElementDefinition(
-			_getLocalizedElementDefinition(sxpElement.getElementDefinition()));
-		sxpElement.setTitle(_getLocalization(sxpElement.getTitle_i18n()));
+			() -> SXPDTOConverterUtil.translate(
+				elementDefinition, _language, locale));
+
+		sxpElement.setTitle(
+			() -> SXPDTOConverterUtil.translate(
+				sxpElement.getFallbackTitle(), _language, locale,
+				LocalizedMapUtil.getLocalizedMap(sxpElement.getTitle_i18n())));
 
 		return sxpElement;
 	}
 
 	@Override
 	public SXPElement postSXPElementValidate(String json) throws Exception {
-		return SXPElementUtil.toSXPElement(json);
+		SXPElement sxpElement = SXPElementUtil.toSXPElement(json);
+
+		DecodeSXPUtil.decodeSXPElement(sxpElement);
+
+		_validateSXPElementExternalReferenceCode(sxpElement);
+
+		return sxpElement;
+	}
+
+	@Override
+	public SXPElement putSXPElement(Long sxpElementId, SXPElement sxpElement)
+		throws Exception {
+
+		DecodeSXPUtil.decodeSXPElement(sxpElement);
+
+		com.liferay.search.experiences.model.SXPElement
+			serviceBuilderSXPElement = _sxpElementService.fetchSXPElement(
+				sxpElementId);
+
+		return _putSXPElement(serviceBuilderSXPElement, sxpElement);
 	}
 
 	@Override
@@ -313,19 +344,16 @@ public class SXPElementResourceImpl extends BaseSXPElementResourceImpl {
 			String externalReferenceCode, SXPElement sxpElement)
 		throws Exception {
 
+		DecodeSXPUtil.decodeSXPElement(sxpElement);
+
 		com.liferay.search.experiences.model.SXPElement
-			serviceBuilderSxpElement =
+			serviceBuilderSXPElement =
 				_sxpElementService.fetchSXPElementByExternalReferenceCode(
 					externalReferenceCode, contextCompany.getCompanyId());
 
-		sxpElement.setExternalReferenceCode(externalReferenceCode);
+		sxpElement.setExternalReferenceCode(() -> externalReferenceCode);
 
-		if (serviceBuilderSxpElement != null) {
-			return patchSXPElement(
-				serviceBuilderSxpElement.getSXPElementId(), sxpElement);
-		}
-
-		return postSXPElement(sxpElement);
+		return _putSXPElement(serviceBuilderSXPElement, sxpElement);
 	}
 
 	private String _getElementDefinitionJSON(SXPElement sxpElement) {
@@ -337,70 +365,91 @@ public class SXPElementResourceImpl extends BaseSXPElementResourceImpl {
 			ElementDefinitionUtil.unpack(sxpElement.getElementDefinition()));
 	}
 
-	private String _getLocalization(Map<String, String> localizationMap) {
-		return _language.get(
-			contextHttpServletRequest,
-			localizationMap.get(
-				contextAcceptLanguage.getPreferredLanguageId()));
-	}
-
-	private ElementDefinition _getLocalizedElementDefinition(
-		ElementDefinition elementDefinition) {
-
-		try {
-			UiConfiguration uiConfiguration =
-				elementDefinition.getUiConfiguration();
-
-			if (uiConfiguration == null) {
-				return elementDefinition;
-			}
-
-			FieldSet[] fieldSets = uiConfiguration.getFieldSets();
-
-			if (fieldSets == null) {
-				return elementDefinition;
-			}
-
-			for (FieldSet fieldSet : fieldSets) {
-				com.liferay.search.experiences.rest.dto.v1_0.Field[] fields =
-					fieldSet.getFields();
-
-				for (com.liferay.search.experiences.rest.dto.v1_0.Field field :
-						fields) {
-
-					if (!Validator.isBlank(field.getHelpText())) {
-						field.setHelpTextLocalized(
-							_language.get(
-								contextHttpServletRequest,
-								field.getHelpText()));
-					}
-
-					if (!Validator.isBlank(field.getLabel())) {
-						field.setLabelLocalized(
-							_language.get(
-								contextHttpServletRequest, field.getLabel()));
-					}
-				}
-			}
-
-			return elementDefinition;
-		}
-		catch (Exception exception) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(exception);
-			}
-
-			return null;
-		}
-	}
-
 	private String _getSchemaVersion() {
-		return StringUtils.substringBetween(
-			contextUriInfo.getPath(), "v", StringPool.SLASH);
+		return "1.0";
 	}
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		SXPElementResourceImpl.class);
+	private SXPElement _putSXPElement(
+			com.liferay.search.experiences.model.SXPElement
+				serviceBuilderSXPElement,
+			SXPElement sxpElement)
+		throws Exception {
+
+		if (serviceBuilderSXPElement == null) {
+			return postSXPElement(sxpElement);
+		}
+
+		if (!serviceBuilderSXPElement.isReadOnly()) {
+			return _updateSXPElement(
+				serviceBuilderSXPElement.getSXPElementId(), sxpElement);
+		}
+
+		return getSXPElement(serviceBuilderSXPElement.getSXPElementId());
+	}
+
+	private SXPElement _updateSXPElement(
+			Long sxpElementId, SXPElement sxpElement)
+		throws Exception {
+
+		_validateTitleI18n(sxpElement.getTitle_i18n());
+
+		return _sxpElementDTOConverter.toDTO(
+			new DefaultDTOConverterContext(
+				contextAcceptLanguage.isAcceptAllLanguages(), new HashMap<>(),
+				_dtoConverterRegistry, contextHttpServletRequest,
+				sxpElement.getId(), contextAcceptLanguage.getPreferredLocale(),
+				contextUriInfo, contextUser),
+			_sxpElementService.updateSXPElement(
+				sxpElement.getExternalReferenceCode(), sxpElementId,
+				LocalizedMapUtil.getLocalizedMap(
+					contextAcceptLanguage.getPreferredLocale(),
+					sxpElement.getDescription(),
+					sxpElement.getDescription_i18n()),
+				_getElementDefinitionJSON(sxpElement), _getSchemaVersion(),
+				GetterUtil.getBoolean(sxpElement.getHidden()),
+				LocalizedMapUtil.getLocalizedMap(
+					contextAcceptLanguage.getPreferredLocale(),
+					sxpElement.getTitle(), sxpElement.getTitle_i18n()),
+				ServiceContextFactory.getInstance(contextHttpServletRequest)));
+	}
+
+	private void _validateSXPElementExternalReferenceCode(SXPElement sxpElement)
+		throws Exception {
+
+		if (Validator.isBlank(sxpElement.getExternalReferenceCode())) {
+			return;
+		}
+
+		com.liferay.search.experiences.model.SXPElement
+			serviceBuilderSXPElement =
+				_sxpElementLocalService.fetchSXPElementByExternalReferenceCode(
+					sxpElement.getExternalReferenceCode(),
+					contextCompany.getCompanyId());
+
+		if ((serviceBuilderSXPElement != null) &&
+			!Objects.equals(
+				serviceBuilderSXPElement.getSXPElementId(),
+				sxpElement.getId())) {
+
+			throw new DuplicateSXPElementExternalReferenceCodeException();
+		}
+	}
+
+	private void _validateTitleI18n(Map<String, String> titleI18n)
+		throws Exception {
+
+		if (!titleI18n.containsKey(
+				LocaleUtil.getDefault(
+				).toString()) &&
+			!titleI18n.containsKey(
+				LocaleUtil.toBCP47LanguageId(LocaleUtil.getDefault()))) {
+
+			throw new SXPElementTitleException(
+				"The title for the default locale " +
+					LocaleUtil.toLanguageId(LocaleUtil.getDefault()) +
+						" cannot be blank");
+		}
+	}
 
 	@Reference
 	private DTOConverterRegistry _dtoConverterRegistry;
@@ -420,6 +469,9 @@ public class SXPElementResourceImpl extends BaseSXPElementResourceImpl {
 	private DTOConverter
 		<com.liferay.search.experiences.model.SXPElement, SXPElement>
 			_sxpElementDTOConverter;
+
+	@Reference
+	private SXPElementLocalService _sxpElementLocalService;
 
 	@Reference
 	private SXPElementService _sxpElementService;

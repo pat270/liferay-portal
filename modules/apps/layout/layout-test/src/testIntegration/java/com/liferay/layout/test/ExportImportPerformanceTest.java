@@ -31,13 +31,12 @@ import com.liferay.journal.constants.JournalFolderConstants;
 import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalService;
+import com.liferay.layout.helper.LayoutCopyHelper;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
 import com.liferay.layout.test.util.LayoutTestUtil;
-import com.liferay.layout.util.LayoutCopyHelper;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.layout.util.structure.LayoutStructureItem;
 import com.liferay.petra.io.StreamUtil;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskManager;
@@ -51,6 +50,7 @@ import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
+import com.liferay.portal.kernel.test.performance.PerformanceTimer;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -69,11 +69,10 @@ import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.segments.service.SegmentsExperienceLocalService;
-import com.liferay.sites.kernel.util.SitesUtil;
+import com.liferay.sites.kernel.util.Sites;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
 
 import java.nio.file.Files;
@@ -180,7 +179,7 @@ public class ExportImportPerformanceTest {
 
 	@Test
 	public void testExportGroupToLAR() throws Exception {
-		try (Closeable closeable = _startTimer()) {
+		try (Closeable closeable = new PerformanceTimer(1000, _logFilePath)) {
 			Map<String, Serializable> exportLayoutSettingsMap =
 				_exportImportConfigurationSettingsMapFactory.
 					buildExportLayoutSettingsMap(
@@ -217,7 +216,7 @@ public class ExportImportPerformanceTest {
 		File file = _exportImportLocalService.exportLayoutsAsFile(
 			_exportImportConfiguration);
 
-		try (Closeable closeable = _startTimer()) {
+		try (Closeable closeable = new PerformanceTimer(1000, _logFilePath)) {
 			Map<String, Serializable> importLayoutSettingsMap =
 				_exportImportConfigurationSettingsMapFactory.
 					buildImportLayoutSettingsMap(
@@ -238,7 +237,7 @@ public class ExportImportPerformanceTest {
 
 	@Test
 	public void testInitialStagingPublication() throws Exception {
-		try (Closeable closeable = _startTimer()) {
+		try (Closeable closeable = new PerformanceTimer(10000, _logFilePath)) {
 			_stagingLocalService.enableLocalStaging(
 				TestPropsValues.getUserId(), _group, false, false,
 				_serviceContext);
@@ -271,14 +270,14 @@ public class ExportImportPerformanceTest {
 			_layoutLocalService.updateLayout(layout);
 		}
 
-		SitesUtil.updateLayoutSetPrototypesLinks(
+		_sites.updateLayoutSetPrototypesLinks(
 			_group, _layoutSetPrototype.getLayoutSetPrototypeId(), 0, true,
 			true);
 
-		try (Closeable closeable = _startTimer()) {
+		try (Closeable closeable = new PerformanceTimer(1000, _logFilePath)) {
 			MergeLayoutPrototypesThreadLocal.clearMergeComplete();
 
-			SitesUtil.mergeLayoutSetPrototypeLayouts(
+			_sites.mergeLayoutSetPrototypeLayouts(
 				_group, _group.getPublicLayoutSet());
 		}
 	}
@@ -288,7 +287,7 @@ public class ExportImportPerformanceTest {
 		_stagingLocalService.enableLocalStaging(
 			TestPropsValues.getUserId(), _group, false, false, _serviceContext);
 
-		try (Closeable closeable = _startTimer()) {
+		try (Closeable closeable = new PerformanceTimer(1000, _logFilePath)) {
 			Group stagingGroup = _group.getStagingGroup();
 
 			Map<String, Serializable> stagingSettingsMap =
@@ -316,7 +315,7 @@ public class ExportImportPerformanceTest {
 		}
 	}
 
-	private static void _writeToLogFile(String... contents) throws IOException {
+	private static void _writeToLogFile(String... contents) throws Exception {
 		Files.write(
 			_logFilePath, Arrays.asList(contents), StandardOpenOption.APPEND,
 			StandardOpenOption.CREATE, StandardOpenOption.WRITE);
@@ -432,7 +431,7 @@ public class ExportImportPerformanceTest {
 			RandomTestUtil.randomLocaleStringMap(defaultLocale), content,
 			_ddmStructure.getStructureId(), _ddmTemplate.getTemplateKey(),
 			StringPool.BLANK, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, true, 0, 0, 0, 0, 0,
-			true, true, false, null, null, null, null, _serviceContext);
+			true, true, false, 0, 0, null, null, null, null, _serviceContext);
 	}
 
 	private void _addLayouts() throws Exception {
@@ -506,23 +505,6 @@ public class ExportImportPerformanceTest {
 		}
 
 		return layoutStructure.toString();
-	}
-
-	private Closeable _startTimer() {
-		Thread thread = Thread.currentThread();
-
-		StackTraceElement stackTraceElement = thread.getStackTrace()[2];
-
-		String invokerName = StringBundler.concat(
-			stackTraceElement.getClassName(), StringPool.POUND,
-			stackTraceElement.getMethodName());
-
-		long startTime = System.currentTimeMillis();
-
-		return () -> _writeToLogFile(
-			StringBundler.concat(
-				invokerName, " used ", System.currentTimeMillis() - startTime,
-				"ms"));
 	}
 
 	private void _updateLayoutPortletSetup(Layout layout, String portletId)
@@ -622,6 +604,9 @@ public class ExportImportPerformanceTest {
 	private SegmentsExperienceLocalService _segmentsExperienceLocalService;
 
 	private ServiceContext _serviceContext;
+
+	@Inject
+	private Sites _sites;
 
 	@Inject
 	private Staging _staging;

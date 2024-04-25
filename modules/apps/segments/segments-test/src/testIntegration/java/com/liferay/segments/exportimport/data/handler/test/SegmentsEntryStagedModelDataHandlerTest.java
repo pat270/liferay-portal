@@ -24,7 +24,6 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.StagedModel;
 import com.liferay.portal.kernel.model.Team;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.model.adapter.ModelAdapterUtil;
 import com.liferay.portal.kernel.service.TeamLocalServiceUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
@@ -34,6 +33,7 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
+import com.liferay.portal.model.adapter.util.ModelAdapterUtil;
 import com.liferay.portal.odata.normalizer.Normalizer;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
@@ -122,8 +122,7 @@ public class SegmentsEntryStagedModelDataHandlerTest
 			columnValue);
 
 		_segmentsEntry = SegmentsTestUtil.addSegmentsEntry(
-			stagingGroup.getGroupId(), _getCriteria(filterString),
-			User.class.getName());
+			stagingGroup.getGroupId(), _getCriteria(filterString));
 
 		StagedModelDataHandlerUtil.exportStagedModel(
 			portletDataContext, _segmentsEntry);
@@ -186,8 +185,7 @@ public class SegmentsEntryStagedModelDataHandlerTest
 			"(teamIds eq '%s')", team.getTeamId());
 
 		_segmentsEntry = SegmentsTestUtil.addSegmentsEntry(
-			stagingGroup.getGroupId(), _getCriteria(filterString),
-			User.class.getName());
+			stagingGroup.getGroupId(), _getCriteria(filterString));
 
 		StagedModelDataHandlerUtil.exportStagedModel(
 			portletDataContext, _segmentsEntry);

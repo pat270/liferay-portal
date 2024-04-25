@@ -1,10 +1,13 @@
 @component-name = "portal-upgrades"
 definition {
 
+	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.component.names = "Nested Portlets,Upgrades WEM";
-	property testray.main.component.name = "Upgrades WEM";
+	property test.liferay.virtual.instance = "false";
+	property test.run.type = "single";
+	property testray.component.names = "Upgrades WEM";
+	property testray.main.component.name = "Nested Portlets Widget";
 
 	setUp {
 		SignIn.signIn();
@@ -16,7 +19,7 @@ definition {
 		SearchAdministration.executeReindex();
 	}
 
-	@description = "View nested portlets after upgrade."
+	@description = "View nested portlets after upgrade from 625."
 	@priority = 5
 	test ViewNestedPortletsArchive625 {
 		property data.archive.type = "data-archive-nested-portlets";
@@ -26,7 +29,7 @@ definition {
 		ValidateWebContentUpgrade.viewNestedPortlets();
 	}
 
-	@description = "View nested portlets after upgrade."
+	@description = "View nested portlets after upgrade from 621015."
 	@priority = 5
 	test ViewNestedPortletsArchive621015 {
 		property data.archive.type = "data-archive-nested-portlets";
@@ -36,7 +39,7 @@ definition {
 		ValidateWebContentUpgrade.viewNestedPortlets();
 	}
 
-	@description = "View nested portlets after upgrade."
+	@description = "View nested portlets after upgrade from 621021."
 	@priority = 5
 	test ViewNestedPortletsArchive621021 {
 		property data.archive.type = "data-archive-nested-portlets";
@@ -46,7 +49,7 @@ definition {
 		ValidateWebContentUpgrade.viewNestedPortlets();
 	}
 
-	@description = "This is a use case for LPS-66141. View nested portlets in staging site after upgrade."
+	@description = "This is a use case for LPS-66141. View nested portlets in staging site after upgrade from 625."
 	@priority = 5
 	test ViewStagingNestedPortletsArchive625 {
 		property data.archive.type = "data-archive-staging-nested-portlets";
@@ -56,7 +59,7 @@ definition {
 		ValidateStagingUpgrade.viewStagingNestedPortlets();
 	}
 
-	@description = "This is a use case for LPS-66141. View nested portlets in staging site after upgrade."
+	@description = "This is a use case for LPS-66141. View nested portlets in staging site after upgrade from 62105."
 	@priority = 5
 	test ViewStagingNestedPortletsArchive621015 {
 		property data.archive.type = "data-archive-staging-nested-portlets";
@@ -66,7 +69,7 @@ definition {
 		ValidateStagingUpgrade.viewStagingNestedPortlets();
 	}
 
-	@description = "This is a use case for LPS-66141. View nested portlets in staging site after upgrade."
+	@description = "This is a use case for LPS-66141. View nested portlets in staging site after upgrade from 621021."
 	@priority = 5
 	test ViewStagingNestedPortletsArchive621021 {
 		property data.archive.type = "data-archive-staging-nested-portlets";

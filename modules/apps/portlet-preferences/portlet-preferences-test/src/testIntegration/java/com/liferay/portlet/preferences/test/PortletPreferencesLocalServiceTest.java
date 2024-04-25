@@ -7,15 +7,18 @@ package com.liferay.portlet.preferences.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.layout.test.util.LayoutTestUtil;
+import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.deploy.hot.ServiceBag;
 import com.liferay.portal.kernel.bean.ClassLoaderBeanHandler;
+import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.PortletApp;
 import com.liferay.portal.kernel.model.PortletPreferences;
 import com.liferay.portal.kernel.model.PortletPreferencesIds;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.PortletPreferencesLocalService;
 import com.liferay.portal.kernel.service.PortletPreferencesLocalServiceWrapper;
 import com.liferay.portal.kernel.service.ServiceWrapper;
@@ -23,7 +26,6 @@ import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
-import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.model.impl.PortletAppImpl;
@@ -89,6 +91,47 @@ public class PortletPreferencesLocalServiceTest
 	@After
 	public void tearDown() {
 		portletLocalService.destroyPortlet(testPortlet);
+	}
+
+	@Test
+	public void testAddPortletPreferencesWithCompanyThreadLocal()
+		throws Exception {
+
+		try (SafeCloseable safeCloseable =
+				CompanyThreadLocal.setWithSafeCloseable(
+					TestPropsValues.getCompanyId())) {
+
+			PortletPreferences portletPreferences =
+				portletPreferencesLocalService.addPortletPreferences(
+					0, PortletKeys.PREFS_OWNER_ID_DEFAULT,
+					PortletKeys.PREFS_OWNER_TYPE_LAYOUT, testLayout.getPlid(),
+					testPortlet.getPortletId(), testPortlet, null);
+
+			Assert.assertEquals(
+				(long)CompanyThreadLocal.getCompanyId(),
+				portletPreferences.getCompanyId());
+		}
+	}
+
+	@Test
+	public void testAddPortletPreferencesWithCompanyThreadLocalSystem()
+		throws Exception {
+
+		try (SafeCloseable safeCloseable =
+				CompanyThreadLocal.setWithSafeCloseable(
+					CompanyConstants.SYSTEM)) {
+
+			PortletPreferences portletPreferences =
+				portletPreferencesLocalService.addPortletPreferences(
+					TestPropsValues.getCompanyId(),
+					PortletKeys.PREFS_OWNER_ID_DEFAULT,
+					PortletKeys.PREFS_OWNER_TYPE_LAYOUT, testLayout.getPlid(),
+					testPortlet.getPortletId(), testPortlet, null);
+
+			Assert.assertEquals(
+				TestPropsValues.getCompanyId(),
+				portletPreferences.getCompanyId());
+		}
 	}
 
 	@Test
@@ -1363,8 +1406,8 @@ public class PortletPreferencesLocalServiceTest
 				(PortletPreferencesLocalService)previousService);
 
 		_serviceBag = new ServiceBag<>(
-			PortalClassLoaderUtil.getClassLoader(), aopInvocationHandler,
-			PortletPreferencesLocalService.class, serviceWrapper);
+			aopInvocationHandler, PortletPreferencesLocalService.class,
+			serviceWrapper, null, null);
 	}
 
 	protected void resetService() throws Exception {

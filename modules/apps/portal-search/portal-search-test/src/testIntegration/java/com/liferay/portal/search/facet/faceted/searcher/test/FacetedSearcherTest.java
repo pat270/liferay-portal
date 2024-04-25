@@ -53,7 +53,9 @@ public class FacetedSearcherTest extends BaseFacetedSearcherTestCase {
 	}
 
 	@Test
-	public void testSearchByKeywordsIgnoresInactiveSites() throws Exception {
+	public void testSearchByKeywordsIgnoresInactiveSitesWithCaseSensitiveTags()
+		throws Exception {
+
 		Group group1 = userSearchFixture.addGroup();
 
 		String prefix = randomString();

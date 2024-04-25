@@ -7,14 +7,15 @@ package com.liferay.object.web.internal.util;
 
 import com.liferay.info.field.type.BooleanInfoFieldType;
 import com.liferay.info.field.type.DateInfoFieldType;
+import com.liferay.info.field.type.DateTimeInfoFieldType;
 import com.liferay.info.field.type.FileInfoFieldType;
 import com.liferay.info.field.type.HTMLInfoFieldType;
 import com.liferay.info.field.type.InfoFieldType;
 import com.liferay.info.field.type.LongTextInfoFieldType;
-import com.liferay.info.field.type.MultiselectInfoFieldType;
 import com.liferay.info.field.type.NumberInfoFieldType;
+import com.liferay.info.field.type.PicklistMultiselectInfoFieldType;
+import com.liferay.info.field.type.PicklistSelectInfoFieldType;
 import com.liferay.info.field.type.RelationshipInfoFieldType;
-import com.liferay.info.field.type.SelectInfoFieldType;
 import com.liferay.info.field.type.TextInfoFieldType;
 import com.liferay.object.constants.ObjectFieldConstants;
 import com.liferay.object.model.ObjectField;
@@ -47,6 +48,12 @@ public class ObjectFieldDBTypeUtil {
 		}
 		else if (Objects.equals(
 					objectField.getBusinessType(),
+					ObjectFieldConstants.BUSINESS_TYPE_DATE_TIME)) {
+
+			return DateTimeInfoFieldType.INSTANCE;
+		}
+		else if (Objects.equals(
+					objectField.getBusinessType(),
 					ObjectFieldConstants.BUSINESS_TYPE_DECIMAL) ||
 				 Objects.equals(
 					 objectField.getBusinessType(),
@@ -70,13 +77,13 @@ public class ObjectFieldDBTypeUtil {
 					objectField.getBusinessType(),
 					ObjectFieldConstants.BUSINESS_TYPE_MULTISELECT_PICKLIST)) {
 
-			return MultiselectInfoFieldType.INSTANCE;
+			return PicklistMultiselectInfoFieldType.INSTANCE;
 		}
 		else if (Objects.equals(
 					objectField.getBusinessType(),
 					ObjectFieldConstants.BUSINESS_TYPE_PICKLIST)) {
 
-			return SelectInfoFieldType.INSTANCE;
+			return PicklistSelectInfoFieldType.INSTANCE;
 		}
 		else if (Objects.equals(
 					objectField.getBusinessType(),

@@ -22,9 +22,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.annotation.Priority;
-
-import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
@@ -32,10 +29,16 @@ import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 
+import org.apache.cxf.interceptor.InterceptorChain;
+import org.apache.cxf.message.Message;
+import org.apache.cxf.phase.AbstractPhaseInterceptor;
+import org.apache.cxf.phase.Phase;
+import org.apache.cxf.phase.PhaseInterceptorChain;
+import org.apache.cxf.transport.MessageObserver;
+
 /**
  * @author Javier Gamarra
  */
-@Priority(Priorities.USER - 10)
 @Provider
 @Transactional(rollbackFor = Exception.class)
 public class TransactionContainerRequestFilter
@@ -59,9 +62,24 @@ public class TransactionContainerRequestFilter
 		if (_transactionRequiredMethodNames.contains(
 				containerRequestContext.getMethod())) {
 
+			Message message = PhaseInterceptorChain.getCurrentMessage();
+
+			InterceptorChain interceptorChain = message.getInterceptorChain();
+
+			TransactionCleanUpMessageObserver
+				transactionCleanUpMessageObserver =
+					new TransactionCleanUpMessageObserver(
+						interceptorChain.getFaultObserver(),
+						_transactionExecutor.start(
+							_transactionAttributeAdapter));
+
 			containerRequestContext.setProperty(
-				_TRANSACTION_STATUS_ADAPTER,
-				_transactionExecutor.start(_transactionAttributeAdapter));
+				_TRANSACTION_CLEAN_UP_MESSAGE_OBSERVER,
+				transactionCleanUpMessageObserver);
+
+			interceptorChain.add(transactionCleanUpMessageObserver);
+			interceptorChain.setFaultObserver(
+				transactionCleanUpMessageObserver);
 		}
 	}
 
@@ -71,11 +89,12 @@ public class TransactionContainerRequestFilter
 			ContainerResponseContext containerResponseContext)
 		throws IOException {
 
-		TransactionStatusAdapter transactionStatusAdapter =
-			(TransactionStatusAdapter)containerRequestContext.getProperty(
-				_TRANSACTION_STATUS_ADAPTER);
+		TransactionCleanUpMessageObserver transactionCleanUpMessageObserver =
+			(TransactionCleanUpMessageObserver)
+				containerRequestContext.getProperty(
+					_TRANSACTION_CLEAN_UP_MESSAGE_OBSERVER);
 
-		if (transactionStatusAdapter == null) {
+		if (transactionCleanUpMessageObserver == null) {
 			return;
 		}
 
@@ -83,29 +102,19 @@ public class TransactionContainerRequestFilter
 			containerResponseContext.getStatus());
 
 		if (family == Response.Status.Family.SUCCESSFUL) {
-			_transactionExecutor.commit(
-				_transactionAttributeAdapter, transactionStatusAdapter);
+			transactionCleanUpMessageObserver.commit();
 		}
 		else {
-			try {
-				_transactionExecutor.rollback(
-					new Exception(
-						StringBundler.concat(
-							"Rollback due to ", family, ": ",
-							containerResponseContext.getStatus())),
-					_transactionAttributeAdapter, transactionStatusAdapter);
-			}
-			catch (Throwable throwable) {
-				if (_log.isDebugEnabled()) {
-					_log.debug("Unable to rollback the transaction", throwable);
-				}
-			}
+			transactionCleanUpMessageObserver.rollback(
+				StringBundler.concat(
+					"Rollback due to ", family, ": ",
+					containerResponseContext.getStatus()));
 		}
 	}
 
-	private static final String _TRANSACTION_STATUS_ADAPTER =
+	private static final String _TRANSACTION_CLEAN_UP_MESSAGE_OBSERVER =
 		TransactionContainerRequestFilter.class.getName() +
-			"#TRANSACTION_STATUS_ADAPTER";
+			"#TRANSACTION_CLEAN_UP_MESSAGE_OBSERVER";
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		TransactionContainerRequestFilter.class);
@@ -120,5 +129,76 @@ public class TransactionContainerRequestFilter
 			"transactionExecutor");
 	private static final Set<String> _transactionRequiredMethodNames =
 		new HashSet<>(Arrays.asList("DELETE", "PATCH", "POST", "PUT"));
+
+	private static class TransactionCleanUpMessageObserver
+		extends AbstractPhaseInterceptor implements MessageObserver {
+
+		public void commit() {
+			try {
+				_transactionExecutor.commit(
+					_transactionAttributeAdapter, _transactionStatusAdapter);
+			}
+			finally {
+				_complete = true;
+			}
+		}
+
+		@Override
+		public void handleFault(Message message) {
+			if (!_complete) {
+				rollback("Rollback due to uncaught exception");
+			}
+		}
+
+		@Override
+		public void handleMessage(Message message) {
+			if (!_complete) {
+				rollback("Rollback due to uncaught exception");
+			}
+		}
+
+		@Override
+		public void onMessage(Message message) {
+			if (!_complete) {
+				rollback("Rollback due to uncaught exception");
+			}
+
+			_messageObserver.onMessage(message);
+		}
+
+		public void rollback(String message) {
+			Exception exception = new Exception(message);
+
+			try {
+				_transactionExecutor.rollback(
+					exception, _transactionAttributeAdapter,
+					_transactionStatusAdapter);
+			}
+			catch (Throwable throwable) {
+				if (throwable != exception) {
+					_log.error(
+						"Unable to roll back the transaction", throwable);
+				}
+			}
+			finally {
+				_complete = true;
+			}
+		}
+
+		private TransactionCleanUpMessageObserver(
+			MessageObserver messageObserver,
+			TransactionStatusAdapter transactionStatusAdapter) {
+
+			super(Phase.POST_INVOKE);
+
+			_messageObserver = messageObserver;
+			_transactionStatusAdapter = transactionStatusAdapter;
+		}
+
+		private boolean _complete;
+		private final MessageObserver _messageObserver;
+		private final TransactionStatusAdapter _transactionStatusAdapter;
+
+	}
 
 }

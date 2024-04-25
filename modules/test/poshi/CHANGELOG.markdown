@@ -1,5 +1,236 @@
 # Poshi Runner Change Log
 
+## 1.0.490
+
+### Core
+
+* [POSHI-696](https://liferay.atlassian.net/browse/POSHI-696) - Allow Poshi Context file reading timeout to be configurable
+
+### Gradle
+
+* [POSHI-695](https://liferay.atlassian.net/browse/POSHI-695) - Update ChromeDriver's base URL for downloads
+
+### Other
+
+* [LPS-105380](https://liferay.atlassian.net/browse/LPS-105380) - SourceFormatter Improvements
+* [LRCI-4072](https://liferay.atlassian.net/browse/LRCI-4072) - Update Quarterly Release branches to latest Poshi version for compatibility with latest Jenkins slave image.
+
+### Prose
+
+* [POSHI-654](https://liferay.atlassian.net/browse/POSHI-654) - Delete poshi prose
+
+### Runner
+
+* [POSHI-697](https://liferay.atlassian.net/browse/POSHI-697) - Refactor SelectWindow.selectPopUp to accept value2 as a param.
+
+### Utils
+
+* [POSHI-692](https://liferay.atlassian.net/browse/POSHI-692) - Use of library with known vulnerability: Jayway JsonPath 2.1.0 (poshi-runner)
+
+### Validation
+
+* [POSHI-629](https://liferay.atlassian.net/browse/POSHI-629) - Validate for double quoted or variable reference arguments in util methods
+
+### WebDriver
+
+* [POSHI-675](https://liferay.atlassian.net/browse/POSHI-675) - Make JSONUtil.getWithJSONPath support expression with null
+* [POSHI-687](https://liferay.atlassian.net/browse/POSHI-687) - Make DEFAULT_PATH_LEAF_TO_NULL work
+* [POSHI-690](https://liferay.atlassian.net/browse/POSHI-690) - Remove robot screenshot from Poshi
+* [POSHI-693](https://liferay.atlassian.net/browse/POSHI-693) - Stop using net.jsourcerer.webdriver:JSErrorCollector
+* [POSHI-694](https://liferay.atlassian.net/browse/POSHI-694) - Add new method to return a CDP command
+
+## 1.0.481
+
+### Documentation
+
+* [POSHI-652](https://liferay.atlassian.net/browse/POSHI-652) - Update poshi-script.markdown to reflect new major syntax changes
+
+### Other
+
+* [LPS-194474](https://liferay.atlassian.net/browse/LPS-194474) - Refactor Echo case runs over 5 mins
+* [LPS-203216](https://liferay.atlassian.net/browse/LPS-203216) - Investigate failure in LocalFile.WebContentDisplay#ViewAllSettingsEnabled
+* [LPSA-61758](https://liferay.atlassian.net/browse/LPSA-61758) - Add option to override/set custom artifact version for the uploadPoshiRunnerResources task
+* [LRQA-81564](https://liferay.atlassian.net/browse/LRQA-81564) - Deprecated methods "waitForNotPartialText" and "assertNotPartialText" should be replaced
+* [LRQA-81565](https://liferay.atlassian.net/browse/LRQA-81565) - Deprecated methods "waitForTextCaseInsensitive" and "assertTextCaseInsensitive" should be replaced
+* [LRQA-81566](https://liferay.atlassian.net/browse/LRQA-81566) - Deprecated methods "waitForPartialTextCaseInsensitive" and "assertPartialTextCaseInsensitive" should be replaced
+
+### Script
+
+* [POSHI-674](https://liferay.atlassian.net/browse/POSHI-674) - Update poshi-runner-resources to use new signature syntax
+
+### Testing
+
+* [POSHI-660](https://liferay.atlassian.net/browse/POSHI-660) - Exception failure at PoshiElementFactoryTest
+* [POSHI-661](https://liferay.atlassian.net/browse/POSHI-661) - ComparisonFailure at PoshiSourceProcessorTest
+
+### WebDriver
+
+* [POSHI-630](https://liferay.atlassian.net/browse/POSHI-630) - As a test writer, I would like a property to configure browser resolution for a test
+* [POSHI-670](https://liferay.atlassian.net/browse/POSHI-670) - Add cookie setting support through ProxyUtil
+* [POSHI-675](https://liferay.atlassian.net/browse/POSHI-675) - Make JSONUtil.getWithJSONPath support expression with null
+* [POSHI-685](https://liferay.atlassian.net/browse/POSHI-685) - Modify RegexUtil.escapeRegexChars to support other types
+
+## 1.0.477
+
+### Core
+
+* [POSHI-557](https://liferay.atlassian.net/browse/POSHI-557) - Investigate failure in com.liferay.poshi.core.PoshiContextTest
+
+### Script
+
+* [POSHI-577](https://liferay.atlassian.net/browse/POSHI-577) - Begin migration to utilize macro and function signatures
+
+## 1.0.476
+
+### Core
+
+* [POSHI-561](https://liferay.atlassian.net/browse/POSHI-561) - Clean up usage of "value" and "locator" to specific methods for more clear usage.
+
+### Other
+
+* [LPS-181508](https://liferay.atlassian.net/browse/LPS-181508) - In order to use supported JDK versions, we need to upgrade to Gradle 7 to use newer JDK
+* [LPS-187460](https://liferay.atlassian.net/browse/LPS-187460) - Use of library with known vulnerability: JSON-java 20220320 (liferay-partner-workspace)
+* [LPS-199147](https://liferay.atlassian.net/browse/LPS-199147) - Adding a method to get headers from HTTP response
+* [LPS-199200](https://liferay.atlassian.net/browse/LPS-199200) - Use of library with known vulnerability: JSON-java 20230618
+
+### Reports
+
+* [POSHI-650](https://liferay.atlassian.net/browse/POSHI-650) - Add PoshiContext.readFiles into the CSV file generator
+
+### Script
+
+* [POSHI-577](https://liferay.atlassian.net/browse/POSHI-577) - Begin migration to utilize macro and function signatures
+
+### Utils
+
+* [POSHI-574](https://liferay.atlassian.net/browse/POSHI-574) - Simplify HttpRequestUtil method usages
+* [POSHI-618](https://liferay.atlassian.net/browse/POSHI-618) - Evaluate API testing for content, status code, and response time assertions
+
+## 1.0.471
+
+### Core
+
+* [POSHI-561](https://liferay.atlassian.net/browse/POSHI-561) - Clean up usage of "value" and "locator" to specific methods for more clear usage.
+* [POSHI-633](https://liferay.atlassian.net/browse/POSHI-633) - Add validation values of internal Poshi properties
+
+### Gradle
+
+* [POSHI-614](https://liferay.atlassian.net/browse/POSHI-614) - Create gradle task to run PoshiReportGenerator
+
+### Script
+
+* [POSHI-549](https://liferay.atlassian.net/browse/POSHI-549) - Skip file regeneration and possibly validation for poshi resource jar files
+
+### Validation
+
+* [POSHI-646](https://liferay.atlassian.net/browse/POSHI-646) - Investigate failure in com.liferay.poshi.core.script.PoshiScriptParserTest
+
+### WebDriver
+
+* [POSHI-639](https://liferay.atlassian.net/browse/POSHI-639) - As a tester, I want to configure AssertAccessible() to catch serious and critical levels only.
+
+## 1.0.468
+
+### Gradle
+
+* [POSHI-627](https://liferay.atlassian.net/browse/POSHI-627) - Investigate Failure in com.liferay.poshi.runner.resources.PoshiResourcesMasterTest
+
+### Other
+
+* [LPS-194477](https://liferay.atlassian.net/browse/LPS-194477) - [SF] source-formatter.properties  key should follow root source-formatter file
+
+### Utils
+
+* [POSHI-643](https://liferay.atlassian.net/browse/POSHI-643) - Replacement of secret parameters in osgi config test depdendencies
+
+### Validation
+
+* [POSHI-642](https://liferay.atlassian.net/browse/POSHI-642) - Allow isset/equals conditions to work in functions
+
+### WebDriver
+
+* [POSHI-639](https://liferay.atlassian.net/browse/POSHI-639) - As a tester, I want to configure AssertAccessible() to catch serious and critical levels only.
+
+## 1.0.466
+
+### Core
+
+* [POSHI-571](https://liferay.atlassian.net/browse/POSHI-571) - Implement Poshi Shared Scope to Improve Ci Runtimes
+* [POSHI-623](https://liferay.atlassian.net/browse/POSHI-623) - Add test.run.type=single for tests that have to be grouped individually
+
+### Gradle
+
+* [POSHI-607](https://liferay.atlassian.net/browse/POSHI-607) - Add support for chromedriver 115+
+* [POSHI-614](https://liferay.atlassian.net/browse/POSHI-614) - Create gradle task to run PoshiReportGenerator
+
+### Logger
+
+* [POSHI-371](https://liferay.atlassian.net/browse/POSHI-371) - External methods do not iterate the linkID after being called
+
+### Reports
+
+* [POSHI-613](https://liferay.atlassian.net/browse/POSHI-613) - Move report methods from PoshiContext to PoshiReportGenerator
+
+### Runner
+
+* [POSHI-28](https://liferay.atlassian.net/browse/POSHI-28) - Add a tool to give more info on macro (possibly function) usages
+
+### Script
+
+* [POSHI-549](https://liferay.atlassian.net/browse/POSHI-549) - Skip file regeneration and possibly validation for poshi resource jar files
+* [POSHI-634](https://liferay.atlassian.net/browse/POSHI-634) - Double quotes not being escaped for external methods
+
+### Utils
+
+* [POSHI-615](https://liferay.atlassian.net/browse/POSHI-615) - Escape regex in new assertTextMatches method
+* [POSHI-617](https://liferay.atlassian.net/browse/POSHI-617) - Add assertions for JSONUtil.getWithJSONPath and other JSON assertions
+
+### Validation
+
+* [POSHI-631](https://liferay.atlassian.net/browse/POSHI-631) - Throw poshi validation error when there are duplicate data-archives
+
+### WebDriver
+
+* [POSHI-575](https://liferay.atlassian.net/browse/POSHI-575) - Support Object in ListUtil
+* [POSHI-594](https://liferay.atlassian.net/browse/POSHI-594) - Add assertPartialValue method
+
+## 1.0.457
+
+### Core
+
+* [POSHI-593](https://liferay.atlassian.net/browse/POSHI-593) - java.lang.Exception in com.liferay.poshi.runner.resources.PoshiResources70xTest
+* [POSHI-609](https://liferay.atlassian.net/browse/POSHI-609) - PoshiProperties variables must also be reset when using PropsUtil.setProperties
+* [POSHI-616](https://liferay.atlassian.net/browse/POSHI-616) - Legacy Database Dumps are reading in two different dirs causing Poshi failures
+
+### Other
+
+* [LPS-181508](https://liferay.atlassian.net/browse/LPS-181508) - In order to use supported JDK versions, we need to upgrade to Gradle 7 to use newer JDK
+
+### Runner
+
+* [POSHI-612](https://liferay.atlassian.net/browse/POSHI-612) - Add a configurable timeout for individual tests in ParallelPoshiRunner
+
+### Utils
+
+* [POSHI-608](https://liferay.atlassian.net/browse/POSHI-608) - Add a way to synchronously execute calls against portal's virtual instance API's
+* [POSHI-615](https://liferay.atlassian.net/browse/POSHI-615) - Escape regex in new assertTextMatches method
+
+## 1.0.453
+
+### Core
+
+* [POSHI-562](https://liferay.atlassian.net/browse/POSHI-562) - Up PoshiContext timeout time when reading files
+
+### Other
+
+* [LPS-188134](https://liferay.atlassian.net/browse/LPS-188134) - Use of library with known vulnerability: Guava 30.1.1
+* [LPS-188912](https://liferay.atlassian.net/browse/LPS-188912) - New ant task format-source-change-copyrights
+
+### Runner
+
+* [POSHI-600](https://liferay.atlassian.net/browse/POSHI-600) - Isolate poshi error message from poshi & java stacktraces in junit result file or post parse error messages for testray
+* [POSHI-606](https://liferay.atlassian.net/browse/POSHI-606) - When tearDowns fail, they should throw a warning that should be added and denoted in testray
+
 ## 1.0.450
 
 ### Core

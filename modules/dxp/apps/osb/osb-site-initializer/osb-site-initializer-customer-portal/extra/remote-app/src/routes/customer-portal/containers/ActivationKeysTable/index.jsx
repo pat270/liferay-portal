@@ -12,6 +12,8 @@ import RoundedGroupButtons from '../../../../common/components/RoundedGroupButto
 import Table from '../../../../common/components/Table';
 import {useAppPropertiesContext} from '../../../../common/contexts/AppPropertiesContext';
 import {ALERT_DOWNLOAD_TYPE} from '../../utils/constants/alertDownloadType';
+import { getProperProductNames } from '../../utils/getProperProductNames';
+import {getLicenseKeyPermanentStatus} from '../GenerateNewKey/utils/licenseKeyPermanentStatus';
 import DownloadAlert from './components/DownloadAlert';
 import ActivationKeysTableHeader from './components/Header';
 import useFilters from './components/Header/hooks/useFilters';
@@ -36,7 +38,7 @@ const messageNewKeyGeneratedAlert = i18n.translate(
 );
 
 const messageNewKeyGeneratedAlertForComplimentary = i18n.translate(
-	'complimentary-key-was-generated-sucessfully'
+	'complimentary-key-was-generated-successfully'
 );
 
 const messageDeactivateKey = i18n.translate(
@@ -44,22 +46,25 @@ const messageDeactivateKey = i18n.translate(
 );
 
 const ActivationKeysTable = ({
-	infoSelectedKey,
+	hasComplimentaryKey,
 	initialFilter,
+	isRenewTable,
 	productName,
 	project,
 	sessionId,
+	setActivationKeysChecked,
+	setKeysSelectedCount,
+	setRenewKeysFilterChecked,
 }) => {
 	const {provisioningServerAPI} = useAppPropertiesContext();
 	const [isVisibleModal, setIsVisibleModal] = useState(false);
 	const [downloadStatus, setDownloadStatus] = useState('');
 	const {state} = useLocation();
-	const {setHasQuickLinksPanel, setHasSideMenu} = useOutletContext();
+	const {setHasSideMenu} = useOutletContext();
 
 	useEffect(() => {
-		setHasQuickLinksPanel(true);
 		setHasSideMenu(true);
-	}, [setHasSideMenu, setHasQuickLinksPanel]);
+	}, [setHasSideMenu]);
 
 	const [
 		newKeyGeneratedAlertStatus,
@@ -81,6 +86,8 @@ const ActivationKeysTable = ({
 		statusfilterByTitle: [statusFilter, setStatusFilter],
 	} = useStatusCountNavigation(activationKeys);
 
+	const [allActivationKeys, setAllActivationKeys] = useState([]);
+	const [hasRenewalSubscription, setHasRenewalSubscription] = useState('');
 	const [filters, setFilters] = useFilters(
 		setFilterTerm,
 		productName,
@@ -89,6 +96,8 @@ const ActivationKeysTable = ({
 
 	const {activationKeysByStatusPaginated, paginationConfig} = usePagination(
 		activationKeys,
+		isRenewTable,
+		setAllActivationKeys,
 		statusFilter
 	);
 
@@ -106,6 +115,42 @@ const ActivationKeysTable = ({
 			) || [],
 		[activationKeys, activationKeysIdChecked]
 	);
+
+	useEffect(() => {
+		const renewKeysSelected = () => {
+			if (isRenewTable) {
+				setActivationKeysChecked(
+					activationKeysByStatusPaginatedChecked
+				);
+
+				setKeysSelectedCount(activationKeysIdChecked?.length);
+			}
+		};
+		renewKeysSelected();
+	}, [
+		activationKeysByStatusPaginatedChecked,
+		activationKeysIdChecked?.length,
+		allActivationKeys,
+		isRenewTable,
+		setActivationKeysChecked,
+		setKeysSelectedCount,
+	]);
+
+	useEffect(() => {
+		const hasRenewSubscription = allActivationKeys.some(
+			(item) =>
+				!getLicenseKeyPermanentStatus(
+					item?.startDate,
+					item?.expirationDate
+				)
+		);
+
+		if (hasRenewSubscription) {
+			setHasRenewalSubscription(true);
+		} else {
+			setHasRenewalSubscription(false);
+		}
+	}, [allActivationKeys]);
 
 	const handleAlertStatus = useCallback((hasSuccessfullyDownloadedKeys) => {
 		setDownloadStatus(
@@ -179,14 +224,28 @@ const ActivationKeysTable = ({
 				<div>
 					<div className="align-center cp-activation-key-container d-flex justify-content-between mb-2">
 						<h3 className="m-0">
-							{i18n.translate('activation-keys')}
+							{isRenewTable
+								? i18n.sub('renew-x-activation-key', getProperProductNames(productName))
+								: i18n.translate('activation-keys')}
 						</h3>
 
-						<RoundedGroupButtons
-							groupButtons={navigationGroupButtons}
-							handleOnChange={(value) => setStatusFilter(value)}
-						/>
+						{!isRenewTable && (
+							<RoundedGroupButtons
+								groupButtons={navigationGroupButtons}
+								handleOnChange={(value) =>
+									setStatusFilter(value)
+								}
+							/>
+						)}
 					</div>
+
+					{isRenewTable && (
+						<h6 className="text-neutral-6">
+							{i18n.translate(
+								'select-the-activation-key-you-wish-to-renew'
+							)}
+						</h6>
+					)}
 
 					<div className="mt-4 py-2">
 						<ActivationKeysTableHeader
@@ -198,10 +257,15 @@ const ActivationKeysTable = ({
 								setActivationKeys,
 							]}
 							filterState={[filters, setFilters]}
+							hasRenewalSubscription={hasRenewalSubscription}
+							isRenewTable={isRenewTable}
 							loading={loading}
 							productName={productName}
 							project={project}
 							sessionId={sessionId}
+							setRenewKeysFilterChecked={
+								setRenewKeysFilterChecked
+							}
 						/>
 					</div>
 
@@ -251,7 +315,7 @@ const ActivationKeysTable = ({
 				<DownloadAlert
 					downloadStatus={newKeyGeneratedAlertStatus}
 					message={
-						infoSelectedKey?.selectedSubscription.complimentary
+						!hasComplimentaryKey
 							? messageNewKeyGeneratedAlert
 							: messageNewKeyGeneratedAlertForComplimentary
 					}

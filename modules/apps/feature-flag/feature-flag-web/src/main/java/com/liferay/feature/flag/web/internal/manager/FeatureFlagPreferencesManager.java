@@ -5,7 +5,7 @@
 
 package com.liferay.feature.flag.web.internal.manager;
 
-import com.liferay.feature.flag.web.internal.constants.FeatureFlagConstants;
+import com.liferay.portal.kernel.feature.flag.constants.FeatureFlagConstants;
 import com.liferay.portal.kernel.portlet.PortalPreferences;
 import com.liferay.portal.kernel.service.PortalPreferencesLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -24,8 +24,8 @@ public class FeatureFlagPreferencesManager {
 
 	public Boolean isEnabled(long companyId, String key) {
 		if (Validator.isNull(
-				_portalPreferencesLocalService.fetchPortalPreferences(
-					companyId, PortletKeys.PREFS_OWNER_TYPE_COMPANY))) {
+				_portalPreferencesLocalService.fetchCompanyPortalPreferences(
+					companyId))) {
 
 			return null;
 		}

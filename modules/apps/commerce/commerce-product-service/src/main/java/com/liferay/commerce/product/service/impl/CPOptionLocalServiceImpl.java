@@ -15,12 +15,13 @@ import com.liferay.commerce.product.service.CPOptionValueLocalService;
 import com.liferay.commerce.product.service.base.CPOptionLocalServiceBaseImpl;
 import com.liferay.expando.kernel.service.ExpandoRowLocalService;
 import com.liferay.portal.aop.AopService;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.search.BaseModelSearchResult;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
@@ -52,6 +53,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -71,11 +73,11 @@ public class CPOptionLocalServiceImpl extends CPOptionLocalServiceBaseImpl {
 	public CPOption addCPOption(
 			String externalReferenceCode, long userId,
 			Map<Locale, String> nameMap, Map<Locale, String> descriptionMap,
-			String ddmFormFieldTypeName, boolean facetable, boolean required,
+			String commerceOptionTypeKey, boolean facetable, boolean required,
 			boolean skuContributor, String key, ServiceContext serviceContext)
 		throws PortalException {
 
-		_validateDDMFormFieldTypeName(ddmFormFieldTypeName, skuContributor);
+		_validateCommerceOptionTypeKey(commerceOptionTypeKey, skuContributor);
 
 		User user = _userLocalService.getUser(userId);
 
@@ -97,7 +99,7 @@ public class CPOptionLocalServiceImpl extends CPOptionLocalServiceBaseImpl {
 		cpOption.setUserName(user.getFullName());
 		cpOption.setNameMap(nameMap);
 		cpOption.setDescriptionMap(descriptionMap);
-		cpOption.setDDMFormFieldTypeName(ddmFormFieldTypeName);
+		cpOption.setCommerceOptionTypeKey(commerceOptionTypeKey);
 		cpOption.setFacetable(facetable);
 		cpOption.setRequired(required);
 		cpOption.setSkuContributor(skuContributor);
@@ -117,7 +119,7 @@ public class CPOptionLocalServiceImpl extends CPOptionLocalServiceBaseImpl {
 	public CPOption addOrUpdateCPOption(
 			String externalReferenceCode, long userId,
 			Map<Locale, String> nameMap, Map<Locale, String> descriptionMap,
-			String ddmFormFieldTypeName, boolean facetable, boolean required,
+			String commerceOptionTypeKey, boolean facetable, boolean required,
 			boolean skuContributor, String key, ServiceContext serviceContext)
 		throws PortalException {
 
@@ -131,14 +133,14 @@ public class CPOptionLocalServiceImpl extends CPOptionLocalServiceBaseImpl {
 			if (cpOption != null) {
 				return updateCPOption(
 					cpOption.getCPOptionId(), nameMap, descriptionMap,
-					ddmFormFieldTypeName, facetable, required, skuContributor,
+					commerceOptionTypeKey, facetable, required, skuContributor,
 					key, serviceContext);
 			}
 		}
 
 		return addCPOption(
 			externalReferenceCode, userId, nameMap, descriptionMap,
-			ddmFormFieldTypeName, facetable, required, skuContributor, key,
+			commerceOptionTypeKey, facetable, required, skuContributor, key,
 			serviceContext);
 	}
 
@@ -238,12 +240,12 @@ public class CPOptionLocalServiceImpl extends CPOptionLocalServiceBaseImpl {
 	@Override
 	public CPOption updateCPOption(
 			long cpOptionId, Map<Locale, String> nameMap,
-			Map<Locale, String> descriptionMap, String ddmFormFieldTypeName,
+			Map<Locale, String> descriptionMap, String commerceOptionTypeKey,
 			boolean facetable, boolean required, boolean skuContributor,
 			String key, ServiceContext serviceContext)
 		throws PortalException {
 
-		_validateDDMFormFieldTypeName(ddmFormFieldTypeName, skuContributor);
+		_validateCommerceOptionTypeKey(commerceOptionTypeKey, skuContributor);
 
 		CPOption cpOption = cpOptionPersistence.findByPrimaryKey(cpOptionId);
 
@@ -254,7 +256,7 @@ public class CPOptionLocalServiceImpl extends CPOptionLocalServiceBaseImpl {
 
 		cpOption.setNameMap(nameMap);
 		cpOption.setDescriptionMap(descriptionMap);
-		cpOption.setDDMFormFieldTypeName(ddmFormFieldTypeName);
+		cpOption.setCommerceOptionTypeKey(commerceOptionTypeKey);
 		cpOption.setFacetable(facetable);
 		cpOption.setRequired(required);
 		cpOption.setSkuContributor(skuContributor);
@@ -379,6 +381,42 @@ public class CPOptionLocalServiceImpl extends CPOptionLocalServiceBaseImpl {
 			"Unable to fix the search index after 10 attempts");
 	}
 
+	private void _validateCommerceOptionTypeKey(
+			String commerceOptionTypeKey, boolean skuContributor)
+		throws PortalException {
+
+		if (Validator.isNull(commerceOptionTypeKey)) {
+			throw new CPOptionSKUContributorException();
+		}
+
+		CPOptionConfiguration cpOptionConfiguration =
+			_getCPOptionConfiguration();
+
+		String[] allowedCommerceOptionTypes =
+			cpOptionConfiguration.allowedCommerceOptionTypes();
+
+		if (skuContributor) {
+			allowedCommerceOptionTypes =
+				CPConstants.PRODUCT_OPTION_SKU_CONTRIBUTOR_FIELD_TYPES;
+		}
+
+		allowedCommerceOptionTypes = ArrayUtil.filter(
+			allowedCommerceOptionTypes,
+			commerceOptionType ->
+				!Objects.equals(
+					CPConstants.PRODUCT_OPTION_SELECT_DATE_KEY,
+					commerceOptionType) ||
+				FeatureFlagManagerUtil.isEnabled("LPD-10887"));
+
+		if (ArrayUtil.contains(
+				allowedCommerceOptionTypes, commerceOptionTypeKey)) {
+
+			return;
+		}
+
+		throw new CPOptionSKUContributorException();
+	}
+
 	private void _validateCPOptionKey(
 			long cpOptionId, long companyId, String key)
 		throws PortalException {
@@ -388,34 +426,6 @@ public class CPOptionLocalServiceImpl extends CPOptionLocalServiceBaseImpl {
 		if ((cpOption != null) && (cpOption.getCPOptionId() != cpOptionId)) {
 			throw new CPOptionKeyException();
 		}
-	}
-
-	private void _validateDDMFormFieldTypeName(
-			String ddmFormFieldTypeName, boolean skuContributor)
-		throws PortalException {
-
-		if (Validator.isNull(ddmFormFieldTypeName)) {
-			throw new CPOptionSKUContributorException();
-		}
-
-		CPOptionConfiguration cpOptionConfiguration =
-			_getCPOptionConfiguration();
-
-		String[] ddmFormFieldTypesAllowed =
-			cpOptionConfiguration.ddmFormFieldTypesAllowed();
-
-		if (skuContributor) {
-			ddmFormFieldTypesAllowed =
-				CPConstants.PRODUCT_OPTION_SKU_CONTRIBUTOR_FIELD_TYPES;
-		}
-
-		if (ArrayUtil.contains(
-				ddmFormFieldTypesAllowed, ddmFormFieldTypeName)) {
-
-			return;
-		}
-
-		throw new CPOptionSKUContributorException();
 	}
 
 	private static final String[] _SELECTED_FIELD_NAMES = {

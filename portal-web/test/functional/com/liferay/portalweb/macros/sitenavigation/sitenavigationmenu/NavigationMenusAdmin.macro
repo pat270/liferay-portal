@@ -1,6 +1,7 @@
 definition {
 
-	macro _addItemPage {
+	@summary = "Default summary"
+	macro _addItemPage(pageNameList = null, privacy = null) {
 		if (isSet(privacy)) {
 			Click.clickAt(locator1 = "//div[contains(@class,'container-fluid-max-xl')]/button[contains(@class,'navbar-toggler')][@aria-expanded='false']");
 
@@ -16,11 +17,13 @@ definition {
 		}
 	}
 
-	macro _addItemSubmenu {
+	@summary = "Default summary"
+	macro _addItemSubmenu(submenuName = null) {
 		PortletEntry.inputName(name = ${submenuName});
 	}
 
-	macro _addItemURL {
+	@summary = "Default summary"
+	macro _addItemURL(urlName = null, url = null, target = null) {
 		PortletEntry.inputName(name = ${urlName});
 
 		Type(
@@ -39,7 +42,8 @@ definition {
 		}
 	}
 
-	macro _editItemPage {
+	@summary = "Default summary"
+	macro _editItemPage(name = null) {
 		Check.checkToggleSwitch(locator1 = "SiteNavigationMenu#USE_CUSTOM_NAME_CHECKBOX");
 
 		if (isSet(name)) {
@@ -49,7 +53,8 @@ definition {
 		}
 	}
 
-	macro _editItemSubmenu {
+	@summary = "Default summary"
+	macro _editItemSubmenu(name = null) {
 		if (isSet(name)) {
 			Type(
 				locator1 = "TextInput#NAME",
@@ -57,7 +62,8 @@ definition {
 		}
 	}
 
-	macro _editItemURL {
+	@summary = "Default summary"
+	macro _editItemURL(name = null, url = null) {
 		if (isSet(name)) {
 			Type(
 				locator1 = "TextInput#NAME",
@@ -70,7 +76,8 @@ definition {
 		}
 	}
 
-	macro addChildItem {
+	@summary = "Default summary"
+	macro addChildItem(pageNameList = null, itemName = null, item = null, depotName = null, urlName = null, assetTitleList = null, submenuName = null, privacy = null, url = null, target = null) {
 		MouseOver(
 			key_itemName = ${itemName},
 			locator1 = "SiteNavigationMenu#ITEM_ENTRY");
@@ -105,12 +112,14 @@ definition {
 			WaitForElementPresent(locator1 = "Icon#CURRENT_DISPLAY_STYLE");
 
 			if (IsElementPresent(key_displayStyle = "list", locator1 = "Icon#CURRENT_DISPLAY_STYLE_ACTIVE")) {
-				Click(
+				ClickNoError(
 					key_listEntry = ${assetTitle},
 					locator1 = "LexiconList#LIST_ENTRY_TITLE");
 			}
 			else {
-				LexiconCard.clickCard(card = ${assetTitle});
+				ClickNoError(
+					key_card = ${assetTitle},
+					locator1 = "Card#CARD");
 			}
 		}
 
@@ -181,7 +190,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro addItem {
+	@summary = "Default summary"
+	macro addItem(pageNameList = null, item = null, depotName = null, urlName = null, assetTitleList = null, submenuName = null, privacy = null, url = null, target = null) {
 		WaitForLiferayEvent.initializeLiferayEventLog();
 
 		Button.clickAdd();
@@ -212,12 +222,14 @@ definition {
 			WaitForElementPresent(locator1 = "Icon#CURRENT_DISPLAY_STYLE");
 
 			if (IsElementPresent(key_displayStyle = "list", locator1 = "Icon#CURRENT_DISPLAY_STYLE_ACTIVE")) {
-				Click(
+				ClickNoError(
 					key_listEntry = ${assetTitle},
 					locator1 = "LexiconList#LIST_ENTRY_TITLE");
 			}
 			else {
-				LexiconCard.clickCard(card = ${assetTitle});
+				ClickNoError(
+					key_card = ${assetTitle},
+					locator1 = "Card#CARD");
 			}
 		}
 
@@ -288,7 +300,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro addMenu {
+	@summary = "Default summary"
+	macro addMenu(menuName = null) {
 		LexiconEntry.gotoAdd();
 
 		PortletEntry.inputName(name = ${menuName});
@@ -296,7 +309,8 @@ definition {
 		Modal.save();
 	}
 
-	macro addSiblingItem {
+	@summary = "Default summary"
+	macro addSiblingItem(pageNameList = null, item = null, depotName = null, urlName = null, privacy = null, url = null, target = null, itemName = null, assetTitleList = null, submenuName = null, relationship = null) {
 		MouseOver(
 			key_itemName = ${itemName},
 			locator1 = "SiteNavigationMenu#ITEM_ENTRY");
@@ -332,12 +346,14 @@ definition {
 			WaitForElementPresent(locator1 = "Icon#CURRENT_DISPLAY_STYLE");
 
 			if (IsElementPresent(key_displayStyle = "list", locator1 = "Icon#CURRENT_DISPLAY_STYLE_ACTIVE")) {
-				Click(
+				ClickNoError(
 					key_listEntry = ${assetTitle},
 					locator1 = "LexiconList#LIST_ENTRY_TITLE");
 			}
 			else {
-				LexiconCard.clickCard(card = ${assetTitle});
+				ClickNoError(
+					key_card = ${assetTitle},
+					locator1 = "Card#CARD");
 			}
 		}
 
@@ -408,10 +424,11 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro addTranslation {
+	@summary = "Default summary"
+	macro addTranslation(itemName = null, item = null, translation = null, locale = null) {
 		NavigationMenusAdmin.openItemSidebar(itemName = ${itemName});
 
-		if (IsElementPresent(locator1 = "SiteNavigationMenu#USE_CUSTOM_NAME_CHECKBOX")) {
+		if ((${item} != "Submenu") && (${item} != "URL")) {
 			Check.checkToggleSwitch(locator1 = "SiteNavigationMenu#USE_CUSTOM_NAME_CHECKBOX");
 		}
 
@@ -424,14 +441,16 @@ definition {
 		Button.clickSave();
 	}
 
-	macro changeDisplayTemplate {
+	@summary = "Default summary"
+	macro changeDisplayTemplate(displayTemplate = null) {
 		Select(
 			key_fieldLabel = "Display Template",
 			locator1 = "Select#GENERIC_SELECT_FIELD",
 			value1 = ${displayTemplate});
 	}
 
-	macro configureMenuType {
+	@summary = "Default summary"
+	macro configureMenuType(menuType = null, navigationMenu = null, oldPrimaryNavigationMenu = null) {
 		if (${menuType} == "Primary Navigation") {
 			LexiconEntry.gotoEntryMenuItemNoError(
 				menuItem = ${menuType},
@@ -453,7 +472,8 @@ definition {
 			locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_TEXT");
 	}
 
-	macro deleteAllCP {
+	@summary = "Default summary"
+	macro deleteAllCP() {
 		PortletEntry.selectAll();
 
 		Click(
@@ -471,7 +491,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro deleteCP {
+	@summary = "Default summary"
+	macro deleteCP(navigationMenuName = null) {
 		LexiconEntry.gotoEntryMenuItem(
 			menuItem = "Delete",
 			rowEntry = ${navigationMenuName});
@@ -487,7 +508,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro deleteItem {
+	@summary = "Default summary"
+	macro deleteItem(itemName = null, actionName = null) {
 		MouseOver.mouseOverNotVisible(
 			key_card = ${itemName},
 			locator1 = "Card#CARD_ELLIPSIS");
@@ -513,7 +535,8 @@ definition {
 		}
 	}
 
-	macro editItem {
+	@summary = "Default summary"
+	macro editItem(itemName = null, item = null, submenuName = null, name = null, assetTitle = null, showWarningMessage = null, warningMessage = null, customName = null, pageName = null, fieldValue = null, url = null, customField = null) {
 		NavigationMenusAdmin.openItemSidebar(itemName = ${itemName});
 
 		if (isSet(useCustomName)) {
@@ -603,13 +626,15 @@ definition {
 		}
 	}
 
-	macro editMenu {
+	@summary = "Default summary"
+	macro editMenu(navigationMenuName = null) {
 		LexiconEntry.gotoEntryMenuItem(
 			menuItem = "Edit",
 			rowEntry = ${navigationMenuName});
 	}
 
-	macro markAsPrimaryNavigation {
+	@summary = "Default summary"
+	macro markAsPrimaryNavigation(newMenuName = null, oldMenuName = null) {
 		LexiconEntry.gotoEntryMenuItemNoError(
 			menuItem = "Primary Navigation",
 			rowEntry = ${newMenuName});
@@ -617,7 +642,8 @@ definition {
 		AssertConfirm(value1 = "Do you want to replace ${newMenuName} for ${oldMenuName} as primary navigation? This action will affect all the pages using primary navigation.");
 	}
 
-	macro openItemSidebar {
+	@summary = "Default summary"
+	macro openItemSidebar(itemName = null) {
 		Click(
 			key_itemName = ${itemName},
 			locator1 = "SiteNavigationMenu#ITEM_ENTRY");
@@ -630,27 +656,30 @@ definition {
 			value1 = ${itemName});
 	}
 
-	macro openNavigationMenusAdmin {
+	@summary = "Default summary"
+	macro openNavigationMenusAdmin(siteURLKey = null) {
 		Navigator.openWithAppendToBaseURL(urlAppend = "group/${siteURLKey}/~/control_panel/manage?p_p_id=com_liferay_site_navigation_admin_web_portlet_SiteNavigationAdminPortlet");
 	}
 
-	macro openPreviewMenu {
+	@summary = "Default summary"
+	macro openPreviewMenu() {
 		WaitForLiferayEvent.initializeLiferayEventLog();
 
 		Button.click(button = "Preview");
 	}
 
-	macro toggleAutomaticallyAddNewPagesToMenu {
+	@summary = "Default summary"
+	macro toggleAutomaticallyAddNewPagesToMenu(toggleValue = null) {
 		Click(locator1 = "SiteNavigationMenu#SIDEBAR_COG");
 
 		if (${toggleValue} == "enable") {
-			Check(
-				checkboxName = "When creating a new page, the page will be automatically added to this menu unless the user deselects it.",
+			Check.checkNotVisible(
+				checkboxName = "When creating a new page, display an option to add it to this navigation menu.",
 				locator1 = "Checkbox#ANY_CHECKBOX");
 		}
 		else if (${toggleValue} == "disable") {
-			Uncheck(
-				checkboxName = "When creating a new page, the page will be automatically added to this menu unless the user deselects it.",
+			Uncheck.uncheckNotVisible(
+				checkboxName = "When creating a new page, display an option to add it to this navigation menu.",
 				locator1 = "Checkbox#ANY_CHECKBOX");
 		}
 		else {
@@ -660,20 +689,23 @@ definition {
 		Button.clickSave();
 	}
 
-	macro viewDisplayTemplate {
+	@summary = "Default summary"
+	macro viewDisplayTemplate(displayTemplate = null) {
 		AssertSelectedLabel(
 			key_fieldLabel = "Display Template",
 			locator1 = "Select#GENERIC_SELECT_FIELD",
 			value1 = ${displayTemplate});
 	}
 
-	macro viewItem {
+	@summary = "Default summary"
+	macro viewItem(itemName = null) {
 		AssertElementPresent(
 			key_itemName = ${itemName},
 			locator1 = "SiteNavigationMenu#ITEM_ENTRY");
 	}
 
-	macro viewItemNested {
+	@summary = "Default summary"
+	macro viewItemNested(groupName = null, site = null, parentItemNameList = null, siteNavigationMenuName = null, itemNameList = null) {
 		var list1 = ListUtil.newListFromString(${itemNameList});
 		var list2 = ListUtil.newListFromString(${parentItemNameList});
 		var size = ListUtil.size(${list1});
@@ -700,7 +732,8 @@ definition {
 		}
 	}
 
-	macro viewItemNotNested {
+	@summary = "Default summary"
+	macro viewItemNotNested(itemNameList = null) {
 		for (var itemName : list ${itemNameList}) {
 			AssertElementPresent(
 				key_itemName = ${itemName},
@@ -709,7 +742,8 @@ definition {
 		}
 	}
 
-	macro viewItemNotPresent {
+	@summary = "Default summary"
+	macro viewItemNotPresent(itemNameList = null) {
 		for (var itemName : list ${itemNameList}) {
 			AssertElementNotPresent(
 				key_itemName = ${itemName},
@@ -717,14 +751,16 @@ definition {
 		}
 	}
 
-	macro viewItemOrder {
+	@summary = "Default summary"
+	macro viewItemOrder(itemName = null, index = null) {
 		AssertTextEquals.assertPartialText(
 			key_index = ${index},
 			locator1 = "SiteNavigationMenu#ITEM_ENTRY_N",
 			value1 = ${itemName});
 	}
 
-	macro viewItemStatus {
+	@summary = "Default summary"
+	macro viewItemStatus(itemName = null, itemStatus = null) {
 		if (!(isSet(index))) {
 			var index = 1;
 		}
@@ -736,21 +772,24 @@ definition {
 			value1 = ${itemStatus});
 	}
 
-	macro viewItemWarningIcon {
+	@summary = "Default summary"
+	macro viewItemWarningIcon(itemName = null) {
 		AssertVisible(
 			key_card = ${itemName},
 			key_icon = "warning",
 			locator1 = "Card#CARD_STICKER");
 	}
 
-	macro viewItemWarningIconNotPresent {
+	@summary = "Default summary"
+	macro viewItemWarningIconNotPresent(itemName = null) {
 		AssertElementNotPresent(
 			key_card = ${itemName},
 			key_icon = "warning",
 			locator1 = "Card#CARD_STICKER");
 	}
 
-	macro viewItemWarningMessage {
+	@summary = "Default summary"
+	macro viewItemWarningMessage(itemName = null, warningMessage = null) {
 		if (isSet(itemName)) {
 			NavigationMenusAdmin.openItemSidebar(itemName = ${itemName});
 		}
@@ -775,7 +814,8 @@ definition {
 		}
 	}
 
-	macro viewItemWarningMessageNotPresent {
+	@summary = "Default summary"
+	macro viewItemWarningMessageNotPresent(itemName = null) {
 		if (isSet(itemName)) {
 			NavigationMenusAdmin.openItemSidebar(itemName = ${itemName});
 		}
@@ -789,11 +829,13 @@ definition {
 			value1 = "This item does not have a display page. Items without display page do not have links and are hidden from menus.");
 	}
 
-	macro viewMenuTitle {
+	@summary = "Default summary"
+	macro viewMenuTitle(navigationMenu = null) {
 		LexiconTable.viewTableEntryTitle(tableEntry = ${navigationMenu});
 	}
 
-	macro viewMenuType {
+	@summary = "Default summary"
+	macro viewMenuType(rowEntry = null, menuType = null) {
 		AssertTextEquals(
 			key_markedAs = ${menuType},
 			key_rowEntry = ${rowEntry},

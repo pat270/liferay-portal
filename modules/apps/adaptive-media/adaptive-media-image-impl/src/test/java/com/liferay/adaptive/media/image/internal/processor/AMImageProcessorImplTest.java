@@ -17,8 +17,6 @@ import com.liferay.adaptive.media.image.scaler.AMImageScalerRegistry;
 import com.liferay.adaptive.media.image.service.AMImageEntryLocalService;
 import com.liferay.adaptive.media.image.validator.AMImageValidator;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.image.ImageTool;
-import com.liferay.portal.kernel.image.ImageToolUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
@@ -50,20 +48,16 @@ public class AMImageProcessorImplTest {
 	@Before
 	public void setUp() {
 		ReflectionTestUtil.setFieldValue(
-			_amImageProcessorImpl, "_amImageConfigurationHelper",
+			_amImageAMProcessor, "_amImageConfigurationHelper",
 			_amImageConfigurationHelper);
 		ReflectionTestUtil.setFieldValue(
-			_amImageProcessorImpl, "_amImageEntryLocalService",
+			_amImageAMProcessor, "_amImageEntryLocalService",
 			_amImageEntryLocalService);
 		ReflectionTestUtil.setFieldValue(
-			_amImageProcessorImpl, "_amImageScalerRegistry",
+			_amImageAMProcessor, "_amImageScalerRegistry",
 			_amImageScalerRegistry);
 		ReflectionTestUtil.setFieldValue(
-			_amImageProcessorImpl, "_amImageValidator", _amImageValidator);
-
-		ImageToolUtil imageToolUtil = new ImageToolUtil();
-
-		imageToolUtil.setImageTool(_imageTool);
+			_amImageAMProcessor, "_amImageValidator", _amImageValidator);
 	}
 
 	@Test
@@ -74,7 +68,7 @@ public class AMImageProcessorImplTest {
 			true
 		);
 
-		_amImageProcessorImpl.cleanUp(_fileVersion);
+		_amImageAMProcessor.cleanUp(_fileVersion);
 
 		Mockito.verify(
 			_amImageEntryLocalService
@@ -99,7 +93,7 @@ public class AMImageProcessorImplTest {
 			Mockito.any(FileVersion.class)
 		);
 
-		_amImageProcessorImpl.cleanUp(_fileVersion);
+		_amImageAMProcessor.cleanUp(_fileVersion);
 	}
 
 	@Test(expected = PortalException.class)
@@ -118,7 +112,7 @@ public class AMImageProcessorImplTest {
 			Mockito.any(FileVersion.class)
 		);
 
-		_amImageProcessorImpl.cleanUp(_fileVersion);
+		_amImageAMProcessor.cleanUp(_fileVersion);
 	}
 
 	@Test
@@ -129,7 +123,7 @@ public class AMImageProcessorImplTest {
 			false
 		);
 
-		_amImageProcessorImpl.cleanUp(_fileVersion);
+		_amImageAMProcessor.cleanUp(_fileVersion);
 
 		Mockito.verify(
 			_amImageEntryLocalService, Mockito.never()
@@ -194,7 +188,7 @@ public class AMImageProcessorImplTest {
 			false
 		);
 
-		_amImageProcessorImpl.process(
+		_amImageAMProcessor.process(
 			_fileVersion, RandomTestUtil.randomString());
 
 		Mockito.verify(
@@ -276,7 +270,7 @@ public class AMImageProcessorImplTest {
 			new AMImageScaledImageImpl(new byte[100], 100, null, 100)
 		);
 
-		_amImageProcessorImpl.process(
+		_amImageAMProcessor.process(
 			_fileVersion, RandomTestUtil.randomString());
 
 		Mockito.verify(
@@ -346,7 +340,7 @@ public class AMImageProcessorImplTest {
 			new AMImageScaledImageImpl(new byte[100], 100, null, 100)
 		);
 
-		_amImageProcessorImpl.process(
+		_amImageAMProcessor.process(
 			_fileVersion, RandomTestUtil.randomString());
 
 		Mockito.verify(
@@ -399,7 +393,7 @@ public class AMImageProcessorImplTest {
 			null
 		);
 
-		_amImageProcessorImpl.process(
+		_amImageAMProcessor.process(
 			_fileVersion, RandomTestUtil.randomString());
 
 		Mockito.verify(
@@ -428,7 +422,7 @@ public class AMImageProcessorImplTest {
 			null
 		);
 
-		_amImageProcessorImpl.process(
+		_amImageAMProcessor.process(
 			_fileVersion, RandomTestUtil.randomString());
 
 		Mockito.verify(
@@ -447,7 +441,7 @@ public class AMImageProcessorImplTest {
 			false
 		);
 
-		_amImageProcessorImpl.process(
+		_amImageAMProcessor.process(
 			_fileVersion, RandomTestUtil.randomString());
 
 		Mockito.verify(
@@ -509,7 +503,7 @@ public class AMImageProcessorImplTest {
 			Mockito.any(InputStream.class), Mockito.eq(100L)
 		);
 
-		_amImageProcessorImpl.process(_fileVersion);
+		_amImageAMProcessor.process(_fileVersion);
 	}
 
 	@Test
@@ -552,7 +546,7 @@ public class AMImageProcessorImplTest {
 			new AMImageScaledImageImpl(new byte[100], 150, null, 200)
 		);
 
-		_amImageProcessorImpl.process(_fileVersion);
+		_amImageAMProcessor.process(_fileVersion);
 
 		Mockito.verify(
 			_amImageScaler
@@ -585,7 +579,7 @@ public class AMImageProcessorImplTest {
 			Mockito.anyLong()
 		);
 
-		_amImageProcessorImpl.process(_fileVersion);
+		_amImageAMProcessor.process(_fileVersion);
 	}
 
 	@Test(expected = AMRuntimeException.IOException.class)
@@ -630,7 +624,7 @@ public class AMImageProcessorImplTest {
 			_fileVersion, amImageConfigurationEntry
 		);
 
-		_amImageProcessorImpl.process(_fileVersion);
+		_amImageAMProcessor.process(_fileVersion);
 	}
 
 	@Test(expected = AMRuntimeException.IOException.class)
@@ -683,7 +677,7 @@ public class AMImageProcessorImplTest {
 			Mockito.any(InputStream.class), Mockito.eq(100L)
 		);
 
-		_amImageProcessorImpl.process(_fileVersion);
+		_amImageAMProcessor.process(_fileVersion);
 	}
 
 	@Test
@@ -702,7 +696,7 @@ public class AMImageProcessorImplTest {
 			Collections.emptyList()
 		);
 
-		_amImageProcessorImpl.process(_fileVersion);
+		_amImageAMProcessor.process(_fileVersion);
 
 		Mockito.verify(
 			_amImageScaler, Mockito.never()
@@ -729,7 +723,7 @@ public class AMImageProcessorImplTest {
 			false
 		);
 
-		_amImageProcessorImpl.process(_fileVersion);
+		_amImageAMProcessor.process(_fileVersion);
 
 		Mockito.verify(
 			_amImageConfigurationHelper, Mockito.never()
@@ -738,13 +732,13 @@ public class AMImageProcessorImplTest {
 		);
 	}
 
+	private final AMImageAMProcessor _amImageAMProcessor =
+		new AMImageAMProcessor();
 	private final AMImageConfigurationHelper _amImageConfigurationHelper =
 		Mockito.mock(AMImageConfigurationHelper.class);
 	private final AMImageEntry _amImageEntry = Mockito.mock(AMImageEntry.class);
 	private final AMImageEntryLocalService _amImageEntryLocalService =
 		Mockito.mock(AMImageEntryLocalService.class);
-	private final AMImageProcessorImpl _amImageProcessorImpl =
-		new AMImageProcessorImpl();
 	private final AMImageScaler _amImageScaler = Mockito.mock(
 		AMImageScaler.class);
 	private final AMImageScalerRegistry _amImageScalerRegistry = Mockito.mock(
@@ -753,6 +747,5 @@ public class AMImageProcessorImplTest {
 		AMImageValidator.class);
 	private final FileEntry _fileEntry = Mockito.mock(FileEntry.class);
 	private final FileVersion _fileVersion = Mockito.mock(FileVersion.class);
-	private final ImageTool _imageTool = Mockito.mock(ImageTool.class);
 
 }

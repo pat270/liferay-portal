@@ -1,10 +1,12 @@
 Bundle-Name: Liferay Dynamic Data Mapping Data Provider Implementation
 Bundle-SymbolicName: com.liferay.dynamic.data.mapping.data.provider.impl
-Bundle-Version: 5.0.29
+Bundle-Version: 5.0.35
 Import-Package:\
 	!com.fasterxml.jackson.*,\
 	\
 	!com.google.gson.*,\
+	\
+	!jakarta.json.*,\
 	\
 	!org.apache.commons.digester.*,\
 	!org.apache.commons.jexl2.*,\
@@ -12,6 +14,8 @@ Import-Package:\
 	!org.apache.commons.vfs2.*,\
 	!org.apache.tapestry5.json.*,\
 	!org.apache.xml.resolver.*,\
+	\
+	!org.codehaus.jettison.*,\
 	\
 	*
 Web-ContextPath: /dynamic-data-mapping-data-provider-impl

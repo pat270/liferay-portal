@@ -1,8 +1,8 @@
 task runGradleTest
 
 gradle.liferayWorkspace {
-	bundleUrl = "file:src/gradleTest/relativeUrl/bundle.zip"
-	product = "portal-7.4-ga8"
+	bundleUrl = "file:bundle.zip"
+	product = "dxp-2023.q4.6"
 }
 
 runGradleTest {

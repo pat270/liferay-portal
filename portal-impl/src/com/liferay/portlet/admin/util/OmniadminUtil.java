@@ -5,14 +5,16 @@
 
 package com.liferay.portlet.admin.util;
 
+import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.instance.PortalInstancePool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.role.RoleConstants;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
-import com.liferay.portal.util.PortalInstances;
 import com.liferay.portal.util.PropsValues;
 
 /**
@@ -63,7 +65,7 @@ public class OmniadminUtil {
 				for (int i = 0; i < PropsValues.OMNIADMIN_USERS.length; i++) {
 					if (PropsValues.OMNIADMIN_USERS[i] == user.getUserId()) {
 						if (user.getCompanyId() !=
-								PortalInstances.getDefaultCompanyId()) {
+								PortalInstancePool.getDefaultCompanyId()) {
 
 							return false;
 						}
@@ -77,14 +79,19 @@ public class OmniadminUtil {
 
 			if (user.isGuestUser() ||
 				(user.getCompanyId() !=
-					PortalInstances.getDefaultCompanyId())) {
+					PortalInstancePool.getDefaultCompanyId())) {
 
 				return false;
 			}
 
-			return RoleLocalServiceUtil.hasUserRole(
-				user.getUserId(), user.getCompanyId(),
-				RoleConstants.ADMINISTRATOR, true);
+			try (SafeCloseable safeCloseable =
+					CompanyThreadLocal.setWithSafeCloseable(
+						PortalInstancePool.getDefaultCompanyId())) {
+
+				return RoleLocalServiceUtil.hasUserRole(
+					user.getUserId(), user.getCompanyId(),
+					RoleConstants.ADMINISTRATOR, true);
+			}
 		}
 		catch (Exception exception) {
 			_log.error("Unable to check if a user is an omniadmin", exception);

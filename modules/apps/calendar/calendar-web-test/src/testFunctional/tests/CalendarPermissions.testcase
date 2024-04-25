@@ -1,7 +1,7 @@
 @component-name = "portal-calendar"
 definition {
 
-	property custom.properties = "default.layout.template.id=1_column${line.separator}company.default.time.zone=America/Los_Angeles";
+	property custom.properties = "company.default.time.zone=America/Los_Angeles${line.separator}default.layout.template.id=1_column";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Calendar";
@@ -85,7 +85,7 @@ definition {
 
 		AssertTextEquals(
 			locator1 = "Search#SEARCH_INFO",
-			value1 = "1 Result for \"Guest\"");
+			value1 = "1 Result Found for \"Guest\"");
 
 		Click(locator1 = "TextInput#SEARCH");
 
@@ -100,7 +100,7 @@ definition {
 
 		AssertTextEquals(
 			locator1 = "Search#SEARCH_INFO",
-			value1 = "0 Results for \"DXP Client\"");
+			value1 = "0 Results Found for \"DXP Client\"");
 
 		Click(locator1 = "TextInput#SEARCH");
 
@@ -118,7 +118,7 @@ definition {
 
 		AssertTextEquals(
 			locator1 = "CalendarPermissions#PERMISSIONS_RESULTS_BAR",
-			value1 = "0 Results for \"DXP Client\"");
+			value1 = "0 Results Found for \"DXP Client\"");
 
 		AssertTextEquals(
 			locator1 = "CalendarPermissions#NO_ROLES_WERE_FOUND",

@@ -7,6 +7,7 @@ package com.liferay.portal.search.elasticsearch7.internal;
 
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.CharPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
@@ -18,20 +19,21 @@ import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.generic.MatchAllQuery;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
-import com.liferay.portal.kernel.test.util.PropsTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.search.elasticsearch7.configuration.DeepPaginationConfiguration;
 import com.liferay.portal.search.elasticsearch7.internal.connection.ElasticsearchConnectionFixture;
 import com.liferay.portal.search.elasticsearch7.internal.connection.ElasticsearchFixture;
-import com.liferay.portal.search.elasticsearch7.internal.deep.pagination.configuration.DeepPaginationConfigurationWrapper;
+import com.liferay.portal.search.elasticsearch7.internal.indexing.ElasticsearchIndexingFixture;
 import com.liferay.portal.search.internal.sort.FieldSortImpl;
 import com.liferay.portal.search.internal.sort.ScoreSortImpl;
 import com.liferay.portal.search.sort.Sorts;
 import com.liferay.portal.search.test.util.IdempotentRetryAssert;
 import com.liferay.portal.search.test.util.indexing.DocumentFixture;
 import com.liferay.portal.search.test.util.indexing.IndexingFixture;
+import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 
 import java.util.ArrayList;
@@ -55,6 +57,7 @@ import org.mockito.Mockito;
 /**
  * @author Joshua Cords
  */
+@FeatureFlags("LPS-172416")
 public class ElasticsearchIndexSearcherSearchAfterTest {
 
 	@ClassRule
@@ -68,11 +71,9 @@ public class ElasticsearchIndexSearcherSearchAfterTest {
 
 		_setUpIndexSearcherAndWriter();
 
-		_setUpDeepPagination();
+		_setUpDeepPagination(60);
 		_setUpIndexSearchLimit();
 		_setUpSorts();
-
-		PropsTestUtil.setProps("feature.flag.LPS-172416", "true");
 	}
 
 	@AfterClass
@@ -143,6 +144,17 @@ public class ElasticsearchIndexSearcherSearchAfterTest {
 	}
 
 	@Test
+	public void testElasticsearchIndexSearcherKeepAliveTime() throws Exception {
+		_setUpDeepPagination(61);
+
+		_assertHits(_INDEX_MAX_RESULT_WINDOW, 0, _INDEX_MAX_RESULT_WINDOW);
+
+		_setUpDeepPagination(0);
+
+		_assertHits(_INDEX_MAX_RESULT_WINDOW, 0, _INDEX_MAX_RESULT_WINDOW);
+	}
+
+	@Test
 	public void testElasticsearchIndexSearcherLargerThanIndexMaxResultWindow()
 		throws Exception {
 
@@ -206,27 +218,36 @@ public class ElasticsearchIndexSearcherSearchAfterTest {
 		};
 	}
 
-	private static void _setUpDeepPagination() {
-		DeepPaginationConfigurationWrapper deepPaginationConfigurationWrapper =
-			Mockito.mock(DeepPaginationConfigurationWrapper.class);
+	private static void _setUpDeepPagination(int pointInTimeKeepAliveSeconds)
+		throws Exception {
 
-		Mockito.doReturn(
+		ConfigurationProvider configurationProvider = Mockito.mock(
+			ConfigurationProvider.class);
+
+		DeepPaginationConfiguration deepPaginationConfiguration = Mockito.mock(
+			DeepPaginationConfiguration.class);
+
+		Mockito.when(
+			deepPaginationConfiguration.enableDeepPagination()
+		).thenReturn(
 			true
-		).when(
-			deepPaginationConfigurationWrapper
-		).isEnableDeepPagination(
-			_indexingFixture.getCompanyId()
 		);
 
-		Mockito.doReturn(
-			60
-		).when(
-			deepPaginationConfigurationWrapper
-		).getPointInTimeKeepAliveSeconds();
+		Mockito.when(
+			deepPaginationConfiguration.pointInTimeKeepAliveSeconds()
+		).thenReturn(
+			pointInTimeKeepAliveSeconds
+		);
+
+		Mockito.when(
+			configurationProvider.getSystemConfiguration(
+				Mockito.eq(DeepPaginationConfiguration.class))
+		).thenReturn(
+			deepPaginationConfiguration
+		);
 
 		ReflectionTestUtil.setFieldValue(
-			_indexSearcher, "_deepPaginationConfigurationWrapper",
-			deepPaginationConfigurationWrapper);
+			_indexSearcher, "_configurationProvider", configurationProvider);
 	}
 
 	private static void _setUpIndexingFixture() throws Exception {

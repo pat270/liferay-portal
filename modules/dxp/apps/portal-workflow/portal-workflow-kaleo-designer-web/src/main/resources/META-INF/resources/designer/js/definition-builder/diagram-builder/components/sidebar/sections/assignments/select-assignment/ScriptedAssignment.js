@@ -9,7 +9,9 @@ import ClayLayout from '@clayui/layout';
 import ClayLink from '@clayui/link';
 import React, {useContext, useEffect, useState} from 'react';
 
+import {DefinitionBuilderContext} from '../../../../../../DefinitionBuilderContext';
 import {DiagramBuilderContext} from '../../../../../DiagramBuilderContext';
+import {filterGroovyOption} from '../../../../../util/filterGroovyOption';
 import SidebarPanel from '../../../SidebarPanel';
 
 const scriptLanguageOptions = [
@@ -25,6 +27,10 @@ const scriptLanguageOptions = [
 
 const ScriptedAssignment = ({setContentName}) => {
 	const {selectedItem, setSelectedItem} = useContext(DiagramBuilderContext);
+	const {
+		allowScriptContentToBeExecutedOrIncluded,
+		hadGroovyScriptBefore,
+	} = useContext(DefinitionBuilderContext);
 
 	const [showScriptData, setShowScriptData] = useState(
 		selectedItem?.data.assignments?.script
@@ -46,6 +52,12 @@ const ScriptedAssignment = ({setContentName}) => {
 			};
 		});
 	};
+
+	const filteredScriptLanguageOptions = filterGroovyOption(
+		allowScriptContentToBeExecutedOrIncluded,
+		hadGroovyScriptBefore,
+		scriptLanguageOptions
+	);
 
 	useEffect(() => {
 		setShowScriptData(selectedItem?.data.assignments?.script);
@@ -79,7 +91,7 @@ const ScriptedAssignment = ({setContentName}) => {
 				}}
 			>
 				{scriptLanguageOptions &&
-					scriptLanguageOptions.map((item) => (
+					filteredScriptLanguageOptions.map((item) => (
 						<ClaySelect.Option
 							key={item.value}
 							label={item.label}

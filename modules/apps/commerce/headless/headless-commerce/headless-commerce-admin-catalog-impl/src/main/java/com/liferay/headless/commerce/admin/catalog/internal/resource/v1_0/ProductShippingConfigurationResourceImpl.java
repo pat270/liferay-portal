@@ -18,7 +18,6 @@ import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.fields.NestedField;
 import com.liferay.portal.vulcan.fields.NestedFieldId;
-import com.liferay.portal.vulcan.fields.NestedFieldSupport;
 
 import javax.ws.rs.core.Response;
 
@@ -31,15 +30,12 @@ import org.osgi.service.component.annotations.ServiceScope;
  */
 @Component(
 	properties = "OSGI-INF/liferay/rest/v1_0/product-shipping-configuration.properties",
-	scope = ServiceScope.PROTOTYPE,
-	service = {
-		NestedFieldSupport.class, ProductShippingConfigurationResource.class
-	}
+	property = "nested.field.support=true", scope = ServiceScope.PROTOTYPE,
+	service = ProductShippingConfigurationResource.class
 )
 @CTAware
 public class ProductShippingConfigurationResourceImpl
-	extends BaseProductShippingConfigurationResourceImpl
-	implements NestedFieldSupport {
+	extends BaseProductShippingConfigurationResourceImpl {
 
 	@Override
 	public ProductShippingConfiguration
@@ -73,7 +69,7 @@ public class ProductShippingConfigurationResourceImpl
 
 		if (cpDefinition == null) {
 			throw new NoSuchCPDefinitionException(
-				"Unable to find Product with ID: " + id);
+				"Unable to find product with ID " + id);
 		}
 
 		return _toProductShippingConfiguration(
@@ -115,7 +111,7 @@ public class ProductShippingConfigurationResourceImpl
 
 		if (cpDefinition == null) {
 			throw new NoSuchCPDefinitionException(
-				"Unable to find Product with ID: " + id);
+				"Unable to find product with ID " + id);
 		}
 
 		_updateProductShippingConfiguration(

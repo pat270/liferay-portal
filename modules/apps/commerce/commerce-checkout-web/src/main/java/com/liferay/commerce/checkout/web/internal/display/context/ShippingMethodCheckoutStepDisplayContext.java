@@ -21,20 +21,21 @@ import com.liferay.commerce.model.CommerceShippingOption;
 import com.liferay.commerce.service.CommerceShippingMethodLocalService;
 import com.liferay.commerce.shipping.engine.fixed.model.CommerceShippingFixedOption;
 import com.liferay.commerce.shipping.engine.fixed.service.CommerceShippingFixedOptionLocalService;
-import com.liferay.commerce.util.CommerceBigDecimalUtil;
 import com.liferay.commerce.util.CommerceShippingEngineRegistry;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.settings.GroupServiceSettingsLocator;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.BigDecimalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.math.BigDecimal;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -96,7 +97,7 @@ public class ShippingMethodCheckoutStepDisplayContext {
 		throws PortalException {
 
 		if (isHideShippingPriceZero() &&
-			CommerceBigDecimalUtil.lte(
+			BigDecimalUtil.lte(
 				commerceShippingOption.getAmount(), BigDecimal.ZERO)) {
 
 			return commerceShippingOption.getName();
@@ -126,7 +127,7 @@ public class ShippingMethodCheckoutStepDisplayContext {
 			_commerceShippingEngineRegistry.getCommerceShippingEngine(
 				commerceShippingMethod.getEngineKey());
 
-		return commerceShippingEngine.getCommerceShippingOptions(
+		return commerceShippingEngine.getEnabledCommerceShippingOptions(
 			_getCommerceContext(), _commerceOrder, themeDisplay.getLocale());
 	}
 
@@ -160,27 +161,35 @@ public class ShippingMethodCheckoutStepDisplayContext {
 			CommerceShippingMethod commerceShippingMethod)
 		throws PortalException {
 
-		List<CommerceShippingOption> filteredCommerceShippingOptions =
-			new ArrayList<>();
-
 		List<CommerceShippingOption> commerceShippingOptions =
 			getCommerceShippingOptions(commerceShippingMethod);
 
-		for (CommerceShippingFixedOption commerceShippingFixedOption :
-				getFilteredCommerceShippingFixedOptions()) {
+		if (Objects.equals(
+				commerceShippingMethod.getEngineKey(), "by-weight") ||
+			Objects.equals(commerceShippingMethod.getEngineKey(), "fixed")) {
 
-			for (CommerceShippingOption commerceShippingOption :
-					commerceShippingOptions) {
+			List<CommerceShippingOption> filteredCommerceShippingOptions =
+				new ArrayList<>();
 
-				String key = commerceShippingFixedOption.getKey();
+			for (CommerceShippingFixedOption commerceShippingFixedOption :
+					getFilteredCommerceShippingFixedOptions()) {
 
-				if (key.equals(commerceShippingOption.getKey())) {
-					filteredCommerceShippingOptions.add(commerceShippingOption);
+				for (CommerceShippingOption commerceShippingOption :
+						commerceShippingOptions) {
+
+					String key = commerceShippingFixedOption.getKey();
+
+					if (key.equals(commerceShippingOption.getKey())) {
+						filteredCommerceShippingOptions.add(
+							commerceShippingOption);
+					}
 				}
 			}
+
+			return filteredCommerceShippingOptions;
 		}
 
-		return filteredCommerceShippingOptions;
+		return commerceShippingOptions;
 	}
 
 	public boolean isHideShippingPriceZero() throws PortalException {

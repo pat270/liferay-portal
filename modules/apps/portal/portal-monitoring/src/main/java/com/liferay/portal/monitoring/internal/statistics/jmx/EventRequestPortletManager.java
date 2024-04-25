@@ -11,8 +11,8 @@ import com.liferay.portal.monitoring.internal.statistics.portlet.PortletSummaryS
 import javax.management.DynamicMBean;
 import javax.management.NotCompliantMBeanException;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Michael C. Han
@@ -31,12 +31,17 @@ public class EventRequestPortletManager extends BasePortletManager {
 		super(PortletManagerMBean.class);
 	}
 
-	@Override
-	protected PortletSummaryStatistics getPortletSummaryStatistics() {
-		return _eventRequestSummaryStatistics;
+	@Activate
+	protected void activate() {
+		_portletSummaryStatistics = new EventRequestSummaryStatistics(
+			serverStatisticsHelper);
 	}
 
-	@Reference
-	private EventRequestSummaryStatistics _eventRequestSummaryStatistics;
+	@Override
+	protected PortletSummaryStatistics getPortletSummaryStatistics() {
+		return _portletSummaryStatistics;
+	}
+
+	private PortletSummaryStatistics _portletSummaryStatistics;
 
 }

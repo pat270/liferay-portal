@@ -4,7 +4,28 @@
  */
 
 type LocalizedValue<T> = Liferay.Language.LocalizedValue<T>;
+
+type Actions = {
+	create?: HTTPMethod;
+	delete?: HTTPMethod;
+	get?: HTTPMethod;
+	permissions?: HTTPMethod;
+	update?: HTTPMethod;
+	updateBatch?: HTTPMethod;
+};
+
+type HTTPMethod = {
+	href: string;
+	method: string;
+};
+
+type LabelValueObject = {
+	label?: string;
+	value?: string | number;
+};
+
 interface ObjectDefinition {
+	actions: Actions;
 	active: boolean;
 	dateCreated: string;
 	dateModified: string;
@@ -52,7 +73,7 @@ interface ObjectField {
 	state: boolean;
 	system?: boolean;
 }
-type LabelValueObject = {label: string; value: string};
+
 type ObjectFieldBusinessType =
 	| 'Attachment'
 	| 'LongText'

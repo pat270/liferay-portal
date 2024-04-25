@@ -33,6 +33,8 @@ import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
+import com.liferay.portal.kernel.trash.TrashHandler;
+import com.liferay.portal.kernel.trash.TrashHandlerRegistryUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
@@ -100,6 +102,14 @@ public class KBArticleStagedModelDataHandler
 	@Override
 	public String getDisplayName(KBArticle kbArticle) {
 		return kbArticle.getTitle();
+	}
+
+	@Override
+	public int[] getExportableStatuses() {
+		return new int[] {
+			WorkflowConstants.STATUS_APPROVED,
+			WorkflowConstants.STATUS_SCHEDULED
+		};
 	}
 
 	@Override
@@ -267,6 +277,28 @@ public class KBArticleStagedModelDataHandler
 	}
 
 	@Override
+	protected void doRestoreStagedModel(
+			PortletDataContext portletDataContext, KBArticle kbArticle)
+		throws Exception {
+
+		KBArticle existingKBArticle = fetchStagedModelByUuidAndGroupId(
+			kbArticle.getUuid(), portletDataContext.getScopeGroupId());
+
+		if ((existingKBArticle == null) || !existingKBArticle.isInTrash()) {
+			return;
+		}
+
+		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
+			KBArticle.class.getName());
+
+		if (trashHandler.isRestorable(existingKBArticle.getResourcePrimKey())) {
+			trashHandler.restoreTrashEntry(
+				portletDataContext.getUserId(kbArticle.getUserUuid()),
+				existingKBArticle.getResourcePrimKey());
+		}
+	}
+
+	@Override
 	protected void importReferenceStagedModels(
 			PortletDataContext portletDataContext, KBArticle stagedModel)
 		throws PortletDataException {
@@ -322,8 +354,9 @@ public class KBArticleStagedModelDataHandler
 			parentResourceClassNameId, parentResourcePrimKey,
 			kbArticle.getTitle(), kbArticle.getUrlTitle(),
 			kbArticle.getContent(), kbArticle.getDescription(), sections,
-			kbArticle.getSourceURL(), kbArticle.getExpirationDate(),
-			kbArticle.getReviewDate(), null, serviceContext);
+			kbArticle.getSourceURL(), kbArticle.getDisplayDate(),
+			kbArticle.getExpirationDate(), kbArticle.getReviewDate(), null,
+			serviceContext);
 
 		ServiceContextThreadLocal.pushServiceContext(serviceContext);
 
@@ -480,8 +513,9 @@ public class KBArticleStagedModelDataHandler
 		_kbArticleLocalService.updateKBArticle(
 			userId, resourcePrimKey, kbArticle.getTitle(),
 			kbArticle.getContent(), kbArticle.getDescription(), sections,
-			kbArticle.getSourceURL(), kbArticle.getExpirationDate(),
-			kbArticle.getReviewDate(), null, null, serviceContext);
+			kbArticle.getSourceURL(), kbArticle.getDisplayDate(),
+			kbArticle.getExpirationDate(), kbArticle.getReviewDate(), null,
+			null, serviceContext);
 
 		ServiceContextThreadLocal.pushServiceContext(serviceContext);
 
@@ -495,7 +529,7 @@ public class KBArticleStagedModelDataHandler
 		}
 
 		return _kbArticleLocalService.getLatestKBArticle(
-			resourcePrimKey, WorkflowConstants.STATUS_APPROVED);
+			resourcePrimKey, kbArticle.getStatus());
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

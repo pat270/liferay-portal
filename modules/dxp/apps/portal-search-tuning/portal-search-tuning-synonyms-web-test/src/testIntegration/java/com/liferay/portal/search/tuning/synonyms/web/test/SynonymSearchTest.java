@@ -17,6 +17,9 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
+import com.liferay.portal.kernel.search.SearchEngine;
+import com.liferay.portal.kernel.search.SearchEngineHelperUtil;
+import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
@@ -25,6 +28,7 @@ import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
+import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HashMapDictionary;
@@ -49,6 +53,7 @@ import java.util.Dictionary;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.portlet.ActionRequest;
 
@@ -64,6 +69,7 @@ import org.osgi.service.cm.ConfigurationAdmin;
 
 /**
  * @author Tibor Lipusz
+ * @author Petteri Karttunen
  */
 @RunWith(Arquillian.class)
 public class SynonymSearchTest {
@@ -78,13 +84,17 @@ public class SynonymSearchTest {
 		try (ConfigurationTemporarySwapper
 				elasticSearchConfigurationTemporarySwapper =
 					new ConfigurationTemporarySwapper(
-						_CONFIGURATION_PID_ELASTICSEARCH,
-						setUpElasticsearchProperties());
+							_getSearchEngineConfigurationPid(),
+						setUpSearchEngineProperties());
 
 			ConfigurationTemporarySwapper synonymConfigurationTemporarySwapper =
 				new ConfigurationTemporarySwapper(
 					_CONFIGURATION_PID_SYNONYMS,
 					setUpSynonymsProperties())) {
+
+			_originalName = PrincipalThreadLocal.getName();
+
+			PrincipalThreadLocal.setName(TestPropsValues.getUserId());
 
 			_company = CompanyTestUtil.addCompany();
 
@@ -100,6 +110,8 @@ public class SynonymSearchTest {
 	@AfterClass
 	public static void tearDownClass() throws Exception {
 		_companyLocalService.deleteCompany(_company);
+
+		PrincipalThreadLocal.setName(_originalName);
 	}
 
 	@Test
@@ -214,11 +226,11 @@ public class SynonymSearchTest {
 		}
 	}
 
-	protected static Dictionary<String, Object> setUpElasticsearchProperties()
+	protected static Dictionary<String, Object> setUpSearchEngineProperties()
 		throws Exception {
 
 		Configuration configuration = _configurationAdmin.getConfiguration(
-			_CONFIGURATION_PID_ELASTICSEARCH, StringPool.QUESTION);
+			_getSearchEngineConfigurationPid(), StringPool.QUESTION);
 
 		Dictionary<String, Object> properties = configuration.getProperties();
 
@@ -272,9 +284,23 @@ public class SynonymSearchTest {
 			expectedCount);
 	}
 
+	private static String _getSearchEngineConfigurationPid() {
+		SearchEngine searchEngine = SearchEngineHelperUtil.getSearchEngine();
+
+		if (Objects.equals(searchEngine.getVendor(), "OpenSearch")) {
+			return _CONFIGURATION_PID_OPENSEARCH_2;
+		}
+
+		return _CONFIGURATION_PID_ELASTICSEARCH;
+	}
+
 	private static final String _CONFIGURATION_PID_ELASTICSEARCH =
 		"com.liferay.portal.search.elasticsearch7.configuration." +
 			"ElasticsearchConfiguration";
+
+	private static final String _CONFIGURATION_PID_OPENSEARCH_2 =
+		"com.liferay.portal.search.opensearch2.configuration." +
+			"OpenSearchConfiguration";
 
 	private static final String _CONFIGURATION_PID_SYNONYMS =
 		"com.liferay.portal.search.tuning.synonyms.web.internal." +
@@ -296,6 +322,7 @@ public class SynonymSearchTest {
 	)
 	private static MVCActionCommand _mvcActionCommand;
 
+	private static String _originalName;
 	private static ServiceContext _serviceContext;
 	private static User _user;
 

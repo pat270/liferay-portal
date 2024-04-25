@@ -12,6 +12,8 @@ import com.liferay.object.admin.rest.client.pagination.Pagination;
 import com.liferay.object.admin.rest.client.problem.Problem;
 import com.liferay.object.admin.rest.client.serdes.v1_0.ObjectDefinitionSerDes;
 
+import java.net.URL;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -131,7 +133,7 @@ public interface ObjectDefinitionResource {
 			String callbackURL, Object object)
 		throws Exception;
 
-	public void postObjectDefinitionPublish(Long objectDefinitionId)
+	public ObjectDefinition postObjectDefinitionPublish(Long objectDefinitionId)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse postObjectDefinitionPublishHttpResponse(
@@ -189,6 +191,10 @@ public interface ObjectDefinitionResource {
 			_scheme = scheme;
 
 			return this;
+		}
+
+		public Builder endpoint(URL url) {
+			return endpoint(url.getHost(), url.getPort(), url.getProtocol());
 		}
 
 		public Builder header(String key, String value) {
@@ -432,6 +438,8 @@ public interface ObjectDefinitionResource {
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body("[]", "application/json");
 
 			if (_builder._locale != null) {
 				httpInvoker.header(
@@ -1520,7 +1528,8 @@ public interface ObjectDefinitionResource {
 			return httpInvoker.invoke();
 		}
 
-		public void postObjectDefinitionPublish(Long objectDefinitionId)
+		public ObjectDefinition postObjectDefinitionPublish(
+				Long objectDefinitionId)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
@@ -1574,7 +1583,7 @@ public interface ObjectDefinitionResource {
 			}
 
 			try {
-				return;
+				return ObjectDefinitionSerDes.toDTO(content);
 			}
 			catch (Exception e) {
 				_logger.log(
@@ -1590,6 +1599,8 @@ public interface ObjectDefinitionResource {
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body("[]", "application/json");
 
 			if (_builder._locale != null) {
 				httpInvoker.header(

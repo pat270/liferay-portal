@@ -11,9 +11,11 @@
 LayoutUtilityPageEntryDisplayContext layoutUtilityPageEntryDisplayContext = new LayoutUtilityPageEntryDisplayContext(renderRequest, renderResponse);
 %>
 
+<liferay-ui:success key="layoutUpdated" message="the-page-was-updated-successfully" />
+
 <clay:management-toolbar
 	managementToolbarDisplayContext="<%= new LayoutUtilityPageEntryManagementToolbarDisplayContext(request, layoutUtilityPageEntryDisplayContext, liferayPortletRequest, liferayPortletResponse) %>"
-	propsTransformer="js/LayoutUtilityPageEntriesManagementToolbarPropsTransformer"
+	propsTransformer="{LayoutUtilityPageEntriesManagementToolbarPropsTransformer} from layout-admin-web"
 />
 
 <aui:form cssClass="container-fluid container-fluid-max-xl container-view" name="fm">
@@ -39,7 +41,7 @@ LayoutUtilityPageEntryDisplayContext layoutUtilityPageEntryDisplayContext = new 
 
 			<liferay-ui:search-container-column-text>
 				<clay:vertical-card
-					propsTransformer="js/LayoutUtilityPageEntryDropdownPropsTransformer"
+					propsTransformer="{LayoutUtilityPageEntryDropdownPropsTransformer} from layout-admin-web"
 					verticalCard="<%= new LayoutUtilityPageEntryVerticalCard(layoutUtilityPageEntry, renderRequest, renderResponse, searchContainer.getRowChecker()) %>"
 				/>
 			</liferay-ui:search-container-column-text>

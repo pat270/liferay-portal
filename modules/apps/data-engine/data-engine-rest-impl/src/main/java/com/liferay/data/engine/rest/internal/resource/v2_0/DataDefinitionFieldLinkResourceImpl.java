@@ -11,7 +11,6 @@ import com.liferay.data.engine.model.DEDataListView;
 import com.liferay.data.engine.rest.dto.v2_0.DataDefinitionFieldLink;
 import com.liferay.data.engine.rest.dto.v2_0.DataLayout;
 import com.liferay.data.engine.rest.dto.v2_0.DataListView;
-import com.liferay.data.engine.rest.internal.content.type.DataDefinitionContentTypeRegistry;
 import com.liferay.data.engine.rest.internal.dto.v2_0.util.DataDefinitionUtil;
 import com.liferay.data.engine.rest.resource.v2_0.DataDefinitionFieldLinkResource;
 import com.liferay.data.engine.service.DEDataDefinitionFieldLinkLocalService;
@@ -116,14 +115,17 @@ public class DataDefinitionFieldLinkResourceImpl
 					_createDataDefinitionFieldLink(
 						ddmStructureLayout.getDDMStructureId()));
 
+			DataLayout[] dataLayouts = dataDefinitionFieldLink.getDataLayouts();
+
 			dataDefinitionFieldLink.setDataLayouts(
-				ArrayUtil.append(
-					dataDefinitionFieldLink.getDataLayouts(),
+				() -> ArrayUtil.append(
+					dataLayouts,
 					new DataLayout() {
 						{
-							id = ddmStructureLayout.getStructureLayoutId();
-							name = LocalizedValueUtil.toStringObjectMap(
-								ddmStructureLayout.getNameMap());
+							setId(ddmStructureLayout::getStructureLayoutId);
+							setName(
+								() -> LocalizedValueUtil.toStringObjectMap(
+									ddmStructureLayout.getNameMap()));
 						}
 					}));
 
@@ -144,16 +146,20 @@ public class DataDefinitionFieldLinkResourceImpl
 					_createDataDefinitionFieldLink(
 						deDataListView.getDdmStructureId()));
 
+			DataListView[] dataListViews =
+				dataDefinitionFieldLink.getDataListViews();
+
 			dataDefinitionFieldLink.setDataListViews(
-				ArrayUtil.append(
-					dataDefinitionFieldLink.getDataListViews(),
+				() -> ArrayUtil.append(
+					dataListViews,
 					new DataListView() {
 						{
-							id =
-								deDataDefinitionFieldLink.
-									getDeDataDefinitionFieldLinkId();
-							name = LocalizedValueUtil.toStringObjectMap(
-								deDataListView.getNameMap());
+							setId(
+								deDataDefinitionFieldLink::
+									getDeDataDefinitionFieldLinkId);
+							setName(
+								() -> LocalizedValueUtil.toStringObjectMap(
+									deDataListView.getNameMap()));
 						}
 					}));
 
@@ -168,20 +174,19 @@ public class DataDefinitionFieldLinkResourceImpl
 
 		return new DataDefinitionFieldLink() {
 			{
-				dataDefinition = DataDefinitionUtil.toDataDefinition(
-					_dataDefinitionContentTypeRegistry,
-					_ddmFormFieldTypeServicesRegistry,
-					_ddmStructureLocalService.getDDMStructure(dataDefinitionId),
-					_ddmStructureLayoutLocalService, _spiDDMFormRuleConverter);
-				dataLayouts = new DataLayout[0];
-				dataListViews = new DataListView[0];
+				setDataDefinition(
+					() -> DataDefinitionUtil.toDataDefinition(
+						_ddmFormFieldTypeServicesRegistry,
+						_ddmStructureLocalService.getDDMStructure(
+							dataDefinitionId),
+						_ddmStructureLayoutLocalService,
+						_ddmStructureLocalService, contextHttpServletRequest,
+						_spiDDMFormRuleConverter));
+				setDataLayouts(() -> new DataLayout[0]);
+				setDataListViews(() -> new DataListView[0]);
 			}
 		};
 	}
-
-	@Reference
-	private DataDefinitionContentTypeRegistry
-		_dataDefinitionContentTypeRegistry;
 
 	@Reference
 	private DDMFormFieldTypeServicesRegistry _ddmFormFieldTypeServicesRegistry;

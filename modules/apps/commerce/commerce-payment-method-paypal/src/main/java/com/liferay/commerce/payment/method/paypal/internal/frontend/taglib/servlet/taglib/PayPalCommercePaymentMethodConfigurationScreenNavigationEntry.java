@@ -14,9 +14,9 @@ import com.liferay.commerce.product.model.CommerceChannel;
 import com.liferay.commerce.product.service.CommerceChannelService;
 import com.liferay.frontend.taglib.servlet.taglib.ScreenNavigationEntry;
 import com.liferay.frontend.taglib.servlet.taglib.util.JSPRenderer;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.settings.GroupServiceSettingsLocator;
 import com.liferay.portal.kernel.settings.ParameterMapSettingsLocator;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -109,7 +109,7 @@ public class PayPalCommercePaymentMethodConfigurationScreenNavigationEntry
 						new GroupServiceSettingsLocator(
 							commerceChannel.getGroupId(),
 							PayPalCommercePaymentMethodConstants.
-								SERVICE_NAME)));
+								COMMERCE_PAYMENT_ENGINE_SERVICE_NAME)));
 
 			httpServletRequest.setAttribute(
 				PayPalGroupServiceConfiguration.class.getName(),

@@ -10,12 +10,11 @@ import com.liferay.commerce.product.model.CPDefinition;
 import com.liferay.commerce.product.service.CPDefinitionService;
 import com.liferay.headless.commerce.admin.catalog.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.dto.v1_0.ProductVirtualSettings;
-import com.liferay.headless.commerce.admin.catalog.internal.dto.v1_0.converter.ProductVirtualSettingsDTOConverter;
 import com.liferay.headless.commerce.admin.catalog.resource.v1_0.ProductVirtualSettingsResource;
+import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.fields.NestedField;
 import com.liferay.portal.vulcan.fields.NestedFieldId;
-import com.liferay.portal.vulcan.fields.NestedFieldSupport;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -26,12 +25,11 @@ import org.osgi.service.component.annotations.ServiceScope;
  */
 @Component(
 	properties = "OSGI-INF/liferay/rest/v1_0/product-virtual-settings.properties",
-	scope = ServiceScope.PROTOTYPE,
-	service = {NestedFieldSupport.class, ProductVirtualSettingsResource.class}
+	property = "nested.field.support=true", scope = ServiceScope.PROTOTYPE,
+	service = ProductVirtualSettingsResource.class
 )
 public class ProductVirtualSettingsResourceImpl
-	extends BaseProductVirtualSettingsResourceImpl
-	implements NestedFieldSupport {
+	extends BaseProductVirtualSettingsResourceImpl {
 
 	@Override
 	public ProductVirtualSettings
@@ -82,8 +80,10 @@ public class ProductVirtualSettingsResourceImpl
 	@Reference
 	private CPDefinitionService _cpDefinitionService;
 
-	@Reference
-	private ProductVirtualSettingsDTOConverter
+	@Reference(
+		target = "(component.name=com.liferay.headless.commerce.admin.catalog.internal.dto.v1_0.converter.ProductVirtualSettingsDTOConverter)"
+	)
+	private DTOConverter<CPDefinition, ProductVirtualSettings>
 		_productVirtualSettingsDTOConverter;
 
 }

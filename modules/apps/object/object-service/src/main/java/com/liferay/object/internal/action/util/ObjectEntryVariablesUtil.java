@@ -20,6 +20,7 @@ import com.liferay.object.system.SystemObjectDefinitionManagerRegistry;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
@@ -29,7 +30,10 @@ import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 
 import java.io.Serializable;
 
+import java.text.DateFormat;
+
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -95,6 +99,8 @@ public class ObjectEntryVariablesUtil {
 
 		return HashMapBuilder.<String, Object>put(
 			"baseModel", currentVariables
+		).put(
+			"entryDTO", currentVariables.get("entryDTO")
 		).put(
 			"originalBaseModel",
 			() -> {
@@ -191,6 +197,8 @@ public class ObjectEntryVariablesUtil {
 		SystemObjectDefinitionManagerRegistry
 			systemObjectDefinitionManagerRegistry) {
 
+		Map<String, Object> objectEntry =
+			(Map<String, Object>)payloadJSONObject.get("objectEntry");
 		String userId = payloadJSONObject.getString("userId");
 
 		Map<String, Object> allowedVariables =
@@ -201,13 +209,36 @@ public class ObjectEntryVariablesUtil {
 						return userId;
 					}
 
-					return MapUtil.getString(
-						(Map<String, Object>)payloadJSONObject.get(
-							"objectEntry"),
-						"userId");
+					return MapUtil.getString(objectEntry, "userId");
+				}
+			).put(
+				"currentDate",
+				() -> {
+					ObjectField objectField =
+						ObjectFieldLocalServiceUtil.fetchObjectField(
+							objectDefinition.getObjectDefinitionId(),
+							"currentDate");
+
+					if (objectField != null) {
+						return null;
+					}
+
+					DateFormat dateFormat =
+						DateFormatFactoryUtil.getSimpleDateFormat("yyyy-MM-dd");
+
+					return dateFormat.format(new Date());
 				}
 			).put(
 				"currentUserId", userId
+			).put(
+				"groupId",
+				() -> {
+					if (objectEntry != null) {
+						return MapUtil.getString(objectEntry, "groupId");
+					}
+
+					return null;
+				}
 			).build();
 
 		Map<String, Object> variables = new HashMap<>();
@@ -242,6 +273,11 @@ public class ObjectEntryVariablesUtil {
 			variables.putAll((Map<String, Object>)variables.get("values"));
 
 			variables.remove("values");
+
+			allowedVariables.put(
+				"entryDTO",
+				payloadJSONObject.get(
+					"objectEntryDTO" + objectDefinition.getShortName()));
 
 			Object objectEntryId = variables.get("objectEntryId");
 

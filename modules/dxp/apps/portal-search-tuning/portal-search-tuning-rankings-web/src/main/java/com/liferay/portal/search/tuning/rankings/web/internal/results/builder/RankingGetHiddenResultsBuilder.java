@@ -14,19 +14,17 @@ import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.permission.ResourceActions;
-import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactory;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.search.document.Document;
 import com.liferay.portal.search.engine.adapter.SearchEngineAdapter;
 import com.liferay.portal.search.engine.adapter.document.GetDocumentRequest;
 import com.liferay.portal.search.engine.adapter.document.GetDocumentResponse;
-import com.liferay.portal.search.query.IdsQuery;
 import com.liferay.portal.search.query.Queries;
-import com.liferay.portal.search.query.Query;
-import com.liferay.portal.search.tuning.rankings.web.internal.index.Ranking;
-import com.liferay.portal.search.tuning.rankings.web.internal.index.RankingIndexReader;
-import com.liferay.portal.search.tuning.rankings.web.internal.index.name.RankingIndexName;
+import com.liferay.portal.search.tuning.rankings.helper.RankingHelper;
+import com.liferay.portal.search.tuning.rankings.index.Ranking;
+import com.liferay.portal.search.tuning.rankings.index.RankingIndexReader;
+import com.liferay.portal.search.tuning.rankings.index.name.RankingIndexName;
 import com.liferay.portal.search.tuning.rankings.web.internal.util.RankingResultUtil;
 
 import java.util.List;
@@ -43,7 +41,7 @@ public class RankingGetHiddenResultsBuilder {
 	public RankingGetHiddenResultsBuilder(
 		DLAppLocalService dlAppLocalService,
 		FastDateFormatFactory fastDateFormatFactory, Queries queries,
-		RankingIndexName rankingIndexName,
+		RankingHelper rankingHelper, RankingIndexName rankingIndexName,
 		RankingIndexReader rankingIndexReader, ResourceActions resourceActions,
 		ResourceRequest resourceRequest, ResourceResponse resourceResponse,
 		SearchEngineAdapter searchEngineAdapter) {
@@ -51,6 +49,7 @@ public class RankingGetHiddenResultsBuilder {
 		_dlAppLocalService = dlAppLocalService;
 		_fastDateFormatFactory = fastDateFormatFactory;
 		_queries = queries;
+		_rankingHelper = rankingHelper;
 		_rankingIndexName = rankingIndexName;
 		_rankingIndexReader = rankingIndexReader;
 		_resourceActions = resourceActions;
@@ -61,7 +60,7 @@ public class RankingGetHiddenResultsBuilder {
 
 	public JSONObject build() {
 		Ranking ranking = _rankingIndexReader.fetch(
-			_rankingIndexName, _rankingId);
+			_rankingId, _rankingIndexName);
 
 		if (ranking == null) {
 			return JSONUtil.put(
@@ -71,7 +70,8 @@ public class RankingGetHiddenResultsBuilder {
 			);
 		}
 
-		List<String> ids = ranking.getHiddenDocumentIds();
+		List<String> ids = _rankingHelper.translateDocumentIds(
+			ranking.getHiddenDocumentIds());
 
 		List<String> paginatedIds = _paginateIds(ids);
 
@@ -107,14 +107,6 @@ public class RankingGetHiddenResultsBuilder {
 				id -> _getDocument(
 					ranking.getIndexName(), id, LIFERAY_DOCUMENT_TYPE)),
 			this::translate, _log);
-	}
-
-	protected Query getIdsQuery(List<String> ids) {
-		IdsQuery idsQuery = _queries.ids();
-
-		idsQuery.addIds(ArrayUtil.toStringArray(ids));
-
-		return idsQuery;
 	}
 
 	protected JSONObject translate(Document document) {
@@ -175,6 +167,7 @@ public class RankingGetHiddenResultsBuilder {
 	private final FastDateFormatFactory _fastDateFormatFactory;
 	private int _from;
 	private final Queries _queries;
+	private final RankingHelper _rankingHelper;
 	private String _rankingId;
 	private final RankingIndexName _rankingIndexName;
 	private final RankingIndexReader _rankingIndexReader;

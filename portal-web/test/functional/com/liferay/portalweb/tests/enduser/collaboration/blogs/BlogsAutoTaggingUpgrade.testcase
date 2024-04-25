@@ -6,8 +6,10 @@ definition {
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property test.assert.warning.exceptions = "true";
+	property test.liferay.virtual.instance = "false";
+	property test.run.type = "single";
 	property testray.component.names = "Auto Tagging";
-	property testray.main.component.name = "Upgrades Lima";
+	property testray.main.component.name = "Upgrades Content Management";
 
 	setUp {
 		SignIn.signIn();
@@ -23,10 +25,11 @@ definition {
 	@refactorneeded
 	test ViewBlogsArchive72101 {
 		property data.archive.type = "data-archive-auto-tagging";
+		property portal.release = "quarantine";
 		property portal.version = "7.2.10.1";
 
 		ValidateAutoTaggingUpgrade.editTagsAndDeleteAutoTaggedBlogsEntry(
-			entryContent = "Digital Transformation or Digital Experience? When selecting a DXP, companies should decide whether they are ready for deep transformation of their business operations, or are focused primarily on marketing and brand awareness, as these priorities tend to reflect the different strengths among the DXP vendors. Having an attractive website or mobile app is good, but more substantial...",
+			entryContent = "Digital Transformation or Digital Experience? When selecting a DXP, companies should decide whether they are ready for deep transformation of their business operations, or are focused primarily on marketing and brand awareness, as these priorities tend to reflect the different strengths among the DXP vendors. Having an attractive website or mobile app is good, but more substantial gains in...",
 			entryTitle = "Digital Transformation or Digital Experience?",
 			entryTitleKey = "digital-transformation-or-digital-experience-?",
 			tagName = "dxp");
@@ -40,12 +43,12 @@ definition {
 		ValidateAutoTaggingUpgrade.addAutoTaggedBlogsEntry(
 			entryContent = "Alice's Adventures in Wonderland",
 			entryTitle = "Blogs New OpenNLP AutoTagging",
-			tagName = "adventures");
+			tagName = "Adventures");
 
 		ValidateAutoTaggingUpgrade.addAutoTaggedBlogsEntry(
 			entryContent = "Serving a wide range of enterprises, we strive to stay true to our core values: Produce Excellence, Lead by Serving, Value People, Grow and Get Better.",
 			entryTitle = "Blogs New Google AutoTagging",
-			tagName = "value people");
+			tagName = "Value People");
 	}
 
 	@priority = 5
@@ -55,7 +58,7 @@ definition {
 		property portal.version = "7.3.10.1";
 
 		ValidateAutoTaggingUpgrade.editTagsAndDeleteAutoTaggedBlogsEntry(
-			entryContent = "Digital Transformation or Digital Experience? When selecting a DXP, companies should decide whether they are ready for deep transformation of their business operations, or are focused primarily on marketing and brand awareness, as these priorities tend to reflect the different strengths among the DXP vendors. Having an attractive website or mobile app is good, but more substantial...",
+			entryContent = "Digital Transformation or Digital Experience? When selecting a DXP, companies should decide whether they are ready for deep transformation of their business operations, or are focused primarily on marketing and brand awareness, as these priorities tend to reflect the different strengths among the DXP vendors. Having an attractive website or mobile app is good, but more substantial gains in...",
 			entryTitle = "Digital Transformation or Digital Experience?",
 			entryTitleKey = "digital-transformation-or-digital-experience-?",
 			tagName = "dxp");
@@ -69,12 +72,12 @@ definition {
 		ValidateAutoTaggingUpgrade.addAutoTaggedBlogsEntry(
 			entryContent = "Alice's Adventures in Wonderland",
 			entryTitle = "Blogs New OpenNLP AutoTagging",
-			tagName = "adventures");
+			tagName = "Adventures");
 
 		ValidateAutoTaggingUpgrade.addAutoTaggedBlogsEntry(
 			entryContent = "Serving a wide range of enterprises, we strive to stay true to our core values: Produce Excellence, Lead by Serving, Value People, Grow and Get Better.",
 			entryTitle = "Blogs New Google AutoTagging",
-			tagName = "value people");
+			tagName = "Value People");
 	}
 
 }

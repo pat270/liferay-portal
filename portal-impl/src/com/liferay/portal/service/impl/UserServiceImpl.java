@@ -39,9 +39,6 @@ import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.membershippolicy.OrganizationMembershipPolicyUtil;
-import com.liferay.portal.kernel.security.membershippolicy.RoleMembershipPolicyUtil;
-import com.liferay.portal.kernel.security.membershippolicy.SiteMembershipPolicyUtil;
-import com.liferay.portal.kernel.security.membershippolicy.UserGroupMembershipPolicyUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.GroupLocalService;
@@ -52,11 +49,9 @@ import com.liferay.portal.kernel.service.UserGroupLocalService;
 import com.liferay.portal.kernel.service.UserGroupRoleLocalService;
 import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
 import com.liferay.portal.kernel.service.permission.OrganizationPermissionUtil;
-import com.liferay.portal.kernel.service.permission.PasswordPolicyPermissionUtil;
 import com.liferay.portal.kernel.service.permission.PortalPermissionUtil;
 import com.liferay.portal.kernel.service.permission.RolePermissionUtil;
 import com.liferay.portal.kernel.service.permission.TeamPermissionUtil;
-import com.liferay.portal.kernel.service.permission.UserGroupPermissionUtil;
 import com.liferay.portal.kernel.service.permission.UserGroupRolePermissionUtil;
 import com.liferay.portal.kernel.service.permission.UserPermissionUtil;
 import com.liferay.portal.kernel.service.persistence.CompanyPersistence;
@@ -75,10 +70,15 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.comparator.UserIdComparator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.workflow.WorkflowThreadLocal;
+import com.liferay.portal.security.membershippolicy.RoleMembershipPolicyUtil;
+import com.liferay.portal.security.membershippolicy.SiteMembershipPolicyUtil;
+import com.liferay.portal.security.membershippolicy.UserGroupMembershipPolicyUtil;
 import com.liferay.portal.service.base.UserServiceBaseImpl;
+import com.liferay.portal.service.permission.PasswordPolicyPermissionUtil;
+import com.liferay.portal.service.permission.UserGroupPermissionUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.admin.util.OmniadminUtil;
-import com.liferay.users.admin.kernel.util.UsersAdminUtil;
+import com.liferay.portlet.usersadmin.util.UsersAdminUtil;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -170,6 +170,8 @@ public class UserServiceImpl extends UserServiceBaseImpl {
 		if (userIds.length == 0) {
 			return;
 		}
+
+		validateUserIds(userIds);
 
 		OrganizationPermissionUtil.check(
 			getPermissionChecker(), organizationId, ActionKeys.ASSIGN_MEMBERS);
@@ -2132,6 +2134,30 @@ public class UserServiceImpl extends UserServiceBaseImpl {
 			userId, password, emailAddress1, emailAddress2, serviceContext);
 	}
 
+	@Override
+	public User updateExternalReferenceCode(
+			long userId, String externalReferenceCode)
+		throws PortalException {
+
+		UserPermissionUtil.check(
+			getPermissionChecker(), userId, ActionKeys.UPDATE);
+
+		return userLocalService.updateExternalReferenceCode(
+			userId, externalReferenceCode);
+	}
+
+	@Override
+	public User updateExternalReferenceCode(
+			User user, String externalReferenceCode)
+		throws PortalException {
+
+		UserPermissionUtil.check(
+			getPermissionChecker(), user.getUserId(), ActionKeys.UPDATE);
+
+		return userLocalService.updateExternalReferenceCode(
+			user, externalReferenceCode);
+	}
+
 	/**
 	 * Updates a user account that was automatically created when a guest user
 	 * participated in an action (e.g. posting a comment) and only provided his
@@ -2281,6 +2307,16 @@ public class UserServiceImpl extends UserServiceBaseImpl {
 			middleName, lastName, prefixListTypeId, suffixListTypeId, male,
 			birthdayMonth, birthdayDay, birthdayYear, jobTitle,
 			updateUserInformation, sendEmail, serviceContext);
+	}
+
+	@Override
+	public User updateLanguageId(long userId, String languageId)
+		throws PortalException {
+
+		UserPermissionUtil.check(
+			getPermissionChecker(), userId, ActionKeys.UPDATE);
+
+		return userLocalService.updateLanguageId(userId, languageId);
 	}
 
 	/**
@@ -2440,8 +2476,34 @@ public class UserServiceImpl extends UserServiceBaseImpl {
 			throw new RequiredUserException();
 		}
 
-		UserPermissionUtil.check(
-			getPermissionChecker(), userId, ActionKeys.DELETE);
+		if ((status == WorkflowConstants.STATUS_APPROVED) &&
+			!UserPermissionUtil.contains(
+				getPermissionChecker(), userId, ActionKeys.ACTIVATE) &&
+			!UserPermissionUtil.contains(
+				getPermissionChecker(), userId, ActionKeys.DELETE)) {
+
+			throw new PrincipalException.MustHavePermission(
+				getPermissionChecker(), User.class.getName(), userId,
+				ActionKeys.ACTIVATE, ActionKeys.DELETE);
+		}
+
+		if ((status == WorkflowConstants.STATUS_INACTIVE) &&
+			!UserPermissionUtil.contains(
+				getPermissionChecker(), userId, ActionKeys.DEACTIVATE) &&
+			!UserPermissionUtil.contains(
+				getPermissionChecker(), userId, ActionKeys.DELETE)) {
+
+			throw new PrincipalException.MustHavePermission(
+				getPermissionChecker(), User.class.getName(), userId,
+				ActionKeys.DEACTIVATE, ActionKeys.DELETE);
+		}
+
+		if ((status != WorkflowConstants.STATUS_APPROVED) &&
+			(status != WorkflowConstants.STATUS_INACTIVE)) {
+
+			UserPermissionUtil.check(
+				getPermissionChecker(), userId, ActionKeys.DELETE);
+		}
 
 		return userLocalService.updateStatus(userId, status, serviceContext);
 	}
@@ -3874,6 +3936,12 @@ public class UserServiceImpl extends UserServiceBaseImpl {
 
 		if (userFieldException.hasFields()) {
 			throw userFieldException;
+		}
+	}
+
+	protected void validateUserIds(long[] userIds) throws PortalException {
+		for (long userId : userIds) {
+			getUserById(userId);
 		}
 	}
 

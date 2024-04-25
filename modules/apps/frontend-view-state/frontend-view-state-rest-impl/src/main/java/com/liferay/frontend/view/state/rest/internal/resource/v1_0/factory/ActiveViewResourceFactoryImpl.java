@@ -72,7 +72,12 @@ public class ActiveViewResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _activeViewResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, ActiveViewResource>
+					activeViewResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_activeViewResourceProxyProviderFunction;
+
+				return activeViewResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -229,9 +234,6 @@ public class ActiveViewResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, ActiveViewResource>
-		_activeViewResourceProxyProviderFunction = _getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -267,6 +269,14 @@ public class ActiveViewResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, ActiveViewResource>
+			_activeViewResourceProxyProviderFunction =
+				_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

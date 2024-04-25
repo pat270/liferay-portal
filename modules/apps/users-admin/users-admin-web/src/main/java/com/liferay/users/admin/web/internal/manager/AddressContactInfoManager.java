@@ -22,13 +22,13 @@ import javax.portlet.ActionRequest;
 public class AddressContactInfoManager extends BaseContactInfoManager<Address> {
 
 	public AddressContactInfoManager(
-		String className, long classPK, AddressLocalService addressLocalService,
-		AddressService addressService) {
+		AddressLocalService addressLocalService, AddressService addressService,
+		String className, long classPK) {
 
-		_className = className;
-		_classPK = classPK;
 		_addressLocalService = addressLocalService;
 		_addressService = addressService;
+		_className = className;
+		_classPK = classPK;
 	}
 
 	@Override
@@ -72,11 +72,11 @@ public class AddressContactInfoManager extends BaseContactInfoManager<Address> {
 	@Override
 	protected Address doAdd(Address address) throws Exception {
 		return _addressService.addAddress(
-			_className, _classPK, address.getStreet1(), address.getStreet2(),
-			address.getStreet3(), address.getCity(), address.getZip(),
-			address.getRegionId(), address.getCountryId(),
+			null, _className, _classPK, null, null, address.getStreet1(),
+			address.getStreet2(), address.getStreet3(), address.getCity(),
+			address.getZip(), address.getRegionId(), address.getCountryId(),
 			address.getListTypeId(), address.isMailing(), address.isPrimary(),
-			new ServiceContext());
+			null, new ServiceContext());
 	}
 
 	@Override
@@ -87,10 +87,11 @@ public class AddressContactInfoManager extends BaseContactInfoManager<Address> {
 	@Override
 	protected void doUpdate(Address address) throws Exception {
 		_addressService.updateAddress(
-			address.getAddressId(), address.getStreet1(), address.getStreet2(),
-			address.getStreet3(), address.getCity(), address.getZip(),
-			address.getRegionId(), address.getCountryId(),
-			address.getListTypeId(), address.isMailing(), address.isPrimary());
+			address.getAddressId(), address.getName(), address.getDescription(),
+			address.getStreet1(), address.getStreet2(), address.getStreet3(),
+			address.getCity(), address.getZip(), address.getRegionId(),
+			address.getCountryId(), address.getListTypeId(),
+			address.isMailing(), address.isPrimary(), address.getPhoneNumber());
 	}
 
 	@Override

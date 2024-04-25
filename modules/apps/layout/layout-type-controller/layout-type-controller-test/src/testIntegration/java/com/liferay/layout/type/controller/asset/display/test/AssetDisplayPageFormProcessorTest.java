@@ -23,6 +23,7 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.servlet.PortletServlet;
@@ -59,8 +60,10 @@ import javax.portlet.WindowState;
 
 import javax.servlet.http.Cookie;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -80,6 +83,18 @@ public class AssetDisplayPageFormProcessorTest {
 	public static final AggregateTestRule aggregateTestRule =
 		new LiferayIntegrationTestRule();
 
+	@BeforeClass
+	public static void setUpClass() throws Exception {
+		_originalName = PrincipalThreadLocal.getName();
+
+		PrincipalThreadLocal.setName(TestPropsValues.getUserId());
+	}
+
+	@AfterClass
+	public static void tearDownClass() throws Exception {
+		PrincipalThreadLocal.setName(_originalName);
+	}
+
 	@Before
 	public void setUp() throws Exception {
 		_group = GroupTestUtil.addGroup();
@@ -95,9 +110,8 @@ public class AssetDisplayPageFormProcessorTest {
 			_layoutPageTemplateEntryLocalService.addLayoutPageTemplateEntry(
 				TestPropsValues.getUserId(), _group.getGroupId(), 0,
 				classNameId, 0, RandomTestUtil.randomString(),
-				LayoutPageTemplateEntryTypeConstants.TYPE_DISPLAY_PAGE, 0, true,
-				0, 0, 0, WorkflowConstants.STATUS_APPROVED,
-				new ServiceContext());
+				LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE, 0, true, 0,
+				0, 0, WorkflowConstants.STATUS_APPROVED, new ServiceContext());
 
 		_withAndWithoutAssetEntry(
 			fileEntry -> {
@@ -190,9 +204,8 @@ public class AssetDisplayPageFormProcessorTest {
 			_layoutPageTemplateEntryLocalService.addLayoutPageTemplateEntry(
 				TestPropsValues.getUserId(), _group.getGroupId(), 0,
 				classNameId, 0, RandomTestUtil.randomString(),
-				LayoutPageTemplateEntryTypeConstants.TYPE_DISPLAY_PAGE, 0, true,
-				0, 0, 0, WorkflowConstants.STATUS_APPROVED,
-				new ServiceContext());
+				LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE, 0, true, 0,
+				0, 0, WorkflowConstants.STATUS_APPROVED, new ServiceContext());
 
 		_withAndWithoutAssetEntry(
 			fileEntry -> {
@@ -327,6 +340,8 @@ public class AssetDisplayPageFormProcessorTest {
 		testFunction.accept(
 			_dlAppLocalService.getFileEntry(dlFileEntry.getFileEntryId()));
 	}
+
+	private static String _originalName;
 
 	@Inject
 	private AssetDisplayPageEntryFormProcessor

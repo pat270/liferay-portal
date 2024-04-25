@@ -7,6 +7,7 @@ package com.liferay.gradle.plugins.workspace.internal.client.extension;
 
 import com.liferay.gradle.plugins.node.NodeExtension;
 import com.liferay.gradle.plugins.node.NodePlugin;
+import com.liferay.gradle.plugins.workspace.LiferayWorkspaceNodePlugin;
 import com.liferay.gradle.plugins.workspace.internal.util.GradleUtil;
 
 import groovy.json.JsonSlurper;
@@ -38,7 +39,7 @@ public class NodeBuildConfigurer implements ClientExtensionConfigurer {
 			return;
 		}
 
-		GradleUtil.applyPlugin(project, NodePlugin.class);
+		LiferayWorkspaceNodePlugin.INSTANCE.apply(project);
 
 		NodeExtension nodeExtension = GradleUtil.getExtension(
 			project, NodeExtension.class);
@@ -75,15 +76,11 @@ public class NodeBuildConfigurer implements ClientExtensionConfigurer {
 				"Unable to parse Node version", exception);
 		}
 
-		String npmVersion = nodeExtension.getNpmVersion();
-
 		try {
 			Version version = Version.parseVersion(nodeVersion);
 
 			if (version.compareTo(_MINIMUM_NPM_VERSION) < 0) {
-				npmVersion = _MINIMUM_NPM_VERSION.toString();
-
-				nodeExtension.setNpmVersion(npmVersion);
+				nodeExtension.setNpmVersion(_MINIMUM_NPM_VERSION.toString());
 			}
 		}
 		catch (Exception exception) {

@@ -6,6 +6,8 @@
 package com.liferay.oauth2.provider.rest.internal.endpoint.redirect;
 
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.content.security.policy.ContentSecurityPolicyNonceProviderUtil;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 
 import javax.ws.rs.DefaultValue;
@@ -37,14 +39,23 @@ public class OAuth2ProviderApplicationRedirect {
 	@Produces(MediaType.TEXT_HTML)
 	public Response redirect(
 		@DefaultValue("") @Encoded @QueryParam("code") String code,
-		@DefaultValue("") @Encoded @QueryParam("error") String error) {
+		@DefaultValue("") @Encoded @QueryParam("error") String error,
+		@DefaultValue("") @Encoded @QueryParam("state") String state) {
 
 		return Response.ok(
 			StringBundler.concat(
 				"<html><head><title>Liferay OAuth2 Redirect</title></head>",
-				"<body><script type=\"text/javascript\">window.postMessage(",
-				"{code: \"", HtmlUtil.escape(code), "\", error: \"", error,
-				"\"}, document.location.href);</script></body></html>")
+				"<body><script",
+				ContentSecurityPolicyNonceProviderUtil.getNonceAttribute(null),
+				" type=\"text/javascript\">window.postMessage(",
+				JSONUtil.put(
+					"code", HtmlUtil.escapeJS(code)
+				).put(
+					"error", HtmlUtil.escapeJS(error)
+				).put(
+					"state", HtmlUtil.escapeJS(state)
+				),
+				", document.location.href);</script></body></html>")
 		).build();
 	}
 

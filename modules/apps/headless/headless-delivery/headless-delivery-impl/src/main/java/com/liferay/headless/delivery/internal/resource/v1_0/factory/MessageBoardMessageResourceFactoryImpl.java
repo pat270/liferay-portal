@@ -72,7 +72,12 @@ public class MessageBoardMessageResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _messageBoardMessageResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, MessageBoardMessageResource>
+					messageBoardMessageResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_messageBoardMessageResourceProxyProviderFunction;
+
+				return messageBoardMessageResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -234,11 +239,6 @@ public class MessageBoardMessageResourceFactoryImpl
 		}
 	}
 
-	private static final Function
-		<InvocationHandler, MessageBoardMessageResource>
-			_messageBoardMessageResourceProxyProviderFunction =
-				_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -274,6 +274,15 @@ public class MessageBoardMessageResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function
+			<InvocationHandler, MessageBoardMessageResource>
+				_messageBoardMessageResourceProxyProviderFunction =
+					_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

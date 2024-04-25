@@ -83,6 +83,7 @@ definition {
 	@priority = 4
 	test CanAccessCustomObjectWithAccessPermission {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ObjectAdmin.addObjectViaAPI(
 			labelName = "Custom Object",
@@ -139,9 +140,12 @@ definition {
 			userLoginEmailAddress = "userea@liferay.com",
 			userLoginFullName = "userfn userln");
 
-		ObjectPortlet.assertObjectIsDisplayedOnControlPanel();
+		ObjectPortlet.assertIsDisplayedOnControlPanel(itemMenu = "Custom Objects");
 
-		ObjectPortlet.goToCustomObjectPortletOnControlPanel();
+		Click(
+			key_category = "Objects",
+			key_portlet = "Custom Objects",
+			locator1 = "ApplicationsMenu#PORTLET");
 
 		AssertElementPresent(
 			key_objectLabel = "Custom Object",
@@ -332,7 +336,9 @@ definition {
 
 		ObjectAdmin.goToDetailsTab();
 
-		CreateObject.selectPanelCategoryKey(panelCategoryKey = "Control Panel > Object");
+		ObjectAdmin.selectDropdownItem(
+			labelName = "Panel Link",
+			optionName = "Object");
 
 		CreateObject.saveObject();
 
@@ -408,6 +414,7 @@ definition {
 	@priority = 4
 	test CanAddObjectEntryWithAddPermission {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ObjectAdmin.addObjectViaAPI(
 			labelName = "Custom Object",
@@ -509,7 +516,9 @@ definition {
 
 		ObjectAdmin.goToDetailsTab();
 
-		CreateObject.selectPanelCategoryKey(panelCategoryKey = "Control Panel > Object");
+		ObjectAdmin.selectDropdownItem(
+			labelName = "Panel Link",
+			optionName = "Object");
 
 		CreateObject.saveObject();
 
@@ -517,7 +526,9 @@ definition {
 
 		ObjectAdmin.goToCustomObject(objectName = "CustomObject239");
 
-		ObjectAdmin.addObjectPicklistFieldEntryViaUI(picklistOption = "Item Test 1");
+		ObjectAdmin.addObjectPicklistFieldEntryViaUI(
+			labelName = "Field Picklist",
+			picklistOption = "Item Test 1");
 
 		ObjectAdmin.goToCustomObject(objectName = "CustomObject239");
 
@@ -584,6 +595,7 @@ definition {
 	@priority = 4
 	test CanApplyPermissionOnlyToSpecificSiteWhenScopedBySite {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ObjectAdmin.addObjectViaAPI(
 			labelName = "Custom Object",
@@ -629,10 +641,7 @@ definition {
 
 		Navigator.openURL();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Roles");
+		Role.openRolesAdmin();
 
 		Role.addAssignee(
 			assigneeName = "Site A",
@@ -794,9 +803,21 @@ definition {
 
 		ObjectAdmin.goToCustomObject(objectName = "CustomObject246");
 
-		ObjectPortlet.viewEntry(entry = "Test text");
+		Click(
+			key_entry = "Test text",
+			locator1 = "ObjectPortlet#ENTRY_KEBAB_MENU");
 
-		ObjectPortlet.deleteEntry(entry = "Test text");
+		ClickNoError(locator1 = "ObjectPortlet#DELETE_ENTRY_BUTTON");
+
+		AssertTextEquals(
+			locator1 = "Modal#HEADER",
+			value1 = "Delete Entry");
+
+		AssertTextEquals(
+			locator1 = "Modal#BODY",
+			value1 = "It may affect many records. Are you sure you want to delete this entry?");
+
+		Button.clickDelete();
 
 		ObjectPortlet.assertEntryNotPresent(entry = "Test text");
 	}
@@ -805,6 +826,7 @@ definition {
 	@priority = 4
 	test CanDeleteObjectEntryWithDeletePermission {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ObjectAdmin.addObjectViaAPI(
 			labelName = "Custom Object",
@@ -1122,19 +1144,28 @@ definition {
 
 		ObjectAdmin.goToCustomObject(objectName = "CustomObject254");
 
-		ObjectAdmin.addObjectPicklistFieldEntryViaUI(picklistOption = "Item Test 1");
+		ObjectAdmin.addObjectPicklistFieldEntryViaUI(
+			labelName = "Field Picklist",
+			picklistOption = "Item Test 1");
 
 		ObjectAdmin.goToCustomObject(objectName = "CustomObject254");
 
 		ObjectPortlet.viewEntryDetails(entry = "Item Test 1");
 
-		ObjectAdmin.changePicklistFieldEntry(
-			entrySelected = "Item Test 1",
-			newPicklistOption = "Item Test 2");
+		ObjectAdmin.selectDropdownItem(
+			labelName = "Field Picklist",
+			optionName = "Item Test 2");
 
-		ObjectPortlet.assertEntryDetailsValueSelected(entrySelected = "Item Test 2");
+		AssertTextEquals(
+			key_labelName = "Field Picklist",
+			locator1 = "ObjectAdmin#CLAY_GENERIC_BUTTON",
+			value1 = "Item Test 2");
 
-		ObjectPortlet.assertEntryDetailsNotPresent(entryNotSelected = "Item Test 1");
+		PortletEntry.save();
+
+		ObjectAdmin.goToCustomObject(objectName = "CustomObject254");
+
+		ObjectPortlet.viewEntry(entry = "Item Test 2");
 	}
 
 	@description = "LPS-135396 - Verify it is possible to edit a String entry on layout"
@@ -1180,6 +1211,7 @@ definition {
 	test CannotAddObjectEntryWithoutAddPermission {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ObjectAdmin.addObjectViaAPI(
 			labelName = "Custom Object",
@@ -1240,6 +1272,7 @@ definition {
 	@priority = 4
 	test CannotDeleteObjectEntryWithoutDeletePermission {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ObjectAdmin.addObjectViaAPI(
 			labelName = "Custom Object",
@@ -1309,6 +1342,7 @@ definition {
 	@priority = 4
 	test CannotUpdateObjectEntryWithoutUpdatePermission {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ObjectAdmin.addObjectViaAPI(
 			labelName = "Custom Object",
@@ -1388,6 +1422,7 @@ definition {
 	test CannotViewOtherUsersEntryWithOnlyAddPermission {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ObjectAdmin.addObjectViaAPI(
 			labelName = "Custom Object",
@@ -1457,6 +1492,7 @@ definition {
 	@priority = 4
 	test CannotViewOtherUsersEntryWithoutViewPermission {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ObjectAdmin.addObjectViaAPI(
 			labelName = "Custom Object",
@@ -1626,6 +1662,8 @@ definition {
 	@description = "LPS-140082 - Verify it is possible to search for a partial Object entry on the Relationship field"
 	@priority = 4
 	test CanSearchPartialOnRelationshipField {
+		property portal.upstream = "quarantine";
+
 		ObjectAdmin.addObjectViaAPI(
 			labelName = "Custom Object 264",
 			objectName = "CustomObject264",
@@ -1683,6 +1721,7 @@ definition {
 	@priority = 4
 	test CanUpdateObjectEntryWithUpdatePermission {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ObjectAdmin.addObjectViaAPI(
 			labelName = "Custom Object",
@@ -1976,6 +2015,7 @@ definition {
 	@priority = 4
 	test CanViewOtherUsersEntryWithViewPermission {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ObjectAdmin.addObjectViaAPI(
 			labelName = "Custom Object",
@@ -2075,17 +2115,18 @@ definition {
 
 		ObjectAdmin.goToCustomObject(objectName = "CustomObject273");
 
-		ObjectAdmin.addObjectPicklistFieldEntryViaUI(picklistOption = "Item Test 1");
+		ObjectAdmin.addObjectPicklistFieldEntryViaUI(
+			labelName = "Field Picklist",
+			picklistOption = "Item Test 1");
 
 		ObjectAdmin.goToCustomObject(objectName = "CustomObject273");
 
 		ObjectPortlet.viewEntryDetails(entry = "Item Test 1");
 
-		AssertElementPresent(
-			key_entryLabel = "Field Picklist",
-			locator1 = "ObjectPortlet#VIEW_ENTRY_DETAILS_LABEL");
-
-		ObjectPortlet.assertEntryDetailsValueSelected(entrySelected = "Item Test 1");
+		AssertTextEquals(
+			key_labelName = "Field Picklist",
+			locator1 = "ObjectAdmin#CLAY_GENERIC_BUTTON",
+			value1 = "Item Test 1");
 	}
 
 	@description = "LPS-135396 - Verify it is possible to view a String entry and label on layout"

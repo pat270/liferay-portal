@@ -17,7 +17,7 @@ definition {
 	@description = "Verify users can view the end of life date for a discontinued product in the product details page"
 	@priority = 5
 	test AssertEndOfLifeDateIsVisibleInProductDetailsPage {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "true";
 
 		task ("Given a Minium site with a buyer user") {
@@ -78,7 +78,6 @@ definition {
 		task ("And a simple product with a SKU") {
 			CommerceJSONProductsAPI._addCommerceProduct(
 				catalogName = "Master",
-				discontinued = "True",
 				productName = "Test Simple Product Replacement",
 				productType = "simple",
 				sku = "SKU1001");
@@ -99,32 +98,32 @@ definition {
 
 			CommerceNavigator.gotoMiniumSidebarItem(menuItem = "Catalog");
 
-			CommerceAcceleratorsInitializer.gotoMiniumProductDetailsPage(productName = "Test Simple Product");
+			CommerceAcceleratorsInitializer.gotoMiniumProductDetailsPage(productName = "Test Simple Product Replacement");
 
 			FrontStore.assertProductDetails(
-				productName = "Test Simple Product",
-				productSKU = "SKU1002");
+				productName = "Test Simple Product Replacement",
+				productSKU = "SKU1001");
 
 			Click(
 				key_text = "Replacements",
 				locator1 = "Button#ANY");
 
 			Click(
-				key_itemName = "SKU1001",
+				key_itemName = "SKU1002",
 				locator1 = "CommerceEntry#VIEW_ITEM_FROM_LIST");
 		}
 
 		task ("Then the changes made should be visible on the SKU side panel") {
 			FrontStore.assertProductDetails(
-				productName = "Test Simple Product Replacement",
-				productSKU = "SKU1001");
+				productName = "Test Simple Product",
+				productSKU = "SKU1002");
 		}
 	}
 
 	@description = "COMMERCE-9093. As a buyer, I want to be able to view a discontinued product's information on the product card."
 	@priority = 3
 	test CanViewDiscontinuedProductInformationOnProductCard {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "false";
 
 		task ("Given a Minium site with a buyer user is created") {
@@ -489,7 +488,9 @@ definition {
 		}
 
 		task ("Then the error 'Please enter a valid replacement' should be shown") {
-			Alert.viewErrorMessage(errorMessage = "Please enter a valid replacement.");
+			AssertTextEquals.assertText(
+				locator1 = "Message#ERROR",
+				value1 = "Close Error:Please enter a valid replacement.");
 		}
 	}
 

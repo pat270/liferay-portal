@@ -29,10 +29,10 @@ List<Map<String, String>> appliedFilters = collectionAppliedFiltersFragmentRende
 
 					<span class="label label-lg label-secondary">
 						<span class="label-item label-item-expand">
-							<%= HtmlUtil.escape(appliedFilter.get("filterLabel")) %>
+							<%= appliedFilter.get("filterLabel") %>
 						</span>
 						<span class="label-item label-item-after">
-							<button aria-label="<liferay-ui:message key="remove-filter" />" class="close remove-filter-button" data-filter-fragment-entry-link-id="<%= HtmlUtil.escapeAttribute(appliedFilter.get("filterFragmentEntryLinkId")) %>" data-filter-type="<%= appliedFilter.get("filterType") %>" data-filter-value="<%= HtmlUtil.escapeAttribute(appliedFilter.get("filterValue")) %>" type="button">
+							<button aria-label="<liferay-ui:message key="remove-filter" />" class="close remove-filter-button" data-filter-fragment-entry-link-id="<%= appliedFilter.get("filterFragmentEntryLinkId") %>" data-filter-type="<%= appliedFilter.get("filterType") %>" data-filter-value="<%= appliedFilter.get("filterValue") %>" type="button">
 								<span class="c-inner">
 									<clay:icon
 										symbol="times-small"
@@ -51,7 +51,14 @@ List<Map<String, String>> appliedFilters = collectionAppliedFiltersFragmentRende
 	</div>
 
 	<div class="d-flex flex-grow-1 flex-shrink-0 flex-sm-column-reverse flex-sm-grow-0 justify-content-between justify-content-sm-start ml-sm-2 mt-2 mt-sm-0">
-		<button class="btn btn-link btn-sm d-none flex-shrink-0 mt-0 mt-sm-2 p-0 text-right text-secondary" data-show-less-label="<liferay-ui:message key="show-less" />" data-show-more-label="<liferay-ui:message key="show-more" />" id="<%= collectionAppliedFiltersFragmentRendererDisplayContext.getFragmentEntryLinkNamespace() %>_toggleExpand" style="line-height: 1.3125;" type="button">
+		<clay:button
+			cssClass="border-0 btn btn-link btn-sm d-none flex-shrink-0 mt-0 mt-sm-2 p-0 text-right text-secondary"
+			data-show-less-label='<%= LanguageUtil.get(request, "show-less") %>'
+			data-show-more-label='<%= LanguageUtil.get(request, "show-more") %>'
+			displayType="secondary"
+			id='<%= collectionAppliedFiltersFragmentRendererDisplayContext.getFragmentEntryLinkNamespace() + "_toggleExpand" %>'
+			style="line-height: 1.3125;"
+		>
 			<span class="inline-item-expand">
 				<liferay-ui:message key="show-more" />
 			</span>
@@ -65,7 +72,7 @@ List<Map<String, String>> appliedFilters = collectionAppliedFiltersFragmentRende
 					symbol="angle-up-small"
 				/>
 			</span>
-		</button>
+		</clay:button>
 
 		<c:if test="<%= (!appliedFilters.isEmpty() || collectionAppliedFiltersFragmentRendererDisplayContext.isEditMode()) && collectionAppliedFiltersFragmentRendererDisplayContext.showClearFiltersButton() %>">
 			<button class="btn btn-link btn-sm flex-shrink-0 ml-2 mt-0 mt-sm-1 p-0 text-right text-secondary" id="<%= collectionAppliedFiltersFragmentRendererDisplayContext.getFragmentEntryLinkNamespace() %>_removeAllFilters" type="button">
@@ -77,5 +84,5 @@ List<Map<String, String>> appliedFilters = collectionAppliedFiltersFragmentRende
 
 <liferay-frontend:component
 	context="<%= collectionAppliedFiltersFragmentRendererDisplayContext.getCollectionAppliedFiltersProps() %>"
-	module="js/CollectionAppliedFilters"
+	module="{CollectionAppliedFilters} from fragment-renderer-collection-filter-impl"
 />

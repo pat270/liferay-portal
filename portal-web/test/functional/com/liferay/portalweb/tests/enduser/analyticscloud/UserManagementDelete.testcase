@@ -15,15 +15,13 @@ definition {
 	tearDown {
 		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
 
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
-		//ACUtils.tearDownAC();
-
 		ACUtils.tearDownDXP();
 
 		if (${testLiferayVirtualInstance} == "true") {
 			PortalInstances.tearDownCP();
 		}
+
+		ACUtils.tearDownAC();
 	}
 
 	@description = "Automation ID: LRAC-9065 | Test Summary: Admin can delete users"
@@ -44,14 +42,10 @@ definition {
 		task ("Login with the admin user") {
 			ACWorkspace.signOut();
 
-			ACLogin.loginAs(
-				emailAddress = "michelle.hoshi@faro.io",
-				password = "test");
+			ACUtils.launchAC(emailAddress = "michelle.hoshi@faro.io");
 		}
 
 		task ("Check if the admin user can delete another user") {
-			ACWorkspace.openWorkspace();
-
 			ACNavigation.goToSettings();
 
 			ACSettings.goToUserManagement();
@@ -140,11 +134,7 @@ definition {
 		task ("Login with a member user and go to settings") {
 			ACWorkspace.signOut();
 
-			ACLogin.loginAs(
-				emailAddress = "corbin.murakami@faro.io",
-				password = "test");
-
-			ACWorkspace.openWorkspace();
+			ACUtils.launchAC(emailAddress = "corbin.murakami@faro.io");
 
 			ACNavigation.goToSettings();
 		}

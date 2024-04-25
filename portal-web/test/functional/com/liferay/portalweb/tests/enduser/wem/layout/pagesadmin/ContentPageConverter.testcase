@@ -4,7 +4,6 @@ definition {
 	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testcase.url = "http://localhost:8080";
 	property testray.main.component.name = "Page Administration";
 
 	static var randomSiteName = StringUtil.randomString(8);
@@ -12,6 +11,10 @@ definition {
 	var siteURLKey = StringUtil.toLowerCase(${randomSiteName});
 
 	setUp {
+		task ("Set up virtual instance") {
+			TestCase.setUpPortalInstance();
+		}
+
 		task ("Sign in") {
 			User.firstLoginPG();
 		}
@@ -125,350 +128,13 @@ definition {
 		}
 
 		task ("View plid is the same after conversion") {
-			TestUtils.assertEquals(
-				actual = ${plid2},
-				expected = ${plid1});
+			StringUtil.assertEquals(${plid1}, ${plid2});
 		}
 
 		task ("View fragments and widgets sidebar at edit mode") {
 			ContentPages.gotoPageEditor();
 
 			AssertElementPresent(locator1 = "PageEditor#FRAGMENT_SIDEBAR_BODY");
-		}
-	}
-
-	@description = "This is a test for LPS-98325. Assert that multiple pages with several widget pages(that can be converted) and an api to convert bulk widget pages to content pages is executed, if convertLayouts and getConvertibleLayoutPlid is invoked, an array with the plids of the widget pages that are convertible to content pages is returned and all convertibles widget pages in the site are converted to content pages."
-	@priority = 5
-	test ConvertMultipleWidgetPagesToContentPagesViaAPI {
-		property portal.acceptance = "true";
-		property test.liferay.virtual.instance = "false";
-
-		task ("Add 10 widget pages") {
-			for (var i : list "1,2,3,4,5,6,7,8,9,10") {
-				JSONLayout.addPublicLayout(
-					groupName = ${randomSiteName},
-					layoutName = "Test Page Name ${i}");
-			}
-		}
-
-		task ("Change layout template of each page") {
-			var i = 1;
-
-			for (var layoutTemplate : list "1 Column,2 Columns (50/50),2 Columns (30/70),2 Columns (70/30),3 Columns,1-2 Columns (30/70),1-2 Columns (70/30),1-2-1 Columns (50/50),1-2-1 Columns (70/30),1-3-1 Columns") {
-				JSONLayout.updateLayoutTemplateOfPublicLayout(
-					groupName = ${randomSiteName},
-					layoutName = "Test Page Name ${i}",
-					layoutTemplate = ${layoutTemplate});
-
-				var i = ${i} + 1;
-			}
-		}
-
-		task ("Add an Asset Publisher to each widget page") {
-			for (var i : list "1,2,3,4,5,6,7,8,9,10") {
-				JSONLayout.addWidgetToPublicLayout(
-					groupName = ${randomSiteName},
-					layoutName = "Test Page Name ${i}",
-					widgetName = "Asset Publisher");
-			}
-		}
-
-		task ("Get plids of widget pages before conversion") {
-			var list = ListUtil.newList();
-
-			for (var i : list "1,2,3,4,5,6,7,8,9,10") {
-				Navigator.gotoSitePage(
-					pageName = "Test Page Name ${i}",
-					siteName = ${randomSiteName});
-
-				var plidBeforeConversion = Page.getPlidFromHtmlSource();
-
-				if (${i} == 1) {
-					ListUtil.add(${list}, ${plidBeforeConversion});
-				}
-				else {
-					ListUtil.add(${list}, " ${plidBeforeConversion}");
-				}
-			}
-
-			var plidsBeforeConversion = ListUtil.toString(${list});
-
-			echo(${plidsBeforeConversion});
-		}
-
-		task ("View current page type before conversion") {
-			PagesAdmin.openPagesAdmin(siteURLKey = ${randomSiteName});
-
-			for (var i : list "1,2,3,4,5,6,7,8,9,10") {
-				PagesAdmin.viewPageType(
-					pageName = "Test Page Name ${i}",
-					pageType = "Widget Page");
-			}
-		}
-
-		task ("Execute grooy script to bulk convert all widget pages") {
-			ServerAdministration.openServerAdmin();
-
-			var script = TestCase.getFileContent(fileName = "convertWidgetPages.groovy");
-
-			var script = StringUtil.replace(${script}, "groupName", "\"${randomSiteName}\"");
-
-			ServerAdministration.executeScript(
-				language = "Groovy",
-				script = ${script});
-		}
-
-		task ("View output content") {
-			var output = selenium.getText("ServerAdministrationScript#OUTPUT_FIELD");
-
-			echo(${output});
-
-			if (contains(${output}, "Convertible layouts before conversion:[${plidsBeforeConversion}]")) {
-				echo("Returned convertible layouts plids array is correct");
-			}
-			else {
-				fail("Returned convertible layout plids array is wrong");
-			}
-
-			if (contains(${output}, "Convertible layouts after conversion: []")) {
-				echo("No convertiable layouts left");
-			}
-			else {
-				fail("There are convertiable layouts left");
-			}
-		}
-
-		task ("Get plids of converted pages") {
-			var list = ListUtil.newList();
-
-			for (var i : list "1,2,3,4,5,6,7,8,9,10") {
-				ContentPagesNavigator.openViewContentPage(
-					pageName = "Test Page Name ${i}",
-					siteName = ${randomSiteName});
-
-				var plidAfterConversion = Page.getPlidFromHtmlSource();
-
-				if (${i} == 1) {
-					ListUtil.add(${list}, ${plidAfterConversion});
-				}
-				else {
-					ListUtil.add(${list}, " ${plidAfterConversion}");
-				}
-			}
-
-			var plidsAfterConversion = ListUtil.toString(${list});
-
-			echo(${plidsAfterConversion});
-		}
-
-		task ("View output content") {
-			if (contains(${output}, "Converted layouts:[${plidsAfterConversion}]")) {
-				echo("Returned converted layouts plids array is correct");
-			}
-			else {
-				fail("Returned converted layout plids array is wrong");
-			}
-		}
-
-		task ("View plids are the same after conversion") {
-			TestUtils.assertEquals(
-				actual = ${plidsAfterConversion},
-				expected = ${plidsBeforeConversion});
-		}
-
-		task ("View current page type after conversion") {
-			PagesAdmin.openPagesAdmin(siteURLKey = ${randomSiteName});
-
-			for (var i : list "1,2,3,4,5,6,7,8,9,10") {
-				PagesAdmin.viewPageType(
-					pageName = "Test Page Name ${i}",
-					pageType = "Content Page");
-			}
-		}
-
-		task ("View page editor is available for converted page") {
-			ContentPagesNavigator.openViewContentPage(
-				pageName = "Test Page Name 1",
-				siteName = ${randomSiteName});
-
-			AssertElementPresent(locator1 = "Icon#EDIT_PENCIL");
-		}
-
-		task ("View Asset Publisher widget is shown") {
-			ContentPagesNavigator.openEditContentPage(
-				pageName = "Test Page Name 1",
-				siteName = ${randomSiteName});
-
-			PageEditor.viewFragment(fragmentName = "Asset Publisher");
-		}
-
-		task ("Add a Heading fragment below Asset Publisher widget") {
-			PageEditor.addFragment(
-				collectionName = "Basic Components",
-				fragmentName = "Heading",
-				targetFragmentName = "Asset Publisher");
-
-			PageEditor.publish();
-		}
-
-		task ("View Heading fragment is shown at view mode") {
-			ContentPagesNavigator.openViewContentPage(
-				pageName = "Test Page Name 1",
-				siteName = ${randomSiteName});
-
-			ContentPages.viewFragmentText(
-				contributed = "false",
-				fragmentName = "heading",
-				text = "Heading Example");
-		}
-	}
-
-	@description = "This is a test for LPS-98325. If there is a site with several widget pages(that can be converted) and some content pages and an api to convert bulk widget pages to content pages is executed, you should be able to convert the widget pages."
-	@priority = 2
-	test ConvertMultipleWidgetPagesWithContentPagesViaAPI {
-		property test.liferay.virtual.instance = "false";
-
-		task ("Add 10 widget pages") {
-			for (var i : list "1,2,3,4,5,6,7,8,9,10") {
-				JSONLayout.addPublicLayout(
-					groupName = ${randomSiteName},
-					layoutName = "Test Widget Page Name ${i}");
-			}
-		}
-
-		task ("Change layout template of each page") {
-			var i = 1;
-
-			for (var layoutTemplate : list "1 Column,2 Columns (50/50),2 Columns (30/70),2 Columns (70/30),3 Columns,1-2 Columns (30/70),1-2 Columns (70/30),1-2-1 Columns (50/50),1-2-1 Columns (70/30),1-3-1 Columns") {
-				JSONLayout.updateLayoutTemplateOfPublicLayout(
-					groupName = ${randomSiteName},
-					layoutName = "Test Widget Page Name ${i}",
-					layoutTemplate = ${layoutTemplate});
-
-				var i = ${i} + 1;
-			}
-		}
-
-		task ("Add an Asset Publisher to each widget page") {
-			for (var i : list "1,2,3,4,5,6,7,8,9,10") {
-				JSONLayout.addWidgetToPublicLayout(
-					groupName = ${randomSiteName},
-					layoutName = "Test Widget Page Name ${i}",
-					widgetName = "Asset Publisher");
-			}
-		}
-
-		task ("Add 4 content pages with Heading fragment") {
-			for (var i : list "1,2,3,4") {
-				JSONLayout.addPublicLayout(
-					groupName = ${randomSiteName},
-					layoutName = "Test Content Page Name ${i}",
-					type = "content");
-
-				ContentPagesNavigator.openEditContentPage(
-					pageName = "Test Content Page Name ${i}",
-					siteName = ${randomSiteName});
-
-				PageEditor.addFragment(
-					collectionName = "Basic Components",
-					fragmentName = "Heading");
-
-				PageEditor.publish();
-			}
-		}
-
-		task ("View current page type before conversion") {
-			PagesAdmin.openPagesAdmin(siteURLKey = ${randomSiteName});
-
-			for (var i : list "1,2,3,4,5,6,7,8,9,10") {
-				PagesAdmin.viewPageType(
-					pageName = "Test Widget Page Name ${i}",
-					pageType = "Widget Page");
-			}
-		}
-
-		task ("Execute grooy script to bulk convert all widget pages") {
-			ServerAdministration.openServerAdmin();
-
-			var script = TestCase.getFileContent(fileName = "convertWidgetPages.groovy");
-
-			var script = StringUtil.replace(${script}, "groupName", "\"${randomSiteName}\"");
-
-			ServerAdministration.executeScript(
-				language = "Groovy",
-				script = ${script});
-
-			ServerAdministration.viewOutputField(valueName = "Convertible layouts after conversion: []");
-		}
-
-		task ("View current page type after conversion") {
-			PagesAdmin.openPagesAdmin(siteURLKey = ${randomSiteName});
-
-			for (var i : list "1,2,3,4,5,6,7,8,9,10") {
-				PagesAdmin.viewPageType(
-					pageName = "Test Widget Page Name ${i}",
-					pageType = "Content Page");
-			}
-		}
-	}
-
-	@description = "This is a test for LPS-98325. Assert that widget pages with nested application and customization setting can be converted to content pages via API."
-	@priority = 5
-	test ConvertWidgetPagesWithNestedApplicationAndCustomizationSettingToContentPagesViaAPI {
-		property portal.acceptance = "true";
-		property test.liferay.virtual.instance = "false";
-
-		task ("Add three widget pages") {
-			for (var i : list "1,2,3") {
-				JSONLayout.addPublicLayout(
-					groupName = ${randomSiteName},
-					layoutName = "Test Page Name ${i}");
-			}
-		}
-
-		task ("Add an Asset Publisher and Nested Applications to page") {
-			var i = 1;
-
-			for (var widgetName : list "Asset Publisher,Nested Applications") {
-				JSONLayout.addWidgetToPublicLayout(
-					groupName = ${randomSiteName},
-					layoutName = "Test Page Name ${i}",
-					widgetName = ${widgetName});
-
-				var i = ${i} + 1;
-			}
-		}
-
-		task ("Enable customization in Pages admin") {
-			PagesAdmin.openPagesAdmin(siteURLKey = ${randomSiteName});
-
-			PageCustomizations.enableSectionCustomizableCP(
-				columnId = 1,
-				pageName = "Test Page Name 3");
-		}
-
-		task ("Execute grooy script to bulk convert all widget pages") {
-			ServerAdministration.openServerAdmin();
-
-			var script = TestCase.getFileContent(fileName = "convertWidgetPages.groovy");
-
-			var script = StringUtil.replace(${script}, "groupName", "\"${randomSiteName}\"");
-
-			ServerAdministration.executeScript(
-				language = "Groovy",
-				script = ${script});
-
-			ServerAdministration.viewOutputField(valueName = "Convertible layouts before conversion");
-		}
-
-		task ("View current page type after conversion") {
-			PagesAdmin.openPagesAdmin(siteURLKey = ${randomSiteName});
-
-			for (var i : list "1,2,3") {
-				PagesAdmin.viewPageType(
-					pageName = "Test Page Name ${i}",
-					pageType = "Content Page");
-			}
 		}
 	}
 
@@ -621,12 +287,10 @@ definition {
 	test ConvertWidgetPageWithNonStandardLayout {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Upload the custom layout") {
-			ApplicationsMenu.gotoPortlet(
-				category = "System",
-				panel = "Control Panel",
-				portlet = "App Manager");
+			AppManager.openAppManagerAdmin();
 
 			AppManager.uploadApp(
 				appName = "custom-layout-layouttpl",
@@ -732,12 +396,10 @@ definition {
 	@priority = 3
 	test ConvertWidgetPageWithNonStandardLayoutAndCustomizableColumns {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Upload the custom layout") {
-			ApplicationsMenu.gotoPortlet(
-				category = "System",
-				panel = "Control Panel",
-				portlet = "App Manager");
+			AppManager.openAppManagerAdmin();
 
 			AppManager.uploadApp(
 				appName = "custom-layout-layouttpl",
@@ -851,12 +513,10 @@ definition {
 	@priority = 3
 	test ConvertWidgetPageWithNonStandardLayoutAndNestedApplicationsContainingWidgets {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Upload the custom layout") {
-			ApplicationsMenu.gotoPortlet(
-				category = "System",
-				panel = "Control Panel",
-				portlet = "App Manager");
+			AppManager.openAppManagerAdmin();
 
 			AppManager.uploadApp(
 				appName = "custom-layout-layouttpl",
@@ -1239,6 +899,80 @@ definition {
 			for (var widgetName : list "Asset Publisher Custom,Documents and Media Custom") {
 				Portlet.viewSpecificPG(portletName = ${widgetName});
 			}
+		}
+	}
+
+	@description = "This is a test for LPS-159512. The user could view associated display page from of web content related."
+	@priority = 3
+	test NavigateToConvertedPageViaSearchResults {
+		task ("Given the user displays a web content on a converted content page") {
+			JSONLayout.addPublicLayout(
+				groupName = ${randomSiteName},
+				layoutName = "Search");
+
+			JSONLayout.addWidgetToPublicLayout(
+				groupName = ${randomSiteName},
+				layoutName = "Search",
+				widgetName = "Search Results");
+
+			JSONLayout.addPublicLayout(
+				groupName = ${randomSiteName},
+				layoutName = "Test Page Name");
+
+			JSONLayout.addWidgetToPublicLayout(
+				groupName = ${randomSiteName},
+				layoutName = "Test Page Name",
+				widgetName = "Asset Publisher");
+
+			Navigator.gotoSitePage(
+				pageName = "Test Page Name",
+				siteName = ${randomSiteName});
+
+			AssetPublisherPortlet.configureDisplaySettings(displaySettings = "Set as the Default Asset Publisher for This Page");
+
+			WebContentNavigator.openWebContentAdmin(siteURLKey = ${siteURLKey});
+
+			WebContentNavigator.gotoAddCP();
+
+			WebContent.addCP(
+				webContentContent = "Web Content Content",
+				webContentTitle = "Web Content Title");
+
+			WebContent.editDisplayPage(
+				pageName = "Test Page Name",
+				pageType = "Pages");
+
+			PortletEntry.publish();
+
+			PagesAdmin.openPagesAdmin(siteURLKey = ${randomSiteName});
+
+			PagesAdmin.gotoPageEllipsisMenuItem(
+				menuItem = "Convert to content page...",
+				pageName = "Test Page Name");
+
+			PageEditor.assertFragmentSidebarLoaded();
+
+			PageEditor.publish();
+		}
+
+		task ("When the user searches the web content") {
+			Navigator.gotoSitePage(
+				pageName = "Search",
+				siteName = ${randomSiteName});
+
+			SearchPage.searchEmbedded(searchTerm = "Web Content");
+		}
+
+		task ("Then the user could access to the display page via search results") {
+			SearchPage.gotoResultDetails(searchAssetTitle = "Web Content Title");
+
+			AssetPublisherPortlet.viewAssetPG(
+				assetContent = "Web Content Content",
+				assetTitle = "Web Content Title");
+
+			AssertVisible(locator1 = "Icon#BACK");
+
+			ControlMenu.viewHeaderTitle(headerTitle = "Test Page Name");
 		}
 	}
 

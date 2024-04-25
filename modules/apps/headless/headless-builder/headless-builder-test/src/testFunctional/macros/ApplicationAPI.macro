@@ -1,0 +1,192 @@
+definition {
+
+	@summary = "Default summary"
+	macro _curlAPIApplication(aPIApplicationId = null, virtualHost = null) {
+		if (isSet(virtualHost)) {
+			if (!(isSet(port))) {
+				var port = 8080;
+			}
+
+			var portalURL = "http://${virtualHost}:${port}";
+		}
+		else {
+			if (!(isSet(portalURL))) {
+				var portalURL = JSONCompany.getPortalURL();
+			}
+		}
+
+		if (isSet(aPIApplicationId)) {
+			var api = "headless-builder/applications/${aPIApplicationId}";
+		}
+		else {
+			var api = "headless-builder/applications";
+		}
+
+		var curl = '''
+			${portalURL}/o/${api} \
+				-u test@liferay.com:test \
+				-H Content-Type: application/json
+		''';
+
+		return ${curl};
+	}
+
+	@summary = "Default summary"
+	macro createAPIApplication(objectFieldErc = null, mainObjectDefinitionErc = null, endpointName = null, virtualHost = null, retrieveType = null, schemaName = null, pathParameter = null, endpointPath = null, baseURL = null, status = null) {
+		Variables.assertDefined(parameterList = "${baseURL},${title}");
+
+		var curl = ApplicationAPI._curlAPIApplication(virtualHost = ${virtualHost});
+		var titleWithoutSpace = StringUtil.removeSpaces(${title});
+
+		if (!(isSet(externalReferenceCode))) {
+			var externalReferenceCode = ${titleWithoutSpace};
+		}
+
+		if (!(isSet(status))) {
+			var status = "unpublished";
+		}
+
+		var body = '''
+			"applicationStatus": {"key": "${status}","name": "${status}"},
+			"baseURL": "${baseURL}",
+			"externalReferenceCode": "${externalReferenceCode}",
+			"title": "${title}"
+		''';
+
+		if (isSet(relatedEndpoint)) {
+			if (!(isSet(scopeKey))) {
+				var scopeKey = "company";
+			}
+
+			if (!(isSet(endpointERC))) {
+				var endpointERC = "${titleWithoutSpace}_${endpointName}";
+			}
+
+			if (isSet(retrieveType)) {
+				var relatedEndpoint = '''
+					"apiApplicationToAPIEndpoints": [{
+						"externalReferenceCode": "${endpointERC}",
+						"httpMethod": "get",
+						"name": "${endpointName}",
+						"path": "${endpointPath}",
+						"pathParameter": "${pathParameter}",
+						"retrieveType": "${retrieveType}",
+						"scope": {"key": "${scopeKey}"}
+					}]
+				''';
+			}
+			else {
+				var relatedEndpoint = '''
+					"apiApplicationToAPIEndpoints": [{
+						"externalReferenceCode": "${endpointERC}",
+						"httpMethod": "get",
+						"name": "${endpointName}",
+						"path": "${endpointPath}",
+						"scope": {"key": "${scopeKey}"}
+					}]
+				''';
+			}
+
+			var body = StringUtil.add(${body}, ", ${relatedEndpoint}", "");
+		}
+
+		if (!(isSet(schemaERC))) {
+			var schemaERC = "${titleWithoutSpace}_${schemaName}";
+		}
+
+		if (isSet(relatedSchema)) {
+			if (isSet(objectFieldErc) && isSet(mainObjectDefinitionErc)) {
+				var relatedSchema = '''
+					"apiApplicationToAPISchemas": [{
+						"apiSchemaToAPIProperties": [{
+							"objectFieldERC": "${objectFieldErc}",
+							"name": "${objectFieldErc}",
+							"description": "description"
+						}],
+						"externalReferenceCode": "${schemaERC}",
+						"mainObjectDefinitionERC": "${mainObjectDefinitionErc}",
+						"name": "${schemaName}",
+						"description": "description"
+					}]
+				''';
+			}
+			else {
+				var relatedSchema = '''
+					"apiApplicationToAPISchemas": [{
+						"description": "description",
+						"externalReferenceCode": "${schemaERC}",
+						"mainObjectDefinitionERC": "${mainObjectDefinitionErc}",
+						"name": "${schemaName}"
+					}]
+				''';
+			}
+
+			var body = StringUtil.add(${body}, ", ${relatedSchema}", "");
+		}
+
+		var curl = StringUtil.add(${curl}, " -d {${body}}", "");
+
+		var response = JSONCurlUtil.post(${curl});
+
+		return ${response};
+	}
+
+	@summary = "Default summary"
+	macro deleteAllAPIApplication() {
+		var getAPIApplicationList = ApplicationAPI.getAPIApplications();
+
+		var aPIApplicationIdList = JSONPathUtil.getProperty(
+			property = "$.items[*].id",
+			response = ${getAPIApplicationList});
+
+		for (var aPIApplicationIdList : list ${aPIApplicationIdList}) {
+			ApplicationAPI.deleteAPIApplicationById(aPIApplicationId = ${aPIApplicationIdList});
+		}
+	}
+
+	@summary = "Default summary"
+	macro deleteAPIApplicationById(aPIApplicationId = null) {
+		Variables.assertDefined(parameterList = ${aPIApplicationId});
+
+		var curl = ApplicationAPI._curlAPIApplication(aPIApplicationId = ${aPIApplicationId});
+
+		JSONCurlUtil.delete(${curl});
+	}
+
+	@summary = "Default summary"
+	macro getAPIApplications() {
+		var curl = ApplicationAPI._curlAPIApplication();
+
+		var response = JSONCurlUtil.get(${curl});
+
+		return ${response};
+	}
+
+	@summary = "Default summary"
+	macro setUpGlobalAPIApplicationId() {
+		var response = ApplicationAPI.getAPIApplications();
+
+		var applicationId = JSONUtil.getWithJSONPath(${response}, "$.items[0].id");
+
+		static var staticApplicationId = ${applicationId};
+
+		return ${staticApplicationId};
+	}
+
+	@summary = "Default summary"
+	macro updateAPIApplication(parameter = null, aPIApplicationId = null, parameterValue = null) {
+		Variables.assertDefined(parameterList = "${aPIApplicationId},${parameter},${parameterValue}");
+
+		var curl = ApplicationAPI._curlAPIApplication(aPIApplicationId = ${aPIApplicationId});
+		var body = '''
+			-d {"${parameter}": "${parameterValue}"}
+		''';
+
+		var curl = StringUtil.add(${curl}, " \ ${body}", "");
+
+		var response = JSONCurlUtil.patch(${curl});
+
+		return ${response};
+	}
+
+}

@@ -6,27 +6,78 @@
 import {
 	Card,
 	Input,
-	InputLocalized,
+	RadioField,
+	SingleSelect,
 	Toggle,
+	stringUtils,
 } from '@liferay/object-js-components-web';
-import React from 'react';
+import {InputLocalized} from 'frontend-js-components-web';
+import React, {useMemo} from 'react';
 
-import {TriggerEventContainer} from './TriggerEventContainer';
+import {NAME_OUTPUT_OBJECT_FIELD_EXTERNAL_REFERENCE_CODE} from '../../utils/constants';
+import {DisabledGroovyScriptAlert} from '../DisabledGroovyScriptAlert';
 import {TabProps} from './useObjectValidationForm';
 
-interface BasicInfoProps extends TabProps {
+export interface BasicInfoProps extends TabProps {
 	componentLabel: string;
+	creationLanguageId: Liferay.Language.Locale;
+	customObjectFields: ObjectField[];
+	disabledGroovyValidation: boolean;
 }
+
+const outputValidationTypeArray = [
+	{
+		label: Liferay.Language.get('full-validation-form-summary'),
+		value: 'fullValidation',
+	},
+	{
+		label: Liferay.Language.get('partial-validation-inline-field'),
+		value: 'partialValidation',
+	},
+];
+
+const TriggerEventOptions = [
+	{
+		label: Liferay.Language.get('on-submission'),
+		value: 'onSubmission',
+	},
+];
 
 export function BasicInfo({
 	componentLabel,
+	creationLanguageId,
+	customObjectFields,
 	disabled,
+	disabledGroovyValidation,
 	errors,
+	scriptManagementConfigurationPortletURL,
+	selectedPartialValidationField,
 	setValues,
 	values,
 }: BasicInfoProps) {
+	const objectFieldsItems = useMemo(() => {
+		return customObjectFields.map(
+			({externalReferenceCode, label, name}) => ({
+				label: stringUtils.getLocalizableLabel(
+					creationLanguageId,
+					label,
+					name
+				),
+				value: externalReferenceCode,
+			})
+		);
+	}, [creationLanguageId, customObjectFields]);
+
 	return (
 		<>
+			{disabledGroovyValidation && (
+				<DisabledGroovyScriptAlert
+					scriptManagementConfigurationPortletURL={
+						scriptManagementConfigurationPortletURL
+					}
+				/>
+			)}
+
 			<Card title={componentLabel}>
 				<InputLocalized
 					disabled={disabled}
@@ -44,18 +95,95 @@ export function BasicInfo({
 					value={values.engineLabel}
 				/>
 
-				<Toggle
+				{values.engine !== 'compositeKey' && (
+					<Toggle
+						disabled={disabled || disabledGroovyValidation}
+						label={Liferay.Language.get('active-validation')}
+						onToggle={(active) => setValues({active})}
+						toggled={values.active}
+					/>
+				)}
+			</Card>
+
+			<Card title={Liferay.Language.get('trigger-event')}>
+				<SingleSelect
+					defaultSelectedKey="onSubmission"
 					disabled={disabled}
-					label={Liferay.Language.get('active-validation')}
-					onToggle={(active) => setValues({active})}
-					toggled={values.active}
+					items={TriggerEventOptions}
+					label={Liferay.Language.get('event')}
 				/>
 			</Card>
 
-			<TriggerEventContainer
-				disabled={disabled}
-				eventTypes={[{label: Liferay.Language.get('on-submission')}]}
-			/>
+			{values.engine?.startsWith('function#') && (
+				<Card title={Liferay.Language.get('error-message')}>
+					<InputLocalized
+						disabled={disabled}
+						error={errors.errorLabel}
+						label={Liferay.Language.get('message')}
+						onChange={(errorLabel) => setValues({errorLabel})}
+						placeholder={Liferay.Language.get(
+							'add-an-error-message'
+						)}
+						required
+						translations={values.errorLabel!}
+					/>
+
+					<>
+						<RadioField
+							defaultValue={values.outputType}
+							inline={false}
+							label={Liferay.Language.get(
+								'output-validation-type'
+							)}
+							onChange={(value) => {
+								if (value === 'fullValidation') {
+									setValues({
+										objectValidationRuleSettings: [],
+										outputType: value as string,
+									});
+
+									return;
+								}
+
+								setValues({
+									outputType: value as string,
+								});
+							}}
+							options={outputValidationTypeArray}
+							popover={{
+								alignPosition: 'top',
+								content: Liferay.Language.get(
+									'map-the-error-message-to-be-displayed-next-to-the-validated-field'
+								),
+								header: Liferay.Language.get(
+									'message-location'
+								),
+							}}
+						/>
+
+						{values.outputType === 'partialValidation' && (
+							<SingleSelect
+								error={errors.outputType}
+								id="objectValidationBasicInfo"
+								items={objectFieldsItems}
+								label={Liferay.Language.get('fields')}
+								onSelectionChange={(value) => {
+									setValues({
+										objectValidationRuleSettings: [
+											{
+												name: NAME_OUTPUT_OBJECT_FIELD_EXTERNAL_REFERENCE_CODE,
+												value: value as string,
+											},
+										],
+									});
+								}}
+								required
+								selectedKey={selectedPartialValidationField}
+							/>
+						)}
+					</>
+				</Card>
+			)}
 		</>
 	);
 }

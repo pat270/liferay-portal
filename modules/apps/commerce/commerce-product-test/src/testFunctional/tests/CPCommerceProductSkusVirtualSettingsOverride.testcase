@@ -1,7 +1,7 @@
 @component-name = "portal-commerce"
 definition {
 
-	property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+	property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Product Info Management";
@@ -391,9 +391,7 @@ definition {
 		}
 
 		task ("And the admin changes the order status to 'completed'") {
-			CommerceNavigator.gotoPortlet(
-				category = "Order Management",
-				portlet = "Orders");
+			CommerceOrders.openOrdersAdmin();
 
 			CommerceNavigator.gotoOrderEntryViaAdmin(status = "Pending");
 
@@ -725,9 +723,7 @@ definition {
 		}
 
 		task ("And the admin changes the order status to 'completed'") {
-			CommerceNavigator.gotoPortlet(
-				category = "Order Management",
-				portlet = "Orders");
+			CommerceOrders.openOrdersAdmin();
 
 			CommerceNavigator.gotoOrderEntryViaAdmin(status = "Pending");
 
@@ -801,9 +797,19 @@ definition {
 
 			CommerceNavigator.gotoEntry(entryName = "VIRTUALSKU");
 
-			CommerceSKUs.editSkuPricing(
-				basePrice = "55.00",
-				promoPrice = "50.00");
+			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Price");
+
+			CommerceNavigator.gotoEntry(entryName = "Minium Base Price List");
+
+			CommerceSKUs.editSkuPricing(basePrice = "55.00");
+
+			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+			CommerceNavigator.gotoEntry(entryName = "Minium Base Promotion");
+
+			CommerceSKUs.editSkuPricing(promoPrice = "50.00");
 
 			CommerceEntry.gotoMenuTab(menuTab = "Media");
 

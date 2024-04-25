@@ -31,10 +31,6 @@ definition {
 	tearDown {
 		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
 
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
-		//ACUtils.tearDownAC();
-
 		ACUtils.tearDownDXP();
 
 		if (${testLiferayVirtualInstance} == "true") {
@@ -43,6 +39,8 @@ definition {
 		else {
 			JSONGroup.deleteGroupByName(groupName = "Site Name");
 		}
+
+		ACUtils.tearDownAC();
 	}
 
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8336 | Test Summary: Search for a Page in Pages list"
@@ -51,14 +49,6 @@ definition {
 		task ("Add pages") {
 			for (var layoutName : list "AC Page 2,AC Page 3") {
 				ACUtils.addPage(layoutName = ${layoutName});
-
-				Navigator.gotoSitePage(
-					pageName = ${layoutName},
-					siteName = "Site Name");
-
-				ACUtils.addWidgetToPage(
-					layoutName = ${layoutName},
-					widgetName = "Blogs");
 			}
 		}
 
@@ -90,8 +80,8 @@ definition {
 
 			for (var pageName : list "AC Page,AC Page 2,AC Page 3") {
 				ACUtils.navigateToSitePage(
-					actionType = "View Blog",
-					documentTitleList = "Blogs AC Title",
+					actionType = "View WC",
+					documentTitleList = "1,2,3,4",
 					pageName = ${pageName},
 					siteName = "Site Name");
 			}
@@ -133,6 +123,73 @@ definition {
 			ACUtils.searchBar(searchItem = 3);
 
 			ACUtils.viewNameList(nameList = "AC Page 3 - Site Name - ${dataSourceName}");
+		}
+	}
+
+	@description = "Feature ID: LRAC-14794 | Automation ID: LRAC-14794 | Test Summary: Search for a Page in Pages list by its canonical URL"
+	@priority = 5
+	test CanSearchPageInPagesListByCanonicalURL {
+		task ("Connect DXP to AC") {
+			ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
+		}
+
+		task ("Add a new user in DXP") {
+			JSONUser.addUser(
+				userEmailAddress = "ac@liferay.com",
+				userFirstName = "ac",
+				userLastName = "ac",
+				userScreenName = "ac");
+
+			JSONUser.setFirstPassword(
+				agreeToTermsAndAnswerReminderQuery = "true",
+				requireReset = "false",
+				userEmailAddress = "ac@liferay.com");
+		}
+
+		task ("Sync the Contact Data") {
+			ACDXPSettings.syncNewContactData();
+		}
+
+		task ("Sign in with the new user to visit the site pages") {
+			User.logoutAndLoginPG(
+				userLoginEmailAddress = "ac@liferay.com",
+				userLoginFullName = "ac ac");
+
+			ACUtils.navigateToSitePage(
+				actionType = "View Blog",
+				documentTitleList = "Blogs AC Title",
+				pageName = "AC Page",
+				siteName = "Site Name");
+
+			var canonicalURL = Navigator.getCurrentURL();
+		}
+
+		task ("Switch to new property in AC") {
+			ACUtils.closeAllSessionsAndWait();
+
+			ACUtils.launchAC();
+
+			ACProperties.switchProperty(propertyName = ${assignedPropertyName});
+		}
+
+		task ("Go to sites pages tab") {
+			ACNavigation.goToSites();
+
+			ACNavigation.switchTab(tabName = "Pages");
+		}
+
+		task ("Choose Last 24 Hours") {
+			ACTimeFilter.clickTimeFilterButton();
+
+			ACTimeFilter.setLast24Hours();
+		}
+
+		task ("Search the Pages") {
+			var dataSourceName = StringUtil.extractFirst(${assignedPropertyName}, " ");
+
+			ACUtils.searchBar(searchItem = ${canonicalURL});
+
+			ACUtils.viewNameList(nameList = "Blogs AC Title - Site Name - ${dataSourceName}");
 		}
 	}
 
@@ -254,75 +311,12 @@ definition {
 		}
 	}
 
-	@description = "Feature ID: Legacy | Automation ID: LRAC-8341 | Test Summary: Filter Page Table by Last Year"
-	@ignore = "true"
-	@priority = 3
-	test PeriodFilterLastYearPageTable {
-
-		// AC Refactor: Test needs data from past dates to assert
-		// AC Refactor ticket: LRAC-8934
-
-		task ("Get site assigned property name") {
-			var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
-		}
-
-		task ("Visit the site page") {
-			ACUtils.navigateToSitePage(
-				pageName = "AC Page",
-				siteName = "Site Name");
-		}
-
-		task ("Switch to new property in AC") {
-			ACUtils.launchAC();
-
-			ACProperties.switchProperty(propertyName = ${propertyName});
-		}
-
-		task ("Select Pages tab and set a 24h time filter") {
-			ACNavigation.switchTab(tabName = "Pages");
-
-			ACTimeFilter.clickTimeFilterButton();
-
-			ACTimeFilter.setLast24Hours();
-		}
-
-		// Can't assert that the filter is working properly, data not present on time
-
-		task ("Assert that the visited page is present on 24h time filter") {
-			ACUtils.assertItemsName(itemList = "AC Page");
-		}
-
-		task ("Set time period filter to Last Year") {
-			ACTimeFilter.clickTimeFilterButton();
-
-			ACTimeFilter.setLastYear();
-		}
-
-		task ("Assert that the 24h filter page is not present on Last Year filter") {
-			ACUtils.assertItemsNameNotPresent(itemList = "AC Page");
-		}
-
-		// Can't assert that the filter is working properly without past data
-
-		task ("Assert that the right page is present on Last Year filter") {
-			ACUtils.assertItemsName(itemList = "Last Year Page");
-		}
-	}
-
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8111 | Test Summary: Assert the pages list shows a list of pages"
 	@priority = 5
 	test ShowsListOfPages {
 		task ("Add pages") {
 			for (var layoutName : list "AC Page 2,AC Page 3") {
 				ACUtils.addPage(layoutName = ${layoutName});
-
-				Navigator.gotoSitePage(
-					pageName = ${layoutName},
-					siteName = "Site Name");
-
-				ACUtils.addWidgetToPage(
-					layoutName = ${layoutName},
-					widgetName = "Blogs");
 			}
 		}
 
@@ -350,8 +344,8 @@ definition {
 
 			for (var pageName : list "AC Page,AC Page 2,AC Page 3") {
 				ACUtils.navigateToSitePage(
-					actionType = "View Blog",
-					documentTitleList = "Blogs AC Title",
+					actionType = "View WC",
+					documentTitleList = "1,2,3,4",
 					pageName = ${pageName},
 					siteName = "Site Name");
 			}

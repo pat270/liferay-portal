@@ -5,7 +5,6 @@
 
 package com.liferay.change.tracking.service.impl;
 
-import com.liferay.change.tracking.constants.CTConstants;
 import com.liferay.change.tracking.exception.CTCollectionDescriptionException;
 import com.liferay.change.tracking.exception.CTCollectionNameException;
 import com.liferay.change.tracking.model.CTCollection;
@@ -18,7 +17,6 @@ import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.ModelHintsUtil;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.ResourceLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -105,6 +103,7 @@ public class CTCollectionTemplateLocalServiceImpl
 			companyId, start, end);
 	}
 
+	@Override
 	public Set<String> getTokens() {
 		Map<String, String> tokensMap = _getTokensMap(0);
 
@@ -235,9 +234,6 @@ public class CTCollectionTemplateLocalServiceImpl
 
 	@Reference
 	private JSONStorageEntryLocalService _jsonStorageEntryLocalService;
-
-	@Reference(target = "(resource.name=" + CTConstants.RESOURCE_NAME + ")")
-	private PortletResourcePermission _portletResourcePermission;
 
 	@Reference
 	private ResourceLocalService _resourceLocalService;

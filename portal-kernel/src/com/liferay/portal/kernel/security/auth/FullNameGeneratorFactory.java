@@ -5,7 +5,7 @@
 
 package com.liferay.portal.kernel.security.auth;
 
-import com.liferay.portal.kernel.util.ServiceProxyFactory;
+import com.liferay.portal.kernel.module.service.Snapshot;
 
 /**
  * @author Michael C. Han
@@ -14,19 +14,21 @@ import com.liferay.portal.kernel.util.ServiceProxyFactory;
 public class FullNameGeneratorFactory {
 
 	public static FullNameGenerator getInstance() {
-		return _fullNameGenerator;
-	}
+		FullNameGenerator fullNameGenerator = _fullNameGeneratorSnapshot.get();
 
-	public void setFullNameGenerator(FullNameGenerator fullNameGenerator) {
-		_fullNameGenerator = fullNameGenerator;
+		if (fullNameGenerator != null) {
+			return fullNameGenerator;
+		}
+
+		return DefaultFullNameGenerator.INSTANCE;
 	}
 
 	private FullNameGeneratorFactory() {
 	}
 
-	private static volatile FullNameGenerator _fullNameGenerator =
-		ServiceProxyFactory.newServiceTrackedInstance(
-			FullNameGenerator.class, FullNameGeneratorFactory.class,
-			"_fullNameGenerator", true);
+	private static final Snapshot<FullNameGenerator>
+		_fullNameGeneratorSnapshot = new Snapshot<>(
+			FullNameGeneratorFactory.class, FullNameGenerator.class, null,
+			true);
 
 }

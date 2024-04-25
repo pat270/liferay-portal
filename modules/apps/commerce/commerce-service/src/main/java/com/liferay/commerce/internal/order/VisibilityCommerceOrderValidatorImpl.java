@@ -23,6 +23,8 @@ import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 
+import java.math.BigDecimal;
+
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -53,7 +55,7 @@ public class VisibilityCommerceOrderValidatorImpl
 	@Override
 	public CommerceOrderValidatorResult validate(
 			Locale locale, CommerceOrder commerceOrder, CPInstance cpInstance,
-			int quantity)
+			String json, BigDecimal quantity, boolean child)
 		throws PortalException {
 
 		if (cpInstance == null) {
@@ -84,12 +86,11 @@ public class VisibilityCommerceOrderValidatorImpl
 			return new CommerceOrderValidatorResult(false);
 		}
 
-		if (!_isAccountEnabled(
-				commerceOrderItem.getCommerceOrder(),
-				cpInstance.getCPDefinition()) ||
+		CommerceOrder commerceOrder = commerceOrderItem.getCommerceOrder();
+
+		if (!_isAccountEnabled(commerceOrder, cpInstance.getCPDefinition()) ||
 			!_isChannelEnabled(
-				commerceOrderItem.getCommerceOrder(),
-				commerceOrderItem.getCPDefinition())) {
+				commerceOrder, commerceOrderItem.getCPDefinition())) {
 
 			return new CommerceOrderValidatorResult(
 				commerceOrderItem.getCommerceOrderItemId(), false,

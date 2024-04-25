@@ -12,6 +12,7 @@ import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -19,7 +20,6 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.ModelHintsUtil;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
@@ -32,6 +32,7 @@ import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
@@ -194,8 +195,7 @@ public class JournalUtil {
 			title = String.valueOf(id);
 		}
 		else {
-			title = FriendlyURLNormalizerUtil.normalizeWithPeriodsAndSlashes(
-				title);
+			title = FriendlyURLNormalizerUtil.normalizeWithEncoding(title);
 		}
 
 		return ModelHintsUtil.trimString(
@@ -296,7 +296,12 @@ public class JournalUtil {
 			return;
 		}
 
-		if (MapUtil.isEmpty(_customTokens)) {
+		if ((_customTokens == null) &&
+			ArrayUtil.isNotEmpty(
+				journalServiceConfiguration.customTokenNames()) &&
+			ArrayUtil.isNotEmpty(
+				journalServiceConfiguration.customTokenValues())) {
+
 			synchronized (JournalUtil.class) {
 				_customTokens = new HashMap<>();
 
@@ -315,7 +320,7 @@ public class JournalUtil {
 			}
 		}
 
-		if (!_customTokens.isEmpty()) {
+		if (MapUtil.isNotEmpty(_customTokens)) {
 			tokens.putAll(_customTokens);
 		}
 	}

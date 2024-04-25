@@ -72,15 +72,16 @@ public class KBArticleInfoItemProviderTest {
 			KBFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			StringUtil.randomString(), StringUtil.randomString(),
 			StringUtil.randomString(), StringUtil.randomString(), null,
-			StringPool.BLANK, null, null, null, _serviceContext);
+			StringPool.BLANK, RandomTestUtil.nextDate(), null, null, null,
+			_serviceContext);
 
 		_serviceContext.setWorkflowAction(WorkflowConstants.ACTION_SAVE_DRAFT);
 
 		KBArticle updatedKBArticle = _kbArticleLocalService.updateKBArticle(
 			_user.getUserId(), _kbArticle.getResourcePrimKey(),
 			StringUtil.randomString(), StringUtil.randomString(),
-			StringUtil.randomString(), null, null, null, null, null, null,
-			_serviceContext);
+			StringUtil.randomString(), null, null, _kbArticle.getDisplayDate(),
+			null, null, null, null, _serviceContext);
 
 		InfoItemIdentifier infoItemIdentifier = new ClassPKInfoItemIdentifier(
 			_kbArticle.getResourcePrimKey());

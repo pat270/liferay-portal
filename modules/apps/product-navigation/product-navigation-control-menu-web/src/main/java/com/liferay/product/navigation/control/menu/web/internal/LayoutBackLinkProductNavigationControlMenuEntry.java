@@ -5,12 +5,18 @@
 
 package com.liferay.product.navigation.control.menu.web.internal;
 
+import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortletKeys;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
+import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
@@ -20,6 +26,9 @@ import com.liferay.product.navigation.control.menu.ProductNavigationControlMenuE
 import com.liferay.product.navigation.control.menu.constants.ProductNavigationControlMenuCategoryKeys;
 
 import java.util.Locale;
+import java.util.Objects;
+
+import javax.portlet.PortletRequest;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -62,8 +71,10 @@ public class LayoutBackLinkProductNavigationControlMenuEntry
 		String backURLTitle = ParamUtil.getString(
 			serviceContext.getRequest(), "p_l_back_url_title");
 
-		if (Validator.isNull(backURLTitle)) {
-			return backURLTitle;
+		if (Validator.isNotNull(backURLTitle)) {
+			return _language.format(
+				locale, "go-to-x",
+				new String[] {HtmlUtil.escape(backURLTitle)});
 		}
 
 		return _language.get(locale, "back");
@@ -71,13 +82,38 @@ public class LayoutBackLinkProductNavigationControlMenuEntry
 
 	@Override
 	public String getLinkCssClass(HttpServletRequest httpServletRequest) {
-		return "lfr-back-link";
+		return "control-menu-nav-link lfr-back-link";
 	}
 
 	@Override
 	public String getURL(HttpServletRequest httpServletRequest) {
-		return _portal.escapeRedirect(
-			ParamUtil.getString(httpServletRequest, "p_l_back_url"));
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		Layout layout = _layoutLocalService.fetchLayout(themeDisplay.getPlid());
+
+		if (!Objects.equals(
+				ParamUtil.getString(
+					httpServletRequest, "p_l_mode", Constants.VIEW),
+				Constants.EDIT) ||
+			(layout == null) || !layout.isDraftLayout()) {
+
+			return _portal.escapeRedirect(
+				ParamUtil.getString(httpServletRequest, "p_l_back_url"));
+		}
+
+		return PortletURLBuilder.create(
+			PortletURLFactoryUtil.create(
+				httpServletRequest,
+				ContentPageEditorPortletKeys.CONTENT_PAGE_EDITOR_PORTLET,
+				themeDisplay.getPlid(), PortletRequest.ACTION_PHASE)
+		).setActionName(
+			"/layout_content_page_editor/unlock_draft_layout"
+		).setRedirect(
+			() -> _portal.escapeRedirect(
+				ParamUtil.getString(httpServletRequest, "p_l_back_url"))
+		).buildString();
 	}
 
 	@Override
@@ -106,6 +142,9 @@ public class LayoutBackLinkProductNavigationControlMenuEntry
 
 	@Reference
 	private Language _language;
+
+	@Reference
+	private LayoutLocalService _layoutLocalService;
 
 	@Reference
 	private Portal _portal;

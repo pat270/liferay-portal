@@ -12,6 +12,7 @@
 <%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %><%@
 taglib uri="http://liferay.com/tld/clay" prefix="clay" %><%@
 taglib uri="http://liferay.com/tld/ddm" prefix="liferay-ddm" %><%@
+taglib uri="http://liferay.com/tld/frontend" prefix="liferay-frontend" %><%@
 taglib uri="http://liferay.com/tld/react" prefix="react" %><%@
 taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %><%@
 taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
@@ -53,7 +54,7 @@ SearchBarPortletDisplayContext searchBarPortletDisplayContext = (SearchBarPortle
 		</div>
 	</c:when>
 	<c:otherwise>
-		<aui:form action="<%= searchBarPortletDisplayContext.getSearchURL() %>" method="get" name="fm">
+		<form action="<%= searchBarPortletDisplayContext.getSearchURL() %>" id="<%= randomNamespace %>fm" method="get" name="<%= randomNamespace %>fm">
 			<c:if test="<%= !Validator.isBlank(searchBarPortletDisplayContext.getPaginationStartParameterName()) %>">
 				<input class="search-bar-reset-start-page" name="<%= searchBarPortletDisplayContext.getPaginationStartParameterName() %>" type="hidden" value="0" />
 			</c:if>
@@ -79,24 +80,26 @@ SearchBarPortletDisplayContext searchBarPortletDisplayContext = (SearchBarPortle
 					<c:when test="<%= searchBarPortletDisplayContext.isSuggestionsEnabled() %>">
 						<div id="<portlet:namespace />reactSearchBar">
 							<react:component
-								module="js/components/SearchBar"
+								module="{ReactSearchBar} from portal-search-web"
 								props='<%=
 									HashMapBuilder.<String, Object>put(
 										"destinationFriendlyURL", searchBarPortletDisplayContext.getDestinationFriendlyURL()
 									).put(
 										"emptySearchEnabled", searchBarPortletDisplayContext.isEmptySearchEnabled()
 									).put(
+										"initialKeywords", searchBarPortletDisplayContext.getKeywords()
+									).put(
 										"isDXP", ReleaseInfo.isDXP()
 									).put(
 										"isSearchExperiencesSupported", searchBarPortletDisplayContext.isSearchExperiencesSupported()
-									).put(
-										"keywords", searchBarPortletDisplayContext.getKeywords()
 									).put(
 										"keywordsParameterName", searchBarPortletDisplayContext.getKeywordsParameterName()
 									).put(
 										"letUserChooseScope", searchBarPortletDisplayContext.isLetTheUserChooseTheSearchScope()
 									).put(
 										"paginationStartParameterName", searchBarPortletDisplayContext.getPaginationStartParameterName()
+									).put(
+										"retainFacetSelections", searchBarPortletDisplayContext.isRetainFacetSelections()
 									).put(
 										"scopeParameterName", searchBarPortletDisplayContext.getScopeParameterName()
 									).put(
@@ -166,12 +169,19 @@ SearchBarPortletDisplayContext searchBarPortletDisplayContext = (SearchBarPortle
 					</c:otherwise>
 				</c:choose>
 			</liferay-ddm:template-renderer>
-		</aui:form>
+		</form>
 
-		<aui:script use="aui-base,liferay-search-bar">
-			if (!A.one('#<portlet:namespace />reactSearchBar')) {
-				new Liferay.Search.SearchBar(A.one('#<portlet:namespace />fm'));
-			}
-		</aui:script>
+		<liferay-frontend:component
+			context='<%=
+				HashMapBuilder.<String, Object>put(
+					"formId", randomNamespace + "fm"
+				).put(
+					"initialKeywords", searchBarPortletDisplayContext.getKeywords()
+				).put(
+					"retainFacetSelections", searchBarPortletDisplayContext.isRetainFacetSelections()
+				).build()
+			%>'
+			module="{SearchBar} from portal-search-web"
+		/>
 	</c:otherwise>
 </c:choose>

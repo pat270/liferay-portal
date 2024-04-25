@@ -5,14 +5,11 @@
 
 package com.liferay.layout.type.controller.display.page.internal.layout.type.controller;
 
-import com.liferay.asset.display.page.portlet.AssetDisplayPageFriendlyURLProvider;
-import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.info.display.request.attributes.contributor.InfoDisplayRequestAttributesContributor;
-import com.liferay.info.item.ClassPKInfoItemIdentifier;
-import com.liferay.info.item.InfoItemReference;
 import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.info.search.InfoSearchClassMapperRegistry;
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorWebKeys;
+import com.liferay.layout.manager.LayoutLockManager;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
 import com.liferay.layout.type.controller.BaseLayoutTypeControllerImpl;
@@ -20,6 +17,7 @@ import com.liferay.layout.type.controller.display.page.internal.constants.Displa
 import com.liferay.layout.type.controller.display.page.internal.display.context.DisplayPageLayoutTypeControllerDisplayContext;
 import com.liferay.petra.io.unsync.UnsyncStringWriter;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.exception.NoSuchLayoutException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -32,12 +30,12 @@ import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.permission.LayoutPermissionUtil;
 import com.liferay.portal.kernel.servlet.PipingServletResponse;
-import com.liferay.portal.kernel.servlet.TransferHeadersHelper;
+import com.liferay.portal.kernel.servlet.TransferHeadersHelperUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
-import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.List;
@@ -70,24 +68,14 @@ public class DisplayPageLayoutTypeController
 			return null;
 		}
 
-		Object object = httpServletRequest.getAttribute(
-			WebKeys.LAYOUT_ASSET_ENTRY);
+		String friendlyURL = _portal.getCurrentURL(httpServletRequest);
 
-		if ((object != null) && (object instanceof AssetEntry)) {
-			AssetEntry assetEntry = (AssetEntry)object;
-
-			ThemeDisplay themeDisplay =
-				(ThemeDisplay)httpServletRequest.getAttribute(
-					WebKeys.THEME_DISPLAY);
-
-			return _assetDisplayPageFriendlyURLProvider.getFriendlyURL(
-				new InfoItemReference(
-					assetEntry.getClassName(),
-					new ClassPKInfoItemIdentifier(assetEntry.getClassPK())),
-				themeDisplay);
+		if (friendlyURL.contains(StringPool.QUESTION)) {
+			friendlyURL = friendlyURL.substring(
+				0, friendlyURL.lastIndexOf(StringPool.QUESTION));
 		}
 
-		return null;
+		return friendlyURL;
 	}
 
 	@Override
@@ -119,6 +107,10 @@ public class DisplayPageLayoutTypeController
 				WebKeys.THEME_DISPLAY);
 
 		if (layout.isDraftLayout()) {
+			if (!themeDisplay.isSignedIn()) {
+				throw new NoSuchLayoutException();
+			}
+
 			Layout curLayout = _layoutLocalService.fetchLayout(
 				layout.getClassPK());
 
@@ -133,12 +125,17 @@ public class DisplayPageLayoutTypeController
 
 		String layoutMode = ParamUtil.getString(
 			httpServletRequest, "p_l_mode", Constants.VIEW);
+		String redirect = StringPool.BLANK;
 
 		if (layoutMode.equals(Constants.EDIT) &&
 			!_hasUpdatePermissions(
 				themeDisplay.getPermissionChecker(), layout)) {
 
 			layoutMode = Constants.VIEW;
+		}
+		else if (!layout.isUnlocked(layoutMode, themeDisplay.getUserId())) {
+			redirect = _layoutLockManager.getLockedLayoutURL(
+				httpServletRequest);
 		}
 
 		DisplayPageLayoutTypeControllerDisplayContext
@@ -152,6 +149,12 @@ public class DisplayPageLayoutTypeController
 				DISPLAY_PAGE_LAYOUT_TYPE_CONTROLLER_DISPLAY_CONTEXT,
 			displayPageLayoutTypeControllerDisplayContext);
 
+		if (!displayPageLayoutTypeControllerDisplayContext.hasInfoItem() &&
+			!themeDisplay.isSignedIn()) {
+
+			throw new NoSuchLayoutException();
+		}
+
 		String page = getViewPage();
 
 		if (layoutMode.equals(Constants.EDIT)) {
@@ -159,7 +162,7 @@ public class DisplayPageLayoutTypeController
 		}
 
 		RequestDispatcher requestDispatcher =
-			_transferHeadersHelper.getTransferHeadersRequestDispatcher(
+			TransferHeadersHelperUtil.getTransferHeadersRequestDispatcher(
 				_servletContext.getRequestDispatcher(page));
 
 		UnsyncStringWriter unsyncStringWriter = new UnsyncStringWriter();
@@ -171,21 +174,37 @@ public class DisplayPageLayoutTypeController
 			RequestDispatcher.INCLUDE_SERVLET_PATH);
 
 		try {
-			LayoutPageTemplateEntry layoutPageTemplateEntry =
-				_fetchLayoutPageTemplateEntry(layout);
+			boolean hasViewPermission =
+				displayPageLayoutTypeControllerDisplayContext.hasPermission(
+					themeDisplay.getPermissionChecker(), ActionKeys.VIEW);
 
-			if (layoutPageTemplateEntry != null) {
-				httpServletRequest.setAttribute(
-					ContentPageEditorWebKeys.CLASS_NAME,
-					LayoutPageTemplateEntry.class.getName());
-				httpServletRequest.setAttribute(
-					ContentPageEditorWebKeys.CLASS_PK,
-					layoutPageTemplateEntry.getLayoutPageTemplateEntryId());
+			if (!hasViewPermission && themeDisplay.isSignedIn()) {
+				httpServletResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
+			}
+			else if (!hasViewPermission) {
+				throw new NoSuchLayoutException();
 			}
 
-			addAttributes(httpServletRequest);
+			if (Validator.isNotNull(redirect)) {
+				httpServletResponse.sendRedirect(redirect);
+			}
+			else {
+				LayoutPageTemplateEntry layoutPageTemplateEntry =
+					_fetchLayoutPageTemplateEntry(layout);
 
-			requestDispatcher.include(httpServletRequest, servletResponse);
+				if (layoutPageTemplateEntry != null) {
+					httpServletRequest.setAttribute(
+						ContentPageEditorWebKeys.CLASS_NAME,
+						LayoutPageTemplateEntry.class.getName());
+					httpServletRequest.setAttribute(
+						ContentPageEditorWebKeys.CLASS_PK,
+						layoutPageTemplateEntry.getLayoutPageTemplateEntryId());
+				}
+
+				addAttributes(httpServletRequest);
+
+				requestDispatcher.include(httpServletRequest, servletResponse);
+			}
 		}
 		finally {
 			removeAttributes(httpServletRequest);
@@ -201,21 +220,6 @@ public class DisplayPageLayoutTypeController
 
 		if (contentType != null) {
 			httpServletResponse.setContentType(contentType);
-		}
-
-		if (!displayPageLayoutTypeControllerDisplayContext.hasPermission(
-				themeDisplay.getPermissionChecker(), ActionKeys.VIEW)) {
-
-			if (themeDisplay.isSignedIn()) {
-				httpServletResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
-			}
-			else {
-				String signInURL = themeDisplay.getURLSignIn();
-
-				httpServletResponse.sendRedirect(
-					HttpComponentsUtil.setParameter(
-						signInURL, "redirect", themeDisplay.getURLCurrent()));
-			}
 		}
 
 		return false;
@@ -339,10 +343,6 @@ public class DisplayPageLayoutTypeController
 		DisplayPageLayoutTypeController.class);
 
 	@Reference
-	private AssetDisplayPageFriendlyURLProvider
-		_assetDisplayPageFriendlyURLProvider;
-
-	@Reference
 	private volatile List<InfoDisplayRequestAttributesContributor>
 		_infoDisplayRequestAttributesContributors;
 
@@ -356,6 +356,9 @@ public class DisplayPageLayoutTypeController
 	private LayoutLocalService _layoutLocalService;
 
 	@Reference
+	private LayoutLockManager _layoutLockManager;
+
+	@Reference
 	private LayoutPageTemplateEntryLocalService
 		_layoutPageTemplateEntryLocalService;
 
@@ -366,8 +369,5 @@ public class DisplayPageLayoutTypeController
 		target = "(osgi.web.symbolicname=com.liferay.layout.type.controller.display.page)"
 	)
 	private ServletContext _servletContext;
-
-	@Reference
-	private TransferHeadersHelper _transferHeadersHelper;
 
 }

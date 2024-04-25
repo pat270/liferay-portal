@@ -48,7 +48,7 @@ public class CPDefinitionOptionRelServiceImpl
 	@Override
 	public CPDefinitionOptionRel addCPDefinitionOptionRel(
 			long cpDefinitionId, long cpOptionId, Map<Locale, String> nameMap,
-			Map<Locale, String> descriptionMap, String ddmFormFieldTypeName,
+			Map<Locale, String> descriptionMap, String commerceOptionTypeKey,
 			double priority, boolean facetable, boolean required,
 			boolean skuContributor, boolean importOptionValue,
 			ServiceContext serviceContext)
@@ -58,25 +58,27 @@ public class CPDefinitionOptionRelServiceImpl
 
 		return cpDefinitionOptionRelLocalService.addCPDefinitionOptionRel(
 			cpDefinitionId, cpOptionId, nameMap, descriptionMap,
-			ddmFormFieldTypeName, priority, facetable, required, skuContributor,
-			importOptionValue, serviceContext);
+			commerceOptionTypeKey, priority, facetable, required,
+			skuContributor, importOptionValue, serviceContext);
 	}
 
 	@Override
 	public CPDefinitionOptionRel addCPDefinitionOptionRel(
 			long cpDefinitionId, long cpOptionId, Map<Locale, String> nameMap,
-			Map<Locale, String> descriptionMap, String ddmFormFieldTypeName,
-			double priority, boolean facetable, boolean required,
+			Map<Locale, String> descriptionMap, String commerceOptionTypeKey,
+			String infoItemServiceKey, double priority,
+			boolean definedExternally, boolean facetable, boolean required,
 			boolean skuContributor, boolean importOptionValue, String priceType,
-			ServiceContext serviceContext)
+			String typeSettings, ServiceContext serviceContext)
 		throws PortalException {
 
 		_checkCommerceCatalog(cpDefinitionId, ActionKeys.UPDATE);
 
 		return cpDefinitionOptionRelLocalService.addCPDefinitionOptionRel(
 			cpDefinitionId, cpOptionId, nameMap, descriptionMap,
-			ddmFormFieldTypeName, priority, facetable, required, skuContributor,
-			importOptionValue, priceType, serviceContext);
+			commerceOptionTypeKey, infoItemServiceKey, priority,
+			definedExternally, facetable, required, skuContributor,
+			importOptionValue, priceType, typeSettings, serviceContext);
 	}
 
 	@Override
@@ -261,7 +263,7 @@ public class CPDefinitionOptionRelServiceImpl
 	public CPDefinitionOptionRel updateCPDefinitionOptionRel(
 			long cpDefinitionOptionRelId, long cpOptionId,
 			Map<Locale, String> nameMap, Map<Locale, String> descriptionMap,
-			String ddmFormFieldTypeName, double priority, boolean facetable,
+			String commerceOptionTypeKey, double priority, boolean facetable,
 			boolean required, boolean skuContributor,
 			ServiceContext serviceContext)
 		throws PortalException {
@@ -275,7 +277,7 @@ public class CPDefinitionOptionRelServiceImpl
 
 		return cpDefinitionOptionRelLocalService.updateCPDefinitionOptionRel(
 			cpDefinitionOptionRel.getCPDefinitionOptionRelId(), cpOptionId,
-			nameMap, descriptionMap, ddmFormFieldTypeName, priority, facetable,
+			nameMap, descriptionMap, commerceOptionTypeKey, priority, facetable,
 			required, skuContributor, serviceContext);
 	}
 
@@ -283,9 +285,10 @@ public class CPDefinitionOptionRelServiceImpl
 	public CPDefinitionOptionRel updateCPDefinitionOptionRel(
 			long cpDefinitionOptionRelId, long cpOptionId,
 			Map<Locale, String> nameMap, Map<Locale, String> descriptionMap,
-			String ddmFormFieldTypeName, double priority, boolean facetable,
+			String commerceOptionTypeKey, String infoItemServiceKey,
+			double priority, boolean definedExternally, boolean facetable,
 			boolean required, boolean skuContributor, String priceType,
-			ServiceContext serviceContext)
+			String typeSettings, ServiceContext serviceContext)
 		throws PortalException {
 
 		CPDefinitionOptionRel cpDefinitionOptionRel =
@@ -297,8 +300,9 @@ public class CPDefinitionOptionRelServiceImpl
 
 		return cpDefinitionOptionRelLocalService.updateCPDefinitionOptionRel(
 			cpDefinitionOptionRel.getCPDefinitionOptionRelId(), cpOptionId,
-			nameMap, descriptionMap, ddmFormFieldTypeName, priority, facetable,
-			required, skuContributor, priceType, serviceContext);
+			nameMap, descriptionMap, commerceOptionTypeKey, infoItemServiceKey,
+			priority, definedExternally, facetable, required, skuContributor,
+			priceType, typeSettings, serviceContext);
 	}
 
 	private void _checkCommerceCatalog(long cpDefinitionId, String actionId)

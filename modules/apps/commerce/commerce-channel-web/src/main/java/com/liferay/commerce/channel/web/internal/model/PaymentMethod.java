@@ -15,12 +15,13 @@ public class PaymentMethod {
 
 	public PaymentMethod(
 		String description, String key, String name, String paymentEngine,
-		LabelField status) {
+		String paymentIntegrationKey, LabelField status) {
 
 		_description = description;
 		_key = key;
 		_name = name;
 		_paymentEngine = paymentEngine;
+		_paymentIntegrationKey = paymentIntegrationKey;
 		_status = status;
 	}
 
@@ -40,6 +41,10 @@ public class PaymentMethod {
 		return _paymentEngine;
 	}
 
+	public String getPaymentIntegrationKey() {
+		return _paymentIntegrationKey;
+	}
+
 	public LabelField getStatus() {
 		return _status;
 	}
@@ -48,6 +53,7 @@ public class PaymentMethod {
 	private final String _key;
 	private final String _name;
 	private final String _paymentEngine;
+	private final String _paymentIntegrationKey;
 	private final LabelField _status;
 
 }

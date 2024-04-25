@@ -15,7 +15,7 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.search.tuning.rankings.web.internal.constants.ResultRankingsConstants;
+import com.liferay.portal.search.tuning.rankings.constants.ResultRankingsConstants;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 
 import javax.portlet.ActionRequest;
@@ -46,7 +46,7 @@ public class EditRankingMVCActionCommandTest
 		_editRankingMVCActionCommand = new EditRankingMVCActionCommand();
 
 		ReflectionTestUtil.setFieldValue(
-			_editRankingMVCActionCommand, "duplicateQueryStringsDetector",
+			_editRankingMVCActionCommand, "_duplicateQueryStringsDetector",
 			duplicateQueryStringsDetector);
 		ReflectionTestUtil.setFieldValue(
 			_editRankingMVCActionCommand, "indexNameBuilder", indexNameBuilder);
@@ -89,7 +89,8 @@ public class EditRankingMVCActionCommandTest
 		setUpPortal();
 		setUpPortalUtil();
 		setUpPortletRequestParamValue(
-			_actionRequest, ResultRankingsConstants.ACTIVATE, Constants.CMD);
+			_actionRequest, ResultRankingsConstants.ACTION_ACTIVATE,
+			Constants.CMD);
 
 		_editRankingMVCActionCommand.doProcessAction(
 			_actionRequest, _actionResponse);
@@ -130,7 +131,8 @@ public class EditRankingMVCActionCommandTest
 		setUpPortal();
 		setUpPortalUtil();
 		setUpPortletRequestParamValue(
-			_actionRequest, ResultRankingsConstants.DEACTIVATE, Constants.CMD);
+			_actionRequest, ResultRankingsConstants.ACTION_DEACTIVATE,
+			Constants.CMD);
 
 		_editRankingMVCActionCommand.doProcessAction(
 			_actionRequest, _actionResponse);

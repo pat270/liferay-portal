@@ -419,7 +419,7 @@ public class GetCollectionFieldMVCResourceCommandTest {
 			).put(
 				"classPK", assetListEntry.getAssetListEntryId()
 			).put(
-				"itemType", AssetEntry.class.getName()
+				"itemType", BlogsEntry.class.getName()
 			).put(
 				"type", InfoListItemSelectorReturnType.class.getName()
 			).toString(),
@@ -444,7 +444,7 @@ public class GetCollectionFieldMVCResourceCommandTest {
 			).put(
 				"classPK", assetListEntry.getAssetListEntryId()
 			).put(
-				"itemType", AssetEntry.class.getName()
+				"itemType", BlogsEntry.class.getName()
 			).put(
 				"type", InfoListItemSelectorReturnType.class.getName()
 			).toString(),
@@ -470,7 +470,7 @@ public class GetCollectionFieldMVCResourceCommandTest {
 			).put(
 				"classPK", assetListEntry.getAssetListEntryId()
 			).put(
-				"itemType", AssetEntry.class.getName()
+				"itemType", BlogsEntry.class.getName()
 			).put(
 				"type", InfoListItemSelectorReturnType.class.getName()
 			).toString(),
@@ -498,8 +498,7 @@ public class GetCollectionFieldMVCResourceCommandTest {
 			Criteria.Conjunction.AND);
 
 		return SegmentsTestUtil.addSegmentsEntry(
-			_group.getGroupId(), CriteriaSerializer.serialize(criteria),
-			User.class.getName());
+			_group.getGroupId(), CriteriaSerializer.serialize(criteria));
 	}
 
 	private HttpServletRequest _getHttpServletRequest() throws Exception {

@@ -164,7 +164,7 @@ public class JournalConverterImpl implements JournalConverter {
 
 				_updateFieldsDisplay(
 					ddmFields, ddmFormField.getName(),
-					String.valueOf(ddmStructure.getStructureId()));
+					StringUtil.randomString());
 			}
 
 			_addNestedDDMFields(
@@ -535,7 +535,11 @@ public class JournalConverterImpl implements JournalConverter {
 				fieldValue = field.getValue(field.getDefaultLocale(), count);
 			}
 
-			String valueString = String.valueOf(fieldValue);
+			String valueString = StringPool.BLANK;
+
+			if (fieldValue != null) {
+				valueString = String.valueOf(fieldValue);
+			}
 
 			if (StringUtil.equals(valueString, DDM.FIELD_EMPTY_VALUE)) {
 				continue;
@@ -621,7 +625,10 @@ public class JournalConverterImpl implements JournalConverter {
 				}
 			}
 			else {
-				dynamicContentElement.addCDATA(jsonArray.getString(0));
+				dynamicContentElement.addCDATA(
+					StringUtil.merge(
+						JSONUtil.toStringArray(jsonArray),
+						StringPool.COMMA_AND_SPACE));
 			}
 		}
 		else {

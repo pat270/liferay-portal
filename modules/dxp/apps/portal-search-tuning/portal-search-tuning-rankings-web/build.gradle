@@ -15,13 +15,17 @@ dependencies {
 	compileOnly project(":apps:frontend-taglib:frontend-taglib")
 	compileOnly project(":apps:frontend-taglib:frontend-taglib-clay")
 	compileOnly project(":apps:frontend-taglib:frontend-taglib-react")
+	compileOnly project(":apps:item-selector:item-selector-api")
+	compileOnly project(":apps:item-selector:item-selector-criteria-api")
+	compileOnly project(":apps:journal:journal-api")
 	compileOnly project(":apps:json-storage:json-storage-api")
+	compileOnly project(":apps:learn:learn-api")
 	compileOnly project(":apps:portal-search:portal-search-api")
 	compileOnly project(":apps:portal-search:portal-search-engine-adapter-api")
 	compileOnly project(":apps:portal-search:portal-search-spi")
 	compileOnly project(":apps:portal-search:portal-search-web-api")
 	compileOnly project(":apps:portal:portal-instance-lifecycle-api")
-	compileOnly project(":apps:static:osgi:osgi-util")
+	compileOnly project(":apps:site:site-item-selector-api")
 	compileOnly project(":apps:static:portal-configuration:portal-configuration-metatype-api")
 	compileOnly project(":apps:static:portal:portal-upgrade-api")
 	compileOnly project(":core:petra:petra-function")
@@ -31,11 +35,11 @@ dependencies {
 	compileOnly project(":dxp:apps:portal-search-tuning:portal-search-tuning-rankings-api")
 	compileOnly project(":dxp:apps:portal-search-tuning:portal-search-tuning-web-api")
 
-	testCompile group: "com.fasterxml.jackson.core", name: "jackson-core", version: "2.13.4"
-	testCompile group: "com.fasterxml.jackson.core", name: "jackson-databind", version: "2.13.4.2"
-	testCompile project(":apps:portal-search:portal-search")
-	testCompile project(":apps:static:portal-configuration:portal-configuration-persistence-api")
-	testCompile project(":core:petra:petra-concurrent")
-	testCompile project(":core:petra:petra-memory")
-	testCompile project(":core:petra:petra-reflect")
+	testImplementation group: "com.fasterxml.jackson.core", name: "jackson-core", version: "2.16.1"
+	testImplementation group: "com.fasterxml.jackson.core", name: "jackson-databind", version: "2.16.1"
+	testImplementation project(":apps:portal-search:portal-search")
+	testImplementation project(":apps:static:portal-configuration:portal-configuration-persistence-api")
+	testImplementation project(":core:petra:petra-concurrent")
+	testImplementation project(":core:petra:petra-memory")
+	testImplementation project(":core:petra:petra-reflect")
 }

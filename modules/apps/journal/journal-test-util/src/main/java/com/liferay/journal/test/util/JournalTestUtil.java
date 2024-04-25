@@ -448,7 +448,7 @@ public class JournalTestUtil {
 			displayDateDay, displayDateYear, displayDateHour, displayDateMinute,
 			expirationDateMonth, expirationDateDay, expirationDateYear,
 			expirationDateHour, expirationDateMinute, neverExpire, 0, 0, 0, 0,
-			0, true, true, false, null, null, null, null, serviceContext);
+			0, true, true, false, 0, 0, null, null, null, null, serviceContext);
 	}
 
 	public static JournalArticle addArticle(
@@ -627,7 +627,7 @@ public class JournalTestUtil {
 			).build(),
 			xml, ddmStructure.getStructureId(), ddmTemplateKey, null, 1, 1,
 			1965, 0, 0, 0, 0, 0, 0, 0, true, 0, 0, 0, 0, 0, true, true, false,
-			null, null, images, null, serviceContext);
+			0, 0, null, null, images, null, serviceContext);
 	}
 
 	public static JournalArticle addArticleWithXMLContent(
@@ -832,12 +832,11 @@ public class JournalTestUtil {
 			DataDefinitionResource.Factory dataDefinitionResourceFactory,
 			DDMFormField ddmFormField,
 			DDMFormValuesToFieldsConverter ddmFormValuesToFieldsConverter,
-			String fieldValue, long groupId, JournalConverter journalConverter)
+			Locale defaultLocale, String fieldValue, long groupId,
+			JournalConverter journalConverter)
 		throws Exception {
 
-		Locale locale = PortalUtil.getSiteDefaultLocale(groupId);
-
-		String languageId = LocaleUtil.toLanguageId(locale);
+		String languageId = LocaleUtil.toLanguageId(defaultLocale);
 
 		DataDefinition dataDefinition =
 			DataDefinitionTestUtil.addDataDefinition(
@@ -865,14 +864,28 @@ public class JournalTestUtil {
 			ddmStructure,
 			_createDDMFormValues(
 				ddmStructure.getDDMForm(),
-				_getDDMFormFieldValue(ddmFormField, fieldValue, locale),
-				locale));
+				_getDDMFormFieldValue(ddmFormField, fieldValue, defaultLocale),
+				defaultLocale));
 
 		String content = journalConverter.getContent(
 			ddmStructure, fields, groupId);
 
 		return addArticleWithXMLContent(
 			groupId, content, dataDefinition.getDataDefinitionKey(), null);
+	}
+
+	public static JournalArticle addJournalArticle(
+			DataDefinitionResource.Factory dataDefinitionResourceFactory,
+			DDMFormField ddmFormField,
+			DDMFormValuesToFieldsConverter ddmFormValuesToFieldsConverter,
+			String fieldValue, long groupId, JournalConverter journalConverter)
+		throws Exception {
+
+		return addJournalArticle(
+			dataDefinitionResourceFactory, ddmFormField,
+			ddmFormValuesToFieldsConverter,
+			PortalUtil.getSiteDefaultLocale(groupId), fieldValue, groupId,
+			journalConverter);
 	}
 
 	public static void expireArticle(long groupId, JournalArticle article)
@@ -1030,12 +1043,13 @@ public class JournalTestUtil {
 		return JournalArticleLocalServiceUtil.updateArticle(
 			userId, article.getGroupId(), article.getFolderId(),
 			article.getArticleId(), article.getVersion(), titleMap,
-			article.getDescriptionMap(), content, article.getDDMTemplateKey(),
-			article.getLayoutUuid(), displayDateMonth, displayDateDay,
-			displayDateYear, displayDateHour, displayDateMinute, 0, 0, 0, 0, 0,
-			true, 0, 0, 0, 0, 0, true, article.isIndexable(),
-			article.isSmallImage(), article.getSmallImageURL(), null, null,
-			null, serviceContext);
+			article.getDescriptionMap(), null, content,
+			article.getDDMTemplateKey(), article.getLayoutUuid(),
+			displayDateMonth, displayDateDay, displayDateYear, displayDateHour,
+			displayDateMinute, 0, 0, 0, 0, 0, true, 0, 0, 0, 0, 0, true,
+			article.isIndexable(), article.isSmallImage(), 0,
+			article.getSmallImageSource(), article.getSmallImageURL(), null,
+			null, null, serviceContext);
 	}
 
 	public static JournalArticle updateArticleWithWorkflow(

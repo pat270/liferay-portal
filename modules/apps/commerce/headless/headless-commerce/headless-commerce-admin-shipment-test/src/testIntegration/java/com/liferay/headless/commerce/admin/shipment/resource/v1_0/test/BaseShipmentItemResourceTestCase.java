@@ -27,15 +27,15 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.test.rule.Inject;
@@ -60,8 +60,6 @@ import java.util.Set;
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-
-import org.apache.commons.lang.time.DateUtils;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -175,6 +173,7 @@ public abstract class BaseShipmentItemResourceTestCase {
 
 		shipmentItem.setExternalReferenceCode(regex);
 		shipmentItem.setShipmentExternalReferenceCode(regex);
+		shipmentItem.setUnitOfMeasureKey(regex);
 		shipmentItem.setUserName(regex);
 
 		String json = ShipmentItemSerDes.toJSON(shipmentItem);
@@ -186,6 +185,7 @@ public abstract class BaseShipmentItemResourceTestCase {
 		Assert.assertEquals(regex, shipmentItem.getExternalReferenceCode());
 		Assert.assertEquals(
 			regex, shipmentItem.getShipmentExternalReferenceCode());
+		Assert.assertEquals(regex, shipmentItem.getUnitOfMeasureKey());
 		Assert.assertEquals(regex, shipmentItem.getUserName());
 	}
 
@@ -240,6 +240,8 @@ public abstract class BaseShipmentItemResourceTestCase {
 		ShipmentItem shipmentItem =
 			testGraphQLGetShipmentByExternalReferenceCodeItem_addShipmentItem();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				shipmentItem,
@@ -261,6 +263,33 @@ public abstract class BaseShipmentItemResourceTestCase {
 								getGraphQLFields())),
 						"JSONObject/data",
 						"Object/shipmentByExternalReferenceCodeItem"))));
+
+		// Using the namespace headlessCommerceAdminShipment_v1_0
+
+		Assert.assertTrue(
+			equals(
+				shipmentItem,
+				ShipmentItemSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminShipment_v1_0",
+								new GraphQLField(
+									"shipmentByExternalReferenceCodeItem",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"externalReferenceCode",
+												"\"" +
+													shipmentItem.
+														getExternalReferenceCode() +
+															"\"");
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminShipment_v1_0",
+						"Object/shipmentByExternalReferenceCodeItem"))));
 	}
 
 	@Test
@@ -269,6 +298,8 @@ public abstract class BaseShipmentItemResourceTestCase {
 
 		String irrelevantExternalReferenceCode =
 			"\"" + RandomTestUtil.randomString() + "\"";
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -284,6 +315,27 @@ public abstract class BaseShipmentItemResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminShipment_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminShipment_v1_0",
+						new GraphQLField(
+							"shipmentByExternalReferenceCodeItem",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"externalReferenceCode",
+										irrelevantExternalReferenceCode);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -330,7 +382,10 @@ public abstract class BaseShipmentItemResourceTestCase {
 
 	@Test
 	public void testGraphQLDeleteShipmentItem() throws Exception {
-		ShipmentItem shipmentItem =
+
+		// No namespace
+
+		ShipmentItem shipmentItem1 =
 			testGraphQLDeleteShipmentItem_addShipmentItem();
 
 		Assert.assertTrue(
@@ -340,23 +395,63 @@ public abstract class BaseShipmentItemResourceTestCase {
 						"deleteShipmentItem",
 						new HashMap<String, Object>() {
 							{
-								put("shipmentItemId", shipmentItem.getId());
+								put("shipmentItemId", shipmentItem1.getId());
 							}
 						})),
 				"JSONObject/data", "Object/deleteShipmentItem"));
-		JSONArray errorsJSONArray = JSONUtil.getValueAsJSONArray(
+
+		JSONArray errorsJSONArray1 = JSONUtil.getValueAsJSONArray(
 			invokeGraphQLQuery(
 				new GraphQLField(
 					"shipmentItem",
 					new HashMap<String, Object>() {
 						{
-							put("shipmentItemId", shipmentItem.getId());
+							put("shipmentItemId", shipmentItem1.getId());
 						}
 					},
 					new GraphQLField("id"))),
 			"JSONArray/errors");
 
-		Assert.assertTrue(errorsJSONArray.length() > 0);
+		Assert.assertTrue(errorsJSONArray1.length() > 0);
+
+		// Using the namespace headlessCommerceAdminShipment_v1_0
+
+		ShipmentItem shipmentItem2 =
+			testGraphQLDeleteShipmentItem_addShipmentItem();
+
+		Assert.assertTrue(
+			JSONUtil.getValueAsBoolean(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"headlessCommerceAdminShipment_v1_0",
+						new GraphQLField(
+							"deleteShipmentItem",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"shipmentItemId",
+										shipmentItem2.getId());
+								}
+							}))),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminShipment_v1_0",
+				"Object/deleteShipmentItem"));
+
+		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminShipment_v1_0",
+					new GraphQLField(
+						"shipmentItem",
+						new HashMap<String, Object>() {
+							{
+								put("shipmentItemId", shipmentItem2.getId());
+							}
+						},
+						new GraphQLField("id")))),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray2.length() > 0);
 	}
 
 	protected ShipmentItem testGraphQLDeleteShipmentItem_addShipmentItem()
@@ -388,6 +483,8 @@ public abstract class BaseShipmentItemResourceTestCase {
 		ShipmentItem shipmentItem =
 			testGraphQLGetShipmentItem_addShipmentItem();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				shipmentItem,
@@ -405,11 +502,37 @@ public abstract class BaseShipmentItemResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/shipmentItem"))));
+
+		// Using the namespace headlessCommerceAdminShipment_v1_0
+
+		Assert.assertTrue(
+			equals(
+				shipmentItem,
+				ShipmentItemSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminShipment_v1_0",
+								new GraphQLField(
+									"shipmentItem",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"shipmentItemId",
+												shipmentItem.getId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminShipment_v1_0",
+						"Object/shipmentItem"))));
 	}
 
 	@Test
 	public void testGraphQLGetShipmentItemNotFound() throws Exception {
 		Long irrelevantShipmentItemId = RandomTestUtil.randomLong();
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -423,6 +546,27 @@ public abstract class BaseShipmentItemResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminShipment_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminShipment_v1_0",
+						new GraphQLField(
+							"shipmentItem",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"shipmentItemId",
+										irrelevantShipmentItemId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -475,7 +619,7 @@ public abstract class BaseShipmentItemResourceTestCase {
 			shipmentItemResource.getShipmentByExternalReferenceCodeItemsPage(
 				externalReferenceCode, Pagination.of(1, 10));
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if (irrelevantExternalReferenceCode != null) {
 			ShipmentItem irrelevantShipmentItem =
@@ -486,13 +630,13 @@ public abstract class BaseShipmentItemResourceTestCase {
 			page =
 				shipmentItemResource.
 					getShipmentByExternalReferenceCodeItemsPage(
-						irrelevantExternalReferenceCode, Pagination.of(1, 2));
+						irrelevantExternalReferenceCode,
+						Pagination.of(1, (int)totalCount + 1));
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantShipmentItem),
-				(List<ShipmentItem>)page.getItems());
+			assertContains(
+				irrelevantShipmentItem, (List<ShipmentItem>)page.getItems());
 			assertValid(
 				page,
 				testGetShipmentByExternalReferenceCodeItemsPage_getExpectedActions(
@@ -510,11 +654,10 @@ public abstract class BaseShipmentItemResourceTestCase {
 		page = shipmentItemResource.getShipmentByExternalReferenceCodeItemsPage(
 			externalReferenceCode, Pagination.of(1, 10));
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(shipmentItem1, shipmentItem2),
-			(List<ShipmentItem>)page.getItems());
+		assertContains(shipmentItem1, (List<ShipmentItem>)page.getItems());
+		assertContains(shipmentItem2, (List<ShipmentItem>)page.getItems());
 		assertValid(
 			page,
 			testGetShipmentByExternalReferenceCodeItemsPage_getExpectedActions(
@@ -542,6 +685,13 @@ public abstract class BaseShipmentItemResourceTestCase {
 		String externalReferenceCode =
 			testGetShipmentByExternalReferenceCodeItemsPage_getExternalReferenceCode();
 
+		Page<ShipmentItem> shipmentItemPage =
+			shipmentItemResource.getShipmentByExternalReferenceCodeItemsPage(
+				externalReferenceCode, null);
+
+		int totalCount = GetterUtil.getInteger(
+			shipmentItemPage.getTotalCount());
+
 		ShipmentItem shipmentItem1 =
 			testGetShipmentByExternalReferenceCodeItemsPage_addShipmentItem(
 				externalReferenceCode, randomShipmentItem());
@@ -554,35 +704,81 @@ public abstract class BaseShipmentItemResourceTestCase {
 			testGetShipmentByExternalReferenceCodeItemsPage_addShipmentItem(
 				externalReferenceCode, randomShipmentItem());
 
-		Page<ShipmentItem> page1 =
-			shipmentItemResource.getShipmentByExternalReferenceCodeItemsPage(
-				externalReferenceCode, Pagination.of(1, 2));
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<ShipmentItem> shipmentItems1 =
-			(List<ShipmentItem>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			shipmentItems1.toString(), 2, shipmentItems1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<ShipmentItem> page1 =
+				shipmentItemResource.
+					getShipmentByExternalReferenceCodeItemsPage(
+						externalReferenceCode,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+							pageSizeLimit));
 
-		Page<ShipmentItem> page2 =
-			shipmentItemResource.getShipmentByExternalReferenceCodeItemsPage(
-				externalReferenceCode, Pagination.of(2, 2));
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(3, page2.getTotalCount());
+			assertContains(shipmentItem1, (List<ShipmentItem>)page1.getItems());
 
-		List<ShipmentItem> shipmentItems2 =
-			(List<ShipmentItem>)page2.getItems();
+			Page<ShipmentItem> page2 =
+				shipmentItemResource.
+					getShipmentByExternalReferenceCodeItemsPage(
+						externalReferenceCode,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+							pageSizeLimit));
 
-		Assert.assertEquals(
-			shipmentItems2.toString(), 1, shipmentItems2.size());
+			assertContains(shipmentItem2, (List<ShipmentItem>)page2.getItems());
 
-		Page<ShipmentItem> page3 =
-			shipmentItemResource.getShipmentByExternalReferenceCodeItemsPage(
-				externalReferenceCode, Pagination.of(1, 3));
+			Page<ShipmentItem> page3 =
+				shipmentItemResource.
+					getShipmentByExternalReferenceCodeItemsPage(
+						externalReferenceCode,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+							pageSizeLimit));
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(shipmentItem1, shipmentItem2, shipmentItem3),
-			(List<ShipmentItem>)page3.getItems());
+			assertContains(shipmentItem3, (List<ShipmentItem>)page3.getItems());
+		}
+		else {
+			Page<ShipmentItem> page1 =
+				shipmentItemResource.
+					getShipmentByExternalReferenceCodeItemsPage(
+						externalReferenceCode,
+						Pagination.of(1, totalCount + 2));
+
+			List<ShipmentItem> shipmentItems1 =
+				(List<ShipmentItem>)page1.getItems();
+
+			Assert.assertEquals(
+				shipmentItems1.toString(), totalCount + 2,
+				shipmentItems1.size());
+
+			Page<ShipmentItem> page2 =
+				shipmentItemResource.
+					getShipmentByExternalReferenceCodeItemsPage(
+						externalReferenceCode,
+						Pagination.of(2, totalCount + 2));
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<ShipmentItem> shipmentItems2 =
+				(List<ShipmentItem>)page2.getItems();
+
+			Assert.assertEquals(
+				shipmentItems2.toString(), 1, shipmentItems2.size());
+
+			Page<ShipmentItem> page3 =
+				shipmentItemResource.
+					getShipmentByExternalReferenceCodeItemsPage(
+						externalReferenceCode,
+						Pagination.of(1, (int)totalCount + 3));
+
+			assertContains(shipmentItem1, (List<ShipmentItem>)page3.getItems());
+			assertContains(shipmentItem2, (List<ShipmentItem>)page3.getItems());
+			assertContains(shipmentItem3, (List<ShipmentItem>)page3.getItems());
+		}
 	}
 
 	protected ShipmentItem
@@ -659,7 +855,7 @@ public abstract class BaseShipmentItemResourceTestCase {
 		Page<ShipmentItem> page = shipmentItemResource.getShipmentItemsPage(
 			shipmentId, Pagination.of(1, 10));
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if (irrelevantShipmentId != null) {
 			ShipmentItem irrelevantShipmentItem =
@@ -667,13 +863,12 @@ public abstract class BaseShipmentItemResourceTestCase {
 					irrelevantShipmentId, randomIrrelevantShipmentItem());
 
 			page = shipmentItemResource.getShipmentItemsPage(
-				irrelevantShipmentId, Pagination.of(1, 2));
+				irrelevantShipmentId, Pagination.of(1, (int)totalCount + 1));
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantShipmentItem),
-				(List<ShipmentItem>)page.getItems());
+			assertContains(
+				irrelevantShipmentItem, (List<ShipmentItem>)page.getItems());
 			assertValid(
 				page,
 				testGetShipmentItemsPage_getExpectedActions(
@@ -689,11 +884,10 @@ public abstract class BaseShipmentItemResourceTestCase {
 		page = shipmentItemResource.getShipmentItemsPage(
 			shipmentId, Pagination.of(1, 10));
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(shipmentItem1, shipmentItem2),
-			(List<ShipmentItem>)page.getItems());
+		assertContains(shipmentItem1, (List<ShipmentItem>)page.getItems());
+		assertContains(shipmentItem2, (List<ShipmentItem>)page.getItems());
 		assertValid(
 			page, testGetShipmentItemsPage_getExpectedActions(shipmentId));
 
@@ -715,6 +909,12 @@ public abstract class BaseShipmentItemResourceTestCase {
 	public void testGetShipmentItemsPageWithPagination() throws Exception {
 		Long shipmentId = testGetShipmentItemsPage_getShipmentId();
 
+		Page<ShipmentItem> shipmentItemPage =
+			shipmentItemResource.getShipmentItemsPage(shipmentId, null);
+
+		int totalCount = GetterUtil.getInteger(
+			shipmentItemPage.getTotalCount());
+
 		ShipmentItem shipmentItem1 = testGetShipmentItemsPage_addShipmentItem(
 			shipmentId, randomShipmentItem());
 
@@ -724,32 +924,72 @@ public abstract class BaseShipmentItemResourceTestCase {
 		ShipmentItem shipmentItem3 = testGetShipmentItemsPage_addShipmentItem(
 			shipmentId, randomShipmentItem());
 
-		Page<ShipmentItem> page1 = shipmentItemResource.getShipmentItemsPage(
-			shipmentId, Pagination.of(1, 2));
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<ShipmentItem> shipmentItems1 =
-			(List<ShipmentItem>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			shipmentItems1.toString(), 2, shipmentItems1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<ShipmentItem> page1 =
+				shipmentItemResource.getShipmentItemsPage(
+					shipmentId,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+						pageSizeLimit));
 
-		Page<ShipmentItem> page2 = shipmentItemResource.getShipmentItemsPage(
-			shipmentId, Pagination.of(2, 2));
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(3, page2.getTotalCount());
+			assertContains(shipmentItem1, (List<ShipmentItem>)page1.getItems());
 
-		List<ShipmentItem> shipmentItems2 =
-			(List<ShipmentItem>)page2.getItems();
+			Page<ShipmentItem> page2 =
+				shipmentItemResource.getShipmentItemsPage(
+					shipmentId,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+						pageSizeLimit));
 
-		Assert.assertEquals(
-			shipmentItems2.toString(), 1, shipmentItems2.size());
+			assertContains(shipmentItem2, (List<ShipmentItem>)page2.getItems());
 
-		Page<ShipmentItem> page3 = shipmentItemResource.getShipmentItemsPage(
-			shipmentId, Pagination.of(1, 3));
+			Page<ShipmentItem> page3 =
+				shipmentItemResource.getShipmentItemsPage(
+					shipmentId,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+						pageSizeLimit));
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(shipmentItem1, shipmentItem2, shipmentItem3),
-			(List<ShipmentItem>)page3.getItems());
+			assertContains(shipmentItem3, (List<ShipmentItem>)page3.getItems());
+		}
+		else {
+			Page<ShipmentItem> page1 =
+				shipmentItemResource.getShipmentItemsPage(
+					shipmentId, Pagination.of(1, totalCount + 2));
+
+			List<ShipmentItem> shipmentItems1 =
+				(List<ShipmentItem>)page1.getItems();
+
+			Assert.assertEquals(
+				shipmentItems1.toString(), totalCount + 2,
+				shipmentItems1.size());
+
+			Page<ShipmentItem> page2 =
+				shipmentItemResource.getShipmentItemsPage(
+					shipmentId, Pagination.of(2, totalCount + 2));
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<ShipmentItem> shipmentItems2 =
+				(List<ShipmentItem>)page2.getItems();
+
+			Assert.assertEquals(
+				shipmentItems2.toString(), 1, shipmentItems2.size());
+
+			Page<ShipmentItem> page3 =
+				shipmentItemResource.getShipmentItemsPage(
+					shipmentId, Pagination.of(1, (int)totalCount + 3));
+
+			assertContains(shipmentItem1, (List<ShipmentItem>)page3.getItems());
+			assertContains(shipmentItem2, (List<ShipmentItem>)page3.getItems());
+			assertContains(shipmentItem3, (List<ShipmentItem>)page3.getItems());
+		}
 	}
 
 	protected ShipmentItem testGetShipmentItemsPage_addShipmentItem(
@@ -788,11 +1028,13 @@ public abstract class BaseShipmentItemResourceTestCase {
 			new GraphQLField("items", getGraphQLFields()),
 			new GraphQLField("page"), new GraphQLField("totalCount"));
 
+		// No namespace
+
 		JSONObject shipmentItemsJSONObject = JSONUtil.getValueAsJSONObject(
 			invokeGraphQLQuery(graphQLField), "JSONObject/data",
 			"JSONObject/shipmentItems");
 
-		Assert.assertEquals(0, shipmentItemsJSONObject.get("totalCount"));
+		long totalCount = shipmentItemsJSONObject.getLong("totalCount");
 
 		ShipmentItem shipmentItem1 =
 			testGraphQLGetShipmentItemsPage_addShipmentItem();
@@ -803,10 +1045,39 @@ public abstract class BaseShipmentItemResourceTestCase {
 			invokeGraphQLQuery(graphQLField), "JSONObject/data",
 			"JSONObject/shipmentItems");
 
-		Assert.assertEquals(2, shipmentItemsJSONObject.getLong("totalCount"));
+		Assert.assertEquals(
+			totalCount + 2, shipmentItemsJSONObject.getLong("totalCount"));
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(shipmentItem1, shipmentItem2),
+		assertContains(
+			shipmentItem1,
+			Arrays.asList(
+				ShipmentItemSerDes.toDTOs(
+					shipmentItemsJSONObject.getString("items"))));
+		assertContains(
+			shipmentItem2,
+			Arrays.asList(
+				ShipmentItemSerDes.toDTOs(
+					shipmentItemsJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceAdminShipment_v1_0
+
+		shipmentItemsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminShipment_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminShipment_v1_0",
+			"JSONObject/shipmentItems");
+
+		Assert.assertEquals(
+			totalCount + 2, shipmentItemsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			shipmentItem1,
+			Arrays.asList(
+				ShipmentItemSerDes.toDTOs(
+					shipmentItemsJSONObject.getString("items"))));
+		assertContains(
+			shipmentItem2,
 			Arrays.asList(
 				ShipmentItemSerDes.toDTOs(
 					shipmentItemsJSONObject.getString("items"))));
@@ -985,6 +1256,14 @@ public abstract class BaseShipmentItemResourceTestCase {
 
 			if (Objects.equals("shipmentId", additionalAssertFieldName)) {
 				if (shipmentItem.getShipmentId() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("unitOfMeasureKey", additionalAssertFieldName)) {
+				if (shipmentItem.getUnitOfMeasureKey() == null) {
 					valid = false;
 				}
 
@@ -1239,6 +1518,17 @@ public abstract class BaseShipmentItemResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("unitOfMeasureKey", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						shipmentItem1.getUnitOfMeasureKey(),
+						shipmentItem2.getUnitOfMeasureKey())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("userName", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						shipmentItem1.getUserName(),
@@ -1310,6 +1600,10 @@ public abstract class BaseShipmentItemResourceTestCase {
 
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
+
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
 
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
@@ -1384,21 +1678,20 @@ public abstract class BaseShipmentItemResourceTestCase {
 
 		if (entityFieldName.equals("createDate")) {
 			if (operator.equals("between")) {
+				Date date = shipmentItem.getCreateDate();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							shipmentItem.getCreateDate(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(shipmentItem.getCreateDate(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -1467,22 +1760,20 @@ public abstract class BaseShipmentItemResourceTestCase {
 
 		if (entityFieldName.equals("modifiedDate")) {
 			if (operator.equals("between")) {
+				Date date = shipmentItem.getModifiedDate();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							shipmentItem.getModifiedDate(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							shipmentItem.getModifiedDate(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -1504,9 +1795,8 @@ public abstract class BaseShipmentItemResourceTestCase {
 		}
 
 		if (entityFieldName.equals("quantity")) {
-			sb.append(String.valueOf(shipmentItem.getQuantity()));
-
-			return sb.toString();
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
 		}
 
 		if (entityFieldName.equals("shipmentExternalReferenceCode")) {
@@ -1558,6 +1848,52 @@ public abstract class BaseShipmentItemResourceTestCase {
 		if (entityFieldName.equals("shipmentId")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
+		}
+
+		if (entityFieldName.equals("unitOfMeasureKey")) {
+			Object object = shipmentItem.getUnitOfMeasureKey();
+
+			String value = String.valueOf(object);
+
+			if (operator.equals("contains")) {
+				sb = new StringBundler();
+
+				sb.append("contains(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 2)) {
+					sb.append(value.substring(1, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else if (operator.equals("startswith")) {
+				sb = new StringBundler();
+
+				sb.append("startswith(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 1)) {
+					sb.append(value.substring(0, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else {
+				sb.append("'");
+				sb.append(value);
+				sb.append("'");
+			}
+
+			return sb.toString();
 		}
 
 		if (entityFieldName.equals("userName")) {
@@ -1666,10 +2002,11 @@ public abstract class BaseShipmentItemResourceTestCase {
 				id = RandomTestUtil.randomLong();
 				modifiedDate = RandomTestUtil.nextDate();
 				orderItemId = RandomTestUtil.randomLong();
-				quantity = RandomTestUtil.randomInt();
 				shipmentExternalReferenceCode = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
 				shipmentId = RandomTestUtil.randomLong();
+				unitOfMeasureKey = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
 				userName = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
 				validateInventory = RandomTestUtil.randomBoolean();
@@ -1689,9 +2026,9 @@ public abstract class BaseShipmentItemResourceTestCase {
 	}
 
 	protected ShipmentItemResource shipmentItemResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

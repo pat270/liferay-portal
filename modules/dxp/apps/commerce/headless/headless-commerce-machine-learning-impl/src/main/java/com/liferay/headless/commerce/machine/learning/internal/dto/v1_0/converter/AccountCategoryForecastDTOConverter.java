@@ -48,30 +48,35 @@ public class AccountCategoryForecastDTOConverter
 					compositeResourcePrimKey.getCompanyId(),
 					compositeResourcePrimKey.getForecastId());
 
-		AssetCategory assetCategory =
-			_assetCategoryLocalService.fetchAssetCategory(
-				assetCategoryCommerceMLForecast.getAssetCategoryId());
-
 		return new AccountCategoryForecast() {
 			{
-				account =
-					assetCategoryCommerceMLForecast.getCommerceAccountId();
-				actual = assetCategoryCommerceMLForecast.getActual();
-				category = assetCategoryCommerceMLForecast.getAssetCategoryId();
+				setAccount(
+					assetCategoryCommerceMLForecast::getCommerceAccountId);
+				setActual(assetCategoryCommerceMLForecast::getActual);
+				setCategory(
+					assetCategoryCommerceMLForecast::getAssetCategoryId);
+				setCategoryTitle(
+					() -> {
+						AssetCategory assetCategory =
+							_assetCategoryLocalService.fetchAssetCategory(
+								assetCategoryCommerceMLForecast.
+									getAssetCategoryId());
 
-				if (assetCategory != null) {
-					categoryTitle = assetCategory.getTitle(
-						LocaleUtil.toLanguageId(
-							dtoConverterContext.getLocale()));
-				}
+						if (assetCategory == null) {
+							return null;
+						}
 
-				forecast = assetCategoryCommerceMLForecast.getForecast();
-				forecastLowerBound =
-					assetCategoryCommerceMLForecast.getForecastLowerBound();
-				forecastUpperBound =
-					assetCategoryCommerceMLForecast.getForecastUpperBound();
-				timestamp = assetCategoryCommerceMLForecast.getTimestamp();
-				unit = assetCategoryCommerceMLForecast.getTarget();
+						return assetCategory.getTitle(
+							LocaleUtil.toLanguageId(
+								dtoConverterContext.getLocale()));
+					});
+				setForecast(assetCategoryCommerceMLForecast::getForecast);
+				setForecastLowerBound(
+					assetCategoryCommerceMLForecast::getForecastLowerBound);
+				setForecastUpperBound(
+					assetCategoryCommerceMLForecast::getForecastUpperBound);
+				setTimestamp(assetCategoryCommerceMLForecast::getTimestamp);
+				setUnit(assetCategoryCommerceMLForecast::getTarget);
 			}
 		};
 	}

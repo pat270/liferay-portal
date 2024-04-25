@@ -71,7 +71,12 @@ public class AssigneeResourceFactoryImpl implements AssigneeResource.Factory {
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _assigneeResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, AssigneeResource>
+					assigneeResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_assigneeResourceProxyProviderFunction;
+
+				return assigneeResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -227,9 +232,6 @@ public class AssigneeResourceFactoryImpl implements AssigneeResource.Factory {
 		}
 	}
 
-	private static final Function<InvocationHandler, AssigneeResource>
-		_assigneeResourceProxyProviderFunction = _getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -264,6 +266,14 @@ public class AssigneeResourceFactoryImpl implements AssigneeResource.Factory {
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, AssigneeResource>
+			_assigneeResourceProxyProviderFunction =
+				_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

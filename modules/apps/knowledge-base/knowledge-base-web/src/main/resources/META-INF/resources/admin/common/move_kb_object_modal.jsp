@@ -8,18 +8,18 @@
 <%@ include file="/init.jsp" %>
 
 <%
-KBAdminNavigationDisplayContext kbAdminNavigationDisplayContext = new KBAdminNavigationDisplayContext(request, renderRequest, renderResponse);
+KBAdminNavigationDisplayContext kbAdminNavigationDisplayContext = new KBAdminNavigationDisplayContext(request, renderRequest, renderResponse, trashHelper);
 %>
 
 <div>
 	<react:component
 		componentId="moveObjectModalId"
-		module="admin/js/components/MoveModal"
+		module="{MoveModal} from knowledge-base-web"
 		props='<%=
 			HashMapBuilder.<String, Object>put(
 				"items", kbAdminNavigationDisplayContext.getKBFolderDataJSONArray()
 			).put(
-				"itemToMoveId", ParamUtil.getString(request, "itemToMoveId")
+				"moveParentKBObjectId", kbAdminNavigationDisplayContext.getMoveParentKBObjectId()
 			).build()
 		%>'
 	/>

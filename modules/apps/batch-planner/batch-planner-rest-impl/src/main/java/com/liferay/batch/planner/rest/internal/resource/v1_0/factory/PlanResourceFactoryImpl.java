@@ -71,7 +71,12 @@ public class PlanResourceFactoryImpl implements PlanResource.Factory {
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _planResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, PlanResource>
+					planResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_planResourceProxyProviderFunction;
+
+				return planResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -225,9 +230,6 @@ public class PlanResourceFactoryImpl implements PlanResource.Factory {
 		}
 	}
 
-	private static final Function<InvocationHandler, PlanResource>
-		_planResourceProxyProviderFunction = _getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -262,6 +264,13 @@ public class PlanResourceFactoryImpl implements PlanResource.Factory {
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, PlanResource>
+			_planResourceProxyProviderFunction = _getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

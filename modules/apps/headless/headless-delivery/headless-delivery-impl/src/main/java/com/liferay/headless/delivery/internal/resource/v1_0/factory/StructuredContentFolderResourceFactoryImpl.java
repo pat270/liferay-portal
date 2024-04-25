@@ -72,7 +72,12 @@ public class StructuredContentFolderResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _structuredContentFolderResourceProxyProviderFunction.
+				Function<InvocationHandler, StructuredContentFolderResource>
+					structuredContentFolderResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_structuredContentFolderResourceProxyProviderFunction;
+
+				return structuredContentFolderResourceProxyProviderFunction.
 					apply(
 						(proxy, method, arguments) -> _invoke(
 							method, arguments, _checkPermissions,
@@ -239,11 +244,6 @@ public class StructuredContentFolderResourceFactoryImpl
 		}
 	}
 
-	private static final Function
-		<InvocationHandler, StructuredContentFolderResource>
-			_structuredContentFolderResourceProxyProviderFunction =
-				_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -279,6 +279,15 @@ public class StructuredContentFolderResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function
+			<InvocationHandler, StructuredContentFolderResource>
+				_structuredContentFolderResourceProxyProviderFunction =
+					_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

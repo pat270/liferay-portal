@@ -5,8 +5,6 @@
 
 package com.liferay.segments.simulation.web.internal.display.context;
 
-import com.liferay.item.selector.ItemSelector;
-import com.liferay.item.selector.criteria.UUIDItemSelectorReturnType;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
@@ -14,10 +12,8 @@ import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
-import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HashMapBuilder;
@@ -27,9 +23,6 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.segments.configuration.provider.SegmentsConfigurationProvider;
 import com.liferay.segments.constants.SegmentsEntryConstants;
 import com.liferay.segments.constants.SegmentsPortletKeys;
-import com.liferay.segments.item.selector.SegmentsEntryItemSelectorReturnType;
-import com.liferay.segments.item.selector.criterion.SegmentsEntryItemSelectorCriterion;
-import com.liferay.segments.item.selector.criterion.SegmentsExperienceItemSelectorCriterion;
 import com.liferay.segments.model.SegmentsEntry;
 import com.liferay.segments.model.SegmentsExperience;
 import com.liferay.segments.service.SegmentsEntryLocalService;
@@ -51,14 +44,12 @@ import javax.servlet.http.HttpServletRequest;
 public class SegmentsSimulationDisplayContext {
 
 	public SegmentsSimulationDisplayContext(
-		HttpServletRequest httpServletRequest, ItemSelector itemSelector,
-		Language language,
+		HttpServletRequest httpServletRequest, Language language,
 		SegmentsConfigurationProvider segmentsConfigurationProvider,
 		SegmentsEntryLocalService segmentsEntryLocalService,
 		SegmentsExperienceLocalService segmentsExperienceLocalService) {
 
 		_httpServletRequest = httpServletRequest;
-		_itemSelector = itemSelector;
 		_language = language;
 		_segmentsConfigurationProvider = segmentsConfigurationProvider;
 		_segmentsEntryLocalService = segmentsEntryLocalService;
@@ -77,28 +68,24 @@ public class SegmentsSimulationDisplayContext {
 
 	public Map<String, Object> getData() throws Exception {
 		return HashMapBuilder.<String, Object>put(
-			"deactivateSimulationURL", getDeactivateSimulationURL()
+			"deactivateSimulationURL", _getDeactivateSimulationURL()
 		).put(
-			"namespace", getPortletNamespace()
+			"namespace", _getPortletNamespace()
 		).put(
-			"segmentationEnabled", isSegmentationEnabled()
+			"segmentationEnabled", _isSegmentationEnabled()
 		).put(
 			"segmentsCompanyConfigurationURL",
-			getSegmentsCompanyConfigurationURL()
+			_getSegmentsCompanyConfigurationURL()
 		).put(
 			"segmentsEntries", _getSegmentsEntriesJSONArray()
 		).put(
 			"segmentsExperiences", _getSegmentsExperiencesJSONArray()
 		).put(
-			"selectSegmentsEntryURL", _getSelectSegmentsEntryURL()
-		).put(
-			"selectSegmentsExperienceURL", _getSelectSegmentsExperienceURL()
-		).put(
-			"simulateSegmentsEntriesURL", getSimulateSegmentsEntriesURL()
+			"simulateSegmentsEntriesURL", _getSimulateSegmentsEntriesURL()
 		).build();
 	}
 
-	public String getDeactivateSimulationURL() {
+	private String _getDeactivateSimulationURL() {
 		return PortletURLBuilder.createActionURL(
 			_liferayPortletResponse, SegmentsPortletKeys.SEGMENTS_SIMULATION
 		).setActionName(
@@ -106,12 +93,12 @@ public class SegmentsSimulationDisplayContext {
 		).buildString();
 	}
 
-	public String getPortletNamespace() {
+	private String _getPortletNamespace() {
 		return PortalUtil.getPortletNamespace(
 			SegmentsPortletKeys.SEGMENTS_SIMULATION);
 	}
 
-	public String getSegmentsCompanyConfigurationURL() {
+	private String _getSegmentsCompanyConfigurationURL() {
 		try {
 			return _segmentsConfigurationProvider.getCompanyConfigurationURL(
 				_httpServletRequest);
@@ -123,50 +110,18 @@ public class SegmentsSimulationDisplayContext {
 		return StringPool.BLANK;
 	}
 
-	public List<SegmentsEntry> getSegmentsEntries() {
+	private List<SegmentsEntry> _getSegmentsEntries() {
 		if (_segmentsEntries != null) {
 			return _segmentsEntries;
 		}
 
 		_segmentsEntries = SegmentsEntryServiceUtil.getSegmentsEntries(
-			_getStagingAwareGroupId(), true);
+			_getStagingAwareGroupId());
 
 		return _segmentsEntries;
 	}
 
-	public String getSimulateSegmentsEntriesURL() {
-		return PortletURLBuilder.createActionURL(
-			_liferayPortletResponse, SegmentsPortletKeys.SEGMENTS_SIMULATION
-		).setActionName(
-			"/segments_simulation/simulate_segments_entries"
-		).buildString();
-	}
-
-	public boolean isSegmentationEnabled() {
-		try {
-			return _segmentsConfigurationProvider.isSegmentationEnabled(
-				_themeDisplay.getCompanyId());
-		}
-		catch (ConfigurationException configurationException) {
-			_log.error(configurationException);
-		}
-
-		return false;
-	}
-
-	public boolean isShowEmptyMessage() {
-		if (_showEmptyMessage != null) {
-			return _showEmptyMessage;
-		}
-
-		List<SegmentsEntry> segmentsEntries = getSegmentsEntries();
-
-		_showEmptyMessage = segmentsEntries.isEmpty();
-
-		return _showEmptyMessage;
-	}
-
-	private JSONArray _getSegmentsEntriesJSONArray() throws Exception {
+	private JSONArray _getSegmentsEntriesJSONArray() {
 		if (_segmentsEntriesJSONArray != null) {
 			return _segmentsEntriesJSONArray;
 		}
@@ -180,7 +135,7 @@ public class SegmentsSimulationDisplayContext {
 					_themeDisplay.getLocale())
 			));
 
-		for (SegmentsEntry segmentsEntry : getSegmentsEntries()) {
+		for (SegmentsEntry segmentsEntry : _getSegmentsEntries()) {
 			_segmentsEntriesJSONArray.put(
 				JSONUtil.put(
 					"id", segmentsEntry.getSegmentsEntryId()
@@ -204,6 +159,8 @@ public class SegmentsSimulationDisplayContext {
 		_segmentsExperiencesJSONArray = JSONUtil.toJSONArray(
 			segmentsExperiences,
 			segmentsExperience -> JSONUtil.put(
+				"active", _isActive(segmentsExperience, segmentsExperiences)
+			).put(
 				"segmentsEntryName",
 				() -> {
 					SegmentsEntry segmentsEntry =
@@ -218,16 +175,13 @@ public class SegmentsSimulationDisplayContext {
 						_themeDisplay.getLocale());
 				}
 			).put(
-				"segmentsExperienceActive",
-				_isActive(segmentsExperience, segmentsExperiences)
-			).put(
 				"segmentsExperienceId",
 				segmentsExperience.getSegmentsExperienceId()
 			).put(
 				"segmentsExperienceName",
 				segmentsExperience.getName(_themeDisplay.getLocale())
 			).put(
-				"segmentsExperienceStatusLabel",
+				"statusLabel",
 				() -> {
 					String statusLabelKey = "inactive";
 
@@ -242,51 +196,12 @@ public class SegmentsSimulationDisplayContext {
 		return _segmentsExperiencesJSONArray;
 	}
 
-	private String _getSelectSegmentsEntryURL() {
-		SegmentsEntryItemSelectorCriterion segmentsEntryItemSelectorCriterion =
-			new SegmentsEntryItemSelectorCriterion();
-
-		segmentsEntryItemSelectorCriterion.setDesiredItemSelectorReturnTypes(
-			new SegmentsEntryItemSelectorReturnType());
-
-		StagingGroupHelper stagingGroupHelper =
-			StagingGroupHelperUtil.getStagingGroupHelper();
-
-		Group group = _themeDisplay.getScopeGroup();
-
-		if (!stagingGroupHelper.isStagedPortlet(
-				_themeDisplay.getScopeGroupId(),
-				SegmentsPortletKeys.SEGMENTS)) {
-
-			group = stagingGroupHelper.getStagedPortletGroup(
-				_themeDisplay.getScopeGroup(), SegmentsPortletKeys.SEGMENTS);
-		}
-
-		segmentsEntryItemSelectorCriterion.setGroupId(group.getGroupId());
-
-		return String.valueOf(
-			_itemSelector.getItemSelectorURL(
-				RequestBackedPortletURLFactoryUtil.create(_httpServletRequest),
-				_liferayPortletResponse.getNamespace() + "selectSegmentsEntry",
-				segmentsEntryItemSelectorCriterion));
-	}
-
-	private String _getSelectSegmentsExperienceURL() {
-		SegmentsExperienceItemSelectorCriterion
-			segmentsExperienceItemSelectorCriterion =
-				new SegmentsExperienceItemSelectorCriterion();
-
-		segmentsExperienceItemSelectorCriterion.
-			setDesiredItemSelectorReturnTypes(new UUIDItemSelectorReturnType());
-		segmentsExperienceItemSelectorCriterion.setPlid(
-			_themeDisplay.getPlid());
-
-		return String.valueOf(
-			_itemSelector.getItemSelectorURL(
-				RequestBackedPortletURLFactoryUtil.create(_httpServletRequest),
-				_liferayPortletResponse.getNamespace() +
-					"selectSegmentsExperience",
-				segmentsExperienceItemSelectorCriterion));
+	private String _getSimulateSegmentsEntriesURL() {
+		return PortletURLBuilder.createActionURL(
+			_liferayPortletResponse, SegmentsPortletKeys.SEGMENTS_SIMULATION
+		).setActionName(
+			"/segments_simulation/simulate_segments_entries"
+		).buildString();
 	}
 
 	private long _getStagingAwareGroupId() {
@@ -326,12 +241,23 @@ public class SegmentsSimulationDisplayContext {
 		return false;
 	}
 
+	private boolean _isSegmentationEnabled() {
+		try {
+			return _segmentsConfigurationProvider.isSegmentationEnabled(
+				_themeDisplay.getCompanyId());
+		}
+		catch (ConfigurationException configurationException) {
+			_log.error(configurationException);
+		}
+
+		return false;
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		SegmentsSimulationDisplayContext.class);
 
 	private Long _groupId;
 	private final HttpServletRequest _httpServletRequest;
-	private final ItemSelector _itemSelector;
 	private final Language _language;
 	private final LiferayPortletResponse _liferayPortletResponse;
 	private final SegmentsConfigurationProvider _segmentsConfigurationProvider;
@@ -341,7 +267,6 @@ public class SegmentsSimulationDisplayContext {
 	private final SegmentsExperienceLocalService
 		_segmentsExperienceLocalService;
 	private JSONArray _segmentsExperiencesJSONArray;
-	private Boolean _showEmptyMessage;
 	private final ThemeDisplay _themeDisplay;
 
 }

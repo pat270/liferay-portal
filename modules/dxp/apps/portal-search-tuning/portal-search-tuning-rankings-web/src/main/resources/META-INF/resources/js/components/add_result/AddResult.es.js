@@ -14,7 +14,7 @@ import AddResultModal from './AddResultModal.es';
 /**
  * A button that opens a modal to be able to search, select, and add results.
  */
-function AddResult({fetchDocumentsSearchUrl, onAddResultSubmit}) {
+function AddResult({disabled, fetchDocumentsSearchURL, onAddResultSubmit}) {
 	const [showModal, setShowModal] = useState(false);
 
 	const {observer, onClose} = useModal({
@@ -31,6 +31,8 @@ function AddResult({fetchDocumentsSearchUrl, onAddResultSubmit}) {
 	return (
 		<>
 			<ClayButton
+				aria-label={Liferay.Language.get('add-result')}
+				disabled={disabled}
 				key="ADD_RESULT_BUTTON"
 				onClick={_handleAddResultButton}
 			>
@@ -40,7 +42,7 @@ function AddResult({fetchDocumentsSearchUrl, onAddResultSubmit}) {
 			<ErrorBoundary component={Liferay.Language.get('add-result')} toast>
 				{showModal ? (
 					<AddResultModal
-						fetchDocumentsSearchUrl={fetchDocumentsSearchUrl}
+						fetchDocumentsSearchURL={fetchDocumentsSearchURL}
 						observer={observer}
 						onAddResultSubmit={onAddResultSubmit}
 						onClose={onClose}
@@ -52,8 +54,13 @@ function AddResult({fetchDocumentsSearchUrl, onAddResultSubmit}) {
 }
 
 AddResult.propTypes = {
-	fetchDocumentsSearchUrl: PropTypes.string.isRequired,
+	disabled: PropTypes.bool,
+	fetchDocumentsSearchURL: PropTypes.string.isRequired,
 	onAddResultSubmit: PropTypes.func.isRequired,
+};
+
+AddResult.defaultProps = {
+	disabled: false,
 };
 
 export default AddResult;

@@ -29,6 +29,10 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.kernel.xml.Attribute;
+import com.liferay.portal.kernel.xml.Document;
+import com.liferay.portal.kernel.xml.Element;
+import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
@@ -86,7 +90,7 @@ public class TranslationEntryServiceTest {
 				RoleTestUtil.addResourcePermission(
 					role,
 					TranslationConstants.RESOURCE_NAME + "." +
-						LocaleUtil.toLanguageId(LocaleUtil.SIMPLIFIED_CHINESE),
+						_language.getLanguageId(LocaleUtil.SIMPLIFIED_CHINESE),
 					ResourceConstants.SCOPE_GROUP,
 					String.valueOf(_group.getGroupId()),
 					TranslationActionKeys.TRANSLATE);
@@ -105,6 +109,7 @@ public class TranslationEntryServiceTest {
 				_translationEntry =
 					_translationEntryService.addOrUpdateTranslationEntry(
 						_group.getGroupId(),
+						_language.getLanguageId(LocaleUtil.US),
 						LocaleUtil.toBCP47LanguageId(
 							LocaleUtil.SIMPLIFIED_CHINESE),
 						infoItemReference,
@@ -127,7 +132,7 @@ public class TranslationEntryServiceTest {
 				RoleTestUtil.addResourcePermission(
 					role,
 					TranslationConstants.RESOURCE_NAME + "." +
-						LocaleUtil.toLanguageId(LocaleUtil.US),
+						_language.getLanguageId(LocaleUtil.US),
 					ResourceConstants.SCOPE_GROUP,
 					String.valueOf(_group.getGroupId()),
 					TranslationActionKeys.TRANSLATE);
@@ -146,7 +151,8 @@ public class TranslationEntryServiceTest {
 				_translationEntry =
 					_translationEntryService.addOrUpdateTranslationEntry(
 						_group.getGroupId(),
-						LocaleUtil.toLanguageId(LocaleUtil.SPAIN),
+						_language.getLanguageId(LocaleUtil.US),
+						_language.getLanguageId(LocaleUtil.SPAIN),
 						infoItemReference,
 						infoItemFieldValuesProvider.getInfoItemFieldValues(
 							journalArticle),
@@ -249,7 +255,7 @@ public class TranslationEntryServiceTest {
 				RoleTestUtil.addResourcePermission(
 					role,
 					TranslationConstants.RESOURCE_NAME + "." +
-						LocaleUtil.toLanguageId(LocaleUtil.US),
+						_language.getLanguageId(LocaleUtil.SPAIN),
 					ResourceConstants.SCOPE_GROUP,
 					String.valueOf(_group.getGroupId()),
 					TranslationActionKeys.TRANSLATE);
@@ -278,7 +284,8 @@ public class TranslationEntryServiceTest {
 				_translationEntry =
 					_translationEntryService.addOrUpdateTranslationEntry(
 						_group.getGroupId(),
-						LocaleUtil.toLanguageId(LocaleUtil.US),
+						_language.getLanguageId(LocaleUtil.US),
+						_language.getLanguageId(LocaleUtil.SPAIN),
 						infoItemReference, infoItemFieldValues, serviceContext);
 
 				Assert.assertNotNull(_translationEntry);
@@ -298,7 +305,7 @@ public class TranslationEntryServiceTest {
 				RoleTestUtil.addResourcePermission(
 					role,
 					TranslationConstants.RESOURCE_NAME + "." +
-						LocaleUtil.toLanguageId(LocaleUtil.US),
+						_language.getLanguageId(LocaleUtil.US),
 					ResourceConstants.SCOPE_GROUP,
 					String.valueOf(_group.getGroupId()),
 					TranslationActionKeys.TRANSLATE);
@@ -333,7 +340,8 @@ public class TranslationEntryServiceTest {
 				_translationEntry =
 					_translationEntryLocalService.addOrUpdateTranslationEntry(
 						_group.getGroupId(),
-						LocaleUtil.toLanguageId(LocaleUtil.US),
+						_language.getLanguageId(LocaleUtil.US),
+						_language.getLanguageId(LocaleUtil.SPAIN),
 						infoItemReference, infoItemFieldValues,
 						ServiceContextTestUtil.getServiceContext());
 
@@ -418,6 +426,87 @@ public class TranslationEntryServiceTest {
 			"newTitle", latestJournalArticle.getTitle(LocaleUtil.SPAIN));
 	}
 
+	@Test
+	public void testAddOrUpdateTranslationEntryWithFranceAsSourceLocale()
+		throws Exception {
+
+		JournalArticle journalArticle = JournalTestUtil.addArticle(
+			_group.getGroupId(), RandomTestUtil.randomString(),
+			RandomTestUtil.randomString());
+
+		TranslationTestUtil.withRegularUser(
+			(user, role) -> {
+				RoleTestUtil.addResourcePermission(
+					role,
+					TranslationConstants.RESOURCE_NAME + "." +
+						_language.getLanguageId(LocaleUtil.SPAIN),
+					ResourceConstants.SCOPE_GROUP,
+					String.valueOf(_group.getGroupId()),
+					TranslationActionKeys.TRANSLATE);
+
+				InfoItemReference infoItemReference = new InfoItemReference(
+					JournalArticle.class.getName(),
+					journalArticle.getResourcePrimKey());
+
+				InfoItemFieldValuesProvider<JournalArticle>
+					infoItemFieldValuesProvider =
+						(InfoItemFieldValuesProvider<JournalArticle>)
+							_infoItemServiceRegistry.getFirstInfoItemService(
+								InfoItemFieldValuesProvider.class,
+								JournalArticle.class.getName());
+
+				InfoItemFieldValues infoItemFieldValues =
+					infoItemFieldValuesProvider.getInfoItemFieldValues(
+						journalArticle);
+
+				ServiceContext serviceContext =
+					ServiceContextTestUtil.getServiceContext();
+
+				serviceContext.setWorkflowAction(
+					WorkflowConstants.ACTION_SAVE_DRAFT);
+
+				String targetLanguageId = _language.getLanguageId(
+					LocaleUtil.SPAIN);
+
+				_translationEntry =
+					_translationEntryService.addOrUpdateTranslationEntry(
+						_group.getGroupId(),
+						_language.getLanguageId(LocaleUtil.FRANCE),
+						targetLanguageId, infoItemReference,
+						infoItemFieldValues, serviceContext);
+
+				Assert.assertNotNull(_translationEntry);
+
+				Assert.assertEquals(
+					targetLanguageId, _translationEntry.getLanguageId());
+
+				Document document = SAXReaderUtil.read(
+					_translationEntry.getContent());
+
+				Assert.assertNotNull(document);
+
+				Element rootElement = document.getRootElement();
+
+				Assert.assertNotNull(rootElement);
+
+				Attribute srcLangAttribute = rootElement.attribute("srcLang");
+
+				Assert.assertNotNull(srcLangAttribute);
+
+				Assert.assertEquals(
+					LocaleUtil.FRANCE.toLanguageTag(),
+					srcLangAttribute.getValue());
+
+				Attribute trgLangAttribute = rootElement.attribute("trgLang");
+
+				Assert.assertNotNull(trgLangAttribute);
+
+				Assert.assertEquals(
+					LocaleUtil.SPAIN.toLanguageTag(),
+					trgLangAttribute.getValue());
+			});
+	}
+
 	private void _addDraftTranslation(
 			JournalArticle journalArticle, Locale locale)
 		throws Exception {
@@ -427,7 +516,7 @@ public class TranslationEntryServiceTest {
 				RoleTestUtil.addResourcePermission(
 					role,
 					TranslationConstants.RESOURCE_NAME + "." +
-						LocaleUtil.toLanguageId(locale),
+						_language.getLanguageId(locale),
 					ResourceConstants.SCOPE_GROUP,
 					String.valueOf(_group.getGroupId()),
 					TranslationActionKeys.TRANSLATE);
@@ -460,8 +549,10 @@ public class TranslationEntryServiceTest {
 
 				_translationEntry =
 					_translationEntryService.addOrUpdateTranslationEntry(
-						_group.getGroupId(), LocaleUtil.toLanguageId(locale),
-						infoItemReference, infoItemFieldValues, serviceContext);
+						_group.getGroupId(),
+						_language.getLanguageId(LocaleUtil.US),
+						_language.getLanguageId(locale), infoItemReference,
+						infoItemFieldValues, serviceContext);
 			});
 	}
 

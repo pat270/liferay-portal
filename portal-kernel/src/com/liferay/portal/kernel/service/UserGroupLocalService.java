@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.service.change.tracking.CTService;
 import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
+import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
@@ -50,6 +51,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @CTAware
+@OSGiBeanProperties(
+	property = {"model.class.name=com.liferay.portal.kernel.model.UserGroup"}
+)
 @ProviderType
 @Transactional(
 	isolation = Isolation.PORTAL,
@@ -63,26 +67,26 @@ public interface UserGroupLocalService
 	 *
 	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.portal.service.impl.UserGroupLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the user group local service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link UserGroupLocalServiceUtil} if injection and service tracking are not available.
 	 */
-	public void addGroupUserGroup(long groupId, long userGroupId);
+	public boolean addGroupUserGroup(long groupId, long userGroupId);
 
-	public void addGroupUserGroup(long groupId, UserGroup userGroup);
+	public boolean addGroupUserGroup(long groupId, UserGroup userGroup);
 
-	public void addGroupUserGroups(long groupId, List<UserGroup> userGroups);
+	public boolean addGroupUserGroups(long groupId, List<UserGroup> userGroups);
 
-	public void addGroupUserGroups(long groupId, long[] userGroupIds);
+	public boolean addGroupUserGroups(long groupId, long[] userGroupIds);
 
 	public UserGroup addOrUpdateUserGroup(
 			String externalReferenceCode, long userId, long companyId,
 			String name, String description, ServiceContext serviceContext)
 		throws PortalException;
 
-	public void addTeamUserGroup(long teamId, long userGroupId);
+	public boolean addTeamUserGroup(long teamId, long userGroupId);
 
-	public void addTeamUserGroup(long teamId, UserGroup userGroup);
+	public boolean addTeamUserGroup(long teamId, UserGroup userGroup);
 
-	public void addTeamUserGroups(long teamId, List<UserGroup> userGroups);
+	public boolean addTeamUserGroups(long teamId, List<UserGroup> userGroups);
 
-	public void addTeamUserGroups(long teamId, long[] userGroupIds);
+	public boolean addTeamUserGroups(long teamId, long[] userGroupIds);
 
 	/**
 	 * Adds a user group.
@@ -124,25 +128,25 @@ public interface UserGroupLocalService
 	/**
 	 * @throws PortalException
 	 */
-	public void addUserUserGroup(long userId, long userGroupId)
+	public boolean addUserUserGroup(long userId, long userGroupId)
 		throws PortalException;
 
 	/**
 	 * @throws PortalException
 	 */
-	public void addUserUserGroup(long userId, UserGroup userGroup)
+	public boolean addUserUserGroup(long userId, UserGroup userGroup)
 		throws PortalException;
 
 	/**
 	 * @throws PortalException
 	 */
-	public void addUserUserGroups(long userId, List<UserGroup> userGroups)
+	public boolean addUserUserGroups(long userId, List<UserGroup> userGroups)
 		throws PortalException;
 
 	/**
 	 * @throws PortalException
 	 */
-	public void addUserUserGroups(long userId, long[] userGroupIds)
+	public boolean addUserUserGroups(long userId, long[] userGroupIds)
 		throws PortalException;
 
 	public void clearGroupUserGroups(long groupId);

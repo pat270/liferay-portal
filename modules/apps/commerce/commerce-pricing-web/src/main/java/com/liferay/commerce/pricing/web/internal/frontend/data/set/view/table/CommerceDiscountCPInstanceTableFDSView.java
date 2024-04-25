@@ -37,6 +37,8 @@ public class CommerceDiscountCPInstanceTableFDSView extends BaseTableFDSView {
 				"actionLink")
 		).add(
 			"productName.LANG", "product"
+		).add(
+			"unitOfMeasureKey", "uom"
 		).build();
 	}
 

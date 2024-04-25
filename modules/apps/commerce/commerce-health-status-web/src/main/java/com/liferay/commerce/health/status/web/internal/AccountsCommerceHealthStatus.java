@@ -104,6 +104,16 @@ public class AccountsCommerceHealthStatus implements CommerceHealthStatus {
 	public boolean isFixed(long companyId, long commerceChannelId)
 		throws PortalException {
 
+		Role accountSupplierRole = _roleLocalService.fetchRole(
+			companyId, AccountRoleConstants.ROLE_NAME_ACCOUNT_SUPPLIER);
+
+		Role supplierRole = _roleLocalService.fetchRole(
+			companyId, AccountRoleConstants.ROLE_NAME_SUPPLIER);
+
+		if ((accountSupplierRole == null) || (supplierRole == null)) {
+			return false;
+		}
+
 		Role role = _roleLocalService.fetchRole(
 			companyId,
 			AccountRoleConstants.REQUIRED_ROLE_NAME_ACCOUNT_ADMINISTRATOR);

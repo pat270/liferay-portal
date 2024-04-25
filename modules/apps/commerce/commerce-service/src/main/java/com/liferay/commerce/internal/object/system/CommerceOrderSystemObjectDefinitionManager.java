@@ -11,6 +11,7 @@ import com.liferay.commerce.service.CommerceOrderLocalService;
 import com.liferay.headless.commerce.admin.order.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.resource.v1_0.OrderResource;
 import com.liferay.object.constants.ObjectDefinitionConstants;
+import com.liferay.object.field.builder.DateObjectFieldBuilder;
 import com.liferay.object.field.builder.IntegerObjectFieldBuilder;
 import com.liferay.object.field.builder.LongIntegerObjectFieldBuilder;
 import com.liferay.object.field.builder.PrecisionDecimalObjectFieldBuilder;
@@ -25,14 +26,15 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.math.BigDecimal;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
@@ -67,6 +69,7 @@ public class CommerceOrderSystemObjectDefinitionManager
 			(CommerceOrder)baseModel);
 	}
 
+	@Override
 	public BaseModel<?> fetchBaseModelByExternalReferenceCode(
 		String externalReferenceCode, long companyId) {
 
@@ -108,8 +111,12 @@ public class CommerceOrderSystemObjectDefinitionManager
 	}
 
 	@Override
-	public Map<Locale, String> getLabelMap() {
-		return createLabelMap("commerce-order");
+	public Map<String, String> getLabelKeys() {
+		return HashMapBuilder.put(
+			"label", "commerce-order"
+		).put(
+			"pluralLabel", "commerce-orders"
+		).build();
 	}
 
 	@Override
@@ -147,6 +154,14 @@ public class CommerceOrderSystemObjectDefinitionManager
 				"currencyCode"
 			).required(
 				true
+			).system(
+				true
+			).build(),
+			new DateObjectFieldBuilder(
+			).labelMap(
+				createLabelMap("order-date")
+			).name(
+				"orderDate"
 			).system(
 				true
 			).build(),
@@ -193,11 +208,6 @@ public class CommerceOrderSystemObjectDefinitionManager
 	}
 
 	@Override
-	public Map<Locale, String> getPluralLabelMap() {
-		return createLabelMap("commerce-orders");
-	}
-
-	@Override
 	public Column<?, Long> getPrimaryKeyColumn() {
 		return CommerceOrderTable.INSTANCE.commerceOrderId;
 	}
@@ -214,7 +224,7 @@ public class CommerceOrderSystemObjectDefinitionManager
 
 	@Override
 	public int getVersion() {
-		return 3;
+		return 4;
 	}
 
 	@Override
@@ -246,16 +256,25 @@ public class CommerceOrderSystemObjectDefinitionManager
 	private Order _toOrder(Map<String, Object> values) {
 		return new Order() {
 			{
-				accountId = GetterUtil.getLong(values.get("accountId"));
-				channelId = GetterUtil.getLong(values.get("channelId"));
-				currencyCode = GetterUtil.getString(values.get("currencyCode"));
-				externalReferenceCode = GetterUtil.getString(
-					values.get("externalReferenceCode"));
-				orderStatus = GetterUtil.getInteger(values.get("orderStatus"));
-				orderTypeExternalReferenceCode = GetterUtil.getString(
-					values.get("orderTypeExternalReferenceCode"));
-				orderTypeId = GetterUtil.getLong(values.get("orderTypeId"));
-
+				setAccountId(() -> GetterUtil.getLong(values.get("accountId")));
+				setChannelId(() -> GetterUtil.getLong(values.get("channelId")));
+				setCurrencyCode(
+					() -> GetterUtil.getString(values.get("currencyCode")));
+				setExternalReferenceCode(
+					() -> GetterUtil.getString(
+						values.get("externalReferenceCode")));
+				setOrderDate(
+					() -> GetterUtil.getDate(
+						values.get("orderDate"),
+						DateFormatFactoryUtil.getSimpleDateFormat(
+							"yyyy-MM-dd'T'HH:mm:ss'Z'")));
+				setOrderStatus(
+					() -> GetterUtil.getInteger(values.get("orderStatus")));
+				setOrderTypeExternalReferenceCode(
+					() -> GetterUtil.getString(
+						values.get("orderTypeExternalReferenceCode")));
+				setOrderTypeId(
+					() -> GetterUtil.getLong(values.get("orderTypeId")));
 				setShippingAmount(
 					() -> {
 						String shippingAmountString = GetterUtil.getString(

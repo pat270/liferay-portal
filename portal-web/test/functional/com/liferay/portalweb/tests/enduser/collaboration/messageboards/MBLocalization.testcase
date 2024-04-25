@@ -1,4 +1,4 @@
-@component-name = "portal-lima"
+@component-name = "portal-content-management"
 definition {
 
 	property portal.acceptance = "true";
@@ -28,7 +28,7 @@ definition {
 	}
 
 	@description = "This test covers LPS-84585. It ensures that a user can delete the reply of MB in Japanese."
-	@priority = 4
+	@priority = 3
 	test CanDeleteThreadReplyInJapanese {
 		JSONMBMessage.addMessage(
 			groupName = "Guest",

@@ -7,6 +7,7 @@ package com.liferay.object.web.internal.object.definitions.display.context;
 
 import com.liferay.frontend.data.set.model.FDSActionDropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
+import com.liferay.learn.LearnMessageUtil;
 import com.liferay.object.constants.ObjectFieldConstants;
 import com.liferay.object.constants.ObjectValidationRuleConstants;
 import com.liferay.object.model.ObjectDefinition;
@@ -22,6 +23,7 @@ import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.security.script.management.configuration.helper.ScriptManagementConfigurationHelper;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -40,12 +42,16 @@ public class ObjectDefinitionsValidationsDisplayContext
 		HttpServletRequest httpServletRequest,
 		ModelResourcePermission<ObjectDefinition>
 			objectDefinitionModelResourcePermission,
-		ObjectValidationRuleEngineRegistry objectValidationRuleEngineRegistry) {
+		ObjectValidationRuleEngineRegistry objectValidationRuleEngineRegistry,
+		ScriptManagementConfigurationHelper
+			scriptManagementConfigurationHelper) {
 
 		super(httpServletRequest, objectDefinitionModelResourcePermission);
 
 		_objectValidationRuleEngineRegistry =
 			objectValidationRuleEngineRegistry;
+		_scriptManagementConfigurationHelper =
+			scriptManagementConfigurationHelper;
 	}
 
 	public String getEditObjectValidationURL() throws Exception {
@@ -82,17 +88,20 @@ public class ObjectDefinitionsValidationsDisplayContext
 	}
 
 	public List<Map<String, String>> getObjectValidationRuleEngines() {
+		ObjectDefinition objectDefinition = getObjectDefinition();
+
 		return ListUtil.sort(
 			TransformUtil.transform(
 				_objectValidationRuleEngineRegistry.
-					getObjectValidationRuleEngines(),
+					getObjectValidationRuleEngines(
+						objectDefinition.getCompanyId(),
+						objectDefinition.getName()),
 				objectValidationRuleEngine -> HashMapBuilder.put(
-					"label",
-					LanguageUtil.get(
-						objectRequestHelper.getLocale(),
-						objectValidationRuleEngine.getName())
+					"key", objectValidationRuleEngine.getKey()
 				).put(
-					"name", objectValidationRuleEngine.getName()
+					"label",
+					objectValidationRuleEngine.getLabel(
+						objectRequestHelper.getLocale())
 				).build()),
 			Comparator.comparing(item -> item.get("label")));
 	}
@@ -104,7 +113,16 @@ public class ObjectDefinitionsValidationsDisplayContext
 		ObjectDefinition objectDefinition = getObjectDefinition();
 
 		return HashMapBuilder.<String, Object>put(
+			"allowScriptContentToBeExecutedOrIncluded",
+			isAllowScriptContentToBeExecutedOrIncluded()
+		).put(
 			"creationLanguageId", objectDefinition.getDefaultLanguageId()
+		).put(
+			"learnResources",
+			LearnMessageUtil.getReactDataJSONObject("object-web")
+		).put(
+			"objectDefinitionExternalReferenceCode",
+			objectDefinition.getExternalReferenceCode()
 		).put(
 			"objectDefinitionId", objectDefinition.getObjectDefinitionId()
 		).put(
@@ -119,6 +137,18 @@ public class ObjectDefinitionsValidationsDisplayContext
 		).put(
 			"readOnly", !hasUpdateObjectDefinitionPermission()
 		).build();
+	}
+
+	public String getScriptManagementConfigurationPortletURL()
+		throws PortalException {
+
+		return _scriptManagementConfigurationHelper.
+			getScriptManagementConfigurationPortletURL();
+	}
+
+	public boolean isAllowScriptContentToBeExecutedOrIncluded() {
+		return _scriptManagementConfigurationHelper.
+			isAllowScriptContentToBeExecutedOrIncluded();
 	}
 
 	@Override
@@ -157,5 +187,7 @@ public class ObjectDefinitionsValidationsDisplayContext
 
 	private final ObjectValidationRuleEngineRegistry
 		_objectValidationRuleEngineRegistry;
+	private final ScriptManagementConfigurationHelper
+		_scriptManagementConfigurationHelper;
 
 }

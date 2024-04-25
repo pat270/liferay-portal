@@ -63,10 +63,6 @@ definition {
 	tearDown {
 		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
 
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
-		//ACUtils.tearDownAC();
-
 		ACUtils.tearDownDXP();
 
 		if (${testLiferayVirtualInstance} == "true") {
@@ -75,6 +71,8 @@ definition {
 		else {
 			JSONGroup.deleteGroupByName(groupName = "Site Name");
 		}
+
+		ACUtils.tearDownAC();
 	}
 
 	@description = "Feature ID: LRAC-7868 | Automation ID: LRAC-10314 | Test Summary: Event Analysis in an empty state"
@@ -440,8 +438,7 @@ definition {
 
 		task ("Add a default attribute in the filter and use the contains condition") {
 			ACEventAnalysis.addFilter(
-				dropdownData = ${analysisInformation},
-				dropdownIndex = 1,
+				dropdownOptionName = ${analysisInformation},
 				filterName = ${firstFilterName},
 				optionValue = ${firstFilterCondition});
 		}
@@ -452,8 +449,7 @@ definition {
 
 		task ("Add another attribute in the filter and use not contains condition") {
 			ACEventAnalysis.addFilter(
-				dropdownData = ${currentURL},
-				dropdownIndex = 1,
+				dropdownOptionName = ${currentURL},
 				filterName = ${secondFilterName},
 				optionValue = ${secondFilterCondition});
 		}
@@ -466,10 +462,7 @@ definition {
 	@description = "Feature ID: LRAC-4266 | Automation ID: LRAC-10307 | Test Summary: Total Chart, Unique Chart and Average Chart data shown"
 	@priority = 5
 	test CheckTotalAndUniqueAndAverageChartDataIsShown {
-		property portal.upstream = "quarantine";
-
-		// AC Quarantine Reason: The data in the event analysis taking a while to appear
-		// AC Refactor ticket: LRAC-10527
+		property test.run.type = "single";
 
 		var attributeName = "pageTitle";
 		var layoutNameList = "Custom 1,Custom 2";
@@ -480,7 +473,7 @@ definition {
 
 			ACCustomEvents.createCustomEvent(
 				customEventName = ${customEventName},
-				timeToSendCustomEvent = 3);
+				timeToSendCustomEvent = 6);
 		}
 
 		task ("Close sessions") {
@@ -504,7 +497,7 @@ definition {
 		task ("Fill fields and make new interactions with custom event") {
 			ACCustomEvents.createCustomEvent(
 				customEventName = ${customEventName},
-				timeToSendCustomEvent = 2);
+				timeToSendCustomEvent = 3);
 		}
 
 		task ("Close sessions") {
@@ -552,17 +545,11 @@ definition {
 		}
 
 		task ("Check that the chart appears for the total tab") {
-			ACEventAnalysis.viewTotalNumberRelatedToColumnInformation(
-				columnInformationValue = "ac page - site name - ${dataSource}",
-				totalEventsValue = 3);
+			ACEventAnalysis.viewAnalysisInformation(informationValueList = "ac page - site name - ${dataSource}");
 
-			ACEventAnalysis.viewTotalNumberRelatedToColumnInformation(
-				columnInformationValue = "custom 2 - site name - ${dataSource}",
-				totalEventsValue = 2);
+			ACEventAnalysis.viewAnalysisInformation(informationValueList = "custom 2 - site name - ${dataSource}");
 
-			ACEventAnalysis.viewTotalNumberRelatedToColumnInformation(
-				columnInformationValue = "custom 1 - site name - ${dataSource}",
-				totalEventsValue = 1);
+			ACEventAnalysis.viewAnalysisInformation(informationValueList = "custom 1 - site name - ${dataSource}");
 		}
 
 		task ("Switch tab to unique") {
@@ -570,17 +557,11 @@ definition {
 		}
 
 		task ("Check that the chart appears for the unique tab") {
-			ACEventAnalysis.viewTotalNumberRelatedToColumnInformation(
-				columnInformationValue = "ac page - site name - ${dataSource}",
-				totalEventsValue = 1);
+			ACEventAnalysis.viewAnalysisInformation(informationValueList = "ac page - site name - ${dataSource}");
 
-			ACEventAnalysis.viewTotalNumberRelatedToColumnInformation(
-				columnInformationValue = "custom 2 - site name - ${dataSource}",
-				totalEventsValue = 1);
+			ACEventAnalysis.viewAnalysisInformation(informationValueList = "custom 2 - site name - ${dataSource}");
 
-			ACEventAnalysis.viewTotalNumberRelatedToColumnInformation(
-				columnInformationValue = "custom 1 - site name - ${dataSource}",
-				totalEventsValue = 1);
+			ACEventAnalysis.viewAnalysisInformation(informationValueList = "custom 1 - site name - ${dataSource}");
 		}
 
 		task ("Switch tab to average") {
@@ -588,17 +569,11 @@ definition {
 		}
 
 		task ("Check that the chart appears for the average tab") {
-			ACEventAnalysis.viewTotalNumberRelatedToColumnInformation(
-				columnInformationValue = "ac page - site name - ${dataSource}",
-				totalEventsValue = 3);
+			ACEventAnalysis.viewAnalysisInformation(informationValueList = "ac page - site name - ${dataSource}");
 
-			ACEventAnalysis.viewTotalNumberRelatedToColumnInformation(
-				columnInformationValue = "custom 2 - site name - ${dataSource}",
-				totalEventsValue = 2);
+			ACEventAnalysis.viewAnalysisInformation(informationValueList = "custom 2 - site name - ${dataSource}");
 
-			ACEventAnalysis.viewTotalNumberRelatedToColumnInformation(
-				columnInformationValue = "custom 1 - site name - ${dataSource}",
-				totalEventsValue = 1);
+			ACEventAnalysis.viewAnalysisInformation(informationValueList = "custom 1 - site name - ${dataSource}");
 		}
 	}
 
@@ -700,12 +675,20 @@ definition {
 		var defaultEventName = "pageViewed";
 		var dataSource = StringUtil.extractFirst(${assignedPropertyName}, " ");
 
+		task ("View the page") {
+			ACUtils.navigateToSitePage(
+				actionType = "View WC",
+				documentTitleList = "1,2,3,4",
+				pageName = "AC Page",
+				siteName = "Site Name");
+		}
+
 		task ("Fill fields and create custom event") {
 			var customEventName = ACCustomEvents.generateCustomEventName();
 
 			ACCustomEvents.createCustomEvent(
 				customEventName = ${customEventName},
-				timeToSendCustomEvent = 1);
+				timeToSendCustomEvent = 4);
 		}
 
 		task ("Close sessions") {
@@ -831,7 +814,7 @@ definition {
 	@description = "Feature ID: LRAC-4266 | Automation ID: LRAC-10306 | Test Summary: Remove Attribute"
 	@priority = 5
 	test RemoveAttribute {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var attributeName = "pageTitle";
 
@@ -864,11 +847,13 @@ definition {
 		}
 
 		task ("Check the analysis result appears") {
+			var dataSourceName = StringUtil.extractFirst(${assignedPropertyName}, " ");
+
 			ACTimeFilter.clickTimeFilterButton();
 
 			ACTimeFilter.setLast24Hours();
 
-			ACEventAnalysis.viewAnalysisInformation(informationValueList = "ac page - site name - liferay dxp");
+			ACEventAnalysis.viewAnalysisInformation(informationValueList = "ac page - site name - ${dataSourceName}");
 		}
 
 		task ("Remove the breakdown from the analysis") {
@@ -876,7 +861,7 @@ definition {
 		}
 
 		task ("Check that the breakdown information does not appear in the result") {
-			ACEventAnalysis.viewAnalysisInformationNotPresent(informationValueList = "ac page - site name - liferay dxp");
+			ACEventAnalysis.viewAnalysisInformationNotPresent(informationValueList = "ac page - site name - ${dataSourceName}");
 		}
 
 		task ("Check that the breakdown does not appear on the dashboard") {
@@ -893,7 +878,7 @@ definition {
 	@description = "Feature ID: LRAC-4266 | Automation ID: LRAC-10301 | Test Summary: Search Event Attribute from Event tab"
 	@priority = 3
 	test SearchEventAttributeInEventTab {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var defaultAttributeName = "pageTitle";
 		var customAttributeName = "category";
@@ -948,7 +933,7 @@ definition {
 	@description = "Feature ID: LRAC-4266 | Automation ID: LRAC-10295 | Test Summary: Search for events in different tabs"
 	@priority = 3
 	test SearchEventsInDifferentTabs {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var defaultEventName = "pageViewed";
 
@@ -1022,7 +1007,7 @@ definition {
 	@description = "Feature ID: LRAC-4266 | Automation ID: LRAC-10311 | Test Summary: Events are in alphabetical order and attributes are in alphabetical order"
 	@priority = 4
 	test ViewEventsAreListedInAlphabeticalOrder {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var attributeName = "assetId";
 		var defaultEventName = "assetClicked";

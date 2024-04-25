@@ -15,7 +15,6 @@ import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.PortletCategory;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
@@ -28,13 +27,10 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
-import com.liferay.portal.util.WebAppPool;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
 import com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineTaskItemDelegate;
 
@@ -54,7 +50,6 @@ import org.junit.runner.RunWith;
 /**
  * @author Igor Beslic
  */
-@FeatureFlags("LPS-170122")
 @RunWith(Arquillian.class)
 public class ObjectDefinitionVulcanBatchEngineTaskItemDelegateTest {
 
@@ -67,11 +62,7 @@ public class ObjectDefinitionVulcanBatchEngineTaskItemDelegateTest {
 
 	@Before
 	public void setUp() throws Exception {
-		_company = CompanyTestUtil.addCompany();
-
-		WebAppPool.put(
-			_company.getCompanyId(), WebKeys.PORTLET_CATEGORY,
-			new PortletCategory());
+		_company = CompanyTestUtil.addCompany(true);
 
 		User user = UserTestUtil.addCompanyAdminUser(_company);
 
@@ -150,18 +141,22 @@ public class ObjectDefinitionVulcanBatchEngineTaskItemDelegateTest {
 
 		com.liferay.object.model.ObjectDefinition
 			serviceBuilderObjectDefinition =
-				_objectDefinitionLocalService.fetchObjectDefinition(
-					_company.getCompanyId(), "C_Oapproved");
+				_objectDefinitionLocalService.
+					fetchObjectDefinitionByExternalReferenceCode(
+						objectDefinition1.getExternalReferenceCode(),
+						_company.getCompanyId());
 
 		Assert.assertNotNull(serviceBuilderObjectDefinition);
-		Assert.assertTrue(serviceBuilderObjectDefinition.getActive());
+		Assert.assertTrue(serviceBuilderObjectDefinition.isActive());
 
 		serviceBuilderObjectDefinition =
-			_objectDefinitionLocalService.fetchObjectDefinition(
-				_company.getCompanyId(), "C_Odraft");
+			_objectDefinitionLocalService.
+				fetchObjectDefinitionByExternalReferenceCode(
+					objectDefinition2.getExternalReferenceCode(),
+					_company.getCompanyId());
 
 		Assert.assertNotNull(serviceBuilderObjectDefinition);
-		Assert.assertFalse(serviceBuilderObjectDefinition.getActive());
+		Assert.assertFalse(serviceBuilderObjectDefinition.isActive());
 	}
 
 	private ObjectDefinition _createObjectDefinition(String name) {
@@ -181,13 +176,9 @@ public class ObjectDefinitionVulcanBatchEngineTaskItemDelegateTest {
 				externalReferenceCode = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
 				id = RandomTestUtil.randomLong();
-				label = Collections.singletonMap("en_US", "O" + finalName);
-
-				if (FeatureFlagManagerUtil.isEnabled("LPS-167253")) {
-					modifiable = !finalSystem;
-				}
-
-				name = "O" + finalName;
+				label = Collections.singletonMap("en_US", "Test" + finalName);
+				modifiable = !finalSystem;
+				name = "Test" + finalName;
 				objectFields = new ObjectField[] {_createObjectField()};
 				panelAppOrder = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
@@ -195,23 +186,24 @@ public class ObjectDefinitionVulcanBatchEngineTaskItemDelegateTest {
 					RandomTestUtil.randomString());
 				parameterRequired = RandomTestUtil.randomBoolean();
 				pluralLabel = Collections.singletonMap(
-					"en_US", "O" + finalName + "s");
+					"en_US", "Test" + finalName + "s");
 				portlet = RandomTestUtil.randomBoolean();
 				restContextPath = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
 				scope = ObjectDefinitionConstants.SCOPE_COMPANY;
-
-				if (FeatureFlagManagerUtil.isEnabled("LPS-135430")) {
-					storageType = StringUtil.toLowerCase(
-						RandomTestUtil.randomString());
-				}
-				else {
-					storageType = StringPool.BLANK;
-				}
-
 				system = finalSystem;
 				titleObjectFieldName = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
+
+				setStorageType(
+					() -> {
+						if (!FeatureFlagManagerUtil.isEnabled("LPS-135430")) {
+							return StringPool.BLANK;
+						}
+
+						return StringUtil.toLowerCase(
+							RandomTestUtil.randomString());
+					});
 			}
 		};
 	}

@@ -1,9 +1,9 @@
 @component-name = "portal-wcm"
 definition {
 
+	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testcase.url = "http://localhost:8080";
 	property testray.main.component.name = "Utility Pages";
 
 	static var randomSiteName = StringUtil.randomString(8);
@@ -11,6 +11,10 @@ definition {
 	var siteURLKey = StringUtil.toLowerCase(${randomSiteName});
 
 	setUp {
+		task ("Set up virtual instance") {
+			TestCase.setUpPortalInstance();
+		}
+
 		task ("Sign in") {
 			User.firstLoginPG();
 		}
@@ -91,6 +95,8 @@ definition {
 	@description = "This is a test for LPS-177408. The page designer could add a 500 error type of utility page"
 	@priority = 5
 	test Add500ErrorUtilityPage {
+		property portal.acceptance = "true";
+
 		task ("Given a page designer navigates to the Pages admin") {
 			PagesAdmin.openPagesAdmin(siteURLKey = ${siteURLKey});
 		}
@@ -170,7 +176,7 @@ definition {
 				menuItem = "Mark as Default",
 				pageName = "First 404 Error Utility Page");
 
-			Confirm();
+			Confirm(value1 = "null");
 
 			Alert.viewSuccessMessage();
 		}
@@ -502,7 +508,7 @@ definition {
 				menuItem = "Preview",
 				pageName = 500);
 
-			SelectWindow.selectPopUp(locator1 = "null");
+			SelectWindow.selectPopUp(value1 = "null");
 
 			ContentPages.viewFragmentText(
 				fragmentName = "heading",
@@ -521,6 +527,7 @@ definition {
 	test Mark404ErrorUtilityPageAsDefault {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given a page designer has a 404 error utility page before enabling private pages") {
 			PagesAdmin.openPagesAdmin(siteURLKey = ${siteURLKey});
@@ -546,7 +553,7 @@ definition {
 				menuItem = "Mark as Default",
 				pageName = "404 Error Utility Page");
 
-			Confirm();
+			Confirm(value1 = "null");
 
 			Alert.viewSuccessMessage();
 		}
@@ -620,6 +627,8 @@ definition {
 	@description = "This is a test for LPS-177408. The page designer could mark a 500 error type of utility page as default."
 	@priority = 5
 	test Mark500ErrorUtilityPageAsDefault {
+		property portal.acceptance = "true";
+
 		task ("Given a page designer has a 500 error utility page") {
 			PagesAdmin.openPagesAdmin(siteURLKey = ${siteURLKey});
 
@@ -646,7 +655,7 @@ definition {
 				menuItem = "Mark as Default",
 				pageName = "500 Error Utility Page");
 
-			Confirm();
+			Confirm(value1 = "null");
 
 			Alert.viewSuccessMessage();
 		}
@@ -691,7 +700,7 @@ definition {
 				menuItem = "Preview",
 				pageName = "404 Error Utility Page");
 
-			SelectWindow.selectPopUp(locator1 = "null");
+			SelectWindow.selectPopUp(value1 = "null");
 
 			ContentPages.viewFragmentText(
 				fragmentName = "heading",
@@ -718,7 +727,7 @@ definition {
 				menuItem = "Preview",
 				pageName = "404 Error Utility Page");
 
-			SelectWindow.selectPopUp(locator1 = "null");
+			SelectWindow.selectPopUp(value1 = "null");
 
 			ContentPages.viewFragmentText(
 				fragmentName = "heading",
@@ -757,7 +766,7 @@ definition {
 				menuItem = "Preview",
 				pageName = "404 Error Utility Page");
 
-			SelectWindow.selectPopUp(locator1 = "null");
+			SelectWindow.selectPopUp(value1 = "null");
 
 			ContentPages.viewFragmentText(
 				fragmentName = "heading",
@@ -833,7 +842,7 @@ definition {
 				menuItem = "Mark as Default",
 				pageName = "404 Error Utility Page");
 
-			Confirm();
+			Confirm(value1 = "null");
 
 			Alert.viewSuccessMessage();
 
@@ -847,7 +856,7 @@ definition {
 				menuItem = "Unmark as Default",
 				pageName = "404 Error Utility Page");
 
-			Confirm();
+			Confirm(value1 = "null");
 
 			Alert.viewSuccessMessage();
 		}

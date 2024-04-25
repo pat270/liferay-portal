@@ -8,22 +8,25 @@ package com.liferay.commerce.organization.web.internal.display.context;
 import com.liferay.commerce.organization.web.internal.configuration.CommerceOrganizationPortletInstanceConfiguration;
 import com.liferay.commerce.organization.web.internal.display.context.helper.CommerceOrganizationRequestHelper;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.OrganizationConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
+import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletQName;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.OrganizationService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.permission.OrganizationPermissionUtil;
 import com.liferay.portal.kernel.service.permission.PortalPermissionUtil;
-import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
@@ -51,11 +54,10 @@ public class CommerceOrganizationDisplayContext {
 		_themeDisplay = (ThemeDisplay)httpServletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		PortletDisplay portletDisplay = _themeDisplay.getPortletDisplay();
-
 		_commerceOrganizationPortletInstanceConfiguration =
-			portletDisplay.getPortletInstanceConfiguration(
-				CommerceOrganizationPortletInstanceConfiguration.class);
+			ConfigurationProviderUtil.getPortletInstanceConfiguration(
+				CommerceOrganizationPortletInstanceConfiguration.class,
+				_themeDisplay);
 	}
 
 	public String getKeywords() {
@@ -190,6 +192,29 @@ public class CommerceOrganizationDisplayContext {
 		return _commerceOrganizationRequestHelper.getUserId();
 	}
 
+	public String getSelectLogoURL() {
+		return PortletURLBuilder.createRenderURL(
+			PortalUtil.getLiferayPortletResponse(
+				_commerceOrganizationRequestHelper.getLiferayPortletResponse()),
+			PortletKeys.IMAGE_UPLOADER
+		).setMVCRenderCommandName(
+			"/image_uploader/upload_image"
+		).setParameter(
+			"aspectRatio", 1
+		).setParameter(
+			"currentLogoURL", "[$CURRENT_LOGO_URL$]"
+		).setParameter(
+			"preserveRatio", true
+		).setParameter(
+			"randomNamespace",
+			PortalUtil.generateRandomKey(
+				_commerceOrganizationRequestHelper.getRequest(),
+				"commerce-organization-web")
+		).setWindowState(
+			LiferayWindowState.POP_UP
+		).buildString();
+	}
+
 	public boolean hasAddOrganizationPermissions() throws PortalException {
 		if (getOrganizationId() ==
 				OrganizationConstants.DEFAULT_PARENT_ORGANIZATION_ID) {
@@ -204,6 +229,15 @@ public class CommerceOrganizationDisplayContext {
 			getOrganizationId(), ActionKeys.ADD_ORGANIZATION);
 	}
 
+	public boolean isAdminPortlet() {
+		return _adminPortlet;
+	}
+
+	public void setAdminPortlet(boolean adminPortlet) {
+		_adminPortlet = adminPortlet;
+	}
+
+	private boolean _adminPortlet;
 	private final CommerceOrganizationPortletInstanceConfiguration
 		_commerceOrganizationPortletInstanceConfiguration;
 	private final CommerceOrganizationRequestHelper

@@ -1,5 +1,6 @@
 import Card from 'shared/components/Card';
 import ClayButton from '@clayui/button';
+import ClayLink from '@clayui/link';
 import Constants, {OrderByDirections, Sizes} from 'shared/util/constants';
 import CrossPageSelect from 'shared/hoc/CrossPageSelect';
 import DataControlRequest from '../queries/DataControlRequestMutation';
@@ -43,7 +44,7 @@ import {
 } from 'shared/util/router';
 import {useMutation, useQuery} from '@apollo/react-hooks';
 import {useParams} from 'react-router-dom';
-import {useQueryPagination} from 'shared/hooks';
+import {useQueryPagination} from 'shared/hooks/useQueryPagination';
 import {User} from 'shared/util/records';
 import {
 	useSelectionContext,
@@ -221,6 +222,8 @@ const RequestList: React.FC<IRequestListProps> = ({
 
 	const {selectedItems} = useSelectionContext();
 
+	const authorized = currentUser.isAdmin();
+
 	const formattedFilterBy = filterBy
 		.filterNot(val => val.isEmpty())
 		.map((val, key) =>
@@ -263,7 +266,9 @@ const RequestList: React.FC<IRequestListProps> = ({
 						emailAddresses,
 						fileName,
 						ownerId: currentUser.id,
-						types
+						types,
+						userId: currentUser.userId,
+						userName: currentUser.name
 					}
 				})
 					.then(() => {
@@ -386,7 +391,7 @@ const RequestList: React.FC<IRequestListProps> = ({
 									'create-a-request-to-get-started'
 								)}
 
-								<a
+								<ClayLink
 									className='d-block mb-3'
 									href={URLConstants.RequestLogDocumentation}
 									key='DOCUMENTATION'
@@ -395,7 +400,7 @@ const RequestList: React.FC<IRequestListProps> = ({
 									{Liferay.Language.get(
 										'access-our-documentation-to-learn-more'
 									)}
-								</a>
+								</ClayLink>
 							</>
 						}
 						icon={{
@@ -435,8 +440,9 @@ const RequestList: React.FC<IRequestListProps> = ({
 					);
 
 					return (
+						authorized &&
 						status === GDPRRequestStatuses.Completed && (
-							<a
+							<ClayLink
 								className={classnames}
 								{...(!itemsSelected && {
 									href: `/o/proxy/download/data-control-tasks/${id}?projectGroupId=${groupId}`
@@ -455,19 +461,19 @@ const RequestList: React.FC<IRequestListProps> = ({
 								tabIndex={0}
 							>
 								{Liferay.Language.get('download')}
-							</a>
+							</ClayLink>
 						)
 					);
 				}}
 				renderNav={() => (
 					<Nav>
 						<Nav.Item>
-							{selectedItems.size ? (
-								<a
+							{authorized && selectedItems.size ? (
+								<ClayLink
 									className='btn btn-primary button-root nav-btn '
-									href={`/o/proxy/download/data-control-tasks?projectGroupId=${groupId}&filter=(id eq ${selectedItems
+									href={`/o/proxy/download/data-control-tasks?projectGroupId=${groupId}&ids=${selectedItems
 										.map(({id}) => id)
-										.join(' or id eq ')})`}
+										.join('&ids=')}`}
 									onClick={() =>
 										analytics.track(
 											'Downloaded User Data Request'
@@ -475,15 +481,21 @@ const RequestList: React.FC<IRequestListProps> = ({
 									}
 								>
 									{Liferay.Language.get('download-all')}
-								</a>
+								</ClayLink>
 							) : (
-								<ClayButton
-									className='button-root nav-btn'
-									displayType='primary'
-									onClick={handleOpenNewRequestModal}
-								>
-									{Liferay.Language.get('create-request')}
-								</ClayButton>
+								<>
+									{authorized && (
+										<ClayButton
+											className='button-root nav-btn'
+											displayType='primary'
+											onClick={handleOpenNewRequestModal}
+										>
+											{Liferay.Language.get(
+												'create-request'
+											)}
+										</ClayButton>
+									)}
+								</>
 							)}
 						</Nav.Item>
 					</Nav>

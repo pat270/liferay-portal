@@ -1,9 +1,10 @@
 @component-name = "portal-wcm"
 definition {
 
+	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Site Localization";
+	property testray.main.component.name = "Localization";
 
 	setUp {
 		task ("Set up instance and sign in") {
@@ -37,8 +38,6 @@ definition {
 	@description = "Add site name translation in site settings."
 	@priority = 4
 	test AddSiteNameTranslations {
-		property testray.component.names = "Localization,Sites Administration";
-
 		task ("Add two localized site names") {
 			Site.openSiteSettingsAdmin(siteURLKey = "test-site-name-1");
 
@@ -101,9 +100,10 @@ definition {
 				configurationScope = "Virtual Instance Scope");
 
 			PortalSettings.configureCurrentLanguagesCP(
-				currentPortalLanguages = "Arabic (Saudi Arabia),Czech (Czech Republic),French (France)",
+				currentPortalLanguages = "ar_SA,cs_CZ,fr_FR",
 				errorMessage = "Error: You cannot remove a language that is the current default language.",
-				failExpected = "true");
+				failExpected = "true",
+				useLanguageKey = "true");
 		}
 	}
 
@@ -111,7 +111,6 @@ definition {
 	@priority = 5
 	test ConfigureLanguagesOfSiteBasedOnSiteTemplate {
 		property portal.acceptance = "true";
-		property testray.component.names = "Site and Page Templates";
 
 		task ("Add a site template") {
 			SiteTemplates.addCP(
@@ -160,7 +159,6 @@ definition {
 	@priority = 5
 	test ConfigureSiteDefaultLanguage {
 		property portal.acceptance = "true";
-		property testray.component.names = "Site Localization";
 
 		task ("View default site language in Portal Settings") {
 			PortalSettings.gotoConfiguration(
@@ -208,7 +206,6 @@ definition {
 	@priority = 3
 	test LocalizeCountryName {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
-		property testray.component.names = "Users and Organizations";
 
 		task ("Add a new user") {
 			JSONUser.addUser(
@@ -244,12 +241,15 @@ definition {
 				countryName = "Estados Unidos",
 				localizedOption = "Organización",
 				navItem = "Organizaciones",
+				newButton = "Nuevo",
 				orgName = "Organization Name",
 				saveButton = "Guardar");
 		}
 
 		task ("Sign out and sign in as new user") {
-			User.logoutAndLoginPG(userLoginEmailAddress = "userea@liferay.com");
+			User.logoutAndLoginPG(
+				signOutLocalizationName = "Salir",
+				userLoginEmailAddress = "userea@liferay.com");
 		}
 
 		task ("View localized country organization is shown") {
@@ -334,7 +334,9 @@ definition {
 		}
 
 		task ("Sign in as Test Test") {
-			User.logoutAndLoginPG(userLoginEmailAddress = "test@liferay.com");
+			User.logoutAndLoginPG(
+				signOutLocalizationName = "Salir",
+				userLoginEmailAddress = "test@liferay.com");
 		}
 
 		task ("View locale is shown in URL when it doesn't match with user's preferred locale") {

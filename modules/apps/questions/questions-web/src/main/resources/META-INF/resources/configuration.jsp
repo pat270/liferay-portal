@@ -8,7 +8,7 @@
 <%@ include file="/init.jsp" %>
 
 <%
-QuestionsConfiguration questionsConfiguration = portletDisplay.getPortletInstanceConfiguration(QuestionsConfiguration.class);
+QuestionsConfiguration questionsConfiguration = ConfigurationProviderUtil.getPortletInstanceConfiguration(QuestionsConfiguration.class, themeDisplay);
 
 long rootTopicId = questionsConfiguration.rootTopicId();
 
@@ -49,6 +49,71 @@ catch (Exception exception) {
 			<aui:input name="preferences--showCardsForTopicNavigation--" type="checkbox" value="<%= questionsConfiguration.showCardsForTopicNavigation() %>" />
 
 			<div class="form-group">
+				<label>
+					<liferay-ui:message key="ask-question-button-text" />
+				</label>
+
+				<liferay-ui:input-localized
+					fieldPrefix="preferences"
+					fieldPrefixSeparator="--"
+					name="askQuestionButtonTextAsLocalizedXML"
+					xml="<%= questionsConfiguration.askQuestionButtonTextAsLocalizedXML() %>"
+				/>
+			</div>
+
+			<div class="form-group">
+				<label>
+					<liferay-ui:message key="edit-question-page-title" />
+				</label>
+
+				<liferay-ui:input-localized
+					fieldPrefix="preferences"
+					fieldPrefixSeparator="--"
+					name="editQuestionPageTitleAsLocalizedXML"
+					xml="<%= questionsConfiguration.editQuestionPageTitleAsLocalizedXML() %>"
+				/>
+			</div>
+
+			<div class="form-group">
+				<label>
+					<liferay-ui:message key="new-question-page-title" />
+				</label>
+
+				<liferay-ui:input-localized
+					fieldPrefix="preferences"
+					fieldPrefixSeparator="--"
+					name="newQuestionPageTitleAsLocalizedXML"
+					xml="<%= questionsConfiguration.newQuestionPageTitleAsLocalizedXML() %>"
+				/>
+			</div>
+
+			<div class="form-group">
+				<label>
+					<liferay-ui:message key="post-your-question-button-text" />
+				</label>
+
+				<liferay-ui:input-localized
+					fieldPrefix="preferences"
+					fieldPrefixSeparator="--"
+					name="postYourQuestionButtonTextAsLocalizedXML"
+					xml="<%= questionsConfiguration.postYourQuestionButtonTextAsLocalizedXML() %>"
+				/>
+			</div>
+
+			<div class="form-group">
+				<label>
+					<liferay-ui:message key="update-your-question-button-text" />
+				</label>
+
+				<liferay-ui:input-localized
+					fieldPrefix="preferences"
+					fieldPrefixSeparator="--"
+					name="updateYourQuestionButtonTextAsLocalizedXML"
+					xml="<%= questionsConfiguration.updateYourQuestionButtonTextAsLocalizedXML() %>"
+				/>
+			</div>
+
+			<div class="form-group">
 				<aui:input label="root-topic-id" name="rootTopicName" type="resource" value="<%= rootTopicName %>" />
 
 				<aui:button name="selectRootTopicButton" value="select" />
@@ -67,7 +132,7 @@ catch (Exception exception) {
 	</liferay-frontend:edit-form-footer>
 </liferay-frontend:edit-form>
 
-<script>
+<aui:script>
 	var selectRootTopicButton = document.getElementById(
 		'<portlet:namespace />selectRootTopicButton'
 	);
@@ -110,7 +175,7 @@ catch (Exception exception) {
 			});
 		});
 	}
-</script>
+</aui:script>
 
 <%!
 private static final Log _log = LogFactoryUtil.getLog("com_liferay_questions_web.configuarion_jsp");

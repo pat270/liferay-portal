@@ -6,6 +6,7 @@
 package com.liferay.headless.commerce.delivery.order.internal.resource.v1_0;
 
 import com.liferay.commerce.exception.NoSuchOrderException;
+import com.liferay.commerce.exception.NoSuchOrderNoteException;
 import com.liferay.commerce.model.CommerceOrder;
 import com.liferay.commerce.model.CommerceOrderNote;
 import com.liferay.commerce.service.CommerceOrderNoteService;
@@ -18,7 +19,6 @@ import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.fields.NestedField;
 import com.liferay.portal.vulcan.fields.NestedFieldId;
-import com.liferay.portal.vulcan.fields.NestedFieldSupport;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 
@@ -31,11 +31,31 @@ import org.osgi.service.component.annotations.ServiceScope;
  */
 @Component(
 	properties = "OSGI-INF/liferay/rest/v1_0/placed-order-comment.properties",
-	scope = ServiceScope.PROTOTYPE,
-	service = {NestedFieldSupport.class, PlacedOrderCommentResource.class}
+	property = "nested.field.support=true", scope = ServiceScope.PROTOTYPE,
+	service = PlacedOrderCommentResource.class
 )
 public class PlacedOrderCommentResourceImpl
-	extends BasePlacedOrderCommentResourceImpl implements NestedFieldSupport {
+	extends BasePlacedOrderCommentResourceImpl {
+
+	@Override
+	public Page<PlacedOrderComment>
+			getPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage(
+				String externalReferenceCode, Pagination pagination)
+		throws Exception {
+
+		CommerceOrder commerceOrder =
+			_commerceOrderService.fetchByExternalReferenceCode(
+				externalReferenceCode, contextCompany.getCompanyId());
+
+		if (commerceOrder == null) {
+			throw new NoSuchOrderException(
+				"Unable to find order with external reference code " +
+					externalReferenceCode);
+		}
+
+		return getPlacedOrderPlacedOrderCommentsPage(
+			commerceOrder.getCommerceOrderId(), pagination);
+	}
 
 	@Override
 	public PlacedOrderComment getPlacedOrderComment(Long placedOrderCommentId)
@@ -53,6 +73,25 @@ public class PlacedOrderCommentResourceImpl
 		}
 
 		return _toPlacedOrderComment(placedOrderCommentId);
+	}
+
+	@Override
+	public PlacedOrderComment getPlacedOrderCommentByExternalReferenceCode(
+			String externalReferenceCode)
+		throws Exception {
+
+		CommerceOrderNote commerceOrderNote =
+			_commerceOrderNoteService.fetchByExternalReferenceCode(
+				externalReferenceCode, contextCompany.getCompanyId());
+
+		if (commerceOrderNote == null) {
+			throw new NoSuchOrderNoteException(
+				"Unable to find order note with external reference code " +
+					externalReferenceCode);
+		}
+
+		return getPlacedOrderComment(
+			commerceOrderNote.getCommerceOrderNoteId());
 	}
 
 	@NestedField(parentClass = PlacedOrder.class, value = "placedOrderComments")

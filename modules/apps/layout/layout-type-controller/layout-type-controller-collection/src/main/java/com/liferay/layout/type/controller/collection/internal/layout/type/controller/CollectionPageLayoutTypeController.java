@@ -6,10 +6,12 @@
 package com.liferay.layout.type.controller.collection.internal.layout.type.controller;
 
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorWebKeys;
+import com.liferay.layout.manager.LayoutLockManager;
 import com.liferay.layout.type.controller.BaseLayoutTypeControllerImpl;
 import com.liferay.petra.io.unsync.UnsyncStringWriter;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
@@ -19,9 +21,9 @@ import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.LayoutLocalService;
-import com.liferay.portal.kernel.service.permission.LayoutPermissionUtil;
+import com.liferay.portal.kernel.service.permission.LayoutPermission;
 import com.liferay.portal.kernel.servlet.PipingServletResponse;
-import com.liferay.portal.kernel.servlet.TransferHeadersHelper;
+import com.liferay.portal.kernel.servlet.TransferHeadersHelperUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
@@ -77,6 +79,9 @@ public class CollectionPageLayoutTypeController
 			(ThemeDisplay)httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
+		String layoutMode = ParamUtil.getString(
+			httpServletRequest, "p_l_mode", Constants.VIEW);
+
 		if (layout.isDraftLayout()) {
 			Layout curLayout = _layoutLocalService.fetchLayout(
 				layout.getClassPK());
@@ -85,8 +90,21 @@ public class CollectionPageLayoutTypeController
 				curLayout = layout;
 			}
 
-			if (!_hasUpdatePermissions(
-					themeDisplay.getPermissionChecker(), curLayout)) {
+			if (FeatureFlagManagerUtil.isEnabled("LPD-11070") &&
+				(layoutMode.equals(Constants.PREVIEW) ||
+				 layoutMode.equals(Constants.VIEW))) {
+
+				if (!_layoutPermission.containsLayoutPreviewDraftPermission(
+						themeDisplay.getPermissionChecker(), curLayout)) {
+
+					throw new PrincipalException.MustHavePermission(
+						themeDisplay.getPermissionChecker(),
+						Layout.class.getName(), layout.getLayoutId(),
+						ActionKeys.UPDATE);
+				}
+			}
+			else if (!_hasUpdatePermissions(
+						themeDisplay.getPermissionChecker(), curLayout)) {
 
 				throw new PrincipalException.MustHavePermission(
 					themeDisplay.getPermissionChecker(), Layout.class.getName(),
@@ -94,14 +112,22 @@ public class CollectionPageLayoutTypeController
 			}
 		}
 
-		String layoutMode = ParamUtil.getString(
-			httpServletRequest, "p_l_mode", Constants.VIEW);
+		String redirect = StringPool.BLANK;
 
-		if (layoutMode.equals(Constants.EDIT) &&
-			!_hasUpdatePermissions(
-				themeDisplay.getPermissionChecker(), layout)) {
+		if (layoutMode.equals(Constants.EDIT)) {
+			if (!_hasUpdatePermissions(
+					themeDisplay.getPermissionChecker(), layout)) {
 
-			layoutMode = Constants.VIEW;
+				layoutMode = Constants.VIEW;
+			}
+			else if (!layout.isUnlocked(layoutMode, themeDisplay.getUserId())) {
+				redirect = _layoutLockManager.getLockedLayoutURL(
+					httpServletRequest);
+			}
+			else {
+				redirect = _getDraftLayoutFullURL(
+					httpServletRequest, layout, themeDisplay);
+			}
 		}
 
 		String page = getViewPage();
@@ -111,7 +137,7 @@ public class CollectionPageLayoutTypeController
 		}
 
 		RequestDispatcher requestDispatcher =
-			_transferHeadersHelper.getTransferHeadersRequestDispatcher(
+			TransferHeadersHelperUtil.getTransferHeadersRequestDispatcher(
 				_servletContext.getRequestDispatcher(page));
 
 		UnsyncStringWriter unsyncStringWriter = new UnsyncStringWriter();
@@ -125,36 +151,18 @@ public class CollectionPageLayoutTypeController
 			RequestDispatcher.INCLUDE_SERVLET_PATH);
 
 		try {
-			httpServletRequest.setAttribute(
-				ContentPageEditorWebKeys.CLASS_NAME, Layout.class.getName());
-			httpServletRequest.setAttribute(
-				ContentPageEditorWebKeys.CLASS_PK, layout.getPlid());
-
-			addAttributes(httpServletRequest);
-
-			Layout draftLayout = _layoutLocalService.fetchLayout(
-				_portal.getClassNameId(Layout.class), layout.getPlid());
-
-			if (layoutMode.equals(Constants.EDIT) && (draftLayout != null)) {
-				String layoutFullURL = _portal.getLayoutFullURL(
-					draftLayout, themeDisplay);
-
-				HttpServletRequest originalHttpServletRequest =
-					_portal.getOriginalServletRequest(httpServletRequest);
-
-				String backURL = originalHttpServletRequest.getParameter(
-					"p_l_back_url");
-
-				if (Validator.isNotNull(backURL)) {
-					layoutFullURL = HttpComponentsUtil.addParameter(
-						layoutFullURL, "p_l_back_url", backURL);
-				}
-
-				httpServletResponse.sendRedirect(
-					HttpComponentsUtil.addParameter(
-						layoutFullURL, "p_l_mode", Constants.EDIT));
+			if (Validator.isNotNull(redirect)) {
+				httpServletResponse.sendRedirect(redirect);
 			}
 			else {
+				httpServletRequest.setAttribute(
+					ContentPageEditorWebKeys.CLASS_NAME,
+					Layout.class.getName());
+				httpServletRequest.setAttribute(
+					ContentPageEditorWebKeys.CLASS_PK, layout.getPlid());
+
+				addAttributes(httpServletRequest);
+
 				requestDispatcher.include(httpServletRequest, servletResponse);
 			}
 		}
@@ -234,11 +242,41 @@ public class CollectionPageLayoutTypeController
 		return _VIEW_PAGE;
 	}
 
+	private String _getDraftLayoutFullURL(
+			HttpServletRequest httpServletRequest, Layout layout,
+			ThemeDisplay themeDisplay)
+		throws Exception {
+
+		Layout draftLayout = layout.fetchDraftLayout();
+
+		if (draftLayout == null) {
+			return StringPool.BLANK;
+		}
+
+		String layoutFullURL = _portal.getLayoutFullURL(
+			draftLayout, themeDisplay);
+
+		HttpServletRequest originalHttpServletRequest =
+			_portal.getOriginalServletRequest(httpServletRequest);
+
+		String backURL = originalHttpServletRequest.getParameter(
+			"p_l_back_url");
+
+		if (Validator.isNotNull(backURL)) {
+			layoutFullURL = HttpComponentsUtil.addParameters(
+				layoutFullURL, "p_l_back_url", backURL, "p_l_back_url_title",
+				draftLayout.getName(themeDisplay.getLocale()));
+		}
+
+		return HttpComponentsUtil.addParameter(
+			layoutFullURL, "p_l_mode", Constants.EDIT);
+	}
+
 	private boolean _hasUpdatePermissions(
 		PermissionChecker permissionChecker, Layout layout) {
 
 		try {
-			if (LayoutPermissionUtil.containsLayoutUpdatePermission(
+			if (_layoutPermission.containsLayoutUpdatePermission(
 					permissionChecker, layout)) {
 
 				return true;
@@ -268,14 +306,17 @@ public class CollectionPageLayoutTypeController
 	private LayoutLocalService _layoutLocalService;
 
 	@Reference
+	private LayoutLockManager _layoutLockManager;
+
+	@Reference
+	private LayoutPermission _layoutPermission;
+
+	@Reference
 	private Portal _portal;
 
 	@Reference(
 		target = "(osgi.web.symbolicname=com.liferay.layout.type.controller.collection)"
 	)
 	private ServletContext _servletContext;
-
-	@Reference
-	private TransferHeadersHelper _transferHeadersHelper;
 
 }

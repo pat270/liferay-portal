@@ -4,6 +4,8 @@ definition {
 	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
+	property test.liferay.virtual.instance = "false";
+	property test.run.type = "single";
 	property testray.main.component.name = "Database Upgrade Framework";
 
 	setUp {
@@ -22,7 +24,6 @@ definition {
 	@priority = 4
 	test CoreAndModuleIndexesAreUpdatedWithIndexesUpdateOnStartup {
 		property custom.properties = "database.indexes.update.on.startup=true";
-		property test.liferay.virtual.instance = "false";
 
 		task ("Restart portal and cleaning the logs") {
 			Portlet.shutdownServer();
@@ -30,9 +31,7 @@ definition {
 			Portlet.startServer(keepOsGiState = "true");
 		}
 
-		AssertConsoleTextPresent(value1 = "Updating portal database indexes");
-
-		AssertConsoleTextPresent(value1 = "Updating database indexes for");
+		AssertConsoleTextPresent(value1 = "Updating database indexes");
 	}
 
 	@description = "LPS-109189: Given a user starts the portal with a database created previously. When core and module indexes are missing and property database.indexes.update.on.startup is set to true. Then portal creates missing indexes."
@@ -46,7 +45,7 @@ definition {
 			tableName = "Company");
 
 		SQL.dropMySQLIndex(
-			indexName = "IX_D3ACAD4A",
+			indexName = "IX_9AA41E0",
 			tableName = "JournalArticle");
 
 		task ("Restart portal and cleaning the logs") {
@@ -61,10 +60,10 @@ definition {
 			fail("Company index IX_EC00543C wasn't recreated");
 		}
 
-		var hasJournalArticleMissingIndex = SQL.hasMySQLIndex(indexName = "IX_D3ACAD4A");
+		var hasJournalArticleMissingIndex = SQL.hasMySQLIndex(indexName = "IX_9AA41E0");
 
 		if (${hasJournalArticleMissingIndex} == "false") {
-			fail("JournalArticle index IX_D3ACAD4A wasn't recreated");
+			fail("JournalArticle index IX_9AA41E0 wasn't recreated");
 		}
 	}
 
@@ -84,10 +83,10 @@ definition {
 
 	@description = "LPS-162455: Given a user starts the portal with a database created previously. When property upgrade.database.auto.run is set to false. Then portal does not run any UpgradeProcess or VerifyProcess."
 	@priority = 4
-	test UpgradeProcessAndVerifyProcessOnlyRunOnFreshDB {
+	test UpgradeProcessAndVerifyProcessDoNotRunOnStaleDB {
 		property database.types = "db2,mariadb,mysql,oracle,postgresql";
 
-		AssertConsoleTextPresent(value1 = "UpgradeProcess");
+		AssertConsoleTextNotPresent(value1 = "UpgradeProcess");
 
 		AssertConsoleTextPresent(value1 = "VerifyProcess");
 

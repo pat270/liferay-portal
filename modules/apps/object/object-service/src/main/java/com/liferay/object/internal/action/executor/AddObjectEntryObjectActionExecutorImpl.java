@@ -8,8 +8,10 @@ package com.liferay.object.internal.action.executor;
 import com.liferay.dynamic.data.mapping.expression.DDMExpressionFactory;
 import com.liferay.object.action.executor.ObjectActionExecutor;
 import com.liferay.object.constants.ObjectActionExecutorConstants;
+import com.liferay.object.constants.ObjectRelationshipConstants;
 import com.liferay.object.internal.action.util.ObjectEntryVariablesUtil;
 import com.liferay.object.model.ObjectDefinition;
+import com.liferay.object.model.ObjectField;
 import com.liferay.object.model.ObjectRelationship;
 import com.liferay.object.rest.dto.v1_0.ObjectEntry;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
@@ -17,6 +19,7 @@ import com.liferay.object.rest.manager.v1_0.ObjectEntryManagerRegistry;
 import com.liferay.object.scope.ObjectScopeProvider;
 import com.liferay.object.scope.ObjectScopeProviderRegistry;
 import com.liferay.object.service.ObjectDefinitionLocalService;
+import com.liferay.object.service.ObjectFieldLocalService;
 import com.liferay.object.service.ObjectRelationshipLocalService;
 import com.liferay.object.system.SystemObjectDefinitionManager;
 import com.liferay.object.system.SystemObjectDefinitionManagerRegistry;
@@ -34,7 +37,6 @@ import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.Objects;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -49,7 +51,8 @@ public class AddObjectEntryObjectActionExecutorImpl
 
 	@Override
 	public void execute(
-			long companyId, UnicodeProperties parametersUnicodeProperties,
+			long companyId, long objectActionId,
+			UnicodeProperties parametersUnicodeProperties,
 			JSONObject payloadJSONObject, long userId)
 		throws Exception {
 
@@ -61,17 +64,36 @@ public class AddObjectEntryObjectActionExecutorImpl
 				GetterUtil.getLong(
 					parametersUnicodeProperties.get("objectDefinitionId")));
 
+		Map<String, Object> values = ObjectEntryVariablesUtil.getValues(
+			_ddmExpressionFactory, parametersUnicodeProperties,
+			ObjectEntryVariablesUtil.getVariables(
+				_dtoConverterRegistry, sourceObjectDefinition,
+				payloadJSONObject, _systemObjectDefinitionManagerRegistry));
+
+		if (GetterUtil.getBoolean(
+				parametersUnicodeProperties.get("relatedObjectEntries"))) {
+
+			for (ObjectRelationship objectRelationship :
+					_objectRelationshipLocalService.getObjectRelationships(
+						sourceObjectDefinition.getObjectDefinitionId(),
+						targetObjectDefinition.getObjectDefinitionId(),
+						ObjectRelationshipConstants.TYPE_ONE_TO_MANY)) {
+
+				ObjectField objectField =
+					_objectFieldLocalService.getObjectField(
+						objectRelationship.getObjectFieldId2());
+
+				values.put(
+					objectField.getName(),
+					payloadJSONObject.getLong("classPK"));
+			}
+		}
+
 		long primaryKey = _execute(
 			_getGroupId(
 				companyId, payloadJSONObject, sourceObjectDefinition,
 				targetObjectDefinition),
-			targetObjectDefinition, _userLocalService.getUser(userId),
-			ObjectEntryVariablesUtil.getValues(
-				_ddmExpressionFactory, parametersUnicodeProperties,
-				ObjectEntryVariablesUtil.getVariables(
-					_dtoConverterRegistry, sourceObjectDefinition,
-					payloadJSONObject,
-					_systemObjectDefinitionManagerRegistry)));
+			targetObjectDefinition, _userLocalService.getUser(userId), values);
 
 		if (!GetterUtil.getBoolean(
 				parametersUnicodeProperties.get("relatedObjectEntries"))) {
@@ -81,14 +103,9 @@ public class AddObjectEntryObjectActionExecutorImpl
 
 		for (ObjectRelationship objectRelationship :
 				_objectRelationshipLocalService.getObjectRelationships(
-					sourceObjectDefinition.getObjectDefinitionId())) {
-
-			if (!Objects.equals(
-					objectRelationship.getObjectDefinitionId2(),
-					targetObjectDefinition.getObjectDefinitionId())) {
-
-				continue;
-			}
+					sourceObjectDefinition.getObjectDefinitionId(),
+					targetObjectDefinition.getObjectDefinitionId(),
+					ObjectRelationshipConstants.TYPE_MANY_TO_MANY)) {
 
 			_objectRelationshipLocalService.
 				addObjectRelationshipMappingTableValues(
@@ -128,7 +145,7 @@ public class AddObjectEntryObjectActionExecutorImpl
 			objectDefinition,
 			new ObjectEntry() {
 				{
-					properties = values;
+					setProperties(() -> values);
 				}
 			},
 			String.valueOf(groupId));
@@ -196,6 +213,9 @@ public class AddObjectEntryObjectActionExecutorImpl
 
 	@Reference
 	private ObjectEntryManagerRegistry _objectEntryManagerRegistry;
+
+	@Reference
+	private ObjectFieldLocalService _objectFieldLocalService;
 
 	@Reference
 	private ObjectRelationshipLocalService _objectRelationshipLocalService;

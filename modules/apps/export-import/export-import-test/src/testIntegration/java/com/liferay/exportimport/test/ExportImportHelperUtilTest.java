@@ -8,6 +8,7 @@ package com.liferay.exportimport.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.service.DLAppLocalServiceUtil;
+import com.liferay.exportimport.kernel.lar.DataLevel;
 import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
 import com.liferay.exportimport.kernel.lar.ManifestSummary;
 import com.liferay.exportimport.kernel.lar.MissingReference;
@@ -43,10 +44,11 @@ import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.zip.ZipReader;
-import com.liferay.portal.kernel.zip.ZipReaderFactoryUtil;
+import com.liferay.portal.kernel.zip.ZipReaderFactory;
 import com.liferay.portal.kernel.zip.ZipWriter;
-import com.liferay.portal.kernel.zip.ZipWriterFactoryUtil;
+import com.liferay.portal.kernel.zip.ZipWriterFactory;
 import com.liferay.portal.model.impl.PortletImpl;
+import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.io.InputStream;
@@ -83,9 +85,9 @@ public class ExportImportHelperUtilTest {
 	}
 
 	@Test
-	public void testDataSiteLevelPortletsRank() throws Exception {
+	public void testDataSiteAndInstanceLevelPortletsRank() throws Exception {
 		List<Portlet> portlets =
-			ExportImportHelperUtil.getDataSiteLevelPortlets(
+			ExportImportHelperUtil.getDataSiteAndInstanceLevelPortlets(
 				TestPropsValues.getCompanyId());
 
 		Integer previousRank = null;
@@ -103,6 +105,62 @@ public class ExportImportHelperUtilTest {
 			}
 
 			previousRank = actualRank;
+		}
+	}
+
+	@Test
+	public void testDataSiteLevelPortletsRank() throws Exception {
+		List<Portlet> portlets =
+			ExportImportHelperUtil.getDataSiteLevelPortlets(
+				TestPropsValues.getCompanyId());
+
+		Integer previousRank = null;
+
+		for (Portlet portlet : portlets) {
+			PortletDataHandler portletDataHandler =
+				portlet.getPortletDataHandlerInstance();
+
+			int actualRank = portletDataHandler.getRank();
+
+			if (previousRank != null) {
+				Assert.assertTrue(previousRank <= actualRank);
+			}
+
+			previousRank = actualRank;
+		}
+	}
+
+	@Test
+	public void testGetDataSiteAndInstanceLevelPortlets() throws Exception {
+		List<Portlet> portlets =
+			ExportImportHelperUtil.getDataSiteAndInstanceLevelPortlets(
+				TestPropsValues.getCompanyId());
+
+		for (Portlet portlet : portlets) {
+			PortletDataHandler portletDataHandler =
+				portlet.getPortletDataHandlerInstance();
+
+			DataLevel portletDataLevel = portletDataHandler.getDataLevel();
+
+			Assert.assertTrue(!portletDataLevel.equals(DataLevel.PORTAL));
+		}
+	}
+
+	@Test
+	public void testGetDataSiteLevelPortlets() throws Exception {
+		List<Portlet> portlets =
+			ExportImportHelperUtil.getDataSiteLevelPortlets(
+				TestPropsValues.getCompanyId());
+
+		for (Portlet portlet : portlets) {
+			PortletDataHandler portletDataHandler =
+				portlet.getPortletDataHandlerInstance();
+
+			DataLevel portletDataLevel = portletDataHandler.getDataLevel();
+
+			Assert.assertTrue(
+				!(portletDataLevel.equals(DataLevel.PORTAL) ||
+				  portletDataLevel.equals(DataLevel.PORTLET_INSTANCE)));
 		}
 	}
 
@@ -811,11 +869,11 @@ public class ExportImportHelperUtilTest {
 		String xml = replaceParameters(
 			getContent("missing_references.txt"), getFileEntry());
 
-		ZipWriter zipWriter = ZipWriterFactoryUtil.getZipWriter();
+		ZipWriter zipWriter = _zipWriterFactory.getZipWriter();
 
 		zipWriter.addEntry("/manifest.xml", xml);
 
-		ZipReader zipReader = ZipReaderFactoryUtil.getZipReader(
+		ZipReader zipReader = _zipReaderFactory.getZipReader(
 			zipWriter.getFile());
 
 		PortletDataContext portletDataContextImport =
@@ -863,7 +921,7 @@ public class ExportImportHelperUtilTest {
 			null, TestPropsValues.getUserId(), _stagingGroup.getGroupId(),
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			RandomTestUtil.randomString() + ".txt", ContentTypes.TEXT_PLAIN,
-			TestDataConstants.TEST_BYTE_ARRAY, null, null,
+			TestDataConstants.TEST_BYTE_ARRAY, null, null, null,
 			ServiceContextTestUtil.getServiceContext(
 				_stagingGroup.getGroupId(), TestPropsValues.getUserId()));
 
@@ -917,6 +975,12 @@ public class ExportImportHelperUtilTest {
 
 	@DeleteAfterTestRun
 	private Group _stagingGroup;
+
+	@Inject
+	private ZipReaderFactory _zipReaderFactory;
+
+	@Inject
+	private ZipWriterFactory _zipWriterFactory;
 
 	private class ExportImportTestParameterMapBuilder {
 

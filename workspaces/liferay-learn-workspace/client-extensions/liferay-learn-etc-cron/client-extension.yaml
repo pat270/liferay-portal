@@ -1,12 +1,13 @@
 assemble:
     - from: assets
-    - fromTask: bootJar
+    - fromTask: fatJar
 liferay-learn-etc-cron-oauth-application-headless-server:
     .serviceAddress: localhost:8080
     .serviceScheme: http
     name: Liferay Learn Etc Cron Oauth Application Headless Server
     scopes:
         - Liferay.Data.Engine.REST.everything
+        - Liferay.Headless.Admin.Taxonomy.everything
         - Liferay.Headless.Admin.User.everything.read
         - Liferay.Headless.Batch.Engine.everything
         - Liferay.Headless.Delivery.everything

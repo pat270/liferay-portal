@@ -85,7 +85,6 @@ public interface CommercePriceEntryLocalService
 	public CommercePriceEntry addCommercePriceEntry(
 		CommercePriceEntry commercePriceEntry);
 
-	@Indexable(type = IndexableType.REINDEX)
 	public CommercePriceEntry addCommercePriceEntry(
 			String externalReferenceCode, long cProductId,
 			String cpInstanceUuid, long commercePriceListId, BigDecimal price,
@@ -148,7 +147,8 @@ public interface CommercePriceEntryLocalService
 		throws PortalException;
 
 	public void deleteCommercePriceEntries(
-		String cpInstanceUuid, BigDecimal quantity, String unitOfMeasureKey);
+			String cpInstanceUuid, BigDecimal quantity, String unitOfMeasureKey)
+		throws PortalException;
 
 	/**
 	 * Deletes the commerce price entry from the database. Also notifies the appropriate model listeners.
@@ -272,15 +272,18 @@ public interface CommercePriceEntryLocalService
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public CommercePriceEntry fetchCommercePriceEntry(
-		long commercePriceListId, String cpInstanceUuid);
+		long commercePriceListId, String cpInstanceUuid, int status,
+		String unitOfMeasureKey);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public CommercePriceEntry fetchCommercePriceEntry(
-		long commercePriceListId, String cpInstanceUuid, boolean useAncestor);
+		long commercePriceListId, String cpInstanceUuid,
+		String unitOfMeasureKey);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public CommercePriceEntry fetchCommercePriceEntry(
-		long commercePriceListId, String cpInstanceUuid, int status);
+		long commercePriceListId, String cpInstanceUuid,
+		String unitOfMeasureKey, boolean useAncestor);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public CommercePriceEntry fetchCommercePriceEntryByExternalReferenceCode(
@@ -383,7 +386,7 @@ public interface CommercePriceEntryLocalService
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public CommercePriceEntry getInstanceBaseCommercePriceEntry(
-		String cpInstanceUuid, String priceListType);
+		String cpInstanceUuid, String priceListType, String unitOfMeasureKey);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getInstanceCommercePriceEntriesCount(String cpInstanceUuid);
@@ -443,13 +446,6 @@ public interface CommercePriceEntryLocalService
 
 	@Indexable(type = IndexableType.REINDEX)
 	public CommercePriceEntry updateCommercePriceEntry(
-			long commercePriceEntryId, BigDecimal price,
-			boolean priceOnApplication, BigDecimal promoPrice,
-			String unitOfMeasureKey, ServiceContext serviceContext)
-		throws PortalException;
-
-	@Indexable(type = IndexableType.REINDEX)
-	public CommercePriceEntry updateCommercePriceEntry(
 			long commercePriceEntryId, boolean bulkPricing,
 			boolean discountDiscovery, BigDecimal discountLevel1,
 			BigDecimal discountLevel2, BigDecimal discountLevel3,
@@ -465,6 +461,12 @@ public interface CommercePriceEntryLocalService
 	@Indexable(type = IndexableType.REINDEX)
 	public CommercePriceEntry updateExternalReferenceCode(
 			String externalReferenceCode, CommercePriceEntry commercePriceEntry)
+		throws PortalException;
+
+	public CommercePriceEntry updatePricingInfo(
+			long commercePriceEntryId, boolean bulkPricing, BigDecimal price,
+			boolean priceOnApplication, BigDecimal promoPrice,
+			String unitOfMeasureKey, ServiceContext serviceContext)
 		throws PortalException;
 
 	@Indexable(type = IndexableType.REINDEX)

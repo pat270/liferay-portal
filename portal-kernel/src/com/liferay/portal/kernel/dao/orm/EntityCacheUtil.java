@@ -7,7 +7,8 @@ package com.liferay.portal.kernel.dao.orm;
 
 import com.liferay.portal.kernel.cache.PortalCache;
 import com.liferay.portal.kernel.model.BaseModel;
-import com.liferay.portal.kernel.util.ServiceProxyFactory;
+import com.liferay.portal.kernel.module.service.Snapshot;
+import com.liferay.portal.kernel.util.ProxyFactory;
 
 import java.io.Serializable;
 
@@ -17,70 +18,106 @@ import java.io.Serializable;
 public class EntityCacheUtil {
 
 	public static void clearCache() {
-		_entityCache.clearCache();
+		EntityCache entityCache = getEntityCache();
+
+		entityCache.clearCache();
 	}
 
 	public static void clearCache(Class<?> clazz) {
-		_entityCache.clearCache(clazz);
+		EntityCache entityCache = getEntityCache();
+
+		entityCache.clearCache(clazz);
 	}
 
 	public static void clearLocalCache() {
-		_entityCache.clearLocalCache();
+		EntityCache entityCache = getEntityCache();
+
+		entityCache.clearLocalCache();
 	}
 
 	public static EntityCache getEntityCache() {
-		return _entityCache;
+		EntityCache entityCache = _entityCacheSnapshot.get();
+
+		if (entityCache == null) {
+			return DummyEntityCacheHolder._dummyEntityCache;
+		}
+
+		return entityCache;
 	}
 
 	public static Serializable getLocalCacheResult(
 		Class<?> clazz, Serializable primaryKey) {
 
-		return _entityCache.getLocalCacheResult(clazz, primaryKey);
+		EntityCache entityCache = getEntityCache();
+
+		return entityCache.getLocalCacheResult(clazz, primaryKey);
 	}
 
 	public static PortalCache<Serializable, Serializable> getPortalCache(
 		Class<?> clazz) {
 
-		return _entityCache.getPortalCache(clazz);
+		EntityCache entityCache = getEntityCache();
+
+		return entityCache.getPortalCache(clazz);
 	}
 
 	public static Serializable getResult(
 		Class<?> clazz, Serializable primaryKey) {
 
-		return _entityCache.getResult(clazz, primaryKey);
+		EntityCache entityCache = getEntityCache();
+
+		return entityCache.getResult(clazz, primaryKey);
 	}
 
 	public static void invalidate() {
-		_entityCache.invalidate();
+		EntityCache entityCache = getEntityCache();
+
+		entityCache.invalidate();
 	}
 
 	public static void putResult(
 		Class<?> clazz, BaseModel<?> baseModel, boolean quiet,
 		boolean updateFinderCache) {
 
-		_entityCache.putResult(clazz, baseModel, quiet, updateFinderCache);
+		EntityCache entityCache = getEntityCache();
+
+		entityCache.putResult(clazz, baseModel, quiet, updateFinderCache);
 	}
 
 	public static void putResult(
 		Class<?> clazz, Serializable primaryKey, Serializable result) {
 
-		_entityCache.putResult(clazz, primaryKey, result);
+		EntityCache entityCache = getEntityCache();
+
+		entityCache.putResult(clazz, primaryKey, result);
 	}
 
 	public static void removeCache(String className) {
-		_entityCache.removeCache(className);
+		EntityCache entityCache = getEntityCache();
+
+		entityCache.removeCache(className);
 	}
 
 	public static void removeResult(Class<?> clazz, BaseModel<?> baseModel) {
-		_entityCache.removeResult(clazz, baseModel);
+		EntityCache entityCache = getEntityCache();
+
+		entityCache.removeResult(clazz, baseModel);
 	}
 
 	public static void removeResult(Class<?> clazz, Serializable primaryKey) {
-		_entityCache.removeResult(clazz, primaryKey);
+		EntityCache entityCache = getEntityCache();
+
+		entityCache.removeResult(clazz, primaryKey);
 	}
 
-	private static volatile EntityCache _entityCache =
-		ServiceProxyFactory.newServiceTrackedInstance(
-			EntityCache.class, EntityCacheUtil.class, "_entityCache", false);
+	private static final Snapshot<EntityCache> _entityCacheSnapshot =
+		new Snapshot<>(EntityCacheUtil.class, EntityCache.class);
+
+	private static class DummyEntityCacheHolder {
+
+		private static final EntityCache _dummyEntityCache =
+			ProxyFactory.newDummyInstance(EntityCache.class);
+
+	}
 
 }

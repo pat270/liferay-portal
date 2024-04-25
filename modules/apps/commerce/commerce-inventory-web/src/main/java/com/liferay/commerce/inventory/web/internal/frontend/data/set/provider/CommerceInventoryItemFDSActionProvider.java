@@ -17,7 +17,6 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
-import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
@@ -56,7 +55,6 @@ public class CommerceInventoryItemFDSActionProvider
 		InventoryItem inventoryItem = (InventoryItem)model;
 
 		return DropdownItemListBuilder.add(
-			() -> _hasPermission(),
 			dropdownItem -> {
 				ThemeDisplay themeDisplay =
 					(ThemeDisplay)httpServletRequest.getAttribute(
@@ -64,7 +62,8 @@ public class CommerceInventoryItemFDSActionProvider
 
 				dropdownItem.setHref(
 					_getCommerceInventoryItemEditURL(
-						inventoryItem.getSku(), themeDisplay));
+						inventoryItem.getSku(),
+						inventoryItem.getUnitOfMeasureKey(), themeDisplay));
 
 				dropdownItem.setLabel(
 					_language.get(httpServletRequest, "edit"));
@@ -82,7 +81,7 @@ public class CommerceInventoryItemFDSActionProvider
 	}
 
 	private String _getCommerceInventoryItemEditURL(
-		String sku, ThemeDisplay themeDisplay) {
+		String sku, String unitOfMeasureKey, ThemeDisplay themeDisplay) {
 
 		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
 
@@ -94,6 +93,8 @@ public class CommerceInventoryItemFDSActionProvider
 			"/commerce_inventory/edit_commerce_inventory_item"
 		).setParameter(
 			"sku", sku
+		).setParameter(
+			"unitOfMeasureKey", unitOfMeasureKey
 		).buildString();
 	}
 
@@ -117,7 +118,7 @@ public class CommerceInventoryItemFDSActionProvider
 		).buildString();
 	}
 
-	private boolean _hasPermission() throws PrincipalException {
+	private boolean _hasPermission() {
 		PortletResourcePermission portletResourcePermission =
 			_commerceInventoryWarehouseModelResourcePermission.
 				getPortletResourcePermission();

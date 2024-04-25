@@ -2,12 +2,60 @@
 
 <instance-wrappers>
 	<instance-wrapper
+		parent-dir="../portal-impl/src"
+		src-file="com/liferay/portal/image/ImageToolUtil.java"
+	/>
+	<instance-wrapper
+		parent-dir="../portal-impl/src"
+		src-file="com/liferay/portal/service/permission/CommonPermissionUtil.java"
+	/>
+	<instance-wrapper
+		parent-dir="../portal-impl/src"
+		src-file="com/liferay/portal/service/permission/PasswordPolicyPermissionUtil.java"
+	/>
+	<instance-wrapper
+		parent-dir="../portal-impl/src"
+		src-file="com/liferay/portal/service/permission/UserGroupPermissionUtil.java"
+	/>
+	<instance-wrapper
+		parent-dir="../portal-impl/src"
+		src-file="com/liferay/portal/servlet/BrowserSnifferUtil.java"
+	/>
+	<instance-wrapper
+		parent-dir="../portal-kernel/src"
+		src-file="com/liferay/portal/kernel/language/UnicodeLanguageUtil.java"
+	/>
+	<instance-wrapper
 		parent-dir="../portal-kernel/src"
 		src-file="com/liferay/portal/kernel/portlet/PortletModeFactory.java"
 	/>
 	<instance-wrapper
 		parent-dir="../portal-kernel/src"
 		src-file="com/liferay/portal/kernel/portlet/WindowStateFactory.java"
+	/>
+	<instance-wrapper
+		parent-dir="../portal-kernel/src"
+		src-file="com/liferay/portal/kernel/service/permission/GroupPermissionUtil.java"
+	/>
+	<instance-wrapper
+		parent-dir="../portal-kernel/src"
+		src-file="com/liferay/portal/kernel/service/permission/OrganizationPermissionUtil.java"
+	/>
+	<instance-wrapper
+		parent-dir="../portal-kernel/src"
+		src-file="com/liferay/portal/kernel/service/permission/PortalPermissionUtil.java"
+	/>
+	<instance-wrapper
+		parent-dir="../portal-kernel/src"
+		src-file="com/liferay/portal/kernel/service/permission/PortletPermissionUtil.java"
+	/>
+	<instance-wrapper
+		parent-dir="../portal-kernel/src"
+		src-file="com/liferay/portal/kernel/service/permission/RolePermissionUtil.java"
+	/>
+	<instance-wrapper
+		parent-dir="../portal-kernel/src"
+		src-file="com/liferay/portal/kernel/service/permission/UserPermissionUtil.java"
 	/>
 	<instance-wrapper
 		parent-dir="../portal-kernel/src"
@@ -24,6 +72,10 @@
 	<instance-wrapper
 		parent-dir="../portal-kernel/src"
 		src-file="com/liferay/portal/kernel/util/GetterUtil.java"
+	/>
+	<instance-wrapper
+		parent-dir="../portal-kernel/src"
+		src-file="com/liferay/portal/kernel/util/HtmlUtil.java"
 	/>
 	<instance-wrapper
 		parent-dir="../portal-kernel/src"

@@ -5,9 +5,9 @@
 
 package com.liferay.exportimport.internal.lar;
 
-import com.liferay.asset.kernel.model.AssetLink;
 import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;
-import com.liferay.asset.kernel.service.AssetLinkLocalServiceUtil;
+import com.liferay.asset.link.model.AssetLink;
+import com.liferay.asset.link.service.AssetLinkLocalServiceUtil;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.expando.kernel.model.ExpandoColumn;
@@ -66,7 +66,6 @@ import com.liferay.portal.kernel.model.Team;
 import com.liferay.portal.kernel.model.TypedModel;
 import com.liferay.portal.kernel.model.WorkflowDefinitionLink;
 import com.liferay.portal.kernel.model.WorkflowedModel;
-import com.liferay.portal.kernel.model.adapter.ModelAdapterUtil;
 import com.liferay.portal.kernel.model.adapter.StagedGroupedWorkflowDefinitionLink;
 import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.portlet.PortletIdCodec;
@@ -92,13 +91,14 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.workflow.WorkflowDefinition;
-import com.liferay.portal.kernel.workflow.WorkflowDefinitionManagerUtil;
 import com.liferay.portal.kernel.workflow.WorkflowException;
 import com.liferay.portal.kernel.xml.Attribute;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import com.liferay.portal.kernel.zip.ZipReader;
 import com.liferay.portal.kernel.zip.ZipWriter;
+import com.liferay.portal.model.adapter.util.ModelAdapterUtil;
+import com.liferay.portal.workflow.util.WorkflowDefinitionManagerUtil;
 import com.liferay.xstream.configurator.XStreamConfigurator;
 import com.liferay.xstream.configurator.XStreamConfiguratorRegistryUtil;
 
@@ -1103,6 +1103,7 @@ public class PortletDataContextImpl implements PortletDataContext {
 		return _rootPortletId;
 	}
 
+	@Override
 	public Set<String> getScopedPrimaryKeys() {
 		return _scopedPrimaryKeys;
 	}
@@ -1313,7 +1314,7 @@ public class PortletDataContextImpl implements PortletDataContext {
 			}
 		}
 
-		_importWorkflowDefinitionLink(newClassedModel);
+		_importWorkflowDefinitionLink(clazz, newClassedModel);
 
 		importLocks(
 			clazz, String.valueOf(primaryKeyObj),
@@ -1561,6 +1562,11 @@ public class PortletDataContextImpl implements PortletDataContext {
 	}
 
 	@Override
+	public boolean isOriginalPrivateLayout() {
+		return _originalPrivateLayout;
+	}
+
+	@Override
 	public boolean isPathExportedInScope(String path) {
 		return addScopedPrimaryKey(String.class, path);
 	}
@@ -1705,6 +1711,11 @@ public class PortletDataContextImpl implements PortletDataContext {
 	@Override
 	public void setNewLayouts(List<Layout> newLayouts) {
 		_newLayouts = newLayouts;
+	}
+
+	@Override
+	public void setOriginalPrivateLayout(boolean originalPrivateLayout) {
+		_originalPrivateLayout = originalPrivateLayout;
 	}
 
 	@Override
@@ -2475,15 +2486,18 @@ public class PortletDataContextImpl implements PortletDataContext {
 		return StringBundler.concat(className, StringPool.POUND, classPK);
 	}
 
-	private void _importWorkflowDefinitionLink(ClassedModel classedModel)
+	private void _importWorkflowDefinitionLink(
+			Class<?> clazz, ClassedModel classedModel)
 		throws PortletDataException {
 
 		Element stagedGroupedWorkflowDefinitionLinkElements =
 			getImportDataGroupElement(
 				StagedGroupedWorkflowDefinitionLink.class);
 
+		String className = clazz.getName();
+
 		Map<Long, Long> primaryKeys = (Map<Long, Long>)getNewPrimaryKeysMap(
-			classedModel.getModelClass());
+			className);
 
 		for (Element stagedGroupedWorkflowDefinitionLinkElement :
 				stagedGroupedWorkflowDefinitionLinkElements.elements()) {
@@ -2494,8 +2508,6 @@ public class PortletDataContextImpl implements PortletDataContext {
 			long referrerClassPK = GetterUtil.getLong(
 				stagedGroupedWorkflowDefinitionLinkElement.attributeValue(
 					"referrer-class-pk"));
-
-			String className = classedModel.getModelClassName();
 
 			long newPrimaryKey = GetterUtil.getLong(
 				classedModel.getPrimaryKeyObj());
@@ -2765,6 +2777,7 @@ public class PortletDataContextImpl implements PortletDataContext {
 	private final Map<String, Map<?, ?>> _newPrimaryKeysMaps = new HashMap<>();
 	private final Set<String> _notUniquePerLayout = new HashSet<>();
 	private final Map<String, Object> _objectsMap = new HashMap<>();
+	private boolean _originalPrivateLayout;
 	private Map<String, String[]> _parameterMap;
 	private final Map<String, List<KeyValuePair>> _permissionsMap =
 		new HashMap<>();

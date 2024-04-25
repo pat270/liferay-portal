@@ -3,8 +3,8 @@ definition {
 	var userFirstName = "Test";
 	var userLastName = "Test";
 
-	@summary-ignore = "true"
-	macro runSmoke {
+	@summary = "Run a Smoke test to assert the main portal functionalities are working correctly"
+	macro runSmoke(i = null) {
 		task ("Ensure that the super admin can add a Blank Site") {
 			ApplicationsMenu.gotoPortlet(
 				category = "Sites",
@@ -150,16 +150,17 @@ definition {
 		}
 	}
 
-	macro viewWelcomeContentPage {
+	@summary = "Assert the Welcome Page elements"
+	macro viewWelcomeContentPage() {
 		ContentPages.viewFragmentText(
-			fragmentName = "heading",
+			fragmentName = "paragraph",
 			id = "element-text",
 			text = "Welcome to Liferay");
 
 		ContentPages.viewFragmentImage(
 			fragmentName = "image",
 			id = "image-square",
-			image = "tree.png");
+			image = "tree-png");
 	}
 
 }

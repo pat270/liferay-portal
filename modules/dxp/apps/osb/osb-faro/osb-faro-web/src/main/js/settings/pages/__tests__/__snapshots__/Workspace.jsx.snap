@@ -144,6 +144,11 @@ exports[`Workspace Settting should render 1`] = `
                     name="serverLocation"
                   >
                     <option
+                      value="MUMBAI, INDIA"
+                    >
+                      Mumbai, India
+                    </option>
+                    <option
                       value="LONDON, ENGLAND"
                     >
                       London, England
@@ -350,7 +355,7 @@ exports[`Workspace Settting should render 1`] = `
                                     role="presentation"
                                   >
                                     <use
-                                      xlink:href="#times"
+                                      href="#times"
                                     />
                                   </svg>
                                 </button>
@@ -397,7 +402,7 @@ exports[`Workspace Settting should render 1`] = `
                         role="presentation"
                       >
                         <use
-                          xlink:href="#question-circle-full"
+                          href="#question-circle-full"
                         />
                       </svg>
                     </span>

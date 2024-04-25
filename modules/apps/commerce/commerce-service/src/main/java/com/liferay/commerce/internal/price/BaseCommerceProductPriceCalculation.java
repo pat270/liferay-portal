@@ -24,15 +24,18 @@ import com.liferay.commerce.product.constants.CommerceChannelAccountEntryRelCons
 import com.liferay.commerce.product.model.CPDefinitionOptionRel;
 import com.liferay.commerce.product.model.CPDefinitionOptionValueRel;
 import com.liferay.commerce.product.model.CPInstance;
+import com.liferay.commerce.product.model.CPInstanceUnitOfMeasure;
 import com.liferay.commerce.product.model.CommerceChannelAccountEntryRel;
 import com.liferay.commerce.product.option.CommerceOptionValue;
 import com.liferay.commerce.product.service.CPDefinitionOptionRelLocalService;
 import com.liferay.commerce.product.service.CPInstanceLocalService;
+import com.liferay.commerce.product.service.CPInstanceUnitOfMeasureLocalService;
 import com.liferay.commerce.product.service.CommerceChannelAccountEntryRelLocalService;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.commerce.tax.CommerceTaxCalculation;
-import com.liferay.commerce.util.CommerceBigDecimalUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.util.BigDecimalUtil;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -55,7 +58,7 @@ public abstract class BaseCommerceProductPriceCalculation
 		throws PortalException {
 
 		CommerceMoney commerceMoney = getUnitMinPrice(
-			cpDefinitionId, 1, commerceContext);
+			cpDefinitionId, BigDecimal.ONE, commerceContext);
 
 		if (commerceMoney.isEmpty()) {
 			return commerceMoney;
@@ -131,9 +134,13 @@ public abstract class BaseCommerceProductPriceCalculation
 				commerceProductOptionValueRelativePriceRequest.
 					getCPInstanceMinQuantity(),
 				commerceProductOptionValueRelativePriceRequest.
+					getCPInstanceUnitOfMeasureKey(),
+				commerceProductOptionValueRelativePriceRequest.
 					getSelectedCPInstanceId(),
 				commerceProductOptionValueRelativePriceRequest.
 					getSelectedCPInstanceMinQuantity(),
+				commerceProductOptionValueRelativePriceRequest.
+					getSelectedCPInstanceUnitOfMeasureKey(),
 				commerceContext));
 
 		relativePrice = relativePrice.add(
@@ -237,20 +244,16 @@ public abstract class BaseCommerceProductPriceCalculation
 				BigDecimal optionValuePrice = commerceOptionValue.getPrice();
 
 				if ((optionValuePrice != null) &&
-					CommerceBigDecimalUtil.gt(
-						optionValuePrice, BigDecimal.ZERO)) {
+					BigDecimalUtil.gt(optionValuePrice, BigDecimal.ZERO)) {
 
 					if (commerceOptionValue.getCPInstanceId() > 0) {
 						optionValuePrice = optionValuePrice.multiply(
-							BigDecimal.valueOf(
-								commerceOptionValue.getQuantity()));
+							commerceOptionValue.getQuantity());
 					}
 
 					unitPrice = unitPrice.add(optionValuePrice);
 
-					if (CommerceBigDecimalUtil.gt(
-							promoPrice, BigDecimal.ZERO)) {
-
+					if (BigDecimalUtil.gt(promoPrice, BigDecimal.ZERO)) {
 						promoPrice = promoPrice.add(optionValuePrice);
 					}
 
@@ -259,14 +262,18 @@ public abstract class BaseCommerceProductPriceCalculation
 			}
 			else if (Objects.equals(
 						commerceOptionValue.getPriceType(),
-						CPConstants.PRODUCT_OPTION_PRICE_TYPE_DYNAMIC)) {
+						CPConstants.PRODUCT_OPTION_PRICE_TYPE_DYNAMIC) &&
+					 (commerceOptionValue.getCPInstanceId() > 0)) {
 
-				int optionValueQuantity = commerceOptionValue.getQuantity();
+				BigDecimal optionValueQuantity =
+					commerceOptionValue.getQuantity();
 
 				CommerceProductPrice optionValueProductPrice =
 					getCommerceProductPrice(
 						commerceOptionValue.getCPInstanceId(),
-						optionValueQuantity, true, commerceContext);
+						optionValueQuantity, true,
+						commerceOptionValue.getUnitOfMeasureKey(),
+						commerceContext);
 
 				CommerceMoney optionValueUnitPriceCommerceMoney =
 					optionValueProductPrice.getUnitPrice();
@@ -284,27 +291,61 @@ public abstract class BaseCommerceProductPriceCalculation
 						optionValueUnitPromoPriceCommerceMoney.getPrice();
 				}
 
-				if (CommerceBigDecimalUtil.gt(
+				BigDecimal incrementalOrderQuantity = BigDecimal.ONE;
+
+				if (Validator.isNotNull(
+						commerceOptionValue.getUnitOfMeasureKey())) {
+
+					CPInstanceUnitOfMeasure cpInstanceUnitOfMeasure =
+						cpInstanceUnitOfMeasureLocalService.
+							fetchCPInstanceUnitOfMeasure(
+								commerceOptionValue.getCPInstanceId(),
+								commerceOptionValue.getUnitOfMeasureKey());
+
+					if (cpInstanceUnitOfMeasure != null) {
+						incrementalOrderQuantity =
+							cpInstanceUnitOfMeasure.
+								getIncrementalOrderQuantity();
+					}
+				}
+
+				CommerceCurrency commerceCurrency =
+					optionValueUnitPriceCommerceMoney.getCommerceCurrency();
+
+				int precision = commerceCurrency.getMaxFractionDigits();
+
+				if (BigDecimalUtil.gt(
 						optionValueUnitPromoPrice, BigDecimal.ZERO) &&
-					CommerceBigDecimalUtil.isZero(promoPrice)) {
+					BigDecimalUtil.isZero(promoPrice)) {
 
 					promoPrice = promoPrice.add(unitPrice);
 				}
-				else if (CommerceBigDecimalUtil.gt(
-							promoPrice, BigDecimal.ZERO)) {
+				else if (BigDecimalUtil.isZero(optionValueUnitPromoPrice) &&
+						 BigDecimalUtil.gt(promoPrice, BigDecimal.ZERO)) {
+
+					BigDecimal price = optionValueUnitPrice.multiply(
+						optionValueQuantity);
 
 					promoPrice = promoPrice.add(
-						optionValueUnitPrice.multiply(
-							BigDecimal.valueOf(optionValueQuantity)));
+						price.divide(
+							incrementalOrderQuantity, precision,
+							RoundingMode.HALF_UP));
 				}
 
+				BigDecimal price = optionValueUnitPrice.multiply(
+					optionValueQuantity);
+
 				unitPrice = unitPrice.add(
-					optionValueUnitPrice.multiply(
-						BigDecimal.valueOf(optionValueQuantity)));
+					price.divide(
+						incrementalOrderQuantity, precision,
+						RoundingMode.HALF_UP));
+
+				price = optionValueUnitPromoPrice.multiply(optionValueQuantity);
 
 				promoPrice = promoPrice.add(
-					optionValueUnitPromoPrice.multiply(
-						BigDecimal.valueOf(optionValueQuantity)));
+					price.divide(
+						incrementalOrderQuantity, precision,
+						RoundingMode.HALF_UP));
 
 				CommerceMoney optionValueFinalPriceCommerceMoney =
 					optionValueProductPrice.getFinalPrice();
@@ -338,7 +379,7 @@ public abstract class BaseCommerceProductPriceCalculation
 			commerceProductPriceImpl.getUnitPromoPrice();
 
 		if (!promoPriceCommerceMoney.isEmpty() &&
-			CommerceBigDecimalUtil.gt(
+			BigDecimalUtil.gt(
 				promoPriceCommerceMoney.getPrice(), BigDecimal.ZERO)) {
 
 			BigDecimal unitPromoPriceWithTaxAmount = getConvertedPrice(
@@ -361,7 +402,7 @@ public abstract class BaseCommerceProductPriceCalculation
 			commerceMoneyFactory.create(
 				commerceContext.getCommerceCurrency(), unitPriceWithTaxAmount));
 
-		int quantity = commerceProductPriceImpl.getQuantity();
+		BigDecimal quantity = commerceProductPriceImpl.getQuantity();
 
 		if (activePrice == null) {
 			activePrice = BigDecimal.ZERO;
@@ -371,7 +412,7 @@ public abstract class BaseCommerceProductPriceCalculation
 			CommerceCurrency commerceCurrency =
 				commerceContext.getCommerceCurrency();
 
-			activePrice = activePrice.multiply(BigDecimal.valueOf(quantity));
+			activePrice = activePrice.multiply(quantity);
 
 			commerceProductPriceImpl.setCommerceDiscountValueWithTaxAmount(
 				CommercePriceConverterUtil.getConvertedCommerceDiscountValue(
@@ -413,6 +454,10 @@ public abstract class BaseCommerceProductPriceCalculation
 	@Reference
 	protected CPInstanceLocalService cpInstanceLocalService;
 
+	@Reference
+	protected CPInstanceUnitOfMeasureLocalService
+		cpInstanceUnitOfMeasureLocalService;
+
 	private BigDecimal _getCPDefinitionOptionMinDynamicPrice(
 			CPDefinitionOptionRel cpDefinitionOptionRel,
 			CommerceContext commerceContext)
@@ -430,20 +475,25 @@ public abstract class BaseCommerceProductPriceCalculation
 
 		CPDefinitionOptionValueRel cpDefinitionOptionValueRel = iterator.next();
 
+		BigDecimal quantity = cpDefinitionOptionValueRel.getQuantity();
+
 		BigDecimal cpDefinitionOptionMinDynamicPrice = _getCPInstanceFinalPrice(
 			cpDefinitionOptionValueRel.getCProductId(),
-			cpDefinitionOptionValueRel.getCPInstanceUuid(),
-			cpDefinitionOptionValueRel.getQuantity(), commerceContext);
+			cpDefinitionOptionValueRel.getCPInstanceUuid(), quantity,
+			cpDefinitionOptionValueRel.getUnitOfMeasureKey(), commerceContext);
 
 		while (iterator.hasNext()) {
 			cpDefinitionOptionValueRel = iterator.next();
 
+			quantity = cpDefinitionOptionValueRel.getQuantity();
+
 			BigDecimal cpInstanceFinalPrice = _getCPInstanceFinalPrice(
 				cpDefinitionOptionValueRel.getCProductId(),
-				cpDefinitionOptionValueRel.getCPInstanceUuid(),
-				cpDefinitionOptionValueRel.getQuantity(), commerceContext);
+				cpDefinitionOptionValueRel.getCPInstanceUuid(), quantity,
+				cpDefinitionOptionValueRel.getUnitOfMeasureKey(),
+				commerceContext);
 
-			if (CommerceBigDecimalUtil.gt(
+			if (BigDecimalUtil.gt(
 					cpDefinitionOptionMinDynamicPrice, cpInstanceFinalPrice)) {
 
 				cpDefinitionOptionMinDynamicPrice = cpInstanceFinalPrice;
@@ -470,20 +520,22 @@ public abstract class BaseCommerceProductPriceCalculation
 
 		CPDefinitionOptionValueRel cpDefinitionOptionValueRel = iterator.next();
 
+		BigDecimal quantity = cpDefinitionOptionValueRel.getQuantity();
+
 		BigDecimal cpDefinitionOptionMinStaticPrice =
 			_getCPDefinitionOptionValueFinalPrice(
-				cpDefinitionOptionValueRel.getPrice(),
-				cpDefinitionOptionValueRel.getQuantity());
+				cpDefinitionOptionValueRel.getPrice(), quantity);
 
 		while (iterator.hasNext()) {
 			cpDefinitionOptionValueRel = iterator.next();
 
+			quantity = cpDefinitionOptionValueRel.getQuantity();
+
 			BigDecimal cpDefinitionOptionValueFinalPrice =
 				_getCPDefinitionOptionValueFinalPrice(
-					cpDefinitionOptionValueRel.getPrice(),
-					cpDefinitionOptionValueRel.getQuantity());
+					cpDefinitionOptionValueRel.getPrice(), quantity);
 
-			if (CommerceBigDecimalUtil.gt(
+			if (BigDecimalUtil.gt(
 					cpDefinitionOptionMinStaticPrice,
 					cpDefinitionOptionValueFinalPrice)) {
 
@@ -500,9 +552,9 @@ public abstract class BaseCommerceProductPriceCalculation
 	}
 
 	private BigDecimal _getCPDefinitionOptionValueFinalPrice(
-		BigDecimal price, int quantity) {
+		BigDecimal price, BigDecimal quantity) {
 
-		return price.multiply(BigDecimal.valueOf(quantity));
+		return price.multiply(quantity);
 	}
 
 	private BigDecimal _getCPDefinitionOptionValuePriceDifference(
@@ -528,7 +580,8 @@ public abstract class BaseCommerceProductPriceCalculation
 		BigDecimal cpInstanceFinalPrice = _getCPInstanceFinalPrice(
 			cpDefinitionOptionValueRel.getCProductId(),
 			cpDefinitionOptionValueRel.getCPInstanceUuid(),
-			cpDefinitionOptionValueRel.getQuantity(), commerceContext);
+			cpDefinitionOptionValueRel.getQuantity(),
+			cpDefinitionOptionValueRel.getUnitOfMeasureKey(), commerceContext);
 
 		if (selectedCPDefinitionOptionValueRel == null) {
 			return cpInstanceFinalPrice;
@@ -537,21 +590,28 @@ public abstract class BaseCommerceProductPriceCalculation
 		BigDecimal selectedCPInstanceFinalPrice = _getCPInstanceFinalPrice(
 			selectedCPDefinitionOptionValueRel.getCProductId(),
 			selectedCPDefinitionOptionValueRel.getCPInstanceUuid(),
-			selectedCPDefinitionOptionValueRel.getQuantity(), commerceContext);
+			selectedCPDefinitionOptionValueRel.getQuantity(),
+			selectedCPDefinitionOptionValueRel.getUnitOfMeasureKey(),
+			commerceContext);
 
 		return cpInstanceFinalPrice.subtract(selectedCPInstanceFinalPrice);
 	}
 
 	private BigDecimal _getCPInstanceFinalPrice(
-			long cProductId, String cpInstanceUuid, int quantity,
-			CommerceContext commerceContext)
+			long cProductId, String cpInstanceUuid, BigDecimal quantity,
+			String unitOfMeasureKey, CommerceContext commerceContext)
 		throws PortalException {
 
-		CPInstance cpInstance = cpInstanceLocalService.getCProductInstance(
+		CPInstance cpInstance = cpInstanceLocalService.fetchCProductInstance(
 			cProductId, cpInstanceUuid);
 
+		if (cpInstance == null) {
+			return BigDecimal.ZERO;
+		}
+
 		CommerceMoney commerceMoney = getFinalPrice(
-			cpInstance.getCPInstanceId(), quantity, commerceContext);
+			cpInstance.getCPInstanceId(), quantity, unitOfMeasureKey,
+			commerceContext);
 
 		if (commerceMoney.isEmpty()) {
 			return BigDecimal.ZERO;
@@ -561,15 +621,18 @@ public abstract class BaseCommerceProductPriceCalculation
 	}
 
 	private BigDecimal _getCPInstancePriceDifference(
-			long cpInstanceId1, int cpInstance1MinQuantity, long cpInstanceId2,
-			int cpInstance2MinQuantity, CommerceContext commerceContext)
+			long cpInstanceId1, BigDecimal cpInstance1MinQuantity,
+			String cpInstance1UnitOfMeasureKey, long cpInstanceId2,
+			BigDecimal cpInstance2MinQuantity,
+			String cpInstance2UnitOfMeasureKey, CommerceContext commerceContext)
 		throws PortalException {
 
 		BigDecimal priceDifference = BigDecimal.ZERO;
 
 		if (cpInstanceId1 > 0) {
 			CommerceMoney cpInstance1FinalPriceCommerceMoney = getFinalPrice(
-				cpInstanceId1, cpInstance1MinQuantity, commerceContext);
+				cpInstanceId1, cpInstance1MinQuantity,
+				cpInstance1UnitOfMeasureKey, commerceContext);
 
 			if (!cpInstance1FinalPriceCommerceMoney.isEmpty()) {
 				priceDifference = priceDifference.add(
@@ -579,7 +642,8 @@ public abstract class BaseCommerceProductPriceCalculation
 
 		if (cpInstanceId2 > 0) {
 			CommerceMoney cpInstance2FinalPriceCommerceMoney = getFinalPrice(
-				cpInstanceId2, cpInstance2MinQuantity, commerceContext);
+				cpInstanceId2, cpInstance2MinQuantity,
+				cpInstance2UnitOfMeasureKey, commerceContext);
 
 			if (!cpInstance2FinalPriceCommerceMoney.isEmpty()) {
 				priceDifference = priceDifference.subtract(

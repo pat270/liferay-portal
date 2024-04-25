@@ -19,12 +19,12 @@ import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
-import com.liferay.portal.kernel.service.permission.LayoutPrototypePermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.service.permission.LayoutPrototypePermissionUtil;
 import com.liferay.taglib.security.PermissionsURLTag;
 
 import java.util.List;
@@ -118,8 +118,10 @@ public class LayoutPrototypeActionDropdownItemsProvider {
 		return dropdownItem -> {
 			dropdownItem.setHref(
 				_renderResponse.createRenderURL(), "mvcPath",
-				"/edit_layout_prototype.jsp", "layoutPrototypeId",
-				_layoutPrototype.getLayoutPrototypeId());
+				"/edit_layout_prototype.jsp", "backURLTitle",
+				LanguageUtil.get(
+					_themeDisplay.getLocale(), "widget-page-templates"),
+				"layoutPrototypeId", _layoutPrototype.getLayoutPrototypeId());
 			dropdownItem.setIcon("cog");
 			dropdownItem.setLabel(
 				LanguageUtil.get(_httpServletRequest, "configure"));
@@ -235,8 +237,10 @@ public class LayoutPrototypeActionDropdownItemsProvider {
 		String layoutFullURL = layoutPrototypeGroup.getDisplayURL(
 			_themeDisplay, true);
 
-		return HttpComponentsUtil.setParameter(
-			layoutFullURL, "p_l_back_url", _themeDisplay.getURLCurrent());
+		return HttpComponentsUtil.addParameters(
+			layoutFullURL, "p_l_back_url", _themeDisplay.getURLCurrent(),
+			"p_l_back_url_title",
+			LanguageUtil.get(_httpServletRequest, "widget-page-templates"));
 	}
 
 	private UnsafeConsumer<DropdownItem, Exception>

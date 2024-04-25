@@ -9,7 +9,7 @@ import React from 'react';
 
 import '@testing-library/jest-dom/extend-expect';
 
-import {FieldBase} from '../../../src/main/resources/META-INF/resources/FieldBase/ReactFieldBase.es';
+import FieldBase from '../../../src/main/resources/META-INF/resources/FieldBase/ReactFieldBase.es';
 
 const spritemap = 'icons.svg';
 
@@ -194,6 +194,19 @@ describe('ReactFieldBase', () => {
 		const {container, findByTestId, getByRole, getByText} = render(
 			<FieldBaseWithProvider
 				fieldName="inputMaskFormat"
+				popover={{
+					alignPosition: 'right-bottom',
+					content: 'Tooltip Description',
+					header: 'input-mask-format',
+					hideOnTriggerOut: true,
+					image: {
+						alt: 'input-mask-format',
+						height: 170,
+						src:
+							'http://localhost:8080/forms/input_mask_format.png',
+						width: 232,
+					},
+				}}
 				spritemap={spritemap}
 				tooltip="Tooltip Description"
 			/>
@@ -216,6 +229,56 @@ describe('ReactFieldBase', () => {
 
 		expect(getByText('input-mask-format')).toBeInTheDocument();
 		expect(getByText('Tooltip Description')).toBeInTheDocument();
+	});
+
+	it('renders the hidden inputs with data-languageid and data-field-name', () => {
+		Liferay.FeatureFlags['LPS-114700'] = true;
+
+		const localizedValue = {ca_ES: 'test_ca_ES', en_US: 'test_en_US'};
+
+		render(
+			<FieldBaseWithProvider
+				fieldName="field_name"
+				instanceId="instance_id"
+				localizedValue={localizedValue}
+				name="test_name"
+			/>
+		);
+
+		const inputs = document.querySelectorAll('[name="test_name"]');
+
+		inputs.forEach((input, i) => {
+			expect(input).toHaveAttribute(
+				'data-field-name',
+				'field_nameinstance_id'
+			);
+			expect(input).toHaveAttribute(
+				'data-languageid',
+				Object.keys(localizedValue)[i]
+			);
+		});
+
+		Liferay.FeatureFlags['LPS-114700'] = false;
+	});
+
+	it('renders the label with info icon and its corresponding styles when the field is non-localizable', () => {
+		Liferay.FeatureFlags['LPS-114700'] = true;
+
+		const {getByLabelText, getByTitle} = render(
+			<FieldBaseWithProvider
+				editOnlyInDefaultLanguage
+				label="my-label"
+				readOnly
+			/>
+		);
+
+		expect(
+			getByTitle('this-field-cannot-be-localized')
+		).toBeInTheDocument();
+
+		expect(getByLabelText('my-label')).toHaveClass('text-muted');
+
+		Liferay.FeatureFlags['LPS-114700'] = false;
 	});
 
 	describe('Hide Field', () => {

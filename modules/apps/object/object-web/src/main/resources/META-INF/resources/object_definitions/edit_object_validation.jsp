@@ -12,7 +12,17 @@ ObjectDefinitionsValidationsDisplayContext objectDefinitionsValidationsDisplayCo
 ObjectValidationRule objectValidationRule = (ObjectValidationRule)request.getAttribute(ObjectWebKeys.OBJECT_VALIDATION);
 %>
 
+<liferay-portlet:resourceURL copyCurrentRenderParameters="<%= false %>" var="baseResourceURL" />
+
 <react:component
-	module="js/components/ObjectValidation/EditObjectValidation"
-	props="<%= objectDefinitionsValidationsDisplayContext.getProps(objectValidationRule) %>"
+	module="{EditObjectValidation} from object-web"
+	props='<%=
+		HashMapBuilder.<String, Object>put(
+			"baseResourceURL", String.valueOf(baseResourceURL)
+		).put(
+			"scriptManagementConfigurationPortletURL", objectDefinitionsValidationsDisplayContext.getScriptManagementConfigurationPortletURL()
+		).putAll(
+			objectDefinitionsValidationsDisplayContext.getProps(objectValidationRule)
+		).build()
+	%>'
 />

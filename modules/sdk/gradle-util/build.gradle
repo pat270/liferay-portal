@@ -1,4 +1,7 @@
-String gradleVersion = "6.9.2"
+sourceCompatibility = "1.8"
+targetCompatibility = "1.8"
+
+String gradleVersion = "8.5"
 
 tasks.eclipse {
 	ext.gradleVersion = gradleVersion

@@ -72,7 +72,12 @@ public class DataDefinitionFieldLinkResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _dataDefinitionFieldLinkResourceProxyProviderFunction.
+				Function<InvocationHandler, DataDefinitionFieldLinkResource>
+					dataDefinitionFieldLinkResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_dataDefinitionFieldLinkResourceProxyProviderFunction;
+
+				return dataDefinitionFieldLinkResourceProxyProviderFunction.
 					apply(
 						(proxy, method, arguments) -> _invoke(
 							method, arguments, _checkPermissions,
@@ -239,11 +244,6 @@ public class DataDefinitionFieldLinkResourceFactoryImpl
 		}
 	}
 
-	private static final Function
-		<InvocationHandler, DataDefinitionFieldLinkResource>
-			_dataDefinitionFieldLinkResourceProxyProviderFunction =
-				_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -279,6 +279,15 @@ public class DataDefinitionFieldLinkResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function
+			<InvocationHandler, DataDefinitionFieldLinkResource>
+				_dataDefinitionFieldLinkResourceProxyProviderFunction =
+					_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

@@ -19,29 +19,8 @@ definition {
 		}
 
 		task ("Open Segmentation Admin") {
-			Navigator.openURL();
-
 			Segmentation.openSegmentsAdmin(siteURLKey = "test-site-name");
 		}
-	}
-
-	tearDown {
-		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
-
-		if (${testLiferayVirtualInstance} == "true") {
-			PortalInstances.tearDownCP();
-		}
-		else {
-			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
-		}
-
-		JSONUser.tearDownNonAdminUsers();
-
-		JSONOrganization.deleteOrganizationByName(
-			organizationName = "Organization Name",
-			parentOrganizationName = "Parent Organization Name");
-
-		JSONOrganization.deleteOrganizationByName(organizationName = "Parent Organization Name");
 	}
 
 	@description = "This is a test for LPS-187282. The segment designer could add a segment based on organization category criteria."
@@ -467,6 +446,7 @@ definition {
 	test AddSegmentByOrganizationRegion {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Add user") {
 			JSONUser.addUser(
@@ -684,7 +664,7 @@ definition {
 
 			Segmentation.fillProperty(selectEntry = "Segment With User1");
 
-			Segmentation.addProperties(propertyOption = "Segment");
+			Segmentation.addSecondProperty(propertyOption = "Segment");
 
 			Segmentation.fillProperty(
 				indexNumber = 2,
@@ -770,7 +750,7 @@ definition {
 
 			Segmentation.fillProperty(selectEntry = "Segment With User1");
 
-			Segmentation.addProperties(propertyOption = "Segment");
+			Segmentation.addSecondProperty(propertyOption = "Segment");
 
 			Segmentation.fillProperty(
 				indexNumber = 2,
@@ -1881,6 +1861,7 @@ definition {
 	test AddSegmentByUserSiteOrganizationRole {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Add user") {
 			JSONUser.addUser(
@@ -2122,12 +2103,10 @@ definition {
 	test AddSegmentUsingCustomFields {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Add custom field in User") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Configuration",
-				panel = "Control Panel",
-				portlet = "Custom Fields");
+			CustomFields.openCustomFieldAdmin();
 
 			CustomFields.addCP(
 				customFieldName = "Business Unit",
@@ -2144,10 +2123,7 @@ definition {
 				userLastName = "userln",
 				userScreenName = "usersn");
 
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Users and Organizations");
+			User.openUsersAdmin();
 
 			UserNavigator.gotoUser(userScreenName = "usersn");
 
@@ -2616,6 +2592,7 @@ definition {
 	@priority = 3
 	test InstanceSettingsSessionPropertyVocabulariesBreadcrumb {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Go to Instance Settings > Segments > Session Property Vocabulary") {
 			PortalSettings.openInstanceSettingsAdmin();
@@ -2647,6 +2624,7 @@ definition {
 	@priority = 3
 	test InstanceSettingsSessionPropertyVocabulariesCancelButton {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Go to Instance Settings > Segments > Session Property Vocabulary") {
 			PortalSettings.openInstanceSettingsAdmin();
@@ -2677,6 +2655,7 @@ definition {
 	test InstanceSettingsSessionPropertyVocabularyInSegmentsEditor {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Set Session Property Vocabulary") {
 			Segmentation.setVocabularySessionProperty(
@@ -2742,6 +2721,7 @@ definition {
 	test KeepInfomationOfDeleteVocabularyInSegment {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Set Session Property Vocabulary") {
 			Segmentation.setVocabularySessionProperty(
@@ -2892,7 +2872,7 @@ definition {
 
 			Segmentation.fillProperty(criterionValue = "Developer");
 
-			Segmentation.addProperties(propertyOption = "First Name");
+			Segmentation.addSecondProperty(propertyOption = "First Name");
 
 			Segmentation.fillProperty(
 				criterionValue = "Test",
@@ -2964,7 +2944,7 @@ definition {
 		}
 
 		task ("Create a Segment") {
-			LexiconEntry.gotoAdd();
+			Button.click(button = "Nuevo");
 
 			Segmentation.addProperties(propertyOption = "Apellido");
 
@@ -3363,6 +3343,149 @@ definition {
 		}
 	}
 
+	@description = "This is a test for LPS-177714. The tooltip of the back button is Go to Segments in the page editor of Segments."
+	@priority = 3
+	test ViewBackButtonTooltipForSegmentsAdmin {
+		task ("Given a site administrator adds a segment") {
+			LexiconEntry.gotoAdd();
+
+			WaitForVisible(locator1 = "Segmentation#ADD_FIELD_POSITION");
+		}
+
+		task ("When the site administrator hovers over the back button") {
+			MouseOver(locator1 = "Icon#BACK");
+		}
+
+		task ("Then the site administrator could see the tooltip message") {
+			AssertVisible(
+				key_content = "Go to Segments",
+				locator1 = "Tooltip#FLOATING_TOOLTIP_CONTENT");
+		}
+
+		task ("Given a site administrator edits the segment") {
+			JSONSegmentsentry.addSegment(
+				fieldName = "Regular Role",
+				groupName = "Test Site Name",
+				operator = "equals",
+				segmentName = "Test Segment Name",
+				selectedOption = "Power User");
+
+			Navigator.gotoBack();
+
+			Segmentation.editSegment(entry = "Test Segment Name");
+
+			WaitForElementPresent(locator1 = "Segmentation#CRITERION_INPUT_ANY");
+		}
+
+		task ("When the site administrator hovers over the back button") {
+			MouseOver(locator1 = "Icon#BACK");
+		}
+
+		task ("Then the site administrator could see the tooltip message") {
+			AssertVisible(
+				key_content = "Go to Segments",
+				locator1 = "Tooltip#FLOATING_TOOLTIP_CONTENT");
+		}
+	}
+
+	@description = "This is a test for LPS-177714. When adding a segment to a new experience, the tooltip of the back button is Go to [pageName] where [pageName] is the name of the page in the Page Editor view."
+	@priority = 3
+	test ViewBackButtonTooltipOfNewSegmentFromNewExperience {
+		task ("Given a site administrator accesses to the segment editor from new experience") {
+			JSONLayout.addPublicLayout(
+				groupName = "Test Site Name",
+				layoutName = "Test Page Name",
+				type = "content");
+
+			ContentPagesNavigator.openEditContentPage(
+				pageName = "Test Page Name",
+				siteName = "Test Site Name");
+
+			PageEditor.openNewExperienceEditor();
+
+			Click(
+				key_text = "New Segment",
+				locator1 = "Button#ANY");
+
+			WaitForVisible(locator1 = "Segmentation#ADD_FIELD_POSITION");
+		}
+
+		task ("When the site administrator hovers over the back button") {
+			MouseOver(locator1 = "Icon#BACK");
+		}
+
+		task ("Then the site administrator could see the tooltip message") {
+			AssertVisible(
+				key_content = "Go to Test Page Name",
+				locator1 = "Tooltip#FLOATING_TOOLTIP_CONTENT");
+		}
+	}
+
+	@description = "This is a test for LPS-94651. The draggable area should be default and the already existent conditions not disabled until one item from the properties sidebar is selected."
+	@priority = 3
+	test ViewDraggableAreaWhenDraggingPropertyItem {
+		task ("Given a segment designer accesses to the segment entry editor") {
+			LexiconEntry.gotoAdd();
+
+			WaitForPageLoad();
+		}
+
+		task ("When the segment designer drags a property item") {
+			DragOver.dragOver(
+				key_propertyOption = "User",
+				locator1 = "Segmentation#ADD_FIELD_TYPE_VISIBLE",
+				locator2 = "Segmentation#ADD_FIELD_TYPE_VISIBLE");
+		}
+
+		task ("Then the segment designer could see the draggable area") {
+			AssertVisible(locator1 = "Segmentation#EMPTY_DROP_ZONE_DASHED");
+		}
+
+		task ("When the segment designer drops the property item in draggable area") {
+			DragAndDrop.javaScriptDragAndDropToObject(
+				key_propertyOption = "User",
+				locator1 = "Segmentation#ADD_FIELD_TYPE_VISIBLE",
+				locator2 = "Segmentation#ADD_FIELD_POSITION");
+
+			AssertElementPresent(
+				locator1 = "Segmentation#CONDITIONS_PROPERTY_NAME",
+				propertyName = "User");
+		}
+
+		task ("Then the segment designer cannot see the draggable area") {
+			AssertElementNotPresent(locator1 = "Segmentation#EMPTY_DROP_ZONE_DASHED");
+		}
+
+		task ("When the segment designer drags a property item from another section") {
+			Segmentation.gotoSidebar(fieldType = "Organization");
+
+			DragOver.dragOver(
+				key_propertyOption = "Country",
+				locator1 = "Segmentation#ADD_FIELD_TYPE_VISIBLE",
+				locator2 = "Segmentation#ADD_FIELD_TYPE_VISIBLE");
+		}
+
+		task ("Then the segment designer could see the draggable area") {
+			AssertVisible(locator1 = "Segmentation#EMPTY_DROP_ZONE_DASHED");
+		}
+
+		task ("When the segment designer drops the property item in draggable area") {
+			DragAndDrop.javaScriptDragAndDropToObject(
+				indexNumber = 2,
+				key_propertyOption = "Country",
+				locator1 = "Segmentation#ADD_FIELD_TYPE_VISIBLE",
+				locator2 = "Segmentation#ADD_FIELD_POSITION_N");
+
+			AssertElementPresent(
+				locator1 = "Segmentation#CONDITIONS_PROPERTY_NAME",
+				propertyName = "Country");
+		}
+
+		task ("Then the segment designer cannot see the draggable area") {
+			AssertElementNotPresent(locator1 = "Segmentation#EMPTY_DROP_ZONE_DASHED");
+		}
+	}
+
 	@description = "This is a use case for LPS-103516 Bug: Session fields are not displayed in segments editor"
 	@priority = 3
 	@uitest
@@ -3385,6 +3508,7 @@ definition {
 	test VocabulariesListedInSystemSettingsSegments {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Add two vocabularies to global site") {
 			for (var n : list "1,2") {

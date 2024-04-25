@@ -6,12 +6,17 @@
 package com.liferay.fragment.model.impl;
 
 import com.liferay.fragment.constants.FragmentConstants;
+import com.liferay.fragment.contributor.FragmentCollectionContributorRegistry;
 import com.liferay.fragment.model.FragmentEntry;
 import com.liferay.fragment.service.FragmentEntryLocalServiceUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.GroupConstants;
+import com.liferay.portal.kernel.module.service.Snapshot;
+import com.liferay.portal.kernel.util.DateUtil;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Date;
+import java.util.Map;
 
 /**
  * @author Eudaldo Alonso
@@ -20,16 +25,30 @@ public class FragmentEntryLinkImpl extends FragmentEntryLinkBaseImpl {
 
 	@Override
 	public boolean isCacheable() {
-		if (getFragmentEntryId() == 0) {
-			return false;
-		}
-
 		FragmentEntry fragmentEntry =
 			FragmentEntryLocalServiceUtil.fetchFragmentEntry(
 				getFragmentEntryId());
 
 		if (fragmentEntry != null) {
 			return fragmentEntry.isCacheable();
+		}
+
+		if (Validator.isNull(getRendererKey())) {
+			return false;
+		}
+
+		FragmentCollectionContributorRegistry
+			fragmentCollectionContributorRegistry =
+				_fragmentCollectionContributorRegistrySnapshot.get();
+
+		Map<String, FragmentEntry> fragmentEntries =
+			fragmentCollectionContributorRegistry.getFragmentEntries();
+
+		FragmentEntry contributedFragmentEntry = fragmentEntries.get(
+			getRendererKey());
+
+		if (contributedFragmentEntry != null) {
+			return contributedFragmentEntry.isCacheable();
 		}
 
 		return false;
@@ -43,7 +62,14 @@ public class FragmentEntryLinkImpl extends FragmentEntryLinkBaseImpl {
 
 		Date fragmentEntryModifiedDate = fragmentEntry.getModifiedDate();
 
-		return fragmentEntryModifiedDate.before(getLastPropagationDate());
+		int value = DateUtil.compareTo(
+			fragmentEntryModifiedDate, getLastPropagationDate());
+
+		if (value < 0) {
+			return true;
+		}
+
+		return false;
 	}
 
 	@Override
@@ -113,5 +139,10 @@ public class FragmentEntryLinkImpl extends FragmentEntryLinkBaseImpl {
 
 		return false;
 	}
+
+	private static final Snapshot<FragmentCollectionContributorRegistry>
+		_fragmentCollectionContributorRegistrySnapshot = new Snapshot<>(
+			FragmentEntryLinkImpl.class,
+			FragmentCollectionContributorRegistry.class);
 
 }

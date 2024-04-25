@@ -5,9 +5,9 @@
 
 package com.liferay.poshi.runner.selenium;
 
+import com.liferay.poshi.core.PoshiProperties;
 import com.liferay.poshi.core.selenium.LiferaySelenium;
 import com.liferay.poshi.core.util.OSDetector;
-import com.liferay.poshi.core.util.PoshiProperties;
 import com.liferay.poshi.core.util.StringPool;
 import com.liferay.poshi.core.util.StringUtil;
 import com.liferay.poshi.core.util.Validator;
@@ -34,7 +34,6 @@ import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxBinary;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
-import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.ie.InternetExplorerOptions;
 import org.openqa.selenium.remote.CapabilityType;
@@ -293,21 +292,6 @@ public class WebDriverUtil {
 
 		firefoxOptions.setCapability("locationContextEnabled", false);
 		firefoxOptions.setCapability("marionette", true);
-
-		try {
-			FirefoxProfile firefoxProfile = new FirefoxProfile();
-
-			firefoxProfile.addExtension(
-				WebDriverUtil.class,
-				"/META-INF/resources/firefox/extensions/jserrorcollector.xpi");
-
-			firefoxOptions.setProfile(firefoxProfile);
-		}
-		catch (Exception exception) {
-			System.out.println(
-				"Unable to add the jserrorcollector.xpi extension to the " +
-					"Firefox profile.");
-		}
 
 		return new FirefoxDriver(firefoxOptions);
 	}

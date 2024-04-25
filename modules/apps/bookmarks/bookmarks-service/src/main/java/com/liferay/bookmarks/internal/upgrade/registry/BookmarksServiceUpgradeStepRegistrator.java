@@ -11,11 +11,12 @@ import com.liferay.bookmarks.internal.upgrade.v1_0_0.UpgradePortletSettings;
 import com.liferay.bookmarks.internal.upgrade.v2_0_0.UpgradeBookmarksEntryResourceBlock;
 import com.liferay.bookmarks.internal.upgrade.v2_0_0.UpgradeBookmarksFolderResourceBlock;
 import com.liferay.bookmarks.model.BookmarksEntry;
+import com.liferay.portal.kernel.model.Release;
 import com.liferay.portal.kernel.settings.SettingsLocatorHelper;
+import com.liferay.portal.kernel.upgrade.CTModelUpgradeProcess;
 import com.liferay.portal.kernel.upgrade.MVCCVersionUpgradeProcess;
 import com.liferay.portal.kernel.upgrade.ViewCountUpgradeProcess;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
-import com.liferay.view.count.service.ViewCountEntryLocalService;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -54,15 +55,18 @@ public class BookmarksServiceUpgradeStepRegistrator
 			"2.1.0", "3.0.0",
 			new ViewCountUpgradeProcess(
 				"BookmarksEntry", BookmarksEntry.class, "entryId", "visits"));
+
+		registry.register(
+			"3.0.0", "3.1.0",
+			new CTModelUpgradeProcess("BookmarksEntry", "BookmarksFolder"));
 	}
+
+	@Reference(
+		target = "(&(release.bundle.symbolic.name=com.liferay.view.count.service)(&(release.schema.version>=1.0.0)))"
+	)
+	private Release _release;
 
 	@Reference
 	private SettingsLocatorHelper _settingsLocatorHelper;
-
-	/**
-	 * See LPS-101587. The ViewCount table needs to exist.
-	 */
-	@Reference
-	private ViewCountEntryLocalService _viewCountEntryLocalService;
 
 }

@@ -8,25 +8,31 @@ package com.liferay.portal.search.similar.results.web.internal.contributor.wiki;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.search.model.uid.UIDFactory;
-import com.liferay.portal.search.similar.results.web.internal.helper.HttpHelper;
+import com.liferay.portal.search.similar.results.web.internal.helper.HttpHelperUtil;
 import com.liferay.portal.search.similar.results.web.internal.util.SearchStringUtil;
-import com.liferay.portal.search.similar.results.web.spi.contributor.SimilarResultsContributor;
 import com.liferay.portal.search.similar.results.web.spi.contributor.helper.RouteBuilder;
 import com.liferay.portal.search.similar.results.web.spi.contributor.helper.RouteHelper;
 import com.liferay.wiki.constants.WikiPortletKeys;
 import com.liferay.wiki.service.WikiNodeLocalService;
 import com.liferay.wiki.service.WikiPageLocalService;
 
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-
 /**
  * @author Wade Cao
  * @author André de Oliveira
  */
-@Component(service = SimilarResultsContributor.class)
 public class WikiDisplaySimilarResultsContributor
 	extends BaseWikiSimilarResultsContributor {
+
+	public WikiDisplaySimilarResultsContributor(
+		AssetEntryLocalService assetEntryLocalService, UIDFactory uidFactory,
+		WikiNodeLocalService wikiNodeLocalService,
+		WikiPageLocalService wikiPageLocalService) {
+
+		_assetEntryLocalService = assetEntryLocalService;
+		_uidFactory = uidFactory;
+		_wikiNodeLocalService = wikiNodeLocalService;
+		_wikiPageLocalService = wikiPageLocalService;
+	}
 
 	@Override
 	public void detectRoute(
@@ -37,16 +43,16 @@ public class WikiDisplaySimilarResultsContributor
 		SearchStringUtil.requireStartsWith(
 			WikiPortletKeys.WIKI_DISPLAY,
 			URLCodec.decodeURL(
-				_httpHelper.getPortletIdParameter(urlString, "p_p_id")));
+				HttpHelperUtil.getPortletIdParameter(urlString, "p_p_id")));
 
 		routeBuilder.addAttribute(
 			"nodeName",
 			URLCodec.decodeURL(
-				_httpHelper.getPortletIdParameter(urlString, "nodeName"))
+				HttpHelperUtil.getPortletIdParameter(urlString, "nodeName"))
 		).addAttribute(
 			"title",
 			URLCodec.decodeURL(
-				_httpHelper.getPortletIdParameter(urlString, "title"))
+				HttpHelperUtil.getPortletIdParameter(urlString, "title"))
 		);
 	}
 
@@ -70,19 +76,9 @@ public class WikiDisplaySimilarResultsContributor
 		return _wikiPageLocalService;
 	}
 
-	@Reference
-	private AssetEntryLocalService _assetEntryLocalService;
-
-	@Reference
-	private HttpHelper _httpHelper;
-
-	@Reference
-	private UIDFactory _uidFactory;
-
-	@Reference
-	private WikiNodeLocalService _wikiNodeLocalService;
-
-	@Reference
-	private WikiPageLocalService _wikiPageLocalService;
+	private final AssetEntryLocalService _assetEntryLocalService;
+	private final UIDFactory _uidFactory;
+	private final WikiNodeLocalService _wikiNodeLocalService;
+	private final WikiPageLocalService _wikiPageLocalService;
 
 }

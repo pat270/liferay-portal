@@ -7,7 +7,7 @@ import 'leaflet/dist/leaflet.css';
 import ClayIcon from '@clayui/icon';
 import React, {useCallback, useState} from 'react';
 
-import {FieldBase} from '../FieldBase/ReactFieldBase.es';
+import FieldBase from '../FieldBase/ReactFieldBase.es';
 import {MAP_PROVIDER, useGeolocation} from './useGeolocation.es';
 
 const geolocateTitle = Liferay.Language.get('geolocate');
@@ -114,7 +114,11 @@ const Main = ({
 			instanceId={instanceId}
 			mapProviderKey={mapProviderKey}
 			name={name}
-			onChange={(value) => onChange({}, value)}
+			onChange={(value) => {
+				if (value !== '{"lat":0,"lng":0}') {
+					onChange({}, value);
+				}
+			}}
 			value={value}
 			viewMode={viewMode}
 		/>

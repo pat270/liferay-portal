@@ -32,6 +32,8 @@ import com.liferay.headless.delivery.dto.v1_0.PageFragmentInstanceDefinition;
 import com.liferay.headless.delivery.dto.v1_0.PageRowDefinition;
 import com.liferay.headless.delivery.dto.v1_0.PageSectionDefinition;
 import com.liferay.headless.delivery.dto.v1_0.Settings;
+import com.liferay.layout.page.template.constants.LayoutPageTemplateCollectionTypeConstants;
+import com.liferay.layout.page.template.constants.LayoutPageTemplateConstants;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateCollection;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
@@ -113,7 +115,10 @@ public class PageDefinitionDTOConverterTest {
 			_layoutPageTemplateCollectionLocalService.
 				addLayoutPageTemplateCollection(
 					TestPropsValues.getUserId(), _group.getGroupId(),
+					LayoutPageTemplateConstants.
+						PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
 					RandomTestUtil.randomString(), StringPool.BLANK,
+					LayoutPageTemplateCollectionTypeConstants.BASIC,
 					_serviceContext);
 
 		_layoutPageTemplateEntry =
@@ -122,7 +127,7 @@ public class PageDefinitionDTOConverterTest {
 				layoutPageTemplateCollection.
 					getLayoutPageTemplateCollectionId(),
 				RandomTestUtil.randomString(),
-				LayoutPageTemplateEntryTypeConstants.TYPE_BASIC, 0,
+				LayoutPageTemplateEntryTypeConstants.BASIC, 0,
 				WorkflowConstants.STATUS_DRAFT, _serviceContext);
 
 		_fragmentCollection =
@@ -538,7 +543,7 @@ public class PageDefinitionDTOConverterTest {
 		com.liferay.headless.delivery.dto.v1_0.Layout sectionLayout =
 			pageSectionDefinition1.getLayout();
 
-		Assert.assertEquals("Fluid", sectionLayout.getWidthTypeAsString());
+		Assert.assertNull(sectionLayout.getWidthTypeAsString());
 		Assert.assertEquals(
 			Integer.valueOf(10), sectionLayout.getPaddingBottom());
 		Assert.assertEquals(Integer.valueOf(4), sectionLayout.getPaddingLeft());
@@ -653,8 +658,8 @@ public class PageDefinitionDTOConverterTest {
 				TestPropsValues.getUserId(), _group.getGroupId(),
 				_fragmentCollection.getFragmentCollectionId(), fragmentEntryKey,
 				fragmentName, StringPool.BLANK, html, StringPool.BLANK, false,
-				configuration, null, 0, FragmentConstants.TYPE_COMPONENT, null,
-				WorkflowConstants.STATUS_APPROVED, _serviceContext);
+				configuration, null, 0, false, FragmentConstants.TYPE_COMPONENT,
+				null, WorkflowConstants.STATUS_APPROVED, _serviceContext);
 
 		FragmentEntryLink fragmentEntryLink =
 			_fragmentEntryLinkLocalService.addFragmentEntryLink(

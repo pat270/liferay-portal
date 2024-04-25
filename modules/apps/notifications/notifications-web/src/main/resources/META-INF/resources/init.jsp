@@ -13,12 +13,14 @@
 taglib uri="http://liferay.com/tld/clay" prefix="clay" %><%@
 taglib uri="http://liferay.com/tld/frontend" prefix="liferay-frontend" %><%@
 taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %><%@
-taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
+taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %><%@
+taglib uri="http://liferay.com/tld/user" prefix="liferay-user" %>
 
 <%@ page import="com.liferay.frontend.taglib.clay.servlet.taglib.util.JSPNavigationItemList" %><%@
 page import="com.liferay.notifications.web.internal.constants.NotificationsPortletKeys" %><%@
 page import="com.liferay.notifications.web.internal.display.context.NotificationsManagementToolbarDisplayContext" %><%@
 page import="com.liferay.notifications.web.internal.search.UserNotificationEventRowChecker" %><%@
+page import="com.liferay.notifications.web.internal.servlet.taglib.util.UserNotificationEventActionDropdownItem" %><%@
 page import="com.liferay.notifications.web.internal.util.NotificationsUtil" %><%@
 page import="com.liferay.notifications.web.internal.util.comparator.PortletIdComparator" %><%@
 page import="com.liferay.petra.string.StringPool" %><%@
@@ -49,11 +51,7 @@ page import="com.liferay.portal.kernel.util.PortalUtil" %><%@
 page import="com.liferay.portal.kernel.util.StringUtil" %><%@
 page import="com.liferay.portal.kernel.util.Time" %><%@
 page import="com.liferay.portal.kernel.util.TreeMapBuilder" %><%@
-page import="com.liferay.portal.kernel.util.Validator" %><%@
-page import="com.liferay.portal.kernel.util.WebKeys" %><%@
-page import="com.liferay.subscription.model.Subscription" %><%@
-page import="com.liferay.subscription.service.SubscriptionLocalServiceUtil" %><%@
-page import="com.liferay.taglib.search.ResultRow" %>
+page import="com.liferay.portal.kernel.util.Validator" %>
 
 <%@ page import="java.text.Format" %>
 
@@ -70,9 +68,7 @@ page import="java.util.Map" %>
 <portlet:defineObjects />
 
 <%
-Format dateFormatDateTime = FastDateFormatFactoryUtil.getDateTime(locale, timeZone);
-
-boolean notificationActionIconList = false;
+Format dateTimeFormat = FastDateFormatFactoryUtil.getDateTime(locale, timeZone);
 %>
 
 <%@ include file="/init-ext.jsp" %>

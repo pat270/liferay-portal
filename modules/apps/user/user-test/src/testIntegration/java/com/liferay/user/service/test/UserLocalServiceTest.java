@@ -7,7 +7,7 @@ package com.liferay.user.service.test;
 
 import com.liferay.announcements.kernel.service.AnnouncementsDeliveryLocalService;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.audit.AuditMessage;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
@@ -15,6 +15,7 @@ import com.liferay.portal.kernel.exception.PasswordExpiredException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.RequiredRoleException;
 import com.liferay.portal.kernel.exception.UserLockoutException;
+import com.liferay.portal.kernel.exception.UserPasswordException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.Company;
@@ -27,13 +28,15 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserConstants;
 import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.model.role.RoleConstants;
+import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.security.auth.AuthException;
 import com.liferay.portal.kernel.security.auth.Authenticator;
+import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
-import com.liferay.portal.kernel.security.pwd.PasswordEncryptor;
 import com.liferay.portal.kernel.security.pwd.PasswordEncryptorUtil;
+import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.PasswordPolicyLocalService;
 import com.liferay.portal.kernel.service.PortalPreferencesLocalService;
@@ -51,6 +54,7 @@ import com.liferay.portal.kernel.test.rule.DataGuard;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.OrganizationTestUtil;
+import com.liferay.portal.kernel.test.util.PropsValuesTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.RoleTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
@@ -71,9 +75,7 @@ import com.liferay.portal.security.audit.AuditMessageProcessor;
 import com.liferay.portal.security.audit.event.generators.constants.EventTypes;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portal.util.PropsValues;
-
-import java.lang.reflect.Field;
+import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -81,8 +83,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -104,7 +108,21 @@ public class UserLocalServiceTest {
 	@ClassRule
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
-		new LiferayIntegrationTestRule();
+		new AggregateTestRule(
+			new LiferayIntegrationTestRule(),
+			PermissionCheckerMethodTestRule.INSTANCE);
+
+	@BeforeClass
+	public static void setUpClass() throws Exception {
+		_originalName = PrincipalThreadLocal.getName();
+
+		PrincipalThreadLocal.setName(TestPropsValues.getUserId());
+	}
+
+	@AfterClass
+	public static void tearDownClass() throws Exception {
+		PrincipalThreadLocal.setName(_originalName);
+	}
 
 	@Before
 	public void setUp() throws Exception {
@@ -235,10 +253,12 @@ public class UserLocalServiceTest {
 
 	@Test
 	public void testGetCompanyUsers() throws Exception {
-		Company company = CompanyTestUtil.addCompany();
+		_company = CompanyTestUtil.addCompany();
 
 		List<User> companyUsers = _userLocalService.getCompanyUsers(
-			company.getCompanyId(), QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+			_company.getCompanyId(), QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+
+		_companyLocalService.deleteCompany(_company);
 
 		Assert.assertEquals(companyUsers.toString(), 1, companyUsers.size());
 
@@ -531,6 +551,56 @@ public class UserLocalServiceTest {
 	}
 
 	@Test
+	public void testPasswordHistory() throws Exception {
+		User user = UserTestUtil.addUser();
+
+		PasswordPolicy passwordPolicy = user.getPasswordPolicy();
+
+		passwordPolicy.setHistory(true);
+		passwordPolicy.setHistoryCount(2);
+
+		_passwordPolicyLocalService.updatePasswordPolicy(passwordPolicy);
+
+		String password1 = "password1";
+		String password2 = "password2";
+
+		try {
+			ServiceContextThreadLocal.pushServiceContext(
+				ServiceContextTestUtil.getServiceContext(
+					user.getGroupId(), user.getUserId()));
+
+			user = _userLocalService.updatePassword(
+				user.getUserId(), password1, password1, false, false);
+
+			user = _userLocalService.updatePassword(
+				user.getUserId(), password2, password2, false, false);
+
+			Assert.assertEquals(
+				Authenticator.SUCCESS,
+				_userLocalService.authenticateByEmailAddress(
+					user.getCompanyId(), user.getEmailAddress(), password2,
+					null, null, null));
+
+			_userLocalService.updatePassword(
+				user.getUserId(), password1, password1, false, false);
+
+			Assert.assertEquals(
+				Authenticator.SUCCESS,
+				_userLocalService.authenticateByEmailAddress(
+					user.getCompanyId(), user.getEmailAddress(), password2,
+					null, null, null));
+		}
+		catch (PortalException portalException) {
+			Assert.assertEquals(
+				UserPasswordException.MustNotBeRecentlyUsed.class,
+				portalException.getClass());
+		}
+		finally {
+			ServiceContextThreadLocal.popServiceContext();
+		}
+	}
+
+	@Test
 	public void testSearch() throws Exception {
 		List<User> users = _userLocalService.search(
 			TestPropsValues.getCompanyId(), null,
@@ -667,24 +737,16 @@ public class UserLocalServiceTest {
 
 	@Test
 	public void testSearchUsersFromDatabase() throws Exception {
-		Field propsValuesField = ReflectionUtil.getDeclaredField(
-			PropsValues.class, "USERS_SEARCH_WITH_INDEX");
-
-		boolean propsValuesFieldValue = (boolean)propsValuesField.get(null);
-
-		try {
-			propsValuesField.set(null, false);
+		try (SafeCloseable safeCloseable =
+				PropsValuesTestUtil.swapWithSafeCloseable(
+					"USERS_SEARCH_WITH_INDEX", false)) {
 
 			_userLocalService.searchCount(
 				TestPropsValues.getCompanyId(), null,
 				WorkflowConstants.STATUS_APPROVED,
 				LinkedHashMapBuilder.<String, Object>put(
-					com.liferay.portal.kernel.search.Field.GROUP_ID,
-					TestPropsValues.getGroupId()
+					Field.GROUP_ID, TestPropsValues.getGroupId()
 				).build());
-		}
-		finally {
-			propsValuesField.set(null, propsValuesFieldValue);
 		}
 	}
 
@@ -772,18 +834,11 @@ public class UserLocalServiceTest {
 
 	@Test
 	public void testUpdatePasswordWithChangedAlgorithm() throws Exception {
-		PasswordEncryptor passwordEncryptor = ReflectionTestUtil.getFieldValue(
-			PasswordEncryptorUtil.class, "_passwordEncryptor");
-
-		String oldPasswordsEncryptionAlgorithmFieldValue =
-			ReflectionTestUtil.getFieldValue(
-				passwordEncryptor.getClass(),
-				"_PASSWORDS_ENCRYPTION_ALGORITHM");
-
-		try {
-			ReflectionTestUtil.setFieldValue(
-				passwordEncryptor.getClass(), "_PASSWORDS_ENCRYPTION_ALGORITHM",
-				"PBKDF2WithHmacSHA1/160/720000");
+		try (AutoCloseable autoCloseable =
+				ReflectionTestUtil.setFieldValueWithAutoCloseable(
+					PasswordEncryptorUtil.class,
+					"_PASSWORDS_ENCRYPTION_ALGORITHM",
+					"PBKDF2WithHmacSHA1/160/720000")) {
 
 			User user = UserTestUtil.addUser();
 
@@ -793,7 +848,7 @@ public class UserLocalServiceTest {
 				encryptedPassword.startsWith("{PBKDF2WithHmacSHA1}"));
 
 			ReflectionTestUtil.setFieldValue(
-				passwordEncryptor.getClass(), "_PASSWORDS_ENCRYPTION_ALGORITHM",
+				PasswordEncryptorUtil.class, "_PASSWORDS_ENCRYPTION_ALGORITHM",
 				"MD5");
 
 			String password = RandomTestUtil.randomString(
@@ -805,11 +860,6 @@ public class UserLocalServiceTest {
 			encryptedPassword = user.getPassword();
 
 			Assert.assertTrue(encryptedPassword.startsWith("{MD5}"));
-		}
-		finally {
-			ReflectionTestUtil.setFieldValue(
-				passwordEncryptor.getClass(), "_PASSWORDS_ENCRYPTION_ALGORITHM",
-				oldPasswordsEncryptionAlgorithmFieldValue);
 		}
 	}
 
@@ -862,6 +912,13 @@ public class UserLocalServiceTest {
 
 		return userIds;
 	}
+
+	private static Company _company;
+
+	@Inject
+	private static CompanyLocalService _companyLocalService;
+
+	private static String _originalName;
 
 	@Inject
 	private AnnouncementsDeliveryLocalService

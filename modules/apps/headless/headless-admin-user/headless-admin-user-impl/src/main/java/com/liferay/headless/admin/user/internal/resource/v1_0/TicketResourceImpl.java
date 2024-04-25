@@ -7,15 +7,19 @@ package com.liferay.headless.admin.user.internal.resource.v1_0;
 
 import com.liferay.headless.admin.user.dto.v1_0.Ticket;
 import com.liferay.headless.admin.user.resource.v1_0.TicketResource;
+import com.liferay.portal.kernel.model.PasswordPolicy;
 import com.liferay.portal.kernel.model.TicketConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
+import com.liferay.portal.kernel.security.pwd.PasswordEncryptorUtil;
+import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.TicketLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
-import com.liferay.portal.kernel.service.permission.UserPermission;
+import com.liferay.portal.kernel.service.permission.UserPermissionUtil;
+import com.liferay.portal.kernel.util.Time;
 
-import java.util.List;
+import java.util.Date;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -45,32 +49,53 @@ public class TicketResourceImpl extends BaseTicketResourceImpl {
 	}
 
 	private Ticket _getTicket(int type, Long userAccountId) throws Exception {
-		_userLocalService.getUser(userAccountId);
+		User user = _userLocalService.getUser(userAccountId);
 
-		_userPermission.check(
+		UserPermissionUtil.check(
 			PermissionThreadLocal.getPermissionChecker(), userAccountId,
 			ActionKeys.UPDATE);
 
-		List<com.liferay.portal.kernel.model.Ticket> tickets =
-			_ticketLocalService.getTickets(
-				User.class.getName(), userAccountId, type);
+		Date expirationDate = null;
 
-		if (tickets.isEmpty()) {
-			return null;
+		PasswordPolicy passwordPolicy = user.getPasswordPolicy();
+
+		if ((passwordPolicy != null) &&
+			(passwordPolicy.getResetTicketMaxAge() > 0)) {
+
+			expirationDate = new Date(
+				System.currentTimeMillis() +
+					(passwordPolicy.getResetTicketMaxAge() * 1000));
+		}
+		else {
+			expirationDate = new Date(System.currentTimeMillis() + Time.DAY);
 		}
 
-		return _toTicket(tickets.get(0));
+		com.liferay.portal.kernel.model.Ticket ticket =
+			_ticketLocalService.addTicket(
+				user.getCompanyId(), User.class.getName(), userAccountId, type,
+				null, expirationDate,
+				ServiceContextThreadLocal.getServiceContext());
+
+		String unencryptedKey = ticket.getKey();
+
+		ticket.setKey(PasswordEncryptorUtil.encrypt(ticket.getKey()));
+
+		_ticketLocalService.updateTicket(ticket);
+
+		return _toTicket(ticket, unencryptedKey);
 	}
 
-	private Ticket _toTicket(com.liferay.portal.kernel.model.Ticket ticket)
+	private Ticket _toTicket(
+			com.liferay.portal.kernel.model.Ticket ticket,
+			String unencryptedKey)
 		throws Exception {
 
 		return new Ticket() {
 			{
-				expirationDate = ticket.getExpirationDate();
-				extraInfo = ticket.getExtraInfo();
-				id = ticket.getTicketId();
-				key = ticket.getKey();
+				setExpirationDate(ticket::getExpirationDate);
+				setExtraInfo(ticket::getExtraInfo);
+				setId(ticket::getTicketId);
+				setKey(() -> unencryptedKey);
 			}
 		};
 	}
@@ -80,8 +105,5 @@ public class TicketResourceImpl extends BaseTicketResourceImpl {
 
 	@Reference
 	private UserLocalService _userLocalService;
-
-	@Reference
-	private UserPermission _userPermission;
 
 }

@@ -11,41 +11,46 @@ import {
 	isValidMac,
 } from '../../../../../common/utils/validations.form';
 
-const KeyInputs = ({id}) => {
+const KeyInputs = ({id, isRenew}) => {
 	return (
 		<>
-			<div className="cp-input-generate-label mb-3">
+			<div className="cp-input-generate-label">
 				<Input
+					disabled={isRenew}
 					label={i18n.translate('host-name')}
 					name={`keys[${id}].hostName`}
-					required
 					type="text"
 					validations={[(value) => isValidHost(value)]}
 				/>
+			</div>
+
+			<div className="font-weight-normal h6 mb-3 mx-3">
+				{i18n.translate('input-one-host-name-per-instance')}
 			</div>
 
 			<div className="cp-input-generate-label">
 				<Input
 					className="cp-input-generate-placeholder w-100"
 					component="textarea"
+					disabled={isRenew}
 					label={i18n.translate('ip-address')}
 					name={`keys[${id}].ipAddresses`}
 					placeholder="1.1.1.1&#10;2.2.2.2"
-					required
 					type="text"
 					validations={[(value) => isValidIp(value)]}
 				/>
 
-				<h6 className="font-weight-normal mb-3 mx-3">
+				<div className="font-weight-normal h6 mb-3 mx-3">
 					{i18n.translate(
 						'add-one-ip-addresses-per-line-ipv6-addresses-are-not-supported'
 					)}
-				</h6>
+				</div>
 
 				<div className="cp-input-generate-label">
 					<Input
 						className="cp-input-generate-placeholder"
 						component="textarea"
+						disabled={isRenew}
 						label={i18n.translate('mac-address')}
 						name={`keys[${id}].macAddresses`}
 						placeholder="XX-XX-XX-XX-XX-XX&#10;XX-XX-XX-XX-XX-XX"
@@ -53,9 +58,11 @@ const KeyInputs = ({id}) => {
 						validations={[(value) => isValidMac(value)]}
 					/>
 
-					<h6 className="font-weight-normal mb-3 mx-3">
-						{i18n.translate('add-one-mac-addresses-per-line')}
-					</h6>
+					<div className="font-weight-normal h6 mb-3 mx-3">
+						{i18n.translate(
+							'add-one-mac-addresses-per-line-if-available-as-a-static-value'
+						)}
+					</div>
 				</div>
 			</div>
 		</>

@@ -7,16 +7,21 @@ package com.liferay.object.internal.action.executor;
 
 import com.liferay.dynamic.data.mapping.expression.DDMExpressionFactory;
 import com.liferay.object.action.executor.ObjectActionExecutor;
+import com.liferay.object.action.util.ObjectActionThreadLocal;
+import com.liferay.object.constants.ObjectActionConstants;
 import com.liferay.object.constants.ObjectActionExecutorConstants;
 import com.liferay.object.entry.util.ObjectEntryThreadLocal;
 import com.liferay.object.internal.action.util.ObjectEntryVariablesUtil;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectField;
 import com.liferay.object.rest.dto.v1_0.ObjectEntry;
+import com.liferay.object.rest.dto.v1_0.Status;
 import com.liferay.object.rest.manager.v1_0.DefaultObjectEntryManager;
 import com.liferay.object.rest.manager.v1_0.DefaultObjectEntryManagerProvider;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManagerRegistry;
+import com.liferay.object.service.ObjectActionLocalService;
 import com.liferay.object.service.ObjectDefinitionLocalService;
+import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.object.service.ObjectFieldLocalService;
 import com.liferay.object.system.SystemObjectDefinitionManager;
 import com.liferay.object.system.SystemObjectDefinitionManagerRegistry;
@@ -46,7 +51,8 @@ public class UpdateObjectEntryObjectActionExecutorImpl
 
 	@Override
 	public void execute(
-			long companyId, UnicodeProperties parametersUnicodeProperties,
+			long companyId, long objectActionId,
+			UnicodeProperties parametersUnicodeProperties,
 			JSONObject payloadJSONObject, long userId)
 		throws Exception {
 
@@ -56,8 +62,10 @@ public class UpdateObjectEntryObjectActionExecutorImpl
 
 		TransactionCommitCallbackUtil.registerCallback(
 			() -> {
+				ObjectActionThreadLocal.setSkipObjectActionExecution(false);
+
 				_execute(
-					objectDefinition,
+					objectActionId, objectDefinition,
 					GetterUtil.getLong(payloadJSONObject.getLong("classPK")),
 					_userLocalService.getUser(userId),
 					_getValues(
@@ -77,8 +85,8 @@ public class UpdateObjectEntryObjectActionExecutorImpl
 	}
 
 	private void _execute(
-			ObjectDefinition objectDefinition, long primaryKey, User user,
-			Map<String, Object> values)
+			long objectActionId, ObjectDefinition objectDefinition,
+			long primaryKey, User user, Map<String, Object> values)
 		throws Exception {
 
 		if (objectDefinition.isUnmodifiableSystemObject()) {
@@ -97,6 +105,7 @@ public class UpdateObjectEntryObjectActionExecutorImpl
 			ObjectEntryThreadLocal.isSkipObjectEntryResourcePermission();
 
 		try {
+			ObjectActionThreadLocal.setClearObjectEntryIdsMap(false);
 			ObjectEntryThreadLocal.setSkipObjectEntryResourcePermission(true);
 			ObjectEntryThreadLocal.setSkipReadOnlyObjectFieldsValidation(true);
 
@@ -105,18 +114,41 @@ public class UpdateObjectEntryObjectActionExecutorImpl
 					_objectEntryManagerRegistry.getObjectEntryManager(
 						objectDefinition.getStorageType()));
 
-			defaultObjectEntryManager.updateObjectEntry(
+			defaultObjectEntryManager.partialUpdateObjectEntry(
 				new DefaultDTOConverterContext(
 					false, Collections.emptyMap(), _dtoConverterRegistry, null,
 					user.getLocale(), null, user),
 				objectDefinition, primaryKey,
 				new ObjectEntry() {
 					{
-						properties = values;
+						setProperties(() -> values);
+						setStatus(
+							() -> new Status() {
+								{
+									setCode(
+										() -> {
+											com.liferay.object.model.ObjectEntry
+												serviceBuilderObjectEntry =
+													_objectEntryService.
+														getObjectEntry(
+															primaryKey);
+
+											return serviceBuilderObjectEntry.
+												getStatus();
+										});
+								}
+							});
 					}
 				});
 		}
+		catch (Exception exception) {
+			_objectActionLocalService.updateStatus(
+				objectActionId, ObjectActionConstants.STATUS_FAILED);
+
+			throw exception;
+		}
 		finally {
+			ObjectActionThreadLocal.setClearObjectEntryIdsMap(true);
 			ObjectEntryThreadLocal.setSkipObjectEntryResourcePermission(
 				skipObjectEntryResourcePermission);
 			ObjectEntryThreadLocal.setSkipReadOnlyObjectFieldsValidation(false);
@@ -160,10 +192,16 @@ public class UpdateObjectEntryObjectActionExecutorImpl
 	private DTOConverterRegistry _dtoConverterRegistry;
 
 	@Reference
+	private ObjectActionLocalService _objectActionLocalService;
+
+	@Reference
 	private ObjectDefinitionLocalService _objectDefinitionLocalService;
 
 	@Reference
 	private ObjectEntryManagerRegistry _objectEntryManagerRegistry;
+
+	@Reference
+	private ObjectEntryLocalService _objectEntryService;
 
 	@Reference
 	private ObjectFieldLocalService _objectFieldLocalService;

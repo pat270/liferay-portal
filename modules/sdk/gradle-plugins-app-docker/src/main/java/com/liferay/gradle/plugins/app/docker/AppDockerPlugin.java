@@ -31,14 +31,16 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.PublishArtifactSet;
+import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileCopyDetails;
-import org.gradle.api.internal.ConventionMapping;
-import org.gradle.api.internal.plugins.DslObject;
 import org.gradle.api.invocation.Gradle;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.PluginContainer;
 import org.gradle.api.plugins.WarPlugin;
+import org.gradle.api.provider.Property;
+import org.gradle.api.provider.SetProperty;
+import org.gradle.api.publish.plugins.PublishingPlugin;
 import org.gradle.api.specs.Spec;
 import org.gradle.api.tasks.Sync;
 import org.gradle.api.tasks.bundling.War;
@@ -108,8 +110,8 @@ public class AppDockerPlugin implements Plugin<Project> {
 	}
 
 	private DockerBuildImage _addTaskBuildAppDockerImage(
-		final Sync prepareAppDockerImageInputDirTask,
-		final AppDockerExtension appDockerExtension) {
+		Sync prepareAppDockerImageInputDirTask,
+		AppDockerExtension appDockerExtension) {
 
 		DockerBuildImage dockerBuildImage = GradleUtil.addTask(
 			prepareAppDockerImageInputDirTask.getProject(),
@@ -120,32 +122,14 @@ public class AppDockerPlugin implements Plugin<Project> {
 		dockerBuildImage.setDescription("Builds the Docker image of the app.");
 		dockerBuildImage.setGroup(BasePlugin.BUILD_GROUP);
 
-		DslObject dslObject = new DslObject(dockerBuildImage);
+		SetProperty<String> setProperty = dockerBuildImage.getImages();
 
-		ConventionMapping conventionMapping = dslObject.getConventionMapping();
+		setProperty.add(_getImageRepository(appDockerExtension));
 
-		conventionMapping.map(
-			"inputDir",
-			new Callable<File>() {
+		DirectoryProperty directoryProperty = dockerBuildImage.getInputDir();
 
-				@Override
-				public File call() throws Exception {
-					return prepareAppDockerImageInputDirTask.
-						getDestinationDir();
-				}
-
-			});
-
-		conventionMapping.map(
-			"tag",
-			new Callable<String>() {
-
-				@Override
-				public String call() throws Exception {
-					return _getImageRepository(appDockerExtension);
-				}
-
-			});
+		directoryProperty.set(
+			prepareAppDockerImageInputDirTask.getDestinationDir());
 
 		return dockerBuildImage;
 	}
@@ -197,7 +181,7 @@ public class AppDockerPlugin implements Plugin<Project> {
 
 	private DockerPushImage _addTaskPushAppDockerImage(
 		DockerBuildImage buildAppDockerImageTask,
-		final AppDockerExtension appDockerExtension) {
+		AppDockerExtension appDockerExtension) {
 
 		DockerPushImage dockerPushImage = GradleUtil.addTask(
 			buildAppDockerImageTask.getProject(),
@@ -207,22 +191,11 @@ public class AppDockerPlugin implements Plugin<Project> {
 			Collections.singleton(buildAppDockerImageTask));
 		dockerPushImage.setDescription(
 			"Pushes the Docker image of the app to the registry.");
-		dockerPushImage.setGroup(BasePlugin.UPLOAD_GROUP);
+		dockerPushImage.setGroup(PublishingPlugin.PUBLISH_TASK_GROUP);
 
-		DslObject dslObject = new DslObject(dockerPushImage);
+		SetProperty<String> setProperty = dockerPushImage.getImages();
 
-		ConventionMapping conventionMapping = dslObject.getConventionMapping();
-
-		conventionMapping.map(
-			"imageName",
-			new Callable<String>() {
-
-				@Override
-				public String call() throws Exception {
-					return _getImageRepository(appDockerExtension);
-				}
-
-			});
+		setProperty.add(_getImageRepository(appDockerExtension));
 
 		return dockerPushImage;
 	}
@@ -230,8 +203,11 @@ public class AppDockerPlugin implements Plugin<Project> {
 	private DockerPushImage _addTaskPushAppDockerImage(
 		DockerTagImage dockerTagImage) {
 
+		Property<String> repositoryProperty = dockerTagImage.getRepository();
+		Property<String> tagProperty = dockerTagImage.getTag();
+
 		String imageRepositoryAndTag = _getImageRepositoryAndTag(
-			dockerTagImage.getRepository(), dockerTagImage.getTag());
+			repositoryProperty.get(), tagProperty.get());
 
 		DockerPushImage dockerPushImage = GradleUtil.addTask(
 			dockerTagImage.getProject(),
@@ -243,8 +219,10 @@ public class AppDockerPlugin implements Plugin<Project> {
 		dockerPushImage.setDescription(
 			"Pushes the Docker image \"" + imageRepositoryAndTag +
 				"\" to the registry.");
-		dockerPushImage.setImageName(dockerTagImage.getRepository());
-		dockerPushImage.setTag(dockerTagImage.getTag());
+
+		SetProperty<String> setProperty = dockerPushImage.getImages();
+
+		setProperty.add(imageRepositoryAndTag);
 
 		return dockerPushImage;
 	}
@@ -292,15 +270,24 @@ public class AppDockerPlugin implements Plugin<Project> {
 		dockerTagImage.setDescription(
 			"Creates the tag \"" + imageRepositoryAndTag +
 				"\" which refers to the Docker image of the app.");
-		dockerTagImage.setRepository(imageRepository);
-		dockerTagImage.setTag(imageTag);
+
+		Property<String> repositoryProperty = dockerTagImage.getRepository();
+
+		repositoryProperty.set(imageRepository);
+
+		Property<String> tagProperty = dockerTagImage.getTag();
+
+		tagProperty.set(imageTag);
 
 		dockerTagImage.targetImageId(
 			new Closure<String>(project) {
 
 				@SuppressWarnings("unused")
 				public String doCall() {
-					return buildAppDockerImagetask.getImageId();
+					Property<String> imageIdProperty =
+						buildAppDockerImagetask.getImageId();
+
+					return imageIdProperty.get();
 				}
 
 			});

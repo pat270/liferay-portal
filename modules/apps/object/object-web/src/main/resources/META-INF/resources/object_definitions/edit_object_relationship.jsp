@@ -13,19 +13,25 @@ ObjectDefinitionsRelationshipsDisplayContext objectDefinitionsRelationshipsDispl
 ObjectRelationship objectRelationship = (ObjectRelationship)request.getAttribute(ObjectWebKeys.OBJECT_RELATIONSHIP);
 %>
 
+<liferay-portlet:resourceURL copyCurrentRenderParameters="<%= false %>" var="baseResourceURL" />
+
 <react:component
-	module="js/components/ObjectRelationship/EditRelationship"
+	module="{EditObjectRelationship} from object-web"
 	props='<%=
 		HashMapBuilder.<String, Object>put(
-			"deletionTypes", objectDefinitionsRelationshipsDisplayContext.getObjectRelationshipDeletionTypesJSONArray()
+			"baseResourceURL", String.valueOf(baseResourceURL)
 		).put(
 			"hasUpdateObjectDefinitionPermission", objectDefinitionsRelationshipsDisplayContext.hasUpdateObjectDefinitionPermission()
 		).put(
+			"objectDefinitionExternalReferenceCode", objectDefinition.getExternalReferenceCode()
+		).put(
 			"objectRelationship", objectDefinitionsRelationshipsDisplayContext.getObjectRelationshipJSONObject(objectRelationship)
 		).put(
-			"parameterEndpoint", objectDefinitionsRelationshipsDisplayContext.getRESTContextPath(objectDefinition)
+			"objectRelationshipDeletionTypes", objectDefinitionsRelationshipsDisplayContext.getObjectRelationshipDeletionTypesJSONArray()
 		).put(
 			"parameterRequired", objectDefinitionsRelationshipsDisplayContext.isParameterRequired(objectDefinition)
+		).put(
+			"restContextPath", objectDefinitionsRelationshipsDisplayContext.getRESTContextPath(objectDefinition)
 		).build()
 	%>'
 />

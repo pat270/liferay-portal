@@ -14,15 +14,16 @@ AssetDisplayPageUsagesManagementToolbarDisplayContext assetDisplayPageUsagesMana
 
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(assetDisplayPageUsagesDisplayContext.getRedirect());
+portletDisplay.setURLBackTitle(portletDisplay.getPortletDisplayName());
 
-LayoutPageTemplateEntry layoutPageTemplateEntry = LayoutPageTemplateEntryServiceUtil.fetchLayoutPageTemplateEntry(assetDisplayPageUsagesDisplayContext.getLayoutPageTemplateEntryId());
+LayoutPageTemplateEntry layoutPageTemplateEntry = LayoutPageTemplateEntryServiceUtil.getLayoutPageTemplateEntry(assetDisplayPageUsagesDisplayContext.getLayoutPageTemplateEntryId());
 
 renderResponse.setTitle(layoutPageTemplateEntry.getName());
 %>
 
 <clay:management-toolbar
 	managementToolbarDisplayContext="<%= assetDisplayPageUsagesManagementToolbarDisplayContext %>"
-	propsTransformer="js/propsTransformers/AssetDisplayPageUsagesManagementToolbarPropsTransformer"
+	propsTransformer="{AssetDisplayPageUsagesManagementToolbarPropsTransformer} from layout-page-template-admin-web"
 />
 
 <aui:form cssClass="container-fluid container-fluid-max-xl" name="fm">

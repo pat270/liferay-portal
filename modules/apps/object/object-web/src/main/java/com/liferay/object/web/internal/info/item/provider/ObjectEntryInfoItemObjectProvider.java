@@ -18,10 +18,16 @@ import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.object.web.internal.util.ObjectEntryUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Guilherme Camacho
@@ -66,19 +72,28 @@ public class ObjectEntryInfoItemObjectProvider
 			return objectEntry;
 		}
 
-		ObjectEntryManager objectEntryManager =
-			_objectEntryManagerRegistry.getObjectEntryManager(
-				_objectDefinition.getStorageType());
-
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
-
-		ThemeDisplay themeDisplay = serviceContext.getThemeDisplay();
 
 		ERCInfoItemIdentifier ercInfoItemIdentifier =
 			(ERCInfoItemIdentifier)infoItemIdentifier;
 
+		Map<InfoItemIdentifier, ObjectEntry> objectEntries = _getObjectEntries(
+			serviceContext.getRequest());
+
+		if (objectEntries.containsKey(ercInfoItemIdentifier)) {
+			return objectEntries.get(ercInfoItemIdentifier);
+		}
+
+		ThemeDisplay themeDisplay = serviceContext.getThemeDisplay();
+
+		ObjectEntryManager objectEntryManager =
+			_objectEntryManagerRegistry.getObjectEntryManager(
+				_objectDefinition.getStorageType());
+
 		try {
+			Group group = themeDisplay.getScopeGroup();
+
 			com.liferay.object.rest.dto.v1_0.ObjectEntry objectEntry =
 				objectEntryManager.getObjectEntry(
 					themeDisplay.getCompanyId(),
@@ -86,11 +101,17 @@ public class ObjectEntryInfoItemObjectProvider
 						false, null, null, null, null, themeDisplay.getLocale(),
 						null, themeDisplay.getUser()),
 					ercInfoItemIdentifier.getExternalReferenceCode(),
-					_objectDefinition, null);
+					_objectDefinition, group.getGroupKey());
 
 			if (objectEntry != null) {
-				return ObjectEntryUtil.toObjectEntry(
-					_objectDefinition.getObjectDefinitionId(), objectEntry);
+				ObjectEntry serviceBuilderObjectEntry =
+					ObjectEntryUtil.toObjectEntry(
+						_objectDefinition.getObjectDefinitionId(), objectEntry);
+
+				objectEntries.put(
+					ercInfoItemIdentifier, serviceBuilderObjectEntry);
+
+				return serviceBuilderObjectEntry;
 			}
 		}
 		catch (Exception exception) {
@@ -103,6 +124,29 @@ public class ObjectEntryInfoItemObjectProvider
 			"Unable to get object entry " +
 				ercInfoItemIdentifier.getExternalReferenceCode());
 	}
+
+	private Map<InfoItemIdentifier, ObjectEntry> _getObjectEntries(
+		HttpServletRequest httpServletRequest) {
+
+		if (httpServletRequest == null) {
+			return new HashMap<>();
+		}
+
+		Map<InfoItemIdentifier, ObjectEntry> objectEntries =
+			(Map<InfoItemIdentifier, ObjectEntry>)
+				httpServletRequest.getAttribute(_OBJECT_ENTRIES);
+
+		if (objectEntries == null) {
+			objectEntries = new HashMap<>();
+
+			httpServletRequest.setAttribute(_OBJECT_ENTRIES, objectEntries);
+		}
+
+		return objectEntries;
+	}
+
+	private static final String _OBJECT_ENTRIES =
+		ObjectEntryInfoItemObjectProvider.class.getName() + "#OBJECT_ENTRIES";
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		ObjectEntryInfoItemObjectProvider.class);

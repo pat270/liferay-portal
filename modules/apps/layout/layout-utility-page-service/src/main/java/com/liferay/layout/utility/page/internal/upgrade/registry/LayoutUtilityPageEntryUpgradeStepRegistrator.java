@@ -5,11 +5,14 @@
 
 package com.liferay.layout.utility.page.internal.upgrade.registry;
 
+import com.liferay.layout.utility.page.internal.upgrade.registry.v1_4_4.LayoutUtilityPageEntryUpgradeProcess;
+import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.upgrade.DummyUpgradeStep;
 import com.liferay.portal.kernel.upgrade.UpgradeProcessFactory;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Eudaldo Alonso
@@ -36,6 +39,13 @@ public class LayoutUtilityPageEntryUpgradeStepRegistrator
 			"1.2.0", "1.3.0",
 			UpgradeProcessFactory.alterColumnType(
 				"LayoutUtilityPageEntry", "type_", "VARCHAR(75) null"));
+
+		registry.register(
+			"1.3.0", "1.4.0",
+			new LayoutUtilityPageEntryUpgradeProcess(_layoutLocalService));
 	}
+
+	@Reference
+	private LayoutLocalService _layoutLocalService;
 
 }

@@ -40,10 +40,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	property = "ddm.form.field.type.name=" + DDMFormFieldTypeConstants.FIELDSET,
-	service = {
-		DDMFormFieldTemplateContextContributor.class,
-		FieldSetDDMFormFieldTemplateContextContributor.class
-	}
+	service = DDMFormFieldTemplateContextContributor.class
 )
 public class FieldSetDDMFormFieldTemplateContextContributor
 	implements DDMFormFieldTemplateContextContributor {
@@ -86,10 +83,16 @@ public class FieldSetDDMFormFieldTemplateContextContributor
 		).put(
 			"ddmStructureId", ddmFormField.getProperty("ddmStructureId")
 		).put(
+			"ddmStructureKey", ddmFormField.getProperty("ddmStructureKey")
+		).put(
 			"ddmStructureLayoutId",
 			ddmFormField.getProperty("ddmStructureLayoutId")
 		).put(
 			"nestedFields", nestedFields
+		).put(
+			"normalizedStructure",
+			GetterUtil.getBoolean(
+				ddmFormField.getProperty("normalizedStructure"))
 		).put(
 			"rows", rowsJSONArray
 		).put(

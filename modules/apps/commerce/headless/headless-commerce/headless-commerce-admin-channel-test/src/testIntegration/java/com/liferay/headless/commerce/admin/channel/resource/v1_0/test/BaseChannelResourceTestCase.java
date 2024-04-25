@@ -28,8 +28,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -38,6 +36,7 @@ import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.search.test.util.SearchTestRule;
@@ -63,8 +62,6 @@ import java.util.Set;
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-
-import org.apache.commons.lang.time.DateUtils;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -194,6 +191,144 @@ public abstract class BaseChannelResourceTestCase {
 	}
 
 	@Test
+	public void testGetAccountAddressChannelChannel() throws Exception {
+		Channel postChannel = testGetAccountAddressChannelChannel_addChannel();
+
+		Channel getChannel = channelResource.getAccountAddressChannelChannel(
+			testGetAccountAddressChannelChannel_getAccountAddressChannelId());
+
+		assertEquals(postChannel, getChannel);
+		assertValid(getChannel);
+	}
+
+	protected Long
+			testGetAccountAddressChannelChannel_getAccountAddressChannelId()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected Channel testGetAccountAddressChannelChannel_addChannel()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGraphQLGetAccountAddressChannelChannel() throws Exception {
+		Channel channel =
+			testGraphQLGetAccountAddressChannelChannel_addChannel();
+
+		// No namespace
+
+		Assert.assertTrue(
+			equals(
+				channel,
+				ChannelSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"accountAddressChannelChannel",
+								new HashMap<String, Object>() {
+									{
+										put(
+											"accountAddressChannelId",
+											testGraphQLGetAccountAddressChannelChannel_getAccountAddressChannelId());
+									}
+								},
+								getGraphQLFields())),
+						"JSONObject/data",
+						"Object/accountAddressChannelChannel"))));
+
+		// Using the namespace headlessCommerceAdminChannel_v1_0
+
+		Assert.assertTrue(
+			equals(
+				channel,
+				ChannelSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminChannel_v1_0",
+								new GraphQLField(
+									"accountAddressChannelChannel",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"accountAddressChannelId",
+												testGraphQLGetAccountAddressChannelChannel_getAccountAddressChannelId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminChannel_v1_0",
+						"Object/accountAddressChannelChannel"))));
+	}
+
+	protected Long
+			testGraphQLGetAccountAddressChannelChannel_getAccountAddressChannelId()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGraphQLGetAccountAddressChannelChannelNotFound()
+		throws Exception {
+
+		Long irrelevantAccountAddressChannelId = RandomTestUtil.randomLong();
+
+		// No namespace
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"accountAddressChannelChannel",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"accountAddressChannelId",
+									irrelevantAccountAddressChannelId);
+							}
+						},
+						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminChannel_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminChannel_v1_0",
+						new GraphQLField(
+							"accountAddressChannelChannel",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"accountAddressChannelId",
+										irrelevantAccountAddressChannelId);
+								}
+							},
+							getGraphQLFields()))),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+	}
+
+	protected Channel testGraphQLGetAccountAddressChannelChannel_addChannel()
+		throws Exception {
+
+		return testGraphQLChannel_addChannel();
+	}
+
+	@Test
 	public void testGetChannelsPage() throws Exception {
 		Page<Channel> page = channelResource.getChannelsPage(
 			null, null, Pagination.of(1, 10), null);
@@ -301,10 +436,10 @@ public abstract class BaseChannelResourceTestCase {
 
 	@Test
 	public void testGetChannelsPageWithPagination() throws Exception {
-		Page<Channel> totalPage = channelResource.getChannelsPage(
+		Page<Channel> channelPage = channelResource.getChannelsPage(
 			null, null, null, null);
 
-		int totalCount = GetterUtil.getInteger(totalPage.getTotalCount());
+		int totalCount = GetterUtil.getInteger(channelPage.getTotalCount());
 
 		Channel channel1 = testGetChannelsPage_addChannel(randomChannel());
 
@@ -312,29 +447,65 @@ public abstract class BaseChannelResourceTestCase {
 
 		Channel channel3 = testGetChannelsPage_addChannel(randomChannel());
 
-		Page<Channel> page1 = channelResource.getChannelsPage(
-			null, null, Pagination.of(1, totalCount + 2), null);
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<Channel> channels1 = (List<Channel>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			channels1.toString(), totalCount + 2, channels1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<Channel> page1 = channelResource.getChannelsPage(
+				null, null,
+				Pagination.of(
+					(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+					pageSizeLimit),
+				null);
 
-		Page<Channel> page2 = channelResource.getChannelsPage(
-			null, null, Pagination.of(2, totalCount + 2), null);
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+			assertContains(channel1, (List<Channel>)page1.getItems());
 
-		List<Channel> channels2 = (List<Channel>)page2.getItems();
+			Page<Channel> page2 = channelResource.getChannelsPage(
+				null, null,
+				Pagination.of(
+					(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+					pageSizeLimit),
+				null);
 
-		Assert.assertEquals(channels2.toString(), 1, channels2.size());
+			assertContains(channel2, (List<Channel>)page2.getItems());
 
-		Page<Channel> page3 = channelResource.getChannelsPage(
-			null, null, Pagination.of(1, totalCount + 3), null);
+			Page<Channel> page3 = channelResource.getChannelsPage(
+				null, null,
+				Pagination.of(
+					(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+					pageSizeLimit),
+				null);
 
-		assertContains(channel1, (List<Channel>)page3.getItems());
-		assertContains(channel2, (List<Channel>)page3.getItems());
-		assertContains(channel3, (List<Channel>)page3.getItems());
+			assertContains(channel3, (List<Channel>)page3.getItems());
+		}
+		else {
+			Page<Channel> page1 = channelResource.getChannelsPage(
+				null, null, Pagination.of(1, totalCount + 2), null);
+
+			List<Channel> channels1 = (List<Channel>)page1.getItems();
+
+			Assert.assertEquals(
+				channels1.toString(), totalCount + 2, channels1.size());
+
+			Page<Channel> page2 = channelResource.getChannelsPage(
+				null, null, Pagination.of(2, totalCount + 2), null);
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<Channel> channels2 = (List<Channel>)page2.getItems();
+
+			Assert.assertEquals(channels2.toString(), 1, channels2.size());
+
+			Page<Channel> page3 = channelResource.getChannelsPage(
+				null, null, Pagination.of(1, (int)totalCount + 3), null);
+
+			assertContains(channel1, (List<Channel>)page3.getItems());
+			assertContains(channel2, (List<Channel>)page3.getItems());
+			assertContains(channel3, (List<Channel>)page3.getItems());
+		}
 	}
 
 	@Test
@@ -344,7 +515,7 @@ public abstract class BaseChannelResourceTestCase {
 			(entityField, channel1, channel2) -> {
 				BeanTestUtil.setProperty(
 					channel1, entityField.getName(),
-					DateUtils.addMinutes(new Date(), -2));
+					new Date(System.currentTimeMillis() - (2 * Time.MINUTE)));
 			});
 	}
 
@@ -442,22 +613,23 @@ public abstract class BaseChannelResourceTestCase {
 
 		channel2 = testGetChannelsPage_addChannel(channel2);
 
+		Page<Channel> page = channelResource.getChannelsPage(
+			null, null, null, null);
+
 		for (EntityField entityField : entityFields) {
 			Page<Channel> ascPage = channelResource.getChannelsPage(
-				null, null, Pagination.of(1, 2),
+				null, null, Pagination.of(1, (int)page.getTotalCount() + 1),
 				entityField.getName() + ":asc");
 
-			assertEquals(
-				Arrays.asList(channel1, channel2),
-				(List<Channel>)ascPage.getItems());
+			assertContains(channel1, (List<Channel>)ascPage.getItems());
+			assertContains(channel2, (List<Channel>)ascPage.getItems());
 
 			Page<Channel> descPage = channelResource.getChannelsPage(
-				null, null, Pagination.of(1, 2),
+				null, null, Pagination.of(1, (int)page.getTotalCount() + 1),
 				entityField.getName() + ":desc");
 
-			assertEquals(
-				Arrays.asList(channel2, channel1),
-				(List<Channel>)descPage.getItems());
+			assertContains(channel2, (List<Channel>)descPage.getItems());
+			assertContains(channel1, (List<Channel>)descPage.getItems());
 		}
 	}
 
@@ -481,6 +653,8 @@ public abstract class BaseChannelResourceTestCase {
 			new GraphQLField("items", getGraphQLFields()),
 			new GraphQLField("page"), new GraphQLField("totalCount"));
 
+		// No namespace
+
 		JSONObject channelsJSONObject = JSONUtil.getValueAsJSONObject(
 			invokeGraphQLQuery(graphQLField), "JSONObject/data",
 			"JSONObject/channels");
@@ -492,6 +666,27 @@ public abstract class BaseChannelResourceTestCase {
 
 		channelsJSONObject = JSONUtil.getValueAsJSONObject(
 			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/channels");
+
+		Assert.assertEquals(
+			totalCount + 2, channelsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			channel1,
+			Arrays.asList(
+				ChannelSerDes.toDTOs(channelsJSONObject.getString("items"))));
+		assertContains(
+			channel2,
+			Arrays.asList(
+				ChannelSerDes.toDTOs(channelsJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceAdminChannel_v1_0
+
+		channelsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminChannel_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminChannel_v1_0",
 			"JSONObject/channels");
 
 		Assert.assertEquals(
@@ -582,6 +777,8 @@ public abstract class BaseChannelResourceTestCase {
 		Channel channel =
 			testGraphQLGetChannelByExternalReferenceCode_addChannel();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				channel,
@@ -603,6 +800,33 @@ public abstract class BaseChannelResourceTestCase {
 								getGraphQLFields())),
 						"JSONObject/data",
 						"Object/channelByExternalReferenceCode"))));
+
+		// Using the namespace headlessCommerceAdminChannel_v1_0
+
+		Assert.assertTrue(
+			equals(
+				channel,
+				ChannelSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminChannel_v1_0",
+								new GraphQLField(
+									"channelByExternalReferenceCode",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"externalReferenceCode",
+												"\"" +
+													channel.
+														getExternalReferenceCode() +
+															"\"");
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminChannel_v1_0",
+						"Object/channelByExternalReferenceCode"))));
 	}
 
 	@Test
@@ -611,6 +835,8 @@ public abstract class BaseChannelResourceTestCase {
 
 		String irrelevantExternalReferenceCode =
 			"\"" + RandomTestUtil.randomString() + "\"";
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -626,6 +852,27 @@ public abstract class BaseChannelResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminChannel_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminChannel_v1_0",
+						new GraphQLField(
+							"channelByExternalReferenceCode",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"externalReferenceCode",
+										irrelevantExternalReferenceCode);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -739,7 +986,10 @@ public abstract class BaseChannelResourceTestCase {
 
 	@Test
 	public void testGraphQLDeleteChannel() throws Exception {
-		Channel channel = testGraphQLDeleteChannel_addChannel();
+
+		// No namespace
+
+		Channel channel1 = testGraphQLDeleteChannel_addChannel();
 
 		Assert.assertTrue(
 			JSONUtil.getValueAsBoolean(
@@ -748,23 +998,60 @@ public abstract class BaseChannelResourceTestCase {
 						"deleteChannel",
 						new HashMap<String, Object>() {
 							{
-								put("channelId", channel.getId());
+								put("channelId", channel1.getId());
 							}
 						})),
 				"JSONObject/data", "Object/deleteChannel"));
-		JSONArray errorsJSONArray = JSONUtil.getValueAsJSONArray(
+
+		JSONArray errorsJSONArray1 = JSONUtil.getValueAsJSONArray(
 			invokeGraphQLQuery(
 				new GraphQLField(
 					"channel",
 					new HashMap<String, Object>() {
 						{
-							put("channelId", channel.getId());
+							put("channelId", channel1.getId());
 						}
 					},
 					new GraphQLField("id"))),
 			"JSONArray/errors");
 
-		Assert.assertTrue(errorsJSONArray.length() > 0);
+		Assert.assertTrue(errorsJSONArray1.length() > 0);
+
+		// Using the namespace headlessCommerceAdminChannel_v1_0
+
+		Channel channel2 = testGraphQLDeleteChannel_addChannel();
+
+		Assert.assertTrue(
+			JSONUtil.getValueAsBoolean(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"headlessCommerceAdminChannel_v1_0",
+						new GraphQLField(
+							"deleteChannel",
+							new HashMap<String, Object>() {
+								{
+									put("channelId", channel2.getId());
+								}
+							}))),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminChannel_v1_0",
+				"Object/deleteChannel"));
+
+		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminChannel_v1_0",
+					new GraphQLField(
+						"channel",
+						new HashMap<String, Object>() {
+							{
+								put("channelId", channel2.getId());
+							}
+						},
+						new GraphQLField("id")))),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray2.length() > 0);
 	}
 
 	protected Channel testGraphQLDeleteChannel_addChannel() throws Exception {
@@ -790,6 +1077,8 @@ public abstract class BaseChannelResourceTestCase {
 	public void testGraphQLGetChannel() throws Exception {
 		Channel channel = testGraphQLGetChannel_addChannel();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				channel,
@@ -805,11 +1094,35 @@ public abstract class BaseChannelResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/channel"))));
+
+		// Using the namespace headlessCommerceAdminChannel_v1_0
+
+		Assert.assertTrue(
+			equals(
+				channel,
+				ChannelSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminChannel_v1_0",
+								new GraphQLField(
+									"channel",
+									new HashMap<String, Object>() {
+										{
+											put("channelId", channel.getId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminChannel_v1_0",
+						"Object/channel"))));
 	}
 
 	@Test
 	public void testGraphQLGetChannelNotFound() throws Exception {
 		Long irrelevantChannelId = RandomTestUtil.randomLong();
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -823,6 +1136,25 @@ public abstract class BaseChannelResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminChannel_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminChannel_v1_0",
+						new GraphQLField(
+							"channel",
+							new HashMap<String, Object>() {
+								{
+									put("channelId", irrelevantChannelId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -1234,6 +1566,10 @@ public abstract class BaseChannelResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -1567,9 +1903,9 @@ public abstract class BaseChannelResourceTestCase {
 	}
 
 	protected ChannelResource channelResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

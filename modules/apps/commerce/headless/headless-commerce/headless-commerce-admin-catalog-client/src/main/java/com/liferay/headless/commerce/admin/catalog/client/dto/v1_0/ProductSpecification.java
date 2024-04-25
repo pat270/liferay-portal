@@ -45,6 +45,25 @@ public class ProductSpecification implements Cloneable, Serializable {
 
 	protected Long id;
 
+	public String getKey() {
+		return key;
+	}
+
+	public void setKey(String key) {
+		this.key = key;
+	}
+
+	public void setKey(UnsafeSupplier<String, Exception> keyUnsafeSupplier) {
+		try {
+			key = keyUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String key;
+
 	public Map<String, String> getLabel() {
 		return label;
 	}
@@ -170,6 +189,27 @@ public class ProductSpecification implements Cloneable, Serializable {
 	}
 
 	protected String specificationKey;
+
+	public Double getSpecificationPriority() {
+		return specificationPriority;
+	}
+
+	public void setSpecificationPriority(Double specificationPriority) {
+		this.specificationPriority = specificationPriority;
+	}
+
+	public void setSpecificationPriority(
+		UnsafeSupplier<Double, Exception> specificationPriorityUnsafeSupplier) {
+
+		try {
+			specificationPriority = specificationPriorityUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Double specificationPriority;
 
 	public Map<String, String> getValue() {
 		return value;

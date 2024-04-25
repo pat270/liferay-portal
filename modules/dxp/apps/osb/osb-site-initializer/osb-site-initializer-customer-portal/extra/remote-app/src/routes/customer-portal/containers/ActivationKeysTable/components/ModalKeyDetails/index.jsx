@@ -6,7 +6,8 @@ import ClayAlert from '@clayui/alert';
 import {ClayToggle} from '@clayui/form';
 import ClayLoadingIndicator from '@clayui/loading-indicator';
 import ClayModal from '@clayui/modal';
-import React, {useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
+import {useGetMyUserAccount} from '~/common/services/liferay/graphql/user-accounts';
 import i18n from '../../../../../../common/I18n';
 import Button from '../../../../../../common/components/Button';
 import {useAppPropertiesContext} from '../../../../../../common/contexts/AppPropertiesContext';
@@ -20,6 +21,8 @@ import {ALERT_DOWNLOAD_TYPE} from '../../../../utils/constants/alertDownloadType
 import {AUTO_CLOSE_ALERT_TIME} from '../../../../utils/constants/autoCloseAlertTime';
 import {ALERT_ACTIVATION_AGGREGATED_KEYS_DOWNLOAD_TEXT} from '../../utils/constants/alertAggregateKeysDownloadText';
 import {downloadActivationLicenseKey} from '../../utils/downloadActivationLicenseKey';
+import {hasAdminUserAccount} from '../../utils/hasAdminUserAccount';
+import RenewButton from '../Renew';
 import TableKeyDetails from '../TableKeyDetails';
 
 const openToast = (title, message, {type = 'success'} = {}) =>
@@ -33,6 +36,7 @@ const YEAR_FOR_PERMANENT_KEYS = 2100;
 
 const ModalKeyDetails = ({
 	currentActivationKey,
+	isVisibleModal,
 	observer,
 	onClose,
 	project,
@@ -47,6 +51,9 @@ const ModalKeyDetails = ({
 	] = useState('');
 	const [toggledSubscription, setToggleSubscription] = useState(false);
 	const [hasErrorSubscription, setHasErrorSubscription] = useState(false);
+
+	const {data: myAccount} = useGetMyUserAccount();
+	const isAdminUserAccount = hasAdminUserAccount(myAccount);
 
 	const handleAlertStatus = (hasSuccessfullyDownloadedKeys) => {
 		setActivationKeysDownloadStatusModal(
@@ -105,14 +112,18 @@ const ModalKeyDetails = ({
 		}
 	};
 
+	const isComplimentaryKey = currentActivationKey?.complimentary
+		? true
+		: false;
+
 	return (
 		<ClayModal center observer={observer} size="lg">
 			<div className="pt-4 px-4">
 				<div className="d-flex justify-content-between mb-4">
 					<div className="flex-row mb-1">
-						<h6 className="text-brand-primary">
+						<div className="h6 text-brand-primary">
 							{i18n.translate('activation-key-details')}
-						</h6>
+						</div>
 
 						<h2 className="text-neutral-10">
 							{currentActivationKey.name}
@@ -175,6 +186,19 @@ const ModalKeyDetails = ({
 					<Button displayType="secondary" onClick={onClose}>
 						{i18n.translate('close')}
 					</Button>
+
+					{isAdminUserAccount && !keyIsPermanent && (
+						<RenewButton
+							className="ml-2"
+							currentActivationKeyModal={currentActivationKey}
+							identifier="renew"
+							isComplimentaryKey={isComplimentaryKey}
+							isVisibleModal={isVisibleModal}
+							project={project}
+						>
+							{i18n.translate('renew-key')}
+						</RenewButton>
+					)}
 
 					<Button
 						appendIcon="download"

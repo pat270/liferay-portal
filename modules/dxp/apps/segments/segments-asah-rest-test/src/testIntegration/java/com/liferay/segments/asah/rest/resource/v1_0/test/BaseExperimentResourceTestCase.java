@@ -21,8 +21,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -30,6 +28,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.test.rule.Inject;
@@ -59,8 +58,6 @@ import java.util.Set;
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-
-import org.apache.commons.lang.time.DateUtils;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -214,7 +211,10 @@ public abstract class BaseExperimentResourceTestCase {
 
 	@Test
 	public void testGraphQLDeleteExperiment() throws Exception {
-		Experiment experiment = testGraphQLDeleteExperiment_addExperiment();
+
+		// No namespace
+
+		Experiment experiment1 = testGraphQLDeleteExperiment_addExperiment();
 
 		Assert.assertTrue(
 			JSONUtil.getValueAsBoolean(
@@ -225,11 +225,12 @@ public abstract class BaseExperimentResourceTestCase {
 							{
 								put(
 									"experimentId",
-									"\"" + experiment.getId() + "\"");
+									"\"" + experiment1.getId() + "\"");
 							}
 						})),
 				"JSONObject/data", "Object/deleteExperiment"));
-		JSONArray errorsJSONArray = JSONUtil.getValueAsJSONArray(
+
+		JSONArray errorsJSONArray1 = JSONUtil.getValueAsJSONArray(
 			invokeGraphQLQuery(
 				new GraphQLField(
 					"experiment",
@@ -237,13 +238,52 @@ public abstract class BaseExperimentResourceTestCase {
 						{
 							put(
 								"experimentId",
-								"\"" + experiment.getId() + "\"");
+								"\"" + experiment1.getId() + "\"");
 						}
 					},
 					new GraphQLField("id"))),
 			"JSONArray/errors");
 
-		Assert.assertTrue(errorsJSONArray.length() > 0);
+		Assert.assertTrue(errorsJSONArray1.length() > 0);
+
+		// Using the namespace segmentsAsah_v1_0
+
+		Experiment experiment2 = testGraphQLDeleteExperiment_addExperiment();
+
+		Assert.assertTrue(
+			JSONUtil.getValueAsBoolean(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"segmentsAsah_v1_0",
+						new GraphQLField(
+							"deleteExperiment",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"experimentId",
+										"\"" + experiment2.getId() + "\"");
+								}
+							}))),
+				"JSONObject/data", "JSONObject/segmentsAsah_v1_0",
+				"Object/deleteExperiment"));
+
+		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"segmentsAsah_v1_0",
+					new GraphQLField(
+						"experiment",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"experimentId",
+									"\"" + experiment2.getId() + "\"");
+							}
+						},
+						new GraphQLField("id")))),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray2.length() > 0);
 	}
 
 	protected Experiment testGraphQLDeleteExperiment_addExperiment()
@@ -272,6 +312,8 @@ public abstract class BaseExperimentResourceTestCase {
 	public void testGraphQLGetExperiment() throws Exception {
 		Experiment experiment = testGraphQLGetExperiment_addExperiment();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				experiment,
@@ -289,12 +331,38 @@ public abstract class BaseExperimentResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/experiment"))));
+
+		// Using the namespace segmentsAsah_v1_0
+
+		Assert.assertTrue(
+			equals(
+				experiment,
+				ExperimentSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"segmentsAsah_v1_0",
+								new GraphQLField(
+									"experiment",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"experimentId",
+												"\"" + experiment.getId() +
+													"\"");
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data", "JSONObject/segmentsAsah_v1_0",
+						"Object/experiment"))));
 	}
 
 	@Test
 	public void testGraphQLGetExperimentNotFound() throws Exception {
 		String irrelevantExperimentId =
 			"\"" + RandomTestUtil.randomString() + "\"";
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -308,6 +376,25 @@ public abstract class BaseExperimentResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace segmentsAsah_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"segmentsAsah_v1_0",
+						new GraphQLField(
+							"experiment",
+							new HashMap<String, Object>() {
+								{
+									put("experimentId", irrelevantExperimentId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -679,6 +766,10 @@ public abstract class BaseExperimentResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -747,20 +838,20 @@ public abstract class BaseExperimentResourceTestCase {
 
 		if (entityFieldName.equals("dateCreated")) {
 			if (operator.equals("between")) {
+				Date date = experiment.getDateCreated();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(experiment.getDateCreated(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(experiment.getDateCreated(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -778,21 +869,20 @@ public abstract class BaseExperimentResourceTestCase {
 
 		if (entityFieldName.equals("dateModified")) {
 			if (operator.equals("between")) {
+				Date date = experiment.getDateModified();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							experiment.getDateModified(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(experiment.getDateModified(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -1072,9 +1162,9 @@ public abstract class BaseExperimentResourceTestCase {
 	}
 
 	protected ExperimentResource experimentResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

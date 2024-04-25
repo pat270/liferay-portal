@@ -27,7 +27,7 @@ renderResponse.setTitle(LanguageUtil.get(request, "specifications"));
 
 <clay:management-toolbar
 	managementToolbarDisplayContext="<%= new CPSpecificationOptionManagementToolbarDisplayContext(cpSpecificationOptionDisplayContext, request, liferayPortletRequest, liferayPortletResponse) %>"
-	propsTransformer="js/CPSpecificationOptionManagementToolbarPropsTransformer"
+	propsTransformer="{CPSpecificationOptionManagementToolbarPropsTransformer} from commerce-product-options-web"
 />
 
 <div id="<portlet:namespace />productSpecificationOptionsContainer">
@@ -73,6 +73,8 @@ renderResponse.setTitle(LanguageUtil.get(request, "specifications"));
 									currentURL
 								).setParameter(
 									"cpSpecificationOptionId", cpSpecificationOption.getCPSpecificationOptionId()
+								).setParameter(
+									"toolbarItem", "specification-labels"
 								).buildPortletURL();
 								%>
 
@@ -93,6 +95,11 @@ renderResponse.setTitle(LanguageUtil.get(request, "specifications"));
 									cssClass="table-cell-expand"
 									name="use-in-faceted-navigation"
 									value='<%= LanguageUtil.get(request, cpSpecificationOption.isFacetable() ? "yes" : "no") %>'
+								/>
+
+								<liferay-ui:search-container-column-text
+									cssClass="table-cell-expand"
+									property="priority"
 								/>
 
 								<liferay-ui:search-container-column-date

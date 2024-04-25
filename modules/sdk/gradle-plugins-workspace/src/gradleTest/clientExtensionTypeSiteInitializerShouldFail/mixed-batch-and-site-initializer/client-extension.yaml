@@ -1,0 +1,17 @@
+batch:
+    name: batch
+    oAuthApplicationHeadlessServer: oauth
+    type: batch
+oauth:
+    .serviceAddress: localhost:8080
+    .serviceScheme: http
+    name: oauth
+    scopes:
+        - Liferay.Headless.Site.everything
+    type: oAuthApplicationHeadlessServer
+site-initializer:
+    name: site initializer
+    oAuthApplicationHeadlessServer: oauth
+    siteExternalReferenceCode: externalReferenceCode
+    siteName: siteName
+    type: siteInitializer

@@ -12,6 +12,8 @@ import com.liferay.headless.commerce.delivery.order.client.pagination.Pagination
 import com.liferay.headless.commerce.delivery.order.client.problem.Problem;
 import com.liferay.headless.commerce.delivery.order.client.serdes.v1_0.PlacedOrderItemSerDes;
 
+import java.net.URL;
+
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -32,6 +34,15 @@ public interface PlacedOrderItemResource {
 		return new Builder();
 	}
 
+	public PlacedOrderItem getPlacedOrderItemByExternalReferenceCode(
+			String externalReferenceCode)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse
+			getPlacedOrderItemByExternalReferenceCodeHttpResponse(
+				String externalReferenceCode)
+		throws Exception;
+
 	public PlacedOrderItem getPlacedOrderItem(Long placedOrderItemId)
 		throws Exception;
 
@@ -39,24 +50,39 @@ public interface PlacedOrderItemResource {
 			Long placedOrderItemId)
 		throws Exception;
 
+	public Page<PlacedOrderItem>
+			getPlacedOrderByExternalReferenceCodePlacedOrderItemsPage(
+				String externalReferenceCode, String search, Long skuId,
+				Pagination pagination, String sortString)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse
+			getPlacedOrderByExternalReferenceCodePlacedOrderItemsPageHttpResponse(
+				String externalReferenceCode, String search, Long skuId,
+				Pagination pagination, String sortString)
+		throws Exception;
+
 	public Page<PlacedOrderItem> getPlacedOrderPlacedOrderItemsPage(
-			Long placedOrderId, Long skuId, Pagination pagination)
+			Long placedOrderId, String search, Long skuId,
+			Pagination pagination, String sortString)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse
 			getPlacedOrderPlacedOrderItemsPageHttpResponse(
-				Long placedOrderId, Long skuId, Pagination pagination)
+				Long placedOrderId, String search, Long skuId,
+				Pagination pagination, String sortString)
 		throws Exception;
 
 	public void postPlacedOrderPlacedOrderItemsPageExportBatch(
-			Long placedOrderId, Long skuId, String callbackURL,
-			String contentType, String fieldNames)
+			Long placedOrderId, String search, Long skuId, String sortString,
+			String callbackURL, String contentType, String fieldNames)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse
 			postPlacedOrderPlacedOrderItemsPageExportBatchHttpResponse(
-				Long placedOrderId, Long skuId, String callbackURL,
-				String contentType, String fieldNames)
+				Long placedOrderId, String search, Long skuId,
+				String sortString, String callbackURL, String contentType,
+				String fieldNames)
 		throws Exception;
 
 	public static class Builder {
@@ -112,6 +138,10 @@ public interface PlacedOrderItemResource {
 			return this;
 		}
 
+		public Builder endpoint(URL url) {
+			return endpoint(url.getHost(), url.getPort(), url.getProtocol());
+		}
+
 		public Builder header(String key, String value) {
 			_headers.put(key, value);
 
@@ -163,6 +193,112 @@ public interface PlacedOrderItemResource {
 
 	public static class PlacedOrderItemResourceImpl
 		implements PlacedOrderItemResource {
+
+		public PlacedOrderItem getPlacedOrderItemByExternalReferenceCode(
+				String externalReferenceCode)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				getPlacedOrderItemByExternalReferenceCodeHttpResponse(
+					externalReferenceCode);
+
+			String content = httpResponse.getContent();
+
+			if ((httpResponse.getStatusCode() / 100) != 2) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response content: " + content);
+				_logger.log(
+					Level.WARNING,
+					"HTTP response message: " + httpResponse.getMessage());
+				_logger.log(
+					Level.WARNING,
+					"HTTP response status code: " +
+						httpResponse.getStatusCode());
+
+				Problem.ProblemException problemException = null;
+
+				if (Objects.equals(
+						httpResponse.getContentType(), "application/json")) {
+
+					problemException = new Problem.ProblemException(
+						Problem.toDTO(content));
+				}
+				else {
+					_logger.log(
+						Level.WARNING,
+						"Unable to process content type: " +
+							httpResponse.getContentType());
+
+					Problem problem = new Problem();
+
+					problem.setStatus(
+						String.valueOf(httpResponse.getStatusCode()));
+
+					problemException = new Problem.ProblemException(problem);
+				}
+
+				throw problemException;
+			}
+			else {
+				_logger.fine("HTTP response content: " + content);
+				_logger.fine(
+					"HTTP response message: " + httpResponse.getMessage());
+				_logger.fine(
+					"HTTP response status code: " +
+						httpResponse.getStatusCode());
+			}
+
+			try {
+				return PlacedOrderItemSerDes.toDTO(content);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
+		}
+
+		public HttpInvoker.HttpResponse
+				getPlacedOrderItemByExternalReferenceCodeHttpResponse(
+					String externalReferenceCode)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port + _builder._contextPath +
+						"/o/headless-commerce-delivery-order/v1.0/placed-order-items/by-externalReferenceCode/{externalReferenceCode}");
+
+			httpInvoker.path("externalReferenceCode", externalReferenceCode);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
 
 		public PlacedOrderItem getPlacedOrderItem(Long placedOrderItemId)
 			throws Exception {
@@ -267,13 +403,143 @@ public interface PlacedOrderItemResource {
 			return httpInvoker.invoke();
 		}
 
+		public Page<PlacedOrderItem>
+				getPlacedOrderByExternalReferenceCodePlacedOrderItemsPage(
+					String externalReferenceCode, String search, Long skuId,
+					Pagination pagination, String sortString)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				getPlacedOrderByExternalReferenceCodePlacedOrderItemsPageHttpResponse(
+					externalReferenceCode, search, skuId, pagination,
+					sortString);
+
+			String content = httpResponse.getContent();
+
+			if ((httpResponse.getStatusCode() / 100) != 2) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response content: " + content);
+				_logger.log(
+					Level.WARNING,
+					"HTTP response message: " + httpResponse.getMessage());
+				_logger.log(
+					Level.WARNING,
+					"HTTP response status code: " +
+						httpResponse.getStatusCode());
+
+				Problem.ProblemException problemException = null;
+
+				if (Objects.equals(
+						httpResponse.getContentType(), "application/json")) {
+
+					problemException = new Problem.ProblemException(
+						Problem.toDTO(content));
+				}
+				else {
+					_logger.log(
+						Level.WARNING,
+						"Unable to process content type: " +
+							httpResponse.getContentType());
+
+					Problem problem = new Problem();
+
+					problem.setStatus(
+						String.valueOf(httpResponse.getStatusCode()));
+
+					problemException = new Problem.ProblemException(problem);
+				}
+
+				throw problemException;
+			}
+			else {
+				_logger.fine("HTTP response content: " + content);
+				_logger.fine(
+					"HTTP response message: " + httpResponse.getMessage());
+				_logger.fine(
+					"HTTP response status code: " +
+						httpResponse.getStatusCode());
+			}
+
+			try {
+				return Page.of(content, PlacedOrderItemSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
+		}
+
+		public HttpInvoker.HttpResponse
+				getPlacedOrderByExternalReferenceCodePlacedOrderItemsPageHttpResponse(
+					String externalReferenceCode, String search, Long skuId,
+					Pagination pagination, String sortString)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
+
+			if (search != null) {
+				httpInvoker.parameter("search", String.valueOf(search));
+			}
+
+			if (skuId != null) {
+				httpInvoker.parameter("skuId", String.valueOf(skuId));
+			}
+
+			if (pagination != null) {
+				httpInvoker.parameter(
+					"page", String.valueOf(pagination.getPage()));
+				httpInvoker.parameter(
+					"pageSize", String.valueOf(pagination.getPageSize()));
+			}
+
+			if (sortString != null) {
+				httpInvoker.parameter("sort", sortString);
+			}
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port + _builder._contextPath +
+						"/o/headless-commerce-delivery-order/v1.0/placed-orders/by-externalReferenceCode/{externalReferenceCode}/placed-order-items");
+
+			httpInvoker.path("externalReferenceCode", externalReferenceCode);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
 		public Page<PlacedOrderItem> getPlacedOrderPlacedOrderItemsPage(
-				Long placedOrderId, Long skuId, Pagination pagination)
+				Long placedOrderId, String search, Long skuId,
+				Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				getPlacedOrderPlacedOrderItemsPageHttpResponse(
-					placedOrderId, skuId, pagination);
+					placedOrderId, search, skuId, pagination, sortString);
 
 			String content = httpResponse.getContent();
 
@@ -336,7 +602,8 @@ public interface PlacedOrderItemResource {
 
 		public HttpInvoker.HttpResponse
 				getPlacedOrderPlacedOrderItemsPageHttpResponse(
-					Long placedOrderId, Long skuId, Pagination pagination)
+					Long placedOrderId, String search, Long skuId,
+					Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -360,6 +627,10 @@ public interface PlacedOrderItemResource {
 
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
 
+			if (search != null) {
+				httpInvoker.parameter("search", String.valueOf(search));
+			}
+
 			if (skuId != null) {
 				httpInvoker.parameter("skuId", String.valueOf(skuId));
 			}
@@ -369,6 +640,10 @@ public interface PlacedOrderItemResource {
 					"page", String.valueOf(pagination.getPage()));
 				httpInvoker.parameter(
 					"pageSize", String.valueOf(pagination.getPageSize()));
+			}
+
+			if (sortString != null) {
+				httpInvoker.parameter("sort", sortString);
 			}
 
 			httpInvoker.path(
@@ -385,13 +660,15 @@ public interface PlacedOrderItemResource {
 		}
 
 		public void postPlacedOrderPlacedOrderItemsPageExportBatch(
-				Long placedOrderId, Long skuId, String callbackURL,
-				String contentType, String fieldNames)
+				Long placedOrderId, String search, Long skuId,
+				String sortString, String callbackURL, String contentType,
+				String fieldNames)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				postPlacedOrderPlacedOrderItemsPageExportBatchHttpResponse(
-					placedOrderId, skuId, callbackURL, contentType, fieldNames);
+					placedOrderId, search, skuId, sortString, callbackURL,
+					contentType, fieldNames);
 
 			String content = httpResponse.getContent();
 
@@ -443,11 +720,14 @@ public interface PlacedOrderItemResource {
 
 		public HttpInvoker.HttpResponse
 				postPlacedOrderPlacedOrderItemsPageExportBatchHttpResponse(
-					Long placedOrderId, Long skuId, String callbackURL,
-					String contentType, String fieldNames)
+					Long placedOrderId, String search, Long skuId,
+					String sortString, String callbackURL, String contentType,
+					String fieldNames)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body("[]", "application/json");
 
 			if (_builder._locale != null) {
 				httpInvoker.header(
@@ -468,8 +748,16 @@ public interface PlacedOrderItemResource {
 
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
 
+			if (search != null) {
+				httpInvoker.parameter("search", String.valueOf(search));
+			}
+
 			if (skuId != null) {
 				httpInvoker.parameter("skuId", String.valueOf(skuId));
+			}
+
+			if (sortString != null) {
+				httpInvoker.parameter("sort", sortString);
 			}
 
 			if (callbackURL != null) {

@@ -46,7 +46,6 @@ import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -157,8 +156,7 @@ public class ContentDashboardAdminManagementToolbarDisplayContext
 			dropdownGroupItem -> {
 				dropdownGroupItem.setDropdownItems(_getFilterDropdownItems());
 				dropdownGroupItem.setLabel(
-					_language.get(httpServletRequest, "filter-by") +
-						StringPool.TRIPLE_PERIOD);
+					_language.get(httpServletRequest, "filter-by"));
 			}
 		).addGroup(
 			dropdownGroupItem -> {
@@ -180,11 +178,6 @@ public class ContentDashboardAdminManagementToolbarDisplayContext
 					_getFilterByReviewDateDropdownItems());
 				dropdownGroupItem.setLabel(
 					_language.get(httpServletRequest, "filter-by-review-date"));
-			}
-		).addGroup(
-			dropdownGroupItem -> {
-				dropdownGroupItem.setDropdownItems(getOrderByDropdownItems());
-				dropdownGroupItem.setLabel(getOrderByDropdownItemsLabel());
 			}
 		).build();
 	}
@@ -554,19 +547,12 @@ public class ContentDashboardAdminManagementToolbarDisplayContext
 	}
 
 	private PortletURL _getAssetTagSelectorURL() {
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)_liferayPortletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
 		AssetTagsItemSelectorCriterion assetTagsItemSelectorCriterion =
 			new AssetTagsItemSelectorCriterion();
 
+		assetTagsItemSelectorCriterion.setAllGroupIds(true);
 		assetTagsItemSelectorCriterion.setDesiredItemSelectorReturnTypes(
 			new AssetTagsItemSelectorReturnType());
-		assetTagsItemSelectorCriterion.setGroupIds(
-			ArrayUtil.toLongArray(
-				_groupLocalService.getGroupIds(
-					themeDisplay.getCompanyId(), true)));
 		assetTagsItemSelectorCriterion.setMultiSelection(true);
 
 		return _itemSelector.getItemSelectorURL(
@@ -666,8 +652,7 @@ public class ContentDashboardAdminManagementToolbarDisplayContext
 					return null;
 				}
 			).setLabel(
-				_language.get(httpServletRequest, "author") +
-					StringPool.TRIPLE_PERIOD
+				_language.get(httpServletRequest, "author")
 			).build());
 	}
 
@@ -712,37 +697,31 @@ public class ContentDashboardAdminManagementToolbarDisplayContext
 				ListUtil.isNotEmpty(
 					_contentDashboardAdminDisplayContext.getAssetCategoryIds())
 			).setLabel(
-				_language.get(httpServletRequest, "categories") +
-					StringPool.TRIPLE_PERIOD
+				_language.get(httpServletRequest, "categories")
 			).build(),
-			() -> {
-				String label = _language.get(
-					httpServletRequest, "site-or-asset-library");
-
-				return DropdownItemBuilder.putData(
-					"action", "selectScope"
-				).putData(
-					"dialogTitle",
-					_language.get(
-						httpServletRequest, "select-site-or-asset-library")
-				).putData(
-					"redirectURL",
-					PortletURLBuilder.create(
-						getPortletURL()
-					).setParameter(
-						"scopeId", (String)null
-					).buildString()
-				).putData(
-					"selectScopeURL",
-					String.valueOf(
-						_contentDashboardAdminDisplayContext.
-							getScopeIdItemSelectorURL())
-				).setActive(
-					_contentDashboardAdminDisplayContext.getScopeId() > 0
-				).setLabel(
-					label + StringPool.TRIPLE_PERIOD
-				).build();
-			},
+			() -> DropdownItemBuilder.putData(
+				"action", "selectScope"
+			).putData(
+				"dialogTitle",
+				_language.get(
+					httpServletRequest, "select-site-or-asset-library")
+			).putData(
+				"redirectURL",
+				PortletURLBuilder.create(
+					getPortletURL()
+				).setParameter(
+					"scopeId", (String)null
+				).buildString()
+			).putData(
+				"selectScopeURL",
+				String.valueOf(
+					_contentDashboardAdminDisplayContext.
+						getScopeIdItemSelectorURL())
+			).setActive(
+				_contentDashboardAdminDisplayContext.getScopeId() > 0
+			).setLabel(
+				_language.get(httpServletRequest, "site-or-asset-library")
+			).build(),
 			() -> DropdownItemBuilder.putData(
 				"action", "selectContentDashboardItemSubtype"
 			).putData(
@@ -765,8 +744,7 @@ public class ContentDashboardAdminManagementToolbarDisplayContext
 					_contentDashboardAdminDisplayContext.
 						getContentDashboardItemSubtypes())
 			).setLabel(
-				_language.get(httpServletRequest, "type") +
-					StringPool.TRIPLE_PERIOD
+				_language.get(httpServletRequest, "type")
 			).build(),
 			() -> DropdownItemBuilder.putData(
 				"action", "selectAssetTag"
@@ -785,8 +763,7 @@ public class ContentDashboardAdminManagementToolbarDisplayContext
 				SetUtil.isNotEmpty(
 					_contentDashboardAdminDisplayContext.getAssetTagIds())
 			).setLabel(
-				_language.get(httpServletRequest, "tags") +
-					StringPool.TRIPLE_PERIOD
+				_language.get(httpServletRequest, "tags")
 			).build());
 
 		dropdownItemList.addAll(

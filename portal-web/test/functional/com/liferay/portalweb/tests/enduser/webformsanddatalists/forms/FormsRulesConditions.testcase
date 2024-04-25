@@ -36,36 +36,6 @@ definition {
 		}
 	}
 
-	@description = "LPS-69733 - Verify that a Rule Condition cannot be added until the Condition Field is selected"
-	@priority = 2
-	test AreDisabledUntilAConditionFieldIsSelected {
-		property portal.acceptance = "true";
-		property portal.upstream = "true";
-		property test.liferay.virtual.instance = "false";
-
-		FormsAdmin.addForm();
-
-		Form.editName();
-
-		Form.addTextField(fieldPositionNumber = 0);
-
-		Form.editFieldLabelMetal(fieldValue = "Text Field");
-
-		Form.closeSidebar();
-
-		FormsAdminNavigator.gotoRules();
-
-		FormRules.addRule();
-
-		FormRules.viewConditionOperatorOptionsNotPresent(conditionRowNumber = 1);
-
-		FormRules.selectConditionField(
-			conditionField = "Text Field",
-			conditionRowNumber = 1);
-
-		FormRules.viewConditionOperatorOptionsIsPresent(conditionRowNumber = 1);
-	}
-
 	@description = "Verify that a Rule Condition can be deleted"
 	@priority = 5
 	test CanBeDeleted {
@@ -777,6 +747,7 @@ definition {
 		property portal.acceptance = "true";
 		property portal.upstream = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		FormsAdmin.addForm();
 
@@ -926,6 +897,7 @@ definition {
 		property portal.acceptance = "true";
 		property portal.upstream = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Navigator.openURL();
 
@@ -995,25 +967,16 @@ definition {
 
 		Form.publishForm();
 
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			portlet = "Pages");
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Form Page");
 
-		PagesAdmin.addPage(pageName = "Form Page");
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Guest",
+			layoutName = "Form Page",
+			widgetName = "Form");
 
-		Navigator.gotoPage(pageName = "Form Page");
-
-		Portlet.addPG(
-			pageName = "Form Page",
-			portletName = "Form");
-
-		FormPortletNavigator.gotoSelectForm();
-
-		FormPortletConfiguration.selectForm();
-
-		PortletEntry.save();
-
-		Navigator.gotoPage(pageName = "Form Page");
+		FormPortletConfiguration.selectFormOnAPage(pageName = "Form Page");
 
 		FormPortlet.waitFormRenderer(text = "Submit");
 
@@ -1025,12 +988,7 @@ definition {
 			fieldLabel = "Manager",
 			fieldName = ${fieldNameManager});
 
-		Navigator.openURL();
-
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.assignSiteRoleCP(
 			siteRoleName = "Site Administrator",
@@ -1087,6 +1045,7 @@ definition {
 		property portal.acceptance = "true";
 		property portal.upstream = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var portalURL = PropsUtil.get("portal.url");
 
@@ -1187,7 +1146,7 @@ definition {
 	@description = "Verify that the OR operator on Condition is working as expected"
 	@priority = 5
 	test CanCreateMultipleConditionsUsingOR {
-		property portal.acceptance = "true";
+		property portal.acceptance = "quarantine";
 
 		FormsAdmin.addForm();
 

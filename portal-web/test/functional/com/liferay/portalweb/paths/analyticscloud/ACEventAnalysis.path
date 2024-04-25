@@ -20,7 +20,7 @@
 </tr>
 <tr>
 	<td>DISABLED_ADD_EVENT_BUTTON</td>
-	<td>//*[contains(@class,'link-disabled')]</td>
+	<td>//*[@disabled]</td>
 	<td></td>
 </tr>
 <tr>
@@ -61,12 +61,12 @@
 </tr>
 <tr>
 	<td>EDIT_PENCIL</td>
-	<td>//div[contains(@class,'overlay')]//button</td>
+	<td>//div[contains(@class,'filter-info-root')]//button</td>
 	<td></td>
 </tr>
 <tr>
 	<td>INPUT_CONDITION</td>
-	<td>//input[contains(@class,'input-root')]</td>
+	<td>//input[@aria-labelledby='clay-autocomplete-label-1'] | //input[contains(@class,'input-root')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -92,7 +92,7 @@
 
 <tr>
 	<td>VIEW_TOTAL_NUMBER_RELATED_COLUMN_INFORMATION</td>
-	<td>//span[text()='${key_columnInformationValue}']/ancestor::tr//span[text()='${key_totalEventsValue}']</td>
+	<td>//span[contains(text(),'${key_columnInformationValue}')]/ancestor::tr//span[text()='${key_totalEventsValue}']</td>
 	<td></td>
 </tr>
 <tr>
@@ -102,7 +102,7 @@
 </tr>
 <tr>
 	<td>VIEW_ANALYSIS_INFORMATION</td>
-	<td>//tr//*[text()='${key_informationValue}']</td>
+	<td>//tr//*[contains(text(),'${key_informationValue}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -144,8 +144,8 @@
 <!-- EVENT ANALYSIS DROPDOWN -->
 
 <tr>
-	<td>DROPDOWN_BY_INDEX</td>
-	<td>//ul[contains(@class,'dropdown-menu')]//li[${key_index}]</td>
+	<td>DROPDOWN_BY_OPTION</td>
+	<td>//*[contains(@class,'dropdown-item')and text()='${key_optionName}']</td>
 	<td></td>
 </tr>
 </tbody>

@@ -22,6 +22,7 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.HashMap;
@@ -45,7 +46,7 @@ public class DDMFormValuesToFieldsConverterImpl
 			DDMStructure ddmStructure, DDMFormValues ddmFormValues)
 		throws PortalException {
 
-		DDMForm ddmForm = ddmStructure.getDDMForm();
+		DDMForm ddmForm = ddmStructure.getFullHierarchyDDMForm();
 
 		ddmFormValues.setDDMFormFieldValues(
 			DDMFormValuesConverterUtil.addMissingDDMFormFieldValues(
@@ -163,6 +164,13 @@ public class DDMFormValuesToFieldsConverterImpl
 		field.setName(ddmFormFieldValue.getName());
 
 		Value value = ddmFormFieldValue.getValue();
+
+		if (MapUtil.isEmpty(value.getValues())) {
+			value = ddmFormField.getPredefinedValue();
+
+			ddmFormFieldAvailableLocales.put(
+				ddmFormField.getName(), value.getAvailableLocales());
+		}
 
 		if (!value.isLocalized()) {
 			field.addValue(

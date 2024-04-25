@@ -5,13 +5,14 @@
 
 package com.liferay.account.internal.upgrade.registry;
 
+import com.liferay.account.constants.AccountConstants;
 import com.liferay.account.internal.upgrade.v1_1_0.SchemaUpgradeProcess;
-import com.liferay.account.internal.upgrade.v2_3_0.AccountResourceUpgradeProcess;
 import com.liferay.account.internal.upgrade.v2_4_0.AccountGroupResourceUpgradeProcess;
 import com.liferay.account.internal.upgrade.v2_5_0.AccountRoleResourceUpgradeProcess;
-import com.liferay.account.internal.upgrade.v2_7_1.AccountEntryUserRelUpgradeProcess;
 import com.liferay.portal.kernel.service.CompanyLocalService;
+import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourceLocalService;
+import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.upgrade.BaseExternalReferenceCodeUpgradeProcess;
 import com.liferay.portal.kernel.upgrade.BaseUuidUpgradeProcess;
 import com.liferay.portal.kernel.upgrade.DummyUpgradeStep;
@@ -89,7 +90,11 @@ public class AccountServiceUpgradeStepRegistrator
 				AccountGroupRelUpgradeProcess(_companyLocalService));
 
 		registry.register(
-			"2.2.0", "2.3.0", new AccountResourceUpgradeProcess());
+			"2.2.0", "2.3.0",
+			UpgradeProcessFactory.runSQL(
+				"delete from ResourceAction where name = 'com.liferay.account'",
+				"delete from ResourcePermission where name = " +
+					"'com.liferay.account'"));
 
 		registry.register(
 			"2.3.0", "2.4.0",
@@ -111,7 +116,10 @@ public class AccountServiceUpgradeStepRegistrator
 				"AccountEntry", "defaultCPaymentMethodKey VARCHAR(75)"));
 
 		registry.register(
-			"2.7.0", "2.7.1", new AccountEntryUserRelUpgradeProcess());
+			"2.7.0", "2.7.1",
+			UpgradeProcessFactory.runSQL(
+				"delete from AccountEntryUserRel where accountEntryId = " +
+					AccountConstants.ACCOUNT_ENTRY_ID_DEFAULT));
 
 		registry.register(
 			"2.7.1", "2.8.0",
@@ -151,12 +159,42 @@ public class AccountServiceUpgradeStepRegistrator
 			UpgradeProcessFactory.addColumns(
 				"AccountEntry", "statusByUserId LONG",
 				"statusByUserName VARCHAR(75) null", "statusDate DATE null"));
+
+		registry.register(
+			"2.10.0", "2.10.1",
+			new com.liferay.account.internal.upgrade.v2_10_1.
+				AccountRoleResourceUpgradeProcess(
+					_resourceActionLocalService,
+					_resourcePermissionLocalService));
+
+		registry.register(
+			"2.10.1", "2.10.2",
+			new com.liferay.account.internal.upgrade.v2_10_2.
+				AccountRoleResourceUpgradeProcess(
+					_resourceActionLocalService,
+					_resourcePermissionLocalService));
+
+		registry.register(
+			"2.10.2", "2.10.3",
+			UpgradeProcessFactory.alterColumnType(
+				"AccountEntry", "name", "VARCHAR(250) null"));
+
+		registry.register(
+			"2.10.3", "2.10.4",
+			new com.liferay.account.internal.upgrade.v2_10_4.
+				AccountListTypeUpgradeProcess());
 	}
 
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
 	@Reference
+	private ResourceActionLocalService _resourceActionLocalService;
+
+	@Reference
 	private ResourceLocalService _resourceLocalService;
+
+	@Reference
+	private ResourcePermissionLocalService _resourcePermissionLocalService;
 
 }

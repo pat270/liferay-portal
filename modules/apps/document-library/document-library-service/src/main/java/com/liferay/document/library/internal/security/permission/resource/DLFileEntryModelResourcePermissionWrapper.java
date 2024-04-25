@@ -18,7 +18,6 @@ import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerListFacto
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.security.permission.BaseModelPermissionCheckerUtil;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.ResourcePermissionCheckerUtil;
 import com.liferay.portal.kernel.security.permission.resource.BaseModelResourcePermissionWrapper;
@@ -26,10 +25,11 @@ import com.liferay.portal.kernel.security.permission.resource.DynamicInheritance
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionFactory;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionLogic;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionUtil;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.StagedModelPermissionLogic;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.kernel.workflow.permission.WorkflowPermission;
+import com.liferay.portal.kernel.workflow.permission.WorkflowPermissionUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.documentlibrary.constants.DLConstants;
 import com.liferay.sharing.security.permission.resource.SharingModelResourcePermissionConfigurator;
@@ -88,10 +88,8 @@ public class DLFileEntryModelResourcePermissionWrapper
 					new DLFileEntryWorkflowedModelResourcePermissionLogic(
 						modelResourcePermission));
 
-				if (_sharingModelResourcePermissionConfigurator != null) {
-					_sharingModelResourcePermissionConfigurator.configure(
-						modelResourcePermission, consumer);
-				}
+				_sharingModelResourcePermissionConfigurator.configure(
+					modelResourcePermission, consumer);
 
 				consumer.accept(
 					(permissionChecker, name, fileEntry, actionId) -> {
@@ -118,10 +116,9 @@ public class DLFileEntryModelResourcePermissionWrapper
 						}
 
 						Boolean hasBaseModelPermission =
-							BaseModelPermissionCheckerUtil.
-								containsBaseModelPermission(
-									permissionChecker, fileEntry.getGroupId(),
-									className, classPK, relatedModelActionId);
+							ModelResourcePermissionUtil.contains(
+								permissionChecker, fileEntry.getGroupId(),
+								className, classPK, relatedModelActionId);
 
 						if ((hasBaseModelPermission != null) &&
 							!hasBaseModelPermission) {
@@ -133,10 +130,21 @@ public class DLFileEntryModelResourcePermissionWrapper
 					});
 
 				if (PropsValues.PERMISSIONS_VIEW_DYNAMIC_INHERITANCE) {
+					DynamicInheritancePermissionLogic<DLFileEntry, DLFolder>
+						dynamicInheritancePermissionLogic =
+							new DynamicInheritancePermissionLogic<>(
+								_dlFolderModelResourcePermission,
+								_getFetchParentFunction(), true);
+
 					consumer.accept(
-						new DynamicInheritancePermissionLogic<>(
-							_dlFolderModelResourcePermission,
-							_getFetchParentFunction(), true));
+						(permissionChecker, name, model, actionId) -> {
+							if (actionId.equals(ActionKeys.DOWNLOAD)) {
+								actionId = ActionKeys.VIEW;
+							}
+
+							return dynamicInheritancePermissionLogic.contains(
+								permissionChecker, name, model, actionId);
+						});
 				}
 			});
 	}
@@ -192,9 +200,6 @@ public class DLFileEntryModelResourcePermissionWrapper
 	@Reference
 	private StagingPermission _stagingPermission;
 
-	@Reference
-	private WorkflowPermission _workflowPermission;
-
 	private class DLFileEntryWorkflowedModelResourcePermissionLogic
 		implements ModelResourcePermissionLogic<DLFileEntry> {
 
@@ -215,7 +220,7 @@ public class DLFileEntryModelResourcePermissionWrapper
 				}
 			}
 			else if (fileVersion.isPending()) {
-				Boolean hasPermission = _workflowPermission.hasPermission(
+				Boolean hasPermission = WorkflowPermissionUtil.hasPermission(
 					permissionChecker, fileVersion.getGroupId(), name,
 					fileVersion.getFileVersionId(), actionId);
 

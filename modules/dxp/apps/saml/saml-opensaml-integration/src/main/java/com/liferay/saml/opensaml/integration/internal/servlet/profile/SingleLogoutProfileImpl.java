@@ -24,6 +24,7 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.saml.constants.SamlWebKeys;
+import com.liferay.saml.helper.RelayStateHelper;
 import com.liferay.saml.helper.SamlHttpRequestHelper;
 import com.liferay.saml.opensaml.integration.internal.binding.SamlBinding;
 import com.liferay.saml.opensaml.integration.internal.transport.HttpClientFactory;
@@ -33,7 +34,6 @@ import com.liferay.saml.persistence.model.SamlIdpSpSession;
 import com.liferay.saml.persistence.model.SamlIdpSsoSession;
 import com.liferay.saml.persistence.model.SamlPeerBinding;
 import com.liferay.saml.persistence.model.SamlSpSession;
-import com.liferay.saml.persistence.service.SamlIdpSpConnectionLocalService;
 import com.liferay.saml.persistence.service.SamlIdpSpSessionLocalService;
 import com.liferay.saml.persistence.service.SamlIdpSsoSessionLocalService;
 import com.liferay.saml.persistence.service.SamlPeerBindingLocalService;
@@ -98,7 +98,10 @@ import org.opensaml.security.credential.Credential;
 import org.opensaml.soap.client.http.PipelineFactoryHttpSOAPClient;
 import org.opensaml.xmlsec.context.SecurityParametersContext;
 
+import org.osgi.framework.BundleContext;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 
 /**
@@ -125,8 +128,7 @@ public class SingleLogoutProfileImpl
 				return false;
 			}
 
-			MetadataResolver metadataResolver =
-				metadataManager.getMetadataResolver();
+			MetadataResolver metadataResolver = getMetadataResolver();
 
 			SamlPeerBinding samlPeerBinding =
 				_samlPeerBindingLocalService.getSamlPeerBinding(
@@ -382,6 +384,18 @@ public class SingleLogoutProfileImpl
 			SamlWebKeys.SAML_SSO_SESSION_ID);
 	}
 
+	@Activate
+	@Override
+	protected void activate(BundleContext bundleContext) {
+		super.activate(bundleContext);
+	}
+
+	@Deactivate
+	@Override
+	protected void deactivate() {
+		super.deactivate();
+	}
+
 	protected void performIdpSpLogout(
 			HttpServletRequest httpServletRequest,
 			HttpServletResponse httpServletResponse,
@@ -607,7 +621,8 @@ public class SingleLogoutProfileImpl
 				SAMLBindingContext.class, true);
 
 		samlBindingContext.setRelayState(
-			portal.getPortalURL(httpServletRequest));
+			_relayStateHelper.getRelayStateTokenFromRedirect(
+				portal.getPortalURL(httpServletRequest)));
 
 		outboundMessageContext.setMessage(logoutRequest);
 
@@ -648,7 +663,7 @@ public class SingleLogoutProfileImpl
 				SecurityParametersContext.class, true);
 
 		OpenSamlUtil.prepareSecurityParametersContext(
-			metadataManager.getSigningCredential(), securityParametersContext,
+			getSigningCredential(), securityParametersContext,
 			idpSSODescriptor);
 
 		logoutRequest.setIssuer(issuer);
@@ -724,10 +739,7 @@ public class SingleLogoutProfileImpl
 
 			if (samlIdpSsoSession != null) {
 				samlSloContext = new SamlSloContext(
-					samlIdpSsoSession, messageContext,
-					_samlIdpSpConnectionLocalService,
-					_samlIdpSpSessionLocalService, _samlPeerBindingLocalService,
-					_userLocalService);
+					samlIdpSsoSession, messageContext);
 
 				samlSloContext.setSamlSsoSessionId(samlSsoSessionId);
 
@@ -845,10 +857,7 @@ public class SingleLogoutProfileImpl
 			_sendIdpLogoutResponse(
 				httpServletRequest, httpServletResponse,
 				StatusCode.UNKNOWN_PRINCIPAL,
-				new SamlSloContext(
-					null, messageContext, _samlIdpSpConnectionLocalService,
-					_samlIdpSpSessionLocalService, _samlPeerBindingLocalService,
-					_userLocalService));
+				new SamlSloContext(null, messageContext));
 
 			return;
 		}
@@ -1003,8 +1012,7 @@ public class SingleLogoutProfileImpl
 			(SSODescriptor)samlPeerMetadataContext.getRoleDescriptor();
 
 		OpenSamlUtil.prepareSecurityParametersContext(
-			metadataManager.getSigningCredential(), securityParametersContext,
-			ssoDescriptor);
+			getSigningCredential(), securityParametersContext, ssoDescriptor);
 
 		outboundMessageContext.setMessage(logoutResponse);
 
@@ -1063,8 +1071,8 @@ public class SingleLogoutProfileImpl
 			terminateSsoSession(httpServletRequest, httpServletResponse);
 		}
 
-		String relayState = ParamUtil.getString(
-			httpServletRequest, "RelayState");
+		String relayState = _relayStateHelper.getRedirectFromRelayStateToken(
+			ParamUtil.getString(httpServletRequest, "RelayState"));
 
 		if (Validator.isNotNull(relayState)) {
 			httpServletResponse.sendRedirect(
@@ -1120,7 +1128,7 @@ public class SingleLogoutProfileImpl
 
 		messageContext.setMessage(logoutRequest);
 
-		Credential credential = metadataManager.getSigningCredential();
+		Credential credential = getSigningCredential();
 
 		SAMLProtocolContext samlProtocolContext = messageContext.getSubcontext(
 			SAMLProtocolContext.class, true);
@@ -1231,8 +1239,7 @@ public class SingleLogoutProfileImpl
 				SecurityParametersContext.class, true);
 
 		OpenSamlUtil.prepareSecurityParametersContext(
-			metadataManager.getSigningCredential(), securityParametersContext,
-			ssoDescriptor);
+			getSigningCredential(), securityParametersContext, ssoDescriptor);
 
 		SAMLProtocolContext samlProtocolContext =
 			outboundMessageContext.getSubcontext(
@@ -1302,7 +1309,7 @@ public class SingleLogoutProfileImpl
 
 		outboundMessageContext.setMessage(logoutRequest);
 
-		Credential credential = metadataManager.getSigningCredential();
+		Credential credential = getSigningCredential();
 
 		SecurityParametersContext securityParametersContext =
 			outboundMessageContext.getSubcontext(
@@ -1443,10 +1450,10 @@ public class SingleLogoutProfileImpl
 	private HttpClientFactory _httpClientFactory;
 
 	@Reference
-	private SamlHttpRequestHelper _samlHttpRequestHelper;
+	private RelayStateHelper _relayStateHelper;
 
 	@Reference
-	private SamlIdpSpConnectionLocalService _samlIdpSpConnectionLocalService;
+	private SamlHttpRequestHelper _samlHttpRequestHelper;
 
 	@Reference
 	private SamlIdpSpSessionLocalService _samlIdpSpSessionLocalService;

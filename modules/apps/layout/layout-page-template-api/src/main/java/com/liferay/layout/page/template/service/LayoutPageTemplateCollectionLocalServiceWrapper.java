@@ -54,13 +54,31 @@ public class LayoutPageTemplateCollectionLocalServiceWrapper
 
 	@Override
 	public LayoutPageTemplateCollection addLayoutPageTemplateCollection(
-			long userId, long groupId, String name, String description,
+			long userId, long groupId,
+			long parentLayoutPageTemplateCollectionId, String name,
+			String description, int type,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _layoutPageTemplateCollectionLocalService.
 			addLayoutPageTemplateCollection(
-				userId, groupId, name, description, serviceContext);
+				userId, groupId, parentLayoutPageTemplateCollectionId, name,
+				description, type, serviceContext);
+	}
+
+	@Override
+	public LayoutPageTemplateCollection copyLayoutPageTemplateCollection(
+			long userId, long groupId,
+			long sourceLayoutPageTemplateCollectionId,
+			long layoutParentPageTemplateCollectionId, boolean copyPermissions,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws Exception {
+
+		return _layoutPageTemplateCollectionLocalService.
+			copyLayoutPageTemplateCollection(
+				userId, groupId, sourceLayoutPageTemplateCollectionId,
+				layoutParentPageTemplateCollectionId, copyPermissions,
+				serviceContext);
 	}
 
 	/**
@@ -257,19 +275,19 @@ public class LayoutPageTemplateCollectionLocalServiceWrapper
 
 	@Override
 	public LayoutPageTemplateCollection fetchLayoutPageTemplateCollection(
-		long groupId, String layoutPageTemplateCollectionKey) {
+		long groupId, String layoutPageTemplateCollectionKey, int type) {
 
 		return _layoutPageTemplateCollectionLocalService.
 			fetchLayoutPageTemplateCollection(
-				groupId, layoutPageTemplateCollectionKey);
+				groupId, layoutPageTemplateCollectionKey, type);
 	}
 
 	@Override
 	public LayoutPageTemplateCollection fetchLayoutPageTemplateCollectionByName(
-		long groupId, String name) {
+		long groupId, String name, int type) {
 
 		return _layoutPageTemplateCollectionLocalService.
-			fetchLayoutPageTemplateCollectionByName(groupId, name);
+			fetchLayoutPageTemplateCollectionByName(groupId, name, type);
 	}
 
 	/**
@@ -369,34 +387,63 @@ public class LayoutPageTemplateCollectionLocalServiceWrapper
 
 	@Override
 	public java.util.List<LayoutPageTemplateCollection>
-		getLayoutPageTemplateCollections(long groupId, int start, int end) {
+		getLayoutPageTemplateCollections(long groupId) {
 
 		return _layoutPageTemplateCollectionLocalService.
-			getLayoutPageTemplateCollections(groupId, start, end);
+			getLayoutPageTemplateCollections(groupId);
 	}
 
 	@Override
 	public java.util.List<LayoutPageTemplateCollection>
 		getLayoutPageTemplateCollections(
-			long groupId, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<LayoutPageTemplateCollection> orderByComparator) {
+			long groupId, int type, int start, int end) {
 
 		return _layoutPageTemplateCollectionLocalService.
-			getLayoutPageTemplateCollections(
-				groupId, start, end, orderByComparator);
+			getLayoutPageTemplateCollections(groupId, type, start, end);
 	}
 
 	@Override
 	public java.util.List<LayoutPageTemplateCollection>
 		getLayoutPageTemplateCollections(
-			long groupId, String name, int start, int end,
+			long groupId, int type, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
 				<LayoutPageTemplateCollection> orderByComparator) {
 
 		return _layoutPageTemplateCollectionLocalService.
 			getLayoutPageTemplateCollections(
-				groupId, name, start, end, orderByComparator);
+				groupId, type, start, end, orderByComparator);
+	}
+
+	@Override
+	public java.util.List<LayoutPageTemplateCollection>
+		getLayoutPageTemplateCollections(
+			long groupId, long layoutPageTemplateCollectionId) {
+
+		return _layoutPageTemplateCollectionLocalService.
+			getLayoutPageTemplateCollections(
+				groupId, layoutPageTemplateCollectionId);
+	}
+
+	@Override
+	public java.util.List<LayoutPageTemplateCollection>
+		getLayoutPageTemplateCollections(
+			long groupId, long layoutPageTemplateCollectionId, int type) {
+
+		return _layoutPageTemplateCollectionLocalService.
+			getLayoutPageTemplateCollections(
+				groupId, layoutPageTemplateCollectionId, type);
+	}
+
+	@Override
+	public java.util.List<LayoutPageTemplateCollection>
+		getLayoutPageTemplateCollections(
+			long groupId, String name, int type, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<LayoutPageTemplateCollection> orderByComparator) {
+
+		return _layoutPageTemplateCollectionLocalService.
+			getLayoutPageTemplateCollections(
+				groupId, name, type, start, end, orderByComparator);
 	}
 
 	/**
@@ -449,17 +496,17 @@ public class LayoutPageTemplateCollectionLocalServiceWrapper
 	}
 
 	@Override
-	public int getLayoutPageTemplateCollectionsCount(long groupId) {
+	public int getLayoutPageTemplateCollectionsCount(long groupId, int type) {
 		return _layoutPageTemplateCollectionLocalService.
-			getLayoutPageTemplateCollectionsCount(groupId);
+			getLayoutPageTemplateCollectionsCount(groupId, type);
 	}
 
 	@Override
 	public int getLayoutPageTemplateCollectionsCount(
-		long groupId, String name) {
+		long groupId, String name, int type) {
 
 		return _layoutPageTemplateCollectionLocalService.
-			getLayoutPageTemplateCollectionsCount(groupId, name);
+			getLayoutPageTemplateCollectionsCount(groupId, name, type);
 	}
 
 	/**
@@ -485,6 +532,27 @@ public class LayoutPageTemplateCollectionLocalServiceWrapper
 			primaryKeyObj);
 	}
 
+	@Override
+	public String getUniqueLayoutPageTemplateCollectionName(
+		long groupId, String sourceName, int type) {
+
+		return _layoutPageTemplateCollectionLocalService.
+			getUniqueLayoutPageTemplateCollectionName(
+				groupId, sourceName, type);
+	}
+
+	@Override
+	public LayoutPageTemplateCollection moveLayoutPageTemplateCollection(
+			long layoutPageTemplateCollectionId,
+			long parentLayoutPageTemplateCollectionId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _layoutPageTemplateCollectionLocalService.
+			moveLayoutPageTemplateCollection(
+				layoutPageTemplateCollectionId,
+				parentLayoutPageTemplateCollectionId);
+	}
+
 	/**
 	 * Updates the layout page template collection in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
@@ -501,6 +569,16 @@ public class LayoutPageTemplateCollectionLocalServiceWrapper
 
 		return _layoutPageTemplateCollectionLocalService.
 			updateLayoutPageTemplateCollection(layoutPageTemplateCollection);
+	}
+
+	@Override
+	public LayoutPageTemplateCollection updateLayoutPageTemplateCollection(
+			long layoutPageTemplateCollectionId, String name)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _layoutPageTemplateCollectionLocalService.
+			updateLayoutPageTemplateCollection(
+				layoutPageTemplateCollectionId, name);
 	}
 
 	@Override

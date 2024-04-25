@@ -30,14 +30,20 @@ String previewFileURL = previewFileURLs[0];
 %>
 
 <liferay-util:html-top
-	outputKey="document_library_preview_document_css"
+	outputKey="com.liferay.document.library.preview.document#/preview/view.jsp"
 >
 	<link href="<%= PortalUtil.getStaticResourceURL(request, PortalUtil.getPathProxy() + application.getContextPath() + "/preview/css/main.css") %>" rel="stylesheet" type="text/css" />
 </liferay-util:html-top>
 
+<clay:stripe
+	dismissible="<%= true %>"
+	displayType="info"
+	message="the-document-preview-may-not-show-all-pages"
+/>
+
 <div id="<portlet:namespace /><%= randomNamespace %>previewDocument">
 	<react:component
-		module="preview/js/DocumentPreviewer.es"
+		module="{DocumentPreviewer} from document-library-preview-document"
 		props='<%=
 			HashMapBuilder.<String, Object>put(
 				"baseImageURL", previewFileURL

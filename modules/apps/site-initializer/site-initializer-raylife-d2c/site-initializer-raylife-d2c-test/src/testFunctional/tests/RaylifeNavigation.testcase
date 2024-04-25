@@ -14,7 +14,10 @@ definition {
 
 		User.firstLoginPG();
 
-		Raylife.createRaylifeSite(siteName = ${testSiteName});
+		HeadlessSite.addSite(
+			siteName = ${testSiteName},
+			templateName = "Raylife D2C",
+			templateType = "Site Initializer");
 	}
 
 	tearDown {
@@ -34,6 +37,7 @@ definition {
 	@priority = 4
 	test CanNavigateByClickingInSections {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -76,6 +80,7 @@ definition {
 	@priority = 5
 	test SectionIsCompleted {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -102,6 +107,7 @@ definition {
 	@priority = 5
 	test SectionIsHighlighted {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -124,6 +130,7 @@ definition {
 	@priority = 5
 	test SectionIsIncomplete {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 

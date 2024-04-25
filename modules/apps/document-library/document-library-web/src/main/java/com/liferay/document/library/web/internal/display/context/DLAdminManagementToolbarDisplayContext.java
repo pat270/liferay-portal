@@ -8,9 +8,10 @@ package com.liferay.document.library.web.internal.display.context;
 import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.asset.kernel.model.AssetVocabulary;
 import com.liferay.asset.kernel.service.AssetCategoryServiceUtil;
-import com.liferay.asset.kernel.service.AssetVocabularyServiceUtil;
+import com.liferay.asset.kernel.service.AssetVocabularyService;
 import com.liferay.asset.tags.item.selector.AssetTagsItemSelectorReturnType;
 import com.liferay.asset.tags.item.selector.criterion.AssetTagsItemSelectorCriterion;
+import com.liferay.depot.group.provider.SiteConnectedGroupGroupProvider;
 import com.liferay.digital.signature.configuration.DigitalSignatureConfiguration;
 import com.liferay.digital.signature.configuration.DigitalSignatureConfigurationUtil;
 import com.liferay.document.library.constants.DLPortletKeys;
@@ -45,8 +46,9 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.petra.string.StringUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
@@ -57,7 +59,9 @@ import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.toolbar.contributor.PortletToolbarContributor;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.service.ClassNameLocalServiceUtil;
+import com.liferay.portal.kernel.servlet.taglib.ui.JavaScriptMenuItem;
 import com.liferay.portal.kernel.servlet.taglib.ui.Menu;
+import com.liferay.portal.kernel.servlet.taglib.ui.MenuItem;
 import com.liferay.portal.kernel.servlet.taglib.ui.URLMenuItem;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -66,7 +70,6 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -92,21 +95,25 @@ public class DLAdminManagementToolbarDisplayContext
 	extends SearchContainerManagementToolbarDisplayContext {
 
 	public DLAdminManagementToolbarDisplayContext(
+		AssetVocabularyService assetVocabularyService,
 		DLAdminDisplayContext dlAdminDisplayContext,
 		DLTrashHelper dlTrashHelper, HttpServletRequest httpServletRequest,
 		ItemSelector itemSelector, LiferayPortletRequest liferayPortletRequest,
-		LiferayPortletResponse liferayPortletResponse) {
+		LiferayPortletResponse liferayPortletResponse,
+		SiteConnectedGroupGroupProvider siteConnectedGroupGroupProvider) {
 
 		super(
 			httpServletRequest, liferayPortletRequest, liferayPortletResponse,
 			dlAdminDisplayContext.getSearchContainer());
 
+		_assetVocabularyService = assetVocabularyService;
 		_dlAdminDisplayContext = dlAdminDisplayContext;
 		_dlTrashHelper = dlTrashHelper;
 		_httpServletRequest = httpServletRequest;
 		_itemSelector = itemSelector;
 		_liferayPortletRequest = liferayPortletRequest;
 		_liferayPortletResponse = liferayPortletResponse;
+		_siteConnectedGroupGroupProvider = siteConnectedGroupGroupProvider;
 
 		_currentURLObj = PortletURLUtil.getCurrent(
 			liferayPortletRequest, liferayPortletResponse);
@@ -164,6 +171,15 @@ public class DLAdminManagementToolbarDisplayContext
 		).add(
 			() -> stagedActions && !user.isGuestUser(),
 			dropdownItem -> {
+				dropdownItem.putData("action", "copy");
+				dropdownItem.setIcon("copy");
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "copy-to"));
+				dropdownItem.setQuickAction(false);
+			}
+		).add(
+			() -> stagedActions && !user.isGuestUser(),
+			dropdownItem -> {
 				dropdownItem.putData("action", "editTags");
 
 				if (enableOnBulk) {
@@ -179,7 +195,7 @@ public class DLAdminManagementToolbarDisplayContext
 		).add(
 			() ->
 				stagedActions && !user.isGuestUser() &&
-				_hasValidAssetVocabularies(_themeDisplay.getScopeGroupId()),
+				_hasValidAssetVocabularies(),
 			dropdownItem -> {
 				dropdownItem.putData("action", "editCategories");
 
@@ -228,6 +244,7 @@ public class DLAdminManagementToolbarDisplayContext
 				dropdownItem.setIcon("password-policies");
 				dropdownItem.setLabel(
 					LanguageUtil.get(_httpServletRequest, "permissions"));
+				dropdownItem.setMultipleTypesBulkActionDisabled(true);
 				dropdownItem.setQuickAction(false);
 			}
 		).build();
@@ -276,18 +293,36 @@ public class DLAdminManagementToolbarDisplayContext
 		creationMenu.setItemsIconAlignment("left");
 
 		for (Menu menu : menus) {
-			List<URLMenuItem> urlMenuItems =
-				(List<URLMenuItem>)(List<?>)menu.getMenuItems();
+			List<MenuItem> menuItems = menu.getMenuItems();
 
-			for (URLMenuItem urlMenuItem : urlMenuItems) {
-				creationMenu.addDropdownItem(
-					dropdownItem -> {
-						dropdownItem.setData(urlMenuItem.getData());
-						dropdownItem.setHref(urlMenuItem.getURL());
-						dropdownItem.setIcon(urlMenuItem.getIcon());
-						dropdownItem.setLabel(urlMenuItem.getLabel());
-						dropdownItem.setSeparator(urlMenuItem.hasSeparator());
-					});
+			for (MenuItem menuItem : menuItems) {
+				if (menuItem instanceof JavaScriptMenuItem) {
+					JavaScriptMenuItem javaScriptMenuItem =
+						(JavaScriptMenuItem)menuItem;
+
+					creationMenu.addDropdownItem(
+						dropdownItem -> {
+							dropdownItem.setData(javaScriptMenuItem.getData());
+							dropdownItem.setIcon(javaScriptMenuItem.getIcon());
+							dropdownItem.setLabel(
+								javaScriptMenuItem.getLabel());
+							dropdownItem.setSeparator(
+								javaScriptMenuItem.hasSeparator());
+						});
+				}
+				else if (menuItem instanceof URLMenuItem) {
+					URLMenuItem urlMenuItem = (URLMenuItem)menuItem;
+
+					creationMenu.addDropdownItem(
+						dropdownItem -> {
+							dropdownItem.setData(urlMenuItem.getData());
+							dropdownItem.setHref(urlMenuItem.getURL());
+							dropdownItem.setIcon(urlMenuItem.getIcon());
+							dropdownItem.setLabel(urlMenuItem.getLabel());
+							dropdownItem.setSeparator(
+								urlMenuItem.hasSeparator());
+						});
+				}
 			}
 		}
 
@@ -301,26 +336,12 @@ public class DLAdminManagementToolbarDisplayContext
 
 	@Override
 	public List<DropdownItem> getFilterDropdownItems() {
-		if (_isSearch() && !FeatureFlagManagerUtil.isEnabled("LPS-84424")) {
-			return null;
-		}
-
 		return DropdownItemListBuilder.addGroup(
 			dropdownGroupItem -> {
 				dropdownGroupItem.setDropdownItems(
 					_getFilterNavigationDropdownItems());
 				dropdownGroupItem.setLabel(
-					LanguageUtil.get(
-						_httpServletRequest, "filter-by-navigation"));
-			}
-		).addGroup(
-			() ->
-				!FeatureFlagManagerUtil.isEnabled("LPS-144527") &&
-				!_dlAdminDisplayContext.isNavigationRecent(),
-			dropdownGroupItem -> {
-				dropdownGroupItem.setDropdownItems(_getOrderByDropdownItems());
-				dropdownGroupItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "order-by"));
+					LanguageUtil.get(_httpServletRequest, "filter-by"));
 			}
 		).build();
 	}
@@ -341,12 +362,6 @@ public class DLAdminManagementToolbarDisplayContext
 
 	@Override
 	public List<DropdownItem> getOrderDropdownItems() {
-		if ((_isSearch() && !FeatureFlagManagerUtil.isEnabled("LPS-84424")) ||
-			!FeatureFlagManagerUtil.isEnabled("LPS-144527")) {
-
-			return null;
-		}
-
 		return _getOrderByDropdownItems();
 	}
 
@@ -364,19 +379,11 @@ public class DLAdminManagementToolbarDisplayContext
 
 	@Override
 	public String getSortingOrder() {
-		if (_isSearch() && !FeatureFlagManagerUtil.isEnabled("LPS-84424")) {
-			return null;
-		}
-
 		return _dlAdminDisplayContext.getOrderByType();
 	}
 
 	@Override
 	public String getSortingURL() {
-		if (_isSearch() && !FeatureFlagManagerUtil.isEnabled("LPS-84424")) {
-			return null;
-		}
-
 		return PortletURLBuilder.create(
 			_getCurrentRenderURL()
 		).setParameter(
@@ -393,10 +400,6 @@ public class DLAdminManagementToolbarDisplayContext
 
 	@Override
 	public List<ViewTypeItem> getViewTypeItems() {
-		if (_isSearch() && !FeatureFlagManagerUtil.isEnabled("LPS-84424")) {
-			return null;
-		}
-
 		PortletURL renderURL = _getCurrentRenderURL();
 
 		int curEntry = ParamUtil.getInteger(_httpServletRequest, "curEntry");
@@ -590,10 +593,8 @@ public class DLAdminManagementToolbarDisplayContext
 		).setParameter(
 			"vocabularyIds",
 			StringUtil.merge(
-				AssetVocabularyServiceUtil.getGroupsVocabularies(
-					PortalUtil.getCurrentAndAncestorSiteGroupIds(
-						_themeDisplay.getScopeGroupId()),
-					DLFileEntryConstants.getClassName()),
+				_assetVocabularyService.getGroupsVocabularies(
+					_getGroupIds(), DLFileEntryConstants.getClassName()),
 				assetVocabulary -> String.valueOf(
 					assetVocabulary.getVocabularyId()),
 				StringPool.COMMA)
@@ -604,15 +605,13 @@ public class DLAdminManagementToolbarDisplayContext
 		return _dlAdminDisplayContext.getAssetTagIds();
 	}
 
-	private String _getAssetTagSelectorURL() throws PortalException {
+	private String _getAssetTagSelectorURL() {
 		AssetTagsItemSelectorCriterion assetTagsItemSelectorCriterion =
 			new AssetTagsItemSelectorCriterion();
 
 		assetTagsItemSelectorCriterion.setDesiredItemSelectorReturnTypes(
 			new AssetTagsItemSelectorReturnType());
-		assetTagsItemSelectorCriterion.setGroupIds(
-			PortalUtil.getCurrentAndAncestorSiteGroupIds(
-				_themeDisplay.getScopeGroupId()));
+		assetTagsItemSelectorCriterion.setGroupIds(_getGroupIds());
 		assetTagsItemSelectorCriterion.setMultiSelection(true);
 
 		return String.valueOf(
@@ -834,15 +833,13 @@ public class DLAdminManagementToolbarDisplayContext
 					LanguageUtil.get(_httpServletRequest, "mine"));
 			}
 		).add(
-			() -> FeatureFlagManagerUtil.isEnabled("LPS-84424"),
 			dropdownItem -> {
 				dropdownItem.putData("action", "openCategoriesSelector");
 				dropdownItem.putData(
 					"categoriesFilterURL", _getAssetCategorySelectorURL());
 				dropdownItem.setActive(!assetCategoryIdsIsEmpty);
 				dropdownItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "categories") +
-						StringPool.TRIPLE_PERIOD);
+					LanguageUtil.get(_httpServletRequest, "categories"));
 			}
 		).add(
 			dropdownItem -> {
@@ -850,9 +847,7 @@ public class DLAdminManagementToolbarDisplayContext
 
 				dropdownItem.putData("action", "openDocumentTypesSelector");
 
-				String label =
-					LanguageUtil.get(_httpServletRequest, "type") +
-						StringPool.TRIPLE_PERIOD;
+				String label = LanguageUtil.get(_httpServletRequest, "type");
 
 				if (fileEntryTypeId != -1) {
 					String fileEntryTypeName = LanguageUtil.get(
@@ -876,26 +871,22 @@ public class DLAdminManagementToolbarDisplayContext
 				dropdownItem.setLabel(label);
 			}
 		).add(
-			() -> FeatureFlagManagerUtil.isEnabled("LPS-84424"),
 			dropdownItem -> {
 				dropdownItem.putData("action", "openExtensionSelector");
 				dropdownItem.putData(
 					"extensionsFilterURL", _getExtensionsItemSelectorURL());
 				dropdownItem.setActive(!extensionsIsEmpty);
 				dropdownItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "extension") +
-						StringPool.TRIPLE_PERIOD);
+					LanguageUtil.get(_httpServletRequest, "extension"));
 			}
 		).add(
-			() -> FeatureFlagManagerUtil.isEnabled("LPS-84424"),
 			dropdownItem -> {
 				dropdownItem.putData("action", "openTagsSelector");
 				dropdownItem.putData(
 					"tagsFilterURL", _getAssetTagSelectorURL());
 				dropdownItem.setActive(!assetTagIdsIsEmpty);
 				dropdownItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "tags") +
-						StringPool.TRIPLE_PERIOD);
+					LanguageUtil.get(_httpServletRequest, "tags"));
 			}
 		).build();
 	}
@@ -906,6 +897,28 @@ public class DLAdminManagementToolbarDisplayContext
 		}
 
 		return _dlAdminDisplayContext.getFolderId();
+	}
+
+	private long[] _getGroupIds() {
+		if (_groupIds != null) {
+			return _groupIds;
+		}
+
+		try {
+			_groupIds =
+				_siteConnectedGroupGroupProvider.
+					getCurrentAndAncestorSiteAndDepotGroupIds(
+						_dlAdminDisplayContext.getRepositoryGroupId(
+							_themeDisplay.getScopeGroupId(),
+							_dlAdminDisplayContext.getRepositoryId()));
+		}
+		catch (PortalException portalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(portalException);
+			}
+		}
+
+		return _groupIds;
 	}
 
 	private String _getLabel(String key, String value) {
@@ -975,18 +988,14 @@ public class DLAdminManagementToolbarDisplayContext
 		).buildString();
 	}
 
-	private boolean _hasValidAssetVocabularies(long scopeGroupId)
-		throws PortalException {
-
+	private boolean _hasValidAssetVocabularies() {
 		if (_hasValidAssetVocabularies != null) {
 			return _hasValidAssetVocabularies;
 		}
 
-		List<AssetVocabulary> assetVocabularies =
-			AssetVocabularyServiceUtil.getGroupVocabularies(
-				PortalUtil.getCurrentAndAncestorSiteGroupIds(scopeGroupId));
+		for (AssetVocabulary assetVocabulary :
+				_assetVocabularyService.getGroupVocabularies(_getGroupIds())) {
 
-		for (AssetVocabulary assetVocabulary : assetVocabularies) {
 			if (!assetVocabulary.isAssociatedToClassNameId(
 					ClassNameLocalServiceUtil.getClassNameId(
 						DLFileEntry.class.getName()))) {
@@ -1049,6 +1058,10 @@ public class DLAdminManagementToolbarDisplayContext
 		return false;
 	}
 
+	private static final Log _log = LogFactoryUtil.getLog(
+		DLAdminManagementToolbarDisplayContext.class.getName());
+
+	private final AssetVocabularyService _assetVocabularyService;
 	private final PortletURL _currentURLObj;
 	private final DLAdminDisplayContext _dlAdminDisplayContext;
 	private final DLPortletInstanceSettingsHelper
@@ -1056,11 +1069,14 @@ public class DLAdminManagementToolbarDisplayContext
 	private final DLRequestHelper _dlRequestHelper;
 	private final DLTrashHelper _dlTrashHelper;
 	private List<LabelItem> _filterLabelItems;
+	private long[] _groupIds;
 	private Boolean _hasValidAssetVocabularies;
 	private final HttpServletRequest _httpServletRequest;
 	private final ItemSelector _itemSelector;
 	private final LiferayPortletRequest _liferayPortletRequest;
 	private final LiferayPortletResponse _liferayPortletResponse;
+	private final SiteConnectedGroupGroupProvider
+		_siteConnectedGroupGroupProvider;
 	private final ThemeDisplay _themeDisplay;
 
 }

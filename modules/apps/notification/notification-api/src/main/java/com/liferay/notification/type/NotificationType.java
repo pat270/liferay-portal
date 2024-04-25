@@ -11,7 +11,10 @@ import com.liferay.notification.model.NotificationRecipientSetting;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Feliphe Marinho
@@ -25,6 +28,18 @@ public interface NotificationType {
 	public List<NotificationRecipientSetting>
 		createNotificationRecipientSettings(
 			long notificationRecipientId, Object[] recipients, User user);
+
+	public default Map<String, String> evaluateNotificationRecipientSettings(
+			long companyId, NotificationContext notificationContext,
+			Map<String, Object> notificationRecipientSettings)
+		throws PortalException {
+
+		return Collections.emptyMap();
+	}
+
+	public default Set<String> getAllowedNotificationRecipientSettingsNames() {
+		return Collections.emptySet();
+	}
 
 	public default String getFromName(
 		NotificationQueueEntry notificationQueueEntry) {
@@ -52,6 +67,9 @@ public interface NotificationType {
 	}
 
 	public void sendNotification(NotificationContext notificationContext)
+		throws PortalException;
+
+	public void sendNotification(NotificationQueueEntry notificationQueueEntry)
 		throws PortalException;
 
 	public Object[] toRecipients(

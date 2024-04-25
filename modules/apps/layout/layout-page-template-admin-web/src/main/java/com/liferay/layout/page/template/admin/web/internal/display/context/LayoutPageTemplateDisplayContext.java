@@ -12,6 +12,7 @@ import com.liferay.layout.page.template.admin.constants.LayoutPageTemplateAdminP
 import com.liferay.layout.page.template.admin.web.internal.security.permission.resource.LayoutPageTemplateCollectionPermission;
 import com.liferay.layout.page.template.admin.web.internal.security.permission.resource.LayoutPageTemplatePermission;
 import com.liferay.layout.page.template.admin.web.internal.util.LayoutPageTemplatePortletUtil;
+import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateCollection;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateCollectionServiceUtil;
@@ -127,9 +128,15 @@ public class LayoutPageTemplateDisplayContext {
 					getLayoutPageTemplateCollectionId();
 		}
 
-		_layoutPageTemplateCollectionId = ParamUtil.getLong(
-			_httpServletRequest, "layoutPageTemplateCollectionId",
-			defaultLayoutPageTemplateCollectionId);
+		long layoutPageTemplateCollectionId = ParamUtil.getLong(
+			_httpServletRequest, "layoutPageTemplateCollectionId");
+
+		if (layoutPageTemplateCollectionId <= 0) {
+			layoutPageTemplateCollectionId =
+				defaultLayoutPageTemplateCollectionId;
+		}
+
+		_layoutPageTemplateCollectionId = layoutPageTemplateCollectionId;
 
 		return _layoutPageTemplateCollectionId;
 	}
@@ -144,7 +151,8 @@ public class LayoutPageTemplateDisplayContext {
 		_layoutPageTemplateCollections =
 			LayoutPageTemplateCollectionServiceUtil.
 				getLayoutPageTemplateCollections(
-					_themeDisplay.getScopeGroupId());
+					_themeDisplay.getScopeGroupId(),
+					LayoutPageTemplateEntryTypeConstants.BASIC);
 
 		return _layoutPageTemplateCollections;
 	}
@@ -219,7 +227,7 @@ public class LayoutPageTemplateDisplayContext {
 		}
 
 		_layoutPageTemplateEntry =
-			LayoutPageTemplateEntryServiceUtil.fetchLayoutPageTemplateEntry(
+			LayoutPageTemplateEntryServiceUtil.getLayoutPageTemplateEntry(
 				getLayoutPageTemplateEntryId());
 
 		return _layoutPageTemplateEntry;

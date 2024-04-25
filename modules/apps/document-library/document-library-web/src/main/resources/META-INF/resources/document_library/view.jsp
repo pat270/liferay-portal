@@ -41,6 +41,10 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 		<clay:management-toolbar
 			additionalProps='<%=
 				HashMapBuilder.<String, Object>put(
+					"addFileEntryURL", dlViewDisplayContext.getAddFileEntryURL()
+				).put(
+					"bulkCopyURL", dlViewDisplayContext.getCopyURL()
+				).put(
 					"bulkPermissionsConfiguration",
 					HashMapBuilder.<String, Object>put(
 						"defaultModelClassName", Folder.class.getSimpleName()
@@ -75,6 +79,8 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 				).put(
 					"openViewMoreFileEntryTypesURL", dlViewDisplayContext.getViewMoreFileEntryTypesURL()
 				).put(
+					"redirect", dlViewDisplayContext.getRedirect()
+				).put(
 					"selectAssetCategoriesURL", dlViewDisplayContext.getSelectAssetCategoriesURL()
 				).put(
 					"selectAssetTagsURL", dlViewDisplayContext.getSelectAssetTagsURL()
@@ -93,7 +99,7 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 				).build()
 			%>'
 			managementToolbarDisplayContext="<%= dlAdminManagementToolbarDisplayContext %>"
-			propsTransformer="document_library/js/DLManagementToolbarPropsTransformer"
+			propsTransformer="{DLManagementToolbarPropsTransformer} from document-library-web"
 		/>
 
 		<%
@@ -102,7 +108,7 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 
 		<div>
 			<react:component
-				module="document_library/js/bulk/BulkStatus.es"
+				module="{BulkStatus} from document-library-web"
 				props='<%=
 					HashMapBuilder.<String, Object>put(
 						"bulkComponentId", liferayPortletResponse.getNamespace() + "BulkStatus"
@@ -131,10 +137,10 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 				</liferay-frontend:sidebar-panel>
 
 				<div class="sidenav-content <%= portletTitleBasedNavigation ? "container-fluid container-fluid-max-xl container-view" : StringPool.BLANK %>">
-					<c:if test='<%= dlAdminDisplayContext.hasFilterParameters() && ListUtil.isNotEmpty(dlAdminDisplayContext.getMountFolders()) && FeatureFlagManagerUtil.isEnabled("LPS-84424") %>'>
+					<c:if test="<%= dlAdminDisplayContext.hasFilterParameters() && ListUtil.isNotEmpty(dlAdminDisplayContext.getMountFolders()) %>">
 						<clay:alert
 							displayType="info"
-							message="filters-only-apply-to-documents-in-local-repositories"
+							message="filters-only-apply-to-documents-in-the-local-repository"
 						/>
 					</c:if>
 
@@ -173,6 +179,15 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 						<liferay-ui:error exception="<%= FileEntryLockException.MustBeUnlocked.class %>" message="you-cannot-perform-this-operation-on-checked-out-documents-.please-check-it-in-or-cancel-the-checkout-first" />
 						<liferay-ui:error exception="<%= FileEntryLockException.MustOwnLock.class %>" message="you-can-only-checkin-documents-you-have-checked-out-yourself" />
 						<liferay-ui:error key="externalServiceFailed" message="you-cannot-access-external-service-because-you-are-not-allowed-to-or-it-is-unavailable" />
+
+						<liferay-ui:error exception="<%= DLObjectSizeLimitExceededException.class %>">
+
+							<%
+							DLObjectSizeLimitExceededException dlObjectSizeLimitExceededException = (DLObjectSizeLimitExceededException)errorException;
+							%>
+
+							<liferay-ui:message key="<%= dlObjectSizeLimitExceededException.getMessage() %>" />
+						</liferay-ui:error>
 
 						<c:if test='<%= SessionErrors.contains(renderRequest, "googleDriveFileMissing") %>'>
 							<aui:script>
@@ -262,8 +277,6 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 				).put(
 					"searchContainerId", "entries"
 				).put(
-					"selectFolderURL", dlViewDisplayContext.getSelectFolderURL()
-				).put(
 					"uploadable", dlViewDisplayContext.isUploadable()
 				).put(
 					"uploadURL", dlViewDisplayContext.getUploadURL()
@@ -272,7 +285,7 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 				).build()
 			%>'
 			destroyOnNavigate="<%= true %>"
-			module="document_library/js/DocumentLibrary"
+			module="{DocumentLibrary} from document-library-web"
 		/>
 
 		<%
@@ -289,7 +302,7 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 
 		<div>
 			<react:component
-				module="document_library/js/categorization/tags/EditTags.es"
+				module="{EditTags} from document-library-web"
 				props='<%=
 					HashMapBuilder.<String, Object>put(
 						"context", Collections.singletonMap("namespace", liferayPortletResponse.getNamespace())
@@ -314,7 +327,7 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 
 		<div>
 			<react:component
-				module="document_library/js/categorization/categories/EditCategories.es"
+				module="{EditCategories} from document-library-web"
 				props='<%=
 					HashMapBuilder.<String, Object>put(
 						"context", Collections.singletonMap("namespace", liferayPortletResponse.getNamespace())
@@ -329,7 +342,7 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 
 		<div>
 			<react:component
-				module="document_library/js/image-editor/EditImageWithImageEditor"
+				module="{EditImageWithImageEditor} from document-library-web"
 				props='<%=
 					HashMapBuilder.<String, Object>put(
 						"editImageURL", editImageURL
@@ -340,8 +353,14 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 			/>
 		</div>
 
+		<div>
+			<react:component
+				module="{ConfigureAIModal} from document-library-web"
+			/>
+		</div>
+
 		<liferay-util:dynamic-include key="com.liferay.document.library.web#/document_library/view.jsp#post" />
 	</c:otherwise>
 </c:choose>
 
-<%@ include file="/document_library/friendly_url_changed_message.jspf" %>
+<%@ include file="/document_library/session_messages.jspf" %>

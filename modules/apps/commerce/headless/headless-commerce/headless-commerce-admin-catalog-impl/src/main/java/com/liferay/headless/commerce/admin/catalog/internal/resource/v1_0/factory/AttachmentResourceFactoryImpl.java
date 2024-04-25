@@ -72,7 +72,12 @@ public class AttachmentResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _attachmentResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, AttachmentResource>
+					attachmentResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_attachmentResourceProxyProviderFunction;
+
+				return attachmentResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -229,9 +234,6 @@ public class AttachmentResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, AttachmentResource>
-		_attachmentResourceProxyProviderFunction = _getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -267,6 +269,14 @@ public class AttachmentResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, AttachmentResource>
+			_attachmentResourceProxyProviderFunction =
+				_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

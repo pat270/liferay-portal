@@ -1,7 +1,7 @@
 {
 	"dependencies": {
 	},
-	"main": "index.js",
+	"main": "js/index.js",
 	"name": "@liferay/document-library-preview-css",
 	"private": true,
 	"scripts": {
@@ -9,5 +9,5 @@
 		"checkFormat": "liferay-npm-scripts check",
 		"format": "liferay-npm-scripts fix"
 	},
-	"version": "1.0.15"
+	"version": "1.0.17"
 }

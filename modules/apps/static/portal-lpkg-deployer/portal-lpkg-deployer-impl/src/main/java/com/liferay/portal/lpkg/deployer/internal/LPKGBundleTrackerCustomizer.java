@@ -17,6 +17,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.lpkg.StaticLPKGResolver;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ModuleFrameworkPropsValues;
+import com.liferay.portal.kernel.util.PropertiesUtil;
 import com.liferay.portal.kernel.util.StreamUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.URLCodec;
@@ -612,7 +613,9 @@ public class LPKGBundleTrackerCustomizer
 	private void _processOutdatedBundle(Bundle bundle) throws Exception {
 		Path path = Paths.get(bundle.getLocation());
 
-		try (FileSystem fileSystem = FileSystems.newFileSystem(path, null)) {
+		try (FileSystem fileSystem = FileSystems.newFileSystem(
+				path, (ClassLoader)null)) {
+
 			Files.createFile(fileSystem.getPath(_FILE_NAME_LFR_OUTDATED));
 		}
 
@@ -679,13 +682,7 @@ public class LPKGBundleTrackerCustomizer
 			return null;
 		}
 
-		try (InputStream inputStream = url.openStream()) {
-			Properties properties = new Properties();
-
-			properties.load(inputStream);
-
-			return properties;
-		}
+		return PropertiesUtil.load(url);
 	}
 
 	private void _recordTrackedBundles(

@@ -6,20 +6,18 @@
 package com.liferay.portal.search.internal.suggestions.spi;
 
 import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
-import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
-import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.SearchContext;
-import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.search.asset.AssetURLViewProvider;
 import com.liferay.portal.search.document.Document;
 import com.liferay.portal.search.hits.SearchHit;
 import com.liferay.portal.search.hits.SearchHits;
@@ -63,9 +61,8 @@ public class BasicSuggestionsContributorTest {
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
 
-		_setUpAssetEntryLocalService();
+		_setUpAssetURLViewProvider();
 		_setUpBasicSuggestionsContributor();
-		_setUpLayoutLocalService();
 		_setUpLiferayPortletRequest();
 		_setUpSearchContext();
 		_setUpSearchRequestBuilderFactory();
@@ -186,16 +183,6 @@ public class BasicSuggestionsContributorTest {
 			_suggestionsContributorConfiguration);
 	}
 
-	private void _setUpAssetEntryLocalService() throws Exception {
-		Mockito.doReturn(
-			Mockito.mock(AssetEntry.class)
-		).when(
-			_assetEntryLocalService
-		).getEntry(
-			Mockito.anyString(), Mockito.anyLong()
-		);
-	}
-
 	private void _setUpAssetRendererFactoryRegistryUtil(
 			boolean assetRendererFactoryNull, String title, String summary)
 		throws Exception {
@@ -223,8 +210,8 @@ public class BasicSuggestionsContributorTest {
 			summary
 		).when(
 			assetRenderer
-		).getSearchSummary(
-			Mockito.any()
+		).getSummary(
+			Mockito.any(), Mockito.any()
 		);
 
 		Mockito.doReturn(
@@ -252,15 +239,23 @@ public class BasicSuggestionsContributorTest {
 		);
 	}
 
+	private void _setUpAssetURLViewProvider() {
+		Mockito.doReturn(
+			RandomTestUtil.randomString()
+		).when(
+			_assetURLViewProvider
+		).getAssetURLView(
+			Mockito.any(), Mockito.any(), Mockito.anyString(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any()
+		);
+	}
+
 	private void _setUpBasicSuggestionsContributor() {
 		_basicSuggestionsContributor = new BasicSuggestionsContributor();
 
 		ReflectionTestUtil.setFieldValue(
-			_basicSuggestionsContributor, "_assetEntryLocalService",
-			_assetEntryLocalService);
-		ReflectionTestUtil.setFieldValue(
-			_basicSuggestionsContributor, "_layoutLocalService",
-			_layoutLocalService);
+			_basicSuggestionsContributor, "_assetURLViewProvider",
+			_assetURLViewProvider);
 		ReflectionTestUtil.setFieldValue(
 			_basicSuggestionsContributor, "_searcher", _searcher);
 		ReflectionTestUtil.setFieldValue(
@@ -273,16 +268,6 @@ public class BasicSuggestionsContributorTest {
 		ReflectionTestUtil.setFieldValue(
 			_basicSuggestionsContributor, "_suggestionBuilderFactory",
 			new SuggestionBuilderFactoryImpl());
-	}
-
-	private void _setUpLayoutLocalService() {
-		Mockito.doReturn(
-			null
-		).when(
-			_layoutLocalService
-		).fetchLayoutByFriendlyURL(
-			Mockito.anyLong(), Mockito.anyBoolean(), Mockito.anyString()
-		);
 	}
 
 	private void _setUpLiferayPortletRequest() {
@@ -431,15 +416,12 @@ public class BasicSuggestionsContributorTest {
 	}
 
 	@Mock
-	private AssetEntryLocalService _assetEntryLocalService;
-
-	@Mock
 	private AssetRendererFactory<?> _assetRendererFactory;
 
-	private BasicSuggestionsContributor _basicSuggestionsContributor;
-
 	@Mock
-	private LayoutLocalService _layoutLocalService;
+	private AssetURLViewProvider _assetURLViewProvider;
+
+	private BasicSuggestionsContributor _basicSuggestionsContributor;
 
 	@Mock
 	private LiferayPortletRequest _liferayPortletRequest;

@@ -43,9 +43,9 @@ if (!ddlDisplayContext.isAdminPortlet()) {
 	clearResultsURL="<%= ddlViewRecordsDisplayContext.getClearResultsURL() %>"
 	creationMenu="<%= ddlViewRecordsDisplayContext.getCreationMenu() %>"
 	disabled="<%= ddlViewRecordsDisplayContext.isDisabledManagementBar() %>"
-	filterDropdownItems="<%= ddlViewRecordsDisplayContext.getFilterItemsDropdownItems() %>"
 	itemsTotal="<%= ddlViewRecordsDisplayContext.getTotalItems() %>"
-	propsTransformer="js/ViewRecordsManagementToolbarPropsTransformer"
+	orderDropdownItems="<%= ddlViewRecordsDisplayContext.getOrderItemsDropdownItems() %>"
+	propsTransformer="{ViewRecordsManagementToolbarPropsTransformer} from dynamic-data-lists-web"
 	searchActionURL="<%= ddlViewRecordsDisplayContext.getSearchActionURL() %>"
 	searchContainerId="<%= ddlViewRecordsDisplayContext.getSearchContainerId() %>"
 	searchFormName="fm1"
@@ -53,6 +53,8 @@ if (!ddlDisplayContext.isAdminPortlet()) {
 	sortingOrder="<%= ddlViewRecordsDisplayContext.getOrderByType() %>"
 	sortingURL="<%= ddlViewRecordsDisplayContext.getSortingURL() %>"
 />
+
+<%@ include file="/deprecated_warning.jspf" %>
 
 <clay:container-fluid
 	cssClass="view-records-container"
@@ -64,7 +66,7 @@ if (!ddlDisplayContext.isAdminPortlet()) {
 		<liferay-ui:search-container
 			id="<%= ddlViewRecordsDisplayContext.getSearchContainerId() %>"
 			rowChecker="<%= new EmptyOnClickRowChecker(renderResponse) %>"
-			searchContainer="<%= ddlViewRecordsDisplayContext.getSearch() %>"
+			searchContainer="<%= ddlViewRecordsDisplayContext.getSearchContainer() %>"
 		>
 			<liferay-ui:search-container-row
 				className="com.liferay.dynamic.data.lists.model.DDLRecord"

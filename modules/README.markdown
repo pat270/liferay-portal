@@ -49,11 +49,11 @@ The logic that chooses the default deploy directory is as follows:
 	1. If the project directory contains a `.lfrbuild-static` marker file, the
 	module is deployed to `${liferay home}/osgi/static`.
 
-	1. If the module symbolic name starts with `com.liferay.portal.`, the module
-	is deployed to `${liferay home}/osgi/portal`.
-
-	1. Otherwise, the module is deployed to `${liferay home}/osgi/modules`.
+	1. Otherwise, the module is deployed to `${liferay home}/osgi/portal`.
 - For themes:
+
+	1. If the project directory is in the main Liferay repository, the theme is
+	deployed to `${liferay home}/osgi/portal-war`.
 
 	1. If the `required-for-startup` property in the
   `src/WEB-INF/liferay-plugin-package.properties` file is `true`, the theme is

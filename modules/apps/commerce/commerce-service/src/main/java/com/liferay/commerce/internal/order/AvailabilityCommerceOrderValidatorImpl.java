@@ -13,9 +13,13 @@ import com.liferay.commerce.order.CommerceOrderValidator;
 import com.liferay.commerce.order.CommerceOrderValidatorResult;
 import com.liferay.commerce.product.availability.CPAvailabilityChecker;
 import com.liferay.commerce.product.model.CPInstance;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.util.BigDecimalUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
+
+import java.math.BigDecimal;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -46,7 +50,7 @@ public class AvailabilityCommerceOrderValidatorImpl
 	@Override
 	public CommerceOrderValidatorResult validate(
 			Locale locale, CommerceOrder commerceOrder, CPInstance cpInstance,
-			int quantity)
+			String json, BigDecimal quantity, boolean child)
 		throws PortalException {
 
 		if (!_cpAvailabilityChecker.isPurchasable(cpInstance)) {
@@ -57,7 +61,8 @@ public class AvailabilityCommerceOrderValidatorImpl
 		}
 
 		if (!_cpAvailabilityChecker.isAvailable(
-				commerceOrder.getGroupId(), cpInstance, quantity)) {
+				commerceOrder.getGroupId(), cpInstance, StringPool.BLANK,
+				quantity)) {
 
 			return new CommerceOrderValidatorResult(
 				false,
@@ -85,11 +90,13 @@ public class AvailabilityCommerceOrderValidatorImpl
 		CommerceInventoryBookedQuantity commerceInventoryBookedQuantity =
 			_commerceInventoryBookedQuantityLocalService.
 				fetchCommerceInventoryBookedQuantity(
-					commerceOrderItem.getBookedQuantityId());
+					commerceOrderItem.getCommerceInventoryBookedQuantityId());
+
+		BigDecimal quantity = commerceOrderItem.getQuantity();
 
 		if (!_cpAvailabilityChecker.isAvailable(
 				commerceOrderItem.getGroupId(), cpInstance,
-				commerceOrderItem.getQuantity()) &&
+				commerceOrderItem.getUnitOfMeasureKey(), quantity) &&
 			(commerceInventoryBookedQuantity == null)) {
 
 			return new CommerceOrderValidatorResult(
@@ -99,13 +106,26 @@ public class AvailabilityCommerceOrderValidatorImpl
 		}
 
 		if ((commerceInventoryBookedQuantity != null) &&
-			(commerceOrderItem.getQuantity() !=
-				commerceInventoryBookedQuantity.getQuantity())) {
+			!BigDecimalUtil.eq(
+				quantity, commerceInventoryBookedQuantity.getQuantity())) {
 
-			return new CommerceOrderValidatorResult(
-				commerceOrderItem.getCommerceOrderItemId(), false,
-				_getLocalizedMessage(
-					locale, "the-specified-quantity-is-not-allowed"));
+			BigDecimal bookedQuantity = BigDecimal.ZERO;
+
+			BigDecimal commerceInventoryWarehouseItemQuantity =
+				commerceInventoryBookedQuantity.getQuantity();
+
+			if (commerceInventoryWarehouseItemQuantity != null) {
+				bookedQuantity = commerceInventoryWarehouseItemQuantity;
+			}
+
+			if (!BigDecimalUtil.eq(
+					commerceOrderItem.getQuantity(), bookedQuantity)) {
+
+				return new CommerceOrderValidatorResult(
+					commerceOrderItem.getCommerceOrderItemId(), false,
+					_getLocalizedMessage(
+						locale, "the-specified-quantity-is-not-allowed"));
+			}
 		}
 
 		return new CommerceOrderValidatorResult(true);

@@ -56,32 +56,32 @@
 </tr>
 <tr>
 	<td>COLLECTION_DISPLAY_COLUMN</td>
-	<td>xpath=(//div[@aria-label='Collection Display'])[${key_position}]//div[starts-with(@class,'row')][${key_rowNumber}]//div[contains(@class,'col-')][${key_columnNumber}]</td>
+	<td>xpath=(//div[@data-name='Collection Display'])[${key_position}]//div[starts-with(@class,'row')][${key_rowNumber}]//div[contains(@class,'col-')][${key_columnNumber}]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>COLLECTION_DISPLAY_COLUMNS_NO_GUTTER</td>
-	<td>xpath=(//div[@aria-label='Collection Display'])[${key_position}]//div[starts-with(@class,'row') and contains(@class,'no-gutters')]</td>
+	<td>xpath=(//div[@data-name='Collection Display'])[${key_position}]//div[starts-with(@class,'row') and contains(@class,'no-gutters')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>COLLECTION_DISPLAY_CONFIGURATION_LAYOUT</td>
-	<td>xpath=(//div[@aria-label='Collection Display'])[${key_position}]//div[contains(@class,'col-${key_layout}')]</td>
+	<td>xpath=(//div[@data-name='Collection Display'])[${key_position}]//div[contains(@class,'col-${key_layout}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>COLLECTION_DISPLAY_CONFIGURATION_ALIGN_ITEMS</td>
-	<td>xpath=(//div[@aria-label='Collection Display'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/div[contains(@class,'page-editor__collection')]/div[contains(@class,'d-flex')][not(contains(class,'pagination'))][contains(@class,'align-items-${key_alignItems}')]</td>
+	<td>xpath=(//div[@data-name='Collection Display'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/div[contains(@class,'page-editor__collection')]/div[contains(@class,'d-flex')][not(contains(class,'pagination'))][contains(@class,'align-items-${key_alignItems}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>COLLECTION_DISPLAY_CONFIGURATION_FLEX_WRAP</td>
-	<td>xpath=(//div[@aria-label='Collection Display'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/div[contains(@class,'page-editor__collection')]/div[contains(@class,'d-flex')][not(contains(class,'pagination'))][contains(@class,'flex-${key_flexWrap}')]</td>
+	<td>xpath=(//div[@data-name='Collection Display'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/div[contains(@class,'page-editor__collection')]/div[contains(@class,'d-flex')][not(contains(class,'pagination'))][contains(@class,'flex-${key_flexWrap}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>COLLECTION_DISPLAY_CONFIGURATION_JUSTIFY_CONTENT</td>
-	<td>xpath=(//div[@aria-label='Collection Display'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/div[contains(@class,'page-editor__collection')]/div[contains(@class,'d-flex')][not(contains(class,'pagination'))][contains(@class,'justify-content-${key_justifyContent}')]</td>
+	<td>xpath=(//div[@data-name='Collection Display'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/div[contains(@class,'page-editor__collection')]/div[contains(@class,'d-flex')][not(contains(class,'pagination'))][contains(@class,'justify-content-${key_justifyContent}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -91,7 +91,7 @@
 </tr>
 <tr>
 	<td>COLLECTION_CELL_NESTED_ELEMENT</td>
-	<td>//div[@aria-label='${key_fragmentName}']//div[contains(@class,'page-editor__collection')]/div[starts-with(@class,'row')][${key_rowPosition}]/div[contains(@class,'col')][${key_colPosition}]${key_element}</td>
+	<td>//div[@data-name='${key_fragmentName}']//div[contains(@class,'page-editor__collection')]/div[starts-with(@class,'row')][${key_rowPosition}]/div[contains(@class,'col')][${key_colPosition}]${key_element}</td>
 	<td></td>
 </tr>
 <tr>
@@ -106,27 +106,27 @@
 </tr>
 <tr>
 	<td>COLLECTION_ITEM_CONTENT_IN_BORDERED_LIST</td>
-	<td>//div[@aria-label='${key_fragmentName}']//div[contains(@class,'page-editor__collection')]//ul[contains(@class,'list-group')]/li[contains(@class,'list-group-item')][${key_position}]${key_entryContent}</td>
+	<td>//div[@data-name='${key_fragmentName}']//div[contains(@class,'page-editor__collection')]//ul[contains(@class,'list-group')]/li[contains(@class,'list-group-item')][${key_position}]${key_entryContent}</td>
 	<td></td>
 </tr>
 <tr>
 	<td>COLLECTION_ITEM_CONTENT_IN_BULLETED_LIST</td>
-	<td>//div[@aria-label='${key_fragmentName}']//div[contains(@class,'page-editor__collection')]//ul[not(contains(@class,'list-group'))]/li[${key_position}]${key_entryContent}</td>
+	<td>//div[@data-name='${key_fragmentName}']//div[contains(@class,'page-editor__collection')]//ul[not(contains(@class,'list-group'))]/li[${key_position}]${key_entryContent}</td>
 	<td></td>
 </tr>
 <tr>
 	<td>COLLECTION_ITEM_CONTENT_IN_INLINE_LIST</td>
-	<td>//div[@aria-label='${key_fragmentName}']//div[contains(@class,'page-editor__collection')]//ul[contains(@class,'list-inline')]/li[contains(@class,'flex-grow-1')][${key_position}]${key_entryContent}</td>
+	<td>//div[@data-name='${key_fragmentName}']//div[contains(@class,'page-editor__collection')]//ul[contains(@class,'list-inline')]/li[contains(@class,'flex-grow-1')][${key_position}]${key_entryContent}</td>
 	<td></td>
 </tr>
 <tr>
 	<td>COLLECTION_ITEM_CONTENT_IN_NUMBERED_LIST</td>
-	<td>//div[@aria-label='${key_fragmentName}']//div[contains(@class,'page-editor__collection')]//ol/li[${key_position}]${key_entryContent}</td>
+	<td>//div[@data-name='${key_fragmentName}']//div[contains(@class,'page-editor__collection')]//ol/li[${key_position}]${key_entryContent}</td>
 	<td></td>
 </tr>
 <tr>
 	<td>COLLECTION_ITEM_CONTENT_IN_UNSTYLED_LIST</td>
-	<td>//div[@aria-label='${key_fragmentName}']//div[contains(@class,'page-editor__collection')]//ul[contains(@class,'list-unstyled')]/li[${key_position}]${key_entryContent}</td>
+	<td>//div[@data-name='${key_fragmentName}']//div[contains(@class,'page-editor__collection')]//ul[contains(@class,'list-unstyled')]/li[${key_position}]${key_entryContent}</td>
 	<td></td>
 </tr>
 <tr>
@@ -155,13 +155,18 @@
 	<td></td>
 </tr>
 <tr>
+	<td>COLLECTION_ITEM_CONTENT_AT_VIEW_MODE</td>
+	<td>//div[contains(@class,'layout-content')]//div[contains(text(), '${title}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>COLLECTION_ITEM_FALSE_ENTRY</td>
 	<td>//span[contains(@class,'text-truncate')][contains(text(),'false')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>COLLECTION_ITEM_IMAGE</td>
-	<td>//div[@aria-label='${key_fragmentName}']//div[contains(@class,'page-editor__collection')]/div[starts-with(@class,'row')][${key_rowPosition}]/div[contains(@class,'col')][${key_colPosition}]//*[contains(@style,'${key_entryImage}')]</td>
+	<td>//div[@data-name='${key_fragmentName}']//div[contains(@class,'page-editor__collection')]/div[starts-with(@class,'row')][${key_rowPosition}]/div[contains(@class,'col')][${key_colPosition}]//*[contains(@style,'${key_entryImage}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -181,17 +186,17 @@
 </tr>
 <tr>
 	<td>COLLECTION_ITEM_NEXT_BUTTON</td>
-	<td>//button[contains(@class,'font-weight-semi-bold ml-3 text-secondary btn btn-unstyled')]//span[contains(text(), 'Next')]</td>
+	<td>//button[contains(@class,'font-weight-semi-bold ml-3 text-secondary btn btn-unstyled') and (text() = 'Next')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>COLLECTION_ITEM_PREVIOUS_BUTTON</td>
-	<td>//button[contains(@class,'font-weight-semi-bold mr-3 text-secondary btn btn-unstyled')]//span[contains(text(), 'Previous')]</td>
+	<td>//button[contains(@class,'font-weight-semi-bold mr-3 text-secondary btn btn-unstyled') and (text() = 'Previous')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>COLLECTION_ITEM_TITLE</td>
-	<td>//div[@aria-label='${key_fragmentName}']//div[contains(@class,'page-editor__collection')]/div[starts-with(@class,'row')][${key_rowPosition}]/div[contains(@class,'col')][${key_colPosition}]//*[contains(@class,'item__title') and contains(.,'${key_entryTitle}')]</td>
+	<td>//div[@data-name='${key_fragmentName}']//div[contains(@class,'page-editor__collection')]/div[starts-with(@class,'row')][${key_rowPosition}]/div[contains(@class,'col')][${key_colPosition}]//*[contains(@class,'item__title') and contains(.,'${key_entryTitle}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -210,12 +215,12 @@
 </tr>
 <tr>
 	<td>COLLECTION_FILTER_HELP_TEXT</td>
-	<td>xpath=(//div[@aria-label='Collection Filter'])[${index}]//p[contains(@id,'HelpText')][normalize-space(text())='${helpText}']</td>
+	<td>xpath=(//div[@data-name='Collection Filter'])[${index}]//p[contains(@id,'HelpText')][normalize-space(text())='${helpText}']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>COLLECTION_FILTER_LABEL</td>
-	<td>xpath=(//div[@aria-label='Collection Filter'])[${index}]//label[normalize-space(text())='${label}']</td>
+	<td>xpath=(//div[@data-name='Collection Filter'])[${index}]//label[normalize-space(text())='${label}']</td>
 	<td></td>
 </tr>
 <tr>
@@ -286,7 +291,7 @@
 </tr>
 <tr>
 	<td>EDIT_MODE_SELECTOR</td>
-	<td>//button[contains(@class,'edit-mode-selector')]</td>
+	<td>//button[contains(@aria-label,'Select edit mode, current edit mode:')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -337,12 +342,12 @@
 
 <tr>
 	<td>ANY_FRAGMENT_DROP_TARGET</td>
-	<td>xpath=(//div[@aria-label='${key_targetFragmentName}']/div[contains(@class,'page-editor__topper__content')])[${index}]</td>
+	<td>xpath=(//div[@data-name='${key_targetFragmentName}']/div[contains(@class,'page-editor__topper__content')])[${index}]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ANY_NESTED_FRAGMENT_DROP_TARGET</td>
-	<td>//div[contains(@class,'page-editor__topper__content')]//div[@aria-label='${key_targetFragmentName}']/div[contains(@class,'page-editor__topper__content')]</td>
+	<td>//div[contains(@class,'page-editor__topper__content')]//div[@data-name='${key_targetFragmentName}']/div[contains(@class,'page-editor__topper__content')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -370,7 +375,7 @@
 
 <tr>
 	<td>EXPERIENCE_ACTIVE_LABEL</td>
-	<td>//*[contains(@class, 'text-truncate-inline')]//*[contains(text(),'${key_experienceName}')]/parent::span//span[contains(text(),'Active')]</td>
+	<td>//*[contains(text(),'${key_experienceName}')]/parent::span//span[contains(text(),'Active')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -425,7 +430,7 @@
 </tr>
 <tr>
 	<td>EXPERIENCE_INACTIVE_LABEL</td>
-	<td>//*[contains(@class, 'text-truncate-inline')]//*[contains(text(),'${key_experienceName}')]/parent::span//span[contains(text(),'Inactive')]</td>
+	<td>//*[contains(text(),'${key_experienceName}')]/parent::span//span[contains(text(),'Inactive')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -465,7 +470,7 @@
 </tr>
 <tr>
 	<td>EXPERIENCE_VALUES</td>
-	<td>//span[contains(@class,'text-truncate-inline')]//span[text()='${key_experienceName}']/parent::span/following-sibling::span[text()='${key_segmentName}']</td>
+	<td>//span//span[text()='${key_experienceName}']/parent::span/following-sibling::span[text()='${key_segmentName}']</td>
 	<td></td>
 </tr>
 <tr>
@@ -523,12 +528,12 @@
 </tr>
 <tr>
 	<td>FRAGMENT_SIDEBAR_COLLECTION_PANEL_COLLAPSED</td>
-	<td>//*[contains(@class,'sheet-subtitle collapsed')][normalize-space()='${key_collectionName}']</td>
+	<td>//*[contains(@class,'panel-header-link collapse-icon') and contains(@class,'collapsed')][normalize-space()='${key_collectionName}']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>FRAGMENT_SIDEBAR_COLLECTION_PANEL_EXPANDED</td>
-	<td>//*[contains(@class,'collapse-icon sheet-subtitle')][normalize-space()='${key_collectionName}']</td>
+	<td>//*[contains(@class,'mb-3') and contains(@class,'panel-header') and contains(@class,'panel-header-link')][normalize-space()='${key_collectionName}']</td>
 	<td></td>
 </tr>
 <tr>
@@ -774,17 +779,17 @@
 
 <tr>
 	<td>FORM_CONTAINER_CONTAINER</td>
-	<td>xpath=(//div[@aria-label='Form Container'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/div[contains(@class,'page-editor__container')]</td>
+	<td>xpath=(//div[@data-name='Form Container'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/div[contains(@class,'page-editor__container')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>FORM_CONTAINER_CONTAINER_NESTED_ELEMENT</td>
-	<td>xpath=(//div[@aria-label='Form Container'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/div[contains(@class,'page-editor__container')]${key_elementHeader}</td>
+	<td>xpath=(//div[@data-name='Form Container'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/div[contains(@class,'page-editor__container')]${key_elementHeader}</td>
 	<td></td>
 </tr>
 <tr>
 	<td>FORM_CONTAINER_SELECT_FIELD</td>
-	<td>xpath=(//div[@aria-label='Form Container'])[${key_position}]//label[normalize-space(text())='Content Type']//following-sibling::select</td>
+	<td>xpath=(//div[@data-name='Form Container'])[${key_position}]//label[normalize-space(text())='Content Type']//following-sibling::select</td>
 	<td></td>
 </tr>
 
@@ -792,32 +797,32 @@
 
 <tr>
 	<td>CONTAINER_CONTAINER</td>
-	<td>xpath=(//div[@aria-label='Container'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/div[contains(@class,'page-editor__container')]</td>
+	<td>xpath=(//div[@data-name='Container'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/div[contains(@class,'page-editor__container')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CONTAINER_CONTAINER_EMPTY</td>
-	<td>xpath=(//div[@aria-label='Container'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/div[contains(@class,'page-editor__container')][contains(@class,'empty')]</td>
+	<td>xpath=(//div[@data-name='Container'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/div[contains(@class,'page-editor__container')][contains(@class,'empty')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CONTAINER_CONTAINER_NESTED_ELEMENT</td>
-	<td>xpath=(//div[@aria-label='Container'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/div[contains(@class,'page-editor__container')]${key_elementHeader}</td>
+	<td>xpath=(//div[@data-name='Container'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/div[contains(@class,'page-editor__container')]${key_elementHeader}</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CONTAINER_CONTAINER_TYPE</td>
-	<td>xpath=(//div[@aria-label='Container'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/${key_type}[contains(@class,'page-editor__container')]</td>
+	<td>xpath=(//div[@data-name='Container'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/${key_type}[contains(@class,'page-editor__container')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>GRID_COLUMN</td>
-	<td>xpath=(//div[@aria-label='Grid'])[${key_position}]//div[contains(@class,'page-editor__col')][${key_columnNumber}]</td>
+	<td>xpath=(//div[@data-name='Grid'])[${key_position}]//div[contains(@class,'page-editor__col')][${key_columnNumber}]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>GRID_COLUMN_EMPTY</td>
-	<td>xpath=(//div[@aria-label='Grid'])[${key_position}]//div[contains(@class,'page-editor__row')][contains(@class,'empty')]</td>
+	<td>xpath=(//div[@data-name='Grid'])[${key_position}]//div[contains(@class,'page-editor__row')][contains(@class,'empty')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -845,47 +850,47 @@
 </tr>
 <tr>
 	<td>CONTAINER_CONFIGURATION_CONTENT_DISPLAY</td>
-	<td>xpath=(//div[@aria-label='Container'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/div[contains(@class,'page-editor__container')][contains(@class,'flex-${key_contentDisplay}')]</td>
+	<td>xpath=(//div[@data-name='Container'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/div[contains(@class,'page-editor__container')][contains(@class,'flex-${key_contentDisplay}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CONTAINER_CONFIGURATION_FIXED_WIDTH</td>
-	<td>xpath=(//div[@aria-label='Container'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/div[contains(@class,'page-editor__container')][contains(@class,'max-xl')]</td>
+	<td>xpath=(//div[@data-name='Container'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/div[contains(@class,'page-editor__container')][contains(@class,'max-xl')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CONTAINER_CONFIGURATION_JUSTIFY_CONTENT</td>
-	<td>xpath=(//div[@aria-label='Container'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/div[contains(@class,'page-editor__container')][contains(@class,'justify-content-${key_justifyContent}')]</td>
+	<td>xpath=(//div[@data-name='Container'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/div[contains(@class,'page-editor__container')][contains(@class,'justify-content-${key_justifyContent}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CONTAINER_CONFIGURATION_FLEX_WRAP</td>
-	<td>xpath=(//div[@aria-label='Container'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/div[contains(@class,'page-editor__container')][contains(@class,'flex-${key_flexWrap}')]</td>
+	<td>xpath=(//div[@data-name='Container'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/div[contains(@class,'page-editor__container')][contains(@class,'flex-${key_flexWrap}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CONTAINER_CONFIGURATION_ALIGN_ITEMS</td>
-	<td>xpath=(//div[@aria-label='Container'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/div[contains(@class,'page-editor__container')][contains(@class,'align-items-${key_alignItems}')]</td>
+	<td>xpath=(//div[@data-name='Container'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/div[contains(@class,'page-editor__container')][contains(@class,'align-items-${key_alignItems}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>GRID_CONFIGURATION_COLUMNS_NO_GUTTER</td>
-	<td>xpath=(//div[@aria-label='Grid'])[${key_position}]//div[contains(@class,'page-editor__row') and contains(@class,'no-gutters')]</td>
+	<td>xpath=(//div[@data-name='Grid'])[${key_position}]//div[contains(@class,'page-editor__row') and contains(@class,'no-gutters')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>GRID_CONFIGURATION_INVERSE_ORDER</td>
-	<td>xpath=(//div[@aria-label='Grid'])[${key_position}]//div[contains(@class,'page-editor__row') and contains(@class,'flex-column-reverse')]</td>
+	<td>xpath=(//div[@data-name='Grid'])[${key_position}]//div[contains(@class,'page-editor__row') and contains(@class,'flex-column-reverse')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>GRID_CONFIGURATION_LAYOUT</td>
-	<td>xpath=(//div[@aria-label='Grid'])[${key_position}]//div[contains(@class,'col-${key_layout}')]</td>
+	<td>xpath=(//div[@data-name='Grid'])[${key_position}]//div[contains(@class,'col-${key_layout}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>GRID_CONFIGURATION_VERTICAL_ALIGNMENT</td>
-	<td>xpath=(//div[@aria-label='Grid'])[${key_position}]//div[contains(@class,'page-editor__row') and contains(@class,'${key_verticalAlignment}')]</td>
+	<td>xpath=(//div[@data-name='Grid'])[${key_position}]//div[contains(@class,'page-editor__row') and contains(@class,'${key_verticalAlignment}')]</td>
 	<td></td>
 </tr>
 
@@ -918,7 +923,7 @@
 </tr>
 <tr>
 	<td>PREVIEW_WITH_CUSTOM_OBJECT_ITEM</td>
-	<td>//dd[contains(@data-value,'${key_objectLabel}')]</td>
+	<td>//dd[contains(@data-value,'${key_entryValue}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -936,7 +941,7 @@
 
 <tr>
 	<td>PAGE_CONTENTS_CONTENT_FILTER_TOGGLE</td>
-	<td>//div[contains(@class,'page-contents__content-filter')]//button[contains(@class,'dropdown-toggle')]</td>
+	<td>//div[contains(@class,'page-contents__content-filter')]//button[contains(@class,'form-control-select')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -970,6 +975,64 @@
 <tr>
 	<td>MORE_LINK</td>
 	<td>//*[contains(@class,'page-editor__sidebar__panel-header') and contains(.,'Page Design Options')]//a[*[name()='svg'][contains(@class,'lexicon-icon-cog')]]</td>
+	<td></td>
+</tr>
+
+<!--PAGE_RULES-->
+
+<tr>
+	<td>PAGE_RULE_BUILDER_ACTION</td>
+	<td>xpath=(//div[contains(@class,'rule-builder-item--action')])[${index}]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_RULE_BUILDER_ACTION_DELETE_BUTTON</td>
+	<td>xpath=(//div[contains(@class,'rule-builder-item--action')])[${index}]//button[contains(@class,'delete')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_RULE_BUILDER_ACTION_ITEM</td>
+	<td>xpath=(//div[contains(@class,'rule-builder-item--action')][@aria-label='Incomplete Action']//button[@role='combobox'])[${index}]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_RULE_BUILDER_CONDITION</td>
+	<td>xpath=(//div[contains(@class,'rule-builder-item--condition')])[${index}]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_RULE_BUILDER_CONDITION_DELETE_BUTTON</td>
+	<td>xpath=(//div[contains(@class,'rule-builder-item--condition')])[${index}]//button[contains(@class,'delete')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_RULE_BUILDER_CONDITION_ITEM</td>
+	<td>xpath=(//div[contains(@class,'rule-builder-item--condition')][@aria-label='Incomplete Condition']//button[@role='combobox'])[${index}]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_RULE_BUILDER_EXISTING_ACTION_ITEM</td>
+	<td>xpath=(//div[contains(@class,'rule-builder-item--action')]//button[@role='combobox'])[${index}]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_RULE_BUILDER_EXISTING_CONDITION_ITEM</td>
+	<td>xpath=(//div[contains(@class,'rule-builder-item--condition')]//button[@role='combobox'])[${index}]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_RULE_BUILDER_SECTION_TITLE</td>
+	<td>//div[contains(@class,'rule-builder-section-title')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_RULE_LIST_ITEM</td>
+	<td>//div[@aria-label='Page Rules Panel']//li[.//*[normalize-space(text())='${key_ruleName}']][normalize-space()='${key_rule}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_RULE_LIST_ITEM_ELLIPSIS</td>
+	<td>//div[@aria-label='Page Rules Panel']//li[.//*[normalize-space(text())='${key_ruleName}']]//button[contains(@class,'dropdown-toggle')]</td>
 	<td></td>
 </tr>
 
@@ -1012,7 +1075,7 @@
 </tr>
 <tr>
 	<td>IMAGE_RESOLUTION_LABEL</td>
-	<td>//p[contains(@class,'text-secondary')]/b[contains(.,'${key_resolutionLabel}')]</td>
+	<td>//p[contains(@class,'text-secondary')]/strong[contains(.,'${key_resolutionLabel}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -1042,12 +1105,20 @@
 </tr>
 <tr>
 	<td>TEXT_ALIGN_ICON</td>
-	<td>//div[contains(@class,'page-editor__collapse')][button[normalize-space()='Text']]//button[*[name()='svg'][contains(@class,'lexicon-icon-${key_text}')]]</td>
+	<td>//button[contains(@class,'collapse-icon-middle')][span[normalize-space()='Text']]//..//button[*[name()='svg'][contains(@class,'lexicon-icon-${key_text}')]]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ACTIVE_TEXT_ALIGN_ICON</td>
-	<td>//div[contains(@class,'page-editor__collapse')][button[normalize-space()='Text']]//button[@aria-pressed='true'][*[name()='svg'][contains(@class,'lexicon-icon-${key_text}')]]</td>
+	<td>//button[contains(@class,'collapse-icon-middle')][span[normalize-space()='Text']]//..//button[@aria-pressed='true'][*[name()='svg'][contains(@class,'lexicon-icon-${key_text}')]]</td>
+	<td></td>
+</tr>
+
+<!-- PANEL -->
+
+<tr>
+	<td>PANEL</td>
+	<td>//button[@data-panel-id='${key_panel_id}']</td>
 	<td></td>
 </tr>
 </tbody>

@@ -40,14 +40,17 @@ import com.liferay.portal.minifier.MinifierUtil;
 import com.liferay.portal.servlet.filters.dynamiccss.DynamicCSSUtil;
 import com.liferay.portal.util.AggregateUtil;
 import com.liferay.portal.util.PropsValues;
+import com.liferay.portlet.documentlibrary.constants.DLFriendlyURLConstants;
 
 import java.io.IOException;
 import java.io.Serializable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -163,6 +166,12 @@ public class ComboServlet extends HttpServlet {
 				name = modulePortletId.concat(name);
 			}
 
+			name = _canonicalizePath(name);
+
+			if (Validator.isNull(name)) {
+				continue;
+			}
+
 			modulePathsSet.add(name);
 		}
 
@@ -172,6 +181,21 @@ public class ComboServlet extends HttpServlet {
 				new NoSuchLayoutException(
 					"Query string translates to an empty module paths set"),
 				httpServletRequest, httpServletResponse);
+
+			return;
+		}
+
+		if ((PropsValues.COMBO_MAX_FILES > 0) &&
+			(modulePathsSet.size() > PropsValues.COMBO_MAX_FILES)) {
+
+			httpServletResponse.setHeader(
+				HttpHeaders.CACHE_CONTROL,
+				HttpHeaders.CACHE_CONTROL_NO_CACHE_VALUE);
+			httpServletResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+
+			if (_log.isWarnEnabled()) {
+				_log.warn("Request exceeds maximum number of files");
+			}
 
 			return;
 		}
@@ -191,7 +215,8 @@ public class ComboServlet extends HttpServlet {
 				extension = pathExtension;
 			}
 
-			if (!modulePath.startsWith(_WEB_SERVER_SERVLET_FILE_ENTRY_PREFIX) &&
+			if (!modulePath.startsWith(
+					DLFriendlyURLConstants.PATH_PREFIX_DOCUMENT) &&
 				!extension.equals(pathExtension)) {
 
 				httpServletResponse.setHeader(
@@ -282,6 +307,15 @@ public class ComboServlet extends HttpServlet {
 						httpServletResponse, modulePath, minifierType);
 				}
 
+				if (bytes == null) {
+					cacheEnabled = false;
+
+					bytes = _EMPTY_FILE_CONTENT_BAG._fileContent;
+
+					httpServletResponse.setHeader(
+						HttpHeaders.CACHE_CONTROL, "max-age=1, no-cache");
+				}
+
 				bytesArray[i] = bytes;
 			}
 
@@ -357,20 +391,19 @@ public class ComboServlet extends HttpServlet {
 				RequestDispatcherUtil.getBufferCacheServletResponse(
 					requestDispatcher, httpServletRequest, httpServletResponse);
 
-			String stringFileContent = StringPool.BLANK;
-
 			String cacheControl = GetterUtil.getString(
 				bufferCacheServletResponse.getHeader("Cache-Control"));
 			String contentType = GetterUtil.getString(
 				bufferCacheServletResponse.getContentType());
 			int status = bufferCacheServletResponse.getStatus();
 
-			if (cacheControl.contains("no-cache") ||
-				cacheControl.contains("no-store")) {
-
+			if (status != HttpServletResponse.SC_OK) {
 				_log.error(
-					"Skip " + modulePath +
-						" because it sent no-cache or no-store headers");
+					StringBundler.concat(
+						"Skip ", modulePath, " because it returns HTTP status ",
+						status));
+
+				return null;
 			}
 			else if (!contentType.startsWith("application/javascript") &&
 					 !contentType.startsWith("text/css") &&
@@ -379,16 +412,20 @@ public class ComboServlet extends HttpServlet {
 				_log.error(
 					"Skip " + modulePath +
 						" because its content type is not CSS or JavaScript");
+
+				return null;
 			}
-			else if (status != HttpServletResponse.SC_OK) {
+			else if (cacheControl.contains("no-cache") ||
+					 cacheControl.contains("no-store")) {
+
 				_log.error(
-					StringBundler.concat(
-						"Skip ", modulePath, " because it returns HTTP status ",
-						status));
+					"Skip " + modulePath +
+						" because it sent no-cache or no-store headers");
+
+				return null;
 			}
-			else {
-				stringFileContent = bufferCacheServletResponse.getString();
-			}
+
+			String stringFileContent = bufferCacheServletResponse.getString();
 
 			if (!StringUtil.endsWith(resourcePath, _CSS_MINIFIED_DASH_SUFFIX) &&
 				!StringUtil.endsWith(resourcePath, _CSS_MINIFIED_DOT_SUFFIX) &&
@@ -540,7 +577,9 @@ public class ComboServlet extends HttpServlet {
 			moduleName = moduleName.substring(0, index);
 		}
 
-		if (moduleName.startsWith(_WEB_SERVER_SERVLET_FILE_ENTRY_PREFIX)) {
+		if (moduleName.startsWith(
+				DLFriendlyURLConstants.PATH_PREFIX_DOCUMENT)) {
+
 			return true;
 		}
 
@@ -560,6 +599,40 @@ public class ComboServlet extends HttpServlet {
 		}
 
 		return validModuleExtension;
+	}
+
+	private String _canonicalizePath(String path) {
+		if (!path.contains(StringPool.PERIOD)) {
+			return path;
+		}
+
+		List<String> canonicalParts = new ArrayList<>();
+
+		String[] parts = StringUtil.split(path, StringPool.SLASH);
+
+		for (int i = 0; i < parts.length; i++) {
+			String part = parts[i];
+
+			if (((i != 0) && Validator.isBlank(part)) ||
+				part.equals(StringPool.PERIOD)) {
+
+				continue;
+			}
+
+			if (part.equals(StringPool.DOUBLE_PERIOD)) {
+				if (canonicalParts.isEmpty()) {
+					return null;
+				}
+
+				canonicalParts.remove(canonicalParts.size() - 1);
+
+				continue;
+			}
+
+			canonicalParts.add(part);
+		}
+
+		return StringUtil.merge(canonicalParts, StringPool.SLASH);
 	}
 
 	private String _getModulePathExtension(String modulePath) {
@@ -588,9 +661,6 @@ public class ComboServlet extends HttpServlet {
 	private static final String _JAVASCRIPT_MINIFIED_DASH_SUFFIX = "-min.js";
 
 	private static final String _JAVASCRIPT_MINIFIED_DOT_SUFFIX = ".min.js";
-
-	private static final String _WEB_SERVER_SERVLET_FILE_ENTRY_PREFIX =
-		"/documents/d/";
 
 	private static final Log _log = LogFactoryUtil.getLog(ComboServlet.class);
 

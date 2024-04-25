@@ -129,6 +129,10 @@ public class ConfigurationModel implements ExtendedObjectClassDefinition {
 		return _configuration;
 	}
 
+	public Map<String, Object> getConfigurationOverrideProperties() {
+		return _configurationOverrideProperties;
+	}
+
 	public ConfigurationScopeDisplayContext
 		getConfigurationScopeDisplayContext() {
 
@@ -190,6 +194,10 @@ public class ConfigurationModel implements ExtendedObjectClassDefinition {
 		}
 
 		return _extendedObjectClassDefinition.getID();
+	}
+
+	public String getFeatureFlagKey() {
+		return _extensionAttributes.get("featureFlagKey");
 	}
 
 	public Map<String, String> getHintAttributes() {

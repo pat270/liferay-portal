@@ -5,16 +5,27 @@
 
 package com.liferay.jenkins.plugin.events.listener;
 
+import hudson.model.Action;
+import hudson.model.Job;
+import hudson.model.JobProperty;
+import hudson.model.Label;
+import hudson.model.ParameterDefinition;
 import hudson.model.ParameterValue;
 import hudson.model.ParametersAction;
+import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Project;
 import hudson.model.Queue;
+import hudson.model.StringParameterDefinition;
 import hudson.model.StringParameterValue;
 import hudson.model.TopLevelItem;
+import hudson.model.labels.LabelAssignmentAction;
+import hudson.model.queue.SubTask;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Nonnull;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -25,6 +36,9 @@ import jenkins.model.Jenkins;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import org.jvnet.jenkins.plugins.nodelabelparameter.LabelParameterDefinition;
+import org.jvnet.jenkins.plugins.nodelabelparameter.LabelParameterValue;
 
 /**
  * @author Michael Hashimoto
@@ -79,25 +93,113 @@ public class JMSMessageListener implements MessageListener {
 			return;
 		}
 
-		Project project = (Project)topLevelItem;
+		queue.schedule(
+			(Project)topLevelItem, 0, _getLabelAction(jsonObject),
+			_getParametersAction(jsonObject, topLevelItem));
+	}
+
+	private Action _getLabelAction(JSONObject jsonObject) {
+		JSONObject jenkinsNodeJSONObject = jsonObject.optJSONObject(
+			"jenkinsNode");
+
+		if (jenkinsNodeJSONObject == null) {
+			return null;
+		}
+
+		String primaryLabel = jenkinsNodeJSONObject.optString("primaryLabel");
+
+		if ((primaryLabel == null) || primaryLabel.isEmpty()) {
+			return null;
+		}
+
+		return new SimpleLabelAssignmentAction(primaryLabel);
+	}
+
+	private Action _getParametersAction(
+		JSONObject jsonObject, TopLevelItem topLevelItem) {
+
+		if (!(topLevelItem instanceof Job)) {
+			return null;
+		}
+
+		Job job = (Job)topLevelItem;
+
+		JobProperty jobProperty = job.getProperty(
+			ParametersDefinitionProperty.class);
+
+		if (!(jobProperty instanceof ParametersDefinitionProperty)) {
+			return null;
+		}
 
 		List<ParameterValue> parameterValues = new ArrayList<>();
 
 		JSONObject jobParametersJSONObject = jsonObject.optJSONObject(
 			"jobParameters");
 
-		if (jobParametersJSONObject != JSONObject.NULL) {
-			for (String key : jobParametersJSONObject.keySet()) {
+		if (jobParametersJSONObject == null) {
+			jobParametersJSONObject = new JSONObject();
+		}
+
+		ParametersDefinitionProperty parametersDefinitionProperty =
+			(ParametersDefinitionProperty)jobProperty;
+
+		for (ParameterDefinition parameterDefinition :
+				parametersDefinitionProperty.getParameterDefinitions()) {
+
+			String parameterName = parameterDefinition.getName();
+
+			String parameterValue = jobParametersJSONObject.optString(
+				parameterName);
+
+			if ((parameterValue == null) || parameterValue.isEmpty()) {
 				parameterValues.add(
-					new StringParameterValue(
-						key, jobParametersJSONObject.getString(key)));
+					parameterDefinition.getDefaultParameterValue());
+
+				continue;
+			}
+
+			if (parameterDefinition instanceof LabelParameterDefinition) {
+				parameterValues.add(
+					new LabelParameterValue(parameterName, parameterValue));
+			}
+			else if (parameterDefinition instanceof StringParameterDefinition) {
+				parameterValues.add(
+					new StringParameterValue(parameterName, parameterValue));
 			}
 		}
 
-		ParametersAction parametersAction = new ParametersAction(
-			parameterValues);
+		return new ParametersAction(parameterValues);
+	}
 
-		queue.schedule(project, 0, parametersAction);
+	private static class SimpleLabelAssignmentAction
+		implements LabelAssignmentAction {
+
+		@Override
+		public Label getAssignedLabel(@Nonnull SubTask subTask) {
+			return Label.get(_label);
+		}
+
+		@Override
+		public String getDisplayName() {
+			return "simple";
+		}
+
+		@Override
+		public String getIconFileName() {
+			return null;
+		}
+
+		@Override
+		public final String getUrlName() {
+			return "simple";
+		}
+
+		private SimpleLabelAssignmentAction(String label) {
+			_label = label;
+		}
+
+		private final String _label;
+
 	}
 
 }

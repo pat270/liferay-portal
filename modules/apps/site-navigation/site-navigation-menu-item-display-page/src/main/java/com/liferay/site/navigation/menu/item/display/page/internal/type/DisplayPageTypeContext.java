@@ -5,11 +5,14 @@
 
 package com.liferay.site.navigation.menu.item.display.page.internal.type;
 
+import com.liferay.info.item.ClassPKInfoItemIdentifier;
 import com.liferay.info.item.InfoItemClassDetails;
 import com.liferay.info.item.InfoItemReference;
 import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.info.item.provider.InfoItemDetailsProvider;
 import com.liferay.info.item.provider.InfoItemFormVariationsProvider;
+import com.liferay.info.item.provider.InfoItemPermissionProvider;
+import com.liferay.info.permission.provider.InfoPermissionProvider;
 import com.liferay.layout.display.page.LayoutDisplayPageInfoItemFieldValuesProvider;
 import com.liferay.layout.display.page.LayoutDisplayPageInfoItemFieldValuesProviderRegistry;
 import com.liferay.layout.display.page.LayoutDisplayPageMultiSelectionProvider;
@@ -17,6 +20,12 @@ import com.liferay.layout.display.page.LayoutDisplayPageMultiSelectionProviderRe
 import com.liferay.layout.display.page.LayoutDisplayPageObjectProvider;
 import com.liferay.layout.display.page.LayoutDisplayPageProvider;
 import com.liferay.layout.display.page.LayoutDisplayPageProviderRegistry;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.UnicodeProperties;
+import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
+import com.liferay.site.navigation.model.SiteNavigationMenuItem;
 
 import java.util.Locale;
 
@@ -65,11 +74,31 @@ public class DisplayPageTypeContext {
 			InfoItemFormVariationsProvider.class, _className);
 	}
 
+	public InfoItemPermissionProvider getInfoItemPermissionProvider() {
+		return _infoItemServiceRegistry.getFirstInfoItemService(
+			InfoItemPermissionProvider.class, _className);
+	}
+
+	public InfoItemReference getInfoItemReference(
+		SiteNavigationMenuItem siteNavigationMenuItem) {
+
+		UnicodeProperties typeSettingsUnicodeProperties =
+			UnicodePropertiesBuilder.fastLoad(
+				siteNavigationMenuItem.getTypeSettings()
+			).build();
+
+		return new InfoItemReference(
+			_className,
+			new ClassPKInfoItemIdentifier(
+				GetterUtil.getLong(
+					typeSettingsUnicodeProperties.get("classPK"))));
+	}
+
 	public String getLabel(Locale locale) {
 		InfoItemClassDetails infoItemClassDetails = getInfoItemClassDetails();
 
 		if (infoItemClassDetails == null) {
-			return null;
+			return StringPool.BLANK;
 		}
 
 		return infoItemClassDetails.getLabel(locale);
@@ -109,11 +138,28 @@ public class DisplayPageTypeContext {
 	}
 
 	public boolean isAvailable() {
+		InfoItemClassDetails infoItemClassDetails = getInfoItemClassDetails();
+
+		if (infoItemClassDetails == null) {
+			return false;
+		}
+
 		InfoItemDetailsProvider<?> infoItemDetailsProvider =
 			_infoItemServiceRegistry.getFirstInfoItemService(
 				InfoItemDetailsProvider.class, _className);
 
 		if (infoItemDetailsProvider == null) {
+			return false;
+		}
+
+		InfoPermissionProvider infoPermissionProvider =
+			_infoItemServiceRegistry.getFirstInfoItemService(
+				InfoPermissionProvider.class, _className);
+
+		if ((infoPermissionProvider != null) &&
+			!infoPermissionProvider.hasViewPermission(
+				PermissionThreadLocal.getPermissionChecker())) {
+
 			return false;
 		}
 

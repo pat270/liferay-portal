@@ -6,15 +6,15 @@
 package com.liferay.client.extension.type.internal.factory;
 
 import com.liferay.client.extension.exception.ClientExtensionEntryTypeSettingsException;
-import com.liferay.client.extension.model.ClientExtensionEntry;
 import com.liferay.client.extension.type.IFrameCET;
-import com.liferay.client.extension.type.factory.CETImplFactory;
 import com.liferay.client.extension.type.internal.IFrameCETImpl;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
+import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.util.Date;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,66 +24,73 @@ import javax.portlet.PortletRequest;
 /**
  * @author Iván Zaera Avellón
  */
-public class IFrameCETImplFactoryImpl implements CETImplFactory<IFrameCET> {
+public class IFrameCETImplFactoryImpl
+	extends BaseCETImplFactoryImpl<IFrameCET> {
 
-	@Override
-	public IFrameCET create(ClientExtensionEntry clientExtensionEntry)
-		throws PortalException {
-
-		return new IFrameCETImpl(clientExtensionEntry);
-	}
-
-	@Override
-	public IFrameCET create(PortletRequest portletRequest)
-		throws PortalException {
-
-		return new IFrameCETImpl(portletRequest);
+	public IFrameCETImplFactoryImpl() {
+		super(IFrameCET.class);
 	}
 
 	@Override
 	public IFrameCET create(
-			String baseURL, long companyId, String description,
-			String externalReferenceCode, String name, Properties properties,
-			String sourceCodeURL, UnicodeProperties unicodeProperties)
-		throws PortalException {
+		String baseURL, long companyId, Date createDate, String description,
+		String externalReferenceCode, Date modifiedDate, String name,
+		Properties properties, boolean readOnly, String sourceCodeURL,
+		int status, UnicodeProperties typeSettingsUnicodeProperties) {
 
 		return new IFrameCETImpl(
-			baseURL, companyId, description, externalReferenceCode, name,
-			properties, sourceCodeURL, unicodeProperties);
+			baseURL, companyId, createDate, description, externalReferenceCode,
+			modifiedDate, name, properties, readOnly, sourceCodeURL, status,
+			typeSettingsUnicodeProperties);
 	}
 
 	@Override
-	public void validate(
-			UnicodeProperties newTypeSettingsUnicodeProperties,
-			UnicodeProperties oldTypeSettingsUnicodeProperties)
+	public UnicodeProperties getUnicodeProperties(
+		PortletRequest portletRequest) {
+
+		return UnicodePropertiesBuilder.create(
+			true
+		).put(
+			"friendlyURLMapping",
+			ParamUtil.getString(portletRequest, "friendlyURLMapping")
+		).put(
+			"instanceable", ParamUtil.getBoolean(portletRequest, "instanceable")
+		).put(
+			"portletCategoryName",
+			ParamUtil.getString(portletRequest, "portletCategoryName")
+		).put(
+			"url", ParamUtil.getString(portletRequest, "url")
+		).build();
+	}
+
+	@Override
+	public void validate(IFrameCET newIFrameCET, IFrameCET oldIFrameCET)
 		throws PortalException {
 
-		IFrameCET newIFrameCET = new IFrameCETImpl(
-			StringPool.NEW_LINE, newTypeSettingsUnicodeProperties);
+		String friendlyURLMapping = newIFrameCET.getFriendlyURLMapping();
 
 		Matcher matcher = _friendlyURLMappingPattern.matcher(
-			newIFrameCET.getFriendlyURLMapping());
+			friendlyURLMapping);
 
 		if (!matcher.matches()) {
 			throw new ClientExtensionEntryTypeSettingsException(
-				"please-enter-a-valid-friendly-url-mapping");
+				"Invalid friendly URL mapping: " + friendlyURLMapping,
+				"friendly-url-mapping-x-is-invalid", friendlyURLMapping);
 		}
 
-		if (!Validator.isUrl(newIFrameCET.getURL())) {
+		String url = newIFrameCET.getURL();
+
+		if (!Validator.isUrl(url)) {
 			throw new ClientExtensionEntryTypeSettingsException(
-				"please-enter-a-valid-url");
+				"Invalid URL: " + url, "url-x-is-invalid", url);
 		}
 
-		if (oldTypeSettingsUnicodeProperties != null) {
-			IFrameCET oldIFrameCET = new IFrameCETImpl(
-				StringPool.NEW_LINE, oldTypeSettingsUnicodeProperties);
+		if ((oldIFrameCET != null) &&
+			(newIFrameCET.isInstanceable() != oldIFrameCET.isInstanceable())) {
 
-			if (newIFrameCET.isInstanceable() !=
-					oldIFrameCET.isInstanceable()) {
-
-				throw new ClientExtensionEntryTypeSettingsException(
-					"the-instanceable-value-cannot-be-changed");
-			}
+			throw new ClientExtensionEntryTypeSettingsException(
+				"The instanceable value cannot be changed",
+				"the-instanceable-value-cannot-be-changed");
 		}
 	}
 

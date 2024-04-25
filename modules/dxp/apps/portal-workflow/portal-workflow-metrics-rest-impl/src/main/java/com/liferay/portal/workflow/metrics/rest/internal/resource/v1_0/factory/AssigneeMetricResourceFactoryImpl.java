@@ -72,7 +72,12 @@ public class AssigneeMetricResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _assigneeMetricResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, AssigneeMetricResource>
+					assigneeMetricResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_assigneeMetricResourceProxyProviderFunction;
+
+				return assigneeMetricResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -230,10 +235,6 @@ public class AssigneeMetricResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, AssigneeMetricResource>
-		_assigneeMetricResourceProxyProviderFunction =
-			_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -269,6 +270,14 @@ public class AssigneeMetricResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, AssigneeMetricResource>
+			_assigneeMetricResourceProxyProviderFunction =
+				_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

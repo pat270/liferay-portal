@@ -15,7 +15,12 @@ import com.liferay.asset.list.service.AssetListEntryLocalService;
 import com.liferay.asset.list.service.AssetListEntrySegmentsEntryRelLocalService;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.test.util.DDMStructureTestUtil;
-import com.liferay.info.exception.InfoFormException;
+import com.liferay.fragment.constants.FragmentConstants;
+import com.liferay.fragment.entry.processor.constants.FragmentEntryProcessorConstants;
+import com.liferay.fragment.model.FragmentCollection;
+import com.liferay.fragment.model.FragmentEntry;
+import com.liferay.fragment.service.FragmentCollectionLocalService;
+import com.liferay.fragment.service.FragmentEntryLocalService;
 import com.liferay.info.exception.InfoFormValidationException;
 import com.liferay.info.field.InfoField;
 import com.liferay.info.field.InfoFieldSet;
@@ -40,8 +45,15 @@ import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.layout.util.structure.CollectionStyledLayoutStructureItem;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.layout.util.structure.LayoutStructureItem;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.cache.MultiVMPool;
+import com.liferay.portal.kernel.dao.orm.EntityCache;
+import com.liferay.portal.kernel.exception.InfoFormException;
+import com.liferay.portal.kernel.json.JSONException;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
@@ -49,7 +61,6 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.LayoutTypePortlet;
 import com.liferay.portal.kernel.model.LayoutTypePortletConstants;
-import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
@@ -66,9 +77,12 @@ import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
@@ -82,8 +96,11 @@ import com.liferay.segments.model.SegmentsExperience;
 import com.liferay.segments.service.SegmentsExperienceLocalService;
 import com.liferay.segments.test.util.SegmentsTestUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -170,6 +187,63 @@ public class RenderLayoutStructureTagTest {
 
 		Assert.assertEquals(
 			"removed-template-id", layoutTypePortlet.getLayoutTemplateId());
+	}
+
+	@Test
+	public void testRenderCollectionStyledLayoutStructureItem()
+		throws Exception {
+
+		AssetListEntry assetListEntry =
+			_assetListEntryLocalService.addAssetListEntry(
+				TestPropsValues.getUserId(), _group.getGroupId(),
+				RandomTestUtil.randomString(),
+				AssetListEntryTypeConstants.TYPE_MANUAL, _serviceContext);
+
+		Layout layout = LayoutTestUtil.addTypeContentLayout(_group);
+
+		long segmentsExperienceId =
+			_segmentsExperienceLocalService.fetchDefaultSegmentsExperienceId(
+				layout.getPlid());
+
+		CollectionStyledLayoutStructureItem
+			collectionStyledLayoutStructureItem =
+				_addCollectionStyledLayoutStructureItem(
+					assetListEntry, layout, segmentsExperienceId);
+
+		_addFragmentEntryLinks(
+			layout, collectionStyledLayoutStructureItem.getItemId(),
+			segmentsExperienceId);
+
+		List<AssetEntry> assetEntries = _addAssetEntries(assetListEntry);
+
+		MockHttpServletRequest mockHttpServletRequest =
+			_getMockHttpServletRequest(layout);
+		MockHttpServletResponse mockHttpServletResponse =
+			new MockHttpServletResponse();
+
+		RenderLayoutStructureTag renderLayoutStructureTag =
+			_getRenderLayoutStructureTag(
+				layout, mockHttpServletRequest, mockHttpServletResponse,
+				segmentsExperienceId);
+
+		_entityCache.clearCache();
+		_multiVMPool.clear();
+
+		try (LoggingTimer loggingTimer = new LoggingTimer()) {
+			renderLayoutStructureTag.doTag(
+				mockHttpServletRequest, mockHttpServletResponse);
+		}
+
+		String content = mockHttpServletResponse.getContentAsString();
+
+		for (AssetEntry assetEntry : assetEntries) {
+			int count = StringUtil.count(
+				content,
+				assetEntry.getTitle(assetEntry.getDefaultLanguageId()));
+
+			Assert.assertTrue(
+				String.valueOf(count), count >= _COUNT_FRAGMENT_ENTRY_LINKS);
+		}
 	}
 
 	@Test
@@ -436,7 +510,7 @@ public class RenderLayoutStructureTagTest {
 
 	@Test
 	public void testRenderFormWithInfoFormException() throws Exception {
-		InfoField<TextInfoFieldType> infoField = _getInfoField();
+		InfoField<TextInfoFieldType> infoField = _getInfoField(false);
 
 		try (MockInfoServiceRegistrationHolder
 				mockInfoServiceRegistrationHolder =
@@ -491,7 +565,7 @@ public class RenderLayoutStructureTagTest {
 	public void testRenderFormWithInfoFormValidationException()
 		throws Exception {
 
-		InfoField<TextInfoFieldType> infoField = _getInfoField();
+		InfoField<TextInfoFieldType> infoField = _getInfoField(false);
 
 		try (MockInfoServiceRegistrationHolder
 				mockInfoServiceRegistrationHolder =
@@ -554,14 +628,15 @@ public class RenderLayoutStructureTagTest {
 
 	@Test
 	public void testRenderFormWithoutErrors() throws Exception {
-		InfoField<TextInfoFieldType> infoField = _getInfoField();
+		InfoField<TextInfoFieldType> infoField = _getInfoField(false);
+		InfoField<TextInfoFieldType> readOnlyInfoField = _getInfoField(true);
 
 		try (MockInfoServiceRegistrationHolder
 				mockInfoServiceRegistrationHolder =
 					new MockInfoServiceRegistrationHolder(
 						InfoFieldSet.builder(
 						).infoFieldSetEntries(
-							ListUtil.fromArray(infoField)
+							ListUtil.fromArray(infoField, readOnlyInfoField)
 						).build(),
 						_editPageInfoItemCapability)) {
 
@@ -571,7 +646,8 @@ public class RenderLayoutStructureTagTest {
 				false,
 				String.valueOf(
 					_portal.getClassNameId(MockObject.class.getName())),
-				"0", layout, _layoutStructureProvider, infoField);
+				"0", layout, _layoutStructureProvider, infoField,
+				readOnlyInfoField);
 
 			MockHttpServletRequest mockHttpServletRequest =
 				_getMockHttpServletRequest(layout);
@@ -593,12 +669,27 @@ public class RenderLayoutStructureTagTest {
 			Assert.assertFalse(content.contains(errorHTML));
 
 			_assertInfoFieldInput(infoField, content);
+			_assertInfoFieldInput(readOnlyInfoField, content);
+
+			Matcher matcher = _inputJSONObjectPattern.matcher(content);
+
+			Assert.assertTrue(matcher.find());
+
+			Locale locale = _portal.getSiteDefaultLocale(_group);
+
+			_assertInfoFieldInputJSONObject(
+				infoField, matcher.group(1), locale);
+
+			Assert.assertTrue(matcher.find());
+
+			_assertInfoFieldInputJSONObject(
+				readOnlyInfoField, matcher.group(1), locale);
 		}
 	}
 
 	@Test
 	public void testRenderFormWithSuccessMessage() throws Exception {
-		InfoField<TextInfoFieldType> infoField = _getInfoField();
+		InfoField<TextInfoFieldType> infoField = _getInfoField(false);
 
 		try (MockInfoServiceRegistrationHolder
 				mockInfoServiceRegistrationHolder =
@@ -645,9 +736,9 @@ public class RenderLayoutStructureTagTest {
 				"thank-you.-your-information-was-successfully-received");
 
 			String expectedSuccessHTML = StringBundler.concat(
-				"<div class=\"font-weight-semi-bold bg-white",
-				"text-secondary text-center text-3 p-5\">",
-				expectedSuccessMessage, "</div>");
+				"<div class=\"bg-white font-weight-semi-bold p-5 text-3 ",
+				"text-center text-secondary\">", expectedSuccessMessage,
+				"</div>");
 
 			Assert.assertTrue(content.contains(expectedSuccessHTML));
 
@@ -655,6 +746,162 @@ public class RenderLayoutStructureTagTest {
 				"<p>InputName:" + infoField.getName() + "</p>";
 
 			Assert.assertFalse(content.contains(expectedInfoFieldInput));
+		}
+	}
+
+	private List<AssetEntry> _addAssetEntries(AssetListEntry assetListEntry)
+		throws Exception {
+
+		List<AssetEntry> assetEntries = new ArrayList<>();
+
+		DDMStructure ddmStructure = DDMStructureTestUtil.addStructure(
+			_group.getGroupId(), JournalArticle.class.getName());
+
+		for (int i = 0; i < _COUNT_INFO_LIST_ITEMS; i++) {
+			JournalArticle journalArticle = _addJournalArticle(ddmStructure);
+
+			assetEntries.add(
+				_assetEntryLocalService.fetchEntry(
+					JournalArticle.class.getName(),
+					journalArticle.getResourcePrimKey()));
+		}
+
+		_assetListEntryLocalService.addAssetEntrySelections(
+			assetListEntry.getAssetListEntryId(),
+			TransformUtil.transformToLongArray(
+				assetEntries, assetEntry -> assetEntry.getEntryId()),
+			SegmentsEntryConstants.ID_DEFAULT, _serviceContext);
+
+		return assetEntries;
+	}
+
+	private CollectionStyledLayoutStructureItem
+			_addCollectionStyledLayoutStructureItem(
+				AssetListEntry assetListEntry, Layout layout,
+				long segmentsExperienceId)
+		throws Exception {
+
+		LayoutStructure layoutStructure =
+			_addCollectionStyledLayoutStructureItemAndGetLayoutStructure(
+				JSONUtil.put(
+					"classNameId", _portal.getClassNameId(AssetListEntry.class)
+				).put(
+					"classPK", assetListEntry.getAssetListEntryId()
+				).put(
+					"itemType", JournalArticle.class.getName()
+				).put(
+					"type", InfoListItemSelectorReturnType.class.getName()
+				),
+				JSONUtil.put(
+					"displayAllPages", true
+				).put(
+					"numberOfItems", _COUNT_INFO_LIST_ITEMS
+				).put(
+					"numberOfItemsPerPage", _COUNT_INFO_LIST_ITEMS
+				).put(
+					"paginationType", "none"
+				).put(
+					"showAllItems", true
+				),
+				layout, null, segmentsExperienceId);
+
+		List<CollectionStyledLayoutStructureItem>
+			collectionStyledLayoutStructureItems =
+				layoutStructure.getCollectionStyledLayoutStructureItems();
+
+		Assert.assertEquals(
+			collectionStyledLayoutStructureItems.toString(), 1,
+			collectionStyledLayoutStructureItems.size());
+
+		return collectionStyledLayoutStructureItems.get(0);
+	}
+
+	private LayoutStructure
+			_addCollectionStyledLayoutStructureItemAndGetLayoutStructure(
+				JSONObject collectionJSONObject,
+				JSONObject displayConfigJSONObject, Layout layout,
+				String listStyle, long segmentsExperienceId)
+		throws Exception {
+
+		LayoutPageTemplateStructure layoutPageTemplateStructure =
+			LayoutPageTemplateStructureLocalServiceUtil.
+				fetchLayoutPageTemplateStructure(
+					_group.getGroupId(), layout.getPlid());
+
+		LayoutStructure layoutStructure = LayoutStructure.of(
+			layoutPageTemplateStructure.getDefaultSegmentsExperienceData());
+
+		CollectionStyledLayoutStructureItem
+			collectionStyledLayoutStructureItem =
+				(CollectionStyledLayoutStructureItem)
+					layoutStructure.addCollectionStyledLayoutStructureItem(
+						layoutStructure.getMainItemId(), 0);
+
+		collectionStyledLayoutStructureItem.setCollectionJSONObject(
+			collectionJSONObject);
+
+		if (displayConfigJSONObject != null) {
+			JSONObject itemConfigJSONObject =
+				collectionStyledLayoutStructureItem.getItemConfigJSONObject();
+
+			for (String key : displayConfigJSONObject.keySet()) {
+				itemConfigJSONObject.put(key, displayConfigJSONObject.get(key));
+			}
+
+			collectionStyledLayoutStructureItem.updateItemConfig(
+				itemConfigJSONObject);
+		}
+
+		collectionStyledLayoutStructureItem.setListStyle(listStyle);
+		collectionStyledLayoutStructureItem.setNamespace(
+			RandomTestUtil.randomString());
+
+		layoutPageTemplateStructure =
+			_layoutPageTemplateStructureLocalService.
+				updateLayoutPageTemplateStructureData(
+					_group.getGroupId(), layout.getPlid(), segmentsExperienceId,
+					layoutStructure.toString());
+
+		return LayoutStructure.of(
+			layoutPageTemplateStructure.getDefaultSegmentsExperienceData());
+	}
+
+	private void _addFragmentEntryLinks(
+			Layout layout, String parentItemId, long segmentsExperienceId)
+		throws Exception {
+
+		FragmentCollection fragmentCollection =
+			_fragmentCollectionLocalService.addFragmentCollection(
+				TestPropsValues.getUserId(), _group.getGroupId(),
+				StringUtil.randomString(), StringPool.BLANK, _serviceContext);
+
+		FragmentEntry fragmentEntry =
+			_fragmentEntryLocalService.addFragmentEntry(
+				TestPropsValues.getUserId(), _group.getGroupId(),
+				fragmentCollection.getFragmentCollectionId(),
+				RandomTestUtil.randomString(), RandomTestUtil.randomString(),
+				StringPool.BLANK,
+				"<h1 data-lfr-editable-id=\"element-text\" " +
+					"data-lfr-editable-type=\"text\">Heading Example</h1>",
+				StringPool.BLANK, false, StringPool.BLANK, null, 0, false,
+				FragmentConstants.TYPE_COMPONENT, null,
+				WorkflowConstants.STATUS_APPROVED, _serviceContext);
+
+		for (int i = 0; i < _COUNT_FRAGMENT_ENTRY_LINKS; i++) {
+			ContentLayoutTestUtil.addFragmentEntryLinkToLayout(
+				JSONUtil.put(
+					FragmentEntryProcessorConstants.
+						KEY_EDITABLE_FRAGMENT_ENTRY_PROCESSOR,
+					JSONUtil.put(
+						"element-text",
+						JSONUtil.put(
+							"collectionFieldId", "JournalArticle_title"))
+				).toString(),
+				fragmentEntry.getCss(), fragmentEntry.getConfiguration(),
+				fragmentEntry.getFragmentEntryId(), fragmentEntry.getHtml(),
+				fragmentEntry.getJs(), layout,
+				fragmentEntry.getFragmentEntryKey(), fragmentEntry.getType(),
+				parentItemId, i, segmentsExperienceId);
 		}
 	}
 
@@ -671,8 +918,8 @@ public class RenderLayoutStructureTagTest {
 			RandomTestUtil.randomLocaleStringMap(),
 			DDMStructureTestUtil.getSampleStructuredContent(),
 			ddmStructure.getStructureId(), StringPool.BLANK, null, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, true, 0, 0, 0, 0, 0, true, true, false, null,
-			null, null, null,
+			0, 0, 0, 0, 0, 0, true, 0, 0, 0, 0, 0, true, true, false, 0, 0,
+			null, null, null, null,
 			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 	}
 
@@ -686,8 +933,7 @@ public class RenderLayoutStructureTagTest {
 			Criteria.Conjunction.AND);
 
 		return SegmentsTestUtil.addSegmentsEntry(
-			_group.getGroupId(), CriteriaSerializer.serialize(criteria),
-			User.class.getName());
+			_group.getGroupId(), CriteriaSerializer.serialize(criteria));
 	}
 
 	private void _assertErrorMessage(
@@ -709,25 +955,25 @@ public class RenderLayoutStructureTagTest {
 		Assert.assertTrue(content.contains(expectedInfoFieldInput));
 	}
 
+	private void _assertInfoFieldInputJSONObject(
+			InfoField<TextInfoFieldType> infoField, String jsonString,
+			Locale locale)
+		throws JSONException {
+
+		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(jsonString);
+
+		Assert.assertEquals(
+			infoField.getLabel(locale), jsonObject.getString("label"));
+		Assert.assertEquals(
+			infoField.isReadOnly(), jsonObject.getBoolean("readOnly"));
+		Assert.assertEquals("text", jsonObject.getString("type"));
+	}
+
 	private void _createLayoutStructure(
 			long assetListEntryId, Layout layout, long segmentsExperienceId)
 		throws Exception {
 
-		LayoutPageTemplateStructure layoutPageTemplateStructure =
-			LayoutPageTemplateStructureLocalServiceUtil.
-				fetchLayoutPageTemplateStructure(
-					_group.getGroupId(), layout.getPlid());
-
-		LayoutStructure layoutStructure = LayoutStructure.of(
-			layoutPageTemplateStructure.getDefaultSegmentsExperienceData());
-
-		CollectionStyledLayoutStructureItem
-			collectionStyledLayoutStructureItem =
-				(CollectionStyledLayoutStructureItem)
-					layoutStructure.addCollectionStyledLayoutStructureItem(
-						layoutStructure.getMainItemId(), 0);
-
-		collectionStyledLayoutStructureItem.setCollectionJSONObject(
+		_addCollectionStyledLayoutStructureItemAndGetLayoutStructure(
 			JSONUtil.put(
 				"classNameId", _portal.getClassNameId(AssetListEntry.class)
 			).put(
@@ -736,15 +982,11 @@ public class RenderLayoutStructureTagTest {
 				"itemType", JournalArticle.class.getName()
 			).put(
 				"type", InfoListItemSelectorReturnType.class.getName()
-			));
-		collectionStyledLayoutStructureItem.setListStyle(
+			),
+			null, layout,
 			"com.liferay.journal.web.internal.info.list.renderer." +
-				"BulletedJournalArticleBasicInfoListRenderer");
-
-		_layoutPageTemplateStructureLocalService.
-			updateLayoutPageTemplateStructureData(
-				_group.getGroupId(), layout.getPlid(), segmentsExperienceId,
-				layoutStructure.toString());
+				"BulletedJournalArticleBasicInfoListRenderer",
+			segmentsExperienceId);
 	}
 
 	private LayoutStructure _getDefaultMasterLayoutStructure() {
@@ -759,7 +1001,7 @@ public class RenderLayoutStructureTagTest {
 		return layoutStructure;
 	}
 
-	private InfoField<TextInfoFieldType> _getInfoField() {
+	private InfoField<TextInfoFieldType> _getInfoField(boolean readOnly) {
 		return InfoField.builder(
 		).infoFieldType(
 			TextInfoFieldType.INSTANCE
@@ -771,6 +1013,8 @@ public class RenderLayoutStructureTagTest {
 			InfoLocalizedValue.singleValue(RandomTestUtil.randomString())
 		).localizable(
 			true
+		).readOnly(
+			readOnly
 		).build();
 	}
 
@@ -825,6 +1069,13 @@ public class RenderLayoutStructureTagTest {
 				layout.getPlid()));
 	}
 
+	private static final int _COUNT_FRAGMENT_ENTRY_LINKS = 5;
+
+	private static final int _COUNT_INFO_LIST_ITEMS = 5;
+
+	private static final Pattern _inputJSONObjectPattern = Pattern.compile(
+		"<p>InputJSONObject:(.*?)<\\/p>");
+
 	@Inject
 	private AssetEntryLocalService _assetEntryLocalService;
 
@@ -843,6 +1094,15 @@ public class RenderLayoutStructureTagTest {
 	)
 	private InfoItemCapability _editPageInfoItemCapability;
 
+	@Inject
+	private EntityCache _entityCache;
+
+	@Inject
+	private FragmentCollectionLocalService _fragmentCollectionLocalService;
+
+	@Inject
+	private FragmentEntryLocalService _fragmentEntryLocalService;
+
 	@DeleteAfterTestRun
 	private Group _group;
 
@@ -858,6 +1118,9 @@ public class RenderLayoutStructureTagTest {
 
 	@Inject
 	private LayoutStructureProvider _layoutStructureProvider;
+
+	@Inject
+	private MultiVMPool _multiVMPool;
 
 	@Inject
 	private Portal _portal;

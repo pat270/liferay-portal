@@ -1,21 +1,49 @@
 /**
- * SPDX-FileCopyrightText: (c) 2000 Liferay, Inc. https://liferay.com
+ * SPDX-FileCopyrightText: (c) 2023 Liferay, Inc. https://liferay.com
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import openDeletePageTemplateModal from '../modal/openDeletePageTemplateModal';
+import {openCreationModal} from '@liferay/layout-js-components-web';
+import {
+	getCheckedCheckboxes,
+	openSelectionModal,
+	setFormValues,
+} from 'frontend-js-web';
+
+import openDeletePageTemplateModal from '../commands/openDeletePageTemplateModal';
 
 export default function propsTransformer({portletNamespace, ...otherProps}) {
-	const deleteSelectedDisplayPages = () => {
+	const copySelectedEntries = (itemData) => {
+		const form = document.getElementById(
+			`${portletNamespace}actionEntriesFm`
+		);
+
+		setFormValues(form, {
+			layoutPageTemplateCollectionsIds: getCheckedCheckboxes(
+				document.getElementById(`${portletNamespace}fm`),
+				'',
+				`${portletNamespace}rowIdsLayoutPageTemplateCollection`
+			),
+			layoutPageTemplateEntriesIds: getCheckedCheckboxes(
+				document.getElementById(`${portletNamespace}fm`),
+				'',
+				`${portletNamespace}rowIds`
+			),
+		});
+
+		submitForm(form, itemData?.copySelectedEntriesURL);
+	};
+
+	const deleteSelectedEntries = (itemData) => {
 		openDeletePageTemplateModal({
 			onDelete: () => {
 				const form = document.getElementById(`${portletNamespace}fm`);
 
 				if (form) {
-					submitForm(form);
+					submitForm(form, itemData?.deleteSelectedEntriesURL);
 				}
 			},
-			title: Liferay.Language.get('display-page-templates'),
+			title: Liferay.Language.get('entries'),
 		});
 	};
 
@@ -27,6 +55,38 @@ export default function propsTransformer({portletNamespace, ...otherProps}) {
 		}
 	};
 
+	const moveSelectedEntries = (itemData) => {
+		openSelectionModal({
+			height: '70vh',
+			onSelect: (selectedItem) => {
+				const form = document.getElementById(
+					`${portletNamespace}actionEntriesFm`
+				);
+
+				setFormValues(form, {
+					layoutPageTemplateCollectionsIds: getCheckedCheckboxes(
+						document.getElementById(`${portletNamespace}fm`),
+						'',
+						`${portletNamespace}rowIdsLayoutPageTemplateCollection`
+					),
+					layoutPageTemplateEntriesIds: getCheckedCheckboxes(
+						document.getElementById(`${portletNamespace}fm`),
+						'',
+						`${portletNamespace}rowIds`
+					),
+					targetLayoutPageTemplateCollectionId:
+						selectedItem.resourceid,
+				});
+
+				submitForm(form);
+			},
+			selectEventName: 'selectFolder',
+			size: 'md',
+			title: Liferay.Language.get('move-entries'),
+			url: itemData.itemSelectorURL,
+		});
+	};
+
 	return {
 		...otherProps,
 		onActionButtonClick(event, {item}) {
@@ -34,11 +94,29 @@ export default function propsTransformer({portletNamespace, ...otherProps}) {
 
 			const action = data?.action;
 
-			if (action === 'deleteSelectedDisplayPages') {
-				deleteSelectedDisplayPages();
+			if (action === 'copySelectedEntries') {
+				copySelectedEntries(data);
+			}
+			else if (action === 'deleteSelectedEntries') {
+				deleteSelectedEntries(data);
 			}
 			else if (action === 'exportDisplayPages') {
 				exportDisplayPages(data);
+			}
+			else if (action === 'moveSelectedEntries') {
+				moveSelectedEntries(data);
+			}
+		},
+		onCreationMenuItemClick(event, {item}) {
+			const data = item?.data;
+
+			if (data?.action === 'addDisplayPageCollection') {
+				openCreationModal({
+					buttonLabel: Liferay.Language.get('create'),
+					formSubmitURL: data.addDisplayPageCollectionURL,
+					heading: Liferay.Language.get('new-folder'),
+					portletNamespace,
+				});
 			}
 		},
 	};

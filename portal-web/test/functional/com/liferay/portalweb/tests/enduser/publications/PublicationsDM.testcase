@@ -134,8 +134,6 @@ definition {
 
 		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "site-name");
 
-		LexiconEntry.changeDisplayStyle(displayStyle = "list");
-
 		DMDocument.checkoutCP(dmDocumentTitle = "DM Document Title");
 
 		Refresh();
@@ -211,6 +209,52 @@ definition {
 			changeTitle = "DM Folder 1 Name",
 			changeType = "Deleted",
 			changeUser = "Test Test");
+	}
+
+	@description = "This is the use case for LPS-199845. Deletion Modification Conflict for DDM Structures should not be edited"
+	@priority = 3
+	test DeletionModificationConflictForDDMStructuresShouldNotBeEdited {
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "guest");
+
+		NavItem.gotoStructures();
+
+		WebContentStructures.addCP(structureName = "WC Structure Title");
+
+		DataEngine.addField(
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
+
+		WebContentStructures.saveCP();
+
+		JSONPublications.addPublication(publicationName = "Publication Name");
+
+		JSONPublications.selectPublication(publicationName = "Publication Name");
+
+		WebContentNavigator.gotoEditStructure(structureName = "WC Structure Title");
+
+		WebContentStructures.addName(structureName = "WC Structure Title Edit");
+
+		WebContentStructures.saveCP();
+
+		Publications.workOnProduction();
+
+		WebContentStructures.deleteCP(structureName = "WC Structure Title");
+
+		PublicationsNavigator.openPublicationsAdmin();
+
+		PublicationsNavigator.gotoPublicationEllipsisItem(
+			menuItem = "Publish",
+			publicationName = "Publication Name");
+
+		AssertElementPresent(
+			key_changeCategory = "Dynamic Data Mapping Structure Layout",
+			key_changeTitle = "Dynamic Data Mapping Structure Layout",
+			locator1 = "PublicationsChanges#DISCARD_CHANGE_BUTTON");
+
+		AssertElementNotPresent(
+			key_changeCategory = "Dynamic Data Mapping Structure Layout",
+			key_changeTitle = "Dynamic Data Mapping Structure Layout",
+			locator1 = "PublicationsChanges#PUBLICATIONS_CHANGE_DROPDOWN");
 	}
 
 	@priority = 4
@@ -342,6 +386,7 @@ definition {
 	test PublishWithShortcut {
 		property app.server.types = "tomcat";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONPublications.addPublication(publicationName = "Publication Name");
 
@@ -449,7 +494,7 @@ definition {
 
 		Publications.viewNeedsManualResolution(
 			entryTitle = "DM Document Title Edit",
-			warningMessage = "The conflict cannot be automatically resolved.");
+			warningMessage = "Entity Recently Updated");
 
 		PublicationsNavigator.gotoViewConflictingChangeDetails(entryTitle = "DM Document Title Edit");
 

@@ -5,7 +5,6 @@ import Card from 'shared/components/Card';
 import DistributionChart from './DistributionChart';
 import ErrorDisplay from 'shared/components/ErrorDisplay';
 import Loading from 'shared/components/Loading';
-import Promise from 'metal-promise';
 import React from 'react';
 import Tabs from './Tabs';
 import {addAlert} from 'shared/actions/alerts';
@@ -16,6 +15,7 @@ import {
 } from 'shared/actions/preferences';
 import {Alert} from 'shared/types';
 import {connect, ConnectedProps} from 'react-redux';
+import {Containers} from 'shared/components/download-report/DownloadPDFReport';
 import {DistributionTab} from 'shared/util/records';
 import {List, Map} from 'immutable';
 import {PreferencesScopes} from 'shared/util/constants';
@@ -49,7 +49,7 @@ interface IDistributionCardProps
 		PropsFromRedux {
 	channelId: string;
 	distributionKey: string;
-	fetchDistribution: (params: object) => typeof Promise;
+	fetchDistribution: (params: object) => Promise<any>;
 	groupId: string;
 	id: string;
 	noResultsRenderer?: () => React.ReactElement;
@@ -180,7 +180,11 @@ class DistributionCard extends React.Component<
 		const tabsCount = distributionTabsIList.size;
 
 		return (
-			<Card className='distribution-card-root' minHeight={536}>
+			<Card
+				className='distribution-card-root'
+				id={Containers.DistributionBreakdownCard}
+				minHeight={536}
+			>
 				{error && !showAddProperty && (
 					<ErrorDisplay
 						onReload={this.handleFetchDistributionTabs}

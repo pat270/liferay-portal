@@ -7,57 +7,63 @@ import ClayButton from '@clayui/button';
 import ClayIcon from '@clayui/icon';
 import ClayLink from '@clayui/link';
 import classNames from 'classnames';
-import React, {useContext} from 'react';
+import React from 'react';
 
-import FeatureFlagContext from './FeatureFlagContext';
+const LinkOrButton = React.forwardRef(
+	(
+		{
+			ariaLabel,
+			children,
+			className,
+			disabled,
+			href,
+			symbol,
+			title,
+			wide,
+			wideViewportTitleVisible = true,
+			...otherProps
+		},
+		ref
+	) => {
+		const responsive = Boolean(symbol && children);
 
-const LinkOrButton = ({
-	ariaLabel,
-	children,
-	className,
-	disabled,
-	href,
-	symbol,
-	title,
-	wide,
-	...otherProps
-}) => {
-	const {showDesignImprovements} = useContext(FeatureFlagContext);
-	const responsive = symbol && children;
-	const Wrapper = href && !disabled ? ClayLink : ClayButton;
+		const Wrapper = href && !disabled ? ClayLink : ClayButton;
 
-	return (
-		<>
-			<Wrapper
-				aria-label={symbol && ariaLabel}
-				block={otherProps.button?.block}
-				className={classNames(className, {
-					'd-md-none': showDesignImprovements && responsive,
-					'nav-btn-monospaced': showDesignImprovements && responsive,
-					'pl-4 pr-4': wide && !symbol,
-				})}
-				disabled={disabled}
-				href={href}
-				{...otherProps}
-				title={symbol && title}
-			>
-				{symbol ? <ClayIcon symbol={symbol} /> : children}
-			</Wrapper>
-
-			{showDesignImprovements && responsive && (
+		return (
+			<div ref={ref}>
 				<Wrapper
+					aria-label={symbol && ariaLabel}
 					block={otherProps.button?.block}
-					className={classNames(className, 'd-md-flex d-none', {
-						'pl-4 pr-4': wide,
+					className={classNames(className, {
+						'd-md-none': responsive,
+						'nav-btn-monospaced': responsive,
+						'pl-4 pr-4': wide && !symbol,
 					})}
 					disabled={disabled}
 					href={href}
 					{...otherProps}
+					title={symbol && title}
 				>
-					{children}
+					{symbol ? <ClayIcon symbol={symbol} /> : children}
 				</Wrapper>
-			)}
-		</>
-	);
-};
+
+				{responsive && (
+					<Wrapper
+						block={otherProps.button?.block}
+						className={classNames(className, 'd-md-flex d-none', {
+							'pl-4 pr-4': wide,
+						})}
+						disabled={disabled}
+						href={href}
+						{...otherProps}
+						title={wideViewportTitleVisible && title}
+					>
+						{children}
+					</Wrapper>
+				)}
+			</div>
+		);
+	}
+);
+
 export default LinkOrButton;

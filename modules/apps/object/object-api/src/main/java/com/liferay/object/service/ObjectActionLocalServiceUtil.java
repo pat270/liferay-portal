@@ -58,14 +58,15 @@ public class ObjectActionLocalServiceUtil {
 			Map<java.util.Locale, String> labelMap, String name,
 			String objectActionExecutorKey, String objectActionTriggerKey,
 			com.liferay.portal.kernel.util.UnicodeProperties
-				parametersUnicodeProperties)
+				parametersUnicodeProperties,
+			boolean system)
 		throws PortalException {
 
 		return getService().addObjectAction(
 			externalReferenceCode, userId, objectDefinitionId, active,
 			conditionExpression, description, errorMessageMap, labelMap, name,
 			objectActionExecutorKey, objectActionTriggerKey,
-			parametersUnicodeProperties);
+			parametersUnicodeProperties, system);
 	}
 
 	public static ObjectAction addOrUpdateObjectAction(
@@ -75,14 +76,15 @@ public class ObjectActionLocalServiceUtil {
 			Map<java.util.Locale, String> labelMap, String name,
 			String objectActionExecutorKey, String objectActionTriggerKey,
 			com.liferay.portal.kernel.util.UnicodeProperties
-				parametersUnicodeProperties)
+				parametersUnicodeProperties,
+			boolean system)
 		throws PortalException {
 
 		return getService().addOrUpdateObjectAction(
 			externalReferenceCode, objectActionId, userId, objectDefinitionId,
 			active, conditionExpression, description, errorMessageMap, labelMap,
 			name, objectActionExecutorKey, objectActionTriggerKey,
-			parametersUnicodeProperties);
+			parametersUnicodeProperties, system);
 	}
 
 	/**
@@ -131,8 +133,11 @@ public class ObjectActionLocalServiceUtil {
 	 *
 	 * @param objectAction the object action
 	 * @return the object action that was removed
+	 * @throws PortalException
 	 */
-	public static ObjectAction deleteObjectAction(ObjectAction objectAction) {
+	public static ObjectAction deleteObjectAction(ObjectAction objectAction)
+		throws PortalException {
+
 		return getService().deleteObjectAction(objectAction);
 	}
 
@@ -241,6 +246,13 @@ public class ObjectActionLocalServiceUtil {
 		return getService().fetchObjectAction(objectActionId);
 	}
 
+	public static ObjectAction fetchObjectAction(
+		String externalReferenceCode, long objectDefinitionId) {
+
+		return getService().fetchObjectAction(
+			externalReferenceCode, objectDefinitionId);
+	}
+
 	/**
 	 * Returns the object action with the matching UUID and company.
 	 *
@@ -310,6 +322,12 @@ public class ObjectActionLocalServiceUtil {
 		throws PortalException {
 
 		return getService().getObjectActionByUuidAndCompanyId(uuid, companyId);
+	}
+
+	public static List<ObjectAction> getObjectActions(
+		boolean active, String objectActionExecutorKey) {
+
+		return getService().getObjectActions(active, objectActionExecutorKey);
 	}
 
 	/**

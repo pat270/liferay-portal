@@ -6,12 +6,12 @@
 package com.liferay.portal.search.web.internal.facet.display.context.builder;
 
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.search.facet.Facet;
 import com.liferay.portal.kernel.search.facet.collector.FacetCollector;
 import com.liferay.portal.kernel.search.facet.collector.TermCollector;
 import com.liferay.portal.kernel.search.facet.config.FacetConfiguration;
-import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -40,11 +40,9 @@ public class AssetTagsSearchFacetDisplayContextBuilder {
 		_themeDisplay = (ThemeDisplay)renderRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		PortletDisplay portletDisplay = _themeDisplay.getPortletDisplay();
-
 		_tagFacetPortletInstanceConfiguration =
-			portletDisplay.getPortletInstanceConfiguration(
-				TagFacetPortletInstanceConfiguration.class);
+			ConfigurationProviderUtil.getPortletInstanceConfiguration(
+				TagFacetPortletInstanceConfiguration.class, _themeDisplay);
 	}
 
 	public AssetTagsSearchFacetDisplayContext build() {
@@ -52,7 +50,7 @@ public class AssetTagsSearchFacetDisplayContextBuilder {
 			new AssetTagsSearchFacetDisplayContext();
 
 		assetTagsSearchFacetDisplayContext.setBucketDisplayContexts(
-			buildBucketDisplayContexts());
+			_buildBucketDisplayContexts());
 		assetTagsSearchFacetDisplayContext.setCloudWithCount(
 			_isCloudWithCount());
 		assetTagsSearchFacetDisplayContext.setDisplayStyleGroupId(
@@ -161,7 +159,78 @@ public class AssetTagsSearchFacetDisplayContextBuilder {
 		return bucketDisplayContext;
 	}
 
-	protected List<BucketDisplayContext> buildBucketDisplayContexts() {
+	protected List<BucketDisplayContext>
+		getEmptySearchResultBucketDisplayContexts() {
+
+		if (_selectedTags.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		BucketDisplayContext bucketDisplayContext = new BucketDisplayContext();
+
+		bucketDisplayContext.setBucketText(_selectedTags.get(0));
+		bucketDisplayContext.setFilterValue(_selectedTags.get(0));
+		bucketDisplayContext.setFrequency(0);
+		bucketDisplayContext.setFrequencyVisible(_frequenciesVisible);
+		bucketDisplayContext.setPopularity(0);
+		bucketDisplayContext.setSelected(true);
+
+		return Collections.singletonList(bucketDisplayContext);
+	}
+
+	protected String getFirstParameterValue() {
+		if (_selectedTags.isEmpty()) {
+			return StringPool.BLANK;
+		}
+
+		return _selectedTags.get(0);
+	}
+
+	protected double getPopularity(
+		int frequency, int minCount, int maxCount, double multiplier) {
+
+		double popularity = maxCount - (maxCount - (frequency - minCount));
+
+		return 1 + (popularity * multiplier);
+	}
+
+	protected List<TermCollector> getTermCollectors() {
+		if (_facet == null) {
+			return Collections.emptyList();
+		}
+
+		FacetCollector facetCollector = _facet.getFacetCollector();
+
+		return facetCollector.getTermCollectors();
+	}
+
+	protected boolean isNothingSelected() {
+		if (_selectedTags.isEmpty()) {
+			return true;
+		}
+
+		return false;
+	}
+
+	protected boolean isRenderNothing() {
+		List<TermCollector> termCollectors = getTermCollectors();
+
+		if (isNothingSelected() && termCollectors.isEmpty()) {
+			return true;
+		}
+
+		return false;
+	}
+
+	protected boolean isSelected(String value) {
+		if (_selectedTags.contains(value)) {
+			return true;
+		}
+
+		return false;
+	}
+
+	private List<BucketDisplayContext> _buildBucketDisplayContexts() {
 		List<TermCollector> termCollectors = getTermCollectors();
 
 		if (termCollectors.isEmpty()) {
@@ -241,77 +310,6 @@ public class AssetTagsSearchFacetDisplayContextBuilder {
 		}
 
 		return bucketDisplayContexts;
-	}
-
-	protected List<BucketDisplayContext>
-		getEmptySearchResultBucketDisplayContexts() {
-
-		if (_selectedTags.isEmpty()) {
-			return Collections.emptyList();
-		}
-
-		BucketDisplayContext bucketDisplayContext = new BucketDisplayContext();
-
-		bucketDisplayContext.setBucketText(_selectedTags.get(0));
-		bucketDisplayContext.setFilterValue(_selectedTags.get(0));
-		bucketDisplayContext.setFrequency(0);
-		bucketDisplayContext.setFrequencyVisible(_frequenciesVisible);
-		bucketDisplayContext.setPopularity(0);
-		bucketDisplayContext.setSelected(true);
-
-		return Collections.singletonList(bucketDisplayContext);
-	}
-
-	protected String getFirstParameterValue() {
-		if (_selectedTags.isEmpty()) {
-			return StringPool.BLANK;
-		}
-
-		return _selectedTags.get(0);
-	}
-
-	protected double getPopularity(
-		int frequency, int minCount, int maxCount, double multiplier) {
-
-		double popularity = maxCount - (maxCount - (frequency - minCount));
-
-		return 1 + (popularity * multiplier);
-	}
-
-	protected List<TermCollector> getTermCollectors() {
-		if (_facet == null) {
-			return Collections.emptyList();
-		}
-
-		FacetCollector facetCollector = _facet.getFacetCollector();
-
-		return facetCollector.getTermCollectors();
-	}
-
-	protected boolean isNothingSelected() {
-		if (_selectedTags.isEmpty()) {
-			return true;
-		}
-
-		return false;
-	}
-
-	protected boolean isRenderNothing() {
-		List<TermCollector> termCollectors = getTermCollectors();
-
-		if (isNothingSelected() && termCollectors.isEmpty()) {
-			return true;
-		}
-
-		return false;
-	}
-
-	protected boolean isSelected(String value) {
-		if (_selectedTags.contains(value)) {
-			return true;
-		}
-
-		return false;
 	}
 
 	private String _getFacetLabel() {

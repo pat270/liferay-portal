@@ -1,3 +1,9 @@
+create table AutoEscapeEntry (
+	autoEscapeEntryId LONG not null primary key,
+	autoEscapeDisabledColumn VARCHAR(75) null,
+	autoEscapeEnabledColumn VARCHAR(75) null
+);
+
 create table BigDecimalEntries_LVEntries (
 	companyId LONG not null,
 	bigDecimalEntryId LONG not null,
@@ -8,7 +14,7 @@ create table BigDecimalEntries_LVEntries (
 create table BigDecimalEntry (
 	bigDecimalEntryId LONG not null primary key,
 	companyId LONG,
-	bigDecimalValue DECIMAL(30, 16) null
+	bigDecimalValue BIGDECIMAL null
 );
 
 create table CacheDisabledEntry (

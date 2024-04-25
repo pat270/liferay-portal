@@ -57,7 +57,8 @@ public class DLFileEntryLocalServiceWrapper
 				<String, com.liferay.dynamic.data.mapping.kernel.DDMFormValues>
 					ddmFormValuesMap,
 			java.io.File file, java.io.InputStream inputStream, long size,
-			java.util.Date expirationDate, java.util.Date reviewDate,
+			java.util.Date displayDate, java.util.Date expirationDate,
+			java.util.Date reviewDate,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -65,7 +66,7 @@ public class DLFileEntryLocalServiceWrapper
 			externalReferenceCode, userId, groupId, repositoryId, folderId,
 			sourceFileName, mimeType, title, urlTitle, description, changeLog,
 			fileEntryTypeId, ddmFormValuesMap, file, inputStream, size,
-			expirationDate, reviewDate, serviceContext);
+			displayDate, expirationDate, reviewDate, serviceContext);
 	}
 
 	@Override
@@ -489,6 +490,27 @@ public class DLFileEntryLocalServiceWrapper
 	}
 
 	@Override
+	public void forEachFileEntry(
+			long companyId, java.util.function.Consumer<DLFileEntry> consumer,
+			long maximumSize, String[] mimeTypes)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		_dlFileEntryLocalService.forEachFileEntry(
+			companyId, consumer, maximumSize, mimeTypes);
+	}
+
+	@Override
+	public void forEachFileEntry(
+			long companyId, long classNameId,
+			java.util.function.Consumer<DLFileEntry> consumer, long maximumSize,
+			String[] mimeTypes)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		_dlFileEntryLocalService.forEachFileEntry(
+			companyId, classNameId, consumer, maximumSize, mimeTypes);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery
 		getActionableDynamicQuery() {
 
@@ -818,6 +840,14 @@ public class DLFileEntryLocalServiceWrapper
 	}
 
 	@Override
+	public java.util.Map<Long, Long> getFileEntryTypeIds(
+		long companyId, long[] groupIds, String treePath) {
+
+		return _dlFileEntryLocalService.getFileEntryTypeIds(
+			companyId, groupIds, treePath);
+	}
+
+	@Override
 	public java.util.List<DLFileEntry> getGroupFileEntries(
 		long groupId, int start, int end) {
 
@@ -1068,15 +1098,16 @@ public class DLFileEntryLocalServiceWrapper
 				<String, com.liferay.dynamic.data.mapping.kernel.DDMFormValues>
 					ddmFormValuesMap,
 			java.io.File file, java.io.InputStream inputStream, long size,
-			java.util.Date expirationDate, java.util.Date reviewDate,
+			java.util.Date displayDate, java.util.Date expirationDate,
+			java.util.Date reviewDate,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlFileEntryLocalService.updateFileEntry(
 			userId, fileEntryId, sourceFileName, mimeType, title, urlTitle,
 			description, changeLog, dlVersionNumberIncrease, fileEntryTypeId,
-			ddmFormValuesMap, file, inputStream, size, expirationDate,
-			reviewDate, serviceContext);
+			ddmFormValuesMap, file, inputStream, size, displayDate,
+			expirationDate, reviewDate, serviceContext);
 	}
 
 	@Override

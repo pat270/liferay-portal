@@ -43,8 +43,8 @@ if (messageId > 0) {
 			<div class="card-row card-row-padded">
 				<div class="card-col-field">
 					<div class="list-group-card-icon">
-						<liferay-ui:user-portrait
-							cssClass="sticker-lg"
+						<liferay-user:user-portrait
+							size="lg"
 							userId="<%= !message.isAnonymous() ? message.getUserId() : 0 %>"
 						/>
 					</div>
@@ -104,7 +104,7 @@ if (messageId > 0) {
 							<span><liferay-ui:message key="posts" />:</span> <%= MBStatsUserLocalServiceUtil.getMessageCount(scopeGroupId, message.getUserId()) %>
 						</span>
 						<span class="h5 text-default">
-							<span><liferay-ui:message key="join-date" />:</span> <%= dateFormatDate.format(messageUser.getCreateDate()) %>
+							<span><liferay-ui:message key="join-date" />:</span> <%= dateFormat.format(messageUser.getCreateDate()) %>
 						</span>
 
 						<c:if test="<%= !message.isApproved() %>">

@@ -8,7 +8,7 @@ definition {
 	property test.assert.warning.exceptions = "true";
 	property test.liferay.virtual.instance = "false";
 	property testray.component.names = "Online Editing";
-	property testray.main.component.name = "Upgrades Lima";
+	property testray.main.component.name = "Upgrades Content Management";
 
 	setUp {
 		SignIn.signIn();
@@ -18,6 +18,21 @@ definition {
 		AssertLocation.assertPartialLocation(value1 = "${portalURL}/web/guest");
 
 		SearchAdministration.executeReindex();
+	}
+
+	tearDown {
+		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
+
+		if (${testLiferayVirtualInstance} == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			DMDocument.tearDownCP();
+
+			DMFolder.tearDownCP();
+
+			PagesAdmin.tearDownCP();
+		}
 	}
 
 	@priority = 5

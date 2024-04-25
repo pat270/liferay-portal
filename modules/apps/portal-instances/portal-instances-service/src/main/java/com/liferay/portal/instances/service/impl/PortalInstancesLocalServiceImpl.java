@@ -10,6 +10,7 @@ import com.liferay.portal.aop.AopService;
 import com.liferay.portal.instances.service.base.PortalInstancesLocalServiceBaseImpl;
 import com.liferay.portal.kernel.cluster.Clusterable;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.instance.PortalInstancePool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
@@ -44,7 +45,7 @@ import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.servlet.DummyHttpServletResponse;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.ColorSchemeFactory;
+import com.liferay.portal.kernel.util.ColorSchemeFactoryUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -84,12 +85,12 @@ public class PortalInstancesLocalServiceImpl
 
 	@Override
 	public long[] getCompanyIds() {
-		return PortalInstances.getCompanyIds();
+		return PortalInstancePool.getCompanyIds();
 	}
 
 	@Override
 	public long getDefaultCompanyId() {
-		return PortalInstances.getDefaultCompanyId();
+		return PortalInstancePool.getDefaultCompanyId();
 	}
 
 	@Override
@@ -147,6 +148,9 @@ public class PortalInstancesLocalServiceImpl
 
 			_layoutLocalService.deleteLayouts(
 				group.getGroupId(), false, new ServiceContext());
+
+			_layoutLocalService.deleteLayouts(
+				group.getGroupId(), true, new ServiceContext());
 
 			siteInitializer.initialize(group.getGroupId());
 		}
@@ -244,7 +248,7 @@ public class PortalInstancesLocalServiceImpl
 
 		themeDisplay.setLookAndFeel(
 			_themeLocalService.getTheme(company.getCompanyId(), themeId),
-			_colorSchemeFactory.getDefaultRegularColorScheme());
+			ColorSchemeFactoryUtil.getDefaultRegularColorScheme());
 
 		themeDisplay.setPermissionChecker(permissionChecker);
 		themeDisplay.setPlid(controlPanelPlid);
@@ -299,9 +303,6 @@ public class PortalInstancesLocalServiceImpl
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		PortalInstancesLocalServiceImpl.class);
-
-	@Reference
-	private ColorSchemeFactory _colorSchemeFactory;
 
 	@Reference
 	private CompanyLocalService _companyLocalService;

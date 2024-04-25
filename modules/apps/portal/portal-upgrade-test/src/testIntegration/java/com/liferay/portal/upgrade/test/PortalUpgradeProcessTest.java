@@ -149,15 +149,16 @@ public class PortalUpgradeProcessTest {
 	}
 
 	@Test
-	public void testGetRequiredSchemaVersionWithMultipleSteps() {
+	public void testGetRequiredSchemaVersionWithMultipleSteps()
+		throws Exception {
+
 		UpgradeVersionTreeMap newUpgradeProcesses = new UpgradeVersionTreeMap();
 
-		UpgradeVersionTreeMap currentUpgradeProcesses =
-			ReflectionTestUtil.getAndSetFieldValue(
-				PortalUpgradeProcess.class, "_upgradeVersionTreeMap",
-				newUpgradeProcesses);
+		try (AutoCloseable autoCloseable =
+				ReflectionTestUtil.setFieldValueWithAutoCloseable(
+					PortalUpgradeProcess.class, "_upgradeVersionTreeMap",
+					newUpgradeProcesses)) {
 
-		try {
 			newUpgradeProcesses.put(
 				new Version(2, 3, 2), new DummyUpgradeProcess());
 			newUpgradeProcesses.put(
@@ -175,11 +176,6 @@ public class PortalUpgradeProcessTest {
 
 			Assert.assertEquals(
 				StringPool.BLANK, requiredSchemaVersion.getQualifier());
-		}
-		finally {
-			ReflectionTestUtil.setFieldValue(
-				PortalUpgradeProcess.class, "_upgradeVersionTreeMap",
-				currentUpgradeProcesses);
 		}
 	}
 
@@ -346,10 +342,8 @@ public class PortalUpgradeProcessTest {
 		}
 	}
 
-	private void _updateSchemaVersion(Version version) {
-		ReflectionTestUtil.invoke(
-			_innerPortalUpgradeProcess, "updateSchemaVersion",
-			new Class<?>[] {Version.class}, version);
+	private void _updateSchemaVersion(Version version) throws Exception {
+		_innerPortalUpgradeProcess.updateSchemaVersion(version);
 	}
 
 	private static final Version _ORIGINAL_SCHEMA_VERSION = new Version(
@@ -367,6 +361,13 @@ public class PortalUpgradeProcessTest {
 
 		public void close() throws SQLException {
 			connection.close();
+		}
+
+		public void updateSchemaVersion(Version newSchemaVersion)
+			throws SQLException {
+
+			PortalUpgradeProcess.updateSchemaVersion(
+				connection, newSchemaVersion);
 		}
 
 		private InnerPortalUpgradeProcess() throws SQLException {

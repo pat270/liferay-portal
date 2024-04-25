@@ -46,6 +46,7 @@ definition {
 	@refactordone
 	test AssertNoVideoInItemSelectorAfterDisablingFFmpeg {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		DMNavigator.openToConfigInSystemSettings(portlet = "FFMPEG Video Converter");
 
@@ -74,6 +75,7 @@ definition {
 	test CanAddBlogEntryWithEmbeddedVideo {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		BlogsNavigator.openBlogsAdmin(siteURLKey = "Site Name");
 
@@ -105,6 +107,7 @@ definition {
 	test CanAddKBArticleWithEmbeddedVideo {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		KBAdmin.openKBAdmin(siteURLKey = "Site Name");
 
@@ -132,6 +135,7 @@ definition {
 	@refactordone
 	test CanAddWCWithEmbeddedVideo {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDepot.addDepot(
 			depotDescription = "This is the description of a depot",
@@ -211,9 +215,10 @@ definition {
 	@priority = 3
 	@refactorneeded
 	test CanConfigureFFmpegVideoPreviewSizePG {
-		property custom.properties = "dl.file.entry.preview.video.width=0${line.separator}dl.file.entry.preview.video.height=0";
+		property custom.properties = "dl.file.entry.preview.video.height=0${line.separator}dl.file.entry.preview.video.width=0";
 		property test.assert.warning.exceptions = "false";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONLayout.addPublicLayout(
 			groupName = "Guest",
@@ -281,10 +286,12 @@ definition {
 	}
 
 	@description = "This test ensures that a blog entry created with an internal video embedded in it can be exported and imported."
-	@priority = 5
+	@priority = 3
 	@refactordone
 	test CanImportExportedBlogWithEmbeddedVideo {
+		property portal.release = "quarantine";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		BlogsNavigator.openBlogsAdmin(siteURLKey = "Site Name");
 
@@ -322,11 +329,12 @@ definition {
 	}
 
 	@description = "This test ensures that a kb article created with an internal video embedded in it can be exported and imported."
-	@priority = 5
+	@priority = 3
 	@refactordone
 	test CanImportExportedKBWithEmbeddedVideo {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDepot.addDepot(
 			depotDescription = "This is the description of a depot",
@@ -378,11 +386,12 @@ definition {
 	}
 
 	@description = "This test ensures that a web content created with an internal video embedded in it can be exported and imported."
-	@priority = 5
+	@priority = 3
 	@refactordone
 	test CanImportExportedWebContentWithEmbeddedVideo {
-		property portal.acceptance = "true";
+		property portal.release = "quarantine";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDepot.addDepot(
 			depotDescription = "This is the description of a depot",
@@ -440,11 +449,11 @@ definition {
 	}
 
 	@description = "This ensures that a depot internal video cannot be viewed from the disconnected site."
-	@priority = 4
+	@priority = 3
 	@refactordone
 	test CanViewFromDisconnectedSite {
-		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDepot.addDepot(
 			depotDescription = "This is the description of a depot",
@@ -499,8 +508,10 @@ definition {
 	@description = "This test ensures that the video preview generated for a document remains intact after FFmpeg is disabled."
 	@priority = 4
 	test PreviewRemainsAfterDisablingFFmpeg {
-		property portal.acceptance = "true";
+		property portal.acceptance = "quarantine";
+		property portal.release = "quarantine";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		DMNavigator.openToEntryInAdmin(
 			dmDocumentTitle = "DM Video Title In Site",

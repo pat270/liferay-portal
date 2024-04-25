@@ -14,6 +14,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCResourceCommand;
 import com.liferay.portal.kernel.security.permission.ResourceActions;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.FastDateFormatFactory;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -23,10 +24,11 @@ import com.liferay.portal.search.filter.ComplexQueryPartBuilderFactory;
 import com.liferay.portal.search.query.Queries;
 import com.liferay.portal.search.searcher.SearchRequestBuilderFactory;
 import com.liferay.portal.search.searcher.Searcher;
+import com.liferay.portal.search.tuning.rankings.helper.RankingHelper;
+import com.liferay.portal.search.tuning.rankings.index.RankingIndexReader;
+import com.liferay.portal.search.tuning.rankings.index.name.RankingIndexName;
+import com.liferay.portal.search.tuning.rankings.index.name.RankingIndexNameBuilder;
 import com.liferay.portal.search.tuning.rankings.web.internal.constants.ResultRankingsPortletKeys;
-import com.liferay.portal.search.tuning.rankings.web.internal.index.RankingIndexReader;
-import com.liferay.portal.search.tuning.rankings.web.internal.index.name.RankingIndexName;
-import com.liferay.portal.search.tuning.rankings.web.internal.index.name.RankingIndexNameBuilder;
 import com.liferay.portal.search.tuning.rankings.web.internal.results.builder.RankingGetHiddenResultsBuilder;
 import com.liferay.portal.search.tuning.rankings.web.internal.results.builder.RankingGetSearchResultsBuilder;
 import com.liferay.portal.search.tuning.rankings.web.internal.results.builder.RankingGetVisibleResultsBuilder;
@@ -84,9 +86,9 @@ public class GetResultsMVCResourceCommand implements MVCResourceCommand {
 		RankingGetHiddenResultsBuilder rankingGetHiddenResultsBuilder =
 			new RankingGetHiddenResultsBuilder(
 				dlAppLocalService, fastDateFormatFactory, queries,
-				getRankingIndexName(resourceRequest), rankingIndexReader,
-				resourceActions, resourceRequest, resourceResponse,
-				searchEngineAdapter);
+				rankingHelper, getRankingIndexName(resourceRequest),
+				rankingIndexReader, resourceActions, resourceRequest,
+				resourceResponse, searchEngineAdapter);
 
 		RankingMVCResourceRequest rankingMVCResourceRequest =
 			new RankingMVCResourceRequest(resourceRequest);
@@ -136,8 +138,8 @@ public class GetResultsMVCResourceCommand implements MVCResourceCommand {
 		RankingGetSearchResultsBuilder rankingGetSearchResultsBuilder =
 			new RankingGetSearchResultsBuilder(
 				complexQueryPartBuilderFactory, dlAppLocalService,
-				fastDateFormatFactory, queries, resourceActions,
-				resourceRequest, resourceResponse, searcher,
+				fastDateFormatFactory, groupLocalService, queries,
+				resourceActions, resourceRequest, resourceResponse, searcher,
 				searchRequestBuilderFactory);
 
 		RankingMVCResourceRequest rankingMVCResourceRequest =
@@ -160,9 +162,10 @@ public class GetResultsMVCResourceCommand implements MVCResourceCommand {
 		RankingGetVisibleResultsBuilder rankingGetVisibleResultsBuilder =
 			new RankingGetVisibleResultsBuilder(
 				complexQueryPartBuilderFactory, dlAppLocalService,
-				fastDateFormatFactory, getRankingIndexName(resourceRequest),
-				rankingIndexReader, rankingSearchRequestHelper, resourceActions,
-				resourceRequest, resourceResponse, queries, searcher,
+				fastDateFormatFactory, groupLocalService,
+				getRankingIndexName(resourceRequest), rankingIndexReader,
+				rankingSearchRequestHelper, resourceActions, resourceRequest,
+				resourceResponse, queries, searcher,
 				searchRequestBuilderFactory);
 
 		RankingMVCResourceRequest rankingMVCResourceRequest =
@@ -172,12 +175,16 @@ public class GetResultsMVCResourceCommand implements MVCResourceCommand {
 			rankingMVCResourceRequest.getCompanyId()
 		).from(
 			rankingMVCResourceRequest.getFrom()
+		).groupExternalReferenceCode(
+			rankingMVCResourceRequest.getGroupExternalReferenceCode()
 		).queryString(
 			rankingMVCResourceRequest.getQueryString()
 		).rankingId(
 			rankingMVCResourceRequest.getRankingId()
 		).size(
 			rankingMVCResourceRequest.getSize()
+		).sxpBlueprintExternalReferenceCode(
+			rankingMVCResourceRequest.getSXPBlueprintExternalReferenceCode()
 		).build();
 	}
 
@@ -208,10 +215,16 @@ public class GetResultsMVCResourceCommand implements MVCResourceCommand {
 	protected FastDateFormatFactory fastDateFormatFactory;
 
 	@Reference
+	protected GroupLocalService groupLocalService;
+
+	@Reference
 	protected Portal portal;
 
 	@Reference
 	protected Queries queries;
+
+	@Reference
+	protected RankingHelper rankingHelper;
 
 	@Reference
 	protected RankingIndexNameBuilder rankingIndexNameBuilder;
@@ -251,6 +264,11 @@ public class GetResultsMVCResourceCommand implements MVCResourceCommand {
 			return ParamUtil.getInteger(_resourceRequest, "from");
 		}
 
+		public String getGroupExternalReferenceCode() {
+			return ParamUtil.getString(
+				_resourceRequest, "groupExternalReferenceCode");
+		}
+
 		public String getQueryString() {
 			return ParamUtil.getString(_resourceRequest, "keywords");
 		}
@@ -261,6 +279,11 @@ public class GetResultsMVCResourceCommand implements MVCResourceCommand {
 
 		public int getSize() {
 			return ParamUtil.getInteger(_resourceRequest, "size", 10);
+		}
+
+		public String getSXPBlueprintExternalReferenceCode() {
+			return ParamUtil.getString(
+				_resourceRequest, "sxpBlueprintExternalReferenceCode");
 		}
 
 		private final ResourceRequest _resourceRequest;

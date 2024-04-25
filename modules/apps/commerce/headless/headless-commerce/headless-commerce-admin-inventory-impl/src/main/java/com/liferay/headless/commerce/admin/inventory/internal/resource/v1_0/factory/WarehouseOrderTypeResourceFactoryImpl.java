@@ -72,7 +72,12 @@ public class WarehouseOrderTypeResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _warehouseOrderTypeResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, WarehouseOrderTypeResource>
+					warehouseOrderTypeResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_warehouseOrderTypeResourceProxyProviderFunction;
+
+				return warehouseOrderTypeResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -232,10 +237,6 @@ public class WarehouseOrderTypeResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, WarehouseOrderTypeResource>
-		_warehouseOrderTypeResourceProxyProviderFunction =
-			_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -271,6 +272,15 @@ public class WarehouseOrderTypeResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function
+			<InvocationHandler, WarehouseOrderTypeResource>
+				_warehouseOrderTypeResourceProxyProviderFunction =
+					_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

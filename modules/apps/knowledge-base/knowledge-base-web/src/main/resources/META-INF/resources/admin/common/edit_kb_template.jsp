@@ -17,6 +17,7 @@ String content = BeanParamUtil.getString(kbTemplate, request, "content");
 
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(redirect);
+portletDisplay.setURLBackTitle(portletDisplay.getTitle());
 
 renderResponse.setTitle((kbTemplate == null) ? LanguageUtil.get(request, "new-template") : kbTemplate.getTitle());
 %>
@@ -73,7 +74,7 @@ renderResponse.setTitle((kbTemplate == null) ? LanguageUtil.get(request, "new-te
 	</aui:form>
 </clay:container-fluid>
 
-<script>
+<aui:script>
 	function <portlet:namespace />updateKBTemplate() {
 		Liferay.Util.postForm(document.<portlet:namespace />fm, {
 			data: {
@@ -84,4 +85,4 @@ renderResponse.setTitle((kbTemplate == null) ? LanguageUtil.get(request, "new-te
 			},
 		});
 	}
-</script>
+</aui:script>

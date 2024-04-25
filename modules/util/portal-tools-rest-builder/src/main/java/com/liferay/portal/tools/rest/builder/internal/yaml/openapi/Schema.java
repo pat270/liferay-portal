@@ -110,6 +110,14 @@ public class Schema {
 		return _jsonMap;
 	}
 
+	public boolean isJsonString() {
+		return _jsonString;
+	}
+
+	public boolean isMergeProperties() {
+		return _mergeProperties;
+	}
+
 	public boolean isReadOnly() {
 		return _readOnly;
 	}
@@ -162,12 +170,20 @@ public class Schema {
 		_jsonMap = jsonMap;
 	}
 
+	public void setJsonString(boolean jsonString) {
+		_jsonString = jsonString;
+	}
+
 	public void setMaximum(Double maximum) {
 		_maximum = maximum;
 	}
 
 	public void setMaxLength(Integer maxLength) {
 		_maxLength = maxLength;
+	}
+
+	public void setMergeProperties(boolean mergeProperties) {
+		_mergeProperties = mergeProperties;
 	}
 
 	public void setMinimum(Double minimum) {
@@ -227,8 +243,10 @@ public class Schema {
 	private String _format;
 	private Items _items;
 	private boolean _jsonMap;
+	private boolean _jsonString;
 	private Double _maximum;
 	private Integer _maxLength;
+	private boolean _mergeProperties = true;
 	private Double _minimum;
 	private Integer _minLength;
 	private String _name;

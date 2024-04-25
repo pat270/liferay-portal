@@ -47,6 +47,8 @@ public class ProcessingCommerceShipmentItemTableFDSView
 			"orderedQuantity", "outstanding-quantity"
 		).add(
 			"toSendQuantity", "quantity-in-shipment"
+		).add(
+			"unitOfMeasureKey", "uom"
 		).build();
 	}
 

@@ -120,7 +120,7 @@ public class CPAttachmentFileEntryCreator {
 				null, repository.getRepositoryId(),
 				DLFolderConstants.DEFAULT_PARENT_FOLDER_ID, fileName,
 				_mimeTypes.getContentType(file), fileName, null, null, null,
-				file, null, null, serviceContext);
+				file, null, null, null, serviceContext);
 		}
 		finally {
 			if (file != null) {
@@ -171,8 +171,8 @@ public class CPAttachmentFileEntryCreator {
 			fileEntry.getFileEntryId(), false, null, displayDateMonth,
 			displayDateDay, displayDateYear, displayDateHour, displayDateMinute,
 			expirationDateMonth, expirationDateDay, expirationDateYear,
-			expirationDateHour, expirationDateMinute, true, titleMap, null,
-			priority, type, serviceContext);
+			expirationDateHour, expirationDateMinute, true, true, titleMap,
+			null, priority, type, serviceContext);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

@@ -35,7 +35,7 @@ currentURLObj.setParameter("historyKey", liferayPortletResponse.getNamespace() +
 	value="roles"
 />
 
-<liferay-ui:membership-policy-error />
+<liferay-site:membership-policy-error />
 
 <liferay-util:buffer
 	var="removeRoleIcon"
@@ -186,7 +186,7 @@ currentURLObj.setParameter("historyKey", liferayPortletResponse.getNamespace() +
 	</c:if>
 
 	<c:if test="<%= !roleGroups.isEmpty() %>">
-		<h4 class="sheet-tertiary-title"><liferay-ui:message key="inherited-regular-roles" /></h4>
+		<span class="sheet-tertiary-title"><liferay-ui:message key="inherited-regular-roles" /></span>
 
 		<liferay-ui:search-container
 			cssClass="lfr-search-container-inherited-regular-roles"
@@ -728,7 +728,7 @@ currentURLObj.setParameter("historyKey", liferayPortletResponse.getNamespace() +
 	</c:if>
 
 	<c:if test="<%= !inheritedSiteRoles.isEmpty() %>">
-		<h4 class="sheet-tertiary-title"><liferay-ui:message key="inherited-site-roles" /></h4>
+		<span class="sheet-tertiary-title"><liferay-ui:message key="inherited-site-roles" /></span>
 
 		<liferay-ui:search-container
 			cssClass="lfr-search-container-inherited-site-roles"
@@ -797,9 +797,11 @@ currentURLObj.setParameter("historyKey", liferayPortletResponse.getNamespace() +
 			var <portlet:namespace />deleteGroupRolesRoleIds = [];
 
 			function <portlet:namespace />deleteRegularRole(roleId) {
-				var A = AUI();
-
-				A.Array.removeItem(<portlet:namespace />addRoleIds, roleId);
+				<portlet:namespace />addRoleIds = <portlet:namespace />addRoleIds.filter(
+					(addRoleId) => {
+						return addRoleId !== roleId;
+					}
+				);
 
 				<portlet:namespace />deleteRoleIds.push(roleId);
 
@@ -861,9 +863,6 @@ currentURLObj.setParameter("historyKey", liferayPortletResponse.getNamespace() +
 				groupId,
 				iconCssClass
 			) {
-				var A = AUI();
-				var LString = A.Lang.String;
-
 				var searchContainerName =
 					'<portlet:namespace />' + searchContainer + 'SearchContainer';
 
@@ -938,7 +937,11 @@ currentURLObj.setParameter("historyKey", liferayPortletResponse.getNamespace() +
 
 					rowColumns.push(removeRoleButton);
 
-					A.Array.removeItem(<portlet:namespace />deleteRoleIds, roleId);
+					<portlet:namespace />deleteRoleIds = <portlet:namespace />deleteRoleIds.filter(
+						(deleteRoleId) => {
+							return deleteRoleId !== roleId;
+						}
+					);
 
 					<portlet:namespace />addRoleIds.push(roleId);
 

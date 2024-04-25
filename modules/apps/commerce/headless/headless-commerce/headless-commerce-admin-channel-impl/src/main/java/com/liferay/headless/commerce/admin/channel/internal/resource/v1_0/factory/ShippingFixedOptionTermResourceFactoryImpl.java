@@ -72,7 +72,12 @@ public class ShippingFixedOptionTermResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _shippingFixedOptionTermResourceProxyProviderFunction.
+				Function<InvocationHandler, ShippingFixedOptionTermResource>
+					shippingFixedOptionTermResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_shippingFixedOptionTermResourceProxyProviderFunction;
+
+				return shippingFixedOptionTermResourceProxyProviderFunction.
 					apply(
 						(proxy, method, arguments) -> _invoke(
 							method, arguments, _checkPermissions,
@@ -239,11 +244,6 @@ public class ShippingFixedOptionTermResourceFactoryImpl
 		}
 	}
 
-	private static final Function
-		<InvocationHandler, ShippingFixedOptionTermResource>
-			_shippingFixedOptionTermResourceProxyProviderFunction =
-				_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -279,6 +279,15 @@ public class ShippingFixedOptionTermResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function
+			<InvocationHandler, ShippingFixedOptionTermResource>
+				_shippingFixedOptionTermResourceProxyProviderFunction =
+					_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

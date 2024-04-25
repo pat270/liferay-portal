@@ -55,6 +55,10 @@ public interface SXPBlueprintService extends BaseService {
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public SXPBlueprint fetchSXPBlueprint(long sxpBlueprintId)
+		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public SXPBlueprint fetchSXPBlueprintByExternalReferenceCode(
 			String externalReferenceCode, long companyId)
 		throws PortalException;
@@ -76,10 +80,10 @@ public interface SXPBlueprintService extends BaseService {
 		throws PortalException;
 
 	public SXPBlueprint updateSXPBlueprint(
-			long sxpBlueprintId, String configurationJSON,
-			Map<Locale, String> descriptionMap, String elementInstancesJSON,
-			String schemaVersion, Map<Locale, String> titleMap,
-			ServiceContext serviceContext)
+			String externalReferenceCode, long sxpBlueprintId,
+			String configurationJSON, Map<Locale, String> descriptionMap,
+			String elementInstancesJSON, String schemaVersion,
+			Map<Locale, String> titleMap, ServiceContext serviceContext)
 		throws PortalException;
 
 }

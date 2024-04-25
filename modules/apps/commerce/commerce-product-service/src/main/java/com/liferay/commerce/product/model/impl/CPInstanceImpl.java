@@ -27,6 +27,12 @@ import java.util.List;
 public class CPInstanceImpl extends CPInstanceBaseImpl {
 
 	@Override
+	public CPInstanceUnitOfMeasure fetchCPInstanceUnitOfMeasure(String key) {
+		return CPInstanceUnitOfMeasureLocalServiceUtil.
+			fetchCPInstanceUnitOfMeasure(getCPInstanceId(), key);
+	}
+
+	@Override
 	public CommerceCatalog getCommerceCatalog() throws PortalException {
 		CPDefinition cpDefinition = getCPDefinition();
 
@@ -120,6 +126,19 @@ public class CPInstanceImpl extends CPInstanceBaseImpl {
 		}
 
 		return _subscriptionTypeSettingsUnicodeProperties;
+	}
+
+	@Override
+	public boolean hasCPInstanceUnitOfMeasures() {
+		int cpInstanceUnitOfMeasuresCount =
+			CPInstanceUnitOfMeasureLocalServiceUtil.
+				getCPInstanceUnitOfMeasuresCount(getCPInstanceId());
+
+		if (cpInstanceUnitOfMeasuresCount > 0) {
+			return true;
+		}
+
+		return false;
 	}
 
 	@Override

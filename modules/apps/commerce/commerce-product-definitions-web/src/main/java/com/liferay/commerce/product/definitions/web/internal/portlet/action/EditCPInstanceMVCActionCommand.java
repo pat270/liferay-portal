@@ -5,6 +5,7 @@
 
 package com.liferay.commerce.product.definitions.web.internal.portlet.action;
 
+import com.liferay.commerce.currency.util.CommercePriceFormatter;
 import com.liferay.commerce.price.list.constants.CommercePriceListConstants;
 import com.liferay.commerce.price.list.model.CommercePriceEntry;
 import com.liferay.commerce.price.list.model.CommercePriceList;
@@ -28,8 +29,8 @@ import com.liferay.commerce.product.service.CPDefinitionLocalService;
 import com.liferay.commerce.product.service.CPDefinitionOptionRelLocalService;
 import com.liferay.commerce.product.service.CPInstanceService;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
@@ -233,19 +234,15 @@ public class EditCPInstanceMVCActionCommand extends BaseMVCActionCommand {
 		boolean purchasable = ParamUtil.getBoolean(
 			actionRequest, "purchasable");
 		boolean published = ParamUtil.getBoolean(actionRequest, "published");
-
 		double width = ParamUtil.getDouble(actionRequest, "width");
 		double height = ParamUtil.getDouble(actionRequest, "height");
 		double depth = ParamUtil.getDouble(actionRequest, "depth");
 		double weight = ParamUtil.getDouble(actionRequest, "weight");
-
-		BigDecimal price = (BigDecimal)ParamUtil.getNumber(
-			actionRequest, "price", BigDecimal.ZERO);
-		BigDecimal promoPrice = (BigDecimal)ParamUtil.getNumber(
-			actionRequest, "promoPrice", BigDecimal.ZERO);
-		BigDecimal cost = (BigDecimal)ParamUtil.getNumber(
-			actionRequest, "cost", BigDecimal.ZERO);
-
+		BigDecimal price = _commercePriceFormatter.parse(
+			actionRequest, "price");
+		BigDecimal promoPrice = _commercePriceFormatter.parse(
+			actionRequest, "promoPrice");
+		BigDecimal cost = _commercePriceFormatter.parse(actionRequest, "cost");
 		int displayDateMonth = ParamUtil.getInteger(
 			actionRequest, "displayDateMonth");
 		int displayDateDay = ParamUtil.getInteger(
@@ -378,7 +375,8 @@ public class EditCPInstanceMVCActionCommand extends BaseMVCActionCommand {
 				_cpDefinitionOptionRelLocalService.
 					getCPDefinitionOptionRelCPDefinitionOptionValueRelIds(
 						cpDefinitionId,
-						ParamUtil.getString(actionRequest, "ddmFormValues")),
+						ParamUtil.getString(
+							actionRequest, "cpInstanceOptions")),
 				width, height, depth, weight, price, promoPrice, cost,
 				published, displayDateMonth, displayDateDay, displayDateYear,
 				displayDateHour, displayDateMinute, expirationDateMonth,
@@ -493,7 +491,7 @@ public class EditCPInstanceMVCActionCommand extends BaseMVCActionCommand {
 		CommercePriceEntry commercePriceEntry =
 			_commercePriceEntryLocalService.fetchCommercePriceEntry(
 				commercePriceList.getCommercePriceListId(),
-				cpInstance.getCPInstanceUuid());
+				cpInstance.getCPInstanceUuid(), StringPool.BLANK);
 
 		serviceContext.setWorkflowAction(WorkflowConstants.ACTION_PUBLISH);
 
@@ -507,9 +505,10 @@ public class EditCPInstanceMVCActionCommand extends BaseMVCActionCommand {
 				priceOnApplication, null, null, serviceContext);
 		}
 		else {
-			_commercePriceEntryLocalService.updateCommercePriceEntry(
-				commercePriceEntry.getCommercePriceEntryId(), price,
-				priceOnApplication, null, null, serviceContext);
+			_commercePriceEntryLocalService.updatePricingInfo(
+				commercePriceEntry.getCommercePriceEntryId(),
+				commercePriceEntry.isBulkPricing(), price, priceOnApplication,
+				null, null, serviceContext);
 		}
 	}
 
@@ -519,6 +518,9 @@ public class EditCPInstanceMVCActionCommand extends BaseMVCActionCommand {
 
 	@Reference
 	private CommercePriceEntryLocalService _commercePriceEntryLocalService;
+
+	@Reference
+	private CommercePriceFormatter _commercePriceFormatter;
 
 	@Reference
 	private CommercePriceListLocalService _commercePriceListLocalService;

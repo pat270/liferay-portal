@@ -12,6 +12,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.model.impl.VirtualLayout;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
@@ -19,7 +20,6 @@ import com.liferay.portal.kernel.portlet.configuration.icon.BasePortletConfigura
 import com.liferay.portal.kernel.portlet.configuration.icon.PortletConfigurationIcon;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.service.PortletLocalService;
 import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -30,7 +30,6 @@ import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portlet.configuration.kernel.util.PortletConfigurationApplicationType;
-import com.liferay.sites.kernel.util.Sites;
 
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
@@ -118,7 +117,7 @@ public class PermissionsPortletConfigurationIcon
 
 		Layout layout = themeDisplay.getLayout();
 
-		if (!_sites.isLayoutUpdateable(layout)) {
+		if ((layout instanceof VirtualLayout) || !layout.isLayoutUpdateable()) {
 			return false;
 		}
 
@@ -163,11 +162,5 @@ public class PermissionsPortletConfigurationIcon
 
 	@Reference
 	private Language _language;
-
-	@Reference
-	private PortletLocalService _portletLocalService;
-
-	@Reference
-	private Sites _sites;
 
 }

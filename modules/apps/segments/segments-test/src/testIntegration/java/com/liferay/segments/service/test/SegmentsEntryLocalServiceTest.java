@@ -12,7 +12,6 @@ import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.search.BaseModelSearchResult;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -88,11 +87,9 @@ public class SegmentsEntryLocalServiceTest {
 		String name = RandomTestUtil.randomString();
 		String description = RandomTestUtil.randomString();
 		String criteria = CriteriaSerializer.serialize(new Criteria());
-		String type = RandomTestUtil.randomString();
 
 		SegmentsEntry segmentsEntry = SegmentsTestUtil.addSegmentsEntry(
-			_group.getGroupId(), segmentsEntryKey, name, description, criteria,
-			type);
+			_group.getGroupId(), segmentsEntryKey, name, description, criteria);
 
 		Assert.assertEquals(
 			StringUtil.toUpperCase(segmentsEntryKey.trim()),
@@ -103,12 +100,11 @@ public class SegmentsEntryLocalServiceTest {
 			description, segmentsEntry.getDescription(LocaleUtil.getDefault()));
 		Assert.assertTrue(segmentsEntry.isActive());
 		Assert.assertEquals(criteria, segmentsEntry.getCriteria());
-		Assert.assertEquals(type, segmentsEntry.getType());
 
 		Assert.assertEquals(
 			1,
 			_segmentsEntryLocalService.getSegmentsEntriesCount(
-				_group.getGroupId(), false));
+				_group.getGroupId()));
 	}
 
 	@Test
@@ -137,9 +133,11 @@ public class SegmentsEntryLocalServiceTest {
 		String segmentsEntryKey = RandomTestUtil.randomString();
 
 		SegmentsTestUtil.addSegmentsEntry(
-			_group.getGroupId(), segmentsEntryKey);
+			_group.getGroupId(), segmentsEntryKey,
+			RandomTestUtil.randomString(), RandomTestUtil.randomString());
 		SegmentsTestUtil.addSegmentsEntry(
-			_group.getGroupId(), segmentsEntryKey);
+			_group.getGroupId(), segmentsEntryKey,
+			RandomTestUtil.randomString(), RandomTestUtil.randomString());
 	}
 
 	@Test(expected = SegmentsEntryKeyException.class)
@@ -149,14 +147,16 @@ public class SegmentsEntryLocalServiceTest {
 		String segmentsEntryKey = RandomTestUtil.randomString();
 
 		SegmentsTestUtil.addSegmentsEntry(
-			_group.getGroupId(), segmentsEntryKey);
+			_group.getGroupId(), segmentsEntryKey,
+			RandomTestUtil.randomString(), RandomTestUtil.randomString());
 
 		Group childGroup = GroupTestUtil.addGroup(_group.getGroupId());
 
 		_groups.add(0, childGroup);
 
 		SegmentsTestUtil.addSegmentsEntry(
-			childGroup.getGroupId(), segmentsEntryKey);
+			childGroup.getGroupId(), segmentsEntryKey,
+			RandomTestUtil.randomString(), RandomTestUtil.randomString());
 	}
 
 	@Test(expected = SegmentsEntryNameException.class)
@@ -164,8 +164,7 @@ public class SegmentsEntryLocalServiceTest {
 		SegmentsTestUtil.addSegmentsEntry(
 			_group.getGroupId(), RandomTestUtil.randomString(),
 			StringPool.BLANK, StringPool.BLANK,
-			CriteriaSerializer.serialize(new Criteria()),
-			RandomTestUtil.randomString());
+			CriteriaSerializer.serialize(new Criteria()));
 	}
 
 	@Test
@@ -177,7 +176,6 @@ public class SegmentsEntryLocalServiceTest {
 				RandomTestUtil.randomLocaleStringMap(),
 				RandomTestUtil.randomBoolean(),
 				CriteriaSerializer.serialize(new Criteria()),
-				User.class.getName(),
 				ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
 		Assert.assertEquals(
@@ -198,8 +196,7 @@ public class SegmentsEntryLocalServiceTest {
 			Criteria.Conjunction.AND);
 
 		SegmentsEntry segmentsEntry = SegmentsTestUtil.addSegmentsEntry(
-			_group.getGroupId(), CriteriaSerializer.serialize(criteria),
-			User.class.getName());
+			_group.getGroupId(), CriteriaSerializer.serialize(criteria));
 
 		Assert.assertEquals(
 			SegmentsEntryConstants.SOURCE_REFERRED, segmentsEntry.getSource());
@@ -216,7 +213,7 @@ public class SegmentsEntryLocalServiceTest {
 		Assert.assertEquals(
 			0,
 			_segmentsEntryLocalService.getSegmentsEntriesCount(
-				_group.getGroupId(), false));
+				_group.getGroupId()));
 	}
 
 	@Test
@@ -230,14 +227,14 @@ public class SegmentsEntryLocalServiceTest {
 		Assert.assertEquals(
 			count,
 			_segmentsEntryLocalService.getSegmentsEntriesCount(
-				_group.getGroupId(), false));
+				_group.getGroupId()));
 
 		_segmentsEntryLocalService.deleteSegmentsEntries(_group.getGroupId());
 
 		Assert.assertEquals(
 			0,
 			_segmentsEntryLocalService.getSegmentsEntriesCount(
-				_group.getGroupId(), false));
+				_group.getGroupId()));
 	}
 
 	@Test
@@ -327,14 +324,9 @@ public class SegmentsEntryLocalServiceTest {
 
 		int segmentsEntriesCount =
 			_segmentsEntryLocalService.getSegmentsEntriesCount(
-				childGroup.getGroupId(), true);
+				childGroup.getGroupId());
 
 		Assert.assertTrue(segmentsEntriesCount > 0);
-
-		Assert.assertEquals(
-			0,
-			_segmentsEntryLocalService.getSegmentsEntriesCount(
-				childGroup.getGroupId(), false));
 	}
 
 	@Test
@@ -350,16 +342,10 @@ public class SegmentsEntryLocalServiceTest {
 
 		List<SegmentsEntry> segmentsEntries =
 			_segmentsEntryLocalService.getSegmentsEntries(
-				childGroup.getGroupId(), true, QueryUtil.ALL_POS,
-				QueryUtil.ALL_POS, null);
+				childGroup.getGroupId(), QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+				null);
 
 		Assert.assertTrue(segmentsEntries.contains(segmentsEntry));
-
-		segmentsEntries = _segmentsEntryLocalService.getSegmentsEntries(
-			childGroup.getGroupId(), false, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-
-		Assert.assertFalse(segmentsEntries.contains(segmentsEntry));
 	}
 
 	@Test
@@ -370,8 +356,8 @@ public class SegmentsEntryLocalServiceTest {
 		BaseModelSearchResult<SegmentsEntry> baseModelSearchResult =
 			_segmentsEntryLocalService.searchSegmentsEntries(
 				segmentsEntry.getCompanyId(), segmentsEntry.getGroupId(),
-				segmentsEntry.getNameCurrentValue(), true,
-				new LinkedHashMap<>(), 0, 1, null);
+				segmentsEntry.getNameCurrentValue(), new LinkedHashMap<>(), 0,
+				1, null);
 
 		List<SegmentsEntry> segmentsEntries =
 			baseModelSearchResult.getBaseModels();
@@ -390,7 +376,7 @@ public class SegmentsEntryLocalServiceTest {
 
 		BaseModelSearchResult<SegmentsEntry> baseModelSearchResult =
 			_segmentsEntryLocalService.searchSegmentsEntries(
-				segmentsEntry.getCompanyId(),
+				segmentsEntry.getCompanyId(), _group.getGroupId(),
 				segmentsEntry.getNameCurrentValue(), new LinkedHashMap<>(), 0,
 				1, null);
 
@@ -429,7 +415,7 @@ public class SegmentsEntryLocalServiceTest {
 
 		BaseModelSearchResult<SegmentsEntry> baseModelSearchResult =
 			_segmentsEntryLocalService.searchSegmentsEntries(
-				_group.getCompanyId(), null,
+				_group.getCompanyId(), _group.getGroupId(), null,
 				LinkedHashMapBuilder.<String, Object>put(
 					"excludedSegmentsEntryIds", excludedSegmentsEntryIds
 				).build(),
@@ -467,12 +453,11 @@ public class SegmentsEntryLocalServiceTest {
 			RandomTestUtil.randomString(),
 			CriteriaSerializer.serialize(new Criteria()),
 			SegmentsEntryConstants.SOURCE_ASAH_FARO_BACKEND,
-			RandomTestUtil.randomString(),
 			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
 		BaseModelSearchResult<SegmentsEntry> baseModelSearchResult =
 			_segmentsEntryLocalService.searchSegmentsEntries(
-				segmentsEntry.getCompanyId(), null,
+				segmentsEntry.getCompanyId(), _group.getGroupId(), null,
 				LinkedHashMapBuilder.<String, Object>put(
 					"excludedSegmentsEntryIds", excludedSegmentsEntryIds
 				).put(
@@ -504,7 +489,7 @@ public class SegmentsEntryLocalServiceTest {
 
 		BaseModelSearchResult<SegmentsEntry> baseModelSearchResult =
 			_segmentsEntryLocalService.searchSegmentsEntries(
-				segmentsEntry.getCompanyId(), null,
+				segmentsEntry.getCompanyId(), _group.getGroupId(), null,
 				LinkedHashMapBuilder.<String, Object>put(
 					"roleIds", new long[] {_role.getRoleId()}
 				).build(),
@@ -530,7 +515,7 @@ public class SegmentsEntryLocalServiceTest {
 		BaseModelSearchResult<SegmentsEntry> baseModelSearchResult =
 			_segmentsEntryLocalService.searchSegmentsEntries(
 				segmentsEntry1.getCompanyId(), segmentsEntry1.getGroupId(),
-				null, true,
+				null,
 				LinkedHashMapBuilder.<String, Object>put(
 					"excludedSegmentsEntryIds",
 					new long[] {segmentsEntry1.getSegmentsEntryId()}
@@ -557,13 +542,11 @@ public class SegmentsEntryLocalServiceTest {
 			RandomTestUtil.randomString(),
 			CriteriaSerializer.serialize(new Criteria()),
 			SegmentsEntryConstants.SOURCE_ASAH_FARO_BACKEND,
-			RandomTestUtil.randomString(),
 			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
 		BaseModelSearchResult<SegmentsEntry> baseModelSearchResult =
 			_segmentsEntryLocalService.searchSegmentsEntries(
 				segmentsEntry.getCompanyId(), segmentsEntry.getGroupId(), null,
-				true,
 				LinkedHashMapBuilder.<String, Object>put(
 					"excludedSources",
 					new String[] {
@@ -592,7 +575,6 @@ public class SegmentsEntryLocalServiceTest {
 		BaseModelSearchResult<SegmentsEntry> baseModelSearchResult =
 			_segmentsEntryLocalService.searchSegmentsEntries(
 				segmentsEntry.getCompanyId(), segmentsEntry.getGroupId(), null,
-				true,
 				LinkedHashMapBuilder.<String, Object>put(
 					"roleIds", new long[] {_role.getRoleId()}
 				).build(),
@@ -644,7 +626,7 @@ public class SegmentsEntryLocalServiceTest {
 		Assert.assertEquals(
 			1,
 			_segmentsEntryLocalService.getSegmentsEntriesCount(
-				_group.getGroupId(), false));
+				_group.getGroupId()));
 	}
 
 	@Test
@@ -656,7 +638,6 @@ public class SegmentsEntryLocalServiceTest {
 			RandomTestUtil.randomString(),
 			CriteriaSerializer.serialize(new Criteria()),
 			SegmentsEntryConstants.SOURCE_ASAH_FARO_BACKEND,
-			RandomTestUtil.randomString(),
 			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
 		SegmentsEntry updatedSegmentsEntry =
@@ -679,10 +660,11 @@ public class SegmentsEntryLocalServiceTest {
 		String segmentsEntryKey = RandomTestUtil.randomString();
 
 		SegmentsTestUtil.addSegmentsEntry(
-			_group.getGroupId(), segmentsEntryKey);
+			_group.getGroupId(), segmentsEntryKey,
+			RandomTestUtil.randomString(), RandomTestUtil.randomString());
 
 		SegmentsEntry segmentsEntry = SegmentsTestUtil.addSegmentsEntry(
-			_group.getGroupId(), RandomTestUtil.randomString());
+			_group.getGroupId());
 
 		_segmentsEntryLocalService.updateSegmentsEntry(
 			segmentsEntry.getSegmentsEntryId(), segmentsEntryKey,
@@ -704,8 +686,7 @@ public class SegmentsEntryLocalServiceTest {
 			Criteria.Conjunction.AND);
 
 		SegmentsEntry segmentsEntry = SegmentsTestUtil.addSegmentsEntry(
-			_group.getGroupId(), CriteriaSerializer.serialize(criteria),
-			User.class.getName());
+			_group.getGroupId(), CriteriaSerializer.serialize(criteria));
 
 		SegmentsEntry updatedSegmentsEntry =
 			_segmentsEntryLocalService.updateSegmentsEntry(

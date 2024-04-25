@@ -13,7 +13,7 @@ import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.service.ObjectActionLocalService;
 import com.liferay.object.service.ObjectActionService;
 import com.liferay.object.service.ObjectDefinitionLocalService;
-import com.liferay.object.service.test.util.ObjectDefinitionTestUtil;
+import com.liferay.object.test.util.ObjectDefinitionTestUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
@@ -55,7 +55,7 @@ public class ObjectActionServiceTest {
 	public void setUp() throws Exception {
 		_guestUser = _userLocalService.getGuestUser(
 			TestPropsValues.getCompanyId());
-		_objectDefinition = ObjectDefinitionTestUtil.addObjectDefinition(
+		_objectDefinition = ObjectDefinitionTestUtil.addCustomObjectDefinition(
 			_objectDefinitionLocalService);
 		_originalName = PrincipalThreadLocal.getName();
 		_originalPermissionChecker =
@@ -156,7 +156,8 @@ public class ObjectActionServiceTest {
 			ObjectActionTriggerConstants.KEY_ON_AFTER_ADD,
 			UnicodePropertiesBuilder.put(
 				"url", RandomTestUtil.randomString()
-			).build());
+			).build(),
+			false);
 	}
 
 	private void _setUser(User user) {
@@ -183,7 +184,8 @@ public class ObjectActionServiceTest {
 				ObjectActionTriggerConstants.KEY_ON_AFTER_ADD,
 				UnicodePropertiesBuilder.put(
 					"url", RandomTestUtil.randomString()
-				).build());
+				).build(),
+				false);
 		}
 		finally {
 			if (objectAction != null) {

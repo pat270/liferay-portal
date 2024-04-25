@@ -31,8 +31,6 @@ import com.liferay.journal.internal.upgrade.v0_0_5.UpgradeJournalDisplayPreferen
 import com.liferay.journal.internal.upgrade.v0_0_5.UpgradeLastPublishDate;
 import com.liferay.journal.internal.upgrade.v0_0_5.UpgradePortletSettings;
 import com.liferay.journal.internal.upgrade.v0_0_6.ImageTypeContentAttributesUpgradeProcess;
-import com.liferay.journal.internal.upgrade.v0_0_7.JournalArticleDatesUpgradeProcess;
-import com.liferay.journal.internal.upgrade.v0_0_7.JournalArticleTreePathUpgradeProcess;
 import com.liferay.journal.internal.upgrade.v0_0_8.ArticleAssetsUpgradeProcess;
 import com.liferay.journal.internal.upgrade.v0_0_8.ArticleExpirationDateUpgradeProcess;
 import com.liferay.journal.internal.upgrade.v0_0_8.ArticleSystemEventsUpgradeProcess;
@@ -56,11 +54,12 @@ import com.liferay.journal.internal.upgrade.v4_0_0.JournalArticleDDMFieldsUpgrad
 import com.liferay.journal.internal.upgrade.v4_1_0.JournalArticleExternalReferenceCodeUpgradeProcess;
 import com.liferay.journal.internal.upgrade.v4_3_1.BasicWebContentAssetEntryClassTypeIdUpgradeProcess;
 import com.liferay.journal.internal.upgrade.v4_4_0.GlobalJournalArticleUrlTitleUpgradeProcess;
-import com.liferay.journal.internal.upgrade.v4_4_3.JournalArticleLayoutClassedModelUsageUpgradeProcess;
 import com.liferay.journal.internal.upgrade.v4_4_4.JournalFeedTypeUpgradeProcess;
 import com.liferay.journal.internal.upgrade.v5_1_0.JournalArticleDDMStructureIdUpgradeProcess;
 import com.liferay.journal.internal.upgrade.v5_1_1.JournalArticleAssetEntryClassTypeIdUpgradeProcess;
 import com.liferay.journal.internal.upgrade.v5_2_0.JournalFeedDDMStructureIdUpgradeProcess;
+import com.liferay.journal.internal.upgrade.v6_1_0.JournalArticleSmallImageSourceUpgradeProcess;
+import com.liferay.journal.internal.upgrade.v6_1_1.JournalArticleLayoutClassedModelUsageUpgradeProcess;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.util.JournalConverter;
 import com.liferay.portal.change.tracking.store.CTStoreFactory;
@@ -154,8 +153,10 @@ public class JournalServiceUpgradeStepRegistrator
 			"0.0.6", "0.0.7", new ImageTypeContentAttributesUpgradeProcess());
 
 		registry.register(
-			"0.0.7", "0.0.8", new JournalArticleDatesUpgradeProcess(),
-			new JournalArticleTreePathUpgradeProcess());
+			"0.0.7", "0.0.8",
+			UpgradeProcessFactory.runSQL(
+				"update JournalArticle set treePath = '/' where folderId = 0 " +
+					"and treePath = '/0/'"));
 
 		registry.register(
 			"0.0.8", "1.0.0",
@@ -199,7 +200,8 @@ public class JournalServiceUpgradeStepRegistrator
 
 		registry.register(
 			"1.1.4", "1.1.5",
-			new ContentImagesUpgradeProcess(_journalArticleImageUpgradeHelper));
+			new ContentImagesUpgradeProcess(
+				_journalArticleImageUpgradeHelper, _portletFileRepository));
 
 		registry.register(
 			"1.1.5", "1.1.6",
@@ -281,8 +283,10 @@ public class JournalServiceUpgradeStepRegistrator
 
 		registry.register("3.4.2", "3.4.3", new DummyUpgradeStep());
 
+		registry.register("3.4.3", "3.4.4", new DummyUpgradeStep());
+
 		registry.register(
-			"3.4.3", "3.5.0",
+			"3.4.4", "3.5.0",
 			new JournalArticleContentUpgradeProcess(
 				_journalContentCompatibilityConverter));
 
@@ -304,11 +308,11 @@ public class JournalServiceUpgradeStepRegistrator
 		registry.register(
 			"4.1.0", "4.2.0",
 			UpgradeProcessFactory.alterColumnType(
-				"JournalFeed", "DDMStructureKey", "VARCHAR(75) null"),
-			UpgradeProcessFactory.alterColumnType(
 				"JournalFeed", "DDMTemplateKey", "VARCHAR(75) null"),
 			UpgradeProcessFactory.alterColumnType(
-				"JournalFeed", "DDMRendererTemplateKey", "VARCHAR(75) null"));
+				"JournalFeed", "DDMRendererTemplateKey", "VARCHAR(75) null"),
+			UpgradeProcessFactory.alterColumnType(
+				"JournalFeed", "DDMStructureKey", "VARCHAR(75) null"));
 
 		registry.register(
 			"4.2.0", "4.3.0",
@@ -340,10 +344,7 @@ public class JournalServiceUpgradeStepRegistrator
 
 		registry.register("4.4.1", "4.4.2", new DummyUpgradeStep());
 
-		registry.register(
-			"4.4.2", "4.4.3",
-			new JournalArticleLayoutClassedModelUsageUpgradeProcess(
-				_classNameLocalService));
+		registry.register("4.4.2", "4.4.3", new DummyUpgradeStep());
 
 		registry.register(
 			"4.4.3", "4.4.4",
@@ -384,6 +385,17 @@ public class JournalServiceUpgradeStepRegistrator
 				"JournalArticle", "DDMStructureKey"),
 			UpgradeProcessFactory.dropColumns(
 				"JournalFeed", "DDMStructureKey"));
+
+		registry.register(
+			"6.0.0", "6.1.0",
+			UpgradeProcessFactory.addColumns(
+				"JournalArticle", "smallImageSource INTEGER"),
+			new JournalArticleSmallImageSourceUpgradeProcess());
+
+		registry.register(
+			"6.1.0", "6.1.1",
+			new JournalArticleLayoutClassedModelUsageUpgradeProcess(
+				_classNameLocalService));
 	}
 
 	private void _deleteTempImages() throws Exception {

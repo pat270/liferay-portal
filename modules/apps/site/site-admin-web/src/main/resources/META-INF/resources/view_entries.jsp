@@ -86,14 +86,14 @@ SiteAdminDisplayContext siteAdminDisplayContext = (SiteAdminDisplayContext)reque
 					<clay:dropdown-actions
 						aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 						dropdownItems="<%= siteAdminDisplayContext.getActionDropdownItems(curGroup) %>"
-						propsTransformer="js/SiteDropdownDefaultPropsTransformer"
+						propsTransformer="{SiteDropdownDefaultPropsTransformer} from site-admin-web"
 					/>
 				</liferay-ui:search-container-column-text>
 			</c:when>
 			<c:when test='<%= Objects.equals(siteAdminDisplayContext.getDisplayStyle(), "icon") %>'>
 				<liferay-ui:search-container-column-text>
 					<clay:vertical-card
-						propsTransformer="js/SiteDropdownDefaultPropsTransformer"
+						propsTransformer="{SiteDropdownDefaultPropsTransformer} from site-admin-web"
 						verticalCard="<%= new SiteVerticalCard(curGroup, liferayPortletRequest, liferayPortletResponse, searchContainer.getRowChecker(), siteAdminDisplayContext) %>"
 					/>
 				</liferay-ui:search-container-column-text>
@@ -116,9 +116,9 @@ SiteAdminDisplayContext siteAdminDisplayContext = (SiteAdminDisplayContext)reque
 					</c:if>
 
 					<%
-					List<String> names = SitesUtil.getOrganizationNames(curGroup, user);
+					List<String> names = TransformUtil.transform(OrganizationLocalServiceUtil.getGroupUserOrganizations(curGroup.getGroupId(), user.getUserId()), Organization::getName);
 
-					names.addAll(SitesUtil.getUserGroupNames(curGroup, user));
+					names.addAll(TransformUtil.transform(UserGroupLocalServiceUtil.getGroupUserUserGroups(curGroup.getGroupId(), user.getUserId()), UserGroup::getName));
 					%>
 
 					<c:if test="<%= ListUtil.isNotEmpty(names) %>">
@@ -221,7 +221,7 @@ SiteAdminDisplayContext siteAdminDisplayContext = (SiteAdminDisplayContext)reque
 					<clay:dropdown-actions
 						aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 						dropdownItems="<%= siteAdminDisplayContext.getActionDropdownItems(curGroup) %>"
-						propsTransformer="js/SiteDropdownDefaultPropsTransformer"
+						propsTransformer="{SiteDropdownDefaultPropsTransformer} from site-admin-web"
 					/>
 				</liferay-ui:search-container-column-text>
 			</c:otherwise>

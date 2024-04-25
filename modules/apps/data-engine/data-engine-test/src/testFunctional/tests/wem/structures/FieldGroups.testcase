@@ -32,6 +32,134 @@ definition {
 		}
 	}
 
+	@description = "This is a test for LPS-179789. Verify it is not possible to mix repeatable fields with other repeatable fields groups"
+	@priority = 4
+	test CannotMixRepeatableFieldsGroups {
+		task ("Given a a Structures that contains 2 field groups with repeatable fields") {
+			DataEngine.addField(
+				fieldFieldLabel = "Text",
+				fieldName = "Text");
+
+			DataEngine.toggleFieldRepeatable(fieldFieldLabel = "Text");
+
+			DataEngine.addFieldNested(
+				fieldFieldLabel = "Numeric",
+				fieldName = "Numeric",
+				targetFieldLabel = "Text");
+
+			DataEngine.toggleFieldRepeatable(fieldFieldLabel = "Numeric");
+
+			DataEngine.toggleFieldRepeatable(fieldsGroupLabel = "Fields Group");
+
+			DataEngine.addField(
+				fieldFieldLabel = "Text 2",
+				fieldName = "Text");
+
+			DataEngine.toggleFieldRepeatable(fieldFieldLabel = "Text 2");
+
+			DataEngine.addFieldNested(
+				fieldFieldLabel = "Numeric 2",
+				fieldName = "Numeric",
+				targetFieldLabel = "Text 2");
+
+			DataEngine.toggleFieldRepeatable(fieldFieldLabel = "Numeric 2");
+
+			DataEngine.editFieldsGroupLabel(
+				fieldsGroupLabel = "Fields Group",
+				fieldsGroupLabelEdit = "Fields Group 2");
+
+			DataEngine.toggleFieldRepeatable(fieldsGroupLabel = "Fields Group 2");
+
+			WebContentStructures.saveCP();
+		}
+
+		task ("When a Web content is created with that structure") {
+			NavItem.gotoWebContent();
+
+			WebContentNavigator.gotoAddWithStructureCP(structureName = "WC Structure Name");
+
+			WebContent.addWithStructureCP(webContentTitle = "WC WebContent Title");
+		}
+
+		task ("and when the user tries to mix the field groups") {
+			AssertElementPresent(locator1 = "DDMEditStructure#FORM_FIELD_GROUP_TARGET_SPACE");
+
+			DragOver(
+				key_fieldFieldLabel = "Fields Group",
+				key_indexItem = 1,
+				locator1 = "DDMEditStructure#FORM_FIELD_CONTAINER_LABEL_ANY",
+				locator2 = "DDMEditStructure#FORM_FIELD_GROUP_TARGET_SPACE");
+		}
+
+		task ("Then the Field groups stay in separate field groups") {
+			DEBuilder.assertFieldsGroup(
+				fieldGroupDepth = 1,
+				fieldGroupLabel = "Fields Group 2",
+				fieldsLabelList = "Text 2,Numeric 2");
+
+			DEBuilder.assertFieldsGroup(
+				fieldGroupDepth = 1,
+				fieldGroupLabel = "Fields Group",
+				fieldsLabelList = "Text,Numeric");
+		}
+	}
+
+	@description = "This is a test for LPS-161853. Verify if all field groups are present after realigning."
+	@priority = 4
+	test CheckFieldGroupsAfterResize {
+		task ("Given a Web Structure form with a field group") {
+			DataEngine.addField(
+				fieldFieldLabel = "Text",
+				fieldName = "Text");
+
+			DataEngine.addFieldNested(
+				fieldFieldLabel = "Date",
+				fieldName = "Date",
+				targetFieldLabel = "Text");
+		}
+
+		task ("When the fields in the field group is resized and realigned") {
+			FormFields.viewFieldSize(
+				fieldName = "Text",
+				size = 12);
+
+			FormFields.resizeField(
+				fieldName = "Text",
+				moveForce = "-400");
+
+			FormFields.moveFieldToPosition(
+				fieldColumnNumber = 1,
+				fieldLabel = "Date");
+
+			Click(locator1 = "Sidebar#BACK");
+		}
+
+		task ("and when another resized field is added to the field group") {
+			DataEngine.addFieldToFieldsGroup(
+				fieldFieldLabel = "Numeric",
+				fieldName = "Numeric",
+				fieldsGroupLabel = "Fields Group");
+
+			FormFields.viewFieldSize(
+				fieldName = "Numeric",
+				size = 12);
+
+			SelectFrame.selectFrameNoLoading(
+				fieldLabel = "Numeric",
+				locator1 = "DataEngineBuilder#FORM_FIELD_NESTED");
+
+			FormFields.resizeFieldGroup(
+				fieldName = "Numeric",
+				moveForce = "-300");
+		}
+
+		task ("Then all fields in the field group are present") {
+			FormFields.assertFieldsVisibleInFieldGroup(
+				fieldGroupLabel = "Fields Group",
+				fieldGroupLabelList = "Text,Date,Numeric");
+		}
+	}
+
 	@description = "This is a test for LPS-98077. Make sure data inserted on a Group Field persists"
 	@priority = 3
 	test CheckIfFieldGroupDataPersists {
@@ -605,7 +733,7 @@ definition {
 				value1 = "This is a Text field - ${labelCount}");
 		}
 
-		WebContent.removeDuplicatedFieldsGroup(index = 3);
+		WebContent.removeDuplicatedFieldsGroup(index = 2);
 
 		PortletEntry.publish();
 
@@ -797,9 +925,13 @@ definition {
 				fieldLabel = "Numeric",
 				index = 2,
 				value = 2);
+
+			PortletEntry.publish();
 		}
 
 		task ("When the user re-orders the repeatable fields groups using drag and drop") {
+			WebContentNavigator.gotoEditCP(webContentTitle = "WC WebContent Title");
+
 			AssertElementPresent(locator1 = "DDMEditStructure#FORM_FIELD_GROUP_TARGET_SPACE");
 
 			DragAndDrop.javaScriptDragAndDropToObject(

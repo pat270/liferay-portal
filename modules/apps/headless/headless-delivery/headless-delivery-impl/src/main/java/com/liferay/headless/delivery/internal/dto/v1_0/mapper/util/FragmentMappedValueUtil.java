@@ -84,7 +84,7 @@ public class FragmentMappedValueUtil {
 		if (Validator.isNotNull(collectionFieldId)) {
 			return new ContextReference() {
 				{
-					contextSource = ContextSource.COLLECTION_ITEM;
+					setContextSource(() -> ContextSource.COLLECTION_ITEM);
 				}
 			};
 		}
@@ -96,15 +96,15 @@ public class FragmentMappedValueUtil {
 		if (Validator.isNotNull(mappedField)) {
 			return new ContextReference() {
 				{
-					contextSource = ContextSource.DISPLAY_PAGE_ITEM;
+					setContextSource(() -> ContextSource.DISPLAY_PAGE_ITEM);
 				}
 			};
 		}
 
 		return new ClassPKReference() {
 			{
-				className = _toItemClassName(jsonObject);
-				classPK = _toItemClassPK(jsonObject);
+				setClassName(() -> _toItemClassName(jsonObject));
+				setClassPK(() -> _toItemClassPK(jsonObject));
 			}
 		};
 	}
@@ -133,31 +133,33 @@ public class FragmentMappedValueUtil {
 
 		return new ClassFieldsReference() {
 			{
-				className = Layout.class.getName();
-
+				setClassName(() -> Layout.class.getName());
 				setFields(
 					() -> {
-						Field friendlyURLField = new Field();
-
-						friendlyURLField.setFieldName("friendlyURL");
-						friendlyURLField.setFieldValue(layout.getFriendlyURL());
-
-						Field privatePageField = new Field();
-
-						privatePageField.setFieldName("privatePage");
-						privatePageField.setFieldValue(
-							String.valueOf(layout.isPrivateLayout()));
-
-						Field siteKeyField = new Field();
-
 						Group group = GroupLocalServiceUtil.getGroup(
 							layout.getGroupId());
 
-						siteKeyField.setFieldName("siteKey");
-						siteKeyField.setFieldValue(group.getGroupKey());
-
 						return new Field[] {
-							friendlyURLField, privatePageField, siteKeyField
+							new Field() {
+								{
+									setFieldName(() -> "friendlyURL");
+									setFieldValue(layout::getFriendlyURL);
+								}
+							},
+							new Field() {
+								{
+									setFieldName(() -> "privatePage");
+									setFieldValue(
+										() -> String.valueOf(
+											layout.isPrivateLayout()));
+								}
+							},
+							new Field() {
+								{
+									setFieldName(() -> "siteKey");
+									setFieldValue(group::getGroupKey);
+								}
+							}
 						};
 					});
 			}

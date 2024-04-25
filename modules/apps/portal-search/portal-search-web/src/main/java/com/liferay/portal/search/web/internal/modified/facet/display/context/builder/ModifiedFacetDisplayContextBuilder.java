@@ -6,26 +6,27 @@
 package com.liferay.portal.search.web.internal.modified.facet.display.context.builder;
 
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
+import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.facet.Facet;
 import com.liferay.portal.kernel.search.facet.collector.FacetCollector;
 import com.liferay.portal.kernel.search.facet.collector.TermCollector;
 import com.liferay.portal.kernel.search.facet.config.FacetConfiguration;
-import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
-import com.liferay.portal.kernel.util.DateFormatFactory;
+import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.search.web.internal.facet.display.context.BucketDisplayContext;
-import com.liferay.portal.search.web.internal.modified.facet.builder.DateRangeFactory;
 import com.liferay.portal.search.web.internal.modified.facet.configuration.ModifiedFacetPortletInstanceConfiguration;
 import com.liferay.portal.search.web.internal.modified.facet.display.context.ModifiedFacetCalendarDisplayContext;
 import com.liferay.portal.search.web.internal.modified.facet.display.context.ModifiedFacetDisplayContext;
+import com.liferay.portal.search.web.internal.util.DateRangeFactoryUtil;
 import com.liferay.portal.search.web.internal.util.comparator.BucketDisplayContextComparatorFactoryUtil;
 
 import java.io.Serializable;
@@ -47,38 +48,27 @@ import javax.portlet.RenderRequest;
  */
 public class ModifiedFacetDisplayContextBuilder implements Serializable {
 
-	public ModifiedFacetDisplayContextBuilder(
-			DateFormatFactory dateFormatFactory, RenderRequest renderRequest)
+	public ModifiedFacetDisplayContextBuilder(RenderRequest renderRequest)
 		throws ConfigurationException {
-
-		_dateFormatFactory = dateFormatFactory;
-
-		_dateRangeFactory = new DateRangeFactory(dateFormatFactory);
 
 		_themeDisplay = (ThemeDisplay)renderRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		PortletDisplay portletDisplay = _themeDisplay.getPortletDisplay();
-
 		_modifiedFacetPortletInstanceConfiguration =
-			portletDisplay.getPortletInstanceConfiguration(
-				ModifiedFacetPortletInstanceConfiguration.class);
+			ConfigurationProviderUtil.getPortletInstanceConfiguration(
+				ModifiedFacetPortletInstanceConfiguration.class, _themeDisplay);
 	}
 
 	public ModifiedFacetDisplayContext build() {
 		ModifiedFacetDisplayContext modifiedFacetDisplayContext =
 			new ModifiedFacetDisplayContext();
 
+		modifiedFacetDisplayContext.setBucketDisplayContexts(
+			_buildBucketDisplayContexts());
 		modifiedFacetDisplayContext.setCalendarDisplayContext(
 			_buildCalendarDisplayContext());
-
-		if ((_dateFormatFactory != null) && (_dateRangeFactory != null)) {
-			modifiedFacetDisplayContext.setCustomRangeBucketDisplayContext(
-				_buildCustomRangeModifiedTermDisplayContext());
-		}
-
-		modifiedFacetDisplayContext.setBucketDisplayContexts(
-			_buildTermDisplayContexts());
+		modifiedFacetDisplayContext.setCustomRangeBucketDisplayContext(
+			_buildCustomRangeBucketDisplayContext());
 		modifiedFacetDisplayContext.setDefaultBucketDisplayContext(
 			_buildDefaultBucketDisplayContext());
 		modifiedFacetDisplayContext.setDisplayStyleGroupId(
@@ -200,6 +190,59 @@ public class ModifiedFacetDisplayContextBuilder implements Serializable {
 		return isNothingSelected();
 	}
 
+	private BucketDisplayContext _buildBucketDisplayContext(
+		String label, String range) {
+
+		BucketDisplayContext bucketDisplayContext = new BucketDisplayContext();
+
+		bucketDisplayContext.setBucketText(label);
+		bucketDisplayContext.setFilterValue(_getLabeledRangeURL(label));
+		bucketDisplayContext.setFrequency(
+			getFrequency(getTermCollector(range)));
+		bucketDisplayContext.setFrequencyVisible(_frequenciesVisible);
+		bucketDisplayContext.setSelected(_selectedRanges.contains(label));
+
+		return bucketDisplayContext;
+	}
+
+	private List<BucketDisplayContext> _buildBucketDisplayContexts() {
+		JSONArray rangesJSONArray = _getRangesJSONArray();
+
+		if (rangesJSONArray == null) {
+			return null;
+		}
+
+		List<BucketDisplayContext> bucketDisplayContexts = new ArrayList<>();
+
+		for (int i = 0; i < rangesJSONArray.length(); i++) {
+			JSONObject jsonObject = rangesJSONArray.getJSONObject(i);
+
+			String label = jsonObject.getString("label");
+
+			if (label.equals("custom-range")) {
+				continue;
+			}
+
+			String range = jsonObject.getString("range");
+
+			if ((_frequencyThreshold > 0) &&
+				(_frequencyThreshold > getFrequency(getTermCollector(range)))) {
+
+				continue;
+			}
+
+			bucketDisplayContexts.add(_buildBucketDisplayContext(label, range));
+		}
+
+		if (!_order.equals("rangesConfiguration")) {
+			bucketDisplayContexts.sort(
+				BucketDisplayContextComparatorFactoryUtil.
+					getBucketDisplayContextComparator(_order));
+		}
+
+		return bucketDisplayContexts;
+	}
+
 	private ModifiedFacetCalendarDisplayContext _buildCalendarDisplayContext() {
 		ModifiedFacetCalendarDisplayContextBuilder
 			modifiedFacetCalendarDisplayContextBuilder =
@@ -220,7 +263,7 @@ public class ModifiedFacetDisplayContextBuilder implements Serializable {
 		return modifiedFacetCalendarDisplayContextBuilder.build();
 	}
 
-	private BucketDisplayContext _buildCustomRangeModifiedTermDisplayContext() {
+	private BucketDisplayContext _buildCustomRangeBucketDisplayContext() {
 		boolean selected = _isCustomRangeSelected();
 
 		BucketDisplayContext bucketDisplayContext = new BucketDisplayContext();
@@ -252,67 +295,21 @@ public class ModifiedFacetDisplayContextBuilder implements Serializable {
 		return bucketDisplayContext;
 	}
 
-	private BucketDisplayContext _buildTermDisplayContext(
-		String label, String range) {
-
-		BucketDisplayContext bucketDisplayContext = new BucketDisplayContext();
-
-		bucketDisplayContext.setBucketText(label);
-		bucketDisplayContext.setFilterValue(_getLabeledRangeURL(label));
-		bucketDisplayContext.setFrequency(
-			getFrequency(getTermCollector(range)));
-		bucketDisplayContext.setFrequencyVisible(_frequenciesVisible);
-		bucketDisplayContext.setSelected(_selectedRanges.contains(label));
-
-		return bucketDisplayContext;
-	}
-
-	private List<BucketDisplayContext> _buildTermDisplayContexts() {
-		JSONArray rangesJSONArray = _getRangesJSONArray();
-
-		if (rangesJSONArray == null) {
-			return null;
-		}
-
-		List<BucketDisplayContext> bucketDisplayContexts = new ArrayList<>();
-
-		for (int i = 0; i < rangesJSONArray.length(); i++) {
-			JSONObject jsonObject = rangesJSONArray.getJSONObject(i);
-
-			String range = jsonObject.getString("range");
-
-			if ((_frequencyThreshold > 0) &&
-				(_frequencyThreshold > getFrequency(getTermCollector(range)))) {
-
-				continue;
-			}
-
-			bucketDisplayContexts.add(
-				_buildTermDisplayContext(jsonObject.getString("label"), range));
-		}
-
-		if (!_order.equals("OrderHitsDesc")) {
-			bucketDisplayContexts.sort(
-				BucketDisplayContextComparatorFactoryUtil.
-					getBucketDisplayContextComparator(_order));
-		}
-
-		return bucketDisplayContexts;
-	}
-
 	private TermCollector _getCustomRangeTermCollector(boolean selected) {
 		if (!selected) {
 			return null;
 		}
 
 		FacetCollector facetCollector = _facet.getFacetCollector();
+		SearchContext searchContext = _facet.getSearchContext();
 
 		return facetCollector.getTermCollector(
-			_dateRangeFactory.getRangeString(_from, _to));
+			DateRangeFactoryUtil.getRangeString(
+				_from, _to, searchContext.getTimeZone()));
 	}
 
 	private String _getCustomRangeURL() {
-		DateFormat format = _dateFormatFactory.getSimpleDateFormat(
+		DateFormat format = DateFormatFactoryUtil.getSimpleDateFormat(
 			"yyyy-MM-dd");
 
 		Calendar calendar = CalendarFactoryUtil.getCalendar(_timeZone);
@@ -368,8 +365,6 @@ public class ModifiedFacetDisplayContextBuilder implements Serializable {
 	}
 
 	private String _currentURL;
-	private final DateFormatFactory _dateFormatFactory;
-	private final DateRangeFactory _dateRangeFactory;
 	private Facet _facet;
 	private boolean _frequenciesVisible;
 	private int _frequencyThreshold;

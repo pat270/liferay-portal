@@ -10,9 +10,8 @@ import URLConstants from 'shared/util/url-constants';
 import {Routes, toRoute} from 'shared/util/router';
 import {Switch, useParams} from 'react-router-dom';
 import {useChannelContext} from 'shared/context/channel';
+import {useCurrentUser} from 'shared/hooks/useCurrentUser';
 import {useDataSource} from 'shared/hooks/useDataSource';
-import {User} from 'shared/util/records';
-import {withCurrentUser} from 'shared/hoc';
 
 const Overview = lazy(
 	() =>
@@ -38,17 +37,14 @@ type Router = {
 };
 
 interface ICommerceDashboardProps extends React.HTMLAttributes<HTMLDivElement> {
-	currentUser: User;
 	router: Router;
 }
 
-export const CommerceDashboard: React.FC<ICommerceDashboardProps> = ({
-	currentUser,
-	router
-}) => {
+const CommerceDashboard: React.FC<ICommerceDashboardProps> = ({router}) => {
 	const {channelId, groupId} = useParams();
 	const dataSourceStates = useDataSource();
 	const {selectedChannel} = useChannelContext();
+	const currentUser = useCurrentUser();
 
 	const authorized = currentUser.isAdmin();
 
@@ -95,7 +91,7 @@ export const CommerceDashboard: React.FC<ICommerceDashboardProps> = ({
 											'connect-a-data-source-with-sites-data'
 										)}
 
-										<a
+										<ClayLink
 											className='d-block mb-3'
 											href={
 												URLConstants.DataSourceConnection
@@ -106,7 +102,7 @@ export const CommerceDashboard: React.FC<ICommerceDashboardProps> = ({
 											{Liferay.Language.get(
 												'access-our-documentation-to-learn-more'
 											)}
-										</a>
+										</ClayLink>
 
 										{authorized && (
 											<ClayLink
@@ -156,4 +152,4 @@ export const CommerceDashboard: React.FC<ICommerceDashboardProps> = ({
 	);
 };
 
-export default withCurrentUser(CommerceDashboard);
+export default CommerceDashboard;

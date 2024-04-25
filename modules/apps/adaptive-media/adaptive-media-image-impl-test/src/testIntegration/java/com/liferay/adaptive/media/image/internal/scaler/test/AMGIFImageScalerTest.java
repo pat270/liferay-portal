@@ -96,7 +96,7 @@ public class AMGIFImageScalerTest {
 			RandomTestUtil.randomString() + ".gif", ContentTypes.IMAGE_GIF,
 			FileUtil.getBytes(
 				AMGIFImageScalerTest.class, "dependencies/image.gif"),
-			null, null, new ServiceContext());
+			null, null, null, new ServiceContext());
 	}
 
 	private AMImageConfigurationEntry _addTestVariant() throws Exception {
@@ -114,7 +114,7 @@ public class AMGIFImageScalerTest {
 	@Inject
 	private AMImageConfigurationHelper _amImageConfigurationHelper;
 
-	@Inject(filter = "supportedMimeTypes=image/gif", type = AMImageScaler.class)
+	@Inject(filter = "mimeTypes=image/gif", type = AMImageScaler.class)
 	private AMImageScaler _amImageScaler;
 
 	@DeleteAfterTestRun

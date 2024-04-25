@@ -6,6 +6,7 @@
 package com.liferay.layout.internal.importer.structure.util;
 
 import com.liferay.headless.delivery.dto.v1_0.ContextReference;
+import com.liferay.headless.delivery.dto.v1_0.MessageFormSubmissionResult;
 import com.liferay.headless.delivery.dto.v1_0.PageElement;
 import com.liferay.layout.converter.AlignConverter;
 import com.liferay.layout.converter.ContentDisplayConverter;
@@ -16,11 +17,12 @@ import com.liferay.layout.util.structure.FormStyledLayoutStructureItem;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.layout.util.structure.LayoutStructureItem;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.json.JSONFactory;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -30,13 +32,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-
 /**
  * @author Eudaldo Alonso
  */
-@Component(service = LayoutStructureItemImporter.class)
 public class FormLayoutStructureItemImporter
 	extends BaseLayoutStructureItemImporter
 	implements LayoutStructureItemImporter {
@@ -52,6 +50,7 @@ public class FormLayoutStructureItemImporter
 		FormStyledLayoutStructureItem formStyledLayoutStructureItem =
 			(FormStyledLayoutStructureItem)
 				layoutStructure.addFormStyledLayoutStructureItem(
+					layoutStructureItemImporterContext.getItemId(pageElement),
 					layoutStructureItemImporterContext.getParentItemId(),
 					layoutStructureItemImporterContext.getPosition());
 
@@ -104,7 +103,7 @@ public class FormLayoutStructureItemImporter
 			}
 			else {
 				formStyledLayoutStructureItem.setClassNameId(
-					portal.getClassNameId(
+					PortalUtil.getClassNameId(
 						(String)itemReferenceMap.get("className")));
 
 				Integer classType = (Integer)itemReferenceMap.get("classType");
@@ -218,7 +217,7 @@ public class FormLayoutStructureItemImporter
 	private JSONObject _getLocalizedValuesJSONObject(
 		String key, Map<String, Object> propertiesMap) {
 
-		JSONObject jsonObject = _jsonFactory.createJSONObject();
+		JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
 
 		Map<String, Object> map = (Map<String, Object>)propertiesMap.get(key);
 
@@ -237,7 +236,7 @@ public class FormLayoutStructureItemImporter
 			jsonObject.put(entry.getKey(), entry.getValue());
 		}
 
-		return JSONUtil.put(key, jsonObject);
+		return jsonObject;
 	}
 
 	private JSONObject _getSuccessMessageJSONObject(
@@ -251,9 +250,63 @@ public class FormLayoutStructureItemImporter
 			return null;
 		}
 
-		if (formSuccessSubmissionResultMap.containsKey("message")) {
-			return _getLocalizedValuesJSONObject(
+		String messageType = String.valueOf(
+			formSuccessSubmissionResultMap.get("messageType"));
+
+		if (formSuccessSubmissionResultMap.containsKey("message") ||
+			Objects.equals(
+				messageType,
+				MessageFormSubmissionResult.MessageType.EMBEDDED.getValue()) ||
+			Objects.equals(
+				messageType,
+				MessageFormSubmissionResult.MessageType.NONE.getValue())) {
+
+			JSONObject messageJSONObject = _getLocalizedValuesJSONObject(
 				"message", formSuccessSubmissionResultMap);
+
+			if (Objects.equals(
+					messageType,
+					MessageFormSubmissionResult.MessageType.NONE.getValue())) {
+
+				return JSONUtil.put(
+					"notificationText",
+					() -> {
+						if (messageJSONObject.length() > 0) {
+							return messageJSONObject;
+						}
+
+						return null;
+					}
+				).put(
+					"showNotification",
+					() -> {
+						if (formSuccessSubmissionResultMap.containsKey(
+								"showNotification")) {
+
+							return GetterUtil.getBoolean(
+								formSuccessSubmissionResultMap.get(
+									"showNotification"));
+						}
+
+						return null;
+					}
+				).put(
+					"type", "none"
+				);
+			}
+
+			return JSONUtil.put(
+				"message",
+				() -> {
+					if (messageJSONObject.length() > 0) {
+						return messageJSONObject;
+					}
+
+					return null;
+				}
+			).put(
+				"type", "embedded"
+			);
 		}
 		else if (formSuccessSubmissionResultMap.containsKey("itemReference")) {
 			Map<String, Object> itemReference =
@@ -263,17 +316,22 @@ public class FormLayoutStructureItemImporter
 			return JSONUtil.put(
 				"layout",
 				getLayoutFromItemReferenceJSONObject(
-					itemReference, layoutStructureItemImporterContext));
+					itemReference, layoutStructureItemImporterContext)
+			).put(
+				"type", "layout"
+			);
 		}
 		else if (formSuccessSubmissionResultMap.containsKey("url")) {
-			return _getLocalizedValuesJSONObject(
-				"url", formSuccessSubmissionResultMap);
+			return JSONUtil.put(
+				"type", "url"
+			).put(
+				"url",
+				_getLocalizedValuesJSONObject(
+					"url", formSuccessSubmissionResultMap)
+			);
 		}
 
 		return null;
 	}
-
-	@Reference
-	private JSONFactory _jsonFactory;
 
 }

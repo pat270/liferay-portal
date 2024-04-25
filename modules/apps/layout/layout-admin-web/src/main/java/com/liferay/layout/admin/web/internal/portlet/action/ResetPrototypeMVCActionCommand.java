@@ -7,6 +7,7 @@ package com.liferay.layout.admin.web.internal.portlet.action;
 
 import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
 import com.liferay.layout.configuration.LayoutExportImportConfiguration;
+import com.liferay.layout.set.prototype.helper.LayoutSetPrototypeHelper;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
@@ -15,7 +16,6 @@ import com.liferay.portal.kernel.servlet.MultiSessionMessages;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.sites.kernel.util.Sites;
 
 import java.util.Map;
 
@@ -55,14 +55,14 @@ public class ResetPrototypeMVCActionCommand extends BaseMVCActionCommand {
 
 		Layout layout = themeDisplay.getLayout();
 
-		_sites.resetPrototype(layout);
+		_layoutSetPrototypeHelper.resetPrototype(layout);
 
 		Layout draftLayout = layout.fetchDraftLayout();
 
 		if ((draftLayout != null) &&
 			_layoutExportImportConfiguration.exportDraftLayout()) {
 
-			_sites.resetPrototype(draftLayout);
+			_layoutSetPrototypeHelper.resetPrototype(draftLayout);
 		}
 
 		MultiSessionMessages.add(
@@ -74,9 +74,9 @@ public class ResetPrototypeMVCActionCommand extends BaseMVCActionCommand {
 		_layoutExportImportConfiguration;
 
 	@Reference
-	private Portal _portal;
+	private LayoutSetPrototypeHelper _layoutSetPrototypeHelper;
 
 	@Reference
-	private Sites _sites;
+	private Portal _portal;
 
 }

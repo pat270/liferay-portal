@@ -16,6 +16,7 @@ import com.liferay.source.formatter.parser.JavaClass;
 import com.liferay.source.formatter.parser.JavaClassParser;
 import com.liferay.source.formatter.parser.JavaTerm;
 import com.liferay.source.formatter.util.FileUtil;
+import com.liferay.source.formatter.util.SourceFormatterUtil;
 
 import java.io.File;
 
@@ -419,13 +420,12 @@ public class JavaOSGiReferenceCheck extends BaseFileCheck {
 
 		String moduleRootDirLocation = "modules/";
 
-		for (int i = 0; i < 6; i++) {
+		for (int i = 0; i < getMaxDirLevel(); i++) {
 			File file = new File(getBaseDirName() + moduleRootDirLocation);
 
 			if (file.exists()) {
-				fileNames = getFileNames(
-					getBaseDirName() + moduleRootDirLocation, new String[0],
-					new String[] {"**/*.java"});
+				fileNames = SourceFormatterUtil.scanForFileNames(
+					file.getCanonicalPath(), new String[] {"**/*.java"});
 
 				break;
 			}
@@ -434,9 +434,6 @@ public class JavaOSGiReferenceCheck extends BaseFileCheck {
 		}
 
 		for (String fileName : fileNames) {
-			fileName = StringUtil.replace(
-				fileName, CharPool.BACK_SLASH, CharPool.SLASH);
-
 			String className = StringUtil.replace(
 				fileName, CharPool.SLASH, CharPool.PERIOD);
 
@@ -562,9 +559,6 @@ public class JavaOSGiReferenceCheck extends BaseFileCheck {
 				new String[] {"**/*Util.java"});
 
 			for (String fileName : utilFileNames) {
-				fileName = StringUtil.replace(
-					fileName, CharPool.BACK_SLASH, CharPool.SLASH);
-
 				String content = FileUtil.read(new File(fileName));
 
 				if (content.contains(

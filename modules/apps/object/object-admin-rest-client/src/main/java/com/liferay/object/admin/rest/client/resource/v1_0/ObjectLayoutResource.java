@@ -12,6 +12,8 @@ import com.liferay.object.admin.rest.client.pagination.Pagination;
 import com.liferay.object.admin.rest.client.problem.Problem;
 import com.liferay.object.admin.rest.client.serdes.v1_0.ObjectLayoutSerDes;
 
+import java.net.URL;
+
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -35,13 +37,13 @@ public interface ObjectLayoutResource {
 	public Page<ObjectLayout>
 			getObjectDefinitionByExternalReferenceCodeObjectLayoutsPage(
 				String externalReferenceCode, String search,
-				Pagination pagination)
+				Pagination pagination, String sortString)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse
 			getObjectDefinitionByExternalReferenceCodeObjectLayoutsPageHttpResponse(
 				String externalReferenceCode, String search,
-				Pagination pagination)
+				Pagination pagination, String sortString)
 		throws Exception;
 
 	public ObjectLayout postObjectDefinitionByExternalReferenceCodeObjectLayout(
@@ -54,23 +56,25 @@ public interface ObjectLayoutResource {
 		throws Exception;
 
 	public Page<ObjectLayout> getObjectDefinitionObjectLayoutsPage(
-			Long objectDefinitionId, String search, Pagination pagination)
+			Long objectDefinitionId, String search, Pagination pagination,
+			String sortString)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse
 			getObjectDefinitionObjectLayoutsPageHttpResponse(
-				Long objectDefinitionId, String search, Pagination pagination)
+				Long objectDefinitionId, String search, Pagination pagination,
+				String sortString)
 		throws Exception;
 
 	public void postObjectDefinitionObjectLayoutsPageExportBatch(
-			Long objectDefinitionId, String search, String callbackURL,
-			String contentType, String fieldNames)
+			Long objectDefinitionId, String search, String sortString,
+			String callbackURL, String contentType, String fieldNames)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse
 			postObjectDefinitionObjectLayoutsPageExportBatchHttpResponse(
-				Long objectDefinitionId, String search, String callbackURL,
-				String contentType, String fieldNames)
+				Long objectDefinitionId, String search, String sortString,
+				String callbackURL, String contentType, String fieldNames)
 		throws Exception;
 
 	public ObjectLayout postObjectDefinitionObjectLayout(
@@ -178,6 +182,10 @@ public interface ObjectLayoutResource {
 			return this;
 		}
 
+		public Builder endpoint(URL url) {
+			return endpoint(url.getHost(), url.getPort(), url.getProtocol());
+		}
+
 		public Builder header(String key, String value) {
 			_headers.put(key, value);
 
@@ -233,12 +241,12 @@ public interface ObjectLayoutResource {
 		public Page<ObjectLayout>
 				getObjectDefinitionByExternalReferenceCodeObjectLayoutsPage(
 					String externalReferenceCode, String search,
-					Pagination pagination)
+					Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				getObjectDefinitionByExternalReferenceCodeObjectLayoutsPageHttpResponse(
-					externalReferenceCode, search, pagination);
+					externalReferenceCode, search, pagination, sortString);
 
 			String content = httpResponse.getContent();
 
@@ -302,7 +310,7 @@ public interface ObjectLayoutResource {
 		public HttpInvoker.HttpResponse
 				getObjectDefinitionByExternalReferenceCodeObjectLayoutsPageHttpResponse(
 					String externalReferenceCode, String search,
-					Pagination pagination)
+					Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -335,6 +343,10 @@ public interface ObjectLayoutResource {
 					"page", String.valueOf(pagination.getPage()));
 				httpInvoker.parameter(
 					"pageSize", String.valueOf(pagination.getPageSize()));
+			}
+
+			if (sortString != null) {
+				httpInvoker.parameter("sort", sortString);
 			}
 
 			httpInvoker.path(
@@ -460,12 +472,13 @@ public interface ObjectLayoutResource {
 		}
 
 		public Page<ObjectLayout> getObjectDefinitionObjectLayoutsPage(
-				Long objectDefinitionId, String search, Pagination pagination)
+				Long objectDefinitionId, String search, Pagination pagination,
+				String sortString)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				getObjectDefinitionObjectLayoutsPageHttpResponse(
-					objectDefinitionId, search, pagination);
+					objectDefinitionId, search, pagination, sortString);
 
 			String content = httpResponse.getContent();
 
@@ -529,7 +542,7 @@ public interface ObjectLayoutResource {
 		public HttpInvoker.HttpResponse
 				getObjectDefinitionObjectLayoutsPageHttpResponse(
 					Long objectDefinitionId, String search,
-					Pagination pagination)
+					Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -564,6 +577,10 @@ public interface ObjectLayoutResource {
 					"pageSize", String.valueOf(pagination.getPageSize()));
 			}
 
+			if (sortString != null) {
+				httpInvoker.parameter("sort", sortString);
+			}
+
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port + _builder._contextPath +
@@ -578,14 +595,14 @@ public interface ObjectLayoutResource {
 		}
 
 		public void postObjectDefinitionObjectLayoutsPageExportBatch(
-				Long objectDefinitionId, String search, String callbackURL,
-				String contentType, String fieldNames)
+				Long objectDefinitionId, String search, String sortString,
+				String callbackURL, String contentType, String fieldNames)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				postObjectDefinitionObjectLayoutsPageExportBatchHttpResponse(
-					objectDefinitionId, search, callbackURL, contentType,
-					fieldNames);
+					objectDefinitionId, search, sortString, callbackURL,
+					contentType, fieldNames);
 
 			String content = httpResponse.getContent();
 
@@ -637,11 +654,13 @@ public interface ObjectLayoutResource {
 
 		public HttpInvoker.HttpResponse
 				postObjectDefinitionObjectLayoutsPageExportBatchHttpResponse(
-					Long objectDefinitionId, String search, String callbackURL,
-					String contentType, String fieldNames)
+					Long objectDefinitionId, String search, String sortString,
+					String callbackURL, String contentType, String fieldNames)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body("[]", "application/json");
 
 			if (_builder._locale != null) {
 				httpInvoker.header(
@@ -664,6 +683,10 @@ public interface ObjectLayoutResource {
 
 			if (search != null) {
 				httpInvoker.parameter("search", String.valueOf(search));
+			}
+
+			if (sortString != null) {
+				httpInvoker.parameter("sort", sortString);
 			}
 
 			if (callbackURL != null) {

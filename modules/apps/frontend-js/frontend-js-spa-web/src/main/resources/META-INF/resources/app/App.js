@@ -485,8 +485,8 @@ class App extends EventEmitter {
 					this.extractParams(route, path)
 				);
 			})
-			.then(() => nextScreen.evaluateStyles(this.surfaces))
 			.then(() => nextScreen.flip(this.surfaces))
+			.then(() => nextScreen.evaluateStyles(this.surfaces))
 			.then(() => nextScreen.evaluateScripts(this.surfaces))
 			.then(() => this.maybeUpdateScrollPositionState_())
 			.then(() => this.syncScrollPositionSyncThenAsync_())
@@ -929,10 +929,18 @@ class App extends EventEmitter {
 	 */
 	maybeUpdateScrollPositionState_() {
 		const hash = window.location.hash;
-		const anchorElement = document.getElementById(hash.substring(1));
-		if (anchorElement) {
-			const {offsetLeft, offsetTop} = getNodeOffset(anchorElement);
-			this.saveHistoryCurrentPageScrollPosition_(offsetTop, offsetLeft);
+
+		if (hash) {
+			const anchorElement = document.getElementById(hash.substring(1));
+
+			if (anchorElement) {
+				const {offsetLeft, offsetTop} = getNodeOffset(anchorElement);
+
+				this.saveHistoryCurrentPageScrollPosition_(
+					offsetTop,
+					offsetLeft
+				);
+			}
 		}
 	}
 

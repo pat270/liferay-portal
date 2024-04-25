@@ -1,4 +1,4 @@
-@component-name = "portal-lima"
+@component-name = "portal-content-management"
 definition {
 
 	property portal.acceptance = "true";
@@ -60,6 +60,7 @@ definition {
 	@refactordone
 	test AbstractDescriptionPersistsWhenTypingInContentField {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		BlogsNavigator.openToAddEntry(
 			layoutName = "Blogs Page",
@@ -83,7 +84,7 @@ definition {
 	}
 
 	@description = "This checks that users can add a comment to a blog entry through the page comment widget when a blog entry is displayed through a DPT."
-	@priority = 5
+	@priority = 3
 	test CanAddCommentToBlogEntryWhenEntryIsDisplayedWithDPT {
 		property custom.properties = "virtual.hosts.default.site.name=Guest";
 
@@ -171,6 +172,7 @@ definition {
 	@refactordone
 	test CanDisplayViewCountForEntry {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Portlet.gotoPortletOptions(
 			portletName = "Blogs",
@@ -421,27 +423,27 @@ definition {
 
 		Navigator.gotoPage(pageName = "Search Page");
 
-		SearchPortlets.searchEmbedded(searchTerm = "\"Blogs\"");
+		SearchPage.searchEmbedded(searchTerm = "\"Blogs\"");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Entry Title",
 			searchAssetType = "Blogs Entry",
 			searchTerm = "\"Blogs\"");
 
-		SearchPortlets.searchEmbedded(searchTerm = "\"Blogs Entry Content\"");
+		SearchPage.searchEmbedded(searchTerm = "\"Blogs Entry Content\"");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Entry Title",
 			searchAssetType = "Blogs Entry",
 			searchTerm = "\"Blogs Entry Content\"");
 
-		SearchPortlets.searchEmbedded(searchTerm = "\"Blogs1\"");
+		SearchPage.searchEmbedded(searchTerm = "\"Blogs1\"");
 
-		SearchResultPortlet.viewNoSearchResults(searchTerm = "\"Blogs1\"");
+		SearchResults.viewNoSearchResults(searchTerm = "\"Blogs1\"");
 
-		SearchPortlets.searchEmbedded(searchTerm = "\"Blogs1 Entry1 Content1\"");
+		SearchPage.searchEmbedded(searchTerm = "\"Blogs1 Entry1 Content1\"");
 
-		SearchResultPortlet.viewNoSearchResults(searchTerm = "\"Blogs1 Entry1 Content1\"");
+		SearchResults.viewNoSearchResults(searchTerm = "\"Blogs1 Entry1 Content1\"");
 	}
 
 	@description = "This checks that exact title search returns an entry when it includes the entire phrase being queried."
@@ -458,27 +460,27 @@ definition {
 
 		Navigator.gotoPage(pageName = "Search Page");
 
-		SearchPortlets.searchEmbedded(searchTerm = "\"Blogs\"");
+		SearchPage.searchEmbedded(searchTerm = "\"Blogs\"");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Blogs Entry Title",
 			searchAssetType = "Blogs Entry",
 			searchTerm = "\"Blogs\"");
 
-		SearchPortlets.searchEmbedded(searchTerm = "\"Blogs Entry Title\"");
+		SearchPage.searchEmbedded(searchTerm = "\"Blogs Entry Title\"");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Blogs Entry Title",
 			searchAssetType = "Blogs Entry",
 			searchTerm = "\"Blogs Entry Title\"");
 
-		SearchPortlets.searchEmbedded(searchTerm = "\"Blogs1\"");
+		SearchPage.searchEmbedded(searchTerm = "\"Blogs1\"");
 
-		SearchResultPortlet.viewNoSearchResults(searchTerm = "\"Blogs1\"");
+		SearchResults.viewNoSearchResults(searchTerm = "\"Blogs1\"");
 
-		SearchPortlets.searchEmbedded(searchTerm = "\"Blogs Entry Title1\"");
+		SearchPage.searchEmbedded(searchTerm = "\"Blogs Entry Title1\"");
 
-		SearchResultPortlet.viewNoSearchResults(searchTerm = "\"Blogs Entry Title1\"");
+		SearchResults.viewNoSearchResults(searchTerm = "\"Blogs Entry Title1\"");
 	}
 
 	@description = "This checks that a blog comment can be subscribed to."
@@ -486,6 +488,7 @@ definition {
 	@refactordone
 	test CanSubscribeToComment {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 		property testray.component.names = "Comment";
 
 		JSONBlog.addEntry(
@@ -562,6 +565,7 @@ definition {
 	@refactordone
 	test CanViewAbstractDisplayingFirst400Characters {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
@@ -573,12 +577,12 @@ definition {
 		Navigator.gotoPage(pageName = "Blogs Page");
 
 		BlogsEntry.viewAbstractDisplay(
-			entryAbstractDescription = "Liferay Portal provides an excellent platform for building web applications, websites, and portals, but it can additionally be used for a new category of web applications called social applications. The definition is simple: a social application is a web application that additionally leverages social identity, data, and features or services. In the left figure, the light blue squares...",
+			entryAbstractDescription = "Liferay Portal provides an excellent platform for building web applications, websites, and portals, but it can additionally be used for a new category of web applications called social applications. The definition is simple: a social application is a web application that additionally leverages social identity, data, and features or services. In the left figure, the light blue squares represent...",
 			entryContent = "Blogs Entry Content",
 			entryTitle = "Blogs Entry Title");
 
 		BlogsNavigator.gotoEntryWithAbstractPG(
-			entryAbstractDescription = "Liferay Portal provides an excellent platform for building web applications, websites, and portals, but it can additionally be used for a new category of web applications called social applications. The definition is simple: a social application is a web application that additionally leverages social identity, data, and features or services. In the left figure, the light blue squares...",
+			entryAbstractDescription = "Liferay Portal provides an excellent platform for building web applications, websites, and portals, but it can additionally be used for a new category of web applications called social applications. The definition is simple: a social application is a web application that additionally leverages social identity, data, and features or services. In the left figure, the light blue squares represent...",
 			entryTitle = "Blogs Entry Title");
 
 		BlogsEntry.viewEntryPG(
@@ -590,6 +594,7 @@ definition {
 	@refactorneeded
 	test CanViewEntriesOnMultiplePagesWithDifferentScopes {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var siteName = TestCase.getSiteName(siteName = ${siteName});
 
@@ -678,6 +683,7 @@ definition {
 	@priority = 5
 	test CanViewEntryUsingDisplayPageTemplate {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// To avoid interference from other tests about the NPE assertion，skip run it on virtal instance, see LPS-185660.
 
@@ -726,7 +732,7 @@ definition {
 	}
 
 	@description = "This test checks that blog entry can be added with special charaters."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanViewEntryWithSpecialCharacters {
 		BlogsNavigator.openToAddEntry(
@@ -751,10 +757,11 @@ definition {
 	}
 
 	@description = "Basic test that ensures reading time displays when enabled."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanViewReadingTime {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		BlogsConfiguration.enableReadingTime();
 
@@ -776,7 +783,7 @@ definition {
 	}
 
 	@description = "This checks that the comment section is hidden when viewing a blog entry through the blogs widget in a DPT."
-	@priority = 5
+	@priority = 4
 	test CommentsSectionOfBlogsWidgetIsHiddenWhenViewingEntryInDPT {
 		var portalURL = PropsUtil.get("portal.url");
 
@@ -817,7 +824,7 @@ definition {
 	}
 
 	@description = "This is a usecase for LPS-66970. It checks that both the old and new blog URLs lead to the current entry."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test ViewBlogEntryViaEditedCustomURL {
 		JSONBlog.addEntry(

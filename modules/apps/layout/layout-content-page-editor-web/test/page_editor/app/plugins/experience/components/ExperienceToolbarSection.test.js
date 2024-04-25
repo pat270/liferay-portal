@@ -6,6 +6,7 @@
 import {
 	fireEvent,
 	render,
+	screen,
 	waitFor,
 	waitForElementToBeRemoved,
 	within,
@@ -155,6 +156,15 @@ describe('ExperienceToolbarSection', () => {
 
 	afterEach(() => {
 		serviceFetch.mockReset();
+	});
+
+	it('renders ExperienceToolbarSection component and makes sure that the button has aria-label and the label is present', async () => {
+		renderExperienceToolbarSection(mockState, mockConfig);
+
+		expect(screen.getByText('experience')).toBeInTheDocument();
+		expect(
+			screen.getByLabelText('experience: Default Experience')
+		).toBeInTheDocument();
 	});
 
 	it('shows a list of Experiences ordered by priority', async () => {
@@ -365,8 +375,7 @@ describe('ExperienceToolbarSection', () => {
 					newPriority: 3,
 					segmentsExperienceId: 'test-experience-id-02',
 				}),
-			}),
-			expect.any(Function)
+			})
 		);
 
 		expect(mockDispatch).toHaveBeenCalledWith(
@@ -443,8 +452,7 @@ describe('ExperienceToolbarSection', () => {
 					newPriority: 1,
 					segmentsExperienceId: 'test-experience-id-01',
 				}),
-			}),
-			expect.any(Function)
+			})
 		);
 
 		expect(mockDispatch).toHaveBeenCalledWith(
@@ -539,8 +547,7 @@ describe('ExperienceToolbarSection', () => {
 					name: 'New Experience #1',
 					segmentsEntryId: 'test-segment-id-00',
 				}),
-			}),
-			expect.any(Function)
+			})
 		);
 
 		expect(mockDispatch).toHaveBeenCalledWith(
@@ -632,8 +639,7 @@ describe('ExperienceToolbarSection', () => {
 					segmentsEntryId: 'test-segment-id-00',
 					segmentsExperienceId: 'test-experience-id-01',
 				}),
-			}),
-			expect.any(Function)
+			})
 		);
 
 		expect(mockDispatch).toHaveBeenCalledWith(
@@ -780,8 +786,7 @@ describe('ExperienceToolbarSection', () => {
 				body: expect.objectContaining({
 					segmentsExperienceId: 'test-experience-id-01',
 				}),
-			}),
-			expect.any(Function)
+			})
 		);
 
 		expect(mockDispatch).toHaveBeenCalledWith(
@@ -850,8 +855,7 @@ describe('ExperienceToolbarSection', () => {
 				body: expect.objectContaining({
 					segmentsExperienceId: 'test-experience-id-01',
 				}),
-			}),
-			expect.any(Function)
+			})
 		);
 
 		expect(mockDispatch).toHaveBeenCalledWith(

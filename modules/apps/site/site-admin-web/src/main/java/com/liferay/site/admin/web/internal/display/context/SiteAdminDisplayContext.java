@@ -8,6 +8,7 @@ package com.liferay.site.admin.web.internal.display.context;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.TabsItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.TabsItemListBuilder;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -15,13 +16,13 @@ import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.MembershipRequestConstants;
+import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.OrganizationConstants;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.SearchDisplayStyleUtil;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.GroupServiceUtil;
 import com.liferay.portal.kernel.service.MembershipRequestLocalServiceUtil;
 import com.liferay.portal.kernel.service.OrganizationLocalServiceUtil;
@@ -41,11 +42,12 @@ import com.liferay.portal.service.persistence.constants.UserGroupFinderConstants
 import com.liferay.site.admin.web.internal.constants.SiteAdminPortletKeys;
 import com.liferay.site.admin.web.internal.search.SiteChecker;
 import com.liferay.site.admin.web.internal.servlet.taglib.util.SiteActionDropdownItemsProvider;
-import com.liferay.site.constants.SiteWebKeys;
+import com.liferay.site.navigation.taglib.servlet.taglib.util.BreadcrumbEntryBuilder;
+import com.liferay.site.navigation.taglib.servlet.taglib.util.BreadcrumbEntryListBuilder;
+import com.liferay.site.provider.GroupSearchProvider;
 import com.liferay.site.search.GroupSearch;
-import com.liferay.site.util.GroupSearchProvider;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -69,9 +71,8 @@ public class SiteAdminDisplayContext {
 		_liferayPortletRequest = liferayPortletRequest;
 		_liferayPortletResponse = liferayPortletResponse;
 
-		_groupSearchProvider =
-			(GroupSearchProvider)httpServletRequest.getAttribute(
-				SiteWebKeys.GROUP_SEARCH_PROVIDER);
+		_themeDisplay = (ThemeDisplay)httpServletRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
 	}
 
 	public List<DropdownItem> getActionDropdownItems(Group group)
@@ -85,60 +86,53 @@ public class SiteAdminDisplayContext {
 	}
 
 	public List<BreadcrumbEntry> getBreadcrumbEntries() throws PortalException {
-		List<BreadcrumbEntry> breadcrumbEntries = new ArrayList<>();
-
-		BreadcrumbEntry breadcrumbEntry = new BreadcrumbEntry();
-
-		breadcrumbEntry.setTitle(
-			LanguageUtil.get(_httpServletRequest, "sites"));
-
-		PortletURL mainURL = PortletURLBuilder.createRenderURL(
-			_liferayPortletResponse
-		).setMVCPath(
-			"/view.jsp"
-		).buildPortletURL();
-
-		breadcrumbEntry.setURL(mainURL.toString());
-
-		breadcrumbEntries.add(breadcrumbEntry);
-
 		Group group = getGroup();
 
 		if (group == null) {
-			return breadcrumbEntries;
+			return BreadcrumbEntryListBuilder.add(
+				breadcrumbEntry -> breadcrumbEntry.setTitle(
+					LanguageUtil.get(_httpServletRequest, "sites"))
+			).build();
 		}
 
-		List<Group> ancestorGroups = group.getAncestors();
+		return BreadcrumbEntryListBuilder.add(
+			breadcrumbEntry -> {
+				breadcrumbEntry.setTitle(
+					LanguageUtil.get(_httpServletRequest, "sites"));
+				breadcrumbEntry.setURL(
+					PortletURLBuilder.createRenderURL(
+						_liferayPortletResponse
+					).setMVCPath(
+						"/view.jsp"
+					).buildString());
+			}
+		).addAll(
+			() -> {
+				List<Group> ancestorGroups = group.getAncestors();
 
-		Collections.reverse(ancestorGroups);
+				Collections.reverse(ancestorGroups);
 
-		for (Group ancestorGroup : ancestorGroups) {
-			breadcrumbEntry = new BreadcrumbEntry();
+				return TransformUtil.transform(
+					ancestorGroups,
+					ancestorGroup -> BreadcrumbEntryBuilder.setTitle(
+						ancestorGroup.getDescriptiveName()
+					).setURL(
+						PortletURLBuilder.createRenderURL(
+							_liferayPortletResponse
+						).setMVCPath(
+							"/view.jsp"
+						).setParameter(
+							"groupId", ancestorGroup.getGroupId()
+						).buildString()
+					).build());
+			}
+		).add(
+			breadcrumbEntry -> {
+				Group unescapedGroup = group.toUnescapedModel();
 
-			breadcrumbEntry.setTitle(ancestorGroup.getDescriptiveName());
-
-			mainURL.setParameter(
-				"groupId", String.valueOf(ancestorGroup.getGroupId()));
-
-			breadcrumbEntry.setURL(mainURL.toString());
-
-			breadcrumbEntries.add(breadcrumbEntry);
-		}
-
-		Group unescapedGroup = group.toUnescapedModel();
-
-		breadcrumbEntry = new BreadcrumbEntry();
-
-		breadcrumbEntry.setTitle(unescapedGroup.getDescriptiveName());
-
-		mainURL.setParameter(
-			"groupId", String.valueOf(unescapedGroup.getGroupId()));
-
-		breadcrumbEntry.setURL(mainURL.toString());
-
-		breadcrumbEntries.add(breadcrumbEntry);
-
-		return breadcrumbEntries;
+				breadcrumbEntry.setTitle(unescapedGroup.getDescriptiveName());
+			}
+		).build();
 	}
 
 	public String getDisplayStyle() {
@@ -178,18 +172,16 @@ public class SiteAdminDisplayContext {
 
 		groupSearch.setId("sites");
 		groupSearch.setOrderByCol("descriptive-name");
-
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)_liferayPortletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
 		groupSearch.setOrderByComparator(
 			new GroupDescriptiveNameComparator(
 				Objects.equals(groupSearch.getOrderByType(), "asc"),
-				themeDisplay.getLocale()));
+				_themeDisplay.getLocale()));
 
-		_groupSearchProvider.setResultsAndTotal(
-			groupSearch, _liferayPortletRequest);
+		GroupSearchProvider.setResultsAndTotal(
+			Arrays.asList(
+				Company.class.getName(), Group.class.getName(),
+				Organization.class.getName()),
+			null, groupSearch, _liferayPortletRequest);
 
 		SiteChecker siteChecker = new SiteChecker(_liferayPortletResponse);
 
@@ -204,14 +196,8 @@ public class SiteAdminDisplayContext {
 	}
 
 	public int getOrganizationsCount(Group group) {
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)_httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
-		Company company = themeDisplay.getCompany();
-
 		return OrganizationLocalServiceUtil.searchCount(
-			company.getCompanyId(),
+			_themeDisplay.getCompanyId(),
 			OrganizationConstants.ANY_PARENT_ORGANIZATION_ID, null, null, null,
 			null,
 			LinkedHashMapBuilder.<String, Object>put(
@@ -253,14 +239,8 @@ public class SiteAdminDisplayContext {
 	}
 
 	public int getUserGroupsCount(Group group) {
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)_httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
-		Company company = themeDisplay.getCompany();
-
 		return UserGroupLocalServiceUtil.searchCount(
-			company.getCompanyId(), null,
+			_themeDisplay.getCompanyId(), null,
 			LinkedHashMapBuilder.<String, Object>put(
 				UserGroupFinderConstants.PARAM_KEY_USER_GROUPS_GROUPS,
 				group.getGroupId()
@@ -268,14 +248,9 @@ public class SiteAdminDisplayContext {
 	}
 
 	public int getUsersCount(Group group) {
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)_httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
-		Company company = themeDisplay.getCompany();
-
 		return UserLocalServiceUtil.searchCount(
-			company.getCompanyId(), null, WorkflowConstants.STATUS_APPROVED,
+			_themeDisplay.getCompanyId(), null,
+			WorkflowConstants.STATUS_APPROVED,
 			LinkedHashMapBuilder.<String, Object>put(
 				"inherit", Boolean.TRUE
 			).put(
@@ -286,18 +261,13 @@ public class SiteAdminDisplayContext {
 	public boolean hasAddChildSitePermission(Group group)
 		throws PortalException {
 
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)_httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
-		PermissionChecker permissionChecker =
-			themeDisplay.getPermissionChecker();
-
 		if (!group.isCompany() &&
 			(PortalPermissionUtil.contains(
-				permissionChecker, ActionKeys.ADD_COMMUNITY) ||
+				_themeDisplay.getPermissionChecker(),
+				ActionKeys.ADD_COMMUNITY) ||
 			 GroupPermissionUtil.contains(
-				 permissionChecker, group, ActionKeys.ADD_COMMUNITY))) {
+				 _themeDisplay.getPermissionChecker(), group,
+				 ActionKeys.ADD_COMMUNITY))) {
 
 			return true;
 		}
@@ -308,9 +278,9 @@ public class SiteAdminDisplayContext {
 	private String _displayStyle;
 	private Group _group;
 	private long _groupId;
-	private final GroupSearchProvider _groupSearchProvider;
 	private final HttpServletRequest _httpServletRequest;
 	private final LiferayPortletRequest _liferayPortletRequest;
 	private final LiferayPortletResponse _liferayPortletResponse;
+	private final ThemeDisplay _themeDisplay;
 
 }

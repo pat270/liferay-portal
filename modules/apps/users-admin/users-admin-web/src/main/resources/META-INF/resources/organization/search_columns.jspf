@@ -19,33 +19,33 @@
 				<aui:a href="<%= String.valueOf(rowURL) %>"><%= organization.getName() %></aui:a>
 			</h5>
 
-			<h6 class="text-default">
+			<div class="h6 text-default">
 				<%= HtmlUtil.escape(organization.getParentOrganizationName()) %>
-			</h6>
+			</div>
 
-			<h6 class="text-default">
+			<div class="h6 text-default">
 				<liferay-ui:message key="<%= organization.getType() %>" />
-			</h6>
+			</div>
 
-			<h6 class="text-default">
+			<div class="h6 text-default">
 				<%= HtmlUtil.escape(organization.getAddress().getCity()) %>
-				<%= UsersAdmin.ORGANIZATION_REGION_NAME_ACCESSOR.get(organization) %>
-				<%= UsersAdmin.ORGANIZATION_COUNTRY_NAME_ACCESSOR.get(organization) %>
-			</h6>
+				<%= UsersAdminUtil.ORGANIZATION_REGION_NAME_ACCESSOR.get(organization) %>
+				<%= UsersAdminUtil.ORGANIZATION_COUNTRY_NAME_ACCESSOR.get(organization) %>
+			</div>
 		</liferay-ui:search-container-column-text>
 
 		<liferay-ui:search-container-column-text>
 			<clay:dropdown-actions
 				aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 				dropdownItems="<%= organizationActionDropdownItems.getActionDropdownItems() %>"
-				propsTransformer="js/OrganizationAndUserDropdownDefaultPropsTransformer"
+				propsTransformer="{OrganizationAndUserDropdownDefaultPropsTransformer} from users-admin-web"
 			/>
 		</liferay-ui:search-container-column-text>
 	</c:when>
 	<c:when test='<%= displayStyle.equals("icon") %>'>
 		<liferay-ui:search-container-column-text>
 			<clay:vertical-card
-				propsTransformer="js/OrganizationAndUserDropdownDefaultPropsTransformer"
+				propsTransformer="{OrganizationAndUserDropdownDefaultPropsTransformer} from users-admin-web"
 				verticalCard="<%= new OrganizationVerticalCard(organizationActionDropdownItems.getActionDropdownItems(), organization, renderRequest, organizationSearchContainer.getRowChecker(), rowURL) %>"
 			/>
 		</liferay-ui:search-container-column-text>
@@ -86,13 +86,13 @@
 			<liferay-ui:search-container-column-text
 				href="<%= rowURL %>"
 				name="region"
-				value="<%= UsersAdmin.ORGANIZATION_REGION_NAME_ACCESSOR.get(organization) %>"
+				value="<%= UsersAdminUtil.ORGANIZATION_REGION_NAME_ACCESSOR.get(organization) %>"
 			/>
 
 			<liferay-ui:search-container-column-text
 				href="<%= rowURL %>"
 				name="country"
-				value="<%= UsersAdmin.ORGANIZATION_COUNTRY_NAME_ACCESSOR.get(organization) %>"
+				value="<%= UsersAdminUtil.ORGANIZATION_COUNTRY_NAME_ACCESSOR.get(organization) %>"
 			/>
 		</c:if>
 
@@ -100,7 +100,7 @@
 			<clay:dropdown-actions
 				aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 				dropdownItems="<%= organizationActionDropdownItems.getActionDropdownItems() %>"
-				propsTransformer="js/OrganizationAndUserDropdownDefaultPropsTransformer"
+				propsTransformer="{OrganizationAndUserDropdownDefaultPropsTransformer} from users-admin-web"
 			/>
 		</liferay-ui:search-container-column-text>
 	</c:otherwise>

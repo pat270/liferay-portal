@@ -5,8 +5,10 @@
 
 package com.liferay.portal.kernel.service.persistence.change.tracking.helper;
 
+import com.liferay.petra.lang.SafeCloseable;
+import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
 import com.liferay.portal.kernel.model.change.tracking.CTModel;
-import com.liferay.portal.kernel.util.ServiceProxyFactory;
+import com.liferay.portal.kernel.module.service.Snapshot;
 
 import java.io.Serializable;
 
@@ -16,7 +18,8 @@ import java.io.Serializable;
 public class CTPersistenceHelperUtil {
 
 	public static <T extends CTModel<T>> boolean isInsert(T ctModel) {
-		CTPersistenceHelper ctPersistenceHelper = _ctPersistenceHelper;
+		CTPersistenceHelper ctPersistenceHelper =
+			_ctPersistenceHelperSnapshot.get();
 
 		if (ctPersistenceHelper == null) {
 			return ctModel.isNew();
@@ -28,7 +31,8 @@ public class CTPersistenceHelperUtil {
 	public static <T extends CTModel<T>> boolean isProductionMode(
 		Class<T> ctModelClass) {
 
-		CTPersistenceHelper ctPersistenceHelper = _ctPersistenceHelper;
+		CTPersistenceHelper ctPersistenceHelper =
+			_ctPersistenceHelperSnapshot.get();
 
 		if (ctPersistenceHelper == null) {
 			return true;
@@ -40,7 +44,8 @@ public class CTPersistenceHelperUtil {
 	public static <T extends CTModel<T>> boolean isProductionMode(
 		Class<T> ctModelClass, Serializable primaryKey) {
 
-		CTPersistenceHelper ctPersistenceHelper = _ctPersistenceHelper;
+		CTPersistenceHelper ctPersistenceHelper =
+			_ctPersistenceHelperSnapshot.get();
 
 		if (ctPersistenceHelper == null) {
 			return true;
@@ -50,7 +55,8 @@ public class CTPersistenceHelperUtil {
 	}
 
 	public static <T extends CTModel<T>> boolean isRemove(T ctModel) {
-		CTPersistenceHelper ctPersistenceHelper = _ctPersistenceHelper;
+		CTPersistenceHelper ctPersistenceHelper =
+			_ctPersistenceHelperSnapshot.get();
 
 		if (ctPersistenceHelper == null) {
 			return true;
@@ -59,12 +65,40 @@ public class CTPersistenceHelperUtil {
 		return ctPersistenceHelper.isRemove(ctModel);
 	}
 
+	public static <T extends CTModel<T>> SafeCloseable
+		setCTCollectionIdWithSafeCloseable(Class<T> ctModelClass) {
+
+		CTPersistenceHelper ctPersistenceHelper =
+			_ctPersistenceHelperSnapshot.get();
+
+		if (ctPersistenceHelper == null) {
+			return CTCollectionThreadLocal.setProductionModeWithSafeCloseable();
+		}
+
+		return ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+			ctModelClass);
+	}
+
+	public static <T extends CTModel<T>> SafeCloseable
+		setCTCollectionIdWithSafeCloseable(
+			Class<T> ctModelClass, Serializable primaryKey) {
+
+		CTPersistenceHelper ctPersistenceHelper =
+			_ctPersistenceHelperSnapshot.get();
+
+		if (ctPersistenceHelper == null) {
+			return CTCollectionThreadLocal.setProductionModeWithSafeCloseable();
+		}
+
+		return ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+			ctModelClass, primaryKey);
+	}
+
 	private CTPersistenceHelperUtil() {
 	}
 
-	private static volatile CTPersistenceHelper _ctPersistenceHelper =
-		ServiceProxyFactory.newServiceTrackedInstance(
-			CTPersistenceHelper.class, CTPersistenceHelperUtil.class,
-			"_ctPersistenceHelper", false, true);
+	private static final Snapshot<CTPersistenceHelper>
+		_ctPersistenceHelperSnapshot = new Snapshot<>(
+			CTPersistenceHelperUtil.class, CTPersistenceHelper.class);
 
 }

@@ -49,10 +49,30 @@ window.addEventListener('scroll', handleWindowResizeOrScroll, {
 	passive: true,
 });
 
-const MAX_ITEMS = 10;
-
 let lastSearchAbortController = new AbortController();
 let lastSearchQuery = null;
+
+if (input.value) {
+	const selectedOption = (input.attributes.options || []).find(
+		(option) => option.value === input.value
+	);
+
+	if (selectedOption) {
+		lastSearchQuery = selectedOption.label.toLowerCase();
+		valueInputElement.value = selectedOption.value;
+
+		const selectedOptionElement = optionListElement.querySelector(
+			'.active.dropdown-item'
+		);
+
+		if (selectedOptionElement) {
+			optionListElement.setAttribute(
+				'aria-activedescendant',
+				selectedOption.id
+			);
+		}
+	}
+}
 
 const KEYS = {
 	ArrowDown: 'ArrowDown',
@@ -79,7 +99,7 @@ function handleResultListClick(event) {
 	}
 
 	if (selectedOptionElement) {
-		setFocusedOption(selectedOptionElement);
+		setFocusedOption(selectedOptionElement, {scrollToElement: false});
 		setSelectedOption(selectedOptionElement);
 	}
 }
@@ -164,7 +184,10 @@ function handleInputChange() {
 			if (optionListElement.firstElementChild) {
 				chooseOptionElement.classList.remove('d-none');
 				noResultsElement.classList.add('d-none');
-				setFocusedOption(optionListElement.firstElementChild);
+
+				setFocusedOption(optionListElement.firstElementChild, {
+					scrollToElement: false,
+				});
 			}
 			else {
 				chooseOptionElement.classList.add('d-none');
@@ -276,7 +299,10 @@ function handleWindowResizeOrScroll() {
 	}
 }
 
-function setFocusedOption(optionElement) {
+function setFocusedOption(
+	optionElement,
+	{scrollToElement = true} = {scrollToElement: true}
+) {
 	const currentFocusedOption = document.getElementById(
 		optionListElement.getAttribute('aria-activedescendant')
 	);
@@ -292,7 +318,10 @@ function setFocusedOption(optionElement) {
 		);
 
 		optionElement.setAttribute('aria-selected', 'true');
-		optionElement.scrollIntoView({block: 'center'});
+
+		if (scrollToElement) {
+			optionElement.scrollIntoView({block: 'nearest'});
+		}
 	}
 	else {
 		optionListElement.removeAttribute('aria-activedescendant');
@@ -315,7 +344,7 @@ function createOptionElement(option) {
 		optionElement.id
 	) {
 		optionElement.setAttribute('aria-selected', 'true');
-		optionElement.scrollIntoView({block: 'center'});
+		optionElement.scrollIntoView({block: 'nearest'});
 	}
 
 	if (valueInputElement.value === option.value) {
@@ -364,6 +393,12 @@ function openDropdown() {
 	uiInputElement.setAttribute('aria-expanded', 'true');
 	buttonElement.setAttribute('aria-expanded', 'true');
 
+	const wrapperWidth = `${fragmentElement.getBoundingClientRect().width}px`;
+
+	dropdownElement.style.maxWidth = wrapperWidth;
+	dropdownElement.style.minWidth = wrapperWidth;
+	dropdownElement.style.width = wrapperWidth;
+
 	requestAnimationFrame(() => {
 		handleInputChange();
 		repositionDropdownElement();
@@ -409,11 +444,9 @@ function repositionDropdownElement() {
 function renderOptionList(options) {
 	optionListElement.innerHTML = '';
 
-	options
-		.slice(0, MAX_ITEMS)
-		.forEach((option) =>
-			optionListElement.appendChild(createOptionElement(option))
-		);
+	options.forEach((option) =>
+		optionListElement.appendChild(createOptionElement(option))
+	);
 }
 
 function debounce(fn, delay) {

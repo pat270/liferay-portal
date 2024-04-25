@@ -27,8 +27,6 @@ import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.dynamic.data.mapping.service.DDMStructureService;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateLocalService;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateService;
-import com.liferay.dynamic.data.mapping.storage.StorageAdapterRegistry;
-import com.liferay.dynamic.data.mapping.util.DDMDisplayRegistry;
 import com.liferay.dynamic.data.mapping.util.DDMTemplateHelper;
 import com.liferay.dynamic.data.mapping.validator.DDMFormLayoutValidationException;
 import com.liferay.dynamic.data.mapping.validator.DDMFormValidationException;
@@ -87,8 +85,8 @@ import org.osgi.service.component.annotations.Reference;
 		"com.liferay.portlet.css-class-wrapper=portlet-dynamic-data-mapping",
 		"com.liferay.portlet.display-category=category.hidden",
 		"com.liferay.portlet.header-portlet-css=/css/main.css",
-		"com.liferay.portlet.header-portlet-javascript=/js/custom_fields.js",
-		"com.liferay.portlet.header-portlet-javascript=/js/main.js",
+		"com.liferay.portlet.header-portlet-javascript=/js/legacy/custom_fields.js",
+		"com.liferay.portlet.header-portlet-javascript=/js/legacy/main.js",
 		"com.liferay.portlet.preferences-owned-by-group=true",
 		"com.liferay.portlet.private-request-attributes=false",
 		"com.liferay.portlet.private-session-attributes=false",
@@ -216,9 +214,6 @@ public class DDMPortlet extends MVCPortlet {
 	}
 
 	@Reference
-	protected DDMDisplayRegistry ddmDisplayRegistry;
-
-	@Reference
 	protected volatile DDMStructureLinkLocalService
 		ddmStructureLinkLocalService;
 
@@ -247,18 +242,14 @@ public class DDMPortlet extends MVCPortlet {
 	)
 	protected Release release;
 
-	@Reference
-	protected StorageAdapterRegistry storageAdapterRegistry;
-
 	private void _setDDMDisplayContextRequestAttribute(
 			RenderRequest renderRequest, RenderResponse renderResponse)
 		throws PortalException {
 
 		DDMDisplayContext ddmDisplayContext = new DDMDisplayContext(
-			renderRequest, renderResponse, ddmDisplayRegistry,
-			ddmStructureLinkLocalService, ddmStructureService,
-			ddmTemplateHelper, ddmTemplateService, ddmWebConfiguration,
-			storageAdapterRegistry);
+			renderRequest, renderResponse, ddmStructureLinkLocalService,
+			ddmStructureService, ddmTemplateHelper, ddmTemplateService,
+			ddmWebConfiguration);
 
 		renderRequest.setAttribute(
 			WebKeys.PORTLET_DISPLAY_CONTEXT, ddmDisplayContext);

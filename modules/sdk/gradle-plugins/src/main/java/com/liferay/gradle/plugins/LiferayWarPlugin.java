@@ -15,9 +15,11 @@ import java.util.concurrent.Callable;
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.file.DuplicatesStrategy;
 import org.gradle.api.file.FileTree;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.WarPlugin;
+import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Sync;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.War;
@@ -52,6 +54,7 @@ public class LiferayWarPlugin implements Plugin<Project> {
 			project, buildWarDirTaskProvider, warTaskProvider);
 		_configureTaskWatchProvider(
 			buildWarDirTaskProvider, warTaskProvider, watchTaskProvider);
+		_configureTaskWarProvider(warTaskProvider);
 	}
 
 	private void _configureTaskBuildWarDirProvider(
@@ -97,6 +100,18 @@ public class LiferayWarPlugin implements Plugin<Project> {
 			});
 	}
 
+	private void _configureTaskWarProvider(TaskProvider<War> warTaskProvider) {
+		warTaskProvider.configure(
+			new Action<War>() {
+
+				@Override
+				public void execute(War war) {
+					war.setDuplicatesStrategy(DuplicatesStrategy.INCLUDE);
+				}
+
+			});
+	}
+
 	private void _configureTaskWatchProvider(
 		final TaskProvider<Sync> buildWarDirTaskProvider,
 		final TaskProvider<War> warTaskProvider,
@@ -129,7 +144,10 @@ public class LiferayWarPlugin implements Plugin<Project> {
 							public String call() throws Exception {
 								War war = warTaskProvider.get();
 
-								return war.getBaseName();
+								Property<String> property =
+									war.getArchiveBaseName();
+
+								return property.get();
 							}
 
 						});

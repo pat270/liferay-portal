@@ -44,12 +44,14 @@ const UserMenuDropdownItem: React.FC<
 		<ClayDropDown.Item className={getCN(className, {active})}>
 			{url ? (
 				externalLink ? (
-					<a
+					<ClayLink
 						className='button-root btn btn-block btn-unstyled'
+						// @ts-ignore
+						externalLink
 						href={url}
 					>
 						<Content />
-					</a>
+					</ClayLink>
 				) : (
 					<ClayLink
 						block

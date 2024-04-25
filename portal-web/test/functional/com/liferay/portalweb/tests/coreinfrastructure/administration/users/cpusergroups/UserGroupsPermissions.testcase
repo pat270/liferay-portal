@@ -1,4 +1,4 @@
-@component-name = "portal-security"
+@component-name = "portal-user-management"
 definition {
 
 	property portal.release = "true";
@@ -55,10 +55,7 @@ definition {
 			userLoginEmailAddress = "userea@liferay.com",
 			userLoginFullName = "userfn userln");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "User Groups");
+		UserGroup.openUserGroupsAdmin();
 
 		AssertElementNotPresent(locator1 = "NavBar#ADD");
 
@@ -76,10 +73,7 @@ definition {
 			userLoginEmailAddress = "userea@liferay.com",
 			userLoginFullName = "userfn userln");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "User Groups");
+		UserGroup.openUserGroupsAdmin();
 
 		UserGroup.addCP(userGroupName = "UG UserGroup Name");
 
@@ -97,10 +91,7 @@ definition {
 			userLoginEmailAddress = "userea@liferay.com",
 			userLoginFullName = "userfn userln");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "User Groups");
+		UserGroup.openUserGroupsAdmin();
 
 		AssertElementNotPresent(locator1 = "NavBar#ADD");
 
@@ -352,6 +343,7 @@ definition {
 	@priority = 4
 	test AssignSiteRoleToUG {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONUserGroup.addUserGroup(
 			userGroupDescription = "UG User Group Description",
@@ -489,6 +481,7 @@ definition {
 	test UserGroupSiteOwnerPermissions {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		SearchAdministration.executeReindex();
 

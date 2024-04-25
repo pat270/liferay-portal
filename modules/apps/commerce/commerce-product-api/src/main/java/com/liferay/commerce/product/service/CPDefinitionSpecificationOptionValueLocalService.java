@@ -85,8 +85,8 @@ public interface CPDefinitionSpecificationOptionValueLocalService
 	public CPDefinitionSpecificationOptionValue
 			addCPDefinitionSpecificationOptionValue(
 				long cpDefinitionId, long cpSpecificationOptionId,
-				long cpOptionCategoryId, Map<Locale, String> valueMap,
-				double priority, ServiceContext serviceContext)
+				long cpOptionCategoryId, double priority,
+				Map<Locale, String> valueMap, ServiceContext serviceContext)
 		throws PortalException;
 
 	/**
@@ -249,6 +249,11 @@ public interface CPDefinitionSpecificationOptionValueLocalService
 	public CPDefinitionSpecificationOptionValue
 		fetchCPDefinitionSpecificationOptionValue(
 			long cpDefinitionId, long cpDefinitionSpecificationOptionValueId);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public CPDefinitionSpecificationOptionValue
+		fetchCPDefinitionSpecificationOptionValue(
+			long cpDefinitionId, String key);
 
 	/**
 	 * Returns the cp definition specification option value matching the UUID and group.
@@ -419,8 +424,8 @@ public interface CPDefinitionSpecificationOptionValueLocalService
 	public CPDefinitionSpecificationOptionValue
 			updateCPDefinitionSpecificationOptionValue(
 				long cpDefinitionSpecificationOptionValueId,
-				long cpOptionCategoryId, Map<Locale, String> valueMap,
-				double priority, ServiceContext serviceContext)
+				long cpOptionCategoryId, String key, double priority,
+				Map<Locale, String> valueMap, ServiceContext serviceContext)
 		throws PortalException;
 
 	public CPDefinitionSpecificationOptionValue updateCPOptionCategoryId(

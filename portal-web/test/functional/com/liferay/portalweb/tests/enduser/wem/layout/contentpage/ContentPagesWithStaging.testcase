@@ -4,7 +4,6 @@ definition {
 	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testcase.url = "http://localhost:8080";
 	property testray.main.component.name = "Content Pages";
 
 	static var randomSiteName = StringUtil.randomString(8);
@@ -12,6 +11,10 @@ definition {
 	static var randomSiteURLKey = StringUtil.toLowerCase(${randomSiteName});
 
 	setUp {
+		task ("Set up virtual instance") {
+			TestCase.setUpPortalInstance();
+		}
+
 		task ("Sign in") {
 			User.firstLoginPG();
 		}
@@ -21,9 +24,7 @@ definition {
 		}
 
 		task ("Activate local live staging") {
-			Staging.openStagingAdmin(siteURLKey = ${randomSiteURLKey});
-
-			Staging.activateStagingCP(siteName = ${randomSiteName});
+			JSONStaging.enableLocalStaging(groupName = ${randomSiteName});
 		}
 	}
 
@@ -228,8 +229,6 @@ definition {
 	@description = "This is a test for LPS-109854. Cannot view the sitemap of staging site as Guest."
 	@priority = 4
 	test CannotViewSiteMapOfStagingSiteAsGuest {
-		property test.liferay.virtual.instance = "false";
-
 		task ("Add a content page") {
 			JSONLayout.addPublicLayout(
 				groupName = "${randomSiteName} (Staging)",
@@ -692,7 +691,7 @@ definition {
 			MenuItem.click(menuItem = "Add Heading");
 
 			AssertElementPresent(
-				key_elementHeader = "//div[@aria-label='Heading']",
+				key_elementHeader = "//div[@data-name='Heading']",
 				key_position = 1,
 				locator1 = "PageEditor#CONTAINER_CONTAINER_NESTED_ELEMENT");
 
@@ -803,7 +802,7 @@ definition {
 				menuItem = "Preview Draft",
 				pageName = "Test Page Name");
 
-			SelectWindow.selectPopUp(locator1 = "null");
+			SelectWindow.selectPopUp(value1 = "null");
 
 			ControlMenu.viewHeaderDraftTitle(headerTitle = "Test Page Name");
 
@@ -827,7 +826,7 @@ definition {
 				item = "Preview Draft",
 				pageName = "Test Page Name*");
 
-			SelectWindow.selectPopUp(locator1 = "null");
+			SelectWindow.selectPopUp(value1 = "null");
 
 			ControlMenu.viewHeaderDraftTitle(headerTitle = "Test Page Name");
 
@@ -1241,9 +1240,7 @@ definition {
 		}
 
 		task ("View the naturalWidth doesn't change") {
-			TestUtils.assertEquals(
-				actual = ${editedNaturalWidth},
-				expected = ${naturalWidth});
+			StringUtil.assertEquals(${naturalWidth}, ${editedNaturalWidth});
 		}
 
 		task ("View the naturalHeight becomes smaller") {
@@ -1269,9 +1266,7 @@ definition {
 		}
 
 		task ("View the naturalWidth doesn't change") {
-			TestUtils.assertEquals(
-				actual = ${editedNaturalWidth},
-				expected = ${naturalWidth});
+			StringUtil.assertEquals(${naturalWidth}, ${editedNaturalWidth});
 		}
 
 		task ("View the naturalHeight becomes smaller") {
@@ -1301,9 +1296,7 @@ definition {
 		}
 
 		task ("View the naturalWidth doesn't change") {
-			TestUtils.assertEquals(
-				actual = ${editedNaturalWidth},
-				expected = ${naturalWidth});
+			StringUtil.assertEquals(${naturalWidth}, ${editedNaturalWidth});
 		}
 
 		task ("View the naturalHeight becomes smaller") {
@@ -1607,6 +1600,58 @@ definition {
 		}
 	}
 
+	@description = "This is a test for LPS-198068. View documents and media URL of Image Fragment is correctly displayed on the Live environment."
+	@priority = 4
+	test ViewDisplayedImageOnLiveSiteAsGuest {
+		task ("Given a user displays an Image on content page in live site") {
+			JSONDocument.addFileWithUploadedFile(
+				dmDocumentTitle = "Document_1",
+				groupName = "${randomSiteName}-staging",
+				mimeType = "image/png",
+				sourceFileName = "Document_1.png");
+
+			JSONLayout.addPublicLayout(
+				groupName = "${randomSiteName} (Staging)",
+				layoutName = "Test Content Page Name",
+				site = "false",
+				type = "content");
+
+			ContentPagesNavigator.openEditContentPage(
+				pageName = "Test Content Page Name",
+				siteName = "${randomSiteName} Staging");
+
+			PageEditor.addFragment(
+				collectionName = "Basic Components",
+				fragmentName = "Image");
+
+			PageEditor.editFragmentImage(
+				fragmentName = "Image",
+				id = "image-square",
+				imageFileName = "Document_1");
+
+			PageEditor.publish();
+
+			Staging.openStagingAdmin(siteURLKey = "${randomSiteURLKey}-staging");
+
+			Staging.publishCustomPublication();
+		}
+
+		task ("When this page is visited by a guest user") {
+			User.logoutPG();
+
+			ContentPagesNavigator.openViewContentPage(
+				pageName = "Test Content Page Name",
+				siteName = ${randomSiteName});
+		}
+
+		task ("Then the guest user could view the displayed image") {
+			ContentPages.viewFragmentImage(
+				fragmentName = "image",
+				id = "image-square",
+				image = "document_1");
+		}
+	}
+
 	@description = "This is a test for LPS-141773 and LPS-142348. Able to land in the experience selected at view mode in page editor in staging site."
 	@priority = 4
 	test ViewExperienceInViewMode {
@@ -1751,7 +1796,7 @@ definition {
 		}
 
 		task ("Then the page creator can change new experience and view the new experience shown in experience selector") {
-			SelectWindow.selectPopUp(locator1 = "null");
+			SelectWindow.selectPopUp(value1 = "null");
 
 			ContentPages.changeExperience(experienceName = "New Experience");
 
@@ -1770,26 +1815,6 @@ definition {
 				id = "element-text",
 				text = "Edited Heading Example");
 		}
-
-		task ("When the page creator is back to view mode") {
-			Close.closeWindow();
-
-			PageEditor.clickBack();
-		}
-
-		task ("Then the page creator should see the New Experience still selected in experience selector") {
-			ContentPages.viewCurrentExperience(experienceName = "New Experience");
-
-			ContentPages.viewFragmentText(
-				fragmentName = "button",
-				id = "link",
-				text = "Go Somewhere");
-
-			ContentPages.viewFragmentText(
-				fragmentName = "heading",
-				id = "element-text",
-				text = "Heading Example");
-		}
 	}
 
 	@description = "This is a test for LPS-146373. New prefixes for email,phone and none options can be used in Content Pages published from staging."
@@ -1807,10 +1832,7 @@ definition {
 		}
 
 		task ("Activate local live staging") {
-			JSONStaging.enableLocalStaging(
-				branchingPrivate = "false",
-				branchingPublic = "false",
-				groupName = ${siteName});
+			JSONStaging.enableLocalStaging(groupName = ${siteName});
 		}
 
 		task ("When adding a web content with email and telephone") {

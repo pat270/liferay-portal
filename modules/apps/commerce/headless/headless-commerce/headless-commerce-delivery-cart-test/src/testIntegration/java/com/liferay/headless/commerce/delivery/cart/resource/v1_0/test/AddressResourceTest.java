@@ -25,14 +25,19 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.CountryLocalService;
 import com.liferay.portal.kernel.service.RegionLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.test.rule.Inject;
+import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.runner.RunWith;
 
 /**
@@ -40,6 +45,13 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class AddressResourceTest extends BaseAddressResourceTestCase {
+
+	@ClassRule
+	@Rule
+	public static final AggregateTestRule aggregateTestRule =
+		new AggregateTestRule(
+			new LiferayIntegrationTestRule(),
+			PermissionCheckerMethodTestRule.INSTANCE);
 
 	@Before
 	@Override
@@ -119,6 +131,40 @@ public class AddressResourceTest extends BaseAddressResourceTestCase {
 	}
 
 	@Override
+	protected Address
+			testGetCartByExternalReferenceCodeBillingAddres_addAddress()
+		throws Exception {
+
+		return _toAddress(_getCommerceAddress());
+	}
+
+	@Override
+	protected String
+			testGetCartByExternalReferenceCodeBillingAddres_getExternalReferenceCode(
+				Address address)
+		throws Exception {
+
+		return _getCartBillingAddress_getCartExternalReferenceCode();
+	}
+
+	@Override
+	protected Address
+			testGetCartByExternalReferenceCodeShippingAddres_addAddress()
+		throws Exception {
+
+		return _toAddress(_getCommerceAddress());
+	}
+
+	@Override
+	protected String
+			testGetCartByExternalReferenceCodeShippingAddres_getExternalReferenceCode(
+				Address address)
+		throws Exception {
+
+		return _getCartShippingAddress_getCartExternalReferenceCode();
+	}
+
+	@Override
 	protected Address testGetCartShippingAddres_addAddress() throws Exception {
 		return _toAddress(_getCommerceAddress());
 	}
@@ -141,6 +187,24 @@ public class AddressResourceTest extends BaseAddressResourceTestCase {
 	}
 
 	@Override
+	protected String
+			testGraphQLGetCartByExternalReferenceCodeBillingAddres_getExternalReferenceCode(
+				Address address)
+		throws Exception {
+
+		return _getCartBillingAddress_getCartExternalReferenceCode();
+	}
+
+	@Override
+	protected String
+			testGraphQLGetCartByExternalReferenceCodeShippingAddres_getExternalReferenceCode(
+				Address address)
+		throws Exception {
+
+		return _getCartShippingAddress_getCartExternalReferenceCode();
+	}
+
+	@Override
 	protected Long testGraphQLGetCartShippingAddres_getCartId()
 		throws Exception {
 
@@ -148,27 +212,55 @@ public class AddressResourceTest extends BaseAddressResourceTestCase {
 	}
 
 	private long _getCartBillingAddres_getCartId() throws Exception {
-		CommerceOrder commerceOrder = _getCommerceOrder();
+		_commerceOrder = _getCommerceOrder();
 
-		commerceOrder.setBillingAddressId(
+		_commerceOrder.setBillingAddressId(
 			_getCommerceAddress().getCommerceAddressId());
 
-		commerceOrder = _commerceOrderLocalService.updateCommerceOrder(
-			commerceOrder);
+		_commerceOrder = _commerceOrderLocalService.updateCommerceOrder(
+			_commerceOrder);
 
-		return commerceOrder.getCommerceOrderId();
+		return _commerceOrder.getCommerceOrderId();
+	}
+
+	private String _getCartBillingAddress_getCartExternalReferenceCode()
+		throws Exception {
+
+		_commerceOrder = _getCommerceOrder();
+
+		_commerceOrder.setBillingAddressId(
+			_getCommerceAddress().getCommerceAddressId());
+
+		_commerceOrder = _commerceOrderLocalService.updateCommerceOrder(
+			_commerceOrder);
+
+		return _commerceOrder.getExternalReferenceCode();
 	}
 
 	private long _getCartShippingAddres_getCartId() throws Exception {
-		CommerceOrder commerceOrder = _getCommerceOrder();
+		_commerceOrder = _getCommerceOrder();
 
-		commerceOrder.setShippingAddressId(
+		_commerceOrder.setShippingAddressId(
 			_getCommerceAddress().getCommerceAddressId());
 
-		commerceOrder = _commerceOrderLocalService.updateCommerceOrder(
-			commerceOrder);
+		_commerceOrder = _commerceOrderLocalService.updateCommerceOrder(
+			_commerceOrder);
 
-		return commerceOrder.getCommerceOrderId();
+		return _commerceOrder.getCommerceOrderId();
+	}
+
+	private String _getCartShippingAddress_getCartExternalReferenceCode()
+		throws Exception {
+
+		_commerceOrder = _getCommerceOrder();
+
+		_commerceOrder.setShippingAddressId(
+			_getCommerceAddress().getCommerceAddressId());
+
+		_commerceOrder = _commerceOrderLocalService.updateCommerceOrder(
+			_commerceOrder);
+
+		return _commerceOrder.getExternalReferenceCode();
 	}
 
 	private CommerceAddress _getCommerceAddress() throws Exception {
@@ -177,12 +269,13 @@ public class AddressResourceTest extends BaseAddressResourceTestCase {
 		}
 
 		_commerceAddress = _commerceAddressLocalService.addCommerceAddress(
-			AccountEntry.class.getName(), _accountEntry.getAccountEntryId(),
+			RandomTestUtil.randomString(), AccountEntry.class.getName(),
+			_accountEntry.getAccountEntryId(), RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
-			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
-			String.valueOf(30133), _region.getRegionId(),
-			_country.getCountryId(), RandomTestUtil.randomString(),
+			RandomTestUtil.randomString(), String.valueOf(30133),
+			_region.getRegionId(), _country.getCountryId(),
+			RandomTestUtil.randomString(),
 			CommerceAddressConstants.ADDRESS_TYPE_BILLING_AND_SHIPPING,
 			_serviceContext);
 
@@ -213,6 +306,8 @@ public class AddressResourceTest extends BaseAddressResourceTestCase {
 				city = commerceAddress.getCity();
 				country = country1.getName();
 				description = commerceAddress.getDescription();
+				externalReferenceCode =
+					commerceAddress.getExternalReferenceCode();
 				id = commerceAddress.getCommerceAddressId();
 				name = commerceAddress.getName();
 				phoneNumber = commerceAddress.getPhoneNumber();

@@ -10,25 +10,28 @@ import com.liferay.gradle.plugins.defaults.internal.util.GradlePluginsDefaultsUt
 import com.liferay.gradle.plugins.defaults.internal.util.GradleUtil;
 import com.liferay.gradle.plugins.poshi.runner.PoshiRunnerResourcesExtension;
 import com.liferay.gradle.plugins.poshi.runner.PoshiRunnerResourcesPlugin;
+import com.liferay.gradle.util.Validator;
 
-import groovy.lang.Closure;
+import java.util.List;
 
-import java.io.File;
-
+import org.gradle.StartParameter;
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.PublishArtifactSet;
-import org.gradle.api.artifacts.dsl.RepositoryHandler;
-import org.gradle.api.artifacts.maven.MavenDeployer;
-import org.gradle.api.artifacts.maven.MavenPom;
 import org.gradle.api.internal.artifacts.publish.ArchivePublishArtifact;
-import org.gradle.api.plugins.MavenPlugin;
-import org.gradle.api.plugins.MavenRepositoryHandlerConvention;
+import org.gradle.api.invocation.Gradle;
+import org.gradle.api.provider.Property;
+import org.gradle.api.publish.PublicationContainer;
+import org.gradle.api.publish.PublishingExtension;
+import org.gradle.api.publish.maven.MavenPublication;
+import org.gradle.api.publish.maven.plugins.MavenPublishPlugin;
+import org.gradle.api.publish.maven.tasks.PublishToMavenRepository;
+import org.gradle.api.publish.plugins.PublishingPlugin;
 import org.gradle.api.specs.Spec;
-import org.gradle.api.tasks.Upload;
+import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 
 /**
@@ -42,23 +45,52 @@ public class PoshiRunnerResourcesDefaultsPlugin implements Plugin<Project> {
 	public static final String ARTIFACT_VERSION_PROPERTY_NAME =
 		"artifactVersion";
 
+	public static final String UPLOAD_POSHI_RUNNER_RESOURCES_TASK_NAME =
+		"uploadPoshiRunnerResources";
+
 	@Override
 	public void apply(Project project) {
 		GradlePluginsDefaultsUtil.configureRepositories(project, null);
 
-		GradleUtil.applyPlugin(project, MavenPlugin.class);
+		GradleUtil.applyPlugin(project, MavenPublishPlugin.class);
 		GradleUtil.applyPlugin(project, PoshiRunnerResourcesPlugin.class);
 
 		_applyConfigScripts(project);
+
+		Task uploadPoshiRunnerResourcesTask =
+			_addTaskUploadPoshiRunnerResources(project);
+
 		_configurePoshiRunnerResources(project);
-		_configureTaskUploadPoshiRunnerResources(project);
+
+		Gradle gradle = project.getGradle();
+
+		StartParameter startParameter = gradle.getStartParameter();
+
+		List<String> taskNames = startParameter.getTaskNames();
+
+		if (taskNames.contains(UPLOAD_POSHI_RUNNER_RESOURCES_TASK_NAME)) {
+			_configurePublishing(project);
+
+			_configureTaskUploadPoshiRunnerResources(
+				uploadPoshiRunnerResourcesTask);
+		}
+	}
+
+	private Task _addTaskUploadPoshiRunnerResources(Project project) {
+		Task task = GradleUtil.addTask(
+			project, UPLOAD_POSHI_RUNNER_RESOURCES_TASK_NAME, Task.class);
+
+		task.setDescription("Uploads all Poshi Runner resources artifacts.");
+		task.setGroup(PublishingPlugin.PUBLISH_TASK_GROUP);
+
+		return task;
 	}
 
 	private void _applyConfigScripts(Project project) {
 		GradleUtil.applyScript(
 			project,
 			"com/liferay/gradle/plugins/defaults/dependencies" +
-				"/config-maven.gradle",
+				"/config-maven-publish.gradle",
 			project);
 	}
 
@@ -82,37 +114,41 @@ public class PoshiRunnerResourcesDefaultsPlugin implements Plugin<Project> {
 		}
 	}
 
-	private void _configureTaskUploadPoshiRunnerResources(
-		final Project project) {
+	private void _configurePublishing(final Project project) {
+		TaskContainer taskContainer = project.getTasks();
 
-		Upload upload = (Upload)GradleUtil.getTask(
-			project,
-			PoshiRunnerResourcesPlugin.UPLOAD_POSHI_RUNNER_RESOURCES_TASK_NAME);
-
-		upload.onlyIf(
-			new Spec<Task>() {
+		taskContainer.withType(
+			PublishToMavenRepository.class,
+			new Action<PublishToMavenRepository>() {
 
 				@Override
-				public boolean isSatisfiedBy(Task task) {
-					GitRepo gitRepo = GitRepo.getGitRepo(
-						project.getProjectDir());
+				public void execute(
+					PublishToMavenRepository publishToMavenRepository) {
 
-					if ((gitRepo != null) && gitRepo.readOnly) {
-						return false;
-					}
+					publishToMavenRepository.onlyIf(
+						new Spec<Task>() {
 
-					return true;
+							@Override
+							public boolean isSatisfiedBy(Task task) {
+								GitRepo gitRepo = GitRepo.getGitRepo(
+									project.getProjectDir());
+
+								if ((gitRepo != null) && gitRepo.readOnly) {
+									return false;
+								}
+
+								return true;
+							}
+
+						});
 				}
 
 			});
 
-		RepositoryHandler repositoryHandler = upload.getRepositories();
-
-		final MavenDeployer mavenDeployer =
-			(MavenDeployer)repositoryHandler.getAt(
-				MavenRepositoryHandlerConvention.DEFAULT_MAVEN_DEPLOYER_NAME);
-
-		Configuration configuration = upload.getConfiguration();
+		Configuration configuration = GradleUtil.getConfiguration(
+			project,
+			PoshiRunnerResourcesPlugin.
+				POSHI_RUNNER_RESOURCES_CONFIGURATION_NAME);
 
 		PublishArtifactSet publishArtifactSet = configuration.getAllArtifacts();
 
@@ -121,37 +157,63 @@ public class PoshiRunnerResourcesDefaultsPlugin implements Plugin<Project> {
 			new Action<ArchivePublishArtifact>() {
 
 				@Override
-				@SuppressWarnings("serial")
 				public void execute(
 					ArchivePublishArtifact archivePublishArtifact) {
 
 					AbstractArchiveTask abstractArchiveTask =
 						archivePublishArtifact.getArchiveTask();
 
-					final String name = abstractArchiveTask.getArchiveName();
+					PublishingExtension publishingExtension =
+						GradleUtil.getExtension(
+							project, PublishingExtension.class);
 
-					mavenDeployer.addFilter(
-						name,
-						new Closure<Boolean>(project) {
+					publishingExtension.publications(
+						new Action<PublicationContainer>() {
 
-							@SuppressWarnings("unused")
-							public Boolean doCall(Object artifact, File file) {
-								if (name.equals(file.getName())) {
-									return true;
+							@Override
+							public void execute(
+								PublicationContainer publicationContainer) {
+
+								MavenPublication mavenPublication =
+									publicationContainer.maybeCreate(
+										"poshiRunnerResources",
+										MavenPublication.class);
+
+								mavenPublication.artifact(abstractArchiveTask);
+
+								Property<String> archiveAppendixProperty =
+									abstractArchiveTask.getArchiveAppendix();
+								Property<String> archiveBaseNameProperty =
+									abstractArchiveTask.getArchiveBaseName();
+
+								String appendix = archiveAppendixProperty.get();
+								String artifactId =
+									archiveBaseNameProperty.get();
+
+								if (Validator.isNotNull(appendix)) {
+									artifactId += '-' + appendix;
 								}
 
-								return false;
+								mavenPublication.setArtifactId(artifactId);
+								mavenPublication.setGroupId(_GROUP_ID);
+
+								Property<String> property =
+									abstractArchiveTask.getArchiveVersion();
+
+								mavenPublication.setVersion(property.get());
 							}
 
 						});
-
-					MavenPom mavenPom = mavenDeployer.pom(name);
-
-					mavenPom.setGroupId(_GROUP_ID);
-					mavenPom.setVersion(abstractArchiveTask.getVersion());
 				}
 
 			});
+	}
+
+	private void _configureTaskUploadPoshiRunnerResources(
+		Task uploadPoshiRunnerResourcesTask) {
+
+		uploadPoshiRunnerResourcesTask.finalizedBy(
+			"publishPoshiRunnerResourcesPublicationToReleasesRepository");
 	}
 
 	private static final String _GROUP_ID =

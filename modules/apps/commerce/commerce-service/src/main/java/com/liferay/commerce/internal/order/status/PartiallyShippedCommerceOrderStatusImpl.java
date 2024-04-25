@@ -14,6 +14,7 @@ import com.liferay.commerce.service.CommerceOrderService;
 import com.liferay.commerce.util.CommerceShippingHelper;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.util.BigDecimalUtil;
 
 import java.util.Locale;
 
@@ -82,6 +83,7 @@ public class PartiallyShippedCommerceOrderStatusImpl
 		return !commerceOrder.isQuote();
 	}
 
+	@Override
 	public boolean isTransitionCriteriaMet(CommerceOrder commerceOrder)
 		throws PortalException {
 
@@ -90,7 +92,8 @@ public class PartiallyShippedCommerceOrderStatusImpl
 		for (CommerceOrderItem shippedCommerceOrderItem :
 				commerceOrder.getCommerceOrderItems()) {
 
-			if ((shippedCommerceOrderItem.getShippedQuantity() <
+			if (BigDecimalUtil.lt(
+					shippedCommerceOrderItem.getShippedQuantity(),
 					shippedCommerceOrderItem.getQuantity()) &&
 				shippedCommerceOrderItem.isShippable()) {
 

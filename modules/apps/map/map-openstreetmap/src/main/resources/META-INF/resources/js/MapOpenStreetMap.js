@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import MapBase from '@liferay/map-common/js/MapBase';
+import {MapBase} from '@liferay/map-common';
 
 import OpenStreetMapDialog from './OpenStreetMapDialog';
 import OpenStreetMapGeoJSON from './OpenStreetMapGeoJSON';
@@ -70,7 +70,7 @@ class MapOpenStreetMap extends MapBase {
 			Object.assign(mapConfig, controlsConfig)
 		);
 
-		if (this.data && this.data.features) {
+		if (this.data?.features?.length) {
 			const bounds = new L.LatLngBounds();
 
 			this.data.features.forEach((feature) =>

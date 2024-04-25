@@ -84,7 +84,7 @@
 </tr>
 <tr>
 	<td>KEYWORD_NAME_BY_INDEX</td>
-	<td>//tr[${key_index}]//*[contains(@class,'table-title') and (text()='${key_keywordName}')]</td>
+	<td>xpath=(//*[contains(@class,'table-title')])[${key_index}]</td>
 	<td></td>
 </tr>
 <tr>
@@ -105,6 +105,14 @@
 <tr>
 	<td>KEYWORD_TEXTFIELD</td>
 	<td>//*[@class='form-control-inset']</td>
+	<td></td>
+</tr>
+
+<!-- DATA CONTROL & PRIVACY -->
+
+<tr>
+	<td>RETENTION_PERIOD</td>
+	<td>//button[contains(@class,'form-control')]</td>
 	<td></td>
 </tr>
 
@@ -230,7 +238,7 @@
 	<td></td>
 </tr>
 <tr>
-	<td>DELETE_CONFIRMATION_BUTTON</td>
+	<td>CONFIRMATION_BUTTON</td>
 	<td>//button[contains(@class,'btn-warning')]</td>
 	<td></td>
 </tr>
@@ -281,7 +289,7 @@
 </tr>
 <tr>
 	<td>PROPERTIES_ADD_USER_BUTTON</td>
-	<td>//button[contains(@class,'button-root btn btn-primary nav-btn px-3') and text()='Add User']</td>
+	<td>//button[contains(@class,'btn-primary') and text()='Add User']</td>
 	<td></td>
 </tr>
 <tr>
@@ -402,12 +410,12 @@
 </tr>
 <tr>
 	<td>PERMISSION_DROPDOWN</td>
-	<td>//button[contains(@class,'dropdown-item') and contains(.,'${key_permissionType}')]</td>
+	<td>//button[contains(@class,'dropdown-toggle') and contains(.,'${key_permissionType}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SELECT_SITE_ROLE</td>
-	<td>//div[contains(@class,'dropdown-menu show')]//button[contains(text(),'${key_siteRole}')]</td>
+	<td>//button[contains(@class,'dropdown-item') and contains(.,'${key_siteRole}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -431,6 +439,14 @@
 <tr>
 	<td>DATA_SOURCE_FIELD_NAME</td>
 	<td>xpath=(//button[contains(@class,'show-caret') and contains(.,'${key_fieldName}')])[${key_index}]</td>
+	<td></td>
+</tr>
+
+<!-- APIs -->
+
+<tr>
+	<td>EXPIRATION_DATE</td>
+	<td>//label[contains(text(), 'Expiration Date')]//following-sibling::select</td>
 	<td></td>
 </tr>
 </tbody>

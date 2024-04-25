@@ -14,7 +14,7 @@ import {partition} from 'lodash';
 import {Segment} from 'shared/util/records';
 import {sequence} from 'shared/util/promise';
 import {useChannelContext} from 'shared/context/channel';
-import {useStatefulPagination} from 'shared/hooks';
+import {useStatefulPagination} from 'shared/hooks/useStatefulPagination';
 
 const DELETE_OPTION = {
 	label: Liferay.Language.get('delete'),
@@ -90,7 +90,7 @@ const AssignSegments: React.FC<IAssignSegmentsProps> = ({groupId, onClose}) => {
 		<td>
 			<Picker
 				data-testid={`select-${id}`}
-				items={options}
+				items={options as {label: string; value: string}[]}
 				onSelectionChange={selectedValue =>
 					updateSegment(id, selectedValue)
 				}

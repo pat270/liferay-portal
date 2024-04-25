@@ -1,9 +1,10 @@
 @component-name = "portal-wcm"
 definition {
 
+	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Sitemap";
+	property testray.main.component.name = "Sitemap Protocol";
 
 	setUp {
 		task ("Set up instance and sign in") {

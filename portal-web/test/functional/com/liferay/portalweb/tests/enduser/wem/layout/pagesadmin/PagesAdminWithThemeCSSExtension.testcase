@@ -4,7 +4,6 @@ definition {
 	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testcase.url = "http://localhost:8080";
 	property testray.main.component.name = "Page Administration";
 
 	static var randomSiteName = StringUtil.randomString(8);
@@ -14,6 +13,10 @@ definition {
 	static var randomEntryName2 = StringUtil.randomString(8);
 
 	setUp {
+		task ("Set up virtual instance") {
+			TestCase.setUpPortalInstance();
+		}
+
 		task ("Sign in") {
 			User.firstLoginPG();
 		}
@@ -79,10 +82,10 @@ definition {
 			Navigator.gotoNavTab(navTab = "Design");
 
 			AssertAttributeValue(
-				attribute1 = "placeholder",
 				key_text = "Theme CSS",
 				locator1 = "TextInput#ANY",
-				value1 = "No theme CSS client extension was loaded.");
+				value1 = "placeholder",
+				value2 = "No theme CSS client extension was loaded.");
 		}
 
 		task ("Then the site designer could add a theme CSS Extension to widget page") {
@@ -129,10 +132,10 @@ definition {
 			WaitForPageLoad();
 
 			AssertAttributeValue(
-				attribute1 = "placeholder",
 				key_text = "Theme CSS",
 				locator1 = "TextInput#ANY",
-				value1 = "No theme CSS client extension was loaded.");
+				value1 = "placeholder",
+				value2 = "No theme CSS client extension was loaded.");
 		}
 
 		task ("Then the site designer could add a theme CSS Extension to widget page") {
@@ -169,10 +172,10 @@ definition {
 			Navigator.gotoNavTab(navTab = "Design");
 
 			AssertAttributeValue(
-				attribute1 = "placeholder",
 				key_text = "Theme CSS",
 				locator1 = "TextInput#ANY",
-				value1 = "No theme CSS client extension was loaded.");
+				value1 = "placeholder",
+				value2 = "No theme CSS client extension was loaded.");
 		}
 
 		task ("Then the site designer could add a theme CSS Extension to Pages") {
@@ -339,10 +342,10 @@ definition {
 			WaitForPageLoad();
 
 			AssertAttributeValue(
-				attribute1 = "placeholder",
 				key_text = "Theme CSS",
 				locator1 = "TextInput#ANY",
-				value1 = "Theme CSS is inherited from master.");
+				value1 = "placeholder",
+				value2 = "Theme CSS is inherited from master.");
 
 			PagesAdmin.addThemeCSSExtension(extensionName = ${randomEntryName2});
 
@@ -394,10 +397,10 @@ definition {
 			Navigator.gotoNavTab(navTab = "Design");
 
 			AssertAttributeValue(
-				attribute1 = "placeholder",
 				key_text = "Theme CSS",
 				locator1 = "TextInput#ANY",
-				value1 = "Theme CSS is inherited from Pages.");
+				value1 = "placeholder",
+				value2 = "Theme CSS is inherited from Pages.");
 
 			PagesAdmin.addThemeCSSExtension(extensionName = ${randomEntryName2});
 
@@ -501,10 +504,10 @@ definition {
 				value1 = "");
 
 			AssertAttributeValue(
-				attribute1 = "placeholder",
 				key_text = "Theme CSS",
 				locator1 = "TextInput#ANY",
-				value1 = "No theme CSS client extension was loaded.");
+				value1 = "placeholder",
+				value2 = "No theme CSS client extension was loaded.");
 
 			PortletEntry.save();
 
@@ -572,10 +575,10 @@ definition {
 				value1 = "");
 
 			AssertAttributeValue(
-				attribute1 = "placeholder",
 				key_text = "Theme CSS",
 				locator1 = "TextInput#ANY",
-				value1 = "No theme CSS client extension was loaded.");
+				value1 = "placeholder",
+				value2 = "No theme CSS client extension was loaded.");
 
 			PortletEntry.save();
 

@@ -9,6 +9,7 @@ import com.liferay.announcements.kernel.model.AnnouncementsDelivery;
 import com.liferay.announcements.kernel.service.AnnouncementsDeliveryLocalService;
 import com.liferay.announcements.kernel.service.AnnouncementsDeliveryLocalServiceUtil;
 import com.liferay.announcements.kernel.service.persistence.AnnouncementsDeliveryPersistence;
+import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.sql.dsl.query.DSLQuery;
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.dao.db.DB;
@@ -30,8 +31,8 @@ import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiServic
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
-import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.kernel.service.persistence.BasePersistence;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -454,18 +455,11 @@ public abstract class AnnouncementsDeliveryLocalServiceBaseImpl
 	}
 
 	public void afterPropertiesSet() {
-		persistedModelLocalServiceRegistry.register(
-			"com.liferay.announcements.kernel.model.AnnouncementsDelivery",
-			announcementsDeliveryLocalService);
-
 		AnnouncementsDeliveryLocalServiceUtil.setService(
 			announcementsDeliveryLocalService);
 	}
 
 	public void destroy() {
-		persistedModelLocalServiceRegistry.unregister(
-			"com.liferay.announcements.kernel.model.AnnouncementsDelivery");
-
 		AnnouncementsDeliveryLocalServiceUtil.setService(null);
 	}
 
@@ -479,8 +473,23 @@ public abstract class AnnouncementsDeliveryLocalServiceBaseImpl
 		return AnnouncementsDeliveryLocalService.class.getName();
 	}
 
-	protected Class<?> getModelClass() {
+	@Override
+	public CTPersistence<AnnouncementsDelivery> getCTPersistence() {
+		return announcementsDeliveryPersistence;
+	}
+
+	@Override
+	public Class<AnnouncementsDelivery> getModelClass() {
 		return AnnouncementsDelivery.class;
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<AnnouncementsDelivery>, R, E>
+				updateUnsafeFunction)
+		throws E {
+
+		return updateUnsafeFunction.apply(announcementsDeliveryPersistence);
 	}
 
 	protected String getModelClassName() {
@@ -527,9 +536,5 @@ public abstract class AnnouncementsDeliveryLocalServiceBaseImpl
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		AnnouncementsDeliveryLocalServiceBaseImpl.class);
-
-	@BeanReference(type = PersistedModelLocalServiceRegistry.class)
-	protected PersistedModelLocalServiceRegistry
-		persistedModelLocalServiceRegistry;
 
 }

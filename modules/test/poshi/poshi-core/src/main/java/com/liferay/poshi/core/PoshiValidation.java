@@ -12,7 +12,6 @@ import com.liferay.poshi.core.selenium.LiferaySeleniumMethod;
 import com.liferay.poshi.core.util.Dom4JUtil;
 import com.liferay.poshi.core.util.ListUtil;
 import com.liferay.poshi.core.util.OSDetector;
-import com.liferay.poshi.core.util.PoshiProperties;
 import com.liferay.poshi.core.util.PropsUtil;
 import com.liferay.poshi.core.util.StringUtil;
 import com.liferay.poshi.core.util.Validator;
@@ -71,6 +70,8 @@ public class PoshiValidation {
 		System.out.println("Start poshi validation.");
 
 		long start = System.currentTimeMillis();
+
+		validateProperties();
 
 		PoshiProperties poshiProperties = PoshiProperties.getPoshiProperties();
 
@@ -144,6 +145,8 @@ public class PoshiValidation {
 	}
 
 	public static void validate(String testName) throws Exception {
+		validateProperties();
+
 		validateTestName(testName);
 
 		if (!_exceptions.isEmpty()) {
@@ -270,7 +273,7 @@ public class PoshiValidation {
 		String filePath = _getFilePath(poshiElement);
 
 		List<String> possibleAttributeNames = Arrays.asList(
-			"arguments", "line-number", "name", "prose", "return", "summary",
+			"arguments", "line-number", "name", "return", "summary",
 			"summary-ignore");
 
 		validatePossibleAttributeNames(poshiElement, possibleAttributeNames);
@@ -702,7 +705,7 @@ public class PoshiValidation {
 				poshiElement, primaryAttributeNames);
 
 			List<String> possibleChildElementNames = Arrays.asList(
-				"arg", "prose", "return", "var");
+				"arg", "return", "var");
 
 			for (PoshiElement childPoshiElement : childPoshiElements) {
 				String childPoshiElementName = childPoshiElement.getName();
@@ -1031,18 +1034,11 @@ public class PoshiValidation {
 
 		validateHasNoAttributes(poshiElement);
 
-		String fileName = filePath.substring(filePath.lastIndexOf(".") + 1);
-
 		List<PoshiElement> childPoshiElements = poshiElement.toPoshiElements(
 			poshiElement.elements());
 
 		List<String> conditionTags = Arrays.asList(
 			"and", "condition", "contains", "equals", "isset", "not", "or");
-
-		if (fileName.equals("function")) {
-			conditionTags = Arrays.asList(
-				"and", "condition", "contains", "not", "or");
-		}
 
 		validateElseElement(poshiElement);
 		validateThenElement(poshiElement);
@@ -1283,6 +1279,18 @@ public class PoshiValidation {
 				(methodParameterTypes.length == childPoshiElements.size())) {
 
 				possibleMethods.add(possibleMethod);
+			}
+		}
+
+		for (PoshiElement childPoshiElement : childPoshiElements) {
+			String nameAttributeValue = childPoshiElement.attributeValue(
+				"name");
+
+			if (Validator.isNotNull(nameAttributeValue)) {
+				_exceptions.add(
+					new PoshiElementException(
+						poshiElement, "Parameter name ", nameAttributeValue,
+						" is not required"));
 			}
 		}
 
@@ -1556,6 +1564,43 @@ public class PoshiValidation {
 							propertyPoshiElement, "Invalid property value '",
 							propertyValue.trim(), "' for property name '",
 							propertyName.trim()));
+				}
+			}
+		}
+	}
+
+	protected static void validateProperties() {
+		PoshiProperties poshiProperties = PoshiProperties.getPoshiProperties();
+
+		if (Validator.isNull(poshiProperties.testCaseAvailablePropertyNames)) {
+			return;
+		}
+
+		for (String testCaseAvailablePropertyName :
+				StringUtil.split(
+					poshiProperties.testCaseAvailablePropertyNames)) {
+
+			String testCaseAvailablePropertyValues = PropsUtil.get(
+				"test.case.available.property.values[" +
+					testCaseAvailablePropertyName + "]");
+
+			if (Validator.isNotNull(testCaseAvailablePropertyValues)) {
+				List<String> uniquePropertyValues = new ArrayList<>();
+
+				for (String propertyValue :
+						StringUtil.split(testCaseAvailablePropertyValues)) {
+
+					if (uniquePropertyValues.contains(propertyValue)) {
+						_exceptions.add(
+							new ValidationException(
+								"Duplicate property value " + propertyValue +
+									" in property name " +
+										testCaseAvailablePropertyName));
+
+						continue;
+					}
+
+					uniquePropertyValues.add(propertyValue);
 				}
 			}
 		}
@@ -2065,13 +2110,28 @@ public class PoshiValidation {
 	}
 
 	private static void _throwExceptions() throws Exception {
+		List<Exception> warnings = PoshiElementException.getWarnings(
+			new ArrayList<>(_exceptions));
+
+		if (!warnings.isEmpty()) {
+			_throwWarnings(warnings);
+		}
+
+		List<Exception> filteredExceptions =
+			PoshiElementException.getFilteredExceptions(
+				new ArrayList<>(_exceptions));
+
+		if (filteredExceptions.isEmpty()) {
+			return;
+		}
+
 		StringBuilder sb = new StringBuilder();
 
 		sb.append("\n\n");
-		sb.append(_exceptions.size());
+		sb.append(filteredExceptions.size());
 		sb.append(" errors in POSHI\n\n");
 
-		for (Exception exception : _exceptions) {
+		for (Exception exception : filteredExceptions) {
 			sb.append(exception.getMessage());
 			sb.append("\n\n");
 		}
@@ -2079,6 +2139,15 @@ public class PoshiValidation {
 		System.out.println(sb.toString());
 
 		throw new Exception();
+	}
+
+	private static void _throwWarnings(List<Exception> warnings) {
+		for (Exception exception : warnings) {
+			PoshiElementException poshiElementException =
+				(PoshiElementException)exception;
+
+			_logger.warning(poshiElementException.getSimpleMessage());
+		}
 	}
 
 	private static final Logger _logger = Logger.getLogger(

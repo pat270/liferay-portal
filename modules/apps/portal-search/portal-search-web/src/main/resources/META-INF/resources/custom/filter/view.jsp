@@ -12,6 +12,7 @@
 <%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %><%@
 taglib uri="http://liferay.com/tld/clay" prefix="clay" %><%@
 taglib uri="http://liferay.com/tld/ddm" prefix="liferay-ddm" %><%@
+taglib uri="http://liferay.com/tld/frontend" prefix="liferay-frontend" %><%@
 taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
 
 <%@ page import="com.liferay.portal.kernel.language.LanguageUtil" %><%@
@@ -33,7 +34,7 @@ CustomFilterPortletInstanceConfiguration customFilterPortletInstanceConfiguratio
 %>
 
 <c:if test="<%= !customFilterDisplayContext.isRenderNothing() %>">
-	<aui:form action="<%= customFilterDisplayContext.getSearchURL() %>" method="get" name="fm">
+	<form action="<%= customFilterDisplayContext.getSearchURL() %>" id="<portlet:namespace />fm" method="get" name="<portlet:namespace />fm">
 		<liferay-ddm:template-renderer
 			className="<%= CustomFilterDisplayContext.class.getName() %>"
 			contextObjects='<%=
@@ -61,7 +62,8 @@ CustomFilterPortletInstanceConfiguration customFilterPortletInstanceConfiguratio
 					persistState="<%= true %>"
 					title="<%= HtmlUtil.escapeAttribute(customFilterDisplayContext.getHeading()) %>"
 				>
-					<aui:input cssClass="custom-filter-value-input" data-qa-id="customFilterValueInput" disabled="<%= customFilterDisplayContext.isImmutable() %>" id="<%= liferayPortletResponse.getNamespace() + StringUtil.randomId() %>" label="" name="<%= HtmlUtil.escapeAttribute(customFilterDisplayContext.getParameterName()) %>" useNamespace="<%= false %>" value="<%= HtmlUtil.escapeAttribute(customFilterDisplayContext.getFilterValue()) %>" />
+					<div class="panel-body">
+						<aui:input cssClass="custom-filter-value-input" data-qa-id="customFilterValueInput" disabled="<%= customFilterDisplayContext.isImmutable() %>" id="<%= liferayPortletResponse.getNamespace() + StringUtil.randomId() %>" label="" name="<%= HtmlUtil.escapeAttribute(customFilterDisplayContext.getParameterName()) %>" useNamespace="<%= false %>" value="<%= HtmlUtil.escapeAttribute(customFilterDisplayContext.getFilterValue()) %>" />
 
 					<clay:button
 						aria-label='<%= LanguageUtil.get(request, "apply") %>'
@@ -75,9 +77,14 @@ CustomFilterPortletInstanceConfiguration customFilterPortletInstanceConfiguratio
 				</liferay-ui:panel>
 			</liferay-ui:panel-container>
 		</liferay-ddm:template-renderer>
-	</aui:form>
+	</form>
 
-	<aui:script use="liferay-search-custom-filter">
-		new Liferay.Search.CustomFilter(A.one('#<portlet:namespace />fm'));
-	</aui:script>
+	<liferay-frontend:component
+		context='<%=
+			HashMapBuilder.<String, Object>put(
+				"namespace", liferayPortletResponse.getNamespace()
+			).build()
+		%>'
+		module="{CustomFilter} from portal-search-web"
+	/>
 </c:if>

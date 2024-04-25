@@ -8,31 +8,31 @@ import React from 'react';
 
 interface ObjectManagementToolbarProps {
 	backURL: string;
-	externalReferenceCode: string;
 	hasPublishObjectPermission: boolean;
 	hasUpdateObjectDefinitionPermission: boolean;
 	isApproved: boolean;
+	isRootDescendantNode: boolean;
 	label: string;
+	objectDefinitionExternalReferenceCode: string;
 	objectDefinitionId: number;
 	onSubmit: (draft: boolean) => void;
 	portletNamespace: string;
 	screenNavigationCategoryKey: string;
-	setValues: (values: Partial<ObjectDefinition>) => void;
 	system: boolean;
 }
 
 export default function ObjectManagementToolbar({
 	backURL,
-	externalReferenceCode,
 	hasPublishObjectPermission,
 	hasUpdateObjectDefinitionPermission,
 	isApproved,
+	isRootDescendantNode,
 	label,
+	objectDefinitionExternalReferenceCode,
 	objectDefinitionId,
 	onSubmit,
 	portletNamespace,
 	screenNavigationCategoryKey,
-	setValues,
 	system,
 }: ObjectManagementToolbarProps) {
 	return (
@@ -47,20 +47,18 @@ export default function ObjectManagementToolbar({
 			className="border-bottom"
 			enableBoxShadow={false}
 			entityId={objectDefinitionId}
-			externalReferenceCode={externalReferenceCode}
-			externalReferenceCodeSaveURL={`/o/object-admin/v1.0/object-definitions/${objectDefinitionId}`}
 			hasPublishPermission={hasPublishObjectPermission}
 			hasUpdatePermission={hasUpdateObjectDefinitionPermission}
 			helpMessage={Liferay.Language.get(
 				'unique-key-for-referencing-the-object-definition'
 			)}
 			isApproved={isApproved}
+			isRootDescendantNode={isRootDescendantNode}
 			label={label}
-			onExternalReferenceCodeChange={(externalReferenceCode: string) => {
-				setValues({
-					externalReferenceCode,
-				});
-			}}
+			objectDefinitionExternalReferenceCode={
+				objectDefinitionExternalReferenceCode
+			}
+			objectDefinitionExternalReferenceCodeSaveURL={`/o/object-admin/v1.0/object-definitions/${objectDefinitionId}`}
 			onGetEntity={() => API.getObjectDefinitionById(objectDefinitionId)}
 			onSubmit={onSubmit}
 			portletNamespace={portletNamespace}

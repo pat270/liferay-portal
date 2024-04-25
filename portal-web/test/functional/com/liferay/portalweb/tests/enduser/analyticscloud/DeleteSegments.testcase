@@ -29,10 +29,6 @@ definition {
 	tearDown {
 		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
 
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
-		//ACUtils.tearDownAC();
-
 		ACUtils.tearDownDXP();
 
 		if (${testLiferayVirtualInstance} == "true") {
@@ -43,12 +39,14 @@ definition {
 
 			CustomFields.tearDownCP();
 		}
+
+		ACUtils.tearDownAC();
 	}
 
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8595 | Test Summary: Delete a criteria"
 	@priority = 3
 	test CanDeleteCriteria {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Get site assigned property name") {
 			var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
@@ -110,7 +108,7 @@ definition {
 	@description = "Delete a dynamic segment"
 	@priority = 5
 	test CanDeleteDynamicSegment {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ACUtils.createBlogsAndAddToPage();
 
@@ -166,7 +164,7 @@ definition {
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8597 | Test Summary: Delete a Segment via the Segment List"
 	@priority = 4
 	test CanDeleteSegmentViaSegmentList {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Get site assigned property name") {
 			var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
@@ -202,15 +200,23 @@ definition {
 			ACProperties.switchProperty(propertyName = ${propertyName});
 		}
 
-		task ("Go to Segments and add a new segment") {
+		task ("Add a new dynamic segment") {
 			ACNavigation.goToSegments();
 
-			ACSegments.createStaticSegment();
+			ACSegments.createDynamicSegment();
 
 			ACUtils.setItemName(itemName = "New Segment Test");
+		}
 
-			ACSegments.addStaticMember(tableMember = "ac ac");
+		task ("Add an email field") {
+			ACSegments.goToSidebarAttributes(criterion = "Individual Attributes");
 
+			ACSegments.addSegmentField(segmentField = "email");
+
+			ACSegments.editTextCriterion(textInput = "ac@liferay.com");
+		}
+
+		task ("Save the segment") {
 			ACSegments.saveSegment();
 		}
 
@@ -228,7 +234,7 @@ definition {
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8138 | Test Summary: Delete a static segment"
 	@priority = 5
 	test CanDeleteStaticSegment {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
 
@@ -240,11 +246,10 @@ definition {
 
 		ACDXPSettings.syncNewContactData();
 
-		User.logoutAndLoginPG(
-			userLoginEmailAddress = "ac@liferay.com",
-			userLoginFullName = "ac ac");
-
-		ACUtils.navigateToSitePage(
+		ACUtils.navigateToSitePageWithUser(
+			actionType = "View WC",
+			documentTitleList = "1,2,3,4",
+			emailList = "ac@liferay.com",
 			pageName = "AC Page",
 			siteName = "Site Name");
 
@@ -280,7 +285,7 @@ definition {
 	@description = "Bug: LRAC-10247 | Automation ID: LRAC-10247 | Test Summary: Deleting a static segment does not remove user in known individuals"
 	@priority = 5
 	test CheckIfKnownIndividualsDontDisappearAfterDeleteStaticSegment {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Connect the DXP to AC") {
 			ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
@@ -306,6 +311,8 @@ definition {
 
 		task ("View the site page") {
 			ACUtils.navigateToSitePage(
+				actionType = "View WC",
+				documentTitleList = "1,2,3,4",
 				pageName = "AC Page",
 				siteName = "Site Name");
 		}
@@ -375,7 +382,7 @@ definition {
 		// AC Refactor: Data doesn't appear on time
 		// AC Refactor ticket: LRAC-14011
 
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Connect DXP to AC") {
 			ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
@@ -398,10 +405,7 @@ definition {
 				userLastName = "ac",
 				userScreenName = "ac");
 
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Users and Organizations");
+			User.openUsersAdmin();
 
 			UserNavigator.gotoUser(userScreenName = "ac");
 
@@ -417,10 +421,7 @@ definition {
 		}
 
 		task ("Redefine the value of the custom field") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Users and Organizations");
+			User.openUsersAdmin();
 
 			UserNavigator.gotoUser(userScreenName = "ac");
 
@@ -519,100 +520,6 @@ definition {
 			AssertVisible(
 				key_text = "",
 				locator1 = "Button#ANY_DISABLED");
-		}
-	}
-
-	@description = "Feature ID: Legacy | Automation ID: LRAC-8594 | Test Summary: Deleting a data source causes individuals to be removed from segment"
-	@ignore = "true"
-	@priority = 4
-	test DeleteDataSourceIndividualsRemovedSegment {
-		property portal.upstream = "quarantine";
-
-		// AC Quarantine Reason: Segment membership takes long time to load LRAC-10769
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
-		task ("Get site assigned property name") {
-			ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
-		}
-
-		task ("Add a new user in DXP") {
-			JSONUser.addUser(
-				userEmailAddress = "ac@liferay.com",
-				userFirstName = "ac",
-				userLastName = "ac",
-				userScreenName = "ac");
-		}
-
-		task ("Sync the Contact Data") {
-			ACDXPSettings.syncNewContactData();
-		}
-
-		task ("Sign in with the new user to visit the site pages") {
-			User.logoutAndLoginPG(
-				userLoginEmailAddress = "ac@liferay.com",
-				userLoginFullName = "ac ac");
-
-			ACUtils.navigateToSitePage(
-				pageName = "AC Page",
-				siteName = "Site Name");
-		}
-
-		task ("Switch to new property in AC") {
-			ACUtils.closeAllSessionsAndWait();
-
-			ACUtils.launchAC();
-
-			ACProperties.switchProperty(propertyName = ${assignedPropertyName});
-		}
-
-		task ("Add a new dynamic segment") {
-			ACNavigation.goToSegments();
-
-			ACSegments.createDynamicSegment();
-
-			ACUtils.setItemName(itemName = "New Segment Test");
-		}
-
-		task ("Add an email field") {
-			ACSegments.goToSidebarAttributes(criterion = "Individual Attributes");
-
-			ACSegments.addSegmentField(segmentField = "email");
-
-			ACSegments.editTextCriterion(textInput = "ac@liferay.com");
-		}
-
-		task ("Save the segment") {
-			ACSegments.saveSegment();
-		}
-
-		task ("Go to Known Individuals") {
-			ACNavigation.goToIndividuals();
-
-			ACNavigation.switchTab(tabName = "Known Individuals");
-		}
-
-		task ("Assert the segment displays under the contact user") {
-			ACIndividualsDashboard.goToKnownIndividualDetails(individualName = "ac ac");
-
-			ACNavigation.switchTab(tabName = "Segments");
-
-			ACIndividualsDashboard.assertIndividualAttribute(individualAttribute = "New Segment Test");
-		}
-
-		//task ("Delete the Data Source") {
-		//	ACSettings.deleteDataSource(dataSourceName = ${assignedPropertyName});
-		//}
-
-		task ("Exit Settings") {
-			ACNavigation.exitSettings();
-		}
-
-		task ("Open the created segment and assert the user is not present") {
-			ACNavigation.goToSegments();
-
-			ACSegments.accessSegment(segmentName = "New Segment Test");
-
-			ACUtils.viewGenericText(textValueList = "There are no members found on the selected time period.");
 		}
 	}
 

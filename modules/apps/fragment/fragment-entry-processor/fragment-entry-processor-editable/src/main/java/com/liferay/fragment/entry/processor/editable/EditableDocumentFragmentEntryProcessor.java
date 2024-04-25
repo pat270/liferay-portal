@@ -13,7 +13,9 @@ import com.liferay.fragment.entry.processor.util.EditableFragmentEntryProcessorU
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.processor.DocumentFragmentEntryProcessor;
 import com.liferay.fragment.processor.FragmentEntryProcessorContext;
+import com.liferay.info.item.ClassPKInfoItemIdentifier;
 import com.liferay.info.item.InfoItemFieldValues;
+import com.liferay.info.item.InfoItemReference;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -21,6 +23,7 @@ import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.HashMap;
@@ -56,13 +59,21 @@ public class EditableDocumentFragmentEntryProcessor
 			fragmentEntryLink.getEditableValues());
 
 		if (jsonObject.length() == 0) {
-			Class<?> clazz = getClass();
-
 			jsonObject.put(
-				clazz.getName(), _getDefaultEditableValuesJSONObject(document));
+				FragmentEntryProcessorConstants.
+					KEY_EDITABLE_FRAGMENT_ENTRY_PROCESSOR,
+				_getDefaultEditableValuesJSONObject(document));
 		}
 
-		Map<Long, InfoItemFieldValues> infoDisplaysFieldValues =
+		JSONObject editableValuesJSONObject = jsonObject.getJSONObject(
+			FragmentEntryProcessorConstants.
+				KEY_EDITABLE_FRAGMENT_ENTRY_PROCESSOR);
+
+		if (editableValuesJSONObject == null) {
+			return;
+		}
+
+		Map<InfoItemReference, InfoItemFieldValues> infoDisplaysFieldValues =
 			new HashMap<>();
 
 		for (Element element :
@@ -78,13 +89,7 @@ public class EditableDocumentFragmentEntryProcessor
 			String id = EditableFragmentEntryProcessorUtil.getElementId(
 				element);
 
-			JSONObject editableValuesJSONObject = jsonObject.getJSONObject(
-				FragmentEntryProcessorConstants.
-					KEY_EDITABLE_FRAGMENT_ENTRY_PROCESSOR);
-
-			if ((editableValuesJSONObject == null) ||
-				!editableValuesJSONObject.has(id)) {
-
+			if (!editableValuesJSONObject.has(id)) {
 				continue;
 			}
 
@@ -176,10 +181,11 @@ public class EditableDocumentFragmentEntryProcessor
 						fragmentEntryProcessorContext);
 				}
 			}
-		}
 
-		if (fragmentEntryProcessorContext.isViewMode()) {
-			for (Element element : document.select("lfr-editable")) {
+			if ((fragmentEntryProcessorContext.isPreviewMode() ||
+				 fragmentEntryProcessorContext.isViewMode()) &&
+				Objects.equals(element.tagName(), "lfr-editable")) {
+
 				element.removeAttr("id");
 				element.removeAttr("type");
 
@@ -195,16 +201,24 @@ public class EditableDocumentFragmentEntryProcessor
 			}
 		}
 
-		if (infoDisplaysFieldValues.containsKey(
-				fragmentEntryProcessorContext.getPreviewClassPK())) {
+		if ((fragmentEntryProcessorContext.getPreviewClassNameId() > 0) &&
+			(fragmentEntryProcessorContext.getPreviewClassPK() > 0)) {
 
-			Element previewElement = new Element("div");
+			InfoItemReference infoItemReference = new InfoItemReference(
+				_portal.getClassName(
+					fragmentEntryProcessorContext.getPreviewClassNameId()),
+				new ClassPKInfoItemIdentifier(
+					fragmentEntryProcessorContext.getPreviewClassPK()));
 
-			previewElement.attr("style", "border: 1px solid #0B5FFF");
+			if (infoDisplaysFieldValues.containsKey(infoItemReference)) {
+				Element previewElement = new Element("div");
 
-			Element bodyElement = document.body();
+				previewElement.attr("style", "border: 1px solid #0B5FFF");
 
-			previewElement.html(bodyElement.html());
+				Element bodyElement = document.body();
+
+				previewElement.html(bodyElement.html());
+			}
 		}
 	}
 
@@ -269,5 +283,8 @@ public class EditableDocumentFragmentEntryProcessor
 
 	@Reference
 	private JSONFactory _jsonFactory;
+
+	@Reference
+	private Portal _portal;
 
 }

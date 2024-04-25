@@ -1,0 +1,5 @@
+dependencies {
+	api project(":modules:testray-rest-api")
+
+	compileOnly group: "com.liferay.portal", name: "release.dxp.api", version: "7.4.13.u112"
+}

@@ -4,24 +4,32 @@
  */
 
 import ClayAlert from '@clayui/alert';
-import {useCallback, useMemo, useState} from 'react';
+import {useCallback, useEffect, useMemo, useState} from 'react';
+import {useAppPropertiesContext} from '~/common/contexts/AppPropertiesContext';
+import {useGetMyUserAccount} from '~/common/services/liferay/graphql/user-accounts';
 import i18n from '../../../../../../common/I18n';
 import {ROLE_TYPES} from '../../../../../../common/utils/constants';
 import {ALERT_DOWNLOAD_TYPE} from '../../../../utils/constants/alertDownloadType';
 import {ALERT_ACTIVATION_AGGREGATED_KEYS_DOWNLOAD_TEXT} from '../../utils/constants/alertAggregateKeysDownloadText';
 import {ALERT_ACTIVATION_MULTIPLE_KEYS_DOWNLOAD_TEXT} from '../../utils/constants/alertMultipleKeysDownloadText';
 import {DOWNLOADABLE_LICENSE_KEYS} from '../../utils/constants/downlodableLicenseKeys';
+import {hasAdminUserAccount} from '../../utils/hasAdminUserAccount';
+import {isBulkRenewAvailable} from '../../utils/isBulkRenewAvailable';
 import ActionButton from '../ActionButton';
 import BadgeFilter from '../BadgeFilter';
 import DeactivateButton from '../Deactivate';
 import DownloadAlert from '../DownloadAlert';
 import Filter from '../Filter';
+import RenewButton from '../Renew';
 import useGetAccountUserAccount from './hooks/useGetAccountUserAccount';
 
 const ActivationKeysTableHeader = ({
 	activationKeysByStatusPaginatedChecked,
 	activationKeysState,
+	hasRenewalSubscription,
+	isRenewTable,
 	project,
+	setRenewKeysFilterChecked,
 	productName,
 	sessionId,
 	loading,
@@ -33,9 +41,13 @@ const ActivationKeysTableHeader = ({
 		userAccountsState: [userAccounts],
 	} = useGetAccountUserAccount(project);
 
+	const {data: myAccount} = useGetMyUserAccount();
+
+	const isAdminUserAccount = hasAdminUserAccount(myAccount);
+
 	const isAdminOrPartnerManager = useMemo(() => {
 		const currentUser = userAccounts?.find(
-			({id}) => id === +Liferay.ThemeDisplay.getUserId()
+			({id}) => id === Number(Liferay.ThemeDisplay.getUserId())
 		);
 
 		if (currentUser) {
@@ -48,6 +60,8 @@ const ActivationKeysTableHeader = ({
 			return hasAdminRoles;
 		}
 	}, [userAccounts]);
+
+	const {featureFlags} = useAppPropertiesContext();
 
 	const [status, setStatus] = useState({
 		deactivate: '',
@@ -105,6 +119,26 @@ const ActivationKeysTableHeader = ({
 
 	const allowSelfProvisioning = project.allowSelfProvisioning;
 
+	const bulkRenewAvailable = isBulkRenewAvailable(
+		activationKeysByStatusPaginatedChecked
+	);
+
+	const complimentaryKeyValidation = (activationKey) => activationKey;
+
+	const handleComplimentaryKey = activationKeysByStatusPaginatedChecked?.map(
+		(activationKey) => activationKey.complimentary
+	);
+
+	const isComplimentaryKey = handleComplimentaryKey.some(
+		complimentaryKeyValidation
+	);
+
+	useEffect(() => {
+		if (isRenewTable) {
+			setRenewKeysFilterChecked(filterCheckedActivationKeys);
+		}
+	}, [filterCheckedActivationKeys, isRenewTable, setRenewKeysFilterChecked]);
+
 	return (
 		<>
 			<div className="bg-neutral-1 d-flex flex-column pb-1 pt-3 px-3 rounded">
@@ -115,58 +149,89 @@ const ActivationKeysTableHeader = ({
 					/>
 
 					<div className="align-items-center d-flex ml-auto">
-						{!!activationKeysByStatusPaginatedChecked.length && (
-							<>
-								<p className="font-weight-semi-bold m-0 ml-auto pr-2 text-neutral-10">
-									{i18n.sub(
-										activationKeysByStatusPaginatedChecked.length ===
-											1
-											? 'x-key-selected'
-											: 'x-keys-selected',
-										[
+						{!!activationKeysByStatusPaginatedChecked.length &&
+							!isRenewTable && (
+								<>
+									<p className="font-weight-semi-bold m-0 ml-auto pr-2 text-neutral-10">
+										{i18n.sub('x-of-x-keys-selected', [
 											activationKeysByStatusPaginatedChecked.length,
-										]
-									)}
-								</p>
+											activationKeys.length,
+										])}
+									</p>
 
-								{isAdminOrPartnerManager &&
-									allowSelfProvisioning && (
-										<DeactivateButton
-											deactivateKeysStatus={
-												status.deactivate
-											}
-											filterCheckedActivationKeys={
-												filterCheckedActivationKeys
-											}
-											handleDeactivate={handleDeactivate}
-											sessionId={sessionId}
-											setDeactivateKeysStatus={(value) =>
-												setStatus((previousStatus) => ({
-													...previousStatus,
-													deactivate: value,
-												}))
-											}
-										/>
-									)}
-							</>
+									{(isAdminUserAccount ||
+										isAdminOrPartnerManager) &&
+										allowSelfProvisioning && (
+											<DeactivateButton
+												deactivateKeysStatus={
+													status.deactivate
+												}
+												filterCheckedActivationKeys={
+													filterCheckedActivationKeys
+												}
+												handleDeactivate={
+													handleDeactivate
+												}
+												sessionId={sessionId}
+												setDeactivateKeysStatus={(
+													value
+												) =>
+													setStatus(
+														(previousStatus) => ({
+															...previousStatus,
+															deactivate: value,
+														})
+													)
+												}
+											/>
+										)}
+								</>
+							)}
+
+						{featureFlags.includes('ISSD-78') &&
+							(isAdminUserAccount || isAdminOrPartnerManager) &&
+							allowSelfProvisioning &&
+							activationKeysByStatusPaginatedChecked.length >=
+								2 &&
+							bulkRenewAvailable &&
+							!isRenewTable && (
+								<RenewButton
+									activationKeysByStatusPaginatedChecked={
+										activationKeysByStatusPaginatedChecked
+									}
+									filterCheckedActivationKeys={
+										filterCheckedActivationKeys
+									}
+									identifier="renew"
+									isComplimentaryKey={isComplimentaryKey}
+								>
+									{i18n.translate('renew')}
+								</RenewButton>
+							)}
+
+						{!isRenewTable && (
+							<ActionButton
+								activationKeysByStatusPaginatedChecked={
+									activationKeysByStatusPaginatedChecked
+								}
+								filterCheckedActivationKeys={
+									filterCheckedActivationKeys
+								}
+								hasRenewalSubscription={hasRenewalSubscription}
+								identifier="action"
+								isAbleToDownloadAggregateKeys={
+									isAbleToDownloadAggregateKeys
+								}
+								isAdminOrPartnerManager={
+									isAdminOrPartnerManager
+								}
+								isAdminUserAccount={isAdminUserAccount}
+								productName={productName}
+								project={project}
+								sessionId={sessionId}
+								setStatus={setStatus}
+							/>
 						)}
-
-						<ActionButton
-							activationKeysByStatusPaginatedChecked={
-								activationKeysByStatusPaginatedChecked
-							}
-							filterCheckedActivationKeys={
-								filterCheckedActivationKeys
-							}
-							isAbleToDownloadAggregateKeys={
-								isAbleToDownloadAggregateKeys
-							}
-							isAdminOrPartnerManager={isAdminOrPartnerManager}
-							productName={productName}
-							project={project}
-							sessionId={sessionId}
-							setStatus={setStatus}
-						/>
 					</div>
 				</div>
 

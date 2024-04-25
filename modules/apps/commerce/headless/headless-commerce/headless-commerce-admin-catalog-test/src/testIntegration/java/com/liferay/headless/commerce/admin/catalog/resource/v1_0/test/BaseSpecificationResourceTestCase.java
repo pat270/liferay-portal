@@ -28,8 +28,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -38,6 +36,7 @@ import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.search.test.util.SearchTestRule;
@@ -63,8 +62,6 @@ import java.util.Set;
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-
-import org.apache.commons.lang.time.DateUtils;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -314,10 +311,11 @@ public abstract class BaseSpecificationResourceTestCase {
 
 	@Test
 	public void testGetSpecificationsPageWithPagination() throws Exception {
-		Page<Specification> totalPage =
+		Page<Specification> specificationPage =
 			specificationResource.getSpecificationsPage(null, null, null, null);
 
-		int totalCount = GetterUtil.getInteger(totalPage.getTotalCount());
+		int totalCount = GetterUtil.getInteger(
+			specificationPage.getTotalCount());
 
 		Specification specification1 =
 			testGetSpecificationsPage_addSpecification(randomSpecification());
@@ -328,32 +326,81 @@ public abstract class BaseSpecificationResourceTestCase {
 		Specification specification3 =
 			testGetSpecificationsPage_addSpecification(randomSpecification());
 
-		Page<Specification> page1 = specificationResource.getSpecificationsPage(
-			null, null, Pagination.of(1, totalCount + 2), null);
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<Specification> specifications1 =
-			(List<Specification>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			specifications1.toString(), totalCount + 2, specifications1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<Specification> page1 =
+				specificationResource.getSpecificationsPage(
+					null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		Page<Specification> page2 = specificationResource.getSpecificationsPage(
-			null, null, Pagination.of(2, totalCount + 2), null);
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+			assertContains(
+				specification1, (List<Specification>)page1.getItems());
 
-		List<Specification> specifications2 =
-			(List<Specification>)page2.getItems();
+			Page<Specification> page2 =
+				specificationResource.getSpecificationsPage(
+					null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		Assert.assertEquals(
-			specifications2.toString(), 1, specifications2.size());
+			assertContains(
+				specification2, (List<Specification>)page2.getItems());
 
-		Page<Specification> page3 = specificationResource.getSpecificationsPage(
-			null, null, Pagination.of(1, totalCount + 3), null);
+			Page<Specification> page3 =
+				specificationResource.getSpecificationsPage(
+					null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		assertContains(specification1, (List<Specification>)page3.getItems());
-		assertContains(specification2, (List<Specification>)page3.getItems());
-		assertContains(specification3, (List<Specification>)page3.getItems());
+			assertContains(
+				specification3, (List<Specification>)page3.getItems());
+		}
+		else {
+			Page<Specification> page1 =
+				specificationResource.getSpecificationsPage(
+					null, null, Pagination.of(1, totalCount + 2), null);
+
+			List<Specification> specifications1 =
+				(List<Specification>)page1.getItems();
+
+			Assert.assertEquals(
+				specifications1.toString(), totalCount + 2,
+				specifications1.size());
+
+			Page<Specification> page2 =
+				specificationResource.getSpecificationsPage(
+					null, null, Pagination.of(2, totalCount + 2), null);
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<Specification> specifications2 =
+				(List<Specification>)page2.getItems();
+
+			Assert.assertEquals(
+				specifications2.toString(), 1, specifications2.size());
+
+			Page<Specification> page3 =
+				specificationResource.getSpecificationsPage(
+					null, null, Pagination.of(1, (int)totalCount + 3), null);
+
+			assertContains(
+				specification1, (List<Specification>)page3.getItems());
+			assertContains(
+				specification2, (List<Specification>)page3.getItems());
+			assertContains(
+				specification3, (List<Specification>)page3.getItems());
+		}
 	}
 
 	@Test
@@ -363,7 +410,7 @@ public abstract class BaseSpecificationResourceTestCase {
 			(entityField, specification1, specification2) -> {
 				BeanTestUtil.setProperty(
 					specification1, entityField.getName(),
-					DateUtils.addMinutes(new Date(), -2));
+					new Date(System.currentTimeMillis() - (2 * Time.MINUTE)));
 			});
 	}
 
@@ -469,24 +516,29 @@ public abstract class BaseSpecificationResourceTestCase {
 		specification2 = testGetSpecificationsPage_addSpecification(
 			specification2);
 
+		Page<Specification> page = specificationResource.getSpecificationsPage(
+			null, null, null, null);
+
 		for (EntityField entityField : entityFields) {
 			Page<Specification> ascPage =
 				specificationResource.getSpecificationsPage(
-					null, null, Pagination.of(1, 2),
+					null, null, Pagination.of(1, (int)page.getTotalCount() + 1),
 					entityField.getName() + ":asc");
 
-			assertEquals(
-				Arrays.asList(specification1, specification2),
-				(List<Specification>)ascPage.getItems());
+			assertContains(
+				specification1, (List<Specification>)ascPage.getItems());
+			assertContains(
+				specification2, (List<Specification>)ascPage.getItems());
 
 			Page<Specification> descPage =
 				specificationResource.getSpecificationsPage(
-					null, null, Pagination.of(1, 2),
+					null, null, Pagination.of(1, (int)page.getTotalCount() + 1),
 					entityField.getName() + ":desc");
 
-			assertEquals(
-				Arrays.asList(specification2, specification1),
-				(List<Specification>)descPage.getItems());
+			assertContains(
+				specification2, (List<Specification>)descPage.getItems());
+			assertContains(
+				specification1, (List<Specification>)descPage.getItems());
 		}
 	}
 
@@ -511,6 +563,8 @@ public abstract class BaseSpecificationResourceTestCase {
 			new GraphQLField("items", getGraphQLFields()),
 			new GraphQLField("page"), new GraphQLField("totalCount"));
 
+		// No namespace
+
 		JSONObject specificationsJSONObject = JSONUtil.getValueAsJSONObject(
 			invokeGraphQLQuery(graphQLField), "JSONObject/data",
 			"JSONObject/specifications");
@@ -524,6 +578,29 @@ public abstract class BaseSpecificationResourceTestCase {
 
 		specificationsJSONObject = JSONUtil.getValueAsJSONObject(
 			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/specifications");
+
+		Assert.assertEquals(
+			totalCount + 2, specificationsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			specification1,
+			Arrays.asList(
+				SpecificationSerDes.toDTOs(
+					specificationsJSONObject.getString("items"))));
+		assertContains(
+			specification2,
+			Arrays.asList(
+				SpecificationSerDes.toDTOs(
+					specificationsJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		specificationsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminCatalog_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminCatalog_v1_0",
 			"JSONObject/specifications");
 
 		Assert.assertEquals(
@@ -597,7 +674,10 @@ public abstract class BaseSpecificationResourceTestCase {
 
 	@Test
 	public void testGraphQLDeleteSpecification() throws Exception {
-		Specification specification =
+
+		// No namespace
+
+		Specification specification1 =
 			testGraphQLDeleteSpecification_addSpecification();
 
 		Assert.assertTrue(
@@ -607,23 +687,61 @@ public abstract class BaseSpecificationResourceTestCase {
 						"deleteSpecification",
 						new HashMap<String, Object>() {
 							{
-								put("id", specification.getId());
+								put("id", specification1.getId());
 							}
 						})),
 				"JSONObject/data", "Object/deleteSpecification"));
-		JSONArray errorsJSONArray = JSONUtil.getValueAsJSONArray(
+
+		JSONArray errorsJSONArray1 = JSONUtil.getValueAsJSONArray(
 			invokeGraphQLQuery(
 				new GraphQLField(
 					"specification",
 					new HashMap<String, Object>() {
 						{
-							put("id", specification.getId());
+							put("id", specification1.getId());
 						}
 					},
 					new GraphQLField("id"))),
 			"JSONArray/errors");
 
-		Assert.assertTrue(errorsJSONArray.length() > 0);
+		Assert.assertTrue(errorsJSONArray1.length() > 0);
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		Specification specification2 =
+			testGraphQLDeleteSpecification_addSpecification();
+
+		Assert.assertTrue(
+			JSONUtil.getValueAsBoolean(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0",
+						new GraphQLField(
+							"deleteSpecification",
+							new HashMap<String, Object>() {
+								{
+									put("id", specification2.getId());
+								}
+							}))),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminCatalog_v1_0",
+				"Object/deleteSpecification"));
+
+		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminCatalog_v1_0",
+					new GraphQLField(
+						"specification",
+						new HashMap<String, Object>() {
+							{
+								put("id", specification2.getId());
+							}
+						},
+						new GraphQLField("id")))),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray2.length() > 0);
 	}
 
 	protected Specification testGraphQLDeleteSpecification_addSpecification()
@@ -656,6 +774,8 @@ public abstract class BaseSpecificationResourceTestCase {
 		Specification specification =
 			testGraphQLGetSpecification_addSpecification();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				specification,
@@ -671,11 +791,35 @@ public abstract class BaseSpecificationResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/specification"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		Assert.assertTrue(
+			equals(
+				specification,
+				SpecificationSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminCatalog_v1_0",
+								new GraphQLField(
+									"specification",
+									new HashMap<String, Object>() {
+										{
+											put("id", specification.getId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminCatalog_v1_0",
+						"Object/specification"))));
 	}
 
 	@Test
 	public void testGraphQLGetSpecificationNotFound() throws Exception {
 		Long irrelevantId = RandomTestUtil.randomLong();
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -689,6 +833,25 @@ public abstract class BaseSpecificationResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0",
+						new GraphQLField(
+							"specification",
+							new HashMap<String, Object>() {
+								{
+									put("id", irrelevantId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -820,6 +983,14 @@ public abstract class BaseSpecificationResourceTestCase {
 
 			if (Objects.equals("optionCategory", additionalAssertFieldName)) {
 				if (specification.getOptionCategory() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("priority", additionalAssertFieldName)) {
+				if (specification.getPriority() == null) {
 					valid = false;
 				}
 
@@ -1006,6 +1177,17 @@ public abstract class BaseSpecificationResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("priority", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						specification1.getPriority(),
+						specification2.getPriority())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("title", additionalAssertFieldName)) {
 				if (!equals(
 						(Map)specification1.getTitle(),
@@ -1053,6 +1235,10 @@ public abstract class BaseSpecificationResourceTestCase {
 
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
+
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
 
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
@@ -1186,6 +1372,12 @@ public abstract class BaseSpecificationResourceTestCase {
 				"Invalid entity field " + entityFieldName);
 		}
 
+		if (entityFieldName.equals("priority")) {
+			sb.append(String.valueOf(specification.getPriority()));
+
+			return sb.toString();
+		}
+
 		if (entityFieldName.equals("title")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
@@ -1238,6 +1430,7 @@ public abstract class BaseSpecificationResourceTestCase {
 				facetable = RandomTestUtil.randomBoolean();
 				id = RandomTestUtil.randomLong();
 				key = StringUtil.toLowerCase(RandomTestUtil.randomString());
+				priority = RandomTestUtil.randomDouble();
 			}
 		};
 	}
@@ -1253,9 +1446,9 @@ public abstract class BaseSpecificationResourceTestCase {
 	}
 
 	protected SpecificationResource specificationResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

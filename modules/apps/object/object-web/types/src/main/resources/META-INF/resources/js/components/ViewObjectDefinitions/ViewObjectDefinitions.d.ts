@@ -6,27 +6,46 @@
 /// <reference types="react" />
 
 import {IFDSTableProps} from '../../utils/fds';
+import {ModalImportKeys} from '../ModalImport/ModalImport';
+import './ViewObjectDefinitions.scss';
+export interface ModalImportProperties {
+	JSONInputId: string;
+	apiURL: string;
+	importExtendedInfo?: KeyValueObject;
+	importURL: string;
+	modalImportKey: ModalImportKeys;
+}
 interface ViewObjectDefinitionsProps extends IFDSTableProps {
 	baseResourceURL: string;
-	storages: LabelTypeObject[];
-}
-export declare type ViewObjectDefinitionsModals = {
-	addObjectDefinition: boolean;
-	deleteObjectDefinition: boolean;
-	importObject: boolean;
-};
-export interface DeletedObjectDefinition extends ObjectDefinition {
-	hasObjectRelationship: boolean;
-	objectEntriesCount: number;
+	editObjectDefinitionURL: string;
+	importObjectDefinitionURL: string;
+	importObjectFolderURL: string;
+	learnResourceContext: any;
+	modelBuilderURL: string;
+	nameMaxLength: string;
+	objectDefinitionsCreationMenu: {
+		primaryItems?: any[];
+		secondaryItems?: any[];
+	};
+	objectDefinitionsFDSActionDropdownItems: any[];
+	objectDefinitionsFDSName: any;
+	objectDefinitionsStorageTypes: LabelValueObject[];
+	objectFolderPermissionsURL: string;
+	portletNamespace: string;
 }
 export default function ViewObjectDefinitions({
-	apiURL,
 	baseResourceURL,
-	creationMenu,
-	id,
-	items,
-	sorting,
-	storages,
-	url,
+	editObjectDefinitionURL,
+	importObjectDefinitionURL,
+	importObjectFolderURL,
+	learnResourceContext,
+	modelBuilderURL,
+	nameMaxLength,
+	objectDefinitionsCreationMenu,
+	objectDefinitionsFDSActionDropdownItems,
+	objectDefinitionsFDSName,
+	objectDefinitionsStorageTypes,
+	objectFolderPermissionsURL,
+	portletNamespace,
 }: ViewObjectDefinitionsProps): JSX.Element;
 export {};

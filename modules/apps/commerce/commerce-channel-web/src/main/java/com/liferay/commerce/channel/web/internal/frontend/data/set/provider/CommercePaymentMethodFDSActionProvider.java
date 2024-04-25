@@ -68,6 +68,9 @@ public class CommercePaymentMethodFDSActionProvider
 					).setParameter(
 						"commerceChannelId", commerceChannelId
 					).setParameter(
+						"commercePaymentIntegrationKey",
+						paymentMethod.getPaymentIntegrationKey()
+					).setParameter(
 						"commercePaymentMethodEngineKey", paymentMethod.getKey()
 					).setWindowState(
 						LiferayWindowState.POP_UP

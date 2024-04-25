@@ -1,4 +1,4 @@
-@component-name = "OSB Site Initializer Partner Portal"
+@component-name = "portal-solutions"
 definition {
 
 	property custom.properties = "feature.flag.LPS-135430=true";
@@ -6,6 +6,7 @@ definition {
 	property portal.release = "false";
 	property portal.upstream = "true";
 	property release.feature.flags.disable.DISABLE_PRIVATE_LAYOUTS = "true";
+	property test.liferay.virtual.instance = "true";
 	property testray.main.component.name = "OSB Site Initializer Partner Portal";
 
 	setUp {
@@ -59,10 +60,59 @@ definition {
 		}
 	}
 
+	@description = "This is a test for LPS-195724. Verify that it's possible to delete the MDF Request while in draft status."
+	@priority = 5
+	test CanDeleteInDraftStatus {
+		property portal.acceptance = "true";
+
+		task ("Given the PMU Fill MDF Request and save as draft") {
+			PRMMarketing.gotoAddNewMDF();
+
+			PRMMDFRequest.createNewRequest(
+				accountName = "Company Name 1",
+				activityDescription = "Activity Description",
+				activityName = "Activity Name 1",
+				budgetList = "Sponsorship Fee-2000",
+				campaignDescription = "Campaign Description",
+				campaignName = "Campaign Name 1",
+				followUpStrategy = "test",
+				goalsOptions = "Lead generation",
+				leadFollowUpList = "Other",
+				leadList = "No",
+				saveAsDraft = "true",
+				tactic = "Other",
+				targetMarketOptions = "Education,Energy",
+				targetOfLeads = 03,
+				targetRolesOptions = "Administrator",
+				typeOfActivity = "Miscellaneous Marketing");
+		}
+
+		task ("When the PMU open the Request Draft") {
+			var firstID = PRMMDFRequest.getRequestID(
+				mdfType = "Request",
+				requestIndex = 1);
+
+			PRMMDFRequest.searchMDF(requestID = ${firstID});
+
+			PRMMDFRequest.goToMDF(campaignName = "Campaign Name 1");
+		}
+
+		task ("And the PMU delete the Request Draft") {
+			PRMUtils.deleteMDF();
+		}
+
+		task ("Then the MDF Request Draft should not be present") {
+			PRMUtils.assertMDFNotPresent(
+				mdfType = "Request",
+				requestID = ${firstID});
+		}
+	}
+
 	@description = "This is a test for LPS-172917. Verify that If there are multiple activities, the review page will display them as dropdown items that can be expandable"
 	@priority = 5
 	test CanExpandAndSeeMultipleActivities {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Temporarily skip portal instances to get tests running for pending release. LRQA-80052
 
@@ -92,7 +142,7 @@ definition {
 				leadFollowUpList = "Other",
 				leadList = "No",
 				tactic = "Other",
-				targetOfLeads = "test",
+				targetOfLeads = 03,
 				typeOfActivity = "Miscellaneous Marketing");
 
 			Button.click(button = "Continue");
@@ -106,7 +156,7 @@ definition {
 				leadFollowUpList = "Other",
 				leadList = "No",
 				tactic = "Other",
-				targetOfLeads = "test",
+				targetOfLeads = 03,
 				typeOfActivity = "Miscellaneous Marketing");
 
 			Button.click(button = "Continue");
@@ -166,6 +216,7 @@ definition {
 	test CanExportAllVisibleMDFs {
 		property solutions.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Temporarily skip portal instances to get tests running for pending release. LRQA-80052
 
@@ -200,6 +251,7 @@ definition {
 	@priority = 4
 	test CanExportFilteredMDFs {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Temporarily skip portal instances to get tests running for pending release. LRQA-80052
 
@@ -275,6 +327,7 @@ definition {
 	@description = "This is a test for LPS-173731. Verify that is possible to export filtered MDFs"
 	@priority = 4
 	test CanExportSearchedMDFs {
+		property portal.acceptance = "true";
 		property solutions.acceptance = "true";
 
 		task ("Given that a new account is created") {
@@ -339,6 +392,7 @@ definition {
 	test CannotContinueWithoutFillRequiredField {
 		property solutions.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Temporarily skip portal instances to get tests running for pending release. LRQA-80052
 
@@ -397,6 +451,7 @@ definition {
 	test CannotExceedTheValueOfMDFRequestedAmount {
 		property solutions.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Temporarily skip portal instances to get tests running for pending release. LRQA-80052
 
@@ -426,7 +481,7 @@ definition {
 				leadFollowUpList = "Other",
 				leadList = "No",
 				tactic = "Other",
-				targetOfLeads = "test",
+				targetOfLeads = 03,
 				typeOfActivity = "Miscellaneous Marketing");
 		}
 
@@ -443,6 +498,7 @@ definition {
 	@priority = 3
 	test CanRemoveBudgetValue {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Temporarily skip portal instances to get tests running for pending release. LRQA-80052
 
@@ -479,6 +535,7 @@ definition {
 	@priority = 5
 	test CanViewMDFStatusOnListing {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Temporarily skip portal instances to get tests running for pending release. LRQA-80052
 
@@ -498,9 +555,13 @@ definition {
 				leadList = "No",
 				tactic = "Other",
 				targetMarketOptions = "Education,Energy",
-				targetOfLeads = "test",
+				targetOfLeads = 03,
 				targetRolesOptions = "Administrator",
 				typeOfActivity = "Miscellaneous Marketing");
+
+			Button.click(button = "See MDF Home");
+
+			PRMNavigator.openSitePage(pageName = "MDF Requests");
 		}
 
 		task ("Then the MDF status appears on list") {
@@ -513,8 +574,10 @@ definition {
 	@description = "This is a test for LPS-173507. Verify that the detail page displays all the information the partner entered on MDF Request Form"
 	@priority = 5
 	test DetailPageDisplaysAllMDFInformation {
+		property portal.acceptance = "true";
 		property solutions.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Temporarily skip portal instances to get tests running for pending release. LRQA-80052
 
@@ -529,7 +592,7 @@ definition {
 			var activityDescription = "Activity Description";
 			var leadFollowUpList = "Other";
 			var tactic = "Other";
-			var targetOfLeads = "test";
+			var targetOfLeads = 03;
 			var typeOfActivity = "Miscellaneous Marketing";
 			var startDate = DateUtil.getFormattedDate("+2", "yyyy-MM-dd");
 			var endDate = DateUtil.getFormattedDate("+3", "yyyy-MM-dd");
@@ -592,6 +655,7 @@ definition {
 	test DifferenceBetweenStartAndEndDateCannotExceedSixMonths {
 		property solutions.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Temporarily skip portal instances to get tests running for pending release. LRQA-80052
 
@@ -639,6 +703,7 @@ definition {
 	test OnlyManagersCanSeeStateManager {
 		property solutions.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Temporarily skip portal instances to get tests running for pending release. LRQA-80052
 
@@ -688,6 +753,7 @@ definition {
 	test RequestedValueIsEqualsTo50PercentOfTotalCost {
 		property solutions.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Temporarily skip portal instances to get tests running for pending release. LRQA-80052
 
@@ -730,6 +796,7 @@ definition {
 	test ReviewPageDisplaysAllInputedInformation {
 		property solutions.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Temporarily skip portal instances to get tests running for pending release. LRQA-80052
 
@@ -811,6 +878,7 @@ definition {
 	test StartDateCannotBeBeforeToCurrentDate {
 		property solutions.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Temporarily skip portal instances to get tests running for pending release. LRQA-80052
 
@@ -852,6 +920,7 @@ definition {
 	test StartDateCannotBeEqualsToCurrentDate {
 		property solutions.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Temporarily skip portal instances to get tests running for pending release. LRQA-80052
 
@@ -892,6 +961,7 @@ definition {
 		property portal.acceptance = "true";
 		property solutions.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Temporarily skip portal instances to get tests running for pending release. LRQA-80052
 
@@ -912,7 +982,7 @@ definition {
 				leadList = "No",
 				tactic = "Other",
 				targetMarketOptions = "Education,Energy",
-				targetOfLeads = "test",
+				targetOfLeads = 03,
 				targetRolesOptions = "Administrator",
 				typeOfActivity = "Miscellaneous Marketing");
 		}
@@ -928,6 +998,7 @@ definition {
 	@priority = 5
 	test VerifyMessageWhenNoClaimWasMade {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Temporarily skip portal instances to get tests running for pending release. LRQA-80052
 
@@ -950,7 +1021,7 @@ definition {
 				leadList = "No",
 				tactic = "Other",
 				targetMarketOptions = "Education,Energy",
-				targetOfLeads = "test",
+				targetOfLeads = 03,
 				targetRolesOptions = "Administrator",
 				typeOfActivity = "Miscellaneous Marketing");
 		}
@@ -980,6 +1051,7 @@ definition {
 	@priority = 5
 	test VerifyMessageWhenOneClaimWasMade {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Temporarily skip portal instances to get tests running for pending release. LRQA-80052
 
@@ -998,7 +1070,7 @@ definition {
 				buttonLink = "mdf-requests",
 				buttonText = "MDFs");
 
-			PRMMDFRequest.goToMDF(campaignName = "Campaign Name");
+			PRMMDFRequest.goToMDF(campaignName = "Campaign Name 1");
 
 			PRMMDFRequest.changeMDFStatus(key_statusButton = "Approve");
 		}
@@ -1014,7 +1086,7 @@ definition {
 				buttonLink = "mdf-requests",
 				buttonText = "MDFs");
 
-			PRMMDFRequest.goToMDF(campaignName = "Campaign Name");
+			PRMMDFRequest.goToMDF(campaignName = "Campaign Name 1");
 
 			PRMMDFClaim.createNewClaim(
 				listLeads = "Document_1.xlsx",
@@ -1031,6 +1103,7 @@ definition {
 	@priority = 5
 	test VerifyMessageWhenTwoClaimsWasMade {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Temporarily skip portal instances to get tests running for pending release. LRQA-80052
 
@@ -1051,7 +1124,7 @@ definition {
 				buttonLink = "mdf-requests",
 				buttonText = "MDFs");
 
-			PRMMDFRequest.goToMDF(campaignName = "Campaign Name");
+			PRMMDFRequest.goToMDF(campaignName = "Campaign Name 1");
 
 			PRMMDFRequest.changeMDFStatus(key_statusButton = "Approve");
 		}
@@ -1067,7 +1140,7 @@ definition {
 				buttonLink = "mdf-requests",
 				buttonText = "MDFs");
 
-			PRMMDFRequest.goToMDF(campaignName = "Campaign Name");
+			PRMMDFRequest.goToMDF(campaignName = "Campaign Name 1");
 
 			PRMMDFClaim.createNewClaim(
 				listLeads = "Document_1.xlsx",
@@ -1090,6 +1163,7 @@ definition {
 	@priority = 5
 	test ViewMDFStatusWithRequestValueHigherThan15K {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given that I submit an MDF with the Total MDF Requested Amount value higher than 15k") {
 			PRMMarketing.gotoAddNewMDF();
@@ -1108,7 +1182,7 @@ definition {
 				leadList = "No",
 				tactic = "Other",
 				targetMarketOptions = "Education,Energy",
-				targetOfLeads = "test",
+				targetOfLeads = 03,
 				targetRolesOptions = "Administrator",
 				typeOfActivity = "Miscellaneous Marketing");
 		}
@@ -1128,6 +1202,7 @@ definition {
 	@priority = 5
 	test ViewMDFStatusWithRequestValueLessThan15K {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given that I submit an MDF with the Total MDF Requested Amount value less than 15k") {
 			PRMMarketing.gotoAddNewMDF();
@@ -1146,7 +1221,7 @@ definition {
 				leadList = "No",
 				tactic = "Other",
 				targetMarketOptions = "Education,Energy",
-				targetOfLeads = "test",
+				targetOfLeads = 03,
 				targetRolesOptions = "Administrator",
 				typeOfActivity = "Miscellaneous Marketing");
 		}
@@ -1166,6 +1241,7 @@ definition {
 	@priority = 4
 	test ViewTargetMarketOptionsError {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given that the User go to add a new MDF Request") {
 			PRMMarketing.gotoAddNewMDF();

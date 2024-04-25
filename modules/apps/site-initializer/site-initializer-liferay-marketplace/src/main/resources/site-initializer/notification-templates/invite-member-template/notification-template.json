@@ -1,6 +1,6 @@
 {
 	"description": "",
-	"editorType": "freeMarker",
+	"editorType": "richText",
 	"externalReferenceCode": "MARKETPLACE-ACTION-INVITE-MEMBER",
 	"name": "Invite Member MarketPlace Template",
 	"recipientType": "email",
@@ -8,9 +8,9 @@
 		{
 			"bcc": "",
 			"cc": "",
-			"from": "[%USERADDITIONALINFO_AUTHOR_EMAIL_ADDRESS%]",
+			"from": "do-not-reply@liferay.com",
 			"fromName": {
-				"en-US": "[%USERADDITIONALINFO_AUTHOR_EMAIL_ADDRESS%]"
+				"en-US": "Liferay Marketplace"
 			},
 			"to": {
 				"en-US": "[%USERADDITIONALINFO_EMAILOFMEMBER%]"

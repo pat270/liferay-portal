@@ -40,6 +40,7 @@ import org.osgi.service.component.annotations.Reference;
 public class CPInstanceUnitOfMeasureServiceImpl
 	extends CPInstanceUnitOfMeasureServiceBaseImpl {
 
+	@Override
 	public CPInstanceUnitOfMeasure addCPInstanceUnitOfMeasure(
 			long cpInstanceId, boolean active,
 			BigDecimal incrementalOrderQuantity, String key,
@@ -55,6 +56,55 @@ public class CPInstanceUnitOfMeasureServiceImpl
 	}
 
 	@Override
+	public CPInstanceUnitOfMeasure addOrUpdateCPInstanceUnitOfMeasure(
+			long cpInstanceId, boolean active,
+			BigDecimal incrementalOrderQuantity, String key,
+			Map<Locale, String> nameMap, int precision, boolean primary,
+			double priority, BigDecimal rate, String sku)
+		throws PortalException {
+
+		_checkCommerceCatalog(cpInstanceId, ActionKeys.UPDATE);
+
+		return cpInstanceUnitOfMeasureLocalService.
+			addOrUpdateCPInstanceUnitOfMeasure(
+				getUserId(), cpInstanceId, active, incrementalOrderQuantity,
+				key, nameMap, precision, primary, priority, rate, sku);
+	}
+
+	@Override
+	public CPInstanceUnitOfMeasure deleteCPInstanceUnitOfMeasure(
+			long cpInstanceUnitOfMeasureId)
+		throws PortalException {
+
+		CPInstanceUnitOfMeasure cpInstanceUnitOfMeasure =
+			cpInstanceUnitOfMeasureLocalService.getCPInstanceUnitOfMeasure(
+				cpInstanceUnitOfMeasureId);
+
+		_checkCommerceCatalog(
+			cpInstanceUnitOfMeasure.getCPInstanceId(), ActionKeys.UPDATE);
+
+		return cpInstanceUnitOfMeasureLocalService.
+			deleteCPInstanceUnitOfMeasure(cpInstanceUnitOfMeasure);
+	}
+
+	@Override
+	public CPInstanceUnitOfMeasure fetchCPInstanceUnitOfMeasure(
+			long cpInstanceUnitOfMeasureId)
+		throws PortalException {
+
+		CPInstanceUnitOfMeasure cpInstanceUnitOfMeasure =
+			cpInstanceUnitOfMeasureLocalService.fetchCPInstanceUnitOfMeasure(
+				cpInstanceUnitOfMeasureId);
+
+		if (cpInstanceUnitOfMeasure != null) {
+			_checkCommerceCatalog(
+				cpInstanceUnitOfMeasure.getCPInstanceId(), ActionKeys.VIEW);
+		}
+
+		return cpInstanceUnitOfMeasure;
+	}
+
+	@Override
 	public CPInstanceUnitOfMeasure fetchCPInstanceUnitOfMeasure(
 			long cpInstanceId, String key)
 		throws PortalException {
@@ -63,6 +113,53 @@ public class CPInstanceUnitOfMeasureServiceImpl
 
 		return cpInstanceUnitOfMeasureLocalService.fetchCPInstanceUnitOfMeasure(
 			cpInstanceId, key);
+	}
+
+	@Override
+	public CPInstanceUnitOfMeasure fetchPrimaryCPInstanceUnitOfMeasure(
+			long cpInstanceId)
+		throws PortalException {
+
+		_checkCommerceCatalog(cpInstanceId, ActionKeys.VIEW);
+
+		return cpInstanceUnitOfMeasureLocalService.
+			fetchPrimaryCPInstanceUnitOfMeasure(cpInstanceId);
+	}
+
+	@Override
+	public List<CPInstanceUnitOfMeasure> getActiveCPInstanceUnitOfMeasures(
+			long cpInstanceId)
+		throws PortalException {
+
+		_checkCommerceCatalog(cpInstanceId, ActionKeys.VIEW);
+
+		return cpInstanceUnitOfMeasureLocalService.
+			getActiveCPInstanceUnitOfMeasures(cpInstanceId);
+	}
+
+	@Override
+	public int getActiveCPInstanceUnitOfMeasuresCount(long cpInstanceId)
+		throws PortalException {
+
+		_checkCommerceCatalog(cpInstanceId, ActionKeys.VIEW);
+
+		return cpInstanceUnitOfMeasureLocalService.
+			getActiveCPInstanceUnitOfMeasuresCount(cpInstanceId);
+	}
+
+	@Override
+	public CPInstanceUnitOfMeasure getCPInstanceUnitOfMeasure(
+			long cpInstanceUnitOfMeasureId)
+		throws PortalException {
+
+		CPInstanceUnitOfMeasure cpInstanceUnitOfMeasure =
+			cpInstanceUnitOfMeasureLocalService.getCPInstanceUnitOfMeasure(
+				cpInstanceUnitOfMeasureId);
+
+		_checkCommerceCatalog(
+			cpInstanceUnitOfMeasure.getCPInstanceId(), ActionKeys.VIEW);
+
+		return cpInstanceUnitOfMeasure;
 	}
 
 	@Override
@@ -76,6 +173,7 @@ public class CPInstanceUnitOfMeasureServiceImpl
 			cpInstanceId, key);
 	}
 
+	@Override
 	public List<CPInstanceUnitOfMeasure> getCPInstanceUnitOfMeasures(
 			long cpInstanceId, int start, int end,
 			OrderByComparator<CPInstanceUnitOfMeasure> orderByComparator)
@@ -87,6 +185,17 @@ public class CPInstanceUnitOfMeasureServiceImpl
 			cpInstanceId, start, end, orderByComparator);
 	}
 
+	@Override
+	public int getCPInstanceUnitOfMeasuresCount(long cpInstanceId)
+		throws PortalException {
+
+		_checkCommerceCatalog(cpInstanceId, ActionKeys.VIEW);
+
+		return cpInstanceUnitOfMeasureLocalService.
+			getCPInstanceUnitOfMeasuresCount(cpInstanceId);
+	}
+
+	@Override
 	public CPInstanceUnitOfMeasure updateCPInstanceUnitOfMeasure(
 			long cpInstanceUnitOfMeasureId, long cpInstanceId, boolean active,
 			BigDecimal incrementalOrderQuantity, String key,

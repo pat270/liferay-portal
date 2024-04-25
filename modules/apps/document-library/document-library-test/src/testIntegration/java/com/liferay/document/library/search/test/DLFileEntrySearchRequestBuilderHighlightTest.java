@@ -32,6 +32,7 @@ public class DLFileEntrySearchRequestBuilderHighlightTest
 				StringUtil.randomString(),
 				ContentTypes.APPLICATION_OCTET_STREAM, title, StringPool.BLANK,
 				StringPool.BLANK, StringPool.BLANK, new byte[0], null, null,
+				null,
 				ServiceContextTestUtil.getServiceContext(group.getGroupId()));
 		}
 	}
@@ -41,6 +42,7 @@ public class DLFileEntrySearchRequestBuilderHighlightTest
 		return DLFileEntry.class;
 	}
 
+	@Override
 	protected String[] getFieldNames() {
 		return new String[] {"title_en_US"};
 	}

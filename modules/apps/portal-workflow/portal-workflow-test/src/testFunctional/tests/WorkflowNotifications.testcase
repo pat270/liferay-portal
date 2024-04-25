@@ -41,6 +41,7 @@ definition {
 	@priority = 4
 	test AccountUserReceivesNotification {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
@@ -57,6 +58,10 @@ definition {
 			userScreenName = "buyeruser",
 			userSiteMembership = "Minium");
 
+		Account.openAccountsAdmin();
+
+		LexiconEntry.gotoEntry(rowEntry = "Commerce Account");
+
 		Account.addAssigneeToRoleViaRolesTab(
 			accountRoleTitle = "Account Administrator",
 			assigneeName = "Buyer");
@@ -68,10 +73,7 @@ definition {
 			requirePasswordReset = "false",
 			userScreenName = "buyeruser");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Store Management",
-			panel = "Commerce",
-			portlet = "Channels");
+		CommerceChannels.openChannelsAdmin();
 
 		CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -107,13 +109,14 @@ definition {
 		Notifications.viewSuccessfulPublication(
 			contentBody = "for review in the workflow.",
 			portletName = "Test Test",
-			publicationType = "sent you a Commerce Order");
+			publicationType = "sent you a Order");
 	}
 
 	@description = "Verify that the user can open new user details by notifications"
 	@priority = 3
 	test CanOpenNewUserDetailsByNotifications {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given Workflow is configured to Single Approver for User") {
 			Workflow.openWorkflowListView();
@@ -153,6 +156,7 @@ definition {
 	@priority = 4
 	test NotificationIsNotAvailableWhenOrderIsDeleted {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
@@ -169,14 +173,15 @@ definition {
 			userScreenName = "buyeruser",
 			userSiteMembership = "Minium");
 
+		Account.openAccountsAdmin();
+
+		LexiconEntry.gotoEntry(rowEntry = "Commerce Account");
+
 		Account.addAssigneeToRoleViaRolesTab(
 			accountRoleTitle = "Account Administrator",
 			assigneeName = "Buyer");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Store Management",
-			panel = "Commerce",
-			portlet = "Channels");
+		CommerceChannels.openChannelsAdmin();
 
 		CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 

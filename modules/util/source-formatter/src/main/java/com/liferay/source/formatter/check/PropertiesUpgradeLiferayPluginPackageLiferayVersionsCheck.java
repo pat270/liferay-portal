@@ -16,6 +16,12 @@ import com.liferay.source.formatter.util.SourceFormatterUtil;
 public class PropertiesUpgradeLiferayPluginPackageLiferayVersionsCheck
 	extends PropertiesLiferayPluginPackageLiferayVersionsCheck {
 
+	@Override
+	public boolean isLiferaySourceCheck() {
+		return false;
+	}
+
+	@Override
 	protected String getLiferayVersion(String absolutePath) {
 		String upgradeToVersion = getAttributeValue(
 			SourceFormatterUtil.UPGRADE_TO_VERSION, absolutePath);
@@ -33,7 +39,9 @@ public class PropertiesUpgradeLiferayPluginPackageLiferayVersionsCheck
 
 	@Override
 	protected boolean isSkipFix(String absolutePath) {
-		if (!absolutePath.contains("/modules/")) {
+		if (!absolutePath.contains("/modules/") &&
+			!absolutePath.contains("/themes/")) {
+
 			return true;
 		}
 

@@ -28,8 +28,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -38,6 +36,7 @@ import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.test.rule.Inject;
@@ -62,8 +61,6 @@ import java.util.Set;
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-
-import org.apache.commons.lang.time.DateUtils;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -226,10 +223,11 @@ public abstract class BaseContactUserGroupResourceTestCase {
 
 	@Test
 	public void testGetContactUserGroupsPageWithPagination() throws Exception {
-		Page<ContactUserGroup> totalPage =
+		Page<ContactUserGroup> contactUserGroupPage =
 			contactUserGroupResource.getContactUserGroupsPage(null, null, null);
 
-		int totalCount = GetterUtil.getInteger(totalPage.getTotalCount());
+		int totalCount = GetterUtil.getInteger(
+			contactUserGroupPage.getTotalCount());
 
 		ContactUserGroup contactUserGroup1 =
 			testGetContactUserGroupsPage_addContactUserGroup(
@@ -243,39 +241,81 @@ public abstract class BaseContactUserGroupResourceTestCase {
 			testGetContactUserGroupsPage_addContactUserGroup(
 				randomContactUserGroup());
 
-		Page<ContactUserGroup> page1 =
-			contactUserGroupResource.getContactUserGroupsPage(
-				null, Pagination.of(1, totalCount + 2), null);
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<ContactUserGroup> contactUserGroups1 =
-			(List<ContactUserGroup>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			contactUserGroups1.toString(), totalCount + 2,
-			contactUserGroups1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<ContactUserGroup> page1 =
+				contactUserGroupResource.getContactUserGroupsPage(
+					null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		Page<ContactUserGroup> page2 =
-			contactUserGroupResource.getContactUserGroupsPage(
-				null, Pagination.of(2, totalCount + 2), null);
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+			assertContains(
+				contactUserGroup1, (List<ContactUserGroup>)page1.getItems());
 
-		List<ContactUserGroup> contactUserGroups2 =
-			(List<ContactUserGroup>)page2.getItems();
+			Page<ContactUserGroup> page2 =
+				contactUserGroupResource.getContactUserGroupsPage(
+					null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		Assert.assertEquals(
-			contactUserGroups2.toString(), 1, contactUserGroups2.size());
+			assertContains(
+				contactUserGroup2, (List<ContactUserGroup>)page2.getItems());
 
-		Page<ContactUserGroup> page3 =
-			contactUserGroupResource.getContactUserGroupsPage(
-				null, Pagination.of(1, totalCount + 3), null);
+			Page<ContactUserGroup> page3 =
+				contactUserGroupResource.getContactUserGroupsPage(
+					null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		assertContains(
-			contactUserGroup1, (List<ContactUserGroup>)page3.getItems());
-		assertContains(
-			contactUserGroup2, (List<ContactUserGroup>)page3.getItems());
-		assertContains(
-			contactUserGroup3, (List<ContactUserGroup>)page3.getItems());
+			assertContains(
+				contactUserGroup3, (List<ContactUserGroup>)page3.getItems());
+		}
+		else {
+			Page<ContactUserGroup> page1 =
+				contactUserGroupResource.getContactUserGroupsPage(
+					null, Pagination.of(1, totalCount + 2), null);
+
+			List<ContactUserGroup> contactUserGroups1 =
+				(List<ContactUserGroup>)page1.getItems();
+
+			Assert.assertEquals(
+				contactUserGroups1.toString(), totalCount + 2,
+				contactUserGroups1.size());
+
+			Page<ContactUserGroup> page2 =
+				contactUserGroupResource.getContactUserGroupsPage(
+					null, Pagination.of(2, totalCount + 2), null);
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<ContactUserGroup> contactUserGroups2 =
+				(List<ContactUserGroup>)page2.getItems();
+
+			Assert.assertEquals(
+				contactUserGroups2.toString(), 1, contactUserGroups2.size());
+
+			Page<ContactUserGroup> page3 =
+				contactUserGroupResource.getContactUserGroupsPage(
+					null, Pagination.of(1, (int)totalCount + 3), null);
+
+			assertContains(
+				contactUserGroup1, (List<ContactUserGroup>)page3.getItems());
+			assertContains(
+				contactUserGroup2, (List<ContactUserGroup>)page3.getItems());
+			assertContains(
+				contactUserGroup3, (List<ContactUserGroup>)page3.getItems());
+		}
 	}
 
 	@Test
@@ -287,7 +327,7 @@ public abstract class BaseContactUserGroupResourceTestCase {
 			(entityField, contactUserGroup1, contactUserGroup2) -> {
 				BeanTestUtil.setProperty(
 					contactUserGroup1, entityField.getName(),
-					DateUtils.addMinutes(new Date(), -2));
+					new Date(System.currentTimeMillis() - (2 * Time.MINUTE)));
 			});
 	}
 
@@ -393,22 +433,29 @@ public abstract class BaseContactUserGroupResourceTestCase {
 		contactUserGroup2 = testGetContactUserGroupsPage_addContactUserGroup(
 			contactUserGroup2);
 
+		Page<ContactUserGroup> page =
+			contactUserGroupResource.getContactUserGroupsPage(null, null, null);
+
 		for (EntityField entityField : entityFields) {
 			Page<ContactUserGroup> ascPage =
 				contactUserGroupResource.getContactUserGroupsPage(
-					null, Pagination.of(1, 2), entityField.getName() + ":asc");
+					null, Pagination.of(1, (int)page.getTotalCount() + 1),
+					entityField.getName() + ":asc");
 
-			assertEquals(
-				Arrays.asList(contactUserGroup1, contactUserGroup2),
-				(List<ContactUserGroup>)ascPage.getItems());
+			assertContains(
+				contactUserGroup1, (List<ContactUserGroup>)ascPage.getItems());
+			assertContains(
+				contactUserGroup2, (List<ContactUserGroup>)ascPage.getItems());
 
 			Page<ContactUserGroup> descPage =
 				contactUserGroupResource.getContactUserGroupsPage(
-					null, Pagination.of(1, 2), entityField.getName() + ":desc");
+					null, Pagination.of(1, (int)page.getTotalCount() + 1),
+					entityField.getName() + ":desc");
 
-			assertEquals(
-				Arrays.asList(contactUserGroup2, contactUserGroup1),
-				(List<ContactUserGroup>)descPage.getItems());
+			assertContains(
+				contactUserGroup2, (List<ContactUserGroup>)descPage.getItems());
+			assertContains(
+				contactUserGroup1, (List<ContactUserGroup>)descPage.getItems());
 		}
 	}
 
@@ -433,6 +480,8 @@ public abstract class BaseContactUserGroupResourceTestCase {
 			new GraphQLField("items", getGraphQLFields()),
 			new GraphQLField("page"), new GraphQLField("totalCount"));
 
+		// No namespace
+
 		JSONObject contactUserGroupsJSONObject = JSONUtil.getValueAsJSONObject(
 			invokeGraphQLQuery(graphQLField), "JSONObject/data",
 			"JSONObject/contactUserGroups");
@@ -446,6 +495,28 @@ public abstract class BaseContactUserGroupResourceTestCase {
 
 		contactUserGroupsJSONObject = JSONUtil.getValueAsJSONObject(
 			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/contactUserGroups");
+
+		Assert.assertEquals(
+			totalCount + 2, contactUserGroupsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			contactUserGroup1,
+			Arrays.asList(
+				ContactUserGroupSerDes.toDTOs(
+					contactUserGroupsJSONObject.getString("items"))));
+		assertContains(
+			contactUserGroup2,
+			Arrays.asList(
+				ContactUserGroupSerDes.toDTOs(
+					contactUserGroupsJSONObject.getString("items"))));
+
+		// Using the namespace analyticsSettings_v1_0
+
+		contactUserGroupsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("analyticsSettings_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/analyticsSettings_v1_0",
 			"JSONObject/contactUserGroups");
 
 		Assert.assertEquals(
@@ -770,6 +841,10 @@ public abstract class BaseContactUserGroupResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -958,9 +1033,9 @@ public abstract class BaseContactUserGroupResourceTestCase {
 	}
 
 	protected ContactUserGroupResource contactUserGroupResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

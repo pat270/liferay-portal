@@ -16,9 +16,9 @@ import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
-import com.liferay.portal.search.similar.results.web.internal.helper.HttpHelper;
+import com.liferay.portal.search.similar.results.web.internal.contributor.SimilarResultsContributor;
+import com.liferay.portal.search.similar.results.web.internal.helper.HttpHelperUtil;
 import com.liferay.portal.search.similar.results.web.internal.util.SearchStringUtil;
-import com.liferay.portal.search.similar.results.web.spi.contributor.SimilarResultsContributor;
 import com.liferay.portal.search.similar.results.web.spi.contributor.helper.CriteriaBuilder;
 import com.liferay.portal.search.similar.results.web.spi.contributor.helper.CriteriaHelper;
 import com.liferay.portal.search.similar.results.web.spi.contributor.helper.DestinationBuilder;
@@ -29,22 +29,28 @@ import com.liferay.portal.search.similar.results.web.spi.contributor.helper.Rout
 import java.util.Arrays;
 import java.util.List;
 
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-
 /**
  * @author Wade Cao
  * @author André de Oliveira
  */
-@Component(service = SimilarResultsContributor.class)
 public class DocumentLibrarySimilarResultsContributor
 	implements SimilarResultsContributor {
+
+	public DocumentLibrarySimilarResultsContributor(
+		AssetEntryLocalService assetEntryLocalService,
+		DLFileEntryLocalService dlFileEntryLocalService,
+		DLFolderLocalService dlFolderLocalService) {
+
+		_assetEntryLocalService = assetEntryLocalService;
+		_dlFileEntryLocalService = dlFileEntryLocalService;
+		_dlFolderLocalService = dlFolderLocalService;
+	}
 
 	@Override
 	public void detectRoute(
 		RouteBuilder routeBuilder, RouteHelper routeHelper) {
 
-		String[] parameters = _httpHelper.getFriendlyURLParameters(
+		String[] parameters = HttpHelperUtil.getFriendlyURLParameters(
 			HttpComponentsUtil.decodePath(routeHelper.getURLString()));
 
 		SearchStringUtil.requireEquals("document_library", parameters[0]);
@@ -162,16 +168,8 @@ public class DocumentLibrarySimilarResultsContributor
 		return null;
 	}
 
-	@Reference
-	private AssetEntryLocalService _assetEntryLocalService;
-
-	@Reference
-	private DLFileEntryLocalService _dlFileEntryLocalService;
-
-	@Reference
-	private DLFolderLocalService _dlFolderLocalService;
-
-	@Reference
-	private HttpHelper _httpHelper;
+	private final AssetEntryLocalService _assetEntryLocalService;
+	private final DLFileEntryLocalService _dlFileEntryLocalService;
+	private final DLFolderLocalService _dlFolderLocalService;
 
 }

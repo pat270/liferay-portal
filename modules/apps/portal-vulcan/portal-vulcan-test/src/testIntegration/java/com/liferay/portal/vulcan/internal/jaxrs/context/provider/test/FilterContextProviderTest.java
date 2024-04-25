@@ -10,6 +10,7 @@ import com.liferay.portal.kernel.search.QueryTerm;
 import com.liferay.portal.kernel.search.TermQuery;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.search.filter.QueryFilter;
+import com.liferay.portal.kernel.test.AssertUtils;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.odata.filter.InvalidFilterException;
@@ -20,6 +21,9 @@ import com.liferay.portal.vulcan.internal.jaxrs.context.provider.test.util.MockM
 import com.liferay.portal.vulcan.internal.jaxrs.context.provider.test.util.MockResource;
 import com.liferay.portal.vulcan.resource.EntityModelResource;
 
+import java.util.Locale;
+
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.HttpHeaders;
@@ -130,9 +134,12 @@ public class FilterContextProviderTest {
 				_mockResource));
 	}
 
-	@Test(expected = NotAcceptableException.class)
-	public void testCreateContextThrowsNotAcceptableException()
-		throws Exception {
+	@Test
+	public void testCreateContextWithDifferentLocale() throws Exception {
+
+		// GET method
+
+		Locale locale = LocaleUtil.TAIWAN;
 
 		MockHttpServletRequest mockHttpServletRequest =
 			new MockHttpServletRequest() {
@@ -140,17 +147,44 @@ public class FilterContextProviderTest {
 					addParameter("filter", "title eq 'example'");
 					addHeader(
 						HttpHeaders.ACCEPT_LANGUAGE,
-						LocaleUtil.toW3cLanguageId(LocaleUtil.TAIWAN));
+						LocaleUtil.toW3cLanguageId(locale));
 				}
 			};
 
 		Class<? extends MockResource> clazz = _mockResource.getClass();
 
-		_contextProvider.createContext(
+		mockHttpServletRequest.setMethod(HttpMethod.GET);
+
+		Filter filter = _contextProvider.createContext(
 			new MockMessage(
 				mockHttpServletRequest,
 				clazz.getMethod(MockResource.METHOD_NAME, String.class),
 				_mockResource));
+
+		Assert.assertTrue(filter instanceof QueryFilter);
+
+		QueryFilter queryFilter = (QueryFilter)filter;
+
+		TermQuery termQuery = (TermQuery)queryFilter.getQuery();
+
+		QueryTerm queryTerm = termQuery.getQueryTerm();
+
+		Assert.assertEquals("example", queryTerm.getValue());
+		Assert.assertEquals("internalTitle", queryTerm.getField());
+
+		// POST method
+
+		mockHttpServletRequest.setMethod(HttpMethod.POST);
+
+		AssertUtils.assertFailure(
+			NotAcceptableException.class,
+			"No locales match the accepted languages: " +
+				locale.toLanguageTag(),
+			() -> _contextProvider.createContext(
+				new MockMessage(
+					mockHttpServletRequest,
+					clazz.getMethod(MockResource.METHOD_NAME, String.class),
+					_mockResource)));
 	}
 
 	private ContextProvider<Filter> _contextProvider;

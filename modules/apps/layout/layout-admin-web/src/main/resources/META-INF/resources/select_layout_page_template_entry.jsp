@@ -20,6 +20,7 @@ SelectLayoutPageTemplateEntryDisplayContext selectLayoutPageTemplateEntryDisplay
 
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(backURL);
+portletDisplay.setURLBackTitle(portletDisplay.getPortletDisplayName());
 
 renderResponse.setTitle(LanguageUtil.get(request, "select-template"));
 %>
@@ -95,7 +96,7 @@ renderResponse.setTitle(LanguageUtil.get(request, "select-template"));
 							>
 								<liferay-ui:search-container-column-text>
 									<react:component
-										module="js/LayoutPageTemplateEntryCard"
+										module="{LayoutPageTemplateEntryCard} from layout-admin-web"
 										props="<%= selectLayoutPageTemplateEntryDisplayContext.getLayoutPageTemplateEntryCardProps(layoutPageTemplateEntry) %>"
 									/>
 								</liferay-ui:search-container-column-text>

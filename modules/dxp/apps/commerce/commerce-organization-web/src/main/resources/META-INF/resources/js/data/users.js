@@ -9,11 +9,13 @@ import {
 } from '../utils/constants';
 import {fetchFromHeadless} from '../utils/fetch';
 
-export const USERS_ROOT_ENDPOINT = '/o/headless-admin-user/v1.0/user-accounts';
-export const ROLES_ROOT_ENDPOINT = '/o/headless-admin-user/v1.0/roles';
 export const ACCOUNTS_ROOT_ENDPOINT = '/o/headless-admin-user/v1.0/accounts';
+export const ROLES_ROOT_ENDPOINT = '/o/headless-admin-user/v1.0/roles';
 export const ORGANIZATIONS_ROOT_ENDPOINT =
 	'/o/headless-admin-user/v1.0/organizations';
+export const USER_ACCOUNT_FULL_NAME_DEFINITION =
+	'/o/headless-admin-user/v1.0/user-account-full-name-definition';
+export const USERS_ROOT_ENDPOINT = '/o/headless-admin-user/v1.0/user-accounts';
 
 export function getUsersByEmails(emails) {
 	const filterString = emails
@@ -36,6 +38,7 @@ export function getOrganizationRoles() {
 	);
 
 	url.searchParams.append('pageSize', 100);
+	url.searchParams.append('restrictFields', 'rolePermissions');
 	url.searchParams.append('types', ORGANIZATIONS_ROLE_TYPE_ID);
 
 	return fetchFromHeadless(url, {}, null, true).then(
@@ -50,6 +53,7 @@ export function getAccountRoles(accountId) {
 	);
 
 	genericRolesURL.searchParams.append('pageSize', 100);
+	genericRolesURL.searchParams.append('restrictFields', 'rolePermissions');
 	genericRolesURL.searchParams.append('types', ACCOUNTS_ROLE_TYPE_ID);
 
 	const specificRolesURL = `${ACCOUNTS_ROOT_ENDPOINT}/${accountId}/account-roles`;
@@ -63,6 +67,15 @@ export function getAccountRoles(accountId) {
 			...specificRolesResponse.value.items,
 		];
 	});
+}
+
+export function getUser(id) {
+	const url = new URL(
+		`${themeDisplay.getPathContext()}${USERS_ROOT_ENDPOINT}/${id}`,
+		themeDisplay.getPortalURL()
+	);
+
+	return fetchFromHeadless(url);
 }
 
 export function getUsers(query) {
@@ -135,4 +148,24 @@ export function removeUserFromAccount(userEmail, accountId) {
 			method: 'DELETE',
 		}
 	);
+}
+
+export function updateUser(id, details) {
+	return fetchFromHeadless(`${USERS_ROOT_ENDPOINT}/${id}`, {
+		body: JSON.stringify(details),
+		method: 'PATCH',
+	});
+}
+
+export function getUserFullNameDefinition(languageId) {
+	const url = new URL(
+		`${themeDisplay.getPathContext()}${USER_ACCOUNT_FULL_NAME_DEFINITION}`,
+		themeDisplay.getPortalURL()
+	);
+
+	if (languageId) {
+		url.searchParams.append('languageId', languageId);
+	}
+
+	return fetchFromHeadless(url);
 }

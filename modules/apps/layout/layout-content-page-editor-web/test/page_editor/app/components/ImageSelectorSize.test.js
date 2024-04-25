@@ -4,7 +4,7 @@
  */
 
 import '@testing-library/jest-dom/extend-expect';
-import {act, render} from '@testing-library/react';
+import {act, render, screen} from '@testing-library/react';
 import React from 'react';
 
 import {useGlobalContext} from '../../../../src/main/resources/META-INF/resources/page_editor/app/contexts/GlobalContext';
@@ -21,13 +21,17 @@ jest.mock(
 );
 
 const renderImageSelectorSize = (
-	{imageSizeId = '1000px', onImageSizeIdChanged} = {imageSizeId: '1000px'}
+	{imageSizeId = '1000px', imageSizeLimit = null, onImageSizeIdChanged} = {
+		imageSizeId: '1000px',
+		imageSizeLimit: null,
+	}
 ) =>
 	render(
 		<StoreAPIContextProvider>
 			<ImageSelectorSize
 				fieldValue={{fileEntryId: '1234'}}
 				imageSizeId={imageSizeId}
+				imageSizeLimit={imageSizeLimit}
 				onImageSizeIdChanged={onImageSizeIdChanged}
 			/>
 		</StoreAPIContextProvider>
@@ -58,6 +62,8 @@ const imageSizesPromise = Promise.resolve([
 
 describe('ImageSelectorSize', () => {
 	beforeEach(() => {
+		Liferay.FeatureFlags['LPS-187285'] = true;
+
 		useGlobalContext.mockReturnValue({
 			document: {
 				body: {
@@ -80,6 +86,8 @@ describe('ImageSelectorSize', () => {
 	});
 
 	afterEach(() => {
+		Liferay.FeatureFlags['LPS-187285'] = false;
+
 		useGlobalContext.mockClear();
 		ImageService.getAvailableImageConfigurations.mockClear();
 	});
@@ -166,5 +174,24 @@ describe('ImageSelectorSize', () => {
 		const widthLabel = getByText('width:', {exact: false});
 
 		expect(widthLabel.parentElement.textContent).toBe('width:300px');
+	});
+
+	it('shows a warning (and checks that this warning is also in the label) if the image is larger than the specified size', async () => {
+		renderImageSelectorSize({
+			imageSizeLimit: 100,
+			onImageSizeIdChanged: jest.fn(),
+		});
+
+		await act(() => imageSizesPromise);
+
+		const warningText =
+			'big-image-file-size-used please-consider-configuring-adaptive-media-lazy-loading-or-reducing-the-image-size';
+
+		const selector = screen.getByRole('combobox', {
+			name: `resolution (${warningText})`,
+		});
+
+		expect(selector).toBeInTheDocument();
+		expect(screen.getByText(warningText)).toBeInTheDocument();
 	});
 });

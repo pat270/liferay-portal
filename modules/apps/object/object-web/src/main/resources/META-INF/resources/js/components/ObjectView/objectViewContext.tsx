@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {getLocalizableLabel} from '@liferay/object-js-components-web';
+import {stringUtils} from '@liferay/object-js-components-web';
 import React, {createContext, useContext, useReducer} from 'react';
 
 import {defaultLanguageId} from '../../utils/constants';
@@ -73,11 +73,6 @@ const handleChangeColumnOrder = (
 	return newColumn;
 };
 
-type TSortOptions = {
-	label: string;
-	value: string;
-};
-
 export type TAction =
 	| {
 			payload: {
@@ -109,7 +104,7 @@ export type TAction =
 				objectFieldName: string;
 				objectFields: ObjectField[];
 				objectViewSortColumns?: TObjectViewSortColumn[];
-				selectedObjetSort: TSortOptions;
+				selectedObjetSortValue: string;
 			};
 			type: TYPES.ADD_OBJECT_VIEW_SORT_COLUMN;
 	  }
@@ -240,7 +235,7 @@ const viewReducer = (state: TState, action: TAction) => {
 						newObjectViewColumns.push({
 							...viewColumn,
 							defaultSort: false,
-							fieldLabel: getLocalizableLabel(
+							fieldLabel: stringUtils.getLocalizableLabel(
 								creationLanguageId,
 								objectField.label,
 								objectField.name
@@ -258,7 +253,7 @@ const viewReducer = (state: TState, action: TAction) => {
 						if (objectField.name === sortColumn.objectFieldName) {
 							newObjectViewSortColumns.push({
 								...sortColumn,
-								fieldLabel: getLocalizableLabel(
+								fieldLabel: stringUtils.getLocalizableLabel(
 									creationLanguageId,
 									objectField.label,
 									objectField.name
@@ -320,7 +315,7 @@ const viewReducer = (state: TState, action: TAction) => {
 						...filterColumn,
 						definition,
 						fieldLabel: objectField
-							? getLocalizableLabel(
+							? stringUtils.getLocalizableLabel(
 									creationLanguageId,
 									objectField.label,
 									objectField.name
@@ -373,7 +368,7 @@ const viewReducer = (state: TState, action: TAction) => {
 					return {
 						...item,
 						defaultSort: defaultSortColumn ? true : false,
-						fieldLabel: getLocalizableLabel(
+						fieldLabel: stringUtils.getLocalizableLabel(
 							creationLanguageId,
 							item.label,
 							item.name
@@ -437,7 +432,10 @@ const viewReducer = (state: TState, action: TAction) => {
 								: [],
 					  }
 					: null,
-				fieldLabel: getLocalizableLabel(creationLanguageId, label),
+				fieldLabel: stringUtils.getLocalizableLabel(
+					creationLanguageId,
+					label
+				),
 				filterBy: label[defaultLanguageId],
 				filterType: filterTypeValue,
 				label,
@@ -483,7 +481,7 @@ const viewReducer = (state: TState, action: TAction) => {
 				objectFieldName,
 				objectFields,
 				objectViewSortColumns,
-				selectedObjetSort,
+				selectedObjetSortValue,
 			} = action.payload;
 
 			const objectView = {...state.objectView};
@@ -504,10 +502,13 @@ const viewReducer = (state: TState, action: TAction) => {
 			const [label] = labels;
 
 			const newSortColumnItem: TObjectViewSortColumn = {
-				fieldLabel: getLocalizableLabel(creationLanguageId, label),
+				fieldLabel: stringUtils.getLocalizableLabel(
+					creationLanguageId,
+					label
+				),
 				label,
 				objectFieldName,
-				sortOrder: selectedObjetSort.value,
+				sortOrder: selectedObjetSortValue,
 			};
 
 			if (!objectViewSortColumns) {
@@ -841,7 +842,7 @@ interface IViewContextProviderProps extends React.HTMLAttributes<HTMLElement> {
 		isViewOnly: boolean;
 		objectDefinitionExternalReferenceCode: string;
 		objectViewId: string;
-		workflowStatusJSONArray: TWorkflowStatus[];
+		workflowStatuses: TWorkflowStatus[];
 	};
 }
 

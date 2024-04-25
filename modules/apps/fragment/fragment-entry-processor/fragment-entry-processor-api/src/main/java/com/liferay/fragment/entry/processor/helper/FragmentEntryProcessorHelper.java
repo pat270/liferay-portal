@@ -27,7 +27,7 @@ public interface FragmentEntryProcessorHelper {
 
 	public Object getFieldValue(
 			JSONObject editableValueJSONObject,
-			Map<Long, InfoItemFieldValues> infoDisplaysFieldValues,
+			Map<InfoItemReference, InfoItemFieldValues> infoDisplaysFieldValues,
 			FragmentEntryProcessorContext fragmentEntryProcessorContext)
 		throws PortalException;
 
@@ -41,6 +41,10 @@ public interface FragmentEntryProcessorHelper {
 	public long getFileEntryId(String className, long classPK);
 
 	public long getFileEntryId(WebImage webImage);
+
+	public Object getMappedInfoItemFieldValue(
+		JSONObject editableValueJSONObject, String fieldName,
+		InfoItemFieldValues infoItemFieldValues, Locale locale);
 
 	public boolean isMapped(JSONObject jsonObject);
 

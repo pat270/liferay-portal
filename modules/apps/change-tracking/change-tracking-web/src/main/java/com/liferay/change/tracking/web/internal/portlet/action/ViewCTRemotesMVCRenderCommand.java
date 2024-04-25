@@ -7,14 +7,12 @@ package com.liferay.change.tracking.web.internal.portlet.action;
 
 import com.liferay.change.tracking.constants.CTActionKeys;
 import com.liferay.change.tracking.constants.CTPortletKeys;
-import com.liferay.change.tracking.service.CTRemoteService;
 import com.liferay.change.tracking.web.internal.constants.CTWebKeys;
 import com.liferay.change.tracking.web.internal.display.context.ViewCTRemotesDisplayContext;
 import com.liferay.change.tracking.web.internal.security.permission.resource.CTPermission;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
-import com.liferay.portal.kernel.service.permission.PortletPermission;
 import com.liferay.portal.kernel.util.Portal;
 
 import javax.portlet.PortletException;
@@ -61,15 +59,9 @@ public class ViewCTRemotesMVCRenderCommand implements MVCRenderCommand {
 	}
 
 	@Reference
-	private CTRemoteService _ctRemoteService;
-
-	@Reference
 	private Language _language;
 
 	@Reference
 	private Portal _portal;
-
-	@Reference
-	private PortletPermission _portletPermission;
 
 }

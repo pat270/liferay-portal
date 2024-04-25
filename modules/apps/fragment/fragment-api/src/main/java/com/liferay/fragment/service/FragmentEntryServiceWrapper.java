@@ -33,14 +33,14 @@ public class FragmentEntryServiceWrapper
 			long groupId, long fragmentCollectionId, String fragmentEntryKey,
 			String name, String css, String html, String js, boolean cacheable,
 			String configuration, String icon, long previewFileEntryId,
-			int type, String typeOptions, int status,
+			boolean readOnly, int type, String typeOptions, int status,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _fragmentEntryService.addFragmentEntry(
 			groupId, fragmentCollectionId, fragmentEntryKey, name, css, html,
-			js, cacheable, configuration, icon, previewFileEntryId, type,
-			typeOptions, status, serviceContext);
+			js, cacheable, configuration, icon, previewFileEntryId, readOnly,
+			type, typeOptions, status, serviceContext);
 	}
 
 	@Override
@@ -355,26 +355,13 @@ public class FragmentEntryServiceWrapper
 			long fragmentEntryId, long fragmentCollectionId, String name,
 			String css, String html, String js, boolean cacheable,
 			String configuration, String icon, long previewFileEntryId,
-			int status)
+			boolean readOnly, String typeOptions, int status)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _fragmentEntryService.updateFragmentEntry(
 			fragmentEntryId, fragmentCollectionId, name, css, html, js,
-			cacheable, configuration, icon, previewFileEntryId, status);
-	}
-
-	@Override
-	public FragmentEntry updateFragmentEntry(
-			long fragmentEntryId, long fragmentCollectionId, String name,
-			String css, String html, String js, boolean cacheable,
-			String configuration, String icon, long previewFileEntryId,
-			String typeOptions, int status)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _fragmentEntryService.updateFragmentEntry(
-			fragmentEntryId, fragmentCollectionId, name, css, html, js,
-			cacheable, configuration, icon, previewFileEntryId, typeOptions,
-			status);
+			cacheable, configuration, icon, previewFileEntryId, readOnly,
+			typeOptions, status);
 	}
 
 	@Override

@@ -1,10 +1,11 @@
 definition {
 
-	macro _deleteCommerceMeasurementUnits {
+	@summary = "Default summary"
+	macro _deleteCommerceMeasurementUnits() {
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var commerceMeasurementUnitsIds = CommerceJSONMeasurementUnitsAPI._getCommerceMeasurementUnits();
@@ -29,7 +30,8 @@ definition {
 		}
 	}
 
-	macro _getCommerceAvailableMeasurementUnitsCount {
+	@summary = "Default summary"
+	macro _getCommerceAvailableMeasurementUnitsCount() {
 		var availableMeasurementUnits = 0;
 		var commerceMeasurementUnitsIds = CommerceJSONMeasurementUnitsAPI._getCommerceMeasurementUnits();
 
@@ -44,11 +46,12 @@ definition {
 		return ${availableMeasurementUnits};
 	}
 
-	macro _getCommerceMeasurementUnits {
+	@summary = "Default summary"
+	macro _getCommerceMeasurementUnits() {
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var companyId = JSONCompany.getCompanyId();

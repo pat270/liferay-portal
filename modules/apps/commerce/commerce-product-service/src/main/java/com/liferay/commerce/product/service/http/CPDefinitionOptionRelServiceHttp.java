@@ -47,8 +47,8 @@ public class CPDefinitionOptionRelServiceHttp {
 				long cpOptionId,
 				java.util.Map<java.util.Locale, String> nameMap,
 				java.util.Map<java.util.Locale, String> descriptionMap,
-				String ddmFormFieldTypeName, double priority, boolean facetable,
-				boolean required, boolean skuContributor,
+				String commerceOptionTypeKey, double priority,
+				boolean facetable, boolean required, boolean skuContributor,
 				boolean importOptionValue,
 				com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -61,7 +61,7 @@ public class CPDefinitionOptionRelServiceHttp {
 
 			MethodHandler methodHandler = new MethodHandler(
 				methodKey, cpDefinitionId, cpOptionId, nameMap, descriptionMap,
-				ddmFormFieldTypeName, priority, facetable, required,
+				commerceOptionTypeKey, priority, facetable, required,
 				skuContributor, importOptionValue, serviceContext);
 
 			Object returnObj = null;
@@ -99,9 +99,11 @@ public class CPDefinitionOptionRelServiceHttp {
 				long cpOptionId,
 				java.util.Map<java.util.Locale, String> nameMap,
 				java.util.Map<java.util.Locale, String> descriptionMap,
-				String ddmFormFieldTypeName, double priority, boolean facetable,
+				String commerceOptionTypeKey, String infoItemServiceKey,
+				double priority, boolean definedExternally, boolean facetable,
 				boolean required, boolean skuContributor,
 				boolean importOptionValue, String priceType,
+				String typeSettings,
 				com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -113,8 +115,9 @@ public class CPDefinitionOptionRelServiceHttp {
 
 			MethodHandler methodHandler = new MethodHandler(
 				methodKey, cpDefinitionId, cpOptionId, nameMap, descriptionMap,
-				ddmFormFieldTypeName, priority, facetable, required,
-				skuContributor, importOptionValue, priceType, serviceContext);
+				commerceOptionTypeKey, infoItemServiceKey, priority,
+				definedExternally, facetable, required, skuContributor,
+				importOptionValue, priceType, typeSettings, serviceContext);
 
 			Object returnObj = null;
 
@@ -761,8 +764,8 @@ public class CPDefinitionOptionRelServiceHttp {
 				long cpOptionId,
 				java.util.Map<java.util.Locale, String> nameMap,
 				java.util.Map<java.util.Locale, String> descriptionMap,
-				String ddmFormFieldTypeName, double priority, boolean facetable,
-				boolean required, boolean skuContributor,
+				String commerceOptionTypeKey, double priority,
+				boolean facetable, boolean required, boolean skuContributor,
 				com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -774,7 +777,7 @@ public class CPDefinitionOptionRelServiceHttp {
 
 			MethodHandler methodHandler = new MethodHandler(
 				methodKey, cpDefinitionOptionRelId, cpOptionId, nameMap,
-				descriptionMap, ddmFormFieldTypeName, priority, facetable,
+				descriptionMap, commerceOptionTypeKey, priority, facetable,
 				required, skuContributor, serviceContext);
 
 			Object returnObj = null;
@@ -812,8 +815,10 @@ public class CPDefinitionOptionRelServiceHttp {
 				long cpOptionId,
 				java.util.Map<java.util.Locale, String> nameMap,
 				java.util.Map<java.util.Locale, String> descriptionMap,
-				String ddmFormFieldTypeName, double priority, boolean facetable,
+				String commerceOptionTypeKey, String infoItemServiceKey,
+				double priority, boolean definedExternally, boolean facetable,
 				boolean required, boolean skuContributor, String priceType,
+				String typeSettings,
 				com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -825,8 +830,9 @@ public class CPDefinitionOptionRelServiceHttp {
 
 			MethodHandler methodHandler = new MethodHandler(
 				methodKey, cpDefinitionOptionRelId, cpOptionId, nameMap,
-				descriptionMap, ddmFormFieldTypeName, priority, facetable,
-				required, skuContributor, priceType, serviceContext);
+				descriptionMap, commerceOptionTypeKey, infoItemServiceKey,
+				priority, definedExternally, facetable, required,
+				skuContributor, priceType, typeSettings, serviceContext);
 
 			Object returnObj = null;
 
@@ -870,8 +876,9 @@ public class CPDefinitionOptionRelServiceHttp {
 	private static final Class<?>[] _addCPDefinitionOptionRelParameterTypes1 =
 		new Class[] {
 			long.class, long.class, java.util.Map.class, java.util.Map.class,
-			String.class, double.class, boolean.class, boolean.class,
-			boolean.class, boolean.class, String.class,
+			String.class, String.class, double.class, boolean.class,
+			boolean.class, boolean.class, boolean.class, boolean.class,
+			String.class, String.class,
 			com.liferay.portal.kernel.service.ServiceContext.class
 		};
 	private static final Class<?>[] _addCPDefinitionOptionRelParameterTypes2 =
@@ -929,9 +936,9 @@ public class CPDefinitionOptionRelServiceHttp {
 	private static final Class<?>[]
 		_updateCPDefinitionOptionRelParameterTypes17 = new Class[] {
 			long.class, long.class, java.util.Map.class, java.util.Map.class,
-			String.class, double.class, boolean.class, boolean.class,
-			boolean.class, String.class,
-			com.liferay.portal.kernel.service.ServiceContext.class
+			String.class, String.class, double.class, boolean.class,
+			boolean.class, boolean.class, boolean.class, String.class,
+			String.class, com.liferay.portal.kernel.service.ServiceContext.class
 		};
 
 }

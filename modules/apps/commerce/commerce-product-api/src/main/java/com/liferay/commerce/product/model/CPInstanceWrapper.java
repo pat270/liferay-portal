@@ -412,6 +412,11 @@ public class CPInstanceWrapper
 	}
 
 	@Override
+	public CPInstanceUnitOfMeasure fetchCPInstanceUnitOfMeasure(String key) {
+		return model.fetchCPInstanceUnitOfMeasure(key);
+	}
+
+	@Override
 	public CommerceCatalog getCommerceCatalog()
 		throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -970,6 +975,11 @@ public class CPInstanceWrapper
 	@Override
 	public double getWidth() {
 		return model.getWidth();
+	}
+
+	@Override
+	public boolean hasCPInstanceUnitOfMeasures() {
+		return model.hasCPInstanceUnitOfMeasures();
 	}
 
 	/**

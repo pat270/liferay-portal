@@ -5,17 +5,18 @@
 
 /// <reference types="react" />
 
-import {CustomItem} from '@liferay/object-js-components-web';
+import {ActionError} from '../../ObjectActionContainer';
+import {ObjectOptionsListItem} from '../../fetchUtil';
 import './ThenContainer.scss';
-import {ActionError} from '../..';
 interface ThenContainerProps {
+	disabled: boolean;
 	errors: ActionError;
 	isValidField: (
 		{businessType, name, objectFieldSettings, system}: ObjectField,
 		isObjectActionSystem?: boolean
 	) => boolean;
-	newObjectActionExecutors: CustomItem<string>[];
-	objectActionExecutors: CustomItem[];
+	newObjectActionExecutors: ObjectActionTriggerExecutorItem[];
+	objectActionExecutors: ObjectActionTriggerExecutorItem[];
 	objectDefinitionExternalReferenceCode: string;
 	objectDefinitionId: number;
 	objectDefinitionsRelationshipsURL: string;
@@ -23,10 +24,11 @@ interface ThenContainerProps {
 	setCurrentObjectDefinitionFields: (values: ObjectField[]) => void;
 	setValues: (values: Partial<ObjectAction>) => void;
 	systemObject: boolean;
-	updateParameters: (value: string) => Promise<void>;
+	updateParameters: (value: ObjectOptionsListItem) => Promise<void>;
 	values: Partial<ObjectAction>;
 }
 export declare function ThenContainer({
+	disabled,
 	errors,
 	isValidField,
 	newObjectActionExecutors,

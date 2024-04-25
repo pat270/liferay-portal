@@ -1,20 +1,21 @@
 import client from 'shared/apollo/client';
+import CommerceMetricCard from 'commerce/components/CommerceMetricCard';
 import CommerceTotalOrderValueQuery, {
 	CommerceTotalOrderValueData
 } from 'commerce/queries/TotalOrderValueQuery';
+import mockStore from 'test/mock-store';
 import React from 'react';
 import {ApolloProvider} from '@apollo/react-hooks';
 import {cleanup, render} from '@testing-library/react';
-import {CommerceMetricCard} from 'commerce/components/CommerceMetricCard';
 import {
 	mockCommerceTotalOrderValueReq,
+	mockPreferenceReq,
 	mockTimeRangeReq
 } from 'test/graphql-data';
 import {MockedProvider} from '@apollo/react-testing';
-import {mockUser} from 'test/data';
+import {Provider} from 'react-redux';
 import {RangeKeyTimeRanges} from 'shared/util/constants';
 import {StaticRouter} from 'react-router-dom';
-import {User} from 'shared/util/records';
 import {waitForLoadingToBeRemoved} from 'test/helpers';
 
 jest.unmock('react-dom');
@@ -58,38 +59,32 @@ const variables = {
 	rangeStart: null
 };
 
-const WrappedComponent = ({
-	data,
-	defaultLanguageId = 'en_US'
-}: {
-	data?: any;
-	defaultLanguageId?: string;
-}) => (
-	<ApolloProvider client={client}>
-		<StaticRouter>
-			<MockedProvider
-				mocks={[
-					mockTimeRangeReq(),
-					mockCommerceTotalOrderValueReq({
-						data,
-						Query: CommerceTotalOrderValueQuery,
-						variables
-					})
-				]}
-			>
-				<CommerceMetricCard<CommerceTotalOrderValueData>
-					currentUser={
-						new User(mockUser(1, {languageId: defaultLanguageId}))
-					}
-					description='this is the description'
-					emptyTitle='There are no orders on the selected period.'
-					label='this is the label'
-					mapper={result => result?.orderTotalCurrencyValues}
-					Query={CommerceTotalOrderValueQuery}
-				/>
-			</MockedProvider>
-		</StaticRouter>
-	</ApolloProvider>
+const WrappedComponent = ({data}: {data?: any; defaultLanguageId?: string}) => (
+	<Provider store={mockStore()}>
+		<ApolloProvider client={client}>
+			<StaticRouter>
+				<MockedProvider
+					mocks={[
+						mockTimeRangeReq(),
+						mockPreferenceReq(),
+						mockCommerceTotalOrderValueReq({
+							data,
+							Query: CommerceTotalOrderValueQuery,
+							variables
+						})
+					]}
+				>
+					<CommerceMetricCard<CommerceTotalOrderValueData>
+						description='this is the description'
+						emptyTitle='There are no orders on the selected period.'
+						label='this is the label'
+						mapper={result => result?.orderTotalCurrencyValues}
+						Query={CommerceTotalOrderValueQuery}
+					/>
+				</MockedProvider>
+			</StaticRouter>
+		</ApolloProvider>
+	</Provider>
 );
 
 describe('CommerceMetricCard', () => {
@@ -103,7 +98,7 @@ describe('CommerceMetricCard', () => {
 		await waitForLoadingToBeRemoved(container);
 
 		const dropdownRangeSelector = document.querySelector(
-			'.dropdown-range-key-menu-root'
+			'.dropdown-range-key-root'
 		);
 
 		expect(getByText('this is the description')).toBeInTheDocument();

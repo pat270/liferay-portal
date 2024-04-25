@@ -6,7 +6,6 @@
 package com.liferay.search.experiences.rest.internal.resource.v1_0;
 
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
-import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.search.ml.embedding.EmbeddingProviderStatus;
 import com.liferay.search.experiences.ml.embedding.text.TextEmbeddingRetriever;
@@ -46,31 +45,40 @@ public class EmbeddingProviderValidationResultResourceImpl
 
 			return new EmbeddingProviderValidationResult() {
 				{
-					if (!Validator.isBlank(
-							embeddingProviderStatus.getErrorMessage())) {
+					setErrorMessage(
+						() -> {
+							if (Validator.isBlank(
+									embeddingProviderStatus.
+										getErrorMessage())) {
 
-						errorMessage =
-							embeddingProviderStatus.getErrorMessage();
-					}
-					else {
-						expectedDimensions =
-							embeddingProviderStatus.
+								return null;
+							}
+
+							return embeddingProviderStatus.getErrorMessage();
+						});
+					setExpectedDimensions(
+						() -> {
+							if (!Validator.isBlank(
+									embeddingProviderStatus.
+										getErrorMessage())) {
+
+								return null;
+							}
+
+							return embeddingProviderStatus.
 								getEmbeddingVectorDimensions();
-					}
+						});
 				}
 			};
 		}
 		catch (Exception exception) {
 			return new EmbeddingProviderValidationResult() {
 				{
-					errorMessage = exception.getMessage();
+					setErrorMessage(exception::getMessage);
 				}
 			};
 		}
 	}
-
-	@Reference
-	private JSONFactory _jsonFactory;
 
 	@Reference
 	private TextEmbeddingRetriever _textEmbeddingRetriever;

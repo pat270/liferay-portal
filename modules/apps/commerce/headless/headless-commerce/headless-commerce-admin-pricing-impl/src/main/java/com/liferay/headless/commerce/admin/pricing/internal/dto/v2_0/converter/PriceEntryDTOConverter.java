@@ -11,6 +11,7 @@ import com.liferay.commerce.price.list.model.CommercePriceEntry;
 import com.liferay.commerce.price.list.model.CommercePriceList;
 import com.liferay.commerce.price.list.service.CommercePriceEntryService;
 import com.liferay.commerce.product.model.CPInstance;
+import com.liferay.commerce.product.service.CPInstanceLocalService;
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.headless.commerce.admin.pricing.dto.v2_0.PriceEntry;
 import com.liferay.petra.string.StringPool;
@@ -53,41 +54,61 @@ public class PriceEntryDTOConverter
 		CommerceCurrency commerceCurrency =
 			commercePriceList.getCommerceCurrency();
 
-		CPInstance cpInstance = commercePriceEntry.getCPInstance();
-
-		ExpandoBridge expandoBridge = commercePriceEntry.getExpandoBridge();
+		CPInstance cpInstance = _cpInstanceLocalService.fetchCProductInstance(
+			commercePriceEntry.getCProductId(),
+			commercePriceEntry.getCPInstanceUuid());
 
 		BigDecimal priceEntryPrice = commercePriceEntry.getPrice();
 
-		Locale locale = dtoConverterContext.getLocale();
-
 		return new PriceEntry() {
 			{
-				actions = dtoConverterContext.getActions();
-				bulkPricing = commercePriceEntry.isBulkPricing();
-				customFields = expandoBridge.getAttributes();
-				discountDiscovery = commercePriceEntry.isDiscountDiscovery();
-				discountLevel1 = commercePriceEntry.getDiscountLevel1();
-				discountLevel2 = commercePriceEntry.getDiscountLevel2();
-				discountLevel3 = commercePriceEntry.getDiscountLevel3();
-				discountLevel4 = commercePriceEntry.getDiscountLevel4();
-				discountLevelsFormatted = _getDiscountLevelsFormatted(
-					commercePriceEntry);
-				displayDate = commercePriceEntry.getDisplayDate();
-				expirationDate = commercePriceEntry.getExpirationDate();
-				externalReferenceCode =
-					commercePriceEntry.getExternalReferenceCode();
-				hasTierPrice = commercePriceEntry.isHasTierPrice();
-				price = priceEntryPrice.doubleValue();
-				priceEntryId = commercePriceEntry.getCommercePriceEntryId();
-				priceFormatted = _formatPrice(
-					priceEntryPrice, commerceCurrency, locale);
-				priceListId = commercePriceEntry.getCommercePriceListId();
-				priceOnApplication = commercePriceEntry.isPriceOnApplication();
-				skuExternalReferenceCode =
-					cpInstance.getExternalReferenceCode();
-				skuId = cpInstance.getCPInstanceId();
-				unitOfMeasure = commercePriceEntry.getUnitOfMeasureKey();
+				setActions(dtoConverterContext::getActions);
+				setBulkPricing(commercePriceEntry::isBulkPricing);
+				setCustomFields(
+					() -> {
+						ExpandoBridge expandoBridge =
+							commercePriceEntry.getExpandoBridge();
+
+						return expandoBridge.getAttributes();
+					});
+				setDiscountDiscovery(commercePriceEntry::isDiscountDiscovery);
+				setDiscountLevel1(commercePriceEntry::getDiscountLevel1);
+				setDiscountLevel2(commercePriceEntry::getDiscountLevel2);
+				setDiscountLevel3(commercePriceEntry::getDiscountLevel3);
+				setDiscountLevel4(commercePriceEntry::getDiscountLevel4);
+				setDiscountLevelsFormatted(
+					() -> _getDiscountLevelsFormatted(commercePriceEntry));
+				setDisplayDate(commercePriceEntry::getDisplayDate);
+				setExpirationDate(commercePriceEntry::getExpirationDate);
+				setExternalReferenceCode(
+					commercePriceEntry::getExternalReferenceCode);
+				setHasTierPrice(commercePriceEntry::isHasTierPrice);
+				setPrice(priceEntryPrice::doubleValue);
+				setPriceEntryId(commercePriceEntry::getCommercePriceEntryId);
+				setPriceFormatted(
+					() -> _formatPrice(
+						priceEntryPrice, commerceCurrency,
+						dtoConverterContext.getLocale()));
+				setPriceListId(commercePriceEntry::getCommercePriceListId);
+				setPriceOnApplication(commercePriceEntry::isPriceOnApplication);
+				setQuantity(commercePriceEntry::getQuantity);
+				setSkuExternalReferenceCode(
+					() -> {
+						if (cpInstance == null) {
+							return null;
+						}
+
+						return cpInstance.getExternalReferenceCode();
+					});
+				setSkuId(
+					() -> {
+						if (cpInstance == null) {
+							return null;
+						}
+
+						return cpInstance.getCPInstanceId();
+					});
+				setUnitOfMeasureKey(commercePriceEntry::getUnitOfMeasureKey);
 			}
 		};
 	}
@@ -145,5 +166,8 @@ public class PriceEntryDTOConverter
 
 	@Reference
 	private CommercePriceFormatter _commercePriceFormatter;
+
+	@Reference
+	private CPInstanceLocalService _cpInstanceLocalService;
 
 }

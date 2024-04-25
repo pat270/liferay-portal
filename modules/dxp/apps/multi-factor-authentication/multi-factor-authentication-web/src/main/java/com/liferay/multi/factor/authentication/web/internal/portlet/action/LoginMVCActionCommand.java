@@ -24,7 +24,6 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
-import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.PortletURLFactory;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
@@ -33,7 +32,6 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.auth.AuthException;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
-import com.liferay.portal.kernel.security.auth.session.AuthenticatedSessionManagerUtil;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Accessor;
@@ -46,6 +44,7 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.security.auth.session.AuthenticatedSessionManagerUtil;
 
 import java.security.Key;
 
@@ -124,7 +123,7 @@ public class LoginMVCActionCommand extends BaseMVCActionCommand {
 				}
 
 				if (userId > 0) {
-					_redirectToVerify(actionRequest, actionResponse, userId);
+					_redirectToVerify(actionRequest, userId);
 				}
 			}
 			catch (Exception exception) {
@@ -190,7 +189,8 @@ public class LoginMVCActionCommand extends BaseMVCActionCommand {
 			throw new PrincipalException("User sent unverified state");
 		}
 
-		Key mfaWebKey = (Key)httpSession.getAttribute(MFAWebKeys.MFA_WEB_KEY);
+		Key mfaWebKey = _encryptor.deserializeKey(
+			(String)httpSession.getAttribute(MFAWebKeys.MFA_WEB_KEY));
 
 		Map<String, Object> stateMap = _jsonFactory.looseDeserialize(
 			_encryptor.decrypt(mfaWebKey, state), Map.class);
@@ -229,38 +229,6 @@ public class LoginMVCActionCommand extends BaseMVCActionCommand {
 			}
 
 		};
-	}
-
-	private LiferayPortletURL _getLiferayPortletURL(
-		HttpServletRequest httpServletRequest, String redirectURL,
-		String returnToFullPageURL) {
-
-		httpServletRequest = _portal.getOriginalServletRequest(
-			httpServletRequest);
-
-		long plid = 0;
-
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
-		if (themeDisplay != null) {
-			plid = themeDisplay.getPlid();
-		}
-
-		LiferayPortletURL liferayPortletURL = _portletURLFactory.create(
-			httpServletRequest, MFAPortletKeys.MFA_VERIFY, plid,
-			PortletRequest.RENDER_PHASE);
-
-		liferayPortletURL.setParameter(
-			"saveLastPath", Boolean.FALSE.toString());
-		liferayPortletURL.setParameter(
-			"mvcRenderCommandName", "/mfa_verify/view");
-		liferayPortletURL.setParameter("redirect", redirectURL);
-		liferayPortletURL.setParameter(
-			"returnToFullPageURL", returnToFullPageURL);
-
-		return liferayPortletURL;
 	}
 
 	private void _postProcessAuthFailure(
@@ -309,13 +277,8 @@ public class LoginMVCActionCommand extends BaseMVCActionCommand {
 		actionResponse.sendRedirect(portletURL.toString());
 	}
 
-	private void _redirectToVerify(
-			ActionRequest actionRequest, ActionResponse actionResponse,
-			long userId)
+	private void _redirectToVerify(ActionRequest actionRequest, long userId)
 		throws Exception {
-
-		LiferayPortletResponse liferayPortletResponse =
-			_portal.getLiferayPortletResponse(actionResponse);
 
 		Key key = _encryptor.generateKey();
 
@@ -323,36 +286,42 @@ public class LoginMVCActionCommand extends BaseMVCActionCommand {
 			key,
 			_jsonFactory.looseSerializeDeep(
 				HashMapBuilder.<String, Object>put(
-					"requestParameters", actionRequest.getParameterMap()
+					"requestParameters",
+					() -> HashMapBuilder.putAll(
+						actionRequest.getParameterMap()
+					).remove(
+						"redirect"
+					).build()
 				).build()));
 
 		HttpServletRequest httpServletRequest =
 			_portal.getOriginalServletRequest(
 				_portal.getHttpServletRequest(actionRequest));
 
-		LiferayPortletURL liferayPortletURL = _getLiferayPortletURL(
-			httpServletRequest,
-			PortletURLBuilder.createActionURL(
-				liferayPortletResponse
-			).setActionName(
-				"/login/login"
-			).setParameter(
-				"state", encryptedStateMapJSON
-			).buildString(),
-			PortletURLBuilder.createRenderURL(
-				liferayPortletResponse
-			).setRedirect(
-				() -> {
-					String redirect = ParamUtil.getString(
-						actionRequest, "redirect");
+		httpServletRequest = _portal.getOriginalServletRequest(
+			httpServletRequest);
 
-					if (Validator.isNotNull(redirect)) {
-						return redirect;
-					}
+		long plid = 0;
 
-					return null;
-				}
-			).buildString());
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		if (themeDisplay != null) {
+			plid = themeDisplay.getPlid();
+		}
+
+		LiferayPortletURL liferayPortletURL = _portletURLFactory.create(
+			httpServletRequest, MFAPortletKeys.MFA_VERIFY, plid,
+			PortletRequest.RENDER_PHASE);
+
+		liferayPortletURL.setParameter(
+			"saveLastPath", Boolean.FALSE.toString());
+		liferayPortletURL.setParameter(
+			"mvcRenderCommandName", "/mfa_verify/view");
+		liferayPortletURL.setParameter(
+			"redirect", ParamUtil.getString(actionRequest, "redirect"));
+		liferayPortletURL.setParameter("state", encryptedStateMapJSON);
 
 		String portletId = ParamUtil.getString(httpServletRequest, "p_p_id");
 
@@ -372,7 +341,8 @@ public class LoginMVCActionCommand extends BaseMVCActionCommand {
 		httpSession.setAttribute(
 			MFAWebKeys.MFA_WEB_DIGEST,
 			DigesterUtil.digest(encryptedStateMapJSON));
-		httpSession.setAttribute(MFAWebKeys.MFA_WEB_KEY, key);
+		httpSession.setAttribute(
+			MFAWebKeys.MFA_WEB_KEY, _encryptor.serializeKey(key));
 	}
 
 	private static final Accessor<Object, String> _STRING_ACCESSOR =

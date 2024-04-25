@@ -7,7 +7,7 @@ import {ClayCheckbox, ClayInput, ClayToggle} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import React from 'react';
 
-import {FieldBase} from '../FieldBase/ReactFieldBase.es';
+import FieldBase from '../FieldBase/ReactFieldBase.es';
 
 import type {FieldChangeEventHandler} from '../types';
 
@@ -26,6 +26,7 @@ const Switcher: React.FC<ISwitcherProps> = ({
 		<>
 			<label className="toggle-switch">
 				<ClayToggle
+					aria-required={required}
 					disabled={disabled}
 					name={name}
 					onToggle={(checked) => {
@@ -76,6 +77,7 @@ const Checkbox: React.FC<ICheckboxProps> = ({
 }) => {
 	return (
 		<ClayCheckbox
+			aria-required={required}
 			checked={checked}
 			disabled={disabled}
 			label={showLabel ? label : ''}

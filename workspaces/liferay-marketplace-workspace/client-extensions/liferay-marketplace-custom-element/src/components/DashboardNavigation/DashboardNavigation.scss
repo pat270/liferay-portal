@@ -1,8 +1,15 @@
 .dashboard-navigation {
 	&-container {
+		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
-		max-width: 17.5rem;
+
+		&-dropdown {
+			border-radius: 0.625rem;
+			max-width: 30.5rem;
+			min-width: 10.25rem;
+			width: 17.5rem;
+		}
 	}
 
 	&-header {
@@ -24,8 +31,11 @@
 		}
 
 		&-logo {
-			height: 3rem;
+			border-radius: 50%;
+			border-radius: 8px;
 			margin-right: 0.75rem;
+			max-height: 3rem;
+			object-fit: contain;
 			width: 3rem;
 		}
 
@@ -39,18 +49,16 @@
 			font-size: 1rem;
 			font-weight: 600;
 			line-height: 1.5rem;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			width: 164px;
 		}
 
 		&-apps {
 			color: #54555f;
 			font-size: 0.813rem;
 			line-height: 1rem;
-		}
-
-		&-arrow-down {
-			display: none;
-			height: 1rem;
-			width: 1rem;
 		}
 
 		&:hover,
@@ -67,7 +75,9 @@
 	&-body {
 		background-color: #f7f7f8;
 		border-radius: 0.625rem;
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
 		padding: 0.5rem;
-		width: 17.5rem;
 	}
 }

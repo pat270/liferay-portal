@@ -20,10 +20,12 @@ taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
 page import="com.liferay.petra.string.StringPool" %><%@
 page import="com.liferay.portal.kernel.language.LanguageUtil" %><%@
 page import="com.liferay.portal.kernel.model.Group" %><%@
+page import="com.liferay.portal.kernel.model.LayoutSet" %><%@
 page import="com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder" %><%@
 page import="com.liferay.portal.kernel.service.GroupServiceUtil" %><%@
 page import="com.liferay.portal.kernel.util.HashMapBuilder" %><%@
 page import="com.liferay.portal.kernel.util.HtmlUtil" %><%@
+page import="com.liferay.portal.kernel.util.MapUtil" %><%@
 page import="com.liferay.portal.kernel.util.ParamUtil" %><%@
 page import="com.liferay.portal.kernel.util.Validator" %><%@
 page import="com.liferay.site.constants.SiteWebKeys" %><%@
@@ -32,7 +34,7 @@ page import="com.liferay.site.item.selector.web.internal.constants.SitesItemSele
 page import="com.liferay.site.item.selector.web.internal.display.context.SitesItemSelectorViewManagementToolbarDisplayContext" %><%@
 page import="com.liferay.site.item.selector.web.internal.frontend.taglib.clay.servlet.taglib.SiteVerticalCard" %><%@
 page import="com.liferay.site.navigation.taglib.servlet.taglib.util.BreadcrumbEntriesUtil" %><%@
-page import="com.liferay.site.util.GroupURLProvider" %>
+page import="com.liferay.site.provider.GroupURLProvider" %>
 
 <%@ page import="java.util.List" %><%@
 page import="java.util.Map" %>

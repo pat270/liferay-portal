@@ -1,0 +1,17 @@
+.lfr-object-web__modal-add-object-relationship {
+	&-current-object-input {
+		align-items: center;
+		display: flex;
+		gap: 1rem;
+		justify-content: center;
+
+		.form-group {
+			width: 100%;
+		}
+	}
+}
+
+.lfr-objects__modal-add-object-relationship-form-base .dropdown-menu {
+	max-width: 34rem;
+	width: 34rem;
+}

@@ -2,13 +2,13 @@ import * as API from 'shared/api';
 import * as data from 'test/data';
 import BaseFieldMappingView from '../BaseFieldMappingView';
 import mockStore from 'test/mock-store';
-import Promise from 'metal-promise';
 import React from 'react';
 import {DataSource, User} from 'shared/util/records';
 import {FieldContexts} from 'shared/util/constants';
 import {Provider} from 'react-redux';
 import {render} from '@testing-library/react';
 import {StaticRouter} from 'react-router';
+import {waitForLoadingToBeRemoved} from 'test/helpers';
 
 jest.unmock('react-dom');
 
@@ -31,32 +31,38 @@ const WrappedComponent = props => (
 );
 
 describe('BaseFieldMappingView', () => {
-	it('should render', () => {
+	it('should render', async () => {
 		const {container} = render(<WrappedComponent />);
 
 		jest.runAllTimers();
+
+		await waitForLoadingToBeRemoved(container);
 
 		expect(container).toMatchSnapshot();
 	});
 
-	it('should render w/o loading', () => {
+	it('should render w/o loading', async () => {
 		const {container} = render(<WrappedComponent />);
 
 		jest.runAllTimers();
 
+		await waitForLoadingToBeRemoved(container);
+
 		expect(container.querySelector('.loading-root')).toBeNull();
 	});
 
-	it('should render w/ error display', () => {
+	it('should render w/ error display', async () => {
 		API.dataSource.fetchMappingsLite.mockReturnValueOnce(
 			Promise.reject({})
 		);
 
-		const {getByText} = render(
+		const {container, getByText} = render(
 			<WrappedComponent title='This is a title' />
 		);
 
 		jest.runAllTimers();
+
+		await waitForLoadingToBeRemoved(container);
 
 		expect(getByText('An unexpected error occurred.')).toBeTruthy();
 	});

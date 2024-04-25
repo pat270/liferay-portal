@@ -72,7 +72,12 @@ public class SearchResultResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _searchResultResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, SearchResultResource>
+					searchResultResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_searchResultResourceProxyProviderFunction;
+
+				return searchResultResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -229,10 +234,6 @@ public class SearchResultResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, SearchResultResource>
-		_searchResultResourceProxyProviderFunction =
-			_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -268,6 +269,14 @@ public class SearchResultResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, SearchResultResource>
+			_searchResultResourceProxyProviderFunction =
+				_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

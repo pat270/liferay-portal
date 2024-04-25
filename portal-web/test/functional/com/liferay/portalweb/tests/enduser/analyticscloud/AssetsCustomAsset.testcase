@@ -62,10 +62,6 @@ definition {
 	tearDown {
 		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
 
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
-		//ACUtils.tearDownAC();
-
 		ACUtils.tearDownDXP();
 
 		if (${testLiferayVirtualInstance} == "true") {
@@ -74,6 +70,8 @@ definition {
 		else {
 			JSONGroup.deleteGroupByName(groupName = "Site Name");
 		}
+
+		ACUtils.tearDownAC();
 	}
 
 	@description = "Feature ID: LRAC-7532 | Automation ID: LRAC-8538 | Test Summary: Create custom asset report"
@@ -86,10 +84,11 @@ definition {
 		}
 
 		task ("View the Custom Assets page") {
-			ACAssets.interactWithCustomAssets(
+			ACUtils.navigateToSitePage(
+				actionType = "View WC",
+				documentTitleList = "1,2,3,4",
 				pageName = "AC Page",
-				siteName = "Site Name",
-				viewPageNumber = "1,2,3");
+				siteName = "Site Name");
 		}
 
 		task ("Close sessions") {
@@ -141,10 +140,11 @@ definition {
 		}
 
 		task ("View the Custom Assets page") {
-			ACAssets.interactWithCustomAssets(
+			ACUtils.navigateToSitePage(
+				actionType = "View WC",
+				documentTitleList = "1,2,3,4",
 				pageName = "AC Page",
-				siteName = "Site Name",
-				viewPageNumber = "1,2,3");
+				siteName = "Site Name");
 		}
 
 		task ("Interact with Custom Assets by downloading, clicking and submitting the form") {
@@ -214,6 +214,8 @@ definition {
 
 		task ("Navigate to Custom Asset page") {
 			ACUtils.navigateToSitePage(
+				actionType = "View WC",
+				documentTitleList = "1,2,3,4",
 				pageName = "AC Page 2",
 				siteName = "Site Name");
 		}
@@ -249,6 +251,7 @@ definition {
 
 			ACUtils.navigateToSitePage(
 				actionType = "View WC",
+				documentTitleList = "1,2,3,4",
 				pageName = "AC Page",
 				siteName = "Site Name");
 		}
@@ -299,11 +302,11 @@ definition {
 		}
 
 		task ("View the site page") {
-			for (var n : list "1,2,3,4") {
-				ACUtils.navigateToSitePage(
-					pageName = "AC Page",
-					siteName = "Site Name");
-			}
+			ACUtils.navigateToSitePage(
+				actionType = "View WC",
+				documentTitleList = "1,2,3,4",
+				pageName = "AC Page",
+				siteName = "Site Name");
 		}
 
 		task ("Close sessions") {
@@ -360,11 +363,11 @@ definition {
 		}
 
 		task ("View the site page") {
-			for (var n : list "1,2,3,4") {
-				ACUtils.navigateToSitePage(
-					pageName = "AC Page",
-					siteName = "Site Name");
-			}
+			ACUtils.navigateToSitePage(
+				actionType = "View WC",
+				documentTitleList = "1,2,3,4",
+				pageName = "AC Page",
+				siteName = "Site Name");
 		}
 
 		task ("Close sessions") {
@@ -434,11 +437,11 @@ definition {
 		}
 
 		for (var pageName : list "AC Page,AC Page 2,AC Page 3") {
-			for (var n : list "1,2,3") {
-				ACUtils.navigateToSitePage(
-					pageName = "AC Page",
-					siteName = "Site Name");
-			}
+			ACUtils.navigateToSitePage(
+				actionType = "View WC",
+				documentTitleList = "1,2,3,4",
+				pageName = ${pageName},
+				siteName = "Site Name");
 		}
 
 		ACUtils.closeAllSessionsAndWait();

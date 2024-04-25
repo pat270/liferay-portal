@@ -12,14 +12,13 @@ import {
 	useStateSafe,
 } from '@liferay/frontend-js-react-web';
 import classNames from 'classnames';
+import {useId, useSessionState} from 'frontend-js-components-web';
 import {sub} from 'frontend-js-web';
 import React, {useRef} from 'react';
 
-import {useId} from '../../common/hooks/useId';
 import useLazy from '../../common/hooks/useLazy';
 import useLoad from '../../common/hooks/useLoad';
 import usePlugins from '../../common/hooks/usePlugins';
-import {useSessionState} from '../../common/hooks/useSessionState';
 import * as Actions from '../actions/index';
 import {config} from '../config/index';
 import {useSelectItem} from '../contexts/ControlsContext';
@@ -29,6 +28,7 @@ import selectItemConfigurationOpen from '../selectors/selectItemConfigurationOpe
 import selectSidebarIsOpened from '../selectors/selectSidebarIsOpened';
 import switchSidebarPanel from '../thunks/switchSidebarPanel';
 import {useDropClear} from '../utils/drag_and_drop/useDragAndDrop';
+import isSmallResolution from '../utils/isSmallResolution';
 
 const {Suspense, useCallback, useEffect} = React;
 
@@ -101,7 +101,7 @@ export default function Sidebar() {
 	});
 
 	const promise = panel
-		? load(sidebarPanelId, panel.pluginEntryPoint)
+		? load(sidebarPanelId, panel.pluginClass)
 		: Promise.resolve();
 
 	const app = {
@@ -276,15 +276,21 @@ export default function Sidebar() {
 		const open =
 			panel.sidebarPanelId === sidebarPanelId ? !sidebarOpen : true;
 
+		const smallResolution = isSmallResolution();
+
 		dispatch(
 			switchSidebarPanel({
+				itemConfigurationOpen: smallResolution
+					? false
+					: store.sidebar.itemConfigurationOpen,
 				sidebarOpen: open,
 				sidebarPanelId: panel.sidebarPanelId,
 			})
 		);
 
 		if (open) {
-			sidebarContentRef.current?.focus();
+			sidebarContentRef.current.style.visibility = 'visible';
+			sidebarContentRef.current?.focus({preventScroll: true});
 		}
 	};
 
@@ -366,9 +372,7 @@ export default function Sidebar() {
 	return (
 		<ReactPortal className="cadmin">
 			<div
-				className={classNames(
-					'page-editor__sidebar page-editor__theme-adapter-forms'
-				)}
+				className="page-editor__sidebar page-editor__theme-adapter-forms"
 				ref={dropClearRef}
 				style={{'--sidebar-content-width': `${sidebarWidth}px`}}
 			>
@@ -393,7 +397,7 @@ export default function Sidebar() {
 								icon,
 								isLink,
 								label,
-								pluginEntryPoint,
+								pluginClass,
 								url,
 							} = panel;
 
@@ -412,10 +416,9 @@ export default function Sidebar() {
 							}
 
 							const prefetch = () =>
-								load(
-									panel.sidebarPanelId,
-									pluginEntryPoint
-								).then(...swallow);
+								load(panel.sidebarPanelId, pluginClass).then(
+									...swallow
+								);
 
 							return (
 								<ClayButtonWithIcon
@@ -473,16 +476,7 @@ export default function Sidebar() {
 					})}
 					id={sidebarContentId}
 					onClick={deselectItem}
-					ref={(ref) => {
-						sidebarContentRef.current = ref;
-
-						if (sidebarOpen) {
-							ref?.removeAttribute('inert');
-						}
-						else {
-							ref?.setAttribute('inert', '');
-						}
-					}}
+					ref={sidebarContentRef}
 					role="tabpanel"
 					tabIndex="-1"
 				>

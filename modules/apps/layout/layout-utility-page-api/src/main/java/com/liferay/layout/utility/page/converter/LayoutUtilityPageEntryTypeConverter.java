@@ -37,12 +37,21 @@ public class LayoutUtilityPageEntryTypeConverter {
 
 	private static final Map<String, String> _externalToInternalValuesMap =
 		HashMapBuilder.put(
+			"CookiePolicy", LayoutUtilityPageEntryConstants.TYPE_COOKIE_POLICY
+		).put(
+			"CreateAccount", LayoutUtilityPageEntryConstants.TYPE_CREATE_ACCOUNT
+		).put(
 			"Error", LayoutUtilityPageEntryConstants.TYPE_STATUS
 		).put(
 			"ErrorCode404", LayoutUtilityPageEntryConstants.TYPE_SC_NOT_FOUND
 		).put(
 			"ErrorCode500",
 			LayoutUtilityPageEntryConstants.TYPE_SC_INTERNAL_SERVER_ERROR
+		).put(
+			"ForgotPassword",
+			LayoutUtilityPageEntryConstants.TYPE_FORGOT_PASSWORD
+		).put(
+			"Login", LayoutUtilityPageEntryConstants.TYPE_LOGIN
 		).put(
 			"TermsOfUse", LayoutUtilityPageEntryConstants.TYPE_TERMS_OF_USE
 		).build();

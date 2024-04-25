@@ -285,8 +285,8 @@ public class DLSharepointStorageImpl extends BaseSharepointStorageImpl {
 					fileEntryId, newName, mimeType, newName, StringPool.BLANK,
 					description, changeLog,
 					DLVersionNumberIncrease.fromMajorVersion(false), file,
-					fileEntry.getExpirationDate(), fileEntry.getReviewDate(),
-					serviceContext);
+					fileEntry.getDisplayDate(), fileEntry.getExpirationDate(),
+					fileEntry.getReviewDate(), serviceContext);
 
 				if (folderId != newParentFolderId) {
 					fileEntry = DLAppServiceUtil.moveFileEntry(
@@ -380,8 +380,8 @@ public class DLSharepointStorageImpl extends BaseSharepointStorageImpl {
 					fileEntry.getFileEntryId(), title, contentType, title,
 					StringPool.BLANK, description, changeLog,
 					DLVersionNumberIncrease.fromMajorVersion(false), file,
-					fileEntry.getExpirationDate(), fileEntry.getReviewDate(),
-					serviceContext);
+					fileEntry.getDisplayDate(), fileEntry.getExpirationDate(),
+					fileEntry.getReviewDate(), serviceContext);
 			}
 			catch (NoSuchFileEntryException noSuchFileEntryException) {
 				if (_log.isDebugEnabled()) {
@@ -390,7 +390,7 @@ public class DLSharepointStorageImpl extends BaseSharepointStorageImpl {
 
 				DLAppServiceUtil.addFileEntry(
 					null, groupId, parentFolderId, title, contentType, null,
-					null, description, changeLog, file, null, null,
+					null, description, changeLog, file, null, null, null,
 					serviceContext);
 			}
 		}

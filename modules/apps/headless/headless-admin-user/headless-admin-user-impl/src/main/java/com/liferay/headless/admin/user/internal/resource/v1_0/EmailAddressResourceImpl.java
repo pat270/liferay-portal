@@ -5,7 +5,11 @@
 
 package com.liferay.headless.admin.user.internal.resource.v1_0;
 
+import com.liferay.account.model.AccountEntry;
+import com.liferay.account.service.AccountEntryService;
+import com.liferay.headless.admin.user.dto.v1_0.Account;
 import com.liferay.headless.admin.user.dto.v1_0.EmailAddress;
+import com.liferay.headless.admin.user.dto.v1_0.UserAccount;
 import com.liferay.headless.admin.user.internal.dto.v1_0.converter.constants.DTOConverterConstants;
 import com.liferay.headless.admin.user.internal.dto.v1_0.util.EmailAddressUtil;
 import com.liferay.headless.admin.user.resource.v1_0.EmailAddressResource;
@@ -15,6 +19,7 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.EmailAddressService;
 import com.liferay.portal.kernel.service.UserService;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
+import com.liferay.portal.vulcan.dto.converter.util.DTOConverterUtil;
 import com.liferay.portal.vulcan.pagination.Page;
 
 import org.osgi.service.component.annotations.Component;
@@ -31,9 +36,47 @@ import org.osgi.service.component.annotations.ServiceScope;
 public class EmailAddressResourceImpl extends BaseEmailAddressResourceImpl {
 
 	@Override
+	public Page<EmailAddress>
+			getAccountByExternalReferenceCodeEmailAddressesPage(
+				String externalReferenceCode)
+		throws Exception {
+
+		return getAccountEmailAddressesPage(
+			DTOConverterUtil.getModelPrimaryKey(
+				_accountResourceDTOConverter, externalReferenceCode));
+	}
+
+	@Override
+	public Page<EmailAddress> getAccountEmailAddressesPage(Long accountId)
+		throws Exception {
+
+		AccountEntry accountEntry = _accountEntryService.getAccountEntry(
+			accountId);
+
+		return Page.of(
+			transform(
+				_emailAddressService.getEmailAddresses(
+					accountEntry.getModelClassName(),
+					accountEntry.getAccountEntryId()),
+				EmailAddressUtil::toEmailAddress));
+	}
+
+	@Override
 	public EmailAddress getEmailAddress(Long emailAddressId) throws Exception {
 		return EmailAddressUtil.toEmailAddress(
 			_emailAddressService.getEmailAddress(emailAddressId));
+	}
+
+	@Override
+	public Page<EmailAddress>
+			getOrganizationByExternalReferenceCodeEmailAddressesPage(
+				String externalReferenceCode)
+		throws Exception {
+
+		return getOrganizationEmailAddressesPage(
+			String.valueOf(
+				DTOConverterUtil.getModelPrimaryKey(
+					_organizationResourceDTOConverter, externalReferenceCode)));
 	}
 
 	@Override
@@ -53,6 +96,17 @@ public class EmailAddressResourceImpl extends BaseEmailAddressResourceImpl {
 	}
 
 	@Override
+	public Page<EmailAddress>
+			getUserAccountByExternalReferenceCodeEmailAddressesPage(
+				String externalReferenceCode)
+		throws Exception {
+
+		return getUserAccountEmailAddressesPage(
+			DTOConverterUtil.getModelPrimaryKey(
+				_userResourceDTOConverter, externalReferenceCode));
+	}
+
+	@Override
 	public Page<EmailAddress> getUserAccountEmailAddressesPage(
 			Long userAccountId)
 		throws Exception {
@@ -67,6 +121,12 @@ public class EmailAddressResourceImpl extends BaseEmailAddressResourceImpl {
 	}
 
 	@Reference
+	private AccountEntryService _accountEntryService;
+
+	@Reference(target = DTOConverterConstants.ACCOUNT_RESOURCE_DTO_CONVERTER)
+	private DTOConverter<AccountEntry, Account> _accountResourceDTOConverter;
+
+	@Reference
 	private EmailAddressService _emailAddressService;
 
 	@Reference(
@@ -75,6 +135,9 @@ public class EmailAddressResourceImpl extends BaseEmailAddressResourceImpl {
 	private DTOConverter
 		<Organization, com.liferay.headless.admin.user.dto.v1_0.Organization>
 			_organizationResourceDTOConverter;
+
+	@Reference(target = DTOConverterConstants.USER_RESOURCE_DTO_CONVERTER)
+	private DTOConverter<User, UserAccount> _userResourceDTOConverter;
 
 	@Reference
 	private UserService _userService;

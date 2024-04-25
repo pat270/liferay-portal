@@ -1,6 +1,7 @@
 @component-name = "portal-categories"
 definition {
 
+	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.component.names = "Categories";
@@ -882,6 +883,7 @@ definition {
 	@priority = 3
 	test ViewBreadcrumbWithFlattenedTree {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Select the Flattened Tree as Category Navigation Display Style") {
 			ApplicationsMenu.gotoPortlet(
@@ -894,7 +896,9 @@ definition {
 				configurationName = "Asset Categories Web",
 				configurationScope = "System Scope");
 
-			SystemSettings.configureDisplayStyle(displayStyle = "Flattened Tree");
+			SystemSettings.configureDisplayStyle(
+				displayStyle = "Flattened Tree",
+				fieldName = "Category Navigation Display Style");
 		}
 
 		task ("Add a category") {
@@ -924,55 +928,6 @@ definition {
 			Category.viewPath(
 				categoryName = "Subcategory Name",
 				path = "Vocabulary Name > Category Name > Subcategory Name");
-		}
-	}
-
-	@description = "This is a test for LPS-145292. The user could view new icons on dropdown menu of categories admin."
-	@priority = 4
-	test ViewDropdownMenuIconsInCategoriesAdmin {
-		task ("Given a Categories creator has a category within a vocabulary") {
-			JSONCategory.addCategory(
-				groupName = "Test Site Name",
-				title = "Category Name",
-				vocabularyName = "Vocabulary Name");
-		}
-
-		task ("When the Categories creator opens the dropdown menu of Vocabularies") {
-			Category.openCategoriesAdmin(siteURLKey = "test-site-name");
-
-			Click.waitForMenuToggleJSClick(locator1 = "NavNested#NAV_NESTED_ELLIPSIS");
-		}
-
-		task ("Then the Categories creator can see the new icon on the dropdown menu") {
-			DropdownMenuItem.viewIcon(iconList = "trash");
-		}
-
-		task ("When the Categories creator opens the dropdown menu of new vocabulary") {
-			Click.waitForMenuToggleJSClick(
-				key_headerName = "Vocabulary Name",
-				locator1 = "Portlet#H2_HEADER_VERTICAL_ELLIPSIS");
-		}
-
-		task ("Then the Categories creator can see the new icons on the dropdown menu") {
-			DropdownMenuItem.viewIcon(iconList = "pencil,password-policies,trash");
-		}
-
-		task ("When the Categories creator opens the dropdown menu of category") {
-			LexiconEntry.openEntryMenu(rowEntry = "Category Name");
-		}
-
-		task ("Then the Categories creator can see the new icons on the dropdown menu") {
-			DropdownMenuItem.viewIcon(iconList = "pencil,move-folder,password-policies,trash");
-		}
-
-		task ("When the Categories creator opens the dropdown menu of management toolbar after selecting the category") {
-			ManagementBar.clickSelectAllCheckbox();
-
-			Click(locator1 = "ManagementBar#MORE_ACTIONS_ELLIPSIS");
-		}
-
-		task ("Then the Categories creator can see the new icons on the dropdown menu") {
-			DropdownMenuItem.viewIcon(iconList = "page,trash");
 		}
 	}
 

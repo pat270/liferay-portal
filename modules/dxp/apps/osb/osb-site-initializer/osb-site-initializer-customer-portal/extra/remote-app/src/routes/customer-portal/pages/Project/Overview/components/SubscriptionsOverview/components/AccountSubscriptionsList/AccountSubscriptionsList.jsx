@@ -11,6 +11,7 @@ import AccountSubscriptionCard from './components/AccountSubscriptionCard/Accoun
 import AccountSubscriptionModal from './components/AccountSubscriptionModal/AccountSubscriptionModal';
 
 const AccountSubscriptionsList = ({
+	IsPortalOrDXP,
 	accountKey,
 	accountSubscriptionGroup,
 	accountSubscriptions,
@@ -32,7 +33,7 @@ const AccountSubscriptionsList = ({
 
 	if (loading) {
 		return (
-			<div className="d-flex flex-wrap">
+			<div className="d-flex flex-column">
 				{[...new Array(maxCardsLoading)].map((_, index) => (
 					<AccountSubscriptionCard key={index} loading />
 				))}
@@ -49,9 +50,10 @@ const AccountSubscriptionsList = ({
 	}
 
 	return (
-		<div className="d-flex flex-wrap">
+		<div className="d-flex flex-column">
 			{open && (
 				<AccountSubscriptionModal
+					IsPortalOrDXP={IsPortalOrDXP}
 					accountKey={accountKey}
 					accountSubscriptionGroup={accountSubscriptionGroup}
 					accountSubscriptionProductKey={
@@ -73,6 +75,7 @@ const AccountSubscriptionsList = ({
 			{accountSubscriptions?.map((accountSubscription, index) => (
 				<AccountSubscriptionCard
 					{...accountSubscription}
+					IsPortalOrDXP={IsPortalOrDXP}
 					key={index}
 					logoPath={
 						LOGO_PATH_TYPES[

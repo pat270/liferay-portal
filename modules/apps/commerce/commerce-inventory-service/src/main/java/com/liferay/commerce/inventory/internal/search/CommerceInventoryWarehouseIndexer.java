@@ -26,6 +26,8 @@ import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.util.GetterUtil;
 
+import java.math.BigDecimal;
+
 import java.util.Locale;
 
 import javax.portlet.PortletRequest;
@@ -124,7 +126,8 @@ public class CommerceInventoryWarehouseIndexer
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
-				"Indexing inventory warehouse " + commerceInventoryWarehouse);
+				"Indexing commerce inventory warehouse " +
+					commerceInventoryWarehouse);
 		}
 
 		Document document = getBaseModelDocument(
@@ -158,7 +161,7 @@ public class CommerceInventoryWarehouseIndexer
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
-				"Document " + commerceInventoryWarehouse +
+				"Commerce inventory warehouse " + commerceInventoryWarehouse +
 					" indexed successfully");
 		}
 
@@ -213,16 +216,21 @@ public class CommerceInventoryWarehouseIndexer
 		return super.isUseSearchResultPermissionFilter(searchContext);
 	}
 
-	private int _getItemsQuantity(
+	private BigDecimal _getItemsQuantity(
 		CommerceInventoryWarehouse commerceInventoryWarehouse) {
 
-		int count = 0;
+		BigDecimal count = BigDecimal.ZERO;
 
 		for (CommerceInventoryWarehouseItem commerceInventoryWarehouseItem :
 				commerceInventoryWarehouse.
 					getCommerceInventoryWarehouseItems()) {
 
-			count += commerceInventoryWarehouseItem.getQuantity();
+			BigDecimal commerceInventoryWarehouseItemQuantity =
+				commerceInventoryWarehouseItem.getQuantity();
+
+			if (commerceInventoryWarehouseItemQuantity != null) {
+				count = count.add(commerceInventoryWarehouseItemQuantity);
+			}
 		}
 
 		return count;
@@ -244,13 +252,9 @@ public class CommerceInventoryWarehouseIndexer
 				}
 				catch (PortalException portalException) {
 					if (_log.isWarnEnabled()) {
-						long commerceInventoryWarehouseId =
-							commerceInventoryWarehouse.
-								getCommerceInventoryWarehouseId();
-
 						_log.warn(
 							"Unable to index commerce inventory warehouse " +
-								commerceInventoryWarehouseId,
+								commerceInventoryWarehouse,
 							portalException);
 					}
 				}

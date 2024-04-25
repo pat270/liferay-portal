@@ -5,8 +5,8 @@
 
 package com.liferay.info.item.creator;
 
-import com.liferay.info.exception.InfoFormException;
 import com.liferay.info.item.InfoItemFieldValues;
+import com.liferay.portal.kernel.exception.InfoFormException;
 
 /**
  * @author Rubén Pulido
@@ -14,7 +14,7 @@ import com.liferay.info.item.InfoItemFieldValues;
 public interface InfoItemCreator<T> {
 
 	public T createFromInfoItemFieldValues(
-			long groupId, InfoItemFieldValues infoItemFieldValues)
+			long groupId, InfoItemFieldValues infoItemFieldValues, int status)
 		throws InfoFormException;
 
 }

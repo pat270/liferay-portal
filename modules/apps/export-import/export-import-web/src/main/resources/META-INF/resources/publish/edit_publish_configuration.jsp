@@ -229,6 +229,13 @@ response.setHeader("Ajax-ID", request.getHeader("Ajax-ID"));
 
 					<div class="sheet">
 						<div class="panel-group panel-group-flush">
+							<clay:alert
+								displayType="warning"
+								message="publish-small-incremental-changes-to-avoid-large-publishing-processes-that-can-take-a-long-time-to-execute"
+								symbol="page"
+								title="recommendation"
+							/>
+
 							<aui:fieldset>
 								<c:choose>
 									<c:when test="<%= exportImportConfiguration == null %>">
@@ -366,23 +373,31 @@ response.setHeader("Ajax-ID", request.getHeader("Ajax-ID"));
 		['<portlet:namespace />selectSchedule', '<portlet:namespace />addButton'],
 		'<portlet:namespace />publishButton'
 	);
-	Liferay.Util.toggleRadio('<portlet:namespace />rangeAll', '', [
-		'<portlet:namespace />startEndDate',
-		'<portlet:namespace />rangeLastInputs',
-	]);
+	Liferay.Util.toggleRadio(
+		'<portlet:namespace />rangeAll',
+		'<portlet:namespace />warningSection',
+		[
+			'<portlet:namespace />startEndDate',
+			'<portlet:namespace />rangeLastInputs',
+		]
+	);
 	Liferay.Util.toggleRadio(
 		'<portlet:namespace />rangeDateRange',
 		'<portlet:namespace />startEndDate',
-		'<portlet:namespace />rangeLastInputs'
+		[
+			'<portlet:namespace />rangeLastInputs',
+			'<portlet:namespace />warningSection',
+		]
 	);
 	Liferay.Util.toggleRadio('<portlet:namespace />rangeLastPublish', '', [
 		'<portlet:namespace />startEndDate',
 		'<portlet:namespace />rangeLastInputs',
+		'<portlet:namespace />warningSection',
 	]);
 	Liferay.Util.toggleRadio(
 		'<portlet:namespace />rangeLast',
 		'<portlet:namespace />rangeLastInputs',
-		['<portlet:namespace />startEndDate']
+		['<portlet:namespace />startEndDate', '<portlet:namespace />warningSection']
 	);
 </aui:script>
 

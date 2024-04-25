@@ -5,7 +5,6 @@
 
 package com.liferay.segments.web.internal.product.navigation.control.menu;
 
-import com.liferay.frontend.js.loader.modules.extender.npm.NPMResolver;
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorWebKeys;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.security.permission.resource.LayoutContentModelResourcePermission;
@@ -17,6 +16,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutTypeController;
 import com.liferay.portal.kernel.model.LayoutTypePortlet;
+import com.liferay.portal.kernel.model.impl.VirtualLayout;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.permission.LayoutPermission;
@@ -36,7 +36,6 @@ import com.liferay.segments.service.SegmentsExperienceLocalService;
 import com.liferay.segments.service.SegmentsExperimentLocalService;
 import com.liferay.segments.service.SegmentsExperimentRelLocalService;
 import com.liferay.segments.web.internal.display.context.SegmentsExperienceSelectorDisplayContext;
-import com.liferay.sites.kernel.util.Sites;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -91,19 +90,17 @@ public class SegmentsExperienceSelectorProductNavigationControlMenuEntry
 						_segmentsExperimentLocalService,
 						_segmentsExperimentRelLocalService);
 
-			PrintWriter writer = httpServletResponse.getWriter();
+			PrintWriter printWriter = httpServletResponse.getWriter();
 
-			writer.write("<div class=\"border-left border-secondary ");
-			writer.write("control-menu-nav-item ml-3 pl-3\">");
+			printWriter.write("<div class=\"border-left border-secondary ");
+			printWriter.write("control-menu-nav-item c-ml-3 c-pl-md-3\">");
 
 			_reactRenderer.renderReact(
-				new ComponentDescriptor(
-					_npmResolver.resolveModuleName("segments-web") +
-						"/js/components/ExperiencePicker"),
+				new ComponentDescriptor("{ExperiencePicker} from segments-web"),
 				segmentsExperienceSelectorDisplayContext.getData(),
-				httpServletRequest, writer);
+				httpServletRequest, printWriter);
 
-			writer.write("</div>");
+			printWriter.write("</div>");
 		}
 		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
@@ -141,7 +138,9 @@ public class SegmentsExperienceSelectorProductNavigationControlMenuEntry
 
 		Layout layout = themeDisplay.getLayout();
 
-		if (!layout.isTypeContent() || !_sites.isLayoutUpdateable(layout)) {
+		if ((layout instanceof VirtualLayout) || !layout.isLayoutUpdateable() ||
+			!layout.isTypeContent()) {
+
 			return false;
 		}
 
@@ -204,9 +203,6 @@ public class SegmentsExperienceSelectorProductNavigationControlMenuEntry
 	private LayoutContentModelResourcePermission _modelResourcePermission;
 
 	@Reference
-	private NPMResolver _npmResolver;
-
-	@Reference
 	private Portal _portal;
 
 	@Reference
@@ -224,8 +220,5 @@ public class SegmentsExperienceSelectorProductNavigationControlMenuEntry
 	@Reference
 	private SegmentsExperimentRelLocalService
 		_segmentsExperimentRelLocalService;
-
-	@Reference
-	private Sites _sites;
 
 }

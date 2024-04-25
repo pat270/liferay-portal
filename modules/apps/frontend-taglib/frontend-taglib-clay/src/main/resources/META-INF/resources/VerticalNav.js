@@ -4,6 +4,7 @@
  */
 
 import {VerticalNav as ClayVerticalNav} from '@clayui/core';
+import ClayIcon from '@clayui/icon';
 import React from 'react';
 
 export default function VerticalNav({
@@ -40,8 +41,20 @@ export default function VerticalNav({
 					href={item.href}
 					items={item.items}
 					key={item.id}
+					textValue={item.label}
 				>
 					{item.label}
+
+					{item.icons?.map((icon) => {
+						return (
+							<ClayIcon
+								className="c-ml-1 text-muted"
+								key={icon.symbol}
+								symbol={icon.symbol}
+								title={icon.title}
+							/>
+						);
+					})}
 				</ClayVerticalNav.Item>
 			)}
 		</ClayVerticalNav>

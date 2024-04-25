@@ -26,6 +26,7 @@ String userName = PortalUtil.getUserName(membershipRequest.getUserId(), StringPo
 
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(redirect);
+portletDisplay.setURLBackTitle("membership-requests");
 
 renderResponse.setTitle(userName);
 %>
@@ -40,7 +41,7 @@ renderResponse.setTitle(userName);
 
 				<div class="nameplate">
 					<div class="nameplate-field">
-						<liferay-ui:user-portrait
+						<liferay-user:user-portrait
 							userId="<%= membershipRequest.getUserId() %>"
 						/>
 					</div>
@@ -83,7 +84,7 @@ renderResponse.setTitle(userName);
 				<div class="nameplate">
 					<c:if test="<%= membershipRequestReplierUser != null %>">
 						<div class="nameplate-field">
-							<liferay-ui:user-portrait
+							<liferay-user:user-portrait
 								user="<%= membershipRequestReplierUser %>"
 							/>
 						</div>

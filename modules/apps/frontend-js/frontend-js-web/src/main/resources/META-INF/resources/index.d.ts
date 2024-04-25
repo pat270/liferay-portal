@@ -39,7 +39,7 @@ export function align(
 ): string;
 
 /* Cancels the scheduled debounced function. */
-export function cancelDebounce(debounced: () => void): void;
+export function cancelDebounce(debounced: (...args: any[]) => void): void;
 
 export function createActionURL(
 	basePortletURL: string,
@@ -62,7 +62,10 @@ export function createResourceURL(
 ): URL;
 
 /* Debounces function execution. */
-export function debounce(fn: () => void, delay: number): () => void;
+export function debounce(
+	fn: (...args: any[]) => void,
+	delay: number
+): (...args: any[]) => void;
 
 /**
  * Decodes the update strings.
@@ -214,10 +217,12 @@ export function openAlertModal({message}: {message: string}): void;
 export function openConfirmModal({
 	message,
 	onConfirm,
+	status,
 	title,
 }: {
 	message: string;
 	onConfirm: (confirmed: boolean) => void;
+	status?: string;
 	title?: string;
 }): void;
 
@@ -270,6 +275,9 @@ export function openToast({
 
 export function openWindow(config: object, callback?: Function): void;
 
+export {default as openCategorySelectionModal} from './liferay/modal/commands/openCategorySelectionModal';
+export {default as openTagSelectionModal} from './liferay/modal/commands/openTagSelectionModal';
+
 /**
  * Registers a portlet client with the portlet hub.
  */
@@ -311,7 +319,10 @@ export function suggestAlignBestRegion(
  * arguments and context are used, replacing those of any previously pending
  * calls.
  */
-export function throttle(fn: () => void, interval: number): () => void;
+export function throttle(
+	fn: (event: any) => void,
+	interval: number
+): () => void;
 
 export function toggleBoxes(
 	checkBoxId: string,
@@ -885,3 +896,10 @@ export function setSessionValue(
 ): Promise<any>;
 
 export function isReducedMotion(): boolean;
+
+/**
+ * Client Extensions API
+ */
+export {default as loadClientExtensions} from './utils/client_extensions/loadClientExtensions';
+export {default as loadEditorClientExtensions} from './utils/client_extensions/loadEditorClientExtensions';
+export {loadModule} from './utils/client_extensions/loadModule';

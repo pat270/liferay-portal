@@ -75,6 +75,8 @@ dateFormatDateTime.setTimeZone(timeZone);
 	</h3>
 
 	<form class="license-form" method="post" name="license_fm" <%= (clusterNodes.size() > 1) ? "onsubmit=\"return validateForm();\"" : "" %>>
+		<input name="p_auth" type="hidden" value="<%= AuthTokenUtil.getToken(request) %>" />
+
 		<c:if test="<%= Validator.isNotNull(errorMessage) %>">
 			<div class="alert alert-danger">
 				<%= errorMessage %>

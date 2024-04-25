@@ -72,7 +72,12 @@ public class WorkflowTaskTransitionsResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _workflowTaskTransitionsResourceProxyProviderFunction.
+				Function<InvocationHandler, WorkflowTaskTransitionsResource>
+					workflowTaskTransitionsResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_workflowTaskTransitionsResourceProxyProviderFunction;
+
+				return workflowTaskTransitionsResourceProxyProviderFunction.
 					apply(
 						(proxy, method, arguments) -> _invoke(
 							method, arguments, _checkPermissions,
@@ -239,11 +244,6 @@ public class WorkflowTaskTransitionsResourceFactoryImpl
 		}
 	}
 
-	private static final Function
-		<InvocationHandler, WorkflowTaskTransitionsResource>
-			_workflowTaskTransitionsResourceProxyProviderFunction =
-				_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -279,6 +279,15 @@ public class WorkflowTaskTransitionsResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function
+			<InvocationHandler, WorkflowTaskTransitionsResource>
+				_workflowTaskTransitionsResourceProxyProviderFunction =
+					_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

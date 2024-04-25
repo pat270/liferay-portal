@@ -27,133 +27,38 @@
 				String notificationsURL = PersonalApplicationURLUtil.getPersonalApplicationURL(request, notificaitonsPortletId);
 				%>
 
-				<aui:a href="<%= (notificationsURL != null) ? notificationsURL : null %>">
+				<a
+					aria-label='<%= notificationsCount + StringPool.SPACE + LanguageUtil.get(request, "new-notification") %>'
+					data-qa-id="notificationsCount"
+					class="panel-notifications-count"
+					href="<%= (notificationsURL != null) ? notificationsURL : null %>"
+					title='<%= notificationsCount + StringPool.SPACE + LanguageUtil.get(request, "new-notification") %>'
+				>
 					<clay:badge
-						cssClass="panel-notifications-count"
 						displayType="danger"
 						label="<%= String.valueOf(notificationsCount) %>"
 					/>
-				</aui:a>
+				</a>
 			</c:if>
 		</span>
 	</c:when>
 	<c:when test="<%= themeDisplay.isShowSignInIcon() %>">
 		<span class="sign-in text-default" role="presentation">
-			<aui:icon
-				cssClass="sign-in text-default"
-				data='<%=
+			<clay:button
+				additionalProps='<%=
 					HashMapBuilder.<String, Object>put(
-						"redirect", String.valueOf(PortalUtil.isLoginRedirectRequired(request))
+						"redirect", PortalUtil.isLoginRedirectRequired(request)
+					).put(
+						"signInURL", themeDisplay.getURLSignIn()
 					).build()
 				%>'
-				image="user"
+				cssClass="sign-in text-default"
+				displayType="unstyled"
+				icon="user"
 				label="sign-in"
-				markupView="lexicon"
-				url="<%= themeDisplay.getURLSignIn() %>"
+				propsTransformer="{signInButtonPropsTransformer} from product-navigation-user-personal-bar-web"
+				small="<%= true %>"
 			/>
 		</span>
-
-		<aui:script sandbox="<%= true %>">
-			var signInLink = document.querySelector('.sign-in > a');
-
-			if (signInLink && signInLink.dataset.redirect === 'false') {
-				var signInURL = '<%= themeDisplay.getURLSignIn() %>';
-
-				var modalSignInURL = Liferay.Util.addParams(
-					'windowState=exclusive',
-					signInURL
-				);
-
-				var setModalContent = function (html) {
-					var modalBody = document.querySelector('.liferay-modal-body');
-
-					if (modalBody) {
-						var fragment = document
-							.createRange()
-							.createContextualFragment(html);
-
-						modalBody.innerHTML = '';
-
-						modalBody.appendChild(fragment);
-					}
-				};
-
-				var loading = false;
-				var redirect = false;
-				var html = '';
-				var modalOpen = false;
-
-				var fetchModalSignIn = function () {
-					if (loading || html) {
-						return;
-					}
-
-					loading = true;
-
-					Liferay.Util.fetch(modalSignInURL)
-						.then((response) => {
-							return response.text();
-						})
-						.then((response) => {
-							if (!loading) {
-								return;
-							}
-
-							loading = false;
-
-							if (!response) {
-								redirect = true;
-
-								return;
-							}
-
-							html = response;
-
-							if (modalOpen) {
-								setModalContent(response);
-							}
-						})
-						.catch(() => {
-							redirect = true;
-						});
-				};
-
-				signInLink.addEventListener('mouseover', fetchModalSignIn);
-				signInLink.addEventListener('focus', fetchModalSignIn);
-
-				signInLink.addEventListener('click', (event) => {
-					event.preventDefault();
-
-					if (redirect) {
-						Liferay.Util.navigate(signInURL);
-
-						return;
-					}
-
-					Liferay.Util.openModal({
-						bodyHTML: html ? html : '<span class="loading-animation">',
-						containerProps: {
-							className: '',
-						},
-						height: '400px',
-						onClose: function () {
-							loading = false;
-							redirect = false;
-							html = '';
-							modalOpen = false;
-						},
-						onOpen: function () {
-							modalOpen = true;
-
-							if (html && document.querySelector('.loading-animation')) {
-								setModalContent(html);
-							}
-						},
-						size: 'md',
-						title: '<liferay-ui:message key="sign-in" />',
-					});
-				});
-			}
-		</aui:script>
 	</c:when>
 </c:choose>

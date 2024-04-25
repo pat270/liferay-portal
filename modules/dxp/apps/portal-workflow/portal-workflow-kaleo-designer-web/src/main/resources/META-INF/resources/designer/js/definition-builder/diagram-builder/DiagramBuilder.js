@@ -30,22 +30,35 @@ import {isIdDuplicated} from './components/sidebar/utils';
 import edgeTypes from './components/transitions/Edge';
 import FloatingConnectionLine from './components/transitions/FloatingConnectionLine';
 import getCollidingElements from './util/collisionDetection';
+import {detectGroovyScript} from './util/detectGroovyScript';
 import populateAssignmentsData from './util/populateAssignmentsData';
 import populateNotificationsData from './util/populateNotificationsData';
+
+let ReactFlowDefault = ReactFlow;
+
+// `react-flow-renderer` provides both a commonjs and ESM version.
+// We need this logic here so that both work. Unit tests rely on commonjs and
+// our DXP runtime uses ESM.
+
+if (ReactFlowDefault.default) {
+	ReactFlowDefault = ReactFlowDefault.default;
+}
 
 const deserializeUtil = new DeserializeUtil();
 
 export default function DiagramBuilder() {
 	const {
 		accountEntryId,
+		allowScriptContentToBeExecutedOrIncluded,
 		currentEditor,
 		definitionName,
 		deserialize,
 		elements,
 		functionActionExecutors,
+		hadGroovyScriptBefore,
 		selectedLanguageId,
 		setActive,
-		setBlockingErrors,
+		setBlockingError,
 		setDefinitionDescription,
 		setDefinitionInfo,
 		setDefinitionName,
@@ -53,6 +66,8 @@ export default function DiagramBuilder() {
 		setDefinitionTitleTranslations,
 		setDeserialize,
 		setElements,
+		setHadGroovyScriptBefore,
+		setHasGroovyScript,
 		setShowDefinitionInfo,
 		statuses,
 		version,
@@ -64,6 +79,10 @@ export default function DiagramBuilder() {
 	const [selectedItem, setSelectedItem] = useState(null);
 	const [selectedItemNewId, setSelectedItemNewId] = useState(null);
 	const [defaultPosition, setDefaultPosition] = useState(null);
+	const [
+		scriptedReassignmentTimerIndex,
+		setScriptedReassignmentTimerIndex,
+	] = useState(null);
 
 	const onConnect = (params) => {
 		if (
@@ -327,11 +346,25 @@ export default function DiagramBuilder() {
 
 			setElements(elements);
 
+			if (
+				Liferay.FeatureFlags['LPD-11179'] &&
+				!allowScriptContentToBeExecutedOrIncluded
+			) {
+				const hasGroovyScript = detectGroovyScript(
+					elements,
+					setHasGroovyScript
+				);
+
+				if (hasGroovyScript && !hadGroovyScriptBefore) {
+					setHadGroovyScriptBefore(true);
+				}
+			}
+
 			populateAssignmentsData(
 				accountEntryId,
 				elements,
 				setElements,
-				setBlockingErrors
+				setBlockingError
 			);
 			populateNotificationsData(accountEntryId, elements, setElements);
 
@@ -375,6 +408,20 @@ export default function DiagramBuilder() {
 
 						setElements(elements);
 
+						if (
+							Liferay.FeatureFlags['LPD-11179'] &&
+							!allowScriptContentToBeExecutedOrIncluded
+						) {
+							const hasGroovyScript = detectGroovyScript(
+								elements,
+								setHasGroovyScript
+							);
+
+							if (hasGroovyScript && !hadGroovyScriptBefore) {
+								setHadGroovyScriptBefore(true);
+							}
+						}
+
 						populateAssignmentsData(
 							accountEntryId,
 							elements,
@@ -396,10 +443,12 @@ export default function DiagramBuilder() {
 		collidingElements,
 		elementRectangle,
 		functionActionExecutors,
+		scriptedReassignmentTimerIndex,
 		selectedItem,
 		selectedItemNewId,
 		setCollidingElements,
 		setElementRectangle,
+		setScriptedReassignmentTimerIndex,
 		setSelectedItem,
 		setSelectedItemNewId,
 		statuses,
@@ -409,7 +458,7 @@ export default function DiagramBuilder() {
 		<DiagramBuilderContextProvider {...contextProps}>
 			<div className="diagram-builder">
 				<div className="diagram-area" ref={reactFlowWrapperRef}>
-					<ReactFlow
+					<ReactFlowDefault
 						connectionLineComponent={FloatingConnectionLine}
 						edgeTypes={edgeTypes}
 						elements={elements}

@@ -1,6 +1,7 @@
 definition {
 
-	macro searchWidget {
+	@summary = "Default summary"
+	macro searchWidget(searchTerm = null) {
 		Type(
 			locator1 = "KnowledgeBase#SEARCH_WIDGET_BAR",
 			value1 = ${searchTerm});
@@ -10,7 +11,8 @@ definition {
 			value1 = "\RETURN");
 	}
 
-	macro viewSearchResultPG {
+	@summary = "Default summary"
+	macro viewSearchResultPG(kbDescription = null, description = null, kbArticleTitle = null) {
 		AssertTextEquals.assertPartialText(
 			key_kbArticleTitle = ${kbArticleTitle},
 			locator1 = "KnowledgeBase#SEARCH_WIDGET_ARTICLE_TITLE",
@@ -28,15 +30,15 @@ definition {
 		if (isSet(kbDescription)) {
 			if (${description} == "Disabled") {
 				AssertElementNotPresent(
-					key_title = "Description",
-					locator1 = "Header#H3_TITLE");
+					key_text = "Description",
+					locator1 = "Sidebar#SUBTITLE");
 
 				AssertElementNotPresent(locator1 = "KnowledgeBase#ARTICLE_DESCRIPTION");
 			}
 			else {
 				AssertTextEquals(
-					key_title = "Description",
-					locator1 = "Header#H3_TITLE",
+					key_text = "Description",
+					locator1 = "Sidebar#SUBTITLE",
 					value1 = "Description");
 
 				AssertTextEquals(

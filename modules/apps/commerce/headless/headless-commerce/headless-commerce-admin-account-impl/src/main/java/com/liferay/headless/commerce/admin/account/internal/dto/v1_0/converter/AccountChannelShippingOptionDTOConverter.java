@@ -12,7 +12,6 @@ import com.liferay.commerce.model.CommerceShippingOptionAccountEntryRel;
 import com.liferay.commerce.product.model.CommerceChannel;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.commerce.service.CommerceShippingMethodLocalService;
-import com.liferay.commerce.service.CommerceShippingOptionAccountEntryRelService;
 import com.liferay.commerce.shipping.engine.fixed.model.CommerceShippingFixedOption;
 import com.liferay.commerce.shipping.engine.fixed.service.CommerceShippingFixedOptionLocalService;
 import com.liferay.headless.commerce.admin.account.dto.v1_0.AccountChannelShippingOption;
@@ -48,23 +47,6 @@ public class AccountChannelShippingOptionDTOConverter
 
 		return new AccountChannelShippingOption() {
 			{
-				accountId =
-					commerceShippingOptionAccountEntryRel.getAccountEntryId();
-				actions = dtoConverterContext.getActions();
-				channelId =
-					commerceShippingOptionAccountEntryRel.
-						getCommerceChannelId();
-				id =
-					commerceShippingOptionAccountEntryRel.
-						getCommerceShippingOptionAccountEntryRelId();
-
-				shippingMethodKey =
-					commerceShippingOptionAccountEntryRel.
-						getCommerceShippingMethodKey();
-				shippingOptionKey =
-					commerceShippingOptionAccountEntryRel.
-						getCommerceShippingOptionKey();
-
 				setAccountExternalReferenceCode(
 					() -> {
 						AccountEntry accountEntry =
@@ -81,6 +63,19 @@ public class AccountChannelShippingOptionDTOConverter
 
 						return null;
 					});
+				setAccountId(
+					() ->
+						commerceShippingOptionAccountEntryRel.
+							getAccountEntryId());
+				setActions(dtoConverterContext::getActions);
+				setChannelId(
+					() ->
+						commerceShippingOptionAccountEntryRel.
+							getCommerceChannelId());
+				setId(
+					() ->
+						commerceShippingOptionAccountEntryRel.
+							getCommerceShippingOptionAccountEntryRelId());
 				setShippingMethodId(
 					() -> {
 						CommerceChannel commerceChannel =
@@ -102,6 +97,10 @@ public class AccountChannelShippingOptionDTOConverter
 						return commerceShippingMethod.
 							getCommerceShippingMethodId();
 					});
+				setShippingMethodKey(
+					() ->
+						commerceShippingOptionAccountEntryRel.
+							getCommerceShippingMethodKey());
 				setShippingOptionId(
 					() -> {
 						CommerceShippingFixedOption
@@ -120,6 +119,10 @@ public class AccountChannelShippingOptionDTOConverter
 						return commerceShippingFixedOption.
 							getCommerceShippingFixedOptionId();
 					});
+				setShippingOptionKey(
+					() ->
+						commerceShippingOptionAccountEntryRel.
+							getCommerceShippingOptionKey());
 			}
 		};
 	}
@@ -137,9 +140,5 @@ public class AccountChannelShippingOptionDTOConverter
 	@Reference
 	private CommerceShippingMethodLocalService
 		_commerceShippingMethodLocalService;
-
-	@Reference
-	private CommerceShippingOptionAccountEntryRelService
-		_commerceShippingOptionAccountEntryRelService;
 
 }

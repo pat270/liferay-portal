@@ -11,15 +11,6 @@
 CommerceInventoryWarehousesDisplayContext commerceInventoryWarehousesDisplayContext = (CommerceInventoryWarehousesDisplayContext)request.getAttribute(WebKeys.PORTLET_DISPLAY_CONTEXT);
 
 CommerceInventoryWarehouse commerceInventoryWarehouse = commerceInventoryWarehousesDisplayContext.getCommerceInventoryWarehouse();
-
-portletDisplay.setShowBackIcon(true);
-
-if (Validator.isNull(redirect)) {
-	portletDisplay.setURLBack(String.valueOf(renderResponse.createRenderURL()));
-}
-else {
-	portletDisplay.setURLBack(redirect);
-}
 %>
 
 <liferay-portlet:renderURL var="editCommerceInventoryWarehouseExternalReferenceCodeURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
@@ -32,7 +23,7 @@ else {
 	bean="<%= commerceInventoryWarehouse %>"
 	beanIdLabel="id"
 	externalReferenceCode="<%= commerceInventoryWarehouse.getExternalReferenceCode() %>"
-	externalReferenceCodeEditUrl="<%= editCommerceInventoryWarehouseExternalReferenceCodeURL %>"
+	externalReferenceCodeEditUrl="<%= commerceInventoryWarehousesDisplayContext.hasPermission() ? editCommerceInventoryWarehouseExternalReferenceCodeURL : null %>"
 	model="<%= CommerceInventoryWarehouse.class %>"
 	title="<%= commerceInventoryWarehouse.getName(locale) %>"
 />

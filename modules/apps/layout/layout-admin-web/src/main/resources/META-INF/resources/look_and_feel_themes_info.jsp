@@ -34,6 +34,7 @@ PluginPackage selPluginPackage = selTheme.getPluginPackage();
 	>
 		<clay:image-card
 			cssClass="c-mb-0"
+			imageAlt=""
 			imageSrc='<%= themeDisplay.getCDNBaseURL() + HtmlUtil.escapeAttribute(selTheme.getStaticResourcePath()) + HtmlUtil.escapeAttribute(selTheme.getImagesPath()) + "/thumbnail.png" %>'
 			subtitle='<%= ((selPluginPackage != null) && Validator.isNotNull(selPluginPackage.getAuthor())) ? HtmlUtil.escape(selPluginPackage.getAuthor()) : "" %>'
 			title='<%= Validator.isNotNull(selTheme.getName()) ? HtmlUtil.escapeAttribute(selTheme.getName()) : "" %>'
@@ -72,7 +73,7 @@ PluginPackage selPluginPackage = selTheme.getPluginPackage();
 		<clay:button
 			disabled="true"
 			displayType="secondary"
-			label='<%= LanguageUtil.get(request, "change-current-theme") %>'
+			label="change-current-theme"
 		/>
 	</clay:col>
 </clay:row>

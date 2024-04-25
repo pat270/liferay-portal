@@ -12,8 +12,8 @@ dependencies {
 	compileOnly project(":apps:frontend-taglib:frontend-taglib-clay")
 	compileOnly project(":apps:frontend-taglib:frontend-taglib-form-navigator")
 	compileOnly project(":apps:frontend-taglib:frontend-taglib-react")
+	compileOnly project(":apps:learn:learn-api")
 	compileOnly project(":apps:portal-url-builder:portal-url-builder-api")
-	compileOnly project(":apps:static:osgi:osgi-util")
 	compileOnly project(":apps:users-admin:users-admin-api")
 	compileOnly project(":core:osgi-service-tracker-collections")
 	compileOnly project(":core:petra:petra-concurrent")
@@ -22,7 +22,7 @@ dependencies {
 	compileOnly project(":core:petra:petra-sql-dsl-api")
 	compileOnly project(":core:petra:petra-string")
 
-	testCompile group: "com.liferay.portal", name: "com.liferay.portal.impl", version: "default"
-	testCompile project(":apps:frontend-js:frontend-js-web")
-	testCompile project(":core:petra:petra-reflect")
+	testImplementation group: "com.liferay.portal", name: "com.liferay.portal.impl", version: "default"
+	testImplementation project(":apps:frontend-js:frontend-js-web")
+	testImplementation project(":core:petra:petra-reflect")
 }

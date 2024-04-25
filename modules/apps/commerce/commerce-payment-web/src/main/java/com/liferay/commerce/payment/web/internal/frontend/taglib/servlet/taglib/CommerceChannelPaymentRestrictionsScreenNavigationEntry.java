@@ -5,6 +5,7 @@
 
 package com.liferay.commerce.payment.web.internal.frontend.taglib.servlet.taglib;
 
+import com.liferay.commerce.payment.integration.CommercePaymentIntegrationRegistry;
 import com.liferay.commerce.payment.method.CommercePaymentMethodRegistry;
 import com.liferay.commerce.payment.service.CommercePaymentMethodGroupRelService;
 import com.liferay.commerce.payment.web.internal.display.context.CommercePaymentMethodGroupRelsDisplayContext;
@@ -12,7 +13,6 @@ import com.liferay.commerce.product.model.CommerceChannel;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.frontend.taglib.servlet.taglib.ScreenNavigationEntry;
 import com.liferay.frontend.taglib.servlet.taglib.util.JSPRenderer;
-import com.liferay.portal.kernel.service.CountryService;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.io.IOException;
@@ -51,8 +51,8 @@ public class CommerceChannelPaymentRestrictionsScreenNavigationEntry
 				new CommercePaymentMethodGroupRelsDisplayContext(
 					_commerceChannelLocalService,
 					_commercePaymentMethodGroupRelService,
-					_commercePaymentMethodRegistry, _countryService,
-					httpServletRequest);
+					_commercePaymentMethodRegistry,
+					_commercePaymentIntegrationRegistry, httpServletRequest);
 
 		httpServletRequest.setAttribute(
 			WebKeys.PORTLET_DISPLAY_CONTEXT,
@@ -67,14 +67,15 @@ public class CommerceChannelPaymentRestrictionsScreenNavigationEntry
 	private CommerceChannelLocalService _commerceChannelLocalService;
 
 	@Reference
+	private CommercePaymentIntegrationRegistry
+		_commercePaymentIntegrationRegistry;
+
+	@Reference
 	private CommercePaymentMethodGroupRelService
 		_commercePaymentMethodGroupRelService;
 
 	@Reference
 	private CommercePaymentMethodRegistry _commercePaymentMethodRegistry;
-
-	@Reference
-	private CountryService _countryService;
 
 	@Reference
 	private JSPRenderer _jspRenderer;

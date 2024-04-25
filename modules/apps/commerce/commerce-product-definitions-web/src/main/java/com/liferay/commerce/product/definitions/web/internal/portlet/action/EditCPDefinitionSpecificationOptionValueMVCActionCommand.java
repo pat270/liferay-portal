@@ -6,6 +6,7 @@
 package com.liferay.commerce.product.definitions.web.internal.portlet.action;
 
 import com.liferay.commerce.product.constants.CPPortletKeys;
+import com.liferay.commerce.product.exception.CPDefinitionSpecificationOptionValueKeyException;
 import com.liferay.commerce.product.exception.NoSuchCPDefinitionSpecificationOptionValueException;
 import com.liferay.commerce.product.model.CPDefinitionSpecificationOptionValue;
 import com.liferay.commerce.product.model.CPSpecificationOption;
@@ -73,6 +74,19 @@ public class EditCPDefinitionSpecificationOptionValueMVCActionCommand
 
 				actionResponse.setRenderParameter("mvcPath", "/error.jsp");
 			}
+			else if (exception instanceof
+						CPDefinitionSpecificationOptionValueKeyException) {
+
+				hideDefaultErrorMessage(actionRequest);
+				hideDefaultSuccessMessage(actionRequest);
+
+				SessionErrors.add(actionRequest, exception.getClass());
+
+				String redirect = ParamUtil.getString(
+					actionRequest, "redirect");
+
+				sendRedirect(actionRequest, actionResponse, redirect);
+			}
 			else {
 				throw exception;
 			}
@@ -114,7 +128,7 @@ public class EditCPDefinitionSpecificationOptionValueMVCActionCommand
 			_cpDefinitionSpecificationOptionValueService.
 				addCPDefinitionSpecificationOptionValue(
 					cpDefinitionId, cpSpecificationOptionId,
-					cpSpecificationOption.getCPOptionCategoryId(), null, i,
+					cpSpecificationOption.getCPOptionCategoryId(), i, null,
 					serviceContext);
 		}
 	}
@@ -160,9 +174,10 @@ public class EditCPDefinitionSpecificationOptionValueMVCActionCommand
 
 		long cpOptionCategoryId = ParamUtil.getLong(
 			actionRequest, "CPOptionCategoryId");
+		String key = ParamUtil.getString(actionRequest, "key");
+		double priority = ParamUtil.getDouble(actionRequest, "priority");
 		Map<Locale, String> valueMap = _localization.getLocalizationMap(
 			actionRequest, "value");
-		double priority = ParamUtil.getDouble(actionRequest, "priority");
 
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(
 			CPDefinitionSpecificationOptionValue.class.getName(),
@@ -170,8 +185,8 @@ public class EditCPDefinitionSpecificationOptionValueMVCActionCommand
 
 		return _cpDefinitionSpecificationOptionValueService.
 			updateCPDefinitionSpecificationOptionValue(
-				cpDefinitionSpecificationOptionValueId, cpOptionCategoryId,
-				valueMap, priority, serviceContext);
+				cpDefinitionSpecificationOptionValueId, cpOptionCategoryId, key,
+				priority, valueMap, serviceContext);
 	}
 
 	@Reference

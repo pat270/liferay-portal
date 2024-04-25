@@ -4,10 +4,47 @@
  */
 
 import ClayLabel from '@clayui/label';
+import ClayLayout from '@clayui/layout';
 import ClayLink from '@clayui/link';
 import {ManagementToolbar} from 'frontend-js-components-web';
 import {navigate, sub} from 'frontend-js-web';
 import React, {useEffect, useRef} from 'react';
+
+/**
+ * @see {ManagementToolbarTag._getResultsLanguageKey} It should have the exact
+ * 	same logic than the corresponding Java method.
+ */
+function getResultText(searchValue, itemTotal, filterTotal) {
+	if (!searchValue) {
+		if (filterTotal) {
+			if (itemTotal === 1) {
+				return Liferay.Language.get('x-result-found-with-filters');
+			}
+
+			return Liferay.Language.get('x-results-found-with-filters');
+		}
+
+		if (itemTotal === 1) {
+			return Liferay.Language.get('x-result-found');
+		}
+
+		return Liferay.Language.get('x-results-found');
+	}
+
+	if (filterTotal) {
+		if (itemTotal === 1) {
+			return Liferay.Language.get('x-result-found-for-x-with-filters');
+		}
+
+		return Liferay.Language.get('x-results-found-for-x-with-filters');
+	}
+
+	if (itemTotal === 1) {
+		return Liferay.Language.get('x-result-found-for-x');
+	}
+
+	return Liferay.Language.get('x-results-found-for-x');
+}
 
 const ResultsBar = ({
 	clearResultsURL,
@@ -15,6 +52,7 @@ const ResultsBar = ({
 	itemsTotal,
 	searchContainerId,
 	searchValue,
+	title,
 }) => {
 	const resultsBarRef = useRef();
 
@@ -40,30 +78,27 @@ const ResultsBar = ({
 				>
 					<span
 						aria-label={sub(
-							itemsTotal === 1
-								? Liferay.Language.get('x-result-for-x')
-								: Liferay.Language.get('x-results-for-x'),
-							[
+							getResultText(
 								itemsTotal,
-								filterLabelItems
-									?.map((item) => item.label)
-									.join(', '),
-							]
+								filterLabelItems?.length || 0
+							),
+							itemsTotal,
+							`"${searchValue}"`
 						)}
 						className="component-text text-truncate-inline"
+						data-qa-id="searchResultText"
 						ref={resultsBarRef}
 						tabIndex={-1}
 					>
 						<span className="text-truncate">
 							{sub(
-								itemsTotal === 1
-									? Liferay.Language.get('x-result-for')
-									: Liferay.Language.get('x-results-for'),
-								itemsTotal
-							)}
-
-							{searchValue && (
-								<strong>{` "${searchValue}"`}</strong>
+								getResultText(
+									searchValue,
+									itemsTotal,
+									filterLabelItems?.length || 0
+								),
+								itemsTotal,
+								<strong>{`"${searchValue}"`}</strong>
 							)}
 						</span>
 					</span>
@@ -116,11 +151,27 @@ const ResultsBar = ({
 
 							navigate(clearResultsURL);
 						}}
+						onKeyPress={(event) => {
+							if (event.key === 'Enter') {
+								event.preventDefault();
+
+								searchContainerRef.current?.fire('clearFilter');
+
+								navigate(clearResultsURL);
+							}
+						}}
+						tabIndex={0}
 					>
 						{Liferay.Language.get('clear')}
 					</ClayLink>
 				</ManagementToolbar.ResultsBarItem>
 			</ManagementToolbar.ResultsBar>
+
+			{Boolean(title) && (
+				<ClayLayout.ContainerFluid className="c-mt-4" size="xl">
+					<h3>{title}</h3>
+				</ClayLayout.ContainerFluid>
+			)}
 		</>
 	);
 };

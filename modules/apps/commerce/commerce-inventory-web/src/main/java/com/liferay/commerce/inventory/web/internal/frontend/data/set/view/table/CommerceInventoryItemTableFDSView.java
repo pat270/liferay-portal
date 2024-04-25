@@ -37,6 +37,8 @@ public class CommerceInventoryItemTableFDSView extends BaseTableFDSView {
 			fdsTableSchemaField -> fdsTableSchemaField.setContentRenderer(
 				"actionLink")
 		).add(
+			"unitOfMeasureKey", "uom"
+		).add(
 			"stock", "on-hand"
 		).add(
 			"available", "available"

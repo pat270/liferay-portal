@@ -20,8 +20,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -188,7 +186,7 @@ public abstract class BaseRoleResourceTestCase {
 
 		Page<Role> page = roleResource.getProcessRolesPage(processId, null);
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if (irrelevantProcessId != null) {
 			Role irrelevantRole = testGetProcessRolesPage_addRole(
@@ -196,10 +194,9 @@ public abstract class BaseRoleResourceTestCase {
 
 			page = roleResource.getProcessRolesPage(irrelevantProcessId, null);
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantRole), (List<Role>)page.getItems());
+			assertContains(irrelevantRole, (List<Role>)page.getItems());
 			assertValid(
 				page,
 				testGetProcessRolesPage_getExpectedActions(
@@ -212,10 +209,10 @@ public abstract class BaseRoleResourceTestCase {
 
 		page = roleResource.getProcessRolesPage(processId, null);
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(role1, role2), (List<Role>)page.getItems());
+		assertContains(role1, (List<Role>)page.getItems());
+		assertContains(role2, (List<Role>)page.getItems());
 		assertValid(
 			page, testGetProcessRolesPage_getExpectedActions(processId));
 	}
@@ -497,6 +494,10 @@ public abstract class BaseRoleResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -675,9 +676,9 @@ public abstract class BaseRoleResourceTestCase {
 	}
 
 	protected RoleResource roleResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

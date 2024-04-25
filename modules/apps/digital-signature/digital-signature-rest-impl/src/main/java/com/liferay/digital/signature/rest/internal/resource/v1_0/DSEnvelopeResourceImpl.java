@@ -15,6 +15,8 @@ import com.liferay.document.library.kernel.service.DLFileEntryLocalService;
 import com.liferay.portal.kernel.util.Base64;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.vulcan.pagination.Page;
+import com.liferay.portal.vulcan.pagination.Pagination;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -36,6 +38,20 @@ public class DSEnvelopeResourceImpl extends BaseDSEnvelopeResourceImpl {
 		return DSEnvelopeUtil.toDSEnvelope(
 			_dsEnvelopeManager.getDSEnvelope(
 				contextCompany.getCompanyId(), siteId, dsEnvelopeId));
+	}
+
+	@Override
+	public Page<DSEnvelope> getSiteDSEnvelopesPage(
+		Long siteId, String fromDate, String keywords, String order,
+		String status, Pagination pagination) {
+
+		return Page.of(
+			transform(
+				_dsEnvelopeManager.getDSEnvelopesPage(
+					contextCompany.getCompanyId(), siteId, fromDate, keywords,
+					order, pagination, status
+				).getItems(),
+				dsEnvelope -> DSEnvelopeUtil.toDSEnvelope(dsEnvelope)));
 	}
 
 	@Override
@@ -68,7 +84,7 @@ public class DSEnvelopeResourceImpl extends BaseDSEnvelopeResourceImpl {
 			}
 
 			document.setData(
-				Base64.encode(
+				() -> Base64.encode(
 					FileUtil.getBytes(dlFileEntry.getContentStream())));
 		}
 

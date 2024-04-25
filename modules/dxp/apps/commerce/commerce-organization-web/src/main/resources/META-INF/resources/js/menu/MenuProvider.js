@@ -19,6 +19,7 @@ const CONTENT = {
 export default function MenuProvider({
 	alignElementRef,
 	data: propData,
+	namespace,
 	parentData,
 }) {
 	const [active, setActive] = useState(false);
@@ -49,13 +50,14 @@ export default function MenuProvider({
 		<ClayDropDown.Menu
 			active={active}
 			alignElementRef={alignElementRef}
-			onSetActive={closeMenu}
+			onActiveChange={closeMenu}
 			ref={menuRef}
 		>
 			{MenuContent && (
 				<MenuContent
 					closeMenu={closeMenu}
 					data={data}
+					namespace={namespace}
 					parentData={parentData}
 				/>
 			)}

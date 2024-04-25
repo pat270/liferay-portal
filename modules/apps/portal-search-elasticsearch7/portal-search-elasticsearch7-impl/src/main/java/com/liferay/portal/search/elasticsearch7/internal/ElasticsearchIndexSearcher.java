@@ -5,12 +5,15 @@
 
 package com.liferay.portal.search.elasticsearch7.internal;
 
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.search.SearchPaginationUtil;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.search.BaseIndexSearcher;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Hits;
@@ -29,9 +32,9 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.search.aggregation.Aggregation;
 import com.liferay.portal.search.aggregation.pipeline.PipelineAggregation;
 import com.liferay.portal.search.constants.SearchContextAttributes;
+import com.liferay.portal.search.elasticsearch7.configuration.DeepPaginationConfiguration;
 import com.liferay.portal.search.elasticsearch7.constants.ElasticsearchSearchContextAttributes;
 import com.liferay.portal.search.elasticsearch7.internal.configuration.ElasticsearchConfigurationWrapper;
-import com.liferay.portal.search.elasticsearch7.internal.deep.pagination.configuration.DeepPaginationConfigurationWrapper;
 import com.liferay.portal.search.engine.adapter.SearchEngineAdapter;
 import com.liferay.portal.search.engine.adapter.search.BaseSearchRequest;
 import com.liferay.portal.search.engine.adapter.search.BaseSearchResponse;
@@ -129,8 +132,7 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 			Hits hits = null;
 
 			if (FeatureFlagManagerUtil.isEnabled("LPS-172416") &&
-				_deepPaginationConfigurationWrapper.isEnableDeepPagination(
-					searchContext.getCompanyId())) {
+				_isEnableDeepPagination(searchContext.getCompanyId())) {
 
 				hits = _searchWithDeepPagination(
 					query, searchContext, searchRequest, searchResponseBuilder,
@@ -238,6 +240,7 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 			searchRequest.isBasicFacetSelection());
 
 		searchSearchRequest.putAllFacets(searchContext.getFacets());
+		searchSearchRequest.setCollapse(searchRequest.getCollapse());
 		searchSearchRequest.setFetchSource(searchRequest.getFetchSource());
 		searchSearchRequest.setFetchSourceExcludes(
 			searchRequest.getFetchSourceExcludes());
@@ -351,8 +354,8 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 			openPointInTimeResponse.pitId());
 
 		pointInTime.setKeepAlive(
-			_deepPaginationConfigurationWrapper.
-				getPointInTimeKeepAliveSeconds());
+			_validatePointInTimeKeepAliveSeconds(
+				_getPointInTimeKeepAliveSeconds(searchContext.getCompanyId())));
 
 		return pointInTime;
 	}
@@ -382,6 +385,26 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 		searchSearchRequest.setSorts(searchRequest.getSorts());
 
 		return searchSearchRequest;
+	}
+
+	private DeepPaginationConfiguration _getDeepPaginationConfiguration(
+		long companyId) {
+
+		try {
+			DeepPaginationConfiguration deepPaginationConfiguration =
+				_configurationProvider.getSystemConfiguration(
+					DeepPaginationConfiguration.class);
+
+			if (!deepPaginationConfiguration.enableDeepPagination()) {
+				return _configurationProvider.getCompanyConfiguration(
+					DeepPaginationConfiguration.class, companyId);
+			}
+
+			return deepPaginationConfiguration;
+		}
+		catch (ConfigurationException configurationException) {
+			return ReflectionUtil.throwException(configurationException);
+		}
 	}
 
 	private String _getExceptionMessage(RuntimeException runtimeException) {
@@ -440,6 +463,13 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 		return searchHitList.get(searchHitList.size() - 1);
 	}
 
+	private int _getPointInTimeKeepAliveSeconds(long companyId) {
+		DeepPaginationConfiguration deepPaginationConfiguration =
+			_getDeepPaginationConfiguration(companyId);
+
+		return deepPaginationConfiguration.pointInTimeKeepAliveSeconds();
+	}
+
 	private SearchRequest _getSearchRequest(SearchContext searchContext) {
 		SearchRequestBuilder searchRequestBuilder = _getSearchRequestBuilder(
 			searchContext);
@@ -457,6 +487,13 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 		SearchContext searchContext) {
 
 		return _searchResponseBuilderFactory.builder(searchContext);
+	}
+
+	private boolean _isEnableDeepPagination(long companyId) {
+		DeepPaginationConfiguration deepPaginationConfiguration =
+			_getDeepPaginationConfiguration(companyId);
+
+		return deepPaginationConfiguration.enableDeepPagination();
 	}
 
 	private void _populateResponse(
@@ -527,6 +564,21 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 		while (true) {
 			SearchSearchRequest searchSearchRequest = createSearchSearchRequest(
 				searchRequest, searchContext, query);
+
+			if (_elasticsearchConfigurationWrapper.indexMaxResultWindow() <=
+					start) {
+
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						StringBundler.concat(
+							"Skip search because index max result window ",
+							_elasticsearchConfigurationWrapper.
+								indexMaxResultWindow(),
+							" is less than or equal to ", start));
+				}
+
+				return new HitsImpl();
+			}
 
 			searchSearchRequest.setSize(
 				Math.min(
@@ -710,15 +762,26 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 		return lastSearchHit;
 	}
 
+	private int _validatePointInTimeKeepAliveSeconds(
+		int pointInTimeKeepAliveSeconds) {
+
+		if ((pointInTimeKeepAliveSeconds > 0) &&
+			(pointInTimeKeepAliveSeconds <= 60)) {
+
+			return pointInTimeKeepAliveSeconds;
+		}
+
+		return 60;
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		ElasticsearchIndexSearcher.class);
 
 	@Reference
-	private volatile DeepPaginationConfigurationWrapper
-		_deepPaginationConfigurationWrapper;
+	private ConfigurationProvider _configurationProvider;
 
 	@Reference
-	private volatile ElasticsearchConfigurationWrapper
+	private ElasticsearchConfigurationWrapper
 		_elasticsearchConfigurationWrapper;
 
 	@Reference

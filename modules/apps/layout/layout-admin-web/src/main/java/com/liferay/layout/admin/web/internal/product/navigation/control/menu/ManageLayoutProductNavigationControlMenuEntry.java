@@ -21,7 +21,7 @@ import com.liferay.portal.kernel.service.permission.LayoutPermission;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.kernel.util.Html;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -113,11 +113,13 @@ public class ManageLayoutProductNavigationControlMenuEntry
 			"groupId", String.valueOf(layout.getGroupId()));
 		editPageURL.setParameter("selPlid", String.valueOf(layout.getPlid()));
 		editPageURL.setParameter(
+			"backURLTitle", layout.getName(themeDisplay.getLocale()));
+		editPageURL.setParameter(
 			"privateLayout", String.valueOf(layout.isPrivateLayout()));
 
 		Map<String, String> values = HashMapBuilder.put(
 			"configurePage",
-			_html.escape(
+			HtmlUtil.escape(
 				_language.get(themeDisplay.getLocale(), "configure-page"))
 		).put(
 			"editPageURL", editPageURL.toString()
@@ -218,7 +220,7 @@ public class ManageLayoutProductNavigationControlMenuEntry
 		if ((layout.getMasterLayoutPlid() > 0) ||
 			(layoutPageTemplateEntry == null) ||
 			(layoutPageTemplateEntry.getType() !=
-				LayoutPageTemplateEntryTypeConstants.TYPE_MASTER_LAYOUT)) {
+				LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT)) {
 
 			return false;
 		}
@@ -230,9 +232,6 @@ public class ManageLayoutProductNavigationControlMenuEntry
 		ManageLayoutProductNavigationControlMenuEntry.class,
 		"/META-INF/resources/control/menu" +
 			"/edit_layout_control_menu_entry_icon.tmpl");
-
-	@Reference
-	private Html _html;
 
 	@Reference
 	private Language _language;

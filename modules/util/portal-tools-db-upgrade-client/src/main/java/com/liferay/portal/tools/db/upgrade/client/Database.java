@@ -10,62 +10,56 @@ package com.liferay.portal.tools.db.upgrade.client;
  */
 public class Database {
 
-	public static Database getDB2Database() {
-		return new Database(
-			"com.ibm.db2.jcc.DB2Driver", "jdbc:db2://", "localhost", 50000,
-			"lportal",
-			":deferPrepares=false;fullyMaterializeInputStreams=true;" +
-				"fullyMaterializeLobData=true;progresssiveLocators=2;" +
-					"progressiveStreaming=2;");
-	}
+	public static Database getDatabase(String databaseType) {
+		if (databaseType.equals("db2")) {
+			return new Database(
+				"com.ibm.db2.jcc.DB2Driver", "jdbc:db2://", "localhost", 50000,
+				":deferPrepares=false;fullyMaterializeInputStreams=true;" +
+					"fullyMaterializeLobData=true;progresssiveLocators=2;" +
+						"progressiveStreaming=2;",
+				"lportal");
+		}
 
-	public static Database getMariaDBDatabase() {
-		return new Database(
-			"org.mariadb.jdbc.Driver", "jdbc:mariadb://", "localhost", 0,
-			"lportal",
-			"?useUnicode=true&characterEncoding=UTF-8" +
-				"&useFastDateParsing=false");
-	}
+		if (databaseType.equals("mariadb")) {
+			return new Database(
+				"org.mariadb.jdbc.Driver", "jdbc:mariadb://", "localhost", 0,
+				"?useUnicode=true&characterEncoding=UTF-8" +
+					"&useFastDateParsing=false",
+				"lportal");
+		}
 
-	public static Database getMySQLDatabase() {
-		return new Database(
-			"com.mysql.cj.jdbc.Driver", "jdbc:mysql://", "localhost", 0,
-			"lportal",
-			"?characterEncoding=UTF-8&dontTrackOpenResources=true" +
-				"&holdResultsOpenOverStatementClose=true&serverTimezone=GMT" +
-					"&useFastDateParsing=false&useUnicode=true");
-	}
+		if (databaseType.equals("mysql")) {
+			return new Database(
+				"com.mysql.cj.jdbc.Driver", "jdbc:mysql://", "localhost", 0,
+				"?characterEncoding=UTF-8&dontTrackOpenResources=true" +
+					"&holdResultsOpenOverStatementClose=true&serverTimezone=" +
+						"GMT&useFastDateParsing=false&useUnicode=true",
+				"lportal");
+		}
 
-	public static Database getOracleDataSource() {
-		return new Database(
-			"oracle.jdbc.OracleDriver", "jdbc:oracle:thin:@", "localhost", 1521,
-			"xe", "");
-	}
+		if (databaseType.equals("oracle")) {
+			return new Database(
+				"oracle.jdbc.OracleDriver", "jdbc:oracle:thin:@", "localhost",
+				1521, "", "xe");
+		}
 
-	public static Database getPostgreSQLDatabase() {
-		return new Database(
-			"org.postgresql.Driver", "jdbc:postgresql://", "localhost", 5432,
-			"lportal", "");
-	}
+		if (databaseType.equals("postgresql")) {
+			return new Database(
+				"org.postgresql.Driver", "jdbc:postgresql://", "localhost",
+				5432, "", "lportal");
+		}
 
-	public static Database getSQLServerDatabase() {
-		return new Database(
-			"com.microsoft.sqlserver.jdbc.SQLServerDriver", "jdbc:sqlserver://",
-			"localhost", 0, "lportal", "");
-	}
+		if (databaseType.equals("sqlserver")) {
+			return new Database(
+				"com.microsoft.sqlserver.jdbc.SQLServerDriver",
+				"jdbc:sqlserver://", "localhost", 0, "", "lportal");
+		}
 
-	public static Database getSybaseDatabase() {
-		return new Database(
-			"com.sybase.jdbc4.jdbc.SybDriver", "jdbc:sybase:Tds:", "localhost",
-			5000, "lportal", "");
+		return null;
 	}
 
 	public String getClassName() {
 		return _className;
-	}
-
-	public String getDatabaseName() {
-		return _databaseName;
 	}
 
 	public String getHost() {
@@ -80,6 +74,10 @@ public class Database {
 		return _protocol;
 	}
 
+	public String getSchemaName() {
+		return _schemaName;
+	}
+
 	public String getURL() {
 		StringBuilder sb = new StringBuilder();
 
@@ -92,7 +90,7 @@ public class Database {
 		}
 
 		if (_protocol.contains("sqlserver")) {
-			sb.append(";databaseName=");
+			sb.append(";databaseType=");
 		}
 		else if (_protocol.contains("oracle")) {
 			sb.append(":");
@@ -101,7 +99,7 @@ public class Database {
 			sb.append("/");
 		}
 
-		sb.append(_databaseName);
+		sb.append(_schemaName);
 		sb.append(_params);
 
 		return sb.toString();
@@ -109,10 +107,6 @@ public class Database {
 
 	public void setClassName(String className) {
 		_className = className;
-	}
-
-	public void setDatabaseName(String databaseName) {
-		_databaseName = databaseName;
 	}
 
 	public void setHost(String host) {
@@ -131,23 +125,27 @@ public class Database {
 		_protocol = protocol;
 	}
 
+	public void setSchemaName(String schemaName) {
+		_schemaName = schemaName;
+	}
+
 	private Database(
-		String className, String protocol, String host, int port,
-		String databaseName, String params) {
+		String className, String protocol, String host, int port, String params,
+		String schemaName) {
 
 		_className = className;
 		_protocol = protocol;
 		_host = host;
 		_port = port;
-		_databaseName = databaseName;
 		_params = params;
+		_schemaName = schemaName;
 	}
 
 	private String _className;
-	private String _databaseName;
 	private String _host;
 	private String _params;
 	private int _port;
 	private String _protocol;
+	private String _schemaName;
 
 }

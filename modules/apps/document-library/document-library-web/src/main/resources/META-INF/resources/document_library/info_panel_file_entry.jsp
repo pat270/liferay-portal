@@ -46,6 +46,13 @@ long assetClassPK = DLAssetHelperUtil.getAssetClassPK(fileEntry, fileVersion);
 				<aui:model-context bean="<%= fileVersion %>" model="<%= DLFileVersion.class %>" />
 
 				<aui:workflow-status model="<%= DLFileEntry.class %>" showIcon="<%= false %>" showLabel="<%= false %>" status="<%= fileVersion.getStatus() %>" />
+
+				<c:if test="<%= !fileVersion.isApproved() && dlViewFileVersionDisplayContext.hasApprovedVersion() %>">
+					<clay:label
+						displayType="success"
+						label="approved"
+					/>
+				</c:if>
 			</clay:content-section>
 		</clay:content-col>
 
@@ -106,7 +113,7 @@ long assetClassPK = DLAssetHelperUtil.getAssetClassPK(fileEntry, fileVersion);
 					%>
 
 					<clay:content-col>
-						<liferay-ui:user-portrait
+						<liferay-user:user-portrait
 							user="<%= owner %>"
 						/>
 					</clay:content-col>
@@ -140,7 +147,7 @@ long assetClassPK = DLAssetHelperUtil.getAssetClassPK(fileEntry, fileVersion);
 
 									<c:choose>
 										<c:when test="<%= conversions.length > 0 %>">
-											<div class="btn-group-item" data-analytics-file-entry-id="<%= String.valueOf(fileEntry.getFileEntryId()) %>" data-analytics-file-entry-title="<%= String.valueOf(fileEntry.getTitle()) %>" data-analytics-file-entry-version="<%= String.valueOf(fileEntry.getVersion()) %>">
+											<div class="btn-group-item" data-analytics-file-entry-id="<%= String.valueOf(fileEntry.getFileEntryId()) %>" data-analytics-file-entry-title="<%= HtmlUtil.escapeAttribute(String.valueOf(fileEntry.getTitle())) %>" data-analytics-file-entry-version="<%= String.valueOf(fileEntry.getVersion()) %>">
 												<clay:dropdown-menu
 													dropdownItems='<%=
 														new JSPDropdownItemList(pageContext) {
@@ -206,7 +213,7 @@ long assetClassPK = DLAssetHelperUtil.getAssetClassPK(fileEntry, fileVersion);
 									</c:choose>
 								</c:when>
 								<c:otherwise>
-									<div class="btn-group-item" data-analytics-file-entry-id="<%= String.valueOf(fileEntry.getFileEntryId()) %>" data-analytics-file-entry-title="<%= String.valueOf(fileEntry.getTitle()) %>" data-analytics-file-entry-version="<%= String.valueOf(fileEntry.getVersion()) %>">
+									<div class="btn-group-item" data-analytics-file-entry-id="<%= String.valueOf(fileEntry.getFileEntryId()) %>" data-analytics-file-entry-title="<%= HtmlUtil.escapeAttribute(String.valueOf(fileEntry.getTitle())) %>" data-analytics-file-entry-version="<%= String.valueOf(fileEntry.getVersion()) %>">
 										<clay:link
 											displayType="primary"
 											href="<%= DLURLHelperUtil.getDownloadURL(fileEntry, fileVersion, themeDisplay, StringPool.BLANK, false, true) %>"
@@ -346,13 +353,13 @@ long assetClassPK = DLAssetHelperUtil.getAssetClassPK(fileEntry, fileVersion);
 					<liferay-ui:message key="modified" />
 				</dt>
 				<dd class="sidebar-dd">
-					<liferay-ui:message arguments="<%= new Object[] {dateFormatDateTime.format(fileVersion.getModifiedDate()), HtmlUtil.escape(fileVersion.getStatusByUserName())} %>" key="x-by-x" translateArguments="<%= false %>" />
+					<liferay-ui:message arguments="<%= new Object[] {dateTimeFormat.format(fileVersion.getModifiedDate()), HtmlUtil.escape(fileVersion.getStatusByUserName())} %>" key="x-by-x" translateArguments="<%= false %>" />
 				</dd>
 				<dt class="sidebar-dt">
 					<liferay-ui:message key="created" />
 				</dt>
 				<dd class="sidebar-dd">
-					<liferay-ui:message arguments="<%= new Object[] {dateFormatDateTime.format(fileEntry.getCreateDate()), HtmlUtil.escape(fileEntry.getUserName())} %>" key="x-by-x" translateArguments="<%= false %>" />
+					<liferay-ui:message arguments="<%= new Object[] {dateTimeFormat.format(fileEntry.getCreateDate()), HtmlUtil.escape(fileEntry.getUserName())} %>" key="x-by-x" translateArguments="<%= false %>" />
 				</dd>
 				<dt class="sidebar-dt">
 					<liferay-ui:message key="expiration-date" />
@@ -360,7 +367,7 @@ long assetClassPK = DLAssetHelperUtil.getAssetClassPK(fileEntry, fileVersion);
 				<dd class="sidebar-dd">
 					<c:choose>
 						<c:when test="<%= fileVersion.getExpirationDate() != null %>">
-							<liferay-ui:message arguments="<%= new Object[] {dateFormatDateTime.format(fileVersion.getExpirationDate()), HtmlUtil.escape(fileVersion.getUserName())} %>" key="x-by-x" translateArguments="<%= false %>" />
+							<liferay-ui:message arguments="<%= new Object[] {dateTimeFormat.format(fileVersion.getExpirationDate()), HtmlUtil.escape(fileVersion.getUserName())} %>" key="x-by-x" translateArguments="<%= false %>" />
 						</c:when>
 						<c:otherwise>
 							<liferay-ui:message key="never-expire" />
@@ -373,7 +380,7 @@ long assetClassPK = DLAssetHelperUtil.getAssetClassPK(fileEntry, fileVersion);
 				<dd class="sidebar-dd">
 					<c:choose>
 						<c:when test="<%= fileVersion.getReviewDate() != null %>">
-							<liferay-ui:message arguments="<%= new Object[] {dateFormatDateTime.format(fileVersion.getReviewDate()), HtmlUtil.escape(fileEntry.getUserName())} %>" key="x-by-x" translateArguments="<%= false %>" />
+							<liferay-ui:message arguments="<%= new Object[] {dateTimeFormat.format(fileVersion.getReviewDate()), HtmlUtil.escape(fileEntry.getUserName())} %>" key="x-by-x" translateArguments="<%= false %>" />
 						</c:when>
 						<c:otherwise>
 							<liferay-ui:message key="never-review" />
@@ -451,12 +458,7 @@ long assetClassPK = DLAssetHelperUtil.getAssetClassPK(fileEntry, fileVersion);
 				/>
 			</c:if>
 
-			<liferay-ui:panel-container
-				cssClass="metadata-panel-container panel-group-flush panel-group-sm"
-				extended="<%= true %>"
-				markupView="lexicon"
-				persistState="<%= true %>"
-			>
+			<clay:panel-group>
 				<c:if test="<%= dlViewFileVersionDisplayContext.getDDMStructuresCount() > 0 %>">
 
 					<%
@@ -472,24 +474,19 @@ long assetClassPK = DLAssetHelperUtil.getAssetClassPK(fileEntry, fileVersion);
 					%>
 
 							<c:if test="<%= ddmFormValues != null %>">
-								<liferay-ui:panel
-									collapsible="<%= true %>"
-									cssClass="metadata"
-									defaultState="closed"
-									extended="<%= true %>"
-									id='<%= "documentLibraryMetadataPanel_" + ddmStructure.getStructureId() + StringPool.UNDERLINE + fileEntry.getFileEntryId() %>'
-									markupView="lexicon"
-									persistState="<%= true %>"
-									title="<%= HtmlUtil.escape(ddmStructure.getName(locale)) %>"
+								<clay:panel
+									displayTitle="<%= HtmlUtil.escape(ddmStructure.getName(locale)) %>"
 								>
-									<liferay-data-engine:data-layout-renderer
-										containerId='<%= liferayPortletResponse.getNamespace() + "dataEngineLayoutRenderer" + ddmStructure.getStructureId() %>'
-										dataDefinitionId="<%= ddmStructure.getStructureId() %>"
-										dataRecordValues="<%= DataRecordValuesUtil.getDataRecordValues(ddmFormValues, ddmStructure) %>"
-										namespace="<%= liferayPortletResponse.getNamespace() + ddmStructure.getStructureId() + StringPool.UNDERLINE %>"
-										readOnly="<%= true %>"
-									/>
-								</liferay-ui:panel>
+									<div class="panel-body">
+										<liferay-data-engine:data-layout-renderer
+											containerId='<%= liferayPortletResponse.getNamespace() + "dataEngineLayoutRenderer" + ddmStructure.getStructureId() %>'
+											dataDefinitionId="<%= ddmStructure.getStructureId() %>"
+											dataRecordValues="<%= DataRecordValuesUtil.getDataRecordValues(ddmFormValues, ddmStructure) %>"
+											namespace="<%= liferayPortletResponse.getNamespace() + ddmStructure.getStructureId() + StringPool.UNDERLINE %>"
+											readOnly="<%= true %>"
+										/>
+									</div>
+								</clay:panel>
 							</c:if>
 
 					<%
@@ -506,22 +503,18 @@ long assetClassPK = DLAssetHelperUtil.getAssetClassPK(fileEntry, fileVersion);
 					classPK="<%= fileVersion.getFileVersionId() %>"
 					editable="<%= false %>"
 				>
-					<liferay-ui:panel
-						collapsible="<%= true %>"
-						cssClass="lfr-custom-fields"
-						defaultState="closed"
-						id="documentLibraryCustomFieldsPanel"
-						markupView="lexicon"
-						persistState="<%= true %>"
-						title="custom-fields"
+					<clay:panel
+						displayTitle='<%= LanguageUtil.get(request, "custom-fields") %>'
 					>
-						<liferay-expando:custom-attribute-list
-							className="<%= DLFileEntryConstants.getClassName() %>"
-							classPK="<%= fileVersion.getFileVersionId() %>"
-							editable="<%= false %>"
-							label="<%= true %>"
-						/>
-					</liferay-ui:panel>
+						<div class="panel-body">
+							<liferay-expando:custom-attribute-list
+								className="<%= DLFileEntryConstants.getClassName() %>"
+								classPK="<%= fileVersion.getFileVersionId() %>"
+								editable="<%= false %>"
+								label="<%= true %>"
+							/>
+						</div>
+					</clay:panel>
 				</liferay-expando:custom-attributes-available>
 
 				<%
@@ -539,26 +532,22 @@ long assetClassPK = DLAssetHelperUtil.getAssetClassPK(fileEntry, fileVersion);
 				%>
 
 						<c:if test="<%= ddmFormValues != null %>">
-							<liferay-ui:panel
-								collapsible="<%= true %>"
-								cssClass="lfr-asset-metadata panel-unstyled"
-								defaultState="closed"
-								id='<%= "documentLibraryMetadataPanel_" + ddmStructure.getStructureId() + StringPool.UNDERLINE + fileEntry.getFileEntryId() %>'
-								markupView="lexicon"
-								persistState="<%= true %>"
-								title='<%= "metadata." + ddmStructure.getStructureKey() %>'
+							<clay:panel
+								displayTitle='<%= LanguageUtil.get(request, "metadata." + ddmStructure.getStructureKey()) %>'
 							>
-								<liferay-ddm:html
-									classNameId="<%= PortalUtil.getClassNameId(com.liferay.dynamic.data.mapping.model.DDMStructure.class) %>"
-									classPK="<%= ddmStructure.getPrimaryKey() %>"
-									ddmFormValues="<%= ddmFormValues %>"
-									fieldsNamespace="<%= String.valueOf(ddmStructure.getPrimaryKey()) %>"
-									groupId="<%= fileVersion.getGroupId() %>"
-									readOnly="<%= true %>"
-									requestedLocale="<%= ddmFormValues.getDefaultLocale() %>"
-									showEmptyFieldLabel="<%= false %>"
-								/>
-							</liferay-ui:panel>
+								<div class="panel-body">
+									<liferay-ddm:html
+										classNameId="<%= PortalUtil.getClassNameId(com.liferay.dynamic.data.mapping.model.DDMStructure.class) %>"
+										classPK="<%= ddmStructure.getPrimaryKey() %>"
+										ddmFormValues="<%= ddmFormValues %>"
+										fieldsNamespace="<%= String.valueOf(ddmStructure.getPrimaryKey()) %>"
+										groupId="<%= fileVersion.getGroupId() %>"
+										readOnly="<%= true %>"
+										requestedLocale="<%= ddmFormValues.getDefaultLocale() %>"
+										showEmptyFieldLabel="<%= false %>"
+									/>
+								</div>
+							</clay:panel>
 						</c:if>
 
 				<%
@@ -568,7 +557,7 @@ long assetClassPK = DLAssetHelperUtil.getAssetClassPK(fileEntry, fileVersion);
 				}
 				%>
 
-			</liferay-ui:panel-container>
+			</clay:panel-group>
 		</liferay-ui:section>
 
 		<c:if test="<%= dlViewFileVersionDisplayContext.isVersionInfoVisible() %>">
@@ -585,5 +574,5 @@ long assetClassPK = DLAssetHelperUtil.getAssetClassPK(fileEntry, fileVersion);
 </div>
 
 <liferay-frontend:component
-	module="document_library/js/InfoPanel.es"
+	module="{InfoPanel} from document-library-web"
 />

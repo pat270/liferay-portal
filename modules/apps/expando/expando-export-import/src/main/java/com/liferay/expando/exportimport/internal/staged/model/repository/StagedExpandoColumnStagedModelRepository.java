@@ -30,9 +30,11 @@ import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.ClassName;
-import com.liferay.portal.kernel.model.adapter.ModelAdapterUtil;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.model.adapter.util.ModelAdapterUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -89,10 +91,11 @@ public class StagedExpandoColumnStagedModelRepository
 		JSONObject extraDataJSONObject = _jsonFactory.createJSONObject(
 			extraData);
 
+		Group group = _groupLocalService.getGroup(groupId);
+
 		List<StagedExpandoColumn> stagedExpandoColumns =
 			fetchStagedModelsByUuidAndCompanyId(
-				extraDataJSONObject.getString("uuid"),
-				extraDataJSONObject.getInt("companyId"));
+				extraDataJSONObject.getString("uuid"), group.getCompanyId());
 
 		if (ListUtil.isEmpty(stagedExpandoColumns)) {
 			return;
@@ -315,6 +318,9 @@ public class StagedExpandoColumnStagedModelRepository
 
 	@Reference
 	private ExportImportHelper _exportImportHelper;
+
+	@Reference
+	private GroupLocalService _groupLocalService;
 
 	@Reference
 	private JSONFactory _jsonFactory;

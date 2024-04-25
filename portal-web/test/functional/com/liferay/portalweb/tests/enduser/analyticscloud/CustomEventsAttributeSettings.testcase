@@ -63,10 +63,6 @@ definition {
 	tearDown {
 		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
 
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
-		//ACUtils.tearDownAC();
-
 		ACUtils.tearDownDXP();
 
 		if (${testLiferayVirtualInstance} == "true") {
@@ -75,6 +71,8 @@ definition {
 		else {
 			JSONGroup.deleteGroupByName(groupName = "Site Name");
 		}
+
+		ACUtils.tearDownAC();
 	}
 
 	@description = "Bug: LRAC-11366 | Automation ID: LRAC-11433 | Test Summary: Delete attribute description"
@@ -107,7 +105,7 @@ definition {
 
 			ACSettings.goToEventAttributes();
 
-			ACNavigation.openItem(itemName = "Attributes");
+			ACSettings.goToAttributes();
 		}
 
 		task ("Edit the new attribute") {
@@ -123,7 +121,7 @@ definition {
 		task ("Back to Event Attributes and Navigation to attributes tab") {
 			ACNavigation.backNavigation(pageName = "Event Attributes");
 
-			ACNavigation.openItem(itemName = "Attributes");
+			ACSettings.goToAttributes();
 		}
 
 		task ("Check if the description has been changed") {
@@ -143,7 +141,7 @@ definition {
 		task ("Back to Event Attributes and Navigation to attributes tab") {
 			ACNavigation.backNavigation(pageName = "Event Attributes");
 
-			ACNavigation.openItem(itemName = "Attributes");
+			ACSettings.goToAttributes();
 		}
 
 		task ("Check if the description is deleted") {
@@ -181,7 +179,7 @@ definition {
 
 			ACSettings.goToEventAttributes();
 
-			ACNavigation.openItem(itemName = "Attributes");
+			ACSettings.goToAttributes();
 		}
 
 		task ("Edit the new attribute") {
@@ -227,7 +225,7 @@ definition {
 
 			ACSettings.goToEventAttributes();
 
-			ACNavigation.openItem(itemName = "Attributes");
+			ACSettings.goToAttributes();
 		}
 
 		task ("Select an attribute") {
@@ -245,7 +243,7 @@ definition {
 		task ("Back to Event Attributes and Navigation to attributes tab") {
 			ACNavigation.backNavigation(pageName = "Event Attributes");
 
-			ACNavigation.openItem(itemName = "Attributes");
+			ACSettings.goToAttributes();
 		}
 
 		task ("Select an attribute") {
@@ -263,7 +261,7 @@ definition {
 		task ("Back to Event Attributes and Navigation to attributes tab") {
 			ACNavigation.backNavigation(pageName = "Event Attributes");
 
-			ACNavigation.openItem(itemName = "Attributes");
+			ACSettings.goToAttributes();
 		}
 
 		task ("Select an attribute") {
@@ -281,7 +279,7 @@ definition {
 		task ("Back to Event Attributes and Navigation to attributes tab") {
 			ACNavigation.backNavigation(pageName = "Event Attributes");
 
-			ACNavigation.openItem(itemName = "Attributes");
+			ACSettings.goToAttributes();
 		}
 
 		task ("Select an attribute") {
@@ -299,7 +297,7 @@ definition {
 		task ("Back to Event Attributes and Navigation to attributes tab") {
 			ACNavigation.backNavigation(pageName = "Event Attributes");
 
-			ACNavigation.openItem(itemName = "Attributes");
+			ACSettings.goToAttributes();
 		}
 
 		task ("Select an attribute") {
@@ -318,12 +316,15 @@ definition {
 	@description = "Feature ID: LRAC-4265 | Automation ID: LRAC-10013 | Test Summary: Rename Attributes Display Name"
 	@priority = 4
 	test RenameAttributeDisplayName {
-		var attributeName = "category";
+		var attributeName = "team";
+		var attributeValue = "analytics cloud";
 
 		task ("Fill fields and create custom event") {
 			var customEventName = ACCustomEvents.generateCustomEventName();
 
 			ACCustomEvents.createCustomEvent(
+				attributesName = ${attributeName},
+				attributesValue = ${attributeValue},
 				customEventName = ${customEventName},
 				timeToSendCustomEvent = 1);
 		}
@@ -345,10 +346,12 @@ definition {
 
 			ACSettings.goToEventAttributes();
 
-			ACNavigation.openItem(itemName = "Attributes");
+			ACSettings.goToAttributes();
 		}
 
 		task ("Edit the new attribute") {
+			ACUtils.searchBar(searchItem = ${attributeName});
+
 			ACNavigation.openItem(itemName = ${attributeName});
 
 			ACUtils.clickAnyButton(button = "Edit");
@@ -361,10 +364,12 @@ definition {
 		task ("Back to Event Attributes and Navigation to attributes tab") {
 			ACNavigation.backNavigation(pageName = "Event Attributes");
 
-			ACNavigation.openItem(itemName = "Attributes");
+			ACSettings.goToAttributes();
 		}
 
 		task ("Check if the display name has been changed") {
+			ACUtils.searchBar(searchItem = ${attributeName});
+
 			ACCustomEvents.viewDisplayNameOrDescriptionList(nameValue = "${attributeName} Display Name");
 		}
 	}
@@ -406,7 +411,7 @@ definition {
 
 			ACSettings.goToEventAttributes();
 
-			ACNavigation.openItem(itemName = "Attributes");
+			ACSettings.goToAttributes();
 		}
 
 		task ("Edit the new attribute") {
@@ -422,7 +427,7 @@ definition {
 		task ("Back to Event Attributes and Navigation to attributes tab") {
 			ACNavigation.backNavigation(pageName = "Event Attributes");
 
-			ACNavigation.openItem(itemName = "Attributes");
+			ACSettings.goToAttributes();
 		}
 
 		task ("Edit the new attribute") {
@@ -478,7 +483,7 @@ definition {
 
 			ACSettings.goToEventAttributes();
 
-			ACNavigation.openItem(itemName = "Attributes");
+			ACSettings.goToAttributes();
 		}
 
 		task ("Search for the name of the attributes and verify that it was found") {
@@ -529,7 +534,7 @@ definition {
 
 			ACSettings.goToEventAttributes();
 
-			ACNavigation.openItem(itemName = "Attributes");
+			ACSettings.goToAttributes();
 		}
 
 		task ("Edit the new attribute") {
@@ -545,7 +550,7 @@ definition {
 		task ("Back to Event Attributes and Navigation to attributes tab") {
 			ACNavigation.backNavigation(pageName = "Event Attributes");
 
-			ACNavigation.openItem(itemName = "Attributes");
+			ACSettings.goToAttributes();
 		}
 
 		task ("Check if the type has been changed") {
@@ -585,7 +590,7 @@ definition {
 
 			ACSettings.goToEventAttributes();
 
-			ACNavigation.openItem(itemName = "Attributes");
+			ACSettings.goToAttributes();
 		}
 
 		task ("Edit the new attribute") {
@@ -601,7 +606,7 @@ definition {
 		task ("Back to Event Attributes and Navigation to attributes tab") {
 			ACNavigation.backNavigation(pageName = "Event Attributes");
 
-			ACNavigation.openItem(itemName = "Attributes");
+			ACSettings.goToAttributes();
 		}
 
 		task ("Check if the description has been changed") {

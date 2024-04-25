@@ -1,8 +1,8 @@
-@component-name = "portal-liferay-online"
+@component-name = "portal-solutions"
 definition {
 
 	property custom.properties = "virtual.hosts.valid.hosts=localhost,127.0.0.1,www.able.com";
-	property database.types = "mysql";
+	property database.types = "mysql, postgresql";
 	property liferay.online.properties = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
@@ -11,7 +11,7 @@ definition {
 	setUp {
 		TestCase.setUpPortalInstance();
 
-		User.firstLoginUI();
+		User.firstLoginPG();
 
 		HeadlessPortalInstanceAPI.addPortalInstanceWithVirtualInstanceInitializer(
 			domain = "www.able.com",
@@ -32,12 +32,10 @@ definition {
 	@priority = 3
 	test ClickMasterclassLogoGoesHomePage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Assert the Virtual Instance created by Json is present") {
-			ApplicationsMenu.gotoPortlet(
-				category = "System",
-				panel = "Control Panel",
-				portlet = "Virtual Instances");
+			PortalInstances.openVirtualInstancesAdmin();
 
 			PortalInstances.viewCP(virtualHost = "www.able.com");
 
@@ -72,6 +70,7 @@ definition {
 	@priority = 4
 	test CreateVirtualInstanceUsingInitializerWithSuccess {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Go to the Virtual Instance created") {
 			Navigator.openSpecificURL(url = "http://www.able.com:8080");
@@ -94,12 +93,10 @@ definition {
 	@priority = 4
 	test DeleteVirtualInstance {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Go to Virtual Instances") {
-			ApplicationsMenu.gotoPortlet(
-				category = "System",
-				panel = "Control Panel",
-				portlet = "Virtual Instances");
+			PortalInstances.openVirtualInstancesAdmin();
 		}
 
 		task ("Delete the Virtual Instance created") {
@@ -119,12 +116,10 @@ definition {
 	@priority = 3
 	test FriendlyErrorAppearsWhenTheUserCantCreateVirtualHost {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Go to Virtual Instances") {
-			ApplicationsMenu.gotoPortlet(
-				category = "System",
-				panel = "Control Panel",
-				portlet = "Virtual Instances");
+			PortalInstances.openVirtualInstancesAdmin();
 		}
 
 		task ("Create a new Virtual instance using localhost") {
@@ -160,12 +155,10 @@ definition {
 	@priority = 4
 	test UserCanCreateVirtualInstance {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Assert the Virtual Instance created by Json is present") {
-			ApplicationsMenu.gotoPortlet(
-				category = "System",
-				panel = "Control Panel",
-				portlet = "Virtual Instances");
+			PortalInstances.openVirtualInstancesAdmin();
 
 			PortalInstances.viewCP(virtualHost = "www.able.com");
 

@@ -12,6 +12,7 @@ EditCollectionConfigurationDisplayContext editCollectionConfigurationDisplayCont
 
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(editCollectionConfigurationDisplayContext.getRedirect());
+portletDisplay.setURLBackTitle(ParamUtil.getString(request, "backURLTitle"));
 
 renderResponse.setTitle(LanguageUtil.get(request, "filter-collection"));
 %>
@@ -49,7 +50,7 @@ renderResponse.setTitle(LanguageUtil.get(request, "filter-collection"));
 
 	<div>
 		<react:component
-			module="page_editor/plugins/collection-configuration/CollectionConfiguration"
+			module="{CollectionConfiguration} from layout-content-page-editor-web"
 			props="<%= editCollectionConfigurationDisplayContext.getData() %>"
 		/>
 	</div>

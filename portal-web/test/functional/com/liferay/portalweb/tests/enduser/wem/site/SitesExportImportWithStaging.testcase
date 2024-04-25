@@ -1,6 +1,7 @@
 @component-name = "portal-wcm"
 definition {
 
+	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Sites Administration";
@@ -20,9 +21,7 @@ definition {
 
 		task ("Activate local live staging for two sites") {
 			for (var n : list "1,2") {
-				Staging.openStagingAdmin(siteURLKey = "test-site-name-${n}");
-
-				Staging.activateStagingCP(siteName = "Test Site Name ${n}");
+				JSONStaging.enableLocalStaging(groupName = "Test Site Name ${n}");
 			}
 		}
 
@@ -33,10 +32,13 @@ definition {
 		}
 
 		task ("Add a page template collection and content page template to the first site") {
-			JSONLayoutpagetemplate.addLayoutPageTemplateCollection(
-				groupName = "Test Site Name 1-staging",
-				layoutPageTemplateCollectionName = "Page Template Collection",
+			var groupId = JSONGroupSetter.setGroupId(
+				groupName = "Test Site Name 1 (Staging)",
 				site = "false");
+
+			JSONLayoutpagetemplate.addLayoutPageTemplateCollection(
+				groupId = ${groupId},
+				layoutPageTemplateCollectionName = "Page Template Collection");
 
 			PageTemplatesAdmin.openPageTemplatesAdmin(siteURLKey = "test-site-name-1-staging");
 
@@ -66,9 +68,8 @@ definition {
 
 		task ("Add a content page with a Title fragment to the first site") {
 			JSONLayout.addPublicLayout(
-				groupName = "Test Site Name 1 (Staging)",
+				groupId = ${groupId},
 				layoutName = "Test Regular Content Page",
-				site = "false",
 				type = "content");
 
 			ContentPagesNavigator.openEditContentPage(
@@ -86,24 +87,21 @@ definition {
 
 		task ("Add a navigation menu to the first site") {
 			JSONSitenavigation.addSiteNavigationMenu(
-				groupName = "Test Site Name 1 (Staging)",
-				site = "false",
+				groupId = ${groupId},
 				siteNavigationMenuName = "Test Navigation Menu Name");
 		}
 
 		task ("Add both content pages to the navigation menu") {
 			JSONSitenavigation.addSiteNavigationMenuItem(
-				groupName = "Test Site Name 1 (Staging)",
+				groupId = ${groupId},
 				privateLayout = "false",
-				site = "false",
 				siteNavigationMenuItemName = "Test Template Content Page",
 				siteNavigationMenuName = "Test Navigation Menu Name",
 				type = "layout");
 
 			JSONSitenavigation.addSiteNavigationMenuItem(
-				groupName = "Test Site Name 1 (Staging)",
+				groupId = ${groupId},
 				privateLayout = "false",
-				site = "false",
 				siteNavigationMenuItemName = "Test Regular Content Page",
 				siteNavigationMenuName = "Test Navigation Menu Name",
 				type = "layout");
@@ -111,8 +109,7 @@ definition {
 
 		task ("Add a URL item to the navigation menu") {
 			JSONSitenavigation.addSiteNavigationMenuItem(
-				groupName = "Test Site Name 1 (Staging)",
-				site = "false",
+				groupId = ${groupId},
 				siteNavigationMenuItemName = "Liferay",
 				siteNavigationMenuName = "Test Navigation Menu Name",
 				type = "url",
@@ -136,8 +133,7 @@ definition {
 			JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
 				contentType = "Web Content Article",
 				displayPageTemplateEntryName = "Display Page Name",
-				groupName = "Test Site Name 1-staging",
-				site = "false",
+				groupId = ${groupId},
 				subType = "Basic Web Content");
 		}
 
@@ -201,24 +197,10 @@ definition {
 		}
 	}
 
-	tearDown {
-		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
-
-		if (${testLiferayVirtualInstance} == "true") {
-			PortalInstances.tearDownCP();
-		}
-		else {
-			JSONGroup.deleteGroupByName(groupName = "Test Site Name 1");
-
-			JSONGroup.deleteGroupByName(groupName = "Test Site Name 2");
-		}
-	}
-
 	@description = "Export a live site into a different staging site. This test is focused on modern site building features. The high level steps of this test are outlined in LRQA-44517."
 	@priority = 5
 	test ImportLiveSiteToStagingSite {
 		property portal.acceptance = "true";
-		property test.liferay.virtual.instance = "false";
 		property timeout.explicit.wait = "30";
 
 		task ("Export the first site") {

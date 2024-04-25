@@ -3,85 +3,153 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayPanel from '@clayui/panel';
+import ClayForm from '@clayui/form';
 import {Toggle} from '@liferay/object-js-components-web';
+import {sub} from 'frontend-js-web';
 import React from 'react';
 
 interface ConfigurationContainerProps {
 	hasUpdateObjectDefinitionPermission: boolean;
+	isLinkedObjectDefinition?: boolean;
+	isRootDescendantNode: boolean;
+	onSubmit?: (editedObjectDefinition?: Partial<ObjectDefinition>) => void;
 	setValues: (values: Partial<ObjectDefinition>) => void;
 	values: Partial<ObjectDefinition>;
 }
 
 export function ConfigurationContainer({
 	hasUpdateObjectDefinitionPermission,
+	isLinkedObjectDefinition,
+	isRootDescendantNode,
+	onSubmit,
 	setValues,
 	values,
 }: ConfigurationContainerProps) {
-	const isReadOnly = Liferay.FeatureFlags['LPS-167253']
-		? !values.modifiable && values.system
-		: values.system;
+	const isReadOnly = !values.modifiable && values.system;
+
+	const disabled =
+		!hasUpdateObjectDefinitionPermission ||
+		isLinkedObjectDefinition ||
+		isReadOnly;
 
 	return (
-		<ClayPanel
-			collapsable
-			defaultExpanded
-			displayTitle={Liferay.Language.get('configuration')}
-			displayType="unstyled"
-		>
-			<ClayPanel.Body>
-				<div className="lfr-objects__object-definition-details-configuration">
-					<Toggle
-						disabled={
-							isReadOnly || !hasUpdateObjectDefinitionPermission
-						}
-						label={Liferay.Language.get('show-widget')}
-						name="showWidget"
-						onToggle={() => setValues({portlet: !values.portlet})}
-						toggled={values.portlet}
-					/>
+		<div className="lfr-objects__object-definition-details-configuration">
+			<ClayForm.Group>
+				<Toggle
+					disabled={disabled || isRootDescendantNode}
+					label={sub(
+						Liferay.Language.get('show-widget-in-x'),
+						Liferay.Language.get('page-builder')
+					)}
+					name="showWidget"
+					onBlur={(event) => {
+						event.stopPropagation();
 
-					<Toggle
-						disabled={
-							isReadOnly || !hasUpdateObjectDefinitionPermission
+						if (onSubmit) {
+							onSubmit();
 						}
-						label={Liferay.Language.get('enable-categorization')}
-						name="enableCategorization"
-						onToggle={() =>
-							setValues({
-								enableCategorization: !values.enableCategorization,
-							})
-						}
-						toggled={values.enableCategorization}
-					/>
+					}}
+					onToggle={() => setValues({portlet: !values.portlet})}
+					toggled={values.portlet}
+				/>
+			</ClayForm.Group>
 
-					<Toggle
-						disabled={
-							isReadOnly || !hasUpdateObjectDefinitionPermission
-						}
-						label={Liferay.Language.get('enable-comments')}
-						name="enableComments"
-						onToggle={() =>
-							setValues({
-								enableComments: !values.enableComments,
-							})
-						}
-						toggled={values.enableComments}
-					/>
+			<ClayForm.Group>
+				<Toggle
+					disabled={disabled}
+					label={sub(
+						Liferay.Language.get('enable-x'),
+						Liferay.Language.get('categorization-of-object-entries')
+					)}
+					name="enableCategorization"
+					onBlur={(event) => {
+						event.stopPropagation();
 
-					<Toggle
-						disabled={isReadOnly}
-						label={Liferay.Language.get('enable-entry-history')}
-						name="enableEntryHistory"
-						onToggle={() =>
-							setValues({
-								enableObjectEntryHistory: !values.enableObjectEntryHistory,
-							})
+						if (onSubmit) {
+							onSubmit();
 						}
-						toggled={values.enableObjectEntryHistory}
-					/>
-				</div>
-			</ClayPanel.Body>
-		</ClayPanel>
+					}}
+					onToggle={() =>
+						setValues({
+							enableCategorization: !values.enableCategorization,
+						})
+					}
+					toggled={values.enableCategorization}
+				/>
+			</ClayForm.Group>
+
+			<ClayForm.Group>
+				<Toggle
+					disabled={disabled}
+					label={sub(
+						Liferay.Language.get('enable-x'),
+						Liferay.Language.get('comments-in-page-builder')
+					)}
+					name="enableComments"
+					onBlur={(event) => {
+						event.stopPropagation();
+
+						if (onSubmit) {
+							onSubmit();
+						}
+					}}
+					onToggle={() =>
+						setValues({
+							enableComments: !values.enableComments,
+						})
+					}
+					toggled={values.enableComments}
+				/>
+			</ClayForm.Group>
+
+			<ClayForm.Group>
+				<Toggle
+					disabled={isLinkedObjectDefinition || isReadOnly}
+					label={sub(
+						Liferay.Language.get('enable-x'),
+						Liferay.Language.get('entry-history-in-audit-framework')
+					)}
+					name="enableEntryHistory"
+					onBlur={(event) => {
+						event.stopPropagation();
+
+						if (onSubmit) {
+							onSubmit();
+						}
+					}}
+					onToggle={() =>
+						setValues({
+							enableObjectEntryHistory: !values.enableObjectEntryHistory,
+						})
+					}
+					toggled={values.enableObjectEntryHistory}
+				/>
+			</ClayForm.Group>
+
+			<ClayForm.Group>
+				<Toggle
+					disabled={
+						isReadOnly || !hasUpdateObjectDefinitionPermission
+					}
+					label={Liferay.Language.get(
+						'allow-users-to-save-entries-as-draft'
+					)}
+					name="enableObjectEntryDraft"
+					onBlur={(event) => {
+						event.stopPropagation();
+
+						if (onSubmit) {
+							onSubmit();
+						}
+					}}
+					onToggle={() =>
+						setValues({
+							enableObjectEntryDraft: !values.enableObjectEntryDraft,
+						})
+					}
+					toggled={values.enableObjectEntryDraft}
+				/>
+			</ClayForm.Group>
+		</div>
 	);
 }

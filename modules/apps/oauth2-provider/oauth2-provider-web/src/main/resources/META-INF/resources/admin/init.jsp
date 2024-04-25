@@ -7,6 +7,8 @@
 
 <%@ include file="/init.jsp" %>
 
+<%@ taglib uri="http://liferay.com/tld/react" prefix="react" %>
+
 <%@ page import="com.liferay.frontend.taglib.clay.servlet.taglib.util.JSPNavigationItemList" %><%@
 page import="com.liferay.item.selector.ItemSelector" %><%@
 page import="com.liferay.item.selector.criteria.UUIDItemSelectorReturnType" %><%@
@@ -26,18 +28,18 @@ page import="com.liferay.oauth2.provider.exception.OAuth2ApplicationRedirectURIM
 page import="com.liferay.oauth2.provider.exception.OAuth2ApplicationRedirectURIPathException" %><%@
 page import="com.liferay.oauth2.provider.exception.OAuth2ApplicationRedirectURISchemeException" %><%@
 page import="com.liferay.oauth2.provider.model.OAuth2Authorization" %><%@
-page import="com.liferay.oauth2.provider.service.OAuth2AuthorizationServiceUtil" %><%@
 page import="com.liferay.oauth2.provider.web.internal.AssignableScopes" %><%@
 page import="com.liferay.oauth2.provider.web.internal.constants.OAuth2ProviderWebKeys" %><%@
 page import="com.liferay.oauth2.provider.web.internal.display.context.AssignScopesDisplayContext" %><%@
 page import="com.liferay.oauth2.provider.web.internal.display.context.AssignScopesTreeDisplayContext" %><%@
 page import="com.liferay.oauth2.provider.web.internal.display.context.OAuth2AdminPortletDisplayContext" %><%@
+page import="com.liferay.oauth2.provider.web.internal.display.context.OAuth2ApplicationsDisplayContext" %><%@
 page import="com.liferay.oauth2.provider.web.internal.display.context.OAuth2ApplicationsManagementToolbarDisplayContext" %><%@
+page import="com.liferay.oauth2.provider.web.internal.display.context.OAuth2AuthorizationsDisplayContext" %><%@
 page import="com.liferay.oauth2.provider.web.internal.display.context.OAuth2AuthorizationsManagementToolbarDisplayContext" %><%@
 page import="com.liferay.oauth2.provider.web.internal.tree.Tree" %><%@
 page import="com.liferay.petra.string.StringBundler" %><%@
 page import="com.liferay.petra.string.StringPool" %><%@
-page import="com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker" %><%@
 page import="com.liferay.portal.kernel.dao.search.ResultRow" %><%@
 page import="com.liferay.portal.kernel.portlet.LiferayWindowState" %><%@
 page import="com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil" %><%@

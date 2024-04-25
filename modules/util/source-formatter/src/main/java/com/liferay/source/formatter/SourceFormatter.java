@@ -27,6 +27,7 @@ import com.liferay.source.formatter.check.configuration.SourceFormatterConfigura
 import com.liferay.source.formatter.check.configuration.SourceFormatterSuppressions;
 import com.liferay.source.formatter.check.configuration.SuppressionsLoader;
 import com.liferay.source.formatter.check.util.SourceUtil;
+import com.liferay.source.formatter.exception.SourceMismatchException;
 import com.liferay.source.formatter.processor.BNDRunSourceProcessor;
 import com.liferay.source.formatter.processor.BNDSourceProcessor;
 import com.liferay.source.formatter.processor.CETSourceProcessor;
@@ -47,6 +48,7 @@ import com.liferay.source.formatter.processor.JavaSourceProcessor;
 import com.liferay.source.formatter.processor.LDIFSourceProcessor;
 import com.liferay.source.formatter.processor.LFRBuildSourceProcessor;
 import com.liferay.source.formatter.processor.LibrarySourceProcessor;
+import com.liferay.source.formatter.processor.ListSourceProcessor;
 import com.liferay.source.formatter.processor.MarkdownSourceProcessor;
 import com.liferay.source.formatter.processor.PackageinfoSourceProcessor;
 import com.liferay.source.formatter.processor.PoshiSourceProcessor;
@@ -353,6 +355,7 @@ public class SourceFormatter {
 		_sourceProcessors.add(new LDIFSourceProcessor());
 		_sourceProcessors.add(new LFRBuildSourceProcessor());
 		_sourceProcessors.add(new LibrarySourceProcessor());
+		_sourceProcessors.add(new ListSourceProcessor());
 		_sourceProcessors.add(new MarkdownSourceProcessor());
 		_sourceProcessors.add(new PackageinfoSourceProcessor());
 		_sourceProcessors.add(new PoshiSourceProcessor());
@@ -1024,7 +1027,7 @@ public class SourceFormatter {
 						"clay|lexicon)/.+"),
 				new ExcludeSyntaxPattern(
 					ExcludeSyntax.REGEX,
-					".*/tests?/.*/dependencies/.+\\.(jar|lar|war|zip)/.+"),
+					".*/tests?/.*/?dependencies/.+\\.(jar|lar|war|zip)/.+"),
 				new ExcludeSyntaxPattern(
 					ExcludeSyntax.REGEX,
 					"^((?!/frontend-js-node-shims/src/).)*/node_modules/.*"),
@@ -1052,7 +1055,7 @@ public class SourceFormatter {
 			parentDirName += "../";
 		}
 
-		_allFileNames = SourceFormatterUtil.scanForFiles(
+		_allFileNames = SourceFormatterUtil.scanForFileNames(
 			_sourceFormatterArgs.getBaseDirName(), new String[0],
 			new String[] {
 				"**/*.*", "**/CODEOWNERS", "**/Dockerfile", "**/packageinfo"
@@ -1150,9 +1153,6 @@ public class SourceFormatter {
 
 	private boolean _isFrontendPackageChanges(String recentChangesFileName) {
 		if (recentChangesFileName.endsWith(
-				"/modules/apps/frontend-js/frontend-js-metal-web" +
-					"/package.json") ||
-			recentChangesFileName.endsWith(
 				"/modules/apps/frontend-js/frontend-js-react-web" +
 					"/package.json") ||
 			recentChangesFileName.endsWith(
@@ -1296,19 +1296,21 @@ public class SourceFormatter {
 			commitMessages, _getPropertyValues("jira.project.keys"));
 
 		for (String commitMessage : commitMessages) {
+			String[] parts = commitMessage.split(":", 2);
+
 			for (String keyword :
 					_getPropertyValues("git.commit.vulnerability.keywords")) {
 
 				Pattern pattern = Pattern.compile(
 					"\\b_*(" + keyword + ")_*\\b", Pattern.CASE_INSENSITIVE);
 
-				Matcher matcher = pattern.matcher(commitMessage);
+				Matcher matcher = pattern.matcher(parts[1]);
 
 				if (matcher.find()) {
 					throw new Exception(
 						StringBundler.concat(
-							"Found formatting issues:\n", "The commit '",
-							commitMessage, "' contains the word '", keyword,
+							"Found formatting issue in SHA ", parts[0], ":\n",
+							"The commit message contains the word '", keyword,
 							"', which could reveal potential security ",
 							"vulnerablities. Please see the vulnerability ",
 							"keywords that are specified in source-formatter.",

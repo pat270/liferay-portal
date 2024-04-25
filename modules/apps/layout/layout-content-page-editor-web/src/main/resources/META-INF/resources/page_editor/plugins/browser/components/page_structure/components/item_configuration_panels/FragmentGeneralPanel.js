@@ -44,7 +44,7 @@ export function FragmentGeneralPanel({item}) {
 		(state) => state.fragmentEntryLinks
 	);
 
-	let fieldSets =
+	const fieldSets =
 		fragmentEntryLink.configuration?.fieldSets?.filter(
 			({configurationRole, label}) =>
 				!configurationRole &&
@@ -53,20 +53,6 @@ export function FragmentGeneralPanel({item}) {
 						FRAGMENT_ENTRY_TYPES.input && !label
 				)
 		) ?? [];
-
-	if (
-		!Liferay.FeatureFlags['LPS-169992'] &&
-		fragmentEntryLink.fragmentEntryKey === 'BASIC_COMPONENT-button'
-	) {
-		fieldSets = fieldSets.map((fieldSet) => {
-			return {
-				...fieldSet,
-				fields: fieldSet.fields.filter(
-					(field) => field.name !== 'type'
-				),
-			};
-		});
-	}
 
 	const itemConfig = getResponsiveConfig(item.config, selectedViewportSize);
 
@@ -84,10 +70,7 @@ export function FragmentGeneralPanel({item}) {
 		[dispatch, fragmentEntryLink, languageId]
 	);
 
-	if (
-		Liferay.FeatureFlags['LPS-169923'] &&
-		restrictedItemIds.has(item.itemId)
-	) {
+	if (restrictedItemIds.has(item.itemId)) {
 		return (
 			<ClayAlert displayType="secondary" role={null}>
 				{Liferay.Language.get(
@@ -101,11 +84,13 @@ export function FragmentGeneralPanel({item}) {
 		<>
 			{selectedViewportSize === VIEWPORT_SIZES.desktop &&
 				fieldSets.map((fieldSet, index) => {
+					const fields = fieldSet.fields;
+
 					return (
-						<div className="mb-1" key={index}>
+						<div className="mb-1 panel-group-sm" key={index}>
 							<FieldSet
 								description={fieldSet.description}
-								fields={fieldSet.fields}
+								fields={fields}
 								fragmentEntryLinks={
 									fragmentEntryLinksRef.current
 								}

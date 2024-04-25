@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
+import com.liferay.portal.kernel.util.BigDecimalUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -29,6 +30,8 @@ import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 import com.liferay.portal.vulcan.util.SearchUtil;
+
+import java.math.BigDecimal;
 
 import java.util.Collections;
 import java.util.Map;
@@ -268,8 +271,10 @@ public class WarehouseResourceImpl extends BaseWarehouseResourceImpl {
 						commerceInventoryWarehouse.getCompanyId(),
 						commerceInventoryWarehouse.
 							getCommerceInventoryWarehouseId(),
-						warehouseItem.getQuantity(), warehouseItem.getSku(),
-						StringPool.BLANK);
+						BigDecimalUtil.get(
+							warehouseItem.getQuantity(), BigDecimal.ZERO),
+						warehouseItem.getSku(),
+						warehouseItem.getUnitOfMeasureKey());
 			}
 		}
 	}

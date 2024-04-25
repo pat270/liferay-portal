@@ -52,6 +52,7 @@ import com.liferay.commerce.util.AccountEntryAllowedTypesUtil;
 import com.liferay.commerce.util.CommerceAccountRoleHelper;
 import com.liferay.commerce.util.CommerceShippingEngineRegistry;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
@@ -67,7 +68,6 @@ import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.Theme;
 import com.liferay.portal.kernel.model.ThemeSetting;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.service.CompanyLocalService;
@@ -79,10 +79,10 @@ import com.liferay.portal.kernel.service.ThemeLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.permission.ModelPermissions;
 import com.liferay.portal.kernel.service.permission.ModelPermissionsFactory;
+import com.liferay.portal.kernel.settings.FallbackKeysSettingsUtil;
 import com.liferay.portal.kernel.settings.GroupServiceSettingsLocator;
 import com.liferay.portal.kernel.settings.ModifiableSettings;
 import com.liferay.portal.kernel.settings.Settings;
-import com.liferay.portal.kernel.settings.SettingsFactory;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -195,7 +195,7 @@ public class MiniumSiteInitializer implements SiteInitializer {
 
 			_configureB2BSite(commerceChannel.getGroup(), serviceContext);
 
-			_miniumLayoutsInitializer.initialize(serviceContext);
+			_createLayouts(serviceContext);
 
 			_importAssetCategories(serviceContext);
 
@@ -314,7 +314,7 @@ public class MiniumSiteInitializer implements SiteInitializer {
 
 		_commerceAccountRoleHelper.checkCommerceAccountRoles(serviceContext);
 
-		Settings settings = _settingsFactory.getSettings(
+		Settings settings = FallbackKeysSettingsUtil.getSettings(
 			new GroupServiceSettingsLocator(
 				group.getGroupId(),
 				CommerceConstants.SERVICE_NAME_COMMERCE_ACCOUNT));
@@ -360,6 +360,32 @@ public class MiniumSiteInitializer implements SiteInitializer {
 			group.getName(serviceContext.getLanguageId()) + " Portal",
 			CommerceChannelConstants.CHANNEL_TYPE_SITE, null,
 			commerceCatalog.getCommerceCurrencyCode(), serviceContext);
+	}
+
+	private void _createLayouts(ServiceContext serviceContext)
+		throws Exception {
+
+		SiteInitializerDependencyResolver siteInitializerDependencyResolver =
+			SiteInitializerDependencyResolverThreadLocal.
+				getSiteInitializerDependencyResolver();
+
+		if (siteInitializerDependencyResolver != null) {
+			_siteInitializerDependencyResolver =
+				siteInitializerDependencyResolver;
+		}
+		else {
+			_siteInitializerDependencyResolver =
+				_defaultSiteInitializerDependencyResolver;
+		}
+
+		_cpFileImporter.cleanLayouts(serviceContext);
+
+		_cpFileImporter.createLayouts(
+			_jsonFactory.createJSONArray(
+				_siteInitializerDependencyResolver.getJSON("layouts.json")),
+			_siteInitializerDependencyResolver.getImageClassLoader(),
+			_siteInitializerDependencyResolver.getImageDependencyPath(),
+			serviceContext);
 	}
 
 	private void _createRoles(
@@ -1157,9 +1183,6 @@ public class MiniumSiteInitializer implements SiteInitializer {
 	private Language _language;
 
 	@Reference
-	private MiniumLayoutsInitializer _miniumLayoutsInitializer;
-
-	@Reference
 	private OrganizationImporter _organizationImporter;
 
 	@Reference
@@ -1178,9 +1201,6 @@ public class MiniumSiteInitializer implements SiteInitializer {
 		target = "(osgi.web.symbolicname=com.liferay.commerce.theme.minium.site.initializer)"
 	)
 	private ServletContext _servletContext;
-
-	@Reference
-	private SettingsFactory _settingsFactory;
 
 	private SiteInitializerDependencyResolver
 		_siteInitializerDependencyResolver;

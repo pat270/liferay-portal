@@ -1,11 +1,8 @@
 @component-name = "portal-frontend-infrastructure"
 definition {
 
-	property custom.properties = "feature.flag.LPS-144527=true";
 	property osgi.module.configuration.file.names = "com.liferay.document.library.web.internal.configuration.FFManagementToolbarConfiguration.config:com.liferay.frontend.taglib.clay.internal.configuration.FFManagementToolbarConfiguration.config";
-	property osgi.module.configurations = "enableDesignImprovements=\"true\":showDesignImprovements=\"true\"";
-	property osgi.modules.includes = "frontend-taglib-clay-sample-web";
-	property portal.acceptance = "true";
+	property portal.acceptance = "quarantine";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.component.names = "Management Toolbar";
@@ -160,7 +157,7 @@ definition {
 		task ("Then a tooltip message will be displayed") {
 			AssertTextEquals(
 				locator1 = "Message#TOOLTIP",
-				value1 = "Reverse Order Direction");
+				value1 = "Reverse Sort Direction");
 		}
 	}
 
@@ -255,7 +252,7 @@ definition {
 	@priority = 5
 	test RendersIndependentFilterAndOrderButtons {
 		task ("Then 'filter' and 'order' button is not rendered together") {
-			AssertElementNotPresent(locator1 = "ManagementBar#FILTER_AND_ORDER");
+			AssertElementNotPresent(locator1 = "ManagementBar#FILTER");
 		}
 
 		task ("Then 'filter' button is an independent dropdown") {

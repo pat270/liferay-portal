@@ -11,8 +11,8 @@ sourceCompatibility = "1.6"
 targetCompatibility = "1.6"
 
 dependencies {
-	compile group: "org.hibernate", name: "hibernate-core", version: "3.6.10.Final"
-	compile group: "org.springframework", name: "spring-orm", version: "4.3.22.RELEASE"
+	api group: "org.hibernate", name: "hibernate-core", version: "3.6.10.Final"
+	api group: "org.springframework", name: "spring-orm", version: "4.3.22.RELEASE"
 }
 
 deploy {
@@ -45,11 +45,19 @@ jarManifest {
 }
 
 jarPatched {
-	archiveName = jar.archiveName
-	destinationDir = jar.destinationDir
+	archiveFileName = jar.archiveFileName
+	destinationDirectory = jar.destinationDirectory
 	duplicatesStrategy = "exclude"
 
 	from copyPatchOriginalLibClasses
+
+	mustRunAfter compileJava
+	mustRunAfter generatePomFileForMavenPublication
+	mustRunAfter processResources
+}
+
+jarSources {
+	mustRunAfter patch
 }
 
 javadoc {

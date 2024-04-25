@@ -72,7 +72,12 @@ public class PageDefinitionResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _pageDefinitionResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, PageDefinitionResource>
+					pageDefinitionResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_pageDefinitionResourceProxyProviderFunction;
+
+				return pageDefinitionResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -230,10 +235,6 @@ public class PageDefinitionResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, PageDefinitionResource>
-		_pageDefinitionResourceProxyProviderFunction =
-			_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -269,6 +270,14 @@ public class PageDefinitionResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, PageDefinitionResource>
+			_pageDefinitionResourceProxyProviderFunction =
+				_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

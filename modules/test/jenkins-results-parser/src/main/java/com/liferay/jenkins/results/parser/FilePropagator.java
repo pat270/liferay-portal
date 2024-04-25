@@ -69,8 +69,12 @@ public class FilePropagator {
 		return _errorSlaves;
 	}
 
-	public void setCleanUpCommand(String cleanUpCommand) {
-		_cleanUpCommand = cleanUpCommand;
+	public void setPostDistCommand(String postDistCommand) {
+		_postDistCommand = postDistCommand;
+	}
+
+	public void setPreDistCommand(String preDistCommand) {
+		_preDistCommand = preDistCommand;
 	}
 
 	public void start(int threadCount) {
@@ -252,23 +256,28 @@ public class FilePropagator {
 		sb.append(targetSlave);
 		sb.append(" '");
 
-		if ((_cleanUpCommand != null) && !_cleanUpCommand.isEmpty()) {
-			sb.append(_cleanUpCommand);
-			sb.append("; ");
+		if (!JenkinsResultsParserUtil.isNullOrEmpty(_preDistCommand)) {
+			sb.append(_preDistCommand);
+			sb.append(" ; ");
 		}
 
 		for (int i = 0; i < commands.size(); i++) {
 			sb.append(commands.get(i));
 
 			if (i < (commands.size() - 1)) {
-				sb.append(" && ");
+				sb.append(" ; ");
 			}
+		}
+
+		if (!JenkinsResultsParserUtil.isNullOrEmpty(_postDistCommand)) {
+			sb.append(" ; ");
+			sb.append(_postDistCommand);
 		}
 
 		sb.append("'");
 
 		Process process = JenkinsResultsParserUtil.executeBashCommands(
-			_timeout, sb.toString());
+			_timeout * 60 * 1000, sb.toString());
 
 		return process.exitValue();
 	}
@@ -282,11 +291,12 @@ public class FilePropagator {
 	private static final long _TIMEOUT_DEFAULT = 15 * 60 * 1000;
 
 	private final List<String> _busySlaves = new ArrayList<>();
-	private String _cleanUpCommand;
 	private final List<String> _errorSlaves = new ArrayList<>();
 	private final List<FilePropagatorTask> _filePropagatorTasks =
 		new ArrayList<>();
 	private final List<String> _mirrorSlaves = new ArrayList<>();
+	private String _postDistCommand;
+	private String _preDistCommand;
 	private final List<String> _targetSlaves = new ArrayList<>();
 	private int _threadsCompletedCount;
 	private long _threadsDurationTotal;

@@ -14,7 +14,10 @@ definition {
 
 		User.firstLoginPG();
 
-		Raylife.createRaylifeSite(siteName = ${testSiteName});
+		HeadlessSite.addSite(
+			siteName = ${testSiteName},
+			templateName = "Raylife D2C",
+			templateType = "Site Initializer");
 	}
 
 	tearDown {
@@ -34,6 +37,7 @@ definition {
 	@priority = 4
 	test BuildingInteriorPhotosFieldIsRequired {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -56,6 +60,7 @@ definition {
 	@priority = 4
 	test CanCancelChangesInModal {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -84,6 +89,7 @@ definition {
 	@priority = 5
 	test CanUserDeleteAttachedFiles {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -112,6 +118,7 @@ definition {
 	@priority = 4
 	test CanUserDiscardFiles {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -141,6 +148,7 @@ definition {
 	@priority = 4
 	test CanUserModifyAttachedFiles {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -190,6 +198,7 @@ definition {
 	@priority = 5
 	test CanUsersDeleteAttachedPhotos {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -219,6 +228,7 @@ definition {
 	@priority = 4
 	test DeleteChangesButtonAppearsWhenAddingFiles {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -242,6 +252,7 @@ definition {
 	@priority = 5
 	test IsLimitOf4FilesReached {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -259,6 +270,7 @@ definition {
 	@priority = 5
 	test IsLimitOf4PhotosReached {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -276,6 +288,7 @@ definition {
 	@priority = 5
 	test IsUploadButtonEnabled {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -305,6 +318,7 @@ definition {
 	@priority = 5
 	test MaxIs4FilesToCommercialLicense {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -322,6 +336,7 @@ definition {
 	@priority = 4
 	test UploadSectionCompleted {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 

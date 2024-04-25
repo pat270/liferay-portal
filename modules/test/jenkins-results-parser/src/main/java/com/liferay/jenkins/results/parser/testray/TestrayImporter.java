@@ -44,6 +44,7 @@ import com.liferay.jenkins.results.parser.test.clazz.TestClass;
 import com.liferay.jenkins.results.parser.test.clazz.group.AxisTestClassGroup;
 import com.liferay.jenkins.results.parser.test.clazz.group.FunctionalAxisTestClassGroup;
 import com.liferay.jenkins.results.parser.test.clazz.group.JUnitAxisTestClassGroup;
+import com.liferay.jenkins.results.parser.test.clazz.group.PlaywrightAxisTestClassGroup;
 
 import java.io.File;
 import java.io.IOException;
@@ -57,6 +58,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -129,13 +131,6 @@ public class TestrayImporter {
 		for (Map.Entry<Long, TestrayBuild> testrayBuildEntry :
 				testrayBuildMap.entrySet()) {
 
-			String testrayBuildTitle = "Testray Build";
-
-			if (i > 0) {
-				testrayBuildTitle = JenkinsResultsParserUtil.combine(
-					testrayBuildTitle, " (", String.valueOf(i), ")");
-			}
-
 			String testrayRoutineTitle = "Testray Routine";
 
 			if (i > 0) {
@@ -147,6 +142,13 @@ public class TestrayImporter {
 
 			TestrayRoutine testrayRoutine = testrayBuild.getTestrayRoutine();
 
+			String testrayBuildTitle = "Testray Build";
+
+			if (i > 0) {
+				testrayBuildTitle = JenkinsResultsParserUtil.combine(
+					testrayBuildTitle, " (", String.valueOf(i), ")");
+			}
+
 			Dom4JUtil.addToElement(
 				rootElement,
 				_getJenkinsBuildDescriptionElement(
@@ -154,7 +156,9 @@ public class TestrayImporter {
 					String.valueOf(testrayRoutine.getURL())),
 				_getJenkinsBuildDescriptionElement(
 					testrayBuildTitle, testrayBuild.getName(),
-					String.valueOf(testrayBuild.getURL())));
+					String.valueOf(testrayBuild.getURL())),
+				_getJenkinsBuildDescriptionElement(
+					"Testray Build ID", String.valueOf(testrayBuild.getID())));
 
 			i++;
 		}
@@ -981,6 +985,12 @@ public class TestrayImporter {
 
 						Map<String, String> propertiesMap = new HashMap<>();
 
+						TopLevelBuild testTopLevelBuild = getTopLevelBuild();
+
+						propertiesMap.put(
+							"testray.build.date",
+							testTopLevelBuild.getTestrayBuildDateString());
+
 						propertiesMap.put(
 							"testray.build.name", testrayBuild.getName());
 
@@ -1018,7 +1028,9 @@ public class TestrayImporter {
 						if (axisTestClassGroup instanceof
 								FunctionalAxisTestClassGroup ||
 							axisTestClassGroup instanceof
-								JUnitAxisTestClassGroup) {
+								JUnitAxisTestClassGroup ||
+							axisTestClassGroup instanceof
+								PlaywrightAxisTestClassGroup) {
 
 							PortalLogTestrayCaseResult
 								portalLogTestrayCaseResult =
@@ -1196,9 +1208,14 @@ public class TestrayImporter {
 		}
 
 		ParallelExecutor<Void> parallelExecutor = new ParallelExecutor<>(
-			callables, _executorService);
+			callables, _executorService, "recordTestrayCaseResults");
 
-		parallelExecutor.execute();
+		try {
+			parallelExecutor.execute();
+		}
+		catch (TimeoutException timeoutException) {
+			throw new RuntimeException(timeoutException);
+		}
 
 		TopLevelBuild topLevelBuild = getTopLevelBuild();
 
@@ -1847,9 +1864,28 @@ public class TestrayImporter {
 			return string;
 		}
 
+		String portalUpstreamBranchName =
+			portalBranchInformation.getUpstreamBranchName();
+
 		string = string.replace(
-			"$(portal.branch.name)",
-			portalBranchInformation.getUpstreamBranchName());
+			"$(portal.branch.name)", portalUpstreamBranchName);
+
+		Matcher releaseBranchMatcher = _releaseBranchPattern.matcher(
+			portalUpstreamBranchName);
+
+		if (releaseBranchMatcher.find()) {
+			string = string.replace(
+				"$(portal.branch.display.name)",
+				JenkinsResultsParserUtil.combine(
+					releaseBranchMatcher.group("year"), " Q",
+					releaseBranchMatcher.group("quarter")));
+		}
+		else {
+			string = string.replace(
+				"$(portal.branch.display.name)",
+				portalGitWorkingDirectory.getMajorPortalVersion());
+		}
+
 		string = string.replace(
 			"$(portal.repository)",
 			portalBranchInformation.getRepositoryName());
@@ -2311,6 +2347,8 @@ public class TestrayImporter {
 		JenkinsResultsParserUtil.getNewThreadPoolExecutor(10, true);
 	private static final Pattern _releaseArtifactURLPattern = Pattern.compile(
 		"https?://.+/(?<releaseName>[^/]+)(.7z|.tar.gz|.war|.zip)");
+	private static final Pattern _releaseBranchPattern = Pattern.compile(
+		"release-(?<year>\\d{4})\\.q(?<quarter>[1-4])");
 
 	private Job _job;
 	private final Map<File, TestrayBuild> _testrayBuilds =

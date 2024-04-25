@@ -39,13 +39,6 @@ AccountEntry accountEntry = commerceOrderContentDisplayContext.getAccountEntry()
 if (commerceOrder != null) {
 	accountEntry = commerceOrder.getAccountEntry();
 }
-
-String backURL = ParamUtil.getString(request, "backURL", null);
-
-if (backURL != null) {
-	portletDisplay.setShowBackIcon(true);
-	portletDisplay.setURLBack(backURL);
-}
 %>
 
 <liferay-ui:error exception="<%= CommerceOrderValidatorException.class %>">
@@ -73,7 +66,7 @@ if (backURL != null) {
 	<div class="commerce-panel__content">
 		<div class="align-items-center row">
 			<div class="col-md-3">
-				<div class="commerce-order-title">
+				<div class="autofit-col-expand commerce-order-title">
 					<%= HtmlUtil.escape(accountEntry.getName()) %>
 				</div>
 			</div>
@@ -243,7 +236,7 @@ if (backURL != null) {
 									"modalTitle", commerceOrder.getDeliveryCommerceTermEntryName()
 								).build()
 							%>'
-							module="js/attachModalToHTMLElement"
+							module="{attachModalToHTMLElement} from commerce-order-content-web"
 						/>
 					</c:if>
 				</p>
@@ -269,7 +262,7 @@ if (backURL != null) {
 									"modalTitle", commerceOrder.getPaymentCommerceTermEntryName()
 								).build()
 							%>'
-							module="js/attachModalToHTMLElement"
+							module="{attachModalToHTMLElement} from commerce-order-content-web"
 						/>
 					</c:if>
 				</p>
@@ -289,10 +282,14 @@ if (backURL != null) {
 	</aui:form>
 
 	<c:if test="<%= commerceOrderContentDisplayContext.isShowProcessQuote() %>">
-		<aui:button cssClass="btn-lg" onClick='<%= liferayPortletResponse.getNamespace() + "processQuote();" %>' value="process-quote" />
+		<aui:button cssClass="btn-lg" onClick='<%= liferayPortletResponse.getNamespace() + "handleCTA('processQuote');" %>' value="process-quote" />
 	</c:if>
 
-	<aui:button cssClass="btn-lg" onClick='<%= liferayPortletResponse.getNamespace() + "reorderCommerceOrder();" %>' value="reorder" />
+	<c:if test='<%= FeatureFlagManagerUtil.isEnabled("LPD-10562") && (commerceOrder.getOrderStatus() == CommerceOrderConstants.ORDER_STATUS_COMPLETED) %>'>
+		<aui:button cssClass="btn-lg" onClick='<%= liferayPortletResponse.getNamespace() + "handleCTA('makeReturn');" %>' value="make-a-return" />
+	</c:if>
+
+	<aui:button cssClass="btn-lg" onClick='<%= liferayPortletResponse.getNamespace() + "handleCTA('reorder');" %>' value="reorder" />
 
 	<c:if test="<%= commerceOrderContentDisplayContext.isShowRetryPayment() %>">
 		<aui:button cssClass="btn-lg" href="<%= commerceOrderContentDisplayContext.getRetryPaymentURL() %>" primary="<%= true %>" value="retry-payment" />
@@ -426,18 +423,20 @@ if (backURL != null) {
 			uri: uri,
 		});
 	}
-
-	function <portlet:namespace />reorderCommerceOrder() {
-		document.<portlet:namespace />fm.<portlet:namespace /><%= Constants.CMD %>.value =
-			'reorder';
-
-		submitForm(document.<portlet:namespace />fm);
-	}
-
-	function <portlet:namespace />processQuote() {
-		document.<portlet:namespace />fm.<portlet:namespace /><%= Constants.CMD %>.value =
-			'processQuote';
-
-		submitForm(document.<portlet:namespace />fm);
-	}
 </aui:script>
+
+<portlet:renderURL var="viewReturnableCommerceOrderItemsURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
+	<portlet:param name="mvcRenderCommandName" value="/commerce_order_content/view_returnable_commerce_order_items" />
+	<portlet:param name="commerceOrderId" value="<%= String.valueOf(commerceOrder.getCommerceOrderId()) %>" />
+</portlet:renderURL>
+
+<liferay-frontend:component
+	context='<%=
+		HashMapBuilder.<String, Object>put(
+			"namespace", liferayPortletResponse.getNamespace()
+		).put(
+			"viewReturnableCommerceOrderItemsURL", viewReturnableCommerceOrderItemsURL
+		).build()
+	%>'
+	module="{viewCommerceOrderDetailsCTAs} from commerce-order-content-web"
+/>

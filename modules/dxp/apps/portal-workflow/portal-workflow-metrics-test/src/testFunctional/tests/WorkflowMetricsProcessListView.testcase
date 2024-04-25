@@ -15,10 +15,7 @@ definition {
 
 		Navigator.openURL();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+		Workflow.openWorkflowMetrics();
 	}
 
 	tearDown {
@@ -34,7 +31,9 @@ definition {
 	test CanSearchBySimilarWords {
 		WorkflowMetricsProcessListView.metricsWorkflowSearch(workflowSearchName = "Single Ap");
 
-		WorkflowMetrics.assertWorkflowProcessPresent(workflowProcessName = "Single Approver");
+		AssertElementPresent(
+			key_workflowProcessName = "Single Approver",
+			locator1 = "WorkflowMetrics#METRICS_WORKFLOW_PROCESS_NAME");
 	}
 
 	@description = "LPS-88573 - Verify that the Clear All option cleans the search results"
@@ -56,11 +55,9 @@ definition {
 	@priority = 3
 	test PaginationButtonIndicatesSelectedPage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		for (var newWorkflow : list "1,2,3") {
 			Workflow.addNewDefinition(workflowDefinitionTitle = "New Workflow ${newWorkflow}");
@@ -76,10 +73,7 @@ definition {
 			Navigator.gotoBack();
 		}
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+		Workflow.openWorkflowMetrics();
 
 		ACLoading.waitForLoadingComplete();
 
@@ -90,11 +84,9 @@ definition {
 	@priority = 3
 	test PaginationFollowsAscDescSequence {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		for (var newWorkflow : list "1,2,3") {
 			Workflow.addNewDefinition(workflowDefinitionTitle = "New Workflow ${newWorkflow}");
@@ -110,10 +102,7 @@ definition {
 			Navigator.gotoBack();
 		}
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+		Workflow.openWorkflowMetrics();
 
 		WorkflowMetricsProcessListView.changePagination(itemsPerPage = "4 Entries");
 
@@ -128,11 +117,9 @@ definition {
 	@priority = 3
 	test PaginationIsDisplayedWhenTableHas5Items {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Workflow.addNewDefinition(workflowDefinitionTitle = "New Workflow 1");
 
@@ -194,10 +181,7 @@ definition {
 
 		Navigator.gotoBack();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+		Workflow.openWorkflowMetrics();
 
 		WorkflowMetricsProcessListView.assertPaginationBar();
 	}
@@ -206,15 +190,13 @@ definition {
 	@priority = 3
 	test SavedOrderOptionStaysInMetricsContext {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Workflow.duplicateSingleApproverWorkflow(workflowName = "Single Approver A");
 
 		Workflow.duplicateSingleApproverWorkflow(workflowName = "Single Approver B");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -230,10 +212,7 @@ definition {
 			entryContent = "Blogs Entry Content",
 			entryTitle = "Blogs Entry B");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+		Workflow.openWorkflowMetrics();
 
 		Click(
 			key_value = "down",
@@ -249,10 +228,7 @@ definition {
 
 		Click(locator1 = "WorkflowMetricsProcessListView#CLEAR_SEARCH");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+		Workflow.openWorkflowMetrics();
 
 		Click(
 			key_assigneeName = "Total Pending",
@@ -300,10 +276,7 @@ definition {
 	@description = "LPS-88573 - Verify that when an instance from Asset is added to the list of process, the count number should be reflected on the Process List"
 	@priority = 5
 	test TableDisplaysCorrectNumbersWhenAssetAdded {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -333,13 +306,11 @@ definition {
 	@priority = 3
 	test TableIsOrderedByOverdueDesc {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Workflow.duplicateSingleApproverWorkflow(workflowName = "Test Workflow");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -373,10 +344,7 @@ definition {
 			entrySubtitle = "Subtitle",
 			entryTitle = "Blogs Entry Title");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+		Workflow.openWorkflowMetrics();
 
 		while ((IsElementNotPresent(key_value = "down", locator1 = "WorkflowMetricsProcessListView#ANY_ARROW_ORDER")) && (maxIterations = "20")) {
 			Refresh();

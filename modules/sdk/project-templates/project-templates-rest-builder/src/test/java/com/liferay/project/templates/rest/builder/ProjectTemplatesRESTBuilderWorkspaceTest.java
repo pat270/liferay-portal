@@ -9,6 +9,7 @@ import com.liferay.maven.executor.MavenExecutor;
 import com.liferay.project.templates.BaseProjectTemplatesTestCase;
 import com.liferay.project.templates.extensions.util.FileUtil;
 import com.liferay.project.templates.extensions.util.Validator;
+import com.liferay.project.templates.extensions.util.VersionUtil;
 import com.liferay.project.templates.util.FileTestUtil;
 
 import java.io.File;
@@ -51,10 +52,11 @@ public class ProjectTemplatesRESTBuilderWorkspaceTest
 			new Object[][] {
 				{"guestbook", "com.liferay.docs.guestbook", "dxp", "7.1.10.7"},
 				{"guestbook", "com.liferay.docs.guestbook", "dxp", "7.2.10.7"},
+				{"guestbook", "com.liferay.docs.guestbook", "dxp", "2024.q1.1"},
 				{"guestbook", "com.liferay.docs.guestbook", "portal", "7.3.7"},
 				{
 					"guestbook", "com.liferay.docs.guestbook", "portal",
-					"7.4.3.16"
+					"7.4.3.56"
 				},
 				{
 					"backend-integration", "com.liferay.docs.guestbook", "dxp",
@@ -65,17 +67,22 @@ public class ProjectTemplatesRESTBuilderWorkspaceTest
 					"7.2.10.7"
 				},
 				{
+					"backend-integration", "com.liferay.docs.guestbook", "dxp",
+					"2024.q1.1"
+				},
+				{
 					"backend-integration", "com.liferay.docs.guestbook",
 					"portal", "7.3.7"
 				},
 				{
 					"backend-integration", "com.liferay.docs.guestbook",
-					"portal", "7.4.3.36"
+					"portal", "7.4.3.56"
 				},
 				{"sample", "com.test.sample", "dxp", "7.1.10.7"},
 				{"sample", "com.test.sample", "dxp", "7.2.10.7"},
+				{"sample", "com.test.sample", "dxp", "2024.q1.1"},
 				{"sample", "com.test.sample", "portal", "7.3.7"},
-				{"sample", "com.test.sample", "portal", "7.4.3.16"}
+				{"sample", "com.test.sample", "portal", "7.4.3.56"}
 			});
 	}
 
@@ -168,7 +175,7 @@ public class ProjectTemplatesRESTBuilderWorkspaceTest
 		if (_name.contains("sample")) {
 			testContains(
 				gradleProjectDir, "sample-impl/build.gradle",
-				"compile project(\":modules:nested:path:sample:sample-api\")");
+				"api project(\":modules:nested:path:sample:sample-api\")");
 		}
 
 		if (_liferayVersion.startsWith("7.1")) {
@@ -204,6 +211,14 @@ public class ProjectTemplatesRESTBuilderWorkspaceTest
 				gradleProjectDir, _name + "-impl/build.gradle",
 				"compileOnly group: \"javax.servlet\", name: " +
 					"\"javax.servlet-api\"");
+		}
+		else if (VersionUtil.isLiferayQuarterlyVersion(_liferayVersion)) {
+			testContains(
+				gradleProjectDir, _name + "-api/build.gradle",
+				DEPENDENCY_RELEASE_DXP_API);
+			testContains(
+				gradleProjectDir, _name + "-impl/build.gradle",
+				DEPENDENCY_RELEASE_DXP_API);
 		}
 		else {
 			testContains(

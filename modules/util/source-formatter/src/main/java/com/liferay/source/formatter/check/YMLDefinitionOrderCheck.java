@@ -97,14 +97,6 @@ public class YMLDefinitionOrderCheck extends BaseFileCheck {
 		return -1;
 	}
 
-	private int _getSpecialQueryKeyWeight(String definitionKey) {
-		if (_specialQueriesKeyWeightMap.containsKey(definitionKey)) {
-			return _specialQueriesKeyWeightMap.get(definitionKey);
-		}
-
-		return -1;
-	}
-
 	private String _removeComments(String definition) {
 		int y = definition.indexOf("\n");
 
@@ -354,15 +346,6 @@ public class YMLDefinitionOrderCheck extends BaseFileCheck {
 		}
 
 		if (parameter1Type.equals(parameter2Type)) {
-			if (parameter1Type.equals("query")) {
-				int weight1 = _getSpecialQueryKeyWeight(value1);
-				int weight2 = _getSpecialQueryKeyWeight(value2);
-
-				if ((weight1 != -1) || (weight2 != -1)) {
-					return weight1 - weight2;
-				}
-			}
-
 			return value1.compareTo(value2);
 		}
 
@@ -386,17 +369,5 @@ public class YMLDefinitionOrderCheck extends BaseFileCheck {
 		"\\{([^{}]+)\\}");
 	private static final Pattern _pathPattern3 = Pattern.compile(
 		" *-\n( +)in: path(\n\\1.+)*\n");
-	private static final Map<String, Integer> _specialQueriesKeyWeightMap =
-		HashMapBuilder.put(
-			"filter", 1
-		).put(
-			"page", 2
-		).put(
-			"pageSize", 3
-		).put(
-			"search", 4
-		).put(
-			"sort", 5
-		).build();
 
 }

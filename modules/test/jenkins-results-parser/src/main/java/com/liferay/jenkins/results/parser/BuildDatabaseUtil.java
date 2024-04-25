@@ -146,6 +146,8 @@ public class BuildDatabaseUtil {
 			return;
 		}
 
+		String currentNetworkName = _getCurrentNetworkName();
+
 		List<String> distNodesList = new ArrayList<>(
 			Arrays.asList(distNodes.split(",")));
 
@@ -155,6 +157,12 @@ public class BuildDatabaseUtil {
 					distNodesList);
 
 				distNodesList.remove(distNode);
+
+				if (!JenkinsResultsParserUtil.isJenkinsSlaveInNetwork(
+						distNode, currentNetworkName)) {
+
+					continue;
+				}
 
 				String[] commands = new String[2];
 
@@ -336,6 +344,14 @@ public class BuildDatabaseUtil {
 		}
 
 		return new File(JenkinsResultsParserUtil.getBuildDirPath());
+	}
+
+	private static String _getCurrentNetworkName() {
+		String masterHostname = System.getenv("MASTER_HOSTNAME");
+
+		JenkinsMaster jenkinsMaster = JenkinsMaster.getInstance(masterHostname);
+
+		return jenkinsMaster.getNetworkName();
 	}
 
 	private static final Map<File, BuildDatabase> _buildDatabases =

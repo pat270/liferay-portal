@@ -447,6 +447,14 @@ public class PortletPreferencesLocalServiceWrapper
 	}
 
 	@Override
+	public java.util.List<PortletPreferences> getPortletPreferencesByPortletId(
+		String portletId) {
+
+		return _portletPreferencesLocalService.getPortletPreferencesByPortletId(
+			portletId);
+	}
+
+	@Override
 	public long getPortletPreferencesCount(
 		int ownerType, long plid, String portletId) {
 
@@ -477,6 +485,14 @@ public class PortletPreferencesLocalServiceWrapper
 
 		return _portletPreferencesLocalService.getPortletPreferencesCount(
 			ownerId, ownerType, portletId, excludeDefaultPreferences);
+	}
+
+	@Override
+	public int getPortletPreferencesCount(
+		long companyId, long ownerId, int ownerType, String portletId) {
+
+		return _portletPreferencesLocalService.getPortletPreferencesCount(
+			companyId, ownerId, ownerType, portletId);
 	}
 
 	/**

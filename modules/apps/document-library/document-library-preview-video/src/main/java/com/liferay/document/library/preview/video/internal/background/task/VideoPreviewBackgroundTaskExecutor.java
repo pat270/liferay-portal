@@ -5,7 +5,9 @@
 
 package com.liferay.document.library.preview.video.internal.background.task;
 
-import com.liferay.document.library.kernel.util.VideoProcessor;
+import com.liferay.document.library.kernel.model.DLProcessorConstants;
+import com.liferay.document.library.kernel.processor.DLProcessor;
+import com.liferay.document.library.kernel.processor.VideoProcessor;
 import com.liferay.document.library.preview.background.task.BasePreviewBackgroundTaskExecutor;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskExecutor;
 import com.liferay.portal.kernel.repository.model.FileVersion;
@@ -18,7 +20,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Roberto Díaz
  */
 @Component(
-	configurationPid = "com.liferay.document.library.configuration.DLFileEntryConfiguration",
 	property = "background.task.executor.class.name=com.liferay.document.library.preview.video.internal.background.task.VideoPreviewBackgroundTaskExecutor",
 	service = BackgroundTaskExecutor.class
 )
@@ -27,15 +28,19 @@ public class VideoPreviewBackgroundTaskExecutor
 
 	@Override
 	protected void generatePreview(FileVersion fileVersion) throws Exception {
-		_videoProcessor.generateVideo(null, fileVersion);
+		VideoProcessor videoProcessor = (VideoProcessor)_dlProcessor;
+
+		videoProcessor.generateVideo(null, fileVersion);
 	}
 
 	@Override
 	protected String[] getMimeTypes() {
-		return ArrayUtil.toStringArray(_videoProcessor.getVideoMimeTypes());
+		VideoProcessor videoProcessor = (VideoProcessor)_dlProcessor;
+
+		return ArrayUtil.toStringArray(videoProcessor.getVideoMimeTypes());
 	}
 
-	@Reference
-	private VideoProcessor _videoProcessor;
+	@Reference(target = "(type=" + DLProcessorConstants.VIDEO_PROCESSOR + ")")
+	private DLProcessor _dlProcessor;
 
 }

@@ -9,6 +9,7 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.CamelCaseUtil;
 import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -24,6 +25,7 @@ import com.liferay.portal.tools.rest.builder.internal.freemarker.tool.java.parse
 import com.liferay.portal.tools.rest.builder.internal.freemarker.tool.java.parser.ResourceTestCaseOpenAPIParser;
 import com.liferay.portal.tools.rest.builder.internal.freemarker.tool.java.parser.util.OpenAPIParserUtil;
 import com.liferay.portal.tools.rest.builder.internal.freemarker.util.ConfigUtil;
+import com.liferay.portal.tools.rest.builder.internal.freemarker.util.OpenAPIUtil;
 import com.liferay.portal.tools.rest.builder.internal.yaml.config.Application;
 import com.liferay.portal.tools.rest.builder.internal.yaml.config.ConfigYAML;
 import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Components;
@@ -268,9 +270,9 @@ public class FreeMarkerTool {
 	}
 
 	public Map<String, Schema> getDTOEnumSchemas(
-		OpenAPIYAML openAPIYAML, Schema schema) {
+		ConfigYAML configYAML, OpenAPIYAML openAPIYAML, Schema schema) {
 
-		return DTOOpenAPIParser.getEnumSchemas(openAPIYAML, schema);
+		return DTOOpenAPIParser.getEnumSchemas(configYAML, openAPIYAML, schema);
 	}
 
 	public String getDTOParentClassName(
@@ -303,20 +305,27 @@ public class FreeMarkerTool {
 	}
 
 	public Map<String, String> getDTOProperties(
-		ConfigYAML configYAML, OpenAPIYAML openAPIYAML, Schema schema) {
+		ConfigYAML configYAML, OpenAPIYAML openAPIYAML, Schema schema,
+		Map<String, Schema> schemas) {
 
-		return DTOOpenAPIParser.getProperties(configYAML, openAPIYAML, schema);
+		return DTOOpenAPIParser.getProperties(
+			configYAML, false, openAPIYAML, schema, schemas);
 	}
 
 	public Map<String, String> getDTOProperties(
-		ConfigYAML configYAML, OpenAPIYAML openAPIYAML, String schemaName) {
+		ConfigYAML configYAML, OpenAPIYAML openAPIYAML, String schemaName,
+		Map<String, Schema> schemas) {
 
 		return DTOOpenAPIParser.getProperties(
-			configYAML, openAPIYAML, schemaName);
+			configYAML, openAPIYAML, schemaName, schemas);
 	}
 
-	public Schema getDTOPropertySchema(String propertyName, Schema schema) {
-		return DTOOpenAPIParser.getPropertySchema(propertyName, schema);
+	public Schema getDTOPropertySchema(
+		ConfigYAML configYAML, String propertyName, Schema schema,
+		Map<String, Schema> schemas) {
+
+		return DTOOpenAPIParser.getPropertySchema(
+			configYAML, propertyName, schema, schemas);
 	}
 
 	public String getEnumFieldName(String value) {
@@ -391,10 +400,10 @@ public class FreeMarkerTool {
 
 	public String getGraphQLJavaParameterName(
 		ConfigYAML configYAML, OpenAPIYAML openAPIYAML, String schemaName,
-		JavaMethodParameter javaMethodParameter) {
+		Map<String, Schema> schemas, JavaMethodParameter javaMethodParameter) {
 
 		Map<String, String> properties = getDTOProperties(
-			configYAML, openAPIYAML, schemaName);
+			configYAML, openAPIYAML, schemaName, schemas);
 
 		return _getParentProperty(
 			schemaName, javaMethodParameter, properties.keySet());
@@ -422,6 +431,27 @@ public class FreeMarkerTool {
 
 	public String getGraphQLMutationName(String methodName) {
 		return GraphQLNamingUtil.getGraphQLMutationName(methodName);
+	}
+
+	public String getGraphQLNamespace(
+		ConfigYAML configYAML, OpenAPIYAML openAPIYAML) {
+
+		Application application = configYAML.getApplication();
+
+		String baseURI = application.getBaseURI();
+
+		if (baseURI.startsWith("/")) {
+			baseURI = baseURI.substring(1);
+		}
+
+		int index = baseURI.indexOf("-rest");
+
+		if (index != -1) {
+			baseURI = baseURI.substring(0, index);
+		}
+
+		return CamelCaseUtil.toCamelCase(
+			baseURI + "_" + OpenAPIUtil.escapeVersion(openAPIYAML));
 	}
 
 	public String getGraphQLParameters(
@@ -581,6 +611,13 @@ public class FreeMarkerTool {
 		return null;
 	}
 
+	public Map<String, Schema> getMultipartBodySchemas(
+		JavaMethodSignature javaMethodSignature) {
+
+		return ResourceOpenAPIParser.getMultipartBodySchemas(
+			javaMethodSignature);
+	}
+
 	public String getObjectFieldStringValue(String type, Object value) {
 		if (value instanceof Date) {
 			if (type.equals("Date")) {
@@ -738,11 +775,11 @@ public class FreeMarkerTool {
 	}
 
 	public String getResourceParameters(
-		List<JavaMethodParameter> javaMethodParameters, OpenAPIYAML openAPIYAML,
-		Operation operation, boolean annotation) {
+		ConfigYAML configYAML, List<JavaMethodParameter> javaMethodParameters,
+		Operation operation, Map<String, Schema> schemas, boolean annotation) {
 
 		return ResourceOpenAPIParser.getParameters(
-			javaMethodParameters, openAPIYAML, operation, annotation);
+			configYAML, javaMethodParameters, operation, schemas, annotation);
 	}
 
 	public String getResourceTestCaseArguments(
@@ -759,11 +796,11 @@ public class FreeMarkerTool {
 	}
 
 	public String getResourceTestCaseParameters(
-		List<JavaMethodParameter> javaMethodParameters, OpenAPIYAML openAPIYAML,
-		Operation operation, boolean annotation) {
+		ConfigYAML configYAML, List<JavaMethodParameter> javaMethodParameters,
+		Operation operation, Map<String, Schema> schemas, boolean annotation) {
 
 		return ResourceTestCaseOpenAPIParser.getParameters(
-			javaMethodParameters, openAPIYAML, operation, annotation);
+			configYAML, javaMethodParameters, operation, schemas, annotation);
 	}
 
 	public String getRESTMethodJavadoc(
@@ -832,10 +869,11 @@ public class FreeMarkerTool {
 	}
 
 	public Map<String, String> getWritableDTOProperties(
-		ConfigYAML configYAML, OpenAPIYAML openAPIYAML, Schema schema) {
+		ConfigYAML configYAML, OpenAPIYAML openAPIYAML, Schema schema,
+		Map<String, Schema> schemas) {
 
 		return DTOOpenAPIParser.getProperties(
-			configYAML, true, openAPIYAML, schema);
+			configYAML, true, openAPIYAML, schema, schemas);
 	}
 
 	public boolean hasHTTPMethod(
@@ -990,10 +1028,11 @@ public class FreeMarkerTool {
 	}
 
 	public boolean isDTOSchemaProperty(
-		OpenAPIYAML openAPIYAML, String propertyName, Schema schema) {
+		ConfigYAML configYAML, String propertyName, Schema schema,
+		Map<String, Schema> schemas) {
 
 		return DTOOpenAPIParser.isSchemaProperty(
-			openAPIYAML, propertyName, schema);
+			configYAML, propertyName, schema, schemas);
 	}
 
 	public boolean isParameter(

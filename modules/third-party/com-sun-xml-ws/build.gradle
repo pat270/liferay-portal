@@ -1,5 +1,3 @@
-apply plugin: "nebula.optional-base"
-
 task jarManifest
 task jarPatched(type: Zip)
 
@@ -24,8 +22,8 @@ jarManifest {
 }
 
 jarPatched {
-	archiveName = jar.archiveName
-	destinationDir = jar.destinationDir
+	archiveFileName = jar.archiveFileName
+	destinationDirectory = jar.destinationDirectory
 	duplicatesStrategy = "exclude"
 
 	exclude "META-INF/services/javax.xml.ws.spi.Provider"
@@ -35,4 +33,8 @@ jarPatched {
 	from {
 		zipTree(configurations.compileOnly.singleFile)
 	}
+
+	mustRunAfter compileJava
+	mustRunAfter generatePomFileForMavenPublication
+	mustRunAfter processResources
 }

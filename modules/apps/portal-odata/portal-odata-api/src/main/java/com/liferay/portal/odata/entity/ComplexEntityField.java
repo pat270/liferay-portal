@@ -30,6 +30,12 @@ public class ComplexEntityField extends EntityField {
 	 * @review
 	 */
 	public ComplexEntityField(String name, List<EntityField> entityFields) {
+		this(name, entityFields, name);
+	}
+
+	public ComplexEntityField(
+		String name, List<EntityField> entityFields, String typeKey) {
+
 		super(
 			name, EntityField.Type.COMPLEX, locale -> name, locale -> name,
 			fieldValue -> String.valueOf(fieldValue));
@@ -44,6 +50,19 @@ public class ComplexEntityField extends EntityField {
 				_entityFieldsMap.put(entityField.getName(), entityField);
 			}
 		}
+
+		_typeKey = typeKey;
+	}
+
+	public ComplexEntityField(
+		String name, Map<String, EntityField> entityFieldsMap, String typeKey) {
+
+		super(
+			name, EntityField.Type.COMPLEX, locale -> name, locale -> name,
+			fieldValue -> String.valueOf(fieldValue));
+
+		_entityFieldsMap = entityFieldsMap;
+		_typeKey = typeKey;
 	}
 
 	/**
@@ -56,15 +75,22 @@ public class ComplexEntityField extends EntityField {
 		return _entityFieldsMap;
 	}
 
+	public String getTypeKey() {
+		return _typeKey;
+	}
+
 	@Override
 	public String toString() {
 		Type type = getType();
 
+		Map<String, EntityField> entityFieldsMap = getEntityFieldsMap();
+
 		return StringBundler.concat(
-			"{entityFields: ", getEntityFieldsMap(), ", name: ", getName(),
-			", type: ", type.name(), "}");
+			"{entityFields: ", entityFieldsMap.keySet(), ", name: ", getName(),
+			", type: ", type.name(), ", typeKey: ", getTypeKey(), "}");
 	}
 
 	private final Map<String, EntityField> _entityFieldsMap;
+	private final String _typeKey;
 
 }

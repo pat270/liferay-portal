@@ -30,7 +30,6 @@
 		<column name="active" type="boolean" />
 		<column name="criteria" type="String" />
 		<column name="source" type="String" />
-		<column name="type" type="String" />
 		<column name="lastPublishDate" type="Date" />
 
 		<!-- Order -->
@@ -47,11 +46,11 @@
 		<finder name="CompanyId" return-type="Collection">
 			<finder-column arrayable-operator="OR" name="companyId" />
 		</finder>
+		<finder name="Active" return-type="Collection">
+			<finder-column name="active" />
+		</finder>
 		<finder name="Source" return-type="Collection">
 			<finder-column name="source" />
-		</finder>
-		<finder name="Type" return-type="Collection">
-			<finder-column name="type" />
 		</finder>
 		<finder name="G_S" return-type="SegmentsEntry" unique="true">
 			<finder-column name="groupId" />
@@ -61,20 +60,9 @@
 			<finder-column arrayable-operator="OR" name="groupId" />
 			<finder-column name="active" />
 		</finder>
-		<finder name="A_T" return-type="Collection">
-			<finder-column name="active" />
-			<finder-column name="type" />
-		</finder>
-		<finder name="G_A_T" return-type="Collection">
+		<finder name="G_SRC" return-type="Collection">
 			<finder-column arrayable-operator="OR" name="groupId" />
-			<finder-column name="active" />
-			<finder-column name="type" />
-		</finder>
-		<finder name="G_A_S_T" return-type="Collection">
-			<finder-column arrayable-operator="OR" name="groupId" />
-			<finder-column name="active" />
 			<finder-column name="source" />
-			<finder-column name="type" />
 		</finder>
 	</entity>
 	<entity local-service="true" name="SegmentsEntryRel" remote-service="true">
@@ -284,18 +272,10 @@
 			<finder-column name="groupId" />
 			<finder-column name="segmentsExperimentKey" />
 		</finder>
-		<finder name="G_P" return-type="Collection">
+		<finder name="G_S_P" return-type="SegmentsExperiment" unique="true">
 			<finder-column name="groupId" />
-			<finder-column name="plid" />
-		</finder>
-		<finder name="S_P" return-type="Collection">
 			<finder-column name="segmentsExperienceId" />
 			<finder-column name="plid" />
-		</finder>
-		<finder name="S_P_S" return-type="Collection">
-			<finder-column arrayable-operator="OR" name="segmentsExperienceId" />
-			<finder-column name="plid" />
-			<finder-column arrayable-operator="OR" name="status" />
 		</finder>
 	</entity>
 	<entity local-service="true" name="SegmentsExperimentRel" remote-service="true">
@@ -336,6 +316,7 @@
 		</finder>
 	</entity>
 	<exceptions>
+		<exception>DuplicateSegmentsExperiment</exception>
 		<exception>LockedSegmentsExperiment</exception>
 		<exception>RequiredSegmentsEntry</exception>
 		<exception>RequiredSegmentsExperience</exception>
@@ -351,6 +332,7 @@
 		<exception>SegmentsExperimentRelName</exception>
 		<exception>SegmentsExperimentRelSplit</exception>
 		<exception>SegmentsExperimentStatus</exception>
+		<exception>SegmentsExperimentType</exception>
 		<exception>WinnerSegmentsExperience</exception>
 	</exceptions>
 </service-builder>

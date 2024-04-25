@@ -284,6 +284,31 @@ public class CPInstanceLocalServiceTest {
 	}
 
 	@Test
+	public void testGetReplacementCPInstances() throws Exception {
+		CPInstance cpInstance = CPTestUtil.addCPInstanceFromCatalog(
+			_commerceCatalog.getGroupId());
+
+		CPInstance replacementCPIstance = CPTestUtil.addCPInstanceFromCatalog(
+			_commerceCatalog.getGroupId());
+
+		CPDefinition replacementCPDefinition = cpInstance.getCPDefinition();
+
+		cpInstance.setReplacementCPInstanceUuid(
+			replacementCPIstance.getCPInstanceUuid());
+		cpInstance.setReplacementCProductId(
+			replacementCPDefinition.getCProductId());
+
+		_cpInstanceLocalService.updateCPInstance(cpInstance);
+
+		List<CPInstance> cpInstances = _cpInstanceLocalService.getCPInstances(
+			replacementCPIstance.getCPInstanceUuid(),
+			replacementCPDefinition.getCProductId(),
+			WorkflowConstants.STATUS_APPROVED);
+
+		Assert.assertEquals(cpInstances.toString(), 1, cpInstances.size());
+	}
+
+	@Test
 	public void testInactivateCPInstanceCPInstanceWithSameOptionAdded()
 		throws Exception {
 
@@ -504,7 +529,7 @@ public class CPInstanceLocalServiceTest {
 				cpDefinitionOptionRel.getCPOptionId(),
 				cpDefinitionOptionRel.getNameMap(),
 				cpDefinitionOptionRel.getDescriptionMap(),
-				cpDefinitionOptionRel.getDDMFormFieldTypeName(),
+				cpDefinitionOptionRel.getCommerceOptionTypeKey(),
 				cpDefinitionOptionRel.getPriority(),
 				cpDefinitionOptionRel.isFacetable(),
 				cpDefinitionOptionRel.isRequired(), false,
@@ -530,7 +555,7 @@ public class CPInstanceLocalServiceTest {
 				cpDefinitionOptionRel.getCPOptionId(),
 				cpDefinitionOptionRel.getNameMap(),
 				cpDefinitionOptionRel.getDescriptionMap(),
-				cpDefinitionOptionRel.getDDMFormFieldTypeName(),
+				cpDefinitionOptionRel.getCommerceOptionTypeKey(),
 				cpDefinitionOptionRel.getPriority(),
 				cpDefinitionOptionRel.isFacetable(),
 				cpDefinitionOptionRel.isRequired(), true,

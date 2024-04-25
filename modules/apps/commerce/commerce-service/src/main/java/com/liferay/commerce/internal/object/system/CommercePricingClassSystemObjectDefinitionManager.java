@@ -24,10 +24,10 @@ import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
@@ -64,6 +64,7 @@ public class CommercePricingClassSystemObjectDefinitionManager
 			(CommercePricingClass)baseModel);
 	}
 
+	@Override
 	public BaseModel<?> fetchBaseModelByExternalReferenceCode(
 		String externalReferenceCode, long companyId) {
 
@@ -106,8 +107,12 @@ public class CommercePricingClassSystemObjectDefinitionManager
 	}
 
 	@Override
-	public Map<Locale, String> getLabelMap() {
-		return createLabelMap("commerce-product-group");
+	public Map<String, String> getLabelKeys() {
+		return HashMapBuilder.put(
+			"label", "commerce-product-group"
+		).put(
+			"pluralLabel", "commerce-product-groups"
+		).build();
 	}
 
 	@Override
@@ -147,11 +152,6 @@ public class CommercePricingClassSystemObjectDefinitionManager
 	}
 
 	@Override
-	public Map<Locale, String> getPluralLabelMap() {
-		return createLabelMap("commerce-product-groups");
-	}
-
-	@Override
 	public Column<?, Long> getPrimaryKeyColumn() {
 		return CommercePricingClassTable.INSTANCE.commercePricingClassId;
 	}
@@ -173,7 +173,7 @@ public class CommercePricingClassSystemObjectDefinitionManager
 
 	@Override
 	public int getVersion() {
-		return 2;
+		return 3;
 	}
 
 	@Override
@@ -208,12 +208,13 @@ public class CommercePricingClassSystemObjectDefinitionManager
 	private ProductGroup _toProductGroup(Map<String, Object> values) {
 		return new ProductGroup() {
 			{
-				description = getLanguageIdMap("description", values);
-				externalReferenceCode = GetterUtil.getString(
-					values.get("externalReferenceCode"));
-				productsCount = GetterUtil.getInteger(
-					values.get("productsCount"));
-				title = getLanguageIdMap("title", values);
+				setDescription(() -> getLanguageIdMap("description", values));
+				setExternalReferenceCode(
+					() -> GetterUtil.getString(
+						values.get("externalReferenceCode")));
+				setProductsCount(
+					() -> GetterUtil.getInteger(values.get("productsCount")));
+				setTitle(() -> getLanguageIdMap("title", values));
 			}
 		};
 	}

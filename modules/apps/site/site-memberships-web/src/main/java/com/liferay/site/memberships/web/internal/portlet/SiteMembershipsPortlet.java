@@ -37,9 +37,9 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.liveusers.LiveUsers;
+import com.liferay.portlet.usersadmin.util.UsersAdminUtil;
 import com.liferay.site.memberships.constants.SiteMembershipsPortletKeys;
 import com.liferay.site.memberships.web.internal.display.context.SiteMembershipsDisplayContext;
-import com.liferay.users.admin.kernel.util.UsersAdmin;
 
 import java.io.IOException;
 
@@ -67,7 +67,6 @@ import org.osgi.service.component.annotations.Reference;
 	property = {
 		"com.liferay.portlet.add-default-resource=true",
 		"com.liferay.portlet.css-class-wrapper=portlet-communities",
-		"com.liferay.portlet.header-portlet-css=/css/main.css",
 		"com.liferay.portlet.icon=/icons/site_memberships_admin.png",
 		"com.liferay.portlet.preferences-owned-by-group=true",
 		"com.liferay.portlet.private-request-attributes=false",
@@ -255,11 +254,11 @@ public class SiteMembershipsPortlet extends MVCPortlet {
 			_userGroupRoleLocalService.getUserGroupRoles(
 				user.getUserId(), group.getGroupId());
 
-		userGroupRoles = _usersAdmin.filterUserGroupRoles(
+		userGroupRoles = UsersAdminUtil.filterUserGroupRoles(
 			themeDisplay.getPermissionChecker(), userGroupRoles);
 
 		List<Long> curRoleIds = ListUtil.toList(
-			userGroupRoles, UsersAdmin.USER_GROUP_ROLE_ID_ACCESSOR);
+			userGroupRoles, UsersAdminUtil.USER_GROUP_ROLE_ID_ACCESSOR);
 
 		List<Long> removeRoleIds = new ArrayList<>();
 
@@ -485,9 +484,6 @@ public class SiteMembershipsPortlet extends MVCPortlet {
 
 	@Reference
 	private UserLocalService _userLocalService;
-
-	@Reference
-	private UsersAdmin _usersAdmin;
 
 	@Reference
 	private UserService _userService;

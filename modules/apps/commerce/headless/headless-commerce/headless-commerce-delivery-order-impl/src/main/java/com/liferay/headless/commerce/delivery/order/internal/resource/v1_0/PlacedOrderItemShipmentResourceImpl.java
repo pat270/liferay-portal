@@ -6,6 +6,7 @@
 package com.liferay.headless.commerce.delivery.order.internal.resource.v1_0;
 
 import com.liferay.commerce.exception.NoSuchOrderException;
+import com.liferay.commerce.exception.NoSuchOrderItemException;
 import com.liferay.commerce.model.CommerceOrder;
 import com.liferay.commerce.model.CommerceOrderItem;
 import com.liferay.commerce.model.CommerceShipment;
@@ -21,7 +22,6 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.fields.NestedField;
 import com.liferay.portal.vulcan.fields.NestedFieldId;
-import com.liferay.portal.vulcan.fields.NestedFieldSupport;
 import com.liferay.portal.vulcan.pagination.Page;
 
 import java.util.ArrayList;
@@ -36,12 +36,31 @@ import org.osgi.service.component.annotations.ServiceScope;
  */
 @Component(
 	properties = "OSGI-INF/liferay/rest/v1_0/placed-order-item-shipment.properties",
-	scope = ServiceScope.PROTOTYPE,
-	service = {NestedFieldSupport.class, PlacedOrderItemShipmentResource.class}
+	property = "nested.field.support=true", scope = ServiceScope.PROTOTYPE,
+	service = PlacedOrderItemShipmentResource.class
 )
 public class PlacedOrderItemShipmentResourceImpl
-	extends BasePlacedOrderItemShipmentResourceImpl
-	implements NestedFieldSupport {
+	extends BasePlacedOrderItemShipmentResourceImpl {
+
+	@Override
+	public Page<PlacedOrderItemShipment>
+			getPlacedOrderItemByExternalReferenceCodePlacedOrderItemShipmentsPage(
+				String externalReferenceCode)
+		throws Exception {
+
+		CommerceOrderItem commerceOrderItem =
+			_commerceOrderItemService.fetchByExternalReferenceCode(
+				externalReferenceCode, contextCompany.getCompanyId());
+
+		if (commerceOrderItem == null) {
+			throw new NoSuchOrderItemException(
+				"Unable to find order item with external reference code " +
+					externalReferenceCode);
+		}
+
+		return getPlacedOrderItemPlacedOrderItemShipmentsPage(
+			commerceOrderItem.getCommerceOrderItemId());
+	}
 
 	@NestedField(
 		parentClass = PlacedOrderItem.class, value = "placedOrderItemShipments"

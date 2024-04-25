@@ -6,7 +6,6 @@
 package com.liferay.portal.search.elasticsearch7.internal;
 
 import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
@@ -404,10 +403,6 @@ public class ElasticsearchIndexWriter extends BaseIndexWriter {
 	}
 
 	private String _getIndexNameNext(long companyId) {
-		if (!FeatureFlagManagerUtil.isEnabled("LPS-177664")) {
-			return null;
-		}
-
 		Company company = _companyLocalService.fetchCompany(companyId);
 
 		if (company == null) {
@@ -447,7 +442,7 @@ public class ElasticsearchIndexWriter extends BaseIndexWriter {
 	private CompanyLocalService _companyLocalService;
 
 	@Reference
-	private volatile ElasticsearchConfigurationWrapper
+	private ElasticsearchConfigurationWrapper
 		_elasticsearchConfigurationWrapper;
 
 	@Reference

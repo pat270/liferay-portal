@@ -9,6 +9,7 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.info.item.InfoItemFormVariation;
 import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.info.item.provider.InfoItemFormVariationsProvider;
+import com.liferay.layout.importer.LayoutsImportStrategy;
 import com.liferay.layout.importer.LayoutsImporter;
 import com.liferay.layout.importer.LayoutsImporterResultEntry;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
@@ -113,7 +114,7 @@ public class ExportImportDisplayPagesTest {
 				_serviceContext1.getUserId(),
 				_serviceContext1.getScopeGroupId(), 0, classNameId, classTypeId,
 				"Display Page Template One",
-				LayoutPageTemplateEntryTypeConstants.TYPE_DISPLAY_PAGE, 0,
+				LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE, 0,
 				WorkflowConstants.STATUS_APPROVED, _serviceContext1);
 
 		Layout layout1 = _layoutLocalService.fetchLayout(
@@ -158,7 +159,7 @@ public class ExportImportDisplayPagesTest {
 		try {
 			layoutsImporterResultEntries = _layoutsImporter.importFile(
 				TestPropsValues.getUserId(), _group2.getGroupId(), 0, file,
-				false);
+				LayoutsImportStrategy.DO_NOT_OVERWRITE, true);
 		}
 		finally {
 			ServiceContextThreadLocal.popServiceContext();

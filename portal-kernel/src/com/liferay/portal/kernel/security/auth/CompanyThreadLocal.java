@@ -25,118 +25,21 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-import java.util.Locale;
-import java.util.TimeZone;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Brian Wing Shun Chan
  */
 public class CompanyThreadLocal {
 
-	public static Long getCompanyId() {
+	public static User fetchGuestUser() {
 		Long companyId = _companyId.get();
 
-		if (_log.isDebugEnabled()) {
-			_log.debug("Get company ID " + companyId);
+		if (companyId == CompanyConstants.SYSTEM) {
+			return null;
 		}
 
-		return companyId;
-	}
-
-	public static boolean isInitializingPortalInstance() {
-		return _initializingPortalInstance.get();
-	}
-
-	public static boolean isLocked() {
-		return _locked.get();
-	}
-
-	public static SafeCloseable lock(long companyId) {
-		if (isLocked()) {
-			Long currentCompanyId = _companyId.get();
-
-			if (companyId == currentCompanyId.longValue()) {
-				return () -> {
-				};
-			}
-
-			throw new UnsupportedOperationException(
-				StringBundler.concat(
-					"Company ID ", companyId, " and company ID ",
-					currentCompanyId.longValue(), " are different"));
-		}
-
-		_syncLastDBPartitionSessionState();
-
-		SafeCloseable safeCloseable = _companyId.setWithSafeCloseable(
-			companyId);
-
-		_locked.set(true);
-
-		return () -> {
-			_locked.set(false);
-
-			_syncLastDBPartitionSessionState();
-
-			safeCloseable.close();
-		};
-	}
-
-	public static void setCompanyId(Long companyId) {
-		if (_setCompanyId(companyId)) {
-			CTCollectionThreadLocal.removeCTCollectionId();
-		}
-	}
-
-	public static SafeCloseable setInitializingCompanyIdWithSafeCloseable(
-		long companyId) {
-
-		if (companyId > 0) {
-			return _companyId.setWithSafeCloseable(companyId);
-		}
-
-		return _companyId.setWithSafeCloseable(CompanyConstants.SYSTEM);
-	}
-
-	public static SafeCloseable setInitializingPortalInstance(
-		boolean initializingPortalInstance) {
-
-		return _initializingPortalInstance.setWithSafeCloseable(
-			initializingPortalInstance);
-	}
-
-	public static SafeCloseable setWithSafeCloseable(Long companyId) {
-		return setWithSafeCloseable(
-			companyId, CTCollectionThreadLocal.CT_COLLECTION_ID_PRODUCTION);
-	}
-
-	public static SafeCloseable setWithSafeCloseable(
-		Long companyId, Long ctCollectionId) {
-
-		long currentCompanyId = _companyId.get();
-		Locale defaultLocale = LocaleThreadLocal.getDefaultLocale();
-		TimeZone defaultTimeZone = TimeZoneThreadLocal.getDefaultTimeZone();
-
-		boolean changed = _setCompanyId(companyId);
-
-		SafeCloseable ctCollectionSafeCloseable =
-			CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
-				ctCollectionId);
-
-		return () -> {
-			if (changed) {
-				_syncLastDBPartitionSessionState();
-			}
-
-			_companyId.set(currentCompanyId);
-			LocaleThreadLocal.setDefaultLocale(defaultLocale);
-			TimeZoneThreadLocal.setDefaultTimeZone(defaultTimeZone);
-
-			ctCollectionSafeCloseable.close();
-		};
-	}
-
-	private static User _fetchGuestUser(long companyId) throws Exception {
 		User guestUser = null;
 
 		try {
@@ -172,23 +75,73 @@ public class CompanyThreadLocal {
 				guestUser.setTimeZoneId(resultSet.getString("timeZoneId"));
 			}
 		}
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception);
+			}
+		}
 
 		return guestUser;
 	}
 
-	private static boolean _setCompanyId(Long companyId) {
+	public static Long getCompanyId() {
+		Long companyId = _companyId.get();
+
+		if (_log.isDebugEnabled()) {
+			_log.debug("Get company ID " + companyId);
+		}
+
+		return companyId;
+	}
+
+	public static boolean isInitializingPortalInstance() {
+		return _initializingPortalInstance.get();
+	}
+
+	public static boolean isLocked() {
+		return _locked.get();
+	}
+
+	public static SafeCloseable lock(long companyId) {
+		long currentCompanyId = _companyId.get();
+
+		if (companyId == currentCompanyId) {
+			if (isLocked()) {
+				return () -> {
+				};
+			}
+
+			_locked.set(true);
+
+			return () -> _locked.set(false);
+		}
+
+		if (isLocked()) {
+			throw new UnsupportedOperationException(
+				StringBundler.concat(
+					"Company ID ", companyId, " and company ID ",
+					currentCompanyId, " are different"));
+		}
+
+		_syncLastDBPartitionSessionState();
+
+		SafeCloseable safeCloseable = _companyId.setWithSafeCloseable(
+			companyId);
+
+		_locked.set(true);
+
+		return () -> {
+			_locked.set(false);
+
+			_syncLastDBPartitionSessionState();
+
+			safeCloseable.close();
+		};
+	}
+
+	public static void setCompanyId(Long companyId) {
 		if (companyId.equals(_companyId.get())) {
-			if (!isLocked()) {
-				return false;
-			}
-
-			if ((LocaleThreadLocal.getDefaultLocale() == null) ||
-				(TimeZoneThreadLocal.getDefaultTimeZone() == null)) {
-
-				_setUserThreadLocals(companyId);
-			}
-
-			return false;
+			return;
 		}
 
 		if (isLocked()) {
@@ -204,43 +157,89 @@ public class CompanyThreadLocal {
 
 		if (companyId > 0) {
 			_companyId.set(companyId);
-
-			_setUserThreadLocals(companyId);
 		}
 		else {
 			_companyId.set(CompanyConstants.SYSTEM);
-
-			_setUserThreadLocals(null);
 		}
 
-		return true;
+		_clearUserThreadLocals();
+
+		CTCollectionThreadLocal.removeCTCollectionId();
 	}
 
-	private static void _setUserThreadLocals(Long companyId) {
-		if (companyId == null) {
-			LocaleThreadLocal.setDefaultLocale(null);
-			TimeZoneThreadLocal.setDefaultTimeZone(null);
+	public static SafeCloseable setInitializingCompanyIdWithSafeCloseable(
+		long companyId) {
 
-			return;
+		if (companyId > 0) {
+			return _companyId.setWithSafeCloseable(companyId);
 		}
 
-		try {
-			User guestUser = _fetchGuestUser(companyId);
+		return _companyId.setWithSafeCloseable(CompanyConstants.SYSTEM);
+	}
 
-			if (guestUser == null) {
-				if (_log.isDebugEnabled()) {
-					_log.debug(
-						"No guest user was found for company " + companyId);
-				}
+	public static SafeCloseable setInitializingPortalInstance(
+		boolean initializingPortalInstance) {
+
+		return _initializingPortalInstance.setWithSafeCloseable(
+			initializingPortalInstance);
+	}
+
+	public static SafeCloseable setWithSafeCloseable(Long companyId) {
+		return setWithSafeCloseable(
+			companyId, CTCollectionThreadLocal.CT_COLLECTION_ID_PRODUCTION);
+	}
+
+	public static SafeCloseable setWithSafeCloseable(
+		Long companyId, Long ctCollectionId) {
+
+		List<SafeCloseable> safeCloseables = new ArrayList<>();
+
+		if (!companyId.equals(_companyId.get())) {
+			if (isLocked()) {
+				throw new UnsupportedOperationException(
+					"CompanyThreadLocal modification is not allowed");
+			}
+
+			_syncLastDBPartitionSessionState();
+
+			if (_log.isDebugEnabled()) {
+				_log.debug("setCompanyId " + companyId);
+			}
+
+			if (companyId > 0) {
+				safeCloseables.add(_companyId.setWithSafeCloseable(companyId));
 			}
 			else {
-				LocaleThreadLocal.setDefaultLocale(guestUser.getLocale());
-				TimeZoneThreadLocal.setDefaultTimeZone(guestUser.getTimeZone());
+				safeCloseables.add(
+					_companyId.setWithSafeCloseable(CompanyConstants.SYSTEM));
 			}
+
+			safeCloseables.add(
+				LocaleThreadLocal.setDefaultLocaleWithSafeCloseable(null));
+			safeCloseables.add(
+				TimeZoneThreadLocal.setDefaultTimeZoneWithSafeCloseable(null));
+
+			_clearUserThreadLocals();
 		}
-		catch (Exception exception) {
-			_log.error(exception);
-		}
+
+		safeCloseables.add(
+			CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
+				ctCollectionId));
+
+		return () -> {
+			if (safeCloseables.size() > 1) {
+				_syncLastDBPartitionSessionState();
+			}
+
+			for (SafeCloseable safeCloseable : safeCloseables) {
+				safeCloseable.close();
+			}
+		};
+	}
+
+	private static void _clearUserThreadLocals() {
+		LocaleThreadLocal.removeDefaultLocale();
+		TimeZoneThreadLocal.removeDefaultTimeZone();
 	}
 
 	private static void _syncLastDBPartitionSessionState() {

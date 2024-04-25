@@ -34,7 +34,7 @@ import org.json.JSONObject;
 public class ValidationBuild extends BaseBuild {
 
 	@Override
-	public void addTimelineData(BaseBuild.TimelineData timelineData) {
+	public void addTimelineData(TimelineData timelineData) {
 		timelineData.addTimelineData(this);
 	}
 
@@ -69,7 +69,16 @@ public class ValidationBuild extends BaseBuild {
 	}
 
 	@Override
+	public String getBuildName() {
+		return "default";
+	}
+
+	@Override
 	public Element getGitHubMessageElement() {
+		if (_gitHubMessageElement != null) {
+			return _gitHubMessageElement;
+		}
+
 		update();
 
 		Element rootElement = Dom4JUtil.getNewElement(
@@ -141,7 +150,9 @@ public class ValidationBuild extends BaseBuild {
 				getFullConsoleClickHereElement());
 		}
 
-		return rootElement;
+		_gitHubMessageElement = rootElement;
+
+		return _gitHubMessageElement;
 	}
 
 	@Override
@@ -413,5 +424,7 @@ public class ValidationBuild extends BaseBuild {
 
 	private static final Pattern _consoleResultPattern = Pattern.compile(
 		"Subrepository task (FAILED|SUCCESSFUL)");
+
+	private Element _gitHubMessageElement;
 
 }

@@ -72,6 +72,9 @@ public interface MessageBoardMessageResource {
 			String callbackURL, Object object)
 		throws Exception;
 
+	public void putMessageBoardMessageMarkAsAnswer(Long messageBoardMessageId)
+		throws Exception;
+
 	public void deleteMessageBoardMessageMyRating(Long messageBoardMessageId)
 		throws Exception;
 
@@ -98,6 +101,9 @@ public interface MessageBoardMessageResource {
 		throws Exception;
 
 	public void putMessageBoardMessageSubscribe(Long messageBoardMessageId)
+		throws Exception;
+
+	public void putMessageBoardMessageUnmarkAsAnswer(Long messageBoardMessageId)
 		throws Exception;
 
 	public void putMessageBoardMessageUnsubscribe(Long messageBoardMessageId)
@@ -176,6 +182,11 @@ public interface MessageBoardMessageResource {
 			putSiteMessageBoardMessagePermissionsPage(
 				Long siteId,
 				com.liferay.portal.vulcan.permission.Permission[] permissions)
+		throws Exception;
+
+	public Page<MessageBoardMessage>
+			getSiteUserMessageBoardMessagesActivityPage(
+				Long siteId, Long userId, Pagination pagination)
 		throws Exception;
 
 	public default void setContextAcceptLanguage(

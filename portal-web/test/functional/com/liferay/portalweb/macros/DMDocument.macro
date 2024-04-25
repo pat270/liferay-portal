@@ -3,7 +3,8 @@ definition {
 	var assetType = "Document";
 	var dmDocumentTypeName = "File Upload";
 
-	macro addCategories {
+	@summary = "Default summary"
+	macro addCategories(vocabularyName = null, categoryNameList = null) {
 		Panel.expandPanel(panel = "Categorization");
 
 		AssetCategorization.addMultipleCategories(
@@ -11,7 +12,8 @@ definition {
 			vocabularyName = ${vocabularyName});
 	}
 
-	macro addCP {
+	@summary = "Default summary"
+	macro addCP(dateValue = null, dmDocumentFile = null, imageField = null, storageQuota = null, dmDocumentTypeName = null, dmDocumentDescription = null, fieldFieldLabel = null, documentsAndMediaField = null, customFieldText = null, tagNameList = null, vocabularyName = null, selectFromListField = null, dmDocumentFileName = null, uploadTempFile = null, textField = null, dmDocumentTitle = null, imageDescription = null, documentTypeName = null, warningForSizeLimits = null, categoryNameList = null, numericField = null, validationError = null, navTab = null, groupName = null, linkedPageName = null, siteURLKey = null, nullFile = null, folderName = null, invalidFileValidation = null, numericFieldFieldLabel = null) {
 		if (isSet(siteURLKey)) {
 			DMNavigator.openToAddEntry(
 				documentTypeName = ${documentTypeName},
@@ -303,7 +305,8 @@ definition {
 		}
 	}
 
-	macro addDMShortcutCP {
+	@summary = "Default summary"
+	macro addDMShortcutCP(dmDocumentTitle = null, depotName = null, siteName = null) {
 		DMNavigator.gotoAddDocumentTypeCP(dmDocumentTypeName = "Shortcut");
 
 		Click(locator1 = "DocumentsAndMediaAddShortcut#SELECT_DOCUMENT_BUTTON");
@@ -344,7 +347,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro addDMShortcutPG {
+	@summary = "Default summary"
+	macro addDMShortcutPG(dmDocumentTitle = null, depotName = null, contentPage = null, siteName = null) {
 		DMNavigator.gotoAddDocumentTypePG(
 			contentPage = ${contentPage},
 			dmDocumentTypeName = "Shortcut");
@@ -378,7 +382,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro addDocumentTypePG {
+	@summary = "Default summary"
+	macro addDocumentTypePG(dateValue = null, dmDocumentTitle = null, dmDocumentFile = null, numericField = null, webcontentField = null, dmDocumentTypeName = null, dmDocumentDescription = null, booleanField = null, selectOption = null, textField = null) {
 		var key_dmDocumentTypeName = ${dmDocumentTypeName};
 
 		Portlet.clickPortletPlusIconPG(portletName = "Documents and Media");
@@ -454,7 +459,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro addImageField {
+	@summary = "Default summary"
+	macro addImageField() {
 		DMNavigator.openToAddDocumentType(siteURLKey = "guest");
 
 		PortletEntry.inputName(name = "DM Document Type Name");
@@ -464,7 +470,8 @@ definition {
 			fieldName = "Image");
 	}
 
-	macro addMultipleCP {
+	@summary = "Default summary"
+	macro addMultipleCP(dateValue = null, documentType = null, currentDocumentType = null, uploadTempFile = null, viewableBy = null, dmDocumentFileList = null) {
 		DMNavigator.gotoAddDocumentTypeCP(dmDocumentTypeName = "Multiple Files Upload");
 
 		if (isSet(dmDocumentFileList)) {
@@ -569,7 +576,8 @@ definition {
 		}
 	}
 
-	macro addMultiplePG {
+	@summary = "Default summary"
+	macro addMultiplePG(viewableBy = null, storageQuota = null, dmDocumentFileList = null, uploadTempFile = null) {
 		if (isSet(contentPage)) {
 			LexiconEntry.gotoAdd();
 		}
@@ -625,7 +633,8 @@ definition {
 		Alert.closeMessage(messageType = "SUCCESS");
 	}
 
-	macro addPG {
+	@summary = "Default summary"
+	macro addPG(dmDocumentFile = null, dmDocumentTypeName = null, dmDocumentDescription = null, fieldFieldLabel = null, vocabularyName = null, tagNameList = null, categoryName = null, dmDocument = null, assetType = null, textField = null, dmDocumentTitle = null, viewableBy = null, stagingActivated = null, useCurrentTitle = null, assetTitle = null) {
 		if (${stagingActivated} == "true") {
 			AssertElementNotPresent(locator1 = "Message#WORKFLOW_UNAPPROVED");
 		}
@@ -715,7 +724,8 @@ definition {
 		}
 	}
 
-	macro addPGViaAP {
+	@summary = "Default summary"
+	macro addPGViaAP(dmDocumentTitle = null, dmDocumentFile = null, dmDocumentDescription = null) {
 		AssetPublisherPortlet.addAsset(assetType = "Basic Document");
 
 		DMDocument.editDocument(
@@ -730,7 +740,8 @@ definition {
 		SelectFrame(locator1 = "relative=top");
 	}
 
-	macro addPGViaAPWithValidationPosition {
+	@summary = "Default summary"
+	macro addPGViaAPWithValidationPosition(dmDocumentTitle = null, dmDocumentFile = null, dmDocumentDescription = null) {
 		AssetPublisherPortlet.addAsset(assetType = "Basic Document");
 
 		DMDocument.editDocument(
@@ -747,7 +758,8 @@ definition {
 		SelectFrame(locator1 = "relative=top");
 	}
 
-	macro addPGViaMG {
+	@summary = "Default summary"
+	macro addPGViaMG(groupName = null, mgDocumentDescription = null, siteURLKey = null, mediaGallery = null, mgDocumentFile = null, mgDocumentTitle = null, warningFeedback = null, validationError = null, layoutName = null) {
 		if (isSet(siteURLKey)) {
 			DMNavigator.openToAddEntry(
 				groupName = ${groupName},
@@ -790,7 +802,8 @@ definition {
 		}
 	}
 
-	macro addRelatedAssetPG {
+	@summary = "Default summary"
+	macro addRelatedAssetPG(assetTitle = null, assetType = null) {
 		Panel.expandPanel(panel = "Related Assets");
 
 		var key_assetType = ${assetType};
@@ -812,7 +825,8 @@ definition {
 		SelectFrame(value1 = "relative=top");
 	}
 
-	macro addWithWorkflowCP {
+	@summary = "Default summary"
+	macro addWithWorkflowCP(dmDocumentTitle = null, dmDocumentFile = null, dmDocumentTypeName = null, dmDocumentDescription = null) {
 		DMNavigator.gotoAddDocumentTypeCP(dmDocumentTypeName = ${dmDocumentTypeName});
 
 		DMDocument.editDocument(
@@ -827,7 +841,8 @@ definition {
 		LexiconEntry.viewEntryName(rowEntry = ${dmDocumentTitle});
 	}
 
-	macro assertDownloadedFileContent {
+	@summary = "Default summary"
+	macro assertDownloadedFileContent(fileName = null, downloadedContent = null) {
 		var fileContent = TestCase.getTempFileContent(fileName = ${fileName});
 
 		if (contains(${fileContent}, ${downloadedContent})) {
@@ -838,7 +853,8 @@ definition {
 		}
 	}
 
-	macro assertDownloadedFileContentNotExist {
+	@summary = "Default summary"
+	macro assertDownloadedFileContentNotExist(fileName = null, downloadedContent = null) {
 		var fileContent = TestCase.getTempFileContent(fileName = ${fileName});
 
 		if (!(contains(${fileContent}, ${downloadedContent}))) {
@@ -849,7 +865,8 @@ definition {
 		}
 	}
 
-	macro assertFileExtensionFromTempFolder {
+	@summary = "Default summary"
+	macro assertFileExtensionFromTempFolder(fileExtension = null) {
 		var downloadedFile = TestCase.getDownloadedTempFileName(fileNamePattern = ${downloadedFile});
 
 		echo("## downloadedFile: ${downloadedFile}");
@@ -862,7 +879,8 @@ definition {
 		}
 	}
 
-	macro assertFileNameFromTempFolder {
+	@summary = "Default summary"
+	macro assertFileNameFromTempFolder(fileName = null) {
 		var tempDir = PropsUtil.get("output.dir.name");
 
 		var downloadedFile = FileUtil.exists("${tempDir}/${fileName}");
@@ -875,7 +893,8 @@ definition {
 		}
 	}
 
-	macro assertNoFileNameFromTempFolder {
+	@summary = "Default summary"
+	macro assertNoFileNameFromTempFolder(fileName = null) {
 		var tempDir = PropsUtil.get("output.dir.name");
 
 		var exportedFile = FileUtil.exists("${tempDir}/${fileName}");
@@ -888,7 +907,8 @@ definition {
 		}
 	}
 
-	macro assertNoZipFileFromTempFolder {
+	@summary = "Default summary"
+	macro assertNoZipFileFromTempFolder(appServer = null, fileNamePattern = null) {
 		var liferayHome = PropsUtil.get("liferay.home.dir.name");
 		var fileName = StringUtil.split("**/${fileNamePattern}");
 
@@ -904,7 +924,8 @@ definition {
 		}
 	}
 
-	macro cancelCheckoutCP {
+	@summary = "Default summary"
+	macro cancelCheckoutCP(dmDocumentTitle = null, dmRepositoryName = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		if (${dmRepositoryName} == "true") {
@@ -921,7 +942,7 @@ definition {
 
 			AssertTextEquals.assertPartialText(
 				locator1 = "Message#CHECKOUT_SUCCESS",
-				value1 = "You now have a lock on this document. No one else can edit this document until you unlock it. This lock will automatically expire in 1 day.");
+				value1 = "Info:You now have a lock on this document. No one else can edit this document until you unlock it. This lock will automatically expire in 1 day.");
 
 			DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
@@ -935,7 +956,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro cancelCheckoutPG {
+	@summary = "Default summary"
+	macro cancelCheckoutPG(dmDocumentTitle = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		AssertClick(
@@ -944,20 +966,22 @@ definition {
 
 		AssertTextEquals(
 			locator1 = "Message#CHECKOUT_SUCCESS",
-			value1 = "You now have a lock on this document. No one else can edit this document until you unlock it. This lock will automatically expire in 1 day.");
+			value1 = "Info:You now have a lock on this document. No one else can edit this document until you unlock it. This lock will automatically expire in 1 day.");
 
 		DMNavigator.gotoVerticalEllipsisMenuItem(menuItem = "Cancel Checkout");
 
 		Alert.viewSuccessMessage();
 	}
 
-	macro cannotViewCP {
+	@summary = "Default summary"
+	macro cannotViewCP(dmDocumentTitle = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		AssertElementNotPresent(locator1 = "DocumentsAndMedia#ICON_DOCUMENT");
 	}
 
-	macro cannotViewDocumentMetadataCP {
+	@summary = "Default summary"
+	macro cannotViewDocumentMetadataCP(metadataLabel = null, metadataData = null) {
 		var key_metadataData = ${metadataData};
 		var key_metadataLabel = ${metadataLabel};
 
@@ -970,28 +994,31 @@ definition {
 		AssertElementNotPresent(locator1 = "DocumentsAndMediaDocument#DOCUMENT_EXTRACTED_METADATA_FIELD");
 	}
 
-	macro checkDocumentCheckboxCP {
+	@summary = "Default summary"
+	macro checkDocumentCheckboxCP(dmDocumentTitle = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		Check.checkNotVisible(locator1 = "DocumentsAndMedia#ICON_DOCUMENT_CHECKBOX");
 	}
 
-	macro checkDocumentCheckboxPG {
+	@summary = "Default summary"
+	macro checkDocumentCheckboxPG(dmDocumentTitle = null) {
 		var key_listEntry = ${dmDocumentTitle};
 
 		Check.checkNotVisible(locator1 = "LexiconList#LIST_ENTRY_CHECKBOX");
 	}
 
-	macro checkinCP {
+	@summary = "Default summary"
+	macro checkinCP(dmRepositoryName = null, changeLog = null, revision = null) {
 		if (${dmRepositoryName} == "true") {
 			AssertTextEquals.assertPartialText(
 				locator1 = "Message#CHECKOUT_SUCCESS",
-				value1 = "You now have an indefinite lock on this document. No one else can edit this document until you unlock it. This lock will never expire.");
+				value1 = "Info:You now have an indefinite lock on this document. No one else can edit this document until you unlock it. This lock will never expire.");
 		}
 		else {
 			AssertTextEquals.assertPartialText(
 				locator1 = "Message#CHECKOUT_SUCCESS",
-				value1 = "You now have a lock on this document. No one else can edit this document until you unlock it. This lock will automatically expire in 1 day.");
+				value1 = "Info:You now have a lock on this document. No one else can edit this document until you unlock it. This lock will automatically expire in 1 day.");
 		}
 
 		Click(locator1 = "Icon#TOOLBAR_ELLIPSIS");
@@ -1025,7 +1052,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro checkinManagementBar {
+	@summary = "Default summary"
+	macro checkinManagementBar(dmDocumentTitle = null, changeLog = null, allFiles = null, revision = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		if (${allFiles} == "true") {
@@ -1035,7 +1063,7 @@ definition {
 			Check(locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_CHECKBOX");
 		}
 
-		Click(locator1 = "Icon#TOOLBAR_ELLIPSIS");
+		Click(locator1 = "ManagementBar#ELLIPSIS");
 
 		MenuItem.click(menuItem = "Checkin");
 
@@ -1062,7 +1090,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro checkinPG {
+	@summary = "Default summary"
+	macro checkinPG(dmDocumentTitle = null, changeLog = null, revision = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		AssertClick(
@@ -1073,7 +1102,7 @@ definition {
 
 		AssertTextEquals(
 			locator1 = "Message#CHECKOUT_SUCCESS",
-			value1 = "You now have a lock on this document. No one else can edit this document until you unlock it. This lock will automatically expire in 1 day.");
+			value1 = "Info:You now have a lock on this document. No one else can edit this document until you unlock it. This lock will automatically expire in 1 day.");
 
 		DMNavigator.gotoVerticalEllipsisMenuItem(menuItem = "Checkin");
 
@@ -1097,7 +1126,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro checkoutCP {
+	@summary = "Default summary"
+	macro checkoutCP(dmDocumentTitle = null, dmRepositoryName = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		if (isSet(editStatus)) {
@@ -1122,7 +1152,7 @@ definition {
 		if (${dmRepositoryName} == "true") {
 			AssertTextEquals.assertPartialText(
 				locator1 = "Message#CHECKOUT_SUCCESS",
-				value1 = "You now have an indefinite lock on this document. No one else can edit this document until you unlock it. This lock will never expire.");
+				value1 = "Info:You now have an indefinite lock on this document. No one else can edit this document until you unlock it. This lock will never expire.");
 		}
 		else if (isSet(editStatus)) {
 			AssertClick(
@@ -1131,16 +1161,17 @@ definition {
 
 			AssertTextEquals.assertPartialText(
 				locator1 = "Message#CHECKOUT_SUCCESS",
-				value1 = "You now have a lock on this document. No one else can edit this document until you unlock it. This lock will automatically expire in 1 day.");
+				value1 = "Info:You now have a lock on this document. No one else can edit this document until you unlock it. This lock will automatically expire in 1 day.");
 		}
 		else {
 			AssertTextEquals.assertPartialText(
 				locator1 = "Message#CHECKOUT_SUCCESS",
-				value1 = "You now have a lock on this document. No one else can edit this document until you unlock it. This lock will automatically expire in 1 day.");
+				value1 = "Info:You now have a lock on this document. No one else can edit this document until you unlock it. This lock will automatically expire in 1 day.");
 		}
 	}
 
-	macro checkoutPG {
+	@summary = "Default summary"
+	macro checkoutPG(dmDocumentTitle = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		AssertClick(
@@ -1153,18 +1184,20 @@ definition {
 
 		AssertTextEquals.assertPartialText(
 			locator1 = "Message#CHECKOUT_SUCCESS",
-			value1 = "You now have a lock on this document. No one else can edit this document until you unlock it. This lock will automatically expire in 1 day.");
+			value1 = "Info:You now have a lock on this document. No one else can edit this document until you unlock it. This lock will automatically expire in 1 day.");
 	}
 
-	macro checkoutViaManagementBar {
-		Click(locator1 = "Icon#TOOLBAR_ELLIPSIS");
+	@summary = "Default summary"
+	macro checkoutViaManagementBar() {
+		Click(locator1 = "ManagementBar#ELLIPSIS");
 
 		MenuItem.click(menuItem = "Checkout");
 
 		Alert.viewSuccessMessage();
 	}
 
-	macro configureCacheControl {
+	@summary = "Default summary"
+	macro configureCacheControl(uncacheableMimeTypes = null, maxAge = null, cacheControl = null) {
 		if (isSet(systemSettingsInstanceScope)) {
 			DMNavigator.openToConfigInSystemSettings(portlet = "Cache Control");
 		}
@@ -1185,7 +1218,7 @@ definition {
 			DropdownMenuItem.click(menuItem = ${cacheControl});
 
 			AssertTextEquals(
-				locator1 = "Dropdown#SELECTED_VALUE",
+				locator1 = "Dropdown#TRIGGER",
 				value1 = ${cacheControl});
 		}
 
@@ -1226,10 +1259,9 @@ definition {
 		SystemSettings.saveConfiguration();
 	}
 
-	macro configureDocumentEmailSenderInfo {
+	@summary = "Default summary"
+	macro configureDocumentEmailSenderInfo(senderName = null, senderEmail = null) {
 		Portlet.gotoPortletOptions(portletOption = "Configuration");
-
-		SelectFrame(locator1 = "IFrame#CONFIGURATION");
 
 		Click(
 			key_navTab = "Email From",
@@ -1249,10 +1281,6 @@ definition {
 				value1 = ${senderEmail});
 		}
 
-		SelectFrame(value1 = "relative=top");
-
-		SelectFrame(locator1 = "IFrame#MODAL_BODY");
-
 		if (isSet(cancel)) {
 			Button.clickCancel();
 		}
@@ -1261,19 +1289,15 @@ definition {
 		}
 	}
 
-	macro configureDocumentEmailTemplate {
+	@summary = "Default summary"
+	macro configureDocumentEmailTemplate(navTab = null, siteURLKey = null, bodyContent = null) {
 		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = ${siteURLKey});
 
 		Click(locator1 = "Portlet#OPTIONS_ICON");
 
 		MenuItem.click(menuItem = "Configuration");
 
-		SelectFrame(locator1 = "IFrame#CONFIGURATION");
-
-		AssertClick(
-			key_navTab = ${navTab},
-			locator1 = "DocumentsAndMediaConfiguration#CONFIGURATION_NAV_ITEM",
-			value1 = ${navTab});
+		MenuBar.click(menuBar = ${navTab});
 
 		if (isSet(bodyContent)) {
 			SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
@@ -1283,86 +1307,167 @@ definition {
 				value1 = ${bodyContent});
 
 			SelectFrame(value1 = "relative=top");
-
-			SelectFrame(locator1 = "IFrame#MODAL_BODY");
 		}
 
 		PortletEntry.save();
 	}
 
-	macro copy {
-		LexiconEntry.gotoEntryMenuItem(
-			menuItem = "Copy To",
-			rowEntry = ${dmDocumentTitle});
-
-		Alert.viewWarningSpecific(warningMessage = "The copying process may take some time. Note that categories, ratings, tags, and custom document types will not be copied.");
-
-		AssertElementPresent(
-			key_fieldLabel = "Copy From",
-			locator1 = "FormFields#FIELD_DISABLED");
-
-		AssertElementPresent(
-			key_fieldLabel = "Copy To",
-			locator1 = "FormFields#FIELD_DISABLED");
-
-		AssertVisible(
-			key_text = "Copy",
-			locator1 = "Button#ANY_DISABLED");
-
-		Button.clickSelect();
-
-		SelectFrame(locator1 = "IFrame#MODAL_BODY");
-
-		WaitForVisible(
-			key_breadcrumbName = "Sites and Libraries",
-			locator1 = "Breadcrumb#BREADCRUMB_ENTRY");
-
-		if (isSet(siteName) || isSet(depotName)) {
-			AssertClick(
-				key_breadcrumbName = "Sites and Libraries",
-				locator1 = "Breadcrumb#BREADCRUMB_ENTRY",
-				value1 = "Sites and Libraries");
+	@summary = "Default summary"
+	macro configureMaxCopySize(existingLimit = null, copyLimit = null) {
+		if (isSet(existingLimit)) {
+			AssertTextEquals(
+				key_text = "Size Limit for Copying Files",
+				locator1 = "TextInput#ANY",
+				value1 = ${existingLimit});
 		}
 
-		if (isSet(siteName)) {
-			LexiconCard.clickCard(card = ${siteName});
+		Type(
+			key_text = "Size Limit for Copying Files",
+			locator1 = "TextInput#ANY",
+			value1 = ${copyLimit});
+
+		Button.clickSave();
+
+		Alert.viewSuccessMessage();
+	}
+
+	@summary = "Default summary"
+	macro copy(dmDocumentTitle = null, depotName = null, targetFolderName = null, siteName = null, copyExceedsSizeLimit = null, limitingHierarchy = null,) {
+		if (!(isSet(bulkCopy))) {
+			LexiconEntry.gotoEntryMenuItem(
+				menuItem = "Copy To",
+				rowEntry = ${dmDocumentTitle});
 		}
 
-		if (isSet(depotName)) {
-			AssertClick(
-				key_groupTab = "Asset Library",
-				locator1 = "ItemSelector#NAVIGATION_GROUP_TAB",
-				value1 = "Asset Library");
-
-			LexiconCard.clickCard(card = ${depotName});
-		}
-
-		if (isSet(homeFolder)) {
-			AssertClick(
-				key_text = "Select This Folder",
-				locator1 = "Button#ANY",
-				value1 = "Select This Folder");
+		if (isSet(immediateFailure)) {
+			Alert.viewErrorMessage(errorMessage = " Item cannot be copied because it exceeds the limit defined in ${limitingHierarchy} settings. The total size of all items to copy must not exceed ${copyExceedsSizeLimit}.");
 		}
 		else {
-			AssertClick(
-				key_dmFolderName = ${targetFolderName},
-				locator1 = "DocumentsAndMedia#SELECT_FOLDER_BUTTON",
-				value1 = "Select");
+			if (isSet(viewInfo)) {
+				Alert.viewWarningSpecific(warningMessage = "The copying process may take some time. Only categories, tags, ratings, and document types in the global scope or asset libraries connected to both sites will be copied. Document type fields will be displayed empty.");
+			}
+
+			AssertElementPresent(
+				key_fieldLabel = "Copy From",
+				locator1 = "FormFields#FIELD_DISABLED");
+
+			AssertElementPresent(
+				key_fieldLabel = "Copy To",
+				locator1 = "FormFields#FIELD_DISABLED");
+
+			AssertVisible(
+				key_text = "Copy",
+				locator1 = "Button#ANY_DISABLED");
+
+			Button.clickSelect();
+
+			SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+			WaitForVisible(
+				key_breadcrumbName = "Sites and Libraries",
+				locator1 = "Breadcrumb#BREADCRUMB_ENTRY");
+
+			if (isSet(siteName) || isSet(depotName)) {
+				AssertClick(
+					key_breadcrumbName = "Sites and Libraries",
+					locator1 = "Breadcrumb#BREADCRUMB_ENTRY",
+					value1 = "Sites and Libraries");
+			}
+
+			if (isSet(siteName)) {
+				LexiconCard.clickCard(card = ${siteName});
+			}
+
+			if (isSet(depotName)) {
+				AssertClick(
+					key_groupTab = "Asset Library",
+					locator1 = "ItemSelector#NAVIGATION_GROUP_TAB",
+					value1 = "Asset Library");
+
+				LexiconCard.clickCard(card = ${depotName});
+			}
+
+			if (isSet(homeFolder)) {
+				AssertClick(
+					key_text = "Select This Folder",
+					locator1 = "Button#ANY",
+					value1 = "Select This Folder");
+			}
+			else {
+				AssertClick(
+					key_dmFolderName = ${targetFolderName},
+					locator1 = "DocumentsAndMedia#SELECT_RESOURCE_BUTTON",
+					value1 = "Select");
+			}
+
+			SelectFrame(locator1 = "relative=top");
+
+			Button.click(button = "Copy");
+
+			if (isSet(copyDuplicatedDocument)) {
+				Alert.viewErrorMessage(errorMessage = "A file entry already exists with title ${dmDocumentTitle}");
+			}
+			else if (isSet(bulkCopyDuplicatedDocument)) {
+				Alert.viewErrorMessage(errorMessage = ${errorMessage});
+			}
+			else if (isSet(copyToUnconnectedSite)) {
+				Alert.viewErrorMessage(errorMessage = "The item is not copied because the site and asset library are not connected.");
+			}
+			else if (isSet(copyToStagingSite)) {
+				Alert.viewErrorMessage(errorMessage = "Cannot copy to the live version of a site. Make your changes in staging and publish them to Live afterwards to make them public.");
+			}
+			else if (isSet(copyWithRequiredField)) {
+				Alert.viewErrorMessage(errorMessage = "No value defined for field name");
+			}
+			else if (isSet(copyExceedsSizeLimit)) {
+				Alert.viewErrorMessage(errorMessage = " Item cannot be copied because it exceeds the limit set in the destination site's site settings. The total size of all items to copy must not exceed ${copyExceedsSizeLimit}.");
+			}
+			else {
+				Alert.viewSuccessMessage();
+			}
+		}
+	}
+
+	@summary = "Copy a document's URL through the actions dropdown"
+	macro copyLink(rowEntry = null, sharingDisabled = null) {
+		LexiconEntry.openEntryMenu(rowEntry = ${rowEntry});
+
+		if (!(isSet(sharingDisabled))) {
+			MouseOver(
+				key_menuItem = "Share",
+				locator1 = "MenuItem#ANY_MENU_ITEM");
 		}
 
-		SelectFrame(locator1 = "relative=top");
+		Click.javaScriptClick(
+			key_menuItem = "Copy Link",
+			locator1 = "MenuItem#MENU_ITEM_SPECIFIC");
 
-		Button.click(button = "Copy");
+		Alert.viewSuccessMessage();
+	}
 
-		if (isSet(copyDuplicatedDocument)) {
-			Alert.viewErrorMessage(errorMessage = "A file entry already exists with title ${dmDocumentTitle}");
+	@summary = "Default summary"
+	macro createAIImage() {
+
+		// This macro will be used for creating AI image. Remove this comment when working on LPS-199872.
+
+		DMNavigator.gotoCreateAIImage();
+
+		if (isSet(createAIImageWithoutKey)) {
+			AssertTextEquals(
+				locator1 = "Modal#HEADER",
+				value1 = "Configure OpenAI");
+
+			AssertTextEquals(
+				locator1 = "Modal#BODY",
+				value1 = "Authentication is needed to use this feature. Contact your administrator to add an API key in instance or site settings.");
 		}
 		else {
 			Alert.viewSuccessMessage();
 		}
 	}
 
-	macro deleteCP {
+	@summary = "Default summary"
+	macro deleteCP(dmDocumentTitle = null) {
 		if (isSet(recycleBinDisabled)) {
 			LexiconEntry.delete(rowEntry = ${dmDocumentTitle});
 		}
@@ -1375,7 +1480,9 @@ definition {
 				locator1 = "ManagementBar#NAVBAR_TEXT",
 				value1 = "All Selected");
 
-			Click(locator1 = "Icon#DELETE");
+			Click(
+				key_text = "trash",
+				locator1 = "ManagementBar#ANY_ICON");
 
 			Alert.viewSuccessMessage();
 		}
@@ -1388,13 +1495,15 @@ definition {
 		}
 	}
 
-	macro deleteDocumentLibraryFolder {
+	@summary = "Default summary"
+	macro deleteDocumentLibraryFolder() {
 		var liferayHome = PropsUtil.get("liferay.home.dir.name");
 
 		FileUtil.delete("${liferayHome}/data/document_library");
 	}
 
-	macro deletePG {
+	@summary = "Default summary"
+	macro deletePG(dmDocumentTitle = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		AssertClick(
@@ -1408,12 +1517,13 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro deletePGViaMG {
+	@summary = "Default summary"
+	macro deletePGViaMG(mgDocumentTitle = null) {
 		WaitForVisible(
 			key_rowEntry = ${mgDocumentTitle},
 			locator1 = "Icon#ROW_VERTICAL_ELLIPSIS");
 
-		Click.waitForMenuToggleJSClick(
+		Click.waitForPersonalMenuJSClick(
 			key_rowEntry = ${mgDocumentTitle},
 			locator1 = "Icon#ROW_VERTICAL_ELLIPSIS");
 
@@ -1426,13 +1536,15 @@ definition {
 			locator1 = "MediaGallery#IMAGE_TITLE");
 	}
 
-	macro deleteTempFolder {
+	@summary = "Default summary"
+	macro deleteTempFolder(appServer = null) {
 		var liferayHome = PropsUtil.get("liferay.home.dir.name");
 
 		FileUtil.delete("${liferayHome}/${appServer}/temp");
 	}
 
-	macro deleteVersion {
+	@summary = "Default summary"
+	macro deleteVersion(dmDocumentVersionNumber = null) {
 		DMDocument.expandInfo();
 
 		DMNavigator.gotoDocumentVersion();
@@ -1448,7 +1560,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro deleteViaActionsPG {
+	@summary = "Default summary"
+	macro deleteViaActionsPG(dmDocumentTitle = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		AssertTextEquals(
@@ -1462,7 +1575,8 @@ definition {
 		VerifyElementPresent(locator1 = "Message#SUCCESS");
 	}
 
-	macro downloadCP {
+	@summary = "Default summary"
+	macro downloadCP(dmDocumentTitle = null, dmDocumentSize = null) {
 		Click.waitForMenuToggleJSClick(
 			key_rowEntry = ${dmDocumentTitle},
 			locator1 = "Icon#ROW_VERTICAL_ELLIPSIS");
@@ -1474,7 +1588,8 @@ definition {
 		DownloadTempFile();
 	}
 
-	macro downloadMultipleCP {
+	@summary = "Default summary"
+	macro downloadMultipleCP(dmDocumentTitleList = null) {
 		LexiconEntry.changeDisplayStyle(displayStyle = "list");
 
 		for (var dmDocumentTitle : list ${dmDocumentTitleList}) {
@@ -1490,7 +1605,8 @@ definition {
 		DownloadTempFile();
 	}
 
-	macro downloadPG {
+	@summary = "Default summary"
+	macro downloadPG(dmDocumentTitle = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		AssertClick(
@@ -1504,7 +1620,8 @@ definition {
 			value1 = "Download");
 	}
 
-	macro downloadVersion {
+	@summary = "Default summary"
+	macro downloadVersion(dmDocumentSize = null, menuItem = null, dmDocumentVersionNumber = null) {
 		DMNavigator.gotoDocumentVersion();
 
 		var key_dmDocumentVersionNumber = "Version ${dmDocumentVersionNumber}";
@@ -1520,8 +1637,9 @@ definition {
 		DownloadTempFile();
 	}
 
-	macro downloadViaURL {
-		var portalURL = PropsUtil.get("portal.url");
+	@summary = "Default summary"
+	macro downloadViaURL(dmDocumentTitle = null, siteURLKey = null) {
+		var portalURL = JSONCompany.getPortalURL();
 
 		if (isSet(siteURLKey)) {
 			var key_siteURLKey = ${siteURLKey};
@@ -1533,8 +1651,9 @@ definition {
 		Navigator.openSpecificURL(url = "${portalURL}/documents/d/${key_siteURLKey}/${dmDocumentTitle}?download=true");
 	}
 
-	macro downloadWithDirectoryIndexing {
-		var portalURL = PropsUtil.get("portal.url");
+	@summary = "Default summary"
+	macro downloadWithDirectoryIndexing(dmDocumentTitle = null, siteURLKey = null) {
+		var portalURL = JSONCompany.getPortalURL();
 
 		Navigator.openSpecificURL(url = "${portalURL}/documents/${siteURLKey}/");
 
@@ -1546,7 +1665,8 @@ definition {
 		DownloadTempFile();
 	}
 
-	macro editCategoryTags {
+	@summary = "Default summary"
+	macro editCategoryTags(multipleDocuments = null, itemNumber = null, editAction = null, categoryNameList = null) {
 		SelectFrame(value1 = "relative=top");
 
 		AssertTextEquals(
@@ -1561,14 +1681,10 @@ definition {
 			Click(locator1 = "Modal#BODY");
 
 			if (${editAction} == "Append") {
-				FormFields.selectRadioOption(
-					fieldName = "add",
-					radioOption = "Add");
+				Click(locator1 = "Radio#APPEND");
 			}
 			else if (${editAction} == "Replace") {
-				FormFields.selectRadioOption(
-					fieldName = "replace",
-					radioOption = "Replace");
+				Click(locator1 = "Radio#REPLACE");
 			}
 		}
 		else {
@@ -1594,7 +1710,8 @@ definition {
 		Alert.viewSuccessMessageText(successMessage = "Changes Saved");
 	}
 
-	macro editCmd {
+	@summary = "Default summary"
+	macro editCmd(dmDocumentFileNameEdit = null, dmDocumentTypeEdit = null, dmDocumentTitleEdit = null, dmDocumentFileEdit = null, dmDocumentDescriptionEdit = null) {
 		if (isSet(dmDocumentFileEdit)) {
 			UploadDependencyFile.uploadFile(fileName = ${dmDocumentFileEdit});
 		}
@@ -1635,7 +1752,8 @@ definition {
 		}
 	}
 
-	macro editCmdPG {
+	@summary = "Default summary"
+	macro editCmdPG(checkedOut = null, dmDocumentTitle = null, dmDocumentFileNameEdit = null, dmDocumentTagName = null, dmDocumentTitleEdit = null, dmDocumentFileEdit = null, changeLog = null, userName = null, dmDocumentDescriptionEdit = null, revision = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		AssertClick(
@@ -1713,7 +1831,8 @@ definition {
 		}
 	}
 
-	macro editCP {
+	@summary = "Default summary"
+	macro editCP(dmDocumentTypeEdit = null, fieldFieldLabel = null, dmDocumentFileEdit = null, imageFieldEdit = null, customFieldTextEdit = null, imageDescriptionEdit = null, dmDocumentDescriptionEdit = null, revision = null, updateAutoTags = null, navTab = null, dmDocumentTitle = null, dmDocumentFileNameEdit = null, dmDocumentTitleEdit = null, versionNotes = null) {
 		if (!(isSet(skipNavigation))) {
 			LexiconEntry.gotoEntryMenuItem(
 				menuItem = "Edit",
@@ -1829,7 +1948,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro editDMShortcutCP {
+	@summary = "Default summary"
+	macro editDMShortcutCP(dmDocumentTitle = null, depotName = null, siteName = null, dmNewDocumentTitle = null) {
 		LexiconEntry.gotoEntryMenuItem(
 			menuItem = "Edit",
 			rowEntry = ${dmDocumentTitle});
@@ -1865,7 +1985,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro editDocument {
+	@summary = "Default summary"
+	macro editDocument(dmDocumentTitle = null, dmDocumentFile = null, viewableBy = null, dmDocumentDescription = null) {
 		UploadCommonFile.uploadCommonFileHiddenNoMouseOver(
 			locator1 = "TextInput#FILE",
 			value1 = ${dmDocumentFile});
@@ -1892,7 +2013,8 @@ definition {
 		}
 	}
 
-	macro editFriendlyURL {
+	@summary = "Default summary"
+	macro editFriendlyURL(friendlyURLEdit = null) {
 		Panel.expandPanel(panel = "Friendly URL");
 
 		Type(
@@ -1903,7 +2025,8 @@ definition {
 		PortletEntry.publish();
 	}
 
-	macro editPG {
+	@summary = "Default summary"
+	macro editPG(dmDocumentTitle = null, dmDocumentFileNameEdit = null, groupName = null, dmDocumentTitleEdit = null, siteURLKey = null, dmDocumentFileEdit = null, folderName = null, dmDocumentDescriptionEdit = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		if (isSet(siteURLKey)) {
@@ -1932,7 +2055,8 @@ definition {
 		PortletEntry.publish();
 	}
 
-	macro editPGViaAP {
+	@summary = "Default summary"
+	macro editPGViaAP(dmDocumentTitleEdit = null, assetTitle = null, portletName = null) {
 		var key_assetTitle = ${assetTitle};
 		var key_portletName = ${portletName};
 
@@ -1965,7 +2089,8 @@ definition {
 		SelectFrame(locator1 = "relative=top");
 	}
 
-	macro editPGViaMG {
+	@summary = "Default summary"
+	macro editPGViaMG(mgDocumentTitleEdit = null, mgDocumentDescriptionEdit = null, mgDocumentTitle = null) {
 		Click.waitForMenuToggleJSClick(
 			key_card = ${mgDocumentTitle},
 			locator1 = "Card#CARD_ELLIPSIS");
@@ -1984,7 +2109,8 @@ definition {
 			value1 = "${mgDocumentTitleEdit} - ${mgDocumentDescriptionEdit}");
 	}
 
-	macro editSavePG {
+	@summary = "Default summary"
+	macro editSavePG(checkedOut = null, dmDocumentTagName = null, dmDocumentTitle = null, dmDocumentTitleEdit = null, changeLog = null, dmDocumentFileEdit = null, userName = null, dmDocumentDescriptionEdit = null, revision = null) {
 		DMDocument.editCmdPG(
 			changeLog = ${changeLog},
 			checkedOut = ${checkedOut},
@@ -2003,7 +2129,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro editTags {
+	@summary = "Default summary"
+	macro editTags(multipleDocuments = null, itemNumber = null, editAction = null, tagName = null) {
 		SelectFrame(value1 = "relative=top");
 
 		AssertTextEquals(
@@ -2018,14 +2145,10 @@ definition {
 			Click(locator1 = "Modal#BODY");
 
 			if (${editAction} == "Append") {
-				FormFields.selectRadioOption(
-					fieldName = "add",
-					radioOption = "Add");
+				Click(locator1 = "Radio#APPEND");
 			}
 			else if (${editAction} == "Replace") {
-				FormFields.selectRadioOption(
-					fieldName = "replace",
-					radioOption = "Replace");
+				Click(locator1 = "Radio#REPLACE");
 			}
 		}
 		else {
@@ -2065,7 +2188,8 @@ definition {
 		Alert.viewSuccessMessageText(successMessage = "Changes Saved");
 	}
 
-	macro enableActionsMenuOnPortlet {
+	@summary = "Default summary"
+	macro enableActionsMenuOnPortlet() {
 		Portlet.gotoPortletOptions(
 			portletName = "Documents and Media",
 			portletOption = "Configuration");
@@ -2081,7 +2205,8 @@ definition {
 		IFrame.closeFrame();
 	}
 
-	macro enableDirectoryIndexing {
+	@summary = "Default summary"
+	macro enableDirectoryIndexing(siteURLKey = null) {
 		DMNavigator.openToConfigInSiteSettings(
 			portlet = "Documents and Media",
 			siteURLKey = ${siteURLKey});
@@ -2093,7 +2218,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro expandInfo {
+	@summary = "Default summary"
+	macro expandInfo() {
 		WaitForPageLoad();
 
 		if (IsElementPresent(locator1 = "Button#INFO")) {
@@ -2117,7 +2243,8 @@ definition {
 		AssertVisible(locator1 = "DocumentsAndMedia#SIDEBAR_INFO_ACTIVE");
 	}
 
-	macro getDMLatestVersionURL {
+	@summary = "Default summary"
+	macro getDMLatestVersionURL(dmDocumentTitle = null, siteURLKey = null, dmFolderName = null) {
 		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = ${siteURLKey});
 
 		if (isSet(dmFolderName)) {
@@ -2128,7 +2255,7 @@ definition {
 
 		DMDocument.expandInfo();
 
-		var portalURL = PropsUtil.get("portal.url");
+		var portalURL = JSONCompany.getPortalURL();
 		var dmLatestVersionURL = selenium.getAttribute("//input[contains(@id,'urlInput')]@value");
 
 		var dmDocumentURL = StringUtil.extractLast(${dmLatestVersionURL}, ${portalURL});
@@ -2138,7 +2265,8 @@ definition {
 		return ${dmDocumentURL};
 	}
 
-	macro getFileResponseHeader {
+	@summary = "Default summary"
+	macro getFileResponseHeader(dmDocumentFileName = null) {
 		WaitForElementPresent(
 			key_dmDocumentFileName = ${dmDocumentFileName},
 			locator1 = "DocumentsAndMediaDocument#DOCUMENT_DETAILS_IMAGE_PREVIEW");
@@ -2152,7 +2280,8 @@ definition {
 		return ${responseHeader};
 	}
 
-	macro getLatestVersionURL {
+	@summary = "Default summary"
+	macro getLatestVersionURL() {
 		var latestVersionURL = selenium.getAttribute("//input[contains(@id,'urlInput')]@value");
 
 		return ${latestVersionURL};
@@ -2160,13 +2289,15 @@ definition {
 		echo("## * latestVersionURL: ${latestVersionURL}");
 	}
 
-	macro gotoEntry {
+	@summary = "Default summary"
+	macro gotoEntry(dmDocumentTitle = null) {
 		Click(
 			key_card = ${dmDocumentTitle},
 			locator1 = "Card#CARD_TITLE");
 	}
 
-	macro gotoMenuItemViaInfoPanel {
+	@summary = "Default summary"
+	macro gotoMenuItemViaInfoPanel(menuItem = null) {
 		DMDocument.expandInfo();
 
 		Click(locator1 = "Icon#SIDEBAR_HEADER_ACTION_VERTICAL_ELLIPSIS_BUTTON");
@@ -2176,7 +2307,8 @@ definition {
 		}
 	}
 
-	macro linkImage {
+	@summary = "Default summary"
+	macro linkImage(navTab = null, dmDocumentURL = null) {
 		ItemSelector.gotoItemSelectorViaAlloyEditor();
 
 		ItemSelector.addImageFromURL(
@@ -2186,7 +2318,8 @@ definition {
 		AssertElementPresent(locator1 = "CKEditor#CONTENT_IMAGE_LINK_IMAGE");
 	}
 
-	macro moveAllToRecycleBinCP {
+	@summary = "Default summary"
+	macro moveAllToRecycleBinCP() {
 		WaitForPageLoad();
 
 		PortletEntry.selectAll();
@@ -2200,7 +2333,8 @@ definition {
 			value1 = "There are no documents or media files in this folder.");
 	}
 
-	macro moveToFolderCP {
+	@summary = "Default summary"
+	macro moveToFolderCP(dmDocumentTitle = null, dmFolderName = null) {
 		if (isSet(selectAll)) {
 			PortletEntry.selectAll();
 
@@ -2208,7 +2342,9 @@ definition {
 				locator1 = "Button#SELECT_ALL",
 				value1 = "Select All");
 
-			Click(locator1 = "Icon#MOVE");
+			Click(
+				key_text = "move",
+				locator1 = "ManagementBar#ANY_ICON");
 		}
 		else {
 			var key_dmDocumentTitle = ${dmDocumentTitle};
@@ -2220,16 +2356,22 @@ definition {
 
 		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
-		if (${dmFolderName} == "Home") {
-			if (IsElementPresent(key_breadcrumbName = "Home", locator1 = "BreadcrumbPortlet#BREADCRUMB_FOLDER")) {
+		echo("## * dmFolderName: ${dmFolderName}");
+
+		var siteName = TestCase.getSiteName();
+
+		echo("## * siteName: ${siteName}");
+
+		if ((${dmFolderName} == "Home") || (${dmFolderName} == ${siteName})) {
+			if (IsElementPresent(key_breadcrumbName = ${siteName}, locator1 = "BreadcrumbPortlet#BREADCRUMB_FOLDER")) {
 				AssertVisible(
 					key_text = "Select This Folder",
 					locator1 = "Button#ANY_DISABLED");
 
 				AssertClick(
-					key_breadcrumbName = "Home",
+					key_breadcrumbName = ${siteName},
 					locator1 = "BreadcrumbPortlet#BREADCRUMB_FOLDER",
-					value1 = "Home");
+					value1 = ${siteName});
 			}
 
 			var key_text = "Select This Folder";
@@ -2239,17 +2381,17 @@ definition {
 				value1 = "Select This Folder");
 		}
 		else {
-			if (IsElementPresent(key_breadcrumbName = "Home", locator1 = "BreadcrumbPortlet#BREADCRUMB_FOLDER")) {
+			if (IsElementPresent(key_breadcrumbName = ${siteName}, locator1 = "BreadcrumbPortlet#BREADCRUMB_FOLDER")) {
 				AssertClick(
-					key_breadcrumbName = "Home",
+					key_breadcrumbName = ${siteName},
 					locator1 = "BreadcrumbPortlet#BREADCRUMB_FOLDER",
-					value1 = "Home");
+					value1 = ${siteName});
 			}
 
 			var key_dmFolderName = ${dmFolderName};
 
 			AssertClick(
-				locator1 = "DocumentsAndMedia#SELECT_FOLDER_BUTTON",
+				locator1 = "DocumentsAndMedia#SELECT_RESOURCE_BUTTON",
 				value1 = "Select");
 		}
 
@@ -2258,7 +2400,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro moveToFolderPG {
+	@summary = "Default summary"
+	macro moveToFolderPG(dmDocumentTitle = null, dmFolderName = null, bulkSelection = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		WaitForLiferayEvent.initializeLiferayEventLog();
@@ -2268,7 +2411,9 @@ definition {
 				locator1 = "ManagementBar#NAVBAR_TEXT",
 				value1 = ${bulkSelection});
 
-			Click(locator1 = "Icon#MOVE");
+			Click(
+				key_text = "Move",
+				locator1 = "Button#ANY");
 		}
 		else {
 			Click(locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_VERTICAL_ELLIPSIS");
@@ -2279,12 +2424,15 @@ definition {
 		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		var key_dmFolderName = ${dmFolderName};
+		var siteName = TestCase.getSiteName();
 
-		if (IsElementPresent(key_breadcrumbName = "Home", locator1 = "BreadcrumbPortlet#BREADCRUMB_FOLDER")) {
+		echo("## * siteName: ${siteName}");
+
+		if (IsElementPresent(key_breadcrumbName = ${siteName}, locator1 = "BreadcrumbPortlet#BREADCRUMB_FOLDER")) {
 			AssertClick(
-				key_breadcrumbName = "Home",
+				key_breadcrumbName = ${siteName},
 				locator1 = "BreadcrumbPortlet#BREADCRUMB_FOLDER",
-				value1 = "Home");
+				value1 = ${siteName});
 		}
 
 		AssertClick(
@@ -2305,7 +2453,8 @@ definition {
 		}
 	}
 
-	macro moveToRecycleBinCP {
+	@summary = "Default summary"
+	macro moveToRecycleBinCP(dmDocumentTitle = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		AssertElementPresent(locator1 = "DocumentsAndMedia#ICON_DOCUMENT");
@@ -2327,7 +2476,8 @@ definition {
 		}
 	}
 
-	macro moveToSubFolderCP {
+	@summary = "Default summary"
+	macro moveToSubFolderCP(dmSubFolderName = null, dmDocumentTitle = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		Click(locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_VERTICAL_ELLIPSIS");
@@ -2351,7 +2501,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro navigateHomeViaDocumentViewPG {
+	@summary = "Default summary"
+	macro navigateHomeViaDocumentViewPG() {
 		var key_breadcrumbName = "Home";
 
 		AssertClick(
@@ -2359,17 +2510,20 @@ definition {
 			value1 = "Home");
 	}
 
-	macro openDocumentsAndMediaAdmin {
+	@summary = "Default summary"
+	macro openDocumentsAndMediaAdmin(siteURLKey = null) {
 		Navigator.openWithAppendToBaseURL(urlAppend = "group/${siteURLKey}/~/control_panel/manage?p_p_id=com_liferay_document_library_web_portlet_DLAdminPortlet");
 	}
 
-	macro previewImage {
+	@summary = "Default summary"
+	macro previewImage(dmDocumentFileName = null) {
 		while (IsElementNotPresent(key_dmDocumentFileName = ${dmDocumentFileName}, locator1 = "DocumentsAndMediaDocument#DOCUMENT_DETAILS_IMAGE_PREVIEW")) {
 			Refresh();
 		}
 	}
 
-	macro publishExpiredDocument {
+	@summary = "Default summary"
+	macro publishExpiredDocument(dmDocumentTitle = null) {
 		AssertTextEquals(
 			locator1 = "TextInput#TITLE",
 			value1 = ${dmDocumentTitle});
@@ -2393,7 +2547,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro removeCategories {
+	@summary = "Default summary"
+	macro removeCategories(categoriesNameList = null) {
 		SelectFrame(value1 = "relative=top");
 
 		for (var categoryName : list ${categoriesNameList}) {
@@ -2409,7 +2564,8 @@ definition {
 		Alert.viewSuccessMessageText(successMessage = "Changes Saved");
 	}
 
-	macro removeOldFriendlyURL {
+	@summary = "Default summary"
+	macro removeOldFriendlyURL(oldFriendlyURL = null) {
 		MouseOver(
 			key_oldFriendlyURL = ${oldFriendlyURL},
 			locator1 = "DocumentsAndMediaDocument#FRIENDLY_URL_HISTORY_ITEM");
@@ -2425,13 +2581,15 @@ definition {
 		Click(locator1 = "Modal#CLOSE_BUTTON");
 	}
 
-	macro removeSearchFilter {
+	@summary = "Default summary"
+	macro removeSearchFilter(filter = null) {
 		Click(
 			key_filter = ${filter},
 			locator1 = "ManagementBar#SEARCH_FILTER_LABEL_X");
 	}
 
-	macro removeTag {
+	@summary = "Default summary"
+	macro removeTag(removeTag = null) {
 		if (IsElementPresent(locator1 = "Button#EDIT")) {
 			Click(locator1 = "Button#EDIT");
 		}
@@ -2450,7 +2608,8 @@ definition {
 			value1 = ${removeTag});
 	}
 
-	macro restoreOldFriendlyURL {
+	@summary = "Default summary"
+	macro restoreOldFriendlyURL(restoredURL = null, activeURL = null, oldFriendlyURL = null) {
 		MouseOver(
 			key_oldFriendlyURL = ${oldFriendlyURL},
 			locator1 = "DocumentsAndMediaDocument#FRIENDLY_URL_HISTORY_ITEM");
@@ -2473,7 +2632,8 @@ definition {
 			value1 = ${restoredURL});
 	}
 
-	macro revertPG {
+	@summary = "Default summary"
+	macro revertPG(dmDocumentVersionNumber = null) {
 		DMNavigator.gotoDocumentVersion();
 
 		var key_dmDocumentVersionNumber = ${dmDocumentVersionNumber};
@@ -2491,7 +2651,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro reviewDocument {
+	@summary = "Default summary"
+	macro reviewDocument(dmDocumentTitle = null) {
 		AssertTextEquals(
 			locator1 = "TextInput#TITLE",
 			value1 = ${dmDocumentTitle});
@@ -2515,7 +2676,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro saveAndCheckinEditedDocumentPG {
+	@summary = "Default summary"
+	macro saveAndCheckinEditedDocumentPG(dmDocumentTitle = null, changeLog = null, dmDocumentDescriptionEdit = null, revision = null) {
 		LexiconEntry.gotoEntryMenuItem(
 			menuItem = "Edit",
 			rowEntry = ${dmDocumentTitle});
@@ -2548,13 +2710,15 @@ definition {
 		}
 	}
 
-	macro selectDocuments {
+	@summary = "Default summary"
+	macro selectDocuments(dmDocumentTitle = null) {
 		for (var key_dmDocumentTitle : list ${dmDocumentTitle}) {
 			Check(locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_CHECKBOX");
 		}
 	}
 
-	macro selectFilterItems {
+	@summary = "Default summary"
+	macro selectFilterItems(categories = null, clearAll = null) {
 		if (${clearAll} == "true") {
 			SelectFrameTop();
 
@@ -2589,10 +2753,16 @@ definition {
 
 		SelectFrameTop();
 
-		Button.clickApply();
+		if (IsTextEqual(locator1 = "Modal#HEADER", value1 = "Filter by Extension")) {
+			Button.clickApply();
+		}
+		else {
+			Button.clickSelect();
+		}
 	}
 
-	macro selectTags {
+	@summary = "Default summary"
+	macro selectTags(tagName = null) {
 		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		WaitForLiferayEvent.initializeLiferayEventLog();
@@ -2612,7 +2782,8 @@ definition {
 			value1 = "Select");
 	}
 
-	macro setExpirationDate {
+	@summary = "Default summary"
+	macro setExpirationDate(invalidExpirationDate = null, increaseMinutes = null) {
 		Panel.expandPanel(panel = "Expiration Date");
 
 		if (isSet(enableExpirationDate)) {
@@ -2623,7 +2794,7 @@ definition {
 
 		var expirationDate = DateUtil.getFormattedCurrentDate("MM/dd/yyyy");
 
-		echo("## * reviewDate: ${expirationDate}");
+		echo("## * expirationDate: ${expirationDate}");
 
 		if (${invalidExpirationDate} == "true") {
 			var expirationDate = DateUtil.getDateOffsetByYears("-1", "MM/dd/yyyy");
@@ -2660,7 +2831,8 @@ definition {
 		}
 	}
 
-	macro setReviewDate {
+	@summary = "Default summary"
+	macro setReviewDate(increaseMinutes = null) {
 		Panel.expandPanel(panel = "Expiration Date");
 
 		if (isSet(enableReviewDate)) {
@@ -2681,6 +2853,8 @@ definition {
 			locator1 = "TextInput#REVIEW_DATE",
 			value1 = ${reviewDate});
 
+		var reviewDateTime = StringUtil.removeSpaces(${reviewDateTime});
+
 		Type.sendKeys(
 			locator1 = "TextInput#REVIEW_DATE_TIME",
 			value1 = ${reviewDateTime});
@@ -2694,7 +2868,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro setRootFolder {
+	@summary = "Default summary"
+	macro setRootFolder(breadcrumbName = null, depotName = null, dmRootFolderName = null) {
 		Portlet.gotoPortletOptions(portletOption = "Configuration");
 
 		SelectFrame(locator1 = "DocumentsAndMedia#CONFIGURATION_IFRAME");
@@ -2739,7 +2914,7 @@ definition {
 
 			AssertClick(
 				key_dmFolderName = ${dmRootFolderName},
-				locator1 = "DocumentsAndMedia#SELECT_FOLDER_BUTTON",
+				locator1 = "DocumentsAndMedia#SELECT_RESOURCE_BUTTON",
 				value1 = "Select");
 		}
 
@@ -2752,7 +2927,8 @@ definition {
 		IFrame.closeFrame();
 	}
 
-	macro sharePG {
+	@summary = "Default summary"
+	macro sharePG(sharingPermissions = null, userEmailAddress = null, userName = null) {
 		IFrame.selectModalFrame();
 
 		if (isSet(noAutocomplete)) {
@@ -2802,7 +2978,8 @@ definition {
 		Alert.viewSuccessMessageText(successMessage = "The item was shared successfully.");
 	}
 
-	macro shareWithNoSharingPermissionsUser {
+	@summary = "Default summary"
+	macro shareWithNoSharingPermissionsUser(sharingPermissions = null, userEmailAddress = null) {
 		IFrame.selectModalFrame();
 
 		Type(
@@ -2836,7 +3013,8 @@ definition {
 		SelectFrame(value1 = "relative=top");
 	}
 
-	macro tearDownCP {
+	@summary = "Default summary"
+	macro tearDownCP() {
 		var key_dmDocumentTitle = "tree.png";
 
 		Navigator.openURL();
@@ -2864,19 +3042,22 @@ definition {
 		JSONRecycleBin.emptyRecycleBin();
 	}
 
-	macro uncheckDocumentCheckboxCP {
+	@summary = "Default summary"
+	macro uncheckDocumentCheckboxCP(dmDocumentTitle = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		Uncheck(locator1 = "DocumentsAndMedia#ICON_DOCUMENT_CHECKBOX");
 	}
 
-	macro unselectDocuments {
+	@summary = "Default summary"
+	macro unselectDocuments(dmDocumentTitle = null) {
 		for (var key_dmDocumentTitle : list ${dmDocumentTitle}) {
 			Uncheck(locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_CHECKBOX");
 		}
 	}
 
-	macro updateCheckInterval {
+	@summary = "Default summary"
+	macro updateCheckInterval(fieldValue = null) {
 		DMNavigator.openToConfigInSystemSettings(portlet = "Service");
 
 		Type(
@@ -2887,7 +3068,8 @@ definition {
 		SystemSettings.saveConfiguration();
 	}
 
-	macro updateFileExtensions {
+	@summary = "Default summary"
+	macro updateFileExtensions(indexNumber = null, fieldValue = null) {
 		DMNavigator.openToConfigInSystemSettings(portlet = "Service");
 
 		ScrollWebElementIntoView(
@@ -2915,7 +3097,8 @@ definition {
 		SystemSettings.saveConfiguration();
 	}
 
-	macro updateFileOrder {
+	@summary = "Default summary"
+	macro updateFileOrder(sortDirection = null, siteURLKey = null, orderBy = null) {
 		if (isSet(instanceSettings)) {
 			DMNavigator.openToConfigInInstanceSettings(portlet = "File Order");
 		}
@@ -2941,7 +3124,8 @@ definition {
 		SystemSettings.saveConfiguration();
 	}
 
-	macro updateMaximumFileSize {
+	@summary = "Default summary"
+	macro updateMaximumFileSize(siteURLKey = null, fieldValue = null) {
 		if (isSet(instanceSettings)) {
 			DMNavigator.openToConfigInInstanceSettings(portlet = "Documents and Media Size Limits");
 		}
@@ -2955,14 +3139,15 @@ definition {
 		}
 
 		Type(
-			key_fieldLabel = "File Max Size",
-			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			key_fieldLabel = "Maximum File Upload Size",
+			locator1 = "TextInput#GENERIC_NUMBER_INPUT",
 			value1 = ${fieldValue});
 
 		SystemSettings.saveConfiguration();
 	}
 
-	macro updateMaximumVersions {
+	@summary = "Default summary"
+	macro updateMaximumVersions(fieldValue = null) {
 		DMNavigator.openToConfigInSystemSettings(portlet = "Service");
 
 		Type(
@@ -2973,7 +3158,8 @@ definition {
 		SystemSettings.saveConfiguration();
 	}
 
-	macro updateMimeTypeSizeLimit {
+	@summary = "Default summary"
+	macro updateMimeTypeSizeLimit(depotName = null, siteURLKey = null, maximumFileSizeValue = null, indexNumber = null, mimeTypeValue = null) {
 		if (isSet(instanceSettings)) {
 			DMNavigator.openToConfigInInstanceSettings(portlet = "Documents and Media Size Limits");
 		}
@@ -2987,6 +3173,13 @@ definition {
 		}
 		else {
 			DMNavigator.openToConfigInSystemSettings(portlet = "Documents and Media Size Limits");
+		}
+
+		if (isSet(checkPortletTitle)) {
+			AssertTextEquals(
+				key_portletTitle = "File Size Limits",
+				locator1 = "DocumentsAndMedia#PORTLET_TITLE",
+				value1 = "File Size Limits");
 		}
 
 		if (${indexNumber} == 2) {
@@ -3040,7 +3233,8 @@ definition {
 		}
 	}
 
-	macro validateGuestUserViewPermission {
+	@summary = "Default summary"
+	macro validateGuestUserViewPermission(dmDocumentTitle = null, groupName = null) {
 		var latestVersionURL = JSONDocument.getLatestVersionURL(
 			dmDocumentTitle = ${dmDocumentTitle},
 			groupName = ${groupName});
@@ -3068,19 +3262,22 @@ definition {
 		}
 	}
 
-	macro viewActionDetailsInKebabMenu {
+	@summary = "Default summary"
+	macro viewActionDetailsInKebabMenu() {
 		for (var menuItem : list ${menuItem}) {
-			MenuItem.verifyPresent(menuItem = ${menuItem});
+			MenuItem.verifyVisible(menuItem = ${menuItem});
 		}
 	}
 
-	macro viewActiveURL {
+	@summary = "Default summary"
+	macro viewActiveURL(activeURL = null) {
 		AssertVisible(
 			key_activeURL = ${activeURL},
 			locator1 = "DocumentsAndMediaDocument#FRIENDLY_URL_ACTIVE_URL");
 	}
 
-	macro viewAllDocumentsChecked {
+	@summary = "Default summary"
+	macro viewAllDocumentsChecked(detailsMessage = null) {
 		Click.clickNoMouseOverNoWaitForVisible(locator1 = "DocumentsAndMedia#TOOLBAR_SELECT_ALL_CHECKBOX");
 
 		Click(locator1 = "DocumentsAndMedia#TOOLBAR_INFO_PANEL");
@@ -3090,7 +3287,8 @@ definition {
 			locator1 = "DocumentsAndMedia#TOOLBAR_INFO_PANEL_DETAILS_MESSAGE");
 	}
 
-	macro viewAllPG {
+	@summary = "Default summary"
+	macro viewAllPG(dmDocumentFileType = null, dmDocumentTitle = null, dmDocumentDescription = null, dmDocumentType = null, commentBody = null, tagNameList = null, dmDocumentAuthor = null, dmDocumentFileName = null, tagName = null, categoryName = null, dmDocumentVersionNumber = null) {
 		DMDocument.viewPG(
 			categoryName = ${categoryName},
 			dmDocumentDescription = ${dmDocumentDescription},
@@ -3123,13 +3321,15 @@ definition {
 		DMDocument.viewDocumentDetailsCmdPG();
 	}
 
-	macro viewAudioPreview {
+	@summary = "Default summary"
+	macro viewAudioPreview(audioName = null) {
 		AssertElementPresent(
 			key_audioName = ${audioName},
 			locator1 = "DocumentsAndMediaDocument#AUDIO_PREVIEW");
 	}
 
-	macro viewAudioPreviewGeneratingInfo {
+	@summary = "Default summary"
+	macro viewAudioPreviewGeneratingInfo() {
 		if (isSet(disabled)) {
 			AssertTextEquals.assertPartialText(
 				locator1 = "DocumentsAndMediaDocument#DOCUMENT_DETAILS_EMPTY_STATE_PREVIEW",
@@ -3148,7 +3348,8 @@ definition {
 		}
 	}
 
-	macro viewCacheControlConfigurationInConsole {
+	@summary = "Default summary"
+	macro viewCacheControlConfigurationInConsole(maxAge = null, responseHeader = null, cacheControl = null) {
 		echo(${responseHeader});
 
 		if (isSet(uncacheableMimeType)) {
@@ -3171,17 +3372,20 @@ definition {
 		}
 	}
 
-	macro viewCannotAddRepository {
+	@summary = "Default summary"
+	macro viewCannotAddRepository() {
 		Portlet.clickPortletPlusIconPG(portletName = "Documents and Media");
 
 		AssertElementNotPresent(locator1 = "HOME_MENULIST_ADD_REPOSITORY");
 	}
 
-	macro viewCardTitle {
+	@summary = "Default summary"
+	macro viewCardTitle(dmDocumentTitle = null) {
 		LexiconCard.viewCardTitle(card = ${dmDocumentTitle});
 	}
 
-	macro viewCategories {
+	@summary = "Default summary"
+	macro viewCategories(categoryNameList = null) {
 		Panel.expandPanel(panel = "Categorization");
 
 		for (var categoryName : list ${categoryNameList}) {
@@ -3193,7 +3397,8 @@ definition {
 		}
 	}
 
-	macro viewCategoriesInfo {
+	@summary = "Default summary"
+	macro viewCategoriesInfo(categoryNameList = null) {
 		DMDocument.expandInfo();
 
 		if (isSet(categoryNameList)) {
@@ -3212,7 +3417,8 @@ definition {
 		}
 	}
 
-	macro viewCheckedinCP {
+	@summary = "Default summary"
+	macro viewCheckedinCP(dmRepositoryName = null, dmDocumentVersionNumber = null) {
 		DMDocument.expandInfo();
 
 		AssertTextEquals(
@@ -3225,14 +3431,15 @@ definition {
 			AssertTextNotPresent(value1 = "You now have an indefinite lock on this document. No one else can edit this document until you unlock it. This lock will never expire.");
 		}
 		else {
-			AssertTextNotPresent(value1 = "You now have a lock on this document. No one else can edit this document until you unlock it. This lock will automatically expire in 1 day.");
+			AssertTextNotPresent(value1 = "Info:You now have a lock on this document. No one else can edit this document until you unlock it. This lock will automatically expire in 1 day.");
 		}
 	}
 
-	macro viewCheckedoutCP {
+	@summary = "Default summary"
+	macro viewCheckedoutCP(dmRepositoryName = null) {
 		if (${dmRepositoryName} == "true") {
 			AssertTextEquals.assertPartialText(
-				locator1 = "Message#INFO",
+				locator1 = "Message#INFO_1",
 				value1 = "You now have an indefinite lock on this document. No one else can edit this document until you unlock it. This lock will never expire.");
 		}
 		else {
@@ -3242,7 +3449,8 @@ definition {
 		}
 	}
 
-	macro viewCheckedoutPG {
+	@summary = "Default summary"
+	macro viewCheckedoutPG(dmDocumentTitle = null, status = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		AssertElementPresent(locator1 = "DocumentsAndMedia#ICON_DOCUMENT_ICON_LOCKED");
@@ -3262,7 +3470,8 @@ definition {
 		VerifyElementPresent(locator1 = "Message#SUCCESS");
 	}
 
-	macro viewCP {
+	@summary = "Default summary"
+	macro viewCP(dmDocumentTitle = null, dmDocumentSize = null, dmDocumentDescription = null, dmDocumentType = null, relatedAssetsTitle = null, dmFolderName = null, customFieldValue = null, dmDocumentFileName = null, customFieldName = null, user = null, previewImage = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		AssertTextEquals(
@@ -3344,7 +3553,8 @@ definition {
 		}
 	}
 
-	macro viewCustomFieldLocalizableLanguages {
+	@summary = "Default summary"
+	macro viewCustomFieldLocalizableLanguages(localizableLanguages = null) {
 		Panel.expandPanel(panel = "Custom Fields");
 
 		Click(locator1 = "Button#LOCALIZATION_GENERIC");
@@ -3356,7 +3566,8 @@ definition {
 		}
 	}
 
-	macro viewDefault {
+	@summary = "Default summary"
+	macro viewDefault() {
 		AssertElementNotPresent(locator1 = "DocumentsAndMedia#ICON_DOCUMENT_GENERIC");
 
 		AssertTextEquals.assertPartialText(
@@ -3364,7 +3575,8 @@ definition {
 			value1 = "There are no documents or media files in this folder.");
 	}
 
-	macro viewDMMarketingBannerPG {
+	@summary = "Default summary"
+	macro viewDMMarketingBannerPG(campaignTheme = null, legalReview = null, assetTitle = null, bannerName = null, marketingSelect = null, bannerDescription = null) {
 		var key_assetTitle = ${assetTitle};
 
 		AssetPublisherPortlet.clickAssetTitle(assetTitle = ${assetTitle});
@@ -3402,7 +3614,8 @@ definition {
 			value1 = ${bannerDescription});
 	}
 
-	macro viewDocumentAuthorCmdPG {
+	@summary = "Default summary"
+	macro viewDocumentAuthorCmdPG(dmDocumentAuthor = null) {
 		if (isSet(dmDocumentAuthor)) {
 			AssertTextEquals(
 				locator1 = "DocumentsAndMediaDocument#DOCUMENT_INFO_UPLOADED_BY",
@@ -3415,7 +3628,8 @@ definition {
 		}
 	}
 
-	macro viewDocumentDetailsCmdPG {
+	@summary = "Default summary"
+	macro viewDocumentDetailsCmdPG(dmDocumentSize = null) {
 		AssertElementPresent(locator1 = "DocumentsAndMediaDocument#DOCUMENT_INFO_CREATED_DATE");
 
 		AssertElementPresent(locator1 = "DocumentsAndMediaDocument#DOCUMENT_INFO_WORKFLOW_STATUS");
@@ -3429,7 +3643,8 @@ definition {
 		Panel.expandPanel(panel = "Automatically Extracted Metadata");
 	}
 
-	macro viewDocumentDetailsInListView {
+	@summary = "Default summary"
+	macro viewDocumentDetailsInListView(dmDocumentTitle = null, authorName = null, workflowStatus = null, contextualBreadcrumb = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		AssertTextEquals(
@@ -3455,7 +3670,8 @@ definition {
 			value1 = ${workflowStatus});
 	}
 
-	macro viewDocumentInfoTitleCmdPG {
+	@summary = "Default summary"
+	macro viewDocumentInfoTitleCmdPG(dmDocumentTitle = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		AssertTextEquals(
@@ -3463,22 +3679,27 @@ definition {
 			value1 = ${dmDocumentTitle});
 	}
 
-	macro viewDocumentMetadataCP {
+	@summary = "Default summary"
+	macro viewDocumentMetadataCP(metadataLabel = null, metadataData = null) {
 		var key_metadataData = ${metadataData};
 		var key_metadataLabel = ${metadataLabel};
+
+		Panel.expandPanel(panel = "Automatically Extracted Metadata");
 
 		AssertElementPresent(
 			locator1 = "DocumentsAndMediaDocument#DOCUMENT_EXTRACTED_METADATA_FIELD",
 			value1 = ${metadataData});
 	}
 
-	macro viewDocumentNoCommentsCmdPG {
+	@summary = "Default summary"
+	macro viewDocumentNoCommentsCmdPG() {
 		AssertTextEquals(
 			locator1 = "Button#SUBSCRIBE",
 			value1 = "Subscribe");
 	}
 
-	macro viewDocumentNoCustomFieldCP {
+	@summary = "Default summary"
+	macro viewDocumentNoCustomFieldCP(dmDocumentTitle = null, customFieldValue = null, customFieldName = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		AssertTextEquals(
@@ -3496,7 +3717,8 @@ definition {
 			value1 = ${customFieldValue});
 	}
 
-	macro viewDocumentTitleCmdPG {
+	@summary = "Default summary"
+	macro viewDocumentTitleCmdPG(dmDocumentTitle = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		AssertTextEquals(
@@ -3504,14 +3726,16 @@ definition {
 			value1 = ${dmDocumentTitle});
 	}
 
-	macro viewDocumentTitleInListView {
+	@summary = "Default summary"
+	macro viewDocumentTitleInListView(dmDocumentTitle = null) {
 		AssertTextEquals(
 			key_dmDocumentTitle = ${dmDocumentTitle},
 			locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_TITLE",
 			value1 = ${dmDocumentTitle});
 	}
 
-	macro viewDocumentToolbarCmdAsGuestPG {
+	@summary = "Default summary"
+	macro viewDocumentToolbarCmdAsGuestPG(dmDocumentTitle = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		AssertClick(
@@ -3539,7 +3763,8 @@ definition {
 		AssertElementNotPresent(locator1 = "Button#MOVE_TO_RECYCLE_BIN");
 	}
 
-	macro viewDocumentToolbarCmdPG {
+	@summary = "Default summary"
+	macro viewDocumentToolbarCmdPG() {
 		Click(locator1 = "Icon#TOOLBAR_ELLIPSIS");
 
 		AssertTextEquals.assertPartialText(
@@ -3558,7 +3783,8 @@ definition {
 		MenuItem.viewVisible(menuItem = "Delete");
 	}
 
-	macro viewDocumentTypePG {
+	@summary = "Default summary"
+	macro viewDocumentTypePG(dateValue = null, uploadFile = null, imageName = null, fieldFieldLabel = null, selectOption = null, numericValue = null, textContent = null, locale = null, panelName = null, radioOption = null, booleanValue = null) {
 		if (IsElementNotPresent(locator1 = "DocumentsAndMediaDocument#DOCUMENT_DETAILS_DROPDOWN")) {
 			Refresh();
 		}
@@ -3572,6 +3798,10 @@ definition {
 		}
 		else {
 			DMDocument.expandInfo();
+		}
+
+		if (isSet(panelName)) {
+			Panel.expandPanel(panel = ${panelName});
 		}
 
 		if (isSet(booleanValue)) {
@@ -3653,14 +3883,42 @@ definition {
 			}
 
 			AssertAttributeValue(
-				attribute1 = "value",
 				key_fieldFieldLabel = ${dateFieldLabel},
 				locator1 = "DocumentsAndMediaDocument#METADATA_PANEL_DATE",
-				value1 = ${dateValue});
+				value1 = "value",
+				value2 = ${dateValue});
 		}
 	}
 
-	macro viewDocumentVersionNumberCmdPG {
+	@summary = "Default summary"
+	macro viewDocumentVersionInfoFromVersionsPage(dmDocumentTitle = null, orderIndex = null) {
+		AssertVisible(
+			index = ${orderIndex},
+			key_tableEntry = ${dmDocumentTitle},
+			locator1 = "LexiconTable#TABLE_ENTRY_TITLE_INDEXED");
+
+		var list1 = ListUtil.newListFromString("id,title,version,status,modified-date,author");
+		var list2 = ListUtil.newListFromString(${dmDocumentVersionInfo});
+		var size = ListUtil.size(${list1});
+		var i = 0;
+
+		while (${i} != ${size}) {
+			var tableTitle = ListUtil.get(${list1}, ${i});
+			var dmDocumentVersionInfo = ListUtil.get(${list2}, ${i});
+
+			AssertVisible(
+				key_columnName = ${tableTitle},
+				key_tableEntry = ${dmDocumentVersionInfo},
+				locator1 = "LexiconTable#TABLE_ENTRY_INFO");
+
+			var i = ${i} + 1;
+
+			var i = StringUtil.valueOf(${i});
+		}
+	}
+
+	@summary = "Default summary"
+	macro viewDocumentVersionNumberCmdPG(dmDocumentVersionNumber = null) {
 		DMDocument.expandInfo();
 
 		if (isSet(dmDocumentVersionNumber)) {
@@ -3675,7 +3933,8 @@ definition {
 		}
 	}
 
-	macro viewEditCP {
+	@summary = "Default summary"
+	macro viewEditCP(dmDocumentTitleEdit = null, dmDocumentFileName = null, dmDocumentVersionNumber = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitleEdit};
 
 		AssertElementPresent(locator1 = "DocumentsAndMedia#ICON_DOCUMENT");
@@ -3693,7 +3952,8 @@ definition {
 		}
 	}
 
-	macro viewEntryInEdit {
+	@summary = "Default summary"
+	macro viewEntryInEdit(dmDocumentTitle = null, dmDocumentFileName = null, friendlyURL = null) {
 		if (isSet(dmDocumentTitle)) {
 			AssertTextEquals.assertValue(
 				key_fieldLabel = "Title",
@@ -3718,7 +3978,8 @@ definition {
 		}
 	}
 
-	macro viewFieldLabels {
+	@summary = "Default summary"
+	macro viewFieldLabels(labels = null) {
 		for (var fieldFieldLabels : list ${labels}) {
 			AssertTextEquals.assertPartialText(
 				key_fieldFieldLabel = ${fieldFieldLabels},
@@ -3727,7 +3988,8 @@ definition {
 		}
 	}
 
-	macro viewFileSizeByVersion {
+	@summary = "Default summary"
+	macro viewFileSizeByVersion(dmDocumentSize = null, dmDocumentVersionNumber = null) {
 		DMNavigator.gotoDocumentVersion();
 
 		Click(
@@ -3767,7 +4029,8 @@ definition {
 			locator1 = "DocumentsAndMediaDocument#DOCUMENT_DETAILS_SIZE");
 	}
 
-	macro viewFilterByDetails {
+	@summary = "Default summary"
+	macro viewFilterByDetails(noTagNames = null, tagNames = null) {
 		IFrame.selectModalFrame();
 
 		if (isSet(tagNames)) {
@@ -3779,6 +4042,10 @@ definition {
 			}
 		}
 		else {
+			while (IsElementPresent(locator1 = "Treeview#NODE_COLLAPSED")) {
+				Click(locator1 = "Treeview#NODE_COLLAPSED");
+			}
+
 			for (var category : list ${category}) {
 				AssertTextEquals(
 					key_nodeName = ${category},
@@ -3819,7 +4086,8 @@ definition {
 		SelectFrame.selectFrameTop();
 	}
 
-	macro viewFilterSummaryResults {
+	@summary = "Default summary"
+	macro viewFilterSummaryResults(searchResults = null) {
 		AssertTextEquals.assertPartialText(
 			locator1 = "ManagementBar#SEARCH_RESULT_SUMMARY",
 			value1 = ${searchResults});
@@ -3832,13 +4100,15 @@ definition {
 		}
 	}
 
-	macro viewIconLockedCP {
+	@summary = "Default summary"
+	macro viewIconLockedCP(dmDocumentTitle = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		AssertVisible(locator1 = "DocumentsAndMedia#ICON_DOCUMENT_ICON_LOCKED");
 	}
 
-	macro viewInternalVideoPreview {
+	@summary = "Default summary"
+	macro viewInternalVideoPreview(videoName = null) {
 		SelectFrame.selectFrameNoLoading(locator1 = "IFrame#EMBEDDED_VIDEO_IFRAME");
 
 		AssertVisible(
@@ -3848,14 +4118,15 @@ definition {
 		SelectFrame.selectFrameTop();
 	}
 
-	macro viewLatestVersionURL {
+	@summary = "Default summary"
+	macro viewLatestVersionURL(siteName = null, dmDocumentFileName = null) {
 		DMDocument.expandInfo();
 
 		AssertTextEquals(
 			locator1 = "DocumentsAndMediaDocument#DOCUMENT_DETAILS_URL",
 			value1 = "Latest Version URL");
 
-		var portalURL = PropsUtil.get("portal.url");
+		var portalURL = JSONCompany.getPortalURL();
 
 		if (isSet(remoteStaging)) {
 			var portalURL = StringUtil.replace(${portalURL}, ":8080", ":9080");
@@ -3868,7 +4139,8 @@ definition {
 			locator1 = "DocumentsAndMediaDocument#DOCUMENT_DETAILS_LATEST_VERSION_URL");
 	}
 
-	macro viewLocation {
+	@summary = "Default summary"
+	macro viewLocation(dmFolderName = null) {
 		var key_dmFolderName = ${dmFolderName};
 
 		AssertElementPresent(locator1 = "DocumentsAndMediaDocument#DOCUMENT_INFO_LOCATION");
@@ -3880,7 +4152,8 @@ definition {
 			value1 = ${dmFolderName});
 	}
 
-	macro viewMovedToFolderCP {
+	@summary = "Default summary"
+	macro viewMovedToFolderCP(dmDocumentTitle = null, dmFolderName = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 		var key_dmFolderName = ${dmFolderName};
 
@@ -3907,11 +4180,13 @@ definition {
 			value1 = ${dmDocumentTitle});
 	}
 
-	macro viewNoAddPermission {
+	@summary = "Default summary"
+	macro viewNoAddPermission() {
 		AssertElementNotPresent(locator1 = "Button#PLUS");
 	}
 
-	macro viewNoCacheControlConfigurationInConsole {
+	@summary = "Default summary"
+	macro viewNoCacheControlConfigurationInConsole(responseHeader = null, cacheControlAttribute = null) {
 		if (!(contains(${responseHeader}, ${cacheControlAttribute}))) {
 			echo("No configured cache control property in the console.");
 		}
@@ -3920,7 +4195,8 @@ definition {
 		}
 	}
 
-	macro viewNoCategoriesPG {
+	@summary = "Default summary"
+	macro viewNoCategoriesPG(categoryNameList = null) {
 		if (isSet(categoryNameList)) {
 			for (var categoryName : list ${categoryNameList}) {
 				AssertElementNotPresent(
@@ -3935,7 +4211,8 @@ definition {
 		}
 	}
 
-	macro viewNoFilesViaMG {
+	@summary = "Default summary"
+	macro viewNoFilesViaMG(mgImagePreview = null, mgDocumentTitle = null) {
 		if (isSet(mgImagePreview)) {
 			AssertElementNotPresent(
 				key_mgImageName = ${mgImagePreview},
@@ -3948,7 +4225,8 @@ definition {
 		}
 	}
 
-	macro viewNoItemInVersionMenu {
+	@summary = "Default summary"
+	macro viewNoItemInVersionMenu(menuItem = null, dmDocumentVersionNumber = null) {
 		DMNavigator.gotoDocumentVersion();
 
 		var key_dmDocumentVersionNumber = "Version ${dmDocumentVersionNumber}";
@@ -3958,19 +4236,22 @@ definition {
 		MenuItem.viewNotPresent(menuItem = ${menuItem});
 	}
 
-	macro viewNoPermission {
+	@summary = "Default summary"
+	macro viewNoPermission(menuItem = null) {
 		MenuItem.viewNotPresent(menuItem = ${menuItem});
 	}
 
-	macro viewNoTagInfo {
+	@summary = "Default summary"
+	macro viewNoTagInfo() {
 		for (var tagName : list ${tagName}) {
 			AssertElementNotPresent(
-				key_tagName = StringUtil.lowerCase(${tagName}),
+				key_tagName = ${tagName},
 				locator1 = "DocumentsAndMedia#TAG");
 		}
 	}
 
-	macro viewOlderVersionPG {
+	@summary = "Default summary"
+	macro viewOlderVersionPG(dmDocumentTitle = null, dmDocumentDescription = null, dmDocumentVersionNumber = null) {
 		DMNavigator.gotoDocumentVersion();
 
 		var key_dmDocumentVersionNumber = "Version ${dmDocumentVersionNumber}";
@@ -3993,7 +4274,8 @@ definition {
 		DMDocument.viewDocumentVersionNumberCmdPG(dmDocumentVersionNumber = ${dmDocumentVersionNumber});
 	}
 
-	macro viewPG {
+	@summary = "Default summary"
+	macro viewPG(dmDocumentSize = null, escapedTitle = null, dmDocumentDescription = null, dmDocumentExtension = null, dmDocumentUploader = null, dmDocumentFileTypeInfo = null, tagNameList = null, categoryName = null, dmDocumentFileType = null, dmDocumentTitle = null, averageRatingStarCount = null, dmDocumentType = null, dmRepositoryName = null, dmFolderName = null, dmDocumentVersionNumber = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 		var key_dmDocumentType = ${dmDocumentType};
 
@@ -4133,7 +4415,8 @@ definition {
 		}
 	}
 
-	macro viewPGDetails {
+	@summary = "Default summary"
+	macro viewPGDetails(dmDocumentTitle = null, dmDocumentSize = null, searchTerm = null, workflow = null, dmDocumentUploader = null, assetTitle = null, dmDocumentVersionNumber = null, portletName = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		AssertTextPresent(
@@ -4203,7 +4486,8 @@ definition {
 			value1 = "Latest Version URL");
 	}
 
-	macro viewPGViaAP {
+	@summary = "Default summary"
+	macro viewPGViaAP(dmDocumentTitle = null, dmDocumentDescription = null, customFieldValue = null, customFieldName = null, contentList = null) {
 		var key_assetContent = ${dmDocumentDescription};
 		var key_assetTitle = ${dmDocumentTitle};
 
@@ -4236,6 +4520,8 @@ definition {
 
 			DMDocument.expandInfo();
 
+			Panel.expandPanel(panel = "Custom Fields");
+
 			AssertTextEquals(
 				locator1 = "DocumentsAndMediaDocument#CUSTOM_FIELD_NAME",
 				value1 = ${customFieldName});
@@ -4258,7 +4544,8 @@ definition {
 		}
 	}
 
-	macro viewPGViaMG {
+	@summary = "Default summary"
+	macro viewPGViaMG(mgDocumentTitle = null) {
 		var key_mgDocumentTitle = ${mgDocumentTitle};
 
 		if (isSet(mgVideoPreview)) {
@@ -4288,7 +4575,8 @@ definition {
 		}
 	}
 
-	macro viewPGViaSearch {
+	@summary = "Default summary"
+	macro viewPGViaSearch(dmDocumentTitle = null, dmDocumentDescription = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		DMDocument.viewDocumentTitleCmdPG(dmDocumentTitle = ${dmDocumentTitle});
@@ -4302,7 +4590,8 @@ definition {
 			value1 = ${dmDocumentDescription});
 	}
 
-	macro viewPGviaStagingLocalLive {
+	@summary = "Default summary"
+	macro viewPGviaStagingLocalLive(dmDocumentTitle = null, documentAdded = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		if (${documentAdded} == "true") {
@@ -4333,7 +4622,8 @@ definition {
 		}
 	}
 
-	macro viewSearchResultsCP {
+	@summary = "Default summary"
+	macro viewSearchResultsCP(dmDocumentTitle = null, dmRepositoryName = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 		var key_dmRepositoryName = ${dmRepositoryName};
 
@@ -4352,14 +4642,16 @@ definition {
 			value1 = ${dmDocumentTitle});
 	}
 
-	macro viewSearchResultsPG {
+	@summary = "Default summary"
+	macro viewSearchResultsPG(dmDocumentTitle = null) {
 		AssertTextEquals.assertPartialText(
 			key_dmDocumentTitle = ${dmDocumentTitle},
 			locator1 = "DocumentsAndMedia#SEARCH_TITLE",
 			value1 = ${dmDocumentTitle});
 	}
 
-	macro ViewSelectedTags {
+	@summary = "Default summary"
+	macro ViewSelectedTags(tagName = null) {
 		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		WaitForLiferayEvent.initializeLiferayEventLog();
@@ -4377,14 +4669,15 @@ definition {
 		SelectFrame(value1 = "relative=top");
 	}
 
-	macro viewStagingDetailsManagementBar {
+	@summary = "Default summary"
+	macro viewStagingDetailsManagementBar(dmDocumentTitle = null) {
 		LexiconEntry.changeDisplayStyle(displayStyle = "list");
 
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		Check(locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_CHECKBOX");
 
-		Click(locator1 = "Icon#TOOLBAR_ELLIPSIS");
+		Click(locator1 = "ManagementBar#ELLIPSIS");
 
 		MenuItem.viewPresent(menuItem = "Download");
 
@@ -4399,7 +4692,8 @@ definition {
 		MenuItem.viewPresent(menuItem = "Permissions");
 	}
 
-	macro viewStagingDetailsPG {
+	@summary = "Default summary"
+	macro viewStagingDetailsPG() {
 		Portlet.clickPortletPlusIconPG(portletName = "Documents and Media");
 
 		MenuItem.viewPresent(menuItem = "Folder");
@@ -4467,7 +4761,8 @@ definition {
 		AssertVisible(locator1 = "Icon#MOVE_TO_RECYCLE_BIN");
 	}
 
-	macro viewStatus {
+	@summary = "Default summary"
+	macro viewStatus(dmDocumentTitle = null, dmDocumentStatus = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
 		if (${dmDocumentStatus} == "Approved") {
@@ -4490,13 +4785,12 @@ definition {
 		}
 	}
 
-	macro viewTagInfo {
+	@summary = "Default summary"
+	macro viewTagInfo() {
 		DMDocument.expandInfo();
 
 		for (var tagName : list ${tagName}) {
 			ScrollWebElementIntoView(locator1 = "DocumentsAndMediaDocument#DOCUMENT_INFO_RATING");
-
-			var tagName = StringUtil.lowerCase(${tagName});
 
 			AssertTextEquals.assertPartialText(
 				locator1 = "DocumentsAndMediaDocument#DOCUMENT_INFO_TAGS",
@@ -4504,7 +4798,8 @@ definition {
 		}
 	}
 
-	macro viewTypeFieldLocalizableLanguages {
+	@summary = "Default summary"
+	macro viewTypeFieldLocalizableLanguages(localizableLanguages = null) {
 		if (!(isSet(currentLocale))) {
 			var key_currentLocale = "en-us";
 		}
@@ -4518,7 +4813,8 @@ definition {
 		}
 	}
 
-	macro viewVideoPreviewGeneratingInfo {
+	@summary = "Default summary"
+	macro viewVideoPreviewGeneratingInfo() {
 		SelectFrame.selectFrameNoLoading(locator1 = "IFrame#EMBEDDED_VIDEO_IFRAME");
 
 		if (isSet(disabled)) {
@@ -4544,14 +4840,15 @@ definition {
 		SelectFrame.selectFrameTop();
 	}
 
-	macro viewWebDAVURL {
+	@summary = "Default summary"
+	macro viewWebDAVURL(siteName = null, dmDocumentFileName = null) {
 		DMDocument.expandInfo();
 
 		AssertTextEquals.assertPartialText(
 			locator1 = "DocumentsAndMediaDocument#DOCUMENT_DETAILS_WEBDAV_URL",
 			value1 = "WebDAV URL");
 
-		var portalURL = PropsUtil.get("portal.url");
+		var portalURL = JSONCompany.getPortalURL();
 
 		if (isSet(remoteStaging)) {
 			var portalURL = StringUtil.replace(${portalURL}, ":8080", ":9080");

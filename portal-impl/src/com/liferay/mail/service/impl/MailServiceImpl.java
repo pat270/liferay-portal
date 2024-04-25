@@ -10,8 +10,10 @@ import com.liferay.mail.kernel.auth.token.provider.MailAuthTokenProviderRegistry
 import com.liferay.mail.kernel.model.Account;
 import com.liferay.mail.kernel.model.MailMessage;
 import com.liferay.mail.kernel.service.MailService;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.change.tracking.CTAware;
 import com.liferay.portal.kernel.cluster.Clusterable;
+import com.liferay.portal.kernel.jndi.JNDIUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.DestinationNames;
@@ -21,11 +23,11 @@ import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiServic
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.transaction.TransactionCommitCallbackUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.InfrastructureUtil;
 import com.liferay.portal.kernel.util.PrefsPropsUtil;
 import com.liferay.portal.kernel.util.PropertiesUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.IOException;
@@ -39,7 +41,8 @@ import javax.mail.Authenticator;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 
-import javax.portlet.PortletPreferences;
+import javax.naming.Context;
+import javax.naming.InitialContext;
 
 /**
  * @author Brian Wing Shun Chan
@@ -77,12 +80,10 @@ public class MailServiceImpl implements IdentifiableOSGiService, MailService {
 	public Session getSession(Account account) {
 		Session session = Session.getInstance(_getProperties(account));
 
+		_debug(session.getProperties());
+
 		if (_log.isDebugEnabled()) {
 			session.setDebug(true);
-
-			Properties sessionProperties = session.getProperties();
-
-			sessionProperties.list(System.out);
 		}
 
 		return session;
@@ -96,17 +97,12 @@ public class MailServiceImpl implements IdentifiableOSGiService, MailService {
 			return session;
 		}
 
-		session = InfrastructureUtil.getMailSession();
-
-		PortletPreferences companyPortletPreferences =
-			PrefsPropsUtil.getPreferences(companyId);
-		PortletPreferences systemPortletPreferences =
-			PrefsPropsUtil.getPreferences();
+		session = _createMailSession();
 
 		Function<String, String> function =
-			(String key) -> companyPortletPreferences.getValue(
-				key,
-				systemPortletPreferences.getValue(key, PropsUtil.get(key)));
+			(String key) -> PrefsPropsUtil.getString(
+				companyId, key,
+				PrefsPropsUtil.getString(key, PropsUtil.get(key)));
 
 		if (!GetterUtil.getBoolean(
 				function.apply(PropsKeys.MAIL_SESSION_MAIL))) {
@@ -259,10 +255,10 @@ public class MailServiceImpl implements IdentifiableOSGiService, MailService {
 			session = Session.getInstance(properties);
 		}
 
+		_debug(properties);
+
 		if (_log.isDebugEnabled()) {
 			session.setDebug(true);
-
-			properties.list(System.out);
 		}
 
 		if (!oAuth2AuthEnable) {
@@ -284,6 +280,46 @@ public class MailServiceImpl implements IdentifiableOSGiService, MailService {
 
 				return null;
 			});
+	}
+
+	private Session _createMailSession() {
+		Properties properties = PropsUtil.getProperties("mail.session.", true);
+
+		String jndiName = properties.getProperty("jndi.name");
+
+		if (Validator.isNotNull(jndiName)) {
+			try {
+				Properties jndiEnvironmentProperties = PropsUtil.getProperties(
+					PropsKeys.JNDI_ENVIRONMENT, true);
+
+				Context context = new InitialContext(jndiEnvironmentProperties);
+
+				return (Session)JNDIUtil.lookup(context, jndiName);
+			}
+			catch (Exception exception) {
+				_log.error("Unable to lookup " + jndiName, exception);
+			}
+		}
+
+		return Session.getInstance(properties);
+	}
+
+	private void _debug(Properties properties) {
+		if (!_log.isDebugEnabled()) {
+			return;
+		}
+
+		_log.debug("Properties:");
+
+		for (String name : properties.stringPropertyNames()) {
+			String value = properties.getProperty(name);
+
+			if (name.contains("password")) {
+				value = "***";
+			}
+
+			_log.debug(StringBundler.concat(name, StringPool.EQUAL, value));
+		}
 	}
 
 	private Properties _getProperties(Account account) {

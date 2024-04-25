@@ -9,7 +9,6 @@ import com.liferay.osgi.service.tracker.collections.EagerServiceTrackerCustomize
 import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerList;
 import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerListFactory;
 import com.liferay.petra.string.StringBundler;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -95,9 +94,7 @@ public class CompanyIndexFactoryHelper {
 
 			SearchLogHelperUtil.logActionResponse(_log, actionResponse);
 
-			if (FeatureFlagManagerUtil.isEnabled("LPS-177664") &&
-				(companyId != CompanyConstants.SYSTEM)) {
-
+			if (companyId != CompanyConstants.SYSTEM) {
 				if (resetBothIndexNames) {
 					_companyLocalService.updateIndexNames(
 						companyId, null, null);
@@ -252,7 +249,7 @@ public class CompanyIndexFactoryHelper {
 		Settings.Builder builder = settingsBuilder.getBuilder();
 
 		String defaultIndexSettings = ResourceUtil.getResourceAsString(
-			getClass(), "/META-INF/index-settings-defaults.json");
+			getClass(), "/META-INF/settings/index-settings-defaults.json");
 
 		builder.loadFromSource(defaultIndexSettings, XContentType.JSON);
 	}
@@ -389,7 +386,7 @@ public class CompanyIndexFactoryHelper {
 	private CompanyLocalService _companyLocalService;
 
 	@Reference
-	private volatile ElasticsearchConfigurationWrapper
+	private ElasticsearchConfigurationWrapper
 		_elasticsearchConfigurationWrapper;
 
 	@Reference

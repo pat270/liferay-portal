@@ -5,50 +5,60 @@
 
 import ClayAlert from '@clayui/alert';
 import ClayForm, {ClayRadio, ClayRadioGroup} from '@clayui/form';
-import {Card, SingleSelect, Toggle} from '@liferay/object-js-components-web';
-import React, {useMemo} from 'react';
+import {SingleSelect, Toggle} from '@liferay/object-js-components-web';
+import classNames from 'classnames';
+import React, {useEffect} from 'react';
 
 import {defaultLanguageId} from '../../../../utils/constants';
-import {ObjectFieldErrors} from '../../ObjectFieldFormBase';
+
+import '../../EditObjectFieldContent.scss';
 
 const languages = Liferay.Language.available;
-const languageLabels = Object.values(languages).map((language) => {
-	return {label: language};
+const languageLabels = Object.entries(languages).map(([key, value]) => {
+	return {label: value, value: key};
 });
-const defaultLanguage = languageLabels[0].label;
 
-interface ISearchableProps {
-	disabled?: boolean;
-	errors: ObjectFieldErrors;
+interface SearchableProps {
 	isApproved: boolean;
-	objectField: Partial<ObjectField>;
+	modelBuilder?: boolean;
+	onSubmit?: (value?: Partial<ObjectField>) => void;
 	readOnly: boolean;
 	setValues: (values: Partial<ObjectField>) => void;
+	values: Partial<ObjectField>;
 }
 
 export function SearchableContainer({
 	isApproved,
-	objectField,
+	modelBuilder,
+	onSubmit,
 	readOnly,
 	setValues,
-}: ISearchableProps) {
+	values,
+}: SearchableProps) {
 	const isSearchableString =
-		objectField.indexed &&
-		(objectField.DBType === 'Clob' ||
-			objectField.DBType === 'String' ||
-			objectField.businessType === 'Attachment') &&
-		objectField.businessType !== 'Aggregation';
+		values.indexed &&
+		(values.DBType === 'Clob' ||
+			values.DBType === 'String' ||
+			values.businessType === 'Attachment') &&
+		values.businessType !== 'Aggregation';
 
-	const selectedLanguage = useMemo(() => {
-		const label =
-			objectField.indexedLanguageId &&
-			languages[objectField.indexedLanguageId];
-
-		return label || defaultLanguage;
-	}, [objectField.indexedLanguageId]);
+	useEffect(() => {
+		if (!values.indexedLanguageId) {
+			setValues({
+				indexedLanguageId: defaultLanguageId,
+			});
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
 	return (
-		<Card title={Liferay.Language.get('searchable')}>
+		<div
+			className={classNames({
+				'lfr-objects__edit-object-field-card-content':
+					modelBuilder === false,
+				'lfr-objects__edit-object-field-model-builder-panel': modelBuilder,
+			})}
+		>
 			{isApproved && (
 				<ClayAlert displayType="info" title="Info">
 					{Liferay.Language.get(
@@ -59,21 +69,41 @@ export function SearchableContainer({
 
 			<ClayForm.Group>
 				<Toggle
-					disabled={objectField.businessType === 'Encrypted'}
+					disabled={
+						values.businessType === 'Aggregation' ||
+						values.businessType === 'Encrypted' ||
+						values.businessType === 'Formula' ||
+						values.system
+					}
 					label={Liferay.Language.get('searchable')}
 					name="indexed"
+					onBlur={(event) => {
+						event.stopPropagation();
+
+						if (onSubmit) {
+							onSubmit();
+						}
+					}}
 					onToggle={(indexed) => setValues({indexed})}
-					toggled={objectField.indexed}
+					toggled={values.indexed}
 				/>
 			</ClayForm.Group>
 
 			{isSearchableString && (
-				<ClayForm.Group>
+				<ClayForm.Group
+					onBlur={(event) => {
+						event.stopPropagation();
+
+						if (onSubmit) {
+							onSubmit();
+						}
+					}}
+				>
 					<ClayRadioGroup
 						onChange={(selected: string | number) => {
 							const indexedAsKeyword = selected === 'true';
 							const indexedLanguageId = indexedAsKeyword
-								? null
+								? ''
 								: defaultLanguageId;
 
 							setValues({
@@ -81,9 +111,7 @@ export function SearchableContainer({
 								indexedLanguageId,
 							});
 						}}
-						value={new Boolean(
-							objectField.indexedAsKeyword
-						).toString()}
+						value={new Boolean(values.indexedAsKeyword).toString()}
 					>
 						<ClayRadio
 							disabled={readOnly}
@@ -100,24 +128,24 @@ export function SearchableContainer({
 				</ClayForm.Group>
 			)}
 
-			{isSearchableString && !objectField.indexedAsKeyword && (
+			{isSearchableString && !values.indexedAsKeyword && (
 				<SingleSelect
+					items={languageLabels}
 					label={Liferay.Language.get('language')}
-					onChange={(value) => {
-						const [indexedLanguageId] = Object.entries(
-							languages
-						).find(([, label]) => value.label === label) as [
-							Liferay.Language.Locale,
-							string
-						];
+					onSelectionChange={(value) => {
+						setValues({indexedLanguageId: value as string});
 
-						setValues({indexedLanguageId});
+						if (onSubmit) {
+							onSubmit({
+								...values,
+								indexedLanguageId: value as string,
+							});
+						}
 					}}
-					options={languageLabels}
 					required
-					value={selectedLanguage}
+					selectedKey={values.indexedLanguageId as string}
 				/>
 			)}
-		</Card>
+		</div>
 	);
 }

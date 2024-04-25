@@ -7,20 +7,21 @@ package com.liferay.change.tracking.web.internal.portlet;
 
 import com.liferay.change.tracking.constants.CTPortletKeys;
 import com.liferay.change.tracking.service.CTCollectionLocalService;
-import com.liferay.change.tracking.service.CTCollectionService;
-import com.liferay.change.tracking.service.CTEntryLocalService;
 import com.liferay.change.tracking.service.CTPreferencesLocalService;
+import com.liferay.change.tracking.service.CTRemoteLocalService;
 import com.liferay.change.tracking.spi.display.CTDisplayRendererRegistry;
 import com.liferay.change.tracking.web.internal.configuration.helper.CTSettingsConfigurationHelper;
 import com.liferay.change.tracking.web.internal.constants.CTWebKeys;
 import com.liferay.change.tracking.web.internal.display.context.PublicationsDisplayContext;
+import com.liferay.change.tracking.web.internal.helper.PublicationHelper;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Release;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
-import com.liferay.portal.kernel.service.permission.PortletPermission;
+import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
+import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 
@@ -73,16 +74,19 @@ public class PublicationsPortlet extends MVCPortlet {
 			checkPermissions(renderRequest);
 		}
 		catch (Exception exception) {
-			throw new PortletException(exception);
+			SessionErrors.add(renderRequest, exception.getClass());
+
+			include("/publications/error.jsp", renderRequest, renderResponse);
+
+			return;
 		}
 
 		PublicationsDisplayContext publicationsDisplayContext =
 			new PublicationsDisplayContext(
-				_ctCollectionLocalService, _ctCollectionService,
-				_ctDisplayRendererRegistry, _ctEntryLocalService,
-				_ctPreferencesLocalService,
+				_ctCollectionLocalService, _ctDisplayRendererRegistry,
+				_ctPreferencesLocalService, _ctRemoteLocalService,
 				_portal.getHttpServletRequest(renderRequest), _language,
-				renderRequest, renderResponse);
+				_publicationHelper, renderRequest, renderResponse);
 
 		renderRequest.setAttribute(
 			CTWebKeys.PUBLICATIONS_DISPLAY_CONTEXT, publicationsDisplayContext);
@@ -112,7 +116,7 @@ public class PublicationsPortlet extends MVCPortlet {
 			}
 		}
 
-		_portletPermission.check(
+		PortletPermissionUtil.check(
 			PermissionThreadLocal.getPermissionChecker(),
 			CTPortletKeys.PUBLICATIONS, ActionKeys.VIEW);
 	}
@@ -121,16 +125,13 @@ public class PublicationsPortlet extends MVCPortlet {
 	private CTCollectionLocalService _ctCollectionLocalService;
 
 	@Reference
-	private CTCollectionService _ctCollectionService;
-
-	@Reference
 	private CTDisplayRendererRegistry _ctDisplayRendererRegistry;
 
 	@Reference
-	private CTEntryLocalService _ctEntryLocalService;
+	private CTPreferencesLocalService _ctPreferencesLocalService;
 
 	@Reference
-	private CTPreferencesLocalService _ctPreferencesLocalService;
+	private CTRemoteLocalService _ctRemoteLocalService;
 
 	@Reference
 	private CTSettingsConfigurationHelper _ctSettingsConfigurationHelper;
@@ -142,7 +143,7 @@ public class PublicationsPortlet extends MVCPortlet {
 	private Portal _portal;
 
 	@Reference
-	private PortletPermission _portletPermission;
+	private PublicationHelper _publicationHelper;
 
 	@Reference(
 		target = "(&(release.bundle.symbolic.name=com.liferay.change.tracking.web)(&(release.schema.version>=1.0.2)(!(release.schema.version>=2.0.0))))"

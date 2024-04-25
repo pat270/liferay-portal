@@ -35,10 +35,6 @@ definition {
 	tearDown {
 		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
 
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
-		//ACUtils.tearDownAC();
-
 		ACUtils.tearDownDXP();
 
 		if (${testLiferayVirtualInstance} == "true") {
@@ -47,6 +43,8 @@ definition {
 		else {
 			JSONGroup.deleteGroupByName(groupName = "Site Name");
 		}
+
+		ACUtils.tearDownAC();
 	}
 
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8911 | Test Summary: Enriched profiles increases by 1 when an anonymous individual converted to a known individual"
@@ -54,25 +52,26 @@ definition {
 	test IncreaseByOneWhenAnonymousIndividualConvertedToKnownIndividual {
 		property portal.acceptance = "false";
 		property portal.release = "false";
+		property test.run.type = "single";
 
 		task ("Add a new user") {
 			JSONUser.addUser(
-				userEmailAddress = "ac@liferay.com",
-				userFirstName = "ac",
-				userLastName = "ac",
-				userScreenName = "ac");
+				userEmailAddress = "anonymousconvertedtoknown@liferay.com",
+				userFirstName = "anonymousconvertedtoknown",
+				userLastName = "anonymousconvertedtoknown",
+				userScreenName = "anonymousconvertedtoknown");
 
 			JSONUser.setFirstPassword(
 				agreeToTermsAndAnswerReminderQuery = "true",
 				requireReset = "false",
-				userEmailAddress = "ac@liferay.com");
+				userEmailAddress = "anonymousconvertedtoknown@liferay.com");
 		}
 
 		task ("View the blog as a new user") {
 			ACUtils.navigateToSitePageWithUser(
 				actionType = "View Blog",
-				documentTitleList = "Blogs AC Title",
-				emailList = "ac@liferay.com",
+				documentTitleList = "Blogs AC Title,Blogs AC Title,Blogs AC Title,Blogs AC Title",
+				emailList = "anonymousconvertedtoknown@liferay.com",
 				pageName = "AC Page",
 				siteName = "Site Name");
 		}
@@ -116,13 +115,10 @@ definition {
 
 			ACDXPSettings.syncNewContactData();
 
-			User.logoutAndLoginPG(
-				userLoginEmailAddress = "ac@liferay.com",
-				userLoginFullName = "ac ac");
-
-			ACUtils.navigateToSitePage(
+			ACUtils.navigateToSitePageWithUser(
 				actionType = "View Blog",
-				documentTitleList = "Blogs AC Title",
+				documentTitleList = "Blogs AC Title,Blogs AC Title,Blogs AC Title,Blogs AC Title",
+				emailList = "anonymousconvertedtoknown@liferay.com",
 				pageName = "AC Page",
 				siteName = "Site Name");
 		}

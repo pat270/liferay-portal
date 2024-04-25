@@ -1,11 +1,36 @@
 {
 	"dependencies": {
+		"@clayui/alert": "3.111.0",
+		"@clayui/button": "3.113.0",
+		"@clayui/card": "3.113.0",
+		"@clayui/drop-down": "3.113.0",
+		"@clayui/empty-state": "3.111.0",
+		"@clayui/form": "3.113.0",
+		"@clayui/icon": "3.111.0",
+		"@clayui/label": "3.111.0",
+		"@clayui/link": "3.111.0",
+		"@clayui/loading-indicator": "3.111.0",
+		"@clayui/management-toolbar": "3.111.0",
+		"@clayui/modal": "3.113.0",
+		"@clayui/navigation-bar": "3.113.0",
+		"@clayui/pagination-bar": "3.113.0",
+		"@clayui/popover": "3.113.0",
+		"@clayui/sticker": "3.111.0",
+		"@clayui/tabs": "3.113.0",
+		"@clayui/tooltip": "3.113.0",
+		"@clayui/upper-toolbar": "3.113.0",
+		"@liferay/flags-taglib": "*",
 		"@liferay/frontend-js-react-web": "*",
+		"asset-taglib": "*",
+		"classnames": "2.3.1",
+		"frontend-editor-ckeditor-web": "*",
 		"frontend-js-web": "*",
 		"graphql-hooks": "4.4.0",
 		"graphql-hooks-memcache": "^2.1.1",
 		"highlight.js": "10.4.1",
+		"history": "4.9.0",
 		"moment": "2.29.4",
+		"prop-types": "15.7.2",
 		"react": "16.12.0",
 		"react-helmet": "^6.1.0",
 		"react-router-dom": "^5.0.1"
@@ -15,7 +40,7 @@
 			"<rootDir>/test/helpers.es.js"
 		]
 	},
-	"main": "js/index.es.js",
+	"main": "js/index.js",
 	"name": "questions-web",
 	"private": true,
 	"scripts": {
@@ -24,5 +49,5 @@
 		"format": "liferay-npm-scripts fix",
 		"test": "liferay-npm-scripts test"
 	},
-	"version": "2.0.91"
+	"version": "2.0.109"
 }

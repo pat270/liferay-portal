@@ -6,9 +6,9 @@
 package com.liferay.change.tracking.web.internal.notifications;
 
 import com.liferay.change.tracking.constants.CTPortletKeys;
+import com.liferay.change.tracking.constants.PublicationRoleConstants;
 import com.liferay.change.tracking.model.CTCollection;
 import com.liferay.change.tracking.service.CTCollectionLocalService;
-import com.liferay.change.tracking.web.internal.constants.PublicationRoleConstants;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -18,13 +18,13 @@ import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.UserGroupRole;
 import com.liferay.portal.kernel.model.UserNotificationEvent;
 import com.liferay.portal.kernel.notifications.BaseUserNotificationHandler;
-import com.liferay.portal.kernel.notifications.UserNotificationHandler;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserGroupRoleLocalService;
 import com.liferay.portal.kernel.service.UserNotificationEventLocalService;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.Portal;
 
 import javax.portlet.PortletRequest;
@@ -35,10 +35,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Samuel Trong Tran
  */
-@Component(
-	property = "javax.portlet.name=" + CTPortletKeys.PUBLICATIONS,
-	service = UserNotificationHandler.class
-)
+@Component(service = PublicationInviteUserNotificationHandler.class)
 public class PublicationInviteUserNotificationHandler
 	extends BaseUserNotificationHandler {
 
@@ -144,7 +141,7 @@ public class PublicationInviteUserNotificationHandler
 		return _language.format(
 			serviceContext.getLocale(), "x-has-invited-you-to-work-on-x-as-a-x",
 			new Object[] {
-				userName, ctCollection.getName(),
+				userName, HtmlUtil.escape(ctCollection.getName()),
 				_language.get(
 					serviceContext.getLocale(), _getRoleLabel(roleValue))
 			},

@@ -29,10 +29,12 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
+import com.liferay.portal.kernel.portlet.url.builder.ResourceURLBuilder;
 import com.liferay.portal.kernel.security.auth.AuthTokenUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
+import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.upload.configuration.UploadServletRequestConfigurationProviderUtil;
 import com.liferay.portal.kernel.util.Constants;
@@ -40,7 +42,6 @@ import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.staging.StagingGroupHelper;
 import com.liferay.staging.StagingGroupHelperUtil;
 import com.liferay.taglib.security.PermissionsURLTag;
@@ -49,7 +50,6 @@ import java.util.List;
 
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
-import javax.portlet.ResourceURL;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -144,6 +144,9 @@ public class LayoutUtilityPageEntryActionDropdownItemsProvider {
 			dropdownGroupItem -> {
 				dropdownGroupItem.setDropdownItems(
 					DropdownItemListBuilder.add(
+						() -> _hasUpdatePermission(),
+						_getConfigureLayoutUtilityPageEntryActionUnsafeConsumer()
+					).add(
 						() -> LayoutUtilityPageEntryPermission.contains(
 							_themeDisplay.getPermissionChecker(),
 							_layoutUtilityPageEntry, ActionKeys.PERMISSIONS),
@@ -161,6 +164,35 @@ public class LayoutUtilityPageEntryActionDropdownItemsProvider {
 				dropdownGroupItem.setSeparator(true);
 			}
 		).build();
+	}
+
+	private UnsafeConsumer<DropdownItem, Exception>
+		_getConfigureLayoutUtilityPageEntryActionUnsafeConsumer() {
+
+		return dropdownItem -> {
+			dropdownItem.setHref(
+				PortletURLBuilder.createRenderURL(
+					_renderResponse
+				).setMVCRenderCommandName(
+					"/layout_admin/edit_layout"
+				).setRedirect(
+					_themeDisplay.getURLCurrent()
+				).setBackURL(
+					_themeDisplay.getURLCurrent()
+				).setParameter(
+					"backURLTitle",
+					LanguageUtil.get(_httpServletRequest, "utility-pages")
+				).setParameter(
+					"groupId", _layout.getGroupId()
+				).setParameter(
+					"privateLayout", _layout.isPrivateLayout()
+				).setParameter(
+					"selPlid", _layout.getPlid()
+				).buildString());
+			dropdownItem.setIcon("cog");
+			dropdownItem.setLabel(
+				LanguageUtil.get(_httpServletRequest, "configure"));
+		};
 	}
 
 	private UnsafeConsumer<DropdownItem, Exception>
@@ -251,15 +283,15 @@ public class LayoutUtilityPageEntryActionDropdownItemsProvider {
 		_getEditLayoutUtilityPageEntryActionUnsafeConsumer() {
 
 		return dropdownItem -> {
-			String layoutFullURL = PortalUtil.getLayoutFullURL(
-				_draftLayout, _themeDisplay);
+			PortletDisplay portletDisplay = _themeDisplay.getPortletDisplay();
 
-			layoutFullURL = HttpComponentsUtil.setParameter(
-				layoutFullURL, "p_l_back_url", _themeDisplay.getURLCurrent());
-			layoutFullURL = HttpComponentsUtil.setParameter(
-				layoutFullURL, "p_l_mode", Constants.EDIT);
-
-			dropdownItem.setHref(layoutFullURL);
+			dropdownItem.setHref(
+				HttpComponentsUtil.addParameters(
+					PortalUtil.getLayoutFullURL(_draftLayout, _themeDisplay),
+					"p_l_back_url", _themeDisplay.getURLCurrent(),
+					"p_l_back_url_title",
+					portletDisplay.getPortletDisplayName(), "p_l_mode",
+					Constants.EDIT));
 
 			dropdownItem.setIcon("pencil");
 			dropdownItem.setLabel(
@@ -270,20 +302,17 @@ public class LayoutUtilityPageEntryActionDropdownItemsProvider {
 	private UnsafeConsumer<DropdownItem, Exception>
 		_getExportLayoutUtilityPageEntryActionUnsafeConsumer() {
 
-		ResourceURL exportLayoutUtilityPageEntryURL =
-			_renderResponse.createResourceURL();
-
-		exportLayoutUtilityPageEntryURL.setParameter(
-			"layoutUtilityPageEntryId",
-			String.valueOf(
-				_layoutUtilityPageEntry.getLayoutUtilityPageEntryId()));
-		exportLayoutUtilityPageEntryURL.setResourceID(
-			"/layout_admin/export_layout_utility_page_entries");
-
 		return dropdownItem -> {
-			dropdownItem.setDisabled(
-				_draftLayout.getStatus() == WorkflowConstants.STATUS_DRAFT);
-			dropdownItem.setHref(exportLayoutUtilityPageEntryURL);
+			dropdownItem.setDisabled(!_layout.isPublished());
+			dropdownItem.setHref(
+				ResourceURLBuilder.createResourceURL(
+					_renderResponse
+				).setParameter(
+					"layoutUtilityPageEntryId",
+					_layoutUtilityPageEntry.getLayoutUtilityPageEntryId()
+				).setResourceID(
+					"/layout_admin/export_layout_utility_page_entries"
+				).buildString());
 			dropdownItem.setIcon("upload");
 			dropdownItem.setLabel(
 				LanguageUtil.get(_httpServletRequest, "export"));

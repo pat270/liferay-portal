@@ -29,6 +29,7 @@ definition {
 	@priority = 4
 	test PublishPublicationWithDataProviderInForm {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONPublications.addPublication(publicationName = "Publication Name");
 
@@ -36,17 +37,9 @@ definition {
 
 		HeadlessSite.addSite(siteName = "Site Name");
 
-		FormsAdminNavigator.enableLocalNetworkDataProvider();
+		FormsAdmin.enableLocalNetworkDataProvider();
 
-		PagesAdmin.openPagesAdmin(siteURLKey = "Site Name");
-
-		ProductMenu.gotoPortlet(
-			category = "Content & Data",
-			portlet = "Forms");
-
-		Navigator.gotoNavItem(navItem = "Data Providers");
-
-		FormsAdminNavigator.gotoAddDataProvider();
+		FormsAdminNavigator.gotoRESTDataProvider(groupName = "Site Name");
 
 		var portalURL = PropsUtil.get("portal.url");
 
@@ -63,13 +56,7 @@ definition {
 
 		FormsAdmin.saveDataProvider();
 
-		PagesAdmin.openPagesAdmin(siteURLKey = "Site Name");
-
-		ProductMenu.gotoPortlet(
-			category = "Content & Data",
-			portlet = "Forms");
-
-		FormsAdminNavigator.gotoAddForm();
+		FormsAdmin.addForm(groupName = "Site Name");
 
 		Form.editName();
 
@@ -84,8 +71,6 @@ definition {
 		Form.editFieldDataProvider(
 			dataProvider = "Liferay Countries",
 			dataProviderOutput = "Country Names");
-
-		Form.closeSidebar();
 
 		PortletEntry.publish();
 
@@ -205,13 +190,7 @@ definition {
 			changeType = "Modified",
 			changeUser = "Test Test");
 
-		PagesAdmin.openPagesAdmin(siteURLKey = "Site Name");
-
-		ProductMenu.gotoPortlet(
-			category = "Content & Data",
-			portlet = "Forms");
-
-		FormsAdminNavigator.gotoAddForm();
+		FormsAdmin.addForm(groupName = "Site Name");
 
 		Form.editName();
 
@@ -229,13 +208,7 @@ definition {
 	test ResolveConflictingPublicationsByDiscarding {
 		HeadlessSite.addSite(siteName = "Site Name");
 
-		PagesAdmin.openPagesAdmin(siteURLKey = "Site Name");
-
-		ProductMenu.gotoPortlet(
-			category = "Content & Data",
-			portlet = "Forms");
-
-		FormsAdminNavigator.gotoAddForm();
+		FormsAdmin.addForm(groupName = "Site Name");
 
 		Form.editName();
 
@@ -303,43 +276,32 @@ definition {
 			changeType = "Deleted",
 			changeUser = "Test Test");
 
-		Publications.publishPublication(publicationName = "Publication Name 2");
-
 		PublicationsNavigator.gotoPublish(
 			gotoPublicationsAdmin = "true",
-			publicationName = "Publication Name 1");
-
-		PublicationsChanges.discardChanges(
-			changeCategory = "Form Instance",
-			changeTitle = "Created Form Name Edited",
-			conflictingChanges = "true",
-			entryTitle = "Form Instance");
+			publicationName = "Publication Name 2");
 
 		PublicationsChanges.discardChanges(
 			changeCategory = "Dynamic Data Mapping Structure",
-			changeTitle = "Created Form Name Edited",
-			conflictingChanges = "true",
-			entryTitle = "Dynamic Data Mapping Structure");
+			changeTitle = "Dynamic Data Mapping Structure",
+			conflictingChanges = "true");
 
-		Publications.publishPublication(publicationName = "Publication Name 1");
+		Publications.publishPublication(publicationName = "Publication Name 2");
+
+		Publications.publishPublication(
+			gotoPublicationsAdmin = "true",
+			publicationName = "Publication Name 1");
 	}
 
 	@description = "Assert the form with mutiple pages can be submited successfully within publications and the entry can be published to production."
 	@priority = 4
 	test SubmitFormWithMultiplePagesWithinPublications {
+		HeadlessSite.addSite(siteName = "Site Name");
+
 		JSONPublications.addPublication(publicationName = "Publication Name");
 
 		JSONPublications.selectPublication(publicationName = "Publication Name");
 
-		HeadlessSite.addSite(siteName = "Site Name");
-
-		PagesAdmin.openPagesAdmin(siteURLKey = "Site Name");
-
-		ProductMenu.gotoPortlet(
-			category = "Content & Data",
-			portlet = "Forms");
-
-		FormsAdminNavigator.gotoAddForm();
+		FormsAdmin.addForm(groupName = "Site Name");
 
 		Form.editName();
 
@@ -372,6 +334,8 @@ definition {
 		FormFields.editOptionsRow(
 			optionName = "Option1",
 			optionValue = "Option 1");
+
+		FormFields.clickAddOptionButton();
 
 		FormFields.editOptionsRow(
 			optionName = "Option2",
@@ -533,13 +497,7 @@ definition {
 
 		HeadlessSite.addSite(siteName = "Site Name");
 
-		PagesAdmin.openPagesAdmin(siteURLKey = "Site Name");
-
-		ProductMenu.gotoPortlet(
-			category = "Content & Data",
-			portlet = "Forms");
-
-		FormsAdminNavigator.gotoAddForm();
+		FormsAdmin.addForm(groupName = "Site Name");
 
 		Form.editName();
 

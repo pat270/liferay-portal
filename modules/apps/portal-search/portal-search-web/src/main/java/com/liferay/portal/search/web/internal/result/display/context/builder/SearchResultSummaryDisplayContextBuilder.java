@@ -27,6 +27,7 @@ import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistry;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.search.SearchException;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.ResourceActions;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
@@ -334,7 +335,7 @@ public class SearchResultSummaryDisplayContextBuilder {
 			Summary summary, String className, long classPK,
 			AssetRendererFactory<?> assetRendererFactory,
 			AssetRenderer<?> assetRenderer)
-		throws PortalException, PortletException {
+		throws Exception {
 
 		SearchResultSummaryDisplayContext searchResultSummaryDisplayContext =
 			new SearchResultSummaryDisplayContext();
@@ -365,25 +366,26 @@ public class SearchResultSummaryDisplayContextBuilder {
 			className, classPK);
 
 		_buildAssetCategoriesOrTags(
-			searchResultSummaryDisplayContext, assetEntry);
+			assetEntry, searchResultSummaryDisplayContext);
 
 		_buildAssetRendererURLDownload(
-			searchResultSummaryDisplayContext, assetRenderer, summary);
+			assetRenderer, assetRendererFactory,
+			searchResultSummaryDisplayContext, summary);
 		_buildCreationDateString(searchResultSummaryDisplayContext);
 		_buildCreatorUserName(searchResultSummaryDisplayContext);
 		_buildCreatorUserPortrait(searchResultSummaryDisplayContext);
 		_buildDocumentForm(searchResultSummaryDisplayContext);
 		_buildImage(
-			searchResultSummaryDisplayContext, assetRendererFactory,
-			assetRenderer);
+			assetRenderer, assetRendererFactory,
+			searchResultSummaryDisplayContext);
 		_buildLocaleReminder(searchResultSummaryDisplayContext, summary);
-		_buildModelResource(searchResultSummaryDisplayContext, className);
+		_buildModelResource(className, searchResultSummaryDisplayContext);
 		_buildModifiedByUserName(searchResultSummaryDisplayContext);
 		_buildModifiedByUserPortrait(searchResultSummaryDisplayContext);
 		_buildModifiedDateString(searchResultSummaryDisplayContext);
 		_buildPublishedDateString(searchResultSummaryDisplayContext);
 		_buildUserPortrait(
-			searchResultSummaryDisplayContext, assetEntry, className);
+			assetEntry, className, searchResultSummaryDisplayContext);
 		_buildViewURL(className, classPK, searchResultSummaryDisplayContext);
 
 		return searchResultSummaryDisplayContext;
@@ -506,8 +508,8 @@ public class SearchResultSummaryDisplayContextBuilder {
 	}
 
 	private void _buildAssetCategoriesOrTags(
-		SearchResultSummaryDisplayContext searchResultSummaryDisplayContext,
-		AssetEntry assetEntry) {
+		AssetEntry assetEntry,
+		SearchResultSummaryDisplayContext searchResultSummaryDisplayContext) {
 
 		if (_hasAssetCategoriesOrTags(assetEntry)) {
 			searchResultSummaryDisplayContext.setAssetCategoriesOrTagsVisible(
@@ -519,14 +521,22 @@ public class SearchResultSummaryDisplayContextBuilder {
 	}
 
 	private void _buildAssetRendererURLDownload(
-		SearchResultSummaryDisplayContext searchResultSummaryDisplayContext,
-		AssetRenderer<?> assetRenderer, Summary summary) {
+			AssetRenderer<?> assetRenderer,
+			AssetRendererFactory<?> assetRendererFactory,
+			SearchResultSummaryDisplayContext searchResultSummaryDisplayContext,
+			Summary summary)
+		throws Exception {
 
 		if (_hasAssetRendererURLDownload(assetRenderer)) {
 			searchResultSummaryDisplayContext.setAssetRendererURLDownload(
 				assetRenderer.getURLDownload(_themeDisplay));
 			searchResultSummaryDisplayContext.
-				setAssetRendererURLDownloadVisible(true);
+				setAssetRendererURLDownloadVisible(
+					assetRendererFactory.hasPermission(
+						_themeDisplay.getPermissionChecker(),
+						assetRenderer.getClassPK(), ActionKeys.DOWNLOAD));
+			searchResultSummaryDisplayContext.setAssetRendererDownloadSize(
+				_getFieldValueLong("size"));
 			searchResultSummaryDisplayContext.setTitle(
 				assetRenderer.getTitle(summary.getLocale()));
 		}
@@ -700,9 +710,9 @@ public class SearchResultSummaryDisplayContextBuilder {
 	}
 
 	private void _buildImage(
-		SearchResultSummaryDisplayContext searchResultSummaryDisplayContext,
+		AssetRenderer<?> assetRenderer,
 		AssetRendererFactory<?> assetRendererFactory,
-		AssetRenderer<?> assetRenderer) {
+		SearchResultSummaryDisplayContext searchResultSummaryDisplayContext) {
 
 		if (!_imageRequested || (assetRendererFactory == null)) {
 			return;
@@ -754,8 +764,8 @@ public class SearchResultSummaryDisplayContextBuilder {
 	}
 
 	private void _buildModelResource(
-		SearchResultSummaryDisplayContext searchResultSummaryDisplayContext,
-		String className) {
+		String className,
+		SearchResultSummaryDisplayContext searchResultSummaryDisplayContext) {
 
 		String modelResource = _resourceActions.getModelResource(
 			_themeDisplay.getLocale(), className);
@@ -846,8 +856,8 @@ public class SearchResultSummaryDisplayContextBuilder {
 	}
 
 	private void _buildUserPortrait(
-		SearchResultSummaryDisplayContext searchResultSummaryDisplayContext,
-		AssetEntry assetEntry, String className) {
+		AssetEntry assetEntry, String className,
+		SearchResultSummaryDisplayContext searchResultSummaryDisplayContext) {
 
 		AssetEntry childAssetEntry = _assetEntryLocalService.fetchEntry(
 			className, _getEntryClassPK());

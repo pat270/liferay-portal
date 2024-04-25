@@ -8,9 +8,9 @@ package com.liferay.document.library.app.service.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;
+import com.liferay.document.library.app.service.test.util.DLAppServiceTestUtil;
 import com.liferay.document.library.kernel.model.DLFileEntryConstants;
 import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
-import com.liferay.document.library.kernel.service.DLAppServiceUtil;
 import com.liferay.document.library.test.util.BaseDLAppTestCase;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.repository.model.FileEntry;
@@ -44,11 +44,11 @@ public class DLAppServiceWhenUpdatingAndCheckingInAFileEntryTest
 		FileEntry fileEntry = DLAppServiceTestUtil.addFileEntry(
 			group.getGroupId(), parentFolder.getFolderId());
 
-		fileEntry = DLAppServiceUtil.updateFileEntryAndCheckIn(
+		fileEntry = dlAppService.updateFileEntryAndCheckIn(
 			fileEntry.getFileEntryId(), fileEntry.getFileName(),
 			fileEntry.getMimeType(), fileEntry.getTitle(),
 			RandomTestUtil.randomString(), StringPool.BLANK, StringPool.BLANK,
-			DLVersionNumberIncrease.MINOR, null, null, null,
+			DLVersionNumberIncrease.MINOR, null, null, null, null,
 			ServiceContextTestUtil.getServiceContext(group.getGroupId()));
 
 		AssetEntry assetEntry = AssetEntryLocalServiceUtil.fetchEntry(

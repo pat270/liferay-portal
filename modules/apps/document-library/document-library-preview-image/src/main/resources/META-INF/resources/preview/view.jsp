@@ -24,7 +24,7 @@ String previewURL = DLURLHelperUtil.getPreviewURL(fileVersion.getFileEntry(), fi
 %>
 
 <liferay-util:html-top
-	outputKey="document_library_preview_image_css"
+	outputKey="com.liferay.document.library.preview.image#/preview/view.jsp"
 >
 	<link href="<%= PortalUtil.getStaticResourceURL(request, PortalUtil.getPathProxy() + application.getContextPath() + "/preview/css/main.css") %>" rel="stylesheet" type="text/css" />
 </liferay-util:html-top>
@@ -40,7 +40,7 @@ String previewURL = DLURLHelperUtil.getPreviewURL(fileVersion.getFileEntry(), fi
 	<c:otherwise>
 		<div id="<portlet:namespace /><%= randomNamespace %>previewImage">
 			<react:component
-				module="preview/js/ImagePreviewer.es"
+				module="{ImagePreviewer} from document-library-preview-image"
 				props='<%=
 					HashMapBuilder.<String, Object>put(
 						"alt", fileVersion.getDescription()

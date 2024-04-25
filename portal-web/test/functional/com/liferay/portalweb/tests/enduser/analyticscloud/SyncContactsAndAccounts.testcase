@@ -29,10 +29,6 @@ definition {
 	tearDown {
 		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
 
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
-		//ACUtils.tearDownAC();
-
 		ACUtils.tearDownDXP();
 
 		if (${testLiferayVirtualInstance} == "true") {
@@ -45,6 +41,8 @@ definition {
 
 			UserGroup.tearDownCP();
 		}
+
+		ACUtils.tearDownAC();
 	}
 
 	@description = "Story: LRAC-10859 | Automation ID: LRAC-12667 | Test Summary: Can search for account groups in the select contacts modal"
@@ -341,7 +339,7 @@ definition {
 		}
 
 		task ("Connect to AC") {
-			var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(contacts = "True");
+			ACDXPSettings.connectDXPtoAnalyticsCloud(contacts = "True");
 		}
 
 		task ("Go to the people page in the sidebar") {
@@ -362,6 +360,8 @@ definition {
 
 		task ("Interact with the user who belongs to the user group and the user who does not belong") {
 			ACUtils.navigateToSitePageWithUser(
+				actionType = "View WC",
+				documentTitleList = "1,2,3,4",
 				emailList = "dxp@liferay.com,lxc@liferay.com",
 				pageName = "Home",
 				siteName = "guest");
@@ -374,7 +374,7 @@ definition {
 		}
 
 		task ("Go to Known Individuals tab") {
-			ACProperties.switchProperty(propertyName = ${propertyName});
+			ACProperties.switchProperty(propertyName = ${assignedPropertyName});
 
 			ACNavigation.goToIndividuals();
 
@@ -506,10 +506,7 @@ definition {
 				userGroupDescription = "User Group Description",
 				userGroupName = "User Group Name");
 
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Users and Organizations");
+			User.openUsersAdmin();
 
 			UserNavigator.gotoUser(userScreenName = "usersn");
 
@@ -602,10 +599,7 @@ definition {
 				organizationName = "Organization Name",
 				userEmailAddress = "userea@liferay.com");
 
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Users and Organizations");
+			User.openUsersAdmin();
 
 			UsersAndOrganizationsNavigator.gotoOrganizations();
 
@@ -782,7 +776,7 @@ definition {
 		}
 
 		task ("Sort the list by the Account Groups column (Ascending)") {
-			ManagementBar.setFilterAndOrder(orderBy = "Account Group");
+			KaleoFormsManageFieldSets.clickFilterAndOrderBy(filterOption = "Account Group");
 
 			ACDXPSettings.setSortDirection(sortDirection = "up");
 		}
@@ -822,7 +816,7 @@ definition {
 		}
 
 		task ("Sort the list by the Account Groups column (Ascending)") {
-			ManagementBar.setFilterAndOrder(orderBy = "Account Group");
+			KaleoFormsManageFieldSets.clickFilterAndOrderBy(filterOption = "Account Group");
 
 			ACDXPSettings.setSortDirection(sortDirection = "up");
 		}
@@ -894,7 +888,7 @@ definition {
 		}
 
 		task ("Sort the list by the Organizations column (Ascending)") {
-			ManagementBar.setFilterAndOrder(orderBy = "Organizations");
+			KaleoFormsManageFieldSets.clickFilterAndOrderBy(filterOption = "Organizations");
 
 			ACDXPSettings.setSortDirection(sortDirection = "up");
 		}
@@ -934,7 +928,7 @@ definition {
 		}
 
 		task ("Sort the list by the Organizations column (Ascending)") {
-			ManagementBar.setFilterAndOrder(orderBy = "Organizations");
+			KaleoFormsManageFieldSets.clickFilterAndOrderBy(filterOption = "Organizations");
 
 			ACDXPSettings.setSortDirection(sortDirection = "up");
 		}
@@ -1008,7 +1002,7 @@ definition {
 		}
 
 		task ("Sort the list by the User Groups column (Ascending)") {
-			ManagementBar.setFilterAndOrder(orderBy = "User Groups");
+			KaleoFormsManageFieldSets.clickFilterAndOrderBy(filterOption = "User Groups");
 
 			ACDXPSettings.setSortDirection(sortDirection = "up");
 		}
@@ -1048,7 +1042,7 @@ definition {
 		}
 
 		task ("Sort the list by the User Groups column (Ascending)") {
-			ManagementBar.setFilterAndOrder(orderBy = "User Groups");
+			KaleoFormsManageFieldSets.clickFilterAndOrderBy(filterOption = "User Groups");
 
 			ACDXPSettings.setSortDirection(sortDirection = "up");
 		}

@@ -71,7 +71,12 @@ public class DiagramResourceFactoryImpl implements DiagramResource.Factory {
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _diagramResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, DiagramResource>
+					diagramResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_diagramResourceProxyProviderFunction;
+
+				return diagramResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -226,9 +231,6 @@ public class DiagramResourceFactoryImpl implements DiagramResource.Factory {
 		}
 	}
 
-	private static final Function<InvocationHandler, DiagramResource>
-		_diagramResourceProxyProviderFunction = _getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -263,6 +265,13 @@ public class DiagramResourceFactoryImpl implements DiagramResource.Factory {
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, DiagramResource>
+			_diagramResourceProxyProviderFunction = _getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

@@ -5,6 +5,7 @@ import ChartTooltip, {
 	Alignments,
 	Weights
 } from 'shared/components/chart-tooltip';
+import ClayLink from '@clayui/link';
 import HeatmapChart from 'shared/components/HeatmapChart';
 import PropTypes from 'prop-types';
 import React, {useContext} from 'react';
@@ -12,6 +13,7 @@ import ReactDOMServer from 'react-dom/server';
 import URLConstants from 'shared/util/url-constants';
 import VisitorsByTimeQuery from 'shared/queries/VisitorsByTimeQuery';
 import {compose} from 'shared/hoc';
+import {Containers} from 'shared/components/download-report/DownloadPDFReport';
 import {graphql} from '@apollo/react-hoc';
 import {IBasePageContext} from 'shared/types';
 import {
@@ -79,7 +81,7 @@ const HeatmapChartWithData = compose<any>(
 					)}
 				</span>
 
-				<a
+				<ClayLink
 					href={URLConstants.SitesDashboardVisitorsByDayAndTime}
 					key='DOCUMENTATION'
 					target='_blank'
@@ -87,7 +89,7 @@ const HeatmapChartWithData = compose<any>(
 					{Liferay.Language.get(
 						'learn-more-about-visitors-by-day-and-time'
 					)}
-				</a>
+				</ClayLink>
 			</>
 		),
 		title: Liferay.Language.get(
@@ -96,8 +98,7 @@ const HeatmapChartWithData = compose<any>(
 	})
 )(HeatmapChart);
 
-interface IVisitorsByTimeCardProps {
-	className: string;
+interface IVisitorsByTimeCardProps extends React.HTMLAttributes<HTMLElement> {
 	label: string;
 }
 
@@ -112,6 +113,7 @@ const VisitorsByTimeCard: React.FC<IVisitorsByTimeCardProps> = ({
 	return (
 		<CardWithRangeKey
 			className={className}
+			id={Containers.VisitorsByTimeCard}
 			label={label}
 			legacyDropdownRangeKey={false}
 		>

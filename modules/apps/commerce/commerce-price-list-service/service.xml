@@ -435,11 +435,13 @@
 		<exception>CommerceBasePriceListCannotDelete</exception>
 		<exception>CommercePriceEntryDisplayDate</exception>
 		<exception>CommercePriceEntryExpirationDate</exception>
+		<exception>CommercePriceEntryPrice</exception>
 		<exception>CommercePriceEntryUnitOfMeasureKey</exception>
 		<exception>CommercePriceListCurrency</exception>
 		<exception>CommercePriceListDisplayDate</exception>
 		<exception>CommercePriceListExpirationDate</exception>
 		<exception>CommercePriceListMaxPriceValue</exception>
+		<exception>CommercePriceListMinPriceValue</exception>
 		<exception>CommercePriceListParentPriceListGroupId</exception>
 		<exception>CommerceTierPriceEntryDisplayDate</exception>
 		<exception>CommerceTierPriceEntryExpirationDate</exception>

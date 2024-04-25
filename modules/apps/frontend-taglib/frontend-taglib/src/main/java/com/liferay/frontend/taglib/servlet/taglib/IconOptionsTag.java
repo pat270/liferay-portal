@@ -12,6 +12,7 @@ import com.liferay.portal.kernel.portlet.configuration.icon.PortletConfiguration
 import com.liferay.portal.kernel.portlet.configuration.icon.PortletConfigurationIconTracker;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.JavaConstants;
@@ -44,8 +45,16 @@ public class IconOptionsTag extends IncludeTag {
 		return super.doEndTag();
 	}
 
+	public String getCssClass() {
+		return GetterUtil.getString(_cssClass);
+	}
+
 	public boolean isMonospaced() {
 		return _monospaced;
+	}
+
+	public void setCssClass(String cssClass) {
+		_cssClass = cssClass;
 	}
 
 	public void setMonospaced(boolean monospaced) {
@@ -63,6 +72,7 @@ public class IconOptionsTag extends IncludeTag {
 	protected void cleanUp() {
 		super.cleanUp();
 
+		_cssClass = null;
 		_monospaced = false;
 		_portletConfigurationIcons = null;
 	}
@@ -79,6 +89,8 @@ public class IconOptionsTag extends IncludeTag {
 
 	@Override
 	protected void setAttributes(HttpServletRequest httpServletRequest) {
+		httpServletRequest.setAttribute(
+			"liferay-frontend:icon-options:cssClass", getCssClass());
 		httpServletRequest.setAttribute(
 			"liferay-frontend:icon-options:dropdownItems", _getDropdownItems());
 		httpServletRequest.setAttribute(
@@ -226,6 +238,7 @@ public class IconOptionsTag extends IncludeTag {
 
 	private static final String _PAGE = "/icon_options/page.jsp";
 
+	private String _cssClass;
 	private boolean _monospaced;
 	private List<PortletConfigurationIcon> _portletConfigurationIcons;
 

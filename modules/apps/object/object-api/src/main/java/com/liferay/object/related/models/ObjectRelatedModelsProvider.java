@@ -28,6 +28,13 @@ public interface ObjectRelatedModelsProvider<T extends BaseModel<T>> {
 			long primaryKey2)
 		throws PortalException;
 
+	public default T fetchRelatedModel(
+			long groupId, long objectRelationshipId, long primaryKey)
+		throws PortalException {
+
+		throw new UnsupportedOperationException();
+	}
+
 	public String getClassName();
 
 	public long getCompanyId();
@@ -46,10 +53,18 @@ public interface ObjectRelatedModelsProvider<T extends BaseModel<T>> {
 
 	public default List<T> getUnrelatedModels(
 			long companyId, long groupId, ObjectDefinition objectDefinition,
-			long objectEntryId, long objectRelationshipId)
+			long objectEntryId, long objectRelationshipId, int start, int end)
 		throws PortalException {
 
 		return new ArrayList<>();
+	}
+
+	public default int getUnrelatedModelsCount(
+			long companyId, long groupId, ObjectDefinition objectDefinition,
+			long objectEntryId, long objectRelationshipId)
+		throws PortalException {
+
+		return 0;
 	}
 
 }

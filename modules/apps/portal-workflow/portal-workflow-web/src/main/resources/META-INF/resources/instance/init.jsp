@@ -16,6 +16,7 @@ page import="com.liferay.asset.kernel.model.AssetEntry" %><%@
 page import="com.liferay.asset.kernel.model.AssetRenderer" %><%@
 page import="com.liferay.asset.kernel.model.AssetRendererFactory" %><%@
 page import="com.liferay.petra.string.StringPool" %><%@
+page import="com.liferay.portal.kernel.language.LanguageUtil" %><%@
 page import="com.liferay.portal.kernel.util.StringUtil" %><%@
 page import="com.liferay.portal.kernel.util.WebKeys" %><%@
 page import="com.liferay.portal.kernel.workflow.WorkflowException" %><%@
@@ -26,10 +27,12 @@ page import="com.liferay.portal.kernel.workflow.WorkflowLog" %><%@
 page import="com.liferay.portal.workflow.web.internal.dao.search.WorkflowInstanceResultRowSplitter" %><%@
 page import="com.liferay.portal.workflow.web.internal.display.context.WorkflowInstanceEditDisplayContext" %><%@
 page import="com.liferay.portal.workflow.web.internal.display.context.WorkflowInstanceViewDisplayContext" %><%@
+page import="com.liferay.portal.workflow.web.internal.display.context.WorkflowInstanceViewManagementToolbarDisplayContext" %><%@
 page import="com.liferay.taglib.search.DateSearchEntry" %><%@
 page import="com.liferay.taglib.search.ResultRow" %>
 
-<%@ page import="java.util.Collections" %>
+<%@ page import="java.util.Collections" %><%@
+page import="java.util.Objects" %>
 
 <liferay-frontend:defineObjects />
 

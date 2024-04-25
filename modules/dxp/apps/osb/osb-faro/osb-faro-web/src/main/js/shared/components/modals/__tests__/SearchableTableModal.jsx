@@ -1,5 +1,4 @@
 import * as data from 'test/data';
-import Promise from 'metal-promise';
 import React from 'react';
 import SearchableTableModal from '../SearchableTableModal';
 import {cleanup, render} from '@testing-library/react';
@@ -7,6 +6,7 @@ import {createOrderIOMap} from 'shared/util/pagination';
 import {MemoryRouter, Route} from 'react-router-dom';
 import {noop} from 'lodash';
 import {Routes} from 'shared/util/router';
+import {waitForLoadingToBeRemoved} from 'test/helpers';
 
 jest.unmock('react-dom');
 
@@ -42,10 +42,12 @@ const DefaultComponent = props => (
 describe('SearchableTableModal', () => {
 	afterEach(cleanup);
 
-	it('should render', () => {
+	it('should render', async () => {
 		const {container} = render(<DefaultComponent />);
 
 		jest.runAllTimers();
+
+		await waitForLoadingToBeRemoved(container);
 
 		expect(container).toMatchSnapshot();
 	});
@@ -72,7 +74,7 @@ describe('SearchableTableModal', () => {
 		);
 	});
 
-	it('should render with preselected items', () => {
+	it('should render with preselected items', async () => {
 		const {container} = render(
 			<DefaultComponent
 				dataSourceFn={() =>
@@ -86,6 +88,8 @@ describe('SearchableTableModal', () => {
 		);
 
 		jest.runAllTimers();
+
+		await waitForLoadingToBeRemoved(container);
 
 		expect(
 			container.querySelector(

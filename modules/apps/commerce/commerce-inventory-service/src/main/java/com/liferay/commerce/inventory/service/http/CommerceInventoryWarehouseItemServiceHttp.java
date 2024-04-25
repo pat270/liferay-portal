@@ -45,7 +45,8 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 		com.liferay.commerce.inventory.model.CommerceInventoryWarehouseItem
 				addCommerceInventoryWarehouseItem(
 					HttpPrincipal httpPrincipal, String externalReferenceCode,
-					long commerceInventoryWarehouseId, int quantity, String sku,
+					long commerceInventoryWarehouseId,
+					java.math.BigDecimal quantity, String sku,
 					String unitOfMeasureKey)
 			throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -93,7 +94,8 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 				addOrUpdateCommerceInventoryWarehouseItem(
 					HttpPrincipal httpPrincipal, String externalReferenceCode,
 					long companyId, long commerceInventoryWarehouseId,
-					int quantity, String sku, String unitOfMeasureKey)
+					java.math.BigDecimal quantity, String sku,
+					String unitOfMeasureKey)
 			throws com.liferay.portal.kernel.exception.PortalException {
 
 		try {
@@ -173,7 +175,8 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 	}
 
 	public static void deleteCommerceInventoryWarehouseItems(
-			HttpPrincipal httpPrincipal, long companyId, String sku)
+			HttpPrincipal httpPrincipal, long companyId, String sku,
+			String unitOfMeasureKey)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		try {
@@ -183,7 +186,7 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 				_deleteCommerceInventoryWarehouseItemsParameterTypes3);
 
 			MethodHandler methodHandler = new MethodHandler(
-				methodKey, companyId, sku);
+				methodKey, companyId, sku, unitOfMeasureKey);
 
 			try {
 				TunnelUtil.invoke(httpPrincipal, methodHandler);
@@ -213,7 +216,8 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 		com.liferay.commerce.inventory.model.CommerceInventoryWarehouseItem
 				fetchCommerceInventoryWarehouseItem(
 					HttpPrincipal httpPrincipal,
-					long commerceInventoryWarehouseId, String sku)
+					long commerceInventoryWarehouseId, String sku,
+					String unitOfMeasureKey)
 			throws com.liferay.portal.kernel.exception.PortalException {
 
 		try {
@@ -223,7 +227,7 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 				_fetchCommerceInventoryWarehouseItemParameterTypes4);
 
 			MethodHandler methodHandler = new MethodHandler(
-				methodKey, commerceInventoryWarehouseId, sku);
+				methodKey, commerceInventoryWarehouseId, sku, unitOfMeasureKey);
 
 			Object returnObj = null;
 
@@ -348,7 +352,8 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 		com.liferay.commerce.inventory.model.CommerceInventoryWarehouseItem
 				getCommerceInventoryWarehouseItem(
 					HttpPrincipal httpPrincipal,
-					long commerceInventoryWarehouseId, String sku)
+					long commerceInventoryWarehouseId, String sku,
+					String unitOfMeasureKey)
 			throws com.liferay.portal.kernel.exception.PortalException {
 
 		try {
@@ -358,7 +363,7 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 				_getCommerceInventoryWarehouseItemParameterTypes7);
 
 			MethodHandler methodHandler = new MethodHandler(
-				methodKey, commerceInventoryWarehouseId, sku);
+				methodKey, commerceInventoryWarehouseId, sku, unitOfMeasureKey);
 
 			Object returnObj = null;
 
@@ -483,19 +488,19 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 
 	public static java.util.List
 		<com.liferay.commerce.inventory.model.CommerceInventoryWarehouseItem>
-				getCommerceInventoryWarehouseItemsByCompanyIdAndSku(
+				getCommerceInventoryWarehouseItemsByCompanyIdSkuAndUnitOfMeasureKey(
 					HttpPrincipal httpPrincipal, long companyId, String sku,
-					int start, int end)
+					String unitOfMeasureKey, int start, int end)
 			throws com.liferay.portal.kernel.security.auth.PrincipalException {
 
 		try {
 			MethodKey methodKey = new MethodKey(
 				CommerceInventoryWarehouseItemServiceUtil.class,
-				"getCommerceInventoryWarehouseItemsByCompanyIdAndSku",
-				_getCommerceInventoryWarehouseItemsByCompanyIdAndSkuParameterTypes10);
+				"getCommerceInventoryWarehouseItemsByCompanyIdSkuAndUnitOfMeasureKey",
+				_getCommerceInventoryWarehouseItemsByCompanyIdSkuAndUnitOfMeasureKeyParameterTypes10);
 
 			MethodHandler methodHandler = new MethodHandler(
-				methodKey, companyId, sku, start, end);
+				methodKey, companyId, sku, unitOfMeasureKey, start, end);
 
 			Object returnObj = null;
 
@@ -571,7 +576,7 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 
 	public static int getCommerceInventoryWarehouseItemsCount(
 			HttpPrincipal httpPrincipal, long companyId, long groupId,
-			String sku)
+			String sku, String unitOfMeasureKey)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		try {
@@ -581,7 +586,7 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 				_getCommerceInventoryWarehouseItemsCountParameterTypes12);
 
 			MethodHandler methodHandler = new MethodHandler(
-				methodKey, companyId, groupId, sku);
+				methodKey, companyId, groupId, sku, unitOfMeasureKey);
 
 			Object returnObj = null;
 
@@ -612,7 +617,8 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 	}
 
 	public static int getCommerceInventoryWarehouseItemsCount(
-			HttpPrincipal httpPrincipal, long companyId, String sku)
+			HttpPrincipal httpPrincipal, long companyId, String sku,
+			String unitOfMeasureKey)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		try {
@@ -622,7 +628,7 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 				_getCommerceInventoryWarehouseItemsCountParameterTypes13);
 
 			MethodHandler methodHandler = new MethodHandler(
-				methodKey, companyId, sku);
+				methodKey, companyId, sku, unitOfMeasureKey);
 
 			Object returnObj = null;
 
@@ -784,8 +790,9 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 		}
 	}
 
-	public static int getStockQuantity(
-		HttpPrincipal httpPrincipal, long companyId, long groupId, String sku) {
+	public static java.math.BigDecimal getStockQuantity(
+		HttpPrincipal httpPrincipal, long companyId, long groupId, String sku,
+		String unitOfMeasureKey) {
 
 		try {
 			MethodKey methodKey = new MethodKey(
@@ -793,7 +800,7 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 				"getStockQuantity", _getStockQuantityParameterTypes17);
 
 			MethodHandler methodHandler = new MethodHandler(
-				methodKey, companyId, groupId, sku);
+				methodKey, companyId, groupId, sku, unitOfMeasureKey);
 
 			Object returnObj = null;
 
@@ -805,7 +812,7 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 					exception);
 			}
 
-			return ((Integer)returnObj).intValue();
+			return (java.math.BigDecimal)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException
 					systemException) {
@@ -816,8 +823,9 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 		}
 	}
 
-	public static int getStockQuantity(
-		HttpPrincipal httpPrincipal, long companyId, String sku) {
+	public static java.math.BigDecimal getStockQuantity(
+		HttpPrincipal httpPrincipal, long companyId, String sku,
+		String unitOfMeasureKey) {
 
 		try {
 			MethodKey methodKey = new MethodKey(
@@ -825,7 +833,7 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 				"getStockQuantity", _getStockQuantityParameterTypes18);
 
 			MethodHandler methodHandler = new MethodHandler(
-				methodKey, companyId, sku);
+				methodKey, companyId, sku, unitOfMeasureKey);
 
 			Object returnObj = null;
 
@@ -837,7 +845,7 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 					exception);
 			}
 
-			return ((Integer)returnObj).intValue();
+			return (java.math.BigDecimal)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException
 					systemException) {
@@ -852,7 +860,8 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 		com.liferay.commerce.inventory.model.CommerceInventoryWarehouseItem
 				increaseCommerceInventoryWarehouseItemQuantity(
 					HttpPrincipal httpPrincipal,
-					long commerceInventoryWarehouseItemId, int quantity)
+					long commerceInventoryWarehouseItemId,
+					java.math.BigDecimal quantity)
 			throws com.liferay.portal.kernel.exception.PortalException {
 
 		try {
@@ -895,7 +904,8 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 
 	public static void moveQuantitiesBetweenWarehouses(
 			HttpPrincipal httpPrincipal, long fromCommerceInventoryWarehouseId,
-			long toCommerceInventoryWarehouseId, int quantity, String sku)
+			long toCommerceInventoryWarehouseId, java.math.BigDecimal quantity,
+			String sku, String unitOfMeasureKey)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		try {
@@ -906,7 +916,8 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 
 			MethodHandler methodHandler = new MethodHandler(
 				methodKey, fromCommerceInventoryWarehouseId,
-				toCommerceInventoryWarehouseId, quantity, sku);
+				toCommerceInventoryWarehouseId, quantity, sku,
+				unitOfMeasureKey);
 
 			try {
 				TunnelUtil.invoke(httpPrincipal, methodHandler);
@@ -936,8 +947,9 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 		com.liferay.commerce.inventory.model.CommerceInventoryWarehouseItem
 				updateCommerceInventoryWarehouseItem(
 					HttpPrincipal httpPrincipal,
-					long commerceInventoryWarehouseItemId, int quantity,
-					int reservedQuantity, long mvccVersion)
+					long commerceInventoryWarehouseItemId,
+					java.math.BigDecimal quantity,
+					java.math.BigDecimal reservedQuantity, long mvccVersion)
 			throws com.liferay.portal.kernel.exception.PortalException {
 
 		try {
@@ -983,8 +995,8 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 		com.liferay.commerce.inventory.model.CommerceInventoryWarehouseItem
 				updateCommerceInventoryWarehouseItem(
 					HttpPrincipal httpPrincipal,
-					long commerceInventoryWarehouseItemId, int quantity,
-					long mvccVersion)
+					long commerceInventoryWarehouseItemId, long mvccVersion,
+					java.math.BigDecimal quantity, String unitOfMeasureKey)
 			throws com.liferay.portal.kernel.exception.PortalException {
 
 		try {
@@ -994,8 +1006,8 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 				_updateCommerceInventoryWarehouseItemParameterTypes22);
 
 			MethodHandler methodHandler = new MethodHandler(
-				methodKey, commerceInventoryWarehouseItemId, quantity,
-				mvccVersion);
+				methodKey, commerceInventoryWarehouseItemId, mvccVersion,
+				quantity, unitOfMeasureKey);
 
 			Object returnObj = null;
 
@@ -1031,13 +1043,14 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 
 	private static final Class<?>[]
 		_addCommerceInventoryWarehouseItemParameterTypes0 = new Class[] {
-			String.class, long.class, int.class, String.class, String.class
+			String.class, long.class, java.math.BigDecimal.class, String.class,
+			String.class
 		};
 	private static final Class<?>[]
 		_addOrUpdateCommerceInventoryWarehouseItemParameterTypes1 =
 			new Class[] {
-				String.class, long.class, long.class, int.class, String.class,
-				String.class
+				String.class, long.class, long.class,
+				java.math.BigDecimal.class, String.class, String.class
 			};
 	private static final Class<?>[]
 		_deleteCommerceInventoryWarehouseItemParameterTypes2 = new Class[] {
@@ -1045,11 +1058,11 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 		};
 	private static final Class<?>[]
 		_deleteCommerceInventoryWarehouseItemsParameterTypes3 = new Class[] {
-			long.class, String.class
+			long.class, String.class, String.class
 		};
 	private static final Class<?>[]
 		_fetchCommerceInventoryWarehouseItemParameterTypes4 = new Class[] {
-			long.class, String.class
+			long.class, String.class, String.class
 		};
 	private static final Class<?>[]
 		_fetchCommerceInventoryWarehouseItemByExternalReferenceCodeParameterTypes5 =
@@ -1060,7 +1073,7 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 		};
 	private static final Class<?>[]
 		_getCommerceInventoryWarehouseItemParameterTypes7 = new Class[] {
-			long.class, String.class
+			long.class, String.class, String.class
 		};
 	private static final Class<?>[]
 		_getCommerceInventoryWarehouseItemsParameterTypes8 = new Class[] {
@@ -1070,19 +1083,21 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 		_getCommerceInventoryWarehouseItemsByCompanyIdParameterTypes9 =
 			new Class[] {long.class, int.class, int.class};
 	private static final Class<?>[]
-		_getCommerceInventoryWarehouseItemsByCompanyIdAndSkuParameterTypes10 =
-			new Class[] {long.class, String.class, int.class, int.class};
+		_getCommerceInventoryWarehouseItemsByCompanyIdSkuAndUnitOfMeasureKeyParameterTypes10 =
+			new Class[] {
+				long.class, String.class, String.class, int.class, int.class
+			};
 	private static final Class<?>[]
 		_getCommerceInventoryWarehouseItemsCountParameterTypes11 = new Class[] {
 			long.class
 		};
 	private static final Class<?>[]
 		_getCommerceInventoryWarehouseItemsCountParameterTypes12 = new Class[] {
-			long.class, long.class, String.class
+			long.class, long.class, String.class, String.class
 		};
 	private static final Class<?>[]
 		_getCommerceInventoryWarehouseItemsCountParameterTypes13 = new Class[] {
-			long.class, String.class
+			long.class, String.class, String.class
 		};
 	private static final Class<?>[]
 		_getCommerceInventoryWarehouseItemsCountByCompanyIdParameterTypes14 =
@@ -1099,23 +1114,25 @@ public class CommerceInventoryWarehouseItemServiceHttp {
 				int.class, int.class
 			};
 	private static final Class<?>[] _getStockQuantityParameterTypes17 =
-		new Class[] {long.class, long.class, String.class};
+		new Class[] {long.class, long.class, String.class, String.class};
 	private static final Class<?>[] _getStockQuantityParameterTypes18 =
-		new Class[] {long.class, String.class};
+		new Class[] {long.class, String.class, String.class};
 	private static final Class<?>[]
 		_increaseCommerceInventoryWarehouseItemQuantityParameterTypes19 =
-			new Class[] {long.class, int.class};
+			new Class[] {long.class, java.math.BigDecimal.class};
 	private static final Class<?>[]
 		_moveQuantitiesBetweenWarehousesParameterTypes20 = new Class[] {
-			long.class, long.class, int.class, String.class
+			long.class, long.class, java.math.BigDecimal.class, String.class,
+			String.class
 		};
 	private static final Class<?>[]
 		_updateCommerceInventoryWarehouseItemParameterTypes21 = new Class[] {
-			long.class, int.class, int.class, long.class
+			long.class, java.math.BigDecimal.class, java.math.BigDecimal.class,
+			long.class
 		};
 	private static final Class<?>[]
 		_updateCommerceInventoryWarehouseItemParameterTypes22 = new Class[] {
-			long.class, int.class, long.class
+			long.class, long.class, java.math.BigDecimal.class, String.class
 		};
 
 }

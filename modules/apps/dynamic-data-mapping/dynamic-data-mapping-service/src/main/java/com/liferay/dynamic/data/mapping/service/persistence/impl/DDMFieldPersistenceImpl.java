@@ -13,7 +13,9 @@ import com.liferay.dynamic.data.mapping.model.impl.DDMFieldModelImpl;
 import com.liferay.dynamic.data.mapping.service.persistence.DDMFieldPersistence;
 import com.liferay.dynamic.data.mapping.service.persistence.DDMFieldUtil;
 import com.liferay.dynamic.data.mapping.service.persistence.impl.constants.DDMPersistenceConstants;
+import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
@@ -161,98 +163,100 @@ public class DDMFieldPersistenceImpl
 		long storageId, int start, int end,
 		OrderByComparator<DDMField> orderByComparator, boolean useFinderCache) {
 
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			DDMField.class);
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					DDMField.class)) {
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = null;
+			Object[] finderArgs = null;
 
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			(orderByComparator == null)) {
+			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
+				(orderByComparator == null)) {
 
-			if (useFinderCache && productionMode) {
-				finderPath = _finderPathWithoutPaginationFindByStorageId;
-				finderArgs = new Object[] {storageId};
+				if (useFinderCache) {
+					finderPath = _finderPathWithoutPaginationFindByStorageId;
+					finderArgs = new Object[] {storageId};
+				}
 			}
-		}
-		else if (useFinderCache && productionMode) {
-			finderPath = _finderPathWithPaginationFindByStorageId;
-			finderArgs = new Object[] {
-				storageId, start, end, orderByComparator
-			};
-		}
+			else if (useFinderCache) {
+				finderPath = _finderPathWithPaginationFindByStorageId;
+				finderArgs = new Object[] {
+					storageId, start, end, orderByComparator
+				};
+			}
 
-		List<DDMField> list = null;
+			List<DDMField> list = null;
 
-		if (useFinderCache && productionMode) {
-			list = (List<DDMField>)finderCache.getResult(
-				finderPath, finderArgs, this);
+			if (useFinderCache) {
+				list = (List<DDMField>)finderCache.getResult(
+					finderPath, finderArgs, this);
 
-			if ((list != null) && !list.isEmpty()) {
-				for (DDMField ddmField : list) {
-					if (storageId != ddmField.getStorageId()) {
-						list = null;
+				if ((list != null) && !list.isEmpty()) {
+					for (DDMField ddmField : list) {
+						if (storageId != ddmField.getStorageId()) {
+							list = null;
 
-						break;
+							break;
+						}
 					}
 				}
 			}
-		}
 
-		if (list == null) {
-			StringBundler sb = null;
+			if (list == null) {
+				StringBundler sb = null;
 
-			if (orderByComparator != null) {
-				sb = new StringBundler(
-					3 + (orderByComparator.getOrderByFields().length * 2));
-			}
-			else {
-				sb = new StringBundler(3);
-			}
+				if (orderByComparator != null) {
+					sb = new StringBundler(
+						3 + (orderByComparator.getOrderByFields().length * 2));
+				}
+				else {
+					sb = new StringBundler(3);
+				}
 
-			sb.append(_SQL_SELECT_DDMFIELD_WHERE);
+				sb.append(_SQL_SELECT_DDMFIELD_WHERE);
 
-			sb.append(_FINDER_COLUMN_STORAGEID_STORAGEID_2);
+				sb.append(_FINDER_COLUMN_STORAGEID_STORAGEID_2);
 
-			if (orderByComparator != null) {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
-			}
-			else {
-				sb.append(DDMFieldModelImpl.ORDER_BY_JPQL);
-			}
+				if (orderByComparator != null) {
+					appendOrderByComparator(
+						sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+				}
+				else {
+					sb.append(DDMFieldModelImpl.ORDER_BY_JPQL);
+				}
 
-			String sql = sb.toString();
+				String sql = sb.toString();
 
-			Session session = null;
+				Session session = null;
 
-			try {
-				session = openSession();
+				try {
+					session = openSession();
 
-				Query query = session.createQuery(sql);
+					Query query = session.createQuery(sql);
 
-				QueryPos queryPos = QueryPos.getInstance(query);
+					QueryPos queryPos = QueryPos.getInstance(query);
 
-				queryPos.add(storageId);
+					queryPos.add(storageId);
 
-				list = (List<DDMField>)QueryUtil.list(
-					query, getDialect(), start, end);
+					list = (List<DDMField>)QueryUtil.list(
+						query, getDialect(), start, end);
 
-				cacheResult(list);
+					cacheResult(list);
 
-				if (useFinderCache && productionMode) {
-					finderCache.putResult(finderPath, finderArgs, list);
+					if (useFinderCache) {
+						finderCache.putResult(finderPath, finderArgs, list);
+					}
+				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
 				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return list;
+			return list;
+		}
 	}
 
 	/**
@@ -539,57 +543,51 @@ public class DDMFieldPersistenceImpl
 	 */
 	@Override
 	public int countByStorageId(long storageId) {
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			DDMField.class);
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					DDMField.class)) {
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = _finderPathCountByStorageId;
 
-		Long count = null;
+			Object[] finderArgs = new Object[] {storageId};
 
-		if (productionMode) {
-			finderPath = _finderPathCountByStorageId;
+			Long count = (Long)finderCache.getResult(
+				finderPath, finderArgs, this);
 
-			finderArgs = new Object[] {storageId};
+			if (count == null) {
+				StringBundler sb = new StringBundler(2);
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
-		}
+				sb.append(_SQL_COUNT_DDMFIELD_WHERE);
 
-		if (count == null) {
-			StringBundler sb = new StringBundler(2);
+				sb.append(_FINDER_COLUMN_STORAGEID_STORAGEID_2);
 
-			sb.append(_SQL_COUNT_DDMFIELD_WHERE);
+				String sql = sb.toString();
 
-			sb.append(_FINDER_COLUMN_STORAGEID_STORAGEID_2);
+				Session session = null;
 
-			String sql = sb.toString();
+				try {
+					session = openSession();
 
-			Session session = null;
+					Query query = session.createQuery(sql);
 
-			try {
-				session = openSession();
+					QueryPos queryPos = QueryPos.getInstance(query);
 
-				Query query = session.createQuery(sql);
+					queryPos.add(storageId);
 
-				QueryPos queryPos = QueryPos.getInstance(query);
+					count = (Long)query.uniqueResult();
 
-				queryPos.add(storageId);
-
-				count = (Long)query.uniqueResult();
-
-				if (productionMode) {
 					finderCache.putResult(finderPath, finderArgs, count);
 				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
+				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return count.intValue();
+			return count.intValue();
+		}
 	}
 
 	private static final String _FINDER_COLUMN_STORAGEID_STORAGEID_2 =
@@ -671,101 +669,104 @@ public class DDMFieldPersistenceImpl
 		long structureVersionId, int start, int end,
 		OrderByComparator<DDMField> orderByComparator, boolean useFinderCache) {
 
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			DDMField.class);
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					DDMField.class)) {
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = null;
+			Object[] finderArgs = null;
 
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			(orderByComparator == null)) {
+			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
+				(orderByComparator == null)) {
 
-			if (useFinderCache && productionMode) {
-				finderPath =
-					_finderPathWithoutPaginationFindByStructureVersionId;
-				finderArgs = new Object[] {structureVersionId};
+				if (useFinderCache) {
+					finderPath =
+						_finderPathWithoutPaginationFindByStructureVersionId;
+					finderArgs = new Object[] {structureVersionId};
+				}
 			}
-		}
-		else if (useFinderCache && productionMode) {
-			finderPath = _finderPathWithPaginationFindByStructureVersionId;
-			finderArgs = new Object[] {
-				structureVersionId, start, end, orderByComparator
-			};
-		}
+			else if (useFinderCache) {
+				finderPath = _finderPathWithPaginationFindByStructureVersionId;
+				finderArgs = new Object[] {
+					structureVersionId, start, end, orderByComparator
+				};
+			}
 
-		List<DDMField> list = null;
+			List<DDMField> list = null;
 
-		if (useFinderCache && productionMode) {
-			list = (List<DDMField>)finderCache.getResult(
-				finderPath, finderArgs, this);
+			if (useFinderCache) {
+				list = (List<DDMField>)finderCache.getResult(
+					finderPath, finderArgs, this);
 
-			if ((list != null) && !list.isEmpty()) {
-				for (DDMField ddmField : list) {
-					if (structureVersionId !=
-							ddmField.getStructureVersionId()) {
+				if ((list != null) && !list.isEmpty()) {
+					for (DDMField ddmField : list) {
+						if (structureVersionId !=
+								ddmField.getStructureVersionId()) {
 
-						list = null;
+							list = null;
 
-						break;
+							break;
+						}
 					}
 				}
 			}
-		}
 
-		if (list == null) {
-			StringBundler sb = null;
+			if (list == null) {
+				StringBundler sb = null;
 
-			if (orderByComparator != null) {
-				sb = new StringBundler(
-					3 + (orderByComparator.getOrderByFields().length * 2));
-			}
-			else {
-				sb = new StringBundler(3);
-			}
+				if (orderByComparator != null) {
+					sb = new StringBundler(
+						3 + (orderByComparator.getOrderByFields().length * 2));
+				}
+				else {
+					sb = new StringBundler(3);
+				}
 
-			sb.append(_SQL_SELECT_DDMFIELD_WHERE);
+				sb.append(_SQL_SELECT_DDMFIELD_WHERE);
 
-			sb.append(_FINDER_COLUMN_STRUCTUREVERSIONID_STRUCTUREVERSIONID_2);
+				sb.append(
+					_FINDER_COLUMN_STRUCTUREVERSIONID_STRUCTUREVERSIONID_2);
 
-			if (orderByComparator != null) {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
-			}
-			else {
-				sb.append(DDMFieldModelImpl.ORDER_BY_JPQL);
-			}
+				if (orderByComparator != null) {
+					appendOrderByComparator(
+						sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+				}
+				else {
+					sb.append(DDMFieldModelImpl.ORDER_BY_JPQL);
+				}
 
-			String sql = sb.toString();
+				String sql = sb.toString();
 
-			Session session = null;
+				Session session = null;
 
-			try {
-				session = openSession();
+				try {
+					session = openSession();
 
-				Query query = session.createQuery(sql);
+					Query query = session.createQuery(sql);
 
-				QueryPos queryPos = QueryPos.getInstance(query);
+					QueryPos queryPos = QueryPos.getInstance(query);
 
-				queryPos.add(structureVersionId);
+					queryPos.add(structureVersionId);
 
-				list = (List<DDMField>)QueryUtil.list(
-					query, getDialect(), start, end);
+					list = (List<DDMField>)QueryUtil.list(
+						query, getDialect(), start, end);
 
-				cacheResult(list);
+					cacheResult(list);
 
-				if (useFinderCache && productionMode) {
-					finderCache.putResult(finderPath, finderArgs, list);
+					if (useFinderCache) {
+						finderCache.putResult(finderPath, finderArgs, list);
+					}
+				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
 				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return list;
+			return list;
+		}
 	}
 
 	/**
@@ -1059,57 +1060,52 @@ public class DDMFieldPersistenceImpl
 	 */
 	@Override
 	public int countByStructureVersionId(long structureVersionId) {
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			DDMField.class);
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					DDMField.class)) {
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = _finderPathCountByStructureVersionId;
 
-		Long count = null;
+			Object[] finderArgs = new Object[] {structureVersionId};
 
-		if (productionMode) {
-			finderPath = _finderPathCountByStructureVersionId;
+			Long count = (Long)finderCache.getResult(
+				finderPath, finderArgs, this);
 
-			finderArgs = new Object[] {structureVersionId};
+			if (count == null) {
+				StringBundler sb = new StringBundler(2);
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
-		}
+				sb.append(_SQL_COUNT_DDMFIELD_WHERE);
 
-		if (count == null) {
-			StringBundler sb = new StringBundler(2);
+				sb.append(
+					_FINDER_COLUMN_STRUCTUREVERSIONID_STRUCTUREVERSIONID_2);
 
-			sb.append(_SQL_COUNT_DDMFIELD_WHERE);
+				String sql = sb.toString();
 
-			sb.append(_FINDER_COLUMN_STRUCTUREVERSIONID_STRUCTUREVERSIONID_2);
+				Session session = null;
 
-			String sql = sb.toString();
+				try {
+					session = openSession();
 
-			Session session = null;
+					Query query = session.createQuery(sql);
 
-			try {
-				session = openSession();
+					QueryPos queryPos = QueryPos.getInstance(query);
 
-				Query query = session.createQuery(sql);
+					queryPos.add(structureVersionId);
 
-				QueryPos queryPos = QueryPos.getInstance(query);
+					count = (Long)query.uniqueResult();
 
-				queryPos.add(structureVersionId);
-
-				count = (Long)query.uniqueResult();
-
-				if (productionMode) {
 					finderCache.putResult(finderPath, finderArgs, count);
 				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
+				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return count.intValue();
+			return count.intValue();
+		}
 	}
 
 	private static final String
@@ -1196,117 +1192,119 @@ public class DDMFieldPersistenceImpl
 		long companyId, String fieldType, int start, int end,
 		OrderByComparator<DDMField> orderByComparator, boolean useFinderCache) {
 
-		fieldType = Objects.toString(fieldType, "");
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					DDMField.class)) {
 
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			DDMField.class);
+			fieldType = Objects.toString(fieldType, "");
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = null;
+			Object[] finderArgs = null;
 
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			(orderByComparator == null)) {
+			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
+				(orderByComparator == null)) {
 
-			if (useFinderCache && productionMode) {
-				finderPath = _finderPathWithoutPaginationFindByC_F;
-				finderArgs = new Object[] {companyId, fieldType};
+				if (useFinderCache) {
+					finderPath = _finderPathWithoutPaginationFindByC_F;
+					finderArgs = new Object[] {companyId, fieldType};
+				}
 			}
-		}
-		else if (useFinderCache && productionMode) {
-			finderPath = _finderPathWithPaginationFindByC_F;
-			finderArgs = new Object[] {
-				companyId, fieldType, start, end, orderByComparator
-			};
-		}
+			else if (useFinderCache) {
+				finderPath = _finderPathWithPaginationFindByC_F;
+				finderArgs = new Object[] {
+					companyId, fieldType, start, end, orderByComparator
+				};
+			}
 
-		List<DDMField> list = null;
+			List<DDMField> list = null;
 
-		if (useFinderCache && productionMode) {
-			list = (List<DDMField>)finderCache.getResult(
-				finderPath, finderArgs, this);
+			if (useFinderCache) {
+				list = (List<DDMField>)finderCache.getResult(
+					finderPath, finderArgs, this);
 
-			if ((list != null) && !list.isEmpty()) {
-				for (DDMField ddmField : list) {
-					if ((companyId != ddmField.getCompanyId()) ||
-						!fieldType.equals(ddmField.getFieldType())) {
+				if ((list != null) && !list.isEmpty()) {
+					for (DDMField ddmField : list) {
+						if ((companyId != ddmField.getCompanyId()) ||
+							!fieldType.equals(ddmField.getFieldType())) {
 
-						list = null;
+							list = null;
 
-						break;
+							break;
+						}
 					}
 				}
 			}
-		}
 
-		if (list == null) {
-			StringBundler sb = null;
+			if (list == null) {
+				StringBundler sb = null;
 
-			if (orderByComparator != null) {
-				sb = new StringBundler(
-					4 + (orderByComparator.getOrderByFields().length * 2));
-			}
-			else {
-				sb = new StringBundler(4);
-			}
-
-			sb.append(_SQL_SELECT_DDMFIELD_WHERE);
-
-			sb.append(_FINDER_COLUMN_C_F_COMPANYID_2);
-
-			boolean bindFieldType = false;
-
-			if (fieldType.isEmpty()) {
-				sb.append(_FINDER_COLUMN_C_F_FIELDTYPE_3);
-			}
-			else {
-				bindFieldType = true;
-
-				sb.append(_FINDER_COLUMN_C_F_FIELDTYPE_2);
-			}
-
-			if (orderByComparator != null) {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
-			}
-			else {
-				sb.append(DDMFieldModelImpl.ORDER_BY_JPQL);
-			}
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				queryPos.add(companyId);
-
-				if (bindFieldType) {
-					queryPos.add(fieldType);
+				if (orderByComparator != null) {
+					sb = new StringBundler(
+						4 + (orderByComparator.getOrderByFields().length * 2));
+				}
+				else {
+					sb = new StringBundler(4);
 				}
 
-				list = (List<DDMField>)QueryUtil.list(
-					query, getDialect(), start, end);
+				sb.append(_SQL_SELECT_DDMFIELD_WHERE);
 
-				cacheResult(list);
+				sb.append(_FINDER_COLUMN_C_F_COMPANYID_2);
 
-				if (useFinderCache && productionMode) {
-					finderCache.putResult(finderPath, finderArgs, list);
+				boolean bindFieldType = false;
+
+				if (fieldType.isEmpty()) {
+					sb.append(_FINDER_COLUMN_C_F_FIELDTYPE_3);
+				}
+				else {
+					bindFieldType = true;
+
+					sb.append(_FINDER_COLUMN_C_F_FIELDTYPE_2);
+				}
+
+				if (orderByComparator != null) {
+					appendOrderByComparator(
+						sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+				}
+				else {
+					sb.append(DDMFieldModelImpl.ORDER_BY_JPQL);
+				}
+
+				String sql = sb.toString();
+
+				Session session = null;
+
+				try {
+					session = openSession();
+
+					Query query = session.createQuery(sql);
+
+					QueryPos queryPos = QueryPos.getInstance(query);
+
+					queryPos.add(companyId);
+
+					if (bindFieldType) {
+						queryPos.add(fieldType);
+					}
+
+					list = (List<DDMField>)QueryUtil.list(
+						query, getDialect(), start, end);
+
+					cacheResult(list);
+
+					if (useFinderCache) {
+						finderCache.putResult(finderPath, finderArgs, list);
+					}
+				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
 				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return list;
+			return list;
+		}
 	}
 
 	/**
@@ -1631,74 +1629,68 @@ public class DDMFieldPersistenceImpl
 	 */
 	@Override
 	public int countByC_F(long companyId, String fieldType) {
-		fieldType = Objects.toString(fieldType, "");
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					DDMField.class)) {
 
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			DDMField.class);
+			fieldType = Objects.toString(fieldType, "");
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = _finderPathCountByC_F;
 
-		Long count = null;
+			Object[] finderArgs = new Object[] {companyId, fieldType};
 
-		if (productionMode) {
-			finderPath = _finderPathCountByC_F;
+			Long count = (Long)finderCache.getResult(
+				finderPath, finderArgs, this);
 
-			finderArgs = new Object[] {companyId, fieldType};
+			if (count == null) {
+				StringBundler sb = new StringBundler(3);
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
-		}
+				sb.append(_SQL_COUNT_DDMFIELD_WHERE);
 
-		if (count == null) {
-			StringBundler sb = new StringBundler(3);
+				sb.append(_FINDER_COLUMN_C_F_COMPANYID_2);
 
-			sb.append(_SQL_COUNT_DDMFIELD_WHERE);
+				boolean bindFieldType = false;
 
-			sb.append(_FINDER_COLUMN_C_F_COMPANYID_2);
+				if (fieldType.isEmpty()) {
+					sb.append(_FINDER_COLUMN_C_F_FIELDTYPE_3);
+				}
+				else {
+					bindFieldType = true;
 
-			boolean bindFieldType = false;
-
-			if (fieldType.isEmpty()) {
-				sb.append(_FINDER_COLUMN_C_F_FIELDTYPE_3);
-			}
-			else {
-				bindFieldType = true;
-
-				sb.append(_FINDER_COLUMN_C_F_FIELDTYPE_2);
-			}
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				queryPos.add(companyId);
-
-				if (bindFieldType) {
-					queryPos.add(fieldType);
+					sb.append(_FINDER_COLUMN_C_F_FIELDTYPE_2);
 				}
 
-				count = (Long)query.uniqueResult();
+				String sql = sb.toString();
 
-				if (productionMode) {
+				Session session = null;
+
+				try {
+					session = openSession();
+
+					Query query = session.createQuery(sql);
+
+					QueryPos queryPos = QueryPos.getInstance(query);
+
+					queryPos.add(companyId);
+
+					if (bindFieldType) {
+						queryPos.add(fieldType);
+					}
+
+					count = (Long)query.uniqueResult();
+
 					finderCache.putResult(finderPath, finderArgs, count);
 				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
+				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return count.intValue();
+			return count.intValue();
+		}
 	}
 
 	private static final String _FINDER_COLUMN_C_F_COMPANYID_2 =
@@ -1709,6 +1701,596 @@ public class DDMFieldPersistenceImpl
 
 	private static final String _FINDER_COLUMN_C_F_FIELDTYPE_3 =
 		"(ddmField.fieldType IS NULL OR ddmField.fieldType = '')";
+
+	private FinderPath _finderPathWithPaginationFindByS_F;
+	private FinderPath _finderPathWithoutPaginationFindByS_F;
+	private FinderPath _finderPathCountByS_F;
+
+	/**
+	 * Returns all the ddm fields where storageId = &#63; and fieldName = &#63;.
+	 *
+	 * @param storageId the storage ID
+	 * @param fieldName the field name
+	 * @return the matching ddm fields
+	 */
+	@Override
+	public List<DDMField> findByS_F(long storageId, String fieldName) {
+		return findByS_F(
+			storageId, fieldName, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+	}
+
+	/**
+	 * Returns a range of all the ddm fields where storageId = &#63; and fieldName = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMFieldModelImpl</code>.
+	 * </p>
+	 *
+	 * @param storageId the storage ID
+	 * @param fieldName the field name
+	 * @param start the lower bound of the range of ddm fields
+	 * @param end the upper bound of the range of ddm fields (not inclusive)
+	 * @return the range of matching ddm fields
+	 */
+	@Override
+	public List<DDMField> findByS_F(
+		long storageId, String fieldName, int start, int end) {
+
+		return findByS_F(storageId, fieldName, start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the ddm fields where storageId = &#63; and fieldName = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMFieldModelImpl</code>.
+	 * </p>
+	 *
+	 * @param storageId the storage ID
+	 * @param fieldName the field name
+	 * @param start the lower bound of the range of ddm fields
+	 * @param end the upper bound of the range of ddm fields (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching ddm fields
+	 */
+	@Override
+	public List<DDMField> findByS_F(
+		long storageId, String fieldName, int start, int end,
+		OrderByComparator<DDMField> orderByComparator) {
+
+		return findByS_F(
+			storageId, fieldName, start, end, orderByComparator, true);
+	}
+
+	/**
+	 * Returns an ordered range of all the ddm fields where storageId = &#63; and fieldName = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMFieldModelImpl</code>.
+	 * </p>
+	 *
+	 * @param storageId the storage ID
+	 * @param fieldName the field name
+	 * @param start the lower bound of the range of ddm fields
+	 * @param end the upper bound of the range of ddm fields (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the ordered range of matching ddm fields
+	 */
+	@Override
+	public List<DDMField> findByS_F(
+		long storageId, String fieldName, int start, int end,
+		OrderByComparator<DDMField> orderByComparator, boolean useFinderCache) {
+
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					DDMField.class)) {
+
+			fieldName = Objects.toString(fieldName, "");
+
+			FinderPath finderPath = null;
+			Object[] finderArgs = null;
+
+			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
+				(orderByComparator == null)) {
+
+				if (useFinderCache) {
+					finderPath = _finderPathWithoutPaginationFindByS_F;
+					finderArgs = new Object[] {storageId, fieldName};
+				}
+			}
+			else if (useFinderCache) {
+				finderPath = _finderPathWithPaginationFindByS_F;
+				finderArgs = new Object[] {
+					storageId, fieldName, start, end, orderByComparator
+				};
+			}
+
+			List<DDMField> list = null;
+
+			if (useFinderCache) {
+				list = (List<DDMField>)finderCache.getResult(
+					finderPath, finderArgs, this);
+
+				if ((list != null) && !list.isEmpty()) {
+					for (DDMField ddmField : list) {
+						if ((storageId != ddmField.getStorageId()) ||
+							!fieldName.equals(ddmField.getFieldName())) {
+
+							list = null;
+
+							break;
+						}
+					}
+				}
+			}
+
+			if (list == null) {
+				StringBundler sb = null;
+
+				if (orderByComparator != null) {
+					sb = new StringBundler(
+						4 + (orderByComparator.getOrderByFields().length * 2));
+				}
+				else {
+					sb = new StringBundler(4);
+				}
+
+				sb.append(_SQL_SELECT_DDMFIELD_WHERE);
+
+				sb.append(_FINDER_COLUMN_S_F_STORAGEID_2);
+
+				boolean bindFieldName = false;
+
+				if (fieldName.isEmpty()) {
+					sb.append(_FINDER_COLUMN_S_F_FIELDNAME_3);
+				}
+				else {
+					bindFieldName = true;
+
+					sb.append(_FINDER_COLUMN_S_F_FIELDNAME_2);
+				}
+
+				if (orderByComparator != null) {
+					appendOrderByComparator(
+						sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+				}
+				else {
+					sb.append(DDMFieldModelImpl.ORDER_BY_JPQL);
+				}
+
+				String sql = sb.toString();
+
+				Session session = null;
+
+				try {
+					session = openSession();
+
+					Query query = session.createQuery(sql);
+
+					QueryPos queryPos = QueryPos.getInstance(query);
+
+					queryPos.add(storageId);
+
+					if (bindFieldName) {
+						queryPos.add(fieldName);
+					}
+
+					list = (List<DDMField>)QueryUtil.list(
+						query, getDialect(), start, end);
+
+					cacheResult(list);
+
+					if (useFinderCache) {
+						finderCache.putResult(finderPath, finderArgs, list);
+					}
+				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
+				}
+			}
+
+			return list;
+		}
+	}
+
+	/**
+	 * Returns the first ddm field in the ordered set where storageId = &#63; and fieldName = &#63;.
+	 *
+	 * @param storageId the storage ID
+	 * @param fieldName the field name
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching ddm field
+	 * @throws NoSuchFieldException if a matching ddm field could not be found
+	 */
+	@Override
+	public DDMField findByS_F_First(
+			long storageId, String fieldName,
+			OrderByComparator<DDMField> orderByComparator)
+		throws NoSuchFieldException {
+
+		DDMField ddmField = fetchByS_F_First(
+			storageId, fieldName, orderByComparator);
+
+		if (ddmField != null) {
+			return ddmField;
+		}
+
+		StringBundler sb = new StringBundler(6);
+
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
+
+		sb.append("storageId=");
+		sb.append(storageId);
+
+		sb.append(", fieldName=");
+		sb.append(fieldName);
+
+		sb.append("}");
+
+		throw new NoSuchFieldException(sb.toString());
+	}
+
+	/**
+	 * Returns the first ddm field in the ordered set where storageId = &#63; and fieldName = &#63;.
+	 *
+	 * @param storageId the storage ID
+	 * @param fieldName the field name
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching ddm field, or <code>null</code> if a matching ddm field could not be found
+	 */
+	@Override
+	public DDMField fetchByS_F_First(
+		long storageId, String fieldName,
+		OrderByComparator<DDMField> orderByComparator) {
+
+		List<DDMField> list = findByS_F(
+			storageId, fieldName, 0, 1, orderByComparator);
+
+		if (!list.isEmpty()) {
+			return list.get(0);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the last ddm field in the ordered set where storageId = &#63; and fieldName = &#63;.
+	 *
+	 * @param storageId the storage ID
+	 * @param fieldName the field name
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching ddm field
+	 * @throws NoSuchFieldException if a matching ddm field could not be found
+	 */
+	@Override
+	public DDMField findByS_F_Last(
+			long storageId, String fieldName,
+			OrderByComparator<DDMField> orderByComparator)
+		throws NoSuchFieldException {
+
+		DDMField ddmField = fetchByS_F_Last(
+			storageId, fieldName, orderByComparator);
+
+		if (ddmField != null) {
+			return ddmField;
+		}
+
+		StringBundler sb = new StringBundler(6);
+
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
+
+		sb.append("storageId=");
+		sb.append(storageId);
+
+		sb.append(", fieldName=");
+		sb.append(fieldName);
+
+		sb.append("}");
+
+		throw new NoSuchFieldException(sb.toString());
+	}
+
+	/**
+	 * Returns the last ddm field in the ordered set where storageId = &#63; and fieldName = &#63;.
+	 *
+	 * @param storageId the storage ID
+	 * @param fieldName the field name
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching ddm field, or <code>null</code> if a matching ddm field could not be found
+	 */
+	@Override
+	public DDMField fetchByS_F_Last(
+		long storageId, String fieldName,
+		OrderByComparator<DDMField> orderByComparator) {
+
+		int count = countByS_F(storageId, fieldName);
+
+		if (count == 0) {
+			return null;
+		}
+
+		List<DDMField> list = findByS_F(
+			storageId, fieldName, count - 1, count, orderByComparator);
+
+		if (!list.isEmpty()) {
+			return list.get(0);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the ddm fields before and after the current ddm field in the ordered set where storageId = &#63; and fieldName = &#63;.
+	 *
+	 * @param fieldId the primary key of the current ddm field
+	 * @param storageId the storage ID
+	 * @param fieldName the field name
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next ddm field
+	 * @throws NoSuchFieldException if a ddm field with the primary key could not be found
+	 */
+	@Override
+	public DDMField[] findByS_F_PrevAndNext(
+			long fieldId, long storageId, String fieldName,
+			OrderByComparator<DDMField> orderByComparator)
+		throws NoSuchFieldException {
+
+		fieldName = Objects.toString(fieldName, "");
+
+		DDMField ddmField = findByPrimaryKey(fieldId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			DDMField[] array = new DDMFieldImpl[3];
+
+			array[0] = getByS_F_PrevAndNext(
+				session, ddmField, storageId, fieldName, orderByComparator,
+				true);
+
+			array[1] = ddmField;
+
+			array[2] = getByS_F_PrevAndNext(
+				session, ddmField, storageId, fieldName, orderByComparator,
+				false);
+
+			return array;
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected DDMField getByS_F_PrevAndNext(
+		Session session, DDMField ddmField, long storageId, String fieldName,
+		OrderByComparator<DDMField> orderByComparator, boolean previous) {
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			sb = new StringBundler(4);
+		}
+
+		sb.append(_SQL_SELECT_DDMFIELD_WHERE);
+
+		sb.append(_FINDER_COLUMN_S_F_STORAGEID_2);
+
+		boolean bindFieldName = false;
+
+		if (fieldName.isEmpty()) {
+			sb.append(_FINDER_COLUMN_S_F_FIELDNAME_3);
+		}
+		else {
+			bindFieldName = true;
+
+			sb.append(_FINDER_COLUMN_S_F_FIELDNAME_2);
+		}
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				sb.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			sb.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC);
+					}
+					else {
+						sb.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			sb.append(DDMFieldModelImpl.ORDER_BY_JPQL);
+		}
+
+		String sql = sb.toString();
+
+		Query query = session.createQuery(sql);
+
+		query.setFirstResult(0);
+		query.setMaxResults(2);
+
+		QueryPos queryPos = QueryPos.getInstance(query);
+
+		queryPos.add(storageId);
+
+		if (bindFieldName) {
+			queryPos.add(fieldName);
+		}
+
+		if (orderByComparator != null) {
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(ddmField)) {
+
+				queryPos.add(orderByConditionValue);
+			}
+		}
+
+		List<DDMField> list = query.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
+	 * Removes all the ddm fields where storageId = &#63; and fieldName = &#63; from the database.
+	 *
+	 * @param storageId the storage ID
+	 * @param fieldName the field name
+	 */
+	@Override
+	public void removeByS_F(long storageId, String fieldName) {
+		for (DDMField ddmField :
+				findByS_F(
+					storageId, fieldName, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+					null)) {
+
+			remove(ddmField);
+		}
+	}
+
+	/**
+	 * Returns the number of ddm fields where storageId = &#63; and fieldName = &#63;.
+	 *
+	 * @param storageId the storage ID
+	 * @param fieldName the field name
+	 * @return the number of matching ddm fields
+	 */
+	@Override
+	public int countByS_F(long storageId, String fieldName) {
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					DDMField.class)) {
+
+			fieldName = Objects.toString(fieldName, "");
+
+			FinderPath finderPath = _finderPathCountByS_F;
+
+			Object[] finderArgs = new Object[] {storageId, fieldName};
+
+			Long count = (Long)finderCache.getResult(
+				finderPath, finderArgs, this);
+
+			if (count == null) {
+				StringBundler sb = new StringBundler(3);
+
+				sb.append(_SQL_COUNT_DDMFIELD_WHERE);
+
+				sb.append(_FINDER_COLUMN_S_F_STORAGEID_2);
+
+				boolean bindFieldName = false;
+
+				if (fieldName.isEmpty()) {
+					sb.append(_FINDER_COLUMN_S_F_FIELDNAME_3);
+				}
+				else {
+					bindFieldName = true;
+
+					sb.append(_FINDER_COLUMN_S_F_FIELDNAME_2);
+				}
+
+				String sql = sb.toString();
+
+				Session session = null;
+
+				try {
+					session = openSession();
+
+					Query query = session.createQuery(sql);
+
+					QueryPos queryPos = QueryPos.getInstance(query);
+
+					queryPos.add(storageId);
+
+					if (bindFieldName) {
+						queryPos.add(fieldName);
+					}
+
+					count = (Long)query.uniqueResult();
+
+					finderCache.putResult(finderPath, finderArgs, count);
+				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
+				}
+			}
+
+			return count.intValue();
+		}
+	}
+
+	private static final String _FINDER_COLUMN_S_F_STORAGEID_2 =
+		"ddmField.storageId = ? AND ";
+
+	private static final String _FINDER_COLUMN_S_F_FIELDNAME_2 =
+		"ddmField.fieldName = ?";
+
+	private static final String _FINDER_COLUMN_S_F_FIELDNAME_3 =
+		"(ddmField.fieldName IS NULL OR ddmField.fieldName = '')";
 
 	private FinderPath _finderPathFetchByS_I;
 	private FinderPath _finderPathCountByS_I;
@@ -1774,106 +2356,100 @@ public class DDMFieldPersistenceImpl
 	public DDMField fetchByS_I(
 		long storageId, String instanceId, boolean useFinderCache) {
 
-		instanceId = Objects.toString(instanceId, "");
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					DDMField.class)) {
 
-		Object[] finderArgs = null;
+			instanceId = Objects.toString(instanceId, "");
 
-		if (useFinderCache) {
-			finderArgs = new Object[] {storageId, instanceId};
-		}
+			Object[] finderArgs = null;
 
-		Object result = null;
-
-		if (useFinderCache) {
-			result = finderCache.getResult(
-				_finderPathFetchByS_I, finderArgs, this);
-		}
-
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			DDMField.class);
-
-		if (result instanceof DDMField) {
-			DDMField ddmField = (DDMField)result;
-
-			if ((storageId != ddmField.getStorageId()) ||
-				!Objects.equals(instanceId, ddmField.getInstanceId())) {
-
-				result = null;
-			}
-			else if (!ctPersistenceHelper.isProductionMode(
-						DDMField.class, ddmField.getPrimaryKey())) {
-
-				result = null;
-			}
-		}
-		else if (!productionMode && (result instanceof List<?>)) {
-			result = null;
-		}
-
-		if (result == null) {
-			StringBundler sb = new StringBundler(4);
-
-			sb.append(_SQL_SELECT_DDMFIELD_WHERE);
-
-			sb.append(_FINDER_COLUMN_S_I_STORAGEID_2);
-
-			boolean bindInstanceId = false;
-
-			if (instanceId.isEmpty()) {
-				sb.append(_FINDER_COLUMN_S_I_INSTANCEID_3);
-			}
-			else {
-				bindInstanceId = true;
-
-				sb.append(_FINDER_COLUMN_S_I_INSTANCEID_2);
+			if (useFinderCache) {
+				finderArgs = new Object[] {storageId, instanceId};
 			}
 
-			String sql = sb.toString();
+			Object result = null;
 
-			Session session = null;
+			if (useFinderCache) {
+				result = finderCache.getResult(
+					_finderPathFetchByS_I, finderArgs, this);
+			}
 
-			try {
-				session = openSession();
+			if (result instanceof DDMField) {
+				DDMField ddmField = (DDMField)result;
 
-				Query query = session.createQuery(sql);
+				if ((storageId != ddmField.getStorageId()) ||
+					!Objects.equals(instanceId, ddmField.getInstanceId())) {
 
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				queryPos.add(storageId);
-
-				if (bindInstanceId) {
-					queryPos.add(instanceId);
+					result = null;
 				}
+			}
 
-				List<DDMField> list = query.list();
+			if (result == null) {
+				StringBundler sb = new StringBundler(4);
 
-				if (list.isEmpty()) {
-					if (useFinderCache && productionMode) {
-						finderCache.putResult(
-							_finderPathFetchByS_I, finderArgs, list);
-					}
+				sb.append(_SQL_SELECT_DDMFIELD_WHERE);
+
+				sb.append(_FINDER_COLUMN_S_I_STORAGEID_2);
+
+				boolean bindInstanceId = false;
+
+				if (instanceId.isEmpty()) {
+					sb.append(_FINDER_COLUMN_S_I_INSTANCEID_3);
 				}
 				else {
-					DDMField ddmField = list.get(0);
+					bindInstanceId = true;
 
-					result = ddmField;
+					sb.append(_FINDER_COLUMN_S_I_INSTANCEID_2);
+				}
 
-					cacheResult(ddmField);
+				String sql = sb.toString();
+
+				Session session = null;
+
+				try {
+					session = openSession();
+
+					Query query = session.createQuery(sql);
+
+					QueryPos queryPos = QueryPos.getInstance(query);
+
+					queryPos.add(storageId);
+
+					if (bindInstanceId) {
+						queryPos.add(instanceId);
+					}
+
+					List<DDMField> list = query.list();
+
+					if (list.isEmpty()) {
+						if (useFinderCache) {
+							finderCache.putResult(
+								_finderPathFetchByS_I, finderArgs, list);
+						}
+					}
+					else {
+						DDMField ddmField = list.get(0);
+
+						result = ddmField;
+
+						cacheResult(ddmField);
+					}
+				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
 				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		if (result instanceof List<?>) {
-			return null;
-		}
-		else {
-			return (DDMField)result;
+			if (result instanceof List<?>) {
+				return null;
+			}
+			else {
+				return (DDMField)result;
+			}
 		}
 	}
 
@@ -1902,74 +2478,68 @@ public class DDMFieldPersistenceImpl
 	 */
 	@Override
 	public int countByS_I(long storageId, String instanceId) {
-		instanceId = Objects.toString(instanceId, "");
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					DDMField.class)) {
 
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			DDMField.class);
+			instanceId = Objects.toString(instanceId, "");
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = _finderPathCountByS_I;
 
-		Long count = null;
+			Object[] finderArgs = new Object[] {storageId, instanceId};
 
-		if (productionMode) {
-			finderPath = _finderPathCountByS_I;
+			Long count = (Long)finderCache.getResult(
+				finderPath, finderArgs, this);
 
-			finderArgs = new Object[] {storageId, instanceId};
+			if (count == null) {
+				StringBundler sb = new StringBundler(3);
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
-		}
+				sb.append(_SQL_COUNT_DDMFIELD_WHERE);
 
-		if (count == null) {
-			StringBundler sb = new StringBundler(3);
+				sb.append(_FINDER_COLUMN_S_I_STORAGEID_2);
 
-			sb.append(_SQL_COUNT_DDMFIELD_WHERE);
+				boolean bindInstanceId = false;
 
-			sb.append(_FINDER_COLUMN_S_I_STORAGEID_2);
+				if (instanceId.isEmpty()) {
+					sb.append(_FINDER_COLUMN_S_I_INSTANCEID_3);
+				}
+				else {
+					bindInstanceId = true;
 
-			boolean bindInstanceId = false;
-
-			if (instanceId.isEmpty()) {
-				sb.append(_FINDER_COLUMN_S_I_INSTANCEID_3);
-			}
-			else {
-				bindInstanceId = true;
-
-				sb.append(_FINDER_COLUMN_S_I_INSTANCEID_2);
-			}
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				queryPos.add(storageId);
-
-				if (bindInstanceId) {
-					queryPos.add(instanceId);
+					sb.append(_FINDER_COLUMN_S_I_INSTANCEID_2);
 				}
 
-				count = (Long)query.uniqueResult();
+				String sql = sb.toString();
 
-				if (productionMode) {
+				Session session = null;
+
+				try {
+					session = openSession();
+
+					Query query = session.createQuery(sql);
+
+					QueryPos queryPos = QueryPos.getInstance(query);
+
+					queryPos.add(storageId);
+
+					if (bindInstanceId) {
+						queryPos.add(instanceId);
+					}
+
+					count = (Long)query.uniqueResult();
+
 					finderCache.putResult(finderPath, finderArgs, count);
 				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
+				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return count.intValue();
+			return count.intValue();
+		}
 	}
 
 	private static final String _FINDER_COLUMN_S_I_STORAGEID_2 =
@@ -1997,17 +2567,20 @@ public class DDMFieldPersistenceImpl
 	 */
 	@Override
 	public void cacheResult(DDMField ddmField) {
-		if (ddmField.getCtCollectionId() != 0) {
-			return;
+		try (SafeCloseable safeCloseable =
+				CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
+					ddmField.getCtCollectionId())) {
+
+			entityCache.putResult(
+				DDMFieldImpl.class, ddmField.getPrimaryKey(), ddmField);
+
+			finderCache.putResult(
+				_finderPathFetchByS_I,
+				new Object[] {
+					ddmField.getStorageId(), ddmField.getInstanceId()
+				},
+				ddmField);
 		}
-
-		entityCache.putResult(
-			DDMFieldImpl.class, ddmField.getPrimaryKey(), ddmField);
-
-		finderCache.putResult(
-			_finderPathFetchByS_I,
-			new Object[] {ddmField.getStorageId(), ddmField.getInstanceId()},
-			ddmField);
 	}
 
 	private int _valueObjectFinderCacheListThreshold;
@@ -2027,14 +2600,15 @@ public class DDMFieldPersistenceImpl
 		}
 
 		for (DDMField ddmField : ddmFields) {
-			if (ddmField.getCtCollectionId() != 0) {
-				continue;
-			}
+			try (SafeCloseable safeCloseable =
+					CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
+						ddmField.getCtCollectionId())) {
 
-			if (entityCache.getResult(
-					DDMFieldImpl.class, ddmField.getPrimaryKey()) == null) {
+				if (entityCache.getResult(
+						DDMFieldImpl.class, ddmField.getPrimaryKey()) == null) {
 
-				cacheResult(ddmField);
+					cacheResult(ddmField);
+				}
 			}
 		}
 	}
@@ -2084,12 +2658,19 @@ public class DDMFieldPersistenceImpl
 	protected void cacheUniqueFindersCache(
 		DDMFieldModelImpl ddmFieldModelImpl) {
 
-		Object[] args = new Object[] {
-			ddmFieldModelImpl.getStorageId(), ddmFieldModelImpl.getInstanceId()
-		};
+		try (SafeCloseable safeCloseable =
+				CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
+					ddmFieldModelImpl.getCtCollectionId())) {
 
-		finderCache.putResult(_finderPathCountByS_I, args, Long.valueOf(1));
-		finderCache.putResult(_finderPathFetchByS_I, args, ddmFieldModelImpl);
+			Object[] args = new Object[] {
+				ddmFieldModelImpl.getStorageId(),
+				ddmFieldModelImpl.getInstanceId()
+			};
+
+			finderCache.putResult(_finderPathCountByS_I, args, Long.valueOf(1));
+			finderCache.putResult(
+				_finderPathFetchByS_I, args, ddmFieldModelImpl);
+		}
 	}
 
 	/**
@@ -2239,16 +2820,6 @@ public class DDMFieldPersistenceImpl
 			closeSession(session);
 		}
 
-		if (ddmField.getCtCollectionId() != 0) {
-			if (isNew) {
-				ddmField.setNew(false);
-			}
-
-			ddmField.resetOriginalValues();
-
-			return ddmField;
-		}
-
 		entityCache.putResult(
 			DDMFieldImpl.class, ddmFieldModelImpl, false, true);
 
@@ -2309,10 +2880,20 @@ public class DDMFieldPersistenceImpl
 	@Override
 	public DDMField fetchByPrimaryKey(Serializable primaryKey) {
 		if (ctPersistenceHelper.isProductionMode(DDMField.class, primaryKey)) {
-			return super.fetchByPrimaryKey(primaryKey);
+			try (SafeCloseable safeCloseable =
+					CTCollectionThreadLocal.
+						setProductionModeWithSafeCloseable()) {
+
+				return super.fetchByPrimaryKey(primaryKey);
+			}
 		}
 
-		DDMField ddmField = null;
+		DDMField ddmField = (DDMField)entityCache.getResult(
+			DDMFieldImpl.class, primaryKey);
+
+		if (ddmField != null) {
+			return ddmField;
+		}
 
 		Session session = null;
 
@@ -2351,7 +2932,12 @@ public class DDMFieldPersistenceImpl
 		Set<Serializable> primaryKeys) {
 
 		if (ctPersistenceHelper.isProductionMode(DDMField.class)) {
-			return super.fetchByPrimaryKeys(primaryKeys);
+			try (SafeCloseable safeCloseable =
+					CTCollectionThreadLocal.
+						setProductionModeWithSafeCloseable()) {
+
+				return super.fetchByPrimaryKeys(primaryKeys);
+			}
 		}
 
 		if (primaryKeys.isEmpty()) {
@@ -2371,6 +2957,33 @@ public class DDMFieldPersistenceImpl
 				map.put(primaryKey, ddmField);
 			}
 
+			return map;
+		}
+
+		Set<Serializable> uncachedPrimaryKeys = null;
+
+		for (Serializable primaryKey : primaryKeys) {
+			try (SafeCloseable safeCloseable =
+					ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+						DDMField.class, primaryKey)) {
+
+				DDMField ddmField = (DDMField)entityCache.getResult(
+					DDMFieldImpl.class, primaryKey);
+
+				if (ddmField == null) {
+					if (uncachedPrimaryKeys == null) {
+						uncachedPrimaryKeys = new HashSet<>();
+					}
+
+					uncachedPrimaryKeys.add(primaryKey);
+				}
+				else {
+					map.put(primaryKey, ddmField);
+				}
+			}
+		}
+
+		if (uncachedPrimaryKeys == null) {
 			return map;
 		}
 
@@ -2499,78 +3112,80 @@ public class DDMFieldPersistenceImpl
 		int start, int end, OrderByComparator<DDMField> orderByComparator,
 		boolean useFinderCache) {
 
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			DDMField.class);
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					DDMField.class)) {
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = null;
+			Object[] finderArgs = null;
 
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			(orderByComparator == null)) {
+			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
+				(orderByComparator == null)) {
 
-			if (useFinderCache && productionMode) {
-				finderPath = _finderPathWithoutPaginationFindAll;
-				finderArgs = FINDER_ARGS_EMPTY;
-			}
-		}
-		else if (useFinderCache && productionMode) {
-			finderPath = _finderPathWithPaginationFindAll;
-			finderArgs = new Object[] {start, end, orderByComparator};
-		}
-
-		List<DDMField> list = null;
-
-		if (useFinderCache && productionMode) {
-			list = (List<DDMField>)finderCache.getResult(
-				finderPath, finderArgs, this);
-		}
-
-		if (list == null) {
-			StringBundler sb = null;
-			String sql = null;
-
-			if (orderByComparator != null) {
-				sb = new StringBundler(
-					2 + (orderByComparator.getOrderByFields().length * 2));
-
-				sb.append(_SQL_SELECT_DDMFIELD);
-
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
-
-				sql = sb.toString();
-			}
-			else {
-				sql = _SQL_SELECT_DDMFIELD;
-
-				sql = sql.concat(DDMFieldModelImpl.ORDER_BY_JPQL);
-			}
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				list = (List<DDMField>)QueryUtil.list(
-					query, getDialect(), start, end);
-
-				cacheResult(list);
-
-				if (useFinderCache && productionMode) {
-					finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderPath = _finderPathWithoutPaginationFindAll;
+					finderArgs = FINDER_ARGS_EMPTY;
 				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
+			else if (useFinderCache) {
+				finderPath = _finderPathWithPaginationFindAll;
+				finderArgs = new Object[] {start, end, orderByComparator};
 			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return list;
+			List<DDMField> list = null;
+
+			if (useFinderCache) {
+				list = (List<DDMField>)finderCache.getResult(
+					finderPath, finderArgs, this);
+			}
+
+			if (list == null) {
+				StringBundler sb = null;
+				String sql = null;
+
+				if (orderByComparator != null) {
+					sb = new StringBundler(
+						2 + (orderByComparator.getOrderByFields().length * 2));
+
+					sb.append(_SQL_SELECT_DDMFIELD);
+
+					appendOrderByComparator(
+						sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+
+					sql = sb.toString();
+				}
+				else {
+					sql = _SQL_SELECT_DDMFIELD;
+
+					sql = sql.concat(DDMFieldModelImpl.ORDER_BY_JPQL);
+				}
+
+				Session session = null;
+
+				try {
+					session = openSession();
+
+					Query query = session.createQuery(sql);
+
+					list = (List<DDMField>)QueryUtil.list(
+						query, getDialect(), start, end);
+
+					cacheResult(list);
+
+					if (useFinderCache) {
+						finderCache.putResult(finderPath, finderArgs, list);
+					}
+				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
+				}
+			}
+
+			return list;
+		}
 	}
 
 	/**
@@ -2591,40 +3206,36 @@ public class DDMFieldPersistenceImpl
 	 */
 	@Override
 	public int countAll() {
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			DDMField.class);
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					DDMField.class)) {
 
-		Long count = null;
-
-		if (productionMode) {
-			count = (Long)finderCache.getResult(
+			Long count = (Long)finderCache.getResult(
 				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
-		}
 
-		if (count == null) {
-			Session session = null;
+			if (count == null) {
+				Session session = null;
 
-			try {
-				session = openSession();
+				try {
+					session = openSession();
 
-				Query query = session.createQuery(_SQL_COUNT_DDMFIELD);
+					Query query = session.createQuery(_SQL_COUNT_DDMFIELD);
 
-				count = (Long)query.uniqueResult();
+					count = (Long)query.uniqueResult();
 
-				if (productionMode) {
 					finderCache.putResult(
 						_finderPathCountAll, FINDER_ARGS_EMPTY, count);
 				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
+				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return count.intValue();
+			return count.intValue();
+		}
 	}
 
 	@Override
@@ -2778,6 +3389,25 @@ public class DDMFieldPersistenceImpl
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_F",
 			new String[] {Long.class.getName(), String.class.getName()},
 			new String[] {"companyId", "fieldType"}, false);
+
+		_finderPathWithPaginationFindByS_F = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByS_F",
+			new String[] {
+				Long.class.getName(), String.class.getName(),
+				Integer.class.getName(), Integer.class.getName(),
+				OrderByComparator.class.getName()
+			},
+			new String[] {"storageId", "fieldName"}, true);
+
+		_finderPathWithoutPaginationFindByS_F = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByS_F",
+			new String[] {Long.class.getName(), String.class.getName()},
+			new String[] {"storageId", "fieldName"}, true);
+
+		_finderPathCountByS_F = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByS_F",
+			new String[] {Long.class.getName(), String.class.getName()},
+			new String[] {"storageId", "fieldName"}, false);
 
 		_finderPathFetchByS_I = new FinderPath(
 			FINDER_CLASS_NAME_ENTITY, "fetchByS_I",

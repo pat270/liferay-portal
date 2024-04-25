@@ -1,0 +1,253 @@
+definition {
+
+	@summary = "Default summary"
+	macro configureSearchResults(disableHighlighting = null, displayDocumentForm = null, federatedSearchKey = null, fieldsToDisplay = null, customEmptyResultMessage = null, displayTemplate = null, paginationDelta = null, index = null, customPagination = null, disableDisplaySelectedResultInContext = null) {
+		if (isSet(index)) {
+			SearchResults.gotoWidgetOptionsSpecific(
+				index = ${index},
+				portletOption = "Configuration");
+		}
+		else {
+			Portlet.gotoPortletOptions(
+				portletName = "Search Results",
+				portletOption = "Configuration");
+		}
+
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
+
+		if (${customEmptyResultMessage} == "true") {
+			Uncheck(
+				checkboxName = "Show Default Empty Result Message",
+				locator1 = "Checkbox#ANY_CHECKBOX");
+		}
+
+		if (${customPagination} == "true") {
+			Uncheck(
+				checkboxName = "Show Default Pagination",
+				locator1 = "Checkbox#ANY_CHECKBOX");
+		}
+
+		if (${disableHighlighting} == "true") {
+			Uncheck(
+				checkboxName = "Enable Highlighting",
+				locator1 = "Checkbox#ANY_CHECKBOX");
+		}
+
+		if (${disableDisplaySelectedResultInContext} == "true") {
+			Uncheck(
+				checkboxName = "Display Selected Result in Context",
+				locator1 = "Checkbox#ANY_CHECKBOX");
+		}
+
+		if (${displayDocumentForm} == "true") {
+			Check(
+				checkboxName = "Display Results in Document Form",
+				locator1 = "Checkbox#ANY_CHECKBOX");
+		}
+
+		if (isSet(displayTemplate)) {
+			Click(
+				key_class = "display-template-selector",
+				key_index = 1,
+				locator1 = "Button#ANY_WITH_CLASS_AND_INDEX");
+
+			MenuItem.click(menuItem = ${displayTemplate});
+		}
+
+		if (isSet(federatedSearchKey)) {
+			Type(
+				key_fieldLabel = "Federated Search Key",
+				locator1 = "TextInput#GENERIC_TEXT_INPUT",
+				value1 = ${federatedSearchKey});
+		}
+
+		if (isSet(fieldsToDisplay)) {
+			Type(
+				key_fieldLabel = "Fields to Display",
+				locator1 = "TextInput#GENERIC_TEXT_INPUT",
+				value1 = ${fieldsToDisplay});
+		}
+
+		if (isSet(paginationDelta)) {
+			Type(
+				key_fieldLabel = "Pagination Delta",
+				locator1 = "TextInput#GENERIC_TEXT_INPUT",
+				value1 = ${paginationDelta});
+		}
+
+		PortletEntry.save();
+
+		IFrame.closeFrame();
+	}
+
+	@summary = "Default summary"
+	macro gotoWidgetOptionsSpecific(index = null, portletOption = null) {
+		MouseOver.mouseOverNotVisible(
+			key_index = ${index},
+			locator1 = "SearchPage#RESULTS_PORTLET_WIDGET_ELLIPSIS_ICON_SPECIFIC");
+
+		Click(
+			key_index = ${index},
+			locator1 = "SearchPage#RESULTS_PORTLET_WIDGET_ELLIPSIS_ICON_SPECIFIC");
+
+		if (isSet(portletOption)) {
+			var key_menuItem = ${portletOption};
+
+			Click(locator1 = "MenuItem#ANY_MENU_ITEM");
+		}
+	}
+
+	@summary = "Default summary"
+	macro paginateAndViewSearchResults() {
+		var key_searchAssetTitle = ${searchAssetTitle};
+		var key_searchAssetType = ${searchAssetType};
+		var searchAssetTitle = ${searchAssetTitle};
+		var searchAssetType = ${searchAssetType};
+		var searchTerm = ${searchTerm};
+
+		while (IsElementNotPresent(locator1 = "SearchPage#RESULT_TITLE_SPECIFIC")) {
+			Click(locator1 = "Pagination#NEXT_LINK");
+		}
+
+		SearchResults.viewSearchResults(
+			searchAssetTitle = ${searchAssetTitle},
+			searchAssetType = ${searchAssetType},
+			searchTerm = ${searchTerm});
+	}
+
+	@summary = "Default summary"
+	macro viewDocumentDetailValue(documentDetailKey = null, searchAssetTitle = null, documentDetailKeyValue = null) {
+		if (IsElementPresent(key_searchAssetTitle = ${searchAssetTitle}, locator1 = "SearchPage#RESULT_DOCUMENT_DETAILS_COLLAPSED")) {
+			Click(
+				key_searchAssetTitle = ${searchAssetTitle},
+				locator1 = "SearchPage#RESULT_DOCUMENT_DETAILS_BUTTON");
+		}
+
+		AssertElementPresent(
+			key_documentDetailKey = ${documentDetailKey},
+			key_searchAssetTitle = ${searchAssetTitle},
+			locator1 = "SearchPage#RESULT_DOCUMENT_DETAILS_KEY");
+
+		AssertTextEquals.assertPartialText(
+			key_documentDetailKey = ${documentDetailKey},
+			key_searchAssetTitle = ${searchAssetTitle},
+			locator1 = "SearchPage#RESULT_DOCUMENT_DETAILS_KEY_VALUE",
+			value1 = ${documentDetailKeyValue});
+	}
+
+	@summary = "Default summary"
+	macro viewMultipleSearchResults(resultsList = null, searchTerm = null) {
+		if (contains(${resultsList}, "/")) {
+			for (var titleAndType : list ${resultsList}) {
+				var searchAssetTitle = StringUtil.extractFirst(${titleAndType}, "/");
+				var searchAssetType = StringUtil.extractLast(${titleAndType}, "/");
+
+				SearchResults.viewSearchResults(
+					searchAssetTitle = ${searchAssetTitle},
+					searchAssetType = ${searchAssetType},
+					searchTerm = ${searchTerm});
+			}
+		}
+		else {
+			for (var searchAssetTitle : list ${resultsList}) {
+				SearchResults.viewSearchResults(
+					searchAssetTitle = ${searchAssetTitle},
+					searchTerm = ${searchTerm});
+			}
+		}
+	}
+
+	@summary = "Default summary"
+	macro viewMultipleSearchResultsNotPresent(resultsList = null, noResultsList = null) {
+		if (contains(${noResultsList}, "/")) {
+			for (var titleAndType : list ${noResultsList}) {
+				var searchAssetTitle = StringUtil.extractFirst(${titleAndType}, "/");
+				var searchAssetType = StringUtil.extractLast(${titleAndType}, "/");
+
+				SearchResults.viewSearchResultNotPresent(
+					searchAssetTitle = ${searchAssetTitle},
+					searchAssetType = ${searchAssetType});
+			}
+		}
+		else {
+			for (var searchAssetTitle : list ${resultsList}) {
+				SearchResults.viewSearchResultNotPresent(searchAssetTitle = ${searchAssetTitle});
+			}
+		}
+	}
+
+	@summary = "Default summary"
+	macro viewNoSearchResults(searchTerm = null) {
+		AssertTextEquals.assertPartialText(
+			locator1 = "Message#EMPTY_INFO",
+			value1 = "No results were found that matched the keywords: ${searchTerm}.");
+	}
+
+	@summary = "Default summary"
+	macro viewSearchResultNotPresent(searchAssetType = null, searchAssetTitle = null) {
+		if (isSet(searchAssetType)) {
+			AssertElementNotPresent(
+				key_searchAssetTitle = ${searchAssetTitle},
+				key_searchAssetType = ${searchAssetType},
+				locator1 = "SearchPage#RESULT_TITLE_SPECIFIC");
+		}
+		else {
+			AssertElementNotPresent(
+				key_searchAssetTitle = ${searchAssetTitle},
+				locator1 = "SearchPage#RESULT_TITLE");
+		}
+	}
+
+	@summary = "Default summary"
+	macro viewSearchResults(searchAssetType = null, searchTerm = null, entryDate = null, searchAssetTitle = null, searchAssetSummary = null) {
+		if (isSet(searchAssetType)) {
+			AssertTextEquals.assertPartialText(
+				key_searchAssetTitle = ${searchAssetTitle},
+				key_searchAssetType = ${searchAssetType},
+				locator1 = "SearchPage#RESULT_TITLE_SPECIFIC",
+				value1 = ${searchAssetTitle});
+		}
+		else {
+			AssertTextEquals.assertPartialText(
+				key_searchAssetTitle = ${searchAssetTitle},
+				locator1 = "SearchPage#RESULT_TITLE",
+				value1 = ${searchAssetTitle});
+		}
+
+		if (isSet(entryDate)) {
+			AssertTextEquals.assertPartialText(
+				key_searchAssetTitle = ${searchAssetTitle},
+				key_searchAssetType = ${searchAssetType},
+				locator1 = "SearchPage#RESULT_TYPE_SPECIFIC_DATE",
+				value1 = ${entryDate});
+		}
+
+		if (isSet(searchAssetSummary)) {
+			AssertTextEquals.assertPartialText(
+				key_searchAssetTitle = ${searchAssetTitle},
+				locator1 = "SearchPage#RESULT_SUMMARY_SPECIFIC",
+				value1 = ${searchAssetSummary});
+		}
+
+		if (isSet(searchTerm)) {
+			AssertTextEquals.assertPartialText(
+				locator1 = "SearchPage#RESULTS_PORTLET_SEARCH_QUERY",
+				value1 = ${searchTerm});
+		}
+	}
+
+	@summary = "Default summary"
+	macro viewSearchResultsSpecificOrder(resultsList = null) {
+		var resultOrder = 0;
+
+		for (var searchAssetTitle : list ${resultsList}) {
+			var resultOrder = ${resultOrder} + 1;
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "SearchPage#RESULT_TITLE_SPECIFIC_ORDER",
+				resultOrder = ${resultOrder},
+				value1 = ${searchAssetTitle});
+		}
+	}
+
+}

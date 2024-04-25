@@ -49,6 +49,8 @@ components:
                 status:
                     $ref: "#/components/schemas/Status"
                     readOnly: true
+                system:
+                    type: boolean
             type: object
         ObjectDefinition:
             properties:
@@ -81,6 +83,8 @@ components:
                     type: boolean
                 enableLocalization:
                     type: boolean
+                enableObjectEntryDraft:
+                    type: boolean
                 enableObjectEntryHistory:
                     type: boolean
                 externalReferenceCode:
@@ -105,6 +109,8 @@ components:
                     items:
                         $ref: "#/components/schemas/ObjectField"
                     type: array
+                objectFolderExternalReferenceCode:
+                    type: string
                 objectLayouts:
                     items:
                         $ref: "#/components/schemas/ObjectLayout"
@@ -137,6 +143,8 @@ components:
                 restContextPath:
                     readOnly: true
                     type: string
+                rootObjectDefinitionExternalReferenceCode:
+                    type: string
                 scope:
                     type: string
                 status:
@@ -161,7 +169,7 @@ components:
                     readOnly: true
                     type: object
                 businessType:
-                    enum: [Aggregation, Attachment, Boolean, Date, DateTime, Decimal, Encrypted, Formula, Integer, LongInteger, LongText, MultiselectPicklist, Picklist, PrecisionDecimal, Relationship, RichText, Text]
+                    enum: [Aggregation, Attachment, AutoIncrement, Boolean, Date, DateTime, Decimal, Encrypted, Formula, Integer, LongInteger, LongText, MultiselectPicklist, Picklist, PrecisionDecimal, Relationship, RichText, Text]
                     type: string
                 defaultValue:
                     deprecated: true
@@ -214,6 +222,9 @@ components:
                     deprecated: true
                     enum: [BigDecimal, Boolean, Clob, Date, DateTime, Double, Integer, Long, String]
                     type: string
+                unique:
+                    readOnly: true
+                    type: boolean
         ObjectFieldSetting:
             properties:
                 id:
@@ -227,6 +238,53 @@ components:
                     type: integer
                 value:
                     type: object
+        ObjectFolder:
+            properties:
+                actions:
+                    additionalProperties:
+                        additionalProperties:
+                            type: string
+                        type: object
+                    readOnly: true
+                    type: object
+                dateCreated:
+                    format: date
+                    readOnly: true
+                    type: string
+                dateModified:
+                    format: date
+                    readOnly: true
+                    type: string
+                externalReferenceCode:
+                    type: string
+                id:
+                    format: int64
+                    readOnly: true
+                    type: integer
+                label:
+                    additionalProperties:
+                        type: string
+                    type: object
+                name:
+                    type: string
+                objectFolderItems:
+                    items:
+                        $ref: "#/components/schemas/ObjectFolderItem"
+                    type: array
+        ObjectFolderItem:
+            properties:
+                linkedObjectDefinition:
+                    type: boolean
+                objectDefinition:
+                    $ref: "#/components/schemas/ObjectDefinition"
+                objectDefinitionExternalReferenceCode:
+                    type: string
+                positionX:
+                    format: int32
+                    type: integer
+                positionY:
+                    format: int32
+                    type: integer
         ObjectLayout:
             properties:
                 actions:
@@ -326,6 +384,8 @@ components:
                     items:
                         $ref: "#/components/schemas/ObjectLayoutBox"
                     type: array
+                objectRelationshipExternalReferenceCode:
+                    type: string
                 objectRelationshipId:
                     format: int64
                     type: integer
@@ -343,6 +403,10 @@ components:
                     type: object
                 deletionType:
                     enum: [cascade, disassociate, prevent]
+                    type: string
+                edge:
+                    type: boolean
+                externalReferenceCode:
                     type: string
                 id:
                     format: int64
@@ -370,6 +434,8 @@ components:
                     type: string
                 objectDefinitionSystem2:
                     type: boolean
+                objectField:
+                    $ref: "#/components/schemas/ObjectField"
                 parameterObjectFieldId:
                     format: int64
                     type: integer
@@ -377,6 +443,8 @@ components:
                     type: string
                 reverse:
                     readOnly: true
+                    type: boolean
+                system:
                     type: boolean
                 type:
                     enum: [oneToMany, oneToOne, manyToMany]
@@ -434,6 +502,8 @@ components:
                     additionalProperties:
                         type: string
                     type: object
+                externalReferenceCode:
+                    type: string
                 id:
                     format: int64
                     readOnly: true
@@ -456,6 +526,8 @@ components:
                     type: string
                 script:
                     type: string
+                system:
+                    type: boolean
             type: object
         ObjectValidationRuleSetting:
             properties:
@@ -565,7 +637,7 @@ components:
 info:
     description:
         "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID
-        'com.liferay.object.admin.rest.client', and version '1.0.55'."
+        'com.liferay.object.admin.rest.client', and version '1.0.67'."
     license:
         name: "Apache 2.0"
         url: "http://www.apache.org/licenses/LICENSE-2.0.html"
@@ -796,6 +868,10 @@ paths:
                   name: search
                   schema:
                       type: string
+                - in: query
+                  name: sort
+                  schema:
+                      type: string
             responses:
                 200:
                     content:
@@ -926,6 +1002,10 @@ paths:
                   name: search
                   schema:
                       type: string
+                - in: query
+                  name: sort
+                  schema:
+                      type: string
                 - in: header
                   name: Accept-Language
                   schema:
@@ -995,6 +1075,10 @@ paths:
                   name: search
                   schema:
                       type: string
+                - in: query
+                  name: sort
+                  schema:
+                      type: string
             responses:
                 200:
                     content:
@@ -1054,6 +1138,10 @@ paths:
                       type: integer
                 - in: query
                   name: search
+                  schema:
+                      type: string
+                - in: query
+                  name: sort
                   schema:
                       type: string
                 - in: header
@@ -1118,6 +1206,10 @@ paths:
                       type: integer
                 - in: query
                   name: search
+                  schema:
+                      type: string
+                - in: query
+                  name: sort
                   schema:
                       type: string
                 - in: header
@@ -1275,6 +1367,10 @@ paths:
                   name: search
                   schema:
                       type: string
+                - in: query
+                  name: sort
+                  schema:
+                      type: string
             responses:
                 200:
                     content:
@@ -1409,6 +1505,10 @@ paths:
                   name: search
                   schema:
                       type: string
+                - in: query
+                  name: sort
+                  schema:
+                      type: string
                 - in: header
                   name: Accept-Language
                   schema:
@@ -1480,6 +1580,10 @@ paths:
                   name: search
                   schema:
                       type: string
+                - in: query
+                  name: sort
+                  schema:
+                      type: string
             responses:
                 200:
                     content:
@@ -1541,6 +1645,10 @@ paths:
                       type: integer
                 - in: query
                   name: search
+                  schema:
+                      type: string
+                - in: query
+                  name: sort
                   schema:
                       type: string
                 - in: header
@@ -1610,6 +1718,10 @@ paths:
                   name: search
                   schema:
                       type: string
+                - in: query
+                  name: sort
+                  schema:
+                      type: string
                 - in: header
                   name: Accept-Language
                   schema:
@@ -1668,8 +1780,12 @@ paths:
             responses:
                 200:
                     content:
-                        application/json: {}
-                        application/xml: {}
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ObjectDefinition"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/ObjectDefinition"
             tags: ["ObjectDefinition"]
     "/object-fields/{objectFieldId}":
         delete:
@@ -1760,6 +1876,194 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/ObjectField"
             tags: ["ObjectField"]
+    "/object-folders":
+        get:
+            operationId: getObjectFoldersPage
+            parameters:
+                - in: query
+                  name: page
+                  schema:
+                      type: integer
+                - in: query
+                  name: pageSize
+                  schema:
+                      type: integer
+                - in: query
+                  name: search
+                  schema:
+                      type: string
+                - in: header
+                  name: Accept-Language
+                  schema:
+                      type: string
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/ObjectFolder"
+                                type: array
+                        application/xml:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/ObjectFolder"
+                                type: array
+            tags: ["ObjectFolder"]
+        post:
+            operationId: postObjectFolder
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/ObjectFolder"
+                    application/xml:
+                        schema:
+                            $ref: "#/components/schemas/ObjectFolder"
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ObjectFolder"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/ObjectFolder"
+            tags: ["ObjectFolder"]
+    "/object-folders/by-external-reference-code/{externalReferenceCode}":
+        get:
+            operationId: getObjectFolderByExternalReferenceCode
+            parameters:
+                - in: path
+                  name: externalReferenceCode
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ObjectFolder"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/ObjectFolder"
+            tags: ["ObjectFolder"]
+        put:
+            operationId: putObjectFolderByExternalReferenceCode
+            parameters:
+                - in: path
+                  name: externalReferenceCode
+                  required: true
+                  schema:
+                      type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/ObjectFolder"
+                    application/xml:
+                        schema:
+                            $ref: "#/components/schemas/ObjectFolder"
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ObjectFolder"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/ObjectFolder"
+            tags: ["ObjectFolder"]
+    "/object-folders/{objectFolderId}":
+        delete:
+            operationId: deleteObjectFolder
+            parameters:
+                - in: path
+                  name: objectFolderId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+            responses:
+                204:
+                    content:
+                        application/json: {}
+                        application/xml: {}
+            tags: ["ObjectFolder"]
+        get:
+            operationId: getObjectFolder
+            parameters:
+                - in: path
+                  name: objectFolderId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ObjectFolder"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/ObjectFolder"
+            tags: ["ObjectFolder"]
+        patch:
+            operationId: patchObjectFolder
+            parameters:
+                - in: path
+                  name: objectFolderId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/ObjectFolder"
+                    application/xml:
+                        schema:
+                            $ref: "#/components/schemas/ObjectFolder"
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ObjectFolder"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/ObjectFolder"
+            tags: ["ObjectFolder"]
+        put:
+            operationId: putObjectFolder
+            parameters:
+                - in: path
+                  name: objectFolderId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/ObjectFolder"
+                    application/xml:
+                        schema:
+                            $ref: "#/components/schemas/ObjectFolder"
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ObjectFolder"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/ObjectFolder"
+            tags: ["ObjectFolder"]
     "/object-layouts/{objectLayoutId}":
         delete:
             operationId: deleteObjectLayout
@@ -1822,6 +2126,33 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/ObjectLayout"
             tags: ["ObjectLayout"]
+    "/object-relationships/by-external-reference-code/{externalReferenceCode}":
+        put:
+            operationId: putObjectRelationshipByExternalReferenceCode
+            parameters:
+                - in: path
+                  name: externalReferenceCode
+                  required: true
+                  schema:
+                      type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/ObjectRelationship"
+                    application/xml:
+                        schema:
+                            $ref: "#/components/schemas/ObjectRelationship"
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ObjectRelationship"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/ObjectRelationship"
+            tags: ["ObjectRelationship"]
     "/object-relationships/{objectRelationshipId}":
         delete:
             operationId: deleteObjectRelationship

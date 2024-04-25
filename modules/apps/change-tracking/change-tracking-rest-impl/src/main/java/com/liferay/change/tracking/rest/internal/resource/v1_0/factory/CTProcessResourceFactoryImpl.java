@@ -71,7 +71,12 @@ public class CTProcessResourceFactoryImpl implements CTProcessResource.Factory {
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _ctProcessResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, CTProcessResource>
+					ctProcessResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_ctProcessResourceProxyProviderFunction;
+
+				return ctProcessResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -227,9 +232,6 @@ public class CTProcessResourceFactoryImpl implements CTProcessResource.Factory {
 		}
 	}
 
-	private static final Function<InvocationHandler, CTProcessResource>
-		_ctProcessResourceProxyProviderFunction = _getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -264,6 +266,14 @@ public class CTProcessResourceFactoryImpl implements CTProcessResource.Factory {
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, CTProcessResource>
+			_ctProcessResourceProxyProviderFunction =
+				_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

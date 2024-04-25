@@ -23,6 +23,7 @@ definition {
 	test CookieBannerAndCookieConsentPanelElementsAreVisible {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: Cookie banner and Cookie Consent portlet are present") {
 			CookieBanner.verifyAllElementsArePresent();
@@ -46,6 +47,7 @@ definition {
 	test CookieBannerBecameVisibleWhenCookiesAreRemovedOrExpired {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: Cookie Banner is present on the Site.") {
 			CookieBanner.cookiesBannerAcceptAll();
@@ -62,12 +64,12 @@ definition {
 		}
 	}
 
-	@description = "This is a use case for LPS-142518. TC-8 Verify that cookies will have 6 months of lifetime when they are accepted or declined. Blocked by LRCI-2917."
-	@ignore = "true"
+	@description = "This is a use case for LPS-142518. TC-8 Verify that cookies will have 12 months of lifetime when they are accepted."
 	@priority = 5
-	test CookiesLifetimeIsSixMonthsWhenTheyAreSaved {
-		property portal.acceptance = "quarantine";
+	test VerifyCookiesLifetime {
+		property portal.upstream = "quarantine";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: Cookie Banner is present on the Site.") {
 			CookieBanner.cookiesBannerAcceptAll();
@@ -77,7 +79,7 @@ definition {
 			CookieHelper.checkAllCookieAreAcceptedAndSaved();
 		}
 
-		task ("Then: Cookie category related cookies are saved with 6 months as expiration time.") {
+		task ("Then: Cookie category related cookies are saved with 12 months as expiration time.") {
 			CookieBanner.checkIfCookiesHasSixMonthsAsExpirationDate();
 		}
 	}
@@ -86,6 +88,7 @@ definition {
 	@priority = 5
 	test VerifyFunctionalCookiesForFirstVisitInInstanceLevelDisableImplicitMode {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: Site Administrator disabled the cookie preference handling in instance level and the implicit cookie consent mode.") {
 			CookiePreferenceHandlingAdmin.disablePreferenceHandlingWithOutCookieConsentInSiteSettings(
@@ -122,6 +125,7 @@ definition {
 	@priority = 5
 	test VerifyFunctionalCookiesForFirstVisitInstanceLevelImplicitMode {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: Site Administrator enabled the cookie preference handling in instance level and the explicit cookie consent mode.") {
 			CookiePreferenceHandlingAdmin.disablePreferenceHandlingWithOutCookieConsentInSiteSettings(
@@ -129,7 +133,7 @@ definition {
 				portlet = "Preference Handling",
 				siteURLKey = "guest");
 
-			CookiePreferenceHandlingAdmin.enablePreferenceHandlingWithOutCookieConsentInInstanceSittings();
+			CookiePreferenceHandlingAdmin.enablePreferenceHandlingWithOutCookieConsentInInstanceSettings();
 		}
 
 		task ("When: End User first visits the site") {
@@ -158,6 +162,7 @@ definition {
 	@priority = 5
 	test VerifyFunctionalCookiesForNotFirstVisitInInstanceLevelEnableThenDisable {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: Site Administrator enabled agreed on the cookie usage, then disable the cookie preference handling in site level.") {
 			UserBar.signOut();
@@ -203,48 +208,11 @@ definition {
 		}
 	}
 
-	@description = "This is a use case for LPS-159221 TC-1. Verifying that Cookies are not saved until End-User sets them via Cookie Banner. Blocked by LPS-162952."
-	@ignore = "true"
-	@priority = 5
-	test VerifyingExplicitCookieWorfklow {
-		property portal.acceptance = "true";
-		property test.liferay.virtual.instance = "false";
-
-		task ("Given: Cookie preference handling is saved with Explicit Consent mode enabled.") {
-			CookiePreferenceHandlingAdmin.enablePreferenceHandlingWithCookieConsent();
-
-			CookieBanner.verifyCookieBannerIsPresent();
-		}
-
-		task ("Then: Cookies are saved with false as value except the NECESSARY coookie.") {
-			CookieHelper.checkEachCookiesSavedValue(
-				cookieNameListWithFalseValue = "CONSENT_TYPE_PERSONALIZATION,CONSENT_TYPE_FUNCTIONAL,CONSENT_TYPE_PERFORMANCE",
-				cookieNameListWithTrueValue = "CONSENT_TYPE_NECESSARY");
-		}
-	}
-
-	@description = "This is a use case for LPS-159221 TC-2. Verifying that Cookies are saved beforehand with true as value, and we didn't show the Cookie Banner. Blocked by LPS-162952."
-	@ignore = "true"
-	@priority = 5
-	test VerifyingImplicitCookieWorfklow {
-		property portal.acceptance = "true";
-		property test.liferay.virtual.instance = "false";
-
-		task ("Given: Cookie preference handling is saved with Explicit Consent mode is disabled.") {
-			CookiePreferenceHandlingAdmin.enablePreferenceHandlingWithoutCookieConsent();
-
-			CookieBanner.verifyCookieBannerIsPresent();
-		}
-
-		task ("Then: Cookies are saved with true as value.") {
-			CookieHelper.checkEachCookiesSavedValue(cookieNameListWithTrueValue = "CONSENT_TYPE_NECESSARY,CONSENT_TYPE_PERSONALIZATION,CONSENT_TYPE_FUNCTIONAL,CONSENT_TYPE_PERFORMANCE");
-		}
-	}
-
 	@description = "This is a use case for LPS-170904 TC-5. Verify no cookies are set in instance level and Explicit mode, when the user is a first-time visitor"
 	@priority = 5
 	test VerifyNoCookiesForFirstVisitInstanceLevelExplicitMode {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: Site Administrator enabled the cookie preference handling in instance level and the explicit cookie consent mode.") {
 			CookiePreferenceHandlingAdmin.disablePreferenceHandlingWithOutCookieConsentInSiteSettings(
@@ -278,9 +246,10 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-156903. Verify the order of menu items after Cookie Preference Handling is enabled"
-	@priority = 3
+	@priority = 5
 	test VerifyOrderOfMenuItemsInSiteSettings {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Verify the order of menu items in Site Settings") {
 			AssertVisible(locator1 = "CookieBannerAdmin#MENU_ITEMS_IN_ORDER");

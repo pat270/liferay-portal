@@ -116,7 +116,7 @@ Map<String, Map<String, String>> languagesTranslationsAriaLabelsMap = new HashMa
 			}
 		%>
 
-			<aui:input dir="<%= curLanguageDir %>" disabled="<%= disabled %>" id="<%= HtmlUtil.escapeAttribute(id + StringPool.UNDERLINE + curLanguageId) %>" name="<%= HtmlUtil.escapeAttribute(fieldNamePrefix + name + StringPool.UNDERLINE + curLanguageId + fieldNameSuffix) %>" type="hidden" value="<%= languageValue %>" />
+			<aui:input data-field-name="<%= HtmlUtil.escapeAttribute(id + fieldSuffix) %>" data-languageid="<%= curLanguageId %>" dir="<%= curLanguageDir %>" disabled="<%= disabled %>" id="<%= HtmlUtil.escapeAttribute(id + StringPool.UNDERLINE + curLanguageId) %>" name="<%= HtmlUtil.escapeAttribute(fieldNamePrefix + name + StringPool.UNDERLINE + curLanguageId + fieldNameSuffix) %>" type="hidden" value="<%= languageValue %>" />
 
 		<%
 		}
@@ -128,7 +128,7 @@ Map<String, Map<String, String>> languagesTranslationsAriaLabelsMap = new HashMa
 		}
 		%>
 
-		<div class="input-group-item input-group-item-shrink input-localized-content">
+		<div class="input-group-item input-group-item-shrink input-localized-content <%= languagesDropdownVisible ? "" : "hide" %>">
 
 			<%
 			String normalizedSelectedLanguageId = StringUtil.replace(selectedLanguageId, '_', '-');
@@ -250,7 +250,7 @@ Map<String, Map<String, String>> languagesTranslationsAriaLabelsMap = new HashMa
 						<c:if test="<%= Validator.isNotNull(activeLanguageIds) && !activeLanguageIds.isEmpty() && adminMode %>">
 							<li aria-hidden="true" class="dropdown-divider" role="presentation"></li>
 							<li>
-								<button class="dropdown-item" id="manage-translations">
+								<button class="dropdown-item" id="manage-translations" type="button">
 									<span class="inline-item inline-item-before">
 										<svg class="lexicon-icon lexicon-icon-automatic-translate" role="presentation">
 											<use xlink:href="<%= themeDisplay.getPathThemeSpritemap() %>#automatic-translate" />

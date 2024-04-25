@@ -16,12 +16,23 @@ $btn-size: 28px;
 		right: 0;
 		top: 0;
 		z-index: 100;
+
+		& ~ .org-char-info-panel {
+			z-index: 100;
+		}
+	}
+
+	.subnav-tbar-primary {
+		padding-left: 3rem;
+		padding-right: 3rem;
+		position: fixed;
+		width: 100%;
 	}
 
 	.zoom-controls {
 		bottom: $spacer;
+		left: $spacer;
 		position: absolute;
-		right: $spacer;
 	}
 
 	.svg-chart {
@@ -67,6 +78,23 @@ $btn-size: 28px;
 
 	.highlighted .chart-rect {
 		stroke: rgba($primary, 0.6);
+	}
+
+	.discovered {
+		.chart-rect {
+			fill: $dark;
+		}
+
+		.node-title,
+		.entity-icon,
+		.entity-description,
+		.node-menu-icon {
+			fill: $white !important;
+		}
+
+		.node-menu-wrapper:hover .node-menu-btn {
+			fill: #373843 !important;
+		}
 	}
 
 	.selected .chart-rect {
@@ -266,6 +294,127 @@ $btn-size: 28px;
 			transition: fill 0.2s ease-in;
 			x: 6;
 			y: 6;
+		}
+	}
+}
+
+.org-chart-management-toolbar {
+	z-index: 10;
+
+	.navbar-nav {
+		padding: 0 12px;
+		width: 100%;
+	}
+
+	.search {
+		flex: 1;
+
+		.row {
+			width: 100%;
+		}
+	}
+}
+
+.org-char-info-panel {
+	bottom: 0;
+	height: auto;
+	pointer-events: auto;
+	position: absolute;
+	top: 0;
+	z-index: 10;
+
+	&.active {
+		transform: translateX(0);
+	}
+
+	.sidebar-light {
+		border-left: 1px solid $secondary-l3;
+	}
+
+	&.info-panel {
+		.sidebar > .sidenav-close {
+			margin: 16px 16px 0 8px;
+			position: absolute;
+			right: 0;
+			top: 0;
+			z-index: 10;
+
+			& + .info-panel-content .sidebar-header > .autofit-row {
+				width: auto;
+			}
+		}
+	}
+
+	.sidebar-header {
+		margin-right: 64px;
+		padding-right: 0;
+	}
+
+	.info-panel-content {
+		bottom: 0;
+		left: 0;
+		position: absolute;
+		right: 0;
+		top: 0;
+
+		.logo-selector-default-img,
+		img {
+			height: 100px;
+			max-height: 100px;
+			max-width: 100px;
+			object-fit: cover;
+			width: 100px;
+		}
+
+		.logo-selector-default-img {
+			background: $gray-200;
+			fill: $gray-600;
+			padding: 20px;
+		}
+
+		.sidebar-dd {
+			white-space: pre;
+		}
+	}
+}
+
+.org-management-portlet-wrapper.expanded {
+	height: 100vh;
+	left: 0;
+	position: fixed;
+	top: 0;
+	width: 100vw;
+	z-index: 990;
+}
+
+.org-chart-container.expanded ~ .org-char-info-panel {
+	top: 48px;
+}
+
+.admin-portlet {
+	.org-char-info-panel {
+		position: fixed;
+		top: calc(var(--control-menu-container-height) + 112px);
+	}
+}
+
+.org-chart-root {
+	overflow-x: hidden;
+}
+
+.root-organizations-filter .inline-scroller {
+	margin: 1rem 1rem 0.25rem 0;
+
+	&::-webkit-scrollbar {
+		width: 5px;
+
+		&-track {
+			background-color: transparent;
+		}
+
+		&-thumb {
+			background-color: #e7e7ed;
+			border-radius: 2px;
 		}
 	}
 }

@@ -28,9 +28,9 @@ long paymentCommerceTermEntryId = commerceOrder.getPaymentCommerceTermEntryId();
 				<clay:col
 					size="12"
 				>
-					<aui:alert type="info">
-						<liferay-ui:message key="there-are-no-available-payment-terms" />
-					</aui:alert>
+					<clay:alert
+						message="there-are-no-available-payment-terms"
+					/>
 				</clay:col>
 			</clay:row>
 
@@ -84,7 +84,7 @@ long paymentCommerceTermEntryId = commerceOrder.getPaymentCommerceTermEntryId();
 						"terms", terms
 					).build()
 				%>'
-				module="js/termsDescriptionHandler"
+				module="{termsDescriptionHandler} from commerce-order-web"
 			/>
 		</c:otherwise>
 	</c:choose>

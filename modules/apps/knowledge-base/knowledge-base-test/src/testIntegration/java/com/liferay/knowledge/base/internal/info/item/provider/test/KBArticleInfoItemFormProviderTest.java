@@ -9,6 +9,7 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.info.field.InfoField;
 import com.liferay.info.field.InfoFieldValue;
 import com.liferay.info.field.type.CategoriesInfoFieldType;
+import com.liferay.info.field.type.DisplayPageInfoFieldType;
 import com.liferay.info.field.type.HTMLInfoFieldType;
 import com.liferay.info.field.type.ImageInfoFieldType;
 import com.liferay.info.field.type.TagsInfoFieldType;
@@ -29,6 +30,7 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ClassNameLocalServiceUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
+import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -82,7 +84,7 @@ public class KBArticleInfoItemFormProviderTest {
 			Comparator.comparing(
 				InfoField::getName, String::compareToIgnoreCase));
 
-		Assert.assertEquals(infoFields.toString(), 8, infoFields.size());
+		Assert.assertEquals(infoFields.toString(), 9, infoFields.size());
 
 		Iterator<InfoField<?>> iterator = infoFields.iterator();
 
@@ -119,6 +121,13 @@ public class KBArticleInfoItemFormProviderTest {
 		Assert.assertEquals(
 			TextInfoFieldType.INSTANCE, infoField.getInfoFieldType());
 		Assert.assertEquals("description", infoField.getName());
+		Assert.assertFalse(infoField.isLocalizable());
+
+		infoField = iterator.next();
+
+		Assert.assertEquals(
+			DisplayPageInfoFieldType.INSTANCE, infoField.getInfoFieldType());
+		Assert.assertEquals("displayPageURL", infoField.getName());
 		Assert.assertFalse(infoField.isLocalizable());
 
 		infoField = iterator.next();
@@ -207,8 +216,8 @@ public class KBArticleInfoItemFormProviderTest {
 				KBFolderConstants.getClassName()),
 			KBFolderConstants.DEFAULT_PARENT_FOLDER_ID, "title KB Article",
 			StringUtil.randomString(), "<strong>Context text</strong>",
-			"Description", null, StringPool.BLANK, null, null, null,
-			ServiceContextTestUtil.getServiceContext());
+			"Description", null, StringPool.BLANK, RandomTestUtil.nextDate(),
+			null, null, null, ServiceContextTestUtil.getServiceContext());
 	}
 
 	@Inject

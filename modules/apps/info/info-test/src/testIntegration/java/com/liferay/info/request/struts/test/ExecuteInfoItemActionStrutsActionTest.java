@@ -6,6 +6,7 @@
 package com.liferay.info.request.struts.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.layout.constants.LayoutTypeSettingsConstants;
 import com.liferay.object.constants.ObjectActionExecutorConstants;
 import com.liferay.object.constants.ObjectActionTriggerConstants;
 import com.liferay.object.constants.ObjectDefinitionConstants;
@@ -18,6 +19,7 @@ import com.liferay.object.model.ObjectField;
 import com.liferay.object.service.ObjectActionLocalService;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectEntryLocalService;
+import com.liferay.object.test.util.ObjectDefinitionTestUtil;
 import com.liferay.petra.io.unsync.UnsyncStringWriter;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.events.EventsProcessorUtil;
@@ -47,11 +49,9 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portal.upload.UploadPortletRequestImpl;
-import com.liferay.portal.upload.UploadServletRequestImpl;
+import com.liferay.portal.upload.test.util.UploadTestUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
 
@@ -75,7 +75,6 @@ import org.springframework.mock.web.MockMultipartHttpServletRequest;
 /**
  * @author Rubén Pulido
  */
-@FeatureFlags("LPS-169992")
 @RunWith(Arquillian.class)
 public class ExecuteInfoItemActionStrutsActionTest {
 
@@ -118,7 +117,7 @@ public class ExecuteInfoItemActionStrutsActionTest {
 			Collections.emptyMap(), Collections.emptyMap(),
 			LayoutConstants.TYPE_CONTENT,
 			UnicodePropertiesBuilder.put(
-				"published", "true"
+				LayoutTypeSettingsConstants.KEY_PUBLISHED, "true"
 			).buildString(),
 			false, false, Collections.emptyMap(), 0,
 			ServiceContextTestUtil.getServiceContext(
@@ -136,7 +135,8 @@ public class ExecuteInfoItemActionStrutsActionTest {
 				"script",
 				"File file = new File('" + _fileName +
 					"'); file.append('true');"
-			).build());
+			).build(),
+			false);
 	}
 
 	@After
@@ -163,9 +163,9 @@ public class ExecuteInfoItemActionStrutsActionTest {
 	private ObjectDefinition _addObjectDefinition() throws Exception {
 		ObjectDefinition objectDefinition =
 			_objectDefinitionLocalService.addCustomObjectDefinition(
-				_user.getUserId(), false, false,
+				_user.getUserId(), 0, false, false, false,
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
-				"A" + RandomTestUtil.randomString(), null,
+				ObjectDefinitionTestUtil.getRandomName(), null,
 				"control_panel.sites",
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
 				false, ObjectDefinitionConstants.SCOPE_SITE,
@@ -215,9 +215,12 @@ public class ExecuteInfoItemActionStrutsActionTest {
 		MockMultipartHttpServletRequest mockMultipartHttpServletRequest =
 			new MockMultipartHttpServletRequest();
 
+		mockMultipartHttpServletRequest.setContentType(
+			"multipart/form-data;boundary=" + System.currentTimeMillis());
+
 		UploadPortletRequest uploadPortletRequest =
-			new UploadPortletRequestImpl(
-				new UploadServletRequestImpl(
+			UploadTestUtil.createUploadPortletRequest(
+				UploadTestUtil.createUploadServletRequest(
 					mockMultipartHttpServletRequest, null,
 					HashMapBuilder.put(
 						"classNameId", Collections.singletonList(_classNameId)

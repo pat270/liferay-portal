@@ -15,7 +15,7 @@ LayoutPageTemplateManagementToolbarDisplayContext layoutPageTemplateManagementTo
 
 <clay:management-toolbar
 	managementToolbarDisplayContext="<%= layoutPageTemplateManagementToolbarDisplayContext %>"
-	propsTransformer="js/propsTransformers/LayoutPageTemplateEntryManagementToolbarPropsTransformer"
+	propsTransformer="{LayoutPageTemplateEntryManagementToolbarPropsTransformer} from layout-page-template-admin-web"
 />
 
 <portlet:actionURL name="/layout_page_template_admin/delete_layout_page_template_entry" var="deleteLayoutPageTemplateEntryURL">
@@ -23,7 +23,8 @@ LayoutPageTemplateManagementToolbarDisplayContext layoutPageTemplateManagementTo
 </portlet:actionURL>
 
 <aui:form action="<%= deleteLayoutPageTemplateEntryURL %>" name="fm">
-	<liferay-ui:error key="<%= PortalException.class.getName() %>" message="you-cannot-delete-page-templates-that-are-used-by-a-page" />
+	<liferay-ui:error exception="<%= PortalException.class %>" message="one-or-more-entries-could-not-be-deleted" />
+	<liferay-ui:error exception="<%= RequiredLayoutPrototypeException.class %>" message="you-cannot-delete-page-templates-that-are-used-by-a-page" />
 
 	<liferay-ui:search-container
 		id="layoutPageTemplateEntries"
@@ -44,7 +45,7 @@ LayoutPageTemplateManagementToolbarDisplayContext layoutPageTemplateManagementTo
 
 			<liferay-ui:search-container-column-text>
 				<clay:vertical-card
-					propsTransformer="js/propsTransformers/LayoutPageTemplateEntryPropsTransformer"
+					propsTransformer="{LayoutPageTemplateEntryPropsTransformer} from layout-page-template-admin-web"
 					verticalCard="<%= new LayoutPageTemplateEntryVerticalCard(layoutPageTemplateEntry, renderRequest, renderResponse, searchContainer.getRowChecker()) %>"
 				/>
 			</liferay-ui:search-container-column-text>

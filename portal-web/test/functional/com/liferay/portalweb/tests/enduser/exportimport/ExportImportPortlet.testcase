@@ -33,6 +33,7 @@ definition {
 	@priority = 3
 	test CanImportJournalArticleWhenUncheckMissingReferencesValidation {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: Uncheck the Validate Missing References box in System settings") {
 			ApplicationsMenu.gotoPortlet(
@@ -111,12 +112,13 @@ definition {
 
 	@description = "This is a use case for LRQA-73362. Verify if custom fields can be added and deleted through importing their LAR file. Blocked by LPS-149168."
 	@ignore = "true"
-	@priority = 4
+	@priority = 3
 	test CustomFieldDeletionViaImporting {
 		property app.server.bundles.size = "1";
 		property databases.size = "1";
 		property minimum.slave.ram = "24";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: User add an input field for document then export it") {
 			CustomFields.addCP(
@@ -293,9 +295,10 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-95589. Verify is not possible export a DM with deleted document link."
-	@priority = 4
+	@priority = 3
 	test ExportDMWithDeletedDocumentLink {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: User add a new site with a new document") {
 			HeadlessSite.addSite(siteName = "Site Name");
@@ -346,10 +349,11 @@ definition {
 		}
 	}
 
-	@description = "Verify is possible export and import a DDL via Global."
-	@priority = 5
-	test ExportImportDDLViaGlobal {
+	@description = "Verify is possible export and import a blog via Global."
+	@priority = 3
+	test ExportImportBlogsViaGlobal {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: User adds a new site and a page to it") {
 			HeadlessSite.addSite(siteName = "Site Name");
@@ -359,92 +363,45 @@ definition {
 				layoutName = "Test Page");
 		}
 
-		task ("And: Add a new DDL data definition to the global site with a field") {
+		task ("And: Add a new blog to the global site") {
+			JSONBlog.addEntry(
+				entryContent = "Blogs Entry Content",
+				entryTitle = "Blogs Entry Title",
+				groupName = "Global");
+		}
+
+		task ("When: User export the blog then imports it to the default site") {
 			PageTemplatesAdmin.openPageTemplatesAdmin(siteURLKey = "global");
 
 			ProductMenu.gotoPortlet(
 				category = "Content & Data",
-				portlet = "Dynamic Data Lists");
-
-			DDLDataDefinition.addCP(
-				ddlDataDefinitionDescription = "DDL Definition Description",
-				ddlDataDefinitionName = "DDL Definition");
-
-			DynamicDataMapping.addField(
-				field = "Text",
-				fieldFieldLabel = "Text Label",
-				fieldName = "TextName");
-
-			DDLDataDefinition.save();
-		}
-
-		task ("And: Add a new DDL to the global site with chosing the previously created DDL data definition") {
-			PageTemplatesAdmin.openPageTemplatesAdmin(siteURLKey = "global");
-
-			ProductMenu.gotoPortlet(
-				category = "Content & Data",
-				portlet = "Dynamic Data Lists");
-
-			DDLList.addCP(
-				ddlListDescription = "DDL List Description",
-				ddlListName = "DDL List");
-
-			DDLDataDefinition.selectCP(ddlDataDefinitionName = "DDL Definition");
-
-			DDLDataDefinition.save();
-		}
-
-		task ("And: Populate the new DDL data definition's field with text") {
-			DDLRecord.addCP(
-				ddlDataDefinitionName = "DDL Definition",
-				ddlListName = "DDL List");
-
-			DDLRecord.populateFieldText(
-				ddlRecordFieldData = "DDL Definition Record",
-				field = "Text",
-				fieldFieldLabel = "Text Label",
-				fieldName = "TextName");
-
-			PortletEntry.publish();
-		}
-
-		task ("When: User export the DDL portlet then imports it to the default site") {
-			PageTemplatesAdmin.openPageTemplatesAdmin(siteURLKey = "global");
-
-			ProductMenu.gotoPortlet(
-				category = "Content & Data",
-				portlet = "Dynamic Data Lists");
+				portlet = "Blogs");
 
 			LAR.exportPortlet(
-				larFileName = "DDL.portlet.lar",
+				larFileName = "Blog.portlet.lar",
 				siteScopeName = "Global");
 
 			Navigator.openSiteURL(siteName = "Site Name");
 
 			ProductMenu.gotoPortlet(
 				category = "Content & Data",
-				portlet = "Dynamic Data Lists");
+				portlet = "Blogs");
 
 			LAR.importPortlet(
-				larFileName = "DDL.portlet.lar",
+				larFileName = "Blog.portlet.lar",
 				siteName = "Site Name");
 		}
 
-		task ("Then: The populated DDL data definition will be present on the default site") {
-			Navigator.openURL();
-
-			Navigator.openSiteURL(siteName = "Site Name");
+		task ("Then: The blog will be present on the default site") {
+			BlogsNavigator.openBlogsAdmin(siteURLKey = "site-name");
 
 			ProductMenu.gotoPortlet(
 				category = "Content & Data",
-				portlet = "Dynamic Data Lists");
+				portlet = "Blogs");
 
-			DDLNavigator.gotoListRecords(ddlListName = "DDL List");
-
-			DDLRecord.viewFirstFieldCP(
-				ddlRecordFieldData = "DDL Definition Record",
-				field = "Text",
-				fieldFieldLabel = "Text Label");
+			AssertElementPresent(
+				key_entryTitle = "Blogs Entry Title",
+				locator1 = "Blogs#ICON_VIEW_ENTRY_TITLE");
 		}
 	}
 
@@ -452,6 +409,7 @@ definition {
 	@priority = 4
 	test ExportImportDeletions {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: User adds a new WC then export it") {
 			JSONWebcontent.addWebContent(
@@ -504,7 +462,7 @@ definition {
 	}
 
 	@description = "Verify is possible export/import a Portlet."
-	@priority = 5
+	@priority = 4
 	test ExportImportPortlet {
 		property portal.acceptance = "true";
 
@@ -566,10 +524,11 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-83326 and LPS-99287. Verify is possible export/import Web Content Folder with a Workflow."
-	@priority = 5
+	@priority = 3
 	test ExportImportWebContentFolderWithWorkflow {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: User adds a new WC folder with default workflow") {
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "guest");
@@ -627,6 +586,7 @@ definition {
 	@priority = 3
 	test ExportImportWebcontentWithRepeatField {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: User adds a new site") {
 			HeadlessSite.addSite(siteName = "Exported Site");
@@ -761,9 +721,10 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-88831, LPS-88889 and LPS-88890. Verify is possible export a web content with deleted reference."
-	@priority = 4
+	@priority = 3
 	test ExportWebContentWithDeletedReference {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: User adds a new site with a page") {
 			HeadlessSite.addSite(siteName = "Site Name");
@@ -920,7 +881,7 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-182704. TC-1 and TC-3: Verify that a confirmation pop-up should show up when Delete Application Data Before Importing checkbox is checked during portlet import process."
-	@priority = 5
+	@priority = 3
 	test ViewDeleteApplicationDataPopUpInPortletImportProgress {
 		task ("Export blank web content and add a new web content entry") {
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "guest");
@@ -951,9 +912,10 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-182704. TC-14 and TC-15: Verify that a confirmation pop-up should show up when Delete Application Data Before Importing checkbox is checked during portlet import process on virtual instance."
-	@priority = 5
+	@priority = 3
 	test ViewDeleteApplicationDataPopUpInPortletImportProgressInVirtualInstance {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Export blank web content") {
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "guest");

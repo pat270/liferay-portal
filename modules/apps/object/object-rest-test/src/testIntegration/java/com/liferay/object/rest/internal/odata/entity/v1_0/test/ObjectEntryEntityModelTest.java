@@ -17,6 +17,7 @@ import com.liferay.object.rest.dto.v1_0.ObjectEntry;
 import com.liferay.object.rest.resource.v1_0.ObjectEntryResource;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectRelationshipLocalService;
+import com.liferay.object.test.util.ObjectDefinitionTestUtil;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
 import com.liferay.petra.string.StringBundler;
@@ -86,7 +87,7 @@ public class ObjectEntryEntityModelTest {
 
 	@Test
 	public void testGetEntityFieldsMap() throws Exception {
-		String value = "A" + RandomTestUtil.randomString();
+		String value = ObjectDefinitionTestUtil.getRandomName();
 
 		List<ObjectField> customObjectFields = Arrays.asList(
 			_createObjectField(ObjectFieldConstants.DB_TYPE_BIG_DECIMAL),
@@ -102,7 +103,7 @@ public class ObjectEntryEntityModelTest {
 			value, customObjectFields);
 
 		ObjectDefinition relatedObjectDefinition = _publishObjectDefinition(
-			"A" + RandomTestUtil.randomString(), customObjectFields);
+			ObjectDefinitionTestUtil.getRandomName(), customObjectFields);
 
 		ObjectRelationship objectRelationship = _addObjectRelationship(
 			objectDefinition, relatedObjectDefinition);
@@ -135,13 +136,6 @@ public class ObjectEntryEntityModelTest {
 					new StringEntityField(
 						"keywords", locale -> "assetTagNames.raw"))
 			).put(
-				"objectDefinitionId",
-				new IntegerEntityField(
-					"objectDefinitionId", locale -> "objectDefinitionId")
-			).put(
-				"siteId",
-				new IntegerEntityField("siteId", locale -> Field.GROUP_ID)
-			).put(
 				"status",
 				new CollectionEntityField(
 					new IntegerEntityField("status", locale -> Field.STATUS))
@@ -168,13 +162,13 @@ public class ObjectEntryEntityModelTest {
 
 		ObjectRelationship objectRelationship =
 			_objectRelationshipLocalService.addObjectRelationship(
-				TestPropsValues.getUserId(),
+				null, TestPropsValues.getUserId(),
 				relatedObjectDefinition.getObjectDefinitionId(),
 				objectDefinition.getObjectDefinitionId(), 0,
 				ObjectRelationshipConstants.DELETION_TYPE_PREVENT,
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
-				StringUtil.randomId(),
-				ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
+				StringUtil.randomId(), false,
+				ObjectRelationshipConstants.TYPE_ONE_TO_MANY, null);
 
 		_objectRelationships.add(objectRelationship);
 
@@ -286,7 +280,7 @@ public class ObjectEntryEntityModelTest {
 		ObjectEntryResource objectEntryResource = _serviceTrackerMap.getService(
 			StringBundler.concat(
 				ObjectEntry.class.getName(), StringPool.POUND,
-				objectDefinition.getOSGiJaxRsName()));
+				StringUtil.toLowerCase(objectDefinition.getName())));
 
 		if (objectEntryResource instanceof EntityModelResource) {
 			Class<?> clazz = objectEntryResource.getClass();
@@ -313,7 +307,7 @@ public class ObjectEntryEntityModelTest {
 
 		ObjectDefinition objectDefinition =
 			_objectDefinitionLocalService.addCustomObjectDefinition(
-				TestPropsValues.getUserId(), false, false,
+				TestPropsValues.getUserId(), 0, false, false, false,
 				LocalizedMapUtil.getLocalizedMap(objectDefinitionName),
 				objectDefinitionName, null, null,
 				LocalizedMapUtil.getLocalizedMap(objectDefinitionName), true,

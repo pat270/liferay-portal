@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {ActionError} from '..';
 import ClayForm from '@clayui/form';
 import {
 	Card,
@@ -12,7 +11,10 @@ import {
 } from '@liferay/object-js-components-web';
 import React from 'react';
 
+import {ActionError} from '../ObjectActionContainer';
+
 interface ConditionContainerProps {
+	disabled: boolean;
 	errors: ActionError;
 	setValues: (values: Partial<ObjectAction>) => void;
 	validateExpressionURL: string;
@@ -20,6 +22,7 @@ interface ConditionContainerProps {
 }
 
 export function ConditionContainer({
+	disabled,
 	errors,
 	setValues,
 	validateExpressionURL,
@@ -36,7 +39,11 @@ export function ConditionContainer({
 		>
 			<ClayForm.Group>
 				<Toggle
-					disabled={values.objectActionTriggerKey === 'standalone'}
+					disabled={
+						disabled ||
+						values.objectActionTriggerKey === 'standalone' ||
+						values.system
+					}
 					label={Liferay.Language.get('enable-condition')}
 					name="condition"
 					onToggle={(enable) =>
@@ -50,6 +57,7 @@ export function ConditionContainer({
 
 			{values.conditionExpression !== undefined && (
 				<ExpressionBuilder
+					disabled={values.system}
 					error={errors.conditionExpression}
 					feedbackMessage={Liferay.Language.get(
 						'use-expressions-to-create-a-condition'

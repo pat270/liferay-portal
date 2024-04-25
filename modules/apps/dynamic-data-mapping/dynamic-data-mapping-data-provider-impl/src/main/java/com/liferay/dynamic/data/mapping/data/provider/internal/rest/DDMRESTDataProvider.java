@@ -34,10 +34,11 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.kernel.util.Html;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.KeyValuePair;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.SystemProperties;
 import com.liferay.portal.kernel.util.Validator;
@@ -53,6 +54,7 @@ import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
@@ -158,7 +160,7 @@ public class DDMRESTDataProvider implements DDMDataProvider {
 
 			url = StringUtil.replaceFirst(
 				url, String.format("{%s}", urlInputParameter.getKey()),
-				_html.escapeURL(urlInputParameter.getValue()));
+				HtmlUtil.escapeURL(urlInputParameter.getValue()));
 		}
 
 		return url;
@@ -287,6 +289,13 @@ public class DDMRESTDataProvider implements DDMDataProvider {
 			}
 
 			allParametersMap.put(key, String.valueOf(entry.getValue()));
+		}
+
+		Locale locale = ddmDataProviderRequest.getLocale();
+
+		if (locale != null) {
+			allParametersMap.put(
+				"ddmDataProviderLanguageId", LocaleUtil.toLanguageId(locale));
 		}
 
 		if (ddmRESTDataProviderSettings.filterable()) {
@@ -606,9 +615,6 @@ public class DDMRESTDataProvider implements DDMDataProvider {
 
 	@Reference(target = "(ddm.data.provider.type=rest)")
 	private DDMDataProviderSettingsProvider _ddmDataProviderSettingsProvider;
-
-	@Reference
-	private Html _html;
 
 	@Reference
 	private JSONWebServiceClientFactory _jsonWebServiceClientFactory;

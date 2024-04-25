@@ -1,4 +1,4 @@
-import {Align} from 'metal-position';
+import {POSITIONS as ALIGN_POSITIONS} from './align';
 
 export const DEVELOPER_MODE = FARO_DEV_MODE;
 
@@ -42,44 +42,44 @@ export const ENABLE_LAST_ACCESS_DATE = false;
 
 export const ENABLE_SALESFORCE = false;
 
-// LRAC-13620 Hide Suppressed Users line from Data Control & Privacy screen
+export enum LanguageIds {
+	English = 'en_US',
+	Japanese = 'ja_JP',
+	Portuguese = 'pt_BR',
+	Spanish = 'es_ES'
+}
 
-export const ENABLE_SUPPRESSED_USERS = false;
-
-/**
- * Languages
- */
 export const LANGUAGES = [
 	{
-		id: 'en_US',
+		id: LanguageIds.English,
 		label: Liferay.Language.get('english')
 	},
 	{
-		id: 'ja_JP',
+		id: LanguageIds.Japanese,
 		label: Liferay.Language.get('japanese')
 	},
 	{
-		id: 'pt_BR',
+		id: LanguageIds.Portuguese,
 		label: Liferay.Language.get('portuguese')
 	},
 	{
-		id: 'es_ES',
+		id: LanguageIds.Spanish,
 		label: Liferay.Language.get('spanish')
 	}
 ];
 
 /**
- * Metal-Position Alignments
+ * Alignments
  */
 export const ALIGNMENTS_MAP = {
-	bottom: Align.Bottom,
-	'bottom-left': Align.BottomLeft,
-	'bottom-right': Align.BottomRight,
-	left: Align.Left,
-	right: Align.Right,
-	top: Align.Top,
-	'top-left': Align.TopLeft,
-	'top-right': Align.TopRight
+	bottom: ALIGN_POSITIONS.BottomCenter,
+	'bottom-left': ALIGN_POSITIONS.BottomLeft,
+	'bottom-right': ALIGN_POSITIONS.BottomRight,
+	left: ALIGN_POSITIONS.LeftCenter,
+	right: ALIGN_POSITIONS.RightCenter,
+	top: ALIGN_POSITIONS.TopCenter,
+	'top-left': ALIGN_POSITIONS.TopLeft,
+	'top-right': ALIGN_POSITIONS.TopRight
 };
 
 export const POSITIONS = [
@@ -228,10 +228,6 @@ export enum GDPRRequestTypes {
 	Unsuppress = 'UNSUPPRESS'
 }
 
-/**
- * RangeKey TimeRange
- */
-
 export enum RangeKeyTimeRanges {
 	CustomRange = 'CUSTOM',
 	Last180Days = '180',
@@ -243,6 +239,14 @@ export enum RangeKeyTimeRanges {
 	LastYear = '365',
 	Yesterday = '1'
 }
+
+export const DATA_RETENTION_PERIOD_KEY = 'data-retention-period';
+
+export const ONE_DAY = '86400000';
+export const ONE_MONTH = '2592000000';
+export const SEVEN_MONTHS = '18144000000';
+export const THIRTEEN_MONTHS = '33696000000';
+export const TWO_DAYS = '172800000';
 
 export const TIME_RANGE_LABELS = {
 	[RangeKeyTimeRanges.Last180Days]: Liferay.Language.get('last-180-days'),

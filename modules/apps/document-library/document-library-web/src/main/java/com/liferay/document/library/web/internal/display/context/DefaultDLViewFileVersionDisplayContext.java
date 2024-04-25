@@ -12,7 +12,9 @@ import com.liferay.document.library.kernel.model.DLFileEntryConstants;
 import com.liferay.document.library.kernel.model.DLFileEntryMetadata;
 import com.liferay.document.library.kernel.model.DLFileEntryType;
 import com.liferay.document.library.kernel.model.DLFileEntryTypeConstants;
+import com.liferay.document.library.kernel.model.DLFileVersion;
 import com.liferay.document.library.kernel.service.DLFileEntryMetadataLocalServiceUtil;
+import com.liferay.document.library.kernel.service.DLFileVersionLocalServiceUtil;
 import com.liferay.document.library.kernel.versioning.VersioningStrategy;
 import com.liferay.document.library.preview.DLPreviewRenderer;
 import com.liferay.document.library.preview.DLPreviewRendererProvider;
@@ -32,11 +34,12 @@ import com.liferay.document.library.web.internal.helper.DLTrashHelper;
 import com.liferay.dynamic.data.mapping.exception.StorageException;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
-import com.liferay.dynamic.data.mapping.storage.StorageEngine;
+import com.liferay.dynamic.data.mapping.storage.DDMStorageEngineManager;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -45,6 +48,7 @@ import com.liferay.portal.kernel.repository.model.FileShortcut;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.io.IOException;
 
@@ -64,29 +68,31 @@ public class DefaultDLViewFileVersionDisplayContext
 	implements DLViewFileVersionDisplayContext {
 
 	public DefaultDLViewFileVersionDisplayContext(
+			DDMStorageEngineManager ddmStorageEngineManager,
 			DLMimeTypeDisplayContext dlMimeTypeDisplayContext,
 			DLPreviewRendererProvider dlPreviewRendererProvider,
 			DLTrashHelper dlTrashHelper, DLURLHelper dlURLHelper,
 			FileShortcut fileShortcut, HttpServletRequest httpServletRequest,
-			StorageEngine storageEngine, VersioningStrategy versioningStrategy)
+			VersioningStrategy versioningStrategy)
 		throws PortalException {
 
 		this(
 			httpServletRequest, fileShortcut.getFileVersion(), fileShortcut,
-			dlMimeTypeDisplayContext, storageEngine, dlTrashHelper,
+			ddmStorageEngineManager, dlMimeTypeDisplayContext, dlTrashHelper,
 			dlPreviewRendererProvider, versioningStrategy, dlURLHelper);
 	}
 
 	public DefaultDLViewFileVersionDisplayContext(
+		DDMStorageEngineManager ddmStorageEngineManager,
 		DLMimeTypeDisplayContext dlMimeTypeDisplayContext,
 		DLPreviewRendererProvider dlPreviewRendererProvider,
 		DLTrashHelper dlTrashHelper, DLURLHelper dlURLHelper,
 		FileVersion fileVersion, HttpServletRequest httpServletRequest,
-		StorageEngine storageEngine, VersioningStrategy versioningStrategy) {
+		VersioningStrategy versioningStrategy) {
 
 		this(
-			httpServletRequest, fileVersion, null, dlMimeTypeDisplayContext,
-			storageEngine, dlTrashHelper, dlPreviewRendererProvider,
+			httpServletRequest, fileVersion, null, ddmStorageEngineManager,
+			dlMimeTypeDisplayContext, dlTrashHelper, dlPreviewRendererProvider,
 			versioningStrategy, dlURLHelper);
 	}
 
@@ -179,7 +185,7 @@ public class DefaultDLViewFileVersionDisplayContext
 			DLFileEntryMetadataLocalServiceUtil.getFileEntryMetadata(
 				ddmStructure.getStructureId(), _fileVersion.getFileVersionId());
 
-		return _storageEngine.getDDMFormValues(
+		return _ddmStorageEngineManager.getDDMFormValues(
 			dlFileEntryMetadata.getDDMStorageId());
 	}
 
@@ -187,7 +193,12 @@ public class DefaultDLViewFileVersionDisplayContext
 	public DDMFormValues getDDMFormValues(long classPK)
 		throws StorageException {
 
-		return _storageEngine.getDDMFormValues(classPK);
+		try {
+			return _ddmStorageEngineManager.getDDMFormValues(classPK);
+		}
+		catch (PortalException portalException) {
+			throw new StorageException(portalException);
+		}
 	}
 
 	@Override
@@ -241,6 +252,26 @@ public class DefaultDLViewFileVersionDisplayContext
 	@Override
 	public UUID getUuid() {
 		return _UUID;
+	}
+
+	@Override
+	public boolean hasApprovedVersion() {
+		if (!FeatureFlagManagerUtil.isEnabled(
+				_fileVersion.getCompanyId(), "LPD-10701")) {
+
+			return false;
+		}
+
+		DLFileVersion dlFileVersion =
+			DLFileVersionLocalServiceUtil.fetchLatestFileVersion(
+				_fileVersion.getFileEntryId(), false,
+				WorkflowConstants.STATUS_APPROVED);
+
+		if (dlFileVersion == null) {
+			return false;
+		}
+
+		return true;
 	}
 
 	@Override
@@ -350,16 +381,17 @@ public class DefaultDLViewFileVersionDisplayContext
 	private DefaultDLViewFileVersionDisplayContext(
 		HttpServletRequest httpServletRequest, FileVersion fileVersion,
 		FileShortcut fileShortcut,
+		DDMStorageEngineManager ddmStorageEngineManager,
 		DLMimeTypeDisplayContext dlMimeTypeDisplayContext,
-		StorageEngine storageEngine, DLTrashHelper dlTrashHelper,
+		DLTrashHelper dlTrashHelper,
 		DLPreviewRendererProvider dlPreviewRendererProvider,
 		VersioningStrategy versioningStrategy, DLURLHelper dlURLHelper) {
 
 		try {
 			_httpServletRequest = httpServletRequest;
 			_fileVersion = fileVersion;
+			_ddmStorageEngineManager = ddmStorageEngineManager;
 			_dlMimeTypeDisplayContext = dlMimeTypeDisplayContext;
-			_storageEngine = storageEngine;
 			_dlPreviewRendererProvider = dlPreviewRendererProvider;
 
 			DLRequestHelper dlRequestHelper = new DLRequestHelper(
@@ -525,6 +557,7 @@ public class DefaultDLViewFileVersionDisplayContext
 	private static final Log _log = LogFactoryUtil.getLog(
 		DefaultDLViewFileVersionDisplayContext.class);
 
+	private final DDMStorageEngineManager _ddmStorageEngineManager;
 	private List<DDMStructure> _ddmStructures;
 	private DLFileEntryType _dlFileEntryType;
 	private final DLMimeTypeDisplayContext _dlMimeTypeDisplayContext;
@@ -536,7 +569,6 @@ public class DefaultDLViewFileVersionDisplayContext
 	private final FileVersionDisplayContextHelper
 		_fileVersionDisplayContextHelper;
 	private final HttpServletRequest _httpServletRequest;
-	private final StorageEngine _storageEngine;
 	private final UIItemsBuilder _uiItemsBuilder;
 
 }

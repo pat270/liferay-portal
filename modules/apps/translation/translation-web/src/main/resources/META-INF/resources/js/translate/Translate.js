@@ -27,11 +27,14 @@ const getInfoFields = (infoFieldSetEntries = []) => {
 	const targetFields = {};
 
 	infoFieldSetEntries.forEach(({fields}) => {
-		fields.forEach(({id: idSet, sourceContent, targetContent}) => {
+		fields.forEach(({html, id: idSet, sourceContent, targetContent}) => {
 			sourceContent.forEach((content, index) => {
 				const id = `${idSet}${index}`;
 
-				sourceFields[id] = content;
+				sourceFields[id] = {
+					content,
+					html,
+				};
 				targetFields[id] = {
 					content: targetContent[index],
 					message: '',
@@ -77,6 +80,7 @@ const reducer = (state, action) => {
 const Translate = ({
 	additionalFields,
 	autoTranslateEnabled = false,
+	concurrentUserError: initialConcurrentUserError,
 	currentUrl,
 	experiencesSelectorData,
 	getAutoTranslateURL,
@@ -98,6 +102,9 @@ const Translate = ({
 }) => {
 	const isMounted = useIsMounted();
 
+	const [concurrentUserError, setConcurrentUserError] = useState(
+		initialConcurrentUserError
+	);
 	const [workflowAction, setWorkflowAction] = useState(
 		workflowActions.PUBLISH
 	);
@@ -154,7 +161,12 @@ const Translate = ({
 	const fetchAutoTranslation = ({fields}) =>
 		fetch(getAutoTranslateURL, {
 			body: JSON.stringify({
-				fields,
+				fields: Object.fromEntries(
+					Object.entries(fields).map((a) => [a[0], a[1].content])
+				),
+				html: Object.fromEntries(
+					Object.entries(fields).map((a) => [a[0], a[1].html])
+				),
 				sourceLanguageId,
 				targetLanguageId,
 			}),
@@ -170,7 +182,7 @@ const Translate = ({
 		});
 
 		fetchAutoTranslation({fields: sourceFields})
-			.then(({error, fields}) => {
+			.then(({error, fields, html}) => {
 				if (error) {
 					throw error;
 				}
@@ -179,8 +191,18 @@ const Translate = ({
 					dispatch({
 						payload: Object.entries(fields).reduce(
 							(acc, [id, content]) => {
+								let contentData;
+								if (
+									html &&
+									sourceFields[id].html === html[id]
+								) {
+									contentData = content;
+								}
+								else {
+									contentData = unescapeHTML(content);
+								}
 								acc[id] = {
-									content: unescapeHTML(content),
+									content: contentData,
 								};
 
 								return acc;
@@ -229,16 +251,25 @@ const Translate = ({
 		fetchAutoTranslation({
 			fields: {[fieldId]: sourceFields[fieldId]},
 		})
-			.then(({error, fields}) => {
+			.then(({error, fields, html}) => {
 				if (error) {
 					throw error;
+				}
+
+				let contentData;
+
+				if (html && sourceFields[fieldId].html === html[fieldId]) {
+					contentData = fields[fieldId];
+				}
+				else {
+					contentData = unescapeHTML(fields[fieldId]);
 				}
 
 				if (isMounted()) {
 					dispatch({
 						payload: {
 							field: {
-								content: unescapeHTML(fields[fieldId]),
+								content: contentData,
 								message: Liferay.Language.get(
 									'field-translated'
 								),
@@ -311,6 +342,17 @@ const Translate = ({
 			/>
 
 			<ClayLayout.ContainerFluid view>
+				{concurrentUserError && (
+					<ClayAlert
+						displayType="danger"
+						onClose={() => setConcurrentUserError(false)}
+					>
+						{Liferay.Language.get(
+							'another-user-has-made-changes-since-you-started-editing'
+						)}
+					</ClayAlert>
+				)}
+
 				<div className="sheet translation-edit-body-form">
 					{!translationPermission ? (
 						<ClayAlert>
@@ -346,6 +388,7 @@ const Translate = ({
 
 Translate.propTypes = {
 	autoTranslateEnabled: PropTypes.bool,
+	concurrentUserError: PropTypes.bool.isRequired,
 	currentUrl: PropTypes.string.isRequired,
 	experiencesSelectorData: PropTypes.shape({
 		label: PropTypes.string.isRequired,

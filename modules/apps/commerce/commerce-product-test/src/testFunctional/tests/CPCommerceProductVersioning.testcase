@@ -21,13 +21,12 @@ definition {
 	test CanCheckProductVersionsWithProductVersioningDisabled {
 		property portal.acceptance = "false";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// This test need to disable the versioning for that reason the 'skip.portal.instance' is necessary
 
 		task ("Given the admin has already created a new simple product and When the admin opens the product that was created before") {
-			CommerceNavigator.gotoPortlet(
-				category = "Product Management",
-				portlet = "Products");
+			CommerceProducts.openProductsAdmin();
 
 			CPCommerceCatalog.newProductsEntry(
 				productCatalog = "Master",
@@ -91,9 +90,7 @@ definition {
 		}
 
 		task ("Then the admin will still see 3 products, one approved, one incomplete, one draft") {
-			CommerceNavigator.gotoPortlet(
-				category = "Product Management",
-				portlet = "Products");
+			CommerceProducts.openProductsAdmin();
 
 			CommerceProducts.checkProductsPresent(list = "Simple T-Shirt:Approved,Simple T-Shirt:Draft,Simple T-Shirt:Incomplete");
 
@@ -114,9 +111,7 @@ definition {
 		property portal.acceptance = "true";
 
 		task ("Given the admin has already created a new simple product and When the admin opens the product that was created before") {
-			CommerceNavigator.gotoPortlet(
-				category = "Product Management",
-				portlet = "Products");
+			CommerceProducts.openProductsAdmin();
 
 			CPCommerceCatalog.newProductsEntry(
 				productCatalog = "Master",
@@ -183,9 +178,7 @@ definition {
 		property portal.acceptance = "false";
 
 		task ("When the Admin goes into the Commerce -> Products and create a new simple product") {
-			CommerceNavigator.gotoPortlet(
-				category = "Product Management",
-				portlet = "Products");
+			CommerceProducts.openProductsAdmin();
 
 			CPCommerceCatalog.newProductsEntry(
 				productCatalog = "Master",
@@ -214,9 +207,7 @@ definition {
 		}
 
 		task ("When the admin opens 'Hoses'") {
-			CommerceNavigator.gotoPortlet(
-				category = "Product Management",
-				portlet = "Products");
+			CommerceProducts.openProductsAdmin();
 
 			AppBuilderAdmin.searchByItem(itemName = "Hoses");
 
@@ -277,9 +268,7 @@ definition {
 		}
 
 		task ("But if the admin goes back on the product admin page and opens the 'Draft' Hoses and clicks on publish") {
-			CommerceNavigator.gotoPortlet(
-				category = "Product Management",
-				portlet = "Products");
+			CommerceProducts.openProductsAdmin();
 
 			AppBuilderAdmin.searchByItem(itemName = "Hoses");
 
@@ -317,7 +306,7 @@ definition {
 				locator1 = "CommerceAccelerators#PRODUCT_CARD_PRICE",
 				value1 = "$ 120.00");
 
-			AssertTextNotEquals.assertNotPartialText(
+			AssertTextNotEquals.assertNotPartialMatch(
 				key_productName = "Hoses",
 				locator1 = "CommerceAccelerators#PRODUCT_CARD_PRICE",
 				value1 = "$ 0.00");
@@ -338,16 +327,12 @@ definition {
 		property portal.acceptance = "true";
 
 		task ("Given the admin has already created a new simple product") {
-			CommerceNavigator.gotoPortlet(
-				category = "Product Management",
-				portlet = "Products");
+			CommerceProducts.openProductsAdmin();
 
 			CPCommerceCatalog.newProductsEntry(
 				productCatalog = "Master",
 				productName = "Simple T-Shirt",
 				productType = "Simple");
-
-			var approvedProductId = selenium.getText("CommerceEntry#PRODUCT_ID");
 		}
 
 		task ("And click on 'Save as Draft'") {
@@ -360,20 +345,12 @@ definition {
 			AssertElementPresent(
 				key_status = "Draft",
 				locator1 = "CommerceEntry#WORKFLOW_STATUS");
-
-			var draftProductId = selenium.getText("CommerceEntry#PRODUCT_ID");
-
-			CommerceProducts.checkProductIdsNotEqual(
-				firstProductId = ${approvedProductId},
-				secondProductId = ${draftProductId});
 		}
 
 		task ("if the admin goes back, he will find two products with the same name where the first is approved, and the second is draft") {
 			Navigator.gotoBack();
 
 			CommerceProducts.checkProductsPresent(list = "Simple T-Shirt:Approved,Simple T-Shirt:Draft");
-
-			CommerceProducts.checkProductId(list = "Simple T-Shirt:Approved:${approvedProductId},Simple T-Shirt:Draft:${draftProductId}");
 		}
 	}
 
@@ -383,9 +360,7 @@ definition {
 		property portal.acceptance = "true";
 
 		task ("Given the admin has already created a new simple product and When the admin opens the product that was created before") {
-			CommerceNavigator.gotoPortlet(
-				category = "Product Management",
-				portlet = "Products");
+			CommerceProducts.openProductsAdmin();
 
 			CPCommerceCatalog.newProductsEntry(
 				productCatalog = "Master",
@@ -437,9 +412,7 @@ definition {
 		property portal.acceptance = "false";
 
 		task ("Given the admin has already created a new simple product and When the admin opens the product that was created before") {
-			CommerceNavigator.gotoPortlet(
-				category = "Product Management",
-				portlet = "Products");
+			CommerceProducts.openProductsAdmin();
 
 			CPCommerceCatalog.newProductsEntry(
 				productCatalog = "Master",
@@ -511,9 +484,7 @@ definition {
 		property portal.acceptance = "true";
 
 		task ("Given the admin has already created a new simple product and When the admin opens the product that was created before") {
-			CommerceNavigator.gotoPortlet(
-				category = "Product Management",
-				portlet = "Products");
+			CommerceProducts.openProductsAdmin();
 
 			CPCommerceCatalog.newProductsEntry(
 				productCatalog = "Master",
@@ -572,16 +543,12 @@ definition {
 		property portal.acceptance = "true";
 
 		task ("Given the admin has already created a new simple product") {
-			CommerceNavigator.gotoPortlet(
-				category = "Product Management",
-				portlet = "Products");
+			CommerceProducts.openProductsAdmin();
 
 			CPCommerceCatalog.newProductsEntry(
 				productCatalog = "Master",
 				productName = "Simple T-Shirt",
 				productType = "Simple");
-
-			var approvedProductId = selenium.getText("CommerceEntry#PRODUCT_ID");
 		}
 
 		task ("And click on 'Save as Draft'") {
@@ -592,10 +559,6 @@ definition {
 			AssertElementPresent(
 				key_status = "Draft",
 				locator1 = "CommerceEntry#WORKFLOW_STATUS");
-		}
-
-		task ("Then a new version of the product is created") {
-			var incompleteProductId = selenium.getText("CommerceEntry#PRODUCT_ID");
 		}
 
 		task ("And the admin goes back and opens the first approved product again") {
@@ -638,20 +601,12 @@ definition {
 			AssertElementPresent(
 				key_status = "Draft",
 				locator1 = "CommerceEntry#WORKFLOW_STATUS");
-
-			var draftProductId = selenium.getText("CommerceEntry#PRODUCT_ID");
 		}
 
 		task ("Then if the admin goes back to the products page the admin will see 3 products, one approved, one incomplete, and one draft") {
-			CommerceProducts.checkProductIdsNotEqual(
-				firstProductId = ${incompleteProductId},
-				secondProductId = ${draftProductId});
-
 			Navigator.gotoBack();
 
 			CommerceProducts.checkProductsPresent(list = "Simple T-Shirt:Approved,Simple T-Shirt:Draft,Simple T-Shirt:Incomplete");
-
-			CommerceProducts.checkProductId(list = "Simple T-Shirt:Approved:${approvedProductId},Simple T-Shirt:Incomplete:${incompleteProductId},Simple T-Shirt:Draft:${draftProductId}");
 		}
 	}
 

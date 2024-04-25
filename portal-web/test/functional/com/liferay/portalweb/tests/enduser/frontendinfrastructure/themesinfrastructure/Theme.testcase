@@ -1,4 +1,4 @@
-@component-name = "portal-platform-experience-and-design-system"
+@component-name = "portal-platform-experience"
 definition {
 
 	property portal.release = "true";
@@ -28,13 +28,11 @@ definition {
 	@refactordone
 	test CanBeAppliedToPage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		User.firstLoginPG();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "System",
-			panel = "Control Panel",
-			portlet = "App Manager");
+		AppManager.openAppManagerAdmin();
 
 		AppManager.uploadApp(
 			appName = "test-theme",
@@ -60,6 +58,7 @@ definition {
 	test CanBeAppliedToPageWhenClassicThemeNotAvailable {
 		property portal.upstream = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		AntCommands.runCommand("build-test.xml", "delete-portal-theme -Dtheme-name=classic-theme");
 
@@ -89,6 +88,7 @@ definition {
 	@refactordone
 	test CanBeDeactivatedAndReactivated {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var appName = "test-theme";
 
@@ -116,10 +116,7 @@ definition {
 
 		Theme.viewTestThemeBackgroundColor();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "System",
-			panel = "Control Panel",
-			portlet = "App Manager");
+		AppManager.openAppManagerAdmin();
 
 		Search.searchCP(searchTerm = ${appName});
 
@@ -139,10 +136,7 @@ definition {
 			pageName = "Theme Test Page",
 			themeName = "Classic");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "System",
-			panel = "Control Panel",
-			portlet = "App Manager");
+		AppManager.openAppManagerAdmin();
 
 		Search.searchCP(searchTerm = ${appName});
 
@@ -164,6 +158,7 @@ definition {
 	@refactordone
 	test CanBeUnInstalledAndRedeployed {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var appName = "test-theme";
 
@@ -191,10 +186,7 @@ definition {
 
 		Theme.viewTestThemeBackgroundColor();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "System",
-			panel = "Control Panel",
-			portlet = "App Manager");
+		AppManager.openAppManagerAdmin();
 
 		Search.searchCP(searchTerm = ${appName});
 

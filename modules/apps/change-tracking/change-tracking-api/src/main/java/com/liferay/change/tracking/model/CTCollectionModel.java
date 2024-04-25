@@ -7,6 +7,7 @@ package com.liferay.change.tracking.model;
 
 import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.ExternalReferenceCodeModel;
 import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.model.StagedModel;
@@ -28,7 +29,8 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface CTCollectionModel
-	extends BaseModel<CTCollection>, MVCCModel, ShardedModel, StagedModel {
+	extends BaseModel<CTCollection>, ExternalReferenceCodeModel, MVCCModel,
+			ShardedModel, StagedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -89,6 +91,7 @@ public interface CTCollectionModel
 	 * @return the external reference code of this ct collection
 	 */
 	@AutoEscape
+	@Override
 	public String getExternalReferenceCode();
 
 	/**
@@ -96,6 +99,7 @@ public interface CTCollectionModel
 	 *
 	 * @param externalReferenceCode the external reference code of this ct collection
 	 */
+	@Override
 	public void setExternalReferenceCode(String externalReferenceCode);
 
 	/**
@@ -189,6 +193,20 @@ public interface CTCollectionModel
 	public void setModifiedDate(Date modifiedDate);
 
 	/**
+	 * Returns the ct remote ID of this ct collection.
+	 *
+	 * @return the ct remote ID of this ct collection
+	 */
+	public long getCtRemoteId();
+
+	/**
+	 * Sets the ct remote ID of this ct collection.
+	 *
+	 * @param ctRemoteId the ct remote ID of this ct collection
+	 */
+	public void setCtRemoteId(long ctRemoteId);
+
+	/**
 	 * Returns the schema version ID of this ct collection.
 	 *
 	 * @return the schema version ID of this ct collection
@@ -231,6 +249,55 @@ public interface CTCollectionModel
 	 * @param description the description of this ct collection
 	 */
 	public void setDescription(String description);
+
+	/**
+	 * Returns the on demand user ID of this ct collection.
+	 *
+	 * @return the on demand user ID of this ct collection
+	 */
+	public long getOnDemandUserId();
+
+	/**
+	 * Sets the on demand user ID of this ct collection.
+	 *
+	 * @param onDemandUserId the on demand user ID of this ct collection
+	 */
+	public void setOnDemandUserId(long onDemandUserId);
+
+	/**
+	 * Returns the on demand user uuid of this ct collection.
+	 *
+	 * @return the on demand user uuid of this ct collection
+	 */
+	public String getOnDemandUserUuid();
+
+	/**
+	 * Sets the on demand user uuid of this ct collection.
+	 *
+	 * @param onDemandUserUuid the on demand user uuid of this ct collection
+	 */
+	public void setOnDemandUserUuid(String onDemandUserUuid);
+
+	/**
+	 * Returns the shareable of this ct collection.
+	 *
+	 * @return the shareable of this ct collection
+	 */
+	public boolean getShareable();
+
+	/**
+	 * Returns <code>true</code> if this ct collection is shareable.
+	 *
+	 * @return <code>true</code> if this ct collection is shareable; <code>false</code> otherwise
+	 */
+	public boolean isShareable();
+
+	/**
+	 * Sets whether this ct collection is shareable.
+	 *
+	 * @param shareable the shareable of this ct collection
+	 */
+	public void setShareable(boolean shareable);
 
 	/**
 	 * Returns the status of this ct collection.

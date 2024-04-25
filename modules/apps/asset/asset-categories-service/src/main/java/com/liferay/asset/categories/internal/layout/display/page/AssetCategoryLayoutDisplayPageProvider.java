@@ -10,9 +10,9 @@ import com.liferay.asset.kernel.service.AssetCategoryLocalService;
 import com.liferay.info.item.ClassPKInfoItemIdentifier;
 import com.liferay.info.item.InfoItemIdentifier;
 import com.liferay.info.item.InfoItemReference;
+import com.liferay.layout.display.page.BaseLayoutDisplayPageProvider;
 import com.liferay.layout.display.page.LayoutDisplayPageObjectProvider;
 import com.liferay.layout.display.page.LayoutDisplayPageProvider;
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.portlet.constants.FriendlyURLResolverConstants;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Portal;
@@ -25,11 +25,24 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(service = LayoutDisplayPageProvider.class)
 public class AssetCategoryLayoutDisplayPageProvider
-	implements LayoutDisplayPageProvider<AssetCategory> {
+	extends BaseLayoutDisplayPageProvider<AssetCategory> {
 
 	@Override
 	public String getClassName() {
 		return AssetCategory.class.getName();
+	}
+
+	@Override
+	public String getDefaultURLSeparator() {
+		return FriendlyURLResolverConstants.URL_SEPARATOR_ASSET_CATEGORY;
+	}
+
+	@Override
+	public LayoutDisplayPageObjectProvider<AssetCategory>
+		getLayoutDisplayPageObjectProvider(AssetCategory assetCategory) {
+
+		return new AssetCategoryLayoutDisplayPageObjectProvider(
+			assetCategory, _portal);
 	}
 
 	@Override
@@ -52,13 +65,8 @@ public class AssetCategoryLayoutDisplayPageProvider
 			return null;
 		}
 
-		try {
-			return new AssetCategoryLayoutDisplayPageObjectProvider(
-				assetCategory, _portal);
-		}
-		catch (PortalException portalException) {
-			throw new RuntimeException(portalException);
-		}
+		return new AssetCategoryLayoutDisplayPageObjectProvider(
+			assetCategory, _portal);
 	}
 
 	@Override
@@ -73,13 +81,8 @@ public class AssetCategoryLayoutDisplayPageProvider
 			return null;
 		}
 
-		try {
-			return new AssetCategoryLayoutDisplayPageObjectProvider(
-				assetCategory, _portal);
-		}
-		catch (PortalException portalException) {
-			throw new RuntimeException(portalException);
-		}
+		return new AssetCategoryLayoutDisplayPageObjectProvider(
+			assetCategory, _portal);
 	}
 
 	@Override
@@ -108,18 +111,8 @@ public class AssetCategoryLayoutDisplayPageProvider
 			return null;
 		}
 
-		try {
-			return new AssetCategoryLayoutDisplayPageObjectProvider(
-				parentCategory, _portal);
-		}
-		catch (PortalException portalException) {
-			throw new RuntimeException(portalException);
-		}
-	}
-
-	@Override
-	public String getURLSeparator() {
-		return FriendlyURLResolverConstants.URL_SEPARATOR_ASSET_CATEGORY;
+		return new AssetCategoryLayoutDisplayPageObjectProvider(
+			parentCategory, _portal);
 	}
 
 	@Override

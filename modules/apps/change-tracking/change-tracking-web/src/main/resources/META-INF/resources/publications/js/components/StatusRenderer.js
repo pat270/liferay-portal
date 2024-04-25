@@ -9,10 +9,14 @@ import React from 'react';
 function StatusRenderer(props) {
 	const getLabelType = (label) => {
 		switch (label) {
+			case 'denied':
 			case 'failed':
 				return 'label-danger';
 			case 'in-progress':
+			case 'pending':
+			case 'queued':
 				return 'label-info';
+			case 'approved':
 			case 'published':
 				return 'label-success';
 			default:

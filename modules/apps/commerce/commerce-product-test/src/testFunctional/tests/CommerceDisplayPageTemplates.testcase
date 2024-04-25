@@ -1,7 +1,7 @@
 @component-name = "portal-commerce"
 definition {
 
-	property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+	property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property release.feature.flags.disable.DISABLE_PRIVATE_LAYOUTS = "true";
@@ -37,7 +37,7 @@ definition {
 
 		task ("When a new Commerce Product type Display Page Template is created") {
 			JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
-				contentType = "Commerce Product",
+				contentType = "Product",
 				displayPageTemplateEntryName = "Test Commerce Product Display Page Template",
 				groupName = "Minium");
 		}
@@ -101,7 +101,7 @@ definition {
 
 		task ("Given a new default Commerce Product type display page template") {
 			JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
-				contentType = "Commerce Product",
+				contentType = "Product",
 				displayPageTemplateEntryName = "Test Commerce Product Display Page Template",
 				groupName = "Minium");
 		}
@@ -178,7 +178,7 @@ definition {
 
 		task ("Given a new Commerce Product type display page template marked as default") {
 			JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
-				contentType = "Commerce Product",
+				contentType = "Product",
 				displayPageTemplateEntryName = "Test Commerce Product Display Page Template",
 				groupName = "Minium");
 
@@ -267,7 +267,7 @@ definition {
 
 		task ("Given a new Commerce Product type display page template marked as default") {
 			JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
-				contentType = "Commerce Product",
+				contentType = "Product",
 				displayPageTemplateEntryName = "Test Commerce Product Display Page Template",
 				groupName = "Minium");
 
@@ -346,6 +346,75 @@ definition {
 		}
 	}
 
+	@description = "This is a test for COMMERCE-12950. As an admin I can view the correct format for the Description in the Paragraph Fragment in a Display Page Template"
+	@priority = 3
+	test CanDisplayCorrectDesriptionOnParagraphFragment {
+		property portal.acceptance = "false";
+
+		task ("Given a new product is created") {
+			CommerceJSONProductsAPI._addCommerceProduct(
+				catalogName = "Minium",
+				neverExpire = "false",
+				productDescription = "Full Description",
+				productName = "Simple Product",
+				productType = "Simple",
+				shortDescription = "Short Description");
+		}
+
+		task ("And a new Display Page Template for Commerce Product is created") {
+			JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
+				contentType = "Product",
+				displayPageTemplateEntryName = "Master Page Blank",
+				groupName = "Minium");
+		}
+
+		task ("And the Paragraph Display fragment is deployed on the page") {
+			DisplayPageTemplate.addFragment(
+				collectionName = "Basic Components",
+				displayPageName = "Master Page Blank",
+				fragmentName = "Paragraph",
+				publish = "false",
+				siteURLKey = "minium");
+		}
+
+		task ("When the admin user goes to Paragraph Mappping") {
+			PageEditorMapping.gotoEditableFieldMapping(
+				fragmentName = "Paragraph",
+				id = "element-text");
+		}
+
+		task ("And Source, Item and Field are correctly filled") {
+			Click(
+				key_fieldLabel = "Source",
+				locator1 = "Select#GENERIC_SELECT_FIELD");
+
+			Select(
+				key_fieldLabel = "Source",
+				locator1 = "Select#GENERIC_SELECT_FIELD",
+				value1 = "Specific Content");
+
+			PageEditorMapping.mapEditableFieldToAsset(
+				entryTitle = "Simple Product",
+				navItem = "Products");
+
+			WaitForEditable(locator1 = "PageEditorEditableLink#FIELD");
+
+			Select(
+				locator1 = "PageEditorEditableLink#FIELD",
+				value1 = "Description");
+		}
+
+		task ("Then the Description is correctly formatted") {
+			AssertElementPresent(
+				key_text = "Full Description",
+				locator1 = "Fragment#EDITABLE_FIELD_CONTENT");
+
+			AssertElementNotPresent(
+				key_text = "<p>Full Description<p>",
+				locator1 = "Fragment#EDITABLE_FIELD_CONTENT");
+		}
+	}
+
 	@description = "COMMERCE-11201. Can display related diagram using Diagram Card list item style"
 	@priority = 5
 	test CanDisplayRelatedDiagramsWithDiagramCardListItemStyle {
@@ -393,7 +462,7 @@ definition {
 
 		task ("And a new Commerce Product type Display Page Template is created") {
 			JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
-				contentType = "Commerce Product",
+				contentType = "Product",
 				displayPageTemplateEntryName = "Test Commerce Product Display Page Template",
 				groupName = "Minium");
 		}
@@ -486,7 +555,7 @@ definition {
 
 		task ("And a new Display Page Template for Commerce Product is created") {
 			JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
-				contentType = "Commerce Product",
+				contentType = "Product",
 				displayPageTemplateEntryName = "Product DPT",
 				groupName = "Minium");
 		}
@@ -576,7 +645,7 @@ definition {
 
 		task ("Given a new Commerce Product type display page template with fragment created and mapped with the Basic Information fields") {
 			CommerceDisplayPageTemplates.addMappedDisplayPageTemplateEntry(
-				contentType = "Commerce Product",
+				contentType = "Product",
 				displayPageName = "Test Commerce Product Display Page Template",
 				fieldsList = "Availability Status,Description,Final Price,Inventory,Name,Product Type,Short Description,SKU,Author Name",
 				fragmentName = "Heading",
@@ -586,9 +655,7 @@ definition {
 		}
 
 		task ("And a product updated") {
-			CommerceNavigator.gotoPortlet(
-				category = "Product Management",
-				portlet = "Products");
+			CommerceProducts.openProductsAdmin();
 
 			CommerceProducts.searchProduct(search = "U-Joint");
 
@@ -659,9 +726,7 @@ definition {
 		}
 
 		task ("And some categories of the new vocabulary are selected inside a product (e.g. ABS Sensor)") {
-			CommerceNavigator.gotoPortlet(
-				category = "Product Management",
-				portlet = "Products");
+			CommerceProducts.openProductsAdmin();
 
 			Click(
 				key_entryName = "ABS Sensor",
@@ -686,7 +751,7 @@ definition {
 
 		task ("And a new Commerce Product type Display Page Template is created") {
 			JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
-				contentType = "Commerce Product",
+				contentType = "Product",
 				displayPageTemplateEntryName = "Test Commerce Product Display Page Template",
 				groupName = "Minium");
 		}
@@ -708,8 +773,6 @@ definition {
 		}
 
 		task ("And the buyer logs in") {
-			ApplicationsMenu.gotoSite(site = "Minium");
-
 			User.logoutPG();
 
 			CommerceLogin.miniumLogin(
@@ -725,7 +788,15 @@ definition {
 				key_productName = "ABS Sensor",
 				locator1 = "CommerceAccelerators#PRODUCT_CARD_NAME");
 
-			CommerceDisplayPageTemplates.viewMappedFragmentsText(fragmentsTextList = "Category 1,Category 2,Topic Category,Brake System");
+			CommerceDisplayPageTemplates.viewMappedFragmentsText(fragmentsTextList = "Brake System,Topic Category");
+
+			for (var fragmentText : list "Category 1,Category 2") {
+				AssertElementPresent(
+					index = 3,
+					key_fragmentText = ${fragmentText},
+					key_id = "element-text",
+					locator1 = "CommerceEntry#ASSERT_FRAGMENTS_TEXT_IN_SF_N");
+			}
 		}
 	}
 
@@ -738,7 +809,7 @@ definition {
 
 		task ("Given a new Commerce Product type display page template with fragment created and mapped with the Delivery Subscription related fields") {
 			CommerceDisplayPageTemplates.addMappedDisplayPageTemplateEntry(
-				contentType = "Commerce Product",
+				contentType = "Product",
 				displayPageName = "Test Commerce Product Display Page Template",
 				fieldsList = "Delivery Subscription Enabled,Delivery Subscription Length,Delivery Subscription Type,Delivery Subscription Type Settings",
 				fragmentName = "Heading",
@@ -748,10 +819,7 @@ definition {
 		}
 
 		task ("And a product with Delivery Subscription") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Product Management",
-				panel = "Commerce",
-				portlet = "Products");
+			CommerceProducts.openProductsAdmin();
 
 			CommerceNavigator.searchEntry(entryName = ${productName});
 
@@ -804,7 +872,7 @@ definition {
 
 		task ("Given a new Commerce Product type display page template with fragment created and mapped with the Detailed Information fields") {
 			CommerceDisplayPageTemplates.addMappedDisplayPageTemplateEntry(
-				contentType = "Commerce Product",
+				contentType = "Product",
 				displayPageName = "Test Commerce Product Display Page Template",
 				fieldsList = "Account Group Filter Enabled,Channel Filter Enabled,Create Date,Status,Tax Exempt,Telco or Electronics,Version",
 				fragmentName = "Heading",
@@ -831,7 +899,7 @@ definition {
 				jsonPath = "$.['createDate']",
 				productName = "Simple Product");
 
-			var productCreateDate = DateUtil.format(${productCreateDate}, "yyyy-MM-dd'T'HH:mm:ss'Z'", "M/d/yy h:m a");
+			var productCreateDate = DateUtil.format(${productCreateDate}, "yyyy-MM-dd'T'HH:mm:ss'Z'", "M/d/yy h:mm a");
 
 			CommerceDisplayPageTemplates.viewMappedFragmentsText(fragmentsTextList = "false,false,${productCreateDate},0,false,false,1");
 		}
@@ -856,9 +924,9 @@ definition {
 
 		task ("Given a new Commerce Product type display page template with fragment created and mapped with the Display Page and Schedule related fields") {
 			CommerceDisplayPageTemplates.addMappedDisplayPageTemplateEntry(
-				contentType = "Commerce Product",
+				contentType = "Product",
 				displayPageName = "Test Commerce Product Display Page Template",
-				fieldsList = "Display Page URL,Display Date,Expiration Date",
+				fieldsList = "Default,Display Date,Expiration Date",
 				fragmentName = "Heading",
 				groupName = "Minium",
 				menuItem = "Mark as Default",
@@ -881,7 +949,7 @@ definition {
 		task ("Then verifies the mapped fragments are visible") {
 			var baseURL = PropsUtil.get("portal.url");
 
-			CommerceDisplayPageTemplates.viewMappedFragmentsText(fragmentsTextList = "${baseURL}/web/minium/p/simple-product,1/1/23 1:01 AM,1/1/24 1:01 AM");
+			CommerceDisplayPageTemplates.viewMappedFragmentsText(fragmentsTextList = "${baseURL}/web/minium/p/simple-product,1/1/24 1:01 AM,1/1/25 1:01 AM");
 		}
 	}
 
@@ -894,7 +962,7 @@ definition {
 
 		task ("Given a new Commerce Product type display page template with fragment created and mapped with the Payment Subscription related fields") {
 			CommerceDisplayPageTemplates.addMappedDisplayPageTemplateEntry(
-				contentType = "Commerce Product",
+				contentType = "Product",
 				displayPageName = "Test Commerce Product Display Page Template",
 				fieldsList = "Subscription Enabled,Subscription Length,Subscription Type,Subscription Type Settings",
 				fragmentName = "Heading",
@@ -904,10 +972,7 @@ definition {
 		}
 
 		task ("And a product with Payment Subscription") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Product Management",
-				panel = "Commerce",
-				portlet = "Products");
+			CommerceProducts.openProductsAdmin();
 
 			CommerceNavigator.searchEntry(entryName = ${productName});
 
@@ -961,7 +1026,7 @@ definition {
 
 		task ("And a new Commerce Product type Display Page Template is created") {
 			JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
-				contentType = "Commerce Product",
+				contentType = "Product",
 				displayPageTemplateEntryName = "Test Commerce Product Display Page Template",
 				groupName = "Minium");
 		}
@@ -1033,31 +1098,23 @@ definition {
 		var customField2Desc = "Custom Field Two Text";
 
 		task ("Given the admin already create the custom field 'Commerce Product' as text area") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Configuration",
-				panel = "Control Panel",
-				portlet = "Custom Fields");
+			CustomFields.openCustomFieldAdmin();
 
-			CustomFields.addCP(
+			CommerceConfiguration.addCP(
 				customFieldName = ${customField1Name},
 				customFieldType = "Text Area",
-				resourceName = "Commerce Product");
+				resourceName = "Product");
 
-			ApplicationsMenu.gotoPortlet(
-				category = "Configuration",
-				panel = "Control Panel",
-				portlet = "Custom Fields");
+			CustomFields.openCustomFieldAdmin();
 
-			CustomFields.addCP(
+			CommerceConfiguration.addCP(
 				customFieldName = ${customField2Name},
 				customFieldType = "Text Area",
-				resourceName = "Commerce Product");
+				resourceName = "Product");
 		}
 
 		task ("And add 'Test Commerce Product Custom Field' inside the text area for the custom field for ABS Sensor") {
-			CommerceNavigator.gotoPortlet(
-				category = "Product Management",
-				portlet = "Products");
+			CommerceProducts.openProductsAdmin();
 
 			Click(
 				key_entryName = "ABS Sensor",
@@ -1078,7 +1135,7 @@ definition {
 
 		task ("When a new Commerce Product type Display Page Template is created") {
 			JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
-				contentType = "Commerce Product",
+				contentType = "Product",
 				displayPageTemplateEntryName = "Test Commerce Product Display Page Template",
 				groupName = "Minium");
 		}
@@ -1160,7 +1217,7 @@ definition {
 
 		task ("And a new Commerce Product type Display Page Template is created") {
 			JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
-				contentType = "Commerce Product",
+				contentType = "Product",
 				displayPageTemplateEntryName = "Test Commerce Product Display Page Template",
 				groupName = "Minium");
 		}
@@ -1248,7 +1305,7 @@ definition {
 
 		task ("And a new Display Page Template for Commerce Product is created") {
 			JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
-				contentType = "Commerce Product",
+				contentType = "Product",
 				displayPageTemplateEntryName = "Test Commerce Product Display Page Template",
 				groupName = "Minium");
 		}
@@ -1359,7 +1416,7 @@ definition {
 
 		task ("Given a new Commerce Product type display page template with fragment created and mapped with the Shipping related fields") {
 			CommerceDisplayPageTemplates.addMappedDisplayPageTemplateEntry(
-				contentType = "Commerce Product",
+				contentType = "Product",
 				displayPageName = "Test Commerce Product Display Page Template",
 				fieldsList = "Free Shipping,Shippable,Shipping Extra Price,Ship Separately,Depth,Height,Weight,Width",
 				fragmentName = "Heading",
@@ -1393,7 +1450,7 @@ definition {
 
 		task ("Given a new Commerce Product type display page template is created") {
 			JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
-				contentType = "Commerce Product",
+				contentType = "Product",
 				displayPageTemplateEntryName = "Test Commerce Product Display Page Template",
 				groupName = "Minium");
 		}
@@ -1492,7 +1549,7 @@ definition {
 
 		task ("Given a Commerce Product type display page template with fragments is created and mapped with fields") {
 			CommerceDisplayPageTemplates.addMappedDisplayPageTemplateEntry(
-				contentType = "Commerce Product",
+				contentType = "Product",
 				displayPageName = "Test Commerce Product DPT",
 				fieldsList = "Availability Status,Inventory,Name",
 				fragmentName = "Heading",
@@ -1502,7 +1559,7 @@ definition {
 
 		task ("And a second Commerce Product type display page template with fragments created and mapped with fields and marked as default") {
 			CommerceDisplayPageTemplates.addMappedDisplayPageTemplateEntry(
-				contentType = "Commerce Product",
+				contentType = "Product",
 				displayPageName = "New Commerce Product DPT",
 				fieldsList = "Name,SKU",
 				fragmentName = "Heading",
@@ -1563,7 +1620,7 @@ definition {
 
 		task ("Given a new Commerce Product type display page template with fragments created with mapped fields") {
 			CommerceDisplayPageTemplates.addMappedDisplayPageTemplateEntry(
-				contentType = "Commerce Product",
+				contentType = "Product",
 				displayPageName = "Test Commerce Product DPT",
 				fieldsList = "Availability Status,Inventory,Name",
 				fragmentName = "Heading",
@@ -1627,7 +1684,7 @@ definition {
 
 		task ("Given a new Commerce Product type display page template with fragments created with mapped fields") {
 			CommerceDisplayPageTemplates.addMappedDisplayPageTemplateEntry(
-				contentType = "Commerce Product",
+				contentType = "Product",
 				displayPageName = "Test Commerce Product DPT",
 				fieldsList = "Availability Status,Inventory,Name",
 				fragmentName = "Heading",
@@ -1702,7 +1759,7 @@ definition {
 		}
 
 		task ("When admin removes the DPT product") {
-			CommerceEntry.deleteCommerceEntry(key_value = "Bearings");
+			CommerceEntry.deleteCommerceEntry(entryName = "Bearings");
 
 			CommerceEntry.assertNoDisplayPageOverride(
 				entryName = "Bearings",
@@ -1728,79 +1785,6 @@ definition {
 		}
 	}
 
-	@description = "Verify that order fields values are mapped to fragments."
-	@priority = 5
-	test CanUseCommerceOrderFieldsWithFragments {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false${line.separator}feature.flag.COMMERCE-9410=true";
-		property portal.acceptance = "true";
-
-		task ("Given buyer user logs in and completes an order with checkout") {
-			User.logoutPG();
-
-			CommerceLogin.miniumLogin(
-				password = "test",
-				urlAppend = "web/minium",
-				userEmailAddress = "buyer@liferay.com");
-
-			FrontStore.addInitializerProductToCart(
-				productName = "U-Joint",
-				productQuantity = 1);
-
-			CommerceCheckout.gotoCheckoutViaMiniCart();
-
-			CommerceCheckout.initializersCheckout(
-				newAddressAddress = "Test Address",
-				newAddressCity = "Test City",
-				newAddressCountry = "United States",
-				newAddressName = "Address Name",
-				newAddressZipCode = "Test Zip Code",
-				productName = "U-Joint",
-				productQuantity = 1,
-				productUnitPrice = 24,
-				shippingMethod = "Standard");
-
-			User.logoutAndLoginPG(
-				userLoginEmailAddress = "test@liferay.com",
-				userLoginFullName = "Test Test");
-		}
-
-		task ("And a new Commerce Order type display page template with fragments is created and mapped with the order related fields") {
-			CommerceDisplayPageTemplates.addMappedDisplayPageTemplateEntry(
-				contentType = "Commerce Order",
-				displayPageName = "Test Commerce Order Display Page Template",
-				fieldsList = "Account Name,Order Status,User Name,Formatted Total Amount,Approved",
-				fragmentName = "Heading",
-				groupName = "Minium",
-				siteURLKey = "minium");
-		}
-
-		task ("And 'Select Other Item...' is clicked from the dropdown of 'Preview With' and the placed order is chosen from the Orders tab") {
-			DisplayPageTemplatesAdmin.gotoDisplayPage(displayPageName = "Test Commerce Order Display Page Template");
-
-			Click(locator1 = "ControlMenu#DISPLAY_PAGE_PREVIEW_ITEM_SELECTOR");
-
-			DropdownMenuItem.click(menuItem = "Select Other Item");
-
-			SelectFrame.selectFrameNoLoading(locator1 = "IFrame#MODAL_BODY");
-
-			var orderId = CommerceJSONOrdersAPI._getCommerceOrder();
-
-			Click(
-				key_entryName = ${orderId},
-				locator1 = "ObjectAdmin#VIEW_ENTRY_NAME_ON_PAGE");
-		}
-
-		task ("Then it is verified that the mapped fragments for that order are listed") {
-			SelectFrameTop();
-
-			for (var entry : list "Commerce Account,1,Buyer User,$ 39.00,true") {
-				AssertElementPresent(
-					key_text = ${entry},
-					locator1 = "Fragment#EDITABLE_FIELD_CONTENT");
-			}
-		}
-	}
-
 	@description = "Verify a product's images can be viewed via an Image Gallery fragment deployed on a default Commerce Product Display Page Template."
 	@priority = 5
 	test CanViewProductImagesUsingImageGalleryFragment {
@@ -1808,7 +1792,7 @@ definition {
 
 		task ("Given a new default Commerce Product type display page template") {
 			JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
-				contentType = "Commerce Product",
+				contentType = "Product",
 				displayPageTemplateEntryName = "Test Commerce Product Display Page Template",
 				groupName = "Minium");
 		}
@@ -1886,13 +1870,13 @@ definition {
 		task ("Then the Image Gallery fragment is present") {
 			WaitForElementPresent(
 				key_fsProductImage = "Black",
-				locator1 = "CommerceFrontStore#FS_IMAGE_GALLERY_MAIN_IMAGE");
+				locator1 = "CommerceFrontStore#FS_PRODUCT_IMAGE");
 		}
 
 		task ("And it is possible to use its functionalities(previous arrow, next arrow, select from the list of images, image overlay)") {
 			Click(
 				key_fsProductImage = "Black",
-				locator1 = "CommerceFrontStore#FS_IMAGE_GALLERY_MAIN_IMAGE");
+				locator1 = "CommerceFrontStore#FS_PRODUCT_IMAGE");
 
 			AssertElementPresent(
 				key_fsProductImage = "Black",
@@ -1904,19 +1888,19 @@ definition {
 
 			AssertElementPresent(
 				key_fsProductImage = "Black",
-				locator1 = "CommerceFrontStore#FS_IMAGE_GALLERY_MAIN_IMAGE");
+				locator1 = "CommerceFrontStore#FS_PRODUCT_IMAGE");
 
 			Click(locator1 = "CommerceFrontStore#FS_IMAGE_GALLERY_ARROW_NEXT");
 
 			AssertElementPresent(
 				key_fsProductImage = "Minium_ProductImage",
-				locator1 = "CommerceFrontStore#FS_IMAGE_GALLERY_MAIN_IMAGE");
+				locator1 = "CommerceFrontStore#FS_PRODUCT_IMAGE");
 
 			Click(locator1 = "CommerceFrontStore#FS_IMAGE_GALLERY_ARROW_PREV");
 
 			AssertElementPresent(
 				key_fsProductImage = "Black",
-				locator1 = "CommerceFrontStore#FS_IMAGE_GALLERY_MAIN_IMAGE");
+				locator1 = "CommerceFrontStore#FS_PRODUCT_IMAGE");
 
 			Click(
 				key_fsProductImage = "Minium_ProductImage",
@@ -1924,7 +1908,7 @@ definition {
 
 			AssertElementPresent(
 				key_fsProductImage = "Minium_ProductImage",
-				locator1 = "CommerceFrontStore#FS_IMAGE_GALLERY_MAIN_IMAGE");
+				locator1 = "CommerceFrontStore#FS_PRODUCT_IMAGE");
 
 			Click(
 				key_fsProductImage = "Black",
@@ -1932,7 +1916,7 @@ definition {
 
 			AssertElementPresent(
 				key_fsProductImage = "Black",
-				locator1 = "CommerceFrontStore#FS_IMAGE_GALLERY_MAIN_IMAGE");
+				locator1 = "CommerceFrontStore#FS_PRODUCT_IMAGE");
 		}
 	}
 

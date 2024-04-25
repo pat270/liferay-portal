@@ -17,14 +17,14 @@ import com.liferay.bulk.rest.dto.v1_0.TaxonomyVocabulary;
 import com.liferay.bulk.rest.internal.selection.v1_0.DocumentBulkSelectionFactory;
 import com.liferay.bulk.rest.resource.v1_0.TaxonomyVocabularyResource;
 import com.liferay.bulk.selection.BulkSelection;
+import com.liferay.depot.group.provider.SiteConnectedGroupGroupProvider;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.portal.kernel.change.tracking.CTAware;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.security.permission.BaseModelPermissionCheckerUtil;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionUtil;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
-import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.vulcan.pagination.Page;
 
 import java.util.ArrayList;
@@ -62,7 +62,7 @@ public class TaxonomyVocabularyResourceImpl
 			transform(
 				assetCategoriesMap.entrySet(),
 				entry -> _toTaxonomyVocabulary(
-					entry.getValue(), entry.getKey())));
+					entry.getValue(), entry.getKey(), siteId)));
 	}
 
 	private Set<AssetCategory> _getAssetCategories(
@@ -82,7 +82,7 @@ public class TaxonomyVocabularyResourceImpl
 
 		assetEntryBulkSelection.forEach(
 			assetEntry -> {
-				if (BaseModelPermissionCheckerUtil.containsBaseModelPermission(
+				if (ModelResourcePermissionUtil.contains(
 						permissionChecker, assetEntry.getGroupId(),
 						assetEntry.getClassName(), assetEntry.getClassPK(),
 						ActionKeys.UPDATE)) {
@@ -145,7 +145,8 @@ public class TaxonomyVocabularyResourceImpl
 
 		for (AssetVocabulary assetVocabulary :
 				_assetVocabularyLocalService.getGroupVocabularies(
-					_portal.getCurrentAndAncestorSiteGroupIds(siteId))) {
+					_siteConnectedGroupGroupProvider.
+						getCurrentAndAncestorSiteAndDepotGroupIds(siteId))) {
 
 			if (!assetVocabulary.isAssociatedToClassNameId(_getClassNameId())) {
 				continue;
@@ -168,25 +169,29 @@ public class TaxonomyVocabularyResourceImpl
 	}
 
 	private TaxonomyVocabulary _toTaxonomyVocabulary(
-		List<AssetCategory> assetCategories, AssetVocabulary assetVocabulary) {
+		List<AssetCategory> assetCategories, AssetVocabulary assetVocabulary,
+		long siteId) {
 
 		return new TaxonomyVocabulary() {
 			{
-				multiValued = assetVocabulary.isMultiValued();
-				name = assetVocabulary.getName();
-				required = assetVocabulary.isRequired(
-					_getClassNameId(),
-					AssetCategoryConstants.ALL_CLASS_TYPE_PK);
-				taxonomyCategories = transformToArray(
-					assetCategories,
-					assetCategory -> new TaxonomyCategory() {
-						{
-							taxonomyCategoryId = assetCategory.getCategoryId();
-							taxonomyCategoryName = assetCategory.getName();
-						}
-					},
-					TaxonomyCategory.class);
-				taxonomyVocabularyId = assetVocabulary.getVocabularyId();
+				setMultiValued(assetVocabulary::isMultiValued);
+				setName(assetVocabulary::getName);
+				setRequired(
+					() -> assetVocabulary.isRequired(
+						_getClassNameId(),
+						AssetCategoryConstants.ALL_CLASS_TYPE_PK, siteId));
+				setTaxonomyCategories(
+					() -> transformToArray(
+						assetCategories,
+						assetCategory -> new TaxonomyCategory() {
+							{
+								setTaxonomyCategoryId(
+									assetCategory::getCategoryId);
+								setTaxonomyCategoryName(assetCategory::getName);
+							}
+						},
+						TaxonomyCategory.class));
+				setTaxonomyVocabularyId(assetVocabulary::getVocabularyId);
 			}
 		};
 	}
@@ -204,6 +209,6 @@ public class TaxonomyVocabularyResourceImpl
 	private DocumentBulkSelectionFactory _documentBulkSelectionFactory;
 
 	@Reference
-	private Portal _portal;
+	private SiteConnectedGroupGroupProvider _siteConnectedGroupGroupProvider;
 
 }

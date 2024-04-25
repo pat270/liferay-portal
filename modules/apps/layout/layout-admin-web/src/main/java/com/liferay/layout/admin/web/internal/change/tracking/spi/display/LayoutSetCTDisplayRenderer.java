@@ -14,7 +14,7 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.service.permission.GroupPermission;
+import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -22,7 +22,6 @@ import com.liferay.portal.kernel.util.WebKeys;
 import java.util.Locale;
 
 import javax.portlet.PortletRequest;
-import javax.portlet.PortletURL;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -47,32 +46,26 @@ public class LayoutSetCTDisplayRenderer
 
 		Group group = layoutSet.getGroup();
 
-		if (!_groupPermission.contains(
+		if (!GroupPermissionUtil.contains(
 				themeDisplay.getPermissionChecker(), group,
 				ActionKeys.UPDATE)) {
 
 			return null;
 		}
 
-		PortletURL portletURL = PortletURLBuilder.create(
+		return PortletURLBuilder.create(
 			_portal.getControlPanelPortletURL(
 				httpServletRequest, group, LayoutAdminPortletKeys.GROUP_PAGES,
 				0, 0, PortletRequest.RENDER_PHASE)
 		).setMVCRenderCommandName(
 			"/layout_admin/edit_layout_set"
-		).buildPortletURL();
-
-		String currentURL = _portal.getCurrentURL(httpServletRequest);
-
-		portletURL.setParameter("redirect", currentURL);
-		portletURL.setParameter("backURL", currentURL);
-
-		portletURL.setParameter(
-			"groupId", String.valueOf(layoutSet.getGroupId()));
-		portletURL.setParameter(
-			"privateLayout", String.valueOf(layoutSet.isPrivateLayout()));
-
-		return portletURL.toString();
+		).setRedirect(
+			_portal.getCurrentURL(httpServletRequest)
+		).setParameter(
+			"groupId", layoutSet.getGroupId()
+		).setParameter(
+			"privateLayout", layoutSet.isPrivateLayout()
+		).buildString();
 	}
 
 	@Override
@@ -98,9 +91,6 @@ public class LayoutSetCTDisplayRenderer
 	public String getTypeName(Locale locale) {
 		return _language.get(locale, "page-set");
 	}
-
-	@Reference
-	private GroupPermission _groupPermission;
 
 	@Reference
 	private Language _language;

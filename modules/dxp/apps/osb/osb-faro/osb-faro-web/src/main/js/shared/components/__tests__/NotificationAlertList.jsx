@@ -2,7 +2,6 @@ import * as API from 'shared/api';
 import * as data from 'test/data';
 import mockStore from 'test/mock-store';
 import NotificationAlertList from '../NotificationAlertList';
-import Promise from 'metal-promise';
 import React from 'react';
 import {fireEvent, render} from '@testing-library/react';
 import {Provider} from 'react-redux';
@@ -10,6 +9,12 @@ import {range} from 'lodash';
 import {StaticRouter} from 'react-router';
 
 jest.unmock('react-dom');
+
+jest.mock('shared/hooks/useTimeZone', () => ({
+	useTimeZone: () => ({
+		displayTimeZone: 'UTC -03:00 Brasilia Time (America/Recife)'
+	})
+}));
 
 const defaultProps = {
 	data: range(1).map(i => data.mockNotification(i)),
@@ -51,7 +56,7 @@ describe('NotificationAlertList', () => {
 		fireEvent.click(container.querySelector('.close'));
 
 		expect(
-			queryByText('Workspace timezone has changed to  as of today')
+			queryByText('Workspace timezone has changed to as of today')
 		).toBeNull();
 	});
 });

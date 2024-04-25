@@ -6,12 +6,18 @@
 /// <reference types="react" />
 
 import {SidebarCategory} from '@liferay/object-js-components-web';
+import {ILearnResourceContext} from 'frontend-js-components-web';
 interface EditObjectValidationProps {
+	allowScriptContentToBeExecutedOrIncluded: boolean;
+	baseResourceURL: string;
 	creationLanguageId: Liferay.Language.Locale;
+	learnResources: ILearnResourceContext;
+	objectDefinitionExternalReferenceCode: string;
 	objectDefinitionId: number;
 	objectValidationRuleElements: SidebarCategory[];
 	objectValidationRuleId: number;
 	readOnly: boolean;
+	scriptManagementConfigurationPortletURL: string;
 }
 export interface PartialValidationFields {
 	id: number;
@@ -20,10 +26,15 @@ export interface PartialValidationFields {
 	value: string;
 }
 export default function EditObjectValidation({
+	allowScriptContentToBeExecutedOrIncluded,
+	baseResourceURL,
 	creationLanguageId,
+	learnResources,
+	objectDefinitionExternalReferenceCode,
 	objectDefinitionId,
 	objectValidationRuleElements,
 	objectValidationRuleId,
 	readOnly,
+	scriptManagementConfigurationPortletURL,
 }: EditObjectValidationProps): JSX.Element;
 export {};

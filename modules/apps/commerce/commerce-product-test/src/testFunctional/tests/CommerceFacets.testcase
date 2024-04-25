@@ -1,7 +1,7 @@
 @component-name = "portal-commerce"
 definition {
 
-	property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+	property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Shopping Experience";
@@ -64,11 +64,10 @@ definition {
 				locator1 = "Search#FACET_TERM_FREQUENCIES",
 				value1 = 2);
 
-			AssertTextEquals.assertPartialText(
+			AssertElementNotPresent(
 				key_facetType = "Price Range Facet",
 				key_termValue = "$ 1,000.00+",
-				locator1 = "Search#FACET_TERM_FREQUENCIES",
-				value1 = 0);
+				locator1 = "Search#FACET_TERM_FREQUENCIES");
 		}
 
 		task ("And then the user is able to filter products using the first two ranges on the newly set Price Range Facet widget") {
@@ -288,10 +287,10 @@ definition {
 		}
 
 		task ("Then the user is able to uncheck selections using Clear button") {
-			SearchFacetPortlet.clearFacet();
+			SearchFacets.clearFacet();
 
 			for (var searchFieldValue : list "48,112") {
-				FormViewBuilder.viewCheckboxNotChecked(
+				CommerceWidget.viewCheckboxNotChecked(
 					fieldName = "Option Facet",
 					fieldValue = ${searchFieldValue});
 			}
@@ -314,10 +313,10 @@ definition {
 		}
 
 		task ("Then the user is able to uncheck selections using Clear button") {
-			SearchFacetPortlet.clearFacet();
+			SearchFacets.clearFacet();
 
 			for (var searchFieldValue : list "Steel,Rubber") {
-				FormViewBuilder.viewCheckboxNotChecked(
+				CommerceWidget.viewCheckboxNotChecked(
 					fieldName = "Specification Facet",
 					fieldValue = ${searchFieldValue});
 			}
@@ -340,10 +339,10 @@ definition {
 		}
 
 		task ("Then the user is able to uncheck selections using Clear button") {
-			SearchFacetPortlet.clearFacet();
+			SearchFacets.clearFacet();
 
 			for (var searchFieldValue : list "$ 0.00 - $ 49.99,$ 50.00 - $ 99.99") {
-				FormViewBuilder.viewCheckboxNotChecked(
+				CommerceWidget.viewCheckboxNotChecked(
 					fieldName = "Price Range Facet",
 					fieldValue = ${searchFieldValue});
 			}
@@ -451,6 +450,46 @@ definition {
 					key_productName = ${productName},
 					locator1 = "CommerceAccelerators#PRODUCT_CARD_NAME");
 			}
+		}
+	}
+
+	@description = "COMMERCE-12603. As a admin, I want to filter products using Specification Facet widget and the URL updates accordingly"
+	@priority = 5
+	test CanFilterProductsBySpecificationFacetAndURLUpdatesAccordingly {
+		property portal.acceptance = "true";
+
+		task ("Given the admin sets as 'facetable' all the specifications created with minium") {
+			CommerceNavigator.goToSpecificationsAdmin();
+
+			Click(
+				key_entry = "Dimensions",
+				locator1 = "CommerceNavigation#ANY_ENTRY_NAME");
+
+			Check.checkNotVisible(
+				key_toggleSwitchLabel = "Use in Faceted Navigation",
+				locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+
+			Button.clickSave();
+		}
+
+		task ("And the filter is set") {
+			ApplicationsMenu.gotoSite(site = "Minium");
+
+			Check.checkToggleSwitch(
+				key_fieldName = '''7" x 5.6" x 2"''',
+				locator1 = "FormFields#CHECKBOX");
+		}
+
+		task ("Then all of the products are correctly shown and the URL is updated with the filter") {
+			var portalURL = JSONCompany.getPortalURL();
+
+			for (var productName : list "U-Joint,Drive Shafts,Hub Bearing Assembly - Rear,ABS Sensor,Oil Pump,Lift Support,") {
+				AssertElementPresent(
+					key_productName = ${productName},
+					locator1 = "CommerceAccelerators#PRODUCT_CARD_NAME");
+			}
+
+			AssertLocation(value1 = "${portalURL}/web/minium/catalog?dimensions=7%22%20x%205.6%22%20x%202%22");
 		}
 	}
 
@@ -653,7 +692,7 @@ definition {
 		}
 
 		task ("When the buyer selects the price range for the new sku's price") {
-			SearchFacetPortlet.clearFacet();
+			SearchFacets.clearFacet();
 
 			Check.checkToggleSwitch(
 				key_fieldName = "$ 500.00 - $ 999.99",
@@ -674,6 +713,107 @@ definition {
 				key_productName = "ABS Sensor",
 				key_productSku = "MIN93015",
 				locator1 = "CommerceEntry#PRODUCT_CARD_SKU");
+		}
+	}
+
+	@description = "COMMERCE-12191 | Specification Facet works when searching products with specifications."
+	@priority = 5
+	test CanSpecificationFacetWorkWhenSearchingProducts {
+		property portal.acceptance = "true";
+
+		task ("Given the admin sets as 'facetable' all the specifications created with minium") {
+			CommerceNavigator.gotoPortlet(
+				category = "Product Management",
+				portlet = "Specifications");
+
+			for (var specificationTitle : list "Quantity,Dimensions,Weight,Height,Length,Width") {
+				Click(
+					key_entry = ${specificationTitle},
+					locator1 = "CommerceNavigation#ANY_ENTRY_NAME");
+
+				Check.checkNotVisible(
+					key_toggleSwitchLabel = "Use in Faceted Navigation",
+					locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+
+				Button.clickSave();
+
+				CommerceUtilities.checkSuccessAlertAppearsAndDisappears();
+
+				Navigator.gotoBack();
+			}
+		}
+
+		task ("And the admin adds 11 more facetable specifications") {
+			for (var index : list "10,11,12,13,14,15,16,17,18,19,20") {
+				CommerceJSONSpecificationsAPI._addCommerceSpecification(
+					specificationLabelFacetable = "true",
+					specificationLabelKey = "spec${index}",
+					specificationLabelTitle = "Spec${index}");
+			}
+		}
+
+		task ("And adds all specifications to ABS Sensor with respective priorities and values") {
+			for (var specificationKeyAndPriority : list "width:5,fit:6,height:7,length:8,spec10:9,spec11:10,spec12:11,spec13:12,spec14:13,spec15:14,spec16:15,spec17:16,spec18:17,spec19:18,spec20:19") {
+				var specificationKey = StringUtil.extractFirst(${specificationKeyAndPriority}, ":");
+				var priority = StringUtil.extractLast(${specificationKeyAndPriority}, ":");
+
+				CommerceJSONProductsAPI._addCommerceProductSpecifications(
+					priority = ${priority},
+					productName = "ABS Sensor",
+					specificationKey = ${specificationKey},
+					value = 0);
+			}
+		}
+
+		task ("And a new specification is created and added to Shock Absorber with respective priority and value") {
+			CommerceJSONSpecificationsAPI._addCommerceSpecification(
+				specificationLabelFacetable = "true",
+				specificationLabelKey = "spec21",
+				specificationLabelTitle = "Spec21");
+
+			CommerceJSONProductsAPI._addCommerceProductSpecifications(
+				priority = 4,
+				productName = "Shock Absorber",
+				specificationKey = "spec21",
+				value = 0);
+		}
+
+		task ("When the admin configures minium site's specification facet widget with 20 as max terms") {
+			Navigator.openWithAppendToBaseURL(urlAppend = "web/minium");
+
+			CommerceWidget.updateFacetConfiguration(
+				maxTerms = 20,
+				portletName = "Specification Facet");
+
+			Refresh();
+		}
+
+		task ("And searches for 'abs' in the minium search bar") {
+			CommerceNavigator.searchEntry(entryName = "abs");
+		}
+
+		task ("Then the specification facet widget can be used and no errors are shown") {
+			AssertElementPresent(
+				locator1 = "FormViewBuilder#RULE_LABEL",
+				ruleLabel = "Dimensions");
+
+			AssertElementNotPresent(
+				key_alertMessage = "Specification Facet is temporarily unavailable.",
+				locator1 = "Message#ERROR_ENTER_ANY");
+		}
+
+		task ("When the admin searches for 'shock' in the minium search bar") {
+			CommerceNavigator.searchEntry(entryName = "shock");
+		}
+
+		task ("Then the specification facet widget can be used and no errors are shown") {
+			AssertElementPresent(
+				locator1 = "FormViewBuilder#RULE_LABEL",
+				ruleLabel = "Dimensions");
+
+			AssertElementNotPresent(
+				key_alertMessage = "Specification Facet is temporarily unavailable.",
+				locator1 = "Message#ERROR_ENTER_ANY");
 		}
 	}
 
@@ -917,7 +1057,7 @@ definition {
 		}
 
 		task ("And the term count of the other values doesn't change either") {
-			for (var priceRangeValueAndCount : list "$ 0.00 - $ 49.99:(21),$ 100.00 - $ 199.99:(10),$ 200.00 - $ 499.99:(4),$ 500.00 - $ 999.99:(2),000.00+:(0)") {
+			for (var priceRangeValueAndCount : list "$ 0.00 - $ 49.99:(21),$ 100.00 - $ 199.99:(10),$ 200.00 - $ 499.99:(4),$ 500.00 - $ 999.99:(2)") {
 				var priceRangeValue = StringUtil.extractFirst(${priceRangeValueAndCount}, ":");
 				var priceRangeCount = StringUtil.extractLast(${priceRangeValueAndCount}, ":");
 
@@ -934,7 +1074,7 @@ definition {
 		}
 
 		task ("Then the term count of all values doesn't change") {
-			for (var priceRangeValueAndCount : list "$ 0.00 - $ 49.99:(21),$ 50.00 - $ 99.99:(12),$ 100.00 - $ 199.99:(10),$ 200.00 - $ 499.99:(4),$ 500.00 - $ 999.99:(2),000.00+:(0)") {
+			for (var priceRangeValueAndCount : list "$ 0.00 - $ 49.99:(21),$ 50.00 - $ 99.99:(12),$ 100.00 - $ 199.99:(10),$ 200.00 - $ 499.99:(4),$ 500.00 - $ 999.99:(2)") {
 				var priceRangeValue = StringUtil.extractFirst(${priceRangeValueAndCount}, ":");
 				var priceRangeCount = StringUtil.extractLast(${priceRangeValueAndCount}, ":");
 
@@ -944,6 +1084,11 @@ definition {
 					locator1 = "Search#FACET_TERM_FREQUENCIES",
 					value1 = ${priceRangeCount});
 			}
+
+			AssertElementNotPresent(
+				key_facetType = "Price Range Facet",
+				key_termValue = "$ 1,000.00+",
+				locator1 = "Search#FACET_TERM_FREQUENCIES");
 		}
 	}
 

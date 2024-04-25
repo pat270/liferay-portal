@@ -5,6 +5,7 @@
 
 import updateFragmentEntryLinkConfiguration from '../../actions/updateFragmentEntryLinkConfiguration';
 import FragmentService from '../../services/FragmentService';
+import {clearPageContents} from '../../utils/usePageContents';
 
 function undoAction({action}) {
 	const {editableValues, fragmentEntryLinkId} = action;
@@ -18,15 +19,16 @@ function undoAction({action}) {
 			languageId,
 			onNetworkStatus: dispatch,
 			segmentsExperienceId,
-		}).then(({fragmentEntryLink, layoutData, pageContents}) => {
+		}).then(({fragmentEntryLink, layoutData}) => {
 			dispatch(
 				updateFragmentEntryLinkConfiguration({
 					fragmentEntryLink,
 					fragmentEntryLinkId,
 					layoutData,
-					pageContents,
 				})
 			);
+
+			clearPageContents();
 		});
 	};
 }

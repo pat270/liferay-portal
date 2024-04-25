@@ -24,7 +24,7 @@ List<CommerceCurrency> commerceCurrencies = commerceCatalogDisplayContext.getCom
 		<aui:input bean="<%= commerceCatalog %>" model="<%= CommerceCatalog.class %>" name="name" required="<%= true %>" />
 
 		<%
-		boolean hasManageLinkSupplierPermission = FeatureFlagManagerUtil.isEnabled("COMMERCE-10890") && commerceCatalogDisplayContext.hasManageLinkSupplierPermission(Constants.ADD);
+		boolean hasManageLinkSupplierPermission = commerceCatalogDisplayContext.hasManageLinkSupplierPermission(Constants.ADD);
 		%>
 
 		<div class="row">
@@ -93,69 +93,39 @@ List<CommerceCurrency> commerceCurrencies = commerceCatalogDisplayContext.getCom
 					AccountEntry defaultAccountEntry = commerceCatalogDisplayContext.getDefaultAccountEntry();
 					%>
 
-					<aui:script require="commerce-frontend-js/components/autocomplete/entry as autocomplete">
-						autocomplete.default('autocomplete', 'link-account-entry-autocomplete-root', {
-							apiUrl: '<%= commerceCatalogDisplayContext.getAccountEntriesAPIURL() %>',
-							initialLabel:
-								'<%= (defaultAccountEntry == null) ? StringPool.BLANK : HtmlUtil.escapeJS(defaultAccountEntry.getName()) %>',
-							initialValue:
-								'<%= (defaultAccountEntry == null) ? 0 : defaultAccountEntry.getAccountEntryId() %>',
-							inputId: '<%= liferayPortletResponse.getNamespace() %>accountEntryId',
-							inputName: 'accountId',
-							itemsKey: 'id',
-							itemsLabel: 'name',
-							required: true,
-						});
-					</aui:script>
+					<liferay-frontend:component
+						context='<%=
+							HashMapBuilder.<String, Object>put(
+								"apiUrl", String.valueOf(commerceCatalogDisplayContext.getAccountEntriesAPIURL())
+							).put(
+								"initialLabel", (defaultAccountEntry == null) ? StringPool.BLANK : defaultAccountEntry.getName()
+							).put(
+								"initialValue", (defaultAccountEntry == null) ? 0 : defaultAccountEntry.getAccountEntryId()
+							).put(
+								"inputId", liferayPortletResponse.getNamespace() + "accountEntryId"
+							).put(
+								"inputName", "accountId"
+							).put(
+								"itemsKey", "id"
+							).put(
+								"itemsLabel", "name"
+							).build()
+						%>'
+						module="{addCommerceCatalogAutocomplete} from commerce-catalog-web"
+					/>
 				</div>
 			</div>
 		</c:if>
 	</aui:form>
 
-	<aui:script require="commerce-frontend-js/utilities/eventsDefinitions as events, commerce-frontend-js/utilities/forms/index as FormUtils">
-		Liferay.provide(
-			window,
-			'<portlet:namespace />apiSubmit',
-			(form) => {
-				var API_URL = '/o/headless-commerce-admin-catalog/v1.0/catalogs';
-
-				window.parent.Liferay.fire(events.IS_LOADING_MODAL, {
-					isLoading: true,
-				});
-
-				FormUtils.apiSubmit(form, API_URL)
-					.then((payload) => {
-						var redirectURL = new Liferay.PortletURL.createURL(
-							'<%= editCatalogPortletURL.toString() %>'
-						);
-
-						redirectURL.setParameter('commerceCatalogId', payload.id);
-						redirectURL.setParameter('p_auth', Liferay.authToken);
-
-						window.parent.Liferay.fire(events.CLOSE_MODAL, {
-							redirectURL: redirectURL.toString(),
-							successNotification: {
-								showSuccessNotification: true,
-								message:
-									'<liferay-ui:message key="your-request-completed-successfully" />',
-							},
-						});
-					})
-					.catch((error) => {
-						window.parent.Liferay.fire(events.IS_LOADING_MODAL, {
-							isLoading: false,
-						});
-
-						window.parent.Liferay.Util.openToast({
-							message:
-								error.title ||
-								'<liferay-ui:message key="an-unexpected-error-occurred" />',
-							title: '<liferay-ui:message key="danger" />',
-							type: 'danger',
-						});
-					});
-			},
-			['liferay-portlet-url']
-		);
-	</aui:script>
+	<liferay-frontend:component
+		context='<%=
+			HashMapBuilder.<String, Object>put(
+				"editCatalogPortletURL", String.valueOf(editCatalogPortletURL)
+			).put(
+				"namespace", liferayPortletResponse.getNamespace()
+			).build()
+		%>'
+		module="{addCommerceCatalog} from commerce-catalog-web"
+	/>
 </commerce-ui:modal-content>

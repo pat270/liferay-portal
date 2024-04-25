@@ -68,9 +68,11 @@ public class StyledLayoutStructureItemUtil {
 			customCSSViewports.add(
 				new CustomCSSViewport() {
 					{
-						setCustomCSS(mobileLandscapeCustomCSS);
+						setCustomCSS(() -> mobileLandscapeCustomCSS);
 						setId(
-							ViewportSize.MOBILE_LANDSCAPE.getViewportSizeId());
+							() ->
+								ViewportSize.MOBILE_LANDSCAPE.
+									getViewportSizeId());
 					}
 				});
 		}
@@ -82,8 +84,11 @@ public class StyledLayoutStructureItemUtil {
 			customCSSViewports.add(
 				new CustomCSSViewport() {
 					{
-						setCustomCSS(portraitMobileCustomCSS);
-						setId(ViewportSize.PORTRAIT_MOBILE.getViewportSizeId());
+						setCustomCSS(() -> portraitMobileCustomCSS);
+						setId(
+							() ->
+								ViewportSize.PORTRAIT_MOBILE.
+									getViewportSizeId());
 					}
 				});
 		}
@@ -95,8 +100,8 @@ public class StyledLayoutStructureItemUtil {
 			customCSSViewports.add(
 				new CustomCSSViewport() {
 					{
-						setCustomCSS(tabletCustomCSS);
-						setId(ViewportSize.TABLET.getViewportSizeId());
+						setCustomCSS(() -> tabletCustomCSS);
+						setId(() -> ViewportSize.TABLET.getViewportSizeId());
 					}
 				});
 		}

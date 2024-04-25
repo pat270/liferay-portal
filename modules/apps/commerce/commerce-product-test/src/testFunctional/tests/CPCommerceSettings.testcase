@@ -14,52 +14,81 @@ definition {
 		CommerceConfiguration.commerceTearDown();
 	}
 
-	@description = "This is a test for COMMERCE-6912. Bulk delete countries"
-	@priority = 3
-	test BulkDeleteCountries {
-		property portal.acceptance = "false";
-		property test.liferay.virtual.instance = "false";
+	@description = "Test for COMMERCE-11974 | Verify that is not possible to perform XSS attack by injecting malicious script in Addressess"
+	@priority = 5
+	test CannotExecuteXSSInAddresses {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+		property portal.acceptance = "true";
 
-		task ("Given a Admin goes to Countries") {
-			CommerceNavigator.gotoPortlet(
-				category = "Settings",
-				portlet = "Countries");
+		task ("Given a Minium site is created") {
+			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 		}
 
-		task ("And verifies if the Trash icon is not present in the header") {
-			AssertElementNotPresent(locator1 = "Button#TRASH_ENABLED");
+		task ("And Commerce Addresses widget is deployed on Minium's Catalog page") {
+			Navigator.openWithAppendToBaseURL(urlAppend = "web/minium/catalog");
+
+			CommerceAcceleratorsInitializer.addPortlet(portletName = "Commerce Addresses");
 		}
 
-		task ("And the admin selects one country using the checkbox and verifies if the Trash icon is now present in the header") {
-			CommerceNavigator.searchEntry(entryName = "Qatar");
-
-			Click.clickNoMouseOverNoWaitForVisible(
-				key_productName = "Qatar",
-				locator1 = "CommerceEntry#PRODUCT_ENTRY_CHECKBOX");
-
-			AssertElementPresent(locator1 = "Button#TRASH_ENABLED");
+		task ("And a business account is created") {
+			JSONAccountEntry.addAccountEntry(
+				accountEntryName = "Commerce Account",
+				accountEntryType = "Business");
 		}
 
-		task ("Then the admin can remove the country by clicking on the Trash icon") {
-			ClickNoError(locator1 = "Button#TRASH_ENABLED");
+		task ("When a billing and a shipping addresses with the XSS are created for the account") {
+			for (var address : list "billing,shipping") {
+				var city = "<script>alert('${address}-city')</script>";
+				var name = "<script>alert('${address}-name')</script>";
+				var street1 = "<script>alert('${address}-street-1')</script>";
+				var street2 = "<script>alert('${address}-street-2')</script>";
+				var street3 = "<script>alert('${address}-street-3')</script>";
+				var zip = "<script>alert('${address}-zip')</script>";
 
-			AssertConfirm(value1 = "Are you sure you want to delete the selected countries?");
-		}
+				if (${address} == "billing") {
+					var type = 1;
+				}
+				else if (${address} == "shipping") {
+					var type = 3;
+				}
 
-		task ("And the admin select the delete country to check if it was deleted") {
-			CommerceNavigator.searchEntry(entryName = "Qatar");
-
-			AssertElementNotPresent(
-				key_entryName = "Qatar",
-				locator1 = "CommerceNavigation#ENTRY_NAME");
-		}
-
-		task ("And the admin can delete all the countries with one click by using the select all checkbox") {
-			CommerceNavigator.searchEntry(entryName = "");
-
-			while (IsElementNotPresent(locator1 = "CommerceNavigation#EMPTY_SEARCH_CONTAINER")) {
-				CommerceProducts.deleteEntries(deleteMessage = "Are you sure you want to delete the selected countries?");
+				CommerceJSONAccountsAPI._addCommerceAccountAddress(
+					accountEntryName = "Commerce Account",
+					city = ${city},
+					countryISOCode = "US",
+					name = ${name},
+					street1 = ${street1},
+					street2 = ${street2},
+					street3 = ${street3},
+					type = ${type},
+					zip = ${zip});
 			}
+		}
+
+		task ("Then the injected script is not executed") {
+			Navigator.openWithAppendToBaseURL(urlAppend = "web/minium/catalog");
+
+			AssertAlertNotPresent();
+		}
+
+		task ("When an order is created with the XSS addresses") {
+			var billingAddressName = "<script>alert(billing-name)</script>";
+			var shippingAddressName = "<script>alert(shipping-name)</script>";
+
+			CommerceJSONDeliveryCart._addCommerceCart(
+				accountEntryName = "Commerce Account",
+				billingAddressName = ${billingAddressName},
+				cartItems = "MIN55861:5",
+				shippingAddressName = ${shippingAddressName},
+				shippingOption = "Standard Delivery");
+		}
+
+		task ("Then in the Orders UI the injected script is not executed") {
+			CommerceOrders.openOrdersAdmin();
+
+			CommerceNavigator.gotoOrderEntryViaAdmin(status = "Open");
+
+			AssertAlertNotPresent();
 		}
 	}
 
@@ -68,6 +97,7 @@ definition {
 	test CanViewLanguageTagsForCategoryOnSitemapPage {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given a Minium site is created") {
 			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
@@ -119,7 +149,7 @@ definition {
 				site = "true");
 			var basePortalURL = PropsUtil.get("portal.url");
 
-			Open.openNoError(locator1 = "${basePortalURL}/sitemap.xml?groupId=${groupId}");
+			Open.openNoError(value1 = "${basePortalURL}/sitemap.xml?groupId=${groupId}");
 
 			var responseToParse = CommerceJSONProductsAPI._getCommerceFieldValue(
 				field = "uuid",
@@ -132,7 +162,7 @@ definition {
 
 			var link = selenium.getHtmlNodeText("//*[contains(text(),'${uuid}')][1]");
 
-			Open.openNoErrorNoSPARefresh(locator1 = ${link});
+			Open.openNoErrorNoSPARefresh(value1 = ${link});
 		}
 
 		task ("Then the default and translated category friendly URL are shown") {
@@ -209,7 +239,7 @@ definition {
 				}
 			}
 
-			Open.openNoErrorNoSPARefresh(locator1 = ${basePortalURL});
+			Open.openNoErrorNoSPARefresh(value1 = ${basePortalURL});
 		}
 	}
 
@@ -218,6 +248,7 @@ definition {
 	test CanViewSubcategoryForCategoryOnSitemapPage {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given a Minium site is created") {
 			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
@@ -255,7 +286,7 @@ definition {
 				site = "true");
 			var basePortalURL = PropsUtil.get("portal.url");
 
-			Open.openNoError(locator1 = "${basePortalURL}/sitemap.xml?groupId=${groupId}");
+			Open.openNoError(value1 = "${basePortalURL}/sitemap.xml?groupId=${groupId}");
 
 			var responseToParse = CommerceJSONProductsAPI._getCommerceFieldValue(
 				field = "uuid",
@@ -268,7 +299,7 @@ definition {
 
 			var link = selenium.getHtmlNodeText("//*[contains(text(),'${uuid}')][1]");
 
-			Open.openNoErrorNoSPARefresh(locator1 = ${link});
+			Open.openNoErrorNoSPARefresh(value1 = ${link});
 		}
 
 		task ("Then both the category and subcategoty URL are shown") {
@@ -279,7 +310,7 @@ definition {
 					locator1 = "CommerceEntry#CATEGORY_SITEMAP_URL");
 			}
 
-			Open.openNoErrorNoSPARefresh(locator1 = ${basePortalURL});
+			Open.openNoErrorNoSPARefresh(value1 = ${basePortalURL});
 		}
 	}
 
@@ -298,43 +329,6 @@ definition {
 		Button.clickSave();
 
 		AssertElementPresent(locator1 = "Message#SUCCESS");
-	}
-
-	test CreateNewCountry {
-		property portal.acceptance = "false";
-		property portal.upstream = "false";
-
-		CommerceNavigator.gotoPortlet(
-			category = "Settings",
-			portlet = "Countries");
-
-		Click(locator1 = "Button#PLUS");
-
-		CommerceEntry.addNewCountriesEntry(
-			entryIsoNumber = 020,
-			entryIsoThreeLetters = "TCO",
-			entryIsoTwoLetters = 54,
-			entryName = "Test Country");
-
-		Button.clickSave();
-
-		AssertElementPresent(locator1 = "Message#SUCCESS");
-
-		CommerceEntry.gotoMenuTab(menuTab = "Regions");
-
-		Click(locator1 = "Button#PLUS");
-
-		CommerceEntry.addNewRegionsEntry(
-			code = "TRE",
-			entryName = "Test Region");
-
-		Button.clickSave();
-
-		AssertElementPresent(locator1 = "Message#SUCCESS");
-
-		AssertElementPresent(
-			key_entry = "Test Region",
-			locator1 = "CommerceNavigation#ANY_ENTRY_NAME");
 	}
 
 	@priority = 5
@@ -364,11 +358,13 @@ definition {
 		AssertElementPresent(locator1 = "Message#SUCCESS");
 	}
 
+	@description = "This is a test to check the instance currencies available"
 	@priority = 5
 	test ViewInstanceCurrenciesAvailable {
 		property environment.acceptance = "true";
 		property operating.system.types = "alpine,amazonlinux,centos,debian,fedora,orcllinux,osx,redhat,rockylinux,solaris,suse,ubuntu,windows";
 		property portal.acceptance = "true";
+		property portal.upstream = "true";
 
 		CommerceNavigator.gotoPortlet(
 			category = "Store Management",

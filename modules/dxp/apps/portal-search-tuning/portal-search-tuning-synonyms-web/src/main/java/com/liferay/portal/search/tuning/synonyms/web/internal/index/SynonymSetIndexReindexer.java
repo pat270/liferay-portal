@@ -6,15 +6,17 @@
 package com.liferay.portal.search.tuning.synonyms.web.internal.index;
 
 import com.liferay.json.storage.service.JSONStorageEntryLocalService;
-import com.liferay.osgi.util.service.Snapshot;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.CompanyConstants;
+import com.liferay.portal.kernel.module.service.Snapshot;
+import com.liferay.portal.kernel.search.background.task.ReindexStatusMessageSenderUtil;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
-import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.search.capabilities.SearchCapabilities;
+import com.liferay.portal.search.document.DocumentBuilderFactory;
+import com.liferay.portal.search.engine.adapter.SearchEngineAdapter;
 import com.liferay.portal.search.index.SyncReindexManager;
 import com.liferay.portal.search.spi.reindexer.IndexReindexer;
 import com.liferay.portal.search.tuning.synonyms.index.name.SynonymSetIndexName;
@@ -24,6 +26,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -34,77 +37,83 @@ import org.osgi.service.component.annotations.Reference;
 public class SynonymSetIndexReindexer implements IndexReindexer {
 
 	@Override
-	public void reindex(long[] companyIds) throws Exception {
-		reindex(companyIds, null);
+	public void reindex(long companyId) throws Exception {
+		reindex(companyId, null);
 	}
 
 	@Override
-	public void reindex(long[] companyIds, String executionMode)
-		throws Exception {
+	public void reindex(long companyId, String executionMode) throws Exception {
+		if (!searchCapabilities.isSynonymsSupported() ||
+			(companyId == CompanyConstants.SYSTEM)) {
 
-		if (!searchCapabilities.isSynonymsSupported()) {
 			return;
 		}
 
-		for (long companyId : companyIds) {
-			List<Long> classPKs = jsonStorageEntryLocalService.getClassPKs(
-				companyId,
-				classNameLocalService.getClassNameId(SynonymSet.class),
-				QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+		SynonymSetIndexName synonymSetIndexName =
+			synonymSetIndexNameBuilder.getSynonymSetIndexName(companyId);
 
-			SynonymSetIndexName synonymSetIndexName =
-				synonymSetIndexNameBuilder.getSynonymSetIndexName(companyId);
+		Date date = null;
 
-			if (ListUtil.isEmpty(classPKs)) {
-				if (_log.isInfoEnabled()) {
-					_log.info(
-						StringBundler.concat(
-							"Not reindexing ",
-							synonymSetIndexName.getIndexName(),
-							" because the database has no synonym set ",
-							"entries"));
-				}
+		if (_isExecuteSyncReindex(executionMode)) {
+			date = new Date();
 
-				continue;
+			Thread.sleep(1000);
+		}
+		else {
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					"Deleting and creating index " +
+						synonymSetIndexName.getIndexName());
 			}
 
-			Date date = null;
+			try {
+				_synonymSetIndexCreator.deleteIfExists(synonymSetIndexName);
 
-			if (_isExecuteSyncReindex(executionMode)) {
-				date = new Date();
-
-				Thread.sleep(1000);
+				_synonymSetIndexCreator.create(synonymSetIndexName);
 			}
-			else {
-				try {
-					synonymSetIndexCreator.delete(synonymSetIndexName);
-				}
-				catch (RuntimeException runtimeException) {
-					_log.error(
-						"Unable to delete index " +
-							synonymSetIndexName.getIndexName(),
-						runtimeException);
-				}
-			}
+			catch (RuntimeException runtimeException) {
+				_log.error(
+					"Unable to delete or create index " +
+						synonymSetIndexName.getIndexName(),
+					runtimeException);
 
-			if (!_isExecuteSyncReindex(executionMode)) {
-				synonymSetIndexCreator.create(synonymSetIndexName);
-			}
-
-			for (long classPK : classPKs) {
-				synonymSetIndexWriter.create(
-					synonymSetIndexName, _buildSynonymSet(classPK));
-			}
-
-			if (_isExecuteSyncReindex(executionMode)) {
-				SyncReindexManager syncReindexManager =
-					_syncReindexManagerSnapshot.get();
-
-				syncReindexManager.deleteStaleDocuments(
-					synonymSetIndexName.getIndexName(), date,
-					Collections.emptySet());
+				return;
 			}
 		}
+
+		List<Long> classPKs = jsonStorageEntryLocalService.getClassPKs(
+			companyId, classNameLocalService.getClassNameId(SynonymSet.class),
+			QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+
+		int sendStatusInterval = Math.max(100, classPKs.size() / 20);
+
+		for (int i = 0; i < classPKs.size(); i++) {
+			_synonymSetIndexWriter.create(
+				synonymSetIndexName, _buildSynonymSet(classPKs.get(i)));
+
+			if ((i % sendStatusInterval) == 0) {
+				ReindexStatusMessageSenderUtil.sendStatusMessage(
+					SynonymSetIndexReindexer.class.getName(), i + 1,
+					classPKs.size());
+			}
+		}
+
+		if (_isExecuteSyncReindex(executionMode)) {
+			SyncReindexManager syncReindexManager =
+				_syncReindexManagerSnapshot.get();
+
+			syncReindexManager.deleteStaleDocuments(
+				synonymSetIndexName.getIndexName(), date,
+				Collections.emptySet());
+		}
+	}
+
+	@Activate
+	protected void activate() {
+		_synonymSetIndexCreator = new SynonymSetIndexCreator(
+			_searchEngineAdapter);
+		_synonymSetIndexWriter = new SynonymSetIndexWriter(
+			_documentBuilderFactory, _searchEngineAdapter);
 	}
 
 	@Reference
@@ -117,13 +126,7 @@ public class SynonymSetIndexReindexer implements IndexReindexer {
 	protected SearchCapabilities searchCapabilities;
 
 	@Reference
-	protected SynonymSetIndexCreator synonymSetIndexCreator;
-
-	@Reference
 	protected SynonymSetIndexNameBuilder synonymSetIndexNameBuilder;
-
-	@Reference
-	protected SynonymSetIndexWriter synonymSetIndexWriter;
 
 	private SynonymSet _buildSynonymSet(long classPK) {
 		JSONObject jsonObject = jsonStorageEntryLocalService.getJSONObject(
@@ -158,5 +161,14 @@ public class SynonymSetIndexReindexer implements IndexReindexer {
 		_syncReindexManagerSnapshot = new Snapshot<>(
 			SynonymSetIndexReindexer.class, SyncReindexManager.class, null,
 			true);
+
+	@Reference
+	private DocumentBuilderFactory _documentBuilderFactory;
+
+	@Reference
+	private SearchEngineAdapter _searchEngineAdapter;
+
+	private SynonymSetIndexCreator _synonymSetIndexCreator;
+	private SynonymSetIndexWriter _synonymSetIndexWriter;
 
 }

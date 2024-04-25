@@ -6,16 +6,14 @@
 package com.liferay.layout.content.page.editor.web.internal.portlet.action;
 
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortletKeys;
-import com.liferay.layout.util.LayoutCopyHelper;
+import com.liferay.layout.helper.LayoutCopyHelper;
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.permission.LayoutPermissionUtil;
 import com.liferay.portal.kernel.servlet.MultiSessionMessages;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import javax.portlet.ActionRequest;
@@ -35,10 +33,10 @@ import org.osgi.service.component.annotations.Reference;
 	service = MVCActionCommand.class
 )
 public class SaveVariantSegmentsExperienceMVCActionCommand
-	extends BaseMVCActionCommand {
+	extends BaseContentPageEditorMVCActionCommand {
 
 	@Override
-	protected void doProcessAction(
+	protected void doCommand(
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
 
@@ -49,8 +47,6 @@ public class SaveVariantSegmentsExperienceMVCActionCommand
 			themeDisplay.getPlid());
 
 		if (!draftLayout.isDraftLayout()) {
-			sendRedirect(actionRequest, actionResponse);
-
 			return;
 		}
 
@@ -71,8 +67,6 @@ public class SaveVariantSegmentsExperienceMVCActionCommand
 		hideDefaultSuccessMessage(actionRequest);
 
 		MultiSessionMessages.add(actionRequest, "variantSaved");
-
-		sendRedirect(actionRequest, actionResponse);
 	}
 
 	@Reference
@@ -80,8 +74,5 @@ public class SaveVariantSegmentsExperienceMVCActionCommand
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;
-
-	@Reference
-	private Portal _portal;
 
 }

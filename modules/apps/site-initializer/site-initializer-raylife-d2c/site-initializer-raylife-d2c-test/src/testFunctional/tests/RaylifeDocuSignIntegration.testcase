@@ -14,10 +14,7 @@ definition {
 
 		User.firstLoginPG();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Instance Settings");
+		PortalSettings.openInstanceSettingsAdmin();
 
 		SystemSettings.gotoConfiguration(
 			configurationCategory = "Digital Signature",
@@ -26,9 +23,14 @@ definition {
 
 		FormFields.enableCheckbox(fieldName = "enabled");
 
-		DigitalSignature.enableDigitalSignature(siteStrategy = "Always Inherit");
+		DigitalSignature.enableDigitalSignature(
+			environment = "Sandbox",
+			siteStrategy = "Always Inherit");
 
-		Raylife.createRaylifeSite(siteName = ${testSiteName});
+		HeadlessSite.addSite(
+			siteName = ${testSiteName},
+			templateName = "Raylife D2C",
+			templateType = "Site Initializer");
 	}
 
 	tearDown {
@@ -48,6 +50,7 @@ definition {
 	@priority = 5
 	test CanViewSentEmail {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		RaylifePaymentMethod.enablePayPalPayment();
 
@@ -88,6 +91,7 @@ definition {
 	@priority = 3
 	test EmailOnTheEnvelopeEqualOnTheForm {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		RaylifePaymentMethod.enablePayPalPayment();
 
@@ -130,6 +134,7 @@ definition {
 	@priority = 3
 	test FirstNameOnEnvelopeSameAsForm {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		RaylifePaymentMethod.enablePayPalPayment();
 
@@ -168,6 +173,7 @@ definition {
 	@priority = 3
 	test LastNameOnEnvelopeSameAsForm {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		RaylifePaymentMethod.enablePayPalPayment();
 

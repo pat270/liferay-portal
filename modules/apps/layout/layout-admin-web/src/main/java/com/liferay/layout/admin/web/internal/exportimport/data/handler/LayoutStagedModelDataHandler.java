@@ -7,6 +7,7 @@ package com.liferay.layout.admin.web.internal.exportimport.data.handler;
 
 import com.liferay.asset.list.model.AssetListEntry;
 import com.liferay.asset.list.service.AssetListEntryLocalService;
+import com.liferay.client.extension.constants.ClientExtensionEntryConstants;
 import com.liferay.client.extension.model.ClientExtensionEntryRel;
 import com.liferay.client.extension.service.ClientExtensionEntryRelLocalService;
 import com.liferay.counter.kernel.service.CounterLocalService;
@@ -37,35 +38,37 @@ import com.liferay.exportimport.lar.PermissionImporter;
 import com.liferay.friendly.url.model.FriendlyURLEntry;
 import com.liferay.friendly.url.service.FriendlyURLEntryLocalService;
 import com.liferay.item.selector.criteria.InfoListItemSelectorReturnType;
-import com.liferay.layout.admin.web.internal.exportimport.data.handler.helper.LayoutPageTemplateStructureDataHandlerHelper;
 import com.liferay.layout.configuration.LayoutExportImportConfiguration;
+import com.liferay.layout.constants.LayoutTypeSettingsConstants;
 import com.liferay.layout.friendly.url.LayoutFriendlyURLEntryHelper;
+import com.liferay.layout.helper.LayoutCopyHelper;
 import com.liferay.layout.model.LayoutClassedModelUsage;
 import com.liferay.layout.model.LayoutLocalization;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.model.LayoutPageTemplateStructure;
+import com.liferay.layout.page.template.model.LayoutPageTemplateStructureRel;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
+import com.liferay.layout.page.template.service.LayoutPageTemplateStructureRelLocalService;
 import com.liferay.layout.seo.model.LayoutSEOEntry;
 import com.liferay.layout.seo.model.LayoutSEOSite;
 import com.liferay.layout.seo.service.LayoutSEOEntryLocalService;
 import com.liferay.layout.seo.service.LayoutSEOSiteLocalService;
 import com.liferay.layout.service.LayoutClassedModelUsageLocalService;
 import com.liferay.layout.service.LayoutLocalizationLocalService;
-import com.liferay.layout.util.LayoutCopyHelper;
-import com.liferay.layout.utility.page.model.LayoutUtilityPageEntry;
-import com.liferay.layout.utility.page.service.LayoutUtilityPageEntryLocalService;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskThreadLocal;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
@@ -79,6 +82,7 @@ import com.liferay.portal.kernel.model.LayoutFriendlyURL;
 import com.liferay.portal.kernel.model.LayoutPrototype;
 import com.liferay.portal.kernel.model.LayoutRevision;
 import com.liferay.portal.kernel.model.LayoutRevisionConstants;
+import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.LayoutSetBranch;
 import com.liferay.portal.kernel.model.LayoutStagingHandler;
 import com.liferay.portal.kernel.model.LayoutTemplate;
@@ -87,7 +91,6 @@ import com.liferay.portal.kernel.model.LayoutTypePortletConstants;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.PortletPreferences;
 import com.liferay.portal.kernel.model.adapter.StagedTheme;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.GroupLocalService;
@@ -107,9 +110,9 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
+import com.liferay.portal.kernel.settings.FallbackKeysSettingsUtil;
 import com.liferay.portal.kernel.settings.PortletInstanceSettingsLocator;
 import com.liferay.portal.kernel.settings.Settings;
-import com.liferay.portal.kernel.settings.SettingsFactoryUtil;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.TransactionConfig;
 import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
@@ -125,7 +128,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.kernel.uuid.PortalUUID;
+import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
@@ -133,6 +136,7 @@ import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import com.liferay.portal.model.adapter.impl.StagedThemeImpl;
 import com.liferay.portal.service.impl.LayoutLocalServiceHelper;
 import com.liferay.portal.util.PropsValues;
+import com.liferay.segments.model.SegmentsExperience;
 import com.liferay.segments.service.SegmentsExperienceLocalService;
 import com.liferay.sites.kernel.util.Sites;
 import com.liferay.staging.configuration.StagingConfiguration;
@@ -460,15 +464,19 @@ public class LayoutStagedModelDataHandler
 
 		boolean privateLayout = false;
 
-		if ((portletDataContext.isPrivateLayout() &&
+		if ((portletDataContext.isOriginalPrivateLayout() &&
 			 !layout.isTypeAssetDisplay()) ||
 			GetterUtil.getBoolean(
 				layoutElement.attributeValue("layout-content-page-template")) ||
+			GetterUtil.getBoolean(
+				layoutElement.attributeValue("layout-layout-prototype")) ||
 			GetterUtil.getBoolean(
 				layoutElement.attributeValue("layout-master-page-template"))) {
 
 			privateLayout = true;
 		}
+
+		portletDataContext.setPrivateLayout(privateLayout);
 
 		Map<Long, Layout> layouts =
 			(Map<Long, Layout>)portletDataContext.getNewPrimaryKeysMap(
@@ -499,7 +507,7 @@ public class LayoutStagedModelDataHandler
 			layoutId = _layoutLocalService.getNextLayoutId(
 				groupId, privateLayout);
 
-			uuid = _portalUUID.generate();
+			uuid = PortalUUIDUtil.generate();
 		}
 		else if (layoutsImportMode.equals(
 					PortletDataHandlerKeys.
@@ -558,8 +566,7 @@ public class LayoutStagedModelDataHandler
 				Layout mergeFailFriendlyURLLayout =
 					_layoutLocalService.getLayout(layoutFriendlyURL.getPlid());
 
-				_sites.addMergeFailFriendlyURLLayout(
-					mergeFailFriendlyURLLayout);
+				_addMergeFailFriendlyURLLayout(mergeFailFriendlyURLLayout);
 
 				if (!_log.isWarnEnabled()) {
 					return;
@@ -692,11 +699,11 @@ public class LayoutStagedModelDataHandler
 				portletDataContext.setPlid(originalPlid);
 			}
 
-			Layout draftLayout = layouts.get(
+			long draftLayoutPlid = layoutPlids.get(
 				GetterUtil.getLong(
-					layoutElement.attributeValue("draft-layout-id")));
+					layoutElement.attributeValue("draft-layout-plid")));
 
-			draftLayout = _layoutLocalService.getLayout(draftLayout.getPlid());
+			Layout draftLayout = _layoutLocalService.getLayout(draftLayoutPlid);
 
 			draftLayout.setClassNameId(_portal.getClassNameId(Layout.class));
 			draftLayout.setClassPK(importedLayout.getPlid());
@@ -921,7 +928,8 @@ public class LayoutStagedModelDataHandler
 		_importFaviconFileEntry(
 			layout, layoutElement, importedLayout, portletDataContext);
 
-		_importClientExtensionEntryRels(layout, portletDataContext);
+		_importClientExtensionEntryRels(
+			importedLayout, layout, portletDataContext);
 
 		_importLayoutLocalizations(layout, portletDataContext);
 
@@ -939,6 +947,15 @@ public class LayoutStagedModelDataHandler
 
 		_importLayoutFriendlyURLs(importedLayout, layout, portletDataContext);
 
+		_importAssets(importedLayout, layout, portletDataContext);
+
+		_importLayoutPageTemplateStructures(
+			importedLayout, layout, portletDataContext);
+
+		// Import layout portlets after layout page template structures
+		// have been imported to ensure portlet preferences are not deleted.
+		// See LPD-16349.
+
 		if ((layout.isTypePortlet() &&
 			 Validator.isNotNull(layout.getTypeSettings())) ||
 			layout.isTypeAssetDisplay() || layout.isTypeContent()) {
@@ -946,11 +963,6 @@ public class LayoutStagedModelDataHandler
 			_importLayoutPortlets(
 				importedLayout, layoutElement, portletDataContext);
 		}
-
-		_importAssets(importedLayout, layout, portletDataContext);
-
-		_importLayoutPageTemplateStructures(
-			importedLayout, layout, portletDataContext);
 
 		_importLayoutSEOEntries(layout, portletDataContext);
 
@@ -1120,6 +1132,35 @@ public class LayoutStagedModelDataHandler
 		}
 	}
 
+	private void _addMergeFailFriendlyURLLayout(Layout layout)
+		throws Exception {
+
+		LayoutSet layoutSet = layout.getLayoutSet();
+
+		layoutSet = _layoutSetLocalService.getLayoutSet(
+			layoutSet.getGroupId(), layoutSet.isPrivateLayout());
+
+		UnicodeProperties settingsUnicodeProperties =
+			layoutSet.getSettingsProperties();
+
+		String oldMergeFailFriendlyURLLayouts =
+			settingsUnicodeProperties.getProperty(
+				Sites.MERGE_FAIL_FRIENDLY_URL_LAYOUTS, StringPool.BLANK);
+
+		String newMergeFailFriendlyURLLayouts = StringUtil.add(
+			oldMergeFailFriendlyURLLayouts, layout.getUuid());
+
+		if (!oldMergeFailFriendlyURLLayouts.equals(
+				newMergeFailFriendlyURLLayouts)) {
+
+			settingsUnicodeProperties.setProperty(
+				Sites.MERGE_FAIL_FRIENDLY_URL_LAYOUTS,
+				newMergeFailFriendlyURLLayouts);
+
+			_layoutSetLocalService.updateLayoutSet(layoutSet);
+		}
+	}
+
 	private String[] _appendPortletIds(
 		String[] portletIds, String[] newPortletIds, String portletsMergeMode) {
 
@@ -1201,7 +1242,8 @@ public class LayoutStagedModelDataHandler
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		serviceContext.setAttribute("published", published);
+		serviceContext.setAttribute(
+			LayoutTypeSettingsConstants.KEY_PUBLISHED, published);
 
 		_layoutLocalService.updateStatus(
 			draftLayout.getUserId(), draftLayout.getPlid(),
@@ -1282,6 +1324,8 @@ public class LayoutStagedModelDataHandler
 				"draft-layout-uuid", draftLayout.getUuid());
 			layoutElement.addAttribute(
 				"draft-layout-id", String.valueOf(draftLayout.getLayoutId()));
+			layoutElement.addAttribute(
+				"draft-layout-plid", String.valueOf(draftLayout.getPlid()));
 		}
 	}
 
@@ -1850,8 +1894,9 @@ public class LayoutStagedModelDataHandler
 		for (Portlet portlet : layoutTypePortlet.getAllPortlets(false)) {
 			String portletId = portlet.getPortletId();
 
-			Settings portletInstanceSettings = SettingsFactoryUtil.getSettings(
-				new PortletInstanceSettingsLocator(layout, portletId));
+			Settings portletInstanceSettings =
+				FallbackKeysSettingsUtil.getSettings(
+					new PortletInstanceSettingsLocator(layout, portletId));
 
 			String scopeType = portletInstanceSettings.getValue(
 				"lfrScopeType", null);
@@ -1915,8 +1960,9 @@ public class LayoutStagedModelDataHandler
 
 			long scopeGroupId = portletDataContext.getScopeGroupId();
 
-			Settings portletInstanceSettings = SettingsFactoryUtil.getSettings(
-				new PortletInstanceSettingsLocator(layout, portletId));
+			Settings portletInstanceSettings =
+				FallbackKeysSettingsUtil.getSettings(
+					new PortletInstanceSettingsLocator(layout, portletId));
 
 			String scopeType = portletInstanceSettings.getValue(
 				"lfrScopeType", null);
@@ -1993,8 +2039,16 @@ public class LayoutStagedModelDataHandler
 	}
 
 	private void _importClientExtensionEntryRels(
-			Layout layout, PortletDataContext portletDataContext)
+			Layout importedLayout, Layout layout,
+			PortletDataContext portletDataContext)
 		throws Exception {
+
+		_clientExtensionEntryRelLocalService.deleteClientExtensionEntryRels(
+			_portal.getClassNameId(Layout.class), importedLayout.getPlid(),
+			ClientExtensionEntryConstants.TYPE_GLOBAL_CSS);
+		_clientExtensionEntryRelLocalService.deleteClientExtensionEntryRels(
+			_portal.getClassNameId(Layout.class), importedLayout.getPlid(),
+			ClientExtensionEntryConstants.TYPE_GLOBAL_JS);
 
 		List<Element> clientExtensionEntryRelsElements =
 			portletDataContext.getReferenceDataElements(
@@ -2147,6 +2201,57 @@ public class LayoutStagedModelDataHandler
 		}
 	}
 
+	private void _importLayoutPageTemplateStructure(
+			PortletDataContext portletDataContext, long classNameId,
+			long classPK, Element layoutPageTemplateStructureElement)
+		throws Exception {
+
+		layoutPageTemplateStructureElement.addAttribute(
+			"className", String.valueOf(_portal.getClassName(classNameId)));
+		layoutPageTemplateStructureElement.addAttribute(
+			"classPK", String.valueOf(classPK));
+
+		StagedModelDataHandlerUtil.importStagedModel(
+			portletDataContext, layoutPageTemplateStructureElement);
+
+		Map<Long, Long> layoutPageTemplateStructureIds =
+			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
+				LayoutPageTemplateStructure.class);
+
+		String path = layoutPageTemplateStructureElement.attributeValue("path");
+
+		LayoutPageTemplateStructure layoutPageTemplateStructure =
+			(LayoutPageTemplateStructure)portletDataContext.getZipEntryAsObject(
+				path);
+
+		long layoutPageTemplateStructureId = MapUtil.getLong(
+			layoutPageTemplateStructureIds,
+			layoutPageTemplateStructure.getLayoutPageTemplateStructureId(),
+			layoutPageTemplateStructure.getLayoutPageTemplateStructureId());
+
+		LayoutPageTemplateStructure existingLayoutPageTemplateStructure =
+			_layoutPageTemplateStructureLocalService.
+				fetchLayoutPageTemplateStructure(layoutPageTemplateStructureId);
+
+		if (existingLayoutPageTemplateStructure == null) {
+			return;
+		}
+
+		List<LayoutPageTemplateStructureRel>
+			existingLayoutPageTemplateStructureRels =
+				_layoutPageTemplateStructureRelLocalService.
+					getLayoutPageTemplateStructureRels(
+						layoutPageTemplateStructureId);
+
+		for (LayoutPageTemplateStructureRel
+				existingLayoutPageTemplateStructureRel :
+					existingLayoutPageTemplateStructureRels) {
+
+			_updateSegmentsExperiences(
+				classPK, existingLayoutPageTemplateStructureRel);
+		}
+	}
+
 	private void _importLayoutPageTemplateStructures(
 			Layout importedLayout, Layout layout,
 			PortletDataContext portletDataContext)
@@ -2166,12 +2271,10 @@ public class LayoutStagedModelDataHandler
 		for (Element layoutPageTemplateStructureElement :
 				layoutPageTemplateStructureElements) {
 
-			_layoutPageTemplateStructureDataHandlerHelper.
-				importLayoutPageTemplateStructure(
-					portletDataContext,
-					_portal.getClassNameId(Layout.class.getName()),
-					importedLayout.getPlid(),
-					layoutPageTemplateStructureElement);
+			_importLayoutPageTemplateStructure(
+				portletDataContext,
+				_portal.getClassNameId(Layout.class.getName()),
+				importedLayout.getPlid(), layoutPageTemplateStructureElement);
 		}
 	}
 
@@ -2532,6 +2635,26 @@ public class LayoutStagedModelDataHandler
 	private boolean _isExportParentLayout(
 		long[] layoutIds, long parentLayoutId) {
 
+		if (FeatureFlagManagerUtil.isEnabled("LPS-199086")) {
+			try {
+				StagingConfiguration stagingConfiguration =
+					_configurationProvider.getCompanyConfiguration(
+						StagingConfiguration.class,
+						CompanyThreadLocal.getCompanyId());
+
+				if (ArrayUtil.contains(layoutIds, parentLayoutId) ||
+					stagingConfiguration.publishParentLayoutsByDefault()) {
+
+					return true;
+				}
+			}
+			catch (Exception exception) {
+				_log.error(exception);
+			}
+
+			return false;
+		}
+
 		if (ArrayUtil.contains(layoutIds, parentLayoutId) ||
 			!ExportImportThreadLocal.isLayoutStagingInProcess()) {
 
@@ -2681,7 +2804,7 @@ public class LayoutStagedModelDataHandler
 
 			if (layoutPageTemplateEntry != null) {
 				if (layoutPageTemplateEntry.getType() ==
-						LayoutPageTemplateEntryTypeConstants.TYPE_BASIC) {
+						LayoutPageTemplateEntryTypeConstants.BASIC) {
 
 					layoutElement.addAttribute(
 						"layout-content-page-template",
@@ -2689,29 +2812,10 @@ public class LayoutStagedModelDataHandler
 				}
 
 				if (layoutPageTemplateEntry.getType() ==
-						LayoutPageTemplateEntryTypeConstants.
-							TYPE_MASTER_LAYOUT) {
+						LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT) {
 
 					layoutElement.addAttribute(
 						"layout-master-page-template", Boolean.TRUE.toString());
-				}
-			}
-			else {
-				LayoutUtilityPageEntry layoutUtilityPageEntry =
-					_layoutUtilityPageEntryLocalService.
-						fetchLayoutUtilityPageEntryByPlid(layout.getPlid());
-
-				if (layoutUtilityPageEntry == null) {
-					layoutUtilityPageEntry =
-						_layoutUtilityPageEntryLocalService.
-							fetchLayoutUtilityPageEntryByPlid(
-								layout.getClassPK());
-				}
-
-				if (layoutUtilityPageEntry != null) {
-					layoutElement.addAttribute(
-						"layout-content-page-template",
-						Boolean.TRUE.toString());
 				}
 			}
 		}
@@ -2894,6 +2998,25 @@ public class LayoutStagedModelDataHandler
 			importedLayoutTypeSettingsUnicodeProperties);
 	}
 
+	private void _updateSegmentsExperiences(
+		long classPK,
+		LayoutPageTemplateStructureRel existingLayoutPageTemplateStructureRel) {
+
+		SegmentsExperience existingSegmentsExperience =
+			_segmentsExperienceLocalService.fetchSegmentsExperience(
+				existingLayoutPageTemplateStructureRel.
+					getSegmentsExperienceId());
+
+		if (existingSegmentsExperience == null) {
+			return;
+		}
+
+		existingSegmentsExperience.setPlid(classPK);
+
+		_segmentsExperienceLocalService.updateSegmentsExperience(
+			existingSegmentsExperience);
+	}
+
 	private void _updateTypeSettings(Layout importedLayout, Layout layout)
 		throws Exception {
 
@@ -3031,12 +3154,12 @@ public class LayoutStagedModelDataHandler
 		_layoutPageTemplateEntryLocalService;
 
 	@Reference
-	private LayoutPageTemplateStructureDataHandlerHelper
-		_layoutPageTemplateStructureDataHandlerHelper;
-
-	@Reference
 	private LayoutPageTemplateStructureLocalService
 		_layoutPageTemplateStructureLocalService;
+
+	@Reference
+	private LayoutPageTemplateStructureRelLocalService
+		_layoutPageTemplateStructureRelLocalService;
 
 	@Reference
 	private LayoutPrototypeLocalService _layoutPrototypeLocalService;
@@ -3060,17 +3183,10 @@ public class LayoutStagedModelDataHandler
 	private LayoutTemplateLocalService _layoutTemplateLocalService;
 
 	@Reference
-	private LayoutUtilityPageEntryLocalService
-		_layoutUtilityPageEntryLocalService;
-
-	@Reference
 	private PermissionImporter _permissionImporter;
 
 	@Reference
 	private Portal _portal;
-
-	@Reference
-	private PortalUUID _portalUUID;
 
 	@Reference
 	private PortletDataContextFactory _portletDataContextFactory;

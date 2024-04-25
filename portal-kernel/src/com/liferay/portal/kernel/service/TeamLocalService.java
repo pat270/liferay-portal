@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.change.tracking.CTService;
 import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
+import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
@@ -47,6 +48,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @CTAware
+@OSGiBeanProperties(
+	property = {"model.class.name=com.liferay.portal.kernel.model.Team"}
+)
 @ProviderType
 @Transactional(
 	isolation = Isolation.PORTAL,
@@ -78,21 +82,21 @@ public interface TeamLocalService
 	@Indexable(type = IndexableType.REINDEX)
 	public Team addTeam(Team team);
 
-	public void addUserGroupTeam(long userGroupId, long teamId);
+	public boolean addUserGroupTeam(long userGroupId, long teamId);
 
-	public void addUserGroupTeam(long userGroupId, Team team);
+	public boolean addUserGroupTeam(long userGroupId, Team team);
 
-	public void addUserGroupTeams(long userGroupId, List<Team> teams);
+	public boolean addUserGroupTeams(long userGroupId, List<Team> teams);
 
-	public void addUserGroupTeams(long userGroupId, long[] teamIds);
+	public boolean addUserGroupTeams(long userGroupId, long[] teamIds);
 
-	public void addUserTeam(long userId, long teamId);
+	public boolean addUserTeam(long userId, long teamId);
 
-	public void addUserTeam(long userId, Team team);
+	public boolean addUserTeam(long userId, Team team);
 
-	public void addUserTeams(long userId, List<Team> teams);
+	public boolean addUserTeams(long userId, List<Team> teams);
 
-	public void addUserTeams(long userId, long[] teamIds);
+	public boolean addUserTeams(long userId, long[] teamIds);
 
 	public void clearUserGroupTeams(long userGroupId);
 

@@ -10,6 +10,7 @@ import com.liferay.exportimport.kernel.lar.ManifestSummary;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
+import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.sql.dsl.query.DSLQuery;
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.dao.db.DB;
@@ -36,10 +37,10 @@ import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
 import com.liferay.portal.kernel.service.CountryLocalService;
 import com.liferay.portal.kernel.service.CountryLocalServiceUtil;
-import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.CountryLocalizationPersistence;
 import com.liferay.portal.kernel.service.persistence.CountryPersistence;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -545,6 +546,8 @@ public abstract class CountryLocalServiceBaseImpl
 				countryLocalizationPersistence.remove(countryLocalization);
 			}
 			else {
+				countryLocalization.setCtCollectionId(
+					country.getCtCollectionId());
 				countryLocalization.setCompanyId(country.getCompanyId());
 
 				countryLocalization.setTitle(localizedValues[0]);
@@ -568,6 +571,7 @@ public abstract class CountryLocalServiceBaseImpl
 			CountryLocalization countryLocalization =
 				countryLocalizationPersistence.create(++batchCounter);
 
+			countryLocalization.setCtCollectionId(country.getCtCollectionId());
 			countryLocalization.setCountryId(country.getCountryId());
 			countryLocalization.setCompanyId(country.getCompanyId());
 
@@ -598,6 +602,7 @@ public abstract class CountryLocalServiceBaseImpl
 			countryLocalization.setLanguageId(languageId);
 		}
 
+		countryLocalization.setCtCollectionId(country.getCtCollectionId());
 		countryLocalization.setCompanyId(country.getCompanyId());
 
 		countryLocalization.setTitle(title);
@@ -687,16 +692,10 @@ public abstract class CountryLocalServiceBaseImpl
 	}
 
 	public void afterPropertiesSet() {
-		persistedModelLocalServiceRegistry.register(
-			"com.liferay.portal.kernel.model.Country", countryLocalService);
-
 		CountryLocalServiceUtil.setService(countryLocalService);
 	}
 
 	public void destroy() {
-		persistedModelLocalServiceRegistry.unregister(
-			"com.liferay.portal.kernel.model.Country");
-
 		CountryLocalServiceUtil.setService(null);
 	}
 
@@ -710,8 +709,22 @@ public abstract class CountryLocalServiceBaseImpl
 		return CountryLocalService.class.getName();
 	}
 
-	protected Class<?> getModelClass() {
+	@Override
+	public CTPersistence<Country> getCTPersistence() {
+		return countryPersistence;
+	}
+
+	@Override
+	public Class<Country> getModelClass() {
 		return Country.class;
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<Country>, R, E> updateUnsafeFunction)
+		throws E {
+
+		return updateUnsafeFunction.apply(countryPersistence);
 	}
 
 	protected String getModelClassName() {
@@ -759,9 +772,5 @@ public abstract class CountryLocalServiceBaseImpl
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		CountryLocalServiceBaseImpl.class);
-
-	@BeanReference(type = PersistedModelLocalServiceRegistry.class)
-	protected PersistedModelLocalServiceRegistry
-		persistedModelLocalServiceRegistry;
 
 }

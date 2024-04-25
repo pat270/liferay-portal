@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.model.UserGroupGroupRole;
 import com.liferay.portal.kernel.model.UserGroupRole;
 import com.liferay.portal.kernel.model.role.RoleConstants;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.UserGroupGroupRoleLocalService;
@@ -28,8 +29,9 @@ import com.liferay.portal.kernel.service.UserGroupRoleLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.saml.opensaml.integration.internal.metadata.MetadataManager;
 import com.liferay.saml.opensaml.integration.resolver.AttributeResolver;
+import com.liferay.saml.persistence.model.SamlIdpSpConnection;
+import com.liferay.saml.persistence.service.SamlIdpSpConnectionLocalService;
 import com.liferay.saml.util.PortletPropsKeys;
 
 import java.io.Serializable;
@@ -65,8 +67,7 @@ public class DefaultAttributeResolver implements AttributeResolver {
 
 		String entityId = attributeResolverSAMLContext.resolvePeerEntityId();
 
-		boolean namespaceEnabled =
-			_metadataManager.isAttributesNamespaceEnabled(entityId);
+		boolean namespaceEnabled = _isAttributesNamespaceEnabled(entityId);
 
 		for (String attributeName : getAttributeNames(entityId)) {
 			if (attributeName.startsWith("expando:")) {
@@ -124,7 +125,23 @@ public class DefaultAttributeResolver implements AttributeResolver {
 	}
 
 	protected String[] getAttributeNames(String entityId) {
-		return _metadataManager.getAttributeNames(entityId);
+		long companyId = CompanyThreadLocal.getCompanyId();
+
+		try {
+			SamlIdpSpConnection samlIdpSpConnection =
+				_samlIdpSpConnectionLocalService.getSamlIdpSpConnection(
+					companyId, entityId);
+
+			return StringUtil.splitLines(
+				samlIdpSpConnection.getAttributeNames());
+		}
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception);
+			}
+		}
+
+		return null;
 	}
 
 	private void _addExpandoAttribute(
@@ -618,6 +635,25 @@ public class DefaultAttributeResolver implements AttributeResolver {
 		}
 	}
 
+	private boolean _isAttributesNamespaceEnabled(String entityId) {
+		long companyId = CompanyThreadLocal.getCompanyId();
+
+		try {
+			SamlIdpSpConnection samlIdpSpConnection =
+				_samlIdpSpConnectionLocalService.getSamlIdpSpConnection(
+					companyId, entityId);
+
+			return samlIdpSpConnection.isAttributesNamespaceEnabled();
+		}
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception);
+			}
+		}
+
+		return false;
+	}
+
 	private boolean _isPeerSalesForce(String entityId) {
 		if (entityId.equals(_SALESFORCE_ENTITY_ID)) {
 			return true;
@@ -643,10 +679,10 @@ public class DefaultAttributeResolver implements AttributeResolver {
 	private GroupLocalService _groupLocalService;
 
 	@Reference
-	private MetadataManager _metadataManager;
+	private RoleLocalService _roleLocalService;
 
 	@Reference
-	private RoleLocalService _roleLocalService;
+	private SamlIdpSpConnectionLocalService _samlIdpSpConnectionLocalService;
 
 	@Reference
 	private UserGroupGroupRoleLocalService _userGroupGroupRoleLocalService;

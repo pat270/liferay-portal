@@ -6,9 +6,10 @@
 package com.liferay.frontend.js.loader.modules.extender.internal.servlet.taglib;
 
 import com.liferay.frontend.js.loader.modules.extender.internal.configuration.Details;
-import com.liferay.frontend.js.loader.modules.extender.internal.servlet.JSResolveModulesServlet;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
+import com.liferay.portal.kernel.content.security.policy.ContentSecurityPolicyNonceProvider;
+import com.liferay.portal.kernel.content.security.policy.ContentSecurityPolicyNonceProviderUtil;
 import com.liferay.portal.kernel.frontend.esm.FrontendESMUtil;
 import com.liferay.portal.kernel.servlet.PortalWebResourceConstants;
 import com.liferay.portal.kernel.servlet.PortalWebResourcesUtil;
@@ -54,7 +55,11 @@ public class JSLoaderTopHeadDynamicInclude extends BaseDynamicInclude {
 
 		PrintWriter printWriter = httpServletResponse.getWriter();
 
-		printWriter.write("<script data-senna-track=\"temporary\" type=\"");
+		printWriter.write("<script");
+		printWriter.write(
+			ContentSecurityPolicyNonceProviderUtil.getNonceAttribute(
+				httpServletRequest));
+		printWriter.write(" data-senna-track=\"temporary\" type=\"");
 		printWriter.write(ContentTypes.TEXT_JAVASCRIPT);
 		printWriter.write("\">window.__CONFIG__= {basePath: '',");
 
@@ -74,16 +79,21 @@ public class JSLoaderTopHeadDynamicInclude extends BaseDynamicInclude {
 		printWriter.write(_details.logLevel());
 		printWriter.write("', moduleType: '");
 		printWriter.write(FrontendESMUtil.getScriptType());
-		printWriter.write("', namespace:'Liferay', ");
+		printWriter.write("', namespace:'Liferay', nonce: '");
 		printWriter.write(
-			"reportMismatchedAnonymousModules: 'warn', resolvePath: '");
+			_contentSecurityPolicyNonceProvider.getNonce(httpServletRequest));
+		printWriter.write(
+			"', reportMismatchedAnonymousModules: 'warn', resolvePath: '");
 		printWriter.write(_getResolvePath(httpServletRequest));
 		printWriter.write("', url: '");
 		printWriter.write(_getURL(httpServletRequest, themeDisplay));
 		printWriter.write("', waitTimeout: ");
 		printWriter.write(String.valueOf(_details.waitTimeout() * 1000));
+		printWriter.write("};</script><script");
 		printWriter.write(
-			"};</script><script data-senna-track=\"permanent\" src=\"");
+			ContentSecurityPolicyNonceProviderUtil.getNonceAttribute(
+				httpServletRequest));
+		printWriter.write(" data-senna-track=\"permanent\" src=\"");
 
 		AbsolutePortalURLBuilder absolutePortalURLBuilder =
 			_absolutePortalURLBuilderFactory.getAbsolutePortalURLBuilder(
@@ -131,7 +141,7 @@ public class JSLoaderTopHeadDynamicInclude extends BaseDynamicInclude {
 				httpServletRequest);
 
 		return absolutePortalURLBuilder.forServlet(
-			_jsResolveModulesServlet.getURL()
+			"/js_resolve_modules"
 		).build();
 	}
 
@@ -157,11 +167,12 @@ public class JSLoaderTopHeadDynamicInclude extends BaseDynamicInclude {
 	private AbsolutePortalURLBuilderFactory _absolutePortalURLBuilderFactory;
 
 	private volatile Bundle _bundle;
-	private volatile Details _details;
 
 	@Reference
-	private JSResolveModulesServlet _jsResolveModulesServlet;
+	private ContentSecurityPolicyNonceProvider
+		_contentSecurityPolicyNonceProvider;
 
+	private volatile Details _details;
 	private volatile String _lastModified;
 
 	@Reference

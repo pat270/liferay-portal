@@ -28,12 +28,11 @@ OAuth2Application oAuth2Application = oAuth2AdminPortletDisplayContext.getOAuth2
 		<aui:input helpMessage="privacy-policy-url-help" name="privacyPolicyURL" />
 	</c:if>
 
-	<aui:select helpMessage="client-authentication-method-help" label="Client Authentication Method" name="clientAuthenticationMethod" required="<%= true %>">
-		<aui:option label="Client Secret Basic" value="client_secret_basic" />
-		<aui:option label="Client Secret Post" value="client_secret_post" />
-		<aui:option label="None" value="none" />
-		<aui:option label="Client Secret JWT" value="client_secret_jwt" />
-		<aui:option label="Private Key JWT" value="private_key_jwt" />
+	<aui:select helpMessage="client-authentication-method-help" label="client-authentication-method" name="clientAuthenticationMethod" required="<%= true %>">
+		<aui:option label="client-secret-basic-or-post" value="client_secret_post" />
+		<aui:option label="none" value="none" />
+		<aui:option label="client-secret-jwt" value="client_secret_jwt" />
+		<aui:option label="private-key-jwt" value="private_key_jwt" />
 	</aui:select>
 
 	<aui:input helpMessage="json-web-key-set-help" label="JSON Web Key Set" name="jwks" style="min-height: 100px;" type="textarea" />
@@ -129,7 +128,7 @@ OAuth2Application oAuth2Application = oAuth2AdminPortletDisplayContext.getOAuth2
 						</div>
 
 						<c:if test="<%= grantType.isRequiresRedirectURI() %>">
-							<script>
+							<aui:script>
 								var allowedAuthorizationTypeCheckbox = document.getElementById(
 									'<portlet:namespace /><%= name %>'
 								);
@@ -139,7 +138,7 @@ OAuth2Application oAuth2Application = oAuth2AdminPortletDisplayContext.getOAuth2
 										<portlet:namespace />requiredRedirectURIs();
 									});
 								}
-							</script>
+							</aui:script>
 						</c:if>
 
 					<%
@@ -172,9 +171,9 @@ OAuth2Application oAuth2Application = oAuth2AdminPortletDisplayContext.getOAuth2
 					</c:choose>
 
 					<div class="btn-group button-holder">
-						<aui:button id="selectUserButton" value="select" />
+						<aui:button data-qa-id="selectUserButton" id="selectUserButton" value="select" />
 
-						<aui:button id="useSignedInUserButton" value="use-signed-in-user" />
+						<aui:button data-qa-id="useSignedInUserButton" id="useSignedInUserButton" value="use-signed-in-user" />
 					</div>
 				</aui:field-wrapper>
 

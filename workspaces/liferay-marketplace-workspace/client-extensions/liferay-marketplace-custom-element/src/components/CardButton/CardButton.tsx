@@ -4,42 +4,84 @@
  */
 
 import classNames from 'classnames';
-import {MouseEvent} from 'react';
+import {MouseEvent, ReactNode} from 'react';
 
-import arrowLeft from '../../assets/icons/guide_icon.svg';
+import sitesIcon from '../../assets/icons/sites_icon.svg';
 
 import './CardButton.scss';
+import {StepType} from '../../pages/GetApp/enums/stepType';
 
 export function CardButton({
 	description,
 	disabled,
+	icon = '',
+	iconRight,
 	onClick,
 	selected,
+	step,
 	title,
 }: {
 	description: string;
-	disabled: boolean;
+	disabled?: boolean;
+	icon?: ReactNode;
+	iconRight?: boolean;
 	onClick: (event: MouseEvent) => void;
 	selected: boolean;
+	step?: StepType;
 	title: string;
 }) {
 	return (
 		<div
-			className={classNames('card-button', {
+			className={classNames('card-button d-flex', {
 				'card-button--disabled': disabled,
 				'card-button--selected': selected,
 			})}
-			onClick={onClick}
+			onClick={disabled ? () => {} : onClick}
 		>
-			<img alt="trial" className="card-button-icon" src={arrowLeft} />
+			{step === StepType.PAYMENT ? (
+				<img
+					alt="trial"
+					className="card-button-icon"
+					src={icon as string}
+				/>
+			) : (
+				!iconRight &&
+				(icon ? (
+					icon
+				) : (
+					<img
+						alt="sites-icon"
+						className="card-button-icon"
+						src={sitesIcon}
+					/>
+				))
+			)}
 
 			<div className="card-button-info">
 				<div className="card-button-title">
-					<div className="card-button-text">{title}</div>
+					<div
+						className={classNames('card-button-text', {
+							'icon-right': iconRight,
+						})}
+					>
+						{title}
+						{step !== StepType.PAYMENT && iconRight && icon}
+					</div>
 
-					<div className="card-button-description">{description}</div>
+					<small
+						className={classNames({
+							'card-button-description':
+								step === StepType.PAYMENT,
+							'card-button-description-paid':
+								step === StepType.LICENSES,
+						})}
+					>
+						{description}
+					</small>
 				</div>
 			</div>
 		</div>
 	);
 }
+
+export default CardButton;

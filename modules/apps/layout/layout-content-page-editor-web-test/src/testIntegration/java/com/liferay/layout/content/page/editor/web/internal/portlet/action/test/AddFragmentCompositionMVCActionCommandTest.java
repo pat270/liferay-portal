@@ -137,9 +137,13 @@ public class AddFragmentCompositionMVCActionCommandTest {
 
 		Assert.assertNotNull(jsonObject);
 
+		JSONObject fragmentCompositionJSONObject = jsonObject.getJSONObject(
+			"fragmentComposition");
+
 		FragmentComposition fragmentComposition =
 			_fragmentCompositionLocalService.fetchFragmentComposition(
-				_group.getGroupId(), jsonObject.getString("fragmentEntryKey"));
+				_group.getGroupId(),
+				fragmentCompositionJSONObject.getString("fragmentEntryKey"));
 
 		Assert.assertNotNull(fragmentComposition);
 
@@ -191,9 +195,13 @@ public class AddFragmentCompositionMVCActionCommandTest {
 
 		Assert.assertNotNull(jsonObject);
 
+		JSONObject fragmentCompositionJSONObject = jsonObject.getJSONObject(
+			"fragmentComposition");
+
 		FragmentComposition fragmentComposition =
 			_fragmentCompositionLocalService.fetchFragmentComposition(
-				_group.getGroupId(), jsonObject.getString("fragmentEntryKey"));
+				_group.getGroupId(),
+				fragmentCompositionJSONObject.getString("fragmentEntryKey"));
 
 		Assert.assertNotNull(fragmentComposition);
 
@@ -231,8 +239,9 @@ public class AddFragmentCompositionMVCActionCommandTest {
 				fragmentCollection.getFragmentCollectionId(),
 				"example-fragment-entry-key", RandomTestUtil.randomString(),
 				StringPool.BLANK, html, StringPool.BLANK, false,
-				StringPool.BLANK, null, 0, FragmentConstants.TYPE_COMPONENT,
-				null, WorkflowConstants.STATUS_APPROVED, _serviceContext);
+				StringPool.BLANK, null, 0, false,
+				FragmentConstants.TYPE_COMPONENT, null,
+				WorkflowConstants.STATUS_APPROVED, _serviceContext);
 
 		long defaultSegmentsExperienceId =
 			_segmentsExperienceLocalService.fetchDefaultSegmentsExperienceId(
@@ -311,10 +320,10 @@ public class AddFragmentCompositionMVCActionCommandTest {
 
 		LayoutStructureItem containerStyledLayoutStructureItem =
 			layoutStructure.addContainerStyledLayoutStructureItem(
-				rootLayoutStructureItem.getItemId(), 0);
+				"item1", rootLayoutStructureItem.getItemId(), 0);
 
 		layoutStructure.addFragmentStyledLayoutStructureItem(
-			fragmentEntryLink.getFragmentEntryLinkId(),
+			fragmentEntryLink.getFragmentEntryLinkId(), "item2",
 			containerStyledLayoutStructureItem.getItemId(), 0);
 
 		_layoutPageTemplateStructureLocalService.
@@ -345,26 +354,32 @@ public class AddFragmentCompositionMVCActionCommandTest {
 			mockLiferayPortletActionRequest,
 			new MockLiferayPortletActionResponse());
 
+		JSONObject fragmentCompositionJSONObject = jsonObject.getJSONObject(
+			"fragmentComposition");
+
 		Assert.assertEquals(
 			String.valueOf(fragmentCollection.getFragmentCollectionId()),
-			jsonObject.getString("fragmentCollectionId"));
+			fragmentCompositionJSONObject.getString("fragmentCollectionId"));
 		Assert.assertEquals(
 			fragmentCollection.getName(),
-			jsonObject.getString("fragmentCollectionName"));
+			fragmentCompositionJSONObject.getString("fragmentCollectionName"));
 
 		Assert.assertTrue(
-			Validator.isNotNull(jsonObject.getString("fragmentEntryKey")));
+			Validator.isNotNull(
+				fragmentCompositionJSONObject.getString("fragmentEntryKey")));
 		Assert.assertEquals(
 			String.valueOf(_group.getGroupId()),
-			jsonObject.getString("groupId"));
+			fragmentCompositionJSONObject.getString("groupId"));
 		Assert.assertEquals(
 			mockLiferayPortletActionRequest.getParameter("name"),
-			jsonObject.getString("name"));
-		Assert.assertEquals("composition", jsonObject.getString("type"));
+			fragmentCompositionJSONObject.getString("name"));
+		Assert.assertEquals(
+			"composition", fragmentCompositionJSONObject.getString("type"));
 
 		FragmentComposition fragmentComposition =
 			_fragmentCompositionLocalService.fetchFragmentComposition(
-				_group.getGroupId(), jsonObject.getString("fragmentEntryKey"));
+				_group.getGroupId(),
+				fragmentCompositionJSONObject.getString("fragmentEntryKey"));
 
 		Assert.assertNotNull(fragmentComposition);
 		Assert.assertEquals(
@@ -429,9 +444,13 @@ public class AddFragmentCompositionMVCActionCommandTest {
 
 		Assert.assertNotNull(jsonObject);
 
+		JSONObject fragmentCompositionJSONObject = jsonObject.getJSONObject(
+			"fragmentComposition");
+
 		FragmentComposition fragmentComposition =
 			_fragmentCompositionLocalService.fetchFragmentComposition(
-				_group.getGroupId(), jsonObject.getString("fragmentEntryKey"));
+				_group.getGroupId(),
+				fragmentCompositionJSONObject.getString("fragmentEntryKey"));
 
 		Assert.assertNotNull(fragmentComposition);
 		Assert.assertTrue(fragmentComposition.getPreviewFileEntryId() > 0);

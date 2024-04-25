@@ -167,7 +167,7 @@
 </tr>
 <tr>
 	<td>SAMPLE_THEME_SPRITEMAP_1_PAGE_PENCIL_ICON</td>
-	<td>//li[@class='control-menu-nav-item']//*[contains(@href,'/o/liferay-sample-theme-spritemap-1/spritemap.svg#pencil')]</td>
+	<td>//li[@class='control-menu-nav-item']//*[contains(@href,'/o/liferay-sample-theme-spritemap-1/spritemap.')][contains(@href,'.svg#pencil')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -193,6 +193,11 @@
 <tr>
 	<td>ANY_FIELD</td>
 	<td>//div[label[contains(.,'${key_fieldName}')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ENTRY_ELLIPSIS_BUTTON</td>
+	<td>//div[contains(@class,'dnd-tbody') and contains(., '${key_entryName}')]//*[name()='svg'][contains(@class,'icon-ellipsis')]</td>
 	<td></td>
 </tr>
 </tbody>

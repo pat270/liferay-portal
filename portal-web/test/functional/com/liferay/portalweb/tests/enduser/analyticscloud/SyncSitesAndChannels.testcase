@@ -33,10 +33,6 @@ definition {
 	tearDown {
 		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
 
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
-		//ACUtils.tearDownAC();
-
 		ACUtils.tearDownDXP();
 
 		if (${testLiferayVirtualInstance} == "true") {
@@ -47,6 +43,8 @@ definition {
 
 			ACUtils.tearDownCommerce();
 		}
+
+		ACUtils.tearDownAC();
 	}
 
 	@description = "Story: LRAC-10858 | Automation ID: LRAC-12579 | Test Summary: Can search for channels and sites on assigned property modal"
@@ -71,6 +69,8 @@ definition {
 		}
 
 		task ("Toggle Commerce On > Click on the Assign button") {
+			ACUtils.waitForSendingRequest();
+
 			Check.checkToggleSwitch(
 				key_propertyName = ${assignedPropertyName},
 				locator1 = "ACDXPSettings#COMMERCE_PROPERTY_TOGGLE");
@@ -229,6 +229,8 @@ definition {
 		}
 
 		task ("Toggle Commerce Off > Try to assign channels to the property") {
+			ACUtils.waitForSendingRequest();
+
 			Uncheck.uncheckToggleSwitch(
 				key_propertyName = ${assignedPropertyName},
 				locator1 = "ACDXPSettings#COMMERCE_PROPERTY_TOGGLE");
@@ -417,6 +419,8 @@ definition {
 		}
 
 		task ("Toggle Commerce On > Assign channels to the new property and check that channels already used in another property are not available") {
+			ACUtils.waitForSendingRequest();
+
 			Check.checkToggleSwitch(
 				key_propertyName = ${newPropertyName},
 				locator1 = "ACDXPSettings#COMMERCE_PROPERTY_TOGGLE");
@@ -476,6 +480,8 @@ definition {
 		var firstSitesPageList = "AC Site 1,AC Site 2,AC Site 3,${assignedPropertyName},Minium";
 
 		task ("Click on the Assign button") {
+			ACUtils.waitForSendingRequest();
+
 			Check.checkToggleSwitch(
 				key_propertyName = ${assignedPropertyName},
 				locator1 = "ACDXPSettings#COMMERCE_PROPERTY_TOGGLE");
@@ -667,6 +673,8 @@ definition {
 		var sitesPageListDown = "Site Name,Minium,${propertyNameExtracted}";
 
 		task ("Toggle Commerce On > Click on the Assign button") {
+			ACUtils.waitForSendingRequest();
+
 			Check.checkToggleSwitch(
 				key_propertyName = ${assignedPropertyName},
 				locator1 = "ACDXPSettings#COMMERCE_PROPERTY_TOGGLE");

@@ -225,6 +225,7 @@
 		<column method-name="CDNURL" name="cdnURL" type="String" />
 		<column name="displayDate" type="Date" />
 		<column name="expirationDate" type="Date" />
+		<column name="galleryEnabled" type="boolean" />
 		<column localized="true" name="title" type="String" />
 		<column name="json" type="String" />
 		<column name="priority" type="double" />
@@ -243,6 +244,9 @@
 
 		<!-- Finder methods -->
 
+		<finder name="FileEntryId" return-type="Collection">
+			<finder-column name="fileEntryId" />
+		</finder>
 		<finder name="C_C" return-type="Collection">
 			<finder-column name="classNameId" />
 			<finder-column name="classPK" />
@@ -281,6 +285,20 @@
 		<finder name="C_C_T_NotST" return-type="Collection">
 			<finder-column name="classNameId" />
 			<finder-column name="classPK" />
+			<finder-column name="type" />
+			<finder-column comparator="!=" name="status" />
+		</finder>
+		<finder name="C_C_G_T_ST" return-type="Collection">
+			<finder-column name="classNameId" />
+			<finder-column name="classPK" />
+			<finder-column name="galleryEnabled" />
+			<finder-column name="type" />
+			<finder-column name="status" />
+		</finder>
+		<finder name="C_C_G_T_NotST" return-type="Collection">
+			<finder-column name="classNameId" />
+			<finder-column name="classPK" />
+			<finder-column name="galleryEnabled" />
 			<finder-column name="type" />
 			<finder-column comparator="!=" name="status" />
 		</finder>
@@ -506,13 +524,16 @@
 		<column name="CPOptionId" type="long" />
 		<column localized="true" name="name" type="String" />
 		<column localized="true" name="description" type="String" />
-		<column name="DDMFormFieldTypeName" type="String" />
+		<column name="commerceOptionTypeKey" type="String" />
+		<column name="infoItemServiceKey" type="String" />
 		<column name="priority" type="double" />
+		<column name="definedExternally" type="boolean" />
 		<column name="facetable" type="boolean" />
 		<column name="required" type="boolean" />
 		<column name="skuContributor" type="boolean" />
 		<column name="key" type="String" />
 		<column name="priceType" type="String" />
+		<column name="typeSettings" type="String" />
 
 		<!-- Order -->
 
@@ -571,12 +592,13 @@
 		<column name="CPDefinitionOptionRelId" type="long" />
 		<column name="CPInstanceUuid" type="String" />
 		<column name="CProductId" type="long" />
-		<column localized="true" name="name" type="String" />
-		<column name="priority" type="double" />
 		<column name="key" type="String" />
-		<column name="quantity" type="int" />
+		<column localized="true" name="name" type="String" />
 		<column name="preselected" type="boolean" />
 		<column name="price" type="BigDecimal" />
+		<column name="priority" type="double" />
+		<column name="quantity" type="BigDecimal" />
+		<column name="unitOfMeasureKey" type="String" />
 
 		<!-- Order -->
 
@@ -634,8 +656,9 @@
 		<column name="CPDefinitionId" type="long" />
 		<column name="CPSpecificationOptionId" type="long" />
 		<column name="CPOptionCategoryId" type="long" />
-		<column localized="true" name="value" type="String" />
+		<column name="key" type="String" />
 		<column name="priority" type="double" />
+		<column localized="true" name="value" type="String" />
 		<column name="lastPublishDate" type="Date" />
 
 		<!-- Order -->
@@ -669,6 +692,10 @@
 		<finder name="C_COC" return-type="Collection">
 			<finder-column name="CPDefinitionId" />
 			<finder-column name="CPOptionCategoryId" />
+		</finder>
+		<finder name="C_K" return-type="CPDefinitionSpecificationOptionValue" unique="true">
+			<finder-column name="CPDefinitionId" />
+			<finder-column name="key" />
 		</finder>
 	</entity>
 	<entity local-service="true" name="CPDisplayLayout" remote-service="true" uuid="true">
@@ -839,6 +866,11 @@
 			<finder-column comparator="&lt;" name="displayDate" />
 			<finder-column name="status" />
 		</finder>
+		<finder name="R_R_S" return-type="Collection">
+			<finder-column name="replacementCPInstanceUuid" />
+			<finder-column name="replacementCProductId" />
+			<finder-column name="status" />
+		</finder>
 	</entity>
 	<entity local-service="true" name="CPInstanceOptionValueRel" remote-service="true" uuid="true">
 
@@ -921,6 +953,10 @@
 		<finder name="C_S" return-type="Collection">
 			<finder-column name="companyId" />
 			<finder-column name="sku" />
+		</finder>
+		<finder name="C_A" return-type="Collection">
+			<finder-column name="CPInstanceId" />
+			<finder-column name="active" />
 		</finder>
 		<finder name="C_K" return-type="CPInstanceUnitOfMeasure" unique="true">
 			<finder-column name="CPInstanceId" />
@@ -1007,7 +1043,7 @@
 
 		<column localized="true" name="name" type="String" />
 		<column localized="true" name="description" type="String" />
-		<column name="DDMFormFieldTypeName" type="String" />
+		<column name="commerceOptionTypeKey" type="String" />
 		<column name="facetable" type="boolean" />
 		<column name="required" type="boolean" />
 		<column name="skuContributor" type="boolean" />
@@ -1167,12 +1203,13 @@
 		<column localized="true" name="description" type="String" />
 		<column name="facetable" type="boolean" />
 		<column name="key" type="String" />
+		<column name="priority" type="double" />
 		<column name="lastPublishDate" type="Date" />
 
 		<!-- Order -->
 
-		<order by="asc">
-			<order-column name="title" />
+		<order by="desc">
+			<order-column name="priority" />
 		</order>
 
 		<!-- Finder methods -->
@@ -1249,6 +1286,7 @@
 		<exception>CPDefinitionOptionValueRelPrice</exception>
 		<exception>CPDefinitionOptionValueRelQuantity</exception>
 		<exception>CPDefinitionProductTypeName</exception>
+		<exception>CPDefinitionSpecificationOptionValueKey</exception>
 		<exception>CPDefinitionSubscriptionLength</exception>
 		<exception>CPDisplayLayoutEntry</exception>
 		<exception>CPDisplayLayoutEntryUuid</exception>
@@ -1258,11 +1296,13 @@
 		<exception>CPInstanceExpirationDate</exception>
 		<exception>CPInstanceJson</exception>
 		<exception>CPInstanceMaxPriceValue</exception>
+		<exception>CPInstanceMinPriceValue</exception>
 		<exception>CPInstanceReplacementCPInstanceUuid</exception>
 		<exception>CPInstanceSku</exception>
 		<exception>CPInstanceSubscriptionLength</exception>
 		<exception>CPInstanceUnitOfMeasureIncrementalOrderQuantity</exception>
 		<exception>CPInstanceUnitOfMeasureKey</exception>
+		<exception>CPInstanceUnitOfMeasureName</exception>
 		<exception>CPInstanceUnitOfMeasureRate</exception>
 		<exception>CPInstanceUnitOfMeasureSku</exception>
 		<exception>CPMeasurementUnitType</exception>
@@ -1280,6 +1320,7 @@
 		<exception>DuplicateCommerceChannelRel</exception>
 		<exception>DuplicateCPAttachmentFileEntry</exception>
 		<exception>DuplicateCPDefinitionOptionRelKey</exception>
+		<exception>DuplicateCPDefinitionOptionValueRelKey</exception>
 		<exception>DuplicateCPInstance</exception>
 		<exception>DuplicateCPInstanceUnitOfMeasureKey</exception>
 		<exception>DuplicateCPMeasurementUnitExternalReferenceCode</exception>

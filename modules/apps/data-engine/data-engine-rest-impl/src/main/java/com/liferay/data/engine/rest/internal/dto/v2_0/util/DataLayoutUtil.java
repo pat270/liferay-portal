@@ -80,14 +80,18 @@ public class DataLayoutUtil {
 
 		return new DataLayout() {
 			{
-				dataLayoutFields = _toDataLayoutFields(
-					ddmFormLayout.getDDMFormFields(),
-					ddmFormFieldTypeServicesRegistry);
-				dataLayoutPages = _toDataLayoutPages(
-					ddmFormLayout.getDDMFormLayoutPages());
-				dataRules = _toDataRules(
-					ddmFormLayout.getDDMFormRules(), spiDDMFormRuleConverter);
-				paginationMode = ddmFormLayout.getPaginationMode();
+				setDataLayoutFields(
+					() -> _toDataLayoutFields(
+						ddmFormLayout.getDDMFormFields(),
+						ddmFormFieldTypeServicesRegistry));
+				setDataLayoutPages(
+					() -> _toDataLayoutPages(
+						ddmFormLayout.getDDMFormLayoutPages()));
+				setDataRules(
+					() -> _toDataRules(
+						ddmFormLayout.getDDMFormRules(),
+						spiDDMFormRuleConverter));
+				setPaginationMode(ddmFormLayout::getPaginationMode);
 			}
 		};
 	}
@@ -106,19 +110,19 @@ public class DataLayoutUtil {
 			ddmFormFieldTypeServicesRegistry,
 			ddmStructureLayout.getDDMFormLayout(), spiDDMFormRuleConverter);
 
-		dataLayout.setDateCreated(ddmStructureLayout.getCreateDate());
-		dataLayout.setDataDefinitionId(ddmStructureLayout.getDDMStructureId());
-		dataLayout.setDataLayoutKey(ddmStructureLayout.getStructureLayoutKey());
-		dataLayout.setDateModified(ddmStructureLayout.getModifiedDate());
+		dataLayout.setDateCreated(ddmStructureLayout::getCreateDate);
+		dataLayout.setDataDefinitionId(ddmStructureLayout::getDDMStructureId);
+		dataLayout.setDataLayoutKey(ddmStructureLayout::getStructureLayoutKey);
+		dataLayout.setDateModified(ddmStructureLayout::getModifiedDate);
 		dataLayout.setDescription(
-			LocalizedValueUtil.toStringObjectMap(
+			() -> LocalizedValueUtil.toStringObjectMap(
 				ddmStructureLayout.getDescriptionMap()));
-		dataLayout.setId(ddmStructureLayout.getStructureLayoutId());
+		dataLayout.setId(ddmStructureLayout::getStructureLayoutId);
 		dataLayout.setName(
-			LocalizedValueUtil.toStringObjectMap(
+			() -> LocalizedValueUtil.toStringObjectMap(
 				ddmStructureLayout.getNameMap()));
-		dataLayout.setSiteId(ddmStructureLayout.getGroupId());
-		dataLayout.setUserId(ddmStructureLayout.getUserId());
+		dataLayout.setSiteId(ddmStructureLayout::getGroupId);
+		dataLayout.setUserId(ddmStructureLayout::getUserId);
 
 		return dataLayout;
 	}
@@ -174,9 +178,10 @@ public class DataLayoutUtil {
 
 		return new DataLayoutColumn() {
 			{
-				columnSize = ddmFormLayoutColumn.getSize();
-				fieldNames = ArrayUtil.toStringArray(
-					ddmFormLayoutColumn.getDDMFormFieldNames());
+				setColumnSize(ddmFormLayoutColumn::getSize);
+				setFieldNames(
+					() -> ArrayUtil.toStringArray(
+						ddmFormLayoutColumn.getDDMFormFieldNames()));
 			}
 		};
 	}
@@ -242,12 +247,15 @@ public class DataLayoutUtil {
 
 		return new DataLayoutPage() {
 			{
-				dataLayoutRows = _toDataLayoutRows(
-					ddmFormLayoutPage.getDDMFormLayoutRows());
-				description = LocalizedValueUtil.toLocalizedValuesMap(
-					ddmFormLayoutPage.getDescription());
-				title = LocalizedValueUtil.toLocalizedValuesMap(
-					ddmFormLayoutPage.getTitle());
+				setDataLayoutRows(
+					() -> _toDataLayoutRows(
+						ddmFormLayoutPage.getDDMFormLayoutRows()));
+				setDescription(
+					() -> LocalizedValueUtil.toLocalizedValuesMap(
+						ddmFormLayoutPage.getDescription()));
+				setTitle(
+					() -> LocalizedValueUtil.toLocalizedValuesMap(
+						ddmFormLayoutPage.getTitle()));
 			}
 		};
 	}
@@ -270,8 +278,9 @@ public class DataLayoutUtil {
 
 		return new DataLayoutRow() {
 			{
-				dataLayoutColumns = _toDataLayoutColumns(
-					ddmFormLayoutRow.getDDMFormLayoutColumns());
+				setDataLayoutColumns(
+					() -> _toDataLayoutColumns(
+						ddmFormLayoutRow.getDDMFormLayoutColumns()));
 			}
 		};
 	}
@@ -299,7 +308,7 @@ public class DataLayoutUtil {
 			Gson gson = new Gson();
 
 			dataRule.setActions(
-				TransformUtil.transformToArray(
+				() -> TransformUtil.transformToArray(
 					spiDDMFormRule.getSPIDDMFormRuleActions(),
 					spiDDMFormRuleAction -> gson.fromJson(
 						JSONFactoryUtil.looseSerializeDeep(
@@ -307,7 +316,7 @@ public class DataLayoutUtil {
 						Map.class),
 					Map.class));
 			dataRule.setConditions(
-				TransformUtil.transformToArray(
+				() -> TransformUtil.transformToArray(
 					spiDDMFormRule.getSPIDDMFormRuleConditions(),
 					spiDDMFormRuleCondition -> gson.fromJson(
 						JSONFactoryUtil.looseSerializeDeep(
@@ -315,9 +324,9 @@ public class DataLayoutUtil {
 						Map.class),
 					Map.class));
 
-			dataRule.setLogicalOperator(spiDDMFormRule.getLogicalOperator());
+			dataRule.setLogicalOperator(spiDDMFormRule::getLogicalOperator);
 			dataRule.setName(
-				LocalizedValueUtil.toLocalizedValuesMap(
+				() -> LocalizedValueUtil.toLocalizedValuesMap(
 					spiDDMFormRule.getName()));
 
 			dataRules = ArrayUtil.append(dataRules, dataRule);

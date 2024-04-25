@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Role;
+import com.liferay.portal.kernel.model.Team;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
@@ -31,12 +32,13 @@ import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
-import com.liferay.portal.kernel.security.membershippolicy.SiteMembershipPolicyUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.security.membershippolicy.SiteMembershipPolicyUtil;
 import com.liferay.site.memberships.web.internal.util.GroupUtil;
+import com.liferay.site.teams.item.selector.criterion.SiteTeamsItemSelectorCriterion;
 import com.liferay.users.admin.item.selector.UserSiteMembershipItemSelectorCriterion;
 
 import java.util.ArrayList;
@@ -229,6 +231,8 @@ public class UsersManagementToolbarDisplayContext
 	public List<LabelItem> getFilterLabelItems() {
 		Role role = _usersDisplayContext.getRole();
 
+		Team team = _usersDisplayContext.getTeam();
+
 		return LabelItemListBuilder.add(
 			() -> role != null,
 			labelItem -> {
@@ -237,12 +241,31 @@ public class UsersManagementToolbarDisplayContext
 					PortletURLBuilder.create(
 						PortletURLUtil.clone(
 							currentURLObj, liferayPortletResponse)
+					).setNavigation(
+						"all"
 					).setParameter(
 						"roleId", "0"
 					).buildString());
 
 				labelItem.setCloseable(true);
 				labelItem.setLabel(role.getTitle(_themeDisplay.getLocale()));
+			}
+		).add(
+			() -> team != null,
+			labelItem -> {
+				labelItem.putData(
+					"removeLabelURL",
+					PortletURLBuilder.create(
+						PortletURLUtil.clone(
+							currentURLObj, liferayPortletResponse)
+					).setNavigation(
+						"all"
+					).setParameter(
+						"teamId", "0"
+					).buildString());
+
+				labelItem.setCloseable(true);
+				labelItem.setLabel(team.getName());
 			}
 		).build();
 	}
@@ -303,7 +326,8 @@ public class UsersManagementToolbarDisplayContext
 			dropdownItem -> {
 				dropdownItem.setActive(Objects.equals(getNavigation(), "all"));
 				dropdownItem.setHref(
-					getPortletURL(), "navigation", "all", "roleId", "0");
+					getPortletURL(), "navigation", "all", "roleId", "0",
+					"teamId", "0");
 				dropdownItem.setLabel(
 					LanguageUtil.get(httpServletRequest, "all"));
 			}
@@ -332,6 +356,31 @@ public class UsersManagementToolbarDisplayContext
 					Objects.equals(getNavigation(), "roles"));
 				dropdownItem.setLabel(
 					LanguageUtil.get(httpServletRequest, "roles"));
+			}
+		).add(
+			dropdownItem -> {
+				dropdownItem.putData("action", "selectTeams");
+				dropdownItem.putData("selectTeamsURL", _getSelectTeamsURL());
+				dropdownItem.putData(
+					"viewTeamURL",
+					PortletURLBuilder.createRenderURL(
+						liferayPortletResponse
+					).setMVCPath(
+						"/view.jsp"
+					).setRedirect(
+						_themeDisplay.getURLCurrent()
+					).setNavigation(
+						"teams"
+					).setTabs1(
+						"users"
+					).setParameter(
+						"groupId", _usersDisplayContext.getGroupId()
+					).buildString());
+
+				dropdownItem.setActive(
+					Objects.equals(getNavigation(), "teams"));
+				dropdownItem.setLabel(
+					LanguageUtil.get(httpServletRequest, "teams"));
 			}
 		).build();
 	}
@@ -362,6 +411,24 @@ public class UsersManagementToolbarDisplayContext
 		).setWindowState(
 			LiferayWindowState.POP_UP
 		).buildString();
+	}
+
+	private String _getSelectTeamsURL() {
+		ItemSelector itemSelector =
+			(ItemSelector)httpServletRequest.getAttribute(
+				ItemSelector.class.getName());
+
+		SiteTeamsItemSelectorCriterion siteTeamsItemSelectorCriterion =
+			new SiteTeamsItemSelectorCriterion();
+
+		siteTeamsItemSelectorCriterion.setDesiredItemSelectorReturnTypes(
+			new UUIDItemSelectorReturnType());
+
+		return String.valueOf(
+			itemSelector.getItemSelectorURL(
+				RequestBackedPortletURLFactoryUtil.create(httpServletRequest),
+				liferayPortletResponse.getNamespace() + "selectTeams",
+				siteTeamsItemSelectorCriterion));
 	}
 
 	private String _getSelectUsersURL() {

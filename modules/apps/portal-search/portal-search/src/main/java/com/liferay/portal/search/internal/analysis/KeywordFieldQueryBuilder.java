@@ -22,9 +22,12 @@ import org.osgi.service.component.annotations.Component;
 /**
  * @author Joshua Cords
  */
-@Component(service = KeywordFieldQueryBuilder.class)
+@Component(
+	property = "query.builder.type=keyword", service = FieldQueryBuilder.class
+)
 public class KeywordFieldQueryBuilder implements FieldQueryBuilder {
 
+	@Override
 	public Query build(String field, String value) {
 		try {
 			BooleanQuery booleanQuery = new BooleanQueryImpl();

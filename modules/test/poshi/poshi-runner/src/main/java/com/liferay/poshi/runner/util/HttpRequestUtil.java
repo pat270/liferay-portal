@@ -5,6 +5,8 @@
 
 package com.liferay.poshi.runner.util;
 
+import com.liferay.poshi.core.util.GetterUtil;
+import com.liferay.poshi.core.util.MathUtil;
 import com.liferay.poshi.core.util.StringUtil;
 
 import java.io.IOException;
@@ -17,7 +19,7 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import jodd.util.Base64;
@@ -27,25 +29,59 @@ import jodd.util.Base64;
  */
 public class HttpRequestUtil {
 
-	public static Map<String, String> addRequestHeaders(
-		Map<String, String> requestHeaders, String header) {
+	public static void assertResponseBody(
+		HttpResponse httpResponse, String expectedResponseBody) {
 
-		if (requestHeaders == null) {
-			requestHeaders = new HashMap<>();
+		String actualResponseBody = httpResponse.getBody();
+
+		if (!StringUtil.equals(actualResponseBody, expectedResponseBody)) {
+			throw new RuntimeException(
+				"Expected response body: " + expectedResponseBody +
+					"does not match actual response body " +
+						actualResponseBody);
 		}
+	}
 
-		int i = header.indexOf("=");
+	public static void assertResponseBodyContains(
+		HttpResponse httpResponse, String expectedText) {
 
-		if (i == -1) {
-			throw new IllegalArgumentException("Invalid header: " + header);
+		String actualResponseBody = httpResponse.getBody();
+
+		if (!StringUtil.contains(actualResponseBody, expectedText)) {
+			throw new RuntimeException(
+				"Expected text \"" + expectedText + "\" was not found in " +
+					actualResponseBody);
 		}
+	}
 
-		String key = header.substring(0, i);
-		String value = header.substring(i + 1);
+	public static void assertResponseDuration(
+		HttpResponse httpResponse, String expectedResponseDuration) {
 
-		requestHeaders.put(key, value);
+		Long actualResponseDuration = httpResponse.getDuration();
 
-		return requestHeaders;
+		if (MathUtil.isGreaterThan(
+				actualResponseDuration,
+				GetterUtil.getLong(expectedResponseDuration))) {
+
+			throw new RuntimeException(
+				"Actual response duration of " + actualResponseDuration +
+					"ms exceeded expected response duration of " +
+						expectedResponseDuration + "ms");
+		}
+	}
+
+	public static void assertResponseStatusCode(
+		HttpResponse httpResponse, String expectedStatusCode) {
+
+		Integer actualStatusCode = httpResponse.getStatusCode();
+
+		if (!StringUtil.equals(
+				actualStatusCode.toString(), expectedStatusCode)) {
+
+			throw new RuntimeException(
+				"Expected status code " + expectedStatusCode +
+					" does not match actual status code " + actualStatusCode);
+		}
 	}
 
 	public static HttpResponse get(
@@ -69,6 +105,12 @@ public class HttpRequestUtil {
 			"GET", _RETRY_PERIOD_DEFAULT, _TIMEOUT_DEFAULT, url);
 	}
 
+	public static HttpResponse get(String url) throws IOException {
+		return request(
+			null, _MAX_RETRIES_DEFAULT, null, null, "GET",
+			_RETRY_PERIOD_DEFAULT, _TIMEOUT_DEFAULT, url);
+	}
+
 	public static HttpAuthorization getHttpAuthorization(
 		String type, String value) {
 
@@ -86,14 +128,33 @@ public class HttpRequestUtil {
 	}
 
 	public static String getResponseBody(HttpResponse httpResponse) {
-		return httpResponse.getResponseBody();
+		return httpResponse.getBody();
+	}
+
+	public static Long getResponseDuration(HttpResponse httpResponse) {
+		return httpResponse.getDuration();
 	}
 
 	public static String getResponseErrorMessage(HttpResponse httpResponse) {
-		return httpResponse.getResponseErrorMessage();
+		return httpResponse.getErrorMessage();
 	}
 
-	public static String getStatusCode(HttpResponse httpResponse) {
+	public static Map<String, List<String>> getResponseHeaderFields(
+		HttpResponse httpResponse) {
+
+		return httpResponse.getHeaderFields();
+	}
+
+	public static List<String> getResponseHeaderFieldValue(
+		HttpResponse httpResponse, String headerFieldKey) {
+
+		Map<String, List<String>> responseHeaderFields =
+			getResponseHeaderFields(httpResponse);
+
+		return responseHeaderFields.get(headerFieldKey);
+	}
+
+	public static Integer getResponseStatusCode(HttpResponse httpResponse) {
 		return httpResponse.getStatusCode();
 	}
 
@@ -107,6 +168,8 @@ public class HttpRequestUtil {
 		url = _fixURL(url);
 
 		int retryCount = 0;
+
+		long startTimeMillis = System.currentTimeMillis();
 
 		while (true) {
 			try {
@@ -183,8 +246,8 @@ public class HttpRequestUtil {
 				}
 
 				if (timeout != 0) {
-					urlConnection.setConnectTimeout(timeout);
-					urlConnection.setReadTimeout(timeout);
+					httpURLConnection.setConnectTimeout(timeout);
+					httpURLConnection.setReadTimeout(timeout);
 				}
 
 				int responseCode = httpURLConnection.getResponseCode();
@@ -193,19 +256,26 @@ public class HttpRequestUtil {
 					try (InputStream inputStream =
 							httpURLConnection.getInputStream()) {
 
-						String body = _readInputStream(inputStream, false);
+						long duration =
+							System.currentTimeMillis() - startTimeMillis;
 
-						return new HttpResponse(body, null, responseCode);
+						return new HttpResponse(
+							_readInputStream(inputStream, false), null,
+							httpURLConnection.getHeaderFields(), responseCode,
+							duration);
 					}
 				}
 
 				try (InputStream errorInputStream =
 						httpURLConnection.getErrorStream()) {
 
-					String errorMessage = _readInputStream(
-						errorInputStream, false);
+					long duration =
+						System.currentTimeMillis() - startTimeMillis;
 
-					return new HttpResponse(null, errorMessage, responseCode);
+					return new HttpResponse(
+						null, _readInputStream(errorInputStream, false),
+						httpURLConnection.getHeaderFields(), responseCode,
+						duration);
 				}
 			}
 			catch (IOException ioException) {
@@ -279,27 +349,43 @@ public class HttpRequestUtil {
 
 	public static class HttpResponse {
 
-		public HttpResponse(String body, String errorMessage, int statusCode) {
-			this.body = body;
-			this.errorMessage = errorMessage;
-			this.statusCode = String.valueOf(statusCode);
+		public HttpResponse(
+			String body, String errorMessage,
+			Map<String, List<String>> headerFields, int statusCode,
+			long duration) {
+
+			_body = body;
+			_errorMessage = errorMessage;
+			_headerFields = headerFields;
+			_statusCode = statusCode;
+			_duration = duration;
 		}
 
-		public String getResponseBody() {
-			return body;
+		public String getBody() {
+			return _body;
 		}
 
-		public String getResponseErrorMessage() {
-			return errorMessage;
+		public long getDuration() {
+			return _duration;
 		}
 
-		public String getStatusCode() {
-			return statusCode;
+		public String getErrorMessage() {
+			return _errorMessage;
 		}
 
-		protected String body;
-		protected String errorMessage;
-		protected String statusCode;
+		public Map<String, List<String>> getHeaderFields() {
+			return _headerFields;
+		}
+
+		public int getStatusCode() {
+			return _statusCode;
+		}
+
+		private final String _body;
+		private final long _duration;
+		private final String _errorMessage;
+		private final Map<String, List<String>> _headerFields;
+		private final int _statusCode;
 
 	}
 

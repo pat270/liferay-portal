@@ -31,6 +31,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.LayoutConstants;
+import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.portlet.PortletLayoutFinder;
 import com.liferay.portal.kernel.portlet.PortletLayoutFinderRegistryUtil;
 import com.liferay.portal.kernel.portlet.PortletProvider;
@@ -61,7 +62,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PrefsPropsUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
-import com.liferay.portal.kernel.util.ServiceProxyFactory;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.URLCodec;
@@ -159,7 +159,7 @@ public class DLImpl implements DL {
 
 		Collections.reverse(folders);
 
-		StringBundler sb = new StringBundler((folders.size() * 3) + 5);
+		StringBundler sb = new StringBundler((folders.size() * 4) + 5);
 
 		sb.append(themeDisplay.translate("home"));
 
@@ -249,6 +249,10 @@ public class DLImpl implements DL {
 			LanguageUtil.get(
 				themeDisplay.getLocale(),
 				"the-company-name-associated-with-the-document")
+		).put(
+			"[$DOCUMENT_STATUS_BY_USER_NAME$]",
+			LanguageUtil.get(
+				themeDisplay.getLocale(), "the-user-who-updated-the-document")
 		).put(
 			"[$DOCUMENT_TITLE$]",
 			LanguageUtil.get(themeDisplay.getLocale(), "the-document-title")
@@ -461,8 +465,9 @@ public class DLImpl implements DL {
 		String fileName = fileEntry.getFileName();
 
 		if (fileEntry.isInTrash()) {
-			fileName = _trashTitleResolver.getOriginalTitle(
-				fileEntry.getFileName());
+			TrashHelper trashHelper = _trashHelperSnapshot.get();
+
+			fileName = trashHelper.getOriginalTitle(fileEntry.getFileName());
 		}
 
 		sb.append(URLCodec.encodeURL(HtmlUtil.unescape(fileName)));
@@ -487,9 +492,16 @@ public class DLImpl implements DL {
 
 		String previewURL = sb.toString();
 
-		if ((themeDisplay != null) && themeDisplay.isAddSessionIdToURL()) {
-			return PortalUtil.getURLWithSessionId(
-				previewURL, themeDisplay.getSessionId());
+		if (themeDisplay != null) {
+			if (Validator.isNotNull(themeDisplay.getDoAsUserId())) {
+				previewURL = PortalUtil.addPreservedParameters(
+					themeDisplay, previewURL, false, true);
+			}
+
+			if (themeDisplay.isAddSessionIdToURL()) {
+				previewURL = PortalUtil.getURLWithSessionId(
+					previewURL, themeDisplay.getSessionId());
+			}
 		}
 
 		return previewURL;
@@ -806,6 +818,13 @@ public class DLImpl implements DL {
 			return entryURL;
 		}
 
+		boolean hasAssetDisplayPage = GetterUtil.getBoolean(
+			serviceContext.getAttribute("hasAssetDisplayPage"));
+
+		if (hasAssetDisplayPage) {
+			return StringPool.BLANK;
+		}
+
 		HttpServletRequest httpServletRequest = serviceContext.getRequest();
 		ThemeDisplay themeDisplay = serviceContext.getThemeDisplay();
 
@@ -1019,9 +1038,8 @@ public class DLImpl implements DL {
 	};
 
 	private static final Map<String, String> _genericNames = new HashMap<>();
-	private static volatile TrashHelper _trashTitleResolver =
-		ServiceProxyFactory.newServiceTrackedInstance(
-			TrashHelper.class, DLImpl.class, "_trashTitleResolver", false);
+	private static final Snapshot<TrashHelper> _trashHelperSnapshot =
+		new Snapshot<>(DLImpl.class, TrashHelper.class);
 
 	static {
 		String[] genericNames = PropsUtil.getArray(

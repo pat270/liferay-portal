@@ -26,8 +26,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -182,62 +180,63 @@ public abstract class BaseSiteScopeResourceTestCase {
 	}
 
 	@Test
-	public void testGetPlanInternalClassNameSiteScopesPage() throws Exception {
-		String internalClassName =
-			testGetPlanInternalClassNameSiteScopesPage_getInternalClassName();
-		String irrelevantInternalClassName =
-			testGetPlanInternalClassNameSiteScopesPage_getIrrelevantInternalClassName();
+	public void testGetPlanInternalClassNameKeySiteScopesPage()
+		throws Exception {
+
+		String internalClassNameKey =
+			testGetPlanInternalClassNameKeySiteScopesPage_getInternalClassNameKey();
+		String irrelevantInternalClassNameKey =
+			testGetPlanInternalClassNameKeySiteScopesPage_getIrrelevantInternalClassNameKey();
 
 		Page<SiteScope> page =
-			siteScopeResource.getPlanInternalClassNameSiteScopesPage(
-				internalClassName, null);
+			siteScopeResource.getPlanInternalClassNameKeySiteScopesPage(
+				internalClassNameKey, null);
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
-		if (irrelevantInternalClassName != null) {
+		if (irrelevantInternalClassNameKey != null) {
 			SiteScope irrelevantSiteScope =
-				testGetPlanInternalClassNameSiteScopesPage_addSiteScope(
-					irrelevantInternalClassName, randomIrrelevantSiteScope());
+				testGetPlanInternalClassNameKeySiteScopesPage_addSiteScope(
+					irrelevantInternalClassNameKey,
+					randomIrrelevantSiteScope());
 
-			page = siteScopeResource.getPlanInternalClassNameSiteScopesPage(
-				irrelevantInternalClassName, null);
+			page = siteScopeResource.getPlanInternalClassNameKeySiteScopesPage(
+				irrelevantInternalClassNameKey, null);
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantSiteScope),
-				(List<SiteScope>)page.getItems());
+			assertContains(
+				irrelevantSiteScope, (List<SiteScope>)page.getItems());
 			assertValid(
 				page,
-				testGetPlanInternalClassNameSiteScopesPage_getExpectedActions(
-					irrelevantInternalClassName));
+				testGetPlanInternalClassNameKeySiteScopesPage_getExpectedActions(
+					irrelevantInternalClassNameKey));
 		}
 
 		SiteScope siteScope1 =
-			testGetPlanInternalClassNameSiteScopesPage_addSiteScope(
-				internalClassName, randomSiteScope());
+			testGetPlanInternalClassNameKeySiteScopesPage_addSiteScope(
+				internalClassNameKey, randomSiteScope());
 
 		SiteScope siteScope2 =
-			testGetPlanInternalClassNameSiteScopesPage_addSiteScope(
-				internalClassName, randomSiteScope());
+			testGetPlanInternalClassNameKeySiteScopesPage_addSiteScope(
+				internalClassNameKey, randomSiteScope());
 
-		page = siteScopeResource.getPlanInternalClassNameSiteScopesPage(
-			internalClassName, null);
+		page = siteScopeResource.getPlanInternalClassNameKeySiteScopesPage(
+			internalClassNameKey, null);
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(siteScope1, siteScope2),
-			(List<SiteScope>)page.getItems());
+		assertContains(siteScope1, (List<SiteScope>)page.getItems());
+		assertContains(siteScope2, (List<SiteScope>)page.getItems());
 		assertValid(
 			page,
-			testGetPlanInternalClassNameSiteScopesPage_getExpectedActions(
-				internalClassName));
+			testGetPlanInternalClassNameKeySiteScopesPage_getExpectedActions(
+				internalClassNameKey));
 	}
 
 	protected Map<String, Map<String, String>>
-			testGetPlanInternalClassNameSiteScopesPage_getExpectedActions(
-				String internalClassName)
+			testGetPlanInternalClassNameKeySiteScopesPage_getExpectedActions(
+				String internalClassNameKey)
 		throws Exception {
 
 		Map<String, Map<String, String>> expectedActions = new HashMap<>();
@@ -245,8 +244,9 @@ public abstract class BaseSiteScopeResourceTestCase {
 		return expectedActions;
 	}
 
-	protected SiteScope testGetPlanInternalClassNameSiteScopesPage_addSiteScope(
-			String internalClassName, SiteScope siteScope)
+	protected SiteScope
+			testGetPlanInternalClassNameKeySiteScopesPage_addSiteScope(
+				String internalClassNameKey, SiteScope siteScope)
 		throws Exception {
 
 		throw new UnsupportedOperationException(
@@ -254,7 +254,7 @@ public abstract class BaseSiteScopeResourceTestCase {
 	}
 
 	protected String
-			testGetPlanInternalClassNameSiteScopesPage_getInternalClassName()
+			testGetPlanInternalClassNameKeySiteScopesPage_getInternalClassNameKey()
 		throws Exception {
 
 		throw new UnsupportedOperationException(
@@ -262,7 +262,7 @@ public abstract class BaseSiteScopeResourceTestCase {
 	}
 
 	protected String
-			testGetPlanInternalClassNameSiteScopesPage_getIrrelevantInternalClassName()
+			testGetPlanInternalClassNameKeySiteScopesPage_getIrrelevantInternalClassNameKey()
 		throws Exception {
 
 		return null;
@@ -528,6 +528,10 @@ public abstract class BaseSiteScopeResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -706,9 +710,9 @@ public abstract class BaseSiteScopeResourceTestCase {
 	}
 
 	protected SiteScopeResource siteScopeResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

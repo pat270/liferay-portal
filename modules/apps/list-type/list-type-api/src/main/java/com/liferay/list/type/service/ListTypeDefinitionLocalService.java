@@ -76,13 +76,14 @@ public interface ListTypeDefinitionLocalService
 
 	@Indexable(type = IndexableType.REINDEX)
 	public ListTypeDefinition addListTypeDefinition(
-			String externalReferenceCode, long userId)
+			String externalReferenceCode, long userId, boolean system)
 		throws PortalException;
 
 	@Indexable(type = IndexableType.REINDEX)
 	public ListTypeDefinition addListTypeDefinition(
 			String externalReferenceCode, long userId,
-			Map<Locale, String> nameMap, List<ListTypeEntry> listTypeEntries)
+			Map<Locale, String> nameMap, boolean system,
+			List<ListTypeEntry> listTypeEntries)
 		throws PortalException;
 
 	/**

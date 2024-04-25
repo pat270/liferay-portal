@@ -1,0 +1,181 @@
+/**
+ * SPDX-FileCopyrightText: (c) 2024 Liferay, Inc. https://liferay.com
+ * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
+ */
+
+import {expect, mergeTests} from '@playwright/test';
+
+import {apiHelpersTest} from '../../fixtures/apiHelpersTest';
+import {loginTest} from '../../fixtures/loginTest';
+import {objectPagesTest} from '../../fixtures/objectPagesTest';
+import {getRandomInt} from '../../utils/getRandomInt';
+
+export const test = mergeTests(apiHelpersTest, loginTest(), objectPagesTest);
+
+test.describe('manage object definitions through model builder', () => {
+	test('navigate between object folders on model builder page', async ({
+		apiHelpers,
+		modelBuilderPage,
+	}) => {
+		const objectFolders: ObjectFolder[] = await Promise.all(
+			Array.apply(null, Array(5)).map(async () => {
+				return await apiHelpers.objectAdmin.postRandomObjectFolder();
+			})
+		);
+
+		await modelBuilderPage.goto({objectFolderName: 'Default'});
+
+		for (const objectFolder of objectFolders) {
+			await expect(modelBuilderPage.otherObjectFolders).toBeVisible();
+
+			const otherObjectFolderLocator =
+				modelBuilderPage.getOtherObjectFolderLocator(
+					objectFolder.label['en_US']
+				);
+
+			await otherObjectFolderLocator.hover();
+
+			await otherObjectFolderLocator
+				.getByRole('button', {name: 'Go to Folder'})
+				.click();
+
+			await expect(otherObjectFolderLocator).toBeHidden();
+
+			await expect(
+				modelBuilderPage.getObjectFolderLabelHeaderLocator(
+					objectFolder.label['en_US']
+				)
+			).toBeVisible();
+		}
+
+		// Clean up
+
+		for (const objectFolder of objectFolders) {
+			await apiHelpers.objectAdmin.deleteObjectFolder(objectFolder.id);
+		}
+	});
+});
+
+test.describe('manage object definitions through view object definitions', () => {
+	test('created object folders are on the left side bar', async ({
+		apiHelpers,
+		viewObjectDefinitionsPage,
+	}) => {
+		await viewObjectDefinitionsPage.goto();
+
+		const objectFolderExternalReferenceCode =
+			'objectFolder' + getRandomInt();
+
+		const objectFolder = await viewObjectDefinitionsPage.createObjectFolder(
+			objectFolderExternalReferenceCode
+		);
+
+		await expect(
+			viewObjectDefinitionsPage.page
+				.locator('li')
+				.filter({hasText: objectFolderExternalReferenceCode})
+		).toBeVisible();
+
+		// Clean up
+
+		await apiHelpers.objectAdmin.deleteObjectFolder(objectFolder.id);
+	});
+
+	test('default folder does not contains delete and edit options', async ({
+		viewObjectDefinitionsPage,
+	}) => {
+		await viewObjectDefinitionsPage.goto();
+
+		await viewObjectDefinitionsPage.clickDefaultObjectFolder();
+
+		await viewObjectDefinitionsPage.openObjectFolderActions();
+
+		await expect(
+			viewObjectDefinitionsPage.objectFolderDeleteFolderOption
+		).toBeHidden();
+
+		await expect(
+			viewObjectDefinitionsPage.objectFolderEditLabelAndERCOption
+		).toBeHidden();
+	});
+
+	test('navigate between object folders on view object definitions page', async ({
+		apiHelpers,
+		viewObjectDefinitionsPage,
+	}) => {
+		const objectFolders: ObjectFolder[] = await Promise.all(
+			Array.apply(null, Array(5)).map(async () => {
+				return await apiHelpers.objectAdmin.postRandomObjectFolder();
+			})
+		);
+
+		await viewObjectDefinitionsPage.goto();
+
+		for (const objectFolder of objectFolders) {
+			await expect(viewObjectDefinitionsPage.objectFolders).toBeVisible();
+
+			viewObjectDefinitionsPage.openObjectFolder(
+				objectFolder.label['en_US']
+			);
+
+			expect(
+				viewObjectDefinitionsPage.getObjectFolderCardHeaderLabel(
+					objectFolder.label['en']
+				)
+			).toBeVisible();
+		}
+
+		// Clean up
+
+		for (const objectFolder of objectFolders) {
+			await apiHelpers.objectAdmin.deleteObjectFolder(objectFolder.id);
+		}
+	});
+});
+
+test('object definitions from a deleted folder are moved to the default folder', async ({
+	apiHelpers,
+	viewObjectDefinitionsPage,
+}) => {
+	const defaultLanguage = 'en_US';
+
+	const objectFolder = await apiHelpers.objectAdmin.postRandomObjectFolder();
+
+	const objectDefinition1 =
+		await apiHelpers.objectAdmin.postRandomObjectDefinition(
+			objectFolder.externalReferenceCode
+		);
+	const objectDefinition2 =
+		await apiHelpers.objectAdmin.postRandomObjectDefinition(
+			objectFolder.externalReferenceCode
+		);
+
+	await viewObjectDefinitionsPage.goto();
+
+	await viewObjectDefinitionsPage.openObjectFolder(
+		objectFolder.externalReferenceCode
+	);
+
+	await viewObjectDefinitionsPage.openObjectFolderActions();
+
+	await viewObjectDefinitionsPage.deleteObjectFolder(objectFolder.name);
+
+	await viewObjectDefinitionsPage.clickDefaultObjectFolder();
+
+	await expect(
+		viewObjectDefinitionsPage.frontendDataSetEntries.filter({
+			hasText: objectDefinition1.label[defaultLanguage],
+		})
+	).toBeVisible();
+
+	await expect(
+		viewObjectDefinitionsPage.frontendDataSetEntries.filter({
+			hasText: objectDefinition2.label[defaultLanguage],
+		})
+	).toBeVisible();
+
+	// Clean up
+
+	await apiHelpers.objectAdmin.deleteObjectDefinition(objectDefinition1.id);
+	await apiHelpers.objectAdmin.deleteObjectDefinition(objectDefinition2.id);
+});

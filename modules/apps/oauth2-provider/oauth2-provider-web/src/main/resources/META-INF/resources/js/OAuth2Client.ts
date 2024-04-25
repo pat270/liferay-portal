@@ -8,6 +8,7 @@ import pkceChallenge from 'pkce-challenge';
 interface IOAuth2ClientFromParametersOptions {
 	authorizeURL?: string;
 	clientId: string;
+	debug?: boolean;
 	homePageURL: string;
 	redirectURIs?: Array<string>;
 	tokenURL?: string;
@@ -16,16 +17,25 @@ interface IOAuth2ClientFromParametersOptions {
 interface IOAuth2ClientOptions {
 	authorizeURL: string;
 	clientId: string;
-	encodedRedirectURL: string;
+	debug?: boolean;
 	homePageURL: string;
 	redirectURIs: Array<string>;
 	tokenURL: string;
 }
 
+interface IOAuth2ClientTokenResponse {
+	access_token: string;
+	expires_after_ms: number;
+	expires_in: number;
+	refresh_token: string;
+	scope: string;
+	token_type: string;
+}
+
 class OAuth2Client {
 	private authorizeURL: string;
 	private clientId: string;
-	private encodedRedirectURL: string;
+	private debug: boolean;
 	private homePageURL: string;
 	private redirectURIs: Array<string>;
 	private tokenURL: string;
@@ -33,7 +43,7 @@ class OAuth2Client {
 	constructor(options: IOAuth2ClientOptions) {
 		this.authorizeURL = options.authorizeURL;
 		this.clientId = options.clientId;
-		this.encodedRedirectURL = options.encodedRedirectURL;
+		this.debug = options.debug || false;
 		this.homePageURL = options.homePageURL;
 		this.redirectURIs = options.redirectURIs;
 		this.tokenURL = options.tokenURL;
@@ -60,48 +70,96 @@ class OAuth2Client {
 		});
 	}
 
-	private _createIframe(challenge: any, sessionKey: string): Promise<any> {
+	private _createIframe(
+		challenge: ReturnType<typeof pkceChallenge>,
+		sessionKey: string
+	): Promise<any> {
 		const oauth2Client = this;
+
+		const origin = window.location.origin;
+		const redirectURI = oauth2Client.redirectURIs.find(uri => uri.startsWith(origin));
+
+		if (!redirectURI) {
+			return Promise.reject(`No redirectURI in ${oauth2Client.redirectURIs} matching origin ${origin}`);
+		}
 
 		const ifrm = document.createElement('iframe');
 
-		ifrm.src = `${oauth2Client.authorizeURL}?client_id=${oauth2Client.clientId}&code_challenge=${challenge.code_challenge}&code_challenge_method=S256&redirect_uri=${oauth2Client.encodedRedirectURL}&response_type=code&prompt=none`;
+		ifrm.src = `${oauth2Client.authorizeURL}?client_id=${oauth2Client.clientId}&code_challenge=${challenge.code_challenge}&code_challenge_method=S256&redirect_uri=${encodeURIComponent(redirectURI)}&response_type=code&prompt=none&state=${sessionKey}`;
 		ifrm.style.display = 'none';
 
 		document.body.appendChild(ifrm);
 
 		return new Promise((resolve, reject) => {
 			const eventHandler = (event: any) => {
-				try {
-					if (event.data.error) {
-						reject(event.data.error);
+				if (oauth2Client.debug) {
+					// eslint-disable-next-line no-console
+					console.debug('OAuth2Client._createIframe.event', event);
+				}
 
-						return;
+				if (event.data.error) {
+
+					// Remove the iframe and reject the promise
+
+					if (event.target && event.target.parentElement) {
+						event.target.parentElement.removeChild(event.target);
 					}
-					else if (event.data.code === null) {
-						reject();
 
-						return;
+					reject(event.data.error);
+
+					return;
+				}
+				else if (!event.data.code) {
+
+					// Ignore messages that don't contain a code
+
+					return;
+				}
+
+				if (event.data.state !== sessionKey) {
+
+					// Remove the iframe and reject the promise
+
+					if (event.target && event.target.parentElement) {
+						event.target.parentElement.removeChild(event.target);
 					}
 
-					const tokenResponse = oauth2Client._requestToken(
-						challenge.code_verifier,
-						event.data.code
-					);
+					reject('state does not match');
 
-					resolve(tokenResponse);
+					return;
+				}
 
-					tokenResponse.then((response) =>
+				const tokenResponse = oauth2Client._requestToken(
+					challenge.code_verifier,
+					event.data.code,
+					redirectURI
+				);
+
+				resolve(tokenResponse);
+
+				tokenResponse
+					.then((response) =>
 						Liferay.Util.SessionStorage.setItem(
 							sessionKey,
-							JSON.stringify(response),
+							JSON.stringify({
+								...response,
+								expires_after_ms:
+									new Date().getTime() +
+									response.expires_in * 1000,
+							}),
 							Liferay.Util.SessionStorage.TYPES.NECESSARY
 						)
-					);
-				}
-				finally {
-					ifrm.parentElement?.removeChild(ifrm);
-				}
+					)
+					.then(() => {
+
+						// Remove the iframe
+
+						if (event.target && event.target.parentElement) {
+							event.target.parentElement.removeChild(
+								event.target
+							);
+						}
+					});
 			};
 
 			if (ifrm.contentWindow) {
@@ -112,7 +170,7 @@ class OAuth2Client {
 
 	private async _fetch(
 		resource: RequestInfo | URL,
-		options: any = {}
+		options: RequestInit = {}
 	): Promise<any> {
 		const oauth2Client = this;
 
@@ -147,10 +205,11 @@ class OAuth2Client {
 		// to perform OAuth2 token authentication instead
 		// eslint-disable-next-line @liferay/portal/no-global-fetch
 		return await fetch(resource, {
+			...options,
 			headers: {
+				...options?.headers,
 				Authorization: `Bearer ${tokenData.access_token}`,
 			},
-			...options,
 		});
 	}
 
@@ -164,10 +223,24 @@ class OAuth2Client {
 				Liferay.Util.SessionStorage.TYPES.NECESSARY
 			);
 
-			if (cachedTokenData !== null && cachedTokenData !== undefined) {
-				resolve(JSON.parse(cachedTokenData));
+			if (oauth2Client.debug && cachedTokenData) {
+				// eslint-disable-next-line no-console
+				console.debug(
+					'OAuth2Client._getOrRequestToken.cachedTokenData',
+					cachedTokenData
+				);
+			}
 
-				return;
+			if (cachedTokenData !== null && cachedTokenData !== undefined) {
+				const cachedToken = JSON.parse(
+					cachedTokenData
+				) as IOAuth2ClientTokenResponse;
+
+				if (new Date().getTime() < cachedToken.expires_after_ms) {
+					resolve(cachedToken);
+
+					return;
+				}
 			}
 
 			resolve(oauth2Client._requestTokenSilently(sessionKey));
@@ -183,8 +256,9 @@ class OAuth2Client {
 
 	private async _requestToken(
 		codeVerifier: string,
-		code: string
-	): Promise<any> {
+		code: string,
+		redirectURI: string
+	): Promise<IOAuth2ClientTokenResponse> {
 		const oauth2Client = this;
 
 		// This client must avoid using @liferay/portal/no-global-fetch in order
@@ -196,7 +270,7 @@ class OAuth2Client {
 				code,
 				code_verifier: codeVerifier,
 				grant_type: 'authorization_code',
-				redirect_uri: oauth2Client.redirectURIs[0],
+				redirect_uri: redirectURI,
 			}),
 			cache: 'no-cache',
 			headers: {
@@ -218,10 +292,7 @@ export function FromParameters(options: IOAuth2ClientFromParametersOptions) {
 	return new OAuth2Client({
 		authorizeURL: options.authorizeURL || Liferay.OAuth2.getAuthorizeURL(),
 		clientId: options.clientId,
-		encodedRedirectURL: encodeURIComponent(
-			(options.redirectURIs && options.redirectURIs[0]) ||
-				Liferay.OAuth2.getBuiltInRedirectURL()
-		),
+		debug: options.debug,
 		homePageURL: options.homePageURL,
 		redirectURIs: options.redirectURIs || [
 			Liferay.OAuth2.getBuiltInRedirectURL(),
@@ -230,7 +301,10 @@ export function FromParameters(options: IOAuth2ClientFromParametersOptions) {
 	});
 }
 
-export function FromUserAgentApplication(userAgentApplicationName: string) {
+export function FromUserAgentApplication(
+	userAgentApplicationName: string,
+	debug?: boolean
+) {
 	const userAgentApplication = Liferay.OAuth2.getUserAgentApplication(
 		userAgentApplicationName
 	);
@@ -244,9 +318,7 @@ export function FromUserAgentApplication(userAgentApplicationName: string) {
 	return new OAuth2Client({
 		authorizeURL: Liferay.OAuth2.getAuthorizeURL(),
 		clientId: userAgentApplication.clientId,
-		encodedRedirectURL: encodeURIComponent(
-			userAgentApplication.redirectURIs[0]
-		),
+		debug,
 		homePageURL: userAgentApplication.homePageURL,
 		redirectURIs: userAgentApplication.redirectURIs,
 		tokenURL: Liferay.OAuth2.getTokenURL(),

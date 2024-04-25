@@ -15,15 +15,12 @@ import com.liferay.fragment.processor.FragmentEntryProcessorContext;
 import com.liferay.fragment.processor.FragmentEntryProcessorRegistry;
 import com.liferay.fragment.service.FragmentEntryLinkService;
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortletKeys;
-import com.liferay.layout.content.page.editor.web.internal.util.ContentManager;
-import com.liferay.layout.content.page.editor.web.internal.util.FragmentEntryLinkManager;
+import com.liferay.layout.content.page.editor.web.internal.manager.FragmentEntryLinkManager;
 import com.liferay.layout.content.page.editor.web.internal.util.layout.structure.LayoutStructureUtil;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
-import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
-import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -50,16 +47,14 @@ import org.osgi.service.component.annotations.Reference;
 	service = MVCActionCommand.class
 )
 public class UpdateConfigurationValuesMVCActionCommand
-	extends BaseMVCActionCommand {
+	extends BaseContentPageEditorTransactionalMVCActionCommand {
 
 	@Override
-	protected void doProcessAction(
+	protected JSONObject doTransactionalCommand(
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
 
-		JSONPortletResponseUtil.writeJSON(
-			actionRequest, actionResponse,
-			_processUpdateConfigurationValues(actionRequest, actionResponse));
+		return _processUpdateConfigurationValues(actionRequest, actionResponse);
 	}
 
 	private JSONObject _mergeEditableValuesJSONObject(
@@ -76,10 +71,6 @@ public class UpdateConfigurationValuesMVCActionCommand
 				editableValuesJSONObject.getJSONObject(
 					fragmentEntryProcessorKey);
 
-			if (editableFragmentEntryProcessorJSONObject == null) {
-				continue;
-			}
-
 			JSONObject defaultEditableFragmentEntryProcessorJSONObject =
 				defaultEditableValuesJSONObject.getJSONObject(
 					fragmentEntryProcessorKey);
@@ -88,15 +79,18 @@ public class UpdateConfigurationValuesMVCActionCommand
 				continue;
 			}
 
-			Iterator<String> iterator =
-				defaultEditableFragmentEntryProcessorJSONObject.keys();
+			if (editableFragmentEntryProcessorJSONObject != null) {
+				Iterator<String> iterator =
+					defaultEditableFragmentEntryProcessorJSONObject.keys();
 
-			while (iterator.hasNext()) {
-				String key = iterator.next();
+				while (iterator.hasNext()) {
+					String key = iterator.next();
 
-				if (editableFragmentEntryProcessorJSONObject.has(key)) {
-					defaultEditableFragmentEntryProcessorJSONObject.put(
-						key, editableFragmentEntryProcessorJSONObject.get(key));
+					if (editableFragmentEntryProcessorJSONObject.has(key)) {
+						defaultEditableFragmentEntryProcessorJSONObject.put(
+							key,
+							editableFragmentEntryProcessorJSONObject.get(key));
+					}
 				}
 			}
 
@@ -152,8 +146,6 @@ public class UpdateConfigurationValuesMVCActionCommand
 				onUpdateFragmentEntryLinkConfigurationValues(fragmentEntryLink);
 		}
 
-		hideDefaultSuccessMessage(actionRequest);
-
 		LayoutStructure layoutStructure =
 			LayoutStructureUtil.getLayoutStructure(
 				themeDisplay.getScopeGroupId(), themeDisplay.getPlid(),
@@ -166,13 +158,6 @@ public class UpdateConfigurationValuesMVCActionCommand
 				_portal.getHttpServletResponse(actionResponse), layoutStructure)
 		).put(
 			"layoutData", layoutStructure.toJSONObject()
-		).put(
-			"pageContents",
-			_contentManager.getPageContentsJSONArray(
-				_portal.getHttpServletRequest(actionRequest),
-				_portal.getHttpServletResponse(actionResponse),
-				themeDisplay.getPlid(),
-				ParamUtil.getLong(actionRequest, "segmentsExperienceId"))
 		);
 	}
 
@@ -181,9 +166,6 @@ public class UpdateConfigurationValuesMVCActionCommand
 			KEY_BACKGROUND_IMAGE_FRAGMENT_ENTRY_PROCESSOR,
 		FragmentEntryProcessorConstants.KEY_EDITABLE_FRAGMENT_ENTRY_PROCESSOR
 	};
-
-	@Reference
-	private ContentManager _contentManager;
 
 	@Reference
 	private FragmentEntryLinkListenerRegistry

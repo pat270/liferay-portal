@@ -14,7 +14,10 @@ definition {
 
 		User.firstLoginPG();
 
-		Raylife.createRaylifeSite(siteName = ${testSiteName});
+		HeadlessSite.addSite(
+			siteName = ${testSiteName},
+			templateName = "Raylife D2C",
+			templateType = "Site Initializer");
 	}
 
 	tearDown {
@@ -34,6 +37,7 @@ definition {
 	@priority = 4
 	test BuildingSquareFeetOccupiedIsRequired {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -85,6 +89,7 @@ definition {
 	@priority = 4
 	test CanContinueOnPropertyInfoWithAllFilled {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -121,6 +126,7 @@ definition {
 	@priority = 3
 	test CanDismissBuildingSquareFeetOccupiedInfoPanel {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -167,6 +173,7 @@ definition {
 	@priority = 3
 	test CanDismissPrimaryBusinessLocationInfoPanel {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -225,6 +232,7 @@ definition {
 	@priority = 3
 	test CanDismissYearBuildingInfoPanel {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -279,6 +287,7 @@ definition {
 	@priority = 5
 	test CanGoBackOnPropertyInfoKeepingAllData {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -317,6 +326,7 @@ definition {
 	@priority = 4
 	test CanViewAddressInDoOwnBuildingAtAddress {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -349,6 +359,7 @@ definition {
 	@priority = 4
 	test CanViewAddressInTitle {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -381,6 +392,7 @@ definition {
 	@priority = 3
 	test CanViewBuildingSquareFeetOccupiedInfoPanel {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -425,6 +437,7 @@ definition {
 	@priority = 3
 	test CanViewPrimaryBusinessLocationInfoPanel {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -481,6 +494,7 @@ definition {
 	@priority = 3
 	test CanViewYearBuildingInfoPanel {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -533,6 +547,7 @@ definition {
 	@priority = 4
 	test DoesIsThereDivingBoardsShowUp {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -592,6 +607,7 @@ definition {
 	@priority = 4
 	test DoesIsThereSwimmingShowUp {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -643,6 +659,7 @@ definition {
 	@priority = 4
 	test StoriesIsRequired {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -691,6 +708,7 @@ definition {
 	@priority = 4
 	test StoriesNotBelowZero {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -733,6 +751,7 @@ definition {
 	@priority = 4
 	test TotalBuildingSquareFeetIsRequired {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -788,6 +807,7 @@ definition {
 	@priority = 4
 	test YearBuildingIsNotFuture {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -842,6 +862,7 @@ definition {
 	@priority = 4
 	test YearBuildingIsRequired {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -901,6 +922,7 @@ definition {
 	@priority = 4
 	test YearBuildingIsValid {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 

@@ -12,11 +12,12 @@ import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.HttpUtil;
+import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.webcache.WebCacheItem;
 import com.liferay.portal.kernel.webcache.WebCachePoolUtil;
-import com.liferay.portal.util.PropsValues;
+
+import java.util.Objects;
 
 /**
  * @author Brian Wing Shun Chan
@@ -56,6 +57,12 @@ public class LearnMessageUtil {
 		return jsonObject;
 	}
 
+	private static final boolean _LEARN_RESOURCES_MODE_DEV = Objects.equals(
+		PropsUtil.get("learn.resources.mode"), "dev");
+
+	private static final boolean _LEARN_RESOURCES_MODE_OFF = Objects.equals(
+		PropsUtil.get("learn.resources.mode"), "off");
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		LearnMessageUtil.class);
 
@@ -68,19 +75,20 @@ public class LearnMessageUtil {
 		@Override
 		public JSONObject convert(String key) {
 			try {
-				if (!PropsValues.LEARN_RESOURCES_ENABLED) {
+				if (_LEARN_RESOURCES_MODE_OFF) {
 					return JSONFactoryUtil.createJSONObject();
 				}
 
-				StringBundler sb = new StringBundler(5);
+				StringBundler sb = new StringBundler(4);
 
-				sb.append(Http.HTTPS_WITH_SLASH);
-
-				if (!PropsValues.LEARN_RESOURCES_CDN_ENABLED) {
-					sb.append("s3.amazonaws.com/");
+				if (_LEARN_RESOURCES_MODE_DEV) {
+					sb.append("http://localhost:3062/");
+				}
+				else {
+					sb.append("https://s3.amazonaws.com");
+					sb.append("/learn-resources.liferay.com/");
 				}
 
-				sb.append("learn-resources.liferay.com/");
 				sb.append(_resource);
 				sb.append(".json");
 
@@ -104,7 +112,13 @@ public class LearnMessageUtil {
 
 		@Override
 		public long getRefreshTime() {
-			return PropsValues.LEARN_RESOURCES_REFRESH_TIME;
+			if (_LEARN_RESOURCES_MODE_DEV) {
+				return 0;
+			}
+
+			// 4 hours
+
+			return 14400000;
 		}
 
 		private final String _resource;

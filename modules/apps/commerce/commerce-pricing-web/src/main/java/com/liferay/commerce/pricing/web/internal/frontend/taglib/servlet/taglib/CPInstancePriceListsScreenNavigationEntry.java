@@ -5,8 +5,10 @@
 
 package com.liferay.commerce.pricing.web.internal.frontend.taglib.servlet.taglib;
 
+import com.liferay.commerce.currency.util.CommercePriceFormatter;
 import com.liferay.commerce.price.list.portlet.action.CommercePriceListActionHelper;
 import com.liferay.commerce.price.list.service.CommercePriceEntryService;
+import com.liferay.commerce.price.list.service.CommercePriceListService;
 import com.liferay.commerce.pricing.web.internal.display.context.CPInstanceCommercePriceEntryDisplayContext;
 import com.liferay.commerce.product.model.CPInstance;
 import com.liferay.commerce.product.portlet.action.ActionHelper;
@@ -63,7 +65,8 @@ public class CPInstancePriceListsScreenNavigationEntry
 				cpInstanceCommercePriceEntryDisplayContext =
 					new CPInstanceCommercePriceEntryDisplayContext(
 						_actionHelper, _commercePriceEntryService,
-						_commercePriceListActionHelper, httpServletRequest,
+						_commercePriceFormatter, _commercePriceListActionHelper,
+						_commercePriceListService, httpServletRequest,
 						_itemSelector);
 
 			httpServletRequest.setAttribute(
@@ -90,7 +93,13 @@ public class CPInstancePriceListsScreenNavigationEntry
 	private CommercePriceEntryService _commercePriceEntryService;
 
 	@Reference
+	private CommercePriceFormatter _commercePriceFormatter;
+
+	@Reference
 	private CommercePriceListActionHelper _commercePriceListActionHelper;
+
+	@Reference
+	private CommercePriceListService _commercePriceListService;
 
 	@Reference
 	private ItemSelector _itemSelector;

@@ -22,22 +22,25 @@ export declare function useObjectFieldForm({
 	errors: import('@liferay/object-js-components-web').FormError<
 		ObjectField & {
 			function: unknown;
-			acceptedFileExtensions: unknown;
+			output: unknown;
+			script: unknown;
+			maxLength: unknown;
 			defaultValue: unknown;
+			prefix: unknown;
+			filters: unknown;
+			acceptedFileExtensions: unknown;
 			defaultValueType: unknown;
 			fileSource: unknown;
-			filters: unknown;
-			maxLength: unknown;
+			initialValue: unknown;
 			maximumFileSize: unknown;
 			objectDefinition1ShortName: unknown;
 			objectFieldName: unknown;
 			objectRelationshipName: unknown;
-			output: unknown;
-			script: unknown;
 			showCounter: unknown;
 			showFilesInDocumentsAndMedia: unknown;
 			stateFlow: unknown;
 			storageDLFolderPath: unknown;
+			suffix: unknown;
 			timeStorage: unknown;
 			uniqueValues: unknown;
 			uniqueValuesErrorMessage: unknown;
@@ -45,6 +48,35 @@ export declare function useObjectFieldForm({
 	>;
 	handleChange: import('react').ChangeEventHandler<HTMLInputElement>;
 	handleSubmit: import('react').FormEventHandler<HTMLFormElement>;
+	handleValidate: (
+		editedValues?: Partial<ObjectField> | undefined
+	) => import('@liferay/object-js-components-web').FormError<
+		ObjectField & {
+			function: unknown;
+			output: unknown;
+			script: unknown;
+			maxLength: unknown;
+			defaultValue: unknown;
+			prefix: unknown;
+			filters: unknown;
+			acceptedFileExtensions: unknown;
+			defaultValueType: unknown;
+			fileSource: unknown;
+			initialValue: unknown;
+			maximumFileSize: unknown;
+			objectDefinition1ShortName: unknown;
+			objectFieldName: unknown;
+			objectRelationshipName: unknown;
+			showCounter: unknown;
+			showFilesInDocumentsAndMedia: unknown;
+			stateFlow: unknown;
+			storageDLFolderPath: unknown;
+			suffix: unknown;
+			timeStorage: unknown;
+			uniqueValues: unknown;
+			uniqueValuesErrorMessage: unknown;
+		}
+	>;
 	setValues: (values: Partial<ObjectField>) => void;
 	values: Partial<ObjectField>;
 };

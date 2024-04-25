@@ -1,6 +1,7 @@
 definition {
 
-	macro viewInstanceSettings {
+	@summary = "Default summary"
+	macro viewInstanceSettings() {
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "Instance Configuration",
 			configurationName = "General",
@@ -115,12 +116,11 @@ definition {
 			configurationName = "Time Zone",
 			configurationScope = "Virtual Instance Scope");
 
-		AssertSelectedLabel(
-			locator1 = "Select#TIME_ZONE",
-			value1 = "(UTC +03:00) Eastern European Time");
+		AssertElementPresent(locator1 = "//option[@value='Europe/Istanbul' and @selected]");
 	}
 
-	macro viewSystemSettings {
+	@summary = "Default summary"
+	macro viewSystemSettings() {
 		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
@@ -155,8 +155,6 @@ definition {
 
 		FormFields.viewCheckboxNotChecked(fieldName = "articleCommentsEnabled");
 
-		FormFields.viewCheckboxNotChecked(fieldName = "databaseContentKeywordSearchEnabled");
-
 		FormFields.viewCheckboxNotChecked(fieldName = "expireAllArticleVersionsEnabled");
 
 		ApplicationsMenu.gotoPortlet(
@@ -170,10 +168,6 @@ definition {
 			configurationScope = "System Scope");
 
 		FormFields.viewCheckboxChecked(fieldName = "changeableDefaultLanguage");
-
-		SystemSettings.viewTextareaValue(
-			fieldName = "defaultDisplayView",
-			fieldValue = "list");
 
 		FormFields.viewCheckboxNotChecked(fieldName = "journalArticleForceAutogenerateId");
 

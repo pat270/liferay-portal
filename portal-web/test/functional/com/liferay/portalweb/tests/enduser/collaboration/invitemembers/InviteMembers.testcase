@@ -1,4 +1,4 @@
-@component-name = "portal-lima"
+@component-name = "portal-content-management"
 definition {
 
 	property custom.properties = "jsonws.web.service.paths.excludes=";
@@ -43,6 +43,7 @@ definition {
 	@refactordone
 	test CanViewNewSiteMember {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		HeadlessSite.addSite(siteName = "Site Name");
 

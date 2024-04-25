@@ -18,13 +18,12 @@ import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portlet.usersadmin.util.UsersAdminUtil;
 import com.liferay.user.groups.admin.constants.UserGroupsAdminPortletKeys;
-import com.liferay.users.admin.kernel.util.UsersAdmin;
 
 import java.util.Locale;
 
@@ -66,8 +65,6 @@ public class UserGroupCTDisplayRenderer
 			"/edit_user_group.jsp"
 		).setRedirect(
 			_portal.getCurrentURL(httpServletRequest)
-		).setBackURL(
-			ParamUtil.getString(httpServletRequest, "backURL")
 		).setParameter(
 			"userGroupId", userGroup.getUserGroupId()
 		).buildString();
@@ -115,7 +112,7 @@ public class UserGroupCTDisplayRenderer
 			() -> ListUtil.toString(
 				_userGroupGroupRoleLocalService.getUserGroupGroupRoles(
 					userGroup.getUserGroupId(), userGroup.getGroupId()),
-				UsersAdmin.USER_GROUP_GROUP_ROLE_TITLE_ACCESSOR,
+				UsersAdminUtil.USER_GROUP_GROUP_ROLE_TITLE_ACCESSOR,
 				StringPool.COMMA_AND_SPACE)
 		);
 	}

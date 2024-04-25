@@ -23,6 +23,7 @@ import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.web.internal.object.definitions.display.context.util.ObjectCodeEditorUtil;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -33,11 +34,11 @@ import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.portlet.url.builder.ResourceURLBuilder;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.security.script.management.configuration.helper.ScriptManagementConfigurationHelper;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -54,7 +55,9 @@ public class ObjectDefinitionsActionsDisplayContext
 		ObjectActionTriggerRegistry objectActionTriggerRegistry,
 		ObjectDefinitionLocalService objectDefinitionLocalService,
 		ModelResourcePermission<ObjectDefinition>
-			objectDefinitionModelResourcePermission) {
+			objectDefinitionModelResourcePermission,
+		ScriptManagementConfigurationHelper
+			scriptManagementConfigurationHelper) {
 
 		super(httpServletRequest, objectDefinitionModelResourcePermission);
 
@@ -63,6 +66,8 @@ public class ObjectDefinitionsActionsDisplayContext
 		_objectActionExecutorRegistry = objectActionExecutorRegistry;
 		_objectActionTriggerRegistry = objectActionTriggerRegistry;
 		_objectDefinitionLocalService = objectDefinitionLocalService;
+		_scriptManagementConfigurationHelper =
+			scriptManagementConfigurationHelper;
 	}
 
 	public String getEditObjectActionURL() throws Exception {
@@ -206,6 +211,8 @@ public class ObjectDefinitionsActionsDisplayContext
 				_notificationTemplateLocalService,
 				_objectDefinitionLocalService,
 				objectAction.getParametersUnicodeProperties())
+		).put(
+			"system", objectAction.isSystem()
 		);
 	}
 
@@ -219,10 +226,14 @@ public class ObjectDefinitionsActionsDisplayContext
 				_objectActionTriggerRegistry.getObjectActionTriggers(
 					objectDefinition.getClassName())) {
 
-			if (Objects.equals(
+			if ((StringUtil.equals(
+					objectActionTrigger.getKey(),
+					ObjectActionTriggerConstants.KEY_ON_AFTER_ROOT_UPDATE) &&
+				 !objectDefinition.isRootNode()) ||
+				(StringUtil.equals(
 					objectActionTrigger.getKey(),
 					ObjectActionTriggerConstants.KEY_STANDALONE) &&
-				objectDefinition.isUnmodifiableSystemObject()) {
+				 objectDefinition.isUnmodifiableSystemObject())) {
 
 				continue;
 			}
@@ -248,6 +259,7 @@ public class ObjectDefinitionsActionsDisplayContext
 		return objectActionTriggersJSONArray;
 	}
 
+	@Override
 	public ObjectDefinition getObjectDefinition() {
 		HttpServletRequest httpServletRequest =
 			objectRequestHelper.getRequest();
@@ -267,12 +279,24 @@ public class ObjectDefinitionsActionsDisplayContext
 		).buildString();
 	}
 
+	public String getScriptManagementConfigurationPortletURL()
+		throws PortalException {
+
+		return _scriptManagementConfigurationHelper.
+			getScriptManagementConfigurationPortletURL();
+	}
+
 	public String getValidateExpressionURL() {
 		return ResourceURLBuilder.createResourceURL(
 			objectRequestHelper.getLiferayPortletResponse()
 		).setResourceID(
 			"/object_definitions/validate_expression"
 		).buildString();
+	}
+
+	public boolean isAllowScriptContentToBeExecutedOrIncluded() {
+		return _scriptManagementConfigurationHelper.
+			isAllowScriptContentToBeExecutedOrIncluded();
 	}
 
 	@Override
@@ -306,5 +330,7 @@ public class ObjectDefinitionsActionsDisplayContext
 	private final ObjectActionExecutorRegistry _objectActionExecutorRegistry;
 	private final ObjectActionTriggerRegistry _objectActionTriggerRegistry;
 	private final ObjectDefinitionLocalService _objectDefinitionLocalService;
+	private final ScriptManagementConfigurationHelper
+		_scriptManagementConfigurationHelper;
 
 }

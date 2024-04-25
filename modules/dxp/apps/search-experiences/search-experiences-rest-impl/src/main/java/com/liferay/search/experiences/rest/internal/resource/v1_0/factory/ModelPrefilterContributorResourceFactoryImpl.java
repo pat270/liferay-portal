@@ -72,7 +72,12 @@ public class ModelPrefilterContributorResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _modelPrefilterContributorResourceProxyProviderFunction.
+				Function<InvocationHandler, ModelPrefilterContributorResource>
+					modelPrefilterContributorResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_modelPrefilterContributorResourceProxyProviderFunction;
+
+				return modelPrefilterContributorResourceProxyProviderFunction.
 					apply(
 						(proxy, method, arguments) -> _invoke(
 							method, arguments, _checkPermissions,
@@ -241,11 +246,6 @@ public class ModelPrefilterContributorResourceFactoryImpl
 		}
 	}
 
-	private static final Function
-		<InvocationHandler, ModelPrefilterContributorResource>
-			_modelPrefilterContributorResourceProxyProviderFunction =
-				_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -281,6 +281,15 @@ public class ModelPrefilterContributorResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function
+			<InvocationHandler, ModelPrefilterContributorResource>
+				_modelPrefilterContributorResourceProxyProviderFunction =
+					_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

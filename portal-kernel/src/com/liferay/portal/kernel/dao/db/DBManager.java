@@ -21,6 +21,14 @@ public interface DBManager {
 
 	public DB getDB(DBType dbType, DataSource dataSource);
 
+	public int getDBInMaxParameters();
+
+	public int getDBMaxParameters();
+
+	public DBType getDBType();
+
+	public DBType getDBType(DataSource dataSource);
+
 	public DBType getDBType(Object dialect);
 
 	public Set<DBType> getDBTypes();

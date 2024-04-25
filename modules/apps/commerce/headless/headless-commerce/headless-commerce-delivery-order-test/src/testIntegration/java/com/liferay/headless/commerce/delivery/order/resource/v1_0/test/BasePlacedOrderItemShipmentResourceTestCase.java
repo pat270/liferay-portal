@@ -25,8 +25,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -34,6 +32,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.test.rule.Inject;
@@ -58,8 +57,6 @@ import java.util.Set;
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-
-import org.apache.commons.lang.time.DateUtils;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -180,8 +177,11 @@ public abstract class BasePlacedOrderItemShipmentResourceTestCase {
 
 		placedOrderItemShipment.setAuthor(regex);
 		placedOrderItemShipment.setCarrier(regex);
+		placedOrderItemShipment.setExternalReferenceCode(regex);
 		placedOrderItemShipment.setShippingOptionName(regex);
 		placedOrderItemShipment.setTrackingNumber(regex);
+		placedOrderItemShipment.setTrackingURL(regex);
+		placedOrderItemShipment.setUnitOfMeasureKey(regex);
 
 		String json = PlacedOrderItemShipmentSerDes.toJSON(
 			placedOrderItemShipment);
@@ -193,8 +193,113 @@ public abstract class BasePlacedOrderItemShipmentResourceTestCase {
 		Assert.assertEquals(regex, placedOrderItemShipment.getAuthor());
 		Assert.assertEquals(regex, placedOrderItemShipment.getCarrier());
 		Assert.assertEquals(
+			regex, placedOrderItemShipment.getExternalReferenceCode());
+		Assert.assertEquals(
 			regex, placedOrderItemShipment.getShippingOptionName());
 		Assert.assertEquals(regex, placedOrderItemShipment.getTrackingNumber());
+		Assert.assertEquals(regex, placedOrderItemShipment.getTrackingURL());
+		Assert.assertEquals(
+			regex, placedOrderItemShipment.getUnitOfMeasureKey());
+	}
+
+	@Test
+	public void testGetPlacedOrderItemByExternalReferenceCodePlacedOrderItemShipmentsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetPlacedOrderItemByExternalReferenceCodePlacedOrderItemShipmentsPage_getExternalReferenceCode();
+		String irrelevantExternalReferenceCode =
+			testGetPlacedOrderItemByExternalReferenceCodePlacedOrderItemShipmentsPage_getIrrelevantExternalReferenceCode();
+
+		Page<PlacedOrderItemShipment> page =
+			placedOrderItemShipmentResource.
+				getPlacedOrderItemByExternalReferenceCodePlacedOrderItemShipmentsPage(
+					externalReferenceCode);
+
+		long totalCount = page.getTotalCount();
+
+		if (irrelevantExternalReferenceCode != null) {
+			PlacedOrderItemShipment irrelevantPlacedOrderItemShipment =
+				testGetPlacedOrderItemByExternalReferenceCodePlacedOrderItemShipmentsPage_addPlacedOrderItemShipment(
+					irrelevantExternalReferenceCode,
+					randomIrrelevantPlacedOrderItemShipment());
+
+			page =
+				placedOrderItemShipmentResource.
+					getPlacedOrderItemByExternalReferenceCodePlacedOrderItemShipmentsPage(
+						irrelevantExternalReferenceCode);
+
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
+
+			assertContains(
+				irrelevantPlacedOrderItemShipment,
+				(List<PlacedOrderItemShipment>)page.getItems());
+			assertValid(
+				page,
+				testGetPlacedOrderItemByExternalReferenceCodePlacedOrderItemShipmentsPage_getExpectedActions(
+					irrelevantExternalReferenceCode));
+		}
+
+		PlacedOrderItemShipment placedOrderItemShipment1 =
+			testGetPlacedOrderItemByExternalReferenceCodePlacedOrderItemShipmentsPage_addPlacedOrderItemShipment(
+				externalReferenceCode, randomPlacedOrderItemShipment());
+
+		PlacedOrderItemShipment placedOrderItemShipment2 =
+			testGetPlacedOrderItemByExternalReferenceCodePlacedOrderItemShipmentsPage_addPlacedOrderItemShipment(
+				externalReferenceCode, randomPlacedOrderItemShipment());
+
+		page =
+			placedOrderItemShipmentResource.
+				getPlacedOrderItemByExternalReferenceCodePlacedOrderItemShipmentsPage(
+					externalReferenceCode);
+
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
+
+		assertContains(
+			placedOrderItemShipment1,
+			(List<PlacedOrderItemShipment>)page.getItems());
+		assertContains(
+			placedOrderItemShipment2,
+			(List<PlacedOrderItemShipment>)page.getItems());
+		assertValid(
+			page,
+			testGetPlacedOrderItemByExternalReferenceCodePlacedOrderItemShipmentsPage_getExpectedActions(
+				externalReferenceCode));
+	}
+
+	protected Map<String, Map<String, String>>
+			testGetPlacedOrderItemByExternalReferenceCodePlacedOrderItemShipmentsPage_getExpectedActions(
+				String externalReferenceCode)
+		throws Exception {
+
+		Map<String, Map<String, String>> expectedActions = new HashMap<>();
+
+		return expectedActions;
+	}
+
+	protected PlacedOrderItemShipment
+			testGetPlacedOrderItemByExternalReferenceCodePlacedOrderItemShipmentsPage_addPlacedOrderItemShipment(
+				String externalReferenceCode,
+				PlacedOrderItemShipment placedOrderItemShipment)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected String
+			testGetPlacedOrderItemByExternalReferenceCodePlacedOrderItemShipmentsPage_getExternalReferenceCode()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected String
+			testGetPlacedOrderItemByExternalReferenceCodePlacedOrderItemShipmentsPage_getIrrelevantExternalReferenceCode()
+		throws Exception {
+
+		return null;
 	}
 
 	@Test
@@ -211,7 +316,7 @@ public abstract class BasePlacedOrderItemShipmentResourceTestCase {
 				getPlacedOrderItemPlacedOrderItemShipmentsPage(
 					placedOrderItemId);
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if (irrelevantPlacedOrderItemId != null) {
 			PlacedOrderItemShipment irrelevantPlacedOrderItemShipment =
@@ -224,10 +329,10 @@ public abstract class BasePlacedOrderItemShipmentResourceTestCase {
 					getPlacedOrderItemPlacedOrderItemShipmentsPage(
 						irrelevantPlacedOrderItemId);
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantPlacedOrderItemShipment),
+			assertContains(
+				irrelevantPlacedOrderItemShipment,
 				(List<PlacedOrderItemShipment>)page.getItems());
 			assertValid(
 				page,
@@ -248,10 +353,13 @@ public abstract class BasePlacedOrderItemShipmentResourceTestCase {
 				getPlacedOrderItemPlacedOrderItemShipmentsPage(
 					placedOrderItemId);
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(placedOrderItemShipment1, placedOrderItemShipment2),
+		assertContains(
+			placedOrderItemShipment1,
+			(List<PlacedOrderItemShipment>)page.getItems());
+		assertContains(
+			placedOrderItemShipment2,
 			(List<PlacedOrderItemShipment>)page.getItems());
 		assertValid(
 			page,
@@ -456,6 +564,18 @@ public abstract class BasePlacedOrderItemShipmentResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals(
+					"externalReferenceCode", additionalAssertFieldName)) {
+
+				if (placedOrderItemShipment.getExternalReferenceCode() ==
+						null) {
+
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("modifiedDate", additionalAssertFieldName)) {
 				if (placedOrderItemShipment.getModifiedDate() == null) {
 					valid = false;
@@ -526,6 +646,22 @@ public abstract class BasePlacedOrderItemShipmentResourceTestCase {
 
 			if (Objects.equals("trackingNumber", additionalAssertFieldName)) {
 				if (placedOrderItemShipment.getTrackingNumber() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("trackingURL", additionalAssertFieldName)) {
+				if (placedOrderItemShipment.getTrackingURL() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("unitOfMeasureKey", additionalAssertFieldName)) {
+				if (placedOrderItemShipment.getUnitOfMeasureKey() == null) {
 					valid = false;
 				}
 
@@ -723,6 +859,19 @@ public abstract class BasePlacedOrderItemShipmentResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals(
+					"externalReferenceCode", additionalAssertFieldName)) {
+
+				if (!Objects.deepEquals(
+						placedOrderItemShipment1.getExternalReferenceCode(),
+						placedOrderItemShipment2.getExternalReferenceCode())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("id", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						placedOrderItemShipment1.getId(),
@@ -837,6 +986,28 @@ public abstract class BasePlacedOrderItemShipmentResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("trackingURL", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						placedOrderItemShipment1.getTrackingURL(),
+						placedOrderItemShipment2.getTrackingURL())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("unitOfMeasureKey", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						placedOrderItemShipment1.getUnitOfMeasureKey(),
+						placedOrderItemShipment2.getUnitOfMeasureKey())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
 			throw new IllegalArgumentException(
 				"Invalid additional assert field name " +
 					additionalAssertFieldName);
@@ -873,6 +1044,10 @@ public abstract class BasePlacedOrderItemShipmentResourceTestCase {
 
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
+
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
 
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
@@ -1042,22 +1217,20 @@ public abstract class BasePlacedOrderItemShipmentResourceTestCase {
 
 		if (entityFieldName.equals("createDate")) {
 			if (operator.equals("between")) {
+				Date date = placedOrderItemShipment.getCreateDate();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							placedOrderItemShipment.getCreateDate(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							placedOrderItemShipment.getCreateDate(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -1077,24 +1250,20 @@ public abstract class BasePlacedOrderItemShipmentResourceTestCase {
 
 		if (entityFieldName.equals("estimatedDeliveryDate")) {
 			if (operator.equals("between")) {
+				Date date = placedOrderItemShipment.getEstimatedDeliveryDate();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							placedOrderItemShipment.getEstimatedDeliveryDate(),
-							-2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							placedOrderItemShipment.getEstimatedDeliveryDate(),
-							2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -1114,24 +1283,20 @@ public abstract class BasePlacedOrderItemShipmentResourceTestCase {
 
 		if (entityFieldName.equals("estimatedShippingDate")) {
 			if (operator.equals("between")) {
+				Date date = placedOrderItemShipment.getEstimatedShippingDate();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							placedOrderItemShipment.getEstimatedShippingDate(),
-							-2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							placedOrderItemShipment.getEstimatedShippingDate(),
-							2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -1149,6 +1314,52 @@ public abstract class BasePlacedOrderItemShipmentResourceTestCase {
 			return sb.toString();
 		}
 
+		if (entityFieldName.equals("externalReferenceCode")) {
+			Object object = placedOrderItemShipment.getExternalReferenceCode();
+
+			String value = String.valueOf(object);
+
+			if (operator.equals("contains")) {
+				sb = new StringBundler();
+
+				sb.append("contains(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 2)) {
+					sb.append(value.substring(1, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else if (operator.equals("startswith")) {
+				sb = new StringBundler();
+
+				sb.append("startswith(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 1)) {
+					sb.append(value.substring(0, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else {
+				sb.append("'");
+				sb.append(value);
+				sb.append("'");
+			}
+
+			return sb.toString();
+		}
+
 		if (entityFieldName.equals("id")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
@@ -1156,22 +1367,20 @@ public abstract class BasePlacedOrderItemShipmentResourceTestCase {
 
 		if (entityFieldName.equals("modifiedDate")) {
 			if (operator.equals("between")) {
+				Date date = placedOrderItemShipment.getModifiedDate();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							placedOrderItemShipment.getModifiedDate(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							placedOrderItemShipment.getModifiedDate(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -1195,9 +1404,8 @@ public abstract class BasePlacedOrderItemShipmentResourceTestCase {
 		}
 
 		if (entityFieldName.equals("quantity")) {
-			sb.append(String.valueOf(placedOrderItemShipment.getQuantity()));
-
-			return sb.toString();
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
 		}
 
 		if (entityFieldName.equals("shippingAddressId")) {
@@ -1312,6 +1520,98 @@ public abstract class BasePlacedOrderItemShipmentResourceTestCase {
 			return sb.toString();
 		}
 
+		if (entityFieldName.equals("trackingURL")) {
+			Object object = placedOrderItemShipment.getTrackingURL();
+
+			String value = String.valueOf(object);
+
+			if (operator.equals("contains")) {
+				sb = new StringBundler();
+
+				sb.append("contains(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 2)) {
+					sb.append(value.substring(1, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else if (operator.equals("startswith")) {
+				sb = new StringBundler();
+
+				sb.append("startswith(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 1)) {
+					sb.append(value.substring(0, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else {
+				sb.append("'");
+				sb.append(value);
+				sb.append("'");
+			}
+
+			return sb.toString();
+		}
+
+		if (entityFieldName.equals("unitOfMeasureKey")) {
+			Object object = placedOrderItemShipment.getUnitOfMeasureKey();
+
+			String value = String.valueOf(object);
+
+			if (operator.equals("contains")) {
+				sb = new StringBundler();
+
+				sb.append("contains(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 2)) {
+					sb.append(value.substring(1, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else if (operator.equals("startswith")) {
+				sb = new StringBundler();
+
+				sb.append("startswith(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 1)) {
+					sb.append(value.substring(0, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else {
+				sb.append("'");
+				sb.append(value);
+				sb.append("'");
+			}
+
+			return sb.toString();
+		}
+
 		throw new IllegalArgumentException(
 			"Invalid entity field " + entityFieldName);
 	}
@@ -1364,16 +1664,21 @@ public abstract class BasePlacedOrderItemShipmentResourceTestCase {
 				createDate = RandomTestUtil.nextDate();
 				estimatedDeliveryDate = RandomTestUtil.nextDate();
 				estimatedShippingDate = RandomTestUtil.nextDate();
+				externalReferenceCode = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
 				id = RandomTestUtil.randomLong();
 				modifiedDate = RandomTestUtil.nextDate();
 				orderId = RandomTestUtil.randomLong();
-				quantity = RandomTestUtil.randomInt();
 				shippingAddressId = RandomTestUtil.randomLong();
 				shippingMethodId = RandomTestUtil.randomLong();
 				shippingOptionName = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
 				supplierShipment = RandomTestUtil.randomBoolean();
 				trackingNumber = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
+				trackingURL = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
+				unitOfMeasureKey = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
 			}
 		};
@@ -1395,9 +1700,9 @@ public abstract class BasePlacedOrderItemShipmentResourceTestCase {
 	}
 
 	protected PlacedOrderItemShipmentResource placedOrderItemShipmentResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

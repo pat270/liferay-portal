@@ -8,7 +8,6 @@
 <%@ include file="/init.jsp" %>
 
 <%
-String bootstrapRequire = (String)request.getAttribute("liferay-map:map:bootstrapRequire");
 boolean geolocation = GetterUtil.getBoolean(request.getAttribute("liferay-map:map:geolocation"));
 double latitude = (Double)request.getAttribute("liferay-map:map:latitude");
 double longitude = (Double)request.getAttribute("liferay-map:map:longitude");
@@ -19,61 +18,39 @@ name = AUIUtil.getNamespace(liferayPortletRequest, liferayPortletResponse) + nam
 %>
 
 <liferay-util:html-top
-	outputKey="js_maps_openstreet_skip_loading"
+	outputKey="com.liferay.map.openstreetmap#/view.jsp"
 >
 	<link crossorigin="anonymous" href="https://npmcdn.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha384-VzLXTJGPSyTLX6d96AxgkKvE/LRb7ECGyTxuwtpjHnVWVZs2gp5RDjeM/tgBnVdM" rel="stylesheet" />
 
-	<script crossorigin="anonymous" integrity="sha384-RFZC58YeKApoNsIbBxf4z6JJXmh+geBSgkCQXFyh+4tiFSJmJBt+2FbjxW7Ar16M" src="https://npmcdn.com/leaflet@1.7.1/dist/leaflet.js" type="text/javascript"></script>
+	<aui:script crossOrigin="anonymous" integrity="sha384-RFZC58YeKApoNsIbBxf4z6JJXmh+geBSgkCQXFyh+4tiFSJmJBt+2FbjxW7Ar16M" src="https://npmcdn.com/leaflet@1.7.1/dist/leaflet.js" type="text/javascript"></aui:script>
 </liferay-util:html-top>
 
-<aui:script require="<%= bootstrapRequire %>">
-	var MapControls = Liferay.MapBase.CONTROLS;
+<liferay-frontend:component
+	context='<%=
+		HashMapBuilder.<String, Object>put(
+			"boundingBox", "#" + HtmlUtil.escapeJS(name) + "Map"
+		).put(
+			"data",
+			() -> {
+				if (Validator.isNull(points)) {
+					return null;
+				}
 
-	var mapConfig = {
-		boundingBox: '#<%= HtmlUtil.escapeJS(name) %>Map',
-
-		<c:if test="<%= geolocation %>">
-			<c:choose>
-				<c:when test="<%= BrowserSnifferUtil.isMobile(request) %>">
-					controls: [MapControls.HOME, MapControls.SEARCH],
-				</c:when>
-				<c:otherwise>
-					controls: [
-						MapControls.HOME,
-						MapControls.PAN,
-						MapControls.SEARCH,
-						MapControls.TYPE,
-						MapControls.ZOOM,
-					],
-				</c:otherwise>
-			</c:choose>
-		</c:if>
-
-		<c:if test="<%= Validator.isNotNull(points) %>">
-			data: <%= points %>,
-		</c:if>
-
-		geolocation: <%= geolocation %>,
-
-		<c:if test="<%= (latitude != 0) && (longitude != 0) %>">
-			position: {
-				location: {
-					lat: <%= latitude %>,
-					lng: <%= longitude %>,
-				},
-			},
-		</c:if>
-	};
-
-	var createMap = function () {
-		var map = new MapOpenStreetMap.default(mapConfig);
-
-		Liferay.MapBase.register(
-			'<%= HtmlUtil.escapeJS(name) %>',
-			map,
-			'<%= portletDisplay.getId() %>'
-		);
-	};
-
-	createMap();
-</aui:script>
+				return JSONFactoryUtil.createJSONObject(points);
+			}
+		).put(
+			"geolocation", geolocation
+		).put(
+			"isMobile", BrowserSnifferUtil.isMobile(request)
+		).put(
+			"latitude", latitude
+		).put(
+			"longitude", longitude
+		).put(
+			"name", HtmlUtil.escapeJS(name)
+		).put(
+			"portletId", portletDisplay.getId()
+		).build()
+	%>'
+	module="{App} from map-openstreetmap"
+/>

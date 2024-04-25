@@ -14,7 +14,6 @@ import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
 import com.liferay.portal.kernel.model.Address;
 import com.liferay.portal.kernel.model.Contact;
-import com.liferay.portal.kernel.model.ListType;
 import com.liferay.portal.kernel.model.ListTypeConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.AddressLocalService;
@@ -25,6 +24,9 @@ import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.test.rule.Inject;
 
+import java.util.Objects;
+
+import org.junit.Assert;
 import org.junit.runner.RunWith;
 
 /**
@@ -32,6 +34,131 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class CTEntryResourceTest extends BaseCTEntryResourceTestCase {
+
+	@Override
+	protected void assertValid(CTEntry ctEntry) throws Exception {
+		boolean valid = true;
+
+		if ((ctEntry.getDateCreated() == null) ||
+			(ctEntry.getDateModified() == null) || (ctEntry.getId() == null)) {
+
+			valid = false;
+		}
+
+		for (String additionalAssertFieldName :
+				getAdditionalAssertFieldNames()) {
+
+			if (Objects.equals(additionalAssertFieldName, "actions")) {
+				if (ctEntry.getActions() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(additionalAssertFieldName, "changeType")) {
+				if (ctEntry.getChangeType() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(additionalAssertFieldName, "ctCollectionId")) {
+				if (ctEntry.getCtCollectionId() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(additionalAssertFieldName, "hideable")) {
+				if (ctEntry.getHideable() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(additionalAssertFieldName, "modelClassNameId")) {
+				if (ctEntry.getModelClassNameId() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(additionalAssertFieldName, "modelClassPK")) {
+				if (ctEntry.getModelClassPK() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(additionalAssertFieldName, "ownerId")) {
+				if (ctEntry.getOwnerId() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(additionalAssertFieldName, "ownerName")) {
+				if (ctEntry.getOwnerName() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(additionalAssertFieldName, "siteId")) {
+				if (ctEntry.getSiteId() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(additionalAssertFieldName, "siteName")) {
+				if (ctEntry.getSiteName() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(additionalAssertFieldName, "status")) {
+				if (ctEntry.getStatus() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(additionalAssertFieldName, "title")) {
+				if (ctEntry.getTitle() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(additionalAssertFieldName, "typeName")) {
+				if (ctEntry.getTypeName() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			throw new IllegalArgumentException(
+				"Invalid additional assert field name " +
+					additionalAssertFieldName);
+		}
+
+		Assert.assertTrue(valid);
+	}
 
 	@Override
 	protected String[] getAdditionalAssertFieldNames() {
@@ -42,7 +169,10 @@ public class CTEntryResourceTest extends BaseCTEntryResourceTestCase {
 
 	@Override
 	protected String[] getIgnoredEntityFieldNames() {
-		return new String[] {"changeType", "ownerName", "siteName", "status"};
+		return new String[] {
+			"changeType", "ownerName", "siteId", "siteName", "status",
+			"typeName"
+		};
 	}
 
 	@Override
@@ -66,7 +196,7 @@ public class CTEntryResourceTest extends BaseCTEntryResourceTestCase {
 		throws Exception {
 
 		CTCollection ctCollection = _ctCollectionLocalService.addCTCollection(
-			testCompany.getCompanyId(), testCompany.getUserId(),
+			null, testCompany.getCompanyId(), testCompany.getUserId(), 0,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString());
 
 		return ctCollection.getCtCollectionId();
@@ -93,16 +223,15 @@ public class CTEntryResourceTest extends BaseCTEntryResourceTestCase {
 
 			User user = TestPropsValues.getUser();
 
-			ListType listType = _listTypeLocalService.getListType(
-				"personal", ListTypeConstants.CONTACT_ADDRESS);
-
 			address = _addressLocalService.addAddress(
 				null, user.getUserId(), Contact.class.getName(),
 				user.getContactId(), name, RandomTestUtil.randomString(),
 				RandomTestUtil.randomString(), null, null,
 				RandomTestUtil.randomString(), null, 0, 0,
-				listType.getListTypeId(), false, false, null,
-				ServiceContextTestUtil.getServiceContext());
+				_listTypeLocalService.getListTypeId(
+					testCompany.getCompanyId(), "personal",
+					ListTypeConstants.CONTACT_ADDRESS),
+				false, false, null, ServiceContextTestUtil.getServiceContext());
 		}
 
 		com.liferay.change.tracking.model.CTEntry serviceBuilderCTEntry =
@@ -116,7 +245,7 @@ public class CTEntryResourceTest extends BaseCTEntryResourceTestCase {
 
 	private long _getCTCollectionId() throws Exception {
 		CTCollection ctCollection = _ctCollectionLocalService.addCTCollection(
-			testCompany.getCompanyId(), testCompany.getUserId(),
+			null, testCompany.getCompanyId(), testCompany.getUserId(), 0,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString());
 
 		return ctCollection.getCtCollectionId();

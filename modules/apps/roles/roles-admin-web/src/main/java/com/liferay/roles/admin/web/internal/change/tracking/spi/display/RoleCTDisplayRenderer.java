@@ -10,9 +10,8 @@ import com.liferay.change.tracking.spi.display.CTDisplayRenderer;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.service.permission.UserPermission;
+import com.liferay.portal.kernel.service.permission.UserPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.roles.admin.constants.RolesAdminPortletKeys;
@@ -38,7 +37,7 @@ public class RoleCTDisplayRenderer extends BaseCTDisplayRenderer<Role> {
 			(ThemeDisplay)httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
-		if (!_userPermission.contains(
+		if (!UserPermissionUtil.contains(
 				themeDisplay.getPermissionChecker(), themeDisplay.getUserId(),
 				ActionKeys.UPDATE)) {
 
@@ -53,8 +52,6 @@ public class RoleCTDisplayRenderer extends BaseCTDisplayRenderer<Role> {
 			"/edit_role.jsp"
 		).setRedirect(
 			_portal.getCurrentURL(httpServletRequest)
-		).setBackURL(
-			ParamUtil.getString(httpServletRequest, "backURL")
 		).setParameter(
 			"roleId", role.getRoleId()
 		).buildString();
@@ -87,8 +84,5 @@ public class RoleCTDisplayRenderer extends BaseCTDisplayRenderer<Role> {
 
 	@Reference
 	private Portal _portal;
-
-	@Reference
-	private UserPermission _userPermission;
 
 }

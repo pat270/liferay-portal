@@ -1,6 +1,7 @@
 definition {
 
-	macro addField {
+	@summary = "Default summary"
+	macro addField(fieldLocation = null, fieldName = null, fieldFieldLabel = null, numericType = null, fieldType = null) {
 		Navigator.gotoSidebarTab(tabName = "Builder");
 
 		Navigator.gotoNavTab(navTab = "Fields");
@@ -88,7 +89,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro addFieldGroupWithFields {
+	@summary = "Default summary"
+	macro addFieldGroupWithFields(fieldNameList = null) {
 		var index = 1;
 		var firstFieldLabel = "";
 
@@ -155,7 +157,8 @@ definition {
 		}
 	}
 
-	macro addFieldNested {
+	@summary = "Default summary"
+	macro addFieldNested(targetFieldGroupLabel = null, fieldName = null, targetFieldLabel = null, fieldFieldLabel = null, numericType = null, fieldType = null) {
 		Navigator.gotoSidebarTab(tabName = "Builder");
 
 		Navigator.gotoNavTab(navTab = "Fields");
@@ -230,7 +233,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro addFieldOption {
+	@summary = "Default summary"
+	macro addFieldOption(optionValue = null, fieldFieldLabel = null, index = null, optionFieldLabel = null) {
 		if (isSet(fieldFieldLabel)) {
 			AssertClick.assertPartialTextClickAt(
 				key_fieldFieldLabel = ${fieldFieldLabel},
@@ -257,7 +261,8 @@ definition {
 		}
 	}
 
-	macro addFields {
+	@summary = "Default summary"
+	macro addFields(fieldNameList = null) {
 		Navigator.gotoSidebarTab(tabName = "Builder");
 
 		Navigator.gotoNavTab(navTab = "Fields");
@@ -289,6 +294,10 @@ definition {
 						index = ${index},
 						optionFieldLabel = "Rows");
 
+					if (${index} != 2) {
+						FormFields.clickAddOptionButton(gridOptionType = "Rows");
+					}
+
 					var index = ${index} + 1;
 				}
 
@@ -305,6 +314,10 @@ definition {
 						index = ${index},
 						optionFieldLabel = "Columns");
 
+					if (${index} != " 2") {
+						FormFields.clickAddOptionButton(gridOptionType = "Columns");
+					}
+
 					var index = ${index} + 1;
 				}
 			}
@@ -318,6 +331,8 @@ definition {
 					fieldReferenceOfFieldOption = "First",
 					index = 1,
 					optionFieldLabel = "Options");
+
+				FormFields.clickAddOptionButton();
 
 				DataEngine.addFieldOption(
 					index = 2,
@@ -338,6 +353,8 @@ definition {
 					fieldReferenceOfFieldOption = "Value2",
 					index = 1);
 
+				FormFields.clickAddOptionButton();
+
 				DataEngine.addFieldOption(
 					index = 2,
 					optionValue = "Option 1");
@@ -354,6 +371,8 @@ definition {
 				DataEngine.editFieldReferenceOfFieldOption(
 					fieldReferenceOfFieldOption = "Value3",
 					index = 1);
+
+				FormFields.clickAddOptionButton();
 
 				DataEngine.addFieldOption(
 					index = 2,
@@ -382,7 +401,8 @@ definition {
 		}
 	}
 
-	macro addFieldsetNested {
+	@summary = "Default summary"
+	macro addFieldsetNested(fieldsetLabel = null, fieldsetName = null, targetFieldLabel = null) {
 		Navigator.gotoSidebarTab(tabName = "Builder");
 
 		Navigator.gotoNavTab(navTab = "Fieldsets");
@@ -421,7 +441,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro addFieldsetToBuilder {
+	@summary = "Default summary"
+	macro addFieldsetToBuilder(fieldsetName = null) {
 		Navigator.gotoSidebarTab(tabName = "Builder");
 
 		Navigator.gotoNavTab(navTab = "Fieldsets");
@@ -437,7 +458,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro addFieldsWithDefaultReference {
+	@summary = "Default summary"
+	macro addFieldsWithDefaultReference(fieldNameList = null) {
 		Navigator.gotoSidebarTab(tabName = "Builder");
 
 		Navigator.gotoNavTab(navTab = "Fields");
@@ -468,6 +490,10 @@ definition {
 						index = ${index},
 						optionFieldLabel = "Rows");
 
+					if (${index} != 2) {
+						FormFields.clickAddOptionButton(gridOptionType = "Rows");
+					}
+
 					var index = ${index} + 1;
 				}
 
@@ -484,6 +510,10 @@ definition {
 						index = ${index},
 						optionFieldLabel = "Columns");
 
+					if (${index} != 2) {
+						FormFields.clickAddOptionButton(gridOptionType = "Columns");
+					}
+
 					var index = ${index} + 1;
 				}
 			}
@@ -497,6 +527,8 @@ definition {
 					fieldReferenceOfFieldOption = "First",
 					index = 1,
 					optionFieldLabel = "Options");
+
+				FormFields.clickAddOptionButton();
 
 				DataEngine.addFieldOption(
 					index = 2,
@@ -517,6 +549,8 @@ definition {
 					fieldReferenceOfFieldOption = "Value2",
 					index = 1);
 
+				FormFields.clickAddOptionButton();
+
 				DataEngine.addFieldOption(
 					index = 2,
 					optionValue = "Option 1");
@@ -534,6 +568,8 @@ definition {
 					fieldReferenceOfFieldOption = "Value3",
 					index = 1);
 
+				FormFields.clickAddOptionButton();
+
 				DataEngine.addFieldOption(
 					index = 2,
 					optionValue = "Option 4");
@@ -547,7 +583,8 @@ definition {
 		}
 	}
 
-	macro addFieldToFieldsGroup {
+	@summary = "Default summary"
+	macro addFieldToFieldsGroup(fieldName = null, fieldFieldLabel = null, numericType = null, fieldsGroupLabel = null, fieldType = null) {
 		Navigator.gotoSidebarTab(tabName = "Builder");
 
 		Navigator.gotoNavTab(navTab = "Fields");
@@ -611,7 +648,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro addRepeatableField {
+	@summary = "Default summary"
+	macro addRepeatableField(fieldLabel = null) {
 		if (!(isSet(index))) {
 			var index = 1;
 		}
@@ -627,7 +665,8 @@ definition {
 			locator1 = "DataEngineRenderer#REPEATABLE_FIELD_ADD_BUTTON_INDEXED");
 	}
 
-	macro addTranslationToFieldset {
+	@summary = "Default summary"
+	macro addTranslationToFieldset(fieldsetName = null, fieldNameList = null, localeList = null) {
 		DataEngine.gotoFieldsetItemEllipsis(fieldsetName = ${fieldsetName});
 
 		MenuItem.click(menuItem = "Edit");
@@ -674,7 +713,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro assertAllowMultipleSelectionsField {
+	@summary = "Default summary"
+	macro assertAllowMultipleSelectionsField(fieldFieldLabel = null) {
 		var checkboxName = "Allow Multiple Selections";
 
 		AssertClick.assertPartialTextClickAt(
@@ -689,7 +729,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro assertCheckboxOptions {
+	@summary = "Default summary"
+	macro assertCheckboxOptions(fieldLabel = null, optionLabelList = null) {
 		if (!(isSet(fieldIndex))) {
 			var fieldIndex = 1;
 		}
@@ -708,14 +749,16 @@ definition {
 		}
 	}
 
-	macro assertFieldInFieldsGroupRepeated {
+	@summary = "Default summary"
+	macro assertFieldInFieldsGroupRepeated(fieldName = null, index = null) {
 		AssertElementPresent(
 			key_fieldName = ${fieldName},
 			key_index = ${index},
 			locator1 = "WCEditWebContent#REPEATED_FIELD_IN_FIELDS_GROUP");
 	}
 
-	macro assertFieldNotPresent {
+	@summary = "Default summary"
+	macro assertFieldNotPresent(fieldsetLabel = null, fieldFieldLabel = null, fieldsGroupLabel = null) {
 		if (isSet(fieldFieldLabel)) {
 			AssertElementNotPresent(
 				key_fieldFieldLabel = ${fieldFieldLabel},
@@ -733,21 +776,24 @@ definition {
 		}
 	}
 
-	macro assertFieldRepeated {
+	@summary = "Default summary"
+	macro assertFieldRepeated(fieldName = null, index = null) {
 		AssertElementPresent(
 			key_fieldName = ${fieldName},
 			key_index = ${index},
 			locator1 = "WCEditWebContent#REPEATED_FIELD");
 	}
 
-	macro assertFieldRepeatedNotPresent {
+	@summary = "Default summary"
+	macro assertFieldRepeatedNotPresent(fieldName = null, index = null) {
 		AssertElementNotPresent(
 			key_fieldName = ${fieldName},
 			key_index = ${index},
 			locator1 = "WCEditWebContent#REPEATED_FIELD");
 	}
 
-	macro assertInlineField {
+	@summary = "Default summary"
+	macro assertInlineField(fieldFieldLabel = null) {
 		var checkboxName = "Inline";
 
 		AssertClick.assertPartialTextClickAt(
@@ -762,7 +808,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro assertInlineOptions {
+	@summary = "Default summary"
+	macro assertInlineOptions(fieldLabel = null, optionLabelList = null) {
 		if (!(isSet(fieldIndex))) {
 			var fieldIndex = 1;
 		}
@@ -781,7 +828,8 @@ definition {
 		}
 	}
 
-	macro assertLocalizableField {
+	@summary = "Default summary"
+	macro assertLocalizableField(fieldFieldLabel = null) {
 		var checkboxName = "Localizable";
 
 		AssertClick.assertPartialTextClickAt(
@@ -796,7 +844,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro assertLocalizableFieldUnchecked {
+	@summary = "Default summary"
+	macro assertLocalizableFieldUnchecked(fieldFieldLabel = null) {
 		AssertClick.assertPartialTextClickAt(
 			key_fieldFieldLabel = ${fieldFieldLabel},
 			locator1 = "DDMEditStructure#FORM_FIELD_CONTAINER",
@@ -811,7 +860,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro assertNonInlineOptions {
+	@summary = "Default summary"
+	macro assertNonInlineOptions(fieldLabel = null, optionLabelList = null) {
 		if (!(isSet(fieldIndex))) {
 			var fieldIndex = 1;
 		}
@@ -830,13 +880,15 @@ definition {
 		}
 	}
 
-	macro assertNonLocalizableField {
+	@summary = "Default summary"
+	macro assertNonLocalizableField(fieldFieldName = null) {
 		AssertElementPresent(
 			key_fieldName = ${fieldFieldName},
 			locator1 = "DataEngineRenderer#WEB_CONTENT_DISABLED_FIELD");
 	}
 
-	macro assertOrderOptionsAlphabeticallyField {
+	@summary = "Default summary"
+	macro assertOrderOptionsAlphabeticallyField(fieldFieldLabel = null) {
 		var checkboxName = "Order Options Alphabetically";
 
 		AssertClick.assertPartialTextClickAt(
@@ -851,7 +903,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro assertRepeatableField {
+	@summary = "Default summary"
+	macro assertRepeatableField(fieldFieldLabel = null) {
 		var checkboxName = "Repeatable";
 
 		AssertClick.assertPartialTextClickAt(
@@ -866,7 +919,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro assertShowLabelField {
+	@summary = "Default summary"
+	macro assertShowLabelField(fieldFieldLabel = null) {
 		var checkboxName = "Show Label";
 
 		AssertClick.assertPartialTextClickAt(
@@ -881,7 +935,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro assertSwitchOptions {
+	@summary = "Default summary"
+	macro assertSwitchOptions(fieldLabel = null, optionLabelList = null) {
 		if (!(isSet(fieldIndex))) {
 			var fieldIndex = 1;
 		}
@@ -900,7 +955,8 @@ definition {
 		}
 	}
 
-	macro changeLocale {
+	@summary = "Default summary"
+	macro changeLocale(fieldName = null, locale = null) {
 		Portlet.waitForForm();
 
 		if (isSet(fieldName)) {
@@ -933,7 +989,8 @@ definition {
 		}
 	}
 
-	macro createNewFieldset {
+	@summary = "Default summary"
+	macro createNewFieldset(fieldsetName = null, fieldNameList = null) {
 		DataEngine.gotoCreateNewFieldset();
 
 		Type(
@@ -963,7 +1020,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro delete {
+	@summary = "Default summary"
+	macro delete(fieldsetLabel = null, fieldFieldLabel = null, fieldsGroupLabel = null) {
 		if (isSet(fieldFieldLabel)) {
 			Click(
 				key_fieldFieldLabel = ${fieldFieldLabel},
@@ -995,7 +1053,8 @@ definition {
 		MenuItem.click(menuItem = "Delete");
 	}
 
-	macro deleteFieldsetFromSideBar {
+	@summary = "Default summary"
+	macro deleteFieldsetFromSideBar(fieldsetName = null) {
 		if (isSet(siteURLKey)) {
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 		}
@@ -1011,7 +1070,8 @@ definition {
 		Button.clickDelete();
 	}
 
-	macro duplicate {
+	@summary = "Default summary"
+	macro duplicate(fieldsetLabel = null, fieldFieldLabel = null, fieldsGroupLabel = null) {
 		if (isSet(fieldFieldLabel)) {
 			Click(
 				key_fieldFieldLabel = ${fieldFieldLabel},
@@ -1043,7 +1103,8 @@ definition {
 		MenuItem.click(menuItem = "Duplicate");
 	}
 
-	macro editCollapsible {
+	@summary = "Default summary"
+	macro editCollapsible(fieldsetLabel = null, fieldsGroupLabel = null, collapsible = null) {
 		if (isSet(fieldsetLabel)) {
 			Click(
 				key_fieldsetLabel = ${fieldsetLabel},
@@ -1071,7 +1132,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro editFieldLabel {
+	@summary = "Default summary"
+	macro editFieldLabel(fieldName = null, fieldFieldLabel = null, fieldFieldLabelEdit = null) {
 		WaitForVisible(locator1 = "Sidebar#PANEL_OPEN");
 
 		Navigator.gotoSidebarTab(tabName = "Builder");
@@ -1120,7 +1182,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro editFieldLocalizable {
+	@summary = "Default summary"
+	macro editFieldLocalizable(fieldFieldLabel = null) {
 		var key_fieldName = "localizable";
 
 		if (isSet(fieldsetModal)) {
@@ -1143,7 +1206,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro editFieldReference {
+	@summary = "Default summary"
+	macro editFieldReference(fieldFieldLabel = null, fieldReference = null, assertFieldReference = null, fieldsGroupLabel = null) {
 		if (isSet(fieldsGroupLabel)) {
 			AssertClick.assertPartialTextClickAt(
 				key_fieldFieldLabel = ${fieldsGroupLabel},
@@ -1173,7 +1237,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro editFieldReferenceOfFieldOption {
+	@summary = "Default summary"
+	macro editFieldReferenceOfFieldOption(fieldFieldLabel = null, index = null, optionFieldLabel = null, fieldReferenceOfFieldOption = null) {
 		if (isSet(fieldFieldLabel)) {
 			AssertClick.assertPartialTextClickAt(
 				key_fieldFieldLabel = ${fieldFieldLabel},
@@ -1217,7 +1282,8 @@ definition {
 		}
 	}
 
-	macro editFieldRequired {
+	@summary = "Default summary"
+	macro editFieldRequired(fieldFieldLabel = null) {
 		AssertClick.assertPartialTextClickAt(
 			key_fieldFieldLabel = ${fieldFieldLabel},
 			locator1 = "DDMEditStructure#FORM_FIELD_CONTAINER",
@@ -1236,7 +1302,24 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro editFieldSearchable {
+	@summary = "Default summary"
+	macro editFieldRequiredWithoutBack(fieldFieldLabel = null) {
+		AssertClick.assertPartialTextClickAt(
+			key_fieldFieldLabel = ${fieldFieldLabel},
+			locator1 = "DDMEditStructure#FORM_FIELD_CONTAINER",
+			value1 = ${fieldFieldLabel});
+
+		Check.checkToggleSwitch(
+			checkboxName = "Required Field",
+			locator1 = "Checkbox#ANY_CHECKBOX");
+
+		AssertVisible(
+			key_text = "Save",
+			locator1 = "Button#ANY_ENABLED");
+	}
+
+	@summary = "Default summary"
+	macro editFieldSearchable(fieldFieldLabel = null, searchableType = null) {
 		if (${fieldFieldLabel} == "Boolean") {
 			Click(
 				key_fieldLabel = ${fieldFieldLabel},
@@ -1259,7 +1342,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro editFieldsetsCollapsible {
+	@summary = "Default summary"
+	macro editFieldsetsCollapsible(fieldsetLabel = null) {
 		Click(
 			key_fieldsetLabel = ${fieldsetLabel},
 			locator1 = "DDMEditStructure#FORM_FIELD_SETS_CONTAINER_LABEL");
@@ -1271,7 +1355,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro editFieldsetsLabel {
+	@summary = "Default summary"
+	macro editFieldsetsLabel(fieldsetLabel = null, fieldsetLabelEdit = null) {
 		Navigator.gotoSidebarTab(tabName = "Builder");
 
 		Click(
@@ -1295,7 +1380,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro editFieldsGroupCollapsible {
+	@summary = "Default summary"
+	macro editFieldsGroupCollapsible() {
 		if (!(isSet(fieldsGroupLabel))) {
 			var fieldsGroupLabel = "Fields Group";
 		}
@@ -1314,7 +1400,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro editFieldsGroupLabel {
+	@summary = "Default summary"
+	macro editFieldsGroupLabel(fieldsGroupLabelEdit = null, fieldsGroupLabel = null) {
 		Navigator.gotoSidebarTab(tabName = "Builder");
 
 		if (isSet(fieldsetModal)) {
@@ -1345,7 +1432,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro editFieldTip {
+	@summary = "Default summary"
+	macro editFieldTip(fieldPlaceholder = null, fieldFieldLabel = null, fieldHelp = null) {
 		if (isSet(fieldsetModal)) {
 			Click(
 				key_fieldFieldLabel = ${fieldFieldLabel},
@@ -1402,7 +1490,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro editFieldType {
+	@summary = "Default summary"
+	macro editFieldType(fieldLabel = null, fieldLineType = null) {
 		if (!(isSet(index))) {
 			var index = 1;
 		}
@@ -1430,7 +1519,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro editImageFieldPredefinedValue {
+	@summary = "Default summary"
+	macro editImageFieldPredefinedValue(depotName = null, imageFileName = null, fieldFieldLabel = null) {
 		AssertClick.assertPartialTextClickAt(
 			key_fieldFieldLabel = ${fieldFieldLabel},
 			locator1 = "DDMEditStructure#FORM_FIELD_CONTAINER",
@@ -1453,7 +1543,8 @@ definition {
 		}
 	}
 
-	macro editNumericType {
+	@summary = "Default summary"
+	macro editNumericType(fieldLabel = null, fieldNumericType = null) {
 		if (!(isSet(index))) {
 			var index = 1;
 		}
@@ -1492,7 +1583,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro editStyle {
+	@summary = "Default summary"
+	macro editStyle(styleValue = null, fieldLabel = null) {
 		Click(
 			key_fieldFieldLabel = ${fieldLabel},
 			locator1 = "DDMEditStructure#FORM_FIELD_CONTAINER");
@@ -1511,7 +1603,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro gotoCreateNewFieldset {
+	@summary = "Default summary"
+	macro gotoCreateNewFieldset() {
 		Navigator.gotoSidebarTab(tabName = "Builder");
 
 		Navigator.gotoNavTab(navTab = "Fieldsets");
@@ -1519,13 +1612,15 @@ definition {
 		Click(locator1 = "FormViewBuilder#CREATE_NEW_FIELD_SETS");
 	}
 
-	macro gotoEditFieldset {
+	@summary = "Default summary"
+	macro gotoEditFieldset(fieldsetName = null) {
 		DataEngine.gotoFieldsetItemEllipsis(fieldsetName = ${fieldsetName});
 
 		MenuItem.click(menuItem = "Edit");
 	}
 
-	macro gotoFieldsetItemEllipsis {
+	@summary = "Default summary"
+	macro gotoFieldsetItemEllipsis(fieldsetName = null) {
 		Navigator.gotoSidebarTab(tabName = "Builder");
 
 		Navigator.gotoNavTab(navTab = "Fieldsets");
@@ -1535,7 +1630,8 @@ definition {
 			locator1 = "Sidebar#FIELDSET_ITEM_ELLIPSIS");
 	}
 
-	macro moveNestedField {
+	@summary = "Default summary"
+	macro moveNestedField(fieldsetLabel = null, nestedFieldLabel = null) {
 		var key_fieldsetLabel = ${fieldsetLabel};
 		var key_fieldFieldLabel = ${nestedFieldLabel};
 
@@ -1546,7 +1642,8 @@ definition {
 			locator2 = "Form#ADD_FIELD_POSITION_1");
 	}
 
-	macro removeFieldOption {
+	@summary = "Default summary"
+	macro removeFieldOption(fieldFieldLabel = null, index = null, optionFieldLabel = null) {
 		if (isSet(fieldFieldLabel)) {
 			AssertClick.assertPartialTextClickAt(
 				key_fieldFieldLabel = ${fieldFieldLabel},
@@ -1567,7 +1664,8 @@ definition {
 		}
 	}
 
-	macro tearDownInstance {
+	@summary = "Default summary"
+	macro tearDownInstance() {
 		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
@@ -1581,7 +1679,8 @@ definition {
 		PortalSettings.configureCurrentLanguagesCP(defaultPortalLanguage = "English (United States)");
 	}
 
-	macro toggleFieldRepeatable {
+	@summary = "Default summary"
+	macro toggleFieldRepeatable(fieldsetLabel = null, fieldFieldLabel = null, fieldsGroupLabel = null) {
 		if (!(isSet(index))) {
 			var index = 1;
 		}
@@ -1628,7 +1727,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro toggleInline {
+	@summary = "Default summary"
+	macro toggleInline(fieldLabel = null) {
 		if (!(isSet(index))) {
 			var index = 1;
 		}
@@ -1664,7 +1764,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro toggleMultipleSelectionOption {
+	@summary = "Default summary"
+	macro toggleMultipleSelectionOption(webContentMultipleSelection = null) {
 		AssertVisible(locator1 = "WCEditWebContent#SIDEBAR");
 
 		if (!(isSet(webContentMultipleSelectionFieldLabel))) {
@@ -1677,7 +1778,8 @@ definition {
 			locator1 = "WCEditWebContent#SELECTION_OPTION");
 	}
 
-	macro toggleShowAsSwitch {
+	@summary = "Default summary"
+	macro toggleShowAsSwitch(fieldLabel = null) {
 		if (!(isSet(index))) {
 			var index = 1;
 		}
@@ -1713,7 +1815,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro toggleShowLabel {
+	@summary = "Default summary"
+	macro toggleShowLabel(fieldLabel = null, hiddenFieldLabel = null) {
 		if (!(isSet(index))) {
 			var index = 1;
 		}
@@ -1796,7 +1899,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro viewField {
+	@summary = "Default summary"
+	macro viewField(fieldPlaceholder = null, fieldName = null, fieldFieldLabel = null, fieldHelp = null) {
 		if (!(isSet(index))) {
 			var index = 1;
 		}
@@ -1839,7 +1943,8 @@ definition {
 		}
 	}
 
-	macro viewFieldLabel {
+	@summary = "Default summary"
+	macro viewFieldLabel(fieldName = null, fieldFieldLabel = null) {
 		if (${fieldName} == "Boolean") {
 			AssertElementPresent(
 				key_fieldLabel = ${fieldFieldLabel},
@@ -1857,7 +1962,8 @@ definition {
 		}
 	}
 
-	macro viewFieldSearchable {
+	@summary = "Default summary"
+	macro viewFieldSearchable(fieldFieldLabel = null, searchableType = null) {
 		AssertClick.assertPartialTextClickAt(
 			key_fieldFieldLabel = ${fieldFieldLabel},
 			locator1 = "DDMEditStructure#FORM_FIELD_CONTAINER",
@@ -1871,7 +1977,8 @@ definition {
 			locator1 = "WCEditWebContent#SELECTION_OPTION");
 	}
 
-	macro viewFieldset {
+	@summary = "Default summary"
+	macro viewFieldset(fieldsetName = null, fieldNameList = null) {
 		AssertVisible(
 			key_fieldsetLabel = ${fieldsetName},
 			locator1 = "DDMEditStructure#FORM_FIELD_SETS_CONTAINER_LABEL");
@@ -1883,7 +1990,8 @@ definition {
 		}
 	}
 
-	macro viewFieldsetTranslation {
+	@summary = "Default summary"
+	macro viewFieldsetTranslation(fieldsetName = null, fieldNameList = null, localeList = null) {
 		for (var locale : list ${localeList}) {
 			PortletEntry.changeLocale(locale = ${locale});
 
@@ -1899,7 +2007,8 @@ definition {
 		}
 	}
 
-	macro viewFieldType {
+	@summary = "Default summary"
+	macro viewFieldType(fieldLabel = null, fieldLineType = null) {
 		if (!(isSet(index))) {
 			var index = 1;
 		}
@@ -1927,7 +2036,8 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro viewNestedField {
+	@summary = "Default summary"
+	macro viewNestedField(fieldName = null, nestedField = null, nestedFieldData = null) {
 		AssertTextEquals.assertValue(
 			key_fieldName = ${fieldName},
 			key_nestedFieldName = ${nestedField},
@@ -1935,7 +2045,8 @@ definition {
 			value1 = ${nestedFieldData});
 	}
 
-	macro viewNumericType {
+	@summary = "Default summary"
+	macro viewNumericType(fieldLabel = null, fieldNumericType = null) {
 		if (!(isSet(index))) {
 			var index = 1;
 		}
@@ -1962,8 +2073,9 @@ definition {
 		Click(locator1 = "Sidebar#BACK");
 	}
 
-	macro waitForAutoSave {
-		if (IsElementPresent(locator1 = "Button#PUBLISH")) {
+	@summary = "Default summary"
+	macro waitForAutoSave() {
+		if (IsElementPresent(key_text = "Publish", locator1 = "Button#ANY")) {
 			Button.clickPublish();
 		}
 		else if (IsElementPresent(locator1 = "Button#SAVE")) {

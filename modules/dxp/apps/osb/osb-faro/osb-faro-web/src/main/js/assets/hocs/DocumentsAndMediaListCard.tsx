@@ -1,4 +1,5 @@
 import Card from 'shared/components/Card';
+import ClayLink from '@clayui/link';
 import DocumentsAndMediaListQuery from 'shared/queries/DocumentsAndMediaListQuery';
 import ListComponent from 'shared/hoc/ListComponent';
 import NoResultsDisplay from 'shared/components/NoResultsDisplay';
@@ -16,7 +17,8 @@ import {Routes} from 'shared/util/router';
 import {Sizes} from 'shared/util/constants';
 import {useParams} from 'react-router-dom';
 import {useQuery} from '@apollo/react-hooks';
-import {useQueryPagination, useQueryRangeSelectors} from 'shared/hooks';
+import {useQueryPagination} from 'shared/hooks/useQueryPagination';
+import {useQueryRangeSelectors} from 'shared/hooks/useQueryRangeSelectors';
 
 const DocumentsAndMediaListCard: React.FC = () => {
 	const {delta, orderIOMap, page, query} = useQueryPagination({
@@ -74,7 +76,7 @@ const DocumentsAndMediaListCard: React.FC = () => {
 									)}
 								</span>
 
-								<a
+								<ClayLink
 									href={
 										URLConstants.AssetsDocumentsAndMediaListDocumentation
 									}
@@ -84,7 +86,7 @@ const DocumentsAndMediaListCard: React.FC = () => {
 									{Liferay.Language.get(
 										'learn-more-about-documents-and-media'
 									)}
-								</a>
+								</ClayLink>
 							</>
 						}
 						icon={{

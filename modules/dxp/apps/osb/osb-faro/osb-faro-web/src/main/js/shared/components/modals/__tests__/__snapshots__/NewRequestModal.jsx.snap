@@ -28,14 +28,7 @@ exports[`NewRequestModal renders 1`] = `
           <p
             class="text-secondary"
           >
-            New requests will be added to the queue and you will be notified once the job has completed running. You can also 
-            <a
-              href="https://learn.liferay.com/analytics-cloud/latest/en/apis.html"
-              target="_blank"
-            >
-              create requests via API
-            </a>
-            .
+            New requests will be added to the queue and you will be notified once the job has completed running.
           </p>
           <div
             class="form-group"
@@ -113,6 +106,41 @@ exports[`NewRequestModal renders 1`] = `
                 </label>
               </div>
             </div>
+            <div
+              class="form-group-item"
+            >
+              <div
+                class="custom-control custom-checkbox"
+              >
+                <label>
+                  <input
+                    class="custom-control-input"
+                    form="[object Object]"
+                    name="suppressRequest"
+                    type="checkbox"
+                    value="false"
+                  />
+                  <span
+                    class="custom-control-label"
+                  >
+                    <span
+                      class="custom-control-label-text"
+                    >
+                      <span
+                        class="checkbox-label"
+                      >
+                        Suppress
+                        <span
+                          class="text-secondary"
+                        >
+                           - Suppress identity resolution of users based on their email.
+                        </span>
+                      </span>
+                    </span>
+                  </span>
+                </label>
+              </div>
+            </div>
           </div>
           <div
             class="form-group"
@@ -155,39 +183,49 @@ exports[`NewRequestModal renders 1`] = `
                       class="input-group"
                     >
                       <div
-                        class="search-input-list-root input-group-item"
+                        class="form-control form-control-tag-group input-group"
                       >
                         <div
-                          class="form-control form-control-tag-group d-flex"
+                          class="input-group-item"
                         >
                           <div
-                            aria-haspopup="true"
-                            class="input-group base-select-input-root select-input-root flex-grow-1 inset"
+                            class="input-group"
                           >
                             <div
-                              class="input-group-item"
+                              class="input-group-item d-contents input-group-item-shrink input-group-prepend"
+                              role="grid"
+                            />
+                            <div
+                              class="input-group-item input-group-prepend"
                             >
                               <input
+                                aria-autocomplete="list"
+                                aria-controls="clay-id-2"
+                                aria-expanded="false"
                                 autocomplete="off"
-                                class="input-root form-control input-group-inset input-group-inset-after form-control-sm"
+                                autocorrect="off"
+                                class="form-control-inset"
                                 placeholder="example@email.com"
+                                role="combobox"
+                                spellcheck="false"
                                 type="text"
                                 value=""
                               />
-                              <div
-                                class="input-group-inset-item input-group-inset-item-after"
-                              >
-                                <svg
-                                  class="lexicon-icon lexicon-icon-caret-bottom icon-root"
-                                  role="presentation"
-                                >
-                                  <use
-                                    xlink:href="#caret-bottom"
-                                  />
-                                </svg>
-                              </div>
                             </div>
                           </div>
+                        </div>
+                        <div
+                          class="sr-only"
+                        >
+                          <span
+                            id="clay-id-1"
+                          >
+                            Press backspace to delete the current row.
+                          </span>
+                          <span
+                            aria-live="polite"
+                            aria-relevant="text"
+                          />
                         </div>
                       </div>
                     </div>
@@ -240,6 +278,7 @@ exports[`NewRequestModal renders 1`] = `
                       >
                         Please upload files in CSV format. A sample file can be found 
                         <a
+                          class=""
                           download="example_user_request.csv"
                           href="data:text/octet-stream;charset=utf-8,user@example.com
 user1@example.com

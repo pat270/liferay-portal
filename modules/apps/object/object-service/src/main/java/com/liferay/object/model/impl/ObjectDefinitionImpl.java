@@ -6,7 +6,11 @@
 package com.liferay.object.model.impl;
 
 import com.liferay.object.constants.ObjectDefinitionConstants;
-import com.liferay.object.internal.definition.util.ObjectDefinitionUtil;
+import com.liferay.object.definition.util.ObjectDefinitionUtil;
+import com.liferay.object.model.ObjectDefinition;
+import com.liferay.object.model.ObjectFolder;
+import com.liferay.object.service.ObjectDefinitionLocalServiceUtil;
+import com.liferay.object.service.ObjectFolderLocalServiceUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
@@ -72,13 +76,25 @@ public class ObjectDefinitionImpl extends ObjectDefinitionBaseImpl {
 	}
 
 	@Override
+	public String getObjectFolderExternalReferenceCode() {
+		ObjectFolder objectFolder =
+			ObjectFolderLocalServiceUtil.fetchObjectFolder(getObjectFolderId());
+
+		if (objectFolder == null) {
+			return null;
+		}
+
+		return objectFolder.getExternalReferenceCode();
+	}
+
+	@Override
 	public String getOSGiJaxRsName() {
 		return getOSGiJaxRsName(StringPool.BLANK);
 	}
 
 	@Override
 	public String getOSGiJaxRsName(String className) {
-		return getName() + className;
+		return StringUtil.toLowerCase(getName()) + className;
 	}
 
 	@Override
@@ -111,8 +127,35 @@ public class ObjectDefinitionImpl extends ObjectDefinitionBaseImpl {
 				getModifiableSystemObjectDefinitionRESTContextPath(getName());
 		}
 
-		return "/c/" +
-			TextFormatter.formatPlural(StringUtil.toLowerCase(getShortName()));
+		String shortName = TextFormatter.formatPlural(
+			StringUtil.toLowerCase(getShortName()));
+
+		if (!isRootDescendantNode()) {
+			return "/c/" + shortName;
+		}
+
+		ObjectDefinition rootObjectDefinition =
+			ObjectDefinitionLocalServiceUtil.fetchObjectDefinition(
+				getRootObjectDefinitionId());
+
+		return StringBundler.concat(
+			"/c/",
+			TextFormatter.formatPlural(
+				StringUtil.toLowerCase(rootObjectDefinition.getShortName())),
+			StringPool.SLASH, shortName);
+	}
+
+	@Override
+	public String getRootObjectDefinitionExternalReferenceCode() {
+		ObjectDefinition rootObjectDefinition =
+			ObjectDefinitionLocalServiceUtil.fetchObjectDefinition(
+				getRootObjectDefinitionId());
+
+		if (rootObjectDefinition == null) {
+			return null;
+		}
+
+		return rootObjectDefinition.getExternalReferenceCode();
 	}
 
 	@Override
@@ -142,16 +185,56 @@ public class ObjectDefinitionImpl extends ObjectDefinitionBaseImpl {
 	}
 
 	@Override
-	public boolean isUnmodifiableSystemObject() {
-		if (FeatureFlagManagerUtil.isEnabled("LPS-167253")) {
-			if (!isModifiable() && isSystem()) {
-				return true;
-			}
-
+	public boolean isLinkedToObjectFolder(long objectFolderId) {
+		if (getObjectFolderId() == objectFolderId) {
 			return false;
 		}
 
-		return isSystem();
+		return true;
+	}
+
+	@Override
+	public boolean isNodeCandidate() {
+		if (!isApproved() && !isUnmodifiableSystemObject()) {
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
+	public boolean isRootDescendantNode() {
+		if (!FeatureFlagManagerUtil.isEnabled("LPS-187142")) {
+			return false;
+		}
+
+		if ((getRootObjectDefinitionId() > 0) && !isRootNode()) {
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
+	public boolean isRootNode() {
+		if (!FeatureFlagManagerUtil.isEnabled("LPS-187142")) {
+			return false;
+		}
+
+		if (getObjectDefinitionId() == getRootObjectDefinitionId()) {
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
+	public boolean isUnmodifiableSystemObject() {
+		if (!isModifiable() && isSystem()) {
+			return true;
+		}
+
+		return false;
 	}
 
 }

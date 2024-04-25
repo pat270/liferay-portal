@@ -72,7 +72,12 @@ public class ProcessVersionResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _processVersionResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, ProcessVersionResource>
+					processVersionResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_processVersionResourceProxyProviderFunction;
+
+				return processVersionResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -230,10 +235,6 @@ public class ProcessVersionResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, ProcessVersionResource>
-		_processVersionResourceProxyProviderFunction =
-			_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -269,6 +270,14 @@ public class ProcessVersionResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, ProcessVersionResource>
+			_processVersionResourceProxyProviderFunction =
+				_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

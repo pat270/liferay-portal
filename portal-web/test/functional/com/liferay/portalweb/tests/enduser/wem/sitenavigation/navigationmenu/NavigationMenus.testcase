@@ -1,16 +1,20 @@
 @component-name = "portal-wcm"
 definition {
 
+	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testcase.url = "http://localhost:8080";
-	property testray.main.component.name = "Navigation";
+	property testray.main.component.name = "Navigation Menus";
 
 	static var randomSiteName = StringUtil.randomString(8);
 	static var randomNavigationMenuName = StringUtil.randomString(8);
 	var siteURLKey = StringUtil.toLowerCase(${randomSiteName});
 
 	setUp {
+		task ("Set up virtual instance") {
+			TestCase.setUpPortalInstance();
+		}
+
 		task ("Sign in") {
 			User.firstLoginPG();
 		}
@@ -30,6 +34,8 @@ definition {
 	@description = "This is a test for LPS-172782. The navigation menu creator could add child item."
 	@priority = 5
 	test AddChildNavigationMenuItem {
+		property portal.acceptance = "true";
+
 		task ("Given a navigation menu creator has a navigation menu") {
 			JSONCategory.addVocabulary(
 				groupName = ${randomSiteName},
@@ -72,246 +78,6 @@ definition {
 				parentItemNameList = "Web Content Title",
 				site = "true",
 				siteNavigationMenuName = "Navigation Menu Name");
-		}
-	}
-
-	@description = "This is a test for LPS-141351. The site admin could find display page type items in dropdown menu."
-	@priority = 5
-	test AddDisplayPageTypeNavigationMenuItems {
-		property portal.acceptance = "true";
-
-		task ("Add the first display page template for Web Content Article and Basic Web Content") {
-			JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
-				contentType = "Web Content Article",
-				displayPageTemplateEntryName = "Web Content DPT",
-				groupName = ${randomSiteName},
-				subType = "Basic Web Content");
-		}
-
-		task ("Add a Display Page Content fragment to the first display page template") {
-			DisplayPageTemplatesAdmin.openDisplayPagesAdmin(siteURLKey = ${siteURLKey});
-
-			DisplayPageTemplatesAdmin.gotoDisplayPage(displayPageName = "Web Content DPT");
-
-			PageEditor.addFragment(
-				collectionName = "Content Display",
-				fragmentName = "Display Page Content");
-
-			PageEditor.publish();
-		}
-
-		task ("Mark the first display page template as default") {
-			DisplayPageTemplatesAdmin.markDisplayPageAsDefault(displayPageName = "Web Content DPT");
-		}
-
-		task ("Add the second display page template for Blogs Entry") {
-			JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
-				contentType = "Blogs Entry",
-				displayPageTemplateEntryName = "Blogs Entry DPT",
-				groupName = ${randomSiteName});
-		}
-
-		task ("Add a Display Page Content fragment to the second display page template") {
-			DisplayPageTemplatesAdmin.openDisplayPagesAdmin(siteURLKey = ${siteURLKey});
-
-			DisplayPageTemplatesAdmin.gotoDisplayPage(displayPageName = "Blogs Entry DPT");
-
-			PageEditor.addFragment(
-				collectionName = "Content Display",
-				fragmentName = "Display Page Content");
-
-			PageEditor.publish();
-		}
-
-		task ("Mark the second display page template as default") {
-			DisplayPageTemplatesAdmin.markDisplayPageAsDefault(displayPageName = "Blogs Entry DPT");
-		}
-
-		task ("Add the third display page template for Document") {
-			JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
-				contentType = "Document",
-				displayPageTemplateEntryName = "Document DPT",
-				groupName = ${randomSiteName},
-				subType = "Basic Document");
-		}
-
-		task ("Add a Display Page Content fragment to the third display page template") {
-			DisplayPageTemplatesAdmin.openDisplayPagesAdmin(siteURLKey = ${siteURLKey});
-
-			DisplayPageTemplatesAdmin.gotoDisplayPage(displayPageName = "Document DPT");
-
-			PageEditor.addFragment(
-				collectionName = "Content Display",
-				fragmentName = "Display Page Content");
-
-			PageEditor.publish();
-		}
-
-		task ("Mark the third display page template as default") {
-			DisplayPageTemplatesAdmin.markDisplayPageAsDefault(displayPageName = "Document DPT");
-		}
-
-		task ("Add the fourth display page template for Category") {
-			JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
-				contentType = "Category",
-				displayPageTemplateEntryName = "Category DPT",
-				groupName = ${randomSiteName});
-		}
-
-		task ("Add a Display Page Content fragment to the fourth display page template") {
-			DisplayPageTemplatesAdmin.openDisplayPagesAdmin(siteURLKey = ${siteURLKey});
-
-			DisplayPageTemplatesAdmin.gotoDisplayPage(displayPageName = "Category DPT");
-
-			PageEditor.addFragment(
-				collectionName = "Content Display",
-				fragmentName = "Display Page Content");
-
-			PageEditor.publish();
-		}
-
-		task ("Mark the fourth display page template as default") {
-			DisplayPageTemplatesAdmin.markDisplayPageAsDefault(displayPageName = "Category DPT");
-		}
-
-		task ("Add a web content based on Basic Web Content") {
-			JSONWebcontent.addWebContent(
-				content = "Web Content Content",
-				groupName = ${randomSiteName},
-				title = "Web Content Title");
-		}
-
-		task ("Add a blogs entry") {
-			HeadlessBlog.addBlogEntry(
-				content = "Blogs Entry Content",
-				groupName = ${randomSiteName},
-				title = "Blogs Entry Title");
-		}
-
-		task ("Add a document with an image") {
-			JSONDocument.addFileWithUploadedFile(
-				dmDocumentTitle = "Document Title",
-				groupName = ${randomSiteName},
-				mimeType = "image/jpeg",
-				sourceFileName = "Document_1.jpg");
-		}
-
-		task ("Add a vocabulary") {
-			JSONCategory.addVocabulary(
-				groupName = ${randomSiteName},
-				title = "Vocabulary Name");
-		}
-
-		task ("Add a category") {
-			JSONCategory.addCategory(
-				groupName = ${randomSiteName},
-				title = "Category Name",
-				vocabularyName = "Vocabulary Name");
-		}
-
-		task ("Add a navigation menu") {
-			JSONSitenavigation.addSiteNavigationMenu(
-				groupName = ${randomSiteName},
-				siteNavigationMenuName = "Navigation Menu Name");
-		}
-
-		task ("Add the Display Page type items in navigation menu") {
-			NavigationMenusAdmin.openNavigationMenusAdmin(siteURLKey = ${siteURLKey});
-
-			NavigationMenusAdmin.editMenu(navigationMenuName = "Navigation Menu Name");
-		}
-
-		task ("Add the Display Page items to the navigation menu") {
-			NavigationMenusAdmin.addItem(
-				assetTitle = "Web Content Title",
-				item = "Web Content Article");
-
-			NavigationMenusAdmin.addItem(
-				assetTitle = "Blogs Entry Title",
-				item = "Blogs Entry");
-
-			NavigationMenusAdmin.addItem(
-				assetTitle = "Document Title",
-				item = "Document");
-
-			NavigationMenusAdmin.addItem(
-				assetTitleList = "Category Name",
-				item = "Category");
-		}
-
-		task ("View the Display Page items") {
-			for (var itemName : list "Web Content Title,Blogs Entry Title,Document Title,Category Name") {
-				NavigationMenusAdmin.viewItem(itemName = ${itemName});
-			}
-		}
-
-		task ("Add a widget page") {
-			JSONLayout.addPublicLayout(
-				groupName = ${randomSiteName},
-				layoutName = "Test Page Name");
-		}
-
-		task ("Select the navigation menu in Navigation Menu widget") {
-			Navigator.gotoSitePage(
-				pageName = "Test Page Name",
-				siteName = ${randomSiteName});
-
-			NavigationMenusWidget.gotoNavigationMenuWidgetConfig();
-
-			NavigationMenusWidget.chooseMenu(menuName = "Navigation Menu Name");
-
-			PortletEntry.save();
-
-			IFrame.closeFrame();
-		}
-
-		task ("View the items shown in Navigation Menu widget") {
-			for (var itemName : list "Web Content Title,Blogs Entry Title,Document Title,Category Name") {
-				AssertVisible(
-					key_pageName = ${itemName},
-					locator1 = "Home#PAGE");
-			}
-		}
-
-		task ("Navigate to associated display page template via Navigation Menu widget") {
-			Click(
-				key_pageName = "Web Content Title",
-				locator1 = "Home#PAGE");
-
-			ControlMenu.viewHeaderTitle(headerTitle = "Web Content Title");
-
-			AssertTextEquals(
-				index = 1,
-				locator1 = "WCD#WEB_CONTENT_CONTENT",
-				value1 = "Web Content Content");
-
-			Click(
-				key_pageName = "Blogs Entry Title",
-				locator1 = "Home#PAGE");
-
-			ControlMenu.viewHeaderTitle(headerTitle = "Blogs Entry Title");
-
-			AssertVisible(
-				key_entryContent = "Blogs Entry Content",
-				locator1 = "BlogsEntry#CONTENT");
-
-			Click(
-				key_pageName = "Document Title",
-				locator1 = "Home#PAGE");
-
-			ControlMenu.viewHeaderTitle(headerTitle = "Document Title");
-
-			ContentPages.viewFragmentBackgroundImage(image = "Document_1.jpg");
-
-			Click(
-				key_pageName = "Category Name",
-				locator1 = "Home#PAGE");
-
-			ControlMenu.viewHeaderTitle(headerTitle = "Category Name");
-
-			ContentPages.viewFragmentText(
-				fragmentName = "Content Display",
-				text = "Category Name");
 		}
 	}
 
@@ -464,6 +230,8 @@ definition {
 	@description = "This is a test for LPS-172782. The navigation menu creator could add sibling item."
 	@priority = 5
 	test AddSiblingNavigationMenuItems {
+		property portal.acceptance = "true";
+
 		task ("Given a navigation menu creator has a navigation menu with an item") {
 			JSONLayout.addPublicLayout(
 				groupName = ${randomSiteName},
@@ -614,9 +382,9 @@ definition {
 				locator1 = "Home#PAGE",
 				value1 = "Liferay");
 
-			SelectWindow.selectPopUp(locator1 = "null");
+			SelectWindow.selectPopUp(value1 = "null");
 
-			AssertLocation.assertPartialLocation(value1 = "https://www.liferay.com");
+			AssertLocation.assertPartialLocation(value1 = "liferay.com");
 		}
 	}
 
@@ -673,7 +441,7 @@ definition {
 				locator1 = "Home#PAGE",
 				value1 = "Liferay");
 
-			AssertLocation.assertPartialLocation(value1 = "https://www.liferay.com");
+			AssertLocation.assertPartialLocation(value1 = "liferay.com");
 		}
 	}
 
@@ -996,8 +764,9 @@ definition {
 	@priority = 4
 	test EditNavigationMenuInVirtualInstanceWithDBPartitioning {
 		property database.partition.enabled = "true";
-		property database.types = "mysql";
+		property database.types = "mysql, postgresql";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var labelName = StringUtil.randomString(8);
 
@@ -1238,9 +1007,7 @@ definition {
 				element = "//div[contains(@class,'site_navigation_menu_editor_AppLayout-content')]",
 				property = "scrollTop");
 
-			TestUtils.assertEquals(
-				actual = ${scrollTop},
-				expected = ${persistenceScrollTop});
+			StringUtil.assertEquals(${persistenceScrollTop}, ${scrollTop});
 		}
 	}
 
@@ -1401,9 +1168,7 @@ definition {
 				element = "//div[contains(@class,'site_navigation_menu_editor_AppLayout-content')]",
 				property = "scrollTop");
 
-			TestUtils.assertEquals(
-				actual = ${scrollTop},
-				expected = 0);
+			StringUtil.assertEquals(0, ${scrollTop});
 
 			ScrollWebElementIntoView(
 				key_itemName = "Test Page Name 15",
@@ -1417,9 +1182,7 @@ definition {
 				element = "//div[contains(@class,'site_navigation_menu_editor_AppLayout-content')]",
 				property = "scrollTop");
 
-			TestUtils.assertEquals(
-				actual = ${scrollTop},
-				expected = 0);
+			StringUtil.assertEquals(0, ${scrollTop});
 		}
 	}
 
@@ -1499,6 +1262,26 @@ definition {
 			NavigationMenusAdmin.editMenu(navigationMenuName = "Navigation Menu Name 1");
 
 			NavigationMenusAdmin.viewItemNotPresent(itemNameList = "Page 3");
+		}
+	}
+
+	@description = "This is a test for LPS-177769. The tooltip of the back button in a new Navigation Menu is Go to Navigation Menus."
+	@priority = 3
+	test ViewBackButtonTooltipInNavigationMenuEditor {
+		task ("Given access to the navigation menu editor") {
+			NavigationMenusAdmin.openNavigationMenusAdmin(siteURLKey = ${siteURLKey});
+
+			NavigationMenusAdmin.addMenu(menuName = "Navigation Menu Name");
+		}
+
+		task ("When hover over the back button") {
+			MouseOver(locator1 = "Icon#BACK");
+		}
+
+		task ("Then see the tooltip message") {
+			AssertVisible(
+				key_content = "Go to Navigation Menus",
+				locator1 = "Tooltip#FLOATING_TOOLTIP_CONTENT");
 		}
 	}
 
@@ -1622,36 +1405,6 @@ definition {
 				parentItemNameList = "Category Name",
 				site = "true",
 				siteNavigationMenuName = "Navigation Menu Name");
-		}
-	}
-
-	@description = "This is a test for LPS-145292. The user could view new icons on dropdown menu of navigation menu."
-	@priority = 4
-	test ViewDropdownMenuIconsInNavigationAdmin {
-		task ("Given a Navigation menu creator has a new navigation menu") {
-			JSONSitenavigation.addSiteNavigationMenu(
-				groupName = ${randomSiteName},
-				siteNavigationMenuName = "Navigation Menu Name");
-		}
-
-		task ("When the Navigation menu creator opens the dropdown menu of navigation menu") {
-			NavigationMenusAdmin.openNavigationMenusAdmin(siteURLKey = ${siteURLKey});
-
-			LexiconEntry.openEntryMenu(rowEntry = "Navigation Menu Name");
-		}
-
-		task ("Then the Navigation menu creator can see the new icons on the dropdown menu") {
-			DropdownMenuItem.viewIcon(iconList = "pencil,password-policies,trash");
-		}
-
-		task ("When the Navigation menu creator opens the dropdown menu of management toolbar after selecting the new navigation menu") {
-			LexiconTable.checkTableCheckbox(tableEntry = "Navigation Menu Name");
-
-			Click(locator1 = "ManagementBar#MORE_ACTIONS_ELLIPSIS");
-		}
-
-		task ("Then the Navigation menu creator can see the new icon on the dropdown menu") {
-			DropdownMenuItem.viewIcon(iconList = "trash");
 		}
 	}
 
@@ -1912,7 +1665,11 @@ definition {
 		}
 
 		task ("When the navigation menu creator hovers on the content page item") {
-			MouseOver(
+			MouseOver.javaScriptFocus(
+				key_nodeName = "Test Page Name",
+				locator1 = "Treeview#NODE_ITEM");
+
+			MouseOver.javaScriptFocus(
 				key_nodeName = "Test Page Name",
 				locator1 = "Treeview#NODE_ITEM");
 		}

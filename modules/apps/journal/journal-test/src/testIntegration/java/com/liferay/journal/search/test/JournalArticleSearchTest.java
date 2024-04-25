@@ -6,6 +6,12 @@
 package com.liferay.journal.search.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.asset.kernel.model.AssetCategory;
+import com.liferay.asset.kernel.model.AssetVocabulary;
+import com.liferay.asset.kernel.service.AssetCategoryLocalService;
+import com.liferay.asset.kernel.service.AssetVocabularyLocalService;
+import com.liferay.asset.kernel.service.persistence.AssetEntryQuery;
+import com.liferay.asset.util.AssetHelper;
 import com.liferay.dynamic.data.mapping.configuration.DDMIndexerConfiguration;
 import com.liferay.dynamic.data.mapping.form.field.type.constants.DDMFormFieldTypeConstants;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
@@ -27,13 +33,14 @@ import com.liferay.journal.model.JournalFolder;
 import com.liferay.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.journal.service.JournalFolderServiceUtil;
 import com.liferay.journal.test.util.JournalTestUtil;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.configuration.test.util.ConfigurationTestUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.ClassedModel;
 import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.portlet.PortalPreferences;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.search.BooleanQuery;
@@ -47,7 +54,6 @@ import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.generic.BooleanQueryImpl;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
-import com.liferay.portal.kernel.security.auth.GuestOrUserUtil;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.PortalPreferencesLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -60,6 +66,7 @@ import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -378,6 +385,64 @@ public class JournalArticleSearchTest extends BaseSearchTestCase {
 			String.valueOf(article2.getResourcePrimKey()));
 	}
 
+	@Test
+	public void testSearchAssetVocabularies() throws Exception {
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(group.getGroupId());
+
+		AssetVocabulary assetVocabulary =
+			_assetVocabularyLocalService.addVocabulary(
+				TestPropsValues.getUserId(), group.getGroupId(),
+				RandomTestUtil.randomString(), serviceContext);
+
+		AssetCategory assetCategory = _assetCategoryLocalService.addCategory(
+			TestPropsValues.getUserId(), group.getGroupId(),
+			RandomTestUtil.randomString(), assetVocabulary.getVocabularyId(),
+			serviceContext);
+
+		Locale locale = _portal.getSiteDefaultLocale(group);
+
+		JournalTestUtil.addArticle(
+			group.getGroupId(), JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID,
+			JournalArticleConstants.CLASS_NAME_ID_DEFAULT, StringPool.BLANK,
+			true, RandomTestUtil.randomLocaleStringMap(locale),
+			RandomTestUtil.randomLocaleStringMap(locale),
+			RandomTestUtil.randomLocaleStringMap(locale), null, locale, null,
+			false, true, serviceContext);
+
+		serviceContext.setAssetCategoryIds(
+			new long[] {assetCategory.getCategoryId()});
+
+		JournalTestUtil.addArticle(
+			group.getGroupId(), JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID,
+			JournalArticleConstants.CLASS_NAME_ID_DEFAULT, StringPool.BLANK,
+			true, RandomTestUtil.randomLocaleStringMap(locale),
+			RandomTestUtil.randomLocaleStringMap(locale),
+			RandomTestUtil.randomLocaleStringMap(locale), null, locale, null,
+			false, true, serviceContext);
+
+		SearchContext searchContext = SearchContextTestUtil.getSearchContext();
+
+		searchContext.setAssetVocabularyIds(
+			new long[] {assetVocabulary.getVocabularyId()});
+		searchContext.setGroupIds(new long[] {group.getGroupId()});
+
+		AssetEntryQuery assetEntryQuery = new AssetEntryQuery();
+
+		assetEntryQuery.setClassName(JournalArticle.class.getName());
+		assetEntryQuery.setGroupIds(new long[] {group.getGroupId()});
+
+		Hits results = _assetHelper.search(
+			searchContext, assetEntryQuery, QueryUtil.ALL_POS,
+			QueryUtil.ALL_POS);
+
+		Assert.assertEquals(results.toString(), 1, results.getLength());
+
+		results = _indexer.search(searchContext);
+
+		Assert.assertEquals(results.toString(), 1, results.getLength());
+	}
+
 	@Override
 	@Test
 	public void testSearchAttachments() throws Exception {
@@ -588,7 +653,7 @@ public class JournalArticleSearchTest extends BaseSearchTestCase {
 			searchContext.setGroupIds(new long[] {groupId});
 			searchContext.setSorts(new Sort(Field.MODIFIED_DATE, true));
 			searchContext.setStart(QueryUtil.ALL_POS);
-			searchContext.setUserId(GuestOrUserUtil.getUserId());
+			searchContext.setUserId(TestPropsValues.getUserId());
 
 			return indexer.search(searchContext);
 		}
@@ -708,6 +773,20 @@ public class JournalArticleSearchTest extends BaseSearchTestCase {
 
 	}
 
+	@Inject(
+		filter = "indexer.class.name=com.liferay.journal.model.JournalArticle"
+	)
+	private static Indexer<JournalArticle> _indexer;
+
+	@Inject
+	private AssetCategoryLocalService _assetCategoryLocalService;
+
+	@Inject
+	private AssetHelper _assetHelper;
+
+	@Inject
+	private AssetVocabularyLocalService _assetVocabularyLocalService;
+
 	@Inject
 	private DDMIndexer _ddmIndexer;
 
@@ -718,5 +797,8 @@ public class JournalArticleSearchTest extends BaseSearchTestCase {
 
 	private JournalServiceConfiguration _journalServiceConfiguration;
 	private String _originalPortalPreferencesXML;
+
+	@Inject
+	private Portal _portal;
 
 }

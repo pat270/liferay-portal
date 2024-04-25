@@ -13,7 +13,6 @@ import com.liferay.asset.kernel.service.AssetTagLocalService;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.List;
 
@@ -61,7 +60,7 @@ public class AssetAutoTaggerEntryLocalServiceImpl
 		throws PortalException {
 
 		AssetTag assetTag = _assetTagLocalService.fetchTag(
-			assetEntry.getGroupId(), StringUtil.toLowerCase(assetTagName));
+			assetEntry.getGroupId(), assetTagName);
 
 		if (assetTag == null) {
 			assetTag = _assetTagLocalService.addTag(

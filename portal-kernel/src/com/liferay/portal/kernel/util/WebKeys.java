@@ -397,6 +397,8 @@ public interface WebKeys {
 	public static final String MESSAGE_BOARDS_TREE_WALKER_VIEWABLE_THREAD =
 		"MESSAGE_BOARDS_TREE_WALKER_VIEWABLE_THREAD";
 
+	public static final String MFA_ENABLED = "MFA_ENABLED";
+
 	public static final String NETVIBES = "NETVIBES";
 
 	public static final String NOTES_LIST = "NOTES_LIST";
@@ -423,6 +425,8 @@ public interface WebKeys {
 		"LIFERAY_SHARED_PAGE_DESCRIPTION";
 
 	public static final String PAGE_KEYWORDS = "LIFERAY_SHARED_PAGE_KEYWORDS";
+
+	public static final String PAGE_ROBOTS = "LIFERAY_SHARED_PAGE_ROBOTS";
 
 	public static final String PAGE_SUBTITLE = "LIFERAY_SHARED_PAGE_SUBTITLE";
 

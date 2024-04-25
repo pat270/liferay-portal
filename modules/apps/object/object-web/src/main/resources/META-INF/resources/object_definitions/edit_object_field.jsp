@@ -13,10 +13,14 @@ ObjectDefinitionsFieldsDisplayContext objectDefinitionsFieldsDisplayContext = (O
 ObjectField objectField = (ObjectField)request.getAttribute(ObjectWebKeys.OBJECT_FIELD);
 %>
 
+<liferay-portlet:resourceURL copyCurrentRenderParameters="<%= false %>" var="baseResourceURL" />
+
 <react:component
-	module="js/components/ObjectField/EditObjectField"
+	module="{EditObjectField} from object-web"
 	props='<%=
 		HashMapBuilder.<String, Object>put(
+			"baseResourceURL", String.valueOf(baseResourceURL)
+		).put(
 			"creationLanguageId", objectDefinition.getDefaultLanguageId()
 		).put(
 			"filterOperators", LocalizedJSONArrayUtil.getFilterOperatorsJSONObject(locale)
@@ -27,27 +31,19 @@ ObjectField objectField = (ObjectField)request.getAttribute(ObjectWebKeys.OBJECT
 		).put(
 			"forbiddenNames", PropsUtil.getArray(PropsKeys.DL_NAME_BLACKLIST)
 		).put(
-			"isApproved", objectDefinition.isApproved()
-		).put(
 			"isDefaultStorageType", objectDefinition.isDefaultStorageType()
+		).put(
+			"isRootDescendantNode", objectDefinition.isRootDescendantNode()
+		).put(
+			"learnResources", LearnMessageUtil.getReactDataJSONObject("object-web")
 		).put(
 			"objectDefinitionExternalReferenceCode", objectDefinition.getExternalReferenceCode()
 		).put(
 			"objectFieldId", objectField.getObjectFieldId()
 		).put(
-			"objectFieldTypes", objectDefinitionsFieldsDisplayContext.getObjectFieldBusinessTypeMaps(Validator.isNotNull(objectField.getRelationshipType()), locale)
-		).put(
-			"objectName", objectDefinition.getShortName()
-		).put(
-			"objectRelationshipId", objectDefinitionsFieldsDisplayContext.getObjectRelationshipId(objectField)
-		).put(
 			"readOnly", !objectDefinitionsFieldsDisplayContext.hasUpdateObjectDefinitionPermission()
 		).put(
-			"readOnlySidebarElements", objectDefinitionsFieldsDisplayContext.getObjectFieldCodeEditorElements()
-		).put(
-			"sidebarElements", objectDefinitionsFieldsDisplayContext.getObjectFieldCodeEditorElements(objectField.getBusinessType())
-		).put(
-			"workflowStatusJSONArray", LocalizedJSONArrayUtil.getWorkflowStatusJSONArray(locale)
+			"workflowStatuses", LocalizedJSONArrayUtil.getWorkflowStatusJSONArray(locale)
 		).build()
 	%>'
 />

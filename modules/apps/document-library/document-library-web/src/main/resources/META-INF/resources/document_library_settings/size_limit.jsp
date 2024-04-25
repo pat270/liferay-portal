@@ -23,35 +23,43 @@ DLSizeLimitConfigurationDisplayContext dlSizeLimitConfigurationDisplayContext = 
 			</h2>
 		</clay:sheet-header>
 
+		<clay:alert
+			dismissible="<%= true %>"
+			displayType="info"
+			message="changes-will-only-apply-to-new-documents-uploaded"
+		/>
+
 		<clay:sheet-section>
+			<h3 class="c-mb-2 sheet-subtitle text-secondary"><liferay-ui:message key="upload-limit" /></h3>
+
 			<p class="c-mb-4 text-3 text-secondary">
-				<liferay-ui:message key="file-max-size-help" />
+				<liferay-ui:message arguments="<%= dlSizeLimitConfigurationDisplayContext.getFileMaxSizeHelpArguments() %>" key="maximum-file-upload-size-help" />
 			</p>
 
-			<aui:input label="file-max-size" name="fileMaxSize" value="<%= dlSizeLimitConfigurationDisplayContext.getFileMaxSize() %>" />
+			<aui:input label="maximum-file-upload-size" name="fileMaxSize" type="number" value="<%= dlSizeLimitConfigurationDisplayContext.getFileMaxSize() %>" />
 		</clay:sheet-section>
 
 		<clay:sheet-section>
-			<h3 class="c-mb-2 sheet-subtitle text-2 text-secondary"><liferay-ui:message key="maximum-file-size-and-mimetypes" /></h3>
+			<h3 class="c-mb-2 sheet-subtitle text-secondary"><liferay-ui:message key="mime-type-limit" /></h3>
 
 			<div>
 				<span aria-hidden="true" class="loading-animation"></span>
 
 				<react:component
-					module="document_library/js/file-size-limit/FileSizeMimetypes"
+					module="{FileSizeMimetypes} from document-library-web"
 					props="<%= dlSizeLimitConfigurationDisplayContext.getFileSizePerMimeTypeData() %>"
 				/>
 			</div>
 		</clay:sheet-section>
 
 		<clay:sheet-section>
-			<h3 class="c-mb-2 sheet-subtitle text-2 text-secondary"><liferay-ui:message key="size-limit-copy-files-title" /></h3>
+			<h3 class="c-mb-2 sheet-subtitle text-secondary"><liferay-ui:message key="copy-limit-title" /></h3>
 
 			<p class="c-mb-4 text-3 text-secondary">
-				<liferay-ui:message key="size-limit-copy-files-help" />
+				<liferay-ui:message key="copy-limit-help" />
 			</p>
 
-			<aui:input label="max-size-to-copy" name="maxSizeToCopy" value="<%= dlSizeLimitConfigurationDisplayContext.getMaxSizeToCopy() %>" />
+			<aui:input label="size-limit-copy-files" name="maxSizeToCopy" type="number" value="<%= dlSizeLimitConfigurationDisplayContext.getMaxSizeToCopy() %>" />
 		</clay:sheet-section>
 
 		<clay:sheet-footer>

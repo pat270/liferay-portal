@@ -41,6 +41,7 @@ import com.liferay.osb.faro.engine.client.model.provider.LiferayProvider;
 import com.liferay.osb.faro.engine.client.util.FilterBuilder;
 import com.liferay.osb.faro.engine.client.util.OrderByField;
 import com.liferay.osb.faro.model.FaroProject;
+import com.liferay.osb.faro.model.FaroUser;
 
 import java.io.OutputStream;
 
@@ -107,12 +108,14 @@ public interface ContactsEngineClient {
 	public void assignChannelToIndividualSegment(
 		FaroProject faroProject, String individualSegmentId, String channelId);
 
-	public void clearChannel(FaroProject faroProject, List<String> ids);
+	public void clearChannel(
+		FaroProject faroProject, FaroUser faroUser, List<String> ids);
 
 	public void deleteBlockedKeywords(FaroProject faroProject, List<String> ids)
 		throws FaroEngineClientException;
 
-	public void deleteChannels(FaroProject faroProject, List<String> ids);
+	public void deleteChannels(
+		FaroProject faroProject, FaroUser faroUser, List<String> ids);
 
 	public void deleteData(
 		FaroProject faroProject, String weDeployDataServiceName,
@@ -210,7 +213,7 @@ public interface ContactsEngineClient {
 		throws FaroEngineClientException;
 
 	public Results<Channel> getChannels(
-		FaroProject faroProject, int cur, int delta,
+		FaroProject faroProject, int cur, int delta, List<String> ids,
 		List<OrderByField> orderByFields);
 
 	public Results<Individual> getCoworkerIndividuals(
@@ -313,6 +316,8 @@ public interface ContactsEngineClient {
 		FaroProject faroProject, Long channelId, String query,
 		String fieldMappingFieldName, int cur, int delta);
 
+	public long getIdentitiesCount(FaroProject faroProject);
+
 	public Individual getIndividual(
 			FaroProject faroProject, String id, String channelId)
 		throws FaroEngineClientException;
@@ -352,9 +357,6 @@ public interface ContactsEngineClient {
 		FaroProject faroProject, String individualSegmentId, String filter,
 		String query, List<String> fields, boolean includeAnonymousUsers,
 		int cur, int delta, List<OrderByField> orderByFields);
-
-	public long getIndividualsCount(
-		FaroProject faroProject, boolean includeAnonymousUsers);
 
 	public long getIndividualsCreatedSinceCount(
 		FaroProject faroProject, Date startDate);
@@ -405,6 +407,8 @@ public interface ContactsEngineClient {
 		String ownerType, String name, String query, String expand, int cur,
 		int delta, List<OrderByField> orderByFields);
 
+	public Date getLastSeenDate(FaroProject faroProject);
+
 	public Results<PageVisited> getPagesVisited(
 		FaroProject faroProject, String channelId, String ownerId,
 		String ownerType, String query, String interestName, Date startDate,
@@ -421,6 +425,8 @@ public interface ContactsEngineClient {
 		FaroProject faroProject, String individualId, String query,
 		List<String> fields, int cur, int delta,
 		List<OrderByField> orderByFields);
+
+	public long getSyncedIndividualsCount(FaroProject faroProject);
 
 	public void getToOutputStream(
 			FaroProject faroProject, Map<String, String> headers, String path,

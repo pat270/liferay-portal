@@ -3,16 +3,9 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {createPortletURL, delegate, openSelectionModal} from 'frontend-js-web';
+import {delegate, openSelectionModal} from 'frontend-js-web';
 
-export default function ({
-	defaultParentGroupId,
-	eventName,
-	groupId,
-	namespace,
-	portletURL,
-	windowState,
-}) {
+export default function ({defaultParentGroupId, namespace, portletURL}) {
 	const eventDelegates = [];
 	const form = document.getElementById(`${namespace}fm`);
 	const membershipContainer = document.getElementById(
@@ -28,22 +21,17 @@ export default function ({
 	const onChangeParentSite = () => {
 		openSelectionModal({
 			onSelect: (event) => {
-				const {entityid, entityname, grouptype} = event;
+				const {groupdescriptivename, groupid, grouptype} = event;
 
-				parentSiteInput.value = `${entityname} (${grouptype})`;
+				parentSiteInput.value = `${groupdescriptivename} (${grouptype})`;
 
-				primaryKeysInput.value = entityid;
+				primaryKeysInput.value = groupid;
 
 				membershipContainer.classList.remove('hide');
 			},
 			selectEventName: `${namespace}selectGroup`,
 			title: Liferay.Language.get('select-site'),
-			url: createPortletURL(portletURL, {
-				eventName,
-				groupId,
-				includeCurrentGroup: false,
-				p_p_state: windowState,
-			}).toString(),
+			url: portletURL,
 		});
 	};
 

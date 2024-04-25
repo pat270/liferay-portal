@@ -13,7 +13,6 @@ import com.liferay.fragment.service.FragmentEntryLinkLocalService;
 import com.liferay.fragment.service.FragmentEntryLocalService;
 import com.liferay.fragment.util.configuration.FragmentConfigurationField;
 import com.liferay.fragment.util.configuration.FragmentEntryConfigurationParser;
-import com.liferay.info.exception.InfoFormException;
 import com.liferay.info.exception.InfoFormInvalidGroupException;
 import com.liferay.info.exception.InfoFormInvalidLayoutModeException;
 import com.liferay.info.exception.InfoFormPrincipalException;
@@ -33,17 +32,18 @@ import com.liferay.info.item.creator.InfoItemCreator;
 import com.liferay.info.item.provider.InfoItemFieldValuesProvider;
 import com.liferay.info.item.provider.InfoItemObjectProvider;
 import com.liferay.info.item.updater.InfoItemFieldValuesUpdater;
+import com.liferay.info.type.WebURL;
 import com.liferay.layout.constants.LayoutWebKeys;
-import com.liferay.layout.page.template.info.item.provider.DisplayPageInfoItemFieldSetProvider;
 import com.liferay.layout.provider.LayoutStructureProvider;
 import com.liferay.layout.util.constants.LayoutDataItemTypeConstants;
 import com.liferay.layout.util.structure.FormStyledLayoutStructureItem;
 import com.liferay.layout.util.structure.FragmentStyledLayoutStructureItem;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.layout.util.structure.LayoutStructureItem;
+import com.liferay.layout.util.structure.LayoutStructureItemUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.captcha.CaptchaException;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
+import com.liferay.portal.kernel.exception.InfoFormException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactory;
@@ -60,16 +60,21 @@ import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.struts.StrutsAction;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.upload.UploadServletRequest;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.text.SimpleDateFormat;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -100,7 +105,7 @@ public class EditInfoItemStrutsAction implements StrutsAction {
 		String formItemId = ParamUtil.getString(
 			httpServletRequest, "formItemId");
 
-		List<InfoFieldValue<Object>> infoFieldValues = null;
+		Map<String, InfoFieldValue<Object>> infoFieldValues = null;
 
 		try {
 			infoFieldValues =
@@ -154,8 +159,18 @@ public class EditInfoItemStrutsAction implements StrutsAction {
 				throw new InfoFormInvalidGroupException();
 			}
 
-			if (_isCaptchaLayoutStructureItem(formItemId, layoutStructure)) {
-				CaptchaUtil.check(httpServletRequest);
+			FragmentEntryLink captchaFragmentEntryLink =
+				_getCaptchaFragmentEntryLink(formItemId, layoutStructure);
+
+			if (captchaFragmentEntryLink != null) {
+				try {
+					CaptchaUtil.check(httpServletRequest);
+				}
+				catch (CaptchaException captchaException) {
+					throw new InfoFormValidationException.InvalidCaptcha(
+						captchaException,
+						captchaFragmentEntryLink.getFragmentEntryLinkId());
+				}
 			}
 
 			_validateRequiredFields(
@@ -169,9 +184,11 @@ public class EditInfoItemStrutsAction implements StrutsAction {
 			InfoItemIdentifier infoItemIdentifier = _getInfoItemIdentifier(
 				httpServletRequest);
 
-			if ((infoItemIdentifier != null) &&
-				FeatureFlagManagerUtil.isEnabled("LPS-183727")) {
+			int status = ParamUtil.getInteger(
+				httpServletRequest, "status",
+				WorkflowConstants.STATUS_APPROVED);
 
+			if (infoItemIdentifier != null) {
 				InfoItemObjectProvider<Object> infoItemObjectProvider =
 					_infoItemServiceRegistry.getFirstInfoItemService(
 						InfoItemObjectProvider.class, className,
@@ -190,10 +207,11 @@ public class EditInfoItemStrutsAction implements StrutsAction {
 						infoItemObjectProvider.getInfoItem(infoItemIdentifier),
 						InfoItemFieldValues.builder(
 						).infoFieldValues(
-							infoFieldValues
+							new ArrayList<>(infoFieldValues.values())
 						).infoItemReference(
 							new InfoItemReference(className, 0)
-						).build());
+						).build(),
+						status);
 			}
 			else {
 				InfoItemCreator<Object> infoItemCreator =
@@ -208,16 +226,17 @@ public class EditInfoItemStrutsAction implements StrutsAction {
 					groupId,
 					InfoItemFieldValues.builder(
 					).infoFieldValues(
-						infoFieldValues
+						new ArrayList<>(infoFieldValues.values())
 					).infoItemReference(
 						new InfoItemReference(className, 0)
-					).build());
+					).build(),
+					status);
 			}
 
 			String displayPageURL = _getDisplayPageURL(
 				className,
 				ParamUtil.getString(httpServletRequest, "displayPage"),
-				infoItem);
+				httpServletRequest, infoItem);
 
 			redirect = ParamUtil.getString(httpServletRequest, "redirect");
 
@@ -250,22 +269,63 @@ public class EditInfoItemStrutsAction implements StrutsAction {
 
 			success = true;
 		}
-		catch (CaptchaException captchaException) {
+		catch (InfoFormValidationException.InvalidCaptcha
+					infoFormValidationException) {
+
 			if (_log.isDebugEnabled()) {
-				_log.debug(captchaException);
+				_log.debug(infoFormValidationException);
 			}
 
 			SessionErrors.add(
-				httpServletRequest, formItemId,
-				new InfoFormValidationException.InvalidCaptcha());
+				httpServletRequest, InfoFormException.class,
+				infoFormValidationException);
 		}
 		catch (InfoFormValidationException infoFormValidationException) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(infoFormValidationException);
 			}
 
-			SessionErrors.add(
-				httpServletRequest, formItemId, infoFormValidationException);
+			boolean hasInfoFormValidationExceptionCustomValidationErrors =
+				false;
+
+			if (infoFormValidationException instanceof
+					InfoFormValidationException.RuleValidation) {
+
+				InfoFormValidationException.RuleValidation
+					infoFormValidationExceptionRuleValidation =
+						(InfoFormValidationException.RuleValidation)
+							infoFormValidationException;
+
+				for (InfoFormValidationException.CustomValidation
+						infoFormValidationExceptionCustomValidation :
+							infoFormValidationExceptionRuleValidation.
+								getCustomValidations()) {
+
+					if (Validator.isNotNull(
+							infoFormValidationExceptionCustomValidation.
+								getInfoFieldUniqueId())) {
+
+						SessionErrors.add(
+							httpServletRequest,
+							infoFormValidationExceptionCustomValidation.
+								getInfoFieldUniqueId(),
+							infoFormValidationExceptionCustomValidation);
+					}
+					else {
+						SessionErrors.add(
+							httpServletRequest, formItemId,
+							infoFormValidationExceptionCustomValidation);
+					}
+
+					hasInfoFormValidationExceptionCustomValidationErrors = true;
+				}
+			}
+
+			if (!hasInfoFormValidationExceptionCustomValidationErrors) {
+				SessionErrors.add(
+					httpServletRequest, formItemId,
+					infoFormValidationException);
+			}
 
 			if (Validator.isNotNull(
 					infoFormValidationException.getInfoFieldUniqueId())) {
@@ -302,7 +362,9 @@ public class EditInfoItemStrutsAction implements StrutsAction {
 		if (!success && (infoFieldValues != null)) {
 			Map<String, String> infoFormParameterMap = new HashMap<>();
 
-			for (InfoFieldValue<Object> infoFieldValue : infoFieldValues) {
+			for (InfoFieldValue<Object> infoFieldValue :
+					infoFieldValues.values()) {
+
 				InfoField<?> infoField = infoFieldValue.getInfoField();
 
 				infoFormParameterMap.put(
@@ -352,8 +414,56 @@ public class EditInfoItemStrutsAction implements StrutsAction {
 			new InfoRequestFieldValuesProviderHelper(_infoItemServiceRegistry);
 	}
 
+	private FragmentEntryLink _getCaptchaFragmentEntryLink(
+			String formItemId, LayoutStructure layoutStructure)
+		throws InfoFormException {
+
+		for (String itemId :
+				LayoutStructureItemUtil.getChildrenItemIds(
+					formItemId, layoutStructure)) {
+
+			LayoutStructureItem layoutStructureItem =
+				layoutStructure.getLayoutStructureItem(itemId);
+
+			if (!(layoutStructureItem instanceof
+					FragmentStyledLayoutStructureItem)) {
+
+				continue;
+			}
+
+			FragmentStyledLayoutStructureItem
+				fragmentStyledLayoutStructureItem =
+					(FragmentStyledLayoutStructureItem)layoutStructureItem;
+
+			long fragmentEntryLinkId =
+				fragmentStyledLayoutStructureItem.getFragmentEntryLinkId();
+
+			if (fragmentEntryLinkId <= 0) {
+				continue;
+			}
+
+			FragmentEntryLink fragmentEntryLink =
+				_fragmentEntryLinkLocalService.fetchFragmentEntryLink(
+					fragmentEntryLinkId);
+
+			if (!fragmentEntryLink.isTypeInput()) {
+				continue;
+			}
+
+			if (_isCaptchaFragmentEntry(
+					fragmentEntryLink.getFragmentEntryId(),
+					fragmentEntryLink.getRendererKey())) {
+
+				return fragmentEntryLink;
+			}
+		}
+
+		return null;
+	}
+
 	private String _getDisplayPageURL(
-		String className, String displayPage, Object infoItem) {
+		String className, String displayPage,
+		HttpServletRequest httpServletRequest, Object infoItem) {
 
 		if (infoItem == null) {
 			return StringPool.BLANK;
@@ -367,15 +477,36 @@ public class EditInfoItemStrutsAction implements StrutsAction {
 			return StringPool.BLANK;
 		}
 
-		InfoFieldValue<Object> infoFieldValue =
-			infoItemFieldValuesProvider.getInfoFieldValue(
-				infoItem, displayPage);
+		try {
+			InfoFieldValue<Object> infoFieldValue =
+				infoItemFieldValuesProvider.getInfoFieldValue(
+					infoItem, displayPage);
 
-		if (infoFieldValue == null) {
-			return StringPool.BLANK;
+			if (infoFieldValue == null) {
+				return StringPool.BLANK;
+			}
+
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)httpServletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
+
+			Object value = infoFieldValue.getValue(themeDisplay.getLocale());
+
+			if (value instanceof WebURL) {
+				WebURL webURL = (WebURL)value;
+
+				return webURL.getURL();
+			}
+
+			return GetterUtil.getString(value);
+		}
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception);
+			}
 		}
 
-		return GetterUtil.getString(infoFieldValue.getValue());
+		return StringPool.BLANK;
 	}
 
 	private InfoItemIdentifier _getInfoItemIdentifier(
@@ -425,54 +556,13 @@ public class EditInfoItemStrutsAction implements StrutsAction {
 			return simpleDateFormat.format(infoFieldValue.getValue());
 		}
 
-		return String.valueOf(infoFieldValue.getValue());
-	}
+		Object value = infoFieldValue.getValue();
 
-	private boolean _hasCaptcha(
-		List<String> childrenItemIds, LayoutStructure layoutStructure) {
-
-		for (String childrenItemId : childrenItemIds) {
-			LayoutStructureItem layoutStructureItem =
-				layoutStructure.getLayoutStructureItem(childrenItemId);
-
-			if (_hasCaptcha(
-					layoutStructureItem.getChildrenItemIds(),
-					layoutStructure)) {
-
-				return true;
-			}
-
-			if (!(layoutStructureItem instanceof
-					FragmentStyledLayoutStructureItem)) {
-
-				continue;
-			}
-
-			FragmentStyledLayoutStructureItem
-				fragmentStyledLayoutStructureItem =
-					(FragmentStyledLayoutStructureItem)layoutStructureItem;
-
-			if (fragmentStyledLayoutStructureItem.getFragmentEntryLinkId() <=
-					0) {
-
-				continue;
-			}
-
-			FragmentEntryLink fragmentEntryLink =
-				_fragmentEntryLinkLocalService.fetchFragmentEntryLink(
-					fragmentStyledLayoutStructureItem.getFragmentEntryLinkId());
-
-			if ((fragmentEntryLink != null) &&
-				fragmentEntryLink.isTypeInput() &&
-				_isCaptchaFragmentEntry(
-					fragmentEntryLink.getFragmentEntryId(),
-					fragmentEntryLink.getRendererKey())) {
-
-				return true;
-			}
+		if (value instanceof List) {
+			return ListUtil.toString((List<?>)value, StringPool.BLANK);
 		}
 
-		return false;
+		return String.valueOf(value);
 	}
 
 	private boolean _isCaptchaFragmentEntry(
@@ -519,23 +609,8 @@ public class EditInfoItemStrutsAction implements StrutsAction {
 		return false;
 	}
 
-	private boolean _isCaptchaLayoutStructureItem(
-			String formItemId, LayoutStructure layoutStructure)
-		throws InfoFormException {
-
-		LayoutStructureItem formLayoutStructureItem =
-			layoutStructure.getLayoutStructureItem(formItemId);
-
-		if (formLayoutStructureItem == null) {
-			throw new InfoFormException();
-		}
-
-		return _hasCaptcha(
-			formLayoutStructureItem.getChildrenItemIds(), layoutStructure);
-	}
-
 	private void _validateRequiredField(
-			List<InfoFieldValue<Object>> infoFieldValues,
+			Map<String, InfoFieldValue<Object>> infoFieldValues,
 			LayoutStructureItem layoutStructureItem)
 		throws InfoFormValidationException.RequiredInfoField {
 
@@ -571,26 +646,17 @@ public class EditInfoItemStrutsAction implements StrutsAction {
 					"inputFieldId", "string", "", false, "text"),
 				LocaleUtil.getMostRelevantLocale()));
 
-		for (InfoFieldValue<Object> infoFieldValue : infoFieldValues) {
-			InfoField infoField = infoFieldValue.getInfoField();
+		if (!infoFieldValues.containsKey(inputFieldId) ||
+			Validator.isNull(infoFieldValues.get(inputFieldId))) {
 
-			if (!Objects.equals(inputFieldId, infoField.getUniqueId())) {
-				continue;
-			}
-
-			if (Validator.isNotNull(infoFieldValue.getValue())) {
-				return;
-			}
-
-			break;
+			throw new InfoFormValidationException.RequiredInfoField(
+				inputFieldId);
 		}
-
-		throw new InfoFormValidationException.RequiredInfoField(inputFieldId);
 	}
 
 	private void _validateRequiredFields(
 			HttpServletRequest httpServletRequest,
-			List<InfoFieldValue<Object>> infoFieldValues,
+			Map<String, InfoFieldValue<Object>> infoFieldValues,
 			LayoutStructure layoutStructure)
 		throws InfoFormException {
 
@@ -604,34 +670,18 @@ public class EditInfoItemStrutsAction implements StrutsAction {
 			throw new InfoFormException();
 		}
 
-		_validateRequiredFields(
-			infoFieldValues, formLayoutStructureItem.getChildrenItemIds(),
-			layoutStructure);
-	}
+		for (String itemId :
+				LayoutStructureItemUtil.getChildrenItemIds(
+					formLayoutStructureItem.getItemId(), layoutStructure)) {
 
-	private void _validateRequiredFields(
-			List<InfoFieldValue<Object>> infoFieldValues, List<String> itemIds,
-			LayoutStructure layoutStructure)
-		throws InfoFormValidationException.RequiredInfoField {
-
-		for (String itemId : itemIds) {
-			LayoutStructureItem layoutStructureItem =
-				layoutStructure.getLayoutStructureItem(itemId);
-
-			_validateRequiredField(infoFieldValues, layoutStructureItem);
-
-			_validateRequiredFields(
-				infoFieldValues, layoutStructureItem.getChildrenItemIds(),
-				layoutStructure);
+			_validateRequiredField(
+				infoFieldValues,
+				layoutStructure.getLayoutStructureItem(itemId));
 		}
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		EditInfoItemStrutsAction.class);
-
-	@Reference
-	private DisplayPageInfoItemFieldSetProvider
-		_displayPageInfoItemFieldSetProvider;
 
 	@Reference
 	private FragmentCollectionContributorRegistry

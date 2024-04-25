@@ -32,7 +32,7 @@ if (Validator.isNull(backURL)) {
 	backURL = PortletURLBuilder.createRenderURL(
 		liferayPortletResponse
 	).setParameter(
-		"toolbarItem", "view-all-organizations"
+		"screenNavigationCategoryKey", UserScreenNavigationEntryConstants.CATEGORY_KEY_ORGANIZATIONS
 	).setParameter(
 		"usersListView", UserConstants.LIST_VIEW_FLAT_ORGANIZATIONS
 	).buildString();
@@ -46,6 +46,7 @@ if (organization != null) {
 
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(backURL);
+portletDisplay.setURLBackTitle(portletDisplay.getPortletDisplayName());
 
 String headerTitle = null;
 

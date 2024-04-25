@@ -15,6 +15,7 @@ import {
 	useEventListener,
 	useIsMounted,
 } from '@liferay/frontend-js-react-web';
+import {useId, useSessionState} from 'frontend-js-components-web';
 import {COOKIE_TYPES, navigate, openToast} from 'frontend-js-web';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 
@@ -23,8 +24,6 @@ import {useDispatch, useSelector} from '../../../app/contexts/StoreContext';
 import selectCanUpdateExperiences from '../../../app/selectors/selectCanUpdateExperiences';
 import selectCanUpdateSegments from '../../../app/selectors/selectCanUpdateSegments';
 import getKeyboardFocusableElements from '../../../app/utils/getKeyboardFocusableElements';
-import {useId} from '../../../common/hooks/useId';
-import {useSessionState} from '../../../common/hooks/useSessionState';
 import createExperience from '../thunks/createExperience';
 import duplicateExperience from '../thunks/duplicateExperience';
 import removeExperience from '../thunks/removeExperience';
@@ -424,7 +423,7 @@ const ExperienceSelector = ({experiences, segments, selectedExperience}) => {
 				aria-label={`${Liferay.Language.get('experience')}: ${
 					selectedExperience.name
 				}`}
-				className="form-control-select pr-4 text-left text-truncate"
+				className="form-control-select page-editor__experience-selector pr-4 text-left text-truncate"
 				disabled={!canUpdateExperiences}
 				displayType="secondary"
 				onClick={() => debouncedSetOpen(!open)}

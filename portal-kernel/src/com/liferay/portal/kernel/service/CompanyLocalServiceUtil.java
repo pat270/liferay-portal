@@ -79,6 +79,14 @@ public class CompanyLocalServiceUtil {
 			defaultAdminMiddleName, defaultAdminLastName);
 	}
 
+	public static Company addDBPartitionCompany(
+			long companyId, String name, String virtualHostName, String webId)
+		throws PortalException {
+
+		return getService().addDBPartitionCompany(
+			companyId, name, virtualHostName, webId);
+	}
+
 	/**
 	 * Returns the company with the web domain.
 	 *
@@ -90,22 +98,6 @@ public class CompanyLocalServiceUtil {
 	 */
 	public static Company checkCompany(String webId) throws PortalException {
 		return getService().checkCompany(webId);
-	}
-
-	/**
-	 * Returns the company with the web domain and mail domain.
-	 *
-	 * The method goes through a series of checks to ensure that the company
-	 * contains default users, groups, etc.
-	 *
-	 * @param webId the company's web domain
-	 * @param mx the company's mail domain
-	 * @return the company with the web domain and mail domain
-	 */
-	public static Company checkCompany(String webId, String mx)
-		throws PortalException {
-
-		return getService().checkCompany(webId, mx);
 	}
 
 	/**
@@ -273,6 +265,12 @@ public class CompanyLocalServiceUtil {
 		com.liferay.portal.kernel.dao.orm.Projection projection) {
 
 		return getService().dynamicQueryCount(dynamicQuery, projection);
+	}
+
+	public static Company extractDBPartitionCompany(long companyId)
+		throws PortalException {
+
+		return getService().extractDBPartitionCompany(companyId);
 	}
 
 	public static Company fetchCompany(long companyId) {

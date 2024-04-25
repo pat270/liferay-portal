@@ -7,20 +7,25 @@ import ClayAlert from '@clayui/alert';
 import ClayIcon from '@clayui/icon';
 import ClayLink from '@clayui/link';
 import {ClayTooltipProvider} from '@clayui/tooltip';
-import {Card, Toggle} from '@liferay/object-js-components-web';
+import {Toggle} from '@liferay/object-js-components-web';
+import classNames from 'classnames';
 import React from 'react';
 
 import './TranslationOptionsContainer.scss';
 
 interface TranslationOptionsContainerProps {
-	objectDefinition: Partial<ObjectDefinition>;
+	modelBuilder?: boolean;
+	objectDefinition?: ObjectDefinition;
+	onSubmit?: () => void;
 	published: boolean;
 	setValues: (values: Partial<ObjectField>) => void;
 	values: Partial<ObjectField>;
 }
 
 export function TranslationOptionsContainer({
+	modelBuilder,
 	objectDefinition,
+	onSubmit,
 	published,
 	setValues,
 	values,
@@ -32,7 +37,13 @@ export function TranslationOptionsContainer({
 		!values.system;
 
 	return (
-		<Card title={Liferay.Language.get('translation-options')}>
+		<div
+			className={classNames({
+				'lfr-objects__edit-object-field-card-content':
+					modelBuilder === false,
+				'lfr-objects__edit-object-field-model-builder-panel': modelBuilder,
+			})}
+		>
 			{!translatableField && (
 				<ClayAlert
 					displayType="info"
@@ -53,15 +64,20 @@ export function TranslationOptionsContainer({
 					disabled={
 						published ||
 						!translatableField ||
-						!objectDefinition.enableLocalization
+						!objectDefinition?.enableLocalization
 					}
 					label={Liferay.Language.get('enable-entry-translations')}
+					onBlur={(event) => {
+						event.stopPropagation();
+
+						if (onSubmit) {
+							onSubmit();
+						}
+					}}
 					onToggle={(localized) =>
 						setValues({
 							localized,
-							required: Liferay.FeatureFlags['LPS-172017']
-								? !localized && values.required
-								: values.required,
+							required: !localized && values.required,
 						})
 					}
 					toggled={values.localized}
@@ -80,6 +96,6 @@ export function TranslationOptionsContainer({
 					</span>
 				</ClayTooltipProvider>
 			</div>
-		</Card>
+		</div>
 	);
 }

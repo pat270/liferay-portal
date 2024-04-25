@@ -4,13 +4,18 @@
  */
 
 import {useModal} from '@clayui/modal';
-import {BuilderScreen, REQUIRED_MSG} from '@liferay/object-js-components-web';
+import {
+	BuilderScreen,
+	Card,
+	constantsUtils,
+} from '@liferay/object-js-components-web';
 import React, {useState} from 'react';
 
 import {
 	FilterErrors,
 	FilterValidation,
 	ModalAddFilter,
+	OnSaveProps,
 } from '../../ModalAddFilter';
 import {TYPES, useViewContext} from '../objectViewContext';
 
@@ -21,7 +26,7 @@ export function FilterScreen() {
 			filterOperators,
 			objectFields,
 			objectView,
-			workflowStatusJSONArray,
+			workflowStatuses,
 		},
 		dispatch,
 	] = useViewContext();
@@ -47,14 +52,11 @@ export function FilterScreen() {
 		});
 	};
 
-	const saveFilterColumn = (
-		objectFieldName: string,
-		filterBy?: string,
-		fieldLabel?: LocalizedValue<string>,
-		objectFieldBusinessType?: string,
-		filterType?: string,
-		valueList?: IItem[]
-	) => {
+	const saveFilterColumn = ({
+		filterType,
+		objectFieldName,
+		valueList,
+	}: OnSaveProps) => {
 		if (editingFilter) {
 			dispatch({
 				payload: {
@@ -82,33 +84,33 @@ export function FilterScreen() {
 		checkedItems,
 		disableDateValues,
 		selectedFilterBy,
-		selectedFilterType,
+		selectedFilterTypeValue,
 		setErrors,
 	}: FilterValidation) => {
 		setErrors({});
 		const currentErrors: FilterErrors = {};
 
 		if (!selectedFilterBy) {
-			currentErrors.selectedFilterBy = REQUIRED_MSG;
+			currentErrors.selectedFilterBy = constantsUtils.REQUIRED_MSG;
 		}
 
 		if (
-			!selectedFilterType &&
+			!selectedFilterTypeValue &&
 			!disableDateValues &&
 			(selectedFilterBy?.name !== 'status' ||
 				selectedFilterBy?.businessType !== 'Picklist')
 		) {
-			currentErrors.selectedFilterType = REQUIRED_MSG;
+			currentErrors.selectedFilterType = constantsUtils.REQUIRED_MSG;
 		}
 
 		if (
-			selectedFilterType &&
+			selectedFilterTypeValue &&
 			(selectedFilterBy?.name === 'status' ||
 				selectedFilterBy?.businessType === 'Picklist' ||
 				selectedFilterBy?.businessType === 'Relationship') &&
 			!checkedItems.length
 		) {
-			currentErrors.items = REQUIRED_MSG;
+			currentErrors.items = constantsUtils.REQUIRED_MSG;
 		}
 
 		setErrors(currentErrors);
@@ -118,42 +120,45 @@ export function FilterScreen() {
 
 	return (
 		<>
-			<BuilderScreen
-				creationLanguageId={creationLanguageId}
-				emptyState={{
-					buttonText: Liferay.Language.get('new-filter'),
-					description: Liferay.Language.get(
-						'start-creating-a-filter-to-display-specific-data'
-					),
-					title: Liferay.Language.get('no-filter-was-created-yet'),
-				}}
-				filter
-				firstColumnHeader={Liferay.Language.get('filter-by')}
-				objectColumns={
-					objectViewFilterColumns.map((filterColumn) => {
-						if (
-							filterColumn.objectFieldName === 'createDate' ||
-							filterColumn.objectFieldName === 'modifiedDate'
-						) {
-							return {
-								...filterColumn,
-								disableEdit: true,
-							};
-						}
-						else {
-							return filterColumn;
-						}
-					}) ?? []
-				}
-				onDeleteColumn={handleDeleteColumn}
-				onEditing={setEditingFilter}
-				onEditingObjectFieldName={setEditingObjectFieldName}
-				onVisibleEditModal={setVisibleModal}
-				openModal={() => setVisibleModal(true)}
-				secondColumnHeader={Liferay.Language.get('type')}
-				thirdColumnHeader={Liferay.Language.get('value')}
-				title={Liferay.Language.get('filters')}
-			/>
+			<Card title={Liferay.Language.get('filters')}>
+				<BuilderScreen
+					builderScreenItems={
+						objectViewFilterColumns.map((filterColumn) => {
+							if (
+								filterColumn.objectFieldName === 'createDate' ||
+								filterColumn.objectFieldName === 'modifiedDate'
+							) {
+								return {
+									...filterColumn,
+									disableEdit: true,
+								};
+							}
+							else {
+								return filterColumn;
+							}
+						}) ?? []
+					}
+					creationLanguageId={creationLanguageId}
+					emptyState={{
+						buttonText: Liferay.Language.get('new-filter'),
+						description: Liferay.Language.get(
+							'start-creating-a-filter-to-display-specific-data'
+						),
+						title: Liferay.Language.get(
+							'no-filter-was-created-yet'
+						),
+					}}
+					filter
+					firstColumnHeader={Liferay.Language.get('filter-by')}
+					onDeleteColumn={handleDeleteColumn}
+					onEditing={setEditingFilter}
+					onEditingObjectFieldName={setEditingObjectFieldName}
+					onVisibleEditModal={setVisibleModal}
+					openModal={() => setVisibleModal(true)}
+					secondColumnHeader={Liferay.Language.get('type')}
+					thirdColumnHeader={Liferay.Language.get('value')}
+				/>
+			</Card>
 
 			{visibleModal && (
 				<ModalAddFilter
@@ -191,13 +196,9 @@ export function FilterScreen() {
 					onClose={onClose}
 					onSave={saveFilterColumn}
 					validate={validateFilters}
-					workflowStatusJSONArray={workflowStatusJSONArray}
+					workflowStatuses={workflowStatuses}
 				/>
 			)}
 		</>
 	);
-}
-
-interface IItem extends LabelValueObject {
-	checked?: boolean;
 }

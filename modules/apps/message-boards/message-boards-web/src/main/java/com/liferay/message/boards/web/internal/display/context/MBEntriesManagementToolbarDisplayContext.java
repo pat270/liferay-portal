@@ -244,15 +244,7 @@ public class MBEntriesManagementToolbarDisplayContext {
 				dropdownGroupItem.setDropdownItems(
 					_getFilterNavigationDropdownItems());
 				dropdownGroupItem.setLabel(
-					LanguageUtil.get(
-						_httpServletRequest, "filter-by-navigation"));
-			}
-		).addGroup(
-			() -> Objects.equals(_getEntriesNavigation(), "all"),
-			dropdownGroupItem -> {
-				dropdownGroupItem.setDropdownItems(_getOrderByDropdownItems());
-				dropdownGroupItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "order-by"));
+					LanguageUtil.get(_httpServletRequest, "filter-by"));
 			}
 		).build();
 	}
@@ -291,6 +283,28 @@ public class MBEntriesManagementToolbarDisplayContext {
 			"modified-date");
 
 		return _orderByCol;
+	}
+
+	public List<DropdownItem> getOrderByDropdownItems() {
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.setActive(
+					Objects.equals(getOrderByCol(), "title"));
+				dropdownItem.setHref(
+					_getCurrentSortingURL(), "orderByCol", "title");
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "title"));
+			}
+		).add(
+			dropdownItem -> {
+				dropdownItem.setActive(
+					Objects.equals(getOrderByCol(), "modified-date"));
+				dropdownItem.setHref(
+					_getCurrentSortingURL(), "orderByCol", "modified-date");
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "modified-date"));
+			}
+		).build();
 	}
 
 	public String getOrderByType() {
@@ -488,28 +502,6 @@ public class MBEntriesManagementToolbarDisplayContext {
 
 				dropdownItem.setLabel(
 					LanguageUtil.get(_httpServletRequest, "categories"));
-			}
-		).build();
-	}
-
-	private List<DropdownItem> _getOrderByDropdownItems() {
-		return DropdownItemListBuilder.add(
-			dropdownItem -> {
-				dropdownItem.setActive(
-					Objects.equals(getOrderByCol(), "title"));
-				dropdownItem.setHref(
-					_getCurrentSortingURL(), "orderByCol", "title");
-				dropdownItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "title"));
-			}
-		).add(
-			dropdownItem -> {
-				dropdownItem.setActive(
-					Objects.equals(getOrderByCol(), "modified-date"));
-				dropdownItem.setHref(
-					_getCurrentSortingURL(), "orderByCol", "modified-date");
-				dropdownItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "modified-date"));
 			}
 		).build();
 	}

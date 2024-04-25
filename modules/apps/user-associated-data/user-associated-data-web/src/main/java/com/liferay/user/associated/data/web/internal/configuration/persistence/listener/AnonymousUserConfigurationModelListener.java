@@ -10,7 +10,7 @@ import com.liferay.portal.configuration.persistence.listener.ConfigurationModelL
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
-import com.liferay.portal.kernel.util.LocaleThreadLocal;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.user.associated.data.web.internal.configuration.AnonymousUserConfiguration;
 import com.liferay.user.associated.data.web.internal.configuration.AnonymousUserConfigurationRetriever;
@@ -73,8 +73,7 @@ public class AnonymousUserConfigurationModelListener
 		}
 
 		ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
-			"content.Language", LocaleThreadLocal.getThemeDisplayLocale(),
-			getClass());
+			"content.Language", LocaleUtil.getMostRelevantLocale(), getClass());
 
 		String message = ResourceBundleUtil.getString(
 			resourceBundle,

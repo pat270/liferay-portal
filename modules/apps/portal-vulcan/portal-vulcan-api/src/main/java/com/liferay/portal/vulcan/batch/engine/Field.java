@@ -11,12 +11,13 @@ package com.liferay.portal.vulcan.batch.engine;
 public class Field {
 
 	public static Field of(
-		String description, String name, boolean readOnly, boolean required,
-		String type, boolean writeOnly) {
+		String description, String name, boolean readOnly, String ref,
+		boolean required, String type, String[] unsupportedFormats,
+		boolean writeOnly) {
 
 		return new Field(
-			_toAccessType(readOnly, writeOnly), description, name, required,
-			type);
+			_toAccessType(readOnly, writeOnly), description, name, ref,
+			required, type, unsupportedFormats);
 	}
 
 	public AccessType getAccessType() {
@@ -31,8 +32,16 @@ public class Field {
 		return _name;
 	}
 
+	public String getRef() {
+		return _ref;
+	}
+
 	public String getType() {
 		return _type;
+	}
+
+	public String[] getUnsupportedFormats() {
+		return _unsupportedFormats;
 	}
 
 	public boolean isRequired() {
@@ -59,20 +68,24 @@ public class Field {
 	}
 
 	private Field(
-		AccessType accessType, String description, String name,
-		boolean required, String type) {
+		AccessType accessType, String description, String name, String ref,
+		boolean required, String type, String[] unsupportedFormats) {
 
 		_accessType = accessType;
 		_description = description;
 		_name = name;
+		_ref = ref;
 		_required = required;
 		_type = type;
+		_unsupportedFormats = unsupportedFormats;
 	}
 
 	private final AccessType _accessType;
 	private final String _description;
 	private final String _name;
+	private final String _ref;
 	private final boolean _required;
 	private final String _type;
+	private final String[] _unsupportedFormats;
 
 }

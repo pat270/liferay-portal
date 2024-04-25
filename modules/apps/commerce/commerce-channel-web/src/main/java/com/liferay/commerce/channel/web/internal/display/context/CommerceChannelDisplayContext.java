@@ -37,6 +37,7 @@ import com.liferay.item.selector.ItemSelectorReturnType;
 import com.liferay.item.selector.criteria.FileEntryItemSelectorReturnType;
 import com.liferay.item.selector.criteria.file.criterion.FileItemSelectorCriterion;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.NoSuchWorkflowDefinitionLinkException;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -44,7 +45,6 @@ import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.WorkflowDefinitionLink;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletProvider;
@@ -59,7 +59,7 @@ import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
 import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalService;
-import com.liferay.portal.kernel.service.permission.GroupPermission;
+import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
 import com.liferay.portal.kernel.settings.GroupServiceSettingsLocator;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
@@ -69,7 +69,7 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.workflow.WorkflowDefinition;
-import com.liferay.portal.kernel.workflow.WorkflowDefinitionManager;
+import com.liferay.portal.workflow.manager.WorkflowDefinitionManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -98,7 +98,7 @@ public class CommerceChannelDisplayContext
 		CommerceCurrencyLocalService commerceCurrencyLocalService,
 		ConfigurationProvider configurationProvider,
 		CPTaxCategoryLocalService cpTaxCategoryLocalService,
-		DLAppLocalService dlAppLocalService, GroupPermission groupPermission,
+		DLAppLocalService dlAppLocalService,
 		HttpServletRequest httpServletRequest, ItemSelector itemSelector,
 		Portal portal,
 		WorkflowDefinitionLinkLocalService workflowDefinitionLinkLocalService,
@@ -117,7 +117,6 @@ public class CommerceChannelDisplayContext
 		_configurationProvider = configurationProvider;
 		_cpTaxCategoryLocalService = cpTaxCategoryLocalService;
 		_dlAppLocalService = dlAppLocalService;
-		_groupPermission = groupPermission;
 		_itemSelector = itemSelector;
 		_portal = portal;
 		_workflowDefinitionLinkLocalService =
@@ -436,7 +435,7 @@ public class CommerceChannelDisplayContext
 	public boolean hasAddLayoutPermission() throws PortalException {
 		CommerceChannel commerceChannel = getCommerceChannel();
 
-		return _groupPermission.contains(
+		return GroupPermissionUtil.contains(
 			PermissionThreadLocal.getPermissionChecker(),
 			commerceChannel.getSiteGroupId(), ActionKeys.ADD_LAYOUT);
 	}
@@ -547,6 +546,19 @@ public class CommerceChannelDisplayContext
 		return commerceOrderFieldsConfiguration.showPurchaseOrderNumber();
 	}
 
+	public boolean isShowSeparateOrderItems() throws PortalException {
+		CommerceChannel commerceChannel = getCommerceChannel();
+
+		CommerceOrderCheckoutConfiguration commerceOrderCheckoutConfiguration =
+			_configurationProvider.getConfiguration(
+				CommerceOrderCheckoutConfiguration.class,
+				new GroupServiceSettingsLocator(
+					commerceChannel.getGroupId(),
+					CommerceConstants.SERVICE_NAME_COMMERCE_ORDER));
+
+		return commerceOrderCheckoutConfiguration.showSeparateOrderItems();
+	}
+
 	private CommerceAccountGroupServiceConfiguration
 			_getCommerceAccountGroupServiceConfiguration()
 		throws PortalException {
@@ -605,7 +617,6 @@ public class CommerceChannelDisplayContext
 	private final ConfigurationProvider _configurationProvider;
 	private final CPTaxCategoryLocalService _cpTaxCategoryLocalService;
 	private final DLAppLocalService _dlAppLocalService;
-	private final GroupPermission _groupPermission;
 	private final ItemSelector _itemSelector;
 	private final Portal _portal;
 	private final WorkflowDefinitionLinkLocalService

@@ -79,6 +79,24 @@
 										</#if>
 									</section>
 								</div>
+
+								<#if entry.isAssetRendererURLDownloadVisible()>
+									<div class="autofit-col c-mr-n2">
+										<span
+											class="lfr-portal-tooltip"
+											title="${languageUtil.format(locale, 'download-x', ['(' + languageUtil.formatStorageSize(entry.getAssetRendererDownloadSize(), locale) + ')'])}"
+										>
+											<@clay.link
+												aria\-label="${languageUtil.format(locale, 'download-x', [entry.getTitle()])}"
+												cssClass="link-monospaced link-outline link-outline-borderless link-outline-secondary"
+												displayType="secondary"
+												href="${entry.getAssetRendererURLDownload()}"
+											>
+												<@clay.icon symbol="download" />
+											</@clay.link>
+										</span>
+									</div>
+								</#if>
 							</div>
 						</div>
 					</div>

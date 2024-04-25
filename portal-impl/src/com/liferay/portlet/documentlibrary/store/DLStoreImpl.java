@@ -22,9 +22,13 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.io.ByteArrayFileInputStream;
+import com.liferay.portal.kernel.messaging.DestinationNames;
+import com.liferay.portal.kernel.messaging.Message;
+import com.liferay.portal.kernel.messaging.MessageBusUtil;
+import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.util.FileUtil;
-import com.liferay.portal.kernel.util.ServiceProxyFactory;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.util.PropsValues;
 
 import java.io.File;
@@ -42,10 +46,8 @@ import java.io.InputStream;
 public class DLStoreImpl implements DLStore {
 
 	public static void setStore(Store store) {
-		_store = store;
-
 		_wrappedStore = new StoreAreaAwareStoreWrapper(
-			() -> _store, () -> _storeAreaProcessor);
+			() -> store, _storeAreaProcessorSnapshot::get);
 	}
 
 	@Override
@@ -100,8 +102,11 @@ public class DLStoreImpl implements DLStore {
 		throws PortalException {
 
 		if (_isStoreAreaSupported()) {
+			StoreAreaProcessor storeAreaProcessor =
+				_storeAreaProcessorSnapshot.get();
+
 			StoreArea.tryRunWithStoreAreas(
-				sourceStoreArea -> _storeAreaProcessor.copy(
+				sourceStoreArea -> storeAreaProcessor.copy(
 					sourceStoreArea.getPath(
 						companyId, repositoryId, fileName, fromVersionLabel),
 					StoreArea.NEW.getPath(
@@ -122,7 +127,34 @@ public class DLStoreImpl implements DLStore {
 			long companyId, long repositoryId, String dirName)
 		throws PortalException {
 
-		_wrappedStore.deleteDirectory(companyId, repositoryId, dirName);
+		Message message = new Message();
+
+		message.setValues(
+			HashMapBuilder.<String, Object>put(
+				"companyId", companyId
+			).put(
+				"dirName", dirName
+			).put(
+				"repositoryId", repositoryId
+			).build());
+
+		MessageBusUtil.sendMessage(
+			DestinationNames.DOCUMENT_LIBRARY_DELETION, message);
+	}
+
+	@Override
+	public void deleteFile(long companyId, long repositoryId, String fileName)
+		throws PortalException {
+
+		_validate(fileName, null, null, false, StringPool.BLANK);
+
+		for (String versionLabel :
+				_wrappedStore.getFileVersions(
+					companyId, repositoryId, fileName)) {
+
+			_wrappedStore.deleteFile(
+				companyId, repositoryId, fileName, versionLabel);
+		}
 	}
 
 	@Override
@@ -234,8 +266,11 @@ public class DLStoreImpl implements DLStore {
 					companyId, repositoryId, fileName)) {
 
 			if (_isStoreAreaSupported()) {
+				StoreAreaProcessor storeAreaProcessor =
+					_storeAreaProcessorSnapshot.get();
+
 				StoreArea.tryRunWithStoreAreas(
-					sourceStoreArea -> _storeAreaProcessor.copy(
+					sourceStoreArea -> storeAreaProcessor.copy(
 						sourceStoreArea.getPath(
 							companyId, repositoryId, fileName, versionLabel),
 						StoreArea.NEW.getPath(
@@ -262,8 +297,11 @@ public class DLStoreImpl implements DLStore {
 		throws PortalException {
 
 		if (_isStoreAreaSupported()) {
+			StoreAreaProcessor storeAreaProcessor =
+				_storeAreaProcessorSnapshot.get();
+
 			StoreArea.tryRunWithStoreAreas(
-				sourceStoreArea -> _storeAreaProcessor.copy(
+				sourceStoreArea -> storeAreaProcessor.copy(
 					sourceStoreArea.getPath(
 						companyId, repositoryId, fileName, fromVersionLabel),
 					StoreArea.NEW.getPath(
@@ -327,7 +365,7 @@ public class DLStoreImpl implements DLStore {
 			return false;
 		}
 
-		if (_storeAreaProcessor != null) {
+		if (_storeAreaProcessorSnapshot.get() != null) {
 			return true;
 		}
 
@@ -351,15 +389,14 @@ public class DLStoreImpl implements DLStore {
 		DLValidatorUtil.validateVersionLabel(versionLabel);
 	}
 
-	private static volatile Store _store =
-		ServiceProxyFactory.newServiceTrackedInstance(
-			Store.class, DLStoreImpl.class, "_store", "(default=true)", true);
-	private static volatile StoreAreaProcessor _storeAreaProcessor =
-		ServiceProxyFactory.newServiceTrackedInstance(
-			StoreAreaProcessor.class, DLStoreImpl.class, "_storeAreaProcessor",
-			"(store.type=" + PropsValues.DL_STORE_IMPL + ")", false, true);
+	private static final Snapshot<StoreAreaProcessor>
+		_storeAreaProcessorSnapshot = new Snapshot<>(
+			DLStoreImpl.class, StoreAreaProcessor.class,
+			"(store.type=" + PropsValues.DL_STORE_IMPL + ")");
+	private static final Snapshot<Store> _storeSnapshot = new Snapshot<>(
+		DLStoreImpl.class, Store.class, "(default=true)", true);
 	private static Store _wrappedStore = new StoreAreaAwareStoreWrapper(
-		() -> _store, () -> _storeAreaProcessor);
+		_storeSnapshot::get, _storeAreaProcessorSnapshot::get);
 
 	private static class DLStoreFileProvider implements SafeCloseable {
 

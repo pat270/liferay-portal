@@ -12,7 +12,6 @@ import ClayList from '@clayui/list';
 import ClayModal, {useModal} from '@clayui/modal';
 import {ClayPaginationBarWithBasicItems} from '@clayui/pagination-bar';
 import ClayPanel from '@clayui/panel';
-import ClayTimePicker from '@clayui/time-picker';
 import {navigate, openConfirmModal} from 'frontend-js-web';
 import React, {useState} from 'react';
 
@@ -36,6 +35,7 @@ class ChangeTrackingConflictsView extends ChangeTrackingBaseScheduleView {
 			timeZone,
 			unapprovedChangesAllowed,
 			unresolvedConflicts,
+			unscheduleURL,
 		} = props;
 
 		this.hasUnapprovedChanges = hasUnapprovedChanges;
@@ -50,15 +50,18 @@ class ChangeTrackingConflictsView extends ChangeTrackingBaseScheduleView {
 		this.timeZone = timeZone;
 		this.unapprovedChangesAllowed = unapprovedChangesAllowed;
 		this.unresolvedConflicts = unresolvedConflicts;
+		this.unscheduleURL = unscheduleURL;
 
 		this.state = {
 			date: null,
 			dateError: '',
 			formError: null,
-			time: {
-				hours: '--',
-				minutes: '--',
-			},
+			scheduleButtonDisabled:
+				!!this.unresolvedConflicts.length ||
+				(this.hasUnapprovedChanges && !this.unapprovedChangesAllowed)
+					? true
+					: false,
+			time: null,
 			timeError: '',
 			validationError: null,
 		};
@@ -104,13 +107,17 @@ class ChangeTrackingConflictsView extends ChangeTrackingBaseScheduleView {
 							spritemap={this.spritemap}
 						>
 							<span>
-								{Liferay.Language.get(
-									'this-publication-contains-conflicting-changes-that-must-be-manually-resolved-before-publishing'
-								) + ' '}
+								{this.unscheduleURL
+									? Liferay.Language.get(
+											'this-scheduled-publication-contains-conflicting-changes-that-must-be-manually-resolved-before-publishing'
+									  )
+									: Liferay.Language.get(
+											'this-publication-contains-conflicting-changes-that-must-be-manually-resolved-before-publishing'
+									  )}
 							</span>
 
 							<a href={this.learnLink.url}>
-								{this.learnLink.message}
+								{' ' + this.learnLink.message}
 							</a>
 						</ClayAlert>
 					)}
@@ -220,17 +227,27 @@ class ChangeTrackingConflictsView extends ChangeTrackingBaseScheduleView {
 
 							<div className={this.getTimeClassName()}>
 								<div>
-									<ClayTimePicker
+									<input
+										className="form-control"
 										disabled={
 											!!this.unresolvedConflicts.length
 										}
-										onChange={this.handleTimeChange}
-										spritemap={this.spritemap}
-										timezone={this.timeZone}
+										onChange={(event) =>
+											this.handleTimeChange(
+												event.target.value
+											)
+										}
+										type="time"
 										value={this.state.time}
 									/>
 
 									{this.getTimeHelpText()}
+								</div>
+
+								<div className="input-group-item input-group-item-shrink">
+									<span className="input-group-text">
+										({this.timeZone})
+									</span>
 								</div>
 							</div>
 						</div>
@@ -248,21 +265,26 @@ class ChangeTrackingConflictsView extends ChangeTrackingBaseScheduleView {
 				<div className="sheet-footer sheet-footer-btn-block-sm-down">
 					<div className="btn-group">
 						<div className="btn-group-item">
-							<button
-								className={
-									!!this.unresolvedConflicts.length ||
-									(this.hasUnapprovedChanges &&
-										!this.unapprovedChangesAllowed)
-										? 'btn btn-primary disabled'
-										: 'btn btn-primary'
-								}
-								onClick={() => this.handleSubmit()}
-								type="button"
-							>
-								{this.schedule
-									? Liferay.Language.get('schedule')
-									: Liferay.Language.get('publish')}
-							</button>
+							{this.unscheduleURL ? (
+								<button
+									className="btn btn-primary"
+									onClick={() => navigate(this.unscheduleURL)}
+									type="button"
+								>
+									{Liferay.Language.get('unschedule')}
+								</button>
+							) : (
+								<button
+									className="btn btn-primary"
+									disabled={this.state.scheduleButtonDisabled}
+									onClick={() => this.handleSubmit()}
+									type="button"
+								>
+									{this.schedule
+										? Liferay.Language.get('schedule')
+										: Liferay.Language.get('publish')}
+								</button>
+							)}
 						</div>
 
 						<div className="btn-group-item">
@@ -654,7 +676,7 @@ const ConflictsTable = ({conflicts, spritemap}) => {
 
 				<div className="publications-modal-body">
 					<ChangeTrackingRenderView
-						dataURL={viewConflict.dataURL}
+						initialDataURL={viewConflict.dataURL}
 						showHeader={false}
 						spritemap={spritemap}
 					/>

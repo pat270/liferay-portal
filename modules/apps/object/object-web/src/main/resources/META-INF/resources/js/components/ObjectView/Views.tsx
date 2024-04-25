@@ -9,8 +9,7 @@ import {
 	// @ts-ignore
 
 } from '@liferay/frontend-data-set-web';
-import {API, getLocalizableLabel} from '@liferay/object-js-components-web';
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 
 import {
 	IFDSTableProps,
@@ -18,6 +17,7 @@ import {
 	fdsItem,
 	formatActionURL,
 } from '../../utils/fds';
+import LabelRenderer from '../LabelRenderer';
 
 interface ItemData {
 	defaultObjectView: boolean;
@@ -30,46 +30,23 @@ export default function Views({
 	formName,
 	id,
 	items,
-	objectDefinitionExternalReferenceCode,
 	style,
 	url,
 }: IFDSTableProps) {
-	const [creationLanguageId, setCreationLanguageId] = useState<
-		Liferay.Language.Locale
-	>();
-
-	useEffect(() => {
-		const makeFetch = async () => {
-			const objectDefinition = await API.getObjectDefinitionByExternalReferenceCode(
-				objectDefinitionExternalReferenceCode
-			);
-
-			setCreationLanguageId(objectDefinition.defaultLanguageId);
-		};
-
-		makeFetch();
-	}, [objectDefinitionExternalReferenceCode]);
-
 	function objectLayoutLabelDataRenderer({
 		itemData,
 		openSidePanel,
 		value,
 	}: fdsItem<ItemData>) {
-		const handleEditField = () => {
-			openSidePanel({
-				url: formatActionURL(url, itemData.id),
-			});
-		};
-
 		return (
-			<div className="table-list-title">
-				<a href="#" onClick={handleEditField}>
-					{getLocalizableLabel(
-						creationLanguageId as Liferay.Language.Locale,
-						value
-					)}
-				</a>
-			</div>
+			<LabelRenderer
+				onClick={() => {
+					openSidePanel({
+						url: formatActionURL(url, itemData.id),
+					});
+				}}
+				value={value}
+			/>
 		);
 	}
 
@@ -108,7 +85,7 @@ export default function Views({
 							fieldName: 'name',
 							label: Liferay.Language.get('label'),
 							localizeLabel: true,
-							sortable: false,
+							sortable: true,
 						},
 						{
 							contentRenderer: 'objectLayoutDefaultDataRenderer',

@@ -13,6 +13,8 @@ import com.liferay.headless.admin.taxonomy.client.permission.Permission;
 import com.liferay.headless.admin.taxonomy.client.problem.Problem;
 import com.liferay.headless.admin.taxonomy.client.serdes.v1_0.KeywordSerDes;
 
+import java.net.URL;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -92,11 +94,11 @@ public interface KeywordResource {
 		throws Exception;
 
 	public Page<Keyword> getKeywordsRankedPage(
-			Long siteId, String search, Pagination pagination)
+			String search, Long siteId, Pagination pagination)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse getKeywordsRankedPageHttpResponse(
-			Long siteId, String search, Pagination pagination)
+			String search, Long siteId, Pagination pagination)
 		throws Exception;
 
 	public void deleteKeyword(Long keywordId) throws Exception;
@@ -243,6 +245,10 @@ public interface KeywordResource {
 			_scheme = scheme;
 
 			return this;
+		}
+
+		public Builder endpoint(URL url) {
+			return endpoint(url.getHost(), url.getPort(), url.getProtocol());
 		}
 
 		public Builder header(String key, String value) {
@@ -490,6 +496,8 @@ public interface KeywordResource {
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body("[]", "application/json");
 
 			if (_builder._locale != null) {
 				httpInvoker.header(
@@ -982,11 +990,11 @@ public interface KeywordResource {
 		}
 
 		public Page<Keyword> getKeywordsRankedPage(
-				Long siteId, String search, Pagination pagination)
+				String search, Long siteId, Pagination pagination)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
-				getKeywordsRankedPageHttpResponse(siteId, search, pagination);
+				getKeywordsRankedPageHttpResponse(search, siteId, pagination);
 
 			String content = httpResponse.getContent();
 
@@ -1048,7 +1056,7 @@ public interface KeywordResource {
 		}
 
 		public HttpInvoker.HttpResponse getKeywordsRankedPageHttpResponse(
-				Long siteId, String search, Pagination pagination)
+				String search, Long siteId, Pagination pagination)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -1072,12 +1080,12 @@ public interface KeywordResource {
 
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
 
-			if (siteId != null) {
-				httpInvoker.parameter("siteId", String.valueOf(siteId));
-			}
-
 			if (search != null) {
 				httpInvoker.parameter("search", String.valueOf(search));
+			}
+
+			if (siteId != null) {
+				httpInvoker.parameter("siteId", String.valueOf(siteId));
 			}
 
 			if (pagination != null) {
@@ -1667,6 +1675,8 @@ public interface KeywordResource {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
 
+			httpInvoker.body("[]", "application/json");
+
 			if (_builder._locale != null) {
 				httpInvoker.header(
 					"Accept-Language", _builder._locale.toLanguageTag());
@@ -1767,6 +1777,8 @@ public interface KeywordResource {
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body("[]", "application/json");
 
 			if (_builder._locale != null) {
 				httpInvoker.header(
@@ -1994,6 +2006,8 @@ public interface KeywordResource {
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body("[]", "application/json");
 
 			if (_builder._locale != null) {
 				httpInvoker.header(

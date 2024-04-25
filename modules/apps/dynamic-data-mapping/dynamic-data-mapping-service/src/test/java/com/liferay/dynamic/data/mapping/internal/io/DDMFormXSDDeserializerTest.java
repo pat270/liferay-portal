@@ -12,7 +12,6 @@ import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import com.liferay.portal.kernel.xml.UnsecureSAXReaderUtil;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
-import com.liferay.portal.util.HtmlImpl;
 import com.liferay.portal.xml.SAXReaderImpl;
 
 import org.junit.Before;
@@ -37,9 +36,6 @@ public class DDMFormXSDDeserializerTest
 
 		_setUpSAXReaderUtil();
 		_setUpDDMFormXSDDeserializer();
-
-		ReflectionTestUtil.setFieldValue(
-			_ddmFormXSDDeserializer, "_html", new HtmlImpl());
 	}
 
 	@Override

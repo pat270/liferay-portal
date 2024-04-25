@@ -7,9 +7,8 @@ package com.liferay.portal.search.similar.results.web.internal.contributor.blogs
 
 import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.blogs.model.BlogsEntry;
-import com.liferay.blogs.service.BlogsEntryLocalService;
 import com.liferay.petra.string.StringBundler;
-import com.liferay.portal.kernel.test.ReflectionTestUtil;
+import com.liferay.portal.kernel.model.ClassedModel;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.search.similar.results.web.internal.builder.DestinationBuilderImpl;
 import com.liferay.portal.search.similar.results.web.internal.builder.RouteBuilderImpl;
@@ -41,14 +40,12 @@ public class BlogsSimilarResultsContributorTest
 
 	@Before
 	public void setUp() throws Exception {
-		_blogsSimilarResultsContributor = new BlogsSimilarResultsContributor();
+		_blogsSimilarResultsContributor = new BlogsSimilarResultsContributor(
+			blogsEntryLocalService, uidFactory);
 	}
 
 	@Test
 	public void testDetectRoute() {
-		ReflectionTestUtil.setFieldValue(
-			_blogsSimilarResultsContributor, "_httpHelper", setUpHttpHelper());
-
 		RouteBuilderImpl routeBuilderImpl = new RouteBuilderImpl();
 
 		RouteHelper routeHelper = () -> StringBundler.concat(
@@ -74,17 +71,18 @@ public class BlogsSimilarResultsContributorTest
 		Mockito.doReturn(
 			Mockito.mock(BlogsEntry.class)
 		).when(
-			_blogsEntryLocalService
+			blogsEntryLocalService
 		).fetchEntry(
 			Mockito.anyLong(), Mockito.anyString()
 		);
 
-		ReflectionTestUtil.setFieldValue(
-			_blogsSimilarResultsContributor, "_blogsEntryLocalService",
-			_blogsEntryLocalService);
-		ReflectionTestUtil.setFieldValue(
-			_blogsSimilarResultsContributor, "_uidFactory",
-			setUpUIDFactory("uid"));
+		Mockito.doReturn(
+			"uid"
+		).when(
+			uidFactory
+		).getUID(
+			Mockito.nullable(ClassedModel.class)
+		);
 
 		CriteriaBuilderImpl criteriaBuilderImpl = new CriteriaBuilderImpl();
 
@@ -165,8 +163,6 @@ public class BlogsSimilarResultsContributorTest
 		).getScopeGroupId();
 	}
 
-	private final BlogsEntryLocalService _blogsEntryLocalService = Mockito.mock(
-		BlogsEntryLocalService.class);
 	private BlogsSimilarResultsContributor _blogsSimilarResultsContributor;
 
 }

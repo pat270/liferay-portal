@@ -71,7 +71,12 @@ public class FieldResourceFactoryImpl implements FieldResource.Factory {
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _fieldResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, FieldResource>
+					fieldResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_fieldResourceProxyProviderFunction;
+
+				return fieldResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -226,9 +231,6 @@ public class FieldResourceFactoryImpl implements FieldResource.Factory {
 		}
 	}
 
-	private static final Function<InvocationHandler, FieldResource>
-		_fieldResourceProxyProviderFunction = _getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -263,6 +265,13 @@ public class FieldResourceFactoryImpl implements FieldResource.Factory {
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, FieldResource>
+			_fieldResourceProxyProviderFunction = _getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

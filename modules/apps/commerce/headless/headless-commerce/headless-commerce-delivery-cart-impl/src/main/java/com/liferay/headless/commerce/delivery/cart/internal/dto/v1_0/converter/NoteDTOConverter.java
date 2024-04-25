@@ -39,16 +39,22 @@ public class NoteDTOConverter
 			_commerceOrderNoteService.getCommerceOrderNote(
 				(Long)dtoConverterContext.getId());
 
-		CommerceOrder commerceOrder = _commerceOrderService.getCommerceOrder(
-			commerceOrderNote.getCommerceOrderId());
-
 		return new CartComment() {
 			{
-				author = commerceOrderNote.getUserName();
-				content = commerceOrderNote.getContent();
-				id = commerceOrderNote.getCommerceOrderNoteId();
-				orderId = commerceOrder.getCommerceOrderId();
-				restricted = commerceOrderNote.isRestricted();
+				setAuthor(commerceOrderNote::getUserName);
+				setContent(commerceOrderNote::getContent);
+				setExternalReferenceCode(
+					commerceOrderNote::getExternalReferenceCode);
+				setId(commerceOrderNote::getCommerceOrderNoteId);
+				setOrderId(
+					() -> {
+						CommerceOrder commerceOrder =
+							_commerceOrderService.getCommerceOrder(
+								commerceOrderNote.getCommerceOrderId());
+
+						return commerceOrder.getCommerceOrderId();
+					});
+				setRestricted(commerceOrderNote::isRestricted);
 			}
 		};
 	}

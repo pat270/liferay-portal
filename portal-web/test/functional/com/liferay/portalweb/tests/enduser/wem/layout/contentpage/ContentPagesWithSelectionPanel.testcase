@@ -4,7 +4,6 @@ definition {
 	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testcase.url = "http://localhost:8080";
 	property testray.main.component.name = "Content Pages";
 
 	static var randomSiteName = StringUtil.randomString(8);
@@ -12,6 +11,10 @@ definition {
 	var siteURLKey = StringUtil.toLowerCase(${randomSiteName});
 
 	setUp {
+		task ("Set up virtual instance") {
+			TestCase.setUpPortalInstance();
+		}
+
 		task ("Sign in") {
 			User.firstLoginPG();
 		}
@@ -215,7 +218,7 @@ definition {
 			PageEditor.waitForAutoSave();
 
 			AssertElementPresent(
-				key_elementHeader = "//div[@aria-label='Button']",
+				key_elementHeader = "//div[@data-name='Button']",
 				key_position = 1,
 				locator1 = "PageEditor#CONTAINER_CONTAINER_NESTED_ELEMENT");
 		}
@@ -233,7 +236,7 @@ definition {
 
 			AssertElementPresent(
 				key_columnNumber = 1,
-				key_elementHeader = "//div[@aria-label='Asset Publisher']",
+				key_elementHeader = "//div[@data-name='Asset Publisher']",
 				key_position = 1,
 				locator1 = "PageEditor#GRID_COLUMN_NESTED_ELEMENT");
 		}
@@ -286,7 +289,7 @@ definition {
 			for (var n : list "1,2,3") {
 				AssertElementPresent(
 					key_colPosition = 1,
-					key_element = "//div[@aria-label='Heading']",
+					key_element = "//div[@data-name='Heading']",
 					key_fragmentName = "Collection Display",
 					key_rowPosition = ${n},
 					locator1 = "PageEditor#COLLECTION_CELL_NESTED_ELEMENT");
@@ -572,10 +575,10 @@ definition {
 			PageEditor.waitForAutoSave();
 
 			AssertAttributeValue(
-				attribute1 = "placeholder",
 				key_fieldLabel = "Item",
 				locator1 = "PageEditor#ITEM_SELECTOR_CONTENT_INPUT",
-				value1 = "Select Item");
+				value1 = "placeholder",
+				value2 = "No Item Selected");
 		}
 
 		task ("View the default empty message is shown in Content Display") {
@@ -586,7 +589,6 @@ definition {
 	@description = "This is a test for LPS-125985. The Page Creater can perform actions on collection displayed in Collection Display via General panel."
 	@priority = 5
 	test PerformActionsOnDisplayedCollectionInCollectionDisplayViaGeneralPanel {
-		property ci.retries.disabled = "true";
 		property portal.acceptance = "true";
 
 		task ("Add a vocabulary") {
@@ -627,10 +629,11 @@ definition {
 		}
 
 		task ("Add a dynamic collection for All Types") {
-			JSONAssetlist.addDynamicAssetListEntryWithItemType(
-				groupName = ${randomSiteName},
-				itemType = "All Types",
-				title = "Dynamic Collection");
+			AssetListsAdmin.openAssetListsAdmin(siteURLKey = ${siteURLKey});
+
+			AssetListsAdmin.addDynamicSelection(assetListTitle = "Dynamic Collection");
+
+			AssetListsAdmin.configureItemTypeInDynamicCollection(itemType = "All Types");
 		}
 
 		task ("Add a Collection Display to page") {
@@ -793,10 +796,10 @@ definition {
 			PageEditor.waitForAutoSave();
 
 			AssertAttributeValue(
-				attribute1 = "placeholder",
 				key_fieldLabel = "Collection",
 				locator1 = "PageEditor#ITEM_SELECTOR_CONTENT_INPUT",
-				value1 = "Select Collection");
+				value1 = "placeholder",
+				value2 = "No Collection Selected");
 		}
 
 		task ("View the default empty message is shown in Collection Display") {
@@ -808,7 +811,6 @@ definition {
 	@priority = 5
 	test PerformActionsOnMappedAssetViaMappingPanel {
 		property portal.acceptance = "true";
-		property testray.component.names = "Item Selector";
 
 		task ("Add a web content") {
 			JSONWebcontent.addWebContent(
@@ -950,10 +952,10 @@ definition {
 			PageEditor.waitForAutoSave();
 
 			AssertAttributeValue(
-				attribute1 = "placeholder",
 				key_fieldLabel = "Item",
 				locator1 = "PageEditor#ITEM_SELECTOR_CONTENT_INPUT",
-				value1 = "Select Item");
+				value1 = "placeholder",
+				value2 = "No Item Selected");
 		}
 
 		task ("View the default inline text is shown in Heading") {
@@ -1105,7 +1107,6 @@ definition {
 	@priority = 5
 	test ViewDetailsOfMappedAssetsInMappingPanel {
 		property portal.acceptance = "true";
-		property testray.component.names = "Item Selector";
 
 		task ("Add a web content based on Basic Web Content") {
 			JSONWebcontent.addWebContent(
@@ -1306,8 +1307,6 @@ definition {
 	@description = "This is a test for LPS-122142. View the visual style of mapped editable field items in Selection panel of content page."
 	@priority = 4
 	test ViewVisualStyleOfMappedEditableFieldItems {
-		property testray.component.names = "Item Selector";
-
 		task ("Add a web content with basic web content") {
 			JSONWebcontent.addWebContent(
 				content = "Web Content Content",

@@ -48,7 +48,7 @@
 		%>
 
 		<div class="login-container">
-			<portlet:actionURL name="/login/login" secure="<%= PropsValues.COMPANY_SECURITY_AUTH_REQUIRES_HTTPS || request.isSecure() %>" var="loginURL">
+			<portlet:actionURL name="/login/login" secure="<%= request.isSecure() %>" var="loginURL">
 				<portlet:param name="mvcRenderCommandName" value="/login/login" />
 			</portlet:actionURL>
 
@@ -110,7 +110,15 @@
 					</div>
 				</c:if>
 
-				<liferay-ui:error exception="<%= AuthException.class %>" message="authentication-failed" />
+				<c:choose>
+					<c:when test="<%= company.isSendPasswordResetLink() %>">
+						<liferay-ui:error exception="<%= AuthException.class %>" message="authentication-failed-due-to-incorrect-credentials-or-account-lockout" />
+					</c:when>
+					<c:otherwise>
+						<liferay-ui:error exception="<%= AuthException.class %>" message="authentication-failed" />
+					</c:otherwise>
+				</c:choose>
+
 				<liferay-ui:error exception="<%= CompanyMaxUsersException.class %>" message="unable-to-log-in-because-the-maximum-number-of-users-has-been-reached" />
 				<liferay-ui:error exception="<%= CookieNotSupportedException.class %>" message="authentication-failed-please-enable-browser-cookies" />
 				<liferay-ui:error exception="<%= NoSuchUserException.class %>" message="authentication-failed" />
@@ -118,26 +126,14 @@
 				<liferay-ui:error exception="<%= UserEmailAddressException.MustNotBeNull.class %>" message="please-enter-an-email-address" />
 				<liferay-ui:error exception="<%= UserLockoutException.LDAPLockout.class %>" message="this-account-is-locked" />
 
-				<liferay-ui:error exception="<%= UserLockoutException.PasswordPolicyLockout.class %>">
-
-					<%
-					UserLockoutException.PasswordPolicyLockout ule = (UserLockoutException.PasswordPolicyLockout)errorException;
-					%>
-
-					<c:choose>
-						<c:when test="<%= ule.passwordPolicy.isRequireUnlock() %>">
-							<liferay-ui:message key="this-account-is-locked" />
-						</c:when>
-						<c:otherwise>
-
-							<%
-							Format dateFormat = FastDateFormatFactoryUtil.getDateTime(FastDateFormatConstants.SHORT, FastDateFormatConstants.LONG, locale, TimeZone.getTimeZone(ule.user.getTimeZoneId()));
-							%>
-
-							<liferay-ui:message arguments="<%= dateFormat.format(ule.user.getUnlockDate()) %>" key="this-account-is-locked-until-x" translateArguments="<%= false %>" />
-						</c:otherwise>
-					</c:choose>
-				</liferay-ui:error>
+				<c:choose>
+					<c:when test="<%= company.isSendPasswordResetLink() %>">
+						<liferay-ui:error exception="<%= UserLockoutException.PasswordPolicyLockout.class %>" message="authentication-failed-due-to-incorrect-credentials-or-account-lockout" />
+					</c:when>
+					<c:otherwise>
+						<liferay-ui:error exception="<%= UserLockoutException.PasswordPolicyLockout.class %>" message="authentication-failed" />
+					</c:otherwise>
+				</c:choose>
 
 				<liferay-ui:error exception="<%= UserPasswordException.class %>" message="authentication-failed" />
 				<liferay-ui:error exception="<%= UserScreenNameException.MustNotBeNull.class %>" message="the-screen-name-cannot-be-blank" />

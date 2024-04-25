@@ -6,27 +6,18 @@
 package com.liferay.template.internal.info.field.transformer;
 
 import com.liferay.info.field.InfoField;
-import com.liferay.info.field.InfoFieldValue;
-import com.liferay.info.field.type.InfoFieldType;
 import com.liferay.info.field.type.OptionInfoFieldType;
 import com.liferay.info.field.type.SelectInfoFieldType;
-import com.liferay.info.type.KeyLocalizedLabelPair;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONArray;
-import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONUtil;
-import com.liferay.portal.kernel.templateparser.TemplateNode;
-import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.template.info.field.transformer.BaseTemplateNodeTransformer;
 import com.liferay.template.info.field.transformer.TemplateNodeTransformer;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Lourdes Fernández Besada
@@ -36,75 +27,48 @@ import org.osgi.service.component.annotations.Reference;
 	service = TemplateNodeTransformer.class
 )
 public class SelectInfoFieldTypeTemplateNodeTransformer
-	extends BaseTemplateNodeTransformer {
+	extends BaseSelectInfoFieldTypeTemplateNodeTransformer {
 
 	@Override
-	public TemplateNode transform(
-		InfoFieldValue<Object> infoFieldValue, ThemeDisplay themeDisplay) {
+	protected Map<String, String> getAttributes() {
+		return HashMapBuilder.put(
+			"multiple", Boolean.FALSE.toString()
+		).build();
+	}
 
-		InfoField infoField = infoFieldValue.getInfoField();
-
-		String stringValue = StringPool.BLANK;
-
-		JSONArray selectedOptionValuesJSONArray =
-			_getSelectedOptionValuesJSONArray(
-				infoFieldValue, themeDisplay.getLocale());
-
+	@Override
+	protected String getKey(JSONArray selectedOptionValuesJSONArray) {
 		if (!JSONUtil.isEmpty(selectedOptionValuesJSONArray)) {
-			stringValue = selectedOptionValuesJSONArray.getString(0);
+			return selectedOptionValuesJSONArray.getString(0);
 		}
 
-		InfoFieldType infoFieldType = infoField.getInfoFieldType();
-
-		TemplateNode templateNode = new TemplateNode(
-			themeDisplay, infoField.getName(), stringValue,
-			infoFieldType.getName(),
-			HashMapBuilder.put(
-				"multiple", Boolean.FALSE.toString()
-			).build());
-
-		List<OptionInfoFieldType> optionInfoFieldTypes =
-			(List<OptionInfoFieldType>)infoField.getAttribute(
-				SelectInfoFieldType.OPTIONS);
-
-		if (optionInfoFieldTypes == null) {
-			optionInfoFieldTypes = Collections.emptyList();
-		}
-
-		for (OptionInfoFieldType optionInfoFieldType : optionInfoFieldTypes) {
-			templateNode.appendOptionMap(
-				optionInfoFieldType.getValue(),
-				optionInfoFieldType.getLabel(themeDisplay.getLocale()));
-		}
-
-		return templateNode;
+		return StringPool.BLANK;
 	}
 
-	private JSONArray _getSelectedOptionValuesJSONArray(
-		InfoFieldValue<Object> infoFieldValue, Locale locale) {
+	@Override
+	protected String getLabel(
+		Map<String, String> optionsMap,
+		JSONArray selectedOptionValuesJSONArray) {
 
-		Object value = infoFieldValue.getValue(locale);
-
-		if (!(value instanceof List)) {
-			return _jsonFactory.createJSONArray();
+		if (JSONUtil.isEmpty(selectedOptionValuesJSONArray)) {
+			return StringPool.BLANK;
 		}
 
-		JSONArray selectedOptionValuesJSONArray =
-			_jsonFactory.createJSONArray();
+		String key = selectedOptionValuesJSONArray.getString(0);
 
-		List<KeyLocalizedLabelPair> keyLocalizedLabelPairs =
-			(List<KeyLocalizedLabelPair>)value;
-
-		for (KeyLocalizedLabelPair keyLocalizedLabelPair :
-				keyLocalizedLabelPairs) {
-
-			selectedOptionValuesJSONArray.put(keyLocalizedLabelPair.getKey());
+		if (optionsMap.containsKey(key)) {
+			return optionsMap.get(key);
 		}
 
-		return selectedOptionValuesJSONArray;
+		return StringPool.BLANK;
 	}
 
-	@Reference
-	private JSONFactory _jsonFactory;
+	@Override
+	protected List<OptionInfoFieldType> getOptionInfoFieldTypes(
+		InfoField infoField) {
+
+		return (List<OptionInfoFieldType>)infoField.getAttribute(
+			SelectInfoFieldType.OPTIONS);
+	}
 
 }

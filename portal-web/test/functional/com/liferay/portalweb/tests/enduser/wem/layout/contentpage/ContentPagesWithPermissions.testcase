@@ -5,7 +5,6 @@ definition {
 	property custom.properties = "jsonws.web.service.paths.excludes=";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testcase.url = "http://localhost:8080";
 	property testray.main.component.name = "Content Pages";
 
 	static var randomSiteName = StringUtil.randomString(8);
@@ -18,17 +17,21 @@ definition {
 	static var randomRoleKey = StringUtil.randomString(8);
 
 	setUp {
+		task ("Set up virtual instance") {
+			TestCase.setUpPortalInstance();
+		}
+
 		task ("Sign in") {
 			User.firstLoginPG();
 		}
 
 		task ("Add a site") {
-			HeadlessSite.addSite(siteName = ${randomSiteName});
+			var groupId = HeadlessSite.addSite(siteName = ${randomSiteName});
 		}
 
 		task ("Add a content page") {
 			JSONLayout.addPublicLayout(
-				groupName = ${randomSiteName},
+				groupId = ${groupId},
 				layoutName = "Test Content Page Name",
 				type = "content");
 		}
@@ -48,7 +51,7 @@ definition {
 
 		task ("Assign the user to site") {
 			JSONUser.addUserToSite(
-				groupName = ${randomSiteName},
+				groupId = ${groupId},
 				userEmailAddress = StringUtil.toLowerCase("${randomUserEmailAddress}@liferay.com"));
 		}
 
@@ -124,15 +127,8 @@ definition {
 		task ("Given a page marketer with update-basic permission has a content page") {
 			User.logoutAndLoginPG(userLoginEmailAddress = "test@liferay.com");
 
-			Permissions.definePermissionViaJSONAPI(
-				resourceAction = "UPDATE_LAYOUT_BASIC",
-				resourceName = "com.liferay.portal.kernel.model.Layout",
-				roleTitle = ${randomRoleKey},
-				roleType = "site");
-
-			Permissions.removePermissionViaAPI(
-				resourceAction = "UPDATE_LAYOUT_LIMITED",
-				resourceName = "com.liferay.portal.kernel.model.Layout",
+			Permissions.definePermissionsViaJSONAPI(
+				resourceNameActionList = "com.liferay.portal.kernel.model.Layout,UPDATE_LAYOUT_BASIC,UPDATE_LAYOUT_LIMITED",
 				roleTitle = ${randomRoleKey},
 				roleType = "site");
 
@@ -221,7 +217,7 @@ definition {
 
 			Type(
 				ariaLabel = "Padding Right",
-				locator1 = "TextInput#ANY_WITH_AIRA_LABEL",
+				locator1 = "TextInput#ANY_WITH_ARIA_LABEL",
 				value1 = 20);
 
 			Click(
@@ -284,7 +280,7 @@ definition {
 		task ("Then the new user should not see the input field for custom values") {
 			AssertElementNotPresent(
 				ariaLabel = "Padding Top",
-				locator1 = "TextInput#ANY_WITH_AIRA_LABEL");
+				locator1 = "TextInput#ANY_WITH_ARIA_LABEL");
 
 			AssertElementNotPresent(
 				key_fieldLabel = "Padding Top",
@@ -514,8 +510,6 @@ definition {
 	@description = "This is a test for LPS-173440. The user with Add Object Entry but without View permission for object cannot see mapped Collection Display or Content Display at view and preview mode."
 	@priority = 4
 	test CannotViewMappedCollectionDisplayOrContentDisplayWithAddObjectEntryButWithoutViewPermissionForObjectOnViewAndPreviewMode {
-		property custom.properties = "feature.flag.LPS-169923=true${line.separator}jsonws.web.service.paths.excludes=";
-
 		var labelName = StringUtil.randomString(8);
 
 		var objectName = "A${labelName}";
@@ -544,7 +538,7 @@ definition {
 			}
 
 			task ("Create two object entries") {
-				JSONObject.addObjectEntryViaJSONAPI(
+				var objectEntryId = JSONObject.addObjectEntryViaJSONAPI(
 					fieldName = "name",
 					fieldValue = "Apple",
 					groupName = ${randomSiteName},
@@ -648,6 +642,8 @@ definition {
 			}
 
 			task ("Assert the Name of object entries are respectively shown in each cell") {
+				ContentPages.gotoPageEditor();
+
 				var n = 1;
 
 				for (var title : list "Banana,Apple") {
@@ -675,9 +671,8 @@ definition {
 				PageEditor.editContentDisplay(
 					entryContent = "Apple",
 					fragmentName = "Content Display",
-					index = 1,
-					objecEntrytName = "${labelName}s",
-					object = "true");
+					object = "${labelName}s",
+					objectEntryId = ${objectEntryId});
 
 				PageEditor.publish();
 			}
@@ -693,7 +688,7 @@ definition {
 			}
 
 			task ("View the user cannot see the Collection Display") {
-				PageEditor.viewFragmentNotPresent(fragmentName = "Collection Display");
+				ContentPages.viewFragmentNotPresent(fragmentName = "Collection");
 			}
 
 			task ("When the user navigates to the content page at preview mode") {
@@ -703,7 +698,7 @@ definition {
 			}
 
 			task ("View the user cannot see the Collection Display") {
-				PageEditor.viewFragmentNotPresent(fragmentName = "Collection Display");
+				ContentPages.viewFragmentNotPresent(fragmentName = "Collection");
 			}
 
 			task ("Navigate to the second content page at view mode") {
@@ -713,7 +708,7 @@ definition {
 			}
 
 			task ("View the user cannot see the Content Display") {
-				PageEditor.viewFragmentNotPresent(fragmentName = "Content Display");
+				ContentPages.viewFragmentNotPresent(fragmentName = "Content");
 			}
 
 			task ("When the user navigates to the content page at preview mode") {
@@ -723,7 +718,7 @@ definition {
 			}
 
 			task ("View the user cannot see the Content Display") {
-				PageEditor.viewFragmentNotPresent(fragmentName = "Content Display");
+				ContentPages.viewFragmentNotPresent(fragmentName = "Content");
 			}
 		}
 	}
@@ -731,8 +726,6 @@ definition {
 	@description = "This is a test for LPS-173440. The user without View permission for object cannot see mapped Collection Display or Content Display at view and preview mode."
 	@priority = 4
 	test CannotViewMappedCollectionDisplayOrContentDisplayWithoutViewPermissionForObjectOnViewAndPreviewMode {
-		property custom.properties = "feature.flag.LPS-169923=true${line.separator}jsonws.web.service.paths.excludes=";
-
 		var labelName = StringUtil.randomString(8);
 
 		var objectName = "A${labelName}";
@@ -761,7 +754,7 @@ definition {
 			}
 
 			task ("Create two object entries") {
-				JSONObject.addObjectEntryViaJSONAPI(
+				var objectEntryId = JSONObject.addObjectEntryViaJSONAPI(
 					fieldName = "name",
 					fieldValue = "Apple",
 					groupName = ${randomSiteName},
@@ -863,6 +856,8 @@ definition {
 			}
 
 			task ("Assert the Name of object entries are respectively shown in each cell") {
+				ContentPages.gotoPageEditor();
+
 				var n = 1;
 
 				for (var title : list "Banana,Apple") {
@@ -890,9 +885,8 @@ definition {
 				PageEditor.editContentDisplay(
 					entryContent = "Apple",
 					fragmentName = "Content Display",
-					index = 1,
-					objecEntrytName = "${labelName}s",
-					object = "true");
+					object = "${labelName}s",
+					objectEntryId = ${objectEntryId});
 
 				PageEditor.publish();
 			}
@@ -946,8 +940,6 @@ definition {
 	@description = "This is a test for LPS-173440. The user without View permission for object cannot see that object in Collection Display or Content Display selector."
 	@priority = 4
 	test CannotViewObjectInCollectionDisplayOrContentDisplayWithoutViewPermissionForObject {
-		property custom.properties = "feature.flag.LPS-169923=true${line.separator}jsonws.web.service.paths.excludes=";
-
 		var labelName = StringUtil.randomString(8);
 
 		var objectName = "A${labelName}";
@@ -1112,8 +1104,6 @@ definition {
 	@description = "This is a test for LPS-173440. The user with View and Add Object Entry permissions for object can see the mapped Collection Display or Content Display."
 	@priority = 4
 	test CanViewMappedCollectionDisplayAndContentDisplayWithAddObjectDefinitionAndViewPermissionForObject {
-		property custom.properties = "feature.flag.LPS-169923=true${line.separator}jsonws.web.service.paths.excludes=";
-
 		var labelName = StringUtil.randomString(8);
 
 		var objectName = "A${labelName}";
@@ -1142,7 +1132,7 @@ definition {
 			}
 
 			task ("Create two object entries") {
-				JSONObject.addObjectEntryViaJSONAPI(
+				var objectEntryId = JSONObject.addObjectEntryViaJSONAPI(
 					fieldName = "name",
 					fieldValue = "Apple",
 					groupName = ${randomSiteName},
@@ -1230,6 +1220,8 @@ definition {
 			}
 
 			task ("Assert the Name of object entries are respectively shown in each cell") {
+				ContentPages.gotoPageEditor();
+
 				var n = 1;
 
 				for (var title : list "Banana,Apple") {
@@ -1257,9 +1249,8 @@ definition {
 				PageEditor.editContentDisplay(
 					entryContent = "Apple",
 					fragmentName = "Content Display",
-					index = 1,
-					objecEntrytName = "${labelName}s",
-					object = "true");
+					object = "${labelName}s",
+					objectEntryId = ${objectEntryId});
 
 				PageEditor.publish();
 			}
@@ -1395,8 +1386,6 @@ definition {
 		task ("Then the page marketer could configue the page via options menu") {
 			LexiconEntry.gotoHeaderMenuItem(menuItem = "Configure");
 
-			SelectWindow.selectPopUp(locator1 = "null");
-
 			AssertVisible(
 				key_title = "General",
 				locator1 = "Header#H2_TITLE");
@@ -1407,7 +1396,7 @@ definition {
 		}
 
 		task ("When the page marketer goes back to the page editor") {
-			Close.closeWindow();
+			Navigator.gotoBack();
 		}
 
 		task ("Then the page marketer could preview changes in a new tab via options menu") {
@@ -1448,8 +1437,6 @@ definition {
 		task ("Then the page marketer could configue the page via options menu") {
 			LexiconEntry.gotoHeaderMenuItem(menuItem = "Configure");
 
-			SelectWindow.selectPopUp(locator1 = "null");
-
 			AssertVisible(
 				key_title = "General",
 				locator1 = "Header#H2_TITLE");
@@ -1460,7 +1447,7 @@ definition {
 		}
 
 		task ("When the page marketer goes back to the page editor") {
-			Close.closeWindow();
+			Navigator.gotoBack();
 		}
 
 		task ("Then the page marketer could preview changes in a new tab via options menu") {
@@ -1806,8 +1793,10 @@ definition {
 		}
 
 		task ("Assign the site role to new user") {
+			var groupId = JSONGroupSetter.setGroupId(groupName = ${randomSiteName});
+
 			JSONRole.assignSiteRoleToUser(
-				groupName = ${randomSiteName},
+				groupId = ${groupId},
 				roleTitle = ${randomRoleKey},
 				userEmailAddress = StringUtil.toLowerCase("${randomUserEmailAddress}@liferay.com"));
 		}
@@ -1816,7 +1805,7 @@ definition {
 			for (var webContentTitle : list "WC WebContent Title 1,WC WebContent Title 2") {
 				JSONWebcontent.addWebContent(
 					content = "WC WebContent Content",
-					groupName = ${randomSiteName},
+					groupId = ${groupId},
 					title = ${webContentTitle});
 			}
 		}
@@ -1855,13 +1844,11 @@ definition {
 
 		task ("Select the second web content") {
 			WebContentDisplayPortlet.selectWebContent(webContentTitle = "WC WebContent Title 2");
+
+			IFrame.closeFrame();
 		}
 
 		task ("Add a Paragraph fragment below the Web Content Display") {
-			ContentPagesNavigator.openEditContentPage(
-				pageName = "Test Content Page Name",
-				siteName = ${randomSiteName});
-
 			PageEditor.addFragment(
 				collectionName = "Basic Components",
 				fragmentName = "Paragraph",
@@ -2118,12 +2105,10 @@ definition {
 	@priority = 4
 	test PublishContentPageWithoutCustomFieldsPermission {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Add a custom field for Page") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Configuration",
-				panel = "Control Panel",
-				portlet = "Custom Fields");
+			CustomFields.openCustomFieldAdmin();
 
 			CustomFields.addCP(
 				customFieldName = "Text Field",
@@ -2210,8 +2195,6 @@ definition {
 	@description = "This is a test for LPS-173440. The user without View permission for object should see alert message on mapped Collection Display or Content Display at edit mode."
 	@priority = 4
 	test ViewAlertOnMappedCollectionDisplayOrContentDisplayWithoutViewPermissionForObjectAtEditMode {
-		property custom.properties = "feature.flag.LPS-169923=true${line.separator}jsonws.web.service.paths.excludes=";
-
 		var labelName = StringUtil.randomString(8);
 
 		var objectName = "A${labelName}";
@@ -2240,7 +2223,7 @@ definition {
 			}
 
 			task ("Create two object entries") {
-				JSONObject.addObjectEntryViaJSONAPI(
+				var objectEntryId = JSONObject.addObjectEntryViaJSONAPI(
 					fieldName = "name",
 					fieldValue = "Apple",
 					groupName = ${randomSiteName},
@@ -2337,8 +2320,6 @@ definition {
 					collectionName = "Basic Components",
 					entryTitle = "",
 					fragmentName = "Heading");
-
-				PageEditor.publish();
 			}
 
 			task ("Map the Text field to Heading fragment") {
@@ -2364,9 +2345,8 @@ definition {
 				PageEditor.editContentDisplay(
 					entryContent = "Apple",
 					fragmentName = "Content Display",
-					index = 1,
-					objecEntrytName = "${labelName}s",
-					object = "true");
+					object = "${labelName}s",
+					objectEntryId = ${objectEntryId});
 
 				PageEditor.publish();
 			}
@@ -2539,8 +2519,6 @@ definition {
 	@description = "This is a test for LPS-165556. The page creator without trigger permission could see the available actions in Action selector."
 	@priority = 4
 	test ViewAvailableActionsInActionSelectorAsUserWithoutTriggerPermission {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}feature.flag.LPS-169992=true";
-
 		var labelName = StringUtil.randomString(8);
 
 		var objectName = "A${labelName}";
@@ -2643,7 +2621,7 @@ definition {
 			AssertTextEquals(
 				key_fieldLabel = "Item",
 				locator1 = "PageEditor#ITEM_SELECTOR_CONTENT_INPUT",
-				value1 = "${labelName}2 ${objectEntryId}");
+				value1 = ${objectEntryId});
 
 			AssertElementPresent(
 				key_fieldLabel = "Action",

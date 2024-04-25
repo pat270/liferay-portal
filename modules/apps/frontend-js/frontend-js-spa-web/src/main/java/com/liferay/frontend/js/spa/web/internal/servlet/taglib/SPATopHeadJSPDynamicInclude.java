@@ -5,24 +5,29 @@
 
 package com.liferay.frontend.js.spa.web.internal.servlet.taglib;
 
-import com.liferay.frontend.js.loader.modules.extender.npm.NPMResolver;
+import com.liferay.frontend.js.loader.modules.extender.esm.ESImportUtil;
 import com.liferay.frontend.js.spa.web.internal.servlet.taglib.helper.SPAHelper;
-import com.liferay.osgi.util.service.Snapshot;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.servlet.taglib.BaseJSPDynamicInclude;
 import com.liferay.portal.kernel.servlet.taglib.DynamicInclude;
+import com.liferay.portal.kernel.servlet.taglib.aui.JSFragment;
 import com.liferay.portal.kernel.servlet.taglib.aui.ScriptData;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.Html;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.url.builder.AbsolutePortalURLBuilder;
+import com.liferay.portal.url.builder.AbsolutePortalURLBuilderFactory;
 
 import java.io.IOException;
+
+import java.util.Arrays;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -60,8 +65,11 @@ public class SPATopHeadJSPDynamicInclude extends BaseJSPDynamicInclude {
 		).put(
 			"excludedPaths", spaHelper.getExcludedPathsJSONArray()
 		).put(
+			"excludedTargetPortlets",
+			spaHelper.getExcludedTargetPortletsJSONArray()
+		).put(
 			"loginRedirect",
-			_html.escapeJS(spaHelper.getLoginRedirect(httpServletRequest))
+			HtmlUtil.escapeJS(spaHelper.getLoginRedirect(httpServletRequest))
 		).put(
 			"navigationExceptionSelectors",
 			spaHelper.getNavigationExceptionSelectors()
@@ -91,16 +99,20 @@ public class SPATopHeadJSPDynamicInclude extends BaseJSPDynamicInclude {
 			"validStatusCodes", spaHelper.getValidStatusCodesJSONArray()
 		);
 
-		String initModuleName = _npmResolver.resolveModuleName(
-			"frontend-js-spa-web/init");
-
 		ScriptData initScriptData = new ScriptData();
+
+		AbsolutePortalURLBuilder absolutePortalURLBuilder =
+			_absolutePortalURLBuilderFactory.getAbsolutePortalURLBuilder(
+				httpServletRequest);
 
 		initScriptData.append(
 			null,
-			"frontendJsSpaWebInit.default(" + configJSONObject.toString() + ")",
-			initModuleName + " as frontendJsSpaWebInit",
-			ScriptData.ModulesType.ES6);
+			new JSFragment(
+				"init(" + configJSONObject.toString() + ");",
+				Arrays.asList(
+					ESImportUtil.getESImport(
+						absolutePortalURLBuilder,
+						"{default as init} from frontend-js-spa-web"))));
 
 		initScriptData.writeTo(httpServletResponse.getWriter());
 	}
@@ -136,13 +148,10 @@ public class SPATopHeadJSPDynamicInclude extends BaseJSPDynamicInclude {
 			SPATopHeadJSPDynamicInclude.class, SPAHelper.class, null, true);
 
 	@Reference
-	private Html _html;
+	private AbsolutePortalURLBuilderFactory _absolutePortalURLBuilderFactory;
 
 	@Reference
 	private Language _language;
-
-	@Reference
-	private NPMResolver _npmResolver;
 
 	@Reference
 	private Props _props;

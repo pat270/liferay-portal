@@ -30,6 +30,7 @@ import com.liferay.knowledge.base.web.internal.util.comparator.KBOrderByComparat
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
@@ -47,6 +48,7 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.trash.TrashHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -72,7 +74,7 @@ public class KBAdminManagementToolbarDisplayContext {
 			LiferayPortletRequest liferayPortletRequest,
 			LiferayPortletResponse liferayPortletResponse,
 			RenderRequest renderRequest, RenderResponse renderResponse,
-			PortletConfig portletConfig)
+			PortletConfig portletConfig, TrashHelper trashHelper)
 		throws PortalException, PortletException {
 
 		_httpServletRequest = httpServletRequest;
@@ -81,6 +83,7 @@ public class KBAdminManagementToolbarDisplayContext {
 		_renderRequest = renderRequest;
 		_renderResponse = renderResponse;
 		_portletConfig = portletConfig;
+		_trashHelper = trashHelper;
 
 		_themeDisplay = (ThemeDisplay)httpServletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
@@ -344,14 +347,39 @@ public class KBAdminManagementToolbarDisplayContext {
 		).build();
 	}
 
-	public List<DropdownItem> getFilterDropdownItems() {
-		return DropdownItemListBuilder.addGroup(
-			dropdownGroupItem -> {
-				dropdownGroupItem.setDropdownItems(_getOrderByDropdownItems());
-				dropdownGroupItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "order-by"));
+	public List<DropdownItem> getOrderByDropdownItems() {
+		return new DropdownItemList() {
+			{
+				Map<String, String> orderColumnsMap = HashMapBuilder.put(
+					"modified-date", "modified-date"
+				).put(
+					"priority", "priority"
+				).put(
+					"title", "title"
+				).put(
+					"view-count", "view-count"
+				).build();
+
+				String[] orderColumns = {
+					"priority", "modified-date", "title", "view-count"
+				};
+
+				for (String orderByCol : orderColumns) {
+					add(
+						dropdownItem -> {
+							dropdownItem.setActive(
+								orderByCol.equals(_getOrderByCol()));
+							dropdownItem.setHref(
+								_getCurrentSortingURL(), "orderByCol",
+								orderByCol);
+							dropdownItem.setLabel(
+								LanguageUtil.get(
+									_httpServletRequest,
+									orderColumnsMap.get(orderByCol)));
+						});
+				}
 			}
-		).build();
+		};
 	}
 
 	public String getOrderByType() {
@@ -419,6 +447,16 @@ public class KBAdminManagementToolbarDisplayContext {
 
 	public boolean isShowInfoButton() {
 		return !isSearch();
+	}
+
+	public boolean isTrashEnabled() throws PortalException {
+		if (FeatureFlagManagerUtil.isEnabled("LPS-188058") &&
+			_trashHelper.isTrashEnabled(_themeDisplay.getScopeGroupId())) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	private SearchContainer<Object> _createSearchContainer()
@@ -539,41 +577,6 @@ public class KBAdminManagementToolbarDisplayContext {
 		return _searchContainer.getOrderByCol();
 	}
 
-	private List<DropdownItem> _getOrderByDropdownItems() {
-		return new DropdownItemList() {
-			{
-				final Map<String, String> orderColumnsMap = HashMapBuilder.put(
-					"modified-date", "modified-date"
-				).put(
-					"priority", "priority"
-				).put(
-					"title", "title"
-				).put(
-					"view-count", "view-count"
-				).build();
-
-				String[] orderColumns = {
-					"priority", "modified-date", "title", "view-count"
-				};
-
-				for (String orderByCol : orderColumns) {
-					add(
-						dropdownItem -> {
-							dropdownItem.setActive(
-								orderByCol.equals(_getOrderByCol()));
-							dropdownItem.setHref(
-								_getCurrentSortingURL(), "orderByCol",
-								orderByCol);
-							dropdownItem.setLabel(
-								LanguageUtil.get(
-									_httpServletRequest,
-									orderColumnsMap.get(orderByCol)));
-						});
-				}
-			}
-		};
-	}
-
 	private String _getRedirect() {
 		return PortalUtil.escapeRedirect(
 			ParamUtil.getString(
@@ -636,5 +639,6 @@ public class KBAdminManagementToolbarDisplayContext {
 	private final RenderResponse _renderResponse;
 	private SearchContainer<Object> _searchContainer;
 	private final ThemeDisplay _themeDisplay;
+	private final TrashHelper _trashHelper;
 
 }

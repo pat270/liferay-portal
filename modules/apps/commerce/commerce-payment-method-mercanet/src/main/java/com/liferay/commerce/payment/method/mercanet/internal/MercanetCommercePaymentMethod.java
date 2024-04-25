@@ -20,15 +20,15 @@ import com.liferay.commerce.service.CommerceOrderService;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.language.Language;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.settings.GroupServiceSettingsLocator;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.URLCodec;
-import com.liferay.portal.kernel.uuid.PortalUUID;
+import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 
 import com.worldline.sips.model.CaptureMode;
 import com.worldline.sips.model.Currency;
@@ -202,7 +202,7 @@ public class MercanetCommercePaymentMethod implements CommercePaymentMethod {
 		paymentRequest.setOrderId(
 			String.valueOf(commerceOrder.getCommerceOrderId()));
 
-		String transactionUuid = _portalUUID.generate();
+		String transactionUuid = PortalUUIDUtil.generate();
 
 		String transactionId = StringUtil.replace(
 			transactionUuid, CharPool.DASH, StringPool.BLANK);
@@ -292,8 +292,5 @@ public class MercanetCommercePaymentMethod implements CommercePaymentMethod {
 
 	@Reference
 	private Portal _portal;
-
-	@Reference
-	private PortalUUID _portalUUID;
 
 }

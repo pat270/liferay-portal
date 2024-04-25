@@ -5,7 +5,6 @@
 
 package com.liferay.portal.model.impl;
 
-import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.expando.kernel.model.CustomAttributesDisplay;
 import com.liferay.exportimport.kernel.lar.PortletDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
@@ -24,10 +23,12 @@ import com.liferay.portal.kernel.model.PortletFilter;
 import com.liferay.portal.kernel.model.PortletInfo;
 import com.liferay.portal.kernel.model.PublicRenderParameter;
 import com.liferay.portal.kernel.model.portlet.PortletDependency;
+import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.module.util.SystemBundleUtil;
 import com.liferay.portal.kernel.notifications.UserNotificationHandler;
 import com.liferay.portal.kernel.plugin.PluginPackage;
 import com.liferay.portal.kernel.pop.MessageListener;
+import com.liferay.portal.kernel.portlet.BaseControlPanelEntry;
 import com.liferay.portal.kernel.portlet.ConfigurationAction;
 import com.liferay.portal.kernel.portlet.ControlPanelEntry;
 import com.liferay.portal.kernel.portlet.FriendlyURLMapper;
@@ -57,7 +58,6 @@ import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.ServiceProxyFactory;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.webdav.WebDAVStorage;
@@ -111,6 +111,7 @@ public class PortletImpl extends PortletBaseImpl {
 
 		_assetRendererFactoryClasses = new ArrayList<>();
 		_autopropagatedParameters = new LinkedHashSet<>();
+		_categoryNames = new LinkedHashSet<>();
 		_customAttributesDisplayClasses = new ArrayList<>();
 		_footerPortalCss = new ArrayList<>();
 		_footerPortalJavaScript = new ArrayList<>();
@@ -148,12 +149,13 @@ public class PortletImpl extends PortletBaseImpl {
 		String portletId, Portlet rootPortlet, PluginPackage pluginPackage,
 		PluginSetting defaultPluginSetting, long companyId, String icon,
 		String virtualPath, String strutsPath, String parentStrutsPath,
-		String portletName, String displayName, String portletClass,
-		String configurationActionClass, List<String> indexerClasses,
-		String openSearchClass, List<SchedulerEntry> schedulerEntries,
-		String portletURLClass, String friendlyURLMapperClass,
-		String friendlyURLMapping, String friendlyURLRoutes,
-		String urlEncoderClass, String portletDataHandlerClass,
+		String portletName, String displayName, Set<String> categoryNames,
+		String portletClass, String configurationActionClass,
+		List<String> indexerClasses, String openSearchClass,
+		List<SchedulerEntry> schedulerEntries, String portletURLClass,
+		String friendlyURLMapperClass, String friendlyURLMapping,
+		String friendlyURLRoutes, String urlEncoderClass,
+		String portletDataHandlerClass,
 		List<String> stagedModelDataHandlerClasses, String templateHandlerClass,
 		String portletConfigurationListenerClass,
 		String portletLayoutListenerClass, String popMessageListenerClass,
@@ -218,6 +220,7 @@ public class PortletImpl extends PortletBaseImpl {
 		_parentStrutsPath = parentStrutsPath;
 		_portletName = portletName;
 		_displayName = displayName;
+		_categoryNames = categoryNames;
 		_portletClass = portletClass;
 		_configurationActionClass = configurationActionClass;
 		_indexerClasses = indexerClasses;
@@ -394,11 +397,11 @@ public class PortletImpl extends PortletBaseImpl {
 			getPortletId(), getRootPortlet(), getPluginPackage(),
 			getDefaultPluginSetting(), getCompanyId(), getIcon(),
 			getVirtualPath(), getStrutsPath(), getParentStrutsPath(),
-			getPortletName(), getDisplayName(), getPortletClass(),
-			getConfigurationActionClass(), getIndexerClasses(),
-			getOpenSearchClass(), getSchedulerEntries(), getPortletURLClass(),
-			getFriendlyURLMapperClass(), _friendlyURLMapping,
-			getFriendlyURLRoutes(), getURLEncoderClass(),
+			getPortletName(), getDisplayName(), getCategoryNames(),
+			getPortletClass(), getConfigurationActionClass(),
+			getIndexerClasses(), getOpenSearchClass(), getSchedulerEntries(),
+			getPortletURLClass(), getFriendlyURLMapperClass(),
+			_friendlyURLMapping, getFriendlyURLRoutes(), getURLEncoderClass(),
 			getPortletDataHandlerClass(), getStagedModelDataHandlerClasses(),
 			getTemplateHandlerClass(), getPortletConfigurationListenerClass(),
 			getPortletLayoutListenerClass(), getPopMessageListenerClass(),
@@ -594,22 +597,6 @@ public class PortletImpl extends PortletBaseImpl {
 	}
 
 	/**
-	 * Returns the asset type instances of the portlet.
-	 *
-	 * @return the asset type instances of the portlet
-	 */
-	@Override
-	public List<AssetRendererFactory<?>> getAssetRendererFactoryInstances() {
-		if (_assetRendererFactoryClasses.isEmpty()) {
-			return null;
-		}
-
-		PortletBag portletBag = PortletBagPool.get(getRootPortletId());
-
-		return portletBag.getAssetRendererFactoryInstances();
-	}
-
-	/**
 	 * Returns the names of the parameters that will be automatically propagated
 	 * through the portlet.
 	 *
@@ -619,6 +606,16 @@ public class PortletImpl extends PortletBaseImpl {
 	@Override
 	public Set<String> getAutopropagatedParameters() {
 		return _autopropagatedParameters;
+	}
+
+	/**
+	 * Returns the category names of the portlet.
+	 *
+	 * @return the category names of the portlet
+	 */
+	@Override
+	public Set<String> getCategoryNames() {
+		return _categoryNames;
 	}
 
 	/**
@@ -729,14 +726,14 @@ public class PortletImpl extends PortletBaseImpl {
 		PortletBag portletBag = PortletBagPool.get(getRootPortletId());
 
 		if (portletBag == null) {
-			return _controlPanelEntry;
+			return _getDefaultControlPanelEntry();
 		}
 
 		List<ControlPanelEntry> controlPanelEntryInstances =
 			portletBag.getControlPanelEntryInstances();
 
 		if (controlPanelEntryInstances.isEmpty()) {
-			return _controlPanelEntry;
+			return _getDefaultControlPanelEntry();
 		}
 
 		return controlPanelEntryInstances.get(0);
@@ -3000,6 +2997,16 @@ public class PortletImpl extends PortletBaseImpl {
 	}
 
 	/**
+	 * Sets the category names of the portlet.
+	 *
+	 * @param categoryNames the category names of the portlet
+	 */
+	@Override
+	public void setCategoryNames(Set<String> categoryNames) {
+		_categoryNames = categoryNames;
+	}
+
+	/**
 	 * Sets the configuration action class of the portlet.
 	 *
 	 * @param configurationActionClass the configuration action class of the
@@ -4235,17 +4242,30 @@ public class PortletImpl extends PortletBaseImpl {
 		}
 	}
 
+	private ControlPanelEntry _getDefaultControlPanelEntry() {
+		ControlPanelEntry controlPanelEntry = _controlPanelEntrySnapshot.get();
+
+		if (controlPanelEntry == null) {
+			return _dummyControlPanelEntry;
+		}
+
+		return controlPanelEntry;
+	}
+
 	/**
 	 * Log instance for this class.
 	 */
 	private static final Log _log = LogFactoryUtil.getLog(PortletImpl.class);
 
-	private static volatile ControlPanelEntry _controlPanelEntry =
-		ServiceProxyFactory.newServiceTrackedInstance(
-			ControlPanelEntry.class, PortletImpl.class, "_controlPanelEntry",
+	private static final Snapshot<ControlPanelEntry>
+		_controlPanelEntrySnapshot = new Snapshot<>(
+			PortletImpl.class, ControlPanelEntry.class,
 			"(&(!(javax.portlet.name=*))(objectClass=" +
 				ControlPanelEntry.class.getName() + "))",
-			false);
+			true);
+	private static final ControlPanelEntry _dummyControlPanelEntry =
+		new BaseControlPanelEntry() {
+		};
 
 	/**
 	 * Map of the ready states of all portlets keyed by their root portlet ID.
@@ -4297,6 +4317,11 @@ public class PortletImpl extends PortletBaseImpl {
 	 * the portlet.
 	 */
 	private Set<String> _autopropagatedParameters;
+
+	/**
+	 * The names of the category that display the portlet
+	 */
+	private Set<String> _categoryNames;
 
 	/**
 	 * The configuration action class of the portlet.

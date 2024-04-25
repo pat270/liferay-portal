@@ -92,7 +92,6 @@ const renderPageContent = (props = contents[0]) =>
 		<StoreContextProvider
 			initialState={{
 				layoutData: {items: {}},
-				pageContents: contents,
 				permissions: {UPDATE: true, UPDATE_LAYOUT_CONTENT: true},
 			}}
 		>
@@ -161,11 +160,11 @@ describe('PageContent', () => {
 		expect(screen.getByLabelText('edit-inline-text-x')).toBeInTheDocument();
 	});
 
-	it('selects the corresponding element on the page when edit button is clicked', () => {
+	it('selects the corresponding element on the page when inline text item is clicked', () => {
 		const selectItem = useSelectItem();
 		renderPageContent(inlineText);
 
-		fireEvent.click(screen.getByLabelText('edit-inline-text-x'));
+		fireEvent.click(screen.getByLabelText(`select ${inlineText.title}`));
 
 		expect(selectItem).toHaveBeenCalledWith('11113-element-text', {
 			itemType: 'editable',

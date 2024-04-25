@@ -8,18 +8,30 @@
 			"type": "boolean"
 		},
 		"externalReferenceCode": {
-			"title": "The external reference code Schema",
+			"title": "The externalReferenceCode Schema",
+			"type": "string"
+		},
+		"friendlyURL": {
+			"title": "The friendlyURL Schema",
 			"type": "string"
 		},
 		"name": {
 			"title": "The name Schema",
 			"type": "string"
 		},
+		"privateLayout": {
+			"title": "The privateLayout Schema",
+			"type": "boolean"
+		},
 		"type": {
 			"enum": [
+				"CookiePolicy",
+				"CreateAccount",
 				"Error",
 				"ErrorCode404",
 				"ErrorCode500",
+				"ForgotPassword",
+				"Login",
 				"TermsOfUse"
 			],
 			"title": "The type Schema",

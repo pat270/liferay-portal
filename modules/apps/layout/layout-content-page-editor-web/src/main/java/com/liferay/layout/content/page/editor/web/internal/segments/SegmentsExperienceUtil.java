@@ -306,8 +306,8 @@ public class SegmentsExperienceUtil {
 			draftLayout.getClassPK());
 
 		return SegmentsExperimentLocalServiceUtil.fetchSegmentsExperiment(
-			segmentsExperienceId, layout.getPlid(),
-			SegmentsExperimentConstants.Status.getExclusiveStatusValues());
+			themeDisplay.getScopeGroupId(), segmentsExperienceId,
+			layout.getPlid());
 	}
 
 	private static String _getSegmentsExperimentURL(
@@ -358,8 +358,7 @@ public class SegmentsExperienceUtil {
 				CounterLocalServiceUtil.increment());
 			newFragmentEntryLink.setCreateDate(new Date());
 			newFragmentEntryLink.setModifiedDate(new Date());
-			newFragmentEntryLink.setOriginalFragmentEntryLinkId(
-				fragmentEntryLink.getFragmentEntryLinkId());
+			newFragmentEntryLink.setOriginalFragmentEntryLinkId(0);
 			newFragmentEntryLink.setSegmentsExperienceId(
 				targetSegmentsExperienceId);
 
@@ -375,12 +374,16 @@ public class SegmentsExperienceUtil {
 				segmentsExperimentPlid = layout.getClassPK();
 			}
 
+			SegmentsExperiment segmentsExperiment =
+				SegmentsExperimentLocalServiceUtil.fetchSegmentsExperiment(
+					layout.getGroupId(), sourceSegmentsExperienceId,
+					segmentsExperimentPlid);
+
 			if (Validator.isNull(
 					editableValuesJSONObject.getString("instanceId")) &&
 				Validator.isNull(
 					editableValuesJSONObject.getString("portletId")) &&
-				SegmentsExperimentLocalServiceUtil.hasSegmentsExperiment(
-					sourceSegmentsExperienceId, segmentsExperimentPlid, null)) {
+				(segmentsExperiment != null)) {
 
 				newNamespace = fragmentEntryLink.getNamespace();
 			}

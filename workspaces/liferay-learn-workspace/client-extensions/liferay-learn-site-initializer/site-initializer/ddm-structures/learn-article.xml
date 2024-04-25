@@ -1,0 +1,109 @@
+<?xml version="1.0"?>
+
+<root>
+	<structure>
+		<definition>
+			<![CDATA[
+				{
+					"availableLanguageIds": [
+						"en_US"
+					],
+					"defaultLanguageId": "en_US",
+					"fields": [
+						{
+							"dataType": "string",
+							"indexType": "text",
+							"label": {
+								"en_US": "Content"
+							},
+							"localizable": true,
+							"name": "content",
+							"predefinedValue": {
+								"en_US": ""
+							},
+							"readOnly": false,
+							"repeatable": false,
+							"required": false,
+							"showLabel": true,
+							"tip": {
+								"en_US": ""
+							},
+							"type": "rich_text"
+						},
+						{
+							"dataType": "string",
+							"displayStyle": "multiline",
+							"indexType": "none",
+							"label": {
+								"en_US": "Navigation"
+							},
+							"localizable": false,
+							"name": "navigation",
+							"predefinedValue": {
+								"en_US": ""
+							},
+							"readOnly": false,
+							"repeatable": false,
+							"required": false,
+							"showLabel": true,
+							"tip": {
+								"en_US": ""
+							},
+							"type": "text"
+						},
+						{
+							"dataType": "boolean",
+							"indexType": "none",
+							"label": {
+								"en_US": "Show Children Cards"
+							},
+							"localizable": false,
+							"name": "showChildrenCards",
+							"predefinedValue": {
+								"en_US": ""
+							},
+							"readOnly": false,
+							"repeatable": false,
+							"required": false,
+							"showAsSwitcher": true,
+							"showLabel": true,
+							"tip": {
+								"en_US": ""
+							},
+							"type": "checkbox"
+						},
+						{
+							"dataType": "string",
+							"displayStyle": "singleline",
+							"indexType": "none",
+							"label": {
+								"en_US": "MD5 Hex"
+							},
+							"localizable": false,
+							"name": "md5Hex",
+							"predefinedValue": {
+								"en_US": ""
+							},
+							"readOnly": false,
+							"repeatable": false,
+							"required": false,
+							"showLabel": true,
+							"tip": {
+								"en_US": ""
+							},
+							"type": "text"
+						}
+					],
+					"successPage": {
+						"body": {
+						},
+						"enabled": false,
+						"title": {
+						}
+					}
+				}
+			]]>
+		</definition>
+		<name>LEARN-ARTICLE</name>
+	</structure>
+</root>

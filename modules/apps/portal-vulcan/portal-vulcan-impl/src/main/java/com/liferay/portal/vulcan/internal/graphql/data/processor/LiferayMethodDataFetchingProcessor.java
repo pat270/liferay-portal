@@ -8,6 +8,7 @@ package com.liferay.portal.vulcan.internal.graphql.data.processor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.liferay.depot.service.DepotEntryLocalService;
+import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerList;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -25,6 +26,7 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.odata.filter.ExpressionConvert;
 import com.liferay.portal.odata.filter.FilterParserProvider;
@@ -34,20 +36,20 @@ import com.liferay.portal.vulcan.aggregation.Aggregation;
 import com.liferay.portal.vulcan.batch.engine.resource.VulcanBatchEngineImportTaskResource;
 import com.liferay.portal.vulcan.batch.engine.resource.VulcanBatchEngineImportTaskResourceFactory;
 import com.liferay.portal.vulcan.graphql.contributor.GraphQLContributor;
-import com.liferay.portal.vulcan.graphql.servlet.ServletData;
 import com.liferay.portal.vulcan.internal.accept.language.AcceptLanguageImpl;
-import com.liferay.portal.vulcan.internal.graphql.servlet.ServletDataAdapter;
 import com.liferay.portal.vulcan.internal.graphql.util.GraphQLUtil;
 import com.liferay.portal.vulcan.internal.jaxrs.context.provider.AggregationContextProvider;
 import com.liferay.portal.vulcan.internal.jaxrs.context.provider.ContextProviderUtil;
 import com.liferay.portal.vulcan.internal.jaxrs.context.provider.FilterContextProvider;
-import com.liferay.portal.vulcan.internal.jaxrs.context.provider.SortContextProvider;
 import com.liferay.portal.vulcan.internal.jaxrs.validation.ValidationUtil;
 import com.liferay.portal.vulcan.internal.multipart.MultipartUtil;
 import com.liferay.portal.vulcan.multipart.BinaryFile;
 import com.liferay.portal.vulcan.multipart.MultipartBody;
+import com.liferay.portal.vulcan.pagination.Pagination;
+import com.liferay.portal.vulcan.pagination.provider.PaginationProvider;
 import com.liferay.portal.vulcan.resource.EntityModelResource;
 import com.liferay.portal.vulcan.util.GroupUtil;
+import com.liferay.portal.vulcan.util.SortUtil;
 
 import graphql.annotations.processor.util.NamingKit;
 import graphql.annotations.processor.util.ReflectionKit;
@@ -62,7 +64,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 
 import javax.servlet.http.HttpServletRequest;
@@ -85,19 +86,46 @@ import org.apache.cxf.message.MessageImpl;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
-import org.osgi.framework.ServiceRegistration;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
-import org.osgi.service.component.annotations.Reference;
-import org.osgi.util.tracker.ServiceTracker;
-import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
 /**
  * @author Carlos Correa
  */
-@Component(service = LiferayMethodDataFetchingProcessor.class)
 public class LiferayMethodDataFetchingProcessor {
+
+	public LiferayMethodDataFetchingProcessor(
+		BundleContext bundleContext, CompanyLocalService companyLocalService,
+		DepotEntryLocalService depotEntryLocalService,
+		ExpressionConvert<Filter> expressionConvert,
+		FilterParserProvider filterParserProvider,
+		ServiceTrackerList<GraphQLContributor>
+			graphQLContributorServiceTrackerList,
+		GroupLocalService groupLocalService, Language language,
+		PaginationProvider paginationProvider, Portal portal,
+		ResourceActionLocalService resourceActionLocalService,
+		ResourcePermissionLocalService resourcePermissionLocalService,
+		RoleLocalService roleLocalService,
+		SortParserProvider sortParserProvider,
+		VulcanBatchEngineImportTaskResourceFactory
+			vulcanBatchEngineImportTaskResourceFactory) {
+
+		_bundleContext = bundleContext;
+		_companyLocalService = companyLocalService;
+		_depotEntryLocalService = depotEntryLocalService;
+		_expressionConvert = expressionConvert;
+		_filterParserProvider = filterParserProvider;
+		_graphQLContributorServiceTrackerList =
+			graphQLContributorServiceTrackerList;
+		_groupLocalService = groupLocalService;
+		_language = language;
+		_paginationProvider = paginationProvider;
+		_portal = portal;
+		_resourceActionLocalService = resourceActionLocalService;
+		_resourcePermissionLocalService = resourcePermissionLocalService;
+		_roleLocalService = roleLocalService;
+		_sortParserProvider = sortParserProvider;
+		_vulcanBatchEngineImportTaskResourceFactory =
+			vulcanBatchEngineImportTaskResourceFactory;
+	}
 
 	public Object process(
 			Map<String, Object> arguments, String fieldName,
@@ -105,6 +133,11 @@ public class LiferayMethodDataFetchingProcessor {
 			HttpServletResponse httpServletResponse, Method method, Object root,
 			Object source)
 		throws Exception {
+
+		Pagination pagination = _paginationProvider.getPagination(
+			_portal.getCompanyId(httpServletRequest),
+			_getIntegerValue(arguments, "page"),
+			_getIntegerValue(arguments, "pageSize"));
 
 		Parameter[] parameters = method.getParameters();
 
@@ -129,16 +162,10 @@ public class LiferayMethodDataFetchingProcessor {
 
 			Object argument = arguments.get(parameterName);
 
-			if (argument == null) {
-				if (parameter.isAnnotationPresent(NotNull.class)) {
-					throw new ValidationException(parameterName + " is null");
-				}
-				else if (parameterName.equals("page")) {
-					argument = 1;
-				}
-				else if (parameterName.equals("pageSize")) {
-					argument = 20;
-				}
+			if ((argument == null) &&
+				parameter.isAnnotationPresent(NotNull.class)) {
+
+				throw new ValidationException(parameterName + " is null");
 			}
 
 			if (parameterName.equals("assetLibraryId") && (argument != null)) {
@@ -157,6 +184,14 @@ public class LiferayMethodDataFetchingProcessor {
 							"\" to group ID",
 						exception);
 				}
+			}
+
+			if (parameterName.equals("page")) {
+				argument = pagination.getPage();
+			}
+
+			if (parameterName.equals("pageSize")) {
+				argument = pagination.getPageSize();
 			}
 
 			if (parameterName.equals("siteKey") && (argument != null)) {
@@ -210,7 +245,8 @@ public class LiferayMethodDataFetchingProcessor {
 					}
 
 					argument = MultipartBody.of(
-						binaryFiles, __ -> _objectMapper, values);
+						binaryFiles, __ -> ObjectMapperHolder._objectMapper,
+						values);
 				}
 			}
 
@@ -219,7 +255,9 @@ public class LiferayMethodDataFetchingProcessor {
 			if ((argument instanceof Map) &&
 				!parameterClass.isAssignableFrom(Map.class)) {
 
-				argument = _objectMapper.convertValue(
+				ObjectMapper objectMapper = ObjectMapperHolder._objectMapper;
+
+				argument = objectMapper.convertValue(
 					argument, parameter.getType());
 
 				ValidationUtil.validate(argument);
@@ -269,22 +307,6 @@ public class LiferayMethodDataFetchingProcessor {
 		ValidationUtil.validateArguments(instance, method, argumentArray);
 
 		return method.invoke(instance, argumentArray);
-	}
-
-	@Activate
-	protected void activate(BundleContext bundleContext) {
-		_bundleContext = bundleContext;
-
-		_graphQLContributorServiceTracker = new ServiceTracker<>(
-			bundleContext, GraphQLContributor.class,
-			new GraphQLContributorServiceTrackerCustomizer());
-
-		_graphQLContributorServiceTracker.open();
-	}
-
-	@Deactivate
-	protected void deactivate() {
-		_graphQLContributorServiceTracker.close();
 	}
 
 	private Message _createMessage(
@@ -482,9 +504,12 @@ public class LiferayMethodDataFetchingProcessor {
 					BiFunction<Object, String, Sort[]> sortsBiFunction =
 						(resource, sortsString) -> {
 							try {
-								return _getSorts(
-									acceptLanguage,
-									_getEntityModel(resource, parameterMap),
+								EntityModel entityModel = _getEntityModel(
+									resource, parameterMap);
+
+								return SortUtil.getSorts(
+									acceptLanguage, entityModel,
+									_sortParserProvider.provide(entityModel),
 									sortsString);
 							}
 							catch (Exception exception) {
@@ -619,6 +644,18 @@ public class LiferayMethodDataFetchingProcessor {
 			acceptLanguage, entityModel, filterString);
 	}
 
+	private Integer _getIntegerValue(
+		Map<String, Object> arguments, String key) {
+
+		Object value = arguments.get(key);
+
+		if (Validator.isNotNull(value)) {
+			return GetterUtil.getInteger(value);
+		}
+
+		return null;
+	}
+
 	private Object _getScopeChecker() {
 		ServiceReference<?> serviceReference =
 			_bundleContext.getServiceReference(
@@ -632,24 +669,13 @@ public class LiferayMethodDataFetchingProcessor {
 	}
 
 	private Object _getService(Class<?> clazz) {
-		for (Object service : _graphQLContributorServiceTracker.getServices()) {
+		for (Object service : _graphQLContributorServiceTrackerList) {
 			if (clazz.isAssignableFrom(service.getClass())) {
 				return service;
 			}
 		}
 
 		return null;
-	}
-
-	private Sort[] _getSorts(
-		AcceptLanguage acceptLanguage, EntityModel entityModel,
-		String sortsString) {
-
-		SortContextProvider sortContextProvider = new SortContextProvider(
-			_language, _portal, _sortParserProvider);
-
-		return sortContextProvider.createContext(
-			acceptLanguage, entityModel, sortsString);
 	}
 
 	private Field _getThisField(Class<?> clazz) {
@@ -668,97 +694,28 @@ public class LiferayMethodDataFetchingProcessor {
 	private static final Log _log = LogFactoryUtil.getLog(
 		LiferayMethodDataFetchingProcessor.class);
 
-	private static final ObjectMapper _objectMapper = new ObjectMapper();
-
-	private BundleContext _bundleContext;
-
-	@Reference
-	private CompanyLocalService _companyLocalService;
-
-	@Reference
-	private DepotEntryLocalService _depotEntryLocalService;
-
-	@Reference(
-		target = "(result.class.name=com.liferay.portal.kernel.search.filter.Filter)"
-	)
-	private ExpressionConvert<Filter> _expressionConvert;
-
-	@Reference
-	private FilterParserProvider _filterParserProvider;
-
-	private ServiceTracker<GraphQLContributor, GraphQLContributor>
-		_graphQLContributorServiceTracker;
-
-	@Reference
-	private GroupLocalService _groupLocalService;
-
-	@Reference
-	private Language _language;
-
-	@Reference
-	private Portal _portal;
-
-	@Reference
-	private ResourceActionLocalService _resourceActionLocalService;
-
-	@Reference
-	private ResourcePermissionLocalService _resourcePermissionLocalService;
-
-	@Reference
-	private RoleLocalService _roleLocalService;
-
-	@Reference
-	private SortParserProvider _sortParserProvider;
-
-	@Reference
-	private VulcanBatchEngineImportTaskResourceFactory
+	private final BundleContext _bundleContext;
+	private final CompanyLocalService _companyLocalService;
+	private final DepotEntryLocalService _depotEntryLocalService;
+	private final ExpressionConvert<Filter> _expressionConvert;
+	private final FilterParserProvider _filterParserProvider;
+	private final ServiceTrackerList<GraphQLContributor>
+		_graphQLContributorServiceTrackerList;
+	private final GroupLocalService _groupLocalService;
+	private final Language _language;
+	private final PaginationProvider _paginationProvider;
+	private final Portal _portal;
+	private final ResourceActionLocalService _resourceActionLocalService;
+	private final ResourcePermissionLocalService
+		_resourcePermissionLocalService;
+	private final RoleLocalService _roleLocalService;
+	private final SortParserProvider _sortParserProvider;
+	private final VulcanBatchEngineImportTaskResourceFactory
 		_vulcanBatchEngineImportTaskResourceFactory;
 
-	private class GraphQLContributorServiceTrackerCustomizer
-		implements ServiceTrackerCustomizer
-			<GraphQLContributor, GraphQLContributor> {
+	private static class ObjectMapperHolder {
 
-		@Override
-		public GraphQLContributor addingService(
-			ServiceReference<GraphQLContributor> serviceReference) {
-
-			GraphQLContributor graphQLContributor = _bundleContext.getService(
-				serviceReference);
-
-			ServiceRegistration<ServletData> servletDataServiceRegistration =
-				_bundleContext.registerService(
-					ServletData.class,
-					ServletDataAdapter.of(graphQLContributor), null);
-
-			_servletDataServiceRegistrations.put(
-				graphQLContributor, servletDataServiceRegistration);
-
-			return graphQLContributor;
-		}
-
-		@Override
-		public void modifiedService(
-			ServiceReference<GraphQLContributor> serviceReference,
-			GraphQLContributor graphQLContributor) {
-		}
-
-		@Override
-		public void removedService(
-			ServiceReference<GraphQLContributor> serviceReference,
-			GraphQLContributor graphQLContributor) {
-
-			ServiceRegistration<ServletData> serviceRegistration =
-				_servletDataServiceRegistrations.remove(graphQLContributor);
-
-			if (serviceRegistration != null) {
-				serviceRegistration.unregister();
-			}
-
-			_bundleContext.ungetService(serviceReference);
-		}
-
-		private final Map<GraphQLContributor, ServiceRegistration<ServletData>>
-			_servletDataServiceRegistrations = new ConcurrentHashMap<>();
+		private static final ObjectMapper _objectMapper = new ObjectMapper();
 
 	}
 

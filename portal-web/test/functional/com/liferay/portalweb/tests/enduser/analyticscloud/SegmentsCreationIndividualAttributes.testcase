@@ -49,10 +49,6 @@ definition {
 	tearDown {
 		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
 
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
-		//ACUtils.tearDownAC();
-
 		ACUtils.tearDownDXP();
 
 		if (${testLiferayVirtualInstance} == "true") {
@@ -63,6 +59,8 @@ definition {
 
 			CustomFields.tearDownCP();
 		}
+
+		ACUtils.tearDownAC();
 	}
 
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8565 | Test Summary: Add segment using an individual property 'role'"
@@ -73,7 +71,7 @@ definition {
 		// AC Refactor: Data doesn't appear on time
 		// AC Refactor ticket: LRAC-14011
 
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Add a new regular role and assign to the user") {
 			JSONRole.addRegularRole(
@@ -292,7 +290,7 @@ definition {
 		// AC Refactor: Data doesn't appear on time
 		// AC Refactor ticket: LRAC-14011
 
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Assign the site to user") {
 			JSONGroup.assignUserToGroup(
@@ -429,7 +427,7 @@ definition {
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8567 | Test Summary: Add segment using an individual property 'user group'"
 	@priority = 4
 	test CanAddSegmentUsingIndividualPropertyUserGroup {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Add a new user group and assign to the user") {
 			JSONUserGroup.addUserGroup(
@@ -451,6 +449,8 @@ definition {
 				userLoginFullName = "ac ac");
 
 			ACUtils.navigateToSitePage(
+				actionType = "View WC",
+				documentTitleList = "1,2,3,4",
 				pageName = "AC Page",
 				siteName = "Site Name");
 		}
@@ -493,7 +493,7 @@ definition {
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8569 | Test Summary: Add segment with custom field for individuals"
 	@priority = 4
 	test CanAddSegmentWithCustomFieldsForIndividuals {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Add a user custom field") {
 			CustomFields.openCustomFieldAdmin();
@@ -506,10 +506,7 @@ definition {
 		}
 
 		task ("Define the value of custom field for new user") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Users and Organizations");
+			User.openUsersAdmin();
 
 			UserNavigator.gotoUser(userScreenName = "ac");
 
@@ -525,10 +522,7 @@ definition {
 		}
 
 		task ("Redefine the value of the custom field") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Users and Organizations");
+			User.openUsersAdmin();
 
 			UserNavigator.gotoUser(userScreenName = "ac");
 
@@ -542,11 +536,10 @@ definition {
 		}
 
 		task ("View the page as the new added user") {
-			User.logoutAndLoginPG(
-				userLoginEmailAddress = "ac@liferay.com",
-				userLoginFullName = "ac ac");
-
-			ACUtils.navigateToSitePage(
+			ACUtils.navigateToSitePageWithUser(
+				actionType = "View WC",
+				documentTitleList = "1,2,3,4",
+				emailList = "ac@liferay.com",
 				pageName = "AC Page",
 				siteName = "Site Name");
 		}
@@ -592,7 +585,7 @@ definition {
 		// AC Refactor: Data doesn't appear on time
 		// AC Refactor ticket: LRAC-14011
 
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Add a new organization and assign to the user") {
 			JSONOrganization.addOrganization(organizationName = "Organization Name");
@@ -661,11 +654,6 @@ definition {
 	@description = "Bug: LRAC-11848 | Automation ID: LRAC-12005 | Test Summary: Add a segment using custom field of type Breakdwon, Checkbox and Radio"
 	@priority = 4
 	test CanAddSegmentWithCustomFieldThatUsesList {
-		property portal.upstream = "quarantine";
-
-		// AC Quarantine reason: Custom field values take a long time to appear in AC
-		// AC Quarantine ticket: Wait for segments migration to see if this case becomes faster - LRAC-11818
-
 		var customFieldDropdown = "user custom field dropdown";
 		var customFieldCheckbox = "user custom field checkbox";
 		var customFieldRadio = "user custom field radio";
@@ -710,10 +698,7 @@ definition {
 		}
 
 		task ("Go to a user and add information for the custom fields created") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Users and Organizations");
+			User.openUsersAdmin();
 
 			User.editCustomFieldInformation(
 				customFieldName = ${customFieldDropdown},
@@ -721,10 +706,7 @@ definition {
 				customFieldValue = "Option2",
 				userScreenName = "ac");
 
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Users and Organizations");
+			User.openUsersAdmin();
 
 			User.editCustomFieldInformation(
 				customFieldName = ${customFieldCheckbox},
@@ -732,10 +714,7 @@ definition {
 				customFieldValue = "QA",
 				userScreenName = "ac");
 
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Users and Organizations");
+			User.openUsersAdmin();
 
 			User.editCustomFieldInformation(
 				customFieldName = ${customFieldRadio},
@@ -750,6 +729,10 @@ definition {
 				attributeNameList = ${customFieldNameList});
 		}
 
+		task ("Sync the Contact Data") {
+			ACDXPSettings.syncNewContactData();
+		}
+
 		task ("View the page as the new added user") {
 			User.logoutAndLoginPG(
 				userLoginEmailAddress = "ac@liferay.com",
@@ -757,7 +740,7 @@ definition {
 
 			ACUtils.navigateToSitePage(
 				actionType = "View Blog",
-				documentTitleList = "Blogs AC Title",
+				documentTitleList = "Blogs AC Title,Blogs AC Title,Blogs AC Title,Blogs AC Title",
 				pageName = "AC Page",
 				siteName = "Site Name");
 		}
@@ -794,19 +777,21 @@ definition {
 			ACSegments.previewSegmentMembership();
 
 			ACUtils.viewNameList(nameList = "ac ac");
+
+			ACUtils.closeModal();
 		}
 
 		task ("Save the segment") {
 			ACSegments.saveSegment();
 		}
 
-		task ("Check if the segment title appears to verify that the page is not broken") {
-			ACUtils.viewGenericText(textValueList = "Dynamic Segment Dropdown");
+		task ("Check that the segment is created") {
+			ACNavigation.goToSegments();
+
+			ACUtils.viewNameList(nameList = "Dynamic Segment Dropdown");
 		}
 
 		task ("Add a new dynamic segment with all custom fields created") {
-			ACNavigation.goToSegments();
-
 			ACSegments.createDynamicSegment();
 
 			ACUtils.setItemName(itemName = "Dynamic Segment Using Custom Fields");
@@ -835,14 +820,14 @@ definition {
 			ACSegments.previewSegmentMembership();
 
 			ACUtils.viewNameList(nameList = "ac ac");
+
+			ACUtils.closeModal();
 		}
 
-		task ("Save the segment") {
-			ACSegments.saveSegment();
-		}
+		task ("Check that the segment is created") {
+			ACNavigation.goToSegments();
 
-		task ("Check if the segment title appears to verify that the page is not broken") {
-			ACUtils.viewGenericText(textValueList = "Dynamic Segment Using Custom Fields");
+			ACUtils.viewNameList(nameList = "Dynamic Segment Using Custom Fields");
 		}
 	}
 

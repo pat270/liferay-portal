@@ -16,7 +16,6 @@ import com.liferay.asset.publisher.constants.AssetPublisherPortletKeys;
 import com.liferay.asset.publisher.constants.AssetPublisherWebKeys;
 import com.liferay.asset.publisher.util.AssetPublisherHelper;
 import com.liferay.asset.publisher.util.AssetQueryRule;
-import com.liferay.asset.publisher.web.internal.action.AssetEntryActionRegistry;
 import com.liferay.asset.publisher.web.internal.configuration.AssetPublisherPortletInstanceConfiguration;
 import com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfigurationUtil;
 import com.liferay.asset.publisher.web.internal.configuration.AssetPublisherWebConfiguration;
@@ -32,6 +31,7 @@ import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.item.selector.ItemSelector;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.Layout;
@@ -39,7 +39,6 @@ import com.liferay.portal.kernel.model.LayoutRevision;
 import com.liferay.portal.kernel.model.LayoutSetBranch;
 import com.liferay.portal.kernel.model.LayoutTypePortletConstants;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.portlet.ConfigurationAction;
 import com.liferay.portal.kernel.portlet.DefaultConfigurationAction;
 import com.liferay.portal.kernel.portlet.PortletIdCodec;
@@ -50,7 +49,6 @@ import com.liferay.portal.kernel.service.LayoutRevisionLocalService;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.settings.LocalizedValuesMap;
-import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Constants;
@@ -127,7 +125,7 @@ public class AssetPublisherConfigurationAction
 			portletResource);
 
 		AssetPublisherCustomizer assetPublisherCustomizer =
-			assetPublisherCustomizerRegistry.getAssetPublisherCustomizer(
+			_assetPublisherCustomizerRegistry.getAssetPublisherCustomizer(
 				rootPortletId);
 
 		RenderRequest renderRequest =
@@ -139,8 +137,7 @@ public class AssetPublisherConfigurationAction
 
 		AssetPublisherDisplayContext assetPublisherDisplayContext =
 			new AssetPublisherDisplayContext(
-				assetEntryActionRegistry, assetHelper,
-				assetListAssetEntryProvider,
+				assetHelper, assetListAssetEntryProvider,
 				assetListEntrySegmentsEntryRelLocalService,
 				assetPublisherCustomizer, assetPublisherHelper,
 				assetPublisherWebConfiguration, assetPublisherWebHelper,
@@ -171,7 +168,7 @@ public class AssetPublisherConfigurationAction
 
 		AssetPublisherPortletInstanceConfiguration
 			assetPublisherPortletInstanceConfiguration =
-				ConfigurationProviderUtil.getSystemConfiguration(
+				configurationProvider.getSystemConfiguration(
 					AssetPublisherPortletInstanceConfiguration.class);
 
 		String languageId = LocaleUtil.toLanguageId(
@@ -203,7 +200,7 @@ public class AssetPublisherConfigurationAction
 
 		String cmd = ParamUtil.getString(actionRequest, Constants.CMD);
 
-		PortletPreferences preferences = actionRequest.getPreferences();
+		PortletPreferences portletPreferences = actionRequest.getPreferences();
 
 		if (cmd.equals(Constants.TRANSLATE)) {
 			super.processAction(portletConfig, actionRequest, actionResponse);
@@ -239,7 +236,7 @@ public class AssetPublisherConfigurationAction
 				if (selectionStyle.equals(
 						AssetPublisherSelectionStyleConstants.TYPE_DYNAMIC)) {
 
-					_updateQueryLogic(actionRequest, preferences);
+					_updateQueryLogic(actionRequest, portletPreferences);
 				}
 
 				_updateDefaultAssetPublisher(actionRequest);
@@ -261,32 +258,32 @@ public class AssetPublisherConfigurationAction
 		}
 		else {
 			if (cmd.equals("add-scope")) {
-				_addScope(actionRequest, preferences);
+				_addScope(actionRequest, portletPreferences);
 			}
 			else if (cmd.equals("add-selection")) {
-				_addSelection(actionRequest, preferences);
+				_addSelection(actionRequest, portletPreferences);
 			}
 			else if (cmd.equals("move-selection-down")) {
-				_moveSelectionDown(actionRequest, preferences);
+				_moveSelectionDown(actionRequest, portletPreferences);
 			}
 			else if (cmd.equals("move-selection-up")) {
-				_moveSelectionUp(actionRequest, preferences);
+				_moveSelectionUp(actionRequest, portletPreferences);
 			}
 			else if (cmd.equals("remove-selection")) {
-				_removeSelection(actionRequest, preferences);
+				_removeSelection(actionRequest, portletPreferences);
 			}
 			else if (cmd.equals("remove-scope")) {
-				_removeScope(actionRequest, preferences);
+				_removeScope(actionRequest, portletPreferences);
 			}
 			else if (cmd.equals("select-scope")) {
-				_setScopes(actionRequest, preferences);
+				_setScopes(actionRequest, portletPreferences);
 			}
 			else if (cmd.equals("selection-style")) {
-				_setSelectionStyle(actionRequest, preferences);
+				_setSelectionStyle(actionRequest, portletPreferences);
 			}
 
 			if (SessionErrors.isEmpty(actionRequest)) {
-				preferences.store();
+				portletPreferences.store();
 
 				String portletResource = ParamUtil.getString(
 					actionRequest, "portletResource");
@@ -317,15 +314,16 @@ public class AssetPublisherConfigurationAction
 	protected void activate(Map<String, Object> properties) {
 		assetPublisherWebConfiguration = ConfigurableUtil.createConfigurable(
 			AssetPublisherWebConfiguration.class, properties);
+
+		_assetPublisherCustomizerRegistry =
+			new AssetPublisherCustomizerRegistry(
+				assetPublisherHelper, assetPublisherWebConfiguration);
 	}
 
 	protected String getDefaultSelectionStyle() {
 		return AssetPublisherSelectionStyleConfigurationUtil.
 			defaultSelectionStyle();
 	}
-
-	@Reference
-	protected AssetEntryActionRegistry assetEntryActionRegistry;
 
 	@Reference
 	protected AssetHelper assetHelper;
@@ -338,9 +336,6 @@ public class AssetPublisherConfigurationAction
 		assetListEntrySegmentsEntryRelLocalService;
 
 	@Reference
-	protected AssetPublisherCustomizerRegistry assetPublisherCustomizerRegistry;
-
-	@Reference
 	protected AssetPublisherHelper assetPublisherHelper;
 
 	protected volatile AssetPublisherWebConfiguration
@@ -351,6 +346,9 @@ public class AssetPublisherConfigurationAction
 
 	@Reference
 	protected AssetTagLocalService assetTagLocalService;
+
+	@Reference
+	protected ConfigurationProvider configurationProvider;
 
 	@Reference
 	protected GroupLocalService groupLocalService;
@@ -380,13 +378,13 @@ public class AssetPublisherConfigurationAction
 	protected Staging staging;
 
 	private void _addScope(
-			ActionRequest actionRequest, PortletPreferences preferences)
+			ActionRequest actionRequest, PortletPreferences portletPreferences)
 		throws Exception {
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		String[] scopeIds = preferences.getValues(
+		String[] scopeIds = portletPreferences.getValues(
 			"scopeIds",
 			new String[] {
 				AssetPublisherHelper.SCOPE_ID_GROUP_PREFIX +
@@ -406,11 +404,11 @@ public class AssetPublisherConfigurationAction
 			scopeIds = ArrayUtil.append(scopeIds, scopeId);
 		}
 
-		preferences.setValues("scopeIds", scopeIds);
+		portletPreferences.setValues("scopeIds", scopeIds);
 	}
 
 	private void _addSelection(
-			ActionRequest actionRequest, PortletPreferences preferences)
+			ActionRequest actionRequest, PortletPreferences portletPreferences)
 		throws Exception {
 
 		long[] assetEntryIds = ParamUtil.getLongValues(
@@ -422,7 +420,8 @@ public class AssetPublisherConfigurationAction
 
 		for (long assetEntryId : assetEntryIds) {
 			assetPublisherWebHelper.addSelection(
-				preferences, assetEntryId, assetEntryOrder, assetEntryType);
+				portletPreferences, assetEntryId, assetEntryOrder,
+				assetEntryType);
 		}
 	}
 
@@ -474,14 +473,10 @@ public class AssetPublisherConfigurationAction
 				HttpServletRequest httpServletRequest)
 		throws ConfigurationException {
 
-		ThemeDisplay themeDisplay =
+		return configurationProvider.getPortletInstanceConfiguration(
+			AssetPublisherPortletInstanceConfiguration.class,
 			(ThemeDisplay)httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
-		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
-
-		return portletDisplay.getPortletInstanceConfiguration(
-			AssetPublisherPortletInstanceConfiguration.class);
+				WebKeys.THEME_DISPLAY));
 	}
 
 	private String[] _getClassTypeIds(
@@ -563,13 +558,13 @@ public class AssetPublisherConfigurationAction
 	}
 
 	private void _moveSelectionDown(
-			ActionRequest actionRequest, PortletPreferences preferences)
+			ActionRequest actionRequest, PortletPreferences portletPreferences)
 		throws Exception {
 
 		int assetEntryOrder = ParamUtil.getInteger(
 			actionRequest, "assetEntryOrder");
 
-		String[] manualEntries = preferences.getValues(
+		String[] manualEntries = portletPreferences.getValues(
 			"assetEntryXml", new String[0]);
 
 		if ((assetEntryOrder >= (manualEntries.length - 1)) ||
@@ -583,17 +578,17 @@ public class AssetPublisherConfigurationAction
 		manualEntries[assetEntryOrder + 1] = manualEntries[assetEntryOrder];
 		manualEntries[assetEntryOrder] = temp;
 
-		preferences.setValues("assetEntryXml", manualEntries);
+		portletPreferences.setValues("assetEntryXml", manualEntries);
 	}
 
 	private void _moveSelectionUp(
-			ActionRequest actionRequest, PortletPreferences preferences)
+			ActionRequest actionRequest, PortletPreferences portletPreferences)
 		throws Exception {
 
 		int assetEntryOrder = ParamUtil.getInteger(
 			actionRequest, "assetEntryOrder");
 
-		String[] manualEntries = preferences.getValues(
+		String[] manualEntries = portletPreferences.getValues(
 			"assetEntryXml", new String[0]);
 
 		if ((assetEntryOrder >= manualEntries.length) ||
@@ -607,14 +602,14 @@ public class AssetPublisherConfigurationAction
 		manualEntries[assetEntryOrder - 1] = manualEntries[assetEntryOrder];
 		manualEntries[assetEntryOrder] = temp;
 
-		preferences.setValues("assetEntryXml", manualEntries);
+		portletPreferences.setValues("assetEntryXml", manualEntries);
 	}
 
 	private void _removeScope(
-			ActionRequest actionRequest, PortletPreferences preferences)
+			ActionRequest actionRequest, PortletPreferences portletPreferences)
 		throws Exception {
 
-		String[] scopeIds = preferences.getValues(
+		String[] scopeIds = portletPreferences.getValues(
 			"scopeIds",
 			new String[] {
 				AssetPublisherHelper.SCOPE_ID_GROUP_PREFIX +
@@ -633,17 +628,17 @@ public class AssetPublisherConfigurationAction
 			scopeIds = ArrayUtil.remove(scopeIds, scopeId);
 		}
 
-		preferences.setValues("scopeIds", scopeIds);
+		portletPreferences.setValues("scopeIds", scopeIds);
 	}
 
 	private void _removeSelection(
-			ActionRequest actionRequest, PortletPreferences preferences)
+			ActionRequest actionRequest, PortletPreferences portletPreferences)
 		throws Exception {
 
 		int assetEntryOrder = ParamUtil.getInteger(
 			actionRequest, "assetEntryOrder");
 
-		String[] manualEntries = preferences.getValues(
+		String[] manualEntries = portletPreferences.getValues(
 			"assetEntryXml", new String[0]);
 
 		if (assetEntryOrder >= manualEntries.length) {
@@ -661,45 +656,46 @@ public class AssetPublisherConfigurationAction
 			}
 		}
 
-		preferences.setValues("assetEntryXml", newEntries);
+		portletPreferences.setValues("assetEntryXml", newEntries);
 	}
 
 	private void _setScopes(
-			ActionRequest actionRequest, PortletPreferences preferences)
+			ActionRequest actionRequest, PortletPreferences portletPreferences)
 		throws Exception {
 
 		String[] scopeIds = StringUtil.split(
 			getParameter(actionRequest, "scopeIds"));
 
-		preferences.setValues("scopeIds", scopeIds);
+		portletPreferences.setValues("scopeIds", scopeIds);
 	}
 
 	private void _setSelectionStyle(
-			ActionRequest actionRequest, PortletPreferences preferences)
+			ActionRequest actionRequest, PortletPreferences portletPreferences)
 		throws Exception {
 
 		String selectionStyle = getParameter(actionRequest, "selectionStyle");
 		String displayStyle = getParameter(actionRequest, "displayStyle");
 
-		preferences.setValue("selectionStyle", selectionStyle);
+		portletPreferences.setValue("selectionStyle", selectionStyle);
 
 		if (selectionStyle.equals(
 				AssetPublisherSelectionStyleConstants.TYPE_MANUAL) ||
 			selectionStyle.equals("view-count")) {
 
-			preferences.setValue("enableRss", Boolean.FALSE.toString());
-			preferences.setValue("showQueryLogic", Boolean.FALSE.toString());
+			portletPreferences.setValue("enableRss", Boolean.FALSE.toString());
+			portletPreferences.setValue(
+				"showQueryLogic", Boolean.FALSE.toString());
 
-			preferences.reset("rssDelta");
-			preferences.reset("rssDisplayStyle");
-			preferences.reset("rssFormat");
-			preferences.reset("rssName");
+			portletPreferences.reset("rssDelta");
+			portletPreferences.reset("rssDisplayStyle");
+			portletPreferences.reset("rssFormat");
+			portletPreferences.reset("rssName");
 		}
 
 		if (!selectionStyle.equals("view-count") &&
 			displayStyle.equals("view-count-details")) {
 
-			preferences.setValue("displayStyle", "full-content");
+			portletPreferences.setValue("displayStyle", "full-content");
 		}
 	}
 
@@ -798,7 +794,7 @@ public class AssetPublisherConfigurationAction
 	}
 
 	private void _updateQueryLogic(
-			ActionRequest actionRequest, PortletPreferences preferences)
+			ActionRequest actionRequest, PortletPreferences portletPreferences)
 		throws Exception {
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
@@ -837,7 +833,7 @@ public class AssetPublisherConfigurationAction
 
 		// Clear previous preferences that are now blank
 
-		String[] values = preferences.getValues(
+		String[] values = portletPreferences.getValues(
 			"queryValues" + i, new String[0]);
 
 		while (values.length > 0) {
@@ -849,7 +845,8 @@ public class AssetPublisherConfigurationAction
 
 			i++;
 
-			values = preferences.getValues("queryValues" + i, new String[0]);
+			values = portletPreferences.getValues(
+				"queryValues" + i, new String[0]);
 		}
 	}
 
@@ -880,5 +877,8 @@ public class AssetPublisherConfigurationAction
 				queryRule.getName());
 		}
 	}
+
+	private volatile AssetPublisherCustomizerRegistry
+		_assetPublisherCustomizerRegistry;
 
 }

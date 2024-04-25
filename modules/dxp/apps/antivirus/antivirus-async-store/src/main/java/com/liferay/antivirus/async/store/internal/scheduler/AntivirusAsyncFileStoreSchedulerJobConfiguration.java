@@ -10,7 +10,6 @@ import com.liferay.antivirus.async.store.constants.AntivirusAsyncConstants;
 import com.liferay.antivirus.async.store.constants.AntivirusAsyncDestinationNames;
 import com.liferay.antivirus.async.store.internal.event.AntivirusAsyncEventListenerManager;
 import com.liferay.antivirus.async.store.util.AntivirusAsyncUtil;
-import com.liferay.document.library.kernel.store.Store;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeRunnable;
 import com.liferay.petra.reflect.ReflectionUtil;
@@ -40,7 +39,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
 import java.util.Map;
 
-import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
@@ -58,6 +56,7 @@ import org.osgi.service.component.annotations.Reference;
 public class AntivirusAsyncFileStoreSchedulerJobConfiguration
 	implements SchedulerJobConfiguration {
 
+	@Override
 	public String getDestinationName() {
 		return AntivirusAsyncDestinationNames.ANTIVIRUS_BATCH;
 	}
@@ -74,15 +73,7 @@ public class AntivirusAsyncFileStoreSchedulerJobConfiguration
 
 	@Override
 	public TriggerConfiguration getTriggerConfiguration() {
-		TriggerConfiguration triggerConfiguration =
-			TriggerConfiguration.createTriggerConfiguration(
-				_antivirusAsyncConfiguration.retryCronExpression());
-
-		triggerConfiguration.setStartDate(
-			new Date(
-				System.currentTimeMillis() + TimeUnit.SECOND.toMillis(30)));
-
-		return triggerConfiguration;
+		return _triggerConfiguration;
 	}
 
 	public void scan(String rootDirAbsolutePathString) {
@@ -96,8 +87,16 @@ public class AntivirusAsyncFileStoreSchedulerJobConfiguration
 
 	@Activate
 	protected void activate(Map<String, Object> properties) {
-		_antivirusAsyncConfiguration = ConfigurableUtil.createConfigurable(
-			AntivirusAsyncConfiguration.class, properties);
+		AntivirusAsyncConfiguration antivirusAsyncConfiguration =
+			ConfigurableUtil.createConfigurable(
+				AntivirusAsyncConfiguration.class, properties);
+
+		_triggerConfiguration = TriggerConfiguration.createTriggerConfiguration(
+			antivirusAsyncConfiguration.retryCronExpression());
+
+		_triggerConfiguration.setStartDate(
+			new Date(
+				System.currentTimeMillis() + TimeUnit.SECOND.toMillis(30)));
 	}
 
 	private void _scan(String rootDirAbsolutePathString) throws IOException {
@@ -256,8 +255,6 @@ public class AntivirusAsyncFileStoreSchedulerJobConfiguration
 	private static final Log _log = LogFactoryUtil.getLog(
 		AntivirusAsyncFileStoreSchedulerJobConfiguration.class);
 
-	private AntivirusAsyncConfiguration _antivirusAsyncConfiguration;
-
 	@Reference
 	private AntivirusAsyncEventListenerManager
 		_antivirusAsyncEventListenerManager;
@@ -268,7 +265,6 @@ public class AntivirusAsyncFileStoreSchedulerJobConfiguration
 	@Reference
 	private MessageBus _messageBus;
 
-	@Reference(target = "(rootDir=*)")
-	private ServiceReference<Store> _storeServiceReference;
+	private TriggerConfiguration _triggerConfiguration;
 
 }

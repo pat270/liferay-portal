@@ -50,6 +50,8 @@ definition {
 
 		Alert.viewSuccessMessage();
 
+		Navigator.gotoBack();
+
 		Click.clickNoWaitForVisible(
 			key_value = "Test Catalog",
 			locator1 = "CommerceEntry#BODY_VERTICAL_ELLIPSIS");
@@ -65,6 +67,8 @@ definition {
 			locator1 = "WCPreview#PREVIEW_IMAGE");
 
 		Button.clickSave();
+
+		Navigator.gotoBack();
 
 		Click.clickNoWaitForVisible(
 			key_value = "Test Catalog",
@@ -126,8 +130,10 @@ definition {
 		}
 	}
 
+	@description = "This is a test for creating a catalog"
+	@priority = 5
 	test CreateNewCatalog {
-		property portal.acceptance = "false";
+		property portal.acceptance = "true";
 
 		CommerceNavigator.gotoPortlet(
 			category = "Product Management",
@@ -218,6 +224,8 @@ definition {
 		SelectFrameTop();
 
 		Alert.viewSuccessMessage();
+
+		Navigator.gotoBack();
 
 		ClickNoError(
 			key_entryName = "Test Catalog Edited",
@@ -326,7 +334,7 @@ definition {
 	@description = "Verify that Master Catalog is created by default and cannot be deleted."
 	@priority = 3
 	test MasterCatalogIsCreatedByDefaultAndCannotBeDeleted {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "false";
 
 		task ("When the admin goes to the catalogs page") {
@@ -394,7 +402,7 @@ definition {
 	@description = "Verify users without permission cannot add, edit, or delete catalogs."
 	@priority = 5
 	test UserWithoutPermissionCannotAddEditOrDeleteCatalogs {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "true";
 
 		task ("Given a user") {
@@ -473,7 +481,7 @@ definition {
 	@description = "Verify users with the permission to edit catalog permissions can edit the permissions on a catalog."
 	@priority = 5
 	test UserWithPermissionCanEditAPermissionOnACatalog {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "true";
 
 		task ("Given a user") {

@@ -1,0 +1,59 @@
+@import 'atlas-variables';
+
+$toolbarHeight: 56px;
+$sidebarWidth: 320px;
+
+.site_navigation_menu_editor_AppLayout {
+	&-content,
+	&-sidebar {
+		height: calc(
+			100vh - var(--control-menu-container-height) - #{$toolbarHeight}
+		);
+		overflow-x: hidden;
+		overflow-y: auto;
+	}
+
+	&-content {
+		position: relative;
+		transition: padding-right ease 0.5s;
+		will-change: padding-right;
+
+		@include media-breakpoint-up(md) {
+			&--with-sidebar {
+				padding-right: $sidebarWidth;
+			}
+		}
+
+		.rtl & {
+			transition: padding-left ease 0.5s;
+		}
+	}
+
+	&-sidebar {
+		background: $white;
+		border-left: 1px solid $secondary-l3;
+		box-sizing: border-box;
+		position: fixed;
+		right: 0;
+		top: calc(var(--control-menu-container-height) + #{$toolbarHeight});
+		transform: translateX($sidebarWidth);
+		transition: transform ease 0.5s, box-shadow ease 0.5s;
+		width: $sidebarWidth;
+		will-change: transform, box-shadow;
+
+		&--visible {
+			box-shadow: 0 0 50px rgba(0, 0, 0, 0.1);
+			transform: translateX(0);
+
+			@include media-breakpoint-up(md) {
+				box-shadow: none;
+			}
+		}
+
+		.rtl & {
+			&--visible {
+				transform: translateX(0);
+			}
+		}
+	}
+}

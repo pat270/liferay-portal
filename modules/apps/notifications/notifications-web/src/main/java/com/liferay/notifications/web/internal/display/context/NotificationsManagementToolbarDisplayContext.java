@@ -117,14 +117,7 @@ public class NotificationsManagementToolbarDisplayContext {
 				dropdownGroupItem.setDropdownItems(
 					_getFilterNavigationDropdownItems());
 				dropdownGroupItem.setLabel(
-					LanguageUtil.get(
-						_httpServletRequest, "filter-by-navigation"));
-			}
-		).addGroup(
-			dropdownGroupItem -> {
-				dropdownGroupItem.setDropdownItems(_getOrderByDropdownItems());
-				dropdownGroupItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "order-by"));
+					LanguageUtil.get(_httpServletRequest, "filter-by"));
 			}
 		).build();
 	}
@@ -147,6 +140,17 @@ public class NotificationsManagementToolbarDisplayContext {
 				labelItem.setCloseable(true);
 				labelItem.setLabel(
 					LanguageUtil.get(_httpServletRequest, navigation));
+			}
+		).build();
+	}
+
+	public List<DropdownItem> getOrderByDropdownItems() {
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.setActive(true);
+				dropdownItem.setHref(getSortingURL());
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "date"));
 			}
 		).build();
 	}
@@ -217,17 +221,6 @@ public class NotificationsManagementToolbarDisplayContext {
 
 	private String _getNavigation() {
 		return ParamUtil.getString(_httpServletRequest, "navigation", "all");
-	}
-
-	private List<DropdownItem> _getOrderByDropdownItems() {
-		return DropdownItemListBuilder.add(
-			dropdownItem -> {
-				dropdownItem.setActive(true);
-				dropdownItem.setHref(getSortingURL());
-				dropdownItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "date"));
-			}
-		).build();
 	}
 
 	private boolean _isActionRequired() {

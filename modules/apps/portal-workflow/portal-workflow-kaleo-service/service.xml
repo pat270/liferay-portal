@@ -118,7 +118,7 @@
 			<finder-column name="kaleoNodeId" />
 		</finder>
 	</entity>
-	<entity local-service="true" name="KaleoDefinition" remote-service="false">
+	<entity local-service="true" name="KaleoDefinition" remote-service="true">
 
 		<!-- PK fields -->
 
@@ -156,6 +156,9 @@
 
 		<finder name="CompanyId" return-type="Collection">
 			<finder-column name="companyId" />
+		</finder>
+		<finder name="Active" return-type="Collection">
+			<finder-column name="active" />
 		</finder>
 		<finder name="C_N" return-type="KaleoDefinition">
 			<finder-column name="companyId" />

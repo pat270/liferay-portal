@@ -14,8 +14,10 @@ import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.template.TemplateException;
 import com.liferay.portal.kernel.template.TemplateResource;
 import com.liferay.portal.kernel.template.TemplateResourceCache;
-import com.liferay.portal.kernel.test.ReflectionTestUtil;
+import com.liferay.portal.kernel.template.TemplateResourceLoader;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.JavaDetector;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.template.ClassLoaderResourceParser;
@@ -63,31 +65,32 @@ public class VelocityTemplateTest {
 
 	@BeforeClass
 	public static void setUpClass() throws Exception {
-		_templateResourceCache = new VelocityTemplateResourceCache() {
+		VelocityManager velocityManager = new VelocityManager();
 
-			@Override
-			public boolean isEnabled() {
-				return false;
-			}
+		_templateResourceCache =
+			velocityManager.new VelocityTemplateResourceCache(
+				ConfigurableUtil.createConfigurable(
+					VelocityEngineConfiguration.class,
+					Collections.emptyMap())) {
 
-		};
+				@Override
+				public boolean isEnabled() {
+					return false;
+				}
 
-		_velocityTemplateResourceLoader = new VelocityTemplateResourceLoader();
-
-		ReflectionTestUtil.setFieldValue(
-			_velocityTemplateResourceLoader, "_velocityTemplateResourceCache",
-			_templateResourceCache);
+			};
 
 		BundleContext bundleContext = SystemBundleUtil.getBundleContext();
+
+		_templateResourceLoader =
+			velocityManager.new VelocityTemplateResourceLoader(
+				bundleContext, _templateResourceCache);
 
 		_templateResourceParserServiceRegistration =
 			bundleContext.registerService(
 				TemplateResourceParser.class, new ClassLoaderResourceParser(),
 				MapUtil.singletonDictionary(
 					"lang.type", TemplateConstants.LANG_TYPE_VM));
-
-		_velocityTemplateResourceLoader.activate(
-			bundleContext, Collections.emptyMap());
 	}
 
 	@AfterClass
@@ -96,8 +99,8 @@ public class VelocityTemplateTest {
 			_templateResourceParserServiceRegistration.unregister();
 		}
 
-		if (_velocityTemplateResourceLoader != null) {
-			_velocityTemplateResourceLoader.deactivate();
+		if (_templateResourceLoader != null) {
+			_templateResourceLoader.destroy();
 		}
 	}
 
@@ -124,7 +127,9 @@ public class VelocityTemplateTest {
 			LiferayMethodExceptionEventHandler.class.getName());
 		extendedProperties.setProperty(
 			RuntimeConstants.INTROSPECTOR_RESTRICT_CLASSES,
-			StringUtil.merge(velocityEngineConfiguration.restrictedClasses()));
+			StringUtil.merge(
+				_filterRestrictedClasses(
+					velocityEngineConfiguration.restrictedClasses())));
 		extendedProperties.setProperty(
 			"liferay." + RuntimeConstants.INTROSPECTOR_RESTRICT_CLASSES +
 				".methods",
@@ -149,8 +154,8 @@ public class VelocityTemplateTest {
 			velocityEngineConfiguration.resourceModificationCheckInterval() +
 				"");
 		extendedProperties.setProperty(
-			VelocityTemplateResourceLoader.class.getName(),
-			_velocityTemplateResourceLoader);
+			VelocityManager.VelocityTemplateResourceLoader.class.getName(),
+			_templateResourceLoader);
 		extendedProperties.setProperty(
 			VelocityEngine.RUNTIME_LOG_LOGSYSTEM_CLASS,
 			velocityEngineConfiguration.logger());
@@ -379,6 +384,19 @@ public class VelocityTemplateTest {
 		Assert.assertEquals(_TEST_VALUE, result);
 	}
 
+	private String[] _filterRestrictedClasses(String[] restrictedClasses) {
+		if (JavaDetector.isJDK21()) {
+
+			// TODO: remove java.lang.Compiler from
+			// VelocityEngineConfiguration.restrictedClasses() and this method
+			// once fully upgraded to JDK21
+
+			return ArrayUtil.remove(restrictedClasses, "java.lang.Compiler");
+		}
+
+		return restrictedClasses;
+	}
+
 	private static final String _TEMPLATE_FILE_NAME = "test.vm";
 
 	private static final String _TEST_KEY = "TEST_KEY";
@@ -393,10 +411,9 @@ public class VelocityTemplateTest {
 	private static final String _WRONG_TEMPLATE_ID = "WRONG_TEMPLATE_ID";
 
 	private static TemplateResourceCache _templateResourceCache;
+	private static TemplateResourceLoader _templateResourceLoader;
 	private static ServiceRegistration<TemplateResourceParser>
 		_templateResourceParserServiceRegistration;
-	private static VelocityTemplateResourceLoader
-		_velocityTemplateResourceLoader;
 
 	private TemplateContextHelper _templateContextHelper;
 	private VelocityEngine _velocityEngine;

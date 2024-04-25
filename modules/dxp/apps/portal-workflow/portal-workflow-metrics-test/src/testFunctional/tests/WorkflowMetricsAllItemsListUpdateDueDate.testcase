@@ -15,10 +15,7 @@ definition {
 
 		Navigator.openURL();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+		Workflow.openWorkflowMetrics();
 	}
 
 	tearDown {
@@ -33,6 +30,7 @@ definition {
 	@priority = 5
 	test BulkUpdateModalIsDisplayedWhenMoreThan1PendingTaskIsSelected {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Workflow.duplicateSingleApproverWorkflow(workflowName = "Multi Task Process");
 
@@ -69,12 +67,7 @@ definition {
 	@description = "LPS-105498 - Verify that the user can filter the tasks by Assignee on Select Tasks to Update step"
 	@priority = 3
 	test CanFilterTasksByAssignee {
-		property portal.upstream = "quarantine";
-
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -95,7 +88,9 @@ definition {
 			workflowMetricsTab = "DASHBOARD",
 			workflowProcess = "Single Approver");
 
-		WorkflowMetrics.goToUpdateDueDateTasks();
+		PortletEntry.selectAll();
+
+		WorkflowMetrics.goToUpdateTasksDueDates();
 
 		WorkflowMetricsAllItemsListUpdateDueDate.selectUpdateDueDateTasksCardFilterValueAssignee(workflowAssignee = "Test Test");
 
@@ -117,10 +112,7 @@ definition {
 	@description = "LPS-105498 - Verify that the user can filter the tasks by Step on Select Tasks to Update step"
 	@priority = 3
 	test CanFilterTasksByStep {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -154,7 +146,9 @@ definition {
 			workflowMetricsTab = "DASHBOARD",
 			workflowProcess = "Single Approver");
 
-		WorkflowMetrics.goToUpdateDueDateTasks();
+		PortletEntry.selectAll();
+
+		WorkflowMetrics.goToUpdateTasksDueDates();
 
 		WorkflowMetricsAllItemsListUpdateDueDate.selectUpdateDueDateCardFilterValueProcessStep(workflowStep = "Review");
 
@@ -178,6 +172,7 @@ definition {
 	@priority = 4
 	test CanNotUpdateDueDateOfUnassignedTasks {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONUser.addUser(
 			userEmailAddress = "user@liferay.com",
@@ -193,10 +188,7 @@ definition {
 			roleTitle = "Portal Content Reviewer",
 			userEmailAddress = "user@liferay.com");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Workflow.uploadDefinition(
 			workflowDefinitionFile = "single-approver-assignments-workflow-definition.xml",
@@ -219,8 +211,6 @@ definition {
 
 		WorkflowMetrics.viewButtonUpdateDueDateIsNotAvailable();
 
-		WorkflowMetrics.viewKebabMenuOptionsIsNotAvailable();
-
 		User.logoutAndLoginPG(
 			userLoginEmailAddress = "user@liferay.com",
 			userLoginFullName = "userfn userln");
@@ -232,7 +222,9 @@ definition {
 
 		WorkflowMetrics.viewButtonUpdateDueDateIsAvailable();
 
-		WorkflowMetrics.viewKebabMenuOptionsIsAvailable(dropdownItem = "Update Due Date");
+		Click(locator1 = "Icon#SVG_ELLIPSIS");
+
+		MenuItem.viewPresent(menuItem = "Update Due Date");
 	}
 
 	@description = "LPS-105497 - Verify that users can hover over a row to see action options and select to Update Task Due Date by hovering over the calendar icon"
@@ -242,10 +234,7 @@ definition {
 
 		var futureYear = ${currentYear} + 1;
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -281,10 +270,7 @@ definition {
 	@description = "LPS-105497 - Verify that the user can select Update Task Due Date in the kebab menu for a particular row"
 	@priority = 4
 	test CanSelectUpDateDueDateInKebabMenu {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -301,7 +287,9 @@ definition {
 			workflowMetricsTab = "DASHBOARD",
 			workflowProcess = "Single Approver");
 
-		WorkflowMetrics.goToUpdateDueDateTasks();
+		PortletEntry.selectAll();
+
+		WorkflowMetrics.goToUpdateTasksDueDates();
 
 		var currentYear = DateUtil.getCurrentYear();
 
@@ -321,10 +309,7 @@ definition {
 	@description = "LPS-105497 - Verify that the current date/time is pre-populated into the Update Task Due Date form getting the data how it is in My Workflow Tasks"
 	@priority = 3
 	test CurrentDateTimeIsPrePopulated {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -374,10 +359,7 @@ definition {
 	@description = "LPS-105498 - Verify that the message The due dates for theses tasks have been updated is displayed when the bulk update due date action is successful"
 	@priority = 3
 	test MessageIsDisplayedWhenBulkUpdateActionIsSuccessful {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -395,7 +377,9 @@ definition {
 
 		WorkflowMetrics.goToWorkflowAllItems(workflowProcessName = "Single Approver");
 
-		WorkflowMetrics.goToUpdateDueDateTasks();
+		PortletEntry.selectAll();
+
+		WorkflowMetrics.goToUpdateTasksDueDates();
 
 		Check.checkNotVisible(locator1 = "WorkflowAllItems#WORKFLOW_ALL_ITEMS_SELECT_ALL_MODAL");
 

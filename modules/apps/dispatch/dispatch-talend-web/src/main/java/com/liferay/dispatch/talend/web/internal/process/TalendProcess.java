@@ -13,6 +13,7 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.petra.string.StringUtil;
 import com.liferay.portal.kernel.util.AggregateClassLoader;
+import com.liferay.portal.kernel.util.JavaDetector;
 import com.liferay.portal.util.PortalClassPathUtil;
 
 import java.io.File;
@@ -109,29 +110,37 @@ public class TalendProcess {
 			ProcessConfig.Builder processConfigBuilder =
 				new ProcessConfig.Builder();
 
+			List<String> arguments = new ArrayList<>();
+
 			if (_jvmOptions != null) {
-				processConfigBuilder.setArguments(_jvmOptions);
+				arguments.addAll(_jvmOptions);
+			}
+
+			if (JavaDetector.isJDK21()) {
+				arguments.add("-Djava.security.manager=allow");
 			}
 
 			ProcessConfig portalProcessConfig =
 				PortalClassPathUtil.getPortalProcessConfig();
 
-			processConfigBuilder.setBootstrapClassPath(
+			return processConfigBuilder.setArguments(
+				arguments
+			).setBootstrapClassPath(
 				_getBootstrapClassPath(
-					portalProcessConfig.getBootstrapClassPathHolders()));
-			processConfigBuilder.setProcessLogConsumer(
-				portalProcessConfig.getProcessLogConsumer());
-			processConfigBuilder.setReactClassLoader(
+					portalProcessConfig.getBootstrapClassPathHolders())
+			).setJavaExecutable(
+				System.getProperty("java.home") + "/bin/java"
+			).setProcessLogConsumer(
+				portalProcessConfig.getProcessLogConsumer()
+			).setReactClassLoader(
 				AggregateClassLoader.getAggregateClassLoader(
 					portalProcessConfig.getReactClassLoader(),
-					TalendProcess.class.getClassLoader()));
-
-			processConfigBuilder.setRuntimeClassPath(
+					TalendProcess.class.getClassLoader())
+			).setRuntimeClassPath(
 				StringBundler.concat(
 					_talendArchive.getClassPath(), File.pathSeparator,
-					_BUNDLE_FILE_PATH));
-
-			return processConfigBuilder.build();
+					_BUNDLE_FILE_PATH)
+			).build();
 		}
 
 		private String _getBootstrapClassPath(PathHolder[] pathHolders) {

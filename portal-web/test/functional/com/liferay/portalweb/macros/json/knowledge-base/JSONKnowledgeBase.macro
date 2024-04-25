@@ -1,6 +1,7 @@
 definition {
 
-	macro _getChildKBResourcePrimKey {
+	@summary = "Default summary"
+	macro _getChildKBResourcePrimKey(groupName = null, kbChildArticleTitle = null, folderName = null, kbArticleTitle = null) {
 		if (!(isSet(site))) {
 			var site = "true";
 		}
@@ -45,7 +46,8 @@ definition {
 		}
 	}
 
-	macro _getKBResourcePrimKey {
+	@summary = "Default summary"
+	macro _getKBResourcePrimKey(groupName = null, folderName = null, kbArticleTitle = null) {
 		if (!(isSet(site))) {
 			var site = "true";
 		}
@@ -70,7 +72,7 @@ definition {
 				-u ${userLoginInfo} \
 				-d groupId=${groupId} \
 				-d parentResourcePrimKey=${folderId} \
-				-d status=0 \
+				-d "status=-1" \
 				-d "start=-1" \
 				-d "end=-1" \
 				-d -orderByComparator=
@@ -86,7 +88,8 @@ definition {
 		}
 	}
 
-	macro addkBArticle {
+	@summary = "Default summary"
+	macro addkBArticle(kbArticleContent = null, parentFolderName = null, groupName = null, assetCategoryIds = null, addGuestPermissions = null, assetTagNames = null, folderName = null, kbArticleTitle = null) {
 		var portalURL = JSONCompany.getPortalURL();
 
 		if (isSet(folderName)) {
@@ -115,7 +118,8 @@ definition {
 				addGuestPermissions = ${addGuestPermissions},
 				assetCategoryIds = ${assetCategoryIds},
 				assetTagNames = ${assetTagNames},
-				groupName = ${groupName});
+				groupName = ${groupName},
+				workflowAction = ${workflowAction});
 		}
 
 		if (!(isSet(urlTitle))) {
@@ -127,14 +131,19 @@ definition {
 		}
 
 		if (!(isSet(expirationDate)) || !(isSet(reviewDate))) {
-			var displayDateYear = DateUtil.getCurrentYear();
+			var reviewDate = "2099-01-01T01:01:00Z";
+			var expirationDate = "2099-01-01T01:01:00Z";
+		}
 
-			var displayDateYear = ${displayDateYear} + 1;
+		if (!(isSet(displayDate))) {
+			var displayDate = "2020-01-01T01:01:00Z";
+		}
+		else {
+			var increaseMinutes = StringUtil.replace(480, 0, ${increaseMinutes});
 
-			var reviewDate = "${displayDateYear}-01-01T01:01:00Z";
-			var displayDateYear = ${displayDateYear} + 1;
+			var displayDate = DateUtil.getDateOffsetByMinutes(${increaseMinutes}, "yyyy-MM-dd HH:mm");
 
-			var expirationDate = "${displayDateYear}-01-01T01:01:00Z";
+			echo("## * displayDate: ${displayDate}");
 		}
 
 		var parentResourceClassNameId = JSONClassname._getClassNameId(value = "com.liferay.knowledge.base.model.KBFolder");
@@ -153,8 +162,9 @@ definition {
 				-d description=${kbDescription} \
 				-d sections= \
 				-d sourceURL= \
-				-d expirationDate=${expirationDate} \
-				-d reviewDate=${reviewDate} \
+				-d <CURL_DATA[displayDate=${displayDate}]CURL_DATA> \
+				-d <CURL_DATA[expirationDate=${expirationDate}]CURL_DATA> \
+				-d <CURL_DATA[reviewDate=${reviewDate}]CURL_DATA> \
 				-d selectedFileNames= \
 				-d serviceContext=${serviceContext}
 		''';
@@ -168,7 +178,8 @@ definition {
 		var messageId = JSONCurlUtil.post(${curl});
 	}
 
-	macro addkBChildArticle {
+	@summary = "Default summary"
+	macro addkBChildArticle(kbChildArticleContent = null, groupName = null, kbChildArticleTitle = null, folderName = null, kbArticleTitle = null) {
 		var portalURL = JSONCompany.getPortalURL();
 		var parentResourceClassNameId = JSONClassname._getClassNameId(value = "com.liferay.knowledge.base.model.KBArticle");
 
@@ -185,14 +196,19 @@ definition {
 		}
 
 		if (!(isSet(expirationDate)) || !(isSet(reviewDate))) {
-			var displayDateYear = DateUtil.getCurrentYear();
+			var reviewDate = "2099-01-01T01:01:00Z";
+			var expirationDate = "2099-01-01T01:01:00Z";
+		}
 
-			var displayDateYear = ${displayDateYear} + 1;
+		if (!(isSet(displayDate))) {
+			var displayDate = "2020-01-01T01:01:00Z";
+		}
+		else {
+			var increaseMinutes = StringUtil.replace(480, 0, ${increaseMinutes});
 
-			var reviewDate = "${displayDateYear}-01-01T01:01:00Z";
-			var displayDateYear = ${displayDateYear} + 1;
+			var displayDate = DateUtil.getDateOffsetByMinutes(${increaseMinutes}, "yyyy-MM-dd HH:mm");
 
-			var expirationDate = "${displayDateYear}-01-01T01:01:00Z";
+			echo("## * displayDate: ${displayDate}");
 		}
 
 		var userLoginInfo = JSONUtil2.formatJSONUser();
@@ -210,8 +226,9 @@ definition {
 				-d description= \
 				-d sections= \
 				-d sourceURL= \
-				-d expirationDate=${expirationDate} \
-				-d reviewDate=${reviewDate}
+				-d <CURL_DATA[displayDate=${displayDate}]CURL_DATA> \
+				-d <CURL_DATA[expirationDate=${expirationDate}]CURL_DATA> \
+				-d <CURL_DATA[reviewDate=${reviewDate}]CURL_DATA>
 				-d selectedFileNames= \
 		''';
 
@@ -224,7 +241,8 @@ definition {
 		var messageId = JSONCurlUtil.post(${curl});
 	}
 
-	macro addkBFolder {
+	@summary = "Default summary"
+	macro addkBFolder(parentFolderName = null, kbFolderName = null, groupName = null) {
 		var portalURL = JSONCompany.getPortalURL();
 
 		if (isSet(parentFolderName)) {
@@ -271,7 +289,8 @@ definition {
 		var messageId = JSONCurlUtil.post(${curl});
 	}
 
-	macro addkBGrandchildArticle {
+	@summary = "Default summary"
+	macro addkBGrandchildArticle(kbGrandchildArticleContent = null, kbGrandchildArticleTitle = null, groupName = null, kbChildArticleTitle = null, folderName = null, kbArticleTitle = null) {
 		var portalURL = JSONCompany.getPortalURL();
 		var parentResourceClassNameId = JSONClassname._getClassNameId(value = "com.liferay.knowledge.base.model.KBArticle");
 
@@ -290,14 +309,12 @@ definition {
 		}
 
 		if (!(isSet(expirationDate)) || !(isSet(reviewDate))) {
-			var displayDateYear = DateUtil.getCurrentYear();
+			var reviewDate = "2099-01-01T01:01:00Z";
+			var expirationDate = "2099-01-01T01:01:00Z";
+		}
 
-			var displayDateYear = ${displayDateYear} + 1;
-
-			var reviewDate = "${displayDateYear}-01-01T01:01:00Z";
-			var displayDateYear = ${displayDateYear} + 1;
-
-			var expirationDate = "${displayDateYear}-01-01T01:01:00Z";
+		if (!(isSet(displayDate))) {
+			var displayDate = "2020-01-01T01:01:00Z";
 		}
 
 		var userLoginInfo = JSONUtil2.formatJSONUser();
@@ -315,6 +332,7 @@ definition {
 				-d description= \
 				-d sections= \
 				-d sourceURL= \
+				-d displayDate=${displayDate} \
 				-d expirationDate=${expirationDate} \
 				-d reviewDate=${reviewDate}
 				-d selectedFileNames= \
@@ -329,7 +347,8 @@ definition {
 		var messageId = JSONCurlUtil.post(${curl});
 	}
 
-	macro addkBTemplate {
+	@summary = "Default summary"
+	macro addkBTemplate(kbTemplateTitle = null, kbTemplateContent = null) {
 		var portalURL = JSONCompany.getPortalURL();
 		var userLoginInfo = JSONUtil2.formatJSONUser();
 
@@ -350,7 +369,8 @@ definition {
 		var messageId = JSONCurlUtil.post(${curl});
 	}
 
-	macro getFolderIdByFolderName {
+	@summary = "Default summary"
+	macro getFolderIdByFolderName(groupName = null, folderName = null) {
 		if (!(isSet(site))) {
 			var site = "true";
 		}
@@ -384,7 +404,34 @@ definition {
 		}
 	}
 
-	macro updateKBArticle {
+	@summary = "Default summary"
+	macro removeKBArticle(groupName = null, folderName = null, kbArticleTitle = null) {
+		var portalURL = JSONCompany.getPortalURL();
+		var userLoginInfo = JSONUtil2.formatJSONUser();
+
+		if (isSet(folderName)) {
+			var resourcePrimKey = JSONKnowledgeBase._getKBResourcePrimKey(
+				folderName = ${folderName},
+				groupName = ${groupName},
+				kbArticleTitle = ${kbArticleTitle});
+		}
+		else {
+			var resourcePrimKey = JSONKnowledgeBase._getKBResourcePrimKey(
+				groupName = ${groupName},
+				kbArticleTitle = ${kbArticleTitle});
+		}
+
+		var curl = '''
+			${portalURL}/api/jsonws/kb.kbarticle/delete-kb-article \
+				-u ${userLoginInfo} \
+				-d resourcePrimKey=${resourcePrimKey}
+		''';
+
+		JSONCurlUtil.post(${curl});
+	}
+
+	@summary = "Default summary"
+	macro updateKBArticle(newKbArticleContent = null, newKbArticleTitle = null, groupName = null, assetCategoryIds = null, addGuestPermissions = null, assetTagNames = null, folderName = null, kbArticleTitle = null) {
 		var portalURL = JSONCompany.getPortalURL();
 
 		if (isSet(folderName)) {
@@ -408,14 +455,12 @@ definition {
 		}
 
 		if (!(isSet(expirationDate)) || !(isSet(reviewDate))) {
-			var displayDateYear = DateUtil.getCurrentYear();
+			var reviewDate = "2099-01-01T01:01:00Z";
+			var expirationDate = "2099-01-01T01:01:00Z";
+		}
 
-			var displayDateYear = ${displayDateYear} + 1;
-
-			var reviewDate = "${displayDateYear}-01-01T01:01:00Z";
-			var displayDateYear = ${displayDateYear} + 1;
-
-			var expirationDate = "${displayDateYear}-01-01T01:01:00Z";
+		if (!(isSet(displayDate))) {
+			var displayDate = "2020-01-01T01:01:00Z";
 		}
 
 		var userLoginInfo = JSONUtil2.formatJSONUser();
@@ -429,6 +474,7 @@ definition {
 				-d description= \
 				-d sections= \
 				-d sourceURL= \
+				-d displayDate=${displayDate} \
 				-d expirationDate=${expirationDate} \
 				-d reviewDate=${reviewDate} \
 				-d selectedFileNames= \
@@ -445,7 +491,8 @@ definition {
 		var messageId = JSONCurlUtil.post(${curl});
 	}
 
-	macro uploadAttachmentToArticle {
+	@summary = "Default summary"
+	macro uploadAttachmentToArticle(groupName = null, sourceFileName = null, kbArticleTitle = null) {
 		var portalURL = JSONCompany.getPortalURL();
 		var resourcePrimKey = JSONKnowledgeBase._getKBResourcePrimKey(
 			groupName = ${groupName},

@@ -14,7 +14,10 @@ definition {
 
 		User.firstLoginPG();
 
-		Raylife.createRaylifeSite(siteName = ${testSiteName});
+		HeadlessSite.addSite(
+			siteName = ${testSiteName},
+			templateName = "Raylife D2C",
+			templateType = "Site Initializer");
 	}
 
 	tearDown {
@@ -34,6 +37,7 @@ definition {
 	@priority = 3
 	test CanContinueQuoteAfterClickOnButton {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -72,6 +76,7 @@ definition {
 	@priority = 3
 	test CanContinueQuoteAfterClickOnX {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -112,6 +117,7 @@ definition {
 	@priority = 4
 	test CanSendLinkAndExit {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -134,13 +140,11 @@ definition {
 	@priority = 4
 	test CanViewErrorMessageForInactiveRaylifeObject {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Object",
-			panel = "Control Panel",
-			portlet = "Objects");
+		ObjectAdmin.openObjectAdmin();
 
 		ObjectPortlet.selectCustomObject(label = "Raylife Application");
 
@@ -150,29 +154,24 @@ definition {
 
 		ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
-		RaylifeHomePage.startFlow();
+		RaylifeHomePage.getAQuote();
 
-		RaylifeContactInfo.typeBasicsInfoFields(
-			label = "basics.businessInformation.business.email",
-			value = "test@liferay.com");
+		Click(
+			locator1 = "RaylifeProduct#SELECT_PRODUCT",
+			selectProduct = "Business Owners Policy");
 
-		Click(locator1 = "RaylifeSaveExit#SAVE_EXIT");
+		Raylife.clickAtButton(text = "Continue");
 
 		AssertTextEquals(
 			locator1 = "Raylife#ERROR_MESSAGE",
-			value1 = "Unable to save your information. Please try again.");
-
-		Click(
-			locator1 = "RaylifeNavigation#SECTION_INCOMPLETED",
-			section = "Basics");
-
-		Click(locator1 = "Raylife#BUTTON_PREVIOUS");
+			value1 = "Application object is disabled");
 	}
 
 	@description = "LPS-143607 - Check when you fill in the Business Email field, the Save and Exit button is enabled in the Basics - Contact Info page"
 	@priority = 4
 	test CanViewSavedProgressModal {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -199,6 +198,7 @@ definition {
 	@priority = 2
 	test IsContinueButtonEnabledAfterNotSavingAndExiting {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -225,6 +225,7 @@ definition {
 	@priority = 4
 	test IsModalEmailEqualsToBusinessEmail {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -263,6 +264,7 @@ definition {
 	@priority = 4
 	test IsSaveAndExitButtonEnabledOnBusiness {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -287,6 +289,7 @@ definition {
 	@priority = 5
 	test IsSaveAndExitButtonEnabledOnContactInfo {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -321,6 +324,7 @@ definition {
 	@priority = 4
 	test IsSaveAndExitButtonEnabledOnEmployees {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -349,6 +353,7 @@ definition {
 	@priority = 4
 	test IsSaveAndExitButtonEnabledOnProductSelection {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -373,6 +378,7 @@ definition {
 	@priority = 4
 	test IsSaveAndExitButtonEnabledOnProperty {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 

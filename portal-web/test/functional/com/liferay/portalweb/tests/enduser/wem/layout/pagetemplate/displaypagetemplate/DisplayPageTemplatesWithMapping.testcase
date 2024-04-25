@@ -1,9 +1,9 @@
 @component-name = "portal-wcm"
 definition {
 
+	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testcase.url = "http://localhost:8080";
 	property testray.main.component.name = "Display Page Templates";
 
 	static var randomSiteName = StringUtil.randomString(8);
@@ -11,6 +11,10 @@ definition {
 	var siteURLKey = StringUtil.toLowerCase(${randomSiteName});
 
 	setUp {
+		task ("Set up virtual instance") {
+			TestCase.setUpPortalInstance();
+		}
+
 		task ("Sign in") {
 			User.firstLoginPG();
 		}
@@ -133,10 +137,7 @@ definition {
 	@priority = 4
 	test MapCustomFieldToTextFragment {
 		task ("Add a custom field for Document") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Configuration",
-				panel = "Control Panel",
-				portlet = "Custom Fields");
+			CustomFields.openCustomFieldAdmin();
 
 			CustomFields.addCP(
 				customFieldName = "Short Description",
@@ -332,8 +333,6 @@ definition {
 	@description = "This is a test for LPS-98031. Map manual URL to image fragment."
 	@priority = 4
 	test MapManualURLToImageFragment {
-		property ci.retries.disabled = "true";
-
 		task ("Add an Image fragment to the Display Page Name") {
 			DisplayPageTemplatesAdmin.openDisplayPagesAdmin(siteURLKey = ${siteURLKey});
 
@@ -404,7 +403,7 @@ definition {
 				key_url = "https://liferay.com",
 				locator1 = "Fragment#FRAGMENT_LINK");
 
-			AssertLocation.assertPartialLocation(value1 = "https://www.liferay.com");
+			AssertLocation.assertPartialLocation(value1 = "liferay.com");
 		}
 	}
 
@@ -448,8 +447,6 @@ definition {
 	@description = "This is a test for LPS-98031. Map manual URL to text fragment."
 	@priority = 4
 	test MapManualURLToTextFragment {
-		property ci.retries.disabled = "true";
-
 		task ("Add a Heading fragment to the Display Page Name") {
 			DisplayPageTemplatesAdmin.openDisplayPagesAdmin(siteURLKey = ${siteURLKey});
 
@@ -515,7 +512,7 @@ definition {
 				key_url = "https://liferay.com",
 				locator1 = "Fragment#FRAGMENT_LINK");
 
-			AssertLocation.assertPartialLocation(value1 = "https://www.liferay.com");
+			AssertLocation.assertPartialLocation(value1 = "liferay.com");
 		}
 	}
 
@@ -622,7 +619,7 @@ definition {
 		task ("Map multiple fields to editable fields") {
 			var n = 1;
 
-			for (var fieldName : list "Title,Content,Author Name,Display Page URL,Tags") {
+			for (var fieldName : list "Title,Content,Author Name,Default,Tags") {
 				PageEditorMapping.mapEditableTextToField(
 					contributed = "false",
 					field = ${fieldName},
@@ -676,9 +673,6 @@ definition {
 	@description = "This is a use case for LPS-182999. The page designer could see mapped image from attachment field on associated display page template."
 	@priority = 4
 	test MapPreviewURLOfImageAttachmentToFragment {
-		property custom.properties = "feature.flag.LPS-176083=true";
-		property test.liferay.virtual.instance = "false";
-
 		var labelName = StringUtil.randomString(8);
 
 		var objectName = "A${labelName}";
@@ -756,17 +750,13 @@ definition {
 
 			PageEditorEditableLink.mapURLToAsset(
 				entryTitle = ${objectEntryId},
-				field = "Display Page URL",
+				field = "Default",
 				navItem = "${labelName}s");
 
 			PageEditor.publish();
 		}
 
 		task ("Then the page designer should see the mapped image shown on associated display page template") {
-			ContentPagesNavigator.openViewContentPage(
-				pageName = "Test Page Name",
-				siteName = ${randomSiteName});
-
 			Button.click(button = "Go Somewhere");
 
 			ControlMenu.viewHeaderTitle(headerTitle = ${objectEntryId});
@@ -781,8 +771,6 @@ definition {
 	@description = "This is a test for LPS-165556. The page designer could map a standalone action from current object to Button fragment in display page template."
 	@priority = 4
 	test MapStandaloneActionFromCurrentObjectToFragment {
-		property custom.properties = "feature.flag.LPS-169992=true";
-
 		var labelName = StringUtil.randomString(8);
 
 		var objectName = "A${labelName}";
@@ -880,7 +868,7 @@ definition {
 
 			PageEditorEditableLink.mapURLToAsset(
 				entryTitle = ${objectEntryId},
-				field = "Display Page URL",
+				field = "Default",
 				navItem = "${labelName}2s");
 
 			PageEditor.publish();
@@ -895,7 +883,7 @@ definition {
 				key_text = "Heading Example",
 				locator1 = "Link#ANY");
 
-			ControlMenu.viewHeaderTitle(headerTitle = "Liferay");
+			ControlMenu.viewHeaderTitle(headerTitle = ${objectEntryId});
 
 			Button.click(button = "Go Somewhere");
 
@@ -910,8 +898,6 @@ definition {
 	@description = "This is a test for LPS-165556. The page designer could map a standalone action from current object to Button fragment inside Colllection Display in display page template."
 	@priority = 4
 	test MapStandaloneActionFromCurrentObjectToFragmentInsideCollectionDisplay {
-		property custom.properties = "feature.flag.LPS-169992=true";
-
 		var labelName = StringUtil.randomString(8);
 
 		var objectName = "A${labelName}";
@@ -1013,7 +999,7 @@ definition {
 
 			PageEditorEditableLink.mapURLToAsset(
 				entryTitle = ${objectEntryId},
-				field = "Display Page URL",
+				field = "Default",
 				navItem = "${labelName}2s");
 
 			PageEditor.publish();
@@ -1028,7 +1014,7 @@ definition {
 				key_text = "Heading Example",
 				locator1 = "Link#ANY");
 
-			ControlMenu.viewHeaderTitle(headerTitle = "Liferay");
+			ControlMenu.viewHeaderTitle(headerTitle = ${objectEntryId});
 
 			Button.click(button = "Go Somewhere");
 
@@ -1043,8 +1029,6 @@ definition {
 	@description = "This is a test for LPS-165556. The page designer could map a standalone action from a specific object entry to Button fragment in display page template."
 	@priority = 4
 	test MapStandaloneActionFromSpecificObjectEntryToFragment {
-		property custom.properties = "feature.flag.LPS-169992=true";
-
 		var labelName = StringUtil.randomString(8);
 
 		var objectName = "A${labelName}";
@@ -1118,7 +1102,7 @@ definition {
 				value1 = "Specific Content");
 
 			PageEditorMapping.mapEditableFieldToAsset(
-				entryTitle = "${labelName}2 ${objectEntryId2}",
+				entryTitle = ${objectEntryId2},
 				navItem = "${labelName}2s",
 				rowItem = "//*[@data-qa-id='row'][contains(.,'${objectEntryId2}')]");
 
@@ -1151,7 +1135,7 @@ definition {
 
 			PageEditorEditableLink.mapURLToAsset(
 				entryTitle = ${objectEntryId1},
-				field = "Display Page URL",
+				field = "Default",
 				navItem = "${labelName}1s");
 
 			PageEditor.publish();
@@ -1166,7 +1150,7 @@ definition {
 				key_text = "Heading Example",
 				locator1 = "Link#ANY");
 
-			ControlMenu.viewHeaderTitle(headerTitle = "Google");
+			ControlMenu.viewHeaderTitle(headerTitle = ${objectEntryId1});
 
 			Button.click(button = "Go Somewhere");
 
@@ -1259,11 +1243,11 @@ definition {
 				key_url = "https://www.liferay.com",
 				locator1 = "Fragment#FRAGMENT_LINK");
 
-			AssertLocation.assertPartialLocation(value1 = "https://www.liferay.com");
+			AssertLocation.assertPartialLocation(value1 = "liferay.com");
 		}
 	}
 
-	@description = "This is a test for LPS-98031. Map web content field with URL to link editable field."
+	@description = "This is a test for LPS-98031. Map web content field with URL to link editable field for Display Pages Templates."
 	@priority = 2
 	test MapWebContentFieldWithURLToLinkFragment {
 		task ("Add a web content structure with a Text field") {
@@ -1344,7 +1328,7 @@ definition {
 				key_url = "https://www.liferay.com",
 				locator1 = "Fragment#FRAGMENT_LINK");
 
-			AssertLocation.assertPartialLocation(value1 = "https://www.liferay.com");
+			AssertLocation.assertPartialLocation(value1 = "liferay.com");
 		}
 	}
 
@@ -1429,7 +1413,7 @@ definition {
 				key_url = "https://www.liferay.com",
 				locator1 = "Fragment#FRAGMENT_LINK");
 
-			AssertLocation.assertPartialLocation(value1 = "https://www.liferay.com");
+			AssertLocation.assertPartialLocation(value1 = "liferay.com");
 		}
 	}
 
@@ -1566,7 +1550,7 @@ definition {
 			AssertElementPresent(
 				key_fieldLabel = "Field",
 				key_groupLabel = "Display Page",
-				key_value = "Display Page URL",
+				key_value = "Default",
 				locator1 = "Select#GROUPED_SELECT_VALUE");
 
 			for (var field : list "All Categories,Topic,Tags") {
@@ -1630,7 +1614,7 @@ definition {
 					locator1 = "Select#GROUPED_SELECT_VALUE");
 			}
 
-			for (var field : list "Display Page URL,Description,Display Date") {
+			for (var field : list "Description,Display Date") {
 				AssertElementPresent(
 					key_fieldLabel = "Field",
 					key_groupLabel = "Configuration",
@@ -1645,6 +1629,12 @@ definition {
 					key_value = ${field},
 					locator1 = "Select#GROUPED_SELECT_VALUE");
 			}
+
+			AssertElementPresent(
+				key_fieldLabel = "Field",
+				key_groupLabel = "Display Page",
+				key_value = "Default",
+				locator1 = "Select#GROUPED_SELECT_VALUE");
 		}
 
 		task ("Add a display page template based on Document and new document type") {
@@ -1793,7 +1783,7 @@ definition {
 		task ("Assert the image of the Document Title 1 is shown in Image fragment") {
 			AssertVisible(
 				id = "image-square",
-				key_image = "Document_1.jpg",
+				key_image = "document_1",
 				key_imageDescription = "",
 				locator1 = "Fragment#CONTRIBUTED_FRAGMENT_EDITABLE_FIELD_IMAGE_PROPERTIES");
 		}
@@ -1811,7 +1801,7 @@ definition {
 		}
 
 		task ("Reverse Sort Direction in Documents and Media") {
-			Click(locator1 = "ManagementBar#ORDER_ICON_GENERIC");
+			ManagementBar.sortAssets(sortDirection = "Ascending");
 		}
 
 		task ("Assert the order of documents in Documents and Media") {
@@ -1829,7 +1819,7 @@ definition {
 		task ("Assert the image of the Document Title 1 is still shown in Image fragment") {
 			AssertVisible(
 				id = "image-square",
-				key_image = "Document_1.jpg",
+				key_image = "document_1",
 				key_imageDescription = "",
 				locator1 = "Fragment#CONTRIBUTED_FRAGMENT_EDITABLE_FIELD_IMAGE_PROPERTIES");
 		}

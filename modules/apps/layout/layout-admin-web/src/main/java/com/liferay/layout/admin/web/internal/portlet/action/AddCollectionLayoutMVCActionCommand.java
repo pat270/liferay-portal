@@ -12,7 +12,7 @@ import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.info.list.provider.item.selector.criterion.InfoListProviderItemSelectorReturnType;
 import com.liferay.item.selector.criteria.InfoListItemSelectorReturnType;
 import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
-import com.liferay.layout.admin.web.internal.handler.LayoutExceptionRequestHandler;
+import com.liferay.layout.admin.web.internal.handler.LayoutExceptionRequestHandlerUtil;
 import com.liferay.layout.importer.LayoutsImporter;
 import com.liferay.layout.page.template.model.LayoutPageTemplateStructure;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
@@ -92,7 +92,7 @@ public class AddCollectionLayoutMVCActionCommand
 
 			hideDefaultErrorMessage(actionRequest);
 
-			_layoutExceptionRequestHandler.handleException(
+			LayoutExceptionRequestHandlerUtil.handleException(
 				actionRequest, actionResponse, exception);
 		}
 	}
@@ -250,7 +250,7 @@ public class AddCollectionLayoutMVCActionCommand
 
 			_layoutsImporter.importPageElement(
 				layout, layoutStructure, layoutStructure.getMainItemId(),
-				pageElementJSON, 0);
+				pageElementJSON, 0, true);
 		}
 	}
 
@@ -259,9 +259,6 @@ public class AddCollectionLayoutMVCActionCommand
 
 	@Reference
 	private InfoItemServiceRegistry _infoItemServiceRegistry;
-
-	@Reference
-	private LayoutExceptionRequestHandler _layoutExceptionRequestHandler;
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;

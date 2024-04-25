@@ -31,6 +31,7 @@ import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.test.util.JournalTestUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.model.Group;
@@ -61,6 +62,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 
 /**
  * @author Javier Gamarra
@@ -154,9 +158,10 @@ public class StructuredContentResourceTest
 		Iterator<StructuredContent> iterator = structuredContents.iterator();
 
 		while (iterator.hasNext()) {
+			structuredContent = iterator.next();
+
 			_structuredContentResource.deleteStructuredContent(
-				iterator.next(
-				).getId());
+				structuredContent.getId());
 		}
 
 		StructuredContent draftStructuredContent1 = _addDraftStructuredContent(
@@ -486,6 +491,7 @@ public class StructuredContentResourceTest
 				getStructuredContent2.getStructuredContentFolderId()));
 	}
 
+	@Override
 	@Test
 	public void testGraphQLGetSiteStructuredContentsPage() throws Exception {
 		super.testGraphQLGetSiteStructuredContentsPage();
@@ -528,69 +534,34 @@ public class StructuredContentResourceTest
 
 		Assert.assertEquals(
 			2, structuredContentsJSONObject.getLong("totalCount"));
-		Assert.assertEquals(
-			"id",
+
+		JSONAssert.assertEquals(
+			JSONFactoryUtil.createJSONArray(
+			).put(
+				JSONUtil.put(
+					"facetCriteria", "id"
+				).put(
+					"facetValues",
+					JSONFactoryUtil.createJSONArray(
+					).put(
+						JSONUtil.put(
+							"numberOfOccurrences", 1
+						).put(
+							"term", String.valueOf(structuredContent1.getId())
+						)
+					).put(
+						JSONUtil.put(
+							"numberOfOccurrences", 1
+						).put(
+							"term", String.valueOf(structuredContent2.getId())
+						)
+					)
+				)
+			).toString(),
 			structuredContentsJSONObject.getJSONArray(
 				"facets"
-			).getJSONObject(
-				0
-			).getString(
-				"facetCriteria"
-			));
-		Assert.assertEquals(
-			1,
-			structuredContentsJSONObject.getJSONArray(
-				"facets"
-			).getJSONObject(
-				0
-			).getJSONArray(
-				"facetValues"
-			).getJSONObject(
-				0
-			).getInt(
-				"numberOfOccurrences"
-			));
-		Assert.assertEquals(
-			structuredContent1.getId(),
-			Long.valueOf(
-				structuredContentsJSONObject.getJSONArray(
-					"facets"
-				).getJSONObject(
-					0
-				).getJSONArray(
-					"facetValues"
-				).getJSONObject(
-					0
-				).getString(
-					"term"
-				)));
-		Assert.assertEquals(
-			1,
-			structuredContentsJSONObject.getJSONArray(
-				"facets"
-			).getJSONObject(
-				0
-			).getJSONArray(
-				"facetValues"
-			).getJSONObject(
-				1
-			).getInt(
-				"numberOfOccurrences"
-			));
-		Assert.assertEquals(
-			structuredContent2.getId(),
-			Long.valueOf(
-				structuredContentsJSONObject.getJSONArray(
-					"facets"
-				).getJSONObject(
-					0
-				).getJSONArray(
-					"facetValues"
-				).getJSONObject(
-					1
-				).getString(
-					"term"
-				)));
+			).toString(),
+			JSONCompareMode.LENIENT);
 
 		assertEqualsIgnoringOrder(
 			Arrays.asList(structuredContent1, structuredContent2),
@@ -901,11 +872,11 @@ public class StructuredContentResourceTest
 					StructuredContent() {
 
 					{
-						setContentStructureId(
-							structuredContent.getContentStructureId());
-						setPriority(structuredContent.getPriority());
-						setSiteId(structuredContent.getSiteId());
-						setTitle(structuredContent.getTitle());
+						contentStructureId =
+							structuredContent.getContentStructureId();
+						priority = structuredContent.getPriority();
+						siteId = structuredContent.getSiteId();
+						title = structuredContent.getTitle();
 					}
 				}));
 	}
@@ -1027,10 +998,9 @@ public class StructuredContentResourceTest
 			StructuredContent() {
 
 			{
-				setContentStructureId(
-					structuredContent.getContentStructureId());
-				setSiteId(structuredContent.getSiteId());
-				setTitle(structuredContent.getTitle());
+				contentStructureId = structuredContent.getContentStructureId();
+				siteId = structuredContent.getSiteId();
+				title = structuredContent.getTitle();
 			}
 		};
 	}
@@ -1041,14 +1011,13 @@ public class StructuredContentResourceTest
 
 		return new StructuredContent() {
 			{
-				setContentStructureId(
-					structuredContent.getContentStructureId());
-				setDateCreated(structuredContent.getDateCreated());
-				setDateModified(structuredContent.getDateModified());
-				setId(structuredContent.getId());
-				setPriority(structuredContent.getPriority());
-				setSiteId(structuredContent.getSiteId());
-				setTitle(structuredContent.getTitle());
+				contentStructureId = structuredContent.getContentStructureId();
+				dateCreated = structuredContent.getDateCreated();
+				dateModified = structuredContent.getDateModified();
+				id = structuredContent.getId();
+				priority = structuredContent.getPriority();
+				siteId = structuredContent.getSiteId();
+				title = structuredContent.getTitle();
 			}
 		};
 	}

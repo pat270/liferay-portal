@@ -15,6 +15,7 @@ import com.liferay.portal.kernel.exception.LayoutNameException;
 import com.liferay.portal.kernel.exception.LayoutParentLayoutIdException;
 import com.liferay.portal.kernel.exception.LayoutTypeException;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
@@ -27,9 +28,12 @@ import com.liferay.portal.kernel.model.LayoutTypeController;
 import com.liferay.portal.kernel.model.ModelHintsUtil;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.Role;
+import com.liferay.portal.kernel.model.impl.VirtualLayout;
 import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiService;
+import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.portlet.FriendlyURLMapper;
+import com.liferay.portal.kernel.portlet.FriendlyURLResolver;
 import com.liferay.portal.kernel.portlet.FriendlyURLResolverRegistryUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.LayoutFriendlyURLEntryValidator;
@@ -47,13 +51,11 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.ServiceProxyFactory;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.comparator.LayoutPriorityComparator;
 import com.liferay.portal.model.impl.LayoutImpl;
 import com.liferay.portal.util.LayoutTypeControllerTracker;
-import com.liferay.sites.kernel.util.SitesUtil;
 
 import java.util.HashMap;
 import java.util.List;
@@ -100,14 +102,18 @@ public class LayoutLocalServiceHelper implements IdentifiableOSGiService {
 				validateFriendlyURL(
 					groupId, privateLayout, layoutId, friendlyURL, languageId);
 
-				if (_layoutFriendlyURLEntryValidator != null) {
+				LayoutFriendlyURLEntryValidator
+					layoutFriendlyURLEntryValidator =
+						_layoutFriendlyURLEntryValidatorSnapshot.get();
+
+				if (layoutFriendlyURLEntryValidator != null) {
 					long classPK = 0;
 
 					if (layout != null) {
 						classPK = layout.getPlid();
 					}
 
-					_layoutFriendlyURLEntryValidator.validateFriendlyURLEntry(
+					layoutFriendlyURLEntryValidator.validateFriendlyURLEntry(
 						groupId, privateLayout, classPK, friendlyURL);
 				}
 
@@ -289,7 +295,8 @@ public class LayoutLocalServiceHelper implements IdentifiableOSGiService {
 			if (((layout == null) ||
 				 Validator.isNull(layout.getSourcePrototypeLayoutUuid())) &&
 				!_isDraftLayout(classNameId, classPK, type) &&
-				!SitesUtil.isLayoutSortable(parentLayout)) {
+				((layout instanceof VirtualLayout) ||
+				 !parentLayout.isLayoutSortable())) {
 
 				throw new LayoutParentLayoutIdException(
 					LayoutParentLayoutIdException.NOT_SORTABLE);
@@ -401,6 +408,26 @@ public class LayoutLocalServiceHelper implements IdentifiableOSGiService {
 			}
 		}
 
+		validateFriendlyURLKeyword(friendlyURL);
+
+		String layoutIdFriendlyURL = friendlyURL.substring(1);
+
+		if (Validator.isNumber(layoutIdFriendlyURL) &&
+			!layoutIdFriendlyURL.equals(String.valueOf(layoutId))) {
+
+			LayoutFriendlyURLException layoutFriendlyURLException =
+				new LayoutFriendlyURLException(
+					LayoutFriendlyURLException.POSSIBLE_DUPLICATE);
+
+			layoutFriendlyURLException.setKeywordConflict(layoutIdFriendlyURL);
+
+			throw layoutFriendlyURLException;
+		}
+	}
+
+	public void validateFriendlyURLKeyword(String friendlyURL)
+		throws LayoutFriendlyURLException {
+
 		LayoutImpl.validateFriendlyURLKeyword(friendlyURL);
 
 		if (friendlyURL.contains(Portal.FRIENDLY_URL_SEPARATOR) ||
@@ -428,16 +455,45 @@ public class LayoutLocalServiceHelper implements IdentifiableOSGiService {
 			throw layoutFriendlyURLException;
 		}
 
-		String[] urlSeparators =
-			FriendlyURLResolverRegistryUtil.getURLSeparators();
+		String keywordConflict = null;
 
-		for (String urlSeparator : urlSeparators) {
-			if (urlSeparator.contains(friendlyURL)) {
+		for (FriendlyURLResolver friendlyURLResolver :
+				FriendlyURLResolverRegistryUtil.
+					getFriendlyURLResolversAsCollection()) {
+
+			String urlSeparator = friendlyURLResolver.getURLSeparator();
+
+			if (!FeatureFlagManagerUtil.isEnabled("LPS-203351") &&
+				urlSeparator.contains(friendlyURL)) {
+
+				keywordConflict = urlSeparator;
+			}
+
+			if (FeatureFlagManagerUtil.isEnabled("LPS-203351")) {
+				if (urlSeparator.contains(friendlyURL) ||
+					friendlyURL.startsWith(urlSeparator)) {
+
+					keywordConflict = urlSeparator;
+				}
+
+				String defaultURLSeparator =
+					friendlyURLResolver.getDefaultURLSeparator();
+
+				if (Validator.isNull(keywordConflict) &&
+					friendlyURLResolver.isURLSeparatorConfigurable() &&
+					(defaultURLSeparator.contains(friendlyURL) ||
+					 friendlyURL.startsWith(defaultURLSeparator))) {
+
+					keywordConflict = defaultURLSeparator;
+				}
+			}
+
+			if (Validator.isNotNull(keywordConflict)) {
 				LayoutFriendlyURLException layoutFriendlyURLException =
 					new LayoutFriendlyURLException(
 						LayoutFriendlyURLException.KEYWORD_CONFLICT);
 
-				layoutFriendlyURLException.setKeywordConflict(urlSeparator);
+				layoutFriendlyURLException.setKeywordConflict(keywordConflict);
 
 				throw layoutFriendlyURLException;
 			}
@@ -468,7 +524,7 @@ public class LayoutLocalServiceHelper implements IdentifiableOSGiService {
 		}
 
 		for (Locale locale : LanguageUtil.getAvailableLocales()) {
-			languageId = StringUtil.toLowerCase(
+			String languageId = StringUtil.toLowerCase(
 				LocaleUtil.toLanguageId(locale));
 
 			String i18nPathLanguageId =
@@ -496,20 +552,6 @@ public class LayoutLocalServiceHelper implements IdentifiableOSGiService {
 
 				throw layoutFriendlyURLException;
 			}
-		}
-
-		String layoutIdFriendlyURL = friendlyURL.substring(1);
-
-		if (Validator.isNumber(layoutIdFriendlyURL) &&
-			!layoutIdFriendlyURL.equals(String.valueOf(layoutId))) {
-
-			LayoutFriendlyURLException layoutFriendlyURLException =
-				new LayoutFriendlyURLException(
-					LayoutFriendlyURLException.POSSIBLE_DUPLICATE);
-
-			layoutFriendlyURLException.setKeywordConflict(layoutIdFriendlyURL);
-
-			throw layoutFriendlyURLException;
 		}
 	}
 
@@ -609,8 +651,9 @@ public class LayoutLocalServiceHelper implements IdentifiableOSGiService {
 		// Layout cannot become a child of a layout that is not sortable because
 		// it is linked to a layout set prototype
 
-		if (Validator.isNull(layout.getSourcePrototypeLayoutUuid()) &&
-			!SitesUtil.isLayoutSortable(parentLayout)) {
+		if ((Validator.isNull(layout.getSourcePrototypeLayoutUuid()) &&
+			 (layout instanceof VirtualLayout)) ||
+			!parentLayout.isLayoutSortable()) {
 
 			throw new LayoutParentLayoutIdException(
 				LayoutParentLayoutIdException.NOT_SORTABLE);
@@ -692,7 +735,8 @@ public class LayoutLocalServiceHelper implements IdentifiableOSGiService {
 
 		if (!Objects.equals(type, LayoutConstants.TYPE_ASSET_DISPLAY) &&
 			!Objects.equals(type, LayoutConstants.TYPE_COLLECTION) &&
-			!Objects.equals(type, LayoutConstants.TYPE_CONTENT)) {
+			!Objects.equals(type, LayoutConstants.TYPE_CONTENT) &&
+			!Objects.equals(type, LayoutConstants.TYPE_UTILITY)) {
 
 			return false;
 		}
@@ -713,12 +757,10 @@ public class LayoutLocalServiceHelper implements IdentifiableOSGiService {
 
 	private static final int _PRIORITY_BUFFER = 1000000;
 
-	private static volatile LayoutFriendlyURLEntryValidator
-		_layoutFriendlyURLEntryValidator =
-			ServiceProxyFactory.newServiceTrackedInstance(
-				LayoutFriendlyURLEntryValidator.class,
-				LayoutLocalServiceHelper.class,
-				"_layoutFriendlyURLEntryValidator", false, true);
+	private static final Snapshot<LayoutFriendlyURLEntryValidator>
+		_layoutFriendlyURLEntryValidatorSnapshot = new Snapshot<>(
+			LayoutLocalServiceHelper.class,
+			LayoutFriendlyURLEntryValidator.class);
 	private static final Pattern _urlSeparatorPattern = Pattern.compile(
 		"/[A-Za-z]");
 

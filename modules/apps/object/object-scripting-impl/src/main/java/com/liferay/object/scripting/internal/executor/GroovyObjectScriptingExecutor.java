@@ -6,9 +6,12 @@
 package com.liferay.object.scripting.internal.executor;
 
 import com.liferay.object.scripting.executor.ObjectScriptingExecutor;
+import com.liferay.petra.lang.SafeCloseable;
+import com.liferay.petra.lang.ThreadContextClassLoaderUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.scripting.ScriptingExecutor;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.scripting.ScriptingExecutorRegistry;
 
 import java.util.Collections;
@@ -40,17 +43,11 @@ public class GroovyObjectScriptingExecutor implements ObjectScriptingExecutor {
 			return Collections.emptyMap();
 		}
 
-		Thread currentThread = Thread.currentThread();
-
-		ClassLoader contextClassLoader = currentThread.getContextClassLoader();
-
-		Class<?> clazz = getClass();
-
 		Map<String, Object> results = new HashMap<>();
 
-		currentThread.setContextClassLoader(clazz.getClassLoader());
+		try (SafeCloseable safeCloseable = ThreadContextClassLoaderUtil.swap(
+				GroovyObjectScriptingExecutor.class.getClassLoader())) {
 
-		try {
 			results = scriptingExecutor.eval(
 				null, inputObjects, outputNames, script);
 
@@ -61,9 +58,10 @@ public class GroovyObjectScriptingExecutor implements ObjectScriptingExecutor {
 
 			results.put("invalidScript", true);
 		}
-		finally {
-			currentThread.setContextClassLoader(contextClassLoader);
-		}
+
+		results.putIfAbsent(
+			"validationCriteriaMet",
+			!GetterUtil.getBoolean(results.get("invalidFields")));
 
 		return results;
 	}

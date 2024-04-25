@@ -14,32 +14,39 @@ import java.io.File;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.gradle.api.artifacts.Configuration;
-import org.gradle.api.tasks.CacheableTask;
+import org.gradle.api.provider.Property;
+import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Internal;
 
 /**
  * @author Andrea Di Giorgi
  */
-@CacheableTask
 public class DirectDeployTask extends BasePortalToolsTask {
 
+	@Internal
 	public File getAppServerDeployDir() {
 		return GradleUtil.toFile(project, _appServerDeployDir);
 	}
 
+	@Internal
 	public File getAppServerDir() {
 		return GradleUtil.toFile(project, _appServerDir);
 	}
 
+	@Internal
 	public File getAppServerLibGlobalDir() {
 		return GradleUtil.toFile(project, _appServerLibGlobalDir);
 	}
 
+	@Internal
 	public File getAppServerPortalDir() {
 		return GradleUtil.toFile(project, _appServerPortalDir);
 	}
 
+	@Input
 	public String getAppServerType() {
 		return GradleUtil.toString(_appServerType);
 	}
@@ -124,30 +131,22 @@ public class DirectDeployTask extends BasePortalToolsTask {
 		return jvmArgs;
 	}
 
-	@Override
-	public String getMain() {
-		String webAppType = getWebAppType();
-
-		if (webAppType.equals("layouttpl")) {
-			webAppType = "layout";
-		}
-
-		return "com.liferay.portal.tools.deploy." +
-			StringUtil.capitalize(webAppType) + "Deployer";
-	}
-
+	@Internal
 	public File getWebAppFile() {
 		return GradleUtil.toFile(project, _webAppFile);
 	}
 
+	@Input
 	public String getWebAppType() {
 		return GradleUtil.toString(_webAppType);
 	}
 
+	@Input
 	public boolean isCustomPortletXml() {
 		return _customPortletXml;
 	}
 
+	@Input
 	public boolean isUnpackWar() {
 		return _unpackWar;
 	}
@@ -186,6 +185,18 @@ public class DirectDeployTask extends BasePortalToolsTask {
 
 	public void setWebAppType(Object webAppType) {
 		_webAppType = webAppType;
+
+		Property<String> mainClassProperty = getMainClass();
+
+		if (Objects.equals(getWebAppType(), "layouttpl")) {
+			mainClassProperty.set(
+				"com.liferay.portal.tools.deploy.LayoutDeployer");
+		}
+		else {
+			mainClassProperty.set(
+				"com.liferay.portal.tools.deploy." +
+					StringUtil.capitalize(getWebAppType()) + "Deployer");
+		}
 	}
 
 	@Override

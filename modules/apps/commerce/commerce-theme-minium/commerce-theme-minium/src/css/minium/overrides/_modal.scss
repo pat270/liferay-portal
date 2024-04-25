@@ -3,10 +3,10 @@
 	top: 0;
 
 	body.signed-in & {
-		top: $liferay-topbar-size;
+		top: var(--control-menu-container-height);
 	}
 
-	body.open & {
+	body.product-menu-open & {
 		left: 320px + $frame-size;
 	}
 }

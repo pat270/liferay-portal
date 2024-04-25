@@ -5,6 +5,8 @@
 
 package com.liferay.commerce.inventory.web.internal.model;
 
+import java.math.BigDecimal;
+
 /**
  * @author Luca Pellizzon
  * @author Alessio Antonio Rendina
@@ -12,13 +14,14 @@ package com.liferay.commerce.inventory.web.internal.model;
 public class BookedQuantity {
 
 	public BookedQuantity(
-		String account, long commerceOrderId, int quantity,
-		String expirationDate) {
+		String account, long commerceOrderId, String expirationDate,
+		BigDecimal quantity, String unitOfMeasureKey) {
 
 		_account = account;
 		_commerceOrderId = commerceOrderId;
-		_quantity = quantity;
 		_expirationDate = expirationDate;
+		_quantity = quantity;
+		_unitOfMeasureKey = unitOfMeasureKey;
 	}
 
 	public String getAccount() {
@@ -33,13 +36,18 @@ public class BookedQuantity {
 		return _expirationDate;
 	}
 
-	public int getQuantity() {
+	public BigDecimal getQuantity() {
 		return _quantity;
+	}
+
+	public String getUnitOfMeasureKey() {
+		return _unitOfMeasureKey;
 	}
 
 	private final String _account;
 	private final long _commerceOrderId;
 	private final String _expirationDate;
-	private final int _quantity;
+	private final BigDecimal _quantity;
+	private final String _unitOfMeasureKey;
 
 }

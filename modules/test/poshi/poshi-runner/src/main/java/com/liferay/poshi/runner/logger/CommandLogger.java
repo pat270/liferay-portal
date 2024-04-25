@@ -6,12 +6,12 @@
 package com.liferay.poshi.runner.logger;
 
 import com.liferay.poshi.core.PoshiContext;
+import com.liferay.poshi.core.PoshiProperties;
 import com.liferay.poshi.core.PoshiStackTrace;
 import com.liferay.poshi.core.PoshiVariablesContext;
 import com.liferay.poshi.core.selenium.LiferaySelenium;
 import com.liferay.poshi.core.util.FileUtil;
 import com.liferay.poshi.core.util.GetterUtil;
-import com.liferay.poshi.core.util.PoshiProperties;
 import com.liferay.poshi.core.util.StringUtil;
 import com.liferay.poshi.core.util.Validator;
 import com.liferay.poshi.runner.exception.PoshiRunnerLoggerException;
@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
@@ -77,9 +78,7 @@ public final class CommandLogger {
 		}
 	}
 
-	public void failCommand(Element element, SyntaxLogger syntaxLogger)
-		throws PoshiRunnerLoggerException {
-
+	public void failCommand(Element element) throws PoshiRunnerLoggerException {
 		if (!_isCurrentCommand(element)) {
 			return;
 		}
@@ -107,30 +106,7 @@ public final class CommandLogger {
 		return _testNamespacedClassCommandName;
 	}
 
-	public void logExternalMethodCommand(
-			Element element, List<String> arguments, Object returnValue,
-			SyntaxLogger syntaxLogger)
-		throws Exception {
-
-		lineGroupLoggerElement = new LoggerElement();
-
-		lineGroupLoggerElement.setClassName("line-group linkable");
-		lineGroupLoggerElement.setName("li");
-		lineGroupLoggerElement.addChildLoggerElement(
-			_getExternalMethodLineLoggerElement(
-				element, arguments, returnValue));
-
-		_commandLogLoggerElement.addChildLoggerElement(lineGroupLoggerElement);
-
-		LoggerElement scriptLoggerElement = syntaxLogger.getSyntaxLoggerElement(
-			_poshiStackTrace.getSimpleStackTraceMessage());
-
-		_linkLoggerElements(scriptLoggerElement);
-	}
-
-	public void logMessage(Element element, SyntaxLogger syntaxLogger)
-		throws PoshiRunnerLoggerException {
-
+	public void logMessage(Element element) throws PoshiRunnerLoggerException {
 		try {
 			lineGroupLoggerElement = _getMessageGroupLoggerElement(element);
 
@@ -158,7 +134,7 @@ public final class CommandLogger {
 			_getRunLineLoggerElement(element, arguments));
 	}
 
-	public void ocularCommand(Element element, SyntaxLogger syntaxLogger)
+	public void ocularCommand(Element element)
 		throws PoshiRunnerLoggerException {
 
 		if (!_isCurrentCommand(element)) {
@@ -176,7 +152,7 @@ public final class CommandLogger {
 		}
 	}
 
-	public void passCommand(Element element, SyntaxLogger syntaxLogger) {
+	public void passCommand(Element element) {
 		if (!_isCurrentCommand(element)) {
 			return;
 		}
@@ -184,7 +160,7 @@ public final class CommandLogger {
 		_commandElement = null;
 	}
 
-	public void startCommand(Element element, SyntaxLogger syntaxLogger)
+	public void startCommand(Element element)
 		throws PoshiRunnerLoggerException {
 
 		if (!_isCommand(element)) {
@@ -207,8 +183,26 @@ public final class CommandLogger {
 		}
 	}
 
-	public void takeScreenshotCommand(
-			Element element, SyntaxLogger syntaxLogger)
+	public void startExternalMethodCommand(
+			Element element, List<String> arguments, Object returnValue)
+		throws Exception {
+
+		_takeScreenshot("before", _detailsLinkId);
+
+		_commandElement = element;
+
+		lineGroupLoggerElement = new LoggerElement();
+
+		lineGroupLoggerElement.setClassName("line-group linkable");
+		lineGroupLoggerElement.setName("li");
+		lineGroupLoggerElement.addChildLoggerElement(
+			_getExternalMethodLineLoggerElement(
+				element, arguments, returnValue));
+
+		_commandLogLoggerElement.addChildLoggerElement(lineGroupLoggerElement);
+	}
+
+	public void takeScreenshotCommand(Element element)
 		throws PoshiRunnerLoggerException {
 
 		try {
@@ -231,9 +225,7 @@ public final class CommandLogger {
 		}
 	}
 
-	public void warnCommand(Element element, SyntaxLogger syntaxLogger)
-		throws PoshiRunnerLoggerException {
-
+	public void warnCommand(Element element) throws PoshiRunnerLoggerException {
 		if (!_isCurrentCommand(element)) {
 			return;
 		}
@@ -263,8 +255,12 @@ public final class CommandLogger {
 		LoggerElement childContainerLoggerElement =
 			lineGroupLoggerElement.loggerElement("ul");
 
-		List<LoggerElement> runLineLoggerElements =
-			childContainerLoggerElement.loggerElements("li");
+		List<LoggerElement> runLineLoggerElements = new ArrayList<>();
+
+		if (!(childContainerLoggerElement == null)) {
+			runLineLoggerElements = childContainerLoggerElement.loggerElements(
+				"li");
+		}
 
 		if (!runLineLoggerElements.isEmpty()) {
 			LoggerElement runLineLoggerElement = runLineLoggerElements.get(
@@ -722,24 +718,6 @@ public final class CommandLogger {
 			StringUtil.toLowerCase(element.getName()), "fail");
 	}
 
-	private void _linkLoggerElements(LoggerElement scriptLoggerElement) {
-		String functionLinkID = scriptLoggerElement.getAttributeValue(
-			"data-functionlinkid");
-
-		if (functionLinkID != null) {
-			_functionLinkId = GetterUtil.getInteger(
-				functionLinkID.substring(15));
-		}
-
-		scriptLoggerElement.setAttribute(
-			"data-functionlinkid", "functionLinkId-" + _functionLinkId);
-
-		lineGroupLoggerElement.setAttribute(
-			"data-functionlinkid", "functionLinkId-" + _functionLinkId);
-
-		_functionLinkId++;
-	}
-
 	private void _ocularLineGroupLoggerElement(
 			Element element, LoggerElement lineGroupLoggerElement)
 		throws Exception {
@@ -827,7 +805,6 @@ public final class CommandLogger {
 	private Element _commandElement;
 	private final LoggerElement _commandLogLoggerElement;
 	private int _detailsLinkId;
-	private int _functionLinkId;
 	private final PoshiProperties _poshiProperties;
 	private final PoshiStackTrace _poshiStackTrace;
 	private final PoshiVariablesContext _poshiVariablesContext;

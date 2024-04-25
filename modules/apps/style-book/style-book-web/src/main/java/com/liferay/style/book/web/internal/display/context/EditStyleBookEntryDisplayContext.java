@@ -36,13 +36,19 @@ import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutSet;
+import com.liferay.portal.kernel.model.ResourceConstants;
+import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.Theme;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.portlet.url.builder.ResourceURLBuilder;
 import com.liferay.portal.kernel.security.auth.AuthTokenUtil;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutSetLocalServiceUtil;
+import com.liferay.portal.kernel.service.ResourcePermissionLocalServiceUtil;
+import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -131,7 +137,7 @@ public class EditStyleBookEntryDisplayContext {
 				JSONUtil.put(
 					"data",
 					_getOptionJSONObject(
-						LayoutPageTemplateEntryTypeConstants.TYPE_DISPLAY_PAGE)
+						LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE)
 				).put(
 					"type", "displayPageTemplate"
 				),
@@ -143,7 +149,7 @@ public class EditStyleBookEntryDisplayContext {
 				JSONUtil.put(
 					"data",
 					_getOptionJSONObject(
-						LayoutPageTemplateEntryTypeConstants.TYPE_MASTER_LAYOUT)
+						LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT)
 				).put(
 					"type", "master"
 				),
@@ -155,8 +161,8 @@ public class EditStyleBookEntryDisplayContext {
 				JSONUtil.put(
 					"data",
 					_getOptionJSONObject(
-						LayoutPageTemplateEntryTypeConstants.TYPE_BASIC,
-						LayoutPageTemplateEntryTypeConstants.TYPE_WIDGET_PAGE)
+						LayoutPageTemplateEntryTypeConstants.BASIC,
+						LayoutPageTemplateEntryTypeConstants.WIDGET_PAGE)
 				).put(
 					"type", "pageTemplate"
 				))
@@ -294,12 +300,11 @@ public class EditStyleBookEntryDisplayContext {
 
 		Group group = _themeDisplay.getScopeGroup();
 
-		LayoutSet layoutSet = LayoutSetLocalServiceUtil.fetchLayoutSet(
-			_themeDisplay.getSiteGroupId(), group.isLayoutSetPrototype());
-
 		FrontendTokenDefinition frontendTokenDefinition =
 			_frontendTokenDefinitionRegistry.getFrontendTokenDefinition(
-				layoutSet.getThemeId());
+				LayoutSetLocalServiceUtil.fetchLayoutSet(
+					_themeDisplay.getSiteGroupId(),
+					group.isLayoutSetPrototype()));
 
 		if (frontendTokenDefinition != null) {
 			return frontendTokenDefinition.getJSONObject(
@@ -376,7 +381,6 @@ public class EditStyleBookEntryDisplayContext {
 
 				layoutItemSelectorCriterion.setDesiredItemSelectorReturnTypes(
 					new LayoutItemSelectorReturnType());
-				layoutItemSelectorCriterion.setShowHiddenPages(true);
 
 				Group group = _themeDisplay.getScopeGroup();
 
@@ -402,6 +406,20 @@ public class EditStyleBookEntryDisplayContext {
 					(JSONObject[])TransformUtil.transformToArray(
 						layouts,
 						layout -> JSONUtil.put(
+							"hasGuestViewPermission",
+							() -> {
+								Role role = RoleLocalServiceUtil.getRole(
+									layout.getCompanyId(), RoleConstants.GUEST);
+
+								return ResourcePermissionLocalServiceUtil.
+									hasResourcePermission(
+										layout.getCompanyId(),
+										Layout.class.getName(),
+										ResourceConstants.SCOPE_INDIVIDUAL,
+										String.valueOf(layout.getPlid()),
+										role.getRoleId(), ActionKeys.VIEW);
+							}
+						).put(
 							"name", layout.getName(_themeDisplay.getLocale())
 						).put(
 							"private", layout.isPrivateLayout()
@@ -474,7 +492,7 @@ public class EditStyleBookEntryDisplayContext {
 
 		try {
 			if (layoutPageTemplateEntry.getType() ==
-					LayoutPageTemplateEntryTypeConstants.TYPE_DISPLAY_PAGE) {
+					LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE) {
 
 				String previewURL = HttpComponentsUtil.addParameters(
 					_themeDisplay.getPortalURL() + _themeDisplay.getPathMain() +
@@ -570,6 +588,7 @@ public class EditStyleBookEntryDisplayContext {
 
 		portletDisplay.setShowBackIcon(true);
 		portletDisplay.setURLBack(_getRedirect());
+		portletDisplay.setURLBackTitle(portletDisplay.getPortletDisplayName());
 
 		_renderResponse.setTitle(_getStyleBookEntryTitle());
 	}

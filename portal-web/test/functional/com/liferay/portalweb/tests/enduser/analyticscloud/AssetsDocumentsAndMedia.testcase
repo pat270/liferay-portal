@@ -33,10 +33,6 @@ definition {
 	tearDown {
 		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
 
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
-		//ACUtils.tearDownAC();
-
 		ACUtils.tearDownDXP();
 
 		if (${testLiferayVirtualInstance} == "true") {
@@ -45,6 +41,8 @@ definition {
 		else {
 			JSONGroup.deleteGroupByName(groupName = "Site Name");
 		}
+
+		ACUtils.tearDownAC();
 	}
 
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8419 | Test Summary: Document asset appears on list shows pages that the document exists on"
@@ -155,7 +153,7 @@ definition {
 		}
 
 		task ("Connect the DXP to AC") {
-			var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
+			ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
 		}
 
 		task ("Log in and download the document") {
@@ -169,6 +167,8 @@ definition {
 
 		task ("Download the document with anonymous user") {
 			User.logoutPG();
+
+			ACUtils.clearLocalStorage();
 
 			ACUtils.navigateToSitePage(
 				actionType = "Download DM",
@@ -184,7 +184,7 @@ definition {
 		task ("Switch to new property in AC and go to Documents and Media tab") {
 			ACUtils.launchAC();
 
-			ACProperties.switchProperty(propertyName = ${propertyName});
+			ACProperties.switchProperty(propertyName = ${assignedPropertyName});
 
 			ACNavigation.goToAssets();
 
@@ -211,12 +211,6 @@ definition {
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8403 | Test Summary: Documents audience card shows expected amount of segmented and unsegmented individuals"
 	@priority = 5
 	test AudienceCardShowsExpectedAmountSegmentedAndUnsegmentedInDM {
-
-		// AC Quarantine reason: The percentage of the downloads does not match the correct one
-		// AC Quarantine ticket: LRAC-9806
-
-		property portal.upstream = "quarantine";
-
 		var userNames = "ac,ac2,ac3";
 		var emailList = "ac@liferay.com,ac2@liferay.com,ac3@liferay.com";
 
@@ -229,22 +223,26 @@ definition {
 					userScreenName = ${name});
 			}
 
-			var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
+			ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
 		}
 
 		task ("Logout and login the AC") {
 			ACUtils.navigateToSitePageWithUser(
 				actionType = "Download DM",
-				documentTitleList = "DM AC Title",
+				documentTitleList = "DM AC Title,DM AC Title,DM AC Title,DM AC Title",
 				emailList = ${emailList},
 				pageName = "AC Page",
 				siteName = "Site Name");
 		}
 
+		task ("Close sessions") {
+			ACUtils.closeAllSessionsAndWait();
+		}
+
 		task ("Create segment") {
 			ACUtils.launchAC();
 
-			ACProperties.switchProperty(propertyName = ${propertyName});
+			ACProperties.switchProperty(propertyName = ${assignedPropertyName});
 
 			ACNavigation.goToSegments();
 
@@ -257,27 +255,7 @@ definition {
 			ACSegments.saveSegment();
 		}
 
-		task ("Go to DXP") {
-			ACUtils.launchDXP(userEmailAddress = "ac@liferay.com");
-		}
-
-		task ("Login and download the document") {
-			ACUtils.navigateToSitePage(
-				actionType = "Download DM",
-				documentTitleList = "DM AC Title",
-				pageName = "AC Page",
-				siteName = "Site Name");
-		}
-
-		task ("Close sessions") {
-			ACUtils.closeAllSessionsAndWait();
-
-			ACUtils.launchAC();
-		}
-
-		task ("Assert segmented and unsegmented in documents and media") {
-			ACProperties.switchProperty(propertyName = ${propertyName});
-
+		task ("Go to Assets > Go to Documents and Media") {
 			ACNavigation.goToAssets();
 
 			ACNavigation.switchTab(tabName = "Documents and Media");
@@ -289,10 +267,12 @@ definition {
 			ACNavigation.openItem(itemName = "DM AC Title");
 		}
 
-		task ("Assert views by download number of know and anoymous users") {
+		task ("Assert views by download number of segmented and unsegmented users") {
 			ACUtils.assertAudienceCard(
 				index = 2,
 				percentageList = "66.67%,33.33%");
+
+			ACUtils.assertViewerSegmentsCard(segmentNameList = "Static Segment Test");
 		}
 	}
 
@@ -381,65 +361,6 @@ definition {
 			ACUtils.searchBar(searchItem = "Should not be here");
 
 			ACUtils.viewNoResultsMessage(noResultMessage = "There are no results found.");
-		}
-	}
-
-	@description = "Feature ID: Legacy | Automation ID: LRAC-8116 | Test Summary: Assert clicking a document in the documents and media list navigates to the documents overview page"
-	@priority = 5
-	test CanNavigatesToDocumentsOverviewPage {
-		property portal.upstream = "quarantine";
-
-		// AC Quarantine Reason: Test fix sites created twice
-		// AC Quarantine Ticket: LRAC-13677
-
-		var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
-
-		JSONUser.addUser(
-			userEmailAddress = "ac@liferay.com",
-			userFirstName = "ac",
-			userLastName = "ac",
-			userScreenName = "ac");
-
-		ACDXPSettings.syncNewContactData();
-
-		User.logoutAndLoginPG(
-			userLoginEmailAddress = "ac@liferay.com",
-			userLoginFullName = "ac ac");
-
-		ACUtils.navigateToSitePage(
-			actionType = "Download DM",
-			documentTitleList = "DM AC Title,DM AC Title,DM AC Title",
-			pageName = "AC Page",
-			siteName = "Site Name");
-
-		ACUtils.closeAllSessionsAndWait();
-
-		ACUtils.launchAC();
-
-		ACProperties.switchProperty(propertyName = ${propertyName});
-
-		ACNavigation.goToAssets();
-
-		ACNavigation.switchTab(tabName = "Documents and Media");
-
-		ACTimeFilter.clickTimeFilterButton();
-
-		ACTimeFilter.setLast24Hours();
-
-		ACNavigation.openItem(itemName = "DM AC Title");
-
-		ACIndividualsDashboard.goToOverviewTab();
-
-		ACNavigation.viewActiveSwitchTab(tabName = "Overview");
-
-		for (var cardTitle : list "Visitors Behavior,Audience,Downloads by Location,Downloads by Technology,Asset Appears On") {
-			ACCards.viewCards(cardTitle = ${cardTitle});
-		}
-
-		for (var metric : list "Previews,Downloads") {
-			ACAssets.viewVisitorsBehaviorMetric(
-				metricTitle = ${metric},
-				metricValue = 3);
 		}
 	}
 
@@ -638,75 +559,6 @@ definition {
 			ACUtils.viewTableInformation(
 				nameList = "DM AC Title",
 				numberValueList = "0.00/10");
-		}
-	}
-
-	@description = "Feature ID: Legacy | Automation ID: LRAC-8412 | Test Summary: Documents location card shows downloads by the expected location"
-	@ignore = "true"
-	@priority = 5
-	test DocumentsLocationCardShowsDownloadsByExpectedLocation {
-
-		// AC Refactor: The location data should show the name of the country but it's actually showing "Local network"
-		// AC Refactor: Personas
-		// AC Refactor ticket: LRAC-9398
-
-		task ("Connect the DXP to AC") {
-			var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
-		}
-
-		task ("Download the document") {
-			ACUtils.navigateToSitePage(
-				actionType = "Download DM",
-				documentTitleList = "DM AC Title",
-				pageName = "AC Page",
-				siteName = "Site Name");
-		}
-
-		task ("Get the ip country") {
-			var country = ACUtils.getIPCountry();
-		}
-
-		task ("Close sessions") {
-			ACUtils.closeAllSessionsAndWait();
-		}
-
-		task ("Switch to new property in AC") {
-			ACUtils.launchAC();
-
-			ACProperties.switchProperty(propertyName = ${propertyName});
-		}
-
-		task ("Navigate to Documents and Media tab in Asset dashboard") {
-			ACNavigation.goToAssets();
-
-			ACNavigation.switchTab(tabName = "Documents and Media");
-		}
-
-		task ("Change the time filter to Last 24 hours") {
-			ACTimeFilter.clickTimeFilterButton();
-
-			ACTimeFilter.setLast24Hours();
-		}
-
-		task ("Navigate to the Overview tab in document report entry") {
-			ACNavigation.openItem(itemName = "DM AC Title");
-		}
-
-		task ("View the time filter of Downloads by Location map is Last 24 Hours") {
-			ACTimeFilter.assertCurrentTimeFilterRange(
-				cardName = "Downloads by Location",
-				timeFilterRange = "Last 24 hours");
-		}
-
-		task ("View the Downloads by location info shown in geomap") {
-			ACUtils.viewNoResultsMessageNotPresent(noResultMessage = "There are no downloads on any location on the selected period.");
-
-			ACCards.viewGeomapContainer(cardTitle = "Downloads by Location");
-
-			ACCards.viewGeomapTableText(
-				cardTitle = "Downloads by Location",
-				leftText = ${country},
-				rightText = "1 100%");
 		}
 	}
 

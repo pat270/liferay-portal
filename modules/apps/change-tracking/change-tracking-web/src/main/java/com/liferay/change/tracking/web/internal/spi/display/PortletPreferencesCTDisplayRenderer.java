@@ -17,7 +17,6 @@ import com.liferay.portal.kernel.model.PortletPreferences;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.PortletLocalService;
 import com.liferay.portal.kernel.service.PortletPreferenceValueLocalService;
-import com.liferay.portal.kernel.service.PortletPreferencesLocalService;
 import com.liferay.portal.kernel.util.CamelCaseUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -107,6 +106,11 @@ public class PortletPreferencesCTDisplayRenderer
 	}
 
 	@Override
+	public boolean isMovable(PortletPreferences portletPreferences) {
+		return false;
+	}
+
+	@Override
 	protected void buildDisplay(
 		DisplayBuilder<PortletPreferences> displayBuilder) {
 
@@ -177,9 +181,6 @@ public class PortletPreferencesCTDisplayRenderer
 
 	@Reference
 	private PortletLocalService _portletLocalService;
-
-	@Reference
-	private PortletPreferencesLocalService _portletPreferencesLocalService;
 
 	@Reference
 	private PortletPreferenceValueLocalService

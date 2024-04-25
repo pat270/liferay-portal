@@ -11,10 +11,13 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.search.document.Document;
 import com.liferay.portal.search.document.DocumentBuilder;
 import com.liferay.portal.search.engine.adapter.document.UpdateByQueryDocumentRequest;
+import com.liferay.portal.search.index.IndexNameBuilder;
 import com.liferay.portal.search.query.BooleanQuery;
 import com.liferay.portal.search.script.ScriptBuilder;
 import com.liferay.portal.search.script.ScriptType;
+import com.liferay.portal.workflow.metrics.internal.search.constants.WorkflowMetricsIndexTypeConstants;
 import com.liferay.portal.workflow.metrics.internal.sla.processor.WorkflowMetricsSLAInstanceResult;
+import com.liferay.portal.workflow.metrics.search.index.constants.WorkflowMetricsIndexNameConstants;
 import com.liferay.portal.workflow.metrics.sla.processor.WorkflowMetricsSLAStatus;
 
 import org.osgi.service.component.annotations.Component;
@@ -185,7 +188,10 @@ public class SLAInstanceResultWorkflowMetricsIndexer
 				).scriptType(
 					ScriptType.INLINE
 				).build(),
-				_instanceWorkflowMetricsIndex.getIndexName(companyId));
+				WorkflowMetricsIndex.getIndexName(
+					_indexNameBuilder,
+					WorkflowMetricsIndexNameConstants.SUFFIX_INSTANCE,
+					companyId));
 
 		if (PortalRunMode.isTestMode()) {
 			updateByQueryDocumentRequest.setRefresh(true);
@@ -196,20 +202,18 @@ public class SLAInstanceResultWorkflowMetricsIndexer
 
 	@Override
 	public String getIndexName(long companyId) {
-		return _slaInstanceResultWorkflowMetricsIndex.getIndexName(companyId);
+		return WorkflowMetricsIndex.getIndexName(
+			_indexNameBuilder,
+			WorkflowMetricsIndexNameConstants.SUFFIX_SLA_INSTANCE_RESULT,
+			companyId);
 	}
 
 	@Override
 	public String getIndexType() {
-		return _slaInstanceResultWorkflowMetricsIndex.getIndexType();
+		return WorkflowMetricsIndexTypeConstants.SLA_INSTANCE_RESULT_TYPE;
 	}
 
-	@Reference(target = "(workflow.metrics.index.entity.name=instance)")
-	private WorkflowMetricsIndex _instanceWorkflowMetricsIndex;
-
-	@Reference(
-		target = "(workflow.metrics.index.entity.name=sla-instance-result)"
-	)
-	private WorkflowMetricsIndex _slaInstanceResultWorkflowMetricsIndex;
+	@Reference
+	private IndexNameBuilder _indexNameBuilder;
 
 }

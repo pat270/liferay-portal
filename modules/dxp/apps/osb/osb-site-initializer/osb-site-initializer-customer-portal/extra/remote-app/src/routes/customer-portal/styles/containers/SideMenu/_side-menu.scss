@@ -1,7 +1,8 @@
 .cp-side-menu {
+	border-radius: 10px;
 	min-height: 83.3vh;
 	min-width: 240px;
-	width: 240px;
+	width: 280px !important;
 
 	.cp-menu-btn-active {
 		background-color: var(--color-action-primary-active-lighten);
@@ -28,6 +29,10 @@
 			color: var(--color-action-primary-hover) !important;
 		}
 
+		&:hover rect {
+			fill: var(--color-action-primary-active);
+		}
+
 		&:focus {
 			box-shadow: none;
 			outline: none;
@@ -39,7 +44,7 @@
 		}
 
 		&.cp-product-activation-active {
-			svg {
+			.lexicon-icon-angle-right-small {
 				transform: rotate(90deg);
 				transition: transform 0.3s;
 			}

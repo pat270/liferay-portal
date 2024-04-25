@@ -18,9 +18,7 @@ definition {
 		}
 
 		task ("Activate local live staging") {
-			Staging.openStagingAdmin(siteURLKey = "test-site-name");
-
-			Staging.activateStagingCP(siteName = "Test Site Name");
+			JSONStaging.enableLocalStaging(groupName = "Test Site Name");
 		}
 
 		task ("Add a page template collection") {
@@ -63,17 +61,6 @@ definition {
 
 		task ("Publish the page template") {
 			PageEditor.publish();
-		}
-	}
-
-	tearDown {
-		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
-
-		if (${testLiferayVirtualInstance} == "true") {
-			PortalInstances.tearDownCP();
-		}
-		else {
-			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
 		}
 	}
 
@@ -175,8 +162,6 @@ definition {
 	@priority = 4
 	test UndoChangesOfContentPageTemplateInStagingSite {
 		task ("View Undo button is disabled when no changes") {
-			PagesAdmin.openPagesAdmin(siteURLKey = "test-site-name-staging");
-
 			PageTemplatesAdmin.openPageTemplatesAdmin(siteURLKey = "test-site-name-staging");
 
 			Navigator.gotoNavNested(navNested = "Page Template Collection");
@@ -193,8 +178,6 @@ definition {
 				collectionName = "Basic Components",
 				fragmentName = "Button",
 				targetFragmentName = "Paragraph");
-
-			PageEditor.waitForAutoSave();
 
 			AssertVisible(
 				key_text = "undo",

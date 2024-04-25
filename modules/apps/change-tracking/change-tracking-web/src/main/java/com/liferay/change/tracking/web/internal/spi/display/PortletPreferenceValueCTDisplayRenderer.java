@@ -16,7 +16,6 @@ import com.liferay.portal.kernel.model.PortletPreferenceValue;
 import com.liferay.portal.kernel.model.PortletPreferences;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.PortletLocalService;
-import com.liferay.portal.kernel.service.PortletPreferenceValueLocalService;
 import com.liferay.portal.kernel.service.PortletPreferencesLocalService;
 import com.liferay.portal.kernel.util.Portal;
 
@@ -107,11 +106,17 @@ public class PortletPreferenceValueCTDisplayRenderer
 		if ((layout == null) ||
 			layout.isPortletEmbedded(
 				portletPreferences.getPortletId(), layout.getGroupId()) ||
-			layout.isSystem() || layout.isTypeControlPanel()) {
+			layout.isSystem() || layout.isTypeControlPanel() ||
+			layout.isTypePortlet()) {
 
 			return true;
 		}
 
+		return false;
+	}
+
+	@Override
+	public boolean isMovable(PortletPreferenceValue portletPreferenceValue) {
 		return false;
 	}
 
@@ -132,9 +137,5 @@ public class PortletPreferenceValueCTDisplayRenderer
 
 	@Reference
 	private PortletPreferencesLocalService _portletPreferencesLocalService;
-
-	@Reference
-	private PortletPreferenceValueLocalService
-		_portletPreferenceValueLocalService;
 
 }

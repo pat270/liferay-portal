@@ -7,10 +7,10 @@ package com.liferay.asset.link.exportimport.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.asset.kernel.model.AssetEntry;
-import com.liferay.asset.kernel.model.AssetLink;
-import com.liferay.asset.kernel.model.adapter.StagedAssetLink;
 import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;
-import com.liferay.asset.kernel.service.AssetLinkLocalServiceUtil;
+import com.liferay.asset.link.model.AssetLink;
+import com.liferay.asset.link.model.adapter.StagedAssetLink;
+import com.liferay.asset.link.service.AssetLinkLocalServiceUtil;
 import com.liferay.bookmarks.model.BookmarksEntry;
 import com.liferay.bookmarks.test.util.BookmarksTestUtil;
 import com.liferay.exportimport.configuration.ExportImportServiceConfiguration;
@@ -29,16 +29,16 @@ import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.journal.test.util.JournalTestUtil;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.model.adapter.ModelAdapterUtil;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.MapUtil;
-import com.liferay.portal.kernel.zip.ZipReaderFactoryUtil;
+import com.liferay.portal.kernel.zip.ZipReaderFactory;
+import com.liferay.portal.model.adapter.util.ModelAdapterUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
@@ -295,7 +295,7 @@ public class AssetLinkExportImportTest extends BaseExportImportTestCase {
 			group.getCompanyId(), importedGroup.getGroupId(), parameterMap,
 			ExportImportHelperUtil.getUserIdStrategy(
 				TestPropsValues.getUserId(), userIdStrategyString),
-			ZipReaderFactoryUtil.getZipReader(larFile));
+			_zipReaderFactory.getZipReader(larFile));
 	}
 
 	private BookmarksEntry _bookmarksEntry;
@@ -304,5 +304,8 @@ public class AssetLinkExportImportTest extends BaseExportImportTestCase {
 	private ConfigurationProvider _configurationProvider;
 
 	private JournalArticle _journalArticle;
+
+	@Inject
+	private ZipReaderFactory _zipReaderFactory;
 
 }

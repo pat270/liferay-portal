@@ -10,6 +10,7 @@ import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectRelationship;
 import com.liferay.object.related.models.ObjectRelatedModelsProvider;
 import com.liferay.object.related.models.ObjectRelatedModelsProviderRegistry;
+import com.liferay.object.relationship.util.ObjectRelationshipUtil;
 import com.liferay.object.rest.dto.v1_0.ObjectEntry;
 import com.liferay.object.rest.manager.v1_0.DefaultObjectEntryManager;
 import com.liferay.object.rest.manager.v1_0.DefaultObjectEntryManagerProvider;
@@ -23,10 +24,10 @@ import com.liferay.object.system.SystemObjectDefinitionManagerRegistry;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.auth.GuestOrUserUtil;
 import com.liferay.portal.kernel.service.PersistedModelLocalService;
-import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.service.PersistedModelLocalServiceRegistryUtil;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.pagination.Page;
@@ -170,8 +171,9 @@ public class RelatedObjectEntryResourceImpl
 		throws Exception {
 
 		PersistedModelLocalService persistedModelLocalService =
-			_persistedModelLocalServiceRegistry.getPersistedModelLocalService(
-				systemObjectDefinition.getClassName());
+			PersistedModelLocalServiceRegistryUtil.
+				getPersistedModelLocalService(
+					systemObjectDefinition.getClassName());
 
 		persistedModelLocalService.getPersistedModel(objectEntryId);
 	}
@@ -223,20 +225,9 @@ public class RelatedObjectEntryResourceImpl
 			ObjectRelationship objectRelationship)
 		throws Exception {
 
-		ObjectDefinition relatedObjectDefinition = null;
-
-		if (objectRelationship.getObjectDefinitionId1() !=
-				objectDefinition.getObjectDefinitionId()) {
-
-			relatedObjectDefinition =
-				_objectDefinitionLocalService.getObjectDefinition(
-					objectRelationship.getObjectDefinitionId1());
-		}
-		else {
-			relatedObjectDefinition =
-				_objectDefinitionLocalService.getObjectDefinition(
-					objectRelationship.getObjectDefinitionId2());
-		}
+		ObjectDefinition relatedObjectDefinition =
+			ObjectRelationshipUtil.getRelatedObjectDefinition(
+				objectDefinition, objectRelationship);
 
 		if (!relatedObjectDefinition.isActive()) {
 			throw new NoSuchObjectDefinitionException(
@@ -267,13 +258,14 @@ public class RelatedObjectEntryResourceImpl
 	}
 
 	private ObjectDefinition _getSystemObjectDefinition(String previousPath) {
+		long companyId = CompanyThreadLocal.getCompanyId();
+
 		SystemObjectDefinitionManager systemObjectDefinitionManager =
-			_getSystemObjectDefinitionManager(previousPath);
+			_getSystemObjectDefinitionManager(companyId, previousPath);
 
 		ObjectDefinition systemObjectDefinition =
 			_objectDefinitionLocalService.fetchObjectDefinition(
-				CompanyThreadLocal.getCompanyId(),
-				systemObjectDefinitionManager.getName());
+				companyId, systemObjectDefinitionManager.getName());
 
 		if (systemObjectDefinition != null) {
 			return systemObjectDefinition;
@@ -285,7 +277,7 @@ public class RelatedObjectEntryResourceImpl
 	}
 
 	private SystemObjectDefinitionManager _getSystemObjectDefinitionManager(
-		String previousPath) {
+		long companyId, String previousPath) {
 
 		URI uri = _uriInfo.getBaseUri();
 
@@ -294,7 +286,8 @@ public class RelatedObjectEntryResourceImpl
 		String restContextPath = path.split("/")[2] + "/v1.0/" + previousPath;
 
 		for (ObjectDefinition systemObjectDefinition :
-				_objectDefinitionLocalService.getSystemObjectDefinitions()) {
+				_objectDefinitionLocalService.
+					getUnmodifiableSystemObjectDefinitions(companyId)) {
 
 			SystemObjectDefinitionManager systemObjectDefinitionManager =
 				_systemObjectDefinitionManagerRegistry.
@@ -335,10 +328,6 @@ public class RelatedObjectEntryResourceImpl
 
 	@Reference
 	private ObjectRelationshipService _objectRelationshipService;
-
-	@Reference
-	private PersistedModelLocalServiceRegistry
-		_persistedModelLocalServiceRegistry;
 
 	@Reference
 	private SystemObjectDefinitionManagerRegistry

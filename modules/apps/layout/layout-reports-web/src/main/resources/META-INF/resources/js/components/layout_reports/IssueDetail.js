@@ -16,7 +16,11 @@ import {StoreStateContext} from '../../context/StoreContext';
 import normalizeFailingElements from '../../utils/normalizeFailingElements';
 
 export default function IssueDetail() {
-	const {selectedIssue} = useContext(StoreStateContext);
+	const {selectedItem} = useContext(StoreStateContext);
+
+	if (Liferay.FeatureFlags['LPS-187284']) {
+		return null;
+	}
 
 	return (
 		<div
@@ -26,18 +30,18 @@ export default function IssueDetail() {
 		>
 			<ClayPanel.Group className="panel-group-flush panel-group-sm">
 				<HtmlPanel
-					content={selectedIssue.description}
+					content={selectedItem.description}
 					title={Liferay.Language.get('description')}
 				/>
 
 				<HtmlPanel
-					content={selectedIssue.tips}
+					content={selectedItem.tips}
 					title={Liferay.Language.get('tips')}
 				/>
 
 				<FailingElementsPanel
-					failingElements={selectedIssue.failingElements}
-					issueType={selectedIssue.key}
+					failingElements={selectedItem.failingElements}
+					issueType={selectedItem.key}
 				/>
 			</ClayPanel.Group>
 		</div>
@@ -48,11 +52,9 @@ const HtmlPanel = ({content, title}) => (
 	<ClayPanel
 		collapsable
 		displayTitle={
-			<span className="c-inner" tabIndex="-1">
-				<ClayPanel.Title className="align-self-center panel-title">
-					{title}
-				</ClayPanel.Title>
-			</span>
+			<ClayPanel.Title className="align-self-center panel-title">
+				{title}
+			</ClayPanel.Title>
 		}
 		displayType="unstyled"
 		showCollapseIcon={true}
@@ -96,31 +98,29 @@ const FailingElementsPanel = ({failingElements, issueType}) => {
 			collapsable
 			defaultExpanded
 			displayTitle={
-				<span className="c-inner" tabIndex="-1">
-					<ClayPanel.Title>
-						<ClayLayout.ContentRow>
-							<ClayLayout.ContentCol
-								className="align-self-center panel-title"
-								expand
-							>
-								{Liferay.Language.get('failing-elements')}
-							</ClayLayout.ContentCol>
+				<ClayPanel.Title>
+					<ClayLayout.ContentRow>
+						<ClayLayout.ContentCol
+							className="align-self-center panel-title"
+							expand
+						>
+							{Liferay.Language.get('failing-elements')}
+						</ClayLayout.ContentCol>
 
-							<ClayLayout.ContentCol>
-								<ClayBadge
-									displayType={
-										totalElements === 0 ? 'success' : 'info'
-									}
-									label={
-										totalElements >= 100
-											? '+100'
-											: totalElements
-									}
-								/>
-							</ClayLayout.ContentCol>
-						</ClayLayout.ContentRow>
-					</ClayPanel.Title>
-				</span>
+						<ClayLayout.ContentCol>
+							<ClayBadge
+								displayType={
+									totalElements === 0 ? 'success' : 'info'
+								}
+								label={
+									totalElements >= 100
+										? '+100'
+										: totalElements
+								}
+							/>
+						</ClayLayout.ContentCol>
+					</ClayLayout.ContentRow>
+				</ClayPanel.Title>
 			}
 			displayType="unstyled"
 			showCollapseIcon={true}

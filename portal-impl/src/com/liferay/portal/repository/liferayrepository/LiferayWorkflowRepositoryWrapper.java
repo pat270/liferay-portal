@@ -37,13 +37,14 @@ public class LiferayWorkflowRepositoryWrapper extends RepositoryWrapper {
 			String externalReferenceCode, long userId, long folderId,
 			String sourceFileName, String mimeType, String title,
 			String urlTitle, String description, String changeLog, File file,
-			Date expirationDate, Date reviewDate, ServiceContext serviceContext)
+			Date displayDate, Date expirationDate, Date reviewDate,
+			ServiceContext serviceContext)
 		throws PortalException {
 
 		FileEntry fileEntry = super.addFileEntry(
 			externalReferenceCode, userId, folderId, sourceFileName, mimeType,
-			title, urlTitle, description, changeLog, file, expirationDate,
-			reviewDate, serviceContext);
+			title, urlTitle, description, changeLog, file, displayDate,
+			expirationDate, reviewDate, serviceContext);
 
 		DLAppHelperLocalServiceUtil.updateAsset(
 			userId, fileEntry, fileEntry.getFileVersion(), serviceContext);
@@ -58,14 +59,14 @@ public class LiferayWorkflowRepositoryWrapper extends RepositoryWrapper {
 			String externalReferenceCode, long userId, long folderId,
 			String sourceFileName, String mimeType, String title,
 			String urlTitle, String description, String changeLog,
-			InputStream inputStream, long size, Date expirationDate,
-			Date reviewDate, ServiceContext serviceContext)
+			InputStream inputStream, long size, Date displayDate,
+			Date expirationDate, Date reviewDate, ServiceContext serviceContext)
 		throws PortalException {
 
 		FileEntry fileEntry = super.addFileEntry(
 			externalReferenceCode, userId, folderId, sourceFileName, mimeType,
 			title, urlTitle, description, changeLog, inputStream, size,
-			expirationDate, reviewDate, serviceContext);
+			displayDate, expirationDate, reviewDate, serviceContext);
 
 		DLAppHelperLocalServiceUtil.updateAsset(
 			userId, fileEntry, fileEntry.getFileVersion(), serviceContext);
@@ -138,13 +139,13 @@ public class LiferayWorkflowRepositoryWrapper extends RepositoryWrapper {
 			long userId, long fileEntryId, String sourceFileName,
 			String mimeType, String title, String urlTitle, String description,
 			String changeLog, DLVersionNumberIncrease dlVersionNumberIncrease,
-			File file, Date expirationDate, Date reviewDate,
+			File file, Date displayDate, Date expirationDate, Date reviewDate,
 			ServiceContext serviceContext)
 		throws PortalException {
 
 		FileEntry fileEntry = super.updateFileEntry(
 			userId, fileEntryId, sourceFileName, mimeType, title, urlTitle,
-			description, changeLog, dlVersionNumberIncrease, file,
+			description, changeLog, dlVersionNumberIncrease, file, displayDate,
 			expirationDate, reviewDate, serviceContext);
 
 		_workflowSupport.updateFileEntry(
@@ -158,14 +159,14 @@ public class LiferayWorkflowRepositoryWrapper extends RepositoryWrapper {
 			long userId, long fileEntryId, String sourceFileName,
 			String mimeType, String title, String urlTitle, String description,
 			String changeLog, DLVersionNumberIncrease dlVersionNumberIncrease,
-			InputStream inputStream, long size, Date expirationDate,
-			Date reviewDate, ServiceContext serviceContext)
+			InputStream inputStream, long size, Date displayDate,
+			Date expirationDate, Date reviewDate, ServiceContext serviceContext)
 		throws PortalException {
 
 		FileEntry fileEntry = super.updateFileEntry(
 			userId, fileEntryId, sourceFileName, mimeType, title, urlTitle,
 			description, changeLog, dlVersionNumberIncrease, inputStream, size,
-			expirationDate, reviewDate, serviceContext);
+			displayDate, expirationDate, reviewDate, serviceContext);
 
 		_workflowSupport.updateFileEntry(
 			userId, fileEntry, dlVersionNumberIncrease, serviceContext);

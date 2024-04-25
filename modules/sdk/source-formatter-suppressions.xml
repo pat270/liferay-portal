@@ -18,6 +18,7 @@
 		<suppress checks="TryWithResourcesCheck" files="ant-gradle/.*" />
 		<suppress checks="TryWithResourcesCheck" files="ant-mirrors-get/.*" />
 		<suppress checks="TryWithResourcesCheck" files="ant-sync-dir/.*" />
+		<suppress checks="URLInputStreamCheck" files="gradle-plugins-poshi-runner/src/main/java/com/liferay/gradle/plugins/poshi/runner/PoshiRunnerPlugin\.java" />
 		<suppress checks="VariableDeclarationAsUsedCheck" files="gradle-plugins/src/main/java/com/liferay/gradle/plugins/LiferayOSGiPlugin\.java" />
 	</checkstyle>
 	<source-check>
@@ -26,9 +27,10 @@
 		<suppress checks="BNDBundleInformationCheck" files="project-templates/project-templates-npm-vuejs-portlet/bnd\.bnd" />
 		<suppress checks="BNDExportsCheck" files="gradle-plugins-workspace/bnd.bnd" />
 		<suppress checks="BNDWebContextPathCheck" files="gradle-plugins-workspace/src/gradleTest/targetPlatformDefault/modules/foo-rule/bnd.bnd" />
+		<suppress checks="CopyrightCheck" files=".*/GreetingBuilder\.java" />
 		<suppress checks="CopyrightCheck" files="ant-bnd/src/main/java/com/liferay/ant/bnd/metatype/MetatypePlugin\.java" />
 		<suppress checks="GradleBlockOrderCheck" files="gradle-plugins-workspace/src/gradleTest/product.*/settings.gradle" />
-		<suppress checks="GradleDependencyArtifactsCheck" files="gradle-plugins-dependency-local-copy/src/gradleTest/smoke/build\.gradle" />
+		<suppress checks="GradleDependencyArtifactsCheck" files="gradle-plugins-workspace/build\.gradle" />
 		<suppress checks="GradleProvidedDependenciesCheck" files="gradle-plugins-workspace/src/gradleTest/providedModules/build\.gradle" />
 		<suppress checks="JavaDeprecatedJavadocCheck" files=".*" />
 		<suppress checks="JavaDiamondOperatorCheck" files="ant-beanshell/.*" />
@@ -49,6 +51,7 @@
 		<suppress checks="JavaXMLSecurityCheck" files="gradle-plugins-maven-plugin-builder/src/main/java/com/liferay/gradle/plugins/maven/plugin/builder/task/BuildPluginDescriptorTask\.java" />
 		<suppress checks="JavaXMLSecurityCheck" files="gradle-plugins-tlddoc-builder/src/main/java/com/liferay/gradle/plugins/tlddoc/builder/internal/util/TLDUtil\.java" />
 		<suppress checks="JSONValidationCheck" files="project-templates/.*" />
+		<suppress checks="LibraryVulnerabilitiesCheck" files="gradle-plugins-target-platform/src/gradleTest/.*" />
 		<suppress checks="MarkdownStylingCheck" files=".*/CHANGELOG\.markdown" />
 		<suppress checks="PoshiStylingCheck" files="gradle-plugins-poshi-runner/samples/src/testFunctional/Click\.function" />
 		<suppress checks="PoshiStylingCheck" files="gradle-plugins-poshi-runner/samples/src/testFunctional/Open\.function" />

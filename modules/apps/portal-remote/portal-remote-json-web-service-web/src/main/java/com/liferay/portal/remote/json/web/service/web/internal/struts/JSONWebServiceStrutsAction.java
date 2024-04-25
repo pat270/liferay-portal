@@ -15,7 +15,6 @@ import com.liferay.portal.kernel.servlet.ServletContextPool;
 import com.liferay.portal.kernel.servlet.ServletResponseUtil;
 import com.liferay.portal.kernel.struts.StrutsAction;
 import com.liferay.portal.kernel.theme.ThemeUtil;
-import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import javax.servlet.RequestDispatcher;
@@ -66,6 +65,7 @@ public class JSONWebServiceStrutsAction implements StrutsAction {
 			Element bodyElement = document.body();
 
 			bodyElement.prepend(unsyncStringWriter.toString());
+			bodyElement.removeClass("product-menu-open");
 
 			ServletResponseUtil.write(httpServletResponse, document.html());
 		}
@@ -78,9 +78,6 @@ public class JSONWebServiceStrutsAction implements StrutsAction {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		JSONWebServiceStrutsAction.class);
-
-	@Reference
-	private Portal _portal;
 
 	@Reference(
 		target = "(osgi.web.symbolicname=com.liferay.portal.remote.json.web.service.web)"

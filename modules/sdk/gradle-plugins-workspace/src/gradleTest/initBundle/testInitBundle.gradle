@@ -1,0 +1,87 @@
+task runGradleTest
+
+gradle.liferayWorkspace {
+	environment = "production"
+	product = "portal-7.1-ga4"
+}
+
+runGradleTest {
+	dependsOn clean, initBundle
+
+	doLast {
+
+		// Configs
+
+		Map<String, String> configFileNames = [
+			"common.txt": "common",
+			"production.txt" : "production",
+			"license/copyright.txt": "production"
+		]
+
+		configFileNames.each {
+			String fileName, String config ->
+
+			File generatedFile = new File(initBundle.destinationDir, fileName)
+
+			assert generatedFile.exists()
+
+			File expectedFile = file("configs/${config}/${fileName}")
+
+			assert expectedFile.text.normalize() == generatedFile.text.normalize()
+		}
+
+		File bundleTomcatDir = new File(initBundle.destinationDir, "tomcat-9.0.17");
+
+		File bundleTomcatBinDir = new File(bundleTomcatDir, "bin");
+
+		File generatedEmptyShFile = new File(bundleTomcatBinDir, "setEnv1.sh");
+
+		assert generatedEmptyShFile.exists();
+
+		// Bundle
+
+		String bundleFileName = downloadBundle.src.toString();
+
+		bundleFileName = bundleFileName.substring(bundleFileName.lastIndexOf('/') + 1);
+
+		File bundleFile = new File(downloadBundle.dest, bundleFileName);
+
+		if (bundleFileName.endsWith(".7z")) {
+			return;
+		}
+
+		FileTree bundleFileTree
+
+		if (bundleFileName.endsWith(".tar.gz")) {
+			bundleFileTree = tarTree(bundleFile);
+		}
+		else {
+			bundleFileTree = zipTree(bundleFile);
+		}
+
+		bundleFileTree.visit {
+
+			// Skip root directory
+
+			int pos = it.path.indexOf('/')
+
+			if (pos == -1) {
+				return
+			}
+
+			String fileName = it.path.substring(pos + 1)
+
+			if (configFileNames.containsKey(fileName)) {
+				return
+			}
+
+			File generatedFile = new File(initBundle.destinationDir, fileName)
+
+			assert generatedFile.exists()
+
+			if (!it.directory) {
+				assert generatedFile.lastModified() == it.lastModified
+			}
+		}
+	}
+}

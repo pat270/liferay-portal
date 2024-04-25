@@ -1,10 +1,10 @@
-@component-name = "portal-lima"
+@component-name = "portal-content-management"
 definition {
 
 	property portal.acceptance = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "SEO";
+	property testray.main.component.name = "OpenGraph Tags";
 
 	setUp {
 		task ("Set up instance and sign in") {
@@ -99,6 +99,7 @@ definition {
 	test CanDisableConfiguration {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var portalURL = PropsUtil.get("portal.url");
 
@@ -212,7 +213,7 @@ definition {
 
 		LexiconEntry.gotoHeaderMenuItem(menuItem = "Configure");
 
-		SelectWindow.selectPopUp(locator1 = "null");
+		SelectWindow.selectPopUp(value1 = "null");
 
 		Navigator.gotoNavNested(navNested = "Open Graph");
 
@@ -310,7 +311,7 @@ definition {
 
 		LexiconEntry.gotoHeaderMenuItem(menuItem = "Configure");
 
-		SelectWindow.selectPopUp(locator1 = "null");
+		SelectWindow.selectPopUp(value1 = "null");
 
 		Navigator.gotoNavNested(navNested = "Open Graph");
 
@@ -429,7 +430,7 @@ definition {
 
 		LexiconEntry.gotoHeaderMenuItem(menuItem = "Configure");
 
-		SelectWindow.selectPopUp(locator1 = "null");
+		SelectWindow.selectPopUp(value1 = "null");
 
 		Navigator.gotoNavNested(navNested = "Open Graph");
 
@@ -490,7 +491,7 @@ definition {
 
 		LexiconEntry.gotoHeaderMenuItem(menuItem = "Configure");
 
-		SelectWindow.selectPopUp(locator1 = "null");
+		SelectWindow.selectPopUp(value1 = "null");
 
 		Navigator.gotoNavNested(navNested = "Open Graph");
 

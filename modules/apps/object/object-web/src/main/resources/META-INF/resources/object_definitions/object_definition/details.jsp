@@ -21,16 +21,14 @@ renderResponse.setTitle(LanguageUtil.format(request, "edit-x", objectDefinition.
 
 <div id="<portlet:namespace />EditObjectDefinition">
 	<react:component
-		module="js/components/ObjectDetails/EditObjectDetails"
+		module="{EditObjectDetails} from object-web"
 		props='<%=
 			HashMapBuilder.<String, Object>put(
 				"backURL", ParamUtil.getString(request, "backURL", String.valueOf(renderResponse.createRenderURL()))
 			).put(
-				"companyKeyValuePair", objectDefinitionsDetailsDisplayContext.getScopeKeyValuePairs("company")
+				"companies", objectDefinitionsDetailsDisplayContext.getScopeJSONArray("company")
 			).put(
 				"dbTableName", objectDefinition.getDBTableName()
-			).put(
-				"externalReferenceCode", objectDefinition.getExternalReferenceCode()
 			).put(
 				"hasPublishObjectPermission", objectDefinitionsDetailsDisplayContext.hasPublishObjectPermission()
 			).put(
@@ -38,9 +36,15 @@ renderResponse.setTitle(LanguageUtil.format(request, "edit-x", objectDefinition.
 			).put(
 				"isApproved", objectDefinition.isApproved()
 			).put(
+				"isRootDescendantNode", objectDefinition.isRootDescendantNode()
+			).put(
 				"label", LocalizationUtil.getLocalizationMap(objectDefinition.getLabel())
 			).put(
+				"learnResourceContext", LearnMessageUtil.getReactDataJSONObject("frontend-js-components-web")
+			).put(
 				"nonRelationshipObjectFieldsInfo", objectDefinitionsDetailsDisplayContext.getNonrelationshipObjectFieldsInfo()
+			).put(
+				"objectDefinitionExternalReferenceCode", objectDefinition.getExternalReferenceCode()
 			).put(
 				"objectDefinitionId", objectDefinition.getObjectDefinitionId()
 			).put(
@@ -50,9 +54,9 @@ renderResponse.setTitle(LanguageUtil.format(request, "edit-x", objectDefinition.
 			).put(
 				"shortName", objectDefinition.getShortName()
 			).put(
-				"siteKeyValuePair", objectDefinitionsDetailsDisplayContext.getScopeKeyValuePairs("site")
+				"sites", objectDefinitionsDetailsDisplayContext.getScopeJSONArray("site")
 			).put(
-				"storageTypes", objectDefinitionsDetailsDisplayContext.getStoragesJSONArray()
+				"storageTypes", objectDefinitionsDetailsDisplayContext.getStorageTypesJSONArray()
 			).build()
 		%>'
 	/>

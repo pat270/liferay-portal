@@ -28,37 +28,37 @@ public interface CETFactory {
 
 	public CET create(
 			CETConfiguration cetConfiguration, long companyId,
-			String externalReferenceCode)
+			String externalReferenceCode, boolean replaceVariables)
 		throws PortalException;
 
-	public CET create(ClientExtensionEntry clientExtensionEntry)
+	public CET create(
+			ClientExtensionEntry clientExtensionEntry, boolean replaceVariables)
 		throws PortalException;
 
-	public CET create(PortletRequest portletRequest, String type)
-		throws PortalException;
+	public CET create(PortletRequest portletRequest) throws PortalException;
 
 	public Collection<String> getTypes();
 
 	public void validate(
-			UnicodeProperties newTypeSettingsUnicodeProperties,
+			long companyId, UnicodeProperties newTypeSettingsUnicodeProperties,
 			UnicodeProperties oldTypeSettingsUnicodeProperties, String type)
 		throws PortalException;
 
 	public final Map<String, String> FEATURE_FLAG_KEYS = HashMapBuilder.put(
+
+		// feature.flag.LPD-15804
+
+		ClientExtensionEntryConstants.TYPE_COMMERCE_CHECKOUT_STEP, "LPD-15804"
+	).put(
 
 		// feature.flag.LPS-164563
 
 		ClientExtensionEntryConstants.TYPE_FDS_CELL_RENDERER, "LPS-164563"
 	).put(
 
-		// feature.flag.LPS-166479
+		// feature.flag.LPS-164563
 
-		ClientExtensionEntryConstants.TYPE_THEME_SPRITEMAP, "LPS-166479"
-	).put(
-
-		// feature.flag.LPS-172903
-
-		ClientExtensionEntryConstants.TYPE_JS_IMPORT_MAPS_ENTRY, "LPS-172903"
+		ClientExtensionEntryConstants.TYPE_FDS_FILTER, "LPS-164563"
 	).put(
 
 		// feature.flag.LPS-177027
@@ -66,9 +66,10 @@ public interface CETFactory {
 		ClientExtensionEntryConstants.TYPE_STATIC_CONTENT, "LPS-177027"
 	).put(
 
-		// feature.flag.LPS-184016
+		// feature.flag.LPS-186870
 
-		ClientExtensionEntryConstants.TYPE_FDS_FILTER, "LPS-184016"
+		ClientExtensionEntryConstants.TYPE_EDITOR_CONFIG_CONTRIBUTOR,
+		"LPS-186870"
 	).build();
 
 }

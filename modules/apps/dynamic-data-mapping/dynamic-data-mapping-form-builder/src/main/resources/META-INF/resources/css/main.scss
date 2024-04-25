@@ -3,6 +3,53 @@
 @import './components/components';
 @import './form-builder/form-builder';
 
+@media screen and (min-height: 851px) {
+	.dropdown-menu.date-picker-dropdown-menu.show {
+		position: fixed;
+	}
+}
+
+@media screen and (max-height: 850px) {
+	.dropdown-menu.date-picker-dropdown-menu.show {
+		height: 21rem;
+		position: fixed;
+	}
+}
+
+@media screen and (max-height: 750px) {
+	.dropdown-menu.date-picker-dropdown-menu.show {
+		height: 15rem;
+		position: fixed;
+	}
+}
+
+@media screen and (max-height: 550px) {
+	.dropdown-menu.date-picker-dropdown-menu.show {
+		height: 10rem;
+		position: fixed;
+	}
+}
+
+@media screen and (max-height: 450px) {
+	.dropdown-menu.date-picker-dropdown-menu.show {
+		height: 8rem;
+		position: fixed;
+	}
+}
+
+@media screen and (max-height: 370px) {
+	.dropdown-menu.date-picker-dropdown-menu.show {
+		height: 6rem;
+		position: fixed;
+	}
+}
+
+@media (min-width: 576px) {
+	.ddm-form-builder .modal-sm {
+		max-width: 300px;
+	}
+}
+
 .col-empty > p {
 	margin: 0;
 }
@@ -10,23 +57,6 @@
 .calculate-field-reference {
 	display: block;
 	font-size: 10px;
-}
-
-.dropdown-menu.clay-color-dropdown-menu.show {
-	position: fixed;
-}
-
-.dropdown-menu.date-picker-dropdown-menu.show {
-	position: fixed;
-}
-
-.dropdown-menu.ddm-select-dropdown.show {
-	position: fixed;
-}
-
-.dropdown-menu.dropdown-opened {
-	display: block;
-	min-width: 100%;
 }
 
 .ddm-field-dropdown.show {
@@ -56,9 +86,37 @@
 	}
 }
 
+.ddm-form-builder {
+	.modal {
+		display: none;
+		margin: inherit;
+	}
+
+	.modal-dialog {
+		position: relative;
+	}
+
+	.modal-sm {
+		max-width: 300px;
+	}
+}
+
 .ddm-target {
 	height: 100%;
 	width: 100%;
+}
+
+.dropdown-menu.clay-color-dropdown-menu.show {
+	position: fixed;
+}
+
+.dropdown-menu.ddm-select-dropdown.show {
+	position: fixed;
+}
+
+.dropdown-menu.dropdown-opened {
+	display: block;
+	min-width: 100%;
 }
 
 .form-builder-select-field {
@@ -209,27 +267,6 @@
 				padding: 0;
 			}
 		}
-	}
-}
-
-.ddm-form-builder {
-	.modal {
-		display: none;
-		margin: inherit;
-	}
-
-	.modal-dialog {
-		position: relative;
-	}
-
-	.modal-sm {
-		max-width: 300px;
-	}
-}
-
-@media (min-width: 576px) {
-	.ddm-form-builder .modal-sm {
-		max-width: 300px;
 	}
 }
 

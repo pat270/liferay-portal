@@ -7,7 +7,6 @@ package com.liferay.portal.verify;
 
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.dao.orm.common.SQLTransformer;
-import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.ResourceConstants;
@@ -19,20 +18,18 @@ import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.verify.model.VerifiableResourcedModel;
+import com.liferay.portal.verify.model.GroupVerifiableResourcedModel;
+import com.liferay.portal.verify.model.LayoutBranchVerifiableResourcedModel;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-import java.util.Collection;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author     Raymond Augé
  * @author     James Lefeu
- * @deprecated As of Mueller (7.2.x), with no direct replacement
  */
-@Deprecated
 public class VerifyResourcePermissions extends VerifyProcess {
 
 	public static void verify(
@@ -55,14 +52,9 @@ public class VerifyResourcePermissions extends VerifyProcess {
 			return;
 		}
 
-		Map<String, VerifiableResourcedModel> verifiableResourcedModelsMap =
-			PortalBeanLocatorUtil.locate(VerifiableResourcedModel.class);
-
-		Collection<VerifiableResourcedModel> verifiableResourcedModels =
-			verifiableResourcedModelsMap.values();
-
 		doVerify(
-			verifiableResourcedModels.toArray(new VerifiableResourcedModel[0]));
+			new GroupVerifiableResourcedModel(),
+			new LayoutBranchVerifiableResourcedModel());
 	}
 
 	protected void doVerify(
@@ -74,11 +66,11 @@ public class VerifyResourcePermissions extends VerifyProcess {
 				Role role = RoleLocalServiceUtil.getRole(
 					companyId, RoleConstants.OWNER);
 
-				processConcurrently(
-					verifiableResourcedModels,
-					verifiableResourcedModel -> _verifyResourcedModel(
-						role, verifiableResourcedModel),
-					null);
+				for (VerifiableResourcedModel verifiableResourcedModel :
+						verifiableResourcedModels) {
+
+					_verifyResourcedModel(role, verifiableResourcedModel);
+				}
 			});
 	}
 

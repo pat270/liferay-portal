@@ -111,7 +111,6 @@ public class RedirectNotFoundEntriesManagementToolbarDisplayContext
 	public List<DropdownItem> getFilterDropdownItems() {
 		List<DropdownItem> filterNavigationDropdownItems =
 			getFilterNavigationDropdownItems();
-		List<DropdownItem> orderByDropdownItems = getOrderByDropdownItems();
 
 		DropdownItemList filterDropdownItems = DropdownItemListBuilder.addGroup(
 			() -> filterNavigationDropdownItems != null,
@@ -127,12 +126,6 @@ public class RedirectNotFoundEntriesManagementToolbarDisplayContext
 					_getFilterDateDropdownItems());
 				dropdownGroupItem.setLabel(
 					LanguageUtil.get(httpServletRequest, "filter-by-date"));
-			}
-		).addGroup(
-			() -> orderByDropdownItems != null,
-			dropdownGroupItem -> {
-				dropdownGroupItem.setDropdownItems(orderByDropdownItems);
-				dropdownGroupItem.setLabel(getOrderByDropdownItemsLabel());
 			}
 		).build();
 

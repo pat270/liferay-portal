@@ -16,10 +16,12 @@ compileJava {
 }
 
 dependencies {
-	compile fileTree(dir: "lib", include: "*.jar")
+	api fileTree(dir: "lib", include: "*.jar")
 }
 
 downloadSrc {
+	doNotTrackState("")
+
 	eachFile {
 		if (path.startsWith("gdata/java/lib") || path.startsWith("gdata/java/sample/util/lib")) {
 			path = "lib/" + name

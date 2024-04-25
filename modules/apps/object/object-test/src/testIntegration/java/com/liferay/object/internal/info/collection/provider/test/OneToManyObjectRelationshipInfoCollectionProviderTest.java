@@ -20,6 +20,7 @@ import com.liferay.object.model.ObjectField;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.object.service.ObjectRelationshipLocalService;
+import com.liferay.object.test.util.ObjectDefinitionTestUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Group;
@@ -30,7 +31,6 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
@@ -50,7 +50,6 @@ import org.junit.runner.RunWith;
 /**
  * @author Jürgen Kappler
  */
-@FeatureFlags("LPS-176083")
 @RunWith(Arquillian.class)
 public class OneToManyObjectRelationshipInfoCollectionProviderTest {
 
@@ -90,13 +89,13 @@ public class OneToManyObjectRelationshipInfoCollectionProviderTest {
 				_parentObjectDefinition.getObjectDefinitionId());
 
 		_objectRelationshipLocalService.addObjectRelationship(
-			TestPropsValues.getUserId(),
+			null, TestPropsValues.getUserId(),
 			_parentObjectDefinition.getObjectDefinitionId(),
 			_childObjectDefinition.getObjectDefinitionId(), 0,
 			ObjectRelationshipConstants.DELETION_TYPE_CASCADE,
 			LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
-			"oneToManyRelationshipName",
-			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
+			"oneToManyRelationshipName", false,
+			ObjectRelationshipConstants.TYPE_ONE_TO_MANY, null);
 	}
 
 	@Test
@@ -170,9 +169,9 @@ public class OneToManyObjectRelationshipInfoCollectionProviderTest {
 		throws Exception {
 
 		return _objectDefinitionLocalService.addCustomObjectDefinition(
-			TestPropsValues.getUserId(), false, false,
+			TestPropsValues.getUserId(), 0, false, false, false,
 			LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
-			"A" + RandomTestUtil.randomString(), null, null,
+			ObjectDefinitionTestUtil.getRandomName(), null, null,
 			LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
 			true, ObjectDefinitionConstants.SCOPE_SITE,
 			ObjectDefinitionConstants.STORAGE_TYPE_DEFAULT,

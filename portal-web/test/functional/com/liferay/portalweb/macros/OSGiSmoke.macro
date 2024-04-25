@@ -1,6 +1,7 @@
 definition {
 
-	macro Smoke {
+	@summary = "Run a smoke test for OSGI"
+	macro Smoke(appName = null, portletName = null) {
 		ApplicationsMenu.gotoPortlet(
 			category = "System",
 			panel = "Control Panel",

@@ -78,14 +78,20 @@ public class ViewSharedAssetsManagementToolbarDisplayContext
 				dropdownGroupItem.setDropdownItems(
 					_getFilterNavigationDropdownItems());
 				dropdownGroupItem.setLabel(
-					LanguageUtil.get(
-						httpServletRequest, "filter-by-navigation"));
+					LanguageUtil.get(httpServletRequest, "filter-by"));
 			}
-		).addGroup(
-			dropdownGroupItem -> {
-				dropdownGroupItem.setDropdownItems(_getOrderByDropdownItems());
-				dropdownGroupItem.setLabel(
-					LanguageUtil.get(httpServletRequest, "order-by"));
+		).build();
+	}
+
+	public List<DropdownItem> getOrderByDropdownItems() {
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.setActive(
+					Objects.equals(getOrderByCol(), "sharedDate"));
+				dropdownItem.setHref(
+					_getCurrentSortingURL(), "orderByCol", "sharedDate");
+				dropdownItem.setLabel(
+					LanguageUtil.get(httpServletRequest, "shared-date"));
 			}
 		).build();
 	}
@@ -166,19 +172,6 @@ public class ViewSharedAssetsManagementToolbarDisplayContext
 				dropdownItem.putData("action", "openAssetTypesSelector");
 				dropdownItem.setActive(Validator.isNotNull(className));
 				dropdownItem.setLabel(_getClassNameLabel(className));
-			}
-		).build();
-	}
-
-	private List<DropdownItem> _getOrderByDropdownItems() {
-		return DropdownItemListBuilder.add(
-			dropdownItem -> {
-				dropdownItem.setActive(
-					Objects.equals(getOrderByCol(), "sharedDate"));
-				dropdownItem.setHref(
-					_getCurrentSortingURL(), "orderByCol", "sharedDate");
-				dropdownItem.setLabel(
-					LanguageUtil.get(httpServletRequest, "shared-date"));
 			}
 		).build();
 	}

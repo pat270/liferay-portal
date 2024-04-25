@@ -1,18 +1,25 @@
 import * as breadcrumbs from 'shared/util/breadcrumbs';
 import BasePage from 'shared/components/base-page';
 import BundleRouter from 'route-middleware/BundleRouter';
+import DownloadCSVReport from 'shared/components/download-report/DownloadCSVReport';
+import DownloadPDFReport, {
+	Containers
+} from 'shared/components/download-report/DownloadPDFReport';
 import Filter from '../hocs/Filter';
 import getCN from 'classnames';
 import Loading from 'shared/components/Loading';
 import React, {lazy, Suspense, useState} from 'react';
 import RouteNotFound from 'shared/components/RouteNotFound';
+import {CSVType} from 'shared/components/download-report/utils';
 import {ENABLE_GLOBAL_FILTER} from 'shared/util/constants';
-import {getRangeSelectorsFromQuery} from 'shared/util/util';
+import {getMatchedRoute, Routes} from 'shared/util/router';
 import {pickBy} from 'lodash';
 import {Router} from 'shared/types';
-import {Routes} from 'shared/util/router';
+import {sub} from 'shared/util/lang';
 import {Switch} from 'react-router-dom';
 import {useChannelContext} from 'shared/context/channel';
+import {useDataSource} from 'shared/hooks/useDataSource';
+import {useQueryRangeSelectors} from 'shared/hooks/useQueryRangeSelectors';
 
 const Overview = lazy(
 	() => import(/* webpackChunkName: "BlogsOverview" */ './Overview')
@@ -24,20 +31,34 @@ const KnownIndividuals = lazy(
 		)
 );
 
+const NAV_ITEMS = [
+	{
+		exact: true,
+		label: Liferay.Language.get('overview'),
+		route: Routes.ASSETS_BLOGS_OVERVIEW
+	},
+	{
+		exact: true,
+		label: Liferay.Language.get('known-individuals'),
+		route: Routes.ASSETS_BLOGS_KNOWN_INDIVIDUALS
+	}
+];
+
 const Blog: React.FC<{
 	className: string;
 	router: Router;
 }> = ({className, router}) => {
 	const {
-		params: {assetId, channelId, groupId, title, touchpoint},
-		query
+		params: {assetId, channelId, groupId, title, touchpoint}
 	} = router;
 
 	const [filters, setFilters] = useState({});
 
+	const dataSourceStates = useDataSource();
+
 	const decodedTitle = decodeURIComponent(title);
 
-	const rangeSelectorsFromQuery = getRangeSelectorsFromQuery(query);
+	const rangeSelectorsFromQuery = useQueryRangeSelectors();
 
 	const {selectedChannel} = useChannelContext();
 
@@ -62,18 +83,7 @@ const Blog: React.FC<{
 				<BasePage.Header.TitleSection title={decodedTitle} />
 
 				<BasePage.Header.NavBar
-					items={[
-						{
-							exact: true,
-							label: Liferay.Language.get('overview'),
-							route: Routes.ASSETS_BLOGS_OVERVIEW
-						},
-						{
-							exact: true,
-							label: Liferay.Language.get('known-individuals'),
-							route: Routes.ASSETS_BLOGS_KNOWN_INDIVIDUALS
-						}
-					]}
+					items={NAV_ITEMS}
 					routeParams={{
 						assetId,
 						channelId,
@@ -84,6 +94,44 @@ const Blog: React.FC<{
 					routeQueries={pickBy(rangeSelectorsFromQuery)}
 				/>
 			</BasePage.Header>
+
+			{getMatchedRoute(NAV_ITEMS) === Routes.ASSETS_BLOGS_OVERVIEW && (
+				<BasePage.SubHeader>
+					<div className='d-flex justify-content-end w-100'>
+						<DownloadPDFReport
+							containers={[
+								Containers.VisitorsBehaviorCard,
+								Containers.AudienceCard,
+								Containers.ViewsByLocationCard,
+								Containers.ViewsByTechnologyCard,
+								Containers.AssetAppearsOnCard
+							]}
+							disabled={dataSourceStates.empty}
+							subtitle={selectedChannel?.name}
+							title={
+								sub(Liferay.Language.get('x-dashboard'), [
+									decodedTitle
+								]) as string
+							}
+						/>
+					</div>
+				</BasePage.SubHeader>
+			)}
+
+			{getMatchedRoute(NAV_ITEMS) ===
+				Routes.ASSETS_BLOGS_KNOWN_INDIVIDUALS && (
+				<BasePage.SubHeader>
+					<div className='d-flex justify-content-end w-100'>
+						<DownloadCSVReport
+							assetId={assetId}
+							assetType='blog'
+							disabled={dataSourceStates.empty}
+							type={CSVType.Individual}
+							typeLang={Liferay.Language.get('blogs')}
+						/>
+					</div>
+				</BasePage.SubHeader>
+			)}
 
 			<BasePage.Context.Provider
 				value={{

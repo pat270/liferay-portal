@@ -9,6 +9,7 @@ import com.liferay.fragment.constants.FragmentConfigurationFieldDataType;
 import com.liferay.fragment.entry.processor.constants.FragmentEntryProcessorConstants;
 import com.liferay.fragment.util.configuration.FragmentConfigurationField;
 import com.liferay.fragment.util.configuration.FragmentEntryConfigurationParser;
+import com.liferay.fragment.util.configuration.FragmentEntryMenuDisplayConfiguration;
 import com.liferay.frontend.token.definition.FrontendToken;
 import com.liferay.frontend.token.definition.FrontendTokenDefinition;
 import com.liferay.frontend.token.definition.FrontendTokenDefinitionRegistry;
@@ -16,6 +17,7 @@ import com.liferay.frontend.token.definition.FrontendTokenMapping;
 import com.liferay.info.item.ClassPKInfoItemIdentifier;
 import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.info.item.provider.InfoItemObjectProvider;
+import com.liferay.info.pagination.InfoPage;
 import com.liferay.info.pagination.Pagination;
 import com.liferay.layout.list.retriever.DefaultLayoutListRetrieverContext;
 import com.liferay.layout.list.retriever.LayoutListRetriever;
@@ -34,7 +36,6 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.LayoutSetLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -45,6 +46,7 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.site.navigation.taglib.servlet.taglib.util.NavItemUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -215,6 +217,19 @@ public class FragmentEntryConfigurationParserImpl
 				if (contextListObject != null) {
 					contextObjects.put(
 						name + _CONTEXT_OBJECT_LIST_SUFFIX, contextListObject);
+				}
+			}
+
+			if (StringUtil.equalsIgnoreCase(
+					fragmentConfigurationField.getType(),
+					"navigationMenuSelector")) {
+
+				Object contextObject = _getNavItemsContextObject(
+					configurationValuesJSONObject.getString(name));
+
+				if (contextObject != null) {
+					contextObjects.put(
+						name + _CONTEXT_OBJECT_SUFFIX, contextObject);
 				}
 			}
 		}
@@ -391,12 +406,11 @@ public class FragmentEntryConfigurationParserImpl
 
 		Group group = themeDisplay.getScopeGroup();
 
-		LayoutSet layoutSet = _layoutSetLocalService.fetchLayoutSet(
-			themeDisplay.getSiteGroupId(), group.isLayoutSetPrototype());
-
 		FrontendTokenDefinition frontendTokenDefinition =
 			_frontendTokenDefinitionRegistry.getFrontendTokenDefinition(
-				layoutSet.getThemeId());
+				_layoutSetLocalService.fetchLayoutSet(
+					themeDisplay.getSiteGroupId(),
+					group.isLayoutSetPrototype()));
 
 		if (frontendTokenDefinition == null) {
 			return fieldValue;
@@ -725,9 +739,11 @@ public class FragmentEntryConfigurationParserImpl
 			defaultLayoutListRetrieverContext.setSegmentsEntryIds(
 				segmentsEntryIds);
 
-			return layoutListRetriever.getList(
+			InfoPage<?> infoPage = layoutListRetriever.getInfoPage(
 				listObjectReferenceFactory.getListObjectReference(jsonObject),
 				defaultLayoutListRetrieverContext);
+
+			return infoPage.getPageItems();
 		}
 		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
@@ -756,6 +772,23 @@ public class FragmentEntryConfigurationParserImpl
 		}
 
 		return null;
+	}
+
+	private Object _getNavItemsContextObject(String value) {
+		ServiceContext serviceContext =
+			ServiceContextThreadLocal.getServiceContext();
+
+		FragmentEntryMenuDisplayConfiguration
+			fragmentEntryMenuDisplayConfiguration =
+				new FragmentEntryMenuDisplayConfiguration(value);
+
+		return NavItemUtil.getNavigationMenuContext(
+			1, "auto", serviceContext.getRequest(),
+			fragmentEntryMenuDisplayConfiguration.getNavigationMenuMode(),
+			false, fragmentEntryMenuDisplayConfiguration.getRootItemId(),
+			fragmentEntryMenuDisplayConfiguration.getRootItemLevel(),
+			fragmentEntryMenuDisplayConfiguration.getRootItemType(),
+			fragmentEntryMenuDisplayConfiguration.getSiteNavigationMenuId());
 	}
 
 	private Object _getURLValue(String value) {

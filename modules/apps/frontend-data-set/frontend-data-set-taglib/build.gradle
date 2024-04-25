@@ -1,7 +1,7 @@
 dependencies {
-	compileOnly group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: "2.13.4"
-	compileOnly group: "com.fasterxml.jackson.core", name: "jackson-core", version: "2.13.4"
-	compileOnly group: "com.fasterxml.jackson.core", name: "jackson-databind", version: "2.13.4.2"
+	compileOnly group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: "2.16.1"
+	compileOnly group: "com.fasterxml.jackson.core", name: "jackson-core", version: "2.16.1"
+	compileOnly group: "com.fasterxml.jackson.core", name: "jackson-databind", version: "2.16.1"
 	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.impl", version: "default"
 	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.kernel", version: "default"
 	compileOnly group: "com.liferay.portal", name: "com.liferay.util.taglib", version: "default"
@@ -19,7 +19,6 @@ dependencies {
 	compileOnly project(":apps:frontend-taglib:frontend-taglib-clay")
 	compileOnly project(":apps:frontend-taglib:frontend-taglib-react")
 	compileOnly project(":apps:portal-template:portal-template-react-renderer-api")
-	compileOnly project(":apps:static:osgi:osgi-util")
 	compileOnly project(":core:petra:petra-function")
 	compileOnly project(":core:petra:petra-string")
 }

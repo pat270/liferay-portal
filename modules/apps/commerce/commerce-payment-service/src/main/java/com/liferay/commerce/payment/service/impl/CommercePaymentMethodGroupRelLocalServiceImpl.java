@@ -101,9 +101,9 @@ public class CommercePaymentMethodGroupRelLocalServiceImpl
 		commercePaymentMethodGroupRel.setUserId(user.getUserId());
 		commercePaymentMethodGroupRel.setUserName(user.getFullName());
 
-		commercePaymentMethodGroupRel.setActive(active);
-		commercePaymentMethodGroupRel.setDescriptionMap(descriptionMap);
 		commercePaymentMethodGroupRel.setNameMap(nameMap);
+		commercePaymentMethodGroupRel.setDescriptionMap(descriptionMap);
+		commercePaymentMethodGroupRel.setActive(active);
 
 		if (imageFile != null) {
 			commercePaymentMethodGroupRel.setImageId(
@@ -342,6 +342,14 @@ public class CommercePaymentMethodGroupRelLocalServiceImpl
 				commercePaymentMethodGroupRelId);
 
 		commercePaymentMethodGroupRel.setActive(active);
+
+		return commercePaymentMethodGroupRelPersistence.update(
+			commercePaymentMethodGroupRel);
+	}
+
+	@Override
+	public CommercePaymentMethodGroupRel updateCommercePaymentMethodGroupRel(
+		CommercePaymentMethodGroupRel commercePaymentMethodGroupRel) {
 
 		return commercePaymentMethodGroupRelPersistence.update(
 			commercePaymentMethodGroupRel);

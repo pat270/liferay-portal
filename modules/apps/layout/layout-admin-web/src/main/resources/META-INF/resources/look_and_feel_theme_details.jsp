@@ -57,7 +57,7 @@ String styleBookWarningMessage = layoutsAdminDisplayContext.getStyleBookWarningM
 	>
 		<clay:image-card
 			cssClass="c-mb-0"
-			imageAlt='<%= Validator.isNotNull(selTheme.getName()) ? HtmlUtil.escapeAttribute(selTheme.getName()) : "" %>'
+			imageAlt=""
 			imageSrc='<%= themeDisplay.getCDNBaseURL() + HtmlUtil.escapeAttribute(selTheme.getStaticResourcePath()) + HtmlUtil.escapeAttribute(selTheme.getImagesPath()) + "/thumbnail.png" %>'
 			subtitle='<%= ((selPluginPackage != null) && Validator.isNotNull(selPluginPackage.getAuthor())) ? HtmlUtil.escape(selPluginPackage.getAuthor()) : "" %>'
 			title='<%= Validator.isNotNull(selTheme.getName()) ? HtmlUtil.escapeAttribute(selTheme.getName()) : "" %>'
@@ -147,7 +147,7 @@ String styleBookWarningMessage = layoutsAdminDisplayContext.getStyleBookWarningM
 			disabled="<%= layoutsAdminDisplayContext.isReadOnly() %>"
 			displayType="secondary"
 			id='<%= liferayPortletResponse.getNamespace() + "changeTheme" %>'
-			label='<%= LanguageUtil.get(request, "change-current-theme") %>'
+			label="change-current-theme"
 		/>
 
 		<portlet:renderURL copyCurrentRenderParameters="<%= true %>" var="lookAndFeelDetailURL" windowState="<%= LiferayWindowState.EXCLUSIVE.toString() %>">
@@ -168,7 +168,7 @@ String styleBookWarningMessage = layoutsAdminDisplayContext.getStyleBookWarningM
 					"themeContainerId", liferayPortletResponse.getNamespace() + "currentThemeContainer"
 				).build()
 			%>'
-			module="js/LookAndFeelThemeEdit"
+			module="{LookAndFeelThemeEdit} from layout-admin-web"
 		/>
 	</clay:col>
 </clay:row>
@@ -236,6 +236,6 @@ List<ColorScheme> colorSchemes = selTheme.getColorSchemes();
 				"regularColorSchemeInputId", liferayPortletResponse.getNamespace() + "regularColorSchemeId"
 			).build()
 		%>'
-		module="js/LookAndFeelThemeDetails"
+		module="{LookAndFeelThemeDetails} from layout-admin-web"
 	/>
 </c:if>

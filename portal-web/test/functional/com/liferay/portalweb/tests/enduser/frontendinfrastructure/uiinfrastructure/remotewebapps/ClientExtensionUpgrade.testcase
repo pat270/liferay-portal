@@ -4,6 +4,8 @@ definition {
 	property app.server.types = "jboss,tcserver,tomcat,weblogic,websphere,wildfly";
 	property database.types = "db2,mariadb,mysql,oracle,postgresql,sqlserver,sybase";
 	property test.assert.warning.exceptions = "true";
+	property test.liferay.virtual.instance = "false";
+	property test.run.type = "single";
 	property testray.component.names = "Client Extensions";
 	property testray.main.component.name = "Upgrades Remote Apps";
 
@@ -21,7 +23,6 @@ definition {
 	@priority = 4
 	test CanViewRemoteAppCustomElementPortletAfterUpgrade7413 {
 		property data.archive.type = "data-archive-remote-app";
-		property portal.acceptance = "false";
 		property portal.release = "false";
 		property portal.upstream = "quarantine";
 		property portal.version = "7.4.13";
@@ -56,7 +57,6 @@ definition {
 	@priority = 5
 	test CanViewRemoteAppFieldsAfterUpgrade73101 {
 		property data.archive.type = "data-archive-remote-app";
-		property portal.acceptance = "false";
 		property portal.release = "false";
 		property portal.upstream = "quarantine";
 		property portal.version = "7.3.10.1";

@@ -5,7 +5,11 @@
 
 package com.liferay.object.model.impl;
 
+import com.liferay.object.constants.ObjectRelationshipConstants;
+import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.relationship.util.ObjectRelationshipUtil;
+import com.liferay.object.service.ObjectDefinitionLocalServiceUtil;
+import com.liferay.portal.kernel.exception.PortalException;
 
 import java.util.Objects;
 import java.util.Set;
@@ -17,6 +21,15 @@ import java.util.Set;
 public class ObjectRelationshipImpl extends ObjectRelationshipBaseImpl {
 
 	@Override
+	public boolean compareType(String type) {
+		if (type.equals(getType())) {
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
 	public boolean isAllowedObjectRelationshipType(String type) {
 		Set<String> defaultObjectRelationshipTypes =
 			ObjectRelationshipUtil.getDefaultObjectRelationshipTypes();
@@ -26,6 +39,31 @@ public class ObjectRelationshipImpl extends ObjectRelationshipBaseImpl {
 		}
 
 		return false;
+	}
+
+	@Override
+	public boolean isEdgeCandidate() throws PortalException {
+		if (isSelf() ||
+			!Objects.equals(
+				ObjectRelationshipConstants.TYPE_ONE_TO_MANY, getType())) {
+
+			return false;
+		}
+
+		ObjectDefinition objectDefinition1 =
+			ObjectDefinitionLocalServiceUtil.getObjectDefinition(
+				getObjectDefinitionId1());
+		ObjectDefinition objectDefinition2 =
+			ObjectDefinitionLocalServiceUtil.getObjectDefinition(
+				getObjectDefinitionId2());
+
+		if (!objectDefinition1.isNodeCandidate() ||
+			!objectDefinition2.isNodeCandidate()) {
+
+			return false;
+		}
+
+		return true;
 	}
 
 	@Override

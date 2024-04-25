@@ -1,0 +1,115 @@
+@import 'atlas-variables';
+
+.site_navigation_menu_editor_MenuItem {
+	box-sizing: content-box;
+	margin-left: calc(var(--nesting-margin) * (var(--nesting-level) - 1) * 1px);
+	position: relative;
+	width: 40ch;
+
+	&:focus,
+	&:focus-within,
+	&:hover,
+	&.active {
+		.menu-item-options-button,
+		.site_navigation_menu_editor_MenuItem-add-button {
+			visibility: visible;
+		}
+	}
+
+	&.active .card {
+		background-color: $info-l2;
+	}
+
+	&:focus .card {
+		box-shadow: 0 0 0 2px $primary-l1;
+	}
+
+	.menu-item-options-button,
+	&-add-button {
+		visibility: hidden;
+	}
+
+	&-add-button-dropdown {
+		right: 50%;
+
+		&.bottom-button {
+			bottom: 0;
+			transform: translate(50%, 50%);
+		}
+
+		&.top-button {
+			top: 0;
+			transform: translate(50%, -50%);
+		}
+	}
+
+	&.dragging {
+		opacity: 0.4;
+	}
+
+	&.is-over-top::before,
+	&.is-over::after {
+		border-top: 4px solid $primary-l1;
+		content: '';
+		display: block;
+		margin-top: 8px;
+		padding-bottom: 16px;
+		width: 100%;
+	}
+
+	&.is-over::after {
+		transform: translateX(
+			calc(
+				var(--nesting-margin) *
+					(var(--nesting-level) - var(--over-nesting-level)) * -1px
+			)
+		);
+
+		[dir='rtl'] & {
+			transform: translateX(
+				calc(
+					var(--nesting-margin) *
+						(var(--nesting-level) - var(--over-nesting-level)) * 1px
+				)
+			);
+		}
+	}
+
+	.card-row {
+		align-items: center;
+	}
+
+	.card-subtitle {
+		line-height: 1rem;
+	}
+
+	.custom-control.custom-checkbox .custom-control-input,
+	.custom-control.custom-checkbox .custom-control-label {
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	.label.label-secondary {
+		max-width: fit-content;
+	}
+
+	.lexicon-icon-drag {
+		color: $gray-500;
+		height: 20px;
+		width: 20px;
+	}
+
+	[draggable='true'] {
+		cursor: grab;
+	}
+
+	.site-navigation__drag-preview + [role='menubar'] > &::before {
+		content: '';
+		display: block;
+		height: 100%;
+		left: -100vw;
+		position: absolute;
+		top: 0;
+		width: 200vw;
+	}
+}

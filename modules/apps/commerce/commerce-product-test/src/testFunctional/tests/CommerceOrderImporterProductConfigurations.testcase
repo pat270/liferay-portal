@@ -1,9 +1,7 @@
 @component-name = "portal-commerce"
 definition {
 
-	property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
-	property osgi.module.configuration.file.names = "com.liferay.commerce.configuration.CommerceOrderImporterTypeConfiguration.config";
-	property osgi.module.configurations = "enabled=\"true\"";
+	property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Shopping Experience";
@@ -442,7 +440,11 @@ definition {
 		}
 
 		task ("Then the order item will not be imported") {
-			Alert.viewErrorMessage(errorMessage = "1 row was not imported.");
+			WaitForElementPresent(locator1 = "Message#ERROR");
+
+			AssertTextEquals.assertText(
+				locator1 = "Message#ERROR",
+				value1 = "Error: 1 row was not imported.");
 		}
 
 		task ("When the buyer imports the order with a valid quantity(6)") {
@@ -517,7 +519,11 @@ definition {
 		}
 
 		task ("Then the order item will not be imported") {
-			Alert.viewErrorMessage(errorMessage = "1 row was not imported.");
+			WaitForElementPresent(locator1 = "Message#ERROR");
+
+			AssertTextEquals.assertText(
+				locator1 = "Message#ERROR",
+				value1 = "Error: 1 row was not imported.");
 		}
 
 		task ("When the buyer imports the order with a valid quantity(4)") {
@@ -592,7 +598,11 @@ definition {
 		}
 
 		task ("Then the order item will not be imported") {
-			Alert.viewErrorMessage(errorMessage = "1 row was not imported.");
+			WaitForElementPresent(locator1 = "Message#ERROR");
+
+			AssertTextEquals.assertText(
+				locator1 = "Message#ERROR",
+				value1 = "Error: 1 row was not imported.");
 		}
 
 		task ("When the buyer imports the order with a valid quantity(6)") {

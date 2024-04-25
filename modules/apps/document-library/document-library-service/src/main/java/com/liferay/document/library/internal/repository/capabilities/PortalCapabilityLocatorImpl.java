@@ -9,9 +9,7 @@ import com.liferay.document.library.kernel.service.DLAppHelperLocalService;
 import com.liferay.document.library.kernel.service.DLFolderService;
 import com.liferay.document.library.security.io.InputStreamSanitizer;
 import com.liferay.document.library.service.DLFileVersionPreviewLocalService;
-import com.liferay.document.library.sync.service.DLSyncEventLocalService;
 import com.liferay.portal.kernel.cache.CacheRegistryItem;
-import com.liferay.portal.kernel.messaging.MessageBus;
 import com.liferay.portal.kernel.repository.DocumentRepository;
 import com.liferay.portal.kernel.repository.capabilities.BulkOperationCapability;
 import com.liferay.portal.kernel.repository.capabilities.CommentCapability;
@@ -22,7 +20,6 @@ import com.liferay.portal.kernel.repository.capabilities.PortalCapabilityLocator
 import com.liferay.portal.kernel.repository.capabilities.ProcessorCapability;
 import com.liferay.portal.kernel.repository.capabilities.RelatedModelCapability;
 import com.liferay.portal.kernel.repository.capabilities.RepositoryEventTriggerCapability;
-import com.liferay.portal.kernel.repository.capabilities.SyncCapability;
 import com.liferay.portal.kernel.repository.capabilities.TemporaryFileEntriesCapability;
 import com.liferay.portal.kernel.repository.capabilities.ThumbnailCapability;
 import com.liferay.portal.kernel.repository.capabilities.TrashCapability;
@@ -32,7 +29,6 @@ import com.liferay.portal.repository.capabilities.util.DLAppServiceAdapter;
 import com.liferay.portal.repository.capabilities.util.DLFileEntryServiceAdapter;
 import com.liferay.portal.repository.capabilities.util.DLFileVersionServiceAdapter;
 import com.liferay.portal.repository.capabilities.util.DLFolderServiceAdapter;
-import com.liferay.portal.repository.capabilities.util.GroupServiceAdapter;
 import com.liferay.portal.repository.capabilities.util.RepositoryEntryChecker;
 import com.liferay.portal.repository.capabilities.util.RepositoryEntryConverter;
 import com.liferay.portal.repository.capabilities.util.RepositoryServiceAdapter;
@@ -134,15 +130,6 @@ public class PortalCapabilityLocatorImpl implements PortalCapabilityLocator {
 	}
 
 	@Override
-	public SyncCapability getSyncCapability(
-		DocumentRepository documentRepository) {
-
-		return new LiferaySyncCapability(
-			GroupServiceAdapter.create(documentRepository),
-			_dlSyncEventLocalService, _messageBus);
-	}
-
-	@Override
 	public TemporaryFileEntriesCapability getTemporaryFileEntriesCapability(
 		DocumentRepository documentRepository) {
 
@@ -235,17 +222,10 @@ public class PortalCapabilityLocatorImpl implements PortalCapabilityLocator {
 	private DLFolderService _dlFolderService;
 
 	@Reference
-	private DLSyncEventLocalService _dlSyncEventLocalService;
-
-	@Reference
 	private InputStreamSanitizer _inputStreamSanitizer;
 
 	private final Map<DocumentRepository, LiferayDynamicCapability>
 		_liferayDynamicCapabilities = new ConcurrentHashMap<>();
-
-	@Reference
-	private MessageBus _messageBus;
-
 	private final RepositoryEntryConverter _repositoryEntryConverter =
 		new RepositoryEntryConverter();
 	private ProcessorCapability _reusingProcessorCapability;

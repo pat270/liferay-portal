@@ -15,11 +15,9 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalService;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.Time;
-import com.liferay.portal.kernel.uuid.PortalUUID;
 import com.liferay.portal.kernel.workflow.NoSuchWorkflowDefinitionException;
 import com.liferay.portal.kernel.workflow.RequiredWorkflowDefinitionException;
 import com.liferay.portal.kernel.workflow.WorkflowDefinition;
-import com.liferay.portal.kernel.workflow.WorkflowDefinitionManager;
 import com.liferay.portal.kernel.workflow.WorkflowException;
 import com.liferay.portal.lock.service.LockLocalService;
 import com.liferay.portal.workflow.comparator.WorkflowComparatorFactory;
@@ -32,6 +30,7 @@ import com.liferay.portal.workflow.kaleo.runtime.integration.internal.util.Workf
 import com.liferay.portal.workflow.kaleo.runtime.util.comparator.KaleoDefinitionOrderByComparator;
 import com.liferay.portal.workflow.kaleo.service.KaleoDefinitionLocalService;
 import com.liferay.portal.workflow.kaleo.service.KaleoDefinitionVersionLocalService;
+import com.liferay.portal.workflow.manager.WorkflowDefinitionManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -73,6 +72,24 @@ public class WorkflowDefinitionManagerImpl
 		return _workflowEngine.deployWorkflowDefinition(
 			title, name, scope, new UnsyncByteArrayInputStream(bytes),
 			serviceContext);
+	}
+
+	@Override
+	public List<WorkflowDefinition> getActiveWorkflowDefinitions(
+			int start, int end)
+		throws WorkflowException {
+
+		try {
+			List<KaleoDefinition> kaleoDefinitions =
+				_kaleoDefinitionLocalService.getKaleoDefinitions(
+					true, start, end);
+
+			return _toWorkflowDefinitions(
+				kaleoDefinitions.toArray(new KaleoDefinition[0]), null);
+		}
+		catch (Exception exception) {
+			throw new WorkflowException(exception);
+		}
 	}
 
 	@Override
@@ -445,9 +462,6 @@ public class WorkflowDefinitionManagerImpl
 	protected String getVersion(int version) {
 		return version + StringPool.PERIOD + 0;
 	}
-
-	@Reference
-	protected PortalUUID portalUUID;
 
 	private List<WorkflowDefinition> _toWorkflowDefinitions(
 		KaleoDefinition[] kaleoDefinitions,

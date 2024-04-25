@@ -1,6 +1,7 @@
 definition {
 
-	macro _curlObjectField {
+	@summary = "Default summary"
+	macro _curlObjectField(objectDefinitionId = null, objectFieldId = null) {
 		var portalURL = JSONCompany.getPortalURL();
 
 		if (isSet(objectDefinitionId)) {
@@ -20,7 +21,8 @@ definition {
 		return ${curl};
 	}
 
-	macro createObjectFieldByObjectDefinitionId {
+	@summary = "Default summary"
+	macro createObjectFieldByObjectDefinitionId(objectDefinitionId = null, name = null, dbType = null) {
 		Variables.assertDefined(parameterList = "${objectDefinitionId},${dbType},${name}");
 
 		var curl = ObjectFieldAPI._curlObjectField(objectDefinitionId = ${objectDefinitionId});
@@ -30,31 +32,36 @@ definition {
 		}
 
 		var body = '''
-			-d {
-				"DBType": "${dbType}",
-				"indexed": true,
-				"indexedAsKeyword": false,
-				"label":{"en_US":"${label}"},
-				"listTypeDefinitionId": 0,
-				"name": "${name}",
-				"required": false
-			}
+			"DBType": "${dbType}",
+			"indexed": true,
+			"indexedAsKeyword": false,
+			"label":{"en_US":"${label}"},
+			"listTypeDefinitionId": 0,
+			"name": "${name}",
+			"required": false
 		''';
 
-		var curl = StringUtil.add(${curl}, ${body}, " ");
+		if (${dbType} == "DateTime") {
+			var parameter = '''"objectFieldSettings": [{"name": "timeStorage","value": "convertToUTC"}]''';
+			var body = StringUtil.add("${body},", "\"objectFieldSettings\": [{\"name\": \"timeStorage\",\"value\": \"convertToUTC\"}]", "");
+		}
+
+		var curl = StringUtil.add(${curl}, "-d {${body}}", " ");
 
 		var response = JSONCurlUtil.post(${curl});
 
 		return ${response};
 	}
 
-	macro deleteObjectField {
+	@summary = "Default summary"
+	macro deleteObjectField(staticObjectFieldId = null) {
 		var curl = ObjectFieldAPI._curlObjectField(objectFieldId = ${staticObjectFieldId});
 
 		JSONCurlUtil.delete(${curl});
 	}
 
-	macro getIdOfCreatedObjectField {
+	@summary = "Default summary"
+	macro getIdOfCreatedObjectField(objectDefinitionId = null, name = null, dbType = null) {
 		var response = ObjectFieldAPI.createObjectFieldByObjectDefinitionId(
 			dbType = ${dbType},
 			name = ${name},
@@ -65,7 +72,8 @@ definition {
 		return ${objectFieldId};
 	}
 
-	macro getObjectFieldsByObjectId {
+	@summary = "Default summary"
+	macro getObjectFieldsByObjectId(objectDefinitionId = null) {
 		Variables.assertDefined(parameterList = ${objectDefinitionId});
 
 		var curl = ObjectFieldAPI._curlObjectField(objectDefinitionId = ${objectDefinitionId});
@@ -75,7 +83,25 @@ definition {
 		return ${response};
 	}
 
-	macro setUpGlobalObjectFieldId {
+	@summary = "Default summary"
+	macro setUpGlobalObjectFieldErcByObjectDefinitionId(objectDefinitionId = null, name = null) {
+		Variables.assertDefined(parameterList = "${name},${objectDefinitionId}");
+
+		var objectFields = ObjectFieldAPI.getObjectFieldsByObjectId(objectDefinitionId = ${objectDefinitionId});
+
+		var objectFieldErc = JSONUtil.getWithJSONPath(${objectFields}, "$..items[?(@.name=='${name}')].externalReferenceCode");
+
+		echo("MY OBJECT FIELD ERC");
+
+		echo(${objectFieldErc});
+
+		static var staticObjectFieldErc = ${objectFieldErc};
+
+		return ${staticObjectFieldErc};
+	}
+
+	@summary = "Default summary"
+	macro setUpGlobalObjectFieldId(objectDefinitionId = null, name = null, dbType = null) {
 		var objectFieldId = ObjectFieldAPI.getIdOfCreatedObjectField(
 			dbType = ${dbType},
 			name = ${name},
@@ -86,7 +112,8 @@ definition {
 		return ${staticObjectFieldId};
 	}
 
-	macro updateFieldOfEntryById {
+	@summary = "Default summary"
+	macro updateFieldOfEntryById(fieldLabel = null, requiredFieldLabel = null, requiredFieldValue = null, fieldValue2 = null, fieldValue = null, en_US_plural_label = null, entryId = null) {
 		Variables.assertDefined(parameterList = "${en_US_plural_label},${entryId},${fieldLabel},${fieldValue},${requiredFieldLabel},${requiredFieldValue}");
 
 		var portalURL = JSONCompany.getPortalURL();

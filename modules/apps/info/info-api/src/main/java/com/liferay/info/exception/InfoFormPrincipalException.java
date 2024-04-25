@@ -5,6 +5,7 @@
 
 package com.liferay.info.exception;
 
+import com.liferay.portal.kernel.exception.InfoFormException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 
 import java.util.Locale;
@@ -14,6 +15,7 @@ import java.util.Locale;
  */
 public class InfoFormPrincipalException extends InfoFormException {
 
+	@Override
 	public String getLocalizedMessage(Locale locale) {
 		return LanguageUtil.get(
 			locale, "you-do-not-have-the-required-permissions");

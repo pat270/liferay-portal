@@ -17,7 +17,6 @@ import com.liferay.contacts.util.ContactsUtil;
 import com.liferay.contacts.web.internal.constants.ContactsPortletKeys;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.bean.BeanParamUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.AddressCityException;
@@ -78,24 +77,23 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.util.comparator.UserLastNameComparator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portlet.usersadmin.util.UsersAdminUtil;
 import com.liferay.social.kernel.exception.NoSuchRelationException;
 import com.liferay.social.kernel.model.SocialRelation;
 import com.liferay.social.kernel.model.SocialRequest;
 import com.liferay.social.kernel.model.SocialRequestConstants;
 import com.liferay.social.kernel.service.SocialRelationLocalService;
 import com.liferay.social.kernel.service.SocialRequestLocalService;
-import com.liferay.users.admin.configuration.UserFileUploadsConfiguration;
-import com.liferay.users.admin.kernel.util.UsersAdmin;
 
-import java.io.IOException;
 import java.io.InputStream;
+
+import java.net.URLEncoder;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.portlet.ActionRequest;
@@ -104,14 +102,10 @@ import javax.portlet.Portlet;
 import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
-import javax.portlet.RenderRequest;
-import javax.portlet.RenderResponse;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 
 /**
@@ -231,7 +225,8 @@ public class ContactsCenterPortlet extends MVCPortlet {
 		String vCard = ContactsUtil.getVCard(user);
 
 		PortletResponseUtil.sendFile(
-			resourceRequest, resourceResponse, user.getFullName() + ".vcf",
+			resourceRequest, resourceResponse,
+			URLEncoder.encode(user.getFullName(), "UTF-8") + ".vcf",
 			vCard.getBytes(StringPool.UTF8), "text/x-vcard; charset=UTF-8");
 	}
 
@@ -715,25 +710,6 @@ public class ContactsCenterPortlet extends MVCPortlet {
 		writeJSON(actionRequest, actionResponse, jsonObject);
 	}
 
-	@Activate
-	@Modified
-	protected void activate(Map<String, Object> properties) {
-		_userFileUploadsConfiguration = ConfigurableUtil.createConfigurable(
-			UserFileUploadsConfiguration.class, properties);
-	}
-
-	@Override
-	protected void doDispatch(
-			RenderRequest renderRequest, RenderResponse renderResponse)
-		throws IOException, PortletException {
-
-		renderRequest.setAttribute(
-			UserFileUploadsConfiguration.class.getName(),
-			_userFileUploadsConfiguration);
-
-		super.doDispatch(renderRequest, renderResponse);
-	}
-
 	@Reference
 	protected AnnouncementsDeliveryLocalService
 		announcementsDeliveryLocalService;
@@ -773,9 +749,6 @@ public class ContactsCenterPortlet extends MVCPortlet {
 	@Reference
 	protected UserNotificationEventLocalService
 		userNotificationEventLocalService;
-
-	@Reference
-	protected UsersAdmin usersAdmin;
 
 	@Reference
 	protected UserService userService;
@@ -1179,9 +1152,9 @@ public class ContactsCenterPortlet extends MVCPortlet {
 
 		User user = themeDisplay.getUser();
 
-		usersAdmin.updateEmailAddresses(
+		UsersAdminUtil.updateEmailAddresses(
 			Contact.class.getName(), user.getContactId(),
-			usersAdmin.getEmailAddresses(actionRequest));
+			UsersAdminUtil.getEmailAddresses(actionRequest));
 	}
 
 	private void _updateAddresses(ActionRequest actionRequest)
@@ -1192,9 +1165,9 @@ public class ContactsCenterPortlet extends MVCPortlet {
 
 		User user = themeDisplay.getUser();
 
-		usersAdmin.updateAddresses(
+		UsersAdminUtil.updateAddresses(
 			Contact.class.getName(), user.getContactId(),
-			usersAdmin.getAddresses(actionRequest));
+			UsersAdminUtil.getAddresses(actionRequest));
 	}
 
 	private void _updateArchived(long userId, long userNotificationEventId)
@@ -1240,9 +1213,9 @@ public class ContactsCenterPortlet extends MVCPortlet {
 
 		User user = themeDisplay.getUser();
 
-		usersAdmin.updatePhones(
+		UsersAdminUtil.updatePhones(
 			Contact.class.getName(), user.getContactId(),
-			usersAdmin.getPhones(actionRequest));
+			UsersAdminUtil.getPhones(actionRequest));
 	}
 
 	private void _updateProfile(ActionRequest actionRequest) throws Exception {
@@ -1326,14 +1299,12 @@ public class ContactsCenterPortlet extends MVCPortlet {
 
 		User user = themeDisplay.getUser();
 
-		usersAdmin.updateWebsites(
+		UsersAdminUtil.updateWebsites(
 			Contact.class.getName(), user.getContactId(),
-			usersAdmin.getWebsites(actionRequest));
+			UsersAdminUtil.getWebsites(actionRequest));
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		ContactsCenterPortlet.class);
-
-	private volatile UserFileUploadsConfiguration _userFileUploadsConfiguration;
 
 }

@@ -22,6 +22,7 @@ long vocabularyId = ParamUtil.getLong(request, "vocabularyId");
 
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(redirect);
+portletDisplay.setURLBackTitle(portletDisplay.getPortletDisplayName());
 
 String title = LanguageUtil.get(request, "add-new-category");
 
@@ -54,6 +55,13 @@ renderResponse.setTitle(title);
 		<liferay-ui:error exception="<%= DuplicateCategoryException.class %>" message="please-enter-a-unique-name" />
 
 		<aui:model-context bean="<%= category %>" model="<%= AssetCategory.class %>" />
+
+		<c:if test='<%= FeatureFlagManagerUtil.isEnabled("LPD-11147") && (assetCategoriesDisplayContext.getAssetEntryAssetCategoryRelsCountByClassNameId(categoryId) > 0) && (category != null) %>'>
+			<clay:alert
+				displayType="info"
+				message="changes-made-to-the-category-will-impact-the-associated-friendly-url"
+			/>
+		</c:if>
 
 		<liferay-frontend:fieldset
 			collapsed="<%= false %>"
@@ -111,9 +119,10 @@ renderResponse.setTitle(title);
 											</div>
 
 											<div class="input-group-item input-group-item-shrink">
-												<button class="btn btn-secondary" type="button">
-													<liferay-ui:message key="select" />
-												</button>
+												<clay:button
+													displayType="secondary"
+													label="select"
+												/>
 											</div>
 										</div>
 									</div>
@@ -134,7 +143,7 @@ renderResponse.setTitle(title);
 							%>
 
 							<react:component
-								module="js/AssetCategoriesSelectorTag.es"
+								module="{AssetCategoriesSelectorTag} from asset-categories-admin-web"
 								props='<%=
 									HashMapBuilder.<String, Object>put(
 										"categoryIds", Collections.singletonList(parentCategoryId)
@@ -193,11 +202,32 @@ renderResponse.setTitle(title);
 	<c:choose>
 		<c:when test="<%= !assetCategoriesDisplayContext.isItemSelector() %>">
 			<liferay-frontend:edit-form-footer>
-				<aui:button disabled="<%= assetCategoriesDisplayContext.isSaveButtonDisabled() %>" type="submit" />
+				<clay:button
+					disabled="<%= assetCategoriesDisplayContext.isSaveButtonDisabled() %>"
+					label="save"
+					type="submit"
+				/>
 
-				<aui:button disabled="<%= assetCategoriesDisplayContext.isSaveAndAddNewButtonDisabled() %>" onClick='<%= liferayPortletResponse.getNamespace() + "saveAndAddNew();" %>' value="save-and-add-a-new-one" />
+				<clay:button
+					additionalProps='<%=
+						HashMapBuilder.<String, Object>put(
+							"redirect", assetCategoriesDisplayContext.getAddCategoryRedirect()
+						).build()
+					%>'
+					className="mr-3"
+					disabled="<%= assetCategoriesDisplayContext.isSaveAndAddNewButtonDisabled() %>"
+					displayType="secondary"
+					label="save-and-add-a-new-one"
+					propsTransformer="{SaveAndAddNewPropsTransformer} from asset-categories-admin-web"
+				/>
 
-				<aui:button href="<%= redirect %>" type="cancel" />
+				<clay:link
+					borderless="<%= false %>"
+					displayType="secondary"
+					href="<%= redirect %>"
+					label="cancel"
+					type="button"
+				/>
 			</liferay-frontend:edit-form-footer>
 		</c:when>
 		<c:otherwise>
@@ -209,18 +239,9 @@ renderResponse.setTitle(title);
 						"redirect", redirect
 					).build()
 				%>'
-				module="js/ItemSelectorAddCategory"
+				module="{ItemSelectorAddCategory} from asset-categories-admin-web"
 				servletContext="<%= application %>"
 			/>
 		</c:otherwise>
 	</c:choose>
 </liferay-frontend:edit-form>
-
-<aui:script>
-	function <portlet:namespace />saveAndAddNew() {
-		document.querySelector('#<portlet:namespace />redirect').value =
-			'<%= assetCategoriesDisplayContext.getAddCategoryRedirect() %>';
-
-		submitForm(document.querySelector('#<portlet:namespace />fm'));
-	}
-</aui:script>

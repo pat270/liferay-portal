@@ -1,14 +1,12 @@
 definition {
 
-	macro filterAndOrder {
-		Click(locator1 = "Dropdown#FILTER_AND_ORDER");
-
-		Click(
-			key_filterOption = ${filterOption},
-			locator1 = "ProcessBuilderListView#FILTER_AND_ORDER");
+	@summary = "Default summary"
+	macro filterAndOrder(filterOption = null) {
+		ManagementBar.setFilterAndOrder(filterBy = ${filterOption});
 	}
 
-	macro gotoPermissions {
+	@summary = "Default summary"
+	macro gotoPermissions(workflowDefinitionTitle = null) {
 		var key_workflowDefinitionTitle = ${workflowDefinitionTitle};
 
 		Click(locator1 = "WorkflowDefinition#DEFINITION_TABLE_SPECIFIC_DEFINITION_ELLIPSIS");
@@ -18,7 +16,8 @@ definition {
 		AssertElementPresent(locator1 = "ProcessBuilderListView#PERMISSIONS_MODAL");
 	}
 
-	macro searchForWorkflow {
+	@summary = "Default summary"
+	macro searchForWorkflow(workflowName = null) {
 		var key_workflowName = ${workflowName};
 
 		Click(locator1 = "ProcessBuilderListView#SEARCH_FIELD");
@@ -32,20 +31,22 @@ definition {
 			value1 = "\RETURN");
 	}
 
-	macro validateIfSearchItem {
+	@summary = "Default summary"
+	macro validateIfSearchItem(numberResults = null, workflowName = null) {
 		if (isSet(singleResult)) {
 			AssertTextEquals(
 				locator1 = "ProcessBuilderListView#VALIDATE_SEARCH_RESULTS_BAR",
-				value1 = "${numberResults} Result for ${workflowName}");
+				value1 = "${numberResults} Result Found for ${workflowName}");
 		}
 		else {
 			AssertTextEquals(
 				locator1 = "ProcessBuilderListView#VALIDATE_SEARCH_RESULTS_BAR",
-				value1 = "${numberResults} Results for ${workflowName}");
+				value1 = "${numberResults} Results Found for ${workflowName}");
 		}
 	}
 
-	macro viewDefinitionPublicationStatus {
+	@summary = "Default summary"
+	macro viewDefinitionPublicationStatus(workflowDefinitionTitle = null) {
 		AssertElementPresent(
 			key_workflowDefinitionTitle = "Published",
 			locator1 = "WorkflowDefinition#DEFINITION_TABLE_TITLE");
@@ -63,13 +64,15 @@ definition {
 		}
 	}
 
-	macro viewWorkflowIsNotPresent {
+	@summary = "Default summary"
+	macro viewWorkflowIsNotPresent(workflowDefinitionTitle = null) {
 		AssertElementNotPresent(
 			key_workflowDefinitionTitle = ${workflowDefinitionTitle},
 			locator1 = "WorkflowDefinition#DEFINITION_TABLE_TITLE_UNPUBLISHED");
 	}
 
-	macro viewWorkflowIsPresent {
+	@summary = "Default summary"
+	macro viewWorkflowIsPresent(workflowDefinitionTitle = null) {
 		AssertElementPresent(
 			key_workflowDefinitionTitle = ${workflowDefinitionTitle},
 			locator1 = "WorkflowDefinition#DEFINITION_TABLE_TITLE_PUBLISHED");

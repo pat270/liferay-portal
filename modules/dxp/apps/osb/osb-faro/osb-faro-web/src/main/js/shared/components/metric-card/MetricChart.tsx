@@ -1,9 +1,10 @@
 // @ts-nocheck - Fix it at this LRAC-13388
 
 import Checkbox from 'shared/components/Checkbox';
+import ClayLink from '@clayui/link';
 import ComposedChartWithEmptyState from 'shared/components/ComposedChartWithEmptyState';
 import MetricStateRenderer from './MetricStateRenderer';
-import MetricTooltip from './MetricTooltipt';
+import MetricTooltip from './MetricTooltip';
 import React, {useMemo, useState} from 'react';
 import URLConstants from 'shared/util/url-constants';
 import {
@@ -29,6 +30,7 @@ import {formatXAxisDate} from 'shared/util/charts';
 import {getActiveItem, getMetricData, getMetricName} from './util';
 import {ICommonMetricProps, useActions, useData} from './MetricBaseCard';
 import {useMetricQuery} from './hooks';
+import {useRetentionPeriod} from 'shared/hooks/useRetentionPeriod';
 
 export const CHART_DATA_PREVIOUS = 'data_previous';
 export const METRIC_TOOLTIP_LABEL_MAP = {
@@ -114,6 +116,8 @@ export const MetricChart: React.FC<IMetricChartProps> = ({
 		return item.type !== 'bar';
 	});
 
+	const retentionPeriod = useRetentionPeriod();
+
 	return (
 		<>
 			<ResponsiveContainer height={height}>
@@ -186,13 +190,15 @@ export const MetricChart: React.FC<IMetricChartProps> = ({
 					<Tooltip
 						content={props => (
 							<MetricTooltip
+								compareToPrevious={compareToPrevious}
 								data={data}
 								interval={interval}
 								rangeSelectors={rangeSelectors}
+								retentionPeriod={retentionPeriod}
 								{...props}
 							/>
 						)}
-						cursor={!intervals.length ? false : true}
+						cursor={!!intervals.length}
 					/>
 
 					<Legend
@@ -393,7 +399,7 @@ const MetricChartWrapper: React.FC<IMetricChartWrapperProps> = ({
 							)}
 						</span>
 
-						<a
+						<ClayLink
 							href={URLConstants.SitesDashboardSitesActivities}
 							key='DOCUMENTATION'
 							target='_blank'
@@ -401,7 +407,7 @@ const MetricChartWrapper: React.FC<IMetricChartWrapperProps> = ({
 							{Liferay.Language.get(
 								'learn-more-about-site-activity'
 							)}
-						</a>
+						</ClayLink>
 					</>
 				}
 				emptyTitle={Liferay.Language.get(

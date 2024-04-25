@@ -6,14 +6,18 @@
 package com.liferay.portal.upgrade.internal.release.osgi.commands;
 
 import com.liferay.gogo.shell.logging.TeeLoggingUtil;
+import com.liferay.osgi.util.osgi.commands.OSGiCommands;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.module.util.BundleUtil;
+import com.liferay.portal.kernel.service.ReleaseLocalService;
+import com.liferay.portal.kernel.upgrade.ReleaseManager;
 import com.liferay.portal.upgrade.internal.executor.UpgradeExecutor;
 import com.liferay.portal.upgrade.internal.graph.ReleaseGraphManager;
 import com.liferay.portal.upgrade.internal.registry.UpgradeInfo;
-import com.liferay.portal.upgrade.internal.release.ReleaseManagerImpl;
+import com.liferay.portal.upgrade.internal.release.util.ReleaseManagerUtil;
 
 import java.util.HashSet;
 import java.util.List;
@@ -21,6 +25,8 @@ import java.util.Set;
 
 import org.apache.felix.service.command.Descriptor;
 
+import org.osgi.framework.BundleContext;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -34,23 +40,23 @@ import org.osgi.service.component.annotations.Reference;
 		"osgi.command.function=execute", "osgi.command.function=executeAll",
 		"osgi.command.function=list", "osgi.command.scope=upgrade"
 	},
-	service = ReleaseManagerOSGiCommands.class
+	service = OSGiCommands.class
 )
-public class ReleaseManagerOSGiCommands {
+public class ReleaseManagerOSGiCommands implements OSGiCommands {
 
 	@Descriptor("List pending upgrades")
 	public String check() {
-		return _releaseManagerImpl.getStatusMessage(false);
+		return _releaseManager.getStatusMessage(false);
 	}
 
 	@Descriptor("List pending upgrade processes and their upgrade steps")
 	public String checkAll() {
-		return _releaseManagerImpl.getStatusMessage(true);
+		return _releaseManager.getStatusMessage(true);
 	}
 
 	@Descriptor("Execute upgrade for a specific module")
 	public String execute(String bundleSymbolicName) {
-		List<UpgradeInfo> upgradeInfos = _releaseManagerImpl.getUpgradeInfos(
+		List<UpgradeInfo> upgradeInfos = _upgradeExecutor.getUpgradeInfos(
 			bundleSymbolicName);
 
 		if (upgradeInfos == null) {
@@ -60,7 +66,10 @@ public class ReleaseManagerOSGiCommands {
 		TeeLoggingUtil.runWithTeeLogging(
 			() -> {
 				try {
-					_upgradeExecutor.execute(bundleSymbolicName, upgradeInfos);
+					_upgradeExecutor.execute(
+						BundleUtil.getBundle(
+							_bundleContext, bundleSymbolicName),
+						upgradeInfos);
 				}
 				catch (Throwable throwable) {
 					_log.error(
@@ -75,7 +84,7 @@ public class ReleaseManagerOSGiCommands {
 
 	@Descriptor("Execute upgrade for a specific module and final version")
 	public String execute(String bundleSymbolicName, String toVersionString) {
-		List<UpgradeInfo> upgradeInfos = _releaseManagerImpl.getUpgradeInfos(
+		List<UpgradeInfo> upgradeInfos = _upgradeExecutor.getUpgradeInfos(
 			bundleSymbolicName);
 
 		if (upgradeInfos == null) {
@@ -87,10 +96,10 @@ public class ReleaseManagerOSGiCommands {
 
 		TeeLoggingUtil.runWithTeeLogging(
 			() -> _upgradeExecutor.executeUpgradeInfos(
-				bundleSymbolicName,
+				BundleUtil.getBundle(_bundleContext, bundleSymbolicName),
 				releaseGraphManager.getUpgradeInfos(
-					_releaseManagerImpl.getSchemaVersionString(
-						bundleSymbolicName),
+					ReleaseManagerUtil.getSchemaVersionString(
+						_releaseLocalService.fetchRelease(bundleSymbolicName)),
 					toVersionString)));
 
 		return null;
@@ -129,7 +138,7 @@ public class ReleaseManagerOSGiCommands {
 	@Descriptor("List registered upgrade processes for all modules")
 	public String list() {
 		Set<String> bundleSymbolicNames =
-			_releaseManagerImpl.getBundleSymbolicNames();
+			_upgradeExecutor.getBundleSymbolicNames();
 
 		StringBundler sb = new StringBundler(2 * bundleSymbolicNames.size());
 
@@ -145,7 +154,7 @@ public class ReleaseManagerOSGiCommands {
 
 	@Descriptor("List registered upgrade processes for a specific module")
 	public String list(String bundleSymbolicName) {
-		List<UpgradeInfo> upgradeInfos = _releaseManagerImpl.getUpgradeInfos(
+		List<UpgradeInfo> upgradeInfos = _upgradeExecutor.getUpgradeInfos(
 			bundleSymbolicName);
 
 		StringBundler sb = new StringBundler(5 + (3 * upgradeInfos.size()));
@@ -154,7 +163,8 @@ public class ReleaseManagerOSGiCommands {
 		sb.append(bundleSymbolicName);
 		sb.append(StringPool.SPACE);
 		sb.append(
-			_releaseManagerImpl.getSchemaVersionString(bundleSymbolicName));
+			ReleaseManagerUtil.getSchemaVersionString(
+				_releaseLocalService.fetchRelease(bundleSymbolicName)));
 		sb.append(StringPool.NEW_LINE);
 
 		for (UpgradeInfo upgradeProcess : upgradeInfos) {
@@ -168,12 +178,19 @@ public class ReleaseManagerOSGiCommands {
 		return sb.toString();
 	}
 
+	@Activate
+	protected void activate(BundleContext bundleContext) {
+		_bundleContext = bundleContext;
+	}
+
 	protected void executeAll(
 		Set<String> upgradeThrewExceptionBundleSymbolicNames) {
 
 		while (true) {
 			Set<String> upgradableBundleSymbolicNames =
-				_releaseManagerImpl.getUpgradableBundleSymbolicNames();
+				ReleaseManagerUtil.getUpgradableBundleSymbolicNames(
+					_upgradeExecutor.getBundleSymbolicNames(),
+					_releaseLocalService, _upgradeExecutor);
 
 			upgradableBundleSymbolicNames.removeAll(
 				upgradeThrewExceptionBundleSymbolicNames);
@@ -187,11 +204,13 @@ public class ReleaseManagerOSGiCommands {
 
 				try {
 					List<UpgradeInfo> upgradeInfos =
-						_releaseManagerImpl.getUpgradeInfos(
+						_upgradeExecutor.getUpgradeInfos(
 							upgradableBundleSymbolicName);
 
 					_upgradeExecutor.execute(
-						upgradableBundleSymbolicName, upgradeInfos);
+						BundleUtil.getBundle(
+							_bundleContext, upgradableBundleSymbolicName),
+						upgradeInfos);
 				}
 				catch (Throwable throwable) {
 					_log.error(
@@ -209,8 +228,13 @@ public class ReleaseManagerOSGiCommands {
 	private static final Log _log = LogFactoryUtil.getLog(
 		ReleaseManagerOSGiCommands.class);
 
+	private BundleContext _bundleContext;
+
 	@Reference
-	private ReleaseManagerImpl _releaseManagerImpl;
+	private ReleaseLocalService _releaseLocalService;
+
+	@Reference
+	private ReleaseManager _releaseManager;
 
 	@Reference
 	private UpgradeExecutor _upgradeExecutor;

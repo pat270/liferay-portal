@@ -7,7 +7,6 @@ import ClayAlert from '@clayui/alert';
 import ClayButton, {ClayButtonWithIcon} from '@clayui/button';
 import ClayDropDown, {Align, ClayDropDownWithItems} from '@clayui/drop-down';
 import ClayEmptyState from '@clayui/empty-state';
-import {ClayToggle} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import ClayLabel from '@clayui/label';
 import ClayLayout from '@clayui/layout';
@@ -15,12 +14,17 @@ import ClayLink from '@clayui/link';
 import ClayNavigationBar from '@clayui/navigation-bar';
 import ClayTable from '@clayui/table';
 import classNames from 'classnames';
+import {FeatureIndicator} from 'frontend-js-components-web';
 import {
+	createPortletURL,
 	fetch,
 	navigate as navigateUtil,
 	openConfirmModal,
 } from 'frontend-js-web';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
+
+import ExperienceDropdown from '../components/ExperienceDropdown';
+import {WorkflowStatusLabel} from '../components/WorkflowStatusLabel';
 
 const LocalizationDropdown = ({
 	currentLocale,
@@ -38,6 +42,7 @@ const LocalizationDropdown = ({
 				onActiveChange={setActive}
 				trigger={
 					<ClayButton
+						aria-label="show-available-locales"
 						displayType="secondary"
 						monospaced
 						onClick={() => setActive(!active)}
@@ -125,143 +130,47 @@ const LocalizationDropdown = ({
 
 export default function ChangeTrackingRenderView({
 	childEntries,
-	dataURL,
 	defaultLocale,
 	description,
 	discardURL,
-	getCache,
 	handleNavigation,
-	handleShowHideable,
+	initialDataURL,
+	moveChangesURL,
 	parentEntries,
 	showDropdown,
 	showHeader = true,
-	showHideable,
+	showWorkflow,
 	spritemap,
 	title,
-	updateCache,
+	workflowStatus,
 }) {
 	const CHANGE_TYPE_ADDED = 'added';
 	const CHANGE_TYPE_DELETED = 'deleted';
 	const CHANGE_TYPE_MODIFIED = 'modified';
-	const CHANGE_TYPE_PRODUCTION = 'production';
 	const CONTENT_TYPE_CHILDREN = 'children';
 	const CONTENT_TYPE_PARENTS = 'parents';
 	const CONTENT_TYPE_RENDER = 'data';
 	const CONTENT_TYPE_PREVIEW = 'display';
+	const CONTENT_TYPE_WORKFLOW = 'workflow';
 	const VIEW_LEFT = 'VIEW_LEFT';
 	const VIEW_RIGHT = 'VIEW_RIGHT';
 	const VIEW_SPLIT = 'VIEW_SPLIT';
 	const VIEW_UNIFIED = 'VIEW_UNIFIED';
 
+	const [dataURL, setDataURL] = useState(initialDataURL);
 	const [loading, setLoading] = useState(false);
 	const [selectedLocale, setSelectedLocale] = useState(defaultLocale);
+	const [
+		selectedSegmentsExperienceId,
+		setSelectedSegmentsExperienceId,
+	] = useState(null);
 	const [state, setState] = useState({
 		contentType: CONTENT_TYPE_PREVIEW,
 		renderData: null,
 		view: VIEW_UNIFIED,
 	});
 
-	const dataURLRef = useRef(null);
-
 	useEffect(() => {
-		if (dataURL === dataURLRef.current) {
-			return;
-		}
-
-		dataURLRef.current = dataURL;
-
-		let cachedData = null;
-
-		if (getCache) {
-			cachedData = getCache();
-		}
-
-		if (cachedData && cachedData.changeType) {
-			if (cachedData.changeType === CHANGE_TYPE_PRODUCTION) {
-				setState({
-					children: childEntries,
-					contentType: CONTENT_TYPE_RENDER,
-					parents: parentEntries,
-					renderData: cachedData,
-					view: VIEW_LEFT,
-				});
-
-				setLoading(false);
-
-				return;
-			}
-
-			const newState = {
-				children: childEntries,
-				contentType: CONTENT_TYPE_PREVIEW,
-				parents: parentEntries,
-				renderData: cachedData,
-				view: VIEW_UNIFIED,
-			};
-
-			if (
-				!Object.prototype.hasOwnProperty.call(
-					cachedData,
-					'leftPreview'
-				) &&
-				!Object.prototype.hasOwnProperty.call(
-					cachedData,
-					'leftLocalizedPreview'
-				) &&
-				!Object.prototype.hasOwnProperty.call(
-					cachedData,
-					'rightPreview'
-				) &&
-				!Object.prototype.hasOwnProperty.call(
-					cachedData,
-					'rightLocalizedPreview'
-				)
-			) {
-				newState.contentType = CONTENT_TYPE_RENDER;
-			}
-
-			if (
-				!Object.prototype.hasOwnProperty.call(cachedData, 'leftTitle')
-			) {
-				newState.view = VIEW_RIGHT;
-			}
-			else if (
-				!Object.prototype.hasOwnProperty.call(cachedData, 'rightTitle')
-			) {
-				newState.view = VIEW_LEFT;
-			}
-
-			if (
-				newState.view === VIEW_UNIFIED &&
-				((newState.contentType === CONTENT_TYPE_RENDER &&
-					!Object.prototype.hasOwnProperty.call(
-						cachedData,
-						'unifiedRender'
-					) &&
-					!Object.prototype.hasOwnProperty.call(
-						cachedData,
-						'unifiedLocalizedRender'
-					)) ||
-					(newState.contentType === CONTENT_TYPE_PREVIEW &&
-						!Object.prototype.hasOwnProperty.call(
-							cachedData,
-							'unifiedPreview'
-						) &&
-						!Object.prototype.hasOwnProperty.call(
-							cachedData,
-							'unifiedLocalizedPreview'
-						)))
-			) {
-				newState.view = VIEW_SPLIT;
-			}
-
-			setState(newState);
-
-			setLoading(false);
-
-			return;
-		}
-
 		setLoading(true);
 
 		fetch(dataURL)
@@ -278,10 +187,6 @@ export default function ChangeTrackingRenderView({
 					});
 
 					return;
-				}
-
-				if (updateCache) {
-					updateCache(json);
 				}
 
 				const newState = {
@@ -360,7 +265,7 @@ export default function ChangeTrackingRenderView({
 					},
 				});
 			});
-	}, [childEntries, dataURL, getCache, parentEntries, updateCache]);
+	}, [childEntries, dataURL, parentEntries, selectedSegmentsExperienceId]);
 
 	let currentLocale = selectedLocale;
 	let currentTitle = title;
@@ -747,6 +652,32 @@ export default function ChangeTrackingRenderView({
 		);
 	};
 
+	const renderWorkflowView = () => {
+		if (
+			state.contentType === CONTENT_TYPE_WORKFLOW &&
+			Object.prototype.hasOwnProperty.call(
+				state.renderData,
+				'workflowView'
+			)
+		) {
+			return (
+				<div
+					dangerouslySetInnerHTML={{
+						__html: state.renderData.workflowView,
+					}}
+				/>
+			);
+		}
+
+		return (
+			<ClayAlert displayType="danger" spritemap={spritemap}>
+				{Liferay.Language.get(
+					'unable-to-display-content-due-to-an-unexpected-error'
+				)}
+			</ClayAlert>
+		);
+	};
+
 	const renderDiffLegend = () => {
 		if (
 			(state.contentType !== CONTENT_TYPE_PREVIEW &&
@@ -786,35 +717,24 @@ export default function ChangeTrackingRenderView({
 	};
 
 	const navigate = (editURL, checkoutURL, confirmationMessage) => {
-		AUI().use('liferay-portlet-url', () => {
-			const editPortletURL = Liferay.PortletURL.createURL(editURL);
+		const editPortletURL = createPortletURL(editURL, {
+			redirect: window.location.pathname + window.location.search,
+		});
 
-			editPortletURL.setParameter(
-				'redirect',
-				window.location.pathname + window.location.search
-			);
+		if (!checkoutURL) {
+			navigateUtil(editPortletURL);
 
-			if (!checkoutURL) {
-				navigateUtil(editPortletURL.toString());
+			return;
+		}
 
-				return;
-			}
+		const checkoutPortletURL = createPortletURL(checkoutURL, {
+			redirect: editPortletURL,
+		});
 
-			const checkoutPortletURL = Liferay.PortletURL.createURL(
-				checkoutURL
-			);
-
-			checkoutPortletURL.setParameter(
-				'redirect',
-				editPortletURL.toString()
-			);
-
-			openConfirmModal({
-				message: confirmationMessage,
-				onConfirm: (isConfirmed) =>
-					isConfirmed &&
-					submitForm(document.hrefFm, checkoutPortletURL.toString()),
-			});
+		openConfirmModal({
+			message: confirmationMessage,
+			onConfirm: (isConfirmed) =>
+				isConfirmed && submitForm(document.hrefFm, checkoutPortletURL),
 		});
 	};
 
@@ -851,11 +771,33 @@ export default function ChangeTrackingRenderView({
 			});
 		}
 
-		dropdownItems.push({
-			label: Liferay.Language.get('discard'),
-			onClick: () => navigate(discardURL),
-			symbolLeft: 'times-circle',
-		});
+		if (moveChangesURL !== null) {
+			dropdownItems.push({
+				label: (
+					<>
+						{Liferay.Language.get('move-changes')}
+
+						<div className="float-right">
+							<FeatureIndicator type="beta" />
+						</div>
+					</>
+				),
+				onClick: () => navigate(moveChangesURL),
+				symbolLeft: 'move-folder',
+			});
+		}
+
+		if (discardURL !== null) {
+			dropdownItems.push({
+				label: Liferay.Language.get('discard'),
+				onClick: () => navigateUtil(discardURL),
+				symbolLeft: 'times-circle',
+			});
+		}
+
+		if (!dropdownItems.length) {
+			return null;
+		}
 
 		return (
 			<div className="autofit-col">
@@ -865,6 +807,7 @@ export default function ChangeTrackingRenderView({
 					spritemap={spritemap}
 					trigger={
 						<ClayButtonWithIcon
+							aria-label="more-actions"
 							displayType="unstyled"
 							small
 							spritemap={spritemap}
@@ -874,30 +817,6 @@ export default function ChangeTrackingRenderView({
 				/>
 			</div>
 		);
-	};
-
-	const renderShowHideableToggle = () => {
-		const elements = [];
-
-		elements.push(
-			<div className="autofit-col autofit-col-expand">
-				<div />
-			</div>
-		);
-
-		elements.push(
-			<div className="autofit-col">
-				<ClayToggle
-					label={Liferay.Language.get('show-all-items')}
-					onToggle={(showHideable) =>
-						handleShowHideable(showHideable)
-					}
-					toggled={showHideable}
-				/>
-			</div>
-		);
-
-		return elements;
 	};
 
 	const renderViewDropdown = () => {
@@ -1074,33 +993,31 @@ export default function ChangeTrackingRenderView({
 
 		let currentTypeName = '';
 
-		const filteredNodes = nodes
-			.filter((item) => showHideable || !item.hideable)
-			.sort((a, b) => {
-				const typeNameA = a.typeName.toLowerCase();
-				const typeNameB = b.typeName.toLowerCase();
+		const filteredNodes = nodes.sort((a, b) => {
+			const typeNameA = a.typeName.toLowerCase();
+			const typeNameB = b.typeName.toLowerCase();
 
-				if (typeNameA < typeNameB) {
-					return -1;
-				}
+			if (typeNameA < typeNameB) {
+				return -1;
+			}
 
-				if (typeNameA > typeNameB) {
-					return 1;
-				}
+			if (typeNameA > typeNameB) {
+				return 1;
+			}
 
-				const titleA = a.title.toLowerCase();
-				const titleB = b.title.toLowerCase();
+			const titleA = a.title.toLowerCase();
+			const titleB = b.title.toLowerCase();
 
-				if (titleA < titleB) {
-					return -1;
-				}
+			if (titleA < titleB) {
+				return -1;
+			}
 
-				if (titleA > titleB) {
-					return 1;
-				}
+			if (titleA > titleB) {
+				return 1;
+			}
 
-				return 0;
-			});
+			return 0;
+		});
 
 		if (!filteredNodes.length) {
 			return (
@@ -1241,6 +1158,12 @@ export default function ChangeTrackingRenderView({
 
 					{state.contentType === CONTENT_TYPE_CHILDREN &&
 						getTableRows(state.children)}
+
+					{state.contentType === CONTENT_TYPE_WORKFLOW && (
+						<td className="publications-render-view-content">
+							{renderWorkflowView()}
+						</td>
+					)}
 				</ClayTable.Body>
 			</ClayTable>
 		);
@@ -1262,6 +1185,7 @@ export default function ChangeTrackingRenderView({
 		items.push(
 			<ClayNavigationBar.Item
 				active={state.contentType === CONTENT_TYPE_PREVIEW}
+				key="display"
 			>
 				<ClayLink
 					className={
@@ -1342,6 +1266,7 @@ export default function ChangeTrackingRenderView({
 		items.push(
 			<ClayNavigationBar.Item
 				active={state.contentType === CONTENT_TYPE_RENDER}
+				key="data"
 			>
 				<ClayLink onClick={() => setContentType(CONTENT_TYPE_RENDER)}>
 					{Liferay.Language.get('data')}
@@ -1354,7 +1279,7 @@ export default function ChangeTrackingRenderView({
 			(state.children && !!state.children.length)
 		) {
 			items.push(
-				<li className="autofit-col nav-item row-divider">
+				<li className="autofit-col nav-item row-divider" key="divider">
 					<div />
 				</li>
 			);
@@ -1362,6 +1287,7 @@ export default function ChangeTrackingRenderView({
 			items.push(
 				<ClayNavigationBar.Item
 					active={state.contentType === CONTENT_TYPE_PARENTS}
+					key="parents"
 				>
 					<ClayLink
 						className={
@@ -1387,6 +1313,7 @@ export default function ChangeTrackingRenderView({
 			items.push(
 				<ClayNavigationBar.Item
 					active={state.contentType === CONTENT_TYPE_CHILDREN}
+					key="children"
 				>
 					<ClayLink
 						className={
@@ -1410,6 +1337,21 @@ export default function ChangeTrackingRenderView({
 			);
 		}
 
+		if (workflowStatus && showWorkflow) {
+			items.push(
+				<ClayNavigationBar.Item
+					active={state.contentType === CONTENT_TYPE_WORKFLOW}
+					key="workflow"
+				>
+					<ClayLink
+						onClick={() => setContentType(CONTENT_TYPE_WORKFLOW)}
+					>
+						{Liferay.Language.get('workflow')}
+					</ClayLink>
+				</ClayNavigationBar.Item>
+			);
+		}
+
 		return (
 			<tr>
 				<td
@@ -1427,8 +1369,6 @@ export default function ChangeTrackingRenderView({
 						</div>
 
 						{renderDiffLegend()}
-
-						{renderShowHideableToggle()}
 					</div>
 				</td>
 			</tr>
@@ -1439,25 +1379,75 @@ export default function ChangeTrackingRenderView({
 		return renderEntry();
 	}
 
+	const updatePreviewRender = (segmentsExperienceId) => {
+		if (segmentsExperienceId) {
+			const newDataURL = createPortletURL(initialDataURL, {
+				segmentsExperienceId,
+			});
+
+			setDataURL(newDataURL.toString());
+			setSelectedSegmentsExperienceId(segmentsExperienceId);
+		}
+		else {
+			console.error(
+				'A SegmentsExperience was selected from ExperienceDropdown but no segmentsExperienceId ' +
+					'from the selected option was passed into the onSelectionChange method'
+			);
+		}
+	};
+
 	return (
 		<div className={`sheet ${loading ? 'publications-loading' : ''}`}>
 			{state.renderData && (
 				<div className="autofit-row sheet-title">
-					{state.renderData.locales &&
-						!!state.renderData.locales.length && (
-							<LocalizationDropdown
-								currentLocale={currentLocale}
-								defaultLocale={state.renderData.defaultLocale}
-								locales={state.renderData.locales}
-								setSelectedLocale={setSelectedLocale}
-								spritemap={spritemap}
-							/>
-						)}
-
 					<div className="autofit-col autofit-col-expand">
-						<h2>{currentTitle}</h2>
+						<div className="align-items-baseline autofit-row mb-2">
+							<h2 className="mr-3">{currentTitle}</h2>
 
-						<div className="entry-description">{description}</div>
+							{state.renderData.segmentsExperiences &&
+								!!state.renderData.segmentsExperiences
+									.length && (
+									<ExperienceDropdown
+										activeSegmentsExperience={
+											state.renderData.segmentsExperiences.filter(
+												(experience) =>
+													experience.active
+											)[0]
+										}
+										segmentsExperiences={
+											state.renderData.segmentsExperiences
+										}
+										updatePreviewRender={
+											updatePreviewRender
+										}
+									/>
+								)}
+
+							{state.renderData.locales &&
+								!!state.renderData.locales.length && (
+									<LocalizationDropdown
+										currentLocale={currentLocale}
+										defaultLocale={
+											state.renderData.defaultLocale
+										}
+										locales={state.renderData.locales}
+										setSelectedLocale={setSelectedLocale}
+										spritemap={spritemap}
+									/>
+								)}
+						</div>
+
+						<div className="entry-description">
+							<span>{description} </span>
+
+							{Liferay.FeatureFlags['LPD-10703'] ? (
+								<>
+									<WorkflowStatusLabel
+										workflowStatus={workflowStatus}
+									/>
+								</>
+							) : null}
+						</div>
 					</div>
 
 					{renderDropdownMenu()}

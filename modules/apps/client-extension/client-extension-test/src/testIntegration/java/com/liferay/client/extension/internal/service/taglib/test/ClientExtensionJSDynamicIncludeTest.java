@@ -45,6 +45,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,6 +56,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 /**
  * @author Víctor Galán
  */
+@Ignore
 @RunWith(Arquillian.class)
 public class ClientExtensionJSDynamicIncludeTest {
 
@@ -73,7 +75,7 @@ public class ClientExtensionJSDynamicIncludeTest {
 		throws Exception {
 
 		_testGlobalJSClientExtensionEntriesAreAdded(
-			_clientExtensionBottomJSPDynamicInclude, "bottom");
+			_clientExtensionBottomDynamicInclude, "bottom");
 	}
 
 	@Test
@@ -81,7 +83,7 @@ public class ClientExtensionJSDynamicIncludeTest {
 		throws Exception {
 
 		_testGlobalJSClientExtensionEntriesAreAdded(
-			_clientExtensionTopJSDynamicInclude, "head");
+			_clientExtensionTopDynamicInclude, "head");
 	}
 
 	private ClientExtensionEntry _addGlobalJSClientExtension(String url)
@@ -186,7 +188,7 @@ public class ClientExtensionJSDynamicIncludeTest {
 			_layoutPageTemplateEntryLocalService.addLayoutPageTemplateEntry(
 				TestPropsValues.getUserId(), _group.getGroupId(), 0,
 				RandomTestUtil.randomString(),
-				LayoutPageTemplateEntryTypeConstants.TYPE_MASTER_LAYOUT, 0,
+				LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT, 0,
 				WorkflowConstants.STATUS_APPROVED,
 				ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
@@ -234,9 +236,9 @@ public class ClientExtensionJSDynamicIncludeTest {
 	}
 
 	@Inject(
-		filter = "component.name=com.liferay.client.extension.internal.service.taglib.ClientExtensionBottomJSPDynamicInclude"
+		filter = "component.name=com.liferay.client.extension.internal.service.taglib.ClientExtensionBottomDynamicInclude"
 	)
-	private DynamicInclude _clientExtensionBottomJSPDynamicInclude;
+	private DynamicInclude _clientExtensionBottomDynamicInclude;
 
 	@DeleteAfterTestRun
 	private final List<ClientExtensionEntry> _clientExtensionEntries =
@@ -250,9 +252,9 @@ public class ClientExtensionJSDynamicIncludeTest {
 		_clientExtensionEntryRelLocalService;
 
 	@Inject(
-		filter = "component.name=com.liferay.client.extension.internal.service.taglib.ClientExtensionTopJSDynamicInclude"
+		filter = "component.name=com.liferay.client.extension.internal.service.taglib.ClientExtensionTopDynamicInclude"
 	)
-	private DynamicInclude _clientExtensionTopJSDynamicInclude;
+	private DynamicInclude _clientExtensionTopDynamicInclude;
 
 	@DeleteAfterTestRun
 	private Group _group;

@@ -59,6 +59,18 @@ public class DLFileVersionLocalServiceImpl
 	}
 
 	@Override
+	public DLFileVersion fetchLatestFileVersion(
+		long fileEntryId, boolean excludeWorkingCopy, int status) {
+
+		if (status == WorkflowConstants.STATUS_ANY) {
+			return fetchLatestFileVersion(fileEntryId, excludeWorkingCopy);
+		}
+
+		return dlFileVersionPersistence.fetchByF_S_Last(
+			fileEntryId, status, new DLFileVersionVersionComparator());
+	}
+
+	@Override
 	public DLFileVersion getFileVersion(long fileVersionId)
 		throws PortalException {
 

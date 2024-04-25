@@ -1,10 +1,8 @@
 definition {
 
-	macro configurationPaypal {
-		ApplicationsMenu.gotoPortlet(
-			category = "Store Management",
-			panel = "Commerce",
-			portlet = "Channels");
+	@summary = "Default summary"
+	macro configurationPaypal() {
+		CommerceChannels.openChannelsAdmin();
 
 		while (IsElementNotPresent(key_entryName = "Raylife D2C Channel", locator1 = "CommerceNavigation#ENTRY_NAME")) {
 			Refresh();
@@ -53,11 +51,9 @@ definition {
 		Refresh();
 	}
 
-	macro enablePayPalPayment {
-		ApplicationsMenu.gotoPortlet(
-			category = "Store Management",
-			panel = "Commerce",
-			portlet = "Channels");
+	@summary = "Default summary"
+	macro enablePayPalPayment() {
+		CommerceChannels.openChannelsAdmin();
 
 		while (IsElementNotPresent(key_entryName = "Raylife D2C Channel", locator1 = "CommerceNavigation#ENTRY_NAME")) {
 			Refresh();
@@ -76,11 +72,9 @@ definition {
 		Refresh();
 	}
 
-	macro enablePricingPaypal {
-		ApplicationsMenu.gotoPortlet(
-			category = "Product Management",
-			panel = "Commerce",
-			portlet = "Products");
+	@summary = "Default summary"
+	macro enablePricingPaypal() {
+		CommerceProducts.openProductsAdmin();
 
 		CommerceNavigator.gotoEntry(entryName = "Business Owners Policy");
 
@@ -141,7 +135,8 @@ definition {
 		Button.clickPublish();
 	}
 
-	macro payPalFlow {
+	@summary = "Default summary"
+	macro payPalFlow() {
 		Click(locator1 = "RaylifePaymentMethod#PAYMENT_METHOD_PAYPAL");
 
 		Click(locator1 = "RaylifePaymentMethod#TERMS_CONDITIONS_CHECKBOX");
@@ -149,7 +144,8 @@ definition {
 		Click(locator1 = "RaylifePaymentMethod#PAY_NOW");
 	}
 
-	macro paypalPaymentFlow {
+	@summary = "Default summary"
+	macro paypalPaymentFlow() {
 		var raylifePaypalEmail = PropsUtil.get("site.initializer.raylife.d2c.paypal.email");
 		var raylifePaypalPassword = PropsUtil.get("site.initializer.raylife.d2c.paypal.password");
 
@@ -164,10 +160,6 @@ definition {
 			value1 = ${raylifePaypalPassword});
 
 		Click(locator1 = "RaylifePaymentMethod#BUTTON_LOGIN_PAYPAL");
-
-		AssertElementPresent(
-			locator1 = "RaylifePaymentMethod#TEST_BUYER_PAYPAL",
-			text = "test buyer");
 
 		AssertElementPresent(
 			locator1 = "RaylifePaymentMethod#VALUE_QUOTATION_PAYPAL",

@@ -13,6 +13,7 @@ create table CPMethodGroupRelQualifier (
 
 create table CommercePaymentEntry (
 	mvccVersion LONG default 0 not null,
+	externalReferenceCode VARCHAR(75) null,
 	commercePaymentEntryId LONG not null primary key,
 	companyId LONG,
 	userId LONG,
@@ -22,14 +23,21 @@ create table CommercePaymentEntry (
 	classNameId LONG,
 	classPK LONG,
 	commerceChannelId LONG,
-	amount DECIMAL(30, 16) null,
+	amount BIGDECIMAL null,
 	callbackURL TEXT null,
+	cancelURL TEXT null,
 	currencyCode VARCHAR(75) null,
+	errorMessages TEXT null,
+	languageId VARCHAR(75) null,
+	note TEXT null,
 	paymentIntegrationKey VARCHAR(75) null,
 	paymentIntegrationType INTEGER,
 	paymentStatus INTEGER,
+	reasonKey VARCHAR(75) null,
+	reasonName STRING null,
 	redirectURL TEXT null,
-	transactionCode VARCHAR(255) null
+	transactionCode VARCHAR(255) null,
+	type_ INTEGER
 );
 
 create table CommercePaymentEntryAudit (
@@ -41,7 +49,7 @@ create table CommercePaymentEntryAudit (
 	createDate DATE null,
 	modifiedDate DATE null,
 	commercePaymentEntryId LONG,
-	amount DECIMAL(30, 16) null,
+	amount BIGDECIMAL null,
 	currencyCode VARCHAR(75) null,
 	logType VARCHAR(75) null,
 	logTypeSettings TEXT null

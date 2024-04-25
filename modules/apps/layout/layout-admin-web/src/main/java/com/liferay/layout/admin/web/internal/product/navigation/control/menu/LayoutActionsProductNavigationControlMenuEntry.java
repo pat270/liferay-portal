@@ -8,10 +8,11 @@ package com.liferay.layout.admin.web.internal.product.navigation.control.menu;
 import com.liferay.layout.admin.web.internal.constants.LayoutAdminWebKeys;
 import com.liferay.layout.admin.web.internal.display.context.LayoutActionsDisplayContext;
 import com.liferay.layout.admin.web.internal.helper.LayoutActionsHelper;
+import com.liferay.layout.security.permission.resource.LayoutContentModelResourcePermission;
 import com.liferay.layout.util.template.LayoutConverterRegistry;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.service.LayoutLocalService;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.permission.LayoutPermission;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
@@ -104,17 +105,19 @@ public class LayoutActionsProductNavigationControlMenuEntry
 
 		if (!layoutMode.equals(Constants.EDIT) ||
 			layout.isEmbeddedPersonalApplication() ||
-			layout.isTypeControlPanel() ||
-			!(themeDisplay.isShowLayoutTemplatesIcon() ||
-			  themeDisplay.isShowPageSettingsIcon())) {
+			layout.isTypeControlPanel()) {
 
 			return false;
 		}
 
-		if (layout.isSystem()) {
-			return _layoutPermission.containsLayoutRestrictedUpdatePermission(
-				themeDisplay.getPermissionChecker(),
-				_layoutLocalService.getLayout(layout.getClassPK()));
+		if (layout.isSystem() &&
+			(_layoutPermission.containsLayoutUpdatePermission(
+				themeDisplay.getPermissionChecker(), layout) ||
+			 _modelResourcePermission.contains(
+				 themeDisplay.getPermissionChecker(), layout.getPlid(),
+				 ActionKeys.UPDATE))) {
+
+			return true;
 		}
 
 		return super.isShow(httpServletRequest);
@@ -129,10 +132,10 @@ public class LayoutActionsProductNavigationControlMenuEntry
 	private LayoutConverterRegistry _layoutConverterRegistry;
 
 	@Reference
-	private LayoutLocalService _layoutLocalService;
+	private LayoutPermission _layoutPermission;
 
 	@Reference
-	private LayoutPermission _layoutPermission;
+	private LayoutContentModelResourcePermission _modelResourcePermission;
 
 	@Reference
 	private SegmentsExperienceLocalService _segmentsExperienceLocalService;

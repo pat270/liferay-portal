@@ -39,7 +39,6 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.sharepoint.rest.repository.internal.configuration.SharepointRepositoryConfiguration;
-import com.liferay.sharepoint.rest.repository.internal.configuration.SharepointSearchConfiguration;
 import com.liferay.sharepoint.rest.repository.internal.document.library.repository.external.model.SharepointFileEntry;
 import com.liferay.sharepoint.rest.repository.internal.document.library.repository.external.model.SharepointModel;
 import com.liferay.sharepoint.rest.repository.internal.document.library.repository.external.model.SharepointRootFolder;
@@ -67,23 +66,22 @@ public class SharepointExtRepository implements ExtRepository {
 
 	public SharepointExtRepository(
 		TokenStore tokenStore,
-		SharepointRepositoryConfiguration sharepointRepositoryConfiguration,
-		SharepointSearchConfiguration sharepointSearchConfiguration) {
+		SharepointRepositoryConfiguration sharepointRepositoryConfiguration) {
 
 		_tokenStore = tokenStore;
 		_sharepointRepositoryConfiguration = sharepointRepositoryConfiguration;
-		_sharepointSearchConfiguration = sharepointSearchConfiguration;
 	}
 
 	@Override
 	public ExtRepositoryFileEntry addExtRepositoryFileEntry(
-			String extRepositoryParentFolderKey, String mimeType, String title,
-			String description, String changeLog, InputStream inputStream)
+			String extRepositoryParentFolderKey, String fileName,
+			String mimeType, String title, String description, String changeLog,
+			InputStream inputStream)
 		throws PortalException {
 
 		try {
 			String url = _sharepointURLHelper.getAddFileURL(
-				extRepositoryParentFolderKey, title);
+				extRepositoryParentFolderKey, fileName);
 
 			JSONObject jsonObject = _post(url, inputStream);
 
@@ -531,8 +529,7 @@ public class SharepointExtRepository implements ExtRepository {
 				StringPool.DASH));
 
 		_sharepointURLHelper = new SharepointURLHelper(
-			_siteAbsoluteURL,
-			_sharepointSearchConfiguration.sharepointResultsSourceId());
+			_siteAbsoluteURL, _RESULTS_SOURCE_ID);
 
 		_sharepointServerResponseConverter =
 			new SharepointServerResponseConverter(
@@ -903,11 +900,13 @@ public class SharepointExtRepository implements ExtRepository {
 		}
 	}
 
+	private static final String _RESULTS_SOURCE_ID =
+		"8413cd39-2156-4e00-b54d-11efd9abdb89";
+
 	private String _libraryPath;
 	private ExtRepositoryFolder _rootFolder;
 	private final SharepointRepositoryConfiguration
 		_sharepointRepositoryConfiguration;
-	private final SharepointSearchConfiguration _sharepointSearchConfiguration;
 	private SharepointServerResponseConverter
 		_sharepointServerResponseConverter;
 	private SharepointURLHelper _sharepointURLHelper;

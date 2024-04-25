@@ -22,7 +22,6 @@ import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.fields.NestedField;
 import com.liferay.portal.vulcan.fields.NestedFieldId;
-import com.liferay.portal.vulcan.fields.NestedFieldSupport;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 
@@ -40,12 +39,11 @@ import org.osgi.service.component.annotations.ServiceScope;
  */
 @Component(
 	properties = "OSGI-INF/liferay/rest/v1_0/related-product.properties",
-	scope = ServiceScope.PROTOTYPE,
-	service = {NestedFieldSupport.class, RelatedProductResource.class}
+	property = "nested.field.support=true", scope = ServiceScope.PROTOTYPE,
+	service = RelatedProductResource.class
 )
 @CTAware
-public class RelatedProductResourceImpl
-	extends BaseRelatedProductResourceImpl implements NestedFieldSupport {
+public class RelatedProductResourceImpl extends BaseRelatedProductResourceImpl {
 
 	@Override
 	public Response deleteRelatedProduct(Long id) throws Exception {
@@ -89,7 +87,7 @@ public class RelatedProductResourceImpl
 
 		if (cpDefinition == null) {
 			throw new NoSuchCPDefinitionException(
-				"Unable to find Product with ID: " + id);
+				"Unable to find product with ID " + id);
 		}
 
 		return _getRelatedProductPage(cpDefinition, type, pagination);
@@ -129,7 +127,7 @@ public class RelatedProductResourceImpl
 
 		if (cpDefinition == null) {
 			throw new NoSuchCPDefinitionException(
-				"Unable to find Product with ID: " + id);
+				"Unable to find product with ID " + id);
 		}
 
 		return _addOrUpdateRelatedProduct(cpDefinition, relatedProduct);

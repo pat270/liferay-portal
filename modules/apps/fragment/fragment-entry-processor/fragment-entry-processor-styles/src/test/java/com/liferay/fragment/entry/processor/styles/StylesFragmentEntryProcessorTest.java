@@ -14,14 +14,11 @@ import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocal
 import com.liferay.layout.util.structure.FragmentStyledLayoutStructureItem;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.layout.util.structure.LayoutStructureItem;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
-import com.liferay.portal.uuid.PortalUUIDImpl;
 
 import java.util.Collections;
 
@@ -53,8 +50,6 @@ public class StylesFragmentEntryProcessorTest {
 	public static void setUpClass() {
 		_setUpDocumentStylesFragmentEntryProcessor();
 		_setUpStylesFragmentEntryValidator();
-
-		_setUpPortalUUIDUtil();
 	}
 
 	@Test
@@ -98,8 +93,8 @@ public class StylesFragmentEntryProcessorTest {
 		String layoutStructureItemUniqueCssClass =
 			fragmentStyledLayoutStructureItem.getUniqueCssClass();
 
-		Elements elements = document.select(
-			StringPool.PERIOD + layoutStructureItemUniqueCssClass);
+		Elements elements = document.getElementsByClass(
+			layoutStructureItemUniqueCssClass);
 
 		Assert.assertEquals(1, elements.size());
 	}
@@ -120,12 +115,6 @@ public class StylesFragmentEntryProcessorTest {
 			_stylesDocumentFragmentEntryProcessor,
 			"_layoutPageTemplateStructureLocalService",
 			Mockito.mock(LayoutPageTemplateStructureLocalService.class));
-	}
-
-	private static void _setUpPortalUUIDUtil() {
-		PortalUUIDUtil portalUUIDUtil = new PortalUUIDUtil();
-
-		portalUUIDUtil.setPortalUUID(new PortalUUIDImpl());
 	}
 
 	private static void _setUpStylesFragmentEntryValidator() {

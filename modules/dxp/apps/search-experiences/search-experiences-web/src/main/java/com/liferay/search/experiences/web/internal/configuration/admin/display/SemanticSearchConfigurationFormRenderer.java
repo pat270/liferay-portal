@@ -10,13 +10,10 @@ import com.liferay.configuration.admin.display.ConfigurationFormRenderer;
 import com.liferay.frontend.taglib.servlet.taglib.util.JSPRenderer;
 import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
-import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.language.Language;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.CamelCaseUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -88,9 +85,9 @@ public class SemanticSearchConfigurationFormRenderer
 		throws IOException {
 
 		if (!FeatureFlagManagerUtil.isEnabled("LPS-122920")) {
-			PrintWriter writer = httpServletResponse.getWriter();
+			PrintWriter printWriter = httpServletResponse.getWriter();
 
-			writer.print(
+			printWriter.print(
 				"<div class=\"alert alert-info\">This feature is not " +
 					"available.</div>");
 
@@ -259,15 +256,6 @@ public class SemanticSearchConfigurationFormRenderer
 
 		return sortedValues;
 	}
-
-	@Reference
-	private ConfigurationProvider _configurationProvider;
-
-	@Reference
-	private Http _http;
-
-	@Reference
-	private JSONFactory _jsonFactory;
 
 	@Reference
 	private JSPRenderer _jspRenderer;

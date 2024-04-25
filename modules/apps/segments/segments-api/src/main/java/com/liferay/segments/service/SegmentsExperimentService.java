@@ -15,10 +15,8 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
-import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.segments.model.SegmentsExperiment;
 
-import java.util.List;
 import java.util.Map;
 
 import org.osgi.annotation.versioning.ProviderType;
@@ -58,12 +56,16 @@ public interface SegmentsExperimentService extends BaseService {
 		throws PortalException;
 
 	public SegmentsExperiment deleteSegmentsExperiment(
+			SegmentsExperiment segmentsExperiment, boolean force)
+		throws PortalException;
+
+	public SegmentsExperiment deleteSegmentsExperiment(
 			String segmentsExperimentKey)
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public SegmentsExperiment fetchSegmentsExperiment(
-			long segmentsExperienceId, long plid, int[] statuses)
+			long groupId, long segmentsExperienceId, long plid)
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -79,12 +81,6 @@ public interface SegmentsExperimentService extends BaseService {
 	public String getOSGiServiceIdentifier();
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<SegmentsExperiment> getSegmentsExperienceSegmentsExperiments(
-			long[] segmentsExperienceIds, long plid, int[] statuses, int start,
-			int end)
-		throws PortalException;
-
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public SegmentsExperiment getSegmentsExperiment(long segmentsExperimentId)
 		throws PortalException;
 
@@ -93,23 +89,14 @@ public interface SegmentsExperimentService extends BaseService {
 			String segmentsExperimentKey)
 		throws PortalException;
 
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<SegmentsExperiment> getSegmentsExperiments(
-		long groupId, long plid);
-
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<SegmentsExperiment> getSegmentsExperiments(
-		long segmentsExperienceId, long plid, int[] statuses,
-		OrderByComparator<SegmentsExperiment> orderByComparator);
-
 	public SegmentsExperiment runSegmentsExperiment(
 			long segmentsExperimentId, double confidenceLevel,
-			Map<Long, Double> segmentsExperienceIdSplitMap)
+			Map<Long, Double> segmentsExperienceIdSplitMap, String type)
 		throws PortalException;
 
 	public SegmentsExperiment runSegmentsExperiment(
 			String segmentsExperimentKey, double confidenceLevel,
-			Map<String, Double> segmentsExperienceKeySplitMap)
+			Map<String, Double> segmentsExperienceKeySplitMap, String type)
 		throws PortalException;
 
 	public SegmentsExperiment updateSegmentsExperiment(

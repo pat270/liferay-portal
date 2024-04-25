@@ -50,10 +50,6 @@
 		},
 		{
 			"genericTypeCount": 1,
-			"name": "com.liferay.adaptive.media.content.transformer.ContentTransformer"
-		},
-		{
-			"genericTypeCount": 1,
 			"name": "com.liferay.adaptive.media.content.transformer.ContentTransformerContentType"
 		},
 		{
@@ -271,10 +267,6 @@
 		{
 			"genericTypeCount": 1,
 			"name": "com.liferay.exportimport.staged.model.repository.StagedModelRepository"
-		},
-		{
-			"genericTypeCount": 1,
-			"name": "com.liferay.frontend.taglib.chart.model.ChartConfig"
 		},
 		{
 			"genericTypeCount": 1,

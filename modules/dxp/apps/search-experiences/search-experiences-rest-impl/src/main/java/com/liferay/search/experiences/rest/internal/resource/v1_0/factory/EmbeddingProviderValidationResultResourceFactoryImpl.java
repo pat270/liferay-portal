@@ -72,7 +72,14 @@ public class EmbeddingProviderValidationResultResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _embeddingProviderValidationResultResourceProxyProviderFunction.
+				Function
+					<InvocationHandler,
+					 EmbeddingProviderValidationResultResource>
+						embeddingProviderValidationResultResourceProxyProviderFunction =
+							ResourceProxyProviderFunctionHolder.
+								_embeddingProviderValidationResultResourceProxyProviderFunction;
+
+				return embeddingProviderValidationResultResourceProxyProviderFunction.
 					apply(
 						(proxy, method, arguments) -> _invoke(
 							method, arguments, _checkPermissions,
@@ -245,11 +252,6 @@ public class EmbeddingProviderValidationResultResourceFactoryImpl
 		}
 	}
 
-	private static final Function
-		<InvocationHandler, EmbeddingProviderValidationResultResource>
-			_embeddingProviderValidationResultResourceProxyProviderFunction =
-				_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -285,6 +287,15 @@ public class EmbeddingProviderValidationResultResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function
+			<InvocationHandler, EmbeddingProviderValidationResultResource>
+				_embeddingProviderValidationResultResourceProxyProviderFunction =
+					_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

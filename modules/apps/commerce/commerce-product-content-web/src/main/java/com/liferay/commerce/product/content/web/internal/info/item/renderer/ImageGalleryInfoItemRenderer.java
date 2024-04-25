@@ -5,19 +5,22 @@
 
 package com.liferay.commerce.product.content.web.internal.info.item.renderer;
 
-import com.liferay.commerce.product.content.util.CPContentHelper;
+import com.liferay.commerce.product.constants.CPPortletKeys;
+import com.liferay.commerce.product.content.helper.CPContentHelper;
 import com.liferay.commerce.product.content.util.CPMedia;
+import com.liferay.commerce.product.content.web.internal.util.AdaptiveMediaCPMediaImpl;
 import com.liferay.commerce.product.model.CPDefinition;
 import com.liferay.info.item.renderer.InfoItemRenderer;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.portlet.PortletURLFactory;
 import com.liferay.portal.kernel.portlet.url.builder.ResourceURLBuilder;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.template.react.renderer.ComponentDescriptor;
@@ -26,7 +29,7 @@ import com.liferay.portal.template.react.renderer.ReactRenderer;
 import java.util.List;
 import java.util.Locale;
 
-import javax.portlet.PortletResponse;
+import javax.portlet.PortletRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -72,19 +75,37 @@ public class ImageGalleryInfoItemRenderer
 
 			_reactRenderer.renderReact(
 				new ComponentDescriptor(
-					"commerce-frontend-js/components/gallery/Gallery",
+					"{GalleryComponent} from commerce-frontend-js",
 					componentId),
 				HashMapBuilder.<String, Object>put(
 					"images",
 					() -> {
 						List<CPMedia> images = _cpContentHelper.getImages(
-							cpDefinition.getCPDefinitionId(), themeDisplay);
+							cpDefinition.getCPDefinitionId(), true,
+							themeDisplay);
 
 						JSONArray jsonArray = _jsonFactory.createJSONArray();
 
 						for (CPMedia cpMedia : images) {
 							jsonArray.put(
 								JSONUtil.put(
+									"adaptiveMediaImageHTMLTag",
+									() -> {
+										if (cpMedia instanceof
+												AdaptiveMediaCPMediaImpl) {
+
+											AdaptiveMediaCPMediaImpl
+												adaptiveMediaCPMediaImpl =
+													(AdaptiveMediaCPMediaImpl)
+														cpMedia;
+
+											return adaptiveMediaCPMediaImpl.
+												getAdaptiveMediaImageHTMLTag();
+										}
+
+										return StringPool.BLANK;
+									}
+								).put(
 									"thumbnailURL", cpMedia.getThumbnailURL()
 								).put(
 									"title", cpMedia.getTitle()
@@ -114,9 +135,9 @@ public class ImageGalleryInfoItemRenderer
 				).put(
 					"viewCPAttachmentURL",
 					() -> ResourceURLBuilder.createResourceURL(
-						_portal.getLiferayPortletResponse(
-							(PortletResponse)httpServletRequest.getAttribute(
-								JavaConstants.JAVAX_PORTLET_RESPONSE))
+						_portletURLFactory.create(
+							httpServletRequest, CPPortletKeys.CP_CONTENT_WEB,
+							PortletRequest.RESOURCE_PHASE)
 					).setParameter(
 						"cpDefinitionId", cpDefinition.getCPDefinitionId()
 					).setResourceID(
@@ -141,6 +162,9 @@ public class ImageGalleryInfoItemRenderer
 
 	@Reference
 	private Portal _portal;
+
+	@Reference
+	private PortletURLFactory _portletURLFactory;
 
 	@Reference
 	private ReactRenderer _reactRenderer;

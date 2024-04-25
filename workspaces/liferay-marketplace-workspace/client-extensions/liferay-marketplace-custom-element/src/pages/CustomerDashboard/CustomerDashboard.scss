@@ -1,0 +1,15 @@
+.purchased-apps-dashboard-page {
+	&-container {
+		display: flex;
+		gap: 2rem;
+		padding: 0;
+	}
+
+	&-loading-indicator {
+		align-self: center;
+	}
+
+	.table-responsive {
+		overflow-x: unset;
+	}
+}

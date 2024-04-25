@@ -22,6 +22,8 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.math.BigDecimal;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -154,10 +156,9 @@ public class CommerceOrderValidatorRegistryImpl
 				itemCommerceOrderValidatorResults = validate(
 					locale, commerceOrderItem);
 
-			for (CommerceOrderValidatorResult commerceOrderValidatorResult :
-					itemCommerceOrderValidatorResults) {
-
-				commerceOrderValidatorResults.add(commerceOrderValidatorResult);
+			if (ListUtil.isNotEmpty(itemCommerceOrderValidatorResults)) {
+				commerceOrderValidatorResults.addAll(
+					itemCommerceOrderValidatorResults);
 			}
 		}
 
@@ -192,7 +193,7 @@ public class CommerceOrderValidatorRegistryImpl
 	@Override
 	public List<CommerceOrderValidatorResult> validate(
 			Locale locale, CommerceOrder commerceOrder, CPInstance cpInstance,
-			int quantity)
+			String json, BigDecimal quantity, boolean child)
 		throws PortalException {
 
 		List<CommerceOrderValidatorResult> commerceOrderValidatorResults =
@@ -206,7 +207,7 @@ public class CommerceOrderValidatorRegistryImpl
 
 			CommerceOrderValidatorResult commerceOrderValidatorResult =
 				commerceOrderValidator.validate(
-					locale, commerceOrder, cpInstance, quantity);
+					locale, commerceOrder, cpInstance, json, quantity, child);
 
 			if (!commerceOrderValidatorResult.isValid()) {
 				commerceOrderValidatorResults.add(commerceOrderValidatorResult);

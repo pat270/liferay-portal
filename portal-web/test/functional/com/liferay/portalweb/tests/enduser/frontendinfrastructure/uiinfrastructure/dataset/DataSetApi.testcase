@@ -1,8 +1,7 @@
 @component-name = "portal-frontend-infrastructure"
 definition {
 
-	property custom.properties = "feature.flag.LPS-164563=true${line.separator}feature.flag.LPS-167253=true";
-	property portal.acceptance = "true";
+	property custom.properties = "feature.flag.LPS-164563=true";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.component.names = "Frontend Data Set";
@@ -24,35 +23,11 @@ definition {
 		}
 	}
 
-	@description = "LPS-175990. Confirm that the user can create a data set view via API"
-	@priority = 5
-	test CanCreateDataSetEntryViaAPI {
-		task ("Given creating a Data Set via API") {
-			DataSetAdmin.goToDataSetAdminPage();
-
-			DataSetAdmin.createDataSetEntryViaAPI(
-				dataSetName = "Data Set Test",
-				restApplication = "/data-set-manager/entries");
-		}
-
-		task ("and given access to the Data Sets admin page") {
-			DataSetAdmin.goToDataSetAdminPage();
-
-			WaitForElementPresent(
-				key_itemName = "Data Set Test",
-				locator1 = "DataSet#TABLE_CELL");
-		}
-
-		task ("Then the data set is shown in the list") {
-			AssertElementPresent(
-				key_itemName = "Data Set Test",
-				locator1 = "DataSet#TABLE_CELL");
-		}
-	}
-
 	@description = "LPS-181355. Confirm that views can be created through API"
-	@priority = 4
+	@priority = 5
 	test CanCreateViewsThroughAPI {
+		property portal.acceptance = "true";
+
 		task ("Given creating a Data Set via API") {
 			DataSetAdmin.goToDataSetAdminPage();
 

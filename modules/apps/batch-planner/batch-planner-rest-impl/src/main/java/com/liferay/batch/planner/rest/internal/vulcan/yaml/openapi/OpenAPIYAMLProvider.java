@@ -13,6 +13,7 @@ import com.liferay.portal.vulcan.yaml.openapi.OpenAPIYAML;
 
 import java.util.Collections;
 
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
 import org.osgi.service.component.annotations.Component;
@@ -24,13 +25,18 @@ import org.osgi.service.component.annotations.Reference;
 @Component(service = OpenAPIYAMLProvider.class)
 public class OpenAPIYAMLProvider {
 
-	public OpenAPIYAML getOpenAPIYAML(long companyId, String internalClassName)
+	public OpenAPIYAML getOpenAPIYAML(
+			long companyId, String internalClassNameKey)
 		throws Exception {
 
 		VulcanBatchEngineTaskItemDelegate vulcanBatchEngineTaskItemDelegate =
 			_vulcanBatchEngineTaskItemDelegateRegistry.
 				getVulcanBatchEngineTaskItemDelegate(
-					companyId, internalClassName);
+					companyId, internalClassNameKey);
+
+		if (vulcanBatchEngineTaskItemDelegate == null) {
+			throw new NotFoundException();
+		}
 
 		Response response = _openAPIResource.getOpenAPI(
 			Collections.singleton(
@@ -40,7 +46,7 @@ public class OpenAPIYAMLProvider {
 		if (response.getStatus() != 200) {
 			throw new IllegalArgumentException(
 				"Unable to find OpenAPI specification for " +
-					internalClassName);
+					internalClassNameKey);
 		}
 
 		return YAMLUtil.loadOpenAPIYAML((String)response.getEntity());

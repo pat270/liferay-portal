@@ -36,6 +36,7 @@ create table CPAttachmentFileEntry (
 	cdnURL STRING null,
 	displayDate DATE null,
 	expirationDate DATE null,
+	galleryEnabled BOOLEAN,
 	title STRING null,
 	json TEXT null,
 	priority DOUBLE,
@@ -62,8 +63,9 @@ create table CPDSpecificationOptionValue (
 	CPDefinitionId LONG,
 	CPSpecificationOptionId LONG,
 	CPOptionCategoryId LONG,
-	value STRING null,
+	key_ VARCHAR(75) null,
 	priority DOUBLE,
+	value STRING null,
 	lastPublishDate DATE null,
 	primary key (CPDSpecificationOptionValueId, ctCollectionId)
 );
@@ -176,13 +178,16 @@ create table CPDefinitionOptionRel (
 	CPOptionId LONG,
 	name STRING null,
 	description STRING null,
-	DDMFormFieldTypeName VARCHAR(75) null,
+	commerceOptionTypeKey VARCHAR(75) null,
+	infoItemServiceKey VARCHAR(255) null,
 	priority DOUBLE,
+	definedExternally BOOLEAN,
 	facetable BOOLEAN,
 	required BOOLEAN,
 	skuContributor BOOLEAN,
 	key_ VARCHAR(75) null,
 	priceType VARCHAR(75) null,
+	typeSettings TEXT null,
 	primary key (CPDefinitionOptionRelId, ctCollectionId)
 );
 
@@ -200,12 +205,13 @@ create table CPDefinitionOptionValueRel (
 	CPDefinitionOptionRelId LONG,
 	CPInstanceUuid VARCHAR(75) null,
 	CProductId LONG,
-	name STRING null,
-	priority DOUBLE,
 	key_ VARCHAR(75) null,
-	quantity INTEGER,
+	name STRING null,
 	preselected BOOLEAN,
-	price DECIMAL(30, 16) null,
+	price BIGDECIMAL null,
+	priority DOUBLE,
+	quantity BIGDECIMAL null,
+	unitOfMeasureKey VARCHAR(75) null,
 	primary key (CPDefinitionOptionValueRelId, ctCollectionId)
 );
 
@@ -249,9 +255,9 @@ create table CPInstance (
 	height DOUBLE,
 	depth DOUBLE,
 	weight DOUBLE,
-	price DECIMAL(30, 16) null,
-	promoPrice DECIMAL(30, 16) null,
-	cost DECIMAL(30, 16) null,
+	price BIGDECIMAL null,
+	promoPrice BIGDECIMAL null,
+	cost BIGDECIMAL null,
 	published BOOLEAN,
 	displayDate DATE null,
 	expirationDate DATE null,
@@ -308,13 +314,13 @@ create table CPInstanceUOM (
 	modifiedDate DATE null,
 	CPInstanceId LONG,
 	active_ BOOLEAN,
-	incrementalOrderQuantity DECIMAL(30, 16) null,
+	incrementalOrderQuantity BIGDECIMAL null,
 	key_ VARCHAR(75) null,
 	name STRING null,
 	precision_ INTEGER,
 	primary_ BOOLEAN,
 	priority DOUBLE,
-	rate DECIMAL(30, 16) null,
+	rate BIGDECIMAL null,
 	sku VARCHAR(75) null,
 	primary key (CPInstanceUOMId, ctCollectionId)
 );
@@ -354,7 +360,7 @@ create table CPOption (
 	modifiedDate DATE null,
 	name STRING null,
 	description STRING null,
-	DDMFormFieldTypeName VARCHAR(75) null,
+	commerceOptionTypeKey VARCHAR(75) null,
 	facetable BOOLEAN,
 	required BOOLEAN,
 	skuContributor BOOLEAN,
@@ -415,6 +421,7 @@ create table CPSpecificationOption (
 	description STRING null,
 	facetable BOOLEAN,
 	key_ VARCHAR(75) null,
+	priority DOUBLE,
 	lastPublishDate DATE null,
 	primary key (CPSpecificationOptionId, ctCollectionId)
 );

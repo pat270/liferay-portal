@@ -18,7 +18,7 @@
 			</then>
 		</elseif>
 		<else>
-			<property name="elasticsearch.version" value="7.17.10" />
+			<property name="elasticsearch.version" value="7.17.18" />
 		</else>
 	</if>
 
@@ -44,7 +44,7 @@
 	<property name="elasticsearch.tar.url.linux" value="https://artifacts.elastic.co/downloads/elasticsearch/${elasticsearch.tar.name.linux}" />
 	<property name="elasticsearch.tar.url.mac" value="https://artifacts.elastic.co/downloads/elasticsearch/${elasticsearch.tar.name.mac}" />
 	<property name="elasticsearch.zip.url.windows" value="https://artifacts.elastic.co/downloads/elasticsearch/${elasticsearch.zip.name.windows}" />
-	<property name="elasticsearch.sidecar.version" value="7.17.10" />
+	<property name="elasticsearch.sidecar.version" value="7.17.12" />
 	<property name="elasticsearch.sidecar.analysis-icu.zip.url" value="https://artifacts.elastic.co/downloads/elasticsearch-plugins/analysis-icu/analysis-icu-${elasticsearch.sidecar.version}.zip" />
 	<property name="elasticsearch.sidecar.analysis-kuromoji.zip.url" value="https://artifacts.elastic.co/downloads/elasticsearch-plugins/analysis-kuromoji/analysis-kuromoji-${elasticsearch.sidecar.version}.zip" />
 	<property name="elasticsearch.sidecar.analysis-smartcn.zip.url" value="https://artifacts.elastic.co/downloads/elasticsearch-plugins/analysis-smartcn/analysis-smartcn-${elasticsearch.sidecar.version}.zip" />
@@ -95,13 +95,21 @@
 		<attribute name="elasticsearch.java.home" />
 
 		<sequential>
-			<replace
-				file="${elasticsearch.dir}/bin/elasticsearch-env"
-			>
-				<replacetoken><![CDATA[#!/bin/bash]]></replacetoken>
-				<replacevalue><![CDATA[#!/bin/bash
-ES_JAVA_HOME=@{elasticsearch.java.home}]]></replacevalue>
-			</replace>
+			<if>
+				<isset property="env.JENKINS_HOME" />
+				<then>
+					<replace
+						file="${elasticsearch.dir}/bin/elasticsearch-env"
+					>
+						<replacetoken><![CDATA[#!/bin/bash]]></replacetoken>
+						<replacevalue><![CDATA[#!/bin/bash
+		ES_JAVA_HOME=@{elasticsearch.java.home}]]></replacevalue>
+					</replace>
+				</then>
+				<else>
+					<echo>Set ${elasticsearch.dir}/bin/elasticsearch-env manually.</echo>
+				</else>
+			</if>
 		</sequential>
 	</macrodef>
 

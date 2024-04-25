@@ -69,7 +69,7 @@ definition {
 	@description = "This is a test case for COMMERCE-10820. User with Category Manager role can access Categories from the site admin menu"
 	@priority = 3
 	test CanCategoryManagerAccessCategoriesAdminMenu {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "false";
 
 		task ("Given a Minium site") {
@@ -415,7 +415,7 @@ definition {
 		}
 
 		task ("When the user removes the Override Default Category Display Page") {
-			CommerceEntry.deleteCommerceEntry(key_value = "Suspension");
+			CommerceEntry.deleteCommerceEntry(entryName = "Suspension");
 		}
 
 		task ("Then the category display page override should no longer be present") {
@@ -565,7 +565,9 @@ definition {
 
 			Button.clickSave();
 
-			Alert.viewErrorMessage(errorMessage = "Please select a valid layout.");
+			AssertTextEquals.assertText(
+				locator1 = "Message#ERROR",
+				value1 = "Close Error:Please select a valid layout.");
 		}
 
 		task ("And Given it is not possible to add an Override Default Category Display Page by selecting only a page") {
@@ -581,7 +583,11 @@ definition {
 
 			Button.clickSave();
 
-			Alert.viewErrorMessage(errorMessage = "Please select a valid category.");
+			WaitForElementPresent(locator1 = "Message#ERROR");
+
+			AssertTextEquals.assertText(
+				locator1 = "Message#ERROR",
+				value1 = "Close Error:Please select a valid category.");
 		}
 
 		task ("And given the Test Public Widget Page is set as Override Default Category Display Page for Engine") {

@@ -12,6 +12,7 @@
 <%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %><%@
 taglib uri="http://liferay.com/tld/clay" prefix="clay" %><%@
 taglib uri="http://liferay.com/tld/ddm" prefix="liferay-ddm" %><%@
+taglib uri="http://liferay.com/tld/frontend" prefix="liferay-frontend" %><%@
 taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
 
 <%@ page import="com.liferay.petra.string.StringPool" %><%@
@@ -40,7 +41,7 @@ ModifiedFacetPortletInstanceConfiguration modifiedFacetPortletInstanceConfigurat
 
 <c:if test="<%= !modifiedFacetDisplayContext.isRenderNothing() %>">
 	<aui:form action="#" method="get" name="fm">
-		<aui:input autocomplete="off" name="inputFacetName" type="hidden" value="modified" />
+		<aui:input name="inputFacetName" type="hidden" value="modified" />
 		<aui:input cssClass="facet-parameter-name" name="facet-parameter-name" type="hidden" value="<%= HtmlUtil.escapeAttribute(modifiedFacetDisplayContext.getParameterName()) %>" />
 		<aui:input name="start-parameter-name" type="hidden" value="<%= modifiedFacetDisplayContext.getPaginationStartParameterName() %>" />
 
@@ -195,25 +196,25 @@ ModifiedFacetPortletInstanceConfiguration modifiedFacetPortletInstanceConfigurat
 		</liferay-ddm:template-renderer>
 	</aui:form>
 
-	<aui:script use="liferay-search-modified-facet">
-		new Liferay.Search.ModifiedFacetFilter({
+	<liferay-frontend:component
+		context='<%=
+			HashMapBuilder.<String, Object>put(
+				"namespace", liferayPortletResponse.getNamespace()
+			).build()
+		%>'
+		module="{FacetUtil} from portal-search-web"
+	/>
+
+	<aui:script use="liferay-search-date-facet">
+		new Liferay.Search.DateFacetFilter({
 			form: A.one('#<portlet:namespace />fm'),
-			fromInputDatePicker: Liferay.component(
-				'<portlet:namespace />fromInputDatePicker'
-			),
 			fromInputName: '<portlet:namespace />fromInput',
 			namespace: '<portlet:namespace />',
+			parameterName: 'modified',
 			searchCustomRangeButton: A.one(
 				'#<portlet:namespace />searchCustomRangeButton'
 			),
-			toInputDatePicker: Liferay.component(
-				'<portlet:namespace />toInputDatePicker'
-			),
 			toInputName: '<portlet:namespace />toInput',
 		});
-
-		Liferay.Search.FacetUtil.enableInputs(
-			document.querySelectorAll('#<portlet:namespace />fm .facet-term')
-		);
 	</aui:script>
 </c:if>

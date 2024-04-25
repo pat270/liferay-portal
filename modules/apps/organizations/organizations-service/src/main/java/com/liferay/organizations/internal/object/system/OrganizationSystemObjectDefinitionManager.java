@@ -21,10 +21,10 @@ import com.liferay.portal.kernel.model.OrganizationTable;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.OrganizationLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
@@ -102,8 +102,12 @@ public class OrganizationSystemObjectDefinitionManager
 	}
 
 	@Override
-	public Map<Locale, String> getLabelMap() {
-		return createLabelMap("organization");
+	public Map<String, String> getLabelKeys() {
+		return HashMapBuilder.put(
+			"label", "organization"
+		).put(
+			"pluralLabel", "organizations"
+		).build();
 	}
 
 	@Override
@@ -135,11 +139,6 @@ public class OrganizationSystemObjectDefinitionManager
 	}
 
 	@Override
-	public Map<Locale, String> getPluralLabelMap() {
-		return createLabelMap("organizations");
-	}
-
-	@Override
 	public Column<?, Long> getPrimaryKeyColumn() {
 		return OrganizationTable.INSTANCE.organizationId;
 	}
@@ -161,7 +160,7 @@ public class OrganizationSystemObjectDefinitionManager
 
 	@Override
 	public int getVersion() {
-		return 1;
+		return 2;
 	}
 
 	@Override
@@ -188,8 +187,8 @@ public class OrganizationSystemObjectDefinitionManager
 	private Organization _toOrganization(Map<String, Object> values) {
 		return new Organization() {
 			{
-				comment = GetterUtil.getString(values.get("comment"));
-				name = GetterUtil.getString(values.get("name"));
+				setComment(() -> GetterUtil.getString(values.get("comment")));
+				setName(() -> GetterUtil.getString(values.get("name")));
 			}
 		};
 	}

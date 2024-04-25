@@ -5,6 +5,8 @@
 
 package com.liferay.layout.page.template.service.test.util;
 
+import com.liferay.layout.page.template.constants.LayoutPageTemplateCollectionTypeConstants;
+import com.liferay.layout.page.template.constants.LayoutPageTemplateConstants;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateCollection;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
@@ -34,7 +36,10 @@ public class LayoutPageTemplateTestUtil {
 		return LayoutPageTemplateCollectionLocalServiceUtil.
 			addLayoutPageTemplateCollection(
 				TestPropsValues.getUserId(), groupId,
+				LayoutPageTemplateConstants.
+					PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
 				RandomTestUtil.randomString(), StringPool.BLANK,
+				LayoutPageTemplateCollectionTypeConstants.BASIC,
 				serviceContext);
 	}
 
@@ -44,7 +49,7 @@ public class LayoutPageTemplateTestUtil {
 
 		return addLayoutPageTemplateEntry(
 			layoutPageTemplateCollectionId, RandomTestUtil.randomString(),
-			LayoutPageTemplateEntryTypeConstants.TYPE_BASIC,
+			LayoutPageTemplateEntryTypeConstants.BASIC,
 			WorkflowConstants.STATUS_DRAFT);
 	}
 
@@ -54,7 +59,7 @@ public class LayoutPageTemplateTestUtil {
 
 		return addLayoutPageTemplateEntry(
 			layoutPageTemplateCollectionId, name,
-			LayoutPageTemplateEntryTypeConstants.TYPE_BASIC,
+			LayoutPageTemplateEntryTypeConstants.BASIC,
 			WorkflowConstants.STATUS_DRAFT);
 	}
 

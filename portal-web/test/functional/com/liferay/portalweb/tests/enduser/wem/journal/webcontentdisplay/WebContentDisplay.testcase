@@ -488,6 +488,7 @@ Welcome to Liferay Community Edition Portal 7.4.0 CE GA1''';
 		property dummy.socket.proxy.disabled = "true";
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 		property testray.component.names = "Training,Web Content Administration";
 
 		task ("Enable the FFMPEG Audio Converter in System Settings") {
@@ -603,6 +604,7 @@ Welcome to Liferay Community Edition Portal 7.4.0 CE GA1''';
 	@priority = 4
 	test DisplayWebContentVideo {
 		property dummy.socket.proxy.disabled = "true";
+		property portal.upstream = "quarantine";
 		property testray.component.names = "Web Content Administration";
 
 		task ("Add an external video shortcut") {
@@ -856,7 +858,7 @@ Welcome to Liferay Community Edition Portal 7.4.0 CE GA1''';
 
 			AssertTextEquals(
 				locator1 = "Search#SEARCH_INFO",
-				value1 = "2 Results for \"ABS Sensor\"");
+				value1 = "2 Results Found for \"ABS Sensor\"");
 
 			for (var entryTitle : list "ABS Sensor,Tesla ABS Wheel Speed Sensor") {
 				LexiconList.viewListEntryTitle(listEntry = ${entryTitle});
@@ -1007,6 +1009,7 @@ Welcome to Liferay Community Edition Portal 7.4.0 CE GA1''';
 	test UndeployWebContentDisplayModuleViaGogoShell {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Disable Web Content Display module via GogoShell") {
 			GogoShell.openGogoShellAdmin();
@@ -1051,7 +1054,7 @@ Welcome to Liferay Community Edition Portal 7.4.0 CE GA1''';
 		}
 
 		task ("View undeployed message is not shown") {
-			AssertTextNotEquals.assertNotPartialText(
+			AssertTextNotEquals.assertNotPartialMatch(
 				locator1 = "Portlet#PORTLET_CONTENT",
 				value1 = "This portlet could not be found. Please redeploy it or remove it from the page.");
 		}
@@ -1189,6 +1192,7 @@ ${runtimeInstance}
 	@priority = 4
 	test ViewAllFileTypesEnabled {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Add a web content") {
 			JSONWebcontent.addWebContent(

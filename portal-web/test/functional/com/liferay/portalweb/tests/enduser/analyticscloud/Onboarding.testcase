@@ -23,9 +23,7 @@ definition {
 	tearDown {
 		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
 
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
-		//ACUtils.tearDownAC();
+		ACUtils.tearDownAC();
 
 		if (${testLiferayVirtualInstance} == "true") {
 			PortalInstances.tearDownCP();
@@ -35,7 +33,7 @@ definition {
 	@description = "Feature ID: LRAC-8720 | Automation ID: LRAC-10622 | Test Summary: Modal is displayed on first access to a new workspace"
 	@priority = 5
 	test ModalDisplayedWhenFirstAccessToWorkspace {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var supportedFPVersionList = "DXP 7.3 Fix Pack 1,DXP 7.2 Fix Pack 11,DXP 7.1 Fix Pack 22,DXP 7.0 Fix Pack 98";
 
@@ -74,13 +72,13 @@ definition {
 		task ("Click on 'click here' and check if a new tab with connection documentation appears") {
 			ACUtils.clickGenericHyperlink(hyperlinkText = "Click here");
 
-			SelectWindow(locator1 = "title=Connecting Liferay DXP to Analytics Cloud - Liferay Learn");
+			SelectWindow(value1 = "title=Connecting Liferay DXP to Analytics Cloud - Liferay Learn");
 
 			ACUtils.viewGenericText(textValueList = "Connecting Liferay DXP to Analytics Cloud");
 		}
 
 		task ("Switch to the AC tab") {
-			SelectWindow(locator1 = "title=No Properties Available - Analytics Cloud");
+			SelectWindow(value1 = "title=No Properties Available - Analytics Cloud");
 		}
 
 		task ("Copy the token from AC") {
@@ -134,7 +132,7 @@ definition {
 		task ("Click on 'click here' and check if a new tab with connection documentation appears") {
 			ACUtils.clickGenericHyperlink(hyperlinkText = "Click here");
 
-			SelectWindow(locator1 = "title=Connecting Liferay DXP to Analytics Cloud - Liferay Learn");
+			SelectWindow(value1 = "title=Connecting Liferay DXP to Analytics Cloud - Liferay Learn");
 
 			ACUtils.viewGenericText(textValueList = "Connecting Liferay DXP to Analytics Cloud");
 		}

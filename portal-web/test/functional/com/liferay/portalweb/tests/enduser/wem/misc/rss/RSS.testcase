@@ -1,9 +1,10 @@
 @component-name = "portal-rss"
 definition {
 
+	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "RSS";
+	property testray.main.component.name = "RSS Publisher Widget";
 
 	setUp {
 		task ("Set up instance and sign in") {
@@ -27,17 +28,6 @@ definition {
 				groupName = "Test Site Name",
 				layoutName = "Test Page Name",
 				widgetName = "RSS Publisher");
-		}
-	}
-
-	tearDown {
-		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
-
-		if (${testLiferayVirtualInstance} == "true") {
-			PortalInstances.tearDownCP();
-		}
-		else {
-			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
 		}
 	}
 
@@ -460,6 +450,7 @@ definition {
 	@uitest
 	test EditRSSFeedViaAssetpublisherWhenSetFeedTimeToOne {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 		property testray.component.names = "Asset Publisher,RSS";
 
 		task ("Change the RSS Feed Time on System Settings") {
@@ -562,6 +553,7 @@ definition {
 	@priority = 3
 	test ViewDescriptionOfRSSCacheFeedTime {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given administrater goes to System Settings") {
 			ApplicationsMenu.gotoPortlet(

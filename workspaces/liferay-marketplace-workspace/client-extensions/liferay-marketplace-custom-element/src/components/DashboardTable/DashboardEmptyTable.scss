@@ -4,7 +4,6 @@
 	border-radius: 10px;
 	display: flex;
 	flex-direction: column;
-	padding: 64px 468px;
 
 	&-background {
 		align-items: center;
@@ -14,6 +13,10 @@
 		height: 80px;
 		justify-content: center;
 		width: 144px;
+	}
+
+	&-button {
+		border-radius: 8px;
 	}
 
 	&-description {
@@ -30,7 +33,7 @@
 	&-image {
 		filter: invert(18%) sepia(87%) saturate(3738%) hue-rotate(218deg)
 			brightness(85%) contrast(103%);
-		width: 42px;
+		width: 32px;
 	}
 
 	&-title {

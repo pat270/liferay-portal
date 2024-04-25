@@ -63,7 +63,7 @@ import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.kernel.util.Html;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -211,7 +211,7 @@ public class FragmentEntryProcessorHelperTest {
 			_journalConverter);
 
 		Assert.assertEquals(
-			_html.escape(fieldValue),
+			HtmlUtil.escape(fieldValue),
 			_getFieldValue(
 				JSONUtil.put(
 					"className", JournalArticle.class.getName()
@@ -508,7 +508,7 @@ public class FragmentEntryProcessorHelperTest {
 			RandomTestUtil.randomString(), ContentTypes.IMAGE_JPEG,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			StringPool.BLANK, StringPool.BLANK, inputStream, bytes.length, null,
-			null, serviceContext);
+			null, null, serviceContext);
 	}
 
 	private JournalArticle _addJournalArticle(
@@ -555,7 +555,8 @@ public class FragmentEntryProcessorHelperTest {
 			displayCalendar.get(Calendar.YEAR),
 			displayCalendar.get(Calendar.HOUR_OF_DAY),
 			displayCalendar.get(Calendar.MINUTE), 0, 0, 0, 0, 0, true, 0, 0, 0,
-			0, 0, true, true, false, null, null, null, null, serviceContext);
+			0, 0, true, true, false, 0, 0, null, null, null, null,
+			serviceContext);
 	}
 
 	private JournalArticle _addJournalArticle(
@@ -702,9 +703,6 @@ public class FragmentEntryProcessorHelperTest {
 
 	@DeleteAfterTestRun
 	private Group _group;
-
-	@Inject
-	private Html _html;
 
 	@Inject
 	private JournalConverter _journalConverter;

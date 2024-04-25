@@ -107,10 +107,11 @@ request.setAttribute("view.jsp-portletURL", portletURL);
 						<span class="sticker-overlay">
 							<c:choose>
 								<c:when test="<%= Validator.isNotNull(cpInstanceCDNURL) %>">
-									<img class="sticker-img" src="<%= cpInstanceCDNURL %>" />
+									<img alt="thumbnail" class="sticker-img" src="<%= cpInstanceCDNURL %>" />
 								</c:when>
 								<c:otherwise>
 									<liferay-adaptive-media:img
+										alt="thumbnail"
 										class="sticker-img"
 										fileVersion="<%= commerceCartContentMiniDisplayContext.getCPInstanceImageFileVersion(commerceOrderItem) %>"
 									/>
@@ -295,5 +296,5 @@ request.setAttribute("view.jsp-portletURL", portletURL);
 </liferay-ddm:template-renderer>
 
 <liferay-frontend:component
-	module="js/cart_mini/view"
+	module="{cartMiniView} from commerce-cart-content-web"
 />

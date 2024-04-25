@@ -61,9 +61,9 @@ SearchContainer<User> searchContainer = editUserGroupAssignmentsManagementToolba
 	additionalProps="<%= editUserGroupAssignmentsManagementToolbarDisplayContext.getAdditionalProps() %>"
 	clearResultsURL="<%= editUserGroupAssignmentsManagementToolbarDisplayContext.getClearResultsURL() %>"
 	creationMenu="<%= editUserGroupAssignmentsManagementToolbarDisplayContext.getCreationMenu() %>"
-	filterDropdownItems="<%= editUserGroupAssignmentsManagementToolbarDisplayContext.getFilterDropdownItems() %>"
 	itemsTotal="<%= searchContainer.getTotal() %>"
-	propsTransformer="js/EditUserGroupAssignmentsManagementToolbarPropsTransformer"
+	orderDropdownItems="<%= editUserGroupAssignmentsManagementToolbarDisplayContext.getOrderByDropdownItems() %>"
+	propsTransformer="{EditUserGroupAssignmentsManagementToolbarPropsTransformer} from user-groups-admin-web"
 	searchActionURL="<%= editUserGroupAssignmentsManagementToolbarDisplayContext.getSearchActionURL() %>"
 	searchContainerId="users"
 	searchFormName="searchFm"
@@ -103,7 +103,7 @@ SearchContainer<User> searchContainer = editUserGroupAssignmentsManagementToolba
 			<c:choose>
 				<c:when test='<%= displayStyle.equals("descriptive") %>'>
 					<liferay-ui:search-container-column-text>
-						<liferay-ui:user-portrait
+						<liferay-user:user-portrait
 							userId="<%= user2.getUserId() %>"
 						/>
 					</liferay-ui:search-container-column-text>
@@ -113,9 +113,9 @@ SearchContainer<User> searchContainer = editUserGroupAssignmentsManagementToolba
 					>
 						<h5><%= user2.getFullName() %></h5>
 
-						<h6 class="text-default">
+						<div class="h6 text-default">
 							<span><%= user2.getScreenName() %></span>
-						</h6>
+						</div>
 					</liferay-ui:search-container-column-text>
 
 					<liferay-ui:search-container-column-jsp
@@ -125,7 +125,7 @@ SearchContainer<User> searchContainer = editUserGroupAssignmentsManagementToolba
 				<c:when test='<%= displayStyle.equals("icon") %>'>
 					<liferay-ui:search-container-column-text>
 						<clay:user-card
-							propsTransformer="js/UserDropdownDefaultPropsTransformer"
+							propsTransformer="{UserDropdownDefaultPropsTransformer} from user-groups-admin-web"
 							userCard="<%= new UserVerticalCard(renderRequest, renderResponse, userSearchContainer.getRowChecker(), user2) %>"
 						/>
 					</liferay-ui:search-container-column-text>

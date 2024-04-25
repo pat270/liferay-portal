@@ -1,6 +1,7 @@
 @component-name = "portal-wcm"
 definition {
 
+	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Style Books";
@@ -17,10 +18,7 @@ definition {
 		}
 
 		task ("Activate local live staging") {
-			JSONStaging.enableLocalStaging(
-				branchingPrivate = "false",
-				branchingPublic = "false",
-				groupName = "Test Site Name");
+			JSONStaging.enableLocalStaging(groupName = "Test Site Name");
 		}
 
 		task ("Add a style book") {
@@ -65,7 +63,7 @@ definition {
 
 			Type(
 				ariaLabel = "Heading 1 Font Size",
-				locator1 = "TextInput#ANY_WITH_AIRA_LABEL",
+				locator1 = "TextInput#ANY_WITH_ARIA_LABEL",
 				value1 = 2);
 
 			StyleBooks.clickManagementBar();
@@ -257,7 +255,7 @@ definition {
 
 			Type(
 				ariaLabel = "Heading 1 Font Size",
-				locator1 = "TextInput#ANY_WITH_AIRA_LABEL",
+				locator1 = "TextInput#ANY_WITH_ARIA_LABEL",
 				value1 = 2);
 
 			StyleBooks.clickManagementBar();
@@ -484,6 +482,8 @@ definition {
 
 			Navigator.gotoBack();
 
+			WaitForPageLoad();
+
 			Css.assertCssCustomPropertyValue(
 				attribute = "background-color",
 				element = "//a[contains(@class,'btn')][normalize-space()='New Entry']",
@@ -524,6 +524,8 @@ definition {
 			Alert.viewSuccessMessage();
 
 			Navigator.gotoBack();
+
+			WaitForPageLoad();
 
 			Css.assertCssCustomPropertyValue(
 				attribute = "background-color",
@@ -566,7 +568,7 @@ definition {
 
 			Type(
 				ariaLabel = "Heading 1 Font Size",
-				locator1 = "TextInput#ANY_WITH_AIRA_LABEL",
+				locator1 = "TextInput#ANY_WITH_ARIA_LABEL",
 				value1 = 2);
 
 			StyleBooks.clickManagementBar();
@@ -654,7 +656,7 @@ definition {
 
 			Type(
 				ariaLabel = "Heading 1 Font Size",
-				locator1 = "TextInput#ANY_WITH_AIRA_LABEL",
+				locator1 = "TextInput#ANY_WITH_ARIA_LABEL",
 				value1 = 2);
 
 			StyleBooks.clickManagementBar();
@@ -804,7 +806,7 @@ definition {
 
 			Type(
 				ariaLabel = "Heading 1 Font Size",
-				locator1 = "TextInput#ANY_WITH_AIRA_LABEL",
+				locator1 = "TextInput#ANY_WITH_ARIA_LABEL",
 				value1 = "1.5");
 
 			StyleBooks.clickManagementBar();

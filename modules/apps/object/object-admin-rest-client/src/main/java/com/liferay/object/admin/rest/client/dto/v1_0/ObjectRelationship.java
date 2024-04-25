@@ -77,6 +77,46 @@ public class ObjectRelationship implements Cloneable, Serializable {
 
 	protected DeletionType deletionType;
 
+	public Boolean getEdge() {
+		return edge;
+	}
+
+	public void setEdge(Boolean edge) {
+		this.edge = edge;
+	}
+
+	public void setEdge(UnsafeSupplier<Boolean, Exception> edgeUnsafeSupplier) {
+		try {
+			edge = edgeUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Boolean edge;
+
+	public String getExternalReferenceCode() {
+		return externalReferenceCode;
+	}
+
+	public void setExternalReferenceCode(String externalReferenceCode) {
+		this.externalReferenceCode = externalReferenceCode;
+	}
+
+	public void setExternalReferenceCode(
+		UnsafeSupplier<String, Exception> externalReferenceCodeUnsafeSupplier) {
+
+		try {
+			externalReferenceCode = externalReferenceCodeUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String externalReferenceCode;
+
 	public Long getId() {
 		return id;
 	}
@@ -299,6 +339,27 @@ public class ObjectRelationship implements Cloneable, Serializable {
 
 	protected Boolean objectDefinitionSystem2;
 
+	public ObjectField getObjectField() {
+		return objectField;
+	}
+
+	public void setObjectField(ObjectField objectField) {
+		this.objectField = objectField;
+	}
+
+	public void setObjectField(
+		UnsafeSupplier<ObjectField, Exception> objectFieldUnsafeSupplier) {
+
+		try {
+			objectField = objectFieldUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected ObjectField objectField;
+
 	public Long getParameterObjectFieldId() {
 		return parameterObjectFieldId;
 	}
@@ -363,6 +424,27 @@ public class ObjectRelationship implements Cloneable, Serializable {
 	}
 
 	protected Boolean reverse;
+
+	public Boolean getSystem() {
+		return system;
+	}
+
+	public void setSystem(Boolean system) {
+		this.system = system;
+	}
+
+	public void setSystem(
+		UnsafeSupplier<Boolean, Exception> systemUnsafeSupplier) {
+
+		try {
+			system = systemUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Boolean system;
 
 	public Type getType() {
 		return type;

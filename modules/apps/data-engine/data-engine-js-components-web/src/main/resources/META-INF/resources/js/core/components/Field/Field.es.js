@@ -5,7 +5,7 @@
 
 import ClayButton from '@clayui/button';
 import ClayLoadingIndicator from '@clayui/loading-indicator';
-import MetalComponent from 'metal-component';
+import {loadModule} from 'frontend-js-web';
 import React, {
 	Suspense,
 	lazy,
@@ -23,23 +23,12 @@ import {AutoFocus} from '../AutoFocus.es';
 import {ErrorBoundary} from '../ErrorBoundary.es';
 
 import './Field.scss';
-import {MetalComponentAdapter} from './MetalComponentAdapter.es';
 import {ParentFieldContext} from './ParentFieldContext.es';
 
 const getModule = (fieldTypes, fieldType) => {
 	const field = fieldTypes.find((field) => field.name === fieldType);
 
 	return field;
-};
-
-const load = (fieldModule) => {
-	return new Promise((resolve, reject) => {
-		Liferay.Loader.require(
-			[fieldModule],
-			(Field) => resolve(Field),
-			(error) => reject({error, network: true})
-		);
-	});
 };
 
 const useLazy = () => {
@@ -49,21 +38,14 @@ const useLazy = () => {
 		(fieldModule) => {
 			if (!components.has(fieldModule)) {
 				const Component = lazy(() => {
-					return load(fieldModule)
+					return loadModule(fieldModule)
 						.then((instance) => {
-							if (!(instance && instance.default)) {
+							if (!instance) {
 								return null;
 							}
 
-							// To maintain compatibility with fields in Metal+Soy,
-							// we call the bridge component to handle this component.
-
-							if (
-								MetalComponent.isComponentCtor(instance.default)
-							) {
-								return {
-									default: MetalComponentAdapter,
-								};
+							if (!instance.default) {
+								return {default: instance};
 							}
 
 							return instance;
@@ -234,7 +216,17 @@ export function Field({field, itemPath, loc, ...otherProps}) {
 	return (
 		<ErrorBoundary onError={setHasError}>
 			<AutoFocus>
-				<div className="ddm-field" data-field-name={field.fieldName}>
+				<div
+					className="ddm-field"
+					data-ddm-localizable-field-id={
+						(Liferay.FeatureFlags['LPS-114700'] &&
+							field.localizable &&
+							field.instanceId) ||
+						null
+					}
+					data-field-name={field.fieldName}
+					data-qa-id={field.fieldName}
+				>
 					<Suspense fallback={<ClayLoadingIndicator />}>
 						<ParentFieldContext.Provider
 							value={getRootParentField(field, loc, parentField)}

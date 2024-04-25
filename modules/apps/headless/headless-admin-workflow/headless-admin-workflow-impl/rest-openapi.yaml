@@ -132,8 +132,7 @@ components:
                     readOnly: true
                     type: array
                 creator:
-                    allOf:
-                        - $ref: "#/components/schemas/Creator"
+                    $ref: "#/components/schemas/Creator"
                     description:
                         The role's creator.
                     readOnly: true
@@ -211,6 +210,7 @@ components:
                     type: boolean
                 content:
                     type: string
+                    x-json-string: true
                 dateCreated:
                     format: date-time
                     readOnly: true
@@ -291,8 +291,7 @@ components:
                     readOnly: true
                     type: integer
                 objectReviewed:
-                    allOf:
-                        - $ref: "#/components/schemas/ObjectReviewed"
+                    $ref: "#/components/schemas/ObjectReviewed"
                     description:
                         The object/asset that the instance's workflow is managing.
                     readOnly: true
@@ -330,8 +329,7 @@ components:
                 Represents the log containing the workflow's activity history (e.g., transitions, assignees, etc.).
             properties:
                 auditPerson:
-                    allOf:
-                        - $ref: "#/components/schemas/Creator"
+                    $ref: "#/components/schemas/Creator"
                     description:
                         The user account of the person auditing the workflow.
                     readOnly: true
@@ -359,20 +357,17 @@ components:
                     readOnly: true
                     type: integer
                 person:
-                    allOf:
-                        - $ref: "#/components/schemas/Creator"
+                    $ref: "#/components/schemas/Creator"
                     description:
                         The person assigned to the workflow.
                     readOnly: true
                 previousPerson:
-                    allOf:
-                        - $ref: "#/components/schemas/Creator"
+                    $ref: "#/components/schemas/Creator"
                     description:
                         The previous person assigned to the workflow.
                     readOnly: true
                 previousRole:
-                    allOf:
-                        - $ref: "#/components/schemas/Role"
+                    $ref: "#/components/schemas/Role"
                     readOnly: true
                 previousState:
                     description:
@@ -385,8 +380,7 @@ components:
                     readOnly: true
                     type: string
                 role:
-                    allOf:
-                        - $ref: "#/components/schemas/Role"
+                    $ref: "#/components/schemas/Role"
                     readOnly: true
                 state:
                     description:
@@ -423,8 +417,7 @@ components:
                     readOnly: true
                     type: object
                 assigneePerson:
-                    allOf:
-                        - $ref: "#/components/schemas/Creator"
+                    $ref: "#/components/schemas/Creator"
                 assigneeRoles:
                     items:
                         $ref: "#/components/schemas/Role"
@@ -472,8 +465,7 @@ components:
                     readOnly: true
                     type: string
                 objectReviewed:
-                    allOf:
-                        - $ref: "#/components/schemas/ObjectReviewed"
+                    $ref: "#/components/schemas/ObjectReviewed"
                     description:
                         The object/asset that the task's workflow is managing.
                     readOnly: true
@@ -650,7 +642,7 @@ components:
 info:
     description:
         "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID
-        'com.liferay.headless.admin.workflow.client', and version '4.0.20'."
+        'com.liferay.headless.admin.workflow.client', and version '4.0.28'."
     license:
         name: "Apache 2.0"
         url: "http://www.apache.org/licenses/LICENSE-2.0.html"
@@ -721,6 +713,11 @@ paths:
                   name: name
                   required: true
                   schema:
+                      type: string
+                - in: query
+                  name: contentFormat
+                  schema:
+                      enum: [JSON, XML]
                       type: string
                 - in: query
                   name: version
@@ -1055,13 +1052,6 @@ paths:
                       format: int64
                       type: integer
                 - in: query
-                  name: types
-                  schema:
-                      items:
-                          enum: [NodeEntry, TaskAssign, TaskCompletion, TaskUpdate, Transition]
-                          type: string
-                      type: array
-                - in: query
                   name: page
                   schema:
                       type: integer
@@ -1069,6 +1059,13 @@ paths:
                   name: pageSize
                   schema:
                       type: integer
+                - in: query
+                  name: types
+                  schema:
+                      items:
+                          enum: [NodeEntry, TaskAssign, TaskCompletion, TaskUpdate, Transition]
+                          type: string
+                      type: array
             responses:
                 200:
                     content:
@@ -1353,18 +1350,18 @@ paths:
             operationId: getWorkflowTasksAssignedToRolePage
             parameters:
                 - in: query
-                  name: roleId
-                  required: true
-                  schema:
-                      format: int64
-                      type: integer
-                - in: query
                   name: page
                   schema:
                       type: integer
                 - in: query
                   name: pageSize
                   schema:
+                      type: integer
+                - in: query
+                  name: roleId
+                  required: true
+                  schema:
+                      format: int64
                       type: integer
             responses:
                 200:
@@ -1788,13 +1785,6 @@ paths:
                       format: int64
                       type: integer
                 - in: query
-                  name: types
-                  schema:
-                      items:
-                          enum: [TaskAssign, TaskCompletion, TaskUpdate, Transition]
-                          type: string
-                      type: array
-                - in: query
                   name: page
                   schema:
                       type: integer
@@ -1802,6 +1792,13 @@ paths:
                   name: pageSize
                   schema:
                       type: integer
+                - in: query
+                  name: types
+                  schema:
+                      items:
+                          enum: [TaskAssign, TaskCompletion, TaskUpdate, Transition]
+                          type: string
+                      type: array
             responses:
                 200:
                     content:

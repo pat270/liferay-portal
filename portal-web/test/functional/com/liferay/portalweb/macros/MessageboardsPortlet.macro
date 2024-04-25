@@ -1,11 +1,10 @@
 definition {
 
-	macro configureAnonymousPostingCP {
+	@summary = "Default summary"
+	macro configureAnonymousPostingCP(siteURLKey = null, anonymousPostingEnabled = null) {
 		MessageBoardsAdmin.openMessageBoardsAdmin(siteURLKey = ${siteURLKey});
 
 		Portlet.gotoPortletOptions(portletOption = "Configuration");
-
-		SelectFrame(locator1 = "IFrame#CONFIGURATION");
 
 		if (${anonymousPostingEnabled} == "true") {
 			Check(locator1 = "MessageBoardsAdminConfiguration#GENERAL_ALLOW_ANONYMOUS_POSTING_CHECKBOX");
@@ -17,12 +16,11 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro configureGeneralCP {
+	@summary = "Default summary"
+	macro configureGeneralCP(threadAsQuestionByDefaultEnabled = null, siteURLKey = null) {
 		MessageBoardsAdmin.openMessageBoardsAdmin(siteURLKey = ${siteURLKey});
 
 		Portlet.gotoPortletOptions(portletOption = "Configuration");
-
-		SelectFrame(locator1 = "IFrame#CONFIGURATION");
 
 		if (${threadAsQuestionByDefaultEnabled} == "true") {
 			Check(locator1 = "MessageBoardsAdminConfiguration#GENERAL_THREAD_AS_QUESTION_BY_DEFAULT_CHECKBOX");
@@ -31,18 +29,15 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro configureMessageAddedEmail {
+	@summary = "Default summary"
+	macro configureMessageAddedEmail(siteURLKey = null, bodyContent = null, messageAddedEmailEnabled = null) {
 		MessageBoardsAdmin.openMessageBoardsAdmin(siteURLKey = ${siteURLKey});
 
 		Click(locator1 = "Portlet#OPTIONS_ICON");
 
 		MenuItem.click(menuItem = "Configuration");
 
-		SelectFrame(locator1 = "IFrame#CONFIGURATION");
-
-		AssertClick(
-			locator1 = "MessageBoardsAdminConfiguration#SETUP_NAVIGATION_MESSAGE_ADDED_EMAIL",
-			value1 = "Message Added Email");
+		MenuBar.click(menuBar = "Message Added Email");
 
 		if (${messageAddedEmailEnabled} == "false") {
 			Uncheck(locator1 = "MessageBoardsAdminConfiguration#MESSAGE_ADDED_EMAIL_ENABLED_CHECKBOX");
@@ -59,14 +54,13 @@ definition {
 				value1 = ${bodyContent});
 
 			SelectFrame(value1 = "relative=top");
-
-			SelectFrame(locator1 = "IFrame#MODAL_BODY");
 		}
 
 		PortletEntry.save();
 	}
 
-	macro configureMessageEmailFromCP {
+	@summary = "Default summary"
+	macro configureMessageEmailFromCP(emailFromName = null, emailFromAddress = null) {
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
@@ -77,11 +71,7 @@ definition {
 
 		MenuItem.click(menuItem = "Configuration");
 
-		SelectFrame(locator1 = "IFrame#CONFIGURATION");
-
-		AssertClick(
-			locator1 = "MessageBoardsAdminConfiguration#SETUP_NAVIGATION_EMAIL_FROM",
-			value1 = "Email From");
+		MenuBar.click(menuBar = "Email From");
 
 		if (isSet(emailFromName)) {
 			Type(
@@ -98,14 +88,13 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro configureMessageFormat {
+	@summary = "Default summary"
+	macro configureMessageFormat(messageFormat = null, siteURLKey = null) {
 		MessageBoardsAdmin.openMessageBoardsAdmin(siteURLKey = ${siteURLKey});
 
 		Click(locator1 = "Portlet#OPTIONS_ICON");
 
 		MenuItem.click(menuItem = "Configuration");
-
-		SelectFrame(locator1 = "IFrame#CONFIGURATION");
 
 		Select(
 			locator1 = "MessageBoardsThread#THREAD_FORMAT_SELECT",
@@ -119,18 +108,15 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro configureMessageUpdatedEmail {
+	@summary = "Default summary"
+	macro configureMessageUpdatedEmail(siteURLKey = null, messageUpdatedEmailEnabled = null) {
 		MessageBoardsAdmin.openMessageBoardsAdmin(siteURLKey = ${siteURLKey});
 
 		Click(locator1 = "Portlet#OPTIONS_ICON");
 
 		MenuItem.click(menuItem = "Configuration");
 
-		SelectFrame(locator1 = "IFrame#CONFIGURATION");
-
-		AssertClick(
-			locator1 = "MessageBoardsAdminConfiguration#SETUP_NAVIGATION_MESSAGE_UPDATED_EMAIL",
-			value1 = "Message Updated Email");
+		MenuBar.click(menuBar = "Message Updated Email");
 
 		if (${messageUpdatedEmailEnabled} == "false") {
 			Uncheck(locator1 = "MessageBoardsAdminConfiguration#MESSAGE_UPDATED_EMAIL_ENABLED_CHECKBOX");
@@ -142,7 +128,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro gotoInlinePermissionsPG {
+	@summary = "Default summary"
+	macro gotoInlinePermissionsPG() {
 		Click(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS");
 
 		MenuItem.click(menuItem = "Permissions");
@@ -152,13 +139,15 @@ definition {
 		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 	}
 
-	macro gotoRecentPostsPG {
+	@summary = "Default summary"
+	macro gotoRecentPostsPG() {
 		AssertClick(
 			locator1 = "MessageBoards#NAVIGATION_RECENT_POSTS",
 			value1 = "Recent Posts");
 	}
 
-	macro subscribePG {
+	@summary = "Default summary"
+	macro subscribePG() {
 		Click(locator1 = "MessageBoards#CONTAINER_VERTICAL_ELLIPSIS");
 
 		MenuItem.click(menuItem = "Subscribe");
@@ -166,7 +155,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro tearDownConfigurationEmailCP {
+	@summary = "Default summary"
+	macro tearDownConfigurationEmailCP() {
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
@@ -177,11 +167,7 @@ definition {
 
 		MenuItem.click(menuItem = "Configuration");
 
-		SelectFrame(locator1 = "IFrame#CONFIGURATION");
-
-		AssertClick(
-			locator1 = "MessageBoardsAdminConfiguration#SETUP_NAVIGATION_MESSAGE_ADDED_EMAIL",
-			value1 = "Message Added Email");
+		MenuBar.click(menuBar = "Message Added Email");
 
 		Check(locator1 = "MessageBoardsAdminConfiguration#MESSAGE_ADDED_EMAIL_ENABLED_CHECKBOX");
 
@@ -196,7 +182,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro tearDownConfigurationGeneralCP {
+	@summary = "Default summary"
+	macro tearDownConfigurationGeneralCP() {
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
@@ -207,19 +194,16 @@ definition {
 
 		MenuItem.click(menuItem = "Configuration");
 
-		SelectFrame(locator1 = "IFrame#CONFIGURATION");
-
 		Check(locator1 = "MessageBoardsAdminConfiguration#GENERAL_ALLOW_ANONYMOUS_POSTING_CHECKBOX");
 
 		PortletEntry.save();
 	}
 
-	macro viewAnonymousPostingConfigurationCP {
+	@summary = "Default summary"
+	macro viewAnonymousPostingConfigurationCP(siteURLKey = null, anonymousPostingEnabled = null) {
 		MessageBoardsAdmin.openMessageBoardsAdmin(siteURLKey = ${siteURLKey});
 
 		Portlet.gotoPortletOptions(portletOption = "Configuration");
-
-		SelectFrame(locator1 = "IFrame#CONFIGURATION");
 
 		if (${anonymousPostingEnabled} == "true") {
 			AssertChecked(locator1 = "MessageBoardsAdminConfiguration#GENERAL_ALLOW_ANONYMOUS_POSTING_CHECKBOX");
@@ -229,7 +213,8 @@ definition {
 		}
 	}
 
-	macro viewBannedUserCP {
+	@summary = "Default summary"
+	macro viewBannedUserCP(siteURLKey = null, userScreenName = null) {
 		MessageBoardsAdmin.openMessageBoardsAdmin(siteURLKey = ${siteURLKey});
 
 		AssertClick(
@@ -257,7 +242,7 @@ definition {
 
 			// We need to wait for the system time to pass by 1 minute in order to verify the auto expire is disabled. There is currently no easy way to manipulate the system time in CI for automation. 1 minute is the shortest value we can set while ensuring the stability of the test. See LPS-157957.
 
-			Pause(locator1 = 60000);
+			Pause(value1 = 60000);
 
 			MessageBoardsAdmin.openMessageBoardsAdmin(siteURLKey = ${siteURLKey});
 
@@ -285,18 +270,15 @@ definition {
 			value1 = ${userScreenName});
 	}
 
-	macro viewDefaultEmailFromCP {
+	@summary = "Default summary"
+	macro viewDefaultEmailFromCP(emailFromAddress = null, siteURLKey = null) {
 		MessageBoardsAdmin.openMessageBoardsAdmin(siteURLKey = ${siteURLKey});
 
 		Click(locator1 = "Portlet#OPTIONS_ICON");
 
 		MenuItem.click(menuItem = "Configuration");
 
-		SelectFrame(locator1 = "IFrame#CONFIGURATION");
-
-		AssertClick(
-			locator1 = "MessageBoardsAdminConfiguration#SETUP_NAVIGATION_EMAIL_FROM",
-			value1 = "Email From");
+		MenuBar.click(menuBar = "Email From");
 
 		AssertTextEquals(
 			locator1 = "TextInput#EMAIL_FROM_NAME",
@@ -315,19 +297,16 @@ definition {
 		}
 	}
 
-	macro ViewMessageEmailTemplate {
+	@summary = "Default summary"
+	macro ViewMessageEmailTemplate(messageURL = null, messageSubject = null, siteURLKey = null, messageAddedEmail = null, content = null) {
 		MessageBoardsAdmin.openMessageBoardsAdmin(siteURLKey = ${siteURLKey});
 
 		Click(locator1 = "Portlet#OPTIONS_ICON");
 
 		MenuItem.click(menuItem = "Configuration");
 
-		SelectFrame(locator1 = "IFrame#CONFIGURATION");
-
 		if (${messageAddedEmail} == "true") {
-			AssertClick(
-				locator1 = "MessageBoardsAdminConfiguration#SETUP_NAVIGATION_MESSAGE_ADDED_EMAIL",
-				value1 = "Message Added Email");
+			MenuBar.click(menuBar = "Message Added Email");
 
 			SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
 
@@ -353,11 +332,9 @@ definition {
 			}
 		}
 		else {
-			AssertClick(
-				locator1 = "MessageBoardsAdminConfiguration#SETUP_NAVIGATION_MESSAGE_UPDATED_EMAIL",
-				value1 = "Message Updated Email");
+			MenuBar.click(menuBar = "Message Updated Email");
 
-			SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME_2");
+			SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
 
 			if (isSet(messageURL)) {
 				AssertElementPresent(
@@ -382,11 +359,10 @@ definition {
 		}
 
 		SelectFrame(value1 = "relative=top");
-
-		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 	}
 
-	macro viewNoPermissionCP {
+	@summary = "Default summary"
+	macro viewNoPermissionCP() {
 		var key_portletTitle = "Message Boards";
 
 		AssertTextEquals(
@@ -400,13 +376,15 @@ definition {
 			value1 = "There are no threads or categories.");
 	}
 
-	macro viewNoSearchResultSubjectPG {
+	@summary = "Default summary"
+	macro viewNoSearchResultSubjectPG(threadSubject = null) {
 		var key_threadSubject = ${threadSubject};
 
 		AssertElementNotPresent(locator1 = "MessageBoardsSearch#SEARCH_RESULTS_ENTRY_TITLE");
 	}
 
-	macro viewSearchResultPG {
+	@summary = "Default summary"
+	macro viewSearchResultPG(threadSubject = null) {
 		var key_threadSubject = ${threadSubject};
 
 		AssertTextEquals(

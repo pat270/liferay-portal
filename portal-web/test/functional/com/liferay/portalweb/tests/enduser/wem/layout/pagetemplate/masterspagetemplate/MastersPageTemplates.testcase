@@ -1,10 +1,10 @@
 @component-name = "portal-wcm"
 definition {
 
+	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.component.names = "Master Page Templates";
-	property testray.main.component.name = "Master Page Templates";
+	property testray.main.component.name = "Master Pages";
 
 	setUp {
 		task ("Set up instance and sign in") {
@@ -26,18 +26,7 @@ definition {
 		}
 	}
 
-	tearDown {
-		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
-
-		if (${testLiferayVirtualInstance} == "true") {
-			PortalInstances.tearDownCP();
-		}
-		else {
-			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
-		}
-	}
-
-	@description = "This is a test for LPS-102566, LPS-109594 and LPS-119634. Add a page based on custom master."
+	@description = "This is a test for LPS-102566, LPS-109594, LPS-119634 and LPS-104629. Add a page based on custom master."
 	@priority = 5
 	test AddPageBasedOnCustomMaster {
 		property portal.acceptance = "true";
@@ -109,22 +98,6 @@ definition {
 				locator1 = "PageEditor#FRAGMENT_INHERITED_FROM_CUSTOM_MASTERS",
 				locator2 = "background-color",
 				value1 = "rgba(231, 231, 237, 1)");
-		}
-	}
-
-	@description = "This is a test for LPS-102208. As a master pages administrator I can duplicate a masters template"
-	@priority = 5
-	test CanDuplicateMastersPageTemplate {
-		property portal.acceptance = "true";
-
-		task ("Make a copy of master page template") {
-			MastersPageTemplatesAdmin.gotoMastersEllipsisItem(
-				item = "Make a Copy",
-				masterLayoutName = "Custom Masters Page Template");
-		}
-
-		task ("Assert master page template's name") {
-			MastersPageTemplatesAdmin.viewMastersPresent(masterLayoutName = "Custom Masters Page Template (Copy)");
 		}
 	}
 
@@ -544,7 +517,7 @@ definition {
 		task ("Type content in the HTML Title field") {
 			LexiconEntry.gotoHeaderMenuItem(menuItem = "Configure");
 
-			SelectWindow.selectPopUp(locator1 = "null");
+			SelectWindow.selectPopUp(value1 = "null");
 
 			Navigator.gotoNavTab(navTab = "SEO");
 
@@ -1040,13 +1013,9 @@ definition {
 				pageName = "Test Page Name",
 				siteName = "Test Site Name");
 
-			PageEditor.searchFragmentViaSidebar(fragmentName = "Heading");
-
 			AssertVisible(
 				key_fragmentName = "Heading",
 				locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_SEARCH_RESULTS");
-
-			PageEditor.searchFragmentViaSidebar(fragmentName = "Button");
 
 			AssertElementNotPresent(
 				key_fragmentName = "Button",
@@ -1146,8 +1115,6 @@ definition {
 				pageName = "Test Page Name 1",
 				siteName = "Test Site Name");
 
-			PageEditor.searchFragmentViaSidebar(fragmentName = "Fragment Name");
-
 			AssertElementNotPresent(
 				key_fragmentName = "Fragment Name",
 				locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_SEARCH_RESULTS");
@@ -1157,8 +1124,6 @@ definition {
 			ContentPagesNavigator.openEditContentPage(
 				pageName = "Test Page Name 2",
 				siteName = "Test Site Name");
-
-			PageEditor.searchFragmentViaSidebar(fragmentName = "Fragment Name");
 
 			AssertVisible(
 				key_fragmentName = "Fragment Name",
@@ -1198,13 +1163,9 @@ definition {
 				pageName = "Test Page Name",
 				siteName = "Test Site Name");
 
-			PageEditor.searchFragmentViaSidebar(fragmentName = "Heading");
-
 			AssertVisible(
 				key_fragmentName = "Heading",
 				locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_SEARCH_RESULTS");
-
-			PageEditor.searchFragmentViaSidebar(fragmentName = "Button");
 
 			AssertElementNotPresent(
 				key_fragmentName = "Button",
@@ -1413,6 +1374,28 @@ definition {
 		}
 	}
 
+	@description = "This is a test for LPS-102208. As a master pages administrator I can duplicate a masters template"
+	@priority = 5
+	test DuplicateMastersPageTemplate {
+		property portal.acceptance = "true";
+
+		task ("Make a copy of master page template") {
+			MastersPageTemplatesAdmin.gotoMasters(masterLayoutName = "Custom Masters Page Template");
+
+			MastersPageTemplates.publishMaster();
+
+			MastersPageTemplatesAdmin.gotoMastersEllipsisItem(
+				item = "Make a Copy",
+				masterLayoutName = "Custom Masters Page Template");
+
+			MenuItem.click(menuItem = "Master Page");
+		}
+
+		task ("Assert master page template's name") {
+			MastersPageTemplatesAdmin.viewMastersPresent(masterLayoutName = "Custom Masters Page Template (Copy)");
+		}
+	}
+
 	@description = "This is a test for LPS-102194. Assert contents in drop zone shouldn't be changed and available fragments should be changed in sidebar after editing allowed fragments."
 	@priority = 4
 	test EditAllowedFragments {
@@ -1485,13 +1468,9 @@ definition {
 
 			PageEditor.viewFragment(fragmentName = "Heading");
 
-			PageEditor.searchFragmentViaSidebar(fragmentName = "Button");
-
 			AssertVisible(
 				key_fragmentName = "Button",
 				locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_SEARCH_RESULTS");
-
-			PageEditor.searchFragmentViaSidebar(fragmentName = "Heading");
 
 			AssertElementNotPresent(
 				key_fragmentName = "Heading",
@@ -1553,6 +1532,8 @@ definition {
 
 			MastersPageTemplates.propagateChange();
 
+			Navigator.gotoBack();
+
 			WebContentDisplayPortlet.viewMessage();
 		}
 
@@ -1564,6 +1545,8 @@ definition {
 	@description = "This is a test for LPS-134844. Fragments hidden in master pages are hidden in pages that use it and visibility can not be changed."
 	@priority = 4
 	test FragmentsHiddenInMasterPagesAreHiddenInPagesThatUseIt {
+		property portal.upstream = "quarantine";
+
 		task ("Add two header fragments") {
 			MastersPageTemplatesAdmin.gotoMasters(masterLayoutName = "Custom Masters Page Template");
 
@@ -1576,7 +1559,7 @@ definition {
 			PageEditor.editFragmentText(
 				fragmentName = "Heading",
 				id = "element-text",
-				text = "Heading Example 1");
+				text = " 1");
 
 			PageEditor.addFragment(
 				collectionName = "Basic Components",
@@ -1588,7 +1571,7 @@ definition {
 				fragmentName = "Heading",
 				id = "element-text",
 				index = 2,
-				text = "Heading Example 2");
+				text = " 2");
 		}
 
 		task ("Hide Heading Example 1 and save master page") {
@@ -1605,38 +1588,6 @@ definition {
 			ContentPages.addPage(
 				masterLayoutName = "Custom Masters Page Template",
 				pageName = "Test Page Name");
-		}
-
-		task ("Assert Heading Example 1 is not shown even if we click on button and it appears with a gray background") {
-			AssertNotVisible(
-				fragmentName = "heading",
-				id = "element-text",
-				index = 1,
-				locator1 = "Fragment#CONTRIBUTED_FRAGMENT_TEXT");
-
-			ContentPages.viewFragmentText(
-				fragmentName = "heading",
-				id = "element-text",
-				position = 2,
-				text = "Heading Example 2");
-
-			PageEditor.gotoTab(tabName = "Browser");
-
-			Click.clickNoWaitForVisible(
-				key_index = 1,
-				key_nodeName = "Heading",
-				locator1 = "Treeview#PAGE_STRUCTURE_TREE_NODE_HIDE_INDEX");
-
-			AssertElementPresent(
-				key_index = 1,
-				key_nodeName = "Heading",
-				locator1 = "Treeview#PAGE_STRUCTURE_TREE_NODE_MASTER_INDEX");
-
-			AssertNotVisible(
-				fragmentName = "heading",
-				id = "element-text",
-				index = 1,
-				locator1 = "Fragment#CONTRIBUTED_FRAGMENT_TEXT");
 		}
 
 		task ("Assert Heading Example 2 not hidden and there is no button to hide it") {

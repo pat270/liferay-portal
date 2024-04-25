@@ -13,10 +13,22 @@ import com.liferay.knowledge.base.service.KBArticleLocalServiceUtil;
 import com.liferay.knowledge.base.service.KBFolderLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
+import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.test.util.DateTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+
+import java.util.Date;
+
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -26,6 +38,13 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class KnowledgeBaseArticleResourceTest
 	extends BaseKnowledgeBaseArticleResourceTestCase {
+
+	@ClassRule
+	@Rule
+	public static final AggregateTestRule aggregateTestRule =
+		new AggregateTestRule(
+			new LiferayIntegrationTestRule(),
+			PermissionCheckerMethodTestRule.INSTANCE);
 
 	@Before
 	@Override
@@ -71,6 +90,58 @@ public class KnowledgeBaseArticleResourceTest
 			knowledgeBaseArticleResource.
 				deleteKnowledgeBaseArticleMyRatingHttpResponse(
 					irrelevantKnowledgeBaseArticle.getId()));
+	}
+
+	@Override
+	@Test
+	public void testPatchKnowledgeBaseArticle() throws Exception {
+		super.testPatchKnowledgeBaseArticle();
+
+		KnowledgeBaseArticle randomKnowledgeBaseArticle =
+			randomKnowledgeBaseArticle();
+
+		KnowledgeBaseArticle postknowledgeBaseArticle =
+			knowledgeBaseArticleResource.postSiteKnowledgeBaseArticle(
+				testGroup.getGroupId(), randomKnowledgeBaseArticle);
+
+		String randomTitle = RandomTestUtil.randomString();
+
+		KnowledgeBaseArticle patchKnowledgeBaseArticle =
+			knowledgeBaseArticleResource.patchKnowledgeBaseArticle(
+				postknowledgeBaseArticle.getId(),
+				new KnowledgeBaseArticle() {
+					{
+						title = randomTitle;
+					}
+				});
+
+		assertValid(patchKnowledgeBaseArticle);
+
+		Assert.assertEquals(randomTitle, patchKnowledgeBaseArticle.getTitle());
+		Assert.assertNotEquals(
+			postknowledgeBaseArticle.getTitle(),
+			patchKnowledgeBaseArticle.getTitle());
+	}
+
+	@Override
+	@Test
+	public void testPostKnowledgeBaseArticleKnowledgeBaseArticle()
+		throws Exception {
+
+		super.testPostKnowledgeBaseArticleKnowledgeBaseArticle();
+
+		KnowledgeBaseArticle knowledgeBaseArticle =
+			randomKnowledgeBaseArticle();
+
+		KnowledgeBaseArticle postKnowledgeBaseArticle =
+			knowledgeBaseArticleResource.postSiteKnowledgeBaseArticle(
+				testGroup.getGroupId(), knowledgeBaseArticle);
+
+		assertValid(postKnowledgeBaseArticle);
+
+		DateTestUtil.assertEquals(
+			_truncateMilliseconds(knowledgeBaseArticle.getDatePublished()),
+			postKnowledgeBaseArticle.getDatePublished());
 	}
 
 	@Override
@@ -146,7 +217,7 @@ public class KnowledgeBaseArticleResourceTest
 			PortalUtil.getClassNameId(KBFolder.class.getName()), 0,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(), null,
-			null, null, null, null, serviceContext);
+			null, RandomTestUtil.nextDate(), null, null, null, serviceContext);
 
 		return kbArticle.getResourcePrimKey();
 	}
@@ -156,6 +227,12 @@ public class KnowledgeBaseArticleResourceTest
 		testGetKnowledgeBaseFolderKnowledgeBaseArticlesPage_getKnowledgeBaseFolderId() {
 
 		return _kbFolder.getKbFolderId();
+	}
+
+	private Date _truncateMilliseconds(Date date) {
+		Instant instant = date.toInstant();
+
+		return Date.from(instant.truncatedTo(ChronoUnit.SECONDS));
 	}
 
 	private KBFolder _kbFolder;

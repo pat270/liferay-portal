@@ -5,9 +5,11 @@
 
 package com.liferay.commerce.pricing.web.internal.portlet.action;
 
+import com.liferay.commerce.currency.util.CommercePriceFormatter;
 import com.liferay.commerce.price.list.exception.NoSuchPriceEntryException;
 import com.liferay.commerce.price.list.portlet.action.CommercePriceListActionHelper;
 import com.liferay.commerce.price.list.service.CommercePriceEntryService;
+import com.liferay.commerce.price.list.service.CommercePriceListService;
 import com.liferay.commerce.pricing.web.internal.display.context.CPInstanceCommercePriceEntryDisplayContext;
 import com.liferay.commerce.product.constants.CPPortletKeys;
 import com.liferay.commerce.product.portlet.action.ActionHelper;
@@ -64,7 +66,8 @@ public class EditCPInstanceCommercePriceEntryMVCRenderCommand
 				cpInstanceCommercePriceEntryDisplayContext =
 					new CPInstanceCommercePriceEntryDisplayContext(
 						_actionHelper, _commercePriceEntryService,
-						_commercePriceListActionHelper, httpServletRequest,
+						_commercePriceFormatter, _commercePriceListActionHelper,
+						_commercePriceListService, httpServletRequest,
 						_itemSelector);
 
 			renderRequest.setAttribute(
@@ -95,7 +98,13 @@ public class EditCPInstanceCommercePriceEntryMVCRenderCommand
 	private CommercePriceEntryService _commercePriceEntryService;
 
 	@Reference
+	private CommercePriceFormatter _commercePriceFormatter;
+
+	@Reference
 	private CommercePriceListActionHelper _commercePriceListActionHelper;
+
+	@Reference
+	private CommercePriceListService _commercePriceListService;
 
 	@Reference
 	private ItemSelector _itemSelector;

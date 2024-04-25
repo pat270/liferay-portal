@@ -72,7 +72,12 @@ public class SamlProviderResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _samlProviderResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, SamlProviderResource>
+					samlProviderResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_samlProviderResourceProxyProviderFunction;
+
+				return samlProviderResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -229,10 +234,6 @@ public class SamlProviderResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, SamlProviderResource>
-		_samlProviderResourceProxyProviderFunction =
-			_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -268,6 +269,14 @@ public class SamlProviderResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, SamlProviderResource>
+			_samlProviderResourceProxyProviderFunction =
+				_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

@@ -9,23 +9,26 @@ import React from 'react';
 
 import DangerModal from '../DangerModal';
 import WarningModal from '../WarningModal';
-import {DeletedObjectDefinition} from './ViewObjectDefinitions';
-import {deleteObjectDefinition} from './objectDefinitionUtil';
+import {deleteObjectDefinitionToast} from './objectDefinitionUtil';
 
 interface ModalDeleteObjectDefinitionProps {
+	handleDeleteObjectDefinition: (
+		value: DeletedObjectDefinition | null
+	) => void;
 	handleOnClose: () => void;
 	objectDefinition: DeletedObjectDefinition;
-	setDeletedObjectDefinition: (value: DeletedObjectDefinition | null) => void;
+	onAfterDeleteObjectDefinition?: () => void;
 }
 
 export function ModalDeleteObjectDefinition({
+	handleDeleteObjectDefinition,
 	handleOnClose,
 	objectDefinition,
-	setDeletedObjectDefinition,
+	onAfterDeleteObjectDefinition,
 }: ModalDeleteObjectDefinitionProps) {
 	const {observer, onClose} = useModal({
 		onClose: () => {
-			setDeletedObjectDefinition(null);
+			handleDeleteObjectDefinition(null);
 			handleOnClose();
 		},
 	});
@@ -71,18 +74,25 @@ export function ModalDeleteObjectDefinition({
 					observer={observer}
 					onClose={onClose}
 					onDelete={async () => {
-						await deleteObjectDefinition(
+						await deleteObjectDefinitionToast(
 							objectDefinition?.id,
 							objectDefinition?.name
 						);
-						setTimeout(() => window.location.reload(), 1500);
+
+						if (onAfterDeleteObjectDefinition) {
+							onAfterDeleteObjectDefinition();
+						}
+						else {
+							setTimeout(() => window.location.reload(), 1500);
+						}
+
 						onClose();
 					}}
 					placeholder={Liferay.Language.get(
 						'confirm-object-definition-name'
 					)}
 					title={Liferay.Language.get('delete-object-definition')}
-					token={objectDefinition?.name}
+					token={objectDefinition ? objectDefinition.name : ''}
 				>
 					<p>
 						{Liferay.Language.get(

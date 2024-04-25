@@ -17,7 +17,12 @@ import com.liferay.journal.service.JournalArticleResourceLocalService;
 import com.liferay.journal.service.JournalFolderLocalService;
 import com.liferay.journal.util.JournalHelper;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
+import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.model.ContainerModel;
+import com.liferay.portal.kernel.model.SystemEvent;
+import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.TrashedModel;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.SearchContext;
@@ -29,6 +34,7 @@ import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.SystemEventLocalService;
 import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.trash.TrashRenderer;
 import com.liferay.portal.kernel.util.Portal;
@@ -58,6 +64,28 @@ import org.osgi.service.component.annotations.Reference;
 	service = TrashHandler.class
 )
 public class JournalArticleTrashHandler extends BaseJournalTrashHandler {
+
+	@Override
+	public SystemEvent addDeletionSystemEvent(
+			long userId, long groupId, long classPK, String classUuid,
+			String referrerClassName)
+		throws PortalException {
+
+		JSONObject extraDataJSONObject = JSONUtil.put("inTrash", true);
+
+		if (FeatureFlagManagerUtil.isEnabled("LPS-165481")) {
+			JournalArticle article =
+				_journalArticleLocalService.getLatestArticle(classPK);
+
+			extraDataJSONObject.put(
+				"assetTitle", article.getTitle(article.getDefaultLanguageId()));
+		}
+
+		return _systemEventLocalService.addSystemEvent(
+			userId, groupId, getSystemEventClassName(), classPK, classUuid,
+			referrerClassName, SystemEventConstants.TYPE_DELETE,
+			extraDataJSONObject.toString());
+	}
 
 	@Override
 	public void checkRestorableEntry(
@@ -408,6 +436,9 @@ public class JournalArticleTrashHandler extends BaseJournalTrashHandler {
 
 	@Reference
 	private Portal _portal;
+
+	@Reference
+	private SystemEventLocalService _systemEventLocalService;
 
 	@Reference
 	private TrashHelper _trashHelper;

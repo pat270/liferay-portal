@@ -10,7 +10,7 @@ import com.liferay.commerce.constants.CommerceOrderConstants;
 import com.liferay.commerce.model.CommerceOrder;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.commerce.service.CommerceOrderLocalService;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.security.permission.resource.BaseModelResourcePermissionWrapper;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionFactory;
@@ -18,7 +18,6 @@ import com.liferay.portal.kernel.security.permission.resource.PortletResourcePer
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.UserGroupRoleLocalService;
 import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalService;
-import com.liferay.portal.kernel.workflow.permission.WorkflowPermission;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -44,14 +43,15 @@ public class CommerceOrderModelResourcePermissionWrapper
 			(modelResourcePermission, consumer) -> {
 				consumer.accept(
 					new CommerceOrderWorkflowedModelPermissionLogic(
-						_workflowPermission, modelResourcePermission,
+						modelResourcePermission,
 						CommerceOrder::getCommerceOrderId));
 
 				consumer.accept(
 					new CommerceOrderModelResourcePermissionLogic(
 						_accountEntryLocalService, _commerceChannelLocalService,
-						_configurationProvider, _groupLocalService,
-						_portletResourcePermission, _userGroupRoleLocalService,
+						_commerceOrderLocalService, _configurationProvider,
+						_groupLocalService, _portletResourcePermission,
+						_userGroupRoleLocalService,
 						_workflowDefinitionLinkLocalService));
 			});
 	}
@@ -82,8 +82,5 @@ public class CommerceOrderModelResourcePermissionWrapper
 	@Reference
 	private WorkflowDefinitionLinkLocalService
 		_workflowDefinitionLinkLocalService;
-
-	@Reference
-	private WorkflowPermission _workflowPermission;
 
 }

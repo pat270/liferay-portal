@@ -5,6 +5,9 @@
 
 package com.liferay.layout.set.prototype.web.internal.product.navigation.control.menu;
 
+import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
+import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
+import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
@@ -53,7 +56,7 @@ public class PropagationMessageProductNavigationControlMenuEntry
 
 		Layout layout = themeDisplay.getLayout();
 
-		if (layout.isTypeControlPanel()) {
+		if (layout.isTypeControlPanel() || layout.isTypeAssetDisplay()) {
 			return false;
 		}
 
@@ -67,7 +70,30 @@ public class PropagationMessageProductNavigationControlMenuEntry
 			_layoutSetPrototypeLocalService.fetchLayoutSetPrototype(
 				group.getClassPK());
 
-		if ((layoutSetPrototype == null) ||
+		if (layoutSetPrototype == null) {
+			return false;
+		}
+
+		LayoutPageTemplateEntry layoutPageTemplateEntry =
+			_layoutPageTemplateEntryLocalService.
+				fetchLayoutPageTemplateEntryByPlid(layout.getPlid());
+
+		if (layoutPageTemplateEntry == null) {
+			layoutPageTemplateEntry =
+				_layoutPageTemplateEntryLocalService.
+					fetchLayoutPageTemplateEntryByPlid(layout.getClassPK());
+		}
+
+		int layoutType = -1;
+
+		if (layoutPageTemplateEntry != null) {
+			layoutType = layoutPageTemplateEntry.getType();
+		}
+
+		if ((layoutType == LayoutPageTemplateEntryTypeConstants.BASIC) ||
+			(layoutType ==
+				LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT) ||
+			layout.isTypeUtility() ||
 			!LayoutSetPrototypePermissionUtil.contains(
 				themeDisplay.getPermissionChecker(),
 				layoutSetPrototype.getLayoutSetPrototypeId(),
@@ -83,6 +109,10 @@ public class PropagationMessageProductNavigationControlMenuEntry
 	protected ServletContext getServletContext() {
 		return _servletContext;
 	}
+
+	@Reference
+	private LayoutPageTemplateEntryLocalService
+		_layoutPageTemplateEntryLocalService;
 
 	@Reference
 	private LayoutSetPrototypeLocalService _layoutSetPrototypeLocalService;

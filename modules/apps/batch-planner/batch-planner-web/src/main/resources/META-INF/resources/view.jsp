@@ -8,6 +8,8 @@
 <%@ include file="/init.jsp" %>
 
 <%
+portletDisplay.setBeta(true);
+
 BatchPlannerPlanDisplayContext batchPlannerPlanDisplayContext = (BatchPlannerPlanDisplayContext)request.getAttribute(WebKeys.PORTLET_DISPLAY_CONTEXT);
 
 SearchContainer<BatchPlannerPlanDisplay> batchPlannerPlanDisplaySearchContainer = batchPlannerPlanDisplayContext.getSearchContainer();
@@ -57,12 +59,12 @@ SearchContainer<BatchPlannerPlanDisplay> batchPlannerPlanDisplaySearchContainer 
 
 			<liferay-ui:search-container-column-text
 				name="type"
-				value="<%= batchPlannerPlanDisplayContext.getSimpleInternalClassName(batchPlannerPlanDisplay.getInternalClassName()) %>"
+				value="<%= batchPlannerPlanDisplayContext.getSimpleClassName(batchPlannerPlanDisplay.getInternalClassNameKey()) %>"
 			/>
 
 			<liferay-ui:search-container-column-text
 				name="creation-date"
-				value="<%= dateFormatDateTime.format(batchPlannerPlanDisplay.getCreateDate()) %>"
+				value="<%= dateTimeFormat.format(batchPlannerPlanDisplay.getCreateDate()) %>"
 			/>
 
 			<liferay-ui:search-container-column-text
@@ -73,9 +75,9 @@ SearchContainer<BatchPlannerPlanDisplay> batchPlannerPlanDisplaySearchContainer 
 			<liferay-ui:search-container-column-text
 				name="status"
 			>
-				<h6 class="text-uppercase <%= BatchPlannerPlanConstants.getStatusCssClass(batchPlannerPlanDisplay.getStatus()) %>">
+				<div class="h6 text-uppercase <%= BatchPlannerPlanConstants.getStatusCssClass(batchPlannerPlanDisplay.getStatus()) %>">
 					<liferay-ui:message key="<%= BatchPlannerPlanConstants.getStatusLabel(batchPlannerPlanDisplay.getStatus()) %>" />
-				</h6>
+				</div>
 			</liferay-ui:search-container-column-text>
 
 			<liferay-ui:search-container-column-text

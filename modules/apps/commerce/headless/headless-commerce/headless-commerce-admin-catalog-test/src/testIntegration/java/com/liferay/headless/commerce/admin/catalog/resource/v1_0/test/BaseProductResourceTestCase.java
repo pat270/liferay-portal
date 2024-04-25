@@ -28,8 +28,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -38,6 +36,7 @@ import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.search.test.util.SearchTestRule;
@@ -63,8 +62,6 @@ import java.util.Set;
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-
-import org.apache.commons.lang.time.DateUtils;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -305,10 +302,10 @@ public abstract class BaseProductResourceTestCase {
 
 	@Test
 	public void testGetProductsPageWithPagination() throws Exception {
-		Page<Product> totalPage = productResource.getProductsPage(
+		Page<Product> productPage = productResource.getProductsPage(
 			null, null, null, null);
 
-		int totalCount = GetterUtil.getInteger(totalPage.getTotalCount());
+		int totalCount = GetterUtil.getInteger(productPage.getTotalCount());
 
 		Product product1 = testGetProductsPage_addProduct(randomProduct());
 
@@ -316,29 +313,65 @@ public abstract class BaseProductResourceTestCase {
 
 		Product product3 = testGetProductsPage_addProduct(randomProduct());
 
-		Page<Product> page1 = productResource.getProductsPage(
-			null, null, Pagination.of(1, totalCount + 2), null);
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<Product> products1 = (List<Product>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			products1.toString(), totalCount + 2, products1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<Product> page1 = productResource.getProductsPage(
+				null, null,
+				Pagination.of(
+					(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+					pageSizeLimit),
+				null);
 
-		Page<Product> page2 = productResource.getProductsPage(
-			null, null, Pagination.of(2, totalCount + 2), null);
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+			assertContains(product1, (List<Product>)page1.getItems());
 
-		List<Product> products2 = (List<Product>)page2.getItems();
+			Page<Product> page2 = productResource.getProductsPage(
+				null, null,
+				Pagination.of(
+					(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+					pageSizeLimit),
+				null);
 
-		Assert.assertEquals(products2.toString(), 1, products2.size());
+			assertContains(product2, (List<Product>)page2.getItems());
 
-		Page<Product> page3 = productResource.getProductsPage(
-			null, null, Pagination.of(1, totalCount + 3), null);
+			Page<Product> page3 = productResource.getProductsPage(
+				null, null,
+				Pagination.of(
+					(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+					pageSizeLimit),
+				null);
 
-		assertContains(product1, (List<Product>)page3.getItems());
-		assertContains(product2, (List<Product>)page3.getItems());
-		assertContains(product3, (List<Product>)page3.getItems());
+			assertContains(product3, (List<Product>)page3.getItems());
+		}
+		else {
+			Page<Product> page1 = productResource.getProductsPage(
+				null, null, Pagination.of(1, totalCount + 2), null);
+
+			List<Product> products1 = (List<Product>)page1.getItems();
+
+			Assert.assertEquals(
+				products1.toString(), totalCount + 2, products1.size());
+
+			Page<Product> page2 = productResource.getProductsPage(
+				null, null, Pagination.of(2, totalCount + 2), null);
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<Product> products2 = (List<Product>)page2.getItems();
+
+			Assert.assertEquals(products2.toString(), 1, products2.size());
+
+			Page<Product> page3 = productResource.getProductsPage(
+				null, null, Pagination.of(1, (int)totalCount + 3), null);
+
+			assertContains(product1, (List<Product>)page3.getItems());
+			assertContains(product2, (List<Product>)page3.getItems());
+			assertContains(product3, (List<Product>)page3.getItems());
+		}
 	}
 
 	@Test
@@ -348,7 +381,7 @@ public abstract class BaseProductResourceTestCase {
 			(entityField, product1, product2) -> {
 				BeanTestUtil.setProperty(
 					product1, entityField.getName(),
-					DateUtils.addMinutes(new Date(), -2));
+					new Date(System.currentTimeMillis() - (2 * Time.MINUTE)));
 			});
 	}
 
@@ -446,22 +479,23 @@ public abstract class BaseProductResourceTestCase {
 
 		product2 = testGetProductsPage_addProduct(product2);
 
+		Page<Product> page = productResource.getProductsPage(
+			null, null, null, null);
+
 		for (EntityField entityField : entityFields) {
 			Page<Product> ascPage = productResource.getProductsPage(
-				null, null, Pagination.of(1, 2),
+				null, null, Pagination.of(1, (int)page.getTotalCount() + 1),
 				entityField.getName() + ":asc");
 
-			assertEquals(
-				Arrays.asList(product1, product2),
-				(List<Product>)ascPage.getItems());
+			assertContains(product1, (List<Product>)ascPage.getItems());
+			assertContains(product2, (List<Product>)ascPage.getItems());
 
 			Page<Product> descPage = productResource.getProductsPage(
-				null, null, Pagination.of(1, 2),
+				null, null, Pagination.of(1, (int)page.getTotalCount() + 1),
 				entityField.getName() + ":desc");
 
-			assertEquals(
-				Arrays.asList(product2, product1),
-				(List<Product>)descPage.getItems());
+			assertContains(product2, (List<Product>)descPage.getItems());
+			assertContains(product1, (List<Product>)descPage.getItems());
 		}
 	}
 
@@ -485,6 +519,8 @@ public abstract class BaseProductResourceTestCase {
 			new GraphQLField("items", getGraphQLFields()),
 			new GraphQLField("page"), new GraphQLField("totalCount"));
 
+		// No namespace
+
 		JSONObject productsJSONObject = JSONUtil.getValueAsJSONObject(
 			invokeGraphQLQuery(graphQLField), "JSONObject/data",
 			"JSONObject/products");
@@ -496,6 +532,27 @@ public abstract class BaseProductResourceTestCase {
 
 		productsJSONObject = JSONUtil.getValueAsJSONObject(
 			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/products");
+
+		Assert.assertEquals(
+			totalCount + 2, productsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			product1,
+			Arrays.asList(
+				ProductSerDes.toDTOs(productsJSONObject.getString("items"))));
+		assertContains(
+			product2,
+			Arrays.asList(
+				ProductSerDes.toDTOs(productsJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		productsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminCatalog_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminCatalog_v1_0",
 			"JSONObject/products");
 
 		Assert.assertEquals(
@@ -586,6 +643,8 @@ public abstract class BaseProductResourceTestCase {
 		Product product =
 			testGraphQLGetProductByExternalReferenceCode_addProduct();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				product,
@@ -607,6 +666,33 @@ public abstract class BaseProductResourceTestCase {
 								getGraphQLFields())),
 						"JSONObject/data",
 						"Object/productByExternalReferenceCode"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		Assert.assertTrue(
+			equals(
+				product,
+				ProductSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminCatalog_v1_0",
+								new GraphQLField(
+									"productByExternalReferenceCode",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"externalReferenceCode",
+												"\"" +
+													product.
+														getExternalReferenceCode() +
+															"\"");
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminCatalog_v1_0",
+						"Object/productByExternalReferenceCode"))));
 	}
 
 	@Test
@@ -615,6 +701,8 @@ public abstract class BaseProductResourceTestCase {
 
 		String irrelevantExternalReferenceCode =
 			"\"" + RandomTestUtil.randomString() + "\"";
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -630,6 +718,27 @@ public abstract class BaseProductResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0",
+						new GraphQLField(
+							"productByExternalReferenceCode",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"externalReferenceCode",
+										irrelevantExternalReferenceCode);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -711,6 +820,8 @@ public abstract class BaseProductResourceTestCase {
 		Product product =
 			testGraphQLGetProductByExternalReferenceCodeByVersion_addProduct();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				product,
@@ -734,6 +845,37 @@ public abstract class BaseProductResourceTestCase {
 								getGraphQLFields())),
 						"JSONObject/data",
 						"Object/productByExternalReferenceCodeByVersion"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		Assert.assertTrue(
+			equals(
+				product,
+				ProductSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminCatalog_v1_0",
+								new GraphQLField(
+									"productByExternalReferenceCodeByVersion",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"externalReferenceCode",
+												"\"" +
+													product.
+														getExternalReferenceCode() +
+															"\"");
+
+											put(
+												"version",
+												product.getVersion());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminCatalog_v1_0",
+						"Object/productByExternalReferenceCodeByVersion"))));
 	}
 
 	@Test
@@ -743,6 +885,8 @@ public abstract class BaseProductResourceTestCase {
 		String irrelevantExternalReferenceCode =
 			"\"" + RandomTestUtil.randomString() + "\"";
 		Integer irrelevantVersion = RandomTestUtil.randomInt();
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -759,6 +903,28 @@ public abstract class BaseProductResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0",
+						new GraphQLField(
+							"productByExternalReferenceCodeByVersion",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"externalReferenceCode",
+										irrelevantExternalReferenceCode);
+									put("version", irrelevantVersion);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -812,7 +978,10 @@ public abstract class BaseProductResourceTestCase {
 
 	@Test
 	public void testGraphQLDeleteProduct() throws Exception {
-		Product product = testGraphQLDeleteProduct_addProduct();
+
+		// No namespace
+
+		Product product1 = testGraphQLDeleteProduct_addProduct();
 
 		Assert.assertTrue(
 			JSONUtil.getValueAsBoolean(
@@ -821,23 +990,60 @@ public abstract class BaseProductResourceTestCase {
 						"deleteProduct",
 						new HashMap<String, Object>() {
 							{
-								put("id", product.getId());
+								put("id", product1.getId());
 							}
 						})),
 				"JSONObject/data", "Object/deleteProduct"));
-		JSONArray errorsJSONArray = JSONUtil.getValueAsJSONArray(
+
+		JSONArray errorsJSONArray1 = JSONUtil.getValueAsJSONArray(
 			invokeGraphQLQuery(
 				new GraphQLField(
 					"product",
 					new HashMap<String, Object>() {
 						{
-							put("id", product.getId());
+							put("id", product1.getId());
 						}
 					},
 					new GraphQLField("id"))),
 			"JSONArray/errors");
 
-		Assert.assertTrue(errorsJSONArray.length() > 0);
+		Assert.assertTrue(errorsJSONArray1.length() > 0);
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		Product product2 = testGraphQLDeleteProduct_addProduct();
+
+		Assert.assertTrue(
+			JSONUtil.getValueAsBoolean(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0",
+						new GraphQLField(
+							"deleteProduct",
+							new HashMap<String, Object>() {
+								{
+									put("id", product2.getId());
+								}
+							}))),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminCatalog_v1_0",
+				"Object/deleteProduct"));
+
+		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminCatalog_v1_0",
+					new GraphQLField(
+						"product",
+						new HashMap<String, Object>() {
+							{
+								put("id", product2.getId());
+							}
+						},
+						new GraphQLField("id")))),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray2.length() > 0);
 	}
 
 	protected Product testGraphQLDeleteProduct_addProduct() throws Exception {
@@ -863,6 +1069,8 @@ public abstract class BaseProductResourceTestCase {
 	public void testGraphQLGetProduct() throws Exception {
 		Product product = testGraphQLGetProduct_addProduct();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				product,
@@ -878,11 +1086,35 @@ public abstract class BaseProductResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/product"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		Assert.assertTrue(
+			equals(
+				product,
+				ProductSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminCatalog_v1_0",
+								new GraphQLField(
+									"product",
+									new HashMap<String, Object>() {
+										{
+											put("id", product.getId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminCatalog_v1_0",
+						"Object/product"))));
 	}
 
 	@Test
 	public void testGraphQLGetProductNotFound() throws Exception {
 		Long irrelevantId = RandomTestUtil.randomLong();
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -896,6 +1128,25 @@ public abstract class BaseProductResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0",
+						new GraphQLField(
+							"product",
+							new HashMap<String, Object>() {
+								{
+									put("id", irrelevantId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -955,6 +1206,8 @@ public abstract class BaseProductResourceTestCase {
 	public void testGraphQLGetProductByVersion() throws Exception {
 		Product product = testGraphQLGetProductByVersion_addProduct();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				product,
@@ -972,12 +1225,40 @@ public abstract class BaseProductResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/productByVersion"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		Assert.assertTrue(
+			equals(
+				product,
+				ProductSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminCatalog_v1_0",
+								new GraphQLField(
+									"productByVersion",
+									new HashMap<String, Object>() {
+										{
+											put("id", product.getId());
+
+											put(
+												"version",
+												product.getVersion());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminCatalog_v1_0",
+						"Object/productByVersion"))));
 	}
 
 	@Test
 	public void testGraphQLGetProductByVersionNotFound() throws Exception {
 		Long irrelevantId = RandomTestUtil.randomLong();
 		Integer irrelevantVersion = RandomTestUtil.randomInt();
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -992,6 +1273,26 @@ public abstract class BaseProductResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0",
+						new GraphQLField(
+							"productByVersion",
+							new HashMap<String, Object>() {
+								{
+									put("id", irrelevantId);
+									put("version", irrelevantVersion);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -2207,6 +2508,10 @@ public abstract class BaseProductResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -2305,20 +2610,20 @@ public abstract class BaseProductResourceTestCase {
 
 		if (entityFieldName.equals("createDate")) {
 			if (operator.equals("between")) {
+				Date date = product.getCreateDate();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(product.getCreateDate(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(product.getCreateDate(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -2397,20 +2702,20 @@ public abstract class BaseProductResourceTestCase {
 
 		if (entityFieldName.equals("displayDate")) {
 			if (operator.equals("between")) {
+				Date date = product.getDisplayDate();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(product.getDisplayDate(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(product.getDisplayDate(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -2433,20 +2738,20 @@ public abstract class BaseProductResourceTestCase {
 
 		if (entityFieldName.equals("expirationDate")) {
 			if (operator.equals("between")) {
+				Date date = product.getExpirationDate();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(product.getExpirationDate(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(product.getExpirationDate(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -2545,20 +2850,20 @@ public abstract class BaseProductResourceTestCase {
 
 		if (entityFieldName.equals("modifiedDate")) {
 			if (operator.equals("between")) {
+				Date date = product.getModifiedDate();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(product.getModifiedDate(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(product.getModifiedDate(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -2959,9 +3264,9 @@ public abstract class BaseProductResourceTestCase {
 	}
 
 	protected ProductResource productResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

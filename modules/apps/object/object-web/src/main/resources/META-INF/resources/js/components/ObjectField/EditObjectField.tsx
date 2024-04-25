@@ -3,44 +3,38 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayTabs from '@clayui/tabs';
 import {
 	API,
+	Card,
 	SidePanelForm,
-	SidebarCategory,
 	openToast,
 	saveAndReload,
 } from '@liferay/object-js-components-web';
-import React, {useEffect, useState} from 'react';
+import {ILearnResourceContext} from 'frontend-js-components-web';
+import React, {useEffect} from 'react';
 
-import './EditObjectField.scss';
-import {AdvancedTab} from './Tabs/Advanced/AdvancedTab';
-import {BasicInfo} from './Tabs/BasicInfo/BasicInfo';
+import {EditObjectFieldContent} from './EditObjectFieldContent';
 import {useObjectFieldForm} from './useObjectFieldForm';
 
-interface EditObjectFieldProps {
+import './EditObjectField.scss';
+
+export interface EditObjectFieldProps {
+	baseResourceURL: string;
 	creationLanguageId: Liferay.Language.Locale;
 	filterOperators: TFilterOperators;
 	forbiddenChars: string[];
 	forbiddenLastChars: string[];
 	forbiddenNames: string[];
-	isApproved: boolean;
 	isDefaultStorageType: boolean;
+	isRootDescendantNode: boolean;
+	learnResources: ILearnResourceContext;
 	objectDefinitionExternalReferenceCode: string;
-	objectField: ObjectField;
 	objectFieldId: number;
-	objectFieldTypes: ObjectFieldType[];
-	objectName: string;
-	objectRelationshipId: number;
 	readOnly: boolean;
-	readOnlySidebarElements: SidebarCategory[];
-	sidebarElements: SidebarCategory[];
-	workflowStatusJSONArray: LabelValueObject[];
+	workflowStatuses: LabelValueObject[];
 }
 
-const TABS = [Liferay.Language.get('basic-info')];
-
-const initialValues: Partial<ObjectField> = {
+export const objectFieldInitialValues: Partial<ObjectField> = {
 	DBType: '',
 	businessType: 'Text',
 	externalReferenceCode: '',
@@ -60,35 +54,30 @@ const initialValues: Partial<ObjectField> = {
 };
 
 export default function EditObjectField({
+	baseResourceURL,
 	creationLanguageId,
 	filterOperators,
 	forbiddenChars,
 	forbiddenLastChars,
 	forbiddenNames,
-	isApproved,
 	isDefaultStorageType,
+	isRootDescendantNode,
+	learnResources,
 	objectDefinitionExternalReferenceCode,
 	objectFieldId,
-	objectFieldTypes,
-	objectName,
-	objectRelationshipId,
 	readOnly,
-	readOnlySidebarElements,
-	sidebarElements,
-	workflowStatusJSONArray,
+	workflowStatuses,
 }: EditObjectFieldProps) {
-	const [activeIndex, setActiveIndex] = useState(0);
-
 	const onSubmit = async ({id, ...objectField}: ObjectField) => {
 		delete objectField.defaultValue;
 		delete objectField.listTypeDefinitionId;
 		delete objectField.system;
 
 		try {
-			await API.save(
-				`/o/object-admin/v1.0/object-fields/${id}`,
-				objectField
-			);
+			await API.save({
+				item: objectField,
+				url: `/o/object-admin/v1.0/object-fields/${id}`,
+			});
 
 			saveAndReload();
 			openToast({
@@ -112,28 +101,20 @@ export default function EditObjectField({
 		forbiddenChars,
 		forbiddenLastChars,
 		forbiddenNames,
-		initialValues,
+		initialValues: objectFieldInitialValues,
 		onSubmit,
 	});
 
-	if (
-		(Liferay.FeatureFlags['LPS-170122'] ||
-			values.businessType === 'Picklist') &&
-		TABS.length < 2
-	) {
-		TABS.push(Liferay.Language.get('advanced'));
-	}
-
 	useEffect(() => {
-		const makeFetch = async () => {
-			const objectFieldResponse = await API.getObjectField(objectFieldId);
-
-			setValues(objectFieldResponse);
-		};
-
-		makeFetch();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [objectFieldId]);
+		if (errors.defaultValue) {
+			openToast({
+				message: Liferay.Language.get(
+					'please-fill-out-all-required-fields'
+				),
+				type: 'danger',
+			});
+		}
+	}, [errors]);
 
 	return (
 		<SidePanelForm
@@ -142,78 +123,25 @@ export default function EditObjectField({
 			readOnly={readOnly}
 			title={Liferay.Language.get('field')}
 		>
-			{(Liferay.FeatureFlags['LPS-170122'] && isDefaultStorageType) ||
-			values.businessType === 'Picklist' ? (
-				<>
-					<ClayTabs className="side-panel-iframe__tabs">
-						{TABS.map((label, index) => (
-							<ClayTabs.Item
-								active={activeIndex === index}
-								key={index}
-								onClick={() => setActiveIndex(index)}
-							>
-								{label}
-							</ClayTabs.Item>
-						))}
-					</ClayTabs>
-
-					<ClayTabs.Content activeIndex={activeIndex} fade>
-						<ClayTabs.TabPane>
-							<BasicInfo
-								errors={errors}
-								filterOperators={filterOperators}
-								handleChange={handleChange}
-								isApproved={isApproved}
-								isDefaultStorageType={isDefaultStorageType}
-								objectDefinitionExternalReferenceCode={
-									objectDefinitionExternalReferenceCode
-								}
-								objectFieldTypes={objectFieldTypes}
-								objectName={objectName}
-								objectRelationshipId={objectRelationshipId}
-								readOnly={readOnly}
-								setValues={setValues}
-								values={values}
-								workflowStatusJSONArray={
-									workflowStatusJSONArray
-								}
-							/>
-						</ClayTabs.TabPane>
-
-						<ClayTabs.TabPane>
-							<AdvancedTab
-								creationLanguageId={creationLanguageId}
-								errors={errors}
-								isDefaultStorageType={isDefaultStorageType}
-								readOnlySidebarElements={
-									readOnlySidebarElements
-								}
-								setValues={setValues}
-								sidebarElements={sidebarElements}
-								values={values}
-							/>
-						</ClayTabs.TabPane>
-					</ClayTabs.Content>
-				</>
-			) : (
-				<BasicInfo
-					errors={errors}
-					filterOperators={filterOperators}
-					handleChange={handleChange}
-					isApproved={isApproved}
-					isDefaultStorageType={isDefaultStorageType}
-					objectDefinitionExternalReferenceCode={
-						objectDefinitionExternalReferenceCode
-					}
-					objectFieldTypes={objectFieldTypes}
-					objectName={objectName}
-					objectRelationshipId={objectRelationshipId}
-					readOnly={readOnly}
-					setValues={setValues}
-					values={values}
-					workflowStatusJSONArray={workflowStatusJSONArray}
-				/>
-			)}
+			<EditObjectFieldContent
+				baseResourceURL={baseResourceURL}
+				containerWrapper={Card}
+				creationLanguageId={creationLanguageId}
+				errors={errors}
+				filterOperators={filterOperators}
+				handleChange={handleChange}
+				isDefaultStorageType={isDefaultStorageType}
+				isRootDescendantNode={isRootDescendantNode}
+				learnResources={learnResources}
+				objectDefinitionExternalReferenceCode={
+					objectDefinitionExternalReferenceCode
+				}
+				objectFieldId={objectFieldId}
+				readOnly={readOnly}
+				setValues={setValues}
+				values={values}
+				workflowStatuses={workflowStatuses}
+			/>
 		</SidePanelForm>
 	);
 }

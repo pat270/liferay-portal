@@ -184,7 +184,7 @@ if (Validator.isNotNull(portletConfigurationPermissionsDisplayContext.getModelRe
 								</div>
 
 								<react:component
-									module="js/PermissionsCheckbox"
+									module="{PermissionsCheckbox} from portlet-configuration-web"
 									props='<%=
 										HashMapBuilder.<String, Object>put(
 											"checked", checked
@@ -219,9 +219,17 @@ if (Validator.isNotNull(portletConfigurationPermissionsDisplayContext.getModelRe
 	</div>
 
 	<aui:button-row>
-		<aui:button name="saveButton" type="submit" />
+		<clay:button
+			id='<%= liferayPortletResponse.getNamespace() + "saveButton" %>'
+			label="save"
+			type="submit"
+		/>
 
-		<aui:button type="cancel" />
+		<clay:button
+			cssClass="btn-cancel"
+			displayType="secondary"
+			label="cancel"
+		/>
 	</aui:button-row>
 </div>
 

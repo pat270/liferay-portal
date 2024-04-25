@@ -13,20 +13,24 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
+import com.liferay.portal.kernel.model.Organization;
+import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
-import com.liferay.portal.kernel.security.membershippolicy.SiteMembershipPolicyUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
+import com.liferay.portal.kernel.service.OrganizationLocalServiceUtil;
+import com.liferay.portal.kernel.service.UserGroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
+import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.security.membershippolicy.SiteMembershipPolicyUtil;
 import com.liferay.site.admin.web.internal.constants.SiteAdminPortletKeys;
 import com.liferay.site.admin.web.internal.display.context.SiteAdminDisplayContext;
-import com.liferay.sites.kernel.util.SitesUtil;
 
 import java.util.List;
 
@@ -151,11 +155,21 @@ public class SiteActionDropdownItemsProvider {
 	private UnsafeConsumer<DropdownItem, Exception>
 		_getAddChildSiteActionUnsafeConsumer() {
 
+		PortletDisplay portletDisplay = _themeDisplay.getPortletDisplay();
+
 		return dropdownItem -> {
+			String backURLTitle = portletDisplay.getPortletDisplayName();
+
+			if (_group != null) {
+				backURLTitle = _group.getDescriptiveName(
+					_themeDisplay.getLocale());
+			}
+
 			dropdownItem.setHref(
-				_liferayPortletResponse.createRenderURL(),
-				"mvcRenderCommandName", "/site_admin/select_site_initializer",
-				"redirect", _themeDisplay.getURLCurrent(), "parentGroupId",
+				_liferayPortletResponse.createRenderURL(), "backURLTitle",
+				backURLTitle, "mvcRenderCommandName",
+				"/site_admin/select_site_initializer", "redirect",
+				_themeDisplay.getURLCurrent(), "parentGroupId",
 				String.valueOf(_group.getGroupId()));
 			dropdownItem.setLabel(
 				LanguageUtil.get(_httpServletRequest, "add-child-site"));
@@ -333,17 +347,19 @@ public class SiteActionDropdownItemsProvider {
 			return false;
 		}
 
-		List<String> organizationNames = SitesUtil.getOrganizationNames(
-			_group, _themeDisplay.getUser());
+		List<Organization> organizations =
+			OrganizationLocalServiceUtil.getGroupUserOrganizations(
+				_group.getGroupId(), _themeDisplay.getUserId());
 
-		if (!organizationNames.isEmpty()) {
+		if (!organizations.isEmpty()) {
 			return false;
 		}
 
-		List<String> userGroupNames = SitesUtil.getUserGroupNames(
-			_group, _themeDisplay.getUser());
+		List<UserGroup> userGroups =
+			UserGroupLocalServiceUtil.getGroupUserUserGroups(
+				_group.getGroupId(), _themeDisplay.getUserId());
 
-		if (!userGroupNames.isEmpty() ||
+		if (!userGroups.isEmpty() ||
 			((_group.getType() != GroupConstants.TYPE_SITE_OPEN) &&
 			 (_group.getType() != GroupConstants.TYPE_SITE_RESTRICTED))) {
 

@@ -65,7 +65,9 @@ public class ${schemaName}ResourceFactoryImpl implements ${schemaName}Resource.F
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _${schemaVarName}ResourceProxyProviderFunction.apply((proxy, method,arguments) -> _invoke(method, arguments, _checkPermissions, _httpServletRequest, _httpServletResponse, _preferredLocale, _uriInfo, _user));
+				Function<InvocationHandler, ${schemaName}Resource> ${schemaVarName}ResourceProxyProviderFunction = ResourceProxyProviderFunctionHolder._${schemaVarName}ResourceProxyProviderFunction;
+
+				return ${schemaVarName}ResourceProxyProviderFunction.apply((proxy, method,arguments) -> _invoke(method, arguments, _checkPermissions, _httpServletRequest, _httpServletResponse, _preferredLocale, _uriInfo, _user));
 			}
 
 			@Override
@@ -189,8 +191,6 @@ public class ${schemaName}ResourceFactoryImpl implements ${schemaName}Resource.F
 		}
 	}
 
-	private static final Function<InvocationHandler, ${schemaName}Resource> _${schemaVarName}ResourceProxyProviderFunction = _getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -225,6 +225,12 @@ public class ${schemaName}ResourceFactoryImpl implements ${schemaName}Resource.F
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, ${schemaName}Resource> _${schemaVarName}ResourceProxyProviderFunction = _getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

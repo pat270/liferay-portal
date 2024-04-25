@@ -25,10 +25,6 @@ definition {
 	tearDown {
 		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
 
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
-		//ACUtils.tearDownAC();
-
 		ACUtils.tearDownDXP();
 
 		if (${testLiferayVirtualInstance} == "true") {
@@ -37,18 +33,17 @@ definition {
 		else {
 			JSONGroup.deleteGroupByName(groupName = "Site Name");
 		}
+
+		ACUtils.tearDownAC();
 	}
 
 	@description = "Story: LRAC-12019 | Automation ID: LRAC-12584 | Test Summary: Can paginate the list of properties"
-	@ignore = "true"
 	@priority = 3
 	test CanPaginatePropertyListInDXP {
+		property test.run.type = "single";
 
-		// AC Bug: Properties are unable to be deleted
-		// AC Bug ticket: LRAC-13704
-
-		var firstPageList = "AC Property Pagination 2,AC Property Pagination 3,AC Property Pagination 4,AC Property Pagination 5,AC Property Pagination 6";
-		var secondPageList = "AC Property Pagination 1";
+		var firstPageList = "AC Property Pagination 6,AC Property Pagination 5,AC Property Pagination 4,AC Property Pagination 3";
+		var secondPageList = "AC Property Pagination 2,AC Property Pagination 1";
 
 		task ("Connect DXP to AC and get the first property name from the list") {
 			ACDXPSettings.connectAnalyticsCloud();
@@ -60,10 +55,10 @@ definition {
 			ACDXPSettings.createNewProperty(newPropertyNameList = "${secondPageList},${firstPageList}");
 		}
 
-		task ("Change the pagination to 4") {
-			ACUtils.changePagination(itemsPerPage = 4);
+		task ("Change the pagination to 5") {
+			ACUtils.changePagination(itemsPerPage = 5);
 
-			ACUtils.viewResultsMessage(results = "Showing 1 to 4 of 7 entries.");
+			ACUtils.viewResultsMessage(results = "Showing 1 to 5 of 8 entries.");
 		}
 
 		task ("Check that 5 properties appear on the first page") {
@@ -73,7 +68,7 @@ definition {
 		task ("Click next page") {
 			Click(locator1 = "Pagination#NEXT_LINK");
 
-			ACUtils.viewResultsMessage(results = "Showing 5 to 7 of 7 entries.");
+			ACUtils.viewResultsMessage(results = "Showing 6 to 8 of 8 entries.");
 		}
 
 		task ("Check that 2 property appear on the second page") {
@@ -88,10 +83,10 @@ definition {
 			ACDXPSettings.navToSyncedSitesMenu();
 		}
 
-		task ("Change the pagination to 4") {
-			ACUtils.changePagination(itemsPerPage = 4);
+		task ("Change the pagination to 5") {
+			ACUtils.changePagination(itemsPerPage = 5);
 
-			ACUtils.viewResultsMessage(results = "Showing 1 to 4 of 7 entries.");
+			ACUtils.viewResultsMessage(results = "Showing 1 to 5 of 8 entries.");
 		}
 
 		task ("Check that 5 properties appear on the first page") {
@@ -101,7 +96,7 @@ definition {
 		task ("Click next page") {
 			Click(locator1 = "Pagination#NEXT_LINK");
 
-			ACUtils.viewResultsMessage(results = "Showing 5 to 7 of 7 entries.");
+			ACUtils.viewResultsMessage(results = "Showing 6 to 8 of 8 entries.");
 		}
 
 		task ("Check that 2 property appear on the second page") {
@@ -261,7 +256,7 @@ definition {
 		}
 
 		task ("Sort the list by the Create Date column (Ascending)") {
-			ManagementBar.setFilterAndOrder(orderBy = "Create Date");
+			KaleoFormsManageFieldSets.clickFilterAndOrderBy(filterOption = "Create Date");
 
 			ACDXPSettings.setSortDirection(sortDirection = "up");
 		}
@@ -283,7 +278,7 @@ definition {
 		}
 
 		task ("Sort the list by the Available Properties column (Ascending)") {
-			ManagementBar.setFilterAndOrder(orderBy = "Available Properties");
+			KaleoFormsManageFieldSets.clickFilterAndOrderBy(filterOption = "Available Properties");
 
 			ACDXPSettings.setSortDirection(sortDirection = "up");
 		}
@@ -317,7 +312,7 @@ definition {
 		}
 
 		task ("Sort the list by the Create Date column (Ascending)") {
-			ManagementBar.setFilterAndOrder(orderBy = "Create Date");
+			KaleoFormsManageFieldSets.clickFilterAndOrderBy(filterOption = "Create Date");
 
 			ACDXPSettings.setSortDirection(sortDirection = "up");
 		}
@@ -339,7 +334,7 @@ definition {
 		}
 
 		task ("Sort the list by the Available Properties column (Ascending)") {
-			ManagementBar.setFilterAndOrder(orderBy = "Available Properties");
+			KaleoFormsManageFieldSets.clickFilterAndOrderBy(filterOption = "Available Properties");
 
 			ACDXPSettings.setSortDirection(sortDirection = "up");
 		}
@@ -362,22 +357,25 @@ definition {
 	}
 
 	@description = "Story: LRAC-10858 | Automation ID: LRAC-12572 | Test Summary: Check that a deleted property in AC will not appear in the DXP"
-	@ignore = "true"
 	@priority = 3
 	test CheckDeletedPropertyInACSideNotAppearInDXP {
+		var propertyName1 = "AC Deleted Property";
+		var propertyName2 = "DXP Deleted Property";
 
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
-		var propertyName = "AC Deleted Property";
-
-		task ("Connect DXP to AC and get the first property name from the list") {
+		task ("Connect DXP to AC") {
 			ACDXPSettings.connectAnalyticsCloud();
+		}
 
-			var autoGeneratePropertyName = ACDXPSettings.getAssignedPropertyName();
+		task ("Complete the wizard configuration") {
+			ACDXPSettings.completeWizardConfiguration();
+		}
+
+		task ("Go to the properties page in the sidebar") {
+			ACDXPSettings.navToSyncedSitesMenu();
 		}
 
 		task ("Create a new property from the list of available properties") {
-			ACDXPSettings.createNewProperty(newPropertyNameList = ${propertyName});
+			ACDXPSettings.createNewProperty(newPropertyNameList = "${propertyName1},${propertyName2}");
 		}
 
 		task ("Go to AC > Go to Settings > Go to Properties") {
@@ -389,14 +387,13 @@ definition {
 		}
 
 		task ("Check that the new properties are created in the properties list") {
-			ACUtils.viewNameList(nameList = "${propertyName},${autoGeneratePropertyName}");
+			ACUtils.viewNameList(nameList = "${propertyName1},${propertyName2}");
 		}
 
 		task ("Delete one property") {
-			ACUtils.searchBar(searchItem = ${autoGeneratePropertyName});
+			ACUtils.searchBar(searchItem = ${propertyName2});
 
-			//ACSettings.deletePropertyByCheckbox(propertyName = ${autoGeneratePropertyName});
-
+			ACSettings.deletePropertyByCheckbox(propertyName = ${propertyName2});
 		}
 
 		task ("Go to DXP > Instance Settings > Analytics Cloud") {
@@ -410,11 +407,11 @@ definition {
 		}
 
 		task ("Check that the not deleted property is present in the list") {
-			ACDXPSettings.viewGenericListItem(itemValueList = ${propertyName});
+			ACDXPSettings.viewGenericListItem(itemValueList = ${propertyName1});
 		}
 
 		task ("Check that the deleted property is not present in the list") {
-			ACDXPSettings.viewGenericListItemNotPresent(itemValueList = ${autoGeneratePropertyName});
+			ACDXPSettings.viewGenericListItemNotPresent(itemValueList = ${propertyName2});
 		}
 	}
 
@@ -429,6 +426,8 @@ definition {
 
 		task ("Copy the token from AC again") {
 			ACUtils.launchAC();
+
+			ACNavigation.goToSettings();
 
 			ACSettings.goToDataSources();
 
@@ -457,12 +456,8 @@ definition {
 	}
 
 	@description = "Story: LRAC-10858 | Automation ID: LRAC-12569 | Test Summary: Assert Empty State upon property creation"
-	@ignore = "true"
 	@priority = 2
 	test CheckPropertyListEmptyStateMessage {
-
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
 		task ("Create a new workspace") {
 			ACUtils.launchAC(
 				emailList = "acworkspace@liferay.com",
@@ -470,11 +465,7 @@ definition {
 		}
 
 		task ("Copy the token from AC") {
-			ACSettings.goToDataSources();
-
 			Click(locator1 = "ACDXPSettings#AC_GENERIC_ADD_OR_CONFIRMATION_BUTTON");
-
-			Click(locator1 = "ACSettings#DXP_DATA_SOURCE_OPTION");
 
 			var token = selenium.getElementValue("ACSettings#TOKEN_INPUT_FIELD");
 		}
@@ -483,6 +474,8 @@ definition {
 			ACUtils.launchDXP();
 
 			ACDXPSettings.connectAnalyticsCloud(acToken = ${token});
+
+			ACDXPSettings.completeWizardConfiguration();
 		}
 
 		task ("Go to AC > Go to Settings > Go to Properties") {
@@ -493,9 +486,9 @@ definition {
 			ACSettings.goToProperties();
 		}
 
-		//task ("Delete all the properties in the list") {
-		//	ACSettings.deleteAllProperties();
-		//}
+		task ("Delete all the properties in the list") {
+			ACSettings.deleteAllProperties();
+		}
 
 		task ("Go to Instance Settings > Analytics Cloud") {
 			ACUtils.launchDXP();
@@ -598,8 +591,6 @@ definition {
 		}
 
 		task ("Set up instance and sign in DXP") {
-			TestCase.setUpPortalInstance();
-
 			ACUtils.launchDXP();
 
 			ACUtils.addSiteAndPage();
@@ -625,6 +616,10 @@ definition {
 
 		task ("Launch AC and Connect new data source") {
 			ACUtils.launchAC();
+
+			if (IsElementNotPresent(locator1 = "ACSettings#SETTINGS_PAGE")) {
+				ACNavigation.goToSettings();
+			}
 
 			ACSettings.goToDataSources();
 

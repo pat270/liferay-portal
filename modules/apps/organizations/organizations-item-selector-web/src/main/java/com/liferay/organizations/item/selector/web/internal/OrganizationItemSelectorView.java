@@ -12,9 +12,8 @@ import com.liferay.item.selector.criteria.UUIDItemSelectorReturnType;
 import com.liferay.organizations.item.selector.OrganizationItemSelectorCriterion;
 import com.liferay.organizations.item.selector.web.internal.display.context.OrganizationItemSelectorViewDisplayContext;
 import com.liferay.portal.kernel.language.Language;
-import com.liferay.portal.kernel.service.OrganizationService;
+import com.liferay.portal.kernel.service.OrganizationLocalService;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.users.admin.kernel.util.UsersAdmin;
 
 import java.io.IOException;
 
@@ -70,8 +69,8 @@ public class OrganizationItemSelectorView
 		OrganizationItemSelectorViewDisplayContext
 			organizationItemSelectorViewDisplayContext =
 				new OrganizationItemSelectorViewDisplayContext(
-					organizationItemSelectorCriterion, _organizationService,
-					_usersAdmin, httpServletRequest, portletURL);
+					organizationItemSelectorCriterion,
+					_organizationLocalService, httpServletRequest, portletURL);
 
 		_itemSelectorViewDescriptorRenderer.renderHTML(
 			httpServletRequest, servletResponse,
@@ -94,12 +93,9 @@ public class OrganizationItemSelectorView
 	private Language _language;
 
 	@Reference
-	private OrganizationService _organizationService;
+	private OrganizationLocalService _organizationLocalService;
 
 	@Reference
 	private Portal _portal;
-
-	@Reference
-	private UsersAdmin _usersAdmin;
 
 }

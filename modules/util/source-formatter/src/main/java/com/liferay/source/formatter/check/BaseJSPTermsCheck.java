@@ -242,6 +242,33 @@ public abstract class BaseJSPTermsCheck extends BaseFileCheck {
 		}
 	}
 
+	private boolean _isInsideComment(String content, int pos) {
+		String s = content.substring(pos);
+
+		int x = s.indexOf("*/");
+
+		if (x == -1) {
+			return false;
+		}
+
+		String trimmedLine = StringUtil.trim(
+			getLine(
+				content,
+				getLineNumber(content, pos) + getLineNumber(s, x) - 1));
+
+		if (!trimmedLine.endsWith("*/")) {
+			return false;
+		}
+
+		s = s.substring(0, x);
+
+		if (!s.contains("/*")) {
+			return true;
+		}
+
+		return false;
+	}
+
 	private boolean _isJSPTermRequired(
 		String fileName, String content, String regex, int lineNumber,
 		String type, Set<String> checkedForUnusedJSPTerm,
@@ -280,6 +307,10 @@ public abstract class BaseJSPTermsCheck extends BaseFileCheck {
 			}
 
 			int x = matcher.start() + 1;
+
+			if (_isInsideComment(content, x)) {
+				continue;
+			}
 
 			if (isJavaSource(content, x)) {
 				if (!ToolsUtil.isInsideQuotes(content, x)) {

@@ -13,14 +13,14 @@ import com.liferay.fragment.internal.upgrade.v2_0_0.util.FragmentEntryTable;
 import com.liferay.fragment.internal.upgrade.v2_1_0.SchemaUpgradeProcess;
 import com.liferay.fragment.internal.upgrade.v2_4_0.FragmentEntryLinkUpgradeProcess;
 import com.liferay.fragment.internal.upgrade.v2_6_0.util.FragmentEntryVersionTable;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.portletfilerepository.PortletFileRepository;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.upgrade.BaseSQLServerDatetimeUpgradeProcess;
 import com.liferay.portal.kernel.upgrade.CTModelUpgradeProcess;
 import com.liferay.portal.kernel.upgrade.DummyUpgradeStep;
 import com.liferay.portal.kernel.upgrade.MVCCVersionUpgradeProcess;
-import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.upgrade.UpgradeProcessFactory;
-import com.liferay.portal.kernel.view.count.ViewCountManager;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
 
 import org.osgi.service.component.annotations.Component;
@@ -180,20 +180,22 @@ public class FragmentServiceUpgradeStepRegistrator
 		registry.register(
 			"2.10.0", "2.10.1",
 			new com.liferay.fragment.internal.upgrade.v2_10_1.
-				FragmentCollectionUpgradeProcess(_dlFolderLocalService));
+				FragmentCollectionUpgradeProcess(
+					_dlFolderLocalService, _portletFileRepository));
 
 		registry.register(
 			"2.10.1", "2.10.2",
-			new UpgradeProcess() {
+			UpgradeProcessFactory.runSQL(
+				"update FragmentEntryLink set deleted = [$FALSE$] where " +
+					"deleted is null"));
 
-				@Override
-				protected void doUpgrade() throws Exception {
-					runSQL(
-						"update FragmentEntryLink set deleted = [$FALSE$] " +
-							"where deleted is null");
-				}
-
-			});
+		registry.register(
+			"2.10.2", "2.10.3",
+			UpgradeProcessFactory.runSQL(
+				StringBundler.concat(
+					"update FragmentEntryLink set originalFragmentEntryLinkId ",
+					"= 0 where originalFragmentEntryLinkId > 0 and plid in ",
+					"(select plid from Layout where classPK > 0)")));
 	}
 
 	@Reference
@@ -203,6 +205,6 @@ public class FragmentServiceUpgradeStepRegistrator
 	private LayoutLocalService _layoutLocalService;
 
 	@Reference
-	private ViewCountManager _viewCountManager;
+	private PortletFileRepository _portletFileRepository;
 
 }

@@ -4,24 +4,45 @@
  */
 
 import ClayCard from '@clayui/card';
+import { getProperProductNames } from '~/routes/customer-portal/utils/getProperProductNames';
 import i18n from '../../../../../common/I18n';
 import {FORMAT_DATE_TYPES} from '../../../../../common/utils/constants';
 import getDateCustomFormat from '../../../../../common/utils/getDateCustomFormat';
-import {getLicenseKeyEndDatesByLicenseType} from '../utils/licenseKeyEndDateUtil';
+import {getLicenseKeyEndDatesByLicenseType} from '../utils/licenseKeyEndDate';
 
-const GenerateCardLayout = ({infoSelectedKey}) => {
-	const startDate = infoSelectedKey?.selectedSubscription?.startDate;
+const GenerateCardLayout = ({
+	expirationRenewDate,
+	isRenew,
+	licenseEntryTypeName,
+	selectedKeyData,
+}) => {
+	const startDate = selectedKeyData?.selectedSubscription?.startDate;
+	const endDate = selectedKeyData?.selectedSubscription?.endDate;
+	const licenseEndDate = getLicenseKeyEndDatesByLicenseType(selectedKeyData);
 
-	const endDate = infoSelectedKey?.selectedSubscription?.endDate;
-	const licenseEndDate = getLicenseKeyEndDatesByLicenseType(infoSelectedKey);
+	const formatDate = (
+		date,
+		formatType = FORMAT_DATE_TYPES.day2DMonthSYearN
+	) => getDateCustomFormat(date, formatType);
 
-	const currentDate = `${getDateCustomFormat(
-		startDate,
-		FORMAT_DATE_TYPES.day2DMonthSYearN
-	)} - ${getDateCustomFormat(
-		licenseEndDate ?? endDate,
-		FORMAT_DATE_TYPES.day2DMonthSYearN
+	const currentDate = `${formatDate(startDate)} - ${formatDate(
+		licenseEndDate ?? endDate
 	)}`;
+	const renewalDates = `${formatDate(startDate)} - ${formatDate(
+		expirationRenewDate
+	)}`;
+
+	const HandleSelectedDates = () => {
+		if (selectedKeyData?.selectedSubscription.perpetual) {
+			return i18n.translate('not-applicable');
+		}
+
+		if (isRenew) {
+			return renewalDates;
+		}
+
+		return currentDate;
+	};
 
 	return (
 		<ClayCard className="mr-5 position-absolute rounded-xl shadow-none">
@@ -31,45 +52,49 @@ const GenerateCardLayout = ({infoSelectedKey}) => {
 						<p className="m-0">{i18n.translate('product')}</p>
 
 						<p className="font-weight-normal">
-							{infoSelectedKey?.productType}
+							{getProperProductNames(selectedKeyData?.productType)}
 						</p>
 
 						<p className="m-0">{i18n.translate('version')}</p>
 
 						<p className="font-weight-normal">
-							{infoSelectedKey?.productVersion}
+							{selectedKeyData?.productVersion}
 						</p>
 
 						<p className="m-0">{i18n.translate('key-type')}</p>
 
 						<p className="font-weight-normal">
-							{infoSelectedKey?.licenseEntryType}{' '}
+							{isRenew
+								? licenseEntryTypeName
+								: selectedKeyData?.licenseEntryType}{' '}
 						</p>
 
 						<p className="m-0">
 							{i18n.translate('start-date-exp-date')}
 						</p>
 
-						<p className="font-weight-normal">{currentDate}</p>
+						<p className="font-weight-normal">
+							<HandleSelectedDates />
+						</p>
 
 						<p className="m-0">
 							{i18n.translate('key-activations-available')}
 						</p>
 
 						<p className="font-weight-normal">
-							{infoSelectedKey?.selectedSubscription?.quantity -
-								infoSelectedKey?.selectedSubscription
+							{selectedKeyData?.selectedSubscription?.quantity -
+								selectedKeyData?.selectedSubscription
 									?.provisionedCount}
 
 							{' of '}
 
-							{infoSelectedKey?.selectedSubscription?.quantity}
+							{selectedKeyData?.selectedSubscription?.quantity}
 						</p>
 
 						<p className="m-0">{i18n.translate('instance-size')}</p>
 
 						<p className="font-weight-normal m-0">
-							{infoSelectedKey?.selectedSubscription
+							{selectedKeyData?.selectedSubscription
 								?.instanceSize || 1}
 						</p>
 					</div>

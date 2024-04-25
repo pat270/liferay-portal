@@ -23,6 +23,10 @@ import com.liferay.source.formatter.SourceFormatterExcludes;
 import com.liferay.source.formatter.SourceFormatterMessage;
 import com.liferay.source.formatter.check.util.JSPSourceUtil;
 import com.liferay.source.formatter.check.util.SourceUtil;
+import com.liferay.source.formatter.parser.JavaClass;
+import com.liferay.source.formatter.parser.JavaClassParser;
+import com.liferay.source.formatter.parser.JavaTerm;
+import com.liferay.source.formatter.parser.JavaVariable;
 import com.liferay.source.formatter.processor.JSPSourceProcessor;
 import com.liferay.source.formatter.processor.JavaSourceProcessor;
 import com.liferay.source.formatter.processor.SourceProcessor;
@@ -374,7 +378,7 @@ public abstract class BaseSourceCheck implements SourceCheck {
 			String baseDirName, String[] excludes, String[] includes)
 		throws IOException {
 
-		return SourceFormatterUtil.scanForFiles(
+		return SourceFormatterUtil.scanForFileNames(
 			baseDirName, excludes, includes, _sourceFormatterExcludes, true);
 	}
 
@@ -605,48 +609,84 @@ public abstract class BaseSourceCheck implements SourceCheck {
 			return methodCall.substring(0, methodCall.indexOf(CharPool.PERIOD));
 		}
 
-		return null;
+		return StringPool.BLANK;
 	}
 
 	protected String getVariableTypeName(
-		String content, String fileContent, String variableName) {
+		String content, JavaTerm javaTerm, String fileContent, String fileName,
+		String variableName) {
 
-		return getVariableTypeName(content, fileContent, variableName, false);
+		return getVariableTypeName(
+			content, javaTerm, fileContent, fileName, variableName, false,
+			false);
 	}
 
 	protected String getVariableTypeName(
-		String content, String fileContent, String variableName,
-		boolean includeArrayOrCollectionTypes) {
+		String content, JavaTerm javaTerm, String fileContent, String fileName,
+		String variableName, boolean includeArrayOrCollectionTypes,
+		boolean includeFullyQualifiedName) {
 
 		if (variableName == null) {
 			return null;
 		}
 
 		String variableTypeName = _getVariableTypeName(
-			content, variableName, includeArrayOrCollectionTypes);
+			content, variableName, includeArrayOrCollectionTypes,
+			includeFullyQualifiedName);
 
 		if ((variableTypeName != null) || content.equals(fileContent)) {
 			return variableTypeName;
 		}
 
-		return _getVariableTypeName(
-			fileContent, variableName, includeArrayOrCollectionTypes);
+		JavaClass javaClass = null;
+
+		try {
+			javaClass = _getJavaClass(javaTerm, fileName, fileContent);
+
+			if (javaClass == null) {
+				return variableTypeName;
+			}
+
+			for (JavaTerm childJavaTerm : javaClass.getChildJavaTerms()) {
+				if (childJavaTerm.isJavaVariable()) {
+					JavaVariable javaVariable = (JavaVariable)childJavaTerm;
+
+					String variableContent = javaVariable.getContent();
+
+					variableTypeName = _getVariableTypeName(
+						variableContent, variableName,
+						includeArrayOrCollectionTypes,
+						includeFullyQualifiedName);
+
+					if (variableTypeName != null) {
+						return variableTypeName;
+					}
+				}
+			}
+		}
+		catch (Exception exception) {
+			return variableTypeName;
+		}
+
+		return variableTypeName;
 	}
 
 	protected boolean hasClassOrVariableName(
-		String className, String content, String fileContent,
+		String className, String content, String fileContent, String fileName,
 		String methodCall) {
 
 		String variable = getVariableName(methodCall);
 
-		if (variable == null) {
+		if (variable.isEmpty()) {
 			return false;
 		}
 
 		String variableTypeName = getVariableTypeName(
-			content, fileContent, variable.trim(), true);
+			content, null, fileContent, fileName, variable.trim(), true, false);
 
-		if (variableTypeName.startsWith(className)) {
+		if ((variableTypeName != null) &&
+			variableTypeName.startsWith(className)) {
+
 			return true;
 		}
 
@@ -801,12 +841,36 @@ public abstract class BaseSourceCheck implements SourceCheck {
 	protected static final String RUN_OUTSIDE_PORTAL_EXCLUDES =
 		"run.outside.portal.excludes";
 
+	private JavaClass _getJavaClass(
+			JavaTerm javaTerm, String fileName, String fileContent)
+		throws Exception {
+
+		if (javaTerm == null) {
+			return JavaClassParser.parseJavaClass(fileName, fileContent);
+		}
+
+		if (javaTerm.isJavaClass()) {
+			return (JavaClass)javaTerm;
+		}
+
+		return javaTerm.getParentJavaClass();
+	}
+
 	private String _getVariableTypeName(
 		String content, String variableName,
-		boolean includeArrayOrCollectionTypes) {
+		boolean includeArrayOrCollectionTypes,
+		boolean includeFullyQualifiedName) {
 
-		Pattern pattern = Pattern.compile(
-			"\\W(\\w+)\\s+" + variableName + "\\s*[;=),]");
+		Pattern pattern = null;
+
+		if (includeFullyQualifiedName) {
+			pattern = Pattern.compile(
+				"\\W((\\w+\\.)*\\w+)\\s+" + variableName + "\\s*[;=),:]");
+		}
+		else {
+			pattern = Pattern.compile(
+				"\\W(\\w+)\\s+" + variableName + "\\s*[;=),:]");
+		}
 
 		Matcher matcher = pattern.matcher(content);
 
@@ -822,7 +886,7 @@ public abstract class BaseSourceCheck implements SourceCheck {
 			return null;
 		}
 
-		pattern = Pattern.compile("[\\]>]\\s+" + variableName + "\\s*[;=),]");
+		pattern = Pattern.compile("[\\]>]\\s+" + variableName + "\\s*[;=),:]");
 
 		matcher = pattern.matcher(content);
 

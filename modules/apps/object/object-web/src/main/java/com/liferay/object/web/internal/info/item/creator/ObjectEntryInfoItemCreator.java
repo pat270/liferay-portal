@@ -5,18 +5,19 @@
 
 package com.liferay.object.web.internal.info.item.creator;
 
-import com.liferay.info.exception.InfoFormException;
 import com.liferay.info.item.InfoItemFieldValues;
 import com.liferay.info.item.creator.InfoItemCreator;
 import com.liferay.info.item.provider.InfoItemFormProvider;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectEntry;
+import com.liferay.object.rest.dto.v1_0.Status;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManagerRegistry;
 import com.liferay.object.scope.ObjectScopeProviderRegistry;
 import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.object.web.internal.info.item.handler.ObjectEntryInfoItemExceptionRequestHandler;
 import com.liferay.object.web.internal.util.ObjectEntryUtil;
+import com.liferay.portal.kernel.exception.InfoFormException;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -46,7 +47,7 @@ public class ObjectEntryInfoItemCreator
 
 	@Override
 	public ObjectEntry createFromInfoItemFieldValues(
-			long groupId, InfoItemFieldValues infoItemFieldValues)
+			long groupId, InfoItemFieldValues infoItemFieldValues, int status)
 		throws InfoFormException {
 
 		try {
@@ -59,6 +60,8 @@ public class ObjectEntryInfoItemCreator
 
 			ThemeDisplay themeDisplay = serviceContext.getThemeDisplay();
 
+			int objectEntryStatus = status;
+
 			com.liferay.object.rest.dto.v1_0.ObjectEntry objectEntry =
 				objectEntryManager.addObjectEntry(
 					new DefaultDTOConverterContext(
@@ -67,11 +70,19 @@ public class ObjectEntryInfoItemCreator
 					_objectDefinition,
 					new com.liferay.object.rest.dto.v1_0.ObjectEntry() {
 						{
-							keywords = serviceContext.getAssetTagNames();
-							properties = ObjectEntryUtil.toProperties(
-								infoItemFieldValues);
-							taxonomyCategoryIds = ArrayUtil.toLongArray(
-								serviceContext.getAssetCategoryIds());
+							setKeywords(serviceContext::getAssetTagNames);
+							setProperties(
+								() -> ObjectEntryUtil.toProperties(
+									infoItemFieldValues));
+							setStatus(
+								() -> new Status() {
+									{
+										setCode(() -> objectEntryStatus);
+									}
+								});
+							setTaxonomyCategoryIds(
+								() -> ArrayUtil.toLongArray(
+									serviceContext.getAssetCategoryIds()));
 						}
 					},
 					ObjectEntryUtil.getScopeKey(

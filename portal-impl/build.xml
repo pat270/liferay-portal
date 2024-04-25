@@ -208,9 +208,10 @@ svn://svn.liferay.com/repos/public/alloy/trunk/sandbox/taglibs.
 		<java
 			classname="com.liferay.portal.tools.service.builder.ServiceBuilder"
 			classpathref="service.builder.classpath"
+			failonerror="true"
 			fork="true"
+			logError="true"
 			newenvironment="true"
-			outputproperty="build-service.output"
 		>
 			<jvmarg if:true="${jvm.debug}" value="${jpda.settings}" />
 			<jvmarg value="-Dfile.encoding=UTF-8" />
@@ -247,15 +248,6 @@ svn://svn.liferay.com/repos/public/alloy/trunk/sandbox/taglibs.
 		</java>
 
 		<delete file="ServiceBuilder.temp" />
-
-		<echo>${build-service.output}</echo>
-
-		<if>
-			<contains string="${build-service.output}" substring="Error" />
-			<then>
-				<fail>Service Builder generated exceptions.</fail>
-			</then>
-		</if>
 
 		<ant dir="../portal-kernel" inheritAll="false" target="compile" />
 	</target>
@@ -334,7 +326,7 @@ svn://svn.liferay.com/repos/public/alloy/trunk/sandbox/taglibs.
 			<arg value="--continue" />
 			<arg unless:true="${build.services.baseline.enabled}" value="--exclude-task" />
 			<arg unless:true="${build.services.baseline.enabled}" value="baseline" />
-			<arg value="-DbuildService.skipReadOnly=${build.services.skip.read.only}" />
+			<arg value="-Dskip.read.only=${build.services.skip.read.only}" />
 		</gradle-execute>
 	</target>
 
@@ -458,6 +450,7 @@ svn://svn.liferay.com/repos/public/alloy/trunk/sandbox/taglibs.
 
 	<target name="format-source-bnd">
 		<antcall target="format-source-files">
+			<param name="skip.check.names" value="BNDBreakingChangeCommitMessageCheck" />
 			<param name="source.file.extensions" value="bnd,gradle,json" />
 		</antcall>
 	</target>
@@ -593,6 +586,15 @@ svn://svn.liferay.com/repos/public/alloy/trunk/sandbox/taglibs.
 								<property name="skip.node.task" value="true" />
 							</then>
 						</if>
+
+						<if>
+							<not>
+								<matches pattern="modules/test/playwright" string="${baseline.current.branch.file.names}" />
+							</not>
+							<then>
+								<property name="skip.playwright.task" value="true" />
+							</then>
+						</if>
 					</then>
 					<else>
 						<if>
@@ -663,6 +665,7 @@ svn://svn.liferay.com/repos/public/alloy/trunk/sandbox/taglibs.
 					<arg value="max.line.length=${source.formatter.max.line.length}" />
 					<arg value="processor.thread.count=${source.formatter.processor.thread.count}" />
 					<arg value="show.debug.information=${source.formatter.show.debug.information}" />
+					<arg value="skip.check.names=${skip.check.names}" />
 					<arg value="source.auto.fix=${source.auto.fix}" />
 					<arg value="source.base.dir=${source.base.dir}" />
 					<arg value="source.check.category.names=${source.check.category.names}" />
@@ -706,11 +709,29 @@ svn://svn.liferay.com/repos/public/alloy/trunk/sandbox/taglibs.
 								<gradle-execute dir="${project.dir}/modules" task=":portalYarnCheckFormat">
 									<env key="LIFERAY_NPM_SCRIPTS_WORKING_BRANCH_NAME" value="${git.working.branch.name}" />
 								</gradle-execute>
+
+								<if>
+									<not>
+										<isset property="skip.playwright.task" />
+									</not>
+									<then>
+										<gradle-execute dir="${project.dir}/modules/test/playwright" task="packageRunCheckFormat" />
+									</then>
+								</if>
 							</then>
 							<else>
 								<gradle-execute dir="${project.dir}/modules" task=":portalYarnFormat">
 									<env key="LIFERAY_NPM_SCRIPTS_WORKING_BRANCH_NAME" value="${git.working.branch.name}" />
 								</gradle-execute>
+
+								<if>
+									<not>
+										<isset property="skip.playwright.task" />
+									</not>
+									<then>
+										<gradle-execute dir="${project.dir}/modules/test/playwright" task="packageRunFormat" />
+									</then>
+								</if>
 							</else>
 						</if>
 					</then>
@@ -801,7 +822,7 @@ svn://svn.liferay.com/repos/public/alloy/trunk/sandbox/taglibs.
 		>
 			<fileset
 				dir="${project.dir}/sql"
-				includes="portal-data-common.sql,portal-data-counter.sql,portal-tables.sql,indexes.properties,indexes.sql,sequences.sql,update-*.sql"
+				includes="portal-data-counter.sql,portal-tables.sql,indexes.properties,indexes.sql,sequences.sql,update-*.sql"
 			/>
 		</copy>
 

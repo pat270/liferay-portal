@@ -16,7 +16,7 @@ LayoutType selLayoutType = selLayout.getLayoutType();
 
 String friendlyURLBase = StringPool.BLANK;
 
-if (!group.isLayoutPrototype() && selLayoutType.isURLFriendliable() && !layoutsAdminDisplayContext.isDraft() && !selLayout.isSystem()) {
+if (!group.isLayoutPrototype() && selLayoutType.isURLFriendliable() && !layoutsAdminDisplayContext.isDraft() && (!selLayout.isSystem() || selLayout.isTypeAssetDisplay() || selLayout.isTypeUtility())) {
 	friendlyURLBase = layoutsAdminDisplayContext.getFriendlyURLBase();
 }
 %>
@@ -31,6 +31,7 @@ if (!group.isLayoutPrototype() && selLayoutType.isURLFriendliable() && !layoutsA
 <liferay-friendly-url:input
 	className="<%= Layout.class.getName() %>"
 	classPK="<%= selLayout.getPlid() %>"
+	helpMessage='<%= selLayout.isTypeAssetDisplay() ? LanguageUtil.get(request, "this-friendly-url-will-only-be-used-when-specifically-mapping-this-display-page-template-from-the-page-editor") : StringPool.BLANK %>'
 	inputAddon="<%= friendlyURLBase %>"
 	name="friendlyURL"
 />
@@ -82,6 +83,6 @@ if (!group.isLayoutPrototype() && selLayoutType.isURLFriendliable() && !layoutsA
 				"namespace", liferayPortletResponse.getNamespace()
 			).build()
 		%>'
-		module="js/Advanced"
+		module="{Advanced} from layout-admin-web"
 	/>
 </c:if>

@@ -157,11 +157,22 @@ public class FriendlyURLEntryStagedModelRepository
 			FriendlyURLEntry friendlyURLEntry)
 		throws PortalException {
 
+		FriendlyURLEntry existingFriendlyURLEntry =
+			fetchStagedModelByUuidAndGroupId(
+				friendlyURLEntry.getUuid(),
+				portletDataContext.getScopeGroupId());
+
+		if (existingFriendlyURLEntry == null) {
+			return null;
+		}
+
 		return _friendlyURLEntryLocalService.updateFriendlyURLEntry(
-			friendlyURLEntry.getFriendlyURLEntryId(),
-			friendlyURLEntry.getClassNameId(), friendlyURLEntry.getClassPK(),
-			friendlyURLEntry.getDefaultLanguageId(),
-			_getLocalizationMap(portletDataContext, friendlyURLEntry));
+			existingFriendlyURLEntry.getFriendlyURLEntryId(),
+			existingFriendlyURLEntry.getClassNameId(),
+			existingFriendlyURLEntry.getClassPK(),
+			existingFriendlyURLEntry.getDefaultLanguageId(),
+			_getLocalizationMap(portletDataContext, friendlyURLEntry),
+			portletDataContext.createServiceContext(friendlyURLEntry));
 	}
 
 	private Map<String, String> _getLocalizationMap(

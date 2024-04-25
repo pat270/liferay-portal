@@ -6,6 +6,8 @@
 package com.liferay.journal.internal.validation;
 
 import com.liferay.depot.group.provider.SiteConnectedGroupGroupProvider;
+import com.liferay.document.library.kernel.exception.NoSuchFileEntryException;
+import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.dynamic.data.mapping.exception.NoSuchTemplateException;
 import com.liferay.dynamic.data.mapping.exception.StorageFieldNameException;
 import com.liferay.dynamic.data.mapping.exception.StorageFieldRequiredException;
@@ -402,10 +404,11 @@ public class JournalArticleModelValidator
 
 		try {
 			validateReferences(
-				article.getGroupId(), article.getDDMStructureId(),
-				ddmTemplateKey, article.getLayoutUuid(), smallImage,
-				smallImageURL, smallImageBytes, article.getSmallImageId(),
-				content);
+				article.getGroupId(), article.getFolderId(),
+				article.getDDMStructureId(), ddmTemplateKey,
+				article.getLayoutUuid(), smallImage, smallImageURL,
+				smallImageBytes, article.getSmallImageId(),
+				article.getSmallImageSource(), content);
 		}
 		catch (ExportImportContentValidationException
 					exportImportContentValidationException) {
@@ -436,14 +439,17 @@ public class JournalArticleModelValidator
 	}
 
 	public void validateReferences(
-			long groupId, long ddmStructureId, String ddmTemplateKey,
-			String layoutUuid, boolean smallImage, String smallImageURL,
-			byte[] smallImageBytes, long smallImageId, String content)
+			long groupId, long folderId, long ddmStructureId,
+			String ddmTemplateKey, String layoutUuid, boolean smallImage,
+			String smallImageURL, byte[] smallImageBytes, long smallImageId,
+			int smallImageSource, String content)
 		throws PortalException {
 
-		if (ddmStructureId > 0) {
-			_ddmStructureLocalService.getDDMStructure(ddmStructureId);
+		if (folderId != 0) {
+			_journalFolderLocalService.getFolder(folderId);
 		}
+
+		_ddmStructureLocalService.getDDMStructure(ddmStructureId);
 
 		if (Validator.isNotNull(ddmTemplateKey)) {
 			DDMTemplate ddmTemplate = _ddmTemplateLocalService.fetchTemplate(
@@ -458,7 +464,9 @@ public class JournalArticleModelValidator
 		}
 
 		if (smallImage && Validator.isNull(smallImageURL) &&
-			ArrayUtil.isEmpty(smallImageBytes)) {
+			ArrayUtil.isEmpty(smallImageBytes) &&
+			(smallImageSource ==
+				JournalArticleConstants.SMALL_IMAGE_SOURCE_USER_COMPUTER)) {
 
 			Image image = _imageLocalService.fetchImage(smallImageId);
 
@@ -469,6 +477,20 @@ public class JournalArticleModelValidator
 			if ((image == null) || (smallImageBytes == null)) {
 				throw new NoSuchImageException(
 					"Small image ID " + smallImageId);
+			}
+		}
+
+		if (smallImage &&
+			(smallImageSource ==
+				JournalArticleConstants.
+					SMALL_IMAGE_SOURCE_DOCUMENTS_AND_MEDIA)) {
+
+			try {
+				_dlAppLocalService.getFileEntry(smallImageId);
+			}
+			catch (NoSuchFileEntryException noSuchFileEntryException) {
+				throw new NoSuchImageException(
+					"Small image ID " + smallImageId, noSuchFileEntryException);
 			}
 		}
 
@@ -521,6 +543,9 @@ public class JournalArticleModelValidator
 
 	@Reference
 	private DDMTemplateLocalService _ddmTemplateLocalService;
+
+	@Reference
+	private DLAppLocalService _dlAppLocalService;
 
 	@Reference
 	private ImageLocalService _imageLocalService;

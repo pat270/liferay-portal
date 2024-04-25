@@ -94,7 +94,7 @@ exports[`Channels List should render 1`] = `
                       role="presentation"
                     >
                       <use
-                        xlink:href="#order-arrow-descending"
+                        href="#order-arrow-descending"
                       />
                     </svg>
                   </a>
@@ -128,7 +128,7 @@ exports[`Channels List should render 1`] = `
                           role="presentation"
                         >
                           <use
-                            xlink:href="#search"
+                            href="#search"
                           />
                         </svg>
                       </button>
@@ -160,7 +160,7 @@ exports[`Channels List should render 1`] = `
           class="table-responsive table-root flex-grow-1"
         >
           <table
-            class="table table-autofit table-hover table-heading-nowrap table-nowrap"
+            class="table table-autofit table-hover show-quick-actions-on-hover table-heading-nowrap table-nowrap"
           >
             <thead>
               <tr>
@@ -180,7 +180,17 @@ exports[`Channels List should render 1`] = `
                   </a>
                 </th>
                 <th
-                  class="table-head-title"
+                  class="table-head-title text-right"
+                >
+                  Sites
+                </th>
+                <th
+                  class="table-head-title text-right"
+                >
+                  Channels
+                </th>
+                <th
+                  class="table-head-title text-right"
                 >
                   Property ID
                 </th>
@@ -209,12 +219,13 @@ exports[`Channels List should render 1`] = `
                         role="presentation"
                       >
                         <use
-                          xlink:href="#order-arrow-down"
+                          href="#order-arrow-down"
                         />
                       </svg>
                     </span>
                   </a>
                 </th>
+                <th />
               </tr>
             </thead>
             <tbody>
@@ -256,7 +267,19 @@ exports[`Channels List should render 1`] = `
                     </a>
                   </div>
                 </td>
-                <td>
+                <td
+                  class="text-right"
+                >
+                  -
+                </td>
+                <td
+                  class="text-right"
+                >
+                  -
+                </td>
+                <td
+                  class="text-right"
+                >
                   0
                 </td>
                 <td>
@@ -264,6 +287,69 @@ exports[`Channels List should render 1`] = `
                 </td>
                 <td>
                   Feb 14, 2020
+                </td>
+                <td
+                  class="row-actions"
+                >
+                  <span>
+                    <div
+                      class="quick-action-menu"
+                    >
+                      <button
+                        aria-label="Clear Data"
+                        class="button-root component-action quick-action-item btn btn-unstyled"
+                        data-tooltip="true"
+                        title="Clear Data"
+                        type="button"
+                      >
+                        <svg
+                          class="lexicon-icon lexicon-icon-magic icon-root"
+                          role="presentation"
+                        >
+                          <use
+                            href="#magic"
+                          />
+                        </svg>
+                      </button>
+                      <button
+                        aria-label="Delete"
+                        class="button-root component-action quick-action-item btn btn-unstyled"
+                        data-tooltip="true"
+                        title="Delete"
+                        type="button"
+                      >
+                        <svg
+                          class="lexicon-icon lexicon-icon-trash icon-root"
+                          role="presentation"
+                        >
+                          <use
+                            href="#trash"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                    <div
+                      class="dropdown dropdown-action"
+                    >
+                      <button
+                        aria-controls="clay-dropdown-menu-1"
+                        aria-expanded="false"
+                        aria-haspopup="true"
+                        aria-label="Menu"
+                        class="dropdown-toggle component-action btn btn-unstyled"
+                        type="button"
+                      >
+                        <svg
+                          class="lexicon-icon lexicon-icon-ellipsis-v"
+                          role="presentation"
+                        >
+                          <use
+                            href="#ellipsis-v"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </span>
                 </td>
               </tr>
             </tbody>
@@ -279,7 +365,7 @@ exports[`Channels List should render 1`] = `
               class="dropdown dropdown-root pagination-items-per-page"
             >
               <button
-                aria-controls="clay-dropdown-menu-1"
+                aria-controls="clay-dropdown-menu-2"
                 aria-expanded="false"
                 aria-haspopup="true"
                 class="dropdown-toggle button-root btn btn-sm btn-secondary"
@@ -291,7 +377,7 @@ exports[`Channels List should render 1`] = `
                   role="presentation"
                 >
                   <use
-                    xlink:href="#caret-bottom"
+                    href="#caret-bottom"
                   />
                 </svg>
               </button>
@@ -317,7 +403,7 @@ exports[`Channels List should render 1`] = `
                     role="presentation"
                   >
                     <use
-                      xlink:href="#angle-left-small"
+                      href="#angle-left-small"
                     />
                   </svg>
                 </a>
@@ -345,7 +431,7 @@ exports[`Channels List should render 1`] = `
                     role="presentation"
                   >
                     <use
-                      xlink:href="#angle-right-small"
+                      href="#angle-right-small"
                     />
                   </svg>
                 </a>

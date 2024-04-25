@@ -2,7 +2,7 @@
 definition {
 
 	property app.server.bundles.size = "1";
-	property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=";
+	property custom.properties = "auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}tunneling.servlet.shared.secret=1234567890123456";
 	property databases.size = "1";
 	property minimum.slave.ram = "24";
 	property portal.release = "true";
@@ -58,10 +58,11 @@ definition {
 	}
 
 	@description = "This ensures that image in basic article in depot can be deleted and republished in staging site when enabling remote staging."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanDeleteWCInlineImage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
@@ -184,6 +185,7 @@ definition {
 	@refactordone
 	test CanEditFriendlyURL {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		DepotNavigator.openDepotWebContentAdmin(depotName = "Test Depot Name");
 
@@ -313,6 +315,7 @@ definition {
 	test CanEditWCInlineImage {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
@@ -418,10 +421,11 @@ definition {
 	}
 
 	@description = "This ensures that an article using a structure stored in depot can be deleted and republished in remote staging site."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanPublishDeletedWCCustomization {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		DepotNavigator.openDepotAdmin();
 
@@ -509,10 +513,11 @@ definition {
 	}
 
 	@description = "This ensures that an article using a structure stored in depot can be edited and republished in remote staging site."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanPublishEditedWCCustomization {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		DepotNavigator.openDepotAdmin();
 
@@ -628,6 +633,7 @@ definition {
 	@refactordone
 	test CanPublishWCFolder {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		DepotNavigator.openDepotWebContentAdmin(depotName = "Test Depot Name");
 
@@ -703,6 +709,7 @@ definition {
 	@refactordone
 	test CanPublishWCWithCategory {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		DepotNavigator.openDepotCategoriesAdmin(depotName = "Test Depot Name");
 
@@ -772,6 +779,7 @@ definition {
 	@refactordone
 	test CanPublishWCWithEmbeddedVideo {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		DepotNavigator.openDepotWebContentAdmin(depotName = "Test Depot Name");
 
@@ -803,6 +811,8 @@ definition {
 		WebContentDisplayPortlet.selectWebContent(
 			depotName = "Test Depot Name",
 			webContentTitle = "WC WebContent Title");
+
+		Refresh();
 
 		Navigator.openSitePage(
 			pageName = "Test Page",

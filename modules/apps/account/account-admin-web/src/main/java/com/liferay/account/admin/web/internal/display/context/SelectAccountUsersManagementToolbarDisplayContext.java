@@ -13,22 +13,24 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemListBuilder;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -50,6 +52,23 @@ public class SelectAccountUsersManagementToolbarDisplayContext
 			searchContainer);
 
 		_selectAccountUsersDisplayContext = selectAccountUsersDisplayContext;
+	}
+
+	@Override
+	public Map<String, Object> getAdditionalProps() {
+		return HashMapBuilder.<String, Object>put(
+			"addAccountEntryUserURL",
+			PortletURLBuilder.createRenderURL(
+				liferayPortletResponse
+			).setMVCRenderCommandName(
+				"/account_admin/add_account_user"
+			).setRedirect(
+				ParamUtil.getString(httpServletRequest, "redirect")
+			).setParameter(
+				"accountEntryId",
+				_selectAccountUsersDisplayContext.getAccountEntryId()
+			).buildString()
+		).build();
 	}
 
 	@Override
@@ -122,6 +141,11 @@ public class SelectAccountUsersManagementToolbarDisplayContext
 	@Override
 	public Boolean isSelectable() {
 		return !_selectAccountUsersDisplayContext.isSingleSelect();
+	}
+
+	@Override
+	public Boolean isShowCreationMenu() {
+		return _selectAccountUsersDisplayContext.isShowCreateButton();
 	}
 
 	@Override

@@ -14,7 +14,6 @@ CPDefinition cpDefinition = cpInstanceDisplayContext.getCPDefinition();
 CPInstance cpInstance = cpInstanceDisplayContext.getCPInstance();
 long cpInstanceId = cpInstanceDisplayContext.getCPInstanceId();
 List<CPDefinitionOptionRel> cpDefinitionOptionRels = cpInstanceDisplayContext.getCPDefinitionOptionRels();
-String commerceCurrencyCode = cpInstanceDisplayContext.getCommerceCurrencyCode();
 
 boolean neverExpire = ParamUtil.getBoolean(request, "neverExpire", true);
 
@@ -92,7 +91,7 @@ boolean discontinued = BeanParamUtil.getBoolean(cpInstance, request, "discontinu
 								StringJoiner stringJoiner = new StringJoiner(StringPool.COMMA);
 							%>
 
-								<h6 class="text-default">
+								<div class="h6 text-default">
 									<strong><%= HtmlUtil.escape(cpDefinitionOptionRel.getName(languageId)) %></strong>
 
 									<%
@@ -102,7 +101,7 @@ boolean discontinued = BeanParamUtil.getBoolean(cpInstance, request, "discontinu
 									%>
 
 									<%= HtmlUtil.escape(stringJoiner.toString()) %>
-								</h6>
+								</div>
 
 							<%
 							}
@@ -110,57 +109,17 @@ boolean discontinued = BeanParamUtil.getBoolean(cpInstance, request, "discontinu
 
 						</c:when>
 						<c:otherwise>
-							<%= cpInstanceDisplayContext.renderOptions(PipingServletResponseFactory.createPipingServletResponse(pageContext)) %>
+							<div id="<portlet:namespace />optionsContainer">
 
-							<aui:input name="ddmFormValues" type="hidden" />
+								<%
+								cpInstanceDisplayContext.renderOptions(PipingServletResponseFactory.createPipingServletResponse(pageContext));
+								%>
+
+								<aui:input name="cpInstanceOptions" type="hidden" />
+							</div>
 						</c:otherwise>
 					</c:choose>
 				</c:if>
-			</div>
-		</div>
-	</commerce-ui:panel>
-
-	<commerce-ui:panel
-		title='<%= LanguageUtil.get(request, "pricing") %>'
-	>
-
-		<%
-		CommercePriceEntry commercePriceEntry = cpInstanceDisplayContext.getCommercePriceEntry(cpInstance);
-
-		boolean priceOnApplication = (commercePriceEntry != null) && commercePriceEntry.isPriceOnApplication();
-		%>
-
-		<c:if test='<%= FeatureFlagManagerUtil.isEnabled("COMMERCE-11028") %>'>
-			<div class="row">
-				<div class="col-8">
-					<aui:input checked="<%= priceOnApplication %>" helpMessage="do-not-set-a-base-price-for-this-product" inlineLabel="right" label="<%= CommercePriceConstants.PRICE_VALUE_PRICE_ON_APPLICATION %>" name="priceOnApplication" type="toggle-switch" />
-				</div>
-			</div>
-		</c:if>
-
-		<div class="row">
-			<div class="col-4">
-				<aui:input disabled="<%= priceOnApplication %>" label="base-price" name="price" suffix="<%= HtmlUtil.escape(commerceCurrencyCode) %>" type="text" value="<%= cpInstanceDisplayContext.getPrice() %>">
-					<aui:validator name="min"><%= CommercePriceConstants.PRICE_VALUE_MIN %></aui:validator>
-					<aui:validator name="max"><%= CommercePriceConstants.PRICE_VALUE_MAX %></aui:validator>
-					<aui:validator name="number" />
-				</aui:input>
-			</div>
-
-			<div class="col-4">
-				<aui:input disabled="<%= priceOnApplication %>" label="promotion-price" name="promoPrice" suffix="<%= HtmlUtil.escape(commerceCurrencyCode) %>" type="text" value="<%= cpInstanceDisplayContext.getPromoPrice() %>">
-					<aui:validator name="min"><%= CommercePriceConstants.PRICE_VALUE_MIN %></aui:validator>
-					<aui:validator name="max"><%= CommercePriceConstants.PRICE_VALUE_MAX %></aui:validator>
-					<aui:validator name="number" />
-				</aui:input>
-			</div>
-
-			<div class="col-4">
-				<aui:input disabled="<%= priceOnApplication %>" name="cost" suffix="<%= HtmlUtil.escape(commerceCurrencyCode) %>" type="text" value="<%= (cpInstance == null) ? StringPool.BLANK : cpInstanceDisplayContext.round(cpInstance.getCost()) %>">
-					<aui:validator name="min"><%= CommercePriceConstants.PRICE_VALUE_MIN %></aui:validator>
-					<aui:validator name="max"><%= CommercePriceConstants.PRICE_VALUE_MAX %></aui:validator>
-					<aui:validator name="number" />
-				</aui:input>
 			</div>
 		</div>
 	</commerce-ui:panel>
@@ -299,8 +258,6 @@ boolean discontinued = BeanParamUtil.getBoolean(cpInstance, request, "discontinu
 <liferay-frontend:component
 	context='<%=
 		HashMapBuilder.<String, Object>put(
-			"cpDefinitionId", cpDefinition.getCPDefinitionId()
-		).put(
 			"initialLabel", cpInstanceDisplayContext.getReplacementCPInstanceLabel()
 		).put(
 			"initialValue", cpInstanceDisplayContext.getReplacementCPInstanceId()
@@ -308,5 +265,5 @@ boolean discontinued = BeanParamUtil.getBoolean(cpInstance, request, "discontinu
 			"WORKFLOW_ACTION_PUBLISH", WorkflowConstants.ACTION_PUBLISH
 		).build()
 	%>'
-	module="js/InstanceDetails"
+	module="{InstanceDetails} from commerce-product-definitions-web"
 />

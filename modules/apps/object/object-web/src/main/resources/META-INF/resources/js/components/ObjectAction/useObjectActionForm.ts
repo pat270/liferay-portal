@@ -5,7 +5,7 @@
 
 import {
 	API,
-	REQUIRED_MSG,
+	constantsUtils,
 	invalidateRequired,
 	openToast,
 	useForm,
@@ -13,7 +13,7 @@ import {
 import {useEffect, useMemo, useState} from 'react';
 
 import {defaultLanguageId} from '../../utils/constants';
-import {ActionError} from './index';
+import {ActionError} from './ObjectActionContainer';
 
 interface UseObjectActionFormProps {
 	initialValues: Partial<ObjectAction>;
@@ -40,25 +40,25 @@ export function useObjectActionForm({
 		const errors: ActionError = {};
 
 		if (invalidateRequired(values.label?.[defaultLanguageId])) {
-			errors.label = REQUIRED_MSG;
+			errors.label = constantsUtils.REQUIRED_MSG;
 		}
 
 		if (invalidateRequired(values.name)) {
-			errors.name = REQUIRED_MSG;
+			errors.name = constantsUtils.REQUIRED_MSG;
 		}
 
 		if (invalidateRequired(values.objectActionTriggerKey)) {
-			errors.objectActionTriggerKey = REQUIRED_MSG;
+			errors.objectActionTriggerKey = constantsUtils.REQUIRED_MSG;
 		}
 
 		if (invalidateRequired(values.objectActionExecutorKey)) {
-			errors.objectActionExecutorKey = REQUIRED_MSG;
+			errors.objectActionExecutorKey = constantsUtils.REQUIRED_MSG;
 		}
 		else if (
 			values.objectActionExecutorKey === 'webhook' &&
 			invalidateRequired(values.parameters?.url)
 		) {
-			errors.url = REQUIRED_MSG;
+			errors.url = constantsUtils.REQUIRED_MSG;
 		}
 		else if (
 			values.objectActionExecutorKey === 'groovy' &&
@@ -71,7 +71,8 @@ export function useObjectActionForm({
 		}
 		else if (values.objectActionExecutorKey === 'add-object-entry') {
 			if (!values.parameters?.objectDefinitionExternalReferenceCode) {
-				errors.objectDefinitionExternalReferenceCode = REQUIRED_MSG;
+				errors.objectDefinitionExternalReferenceCode =
+					constantsUtils.REQUIRED_MSG;
 			}
 		}
 
@@ -90,7 +91,8 @@ export function useObjectActionForm({
 						if (!errors.predefinedValues) {
 							errors.predefinedValues = {} as any;
 						}
-						errors.predefinedValues![name] = REQUIRED_MSG;
+						errors.predefinedValues![name] =
+							constantsUtils.REQUIRED_MSG;
 					}
 				});
 			}
@@ -100,19 +102,19 @@ export function useObjectActionForm({
 			values.objectActionTriggerKey === 'standalone' &&
 			invalidateRequired(values.errorMessage?.[defaultLanguageId])
 		) {
-			errors.errorMessage = REQUIRED_MSG;
+			errors.errorMessage = constantsUtils.REQUIRED_MSG;
 		}
 
 		if (
 			typeof values.conditionExpression === 'string' &&
 			invalidateRequired(values.conditionExpression)
 		) {
-			errors.conditionExpression = REQUIRED_MSG;
+			errors.conditionExpression = constantsUtils.REQUIRED_MSG;
 		}
 
 		if (Object.keys(errors).length) {
 			openToast({
-				message: REQUIRED_MSG,
+				message: constantsUtils.REQUIRED_MSG,
 				type: 'danger',
 			});
 		}
@@ -132,7 +134,7 @@ export function useObjectActionForm({
 	useEffect(() => {
 		if (values.parameters?.objectDefinitionExternalReferenceCode) {
 			const makeFetch = async () => {
-				const response = await API.getObjectFieldsByExternalReferenceCode(
+				const response = await API.getObjectDefinitionByExternalReferenceCodeObjectFields(
 					values.parameters
 						?.objectDefinitionExternalReferenceCode as string
 				);

@@ -6,9 +6,13 @@
 import {FormError} from '@liferay/object-js-components-web';
 import React from 'react';
 interface ObjectRelationshipFormBaseProps {
+	baseResourceURL: string;
+	className?: string;
 	errors: FormError<ObjectRelationship>;
 	handleChange: React.ChangeEventHandler<HTMLInputElement>;
-	objectRelationshipTypes?: string[];
+	hasDefinedObjectDefinitionTarget?: boolean;
+	objectDefinitionExternalReferenceCode1: string;
+	objectDefinitionExternalReferenceCode2?: string;
 	readonly?: boolean;
 	setValues: (values: Partial<ObjectRelationship>) => void;
 	values: Partial<ObjectRelationship>;
@@ -18,11 +22,18 @@ interface UseObjectRelationshipFormProps {
 	onSubmit: (relationship: ObjectRelationship) => void;
 	parameterRequired: boolean;
 }
-export declare enum ObjectRelationshipType {
-	MANY_TO_MANY = 'manyToMany',
-	ONE_TO_MANY = 'oneToMany',
-	ONE_TO_ONE = 'oneToOne',
-}
+export declare type ObjectRelationshipType =
+	| 'manyToMany'
+	| 'oneToMany'
+	| 'oneToOne';
+declare type ObjectRelationshipTypeInfo = {
+	description: string;
+	label: string;
+	objectInputLabel1: string;
+	objectInputLabel2: string;
+	value: ObjectRelationshipType;
+};
+export declare const OBJECT_RELATIONSHIP_TYPES: ObjectRelationshipTypeInfo[];
 export declare function useObjectRelationshipForm({
 	initialValues,
 	onSubmit,
@@ -31,13 +42,20 @@ export declare function useObjectRelationshipForm({
 	errors: FormError<ObjectRelationship>;
 	handleChange: React.ChangeEventHandler<HTMLInputElement>;
 	handleSubmit: React.FormEventHandler<HTMLFormElement>;
+	handleValidate: (
+		editedValues?: Partial<ObjectRelationship> | undefined
+	) => FormError<ObjectRelationship>;
 	setValues: (values: Partial<ObjectRelationship>) => void;
 	values: Partial<ObjectRelationship>;
 };
 export declare function ObjectRelationshipFormBase({
+	baseResourceURL,
+	className,
 	errors,
 	handleChange,
-	objectRelationshipTypes,
+	hasDefinedObjectDefinitionTarget,
+	objectDefinitionExternalReferenceCode1,
+	objectDefinitionExternalReferenceCode2,
 	readonly,
 	setValues,
 	values,

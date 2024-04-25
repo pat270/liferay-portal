@@ -8,6 +8,7 @@ package com.liferay.notification.model;
 import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.exception.LocaleException;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.ExternalReferenceCodeModel;
 import com.liferay.portal.kernel.model.LocalizedModel;
 import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
@@ -32,8 +33,8 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface NotificationTemplateModel
-	extends BaseModel<NotificationTemplate>, LocalizedModel, MVCCModel,
-			ShardedModel, StagedAuditedModel {
+	extends BaseModel<NotificationTemplate>, ExternalReferenceCodeModel,
+			LocalizedModel, MVCCModel, ShardedModel, StagedAuditedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -94,6 +95,7 @@ public interface NotificationTemplateModel
 	 * @return the external reference code of this notification template
 	 */
 	@AutoEscape
+	@Override
 	public String getExternalReferenceCode();
 
 	/**
@@ -101,6 +103,7 @@ public interface NotificationTemplateModel
 	 *
 	 * @param externalReferenceCode the external reference code of this notification template
 	 */
+	@Override
 	public void setExternalReferenceCode(String externalReferenceCode);
 
 	/**
@@ -570,6 +573,27 @@ public interface NotificationTemplateModel
 	 */
 	public void setSubjectMap(
 		Map<Locale, String> subjectMap, Locale defaultLocale);
+
+	/**
+	 * Returns the system of this notification template.
+	 *
+	 * @return the system of this notification template
+	 */
+	public boolean getSystem();
+
+	/**
+	 * Returns <code>true</code> if this notification template is system.
+	 *
+	 * @return <code>true</code> if this notification template is system; <code>false</code> otherwise
+	 */
+	public boolean isSystem();
+
+	/**
+	 * Sets whether this notification template is system.
+	 *
+	 * @param system the system of this notification template
+	 */
+	public void setSystem(boolean system);
 
 	/**
 	 * Returns the type of this notification template.

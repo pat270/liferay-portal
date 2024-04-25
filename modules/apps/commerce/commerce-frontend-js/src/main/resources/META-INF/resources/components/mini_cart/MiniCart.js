@@ -55,6 +55,7 @@ function MiniCart({
 }) {
 	const [isOpen, setIsOpen] = useState(!toggleable);
 	const [isUpdating, setIsUpdating] = useState(false);
+	const [editedItem, setEditedItem] = useState(null);
 	const [actionURLs, setActionURLs] = useState(cartActionURLs);
 	const [CartViews, setCartViews] = useState({});
 	const [cartState, setCartState] = useState({
@@ -64,8 +65,16 @@ function MiniCart({
 		summary: {itemsQuantity},
 	});
 
-	const closeCart = () => setIsOpen(false);
+	const closeCart = () => {
+		setIsOpen(false);
+
+		if (editedItem) {
+			setEditedItem(null);
+		}
+	};
 	const openCart = () => setIsOpen(true);
+
+	const [replacementSKUList, setReplacementSKUList] = useState([]);
 
 	const resetCartState = useCallback(
 		({accountId = 0}) =>
@@ -118,6 +127,22 @@ function MiniCart({
 		[onAddToCart]
 	);
 
+	const updateReplacedSKUList = useCallback(
+		() =>
+			cartState.cartItems
+				? setReplacementSKUList(
+						cartState.cartItems.filter(
+							({replacedSku: replacedSKU}) => Boolean(replacedSKU)
+						)
+				  )
+				: null,
+		[cartState.cartItems]
+	);
+
+	useEffect(() => {
+		updateReplacedSKUList();
+	}, [updateReplacedSKUList]);
+
 	useEffect(() => {
 		resolveCartViews(cartViews).then((views) => setCartViews(views));
 	}, [cartViews]);
@@ -153,14 +178,18 @@ function MiniCart({
 				closeCart,
 				displayDiscountLevels,
 				displayTotalItemsQuantity,
+				editedItem,
 				isOpen,
 				isUpdating,
 				labels: {...DEFAULT_LABELS, ...labels},
 				openCart,
 				productURLSeparator,
+				replacementSKUList,
 				requestQuoteEnabled,
 				setCartState,
+				setEditedItem,
 				setIsUpdating,
+				setReplacementSKUList,
 				summaryDataMapper,
 				toggleable,
 				updateCartModel,
@@ -177,7 +206,7 @@ function MiniCart({
 						<>
 							<div
 								className="mini-cart-overlay"
-								onClick={() => setIsOpen(false)}
+								onClick={() => closeCart()}
 							/>
 
 							<CartViews.Opener />

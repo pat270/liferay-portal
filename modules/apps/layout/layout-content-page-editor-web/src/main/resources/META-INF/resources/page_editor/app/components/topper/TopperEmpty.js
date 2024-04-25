@@ -57,19 +57,23 @@ function TopperEmpty({children, className, item}) {
 			<>
 				{React.cloneElement(child, {
 					...child.props,
-					className: classNames(child.props.className, className, {
-						'drag-over-bottom':
-							isValidDrop &&
-							dropTargetPosition === TARGET_POSITIONS.BOTTOM,
-						'drag-over-middle':
-							isValidDrop &&
-							dropTargetPosition === TARGET_POSITIONS.MIDDLE,
-						'drag-over-top':
-							isValidDrop &&
-							dropTargetPosition === TARGET_POSITIONS.TOP,
-						'drop-container': dropContainerId === item.itemId,
-						'page-editor__topper': true,
-					}),
+					className: classNames(
+						child.props.className,
+						className,
+						'page-editor__topper',
+						{
+							'drag-over-bottom':
+								isValidDrop &&
+								dropTargetPosition === TARGET_POSITIONS.BOTTOM,
+							'drag-over-middle':
+								isValidDrop &&
+								dropTargetPosition === TARGET_POSITIONS.MIDDLE,
+							'drag-over-top':
+								isValidDrop &&
+								dropTargetPosition === TARGET_POSITIONS.TOP,
+							'drop-container': dropContainerId === item.itemId,
+						}
+					),
 					ref: (node) => {
 						containerRef.current = node;
 						targetRef(node);

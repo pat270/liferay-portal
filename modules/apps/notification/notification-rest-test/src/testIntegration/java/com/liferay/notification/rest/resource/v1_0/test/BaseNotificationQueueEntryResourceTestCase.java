@@ -28,8 +28,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -38,6 +36,7 @@ import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.search.test.util.SearchTestRule;
@@ -63,8 +62,6 @@ import java.util.Set;
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-
-import org.apache.commons.lang.time.DateUtils;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -355,11 +352,12 @@ public abstract class BaseNotificationQueueEntryResourceTestCase {
 	public void testGetNotificationQueueEntriesPageWithPagination()
 		throws Exception {
 
-		Page<NotificationQueueEntry> totalPage =
+		Page<NotificationQueueEntry> notificationQueueEntryPage =
 			notificationQueueEntryResource.getNotificationQueueEntriesPage(
 				null, null, null, null);
 
-		int totalCount = GetterUtil.getInteger(totalPage.getTotalCount());
+		int totalCount = GetterUtil.getInteger(
+			notificationQueueEntryPage.getTotalCount());
 
 		NotificationQueueEntry notificationQueueEntry1 =
 			testGetNotificationQueueEntriesPage_addNotificationQueueEntry(
@@ -373,43 +371,88 @@ public abstract class BaseNotificationQueueEntryResourceTestCase {
 			testGetNotificationQueueEntriesPage_addNotificationQueueEntry(
 				randomNotificationQueueEntry());
 
-		Page<NotificationQueueEntry> page1 =
-			notificationQueueEntryResource.getNotificationQueueEntriesPage(
-				null, null, Pagination.of(1, totalCount + 2), null);
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<NotificationQueueEntry> notificationQueueEntries1 =
-			(List<NotificationQueueEntry>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			notificationQueueEntries1.toString(), totalCount + 2,
-			notificationQueueEntries1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<NotificationQueueEntry> page1 =
+				notificationQueueEntryResource.getNotificationQueueEntriesPage(
+					null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		Page<NotificationQueueEntry> page2 =
-			notificationQueueEntryResource.getNotificationQueueEntriesPage(
-				null, null, Pagination.of(2, totalCount + 2), null);
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+			assertContains(
+				notificationQueueEntry1,
+				(List<NotificationQueueEntry>)page1.getItems());
 
-		List<NotificationQueueEntry> notificationQueueEntries2 =
-			(List<NotificationQueueEntry>)page2.getItems();
+			Page<NotificationQueueEntry> page2 =
+				notificationQueueEntryResource.getNotificationQueueEntriesPage(
+					null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		Assert.assertEquals(
-			notificationQueueEntries2.toString(), 1,
-			notificationQueueEntries2.size());
+			assertContains(
+				notificationQueueEntry2,
+				(List<NotificationQueueEntry>)page2.getItems());
 
-		Page<NotificationQueueEntry> page3 =
-			notificationQueueEntryResource.getNotificationQueueEntriesPage(
-				null, null, Pagination.of(1, totalCount + 3), null);
+			Page<NotificationQueueEntry> page3 =
+				notificationQueueEntryResource.getNotificationQueueEntriesPage(
+					null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		assertContains(
-			notificationQueueEntry1,
-			(List<NotificationQueueEntry>)page3.getItems());
-		assertContains(
-			notificationQueueEntry2,
-			(List<NotificationQueueEntry>)page3.getItems());
-		assertContains(
-			notificationQueueEntry3,
-			(List<NotificationQueueEntry>)page3.getItems());
+			assertContains(
+				notificationQueueEntry3,
+				(List<NotificationQueueEntry>)page3.getItems());
+		}
+		else {
+			Page<NotificationQueueEntry> page1 =
+				notificationQueueEntryResource.getNotificationQueueEntriesPage(
+					null, null, Pagination.of(1, totalCount + 2), null);
+
+			List<NotificationQueueEntry> notificationQueueEntries1 =
+				(List<NotificationQueueEntry>)page1.getItems();
+
+			Assert.assertEquals(
+				notificationQueueEntries1.toString(), totalCount + 2,
+				notificationQueueEntries1.size());
+
+			Page<NotificationQueueEntry> page2 =
+				notificationQueueEntryResource.getNotificationQueueEntriesPage(
+					null, null, Pagination.of(2, totalCount + 2), null);
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<NotificationQueueEntry> notificationQueueEntries2 =
+				(List<NotificationQueueEntry>)page2.getItems();
+
+			Assert.assertEquals(
+				notificationQueueEntries2.toString(), 1,
+				notificationQueueEntries2.size());
+
+			Page<NotificationQueueEntry> page3 =
+				notificationQueueEntryResource.getNotificationQueueEntriesPage(
+					null, null, Pagination.of(1, (int)totalCount + 3), null);
+
+			assertContains(
+				notificationQueueEntry1,
+				(List<NotificationQueueEntry>)page3.getItems());
+			assertContains(
+				notificationQueueEntry2,
+				(List<NotificationQueueEntry>)page3.getItems());
+			assertContains(
+				notificationQueueEntry3,
+				(List<NotificationQueueEntry>)page3.getItems());
+		}
 	}
 
 	@Test
@@ -421,7 +464,7 @@ public abstract class BaseNotificationQueueEntryResourceTestCase {
 			(entityField, notificationQueueEntry1, notificationQueueEntry2) -> {
 				BeanTestUtil.setProperty(
 					notificationQueueEntry1, entityField.getName(),
-					DateUtils.addMinutes(new Date(), -2));
+					new Date(System.currentTimeMillis() - (2 * Time.MINUTE)));
 			});
 	}
 
@@ -537,23 +580,33 @@ public abstract class BaseNotificationQueueEntryResourceTestCase {
 			testGetNotificationQueueEntriesPage_addNotificationQueueEntry(
 				notificationQueueEntry2);
 
+		Page<NotificationQueueEntry> page =
+			notificationQueueEntryResource.getNotificationQueueEntriesPage(
+				null, null, null, null);
+
 		for (EntityField entityField : entityFields) {
 			Page<NotificationQueueEntry> ascPage =
 				notificationQueueEntryResource.getNotificationQueueEntriesPage(
-					null, null, Pagination.of(1, 2),
+					null, null, Pagination.of(1, (int)page.getTotalCount() + 1),
 					entityField.getName() + ":asc");
 
-			assertEquals(
-				Arrays.asList(notificationQueueEntry1, notificationQueueEntry2),
+			assertContains(
+				notificationQueueEntry1,
+				(List<NotificationQueueEntry>)ascPage.getItems());
+			assertContains(
+				notificationQueueEntry2,
 				(List<NotificationQueueEntry>)ascPage.getItems());
 
 			Page<NotificationQueueEntry> descPage =
 				notificationQueueEntryResource.getNotificationQueueEntriesPage(
-					null, null, Pagination.of(1, 2),
+					null, null, Pagination.of(1, (int)page.getTotalCount() + 1),
 					entityField.getName() + ":desc");
 
-			assertEquals(
-				Arrays.asList(notificationQueueEntry2, notificationQueueEntry1),
+			assertContains(
+				notificationQueueEntry2,
+				(List<NotificationQueueEntry>)descPage.getItems());
+			assertContains(
+				notificationQueueEntry1,
 				(List<NotificationQueueEntry>)descPage.getItems());
 		}
 	}
@@ -580,6 +633,8 @@ public abstract class BaseNotificationQueueEntryResourceTestCase {
 			new GraphQLField("items", getGraphQLFields()),
 			new GraphQLField("page"), new GraphQLField("totalCount"));
 
+		// No namespace
+
 		JSONObject notificationQueueEntriesJSONObject =
 			JSONUtil.getValueAsJSONObject(
 				invokeGraphQLQuery(graphQLField), "JSONObject/data",
@@ -595,6 +650,29 @@ public abstract class BaseNotificationQueueEntryResourceTestCase {
 
 		notificationQueueEntriesJSONObject = JSONUtil.getValueAsJSONObject(
 			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/notificationQueueEntries");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			notificationQueueEntriesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			notificationQueueEntry1,
+			Arrays.asList(
+				NotificationQueueEntrySerDes.toDTOs(
+					notificationQueueEntriesJSONObject.getString("items"))));
+		assertContains(
+			notificationQueueEntry2,
+			Arrays.asList(
+				NotificationQueueEntrySerDes.toDTOs(
+					notificationQueueEntriesJSONObject.getString("items"))));
+
+		// Using the namespace notification_v1_0
+
+		notificationQueueEntriesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("notification_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/notification_v1_0",
 			"JSONObject/notificationQueueEntries");
 
 		Assert.assertEquals(
@@ -676,7 +754,10 @@ public abstract class BaseNotificationQueueEntryResourceTestCase {
 
 	@Test
 	public void testGraphQLDeleteNotificationQueueEntry() throws Exception {
-		NotificationQueueEntry notificationQueueEntry =
+
+		// No namespace
+
+		NotificationQueueEntry notificationQueueEntry1 =
 			testGraphQLDeleteNotificationQueueEntry_addNotificationQueueEntry();
 
 		Assert.assertTrue(
@@ -688,11 +769,12 @@ public abstract class BaseNotificationQueueEntryResourceTestCase {
 							{
 								put(
 									"notificationQueueEntryId",
-									notificationQueueEntry.getId());
+									notificationQueueEntry1.getId());
 							}
 						})),
 				"JSONObject/data", "Object/deleteNotificationQueueEntry"));
-		JSONArray errorsJSONArray = JSONUtil.getValueAsJSONArray(
+
+		JSONArray errorsJSONArray1 = JSONUtil.getValueAsJSONArray(
 			invokeGraphQLQuery(
 				new GraphQLField(
 					"notificationQueueEntry",
@@ -700,13 +782,53 @@ public abstract class BaseNotificationQueueEntryResourceTestCase {
 						{
 							put(
 								"notificationQueueEntryId",
-								notificationQueueEntry.getId());
+								notificationQueueEntry1.getId());
 						}
 					},
 					new GraphQLField("id"))),
 			"JSONArray/errors");
 
-		Assert.assertTrue(errorsJSONArray.length() > 0);
+		Assert.assertTrue(errorsJSONArray1.length() > 0);
+
+		// Using the namespace notification_v1_0
+
+		NotificationQueueEntry notificationQueueEntry2 =
+			testGraphQLDeleteNotificationQueueEntry_addNotificationQueueEntry();
+
+		Assert.assertTrue(
+			JSONUtil.getValueAsBoolean(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"notification_v1_0",
+						new GraphQLField(
+							"deleteNotificationQueueEntry",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"notificationQueueEntryId",
+										notificationQueueEntry2.getId());
+								}
+							}))),
+				"JSONObject/data", "JSONObject/notification_v1_0",
+				"Object/deleteNotificationQueueEntry"));
+
+		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"notification_v1_0",
+					new GraphQLField(
+						"notificationQueueEntry",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"notificationQueueEntryId",
+									notificationQueueEntry2.getId());
+							}
+						},
+						new GraphQLField("id")))),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray2.length() > 0);
 	}
 
 	protected NotificationQueueEntry
@@ -742,6 +864,8 @@ public abstract class BaseNotificationQueueEntryResourceTestCase {
 		NotificationQueueEntry notificationQueueEntry =
 			testGraphQLGetNotificationQueueEntry_addNotificationQueueEntry();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				notificationQueueEntry,
@@ -759,6 +883,29 @@ public abstract class BaseNotificationQueueEntryResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/notificationQueueEntry"))));
+
+		// Using the namespace notification_v1_0
+
+		Assert.assertTrue(
+			equals(
+				notificationQueueEntry,
+				NotificationQueueEntrySerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"notification_v1_0",
+								new GraphQLField(
+									"notificationQueueEntry",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"notificationQueueEntryId",
+												notificationQueueEntry.getId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data", "JSONObject/notification_v1_0",
+						"Object/notificationQueueEntry"))));
 	}
 
 	@Test
@@ -766,6 +913,8 @@ public abstract class BaseNotificationQueueEntryResourceTestCase {
 		throws Exception {
 
 		Long irrelevantNotificationQueueEntryId = RandomTestUtil.randomLong();
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -781,6 +930,27 @@ public abstract class BaseNotificationQueueEntryResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace notification_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"notification_v1_0",
+						new GraphQLField(
+							"notificationQueueEntry",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"notificationQueueEntryId",
+										irrelevantNotificationQueueEntryId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -1307,6 +1477,10 @@ public abstract class BaseNotificationQueueEntryResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -1529,22 +1703,20 @@ public abstract class BaseNotificationQueueEntryResourceTestCase {
 
 		if (entityFieldName.equals("sentDate")) {
 			if (operator.equals("between")) {
+				Date date = notificationQueueEntry.getSentDate();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							notificationQueueEntry.getSentDate(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							notificationQueueEntry.getSentDate(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -1831,9 +2003,9 @@ public abstract class BaseNotificationQueueEntryResourceTestCase {
 	}
 
 	protected NotificationQueueEntryResource notificationQueueEntryResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

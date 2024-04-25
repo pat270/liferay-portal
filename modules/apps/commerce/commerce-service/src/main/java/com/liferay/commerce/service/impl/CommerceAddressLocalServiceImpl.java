@@ -15,7 +15,9 @@ import com.liferay.commerce.exception.CommerceAddressZipException;
 import com.liferay.commerce.model.CommerceAddress;
 import com.liferay.commerce.model.CommerceGeocoder;
 import com.liferay.commerce.model.impl.CommerceAddressImpl;
+import com.liferay.commerce.product.model.CommerceChannelRel;
 import com.liferay.commerce.product.model.CommerceChannelRelTable;
+import com.liferay.commerce.product.service.CommerceChannelRelLocalService;
 import com.liferay.commerce.service.base.CommerceAddressLocalServiceBaseImpl;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
@@ -24,6 +26,7 @@ import com.liferay.petra.sql.dsl.query.FromStep;
 import com.liferay.petra.sql.dsl.query.GroupByStep;
 import com.liferay.petra.sql.dsl.query.JoinStep;
 import com.liferay.portal.aop.AopService;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Address;
 import com.liferay.portal.kernel.model.AddressTable;
@@ -47,7 +50,6 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.osgi.service.component.annotations.Component;
@@ -58,7 +60,10 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alec Sloan
  */
 @Component(
-	property = "model.class.name=com.liferay.commerce.model.CommerceAddress",
+	property = {
+		"liferay.service=false",
+		"model.class.name=com.liferay.commerce.model.CommerceAddress"
+	},
 	service = AopService.class
 )
 public class CommerceAddressLocalServiceImpl
@@ -256,7 +261,8 @@ public class CommerceAddressLocalServiceImpl
 		throws PortalException {
 
 		return commerceAddressLocalService.getBillingCommerceAddresses(
-			companyId, className, classPK, null, -1, -1, null);
+			companyId, className, classPK, 0, null, QueryUtil.ALL_POS,
+			QueryUtil.ALL_POS, null);
 	}
 
 	@Override
@@ -285,8 +291,9 @@ public class CommerceAddressLocalServiceImpl
 
 	@Override
 	public List<CommerceAddress> getBillingCommerceAddresses(
-			long companyId, String className, long classPK, String keywords,
-			int start, int end, Sort sort)
+			long companyId, String className, long classPK,
+			long commerceChannelId, String keywords, int start, int end,
+			Sort sort)
 		throws PortalException {
 
 		BaseModelSearchResult<Address> addressBaseModelSearchResult =
@@ -302,10 +309,12 @@ public class CommerceAddressLocalServiceImpl
 								ADDRESS_TYPE_BILLING_AND_SHIPPING)
 					}
 				).build(),
-				start, end, sort);
+				QueryUtil.ALL_POS, QueryUtil.ALL_POS, sort);
 
 		return TransformUtil.transform(
-			addressBaseModelSearchResult.getBaseModels(),
+			_filterByCommerceChannel(
+				addressBaseModelSearchResult.getBaseModels(), commerceChannelId,
+				start, end),
 			CommerceAddressImpl::fromAddress);
 	}
 
@@ -333,7 +342,8 @@ public class CommerceAddressLocalServiceImpl
 
 	@Override
 	public int getBillingCommerceAddressesCount(
-			long companyId, String className, long classPK, String keywords)
+			long companyId, String className, long classPK,
+			long commerceChannelId, String keywords)
 		throws PortalException {
 
 		BaseModelSearchResult<Address> addressBaseModelSearchResult =
@@ -349,9 +359,12 @@ public class CommerceAddressLocalServiceImpl
 								ADDRESS_TYPE_BILLING_AND_SHIPPING)
 					}
 				).build(),
-				-1, -1, null);
+				QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
 
-		return addressBaseModelSearchResult.getLength();
+		return _filterByCommerceChannel(
+			addressBaseModelSearchResult.getBaseModels(), commerceChannelId, 0,
+			addressBaseModelSearchResult.getLength() - 1
+		).size();
 	}
 
 	@Override
@@ -469,7 +482,8 @@ public class CommerceAddressLocalServiceImpl
 		throws PortalException {
 
 		return commerceAddressLocalService.getShippingCommerceAddresses(
-			companyId, className, classPK, null, -1, -1, null);
+			companyId, className, classPK, 0, null, QueryUtil.ALL_POS,
+			QueryUtil.ALL_POS, null);
 	}
 
 	@Override
@@ -498,8 +512,9 @@ public class CommerceAddressLocalServiceImpl
 
 	@Override
 	public List<CommerceAddress> getShippingCommerceAddresses(
-			long companyId, String className, long classPK, String keywords,
-			int start, int end, Sort sort)
+			long companyId, String className, long classPK,
+			long commerceChannelId, String keywords, int start, int end,
+			Sort sort)
 		throws PortalException {
 
 		BaseModelSearchResult<Address> addressBaseModelSearchResult =
@@ -515,38 +530,19 @@ public class CommerceAddressLocalServiceImpl
 							CommerceAddressConstants.ADDRESS_TYPE_SHIPPING)
 					}
 				).build(),
-				start, end, sort);
+				QueryUtil.ALL_POS, QueryUtil.ALL_POS, sort);
 
 		return TransformUtil.transform(
-			addressBaseModelSearchResult.getBaseModels(),
+			_filterByCommerceChannel(
+				addressBaseModelSearchResult.getBaseModels(), commerceChannelId,
+				start, end),
 			CommerceAddressImpl::fromAddress);
 	}
 
 	@Override
 	public int getShippingCommerceAddressesCount(
-		long channelId, String className, long classPK, int start, int end) {
-
-		return _addressLocalService.dslQueryCount(
-			_getGroupByStep(
-				DSLQueryFactoryUtil.selectDistinct(AddressTable.INSTANCE),
-				AddressTable.INSTANCE.listTypeId.eq(
-					CommerceAddressImpl.toAddressTypeId(
-						CommerceAddressConstants.ADDRESS_TYPE_SHIPPING)
-				).or(
-					AddressTable.INSTANCE.listTypeId.eq(
-						CommerceAddressImpl.toAddressTypeId(
-							CommerceAddressConstants.
-								ADDRESS_TYPE_BILLING_AND_SHIPPING))
-				),
-				channelId, className, classPK, false, true
-			).limit(
-				start, end
-			));
-	}
-
-	@Override
-	public int getShippingCommerceAddressesCount(
-			long companyId, String className, long classPK, String keywords)
+			long companyId, String className, long classPK,
+			long commerceChannelId, String keywords)
 		throws PortalException {
 
 		BaseModelSearchResult<Address> addressBaseModelSearchResult =
@@ -562,9 +558,12 @@ public class CommerceAddressLocalServiceImpl
 							CommerceAddressConstants.ADDRESS_TYPE_SHIPPING)
 					}
 				).build(),
-				-1, -1, null);
+				QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
 
-		return addressBaseModelSearchResult.getLength();
+		return _filterByCommerceChannel(
+			addressBaseModelSearchResult.getBaseModels(), commerceChannelId, 0,
+			addressBaseModelSearchResult.getLength() - 1
+		).size();
 	}
 
 	/**
@@ -579,7 +578,19 @@ public class CommerceAddressLocalServiceImpl
 
 		BaseModelSearchResult<Address> addressBaseModelSearchResult =
 			_addressLocalService.searchAddresses(
-				companyId, className, classPK, keywords, new LinkedHashMap<>(),
+				companyId, className, classPK, keywords,
+				LinkedHashMapBuilder.<String, Object>put(
+					"listTypeIds",
+					new long[] {
+						CommerceAddressImpl.toAddressTypeId(
+							CommerceAddressConstants.ADDRESS_TYPE_BILLING),
+						CommerceAddressImpl.toAddressTypeId(
+							CommerceAddressConstants.
+								ADDRESS_TYPE_BILLING_AND_SHIPPING),
+						CommerceAddressImpl.toAddressTypeId(
+							CommerceAddressConstants.ADDRESS_TYPE_SHIPPING)
+					}
+				).build(),
 				start, end, sort);
 
 		return new BaseModelSearchResult<>(
@@ -597,7 +608,19 @@ public class CommerceAddressLocalServiceImpl
 
 		BaseModelSearchResult<Address> addressBaseModelSearchResult =
 			_addressLocalService.searchAddresses(
-				companyId, className, classPK, keywords, new LinkedHashMap<>(),
+				companyId, className, classPK, keywords,
+				LinkedHashMapBuilder.<String, Object>put(
+					"listTypeIds",
+					new long[] {
+						CommerceAddressImpl.toAddressTypeId(
+							CommerceAddressConstants.ADDRESS_TYPE_BILLING),
+						CommerceAddressImpl.toAddressTypeId(
+							CommerceAddressConstants.
+								ADDRESS_TYPE_BILLING_AND_SHIPPING),
+						CommerceAddressImpl.toAddressTypeId(
+							CommerceAddressConstants.ADDRESS_TYPE_SHIPPING)
+					}
+				).build(),
 				start, end, sort);
 
 		return new BaseModelSearchResult<>(
@@ -658,6 +681,55 @@ public class CommerceAddressLocalServiceImpl
 		return CommerceAddressImpl.fromAddress(address);
 	}
 
+	private List<Address> _filterByCommerceChannel(
+		List<Address> addresses, long commerceChannelId, int start, int end) {
+
+		List<Address> filteredAddresses = new ArrayList<>();
+
+		long commerceChannelRelsCount =
+			_commerceChannelRelLocalService.getCommerceChannelRelsCount(
+				commerceChannelId);
+
+		if (commerceChannelRelsCount > 0) {
+			for (Address address : addresses) {
+				List<CommerceChannelRel> commerceChannelRels =
+					_commerceChannelRelLocalService.getCommerceChannelRels(
+						Address.class.getName(), address.getAddressId(),
+						QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+
+				if (!commerceChannelRels.isEmpty()) {
+					for (CommerceChannelRel commerceChannelRel :
+							commerceChannelRels) {
+
+						if (commerceChannelRel.getCommerceChannelId() ==
+								commerceChannelId) {
+
+							filteredAddresses.add(address);
+
+							break;
+						}
+					}
+				}
+				else {
+					filteredAddresses.add(address);
+				}
+			}
+		}
+		else {
+			filteredAddresses = addresses;
+		}
+
+		if (end > filteredAddresses.size()) {
+			end = filteredAddresses.size();
+		}
+
+		if (end < 0) {
+			return filteredAddresses;
+		}
+
+		return filteredAddresses.subList(start, end);
+	}
+
 	private OrderByComparator<Address> _getAddressOrderByComparator(
 		OrderByComparator<CommerceAddress> orderByComparator) {
 
@@ -689,8 +761,12 @@ public class CommerceAddressLocalServiceImpl
 			AddressTable.INSTANCE.countryId.eq(CountryTable.INSTANCE.countryId)
 		).leftJoinOn(
 			CommerceChannelRelTable.INSTANCE,
-			CountryTable.INSTANCE.countryId.eq(
-				CommerceChannelRelTable.INSTANCE.classPK)
+			CommerceChannelRelTable.INSTANCE.classPK.eq(
+				AddressTable.INSTANCE.addressId
+			).or(
+				CommerceChannelRelTable.INSTANCE.classPK.eq(
+					CountryTable.INSTANCE.countryId)
+			)
 		);
 
 		return joinStep.where(
@@ -736,7 +812,15 @@ public class CommerceAddressLocalServiceImpl
 						CountryTable.INSTANCE.shippingAllowed.eq(true));
 				}
 
-				return predicate;
+				Predicate addressFilterPredicate =
+					CommerceChannelRelTable.INSTANCE.commerceChannelId.eq(
+						commerceChannelId);
+
+				addressFilterPredicate = addressFilterPredicate.or(
+					CommerceChannelRelTable.INSTANCE.commerceChannelId.
+						isNull());
+
+				return predicate.and(addressFilterPredicate.withParentheses());
 			});
 	}
 
@@ -775,6 +859,9 @@ public class CommerceAddressLocalServiceImpl
 
 	@Reference
 	private ClassNameLocalService _classNameLocalService;
+
+	@Reference
+	private CommerceChannelRelLocalService _commerceChannelRelLocalService;
 
 	@Reference
 	private CommerceGeocoder _commerceGeocoder;

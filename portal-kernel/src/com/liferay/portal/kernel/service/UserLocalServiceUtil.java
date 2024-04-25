@@ -89,6 +89,12 @@ public class UserLocalServiceUtil {
 		return getService().addDefaultRoles(userId);
 	}
 
+	public static User addDefaultServiceAccountUser(long companyId)
+		throws PortalException {
+
+		return getService().addDefaultServiceAccountUser(companyId);
+	}
+
 	/**
 	 * Adds the user to the default user groups, unless the user is already in
 	 * these user groups. The default user groups can be specified in
@@ -105,57 +111,60 @@ public class UserLocalServiceUtil {
 		return getService().addDefaultUserGroups(userId);
 	}
 
-	public static void addGroupUser(long groupId, long userId) {
-		getService().addGroupUser(groupId, userId);
+	public static boolean addGroupUser(long groupId, long userId) {
+		return getService().addGroupUser(groupId, userId);
 	}
 
-	public static void addGroupUser(long groupId, User user) {
-		getService().addGroupUser(groupId, user);
+	public static boolean addGroupUser(long groupId, User user) {
+		return getService().addGroupUser(groupId, user);
 	}
 
 	/**
 	 * @throws PortalException
 	 */
-	public static void addGroupUsers(long groupId, List<User> users)
+	public static boolean addGroupUsers(long groupId, List<User> users)
 		throws PortalException {
 
-		getService().addGroupUsers(groupId, users);
+		return getService().addGroupUsers(groupId, users);
 	}
 
 	/**
 	 * @throws PortalException
 	 */
-	public static void addGroupUsers(long groupId, long[] userIds)
+	public static boolean addGroupUsers(long groupId, long[] userIds)
 		throws PortalException {
 
-		getService().addGroupUsers(groupId, userIds);
+		return getService().addGroupUsers(groupId, userIds);
 	}
 
-	public static void addOrganizationUser(long organizationId, long userId) {
-		getService().addOrganizationUser(organizationId, userId);
+	public static boolean addOrganizationUser(
+		long organizationId, long userId) {
+
+		return getService().addOrganizationUser(organizationId, userId);
 	}
 
-	public static void addOrganizationUser(long organizationId, User user) {
-		getService().addOrganizationUser(organizationId, user);
+	public static boolean addOrganizationUser(long organizationId, User user) {
+		return getService().addOrganizationUser(organizationId, user);
 	}
 
 	/**
 	 * @throws PortalException
 	 */
-	public static void addOrganizationUsers(
+	public static boolean addOrganizationUsers(
 			long organizationId, List<User> users)
 		throws PortalException {
 
-		getService().addOrganizationUsers(organizationId, users);
+		return getService().addOrganizationUsers(organizationId, users);
 	}
 
 	/**
 	 * @throws PortalException
 	 */
-	public static void addOrganizationUsers(long organizationId, long[] userIds)
+	public static boolean addOrganizationUsers(
+			long organizationId, long[] userIds)
 		throws PortalException {
 
-		getService().addOrganizationUsers(organizationId, userIds);
+		return getService().addOrganizationUsers(organizationId, userIds);
 	}
 
 	public static User addOrUpdateUser(
@@ -189,56 +198,56 @@ public class UserLocalServiceUtil {
 		getService().addPasswordPolicyUsers(passwordPolicyId, userIds);
 	}
 
-	public static void addRoleUser(long roleId, long userId) {
-		getService().addRoleUser(roleId, userId);
+	public static boolean addRoleUser(long roleId, long userId) {
+		return getService().addRoleUser(roleId, userId);
 	}
 
-	public static void addRoleUser(long roleId, User user) {
-		getService().addRoleUser(roleId, user);
-	}
-
-	/**
-	 * @throws PortalException
-	 */
-	public static void addRoleUsers(long roleId, List<User> users)
-		throws PortalException {
-
-		getService().addRoleUsers(roleId, users);
+	public static boolean addRoleUser(long roleId, User user) {
+		return getService().addRoleUser(roleId, user);
 	}
 
 	/**
 	 * @throws PortalException
 	 */
-	public static void addRoleUsers(long roleId, long[] userIds)
+	public static boolean addRoleUsers(long roleId, List<User> users)
 		throws PortalException {
 
-		getService().addRoleUsers(roleId, userIds);
-	}
-
-	public static void addTeamUser(long teamId, long userId) {
-		getService().addTeamUser(teamId, userId);
-	}
-
-	public static void addTeamUser(long teamId, User user) {
-		getService().addTeamUser(teamId, user);
+		return getService().addRoleUsers(roleId, users);
 	}
 
 	/**
 	 * @throws PortalException
 	 */
-	public static void addTeamUsers(long teamId, List<User> users)
+	public static boolean addRoleUsers(long roleId, long[] userIds)
 		throws PortalException {
 
-		getService().addTeamUsers(teamId, users);
+		return getService().addRoleUsers(roleId, userIds);
+	}
+
+	public static boolean addTeamUser(long teamId, long userId) {
+		return getService().addTeamUser(teamId, userId);
+	}
+
+	public static boolean addTeamUser(long teamId, User user) {
+		return getService().addTeamUser(teamId, user);
 	}
 
 	/**
 	 * @throws PortalException
 	 */
-	public static void addTeamUsers(long teamId, long[] userIds)
+	public static boolean addTeamUsers(long teamId, List<User> users)
 		throws PortalException {
 
-		getService().addTeamUsers(teamId, userIds);
+		return getService().addTeamUsers(teamId, users);
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	public static boolean addTeamUsers(long teamId, long[] userIds)
+		throws PortalException {
+
+		return getService().addTeamUsers(teamId, userIds);
 	}
 
 	/**
@@ -320,30 +329,30 @@ public class UserLocalServiceUtil {
 		return getService().addUser(user);
 	}
 
-	public static void addUserGroupUser(long userGroupId, long userId) {
-		getService().addUserGroupUser(userGroupId, userId);
+	public static boolean addUserGroupUser(long userGroupId, long userId) {
+		return getService().addUserGroupUser(userGroupId, userId);
 	}
 
-	public static void addUserGroupUser(long userGroupId, User user) {
-		getService().addUserGroupUser(userGroupId, user);
-	}
-
-	/**
-	 * @throws PortalException
-	 */
-	public static void addUserGroupUsers(long userGroupId, List<User> users)
-		throws PortalException {
-
-		getService().addUserGroupUsers(userGroupId, users);
+	public static boolean addUserGroupUser(long userGroupId, User user) {
+		return getService().addUserGroupUser(userGroupId, user);
 	}
 
 	/**
 	 * @throws PortalException
 	 */
-	public static void addUserGroupUsers(long userGroupId, long[] userIds)
+	public static boolean addUserGroupUsers(long userGroupId, List<User> users)
 		throws PortalException {
 
-		getService().addUserGroupUsers(userGroupId, userIds);
+		return getService().addUserGroupUsers(userGroupId, users);
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	public static boolean addUserGroupUsers(long userGroupId, long[] userIds)
+		throws PortalException {
+
+		return getService().addUserGroupUsers(userGroupId, userIds);
 	}
 
 	/**
@@ -2211,18 +2220,20 @@ public class UserLocalServiceUtil {
 	}
 
 	public static List<User> searchBySocial(
-		long companyId, long[] groupIds, String keywords, int start, int end) {
+		long companyId, long[] groupIds, long[] userGroupIds, String keywords,
+		int start, int end) {
 
 		return getService().searchBySocial(
-			companyId, groupIds, keywords, start, end);
+			companyId, groupIds, userGroupIds, keywords, start, end);
 	}
 
 	public static List<User> searchBySocial(
-		long companyId, long[] groupIds, String keywords, int start, int end,
-		OrderByComparator<User> orderByComparator) {
+		long companyId, long[] groupIds, long[] userGroupIds, String keywords,
+		int start, int end, OrderByComparator<User> orderByComparator) {
 
 		return getService().searchBySocial(
-			companyId, groupIds, keywords, start, end, orderByComparator);
+			companyId, groupIds, userGroupIds, keywords, start, end,
+			orderByComparator);
 	}
 
 	public static List<User> searchBySocial(
@@ -2358,22 +2369,17 @@ public class UserLocalServiceUtil {
 			user, emailAddress, serviceContext);
 	}
 
-	/**
-	 * Sends the password email to the user with the email address. The content
-	 * of this email can be specified in <code>portal.properties</code> with the
-	 * <code>admin.email.password</code> keys.
-	 *
-	 * @param companyId the primary key of the user's company
-	 * @param emailAddress the user's email address
-	 * @param fromName the name of the individual that the email should be from
-	 * @param fromAddress the address of the individual that the email should be
-	 from
-	 * @param subject the email subject. If <code>null</code>, the subject
-	 specified in <code>portal.properties</code> will be used.
-	 * @param body the email body. If <code>null</code>, the body specified in
-	 <code>portal.properties</code> will be used.
-	 * @param serviceContext the service context to be applied
-	 */
+	public static boolean sendEmailUserCreationAttempt(
+			long companyId, String emailAddress, String fromName,
+			String fromAddress, String subject, String body,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		return getService().sendEmailUserCreationAttempt(
+			companyId, emailAddress, fromName, fromAddress, subject, body,
+			serviceContext);
+	}
+
 	public static boolean sendPassword(
 			long companyId, String emailAddress, String fromName,
 			String fromAddress, String subject, String body,
@@ -2460,6 +2466,17 @@ public class UserLocalServiceUtil {
 		throws PortalException {
 
 		return getService().sendPasswordByUserId(userId);
+	}
+
+	public static boolean sendPasswordLockout(
+			long companyId, String emailAddress, String fromName,
+			String fromAddress, String subject, String body,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		return getService().sendPasswordLockout(
+			companyId, emailAddress, fromName, fromAddress, subject, body,
+			serviceContext);
 	}
 
 	public static void setGroupUsers(long groupId, long[] userIds) {
@@ -2694,6 +2711,22 @@ public class UserLocalServiceUtil {
 			userId, emailAddressVerified);
 	}
 
+	public static User updateExternalReferenceCode(
+			long userId, String externalReferenceCode)
+		throws PortalException {
+
+		return getService().updateExternalReferenceCode(
+			userId, externalReferenceCode);
+	}
+
+	public static User updateExternalReferenceCode(
+			User user, String externalReferenceCode)
+		throws PortalException {
+
+		return getService().updateExternalReferenceCode(
+			user, externalReferenceCode);
+	}
+
 	/**
 	 * Updates the user's Facebook ID.
 	 *
@@ -2802,6 +2835,12 @@ public class UserLocalServiceUtil {
 		throws PortalException {
 
 		return getService().updateJobTitle(userId, jobTitle);
+	}
+
+	public static User updateLanguageId(long userId, String languageId)
+		throws PortalException {
+
+		return getService().updateLanguageId(userId, languageId);
 	}
 
 	/**

@@ -72,7 +72,12 @@ public class DataRecordResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _dataRecordResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, DataRecordResource>
+					dataRecordResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_dataRecordResourceProxyProviderFunction;
+
+				return dataRecordResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -229,9 +234,6 @@ public class DataRecordResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, DataRecordResource>
-		_dataRecordResourceProxyProviderFunction = _getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -267,6 +269,14 @@ public class DataRecordResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, DataRecordResource>
+			_dataRecordResourceProxyProviderFunction =
+				_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

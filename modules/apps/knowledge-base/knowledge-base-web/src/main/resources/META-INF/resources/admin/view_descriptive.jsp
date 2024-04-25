@@ -12,9 +12,9 @@ long kbFolderClassNameId = PortalUtil.getClassNameId(KBFolderConstants.getClassN
 
 long parentResourceClassNameId = ParamUtil.getLong(request, "parentResourceClassNameId", kbFolderClassNameId);
 
-KBAdminManagementToolbarDisplayContext kbAdminManagementToolbarDisplayContext = new KBAdminManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, renderRequest, renderResponse, portletConfig);
+KBAdminManagementToolbarDisplayContext kbAdminManagementToolbarDisplayContext = new KBAdminManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, renderRequest, renderResponse, portletConfig, trashHelper);
 KBArticleURLHelper kbArticleURLHelper = new KBArticleURLHelper(renderRequest, renderResponse);
-KBArticleViewDisplayContext kbArticleViewDisplayContext = new KBArticleViewDisplayContext(request, liferayPortletRequest, liferayPortletResponse, renderResponse);
+KBArticleViewDisplayContext kbArticleViewDisplayContext = new KBArticleViewDisplayContext(request, liferayPortletRequest, liferayPortletResponse, renderResponse, trashHelper);
 %>
 
 <liferay-ui:search-container
@@ -76,13 +76,13 @@ KBArticleViewDisplayContext kbArticleViewDisplayContext = new KBArticleViewDispl
 				<liferay-ui:search-container-column-text>
 
 					<%
-					KBDropdownItemsProvider kbDropdownItemsProvider = new KBDropdownItemsProvider(liferayPortletRequest, liferayPortletResponse);
+					KBDropdownItemsProvider kbDropdownItemsProvider = new KBDropdownItemsProvider(liferayPortletRequest, liferayPortletResponse, trashHelper);
 					%>
 
 					<clay:dropdown-actions
 						aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 						dropdownItems="<%= kbDropdownItemsProvider.getKBFolderDropdownItems(kbFolder) %>"
-						propsTransformer="admin/js/KBDropdownPropsTransformer"
+						propsTransformer="{KBDropdownPropsTransformer} from knowledge-base-web"
 					/>
 				</liferay-ui:search-container-column-text>
 			</c:when>
@@ -131,29 +131,45 @@ KBArticleViewDisplayContext kbArticleViewDisplayContext = new KBArticleViewDispl
 					</c:if>
 
 					<span class="text-default">
+						<c:choose>
+							<c:when test='<%= FeatureFlagManagerUtil.isEnabled("LPS-188058") && kbArticle.isScheduled() %>'>
 
-						<%
-						String expirationDateString = StringPool.BLANK;
+								<%
+								String displayDateString = StringPool.BLANK;
 
-						if (kbArticle.getExpirationDate() != null) {
-							expirationDateString = dateFormatDateTime.format(kbArticle.getExpirationDate());
-						}
-						%>
+								if (kbArticle.getDisplayDate() != null) {
+									displayDateString = dateTimeFormat.format(kbArticle.getDisplayDate());
+								}
+								%>
 
-						<aui:workflow-status helpMessage="<%= kbArticle.isExpired() ? expirationDateString : StringPool.BLANK %>" markupView="lexicon" showHelpMessage="<%= kbArticle.isExpired() %>" showIcon="<%= false %>" showLabel="<%= false %>" status="<%= kbArticle.getStatus() %>" />
+								<aui:workflow-status helpMessage="<%= kbArticle.isScheduled() ? displayDateString : StringPool.BLANK %>" markupView="lexicon" showHelpMessage="<%= kbArticle.isScheduled() %>" showIcon="<%= false %>" showLabel="<%= false %>" status="<%= kbArticle.getStatus() %>" />
+							</c:when>
+							<c:otherwise>
 
-						<c:if test="<%= kbArticleViewDisplayContext.isExpiringSoon(kbArticle) %>">
-							<span class="label label-warning">
-								<span class="label-item label-item-expand"><liferay-ui:message key="expiring-soon" /></span>
-							</span>
+								<%
+								String expirationDateString = StringPool.BLANK;
 
-							<clay:icon
-								aria-label="<%= expirationDateString %>"
-								cssClass="lfr-portal-tooltip"
-								symbol="question-circle-full"
-								title="<%= expirationDateString %>"
-							/>
-						</c:if>
+								if (kbArticle.getExpirationDate() != null) {
+									expirationDateString = dateTimeFormat.format(kbArticle.getExpirationDate());
+								}
+								%>
+
+								<aui:workflow-status helpMessage="<%= kbArticle.isExpired() ? expirationDateString : StringPool.BLANK %>" markupView="lexicon" showHelpMessage="<%= kbArticle.isExpired() %>" showIcon="<%= false %>" showLabel="<%= false %>" status="<%= kbArticle.getStatus() %>" />
+
+								<c:if test="<%= kbArticleViewDisplayContext.isExpiringSoon(kbArticle) %>">
+									<span class="label label-warning">
+										<span class="label-item label-item-expand"><liferay-ui:message key="expiring-soon" /></span>
+									</span>
+
+									<clay:icon
+										aria-label="<%= expirationDateString %>"
+										cssClass="lfr-portal-tooltip"
+										symbol="question-circle-full"
+										title="<%= expirationDateString %>"
+									/>
+								</c:if>
+							</c:otherwise>
+						</c:choose>
 					</span>
 				</liferay-ui:search-container-column-text>
 
@@ -161,7 +177,7 @@ KBArticleViewDisplayContext kbArticleViewDisplayContext = new KBArticleViewDispl
 					<clay:dropdown-actions
 						aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 						dropdownItems="<%= kbArticleViewDisplayContext.getKBArticleDropdownItems(kbArticle) %>"
-						propsTransformer="admin/js/KBDropdownPropsTransformer"
+						propsTransformer="{KBDropdownPropsTransformer} from knowledge-base-web"
 					/>
 				</liferay-ui:search-container-column-text>
 			</c:otherwise>

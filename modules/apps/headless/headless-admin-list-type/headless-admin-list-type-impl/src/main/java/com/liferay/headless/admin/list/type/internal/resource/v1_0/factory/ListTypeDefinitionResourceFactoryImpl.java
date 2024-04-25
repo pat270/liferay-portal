@@ -72,7 +72,12 @@ public class ListTypeDefinitionResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _listTypeDefinitionResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, ListTypeDefinitionResource>
+					listTypeDefinitionResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_listTypeDefinitionResourceProxyProviderFunction;
+
+				return listTypeDefinitionResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -232,10 +237,6 @@ public class ListTypeDefinitionResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, ListTypeDefinitionResource>
-		_listTypeDefinitionResourceProxyProviderFunction =
-			_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -271,6 +272,15 @@ public class ListTypeDefinitionResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function
+			<InvocationHandler, ListTypeDefinitionResource>
+				_listTypeDefinitionResourceProxyProviderFunction =
+					_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

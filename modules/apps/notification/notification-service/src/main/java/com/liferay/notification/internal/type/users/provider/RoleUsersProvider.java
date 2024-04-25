@@ -15,25 +15,36 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserConstants;
+import com.liferay.portal.kernel.model.UserGroupRoleModel;
+import com.liferay.portal.kernel.model.role.RoleConstants;
+import com.liferay.portal.kernel.security.permission.PermissionCheckerFactory;
 import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.kernel.service.UserGroupRoleLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.util.ListUtil;
 
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-
 /**
  * @author Feliphe Marinho
  */
-@Component(
-	property = "recipient.type=" + NotificationRecipientConstants.TYPE_ROLE,
-	service = UsersProvider.class
-)
 public class RoleUsersProvider
 	extends BaseUsersProvider implements UsersProvider {
+
+	public RoleUsersProvider(
+		PermissionCheckerFactory permissionCheckerFactory,
+		RoleLocalService roleLocalService,
+		UserGroupRoleLocalService userGroupRoleLocalService,
+		UserLocalService userLocalService) {
+
+		super(permissionCheckerFactory);
+
+		_roleLocalService = roleLocalService;
+		_userGroupRoleLocalService = userGroupRoleLocalService;
+		_userLocalService = userLocalService;
+	}
 
 	@Override
 	public String getRecipientType() {
@@ -59,6 +70,18 @@ public class RoleUsersProvider
 				notificationRecipientSetting.getCompanyId(),
 				notificationRecipientSetting.getValue());
 
+			if ((role.getType() == RoleConstants.TYPE_ORGANIZATION) ||
+				(role.getType() == RoleConstants.TYPE_SITE)) {
+
+				userIds.addAll(
+					ListUtil.toList(
+						_userGroupRoleLocalService.getUserGroupRolesByGroup(
+							notificationContext.getGroupId()),
+						UserGroupRoleModel::getUserId));
+
+				continue;
+			}
+
 			for (long userId :
 					_userLocalService.getRoleUserIds(
 						role.getRoleId(), UserConstants.TYPE_REGULAR)) {
@@ -83,10 +106,8 @@ public class RoleUsersProvider
 			});
 	}
 
-	@Reference
-	private RoleLocalService _roleLocalService;
-
-	@Reference
-	private UserLocalService _userLocalService;
+	private final RoleLocalService _roleLocalService;
+	private final UserGroupRoleLocalService _userGroupRoleLocalService;
+	private final UserLocalService _userLocalService;
 
 }

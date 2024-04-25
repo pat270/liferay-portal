@@ -71,7 +71,12 @@ public class MLModelResourceFactoryImpl implements MLModelResource.Factory {
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _mlModelResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, MLModelResource>
+					mlModelResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_mlModelResourceProxyProviderFunction;
+
+				return mlModelResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -226,9 +231,6 @@ public class MLModelResourceFactoryImpl implements MLModelResource.Factory {
 		}
 	}
 
-	private static final Function<InvocationHandler, MLModelResource>
-		_mlModelResourceProxyProviderFunction = _getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -263,6 +265,13 @@ public class MLModelResourceFactoryImpl implements MLModelResource.Factory {
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, MLModelResource>
+			_mlModelResourceProxyProviderFunction = _getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

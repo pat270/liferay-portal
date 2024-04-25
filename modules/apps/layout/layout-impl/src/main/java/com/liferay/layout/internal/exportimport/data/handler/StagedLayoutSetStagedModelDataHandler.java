@@ -5,6 +5,7 @@
 
 package com.liferay.layout.internal.exportimport.data.handler;
 
+import com.liferay.client.extension.constants.ClientExtensionEntryConstants;
 import com.liferay.client.extension.model.ClientExtensionEntryRel;
 import com.liferay.client.extension.service.ClientExtensionEntryRelLocalService;
 import com.liferay.document.library.kernel.model.DLFileEntry;
@@ -43,7 +44,6 @@ import com.liferay.portal.kernel.model.LayoutSetPrototype;
 import com.liferay.portal.kernel.model.StagedModel;
 import com.liferay.portal.kernel.model.Theme;
 import com.liferay.portal.kernel.model.ThemeSetting;
-import com.liferay.portal.kernel.model.adapter.ModelAdapterUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ImageLocalService;
@@ -54,18 +54,19 @@ import com.liferay.portal.kernel.service.LayoutSetPrototypeLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.ColorSchemeFactory;
+import com.liferay.portal.kernel.util.ColorSchemeFactoryUtil;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.DateRange;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.ThemeFactory;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Element;
+import com.liferay.portal.model.adapter.util.ModelAdapterUtil;
 import com.liferay.portal.model.impl.ThemeSettingImpl;
 import com.liferay.portal.service.impl.LayoutLocalServiceHelper;
+import com.liferay.portal.util.ThemeFactoryUtil;
 import com.liferay.sites.kernel.util.Sites;
 
 import java.io.File;
@@ -595,10 +596,10 @@ public class StagedLayoutSetStagedModelDataHandler
 
 		if (!exportThemeSettings) {
 			layoutSet.setThemeId(
-				_themeFactory.getDefaultRegularThemeId(
+				ThemeFactoryUtil.getDefaultRegularThemeId(
 					stagedLayoutSet.getCompanyId()));
 			layoutSet.setColorSchemeId(
-				_colorSchemeFactory.getDefaultRegularColorSchemeId());
+				ColorSchemeFactoryUtil.getDefaultRegularColorSchemeId());
 			layoutSet.setCss(StringPool.BLANK);
 
 			return;
@@ -679,6 +680,15 @@ public class StagedLayoutSetStagedModelDataHandler
 			PortletDataContext portletDataContext,
 			StagedLayoutSet stagedLayoutSet)
 		throws Exception {
+
+		LayoutSet layoutSet = stagedLayoutSet.getLayoutSet();
+
+		_clientExtensionEntryRelLocalService.deleteClientExtensionEntryRels(
+			_portal.getClassNameId(LayoutSet.class), layoutSet.getLayoutSetId(),
+			ClientExtensionEntryConstants.TYPE_GLOBAL_CSS);
+		_clientExtensionEntryRelLocalService.deleteClientExtensionEntryRels(
+			_portal.getClassNameId(LayoutSet.class), layoutSet.getLayoutSetId(),
+			ClientExtensionEntryConstants.TYPE_GLOBAL_JS);
 
 		List<Element> clientExtensionEntryRelsElements =
 			portletDataContext.getReferenceDataElements(
@@ -791,9 +801,13 @@ public class StagedLayoutSetStagedModelDataHandler
 						portletDataContext, stagedLayoutSet,
 						layoutSet.getCss());
 
-			layoutSet.setCss(css);
+			if (Validator.isNotNull(css) ||
+				!MergeLayoutPrototypesThreadLocal.isInProgress()) {
 
-			_themeImporter.importTheme(portletDataContext, layoutSet);
+				layoutSet.setCss(css);
+
+				_themeImporter.importTheme(portletDataContext, layoutSet);
+			}
 		}
 		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
@@ -1099,9 +1113,6 @@ public class StagedLayoutSetStagedModelDataHandler
 		_clientExtensionEntryRelLocalService;
 
 	@Reference
-	private ColorSchemeFactory _colorSchemeFactory;
-
-	@Reference
 	private DLAppService _dlAppService;
 
 	@Reference(target = "(content.processor.type=DLReferences)")
@@ -1150,9 +1161,6 @@ public class StagedLayoutSetStagedModelDataHandler
 
 	@Reference
 	private ThemeExporter _themeExporter;
-
-	@Reference
-	private ThemeFactory _themeFactory;
 
 	@Reference
 	private ThemeImporter _themeImporter;

@@ -12,10 +12,9 @@ import com.liferay.analytics.reports.info.item.ClassNameClassPKInfoItemIdentifie
 import com.liferay.analytics.reports.info.item.provider.AnalyticsReportsInfoItemObjectProvider;
 import com.liferay.analytics.reports.web.internal.constants.AnalyticsReportsPortletKeys;
 import com.liferay.analytics.reports.web.internal.constants.ProductNavigationControlMenuEntryConstants;
-import com.liferay.analytics.reports.web.internal.info.item.provider.AnalyticsReportsInfoItemObjectProviderRegistry;
+import com.liferay.analytics.reports.web.internal.info.item.provider.util.AnalyticsReportsInfoItemObjectProviderRegistryUtil;
 import com.liferay.analytics.reports.web.internal.util.AnalyticsReportsUtil;
 import com.liferay.analytics.settings.rest.manager.AnalyticsSettingsManager;
-import com.liferay.frontend.js.loader.modules.extender.npm.NPMResolver;
 import com.liferay.frontend.taglib.clay.servlet.taglib.ButtonTag;
 import com.liferay.frontend.taglib.clay.servlet.taglib.IconTag;
 import com.liferay.info.item.ClassPKInfoItemIdentifier;
@@ -23,6 +22,7 @@ import com.liferay.info.item.InfoItemReference;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.content.security.policy.ContentSecurityPolicyNonceProviderUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
@@ -32,7 +32,7 @@ import com.liferay.portal.kernel.portlet.PortletURLFactory;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.kernel.util.Html;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -47,9 +47,7 @@ import com.liferay.taglib.util.BodyBottomTag;
 import java.io.IOException;
 import java.io.Writer;
 
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.portlet.PortletRequest;
@@ -115,45 +113,54 @@ public class AnalyticsReportsProductNavigationControlMenuEntry
 			HttpServletResponse httpServletResponse)
 		throws IOException {
 
-		Map<String, String> values = new HashMap<>();
-
-		if (isPanelStateOpen(
-				httpServletRequest,
-				ProductNavigationControlMenuEntryConstants.
-					SESSION_CLICKS_KEY)) {
-
-			values.put("cssClass", "active");
-		}
-		else {
-			values.put("cssClass", StringPool.BLANK);
-		}
-
-		ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
-			_portal.getLocale(httpServletRequest), getClass());
-
-		values.put(
-			"title",
-			_html.escape(_language.get(resourceBundle, "content-performance")));
-
-		IconTag iconTag = new IconTag();
-
-		iconTag.setCssClass("icon-monospaced");
-		iconTag.setSymbol("analytics");
-
-		try {
-			values.put(
-				"iconTag",
-				iconTag.doTagAsString(httpServletRequest, httpServletResponse));
-		}
-		catch (JspException jspException) {
-			throw new IOException(jspException);
-		}
-
-		values.put("portletNamespace", _portletNamespace);
-
 		Writer writer = httpServletResponse.getWriter();
 
-		writer.write(StringUtil.replace(_ICON_TMPL_CONTENT, "${", "}", values));
+		writer.write(
+			StringUtil.replace(
+				_ICON_TMPL_CONTENT, "${", "}",
+				HashMapBuilder.put(
+					"cssClass",
+					() -> {
+						if (isPanelStateOpen(
+								httpServletRequest,
+								ProductNavigationControlMenuEntryConstants.
+									SESSION_CLICKS_KEY)) {
+
+							return "active";
+						}
+
+						return StringPool.BLANK;
+					}
+				).put(
+					"iconTag",
+					() -> {
+						IconTag iconTag = new IconTag();
+
+						iconTag.setCssClass("icon-monospaced");
+						iconTag.setSymbol("analytics");
+
+						return iconTag.doTagAsString(
+							httpServletRequest, httpServletResponse);
+					}
+				).put(
+					"nonceAttribute",
+					ContentSecurityPolicyNonceProviderUtil.getNonceAttribute(
+						httpServletRequest)
+				).put(
+					"portletNamespace", _portletNamespace
+				).put(
+					"title",
+					() -> {
+						ResourceBundle resourceBundle =
+							ResourceBundleUtil.getBundle(
+								_portal.getLocale(httpServletRequest),
+								getClass());
+
+						return HtmlUtil.escape(
+							_language.get(
+								resourceBundle, "content-performance"));
+					}
+				).build()));
 
 		return true;
 	}
@@ -168,7 +175,7 @@ public class AnalyticsReportsProductNavigationControlMenuEntry
 		AnalyticsReportsInfoItemObjectProvider<Object>
 			analyticsReportsInfoItemObjectProvider =
 				(AnalyticsReportsInfoItemObjectProvider<Object>)
-					_analyticsReportsInfoItemObjectProviderRegistry.
+					AnalyticsReportsInfoItemObjectProviderRegistryUtil.
 						getAnalyticsReportsInfoItemObjectProvider(
 							infoItemReference.getClassName());
 
@@ -322,7 +329,8 @@ public class AnalyticsReportsProductNavigationControlMenuEntry
 					ProductNavigationControlMenuEntryConstants.
 						SESSION_CLICKS_KEY)) {
 
-				sb.append("lfr-has-analytics-reports-panel open-admin-panel ");
+				sb.append(
+					"lfr-has-analytics-reports-panel open-admin-panel open ");
 			}
 
 			sb.append(
@@ -369,8 +377,7 @@ public class AnalyticsReportsProductNavigationControlMenuEntry
 
 			_reactRenderer.renderReact(
 				new ComponentDescriptor(
-					_npmResolver.resolveModuleName("analytics-reports-web") +
-						"/js/AnalyticsReportsApp"),
+					"{AnalyticsReportsApp} from analytics-reports-web"),
 				HashMapBuilder.<String, Object>put(
 					"context",
 					HashMapBuilder.<String, Object>put(
@@ -402,23 +409,13 @@ public class AnalyticsReportsProductNavigationControlMenuEntry
 		AnalyticsReportsProductNavigationControlMenuEntry.class);
 
 	@Reference
-	private AnalyticsReportsInfoItemObjectProviderRegistry
-		_analyticsReportsInfoItemObjectProviderRegistry;
-
-	@Reference
 	private AnalyticsReportsInfoItemRegistry _analyticsReportsInfoItemRegistry;
 
 	@Reference
 	private AnalyticsSettingsManager _analyticsSettingsManager;
 
 	@Reference
-	private Html _html;
-
-	@Reference
 	private Language _language;
-
-	@Reference
-	private NPMResolver _npmResolver;
 
 	@Reference
 	private Portal _portal;

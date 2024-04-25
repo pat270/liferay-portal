@@ -1,4 +1,4 @@
-@component-name = "portal-lima"
+@component-name = "portal-content-management"
 definition {
 
 	property portal.acceptance = "true";
@@ -27,6 +27,7 @@ definition {
 	@priority = 5
 	test CanTranslateCustomizedWCWithNumericFields {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "guest");
 
@@ -218,6 +219,7 @@ definition {
 	@priority = 5
 	test CanTranslateCustomizedWCWithTextFields {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "guest");
 
@@ -430,6 +432,8 @@ definition {
 	@description = "This test covers LPS-142169. It ensures that translate side by side shows the duplicate fields."
 	@priority = 4
 	test CanViewDuplicateFields {
+		property portal.release = "quarantine";
+
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "guest");
 
 		NavItem.gotoStructures();

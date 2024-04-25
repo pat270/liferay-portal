@@ -9,7 +9,7 @@ import com.liferay.asset.list.constants.AssetListEntryTypeConstants;
 import com.liferay.asset.list.constants.AssetListPortletKeys;
 import com.liferay.asset.list.model.AssetListEntry;
 import com.liferay.asset.list.service.AssetListEntryService;
-import com.liferay.asset.list.web.internal.handler.AssetListEntryExceptionRequestHandler;
+import com.liferay.asset.list.web.internal.handler.AssetListEntryExceptionRequestHandlerUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
@@ -65,7 +65,6 @@ public class AddAssetListEntryMVCActionCommand extends BaseMVCActionCommand {
 
 				assetListEntry =
 					_assetListEntryService.addDynamicAssetListEntry(
-						serviceContext.getUserId(),
 						serviceContext.getScopeGroupId(), title,
 						UnicodePropertiesBuilder.create(
 							true
@@ -99,7 +98,7 @@ public class AddAssetListEntryMVCActionCommand extends BaseMVCActionCommand {
 
 			hideDefaultErrorMessage(actionRequest);
 
-			_assetListEntryExceptionRequestHandler.handlePortalException(
+			AssetListEntryExceptionRequestHandlerUtil.handlePortalException(
 				actionRequest, actionResponse, portalException);
 		}
 	}
@@ -124,12 +123,10 @@ public class AddAssetListEntryMVCActionCommand extends BaseMVCActionCommand {
 			}
 		).setParameter(
 			"assetListEntryId", assetListEntry.getAssetListEntryId()
+		).setParameter(
+			"backURLTitle", ParamUtil.getString(actionRequest, "backURLTitle")
 		).buildString();
 	}
-
-	@Reference
-	private AssetListEntryExceptionRequestHandler
-		_assetListEntryExceptionRequestHandler;
 
 	@Reference
 	private AssetListEntryService _assetListEntryService;

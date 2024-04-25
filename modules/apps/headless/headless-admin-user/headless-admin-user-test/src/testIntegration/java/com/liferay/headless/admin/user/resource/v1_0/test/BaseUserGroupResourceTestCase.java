@@ -28,8 +28,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -38,6 +36,7 @@ import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.search.test.util.SearchTestRule;
@@ -63,8 +62,6 @@ import java.util.Set;
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-
-import org.apache.commons.lang.time.DateUtils;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -200,7 +197,7 @@ public abstract class BaseUserGroupResourceTestCase {
 		Page<UserGroup> page = userGroupResource.getUserUserGroups(
 			userAccountId);
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if (irrelevantUserAccountId != null) {
 			UserGroup irrelevantUserGroup = testGetUserUserGroups_addUserGroup(
@@ -208,11 +205,10 @@ public abstract class BaseUserGroupResourceTestCase {
 
 			page = userGroupResource.getUserUserGroups(irrelevantUserAccountId);
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantUserGroup),
-				(List<UserGroup>)page.getItems());
+			assertContains(
+				irrelevantUserGroup, (List<UserGroup>)page.getItems());
 			assertValid(
 				page,
 				testGetUserUserGroups_getExpectedActions(
@@ -227,11 +223,10 @@ public abstract class BaseUserGroupResourceTestCase {
 
 		page = userGroupResource.getUserUserGroups(userAccountId);
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(userGroup1, userGroup2),
-			(List<UserGroup>)page.getItems());
+		assertContains(userGroup1, (List<UserGroup>)page.getItems());
+		assertContains(userGroup2, (List<UserGroup>)page.getItems());
 		assertValid(
 			page, testGetUserUserGroups_getExpectedActions(userAccountId));
 
@@ -384,10 +379,10 @@ public abstract class BaseUserGroupResourceTestCase {
 
 	@Test
 	public void testGetUserGroupsPageWithPagination() throws Exception {
-		Page<UserGroup> totalPage = userGroupResource.getUserGroupsPage(
+		Page<UserGroup> userGroupPage = userGroupResource.getUserGroupsPage(
 			null, null, null, null);
 
-		int totalCount = GetterUtil.getInteger(totalPage.getTotalCount());
+		int totalCount = GetterUtil.getInteger(userGroupPage.getTotalCount());
 
 		UserGroup userGroup1 = testGetUserGroupsPage_addUserGroup(
 			randomUserGroup());
@@ -398,29 +393,65 @@ public abstract class BaseUserGroupResourceTestCase {
 		UserGroup userGroup3 = testGetUserGroupsPage_addUserGroup(
 			randomUserGroup());
 
-		Page<UserGroup> page1 = userGroupResource.getUserGroupsPage(
-			null, null, Pagination.of(1, totalCount + 2), null);
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<UserGroup> userGroups1 = (List<UserGroup>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			userGroups1.toString(), totalCount + 2, userGroups1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<UserGroup> page1 = userGroupResource.getUserGroupsPage(
+				null, null,
+				Pagination.of(
+					(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+					pageSizeLimit),
+				null);
 
-		Page<UserGroup> page2 = userGroupResource.getUserGroupsPage(
-			null, null, Pagination.of(2, totalCount + 2), null);
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+			assertContains(userGroup1, (List<UserGroup>)page1.getItems());
 
-		List<UserGroup> userGroups2 = (List<UserGroup>)page2.getItems();
+			Page<UserGroup> page2 = userGroupResource.getUserGroupsPage(
+				null, null,
+				Pagination.of(
+					(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+					pageSizeLimit),
+				null);
 
-		Assert.assertEquals(userGroups2.toString(), 1, userGroups2.size());
+			assertContains(userGroup2, (List<UserGroup>)page2.getItems());
 
-		Page<UserGroup> page3 = userGroupResource.getUserGroupsPage(
-			null, null, Pagination.of(1, totalCount + 3), null);
+			Page<UserGroup> page3 = userGroupResource.getUserGroupsPage(
+				null, null,
+				Pagination.of(
+					(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+					pageSizeLimit),
+				null);
 
-		assertContains(userGroup1, (List<UserGroup>)page3.getItems());
-		assertContains(userGroup2, (List<UserGroup>)page3.getItems());
-		assertContains(userGroup3, (List<UserGroup>)page3.getItems());
+			assertContains(userGroup3, (List<UserGroup>)page3.getItems());
+		}
+		else {
+			Page<UserGroup> page1 = userGroupResource.getUserGroupsPage(
+				null, null, Pagination.of(1, totalCount + 2), null);
+
+			List<UserGroup> userGroups1 = (List<UserGroup>)page1.getItems();
+
+			Assert.assertEquals(
+				userGroups1.toString(), totalCount + 2, userGroups1.size());
+
+			Page<UserGroup> page2 = userGroupResource.getUserGroupsPage(
+				null, null, Pagination.of(2, totalCount + 2), null);
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<UserGroup> userGroups2 = (List<UserGroup>)page2.getItems();
+
+			Assert.assertEquals(userGroups2.toString(), 1, userGroups2.size());
+
+			Page<UserGroup> page3 = userGroupResource.getUserGroupsPage(
+				null, null, Pagination.of(1, (int)totalCount + 3), null);
+
+			assertContains(userGroup1, (List<UserGroup>)page3.getItems());
+			assertContains(userGroup2, (List<UserGroup>)page3.getItems());
+			assertContains(userGroup3, (List<UserGroup>)page3.getItems());
+		}
 	}
 
 	@Test
@@ -430,7 +461,7 @@ public abstract class BaseUserGroupResourceTestCase {
 			(entityField, userGroup1, userGroup2) -> {
 				BeanTestUtil.setProperty(
 					userGroup1, entityField.getName(),
-					DateUtils.addMinutes(new Date(), -2));
+					new Date(System.currentTimeMillis() - (2 * Time.MINUTE)));
 			});
 	}
 
@@ -530,22 +561,23 @@ public abstract class BaseUserGroupResourceTestCase {
 
 		userGroup2 = testGetUserGroupsPage_addUserGroup(userGroup2);
 
+		Page<UserGroup> page = userGroupResource.getUserGroupsPage(
+			null, null, null, null);
+
 		for (EntityField entityField : entityFields) {
 			Page<UserGroup> ascPage = userGroupResource.getUserGroupsPage(
-				null, null, Pagination.of(1, 2),
+				null, null, Pagination.of(1, (int)page.getTotalCount() + 1),
 				entityField.getName() + ":asc");
 
-			assertEquals(
-				Arrays.asList(userGroup1, userGroup2),
-				(List<UserGroup>)ascPage.getItems());
+			assertContains(userGroup1, (List<UserGroup>)ascPage.getItems());
+			assertContains(userGroup2, (List<UserGroup>)ascPage.getItems());
 
 			Page<UserGroup> descPage = userGroupResource.getUserGroupsPage(
-				null, null, Pagination.of(1, 2),
+				null, null, Pagination.of(1, (int)page.getTotalCount() + 1),
 				entityField.getName() + ":desc");
 
-			assertEquals(
-				Arrays.asList(userGroup2, userGroup1),
-				(List<UserGroup>)descPage.getItems());
+			assertContains(userGroup2, (List<UserGroup>)descPage.getItems());
+			assertContains(userGroup1, (List<UserGroup>)descPage.getItems());
 		}
 	}
 
@@ -569,6 +601,8 @@ public abstract class BaseUserGroupResourceTestCase {
 			new GraphQLField("items", getGraphQLFields()),
 			new GraphQLField("page"), new GraphQLField("totalCount"));
 
+		// No namespace
+
 		JSONObject userGroupsJSONObject = JSONUtil.getValueAsJSONObject(
 			invokeGraphQLQuery(graphQLField), "JSONObject/data",
 			"JSONObject/userGroups");
@@ -580,6 +614,28 @@ public abstract class BaseUserGroupResourceTestCase {
 
 		userGroupsJSONObject = JSONUtil.getValueAsJSONObject(
 			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/userGroups");
+
+		Assert.assertEquals(
+			totalCount + 2, userGroupsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			userGroup1,
+			Arrays.asList(
+				UserGroupSerDes.toDTOs(
+					userGroupsJSONObject.getString("items"))));
+		assertContains(
+			userGroup2,
+			Arrays.asList(
+				UserGroupSerDes.toDTOs(
+					userGroupsJSONObject.getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		userGroupsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
 			"JSONObject/userGroups");
 
 		Assert.assertEquals(
@@ -679,6 +735,8 @@ public abstract class BaseUserGroupResourceTestCase {
 		UserGroup userGroup =
 			testGraphQLGetUserGroupByExternalReferenceCode_addUserGroup();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				userGroup,
@@ -700,6 +758,32 @@ public abstract class BaseUserGroupResourceTestCase {
 								getGraphQLFields())),
 						"JSONObject/data",
 						"Object/userGroupByExternalReferenceCode"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		Assert.assertTrue(
+			equals(
+				userGroup,
+				UserGroupSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessAdminUser_v1_0",
+								new GraphQLField(
+									"userGroupByExternalReferenceCode",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"externalReferenceCode",
+												"\"" +
+													userGroup.
+														getExternalReferenceCode() +
+															"\"");
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+						"Object/userGroupByExternalReferenceCode"))));
 	}
 
 	@Test
@@ -708,6 +792,8 @@ public abstract class BaseUserGroupResourceTestCase {
 
 		String irrelevantExternalReferenceCode =
 			"\"" + RandomTestUtil.randomString() + "\"";
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -723,6 +809,27 @@ public abstract class BaseUserGroupResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessAdminUser_v1_0",
+						new GraphQLField(
+							"userGroupByExternalReferenceCode",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"externalReferenceCode",
+										irrelevantExternalReferenceCode);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -843,7 +950,10 @@ public abstract class BaseUserGroupResourceTestCase {
 
 	@Test
 	public void testGraphQLDeleteUserGroup() throws Exception {
-		UserGroup userGroup = testGraphQLDeleteUserGroup_addUserGroup();
+
+		// No namespace
+
+		UserGroup userGroup1 = testGraphQLDeleteUserGroup_addUserGroup();
 
 		Assert.assertTrue(
 			JSONUtil.getValueAsBoolean(
@@ -852,23 +962,59 @@ public abstract class BaseUserGroupResourceTestCase {
 						"deleteUserGroup",
 						new HashMap<String, Object>() {
 							{
-								put("userGroupId", userGroup.getId());
+								put("userGroupId", userGroup1.getId());
 							}
 						})),
 				"JSONObject/data", "Object/deleteUserGroup"));
-		JSONArray errorsJSONArray = JSONUtil.getValueAsJSONArray(
+
+		JSONArray errorsJSONArray1 = JSONUtil.getValueAsJSONArray(
 			invokeGraphQLQuery(
 				new GraphQLField(
 					"userGroup",
 					new HashMap<String, Object>() {
 						{
-							put("userGroupId", userGroup.getId());
+							put("userGroupId", userGroup1.getId());
 						}
 					},
 					new GraphQLField("id"))),
 			"JSONArray/errors");
 
-		Assert.assertTrue(errorsJSONArray.length() > 0);
+		Assert.assertTrue(errorsJSONArray1.length() > 0);
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		UserGroup userGroup2 = testGraphQLDeleteUserGroup_addUserGroup();
+
+		Assert.assertTrue(
+			JSONUtil.getValueAsBoolean(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"headlessAdminUser_v1_0",
+						new GraphQLField(
+							"deleteUserGroup",
+							new HashMap<String, Object>() {
+								{
+									put("userGroupId", userGroup2.getId());
+								}
+							}))),
+				"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+				"Object/deleteUserGroup"));
+
+		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessAdminUser_v1_0",
+					new GraphQLField(
+						"userGroup",
+						new HashMap<String, Object>() {
+							{
+								put("userGroupId", userGroup2.getId());
+							}
+						},
+						new GraphQLField("id")))),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray2.length() > 0);
 	}
 
 	protected UserGroup testGraphQLDeleteUserGroup_addUserGroup()
@@ -897,6 +1043,8 @@ public abstract class BaseUserGroupResourceTestCase {
 	public void testGraphQLGetUserGroup() throws Exception {
 		UserGroup userGroup = testGraphQLGetUserGroup_addUserGroup();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				userGroup,
@@ -912,11 +1060,36 @@ public abstract class BaseUserGroupResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/userGroup"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		Assert.assertTrue(
+			equals(
+				userGroup,
+				UserGroupSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessAdminUser_v1_0",
+								new GraphQLField(
+									"userGroup",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"userGroupId",
+												userGroup.getId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+						"Object/userGroup"))));
 	}
 
 	@Test
 	public void testGraphQLGetUserGroupNotFound() throws Exception {
 		Long irrelevantUserGroupId = RandomTestUtil.randomLong();
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -930,6 +1103,25 @@ public abstract class BaseUserGroupResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessAdminUser_v1_0",
+						new GraphQLField(
+							"userGroup",
+							new HashMap<String, Object>() {
+								{
+									put("userGroupId", irrelevantUserGroupId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -1372,6 +1564,10 @@ public abstract class BaseUserGroupResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -1658,9 +1854,9 @@ public abstract class BaseUserGroupResourceTestCase {
 	}
 
 	protected UserGroupResource userGroupResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

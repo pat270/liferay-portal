@@ -6,7 +6,9 @@
 package com.liferay.jethr0.entity.dalo;
 
 import com.liferay.jethr0.entity.Entity;
+import com.liferay.jethr0.entity.factory.EntityFactory;
 
+import java.util.Date;
 import java.util.Set;
 
 import org.json.JSONObject;
@@ -14,17 +16,21 @@ import org.json.JSONObject;
 /**
  * @author Michael Hashimoto
  */
-public interface EntityDALO<T extends Entity> {
+public interface EntityDALO<T extends Entity> extends DALO {
 
 	public T create(JSONObject jsonObject);
-
-	public T create(T entity);
 
 	public void delete(T entity);
 
 	public T get(long id);
 
 	public Set<T> getAll();
+
+	public Set<T> getAllAfterCreatedDate(Date createdDate);
+
+	public Set<T> getAllAfterModifiedDate(Date modifiedDate);
+
+	public EntityFactory<T> getEntityFactory();
 
 	public T update(T entity);
 

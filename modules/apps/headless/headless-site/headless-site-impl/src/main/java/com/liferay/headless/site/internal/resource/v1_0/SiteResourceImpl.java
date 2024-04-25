@@ -10,10 +10,16 @@ import com.liferay.headless.site.resource.v1_0.SiteResource;
 import com.liferay.portal.events.ServicePreAction;
 import com.liferay.portal.events.ThemeServicePreAction;
 import com.liferay.portal.kernel.change.tracking.CTAware;
+import com.liferay.portal.kernel.exception.NoSuchGroupException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.LayoutSetPrototype;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.GroupService;
@@ -21,7 +27,8 @@ import com.liferay.portal.kernel.service.LayoutSetPrototypeLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.permission.GroupPermission;
+import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
+import com.liferay.portal.kernel.servlet.DummyHttpServletResponse;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -34,6 +41,7 @@ import com.liferay.portal.vulcan.multipart.MultipartBody;
 import com.liferay.site.initializer.SiteInitializer;
 import com.liferay.site.initializer.SiteInitializerFactory;
 import com.liferay.site.initializer.SiteInitializerRegistry;
+import com.liferay.site.initializer.SiteInitializerSerializer;
 import com.liferay.sites.kernel.util.Sites;
 
 import java.io.File;
@@ -42,6 +50,8 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+
+import javax.ws.rs.core.Response;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -58,17 +68,95 @@ import org.osgi.service.component.annotations.ServiceScope;
 public class SiteResourceImpl extends BaseSiteResourceImpl {
 
 	@Override
+	public void deleteSite(Long siteId) throws Exception {
+		_groupService.deleteGroup(siteId);
+	}
+
+	@Override
+	public void deleteSiteByExternalReferenceCode(String externalReferenceCode)
+		throws Exception {
+
+		Group group = _groupLocalService.fetchGroupByExternalReferenceCode(
+			externalReferenceCode, contextCompany.getCompanyId());
+
+		if (group == null) {
+			throw new NoSuchGroupException(
+				"No site exists with external reference code " +
+					externalReferenceCode);
+		}
+
+		_groupService.deleteGroup(group.getGroupId());
+	}
+
+	@Override
+	public Site getSiteByExternalReferenceCode(String externalReferenceCode)
+		throws Exception {
+
+		Group group = _groupLocalService.getGroupByExternalReferenceCode(
+			externalReferenceCode, contextCompany.getCompanyId());
+
+		return new Site() {
+			{
+				setExternalReferenceCode(group::getExternalReferenceCode);
+				setFriendlyUrlPath(group::getFriendlyURL);
+				setId(group::getGroupId);
+				setKey(group::getGroupKey);
+				setName(() -> group.getName(LocaleUtil.getDefault()));
+			}
+		};
+	}
+
+	@Override
+	public Response getSiteByExternalReferenceCodeSiteInitializer(
+			String externalReferenceCode)
+		throws Exception {
+
+		if (!FeatureFlagManagerUtil.isEnabled("LPD-19870")) {
+			throw new UnsupportedOperationException();
+		}
+
+		Group group = _groupLocalService.getGroupByExternalReferenceCode(
+			externalReferenceCode, contextCompany.getCompanyId());
+
+		File file = _siteInitializerSerializer.serialize(group.getGroupId());
+
+		try {
+			return Response.ok(
+				file
+			).header(
+				"Content-Disposition",
+				"attachment; filename=\"" + file.getName() + "\""
+			).build();
+		}
+		finally {
+
+			// TODO LPD-19870
+
+			//file.delete();
+		}
+	}
+
+	@Override
+	public Site postSite(MultipartBody multipartBody) throws Exception {
+		Site site = postSite(
+			multipartBody.getValueAsInstance("site", Site.class));
+
+		return putSiteByExternalReferenceCode(
+			site.getExternalReferenceCode(), multipartBody);
+	}
+
+	@Override
 	public Site postSite(Site site) throws Exception {
 		try {
 			Group group = _addGroup(site.getExternalReferenceCode(), site);
 
 			return new Site() {
 				{
-					externalReferenceCode = group.getExternalReferenceCode();
-					friendlyUrlPath = group.getFriendlyURL();
-					id = group.getGroupId();
-					key = group.getGroupKey();
-					name = group.getName(LocaleUtil.getDefault());
+					setExternalReferenceCode(group::getExternalReferenceCode);
+					setFriendlyUrlPath(group::getFriendlyURL);
+					setId(group::getGroupId);
+					setKey(group::getGroupKey);
+					setName(() -> group.getName(LocaleUtil.getDefault()));
 				}
 			};
 		}
@@ -97,10 +185,15 @@ public class SiteResourceImpl extends BaseSiteResourceImpl {
 						externalReferenceCode);
 			}
 
-			_groupPermission.check(
+			GroupPermissionUtil.check(
 				PermissionThreadLocal.getPermissionChecker(), group,
 				ActionKeys.UPDATE);
 		}
+
+		long companyId = CompanyThreadLocal.getCompanyId();
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
+		String name = PrincipalThreadLocal.getName();
 
 		File tempFile = FileUtil.createTempFile(
 			multipartBody.getBinaryFileAsBytes("file"));
@@ -111,13 +204,35 @@ public class SiteResourceImpl extends BaseSiteResourceImpl {
 		tempFile.delete();
 
 		try {
+			CompanyThreadLocal.setCompanyId(contextCompany.getCompanyId());
+			PermissionThreadLocal.setPermissionChecker(
+				PermissionCheckerFactoryUtil.create(contextUser));
+			PrincipalThreadLocal.setName(contextUser.getUserId());
+
+			ServiceContextThreadLocal.pushServiceContext(
+				_getServiceContext(group));
+
 			SiteInitializer siteInitializer = _siteInitializerFactory.create(
 				new File(tempFolder, "site-initializer"),
 				group.getName(LocaleUtil.getDefault()));
 
 			siteInitializer.initialize(group.getGroupId());
 		}
+		catch (Exception exception) {
+
+			// LPS-169057
+
+			PermissionCacheUtil.clearCache(contextUser.getUserId());
+
+			throw exception;
+		}
 		finally {
+			CompanyThreadLocal.setCompanyId(companyId);
+			PermissionThreadLocal.setPermissionChecker(permissionChecker);
+			PrincipalThreadLocal.setName(name);
+
+			ServiceContextThreadLocal.popServiceContext();
+
 			tempFolder.delete();
 		}
 
@@ -125,11 +240,11 @@ public class SiteResourceImpl extends BaseSiteResourceImpl {
 
 		return new Site() {
 			{
-				externalReferenceCode = finalGroup.getExternalReferenceCode();
-				friendlyUrlPath = finalGroup.getFriendlyURL();
-				id = finalGroup.getGroupId();
-				key = finalGroup.getGroupKey();
-				name = finalGroup.getName(LocaleUtil.getDefault());
+				setExternalReferenceCode(finalGroup::getExternalReferenceCode);
+				setFriendlyUrlPath(finalGroup::getFriendlyURL);
+				setId(finalGroup::getGroupId);
+				setKey(finalGroup::getGroupKey);
+				setName(() -> finalGroup.getName(LocaleUtil.getDefault()));
 			}
 		};
 	}
@@ -279,6 +394,19 @@ public class SiteResourceImpl extends BaseSiteResourceImpl {
 		return group;
 	}
 
+	private ServiceContext _getServiceContext(Group group) throws Exception {
+		ServiceContext serviceContext = new ServiceContext();
+
+		serviceContext.setCompanyId(contextCompany.getCompanyId());
+		serviceContext.setRequest(contextHttpServletRequest);
+		serviceContext.setScopeGroupId(group.getGroupId());
+		serviceContext.setUserId(contextUser.getUserId());
+
+		_initThemeDisplay();
+
+		return serviceContext;
+	}
+
 	private void _initThemeDisplay() throws Exception {
 		ThemeDisplay themeDisplay =
 			(ThemeDisplay)contextHttpServletRequest.getAttribute(
@@ -298,13 +426,15 @@ public class SiteResourceImpl extends BaseSiteResourceImpl {
 
 		themeServicePreAction.run(
 			contextHttpServletRequest, contextHttpServletResponse);
+
+		themeDisplay = (ThemeDisplay)contextHttpServletRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		themeDisplay.setResponse(new DummyHttpServletResponse());
 	}
 
 	@Reference
 	private GroupLocalService _groupLocalService;
-
-	@Reference
-	private GroupPermission _groupPermission;
 
 	@Reference
 	private GroupService _groupService;
@@ -317,6 +447,9 @@ public class SiteResourceImpl extends BaseSiteResourceImpl {
 
 	@Reference
 	private SiteInitializerRegistry _siteInitializerRegistry;
+
+	@Reference
+	private SiteInitializerSerializer _siteInitializerSerializer;
 
 	@Reference
 	private Sites _sites;

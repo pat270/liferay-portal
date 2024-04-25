@@ -72,6 +72,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>XML_CODE_SPECIFIC_ELEMENT_LINE</td>
+	<td>//div[contains(@class, 'linenumber') and contains(., '${key_line}')]/../following-sibling::pre</td>
+	<td></td>
+</tr>
+<tr>
 	<td>INFORMATION_DETAILS</td>
 	<td>//div[@class='info-group']//label[contains(text() ,'${key_fieldOption}')]/..//span[contains(text() ,'${key_fieldInformation}')]</td>
 	<td></td>
@@ -91,7 +96,7 @@
 </tr>
 <tr>
 	<td>TRANSLATION_DROPDOWN</td>
-	<td>//div[@class='dropdown-menu show']</td>
+	<td>//div[contains(@class, 'dropdown-menu')][contains(@class, 'show')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -446,7 +451,7 @@
 </tr>
 <tr>
 	<td>NOTIFICATIONS_TYPE_DROPDOWN</td>
-	<td>//input[contains(@placeholder,'Choose an Option')]</td>
+	<td>//*[@class='form-group'][contains(.,'Notification Type')]//input</td>
 	<td></td>
 </tr>
 <tr>
@@ -466,7 +471,7 @@
 </tr>
 <tr>
 	<td>NOTIFICATION_TYPE_OPTIONS</td>
-	<td>//span[contains(@class,'custom-control-label-text')and contains(text(),'${key_checkboxValue}')]//..//..//input[@type='checkbox']</td>
+	<td>//*[@class='dropdown-item' and contains(.,'${key_checkboxValue}')]//input</td>
 	<td></td>
 </tr>
 <tr>
@@ -522,6 +527,11 @@
 <tr>
 	<td>SELECTED_ASSIGNMENTS_VALUE</td>
 	<td>//*[contains(@class,'d-flex')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DELETE_ASSIGNMENT_BY_ROLE_NAME</td>
+	<td>//input[contains(@id,'role-name')]/..//input[@type='text' and @value ='${key_roleName}']//..//..//..//..//..//following-sibling::*[contains(@class, 'delete-button')]</td>
 	<td></td>
 </tr>
 <tr>

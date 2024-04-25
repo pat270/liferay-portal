@@ -56,21 +56,6 @@
 		</attribute>
 	</tag>
 	<tag>
-		<name>search-input</name>
-		<tag-class>com.liferay.commerce.taglib.servlet.taglib.SearchInputTag</tag-class>
-		<body-content>JSP</body-content>
-		<attribute>
-			<name>actionURL</name>
-			<required>true</required>
-			<rtexprvalue>true</rtexprvalue>
-		</attribute>
-		<attribute>
-			<name>formName</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-		</attribute>
-	</tag>
-	<tag>
 		<name>tier-price</name>
 		<tag-class>com.liferay.commerce.taglib.servlet.taglib.TierPriceTag</tag-class>
 		<body-content>JSP</body-content>
@@ -93,19 +78,25 @@
 		</attribute>
 	</tag>
 	<tag>
-		<name>user-management-bar</name>
-		<tag-class>com.liferay.commerce.taglib.servlet.taglib.UserManagementBarTag</tag-class>
+		<name>unit-of-measure-tier-price</name>
+		<tag-class>com.liferay.commerce.taglib.servlet.taglib.UnitOfMeasureTierPriceTag</tag-class>
 		<body-content>JSP</body-content>
 		<attribute>
-			<name>href</name>
+			<name>CPInstanceId</name>
 			<required>true</required>
 			<rtexprvalue>true</rtexprvalue>
+			<type>long</type>
 		</attribute>
 		<attribute>
-			<name>showNotifications</name>
+			<name>CProductId</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>long</type>
+		</attribute>
+		<attribute>
+			<name>namespace</name>
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
-			<type>boolean</type>
 		</attribute>
 	</tag>
 </taglib>

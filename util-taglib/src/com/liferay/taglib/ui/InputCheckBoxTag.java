@@ -19,7 +19,7 @@ public class InputCheckBoxTag extends IncludeTag {
 
 	@Override
 	public int doEndTag() throws JspException {
-		updateFormCheckboxNames();
+		_updateFormCheckboxNames();
 
 		return super.doEndTag();
 	}
@@ -126,7 +126,7 @@ public class InputCheckBoxTag extends IncludeTag {
 			"liferay-ui:input-checkbox:param", _param);
 	}
 
-	protected void updateFormCheckboxNames() {
+	private void _updateFormCheckboxNames() {
 		HttpServletRequest httpServletRequest = getRequest();
 
 		List<String> checkboxNames =

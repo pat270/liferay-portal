@@ -22,7 +22,6 @@ import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.model.UserGroupGroupRole;
 import com.liferay.portal.kernel.model.UserGroupRole;
 import com.liferay.portal.kernel.service.GroupLocalService;
-import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.UserGroupGroupRoleLocalService;
 import com.liferay.portal.kernel.service.UserGroupLocalService;
 import com.liferay.portal.kernel.service.UserGroupRoleLocalService;
@@ -42,6 +41,7 @@ import com.liferay.portal.workflow.kaleo.service.persistence.KaleoTaskInstanceTo
 import java.sql.Timestamp;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -578,12 +578,10 @@ public class KaleoTaskInstanceTokenFinderImpl
 				user.getUserGroups()));
 
 		for (Group group : groups) {
-			List<Role> roles = _roleLocalService.getGroupRoles(
-				group.getGroupId());
-
-			for (Role role : roles) {
-				roleIds.add(role.getRoleId());
-			}
+			Collections.addAll(
+				roleIds,
+				ArrayUtil.toArray(
+					_groupLocalService.getRolePrimaryKeys(group.getGroupId())));
 		}
 
 		return roleIds;
@@ -938,9 +936,6 @@ public class KaleoTaskInstanceTokenFinderImpl
 
 	@Reference
 	private GroupLocalService _groupLocalService;
-
-	@Reference
-	private RoleLocalService _roleLocalService;
 
 	@Reference
 	private UserGroupGroupRoleLocalService _userGroupGroupRoleLocalService;

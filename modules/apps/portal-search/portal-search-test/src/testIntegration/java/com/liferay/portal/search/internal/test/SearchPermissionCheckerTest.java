@@ -103,7 +103,7 @@ public class SearchPermissionCheckerTest {
 
 	@Test
 	public void testAdministratorRolePermissionFilter() throws Exception {
-		_user = UserTestUtil.addOmniAdminUser();
+		_user = UserTestUtil.addOmniadminUser();
 
 		PermissionThreadLocal.setPermissionChecker(
 			PermissionCheckerFactoryUtil.create(_user));
@@ -155,8 +155,7 @@ public class SearchPermissionCheckerTest {
 				Criteria.Conjunction.AND);
 
 			SegmentsEntry segmentsEntry = SegmentsTestUtil.addSegmentsEntry(
-				_group.getGroupId(), CriteriaSerializer.serialize(criteria),
-				User.class.getName());
+				_group.getGroupId(), CriteriaSerializer.serialize(criteria));
 
 			_role = RoleTestUtil.addRole(RoleConstants.TYPE_REGULAR);
 

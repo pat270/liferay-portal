@@ -28,12 +28,10 @@ String screenNavigationCategoryKey = ParamUtil.getString(request, "screenNavigat
 		<c:otherwise>
 			<div>
 				<react:component
-					module="js/components/ObjectManagementToolbar"
+					module="{ObjectManagementToolbar} from object-web"
 					props='<%=
 						HashMapBuilder.<String, Object>put(
 							"backURL", ParamUtil.getString(request, "backURL", String.valueOf(renderResponse.createRenderURL()))
-						).put(
-							"externalReferenceCode", objectDefinition.getExternalReferenceCode()
 						).put(
 							"hasPublishObjectPermission", objectDefinitionsDetailsDisplayContext.hasPublishObjectPermission()
 						).put(
@@ -42,6 +40,8 @@ String screenNavigationCategoryKey = ParamUtil.getString(request, "screenNavigat
 							"isApproved", objectDefinition.isApproved()
 						).put(
 							"label", objectDefinition.getLabel(locale, true)
+						).put(
+							"objectDefinitionExternalReferenceCode", objectDefinition.getExternalReferenceCode()
 						).put(
 							"objectDefinitionId", objectDefinition.getObjectDefinitionId()
 						).put(

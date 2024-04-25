@@ -146,7 +146,7 @@ public class RepositoryTest {
 			StringUtil.randomString(), ContentTypes.APPLICATION_OCTET_STREAM,
 			StringUtil.randomString(), StringUtil.randomString(),
 			StringUtil.randomString(), StringUtil.randomString(), new byte[0],
-			null, null,
+			null, null, null,
 			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
 		DLFileShortcutLocalServiceUtil.addFileShortcut(
@@ -365,7 +365,7 @@ public class RepositoryTest {
 			RandomTestUtil.randomString(), ContentTypes.TEXT_PLAIN,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			StringPool.BLANK, StringPool.BLANK, inputStream,
-			_TEST_CONTENT.length(), null, null, new ServiceContext());
+			_TEST_CONTENT.length(), null, null, null, new ServiceContext());
 
 		Folder folder = localRepository.addFolder(
 			null, TestPropsValues.getUserId(),
@@ -380,7 +380,7 @@ public class RepositoryTest {
 			RandomTestUtil.randomString(), ContentTypes.TEXT_PLAIN,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			StringPool.BLANK, StringPool.BLANK, inputStream,
-			_TEST_CONTENT.length(), null, null, new ServiceContext());
+			_TEST_CONTENT.length(), null, null, null, new ServiceContext());
 
 		return new long[] {
 			fileEntry.getFileEntryId(), folder.getFolderId(),

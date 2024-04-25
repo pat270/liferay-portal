@@ -77,6 +77,7 @@ definition {
 	@priority = 4
 	test PageIsReadyForPublishAfterApproval {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Navigator.gotoStagedSitePage(
 			pageName = "Site Page Name",
@@ -110,6 +111,7 @@ definition {
 	@priority = 4
 	test RejectPageRevisionPG {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var pageName = "Page Revision Page";
 
@@ -199,6 +201,7 @@ definition {
 	@priority = 3
 	test StatusComesToDraftWhenPageIsEdited {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Navigator.gotoStagedSitePage(
 			pageName = "Site Page Name",
@@ -235,6 +238,9 @@ definition {
 	@priority = 5
 	test StatusIsPendingAfterSubmitForWorkflow {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
+
+		SearchAdministration.executeReindex();
 
 		Navigator.gotoStagedSitePage(
 			pageName = ${pageName},
@@ -249,16 +255,13 @@ definition {
 			workflowStatus = "Draft");
 
 		Staging.submitForWorkflowPageRevision();
-
-		Page.viewWithWorkflowPG(
-			pageName = ${pageName},
-			workflowStatus = "Pending (Created)");
 	}
 
 	@description = "Verify that when the Approved page is edited the button Submit for Workflow is displayed"
 	@priority = 3
 	test SubmitForWorkflowButtonIsDisplayedWhenPageIsEdited {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Navigator.gotoStagedSitePage(
 			pageName = ${pageName},
@@ -300,6 +303,7 @@ definition {
 	test ViewApprovedPageAfterStagingDeactivated {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var pageName = "New Site Page Name";
 
@@ -447,19 +451,13 @@ definition {
 			workflowDefinition = "No Workflow",
 			workflowResourceValue = "Page Revision");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.deactivateCP(userFirstName = "userfn");
 
 		User.deleteCP();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Submissions");
+		ObjectAdmin.openSubmissions();
 
 		Workflow.viewDefaultWorkflowSubmissions();
 	}

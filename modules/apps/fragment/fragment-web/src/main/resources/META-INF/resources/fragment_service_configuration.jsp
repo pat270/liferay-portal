@@ -34,7 +34,7 @@ FragmentServiceConfigurationDisplayContext fragmentServiceConfigurationDisplayCo
 				<span aria-hidden="true" class="loading-animation"></span>
 
 				<react:component
-					module="js/FragmentServiceConfiguration"
+					module="{FragmentServiceConfiguration} from fragment-web"
 					props='<%=
 						HashMapBuilder.<String, Object>put(
 							"alreadyPropagateContributedFragmentChanges", fragmentServiceConfigurationDisplayContext.isAlreadyPropagateContributedFragmentChanges()
@@ -53,9 +53,18 @@ FragmentServiceConfigurationDisplayContext fragmentServiceConfigurationDisplayCo
 		</clay:sheet-section>
 
 		<clay:sheet-footer>
-			<aui:button primary="<%= true %>" type="submit" value="save" />
+			<clay:button
+				displayType="primary"
+				label="save"
+				type="submit"
+			/>
 
-			<aui:button type="cancel" />
+			<clay:link
+				displayType="secondary"
+				href="<%= fragmentServiceConfigurationDisplayContext.getRedirect() %>"
+				label="cancel"
+				type="button"
+			/>
 		</clay:sheet-footer>
 	</clay:sheet>
 </aui:form>

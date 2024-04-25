@@ -4,7 +4,7 @@ definition {
 	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Fragments";
+	property testray.main.component.name = "Fragment Administration";
 
 	setUp {
 		task ("Set up instance and sign in") {
@@ -51,12 +51,12 @@ definition {
 				fragmentName = "Image");
 
 			AssertAttributeValue(
-				attribute1 = "loading",
 				fragmentName = "image",
 				id = "image",
 				index = 1,
 				locator1 = "Fragment#CONTRIBUTED_FRAGMENT_TEXT",
-				value1 = "auto");
+				value1 = "loading",
+				value2 = "auto");
 		}
 
 		task ("When the page creator accesses to the Image Source panel of Image") {
@@ -71,12 +71,12 @@ definition {
 			PageEditor.configureFragment(enableLazyLoading = "true");
 
 			AssertAttributeValue(
-				attribute1 = "loading",
 				fragmentName = "image",
 				id = "image",
 				index = 1,
 				locator1 = "Fragment#CONTRIBUTED_FRAGMENT_TEXT",
-				value1 = "lazy");
+				value1 = "loading",
+				value2 = "lazy");
 		}
 
 		task ("When the page creator disable lazy loading on Image") {
@@ -85,12 +85,12 @@ definition {
 
 		task ("Then the value of loading is back to auto") {
 			AssertAttributeValue(
-				attribute1 = "loading",
 				fragmentName = "image",
 				id = "image",
 				index = 1,
 				locator1 = "Fragment#CONTRIBUTED_FRAGMENT_TEXT",
-				value1 = "auto");
+				value1 = "loading",
+				value2 = "auto");
 		}
 	}
 

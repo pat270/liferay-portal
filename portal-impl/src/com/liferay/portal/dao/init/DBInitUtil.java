@@ -6,36 +6,34 @@
 package com.liferay.portal.dao.init;
 
 import com.liferay.petra.io.StreamUtil;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.dao.jdbc.util.DynamicDataSource;
-import com.liferay.portal.db.partition.DBPartitionUtil;
+import com.liferay.portal.db.partition.util.DBPartitionUtil;
 import com.liferay.portal.events.StartupHelperUtil;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.jdbc.DataSourceFactoryUtil;
-import com.liferay.portal.kernel.dependency.manager.DependencyManagerSync;
+import com.liferay.portal.kernel.dependency.manager.DependencyManagerSyncUtil;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.ReleaseConstants;
-import com.liferay.portal.kernel.module.util.ServiceLatch;
-import com.liferay.portal.kernel.module.util.SystemBundleUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.ReleaseInfo;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.spring.hibernate.DialectDetector;
 import com.liferay.portal.upgrade.PortalUpgradeProcess;
 import com.liferay.portal.util.PropsUtil;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+import java.util.Objects;
 import java.util.Properties;
 
 import javax.sql.DataSource;
+
+import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy;
 
 /**
  * @author Preston Crary
@@ -66,49 +64,20 @@ public class DBInitUtil {
 		try (Connection connection = _dataSource.getConnection()) {
 			_init(DBManagerUtil.getDB(), connection);
 
+			DBPartitionUtil.checkDatabasePartitionSchemaNamePrefix();
+
 			_dataSource = DBPartitionUtil.wrapDataSource(_dataSource);
 
 			DBPartitionUtil.setDefaultCompanyId(connection);
 		}
-	}
 
-	private static void _addReleaseInfo(Connection connection)
-		throws Exception {
-
-		try (PreparedStatement preparedStatement = connection.prepareStatement(
-				StringBundler.concat(
-					"insert into Release_ (releaseId, createDate, ",
-					"modifiedDate, servletContextName, schemaVersion, ",
-					"buildNumber, verified, testString) values (",
-					ReleaseConstants.DEFAULT_ID, ", ?, ?, ?, ?, ?, ?, ?)"))) {
-
-			Date date = new Date(System.currentTimeMillis());
-
-			preparedStatement.setDate(1, date);
-			preparedStatement.setDate(2, date);
-
-			preparedStatement.setString(
-				3, ReleaseConstants.DEFAULT_SERVLET_CONTEXT_NAME);
-			preparedStatement.setString(
-				4,
-				String.valueOf(PortalUpgradeProcess.getLatestSchemaVersion()));
-			preparedStatement.setInt(5, ReleaseInfo.getBuildNumber());
-			preparedStatement.setBoolean(6, false);
-			preparedStatement.setString(7, ReleaseConstants.TEST_STRING);
-
-			preparedStatement.executeUpdate();
-		}
+		_dataSource = new LazyConnectionDataSourceProxy(_dataSource);
 	}
 
 	private static boolean _checkDefaultRelease(Connection connection) {
-		try (PreparedStatement preparedStatement = connection.prepareStatement(
-				"select mvccVersion, schemaVersion, buildNumber, state_ from " +
-					"Release_ where releaseId = " +
-						ReleaseConstants.DEFAULT_ID);
-			ResultSet resultSet = preparedStatement.executeQuery()) {
-
-			if (!resultSet.next()) {
-				_addReleaseInfo(connection);
+		try {
+			if (!PortalUpgradeProcess.hasPortalRelease(connection)) {
+				PortalUpgradeProcess.createPortalRelease(connection);
 
 				_setDBNew();
 			}
@@ -134,12 +103,11 @@ public class DBInitUtil {
 		ClassLoader classLoader = DBInitUtil.class.getClassLoader();
 
 		_runSQLTemplate(db, connection, classLoader, "portal-tables.sql");
-		_runSQLTemplate(db, connection, classLoader, "portal-data-common.sql");
 		_runSQLTemplate(db, connection, classLoader, "portal-data-counter.sql");
 		_runSQLTemplate(db, connection, classLoader, "indexes.sql");
 		_runSQLTemplate(db, connection, classLoader, "sequences.sql");
 
-		_addReleaseInfo(connection);
+		PortalUpgradeProcess.createPortalRelease(connection);
 
 		_setDBNew();
 	}
@@ -250,19 +218,11 @@ public class DBInitUtil {
 	private static void _setDBNew() {
 		StartupHelperUtil.setDBNew(true);
 
-		ServiceLatch serviceLatch = SystemBundleUtil.newServiceLatch();
-
-		serviceLatch.waitFor(
-			DependencyManagerSync.class,
-			dependencyManagerSync -> dependencyManagerSync.registerSyncCallable(
-				() -> {
-					StartupHelperUtil.setDBNew(false);
-
-					return null;
-				}));
-
-		serviceLatch.openOn(
+		DependencyManagerSyncUtil.registerSyncCallable(
 			() -> {
+				StartupHelperUtil.setDBNew(false);
+
+				return null;
 			});
 	}
 
@@ -270,8 +230,9 @@ public class DBInitUtil {
 			DB db, Connection connection)
 		throws Exception {
 
-		if (!_hasDefaultReleaseWithTestString(
-				connection, ReleaseConstants.TEST_STRING)) {
+		if (!Objects.equals(
+				PortalUpgradeProcess.getCurrentTestString(connection),
+				ReleaseConstants.TEST_STRING)) {
 
 			throw new SystemException(
 				"Release_ table was not initialized properly");

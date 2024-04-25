@@ -5,7 +5,6 @@
 
 package com.liferay.commerce.order.content.web.internal.importer.type;
 
-import com.liferay.commerce.configuration.CommerceOrderImporterTypeConfiguration;
 import com.liferay.commerce.context.CommerceContextFactory;
 import com.liferay.commerce.exception.CommerceOrderImporterTypeException;
 import com.liferay.commerce.model.CommerceOrder;
@@ -27,7 +26,7 @@ import com.liferay.commerce.service.CommerceOrderService;
 import com.liferay.frontend.data.set.provider.search.FDSPagination;
 import com.liferay.frontend.taglib.servlet.taglib.util.JSPRenderer;
 import com.liferay.petra.function.transform.TransformUtil;
-import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
@@ -40,22 +39,18 @@ import java.io.IOException;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Alessio Antonio Rendina
  */
 @Component(
-	configurationPid = "com.liferay.commerce.configuration.CommerceOrderImporterTypeConfiguration",
 	property = "commerce.order.importer.type.key=" + CommerceOrdersCommerceOrderImporterTypeImpl.KEY,
 	service = CommerceOrderImporterType.class
 )
@@ -109,6 +104,7 @@ public class CommerceOrdersCommerceOrderImporterTypeImpl
 			_commerceOrderService, _userLocalService);
 	}
 
+	@Override
 	public int getCommerceOrderImporterItemsCount(Object object)
 		throws Exception {
 
@@ -132,13 +128,6 @@ public class CommerceOrdersCommerceOrderImporterTypeImpl
 	}
 
 	@Override
-	public boolean isActive(CommerceOrder commerceOrder)
-		throws PortalException {
-
-		return _commerceOrderImporterTypeConfiguration.enabled();
-	}
-
-	@Override
 	public void render(
 			CommerceOrder commerceOrder, HttpServletRequest httpServletRequest,
 			HttpServletResponse httpServletResponse)
@@ -158,14 +147,6 @@ public class CommerceOrdersCommerceOrderImporterTypeImpl
 		_jspRenderer.renderJSP(
 			httpServletRequest, httpServletResponse,
 			"/pending_commerce_orders/importer_type/common/preview.jsp");
-	}
-
-	@Activate
-	@Modified
-	protected void activate(Map<String, Object> properties) {
-		_commerceOrderImporterTypeConfiguration =
-			ConfigurableUtil.createConfigurable(
-				CommerceOrderImporterTypeConfiguration.class, properties);
 	}
 
 	private CommerceOrderImporterItemImpl[] _getCommerceOrderImporterItemImpls(
@@ -212,7 +193,7 @@ public class CommerceOrdersCommerceOrderImporterTypeImpl
 
 			if ((firstAvailableReplacementCPInstance != null) &&
 				!_cpAvailabilityChecker.check(
-					commerceChannelGroupId, cpInstance,
+					commerceChannelGroupId, cpInstance, StringPool.BLANK,
 					commerceOrderItem.getQuantity())) {
 
 				commerceOrderImporterItemImpl.setReplacingSKU(
@@ -241,6 +222,8 @@ public class CommerceOrdersCommerceOrderImporterTypeImpl
 		commerceOrderImporterItemImpl.setJSON(json);
 		commerceOrderImporterItemImpl.setQuantity(
 			commerceOrderItem.getQuantity());
+		commerceOrderImporterItemImpl.setUnitOfMeasureKey(
+			commerceOrderItem.getUnitOfMeasureKey());
 
 		return commerceOrderImporterItemImpl;
 	}
@@ -250,9 +233,6 @@ public class CommerceOrdersCommerceOrderImporterTypeImpl
 
 	@Reference
 	private CommerceContextFactory _commerceContextFactory;
-
-	private volatile CommerceOrderImporterTypeConfiguration
-		_commerceOrderImporterTypeConfiguration;
 
 	@Reference
 	private CommerceOrderItemService _commerceOrderItemService;

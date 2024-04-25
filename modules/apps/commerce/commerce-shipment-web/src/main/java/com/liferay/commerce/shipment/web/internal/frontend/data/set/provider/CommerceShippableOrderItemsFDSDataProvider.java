@@ -37,6 +37,8 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
+import java.math.BigDecimal;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -77,7 +79,7 @@ public class CommerceShippableOrderItemsFDSDataProvider
 				fdsPagination.getEndPosition());
 
 		for (CommerceOrderItem commerceOrderItem : commerceOrderItems) {
-			if (!commerceOrderItem.getShippable()) {
+			if (!commerceOrderItem.isShippable()) {
 				continue;
 			}
 
@@ -106,20 +108,24 @@ public class CommerceShippableOrderItemsFDSDataProvider
 			}
 
 			if (commerceShipmentItem == null) {
+				BigDecimal quantity = commerceOrderItem.getQuantity();
+
 				orderItems.add(
 					new OrderItem(
 						_commerceInventoryEngine.getStockQuantity(
 							commerceOrderItem.getCompanyId(),
 							commerceCatalogGroupId,
 							commerceOrderItem.getGroupId(),
-							commerceOrderItem.getSku()),
+							commerceOrderItem.getSku(),
+							commerceOrderItem.getUnitOfMeasureKey()),
 						icon, commerceOrderItem.getCommerceOrderId(),
 						commerceOrderItem.getCommerceOrderItemId(),
-						commerceOrderItem.getQuantity() -
-							commerceOrderItem.getShippedQuantity(),
+						quantity.subtract(
+							commerceOrderItem.getShippedQuantity()),
 						_getShippingMethodAndOptionName(
 							commerceOrder, httpServletRequest),
-						commerceOrderItem.getSku()));
+						commerceOrderItem.getSku(),
+						commerceOrderItem.getUnitOfMeasureKey()));
 			}
 		}
 

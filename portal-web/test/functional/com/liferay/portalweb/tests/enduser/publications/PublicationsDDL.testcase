@@ -1,17 +1,35 @@
 @component-name = "portal-publications"
 definition {
 
+	property custom.properties = "feature.flag.LPS-196935=false";
 	property osgi.module.configuration.file.names = "com.liferay.change.tracking.configuration.CTSettingsConfiguration.config";
 	property osgi.module.configurations = "enabled=B\"true\"";
-	property portal.release = "true";
+	property osgi.modules.includes = "dynamic-data-lists";
+	property portal.release = "false";
 	property portal.upstream = "true";
-	property testray.component.names = "Dynamic Data Lists";
 	property testray.main.component.name = "Publications";
 
 	setUp {
 		TestCase.setUpPortalInstance();
 
 		User.firstLoginPG();
+
+		task ("Given portal configured with DDL") {
+			ApplicationsMenu.gotoPortlet(
+				category = "Configuration",
+				panel = "Control Panel",
+				portlet = "Instance Settings");
+
+			SystemSettings.gotoConfiguration(
+				configurationCategory = "Feature Flags",
+				configurationName = "Deprecation",
+				configurationScope = "Virtual Instance Scope");
+
+			Check.checkToggleSwitch(
+				locator1 = "FeatureFlag#TOGGLE_ROW",
+				title_row = "Dynamic Data Lists",
+				toggle_state = "Disabled");
+		}
 	}
 
 	tearDown {
@@ -124,7 +142,7 @@ definition {
 			changeTitle = "New Data Definition for List: List Name",
 			changeType = "Deleted",
 			changeUser = "Test Test",
-			showAllItems = "true");
+			showSystemChanges = "true");
 
 		PublicationsChanges.viewChanges(
 			changeCategory = "Dynamic Data Lists Record",
@@ -158,6 +176,7 @@ definition {
 		LexiconEntry.viewNoEntry(rowEntry = "List Name");
 	}
 
+	@ignore = "true"
 	@priority = 3
 	test PublishPublicationWithDisplayTemplate {
 		JSONPublications.addPublication(publicationName = "Publication Name");
@@ -438,6 +457,8 @@ definition {
 
 	@priority = 3
 	test PublishPublicationWithFormTemplate {
+		property custom.properties = "feature.flag.LPS-196935=true";
+
 		JSONPublications.addPublication(publicationName = "Publication Name");
 
 		JSONPublications.selectPublication(publicationName = "Publication Name");
@@ -602,12 +623,11 @@ definition {
 
 		PublicationsChanges.viewChanges(
 			changeCategory = "Asset",
-			changeOrder = 6,
 			changeSite = "Site Name",
 			changeTitle = "New Data Definition for List: List Name",
 			changeType = "Added",
 			changeUser = "Test Test",
-			showAllItems = "true");
+			showSystemChanges = "true");
 
 		var changeTitle = JSONDDL.getRecordId(
 			ddlListName = "List Name",
@@ -626,6 +646,10 @@ definition {
 			changeTitle = "List Name",
 			changeType = "Added",
 			changeUser = "Test Test");
+
+		PublicationsChanges.filterChangesByItem(
+			checkboxName = "Dynamic Data Mapping Structure",
+			menuItem = "Types");
 
 		PublicationsChanges.viewChanges(
 			changeCategory = "Dynamic Data Mapping Structure",

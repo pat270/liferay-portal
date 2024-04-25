@@ -44,6 +44,7 @@ import com.liferay.portal.kernel.model.OrganizationConstants;
 import com.liferay.portal.kernel.model.Region;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.CountryLocalService;
@@ -54,14 +55,15 @@ import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserGroupRoleLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.settings.FallbackKeysSettingsUtil;
 import com.liferay.portal.kernel.settings.GroupServiceSettingsLocator;
 import com.liferay.portal.kernel.settings.ModifiableSettings;
 import com.liferay.portal.kernel.settings.Settings;
-import com.liferay.portal.kernel.settings.SettingsFactory;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
+import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -118,6 +120,10 @@ public class CommerceOrderTest {
 
 	@Before
 	public void setUp() throws Exception {
+		_originalCompanyId = CompanyThreadLocal.getCompanyId();
+
+		CompanyThreadLocal.setCompanyId(TestPropsValues.getCompanyId());
+
 		_group = GroupTestUtil.addGroup();
 		_user = UserTestUtil.addUser(true);
 
@@ -133,7 +139,7 @@ public class CommerceOrderTest {
 			CommerceChannelConstants.CHANNEL_TYPE_SITE, null,
 			_commerceCurrency.getCode(), _serviceContext);
 
-		Settings settings = _settingsFactory.getSettings(
+		Settings settings = FallbackKeysSettingsUtil.getSettings(
 			new GroupServiceSettingsLocator(
 				_commerceChannel.getGroupId(),
 				CommerceConstants.SERVICE_NAME_COMMERCE_ACCOUNT));
@@ -166,6 +172,8 @@ public class CommerceOrderTest {
 			componentDescriptionDTO);
 
 		voidPromise.getValue();
+
+		CompanyThreadLocal.setCompanyId(_originalCompanyId);
 	}
 
 	@Test
@@ -361,7 +369,7 @@ public class CommerceOrderTest {
 	}
 
 	@Test
-	public void testGetCommerceOrdersForOmniAdmin() throws Exception {
+	public void testGetCommerceOrdersForOmniadmin() throws Exception {
 		frutillaRule.scenario(
 			"Ensure that the Omni-Admin is able to pull all orders"
 		).given(
@@ -966,7 +974,7 @@ public class CommerceOrderTest {
 			"I should have only 2 order"
 		);
 
-		Settings settings = _settingsFactory.getSettings(
+		Settings settings = FallbackKeysSettingsUtil.getSettings(
 			new GroupServiceSettingsLocator(
 				_commerceChannel.getGroupId(),
 				CommerceConstants.SERVICE_NAME_COMMERCE_ORDER_FIELDS));
@@ -1158,6 +1166,7 @@ public class CommerceOrderTest {
 	@Inject
 	private OrganizationLocalService _organizationLocalService;
 
+	private long _originalCompanyId;
 	private Region _region;
 
 	@Inject
@@ -1170,10 +1179,6 @@ public class CommerceOrderTest {
 	private RoleLocalService _roleLocalService;
 
 	private ServiceContext _serviceContext;
-
-	@Inject
-	private SettingsFactory _settingsFactory;
-
 	private User _user;
 
 	@Inject

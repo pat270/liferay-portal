@@ -16,6 +16,7 @@ CookiesBannerDisplayContext cookiesBannerDisplayContext = (CookiesBannerDisplayC
 >
 	<clay:row>
 		<clay:content-row
+			cssClass="autofit-float-sm-down px-2 px-md-0"
 			noGutters="true"
 			verticalAlign="center"
 		>
@@ -67,5 +68,5 @@ CookiesBannerDisplayContext cookiesBannerDisplayContext = (CookiesBannerDisplayC
 <liferay-frontend:component
 	componentId="CookiesBanner"
 	context="<%= cookiesBannerDisplayContext.getContext(locale) %>"
-	module="cookies_banner/js/CookiesBanner"
+	module="{CookiesBanner} from cookies-banner-web"
 />

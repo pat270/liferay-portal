@@ -16,15 +16,17 @@ import com.liferay.item.selector.ItemSelector;
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorWebKeys;
 import com.liferay.layout.content.page.editor.sidebar.panel.ContentPageEditorSidebarPanel;
 import com.liferay.layout.content.page.editor.web.internal.configuration.PageEditorConfiguration;
-import com.liferay.layout.content.page.editor.web.internal.util.ContentManager;
-import com.liferay.layout.content.page.editor.web.internal.util.FragmentCollectionManager;
-import com.liferay.layout.content.page.editor.web.internal.util.FragmentEntryLinkManager;
+import com.liferay.layout.content.page.editor.web.internal.manager.ContentManager;
+import com.liferay.layout.content.page.editor.web.internal.manager.FragmentCollectionManager;
+import com.liferay.layout.content.page.editor.web.internal.manager.FragmentEntryLinkManager;
+import com.liferay.layout.manager.LayoutLockManager;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryService;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureRelLocalService;
+import com.liferay.layout.utility.page.model.LayoutUtilityPageEntry;
 import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerList;
 import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerListFactory;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
@@ -89,11 +91,32 @@ public class ContentPageEditorDisplayContextProvider {
 				_frontendTokenDefinitionRegistry, _groupLocalService,
 				httpServletRequest, _infoItemServiceRegistry,
 				_infoSearchClassMapperRegistry, _itemSelector, _jsonFactory,
-				_language, _layoutLocalService, _layoutSetLocalService,
-				_layoutPageTemplateEntryLocalService,
+				_language, _layoutLocalService, _layoutLockManager,
+				_layoutSetLocalService, _layoutPageTemplateEntryLocalService,
 				_layoutPageTemplateEntryService,
 				_layoutPageTemplateStructureLocalService,
 				_layoutPageTemplateStructureRelLocalService, _layoutPermission,
+				_pageEditorConfiguration, _portal, portletRequest,
+				_portletURLFactory, renderResponse,
+				_segmentsConfigurationProvider,
+				new SegmentsExperienceManager(_segmentsExperienceLocalService),
+				_segmentsExperienceLocalService,
+				_segmentsExperimentRelLocalService, _segmentsEntryService,
+				_staging, _stagingGroupHelper, _styleBookEntryLocalService,
+				_userLocalService, _workflowDefinitionLinkLocalService);
+		}
+
+		if (Objects.equals(className, LayoutUtilityPageEntry.class.getName())) {
+			return new ContentPageEditorLayoutUtilityPageEntryDisplayContext(
+				_getContentPageEditorSidebarPanels(), _contentManager,
+				_fragmentCollectionManager, _fragmentEntryLinkManager,
+				_fragmentEntryLinkLocalService, _fragmentEntryLocalService,
+				_frontendTokenDefinitionRegistry, httpServletRequest,
+				_infoItemServiceRegistry, _infoSearchClassMapperRegistry,
+				_itemSelector, _jsonFactory, _language, _layoutLocalService,
+				_layoutLockManager, _layoutSetLocalService,
+				_layoutPageTemplateEntryLocalService,
+				_layoutPageTemplateEntryService, _layoutPermission,
 				_pageEditorConfiguration, _portal, portletRequest,
 				_portletURLFactory, renderResponse,
 				_segmentsConfigurationProvider,
@@ -115,7 +138,7 @@ public class ContentPageEditorDisplayContextProvider {
 
 		if ((layoutPageTemplateEntry != null) &&
 			(layoutPageTemplateEntry.getType() ==
-				LayoutPageTemplateEntryTypeConstants.TYPE_DISPLAY_PAGE)) {
+				LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE)) {
 
 			pageIsDisplayPage = true;
 		}
@@ -127,15 +150,17 @@ public class ContentPageEditorDisplayContextProvider {
 			_frontendTokenDefinitionRegistry, httpServletRequest,
 			_infoItemServiceRegistry, _infoSearchClassMapperRegistry,
 			_itemSelector, _jsonFactory, _language, _layoutLocalService,
-			_layoutSetLocalService, _layoutPageTemplateEntryLocalService,
+			_layoutLockManager, _layoutSetLocalService,
+			_layoutPageTemplateEntryLocalService,
 			_layoutPageTemplateEntryService, _layoutPermission,
 			_pageEditorConfiguration, pageIsDisplayPage, _portal,
 			portletRequest, _portletURLFactory, renderResponse,
 			_segmentsConfigurationProvider,
 			new SegmentsExperienceManager(_segmentsExperienceLocalService),
 			_segmentsExperienceLocalService, _segmentsExperimentRelLocalService,
-			_staging, _stagingGroupHelper, _styleBookEntryLocalService,
-			_userLocalService, _workflowDefinitionLinkLocalService);
+			_segmentsEntryService, _staging, _stagingGroupHelper,
+			_styleBookEntryLocalService, _userLocalService,
+			_workflowDefinitionLinkLocalService);
 	}
 
 	@Activate
@@ -201,6 +226,9 @@ public class ContentPageEditorDisplayContextProvider {
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;
+
+	@Reference
+	private LayoutLockManager _layoutLockManager;
 
 	@Reference
 	private LayoutPageTemplateEntryLocalService

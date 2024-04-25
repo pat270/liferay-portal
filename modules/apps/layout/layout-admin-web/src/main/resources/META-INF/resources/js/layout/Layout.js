@@ -10,7 +10,10 @@ import Breadcrumbs from '../breadcrumbs/Breadcrumbs';
 import MillerColumns from '../miller_columns/MillerColumns';
 
 const Layout = ({
+	createPageTemplateURL,
+	getItemActionsURL,
 	getItemChildrenURL,
+	getPageTemplateCollectionsURL,
 	initialBreadcrumbEntries,
 	initialLayoutColumns,
 	isPrivateLayoutsEnabled,
@@ -136,6 +139,17 @@ const Layout = ({
 						type: 'danger',
 					});
 				}
+				else {
+					openToast({
+						message: Liferay.Language.get(
+							'your-request-processed-successfully'
+						),
+						toastProps: {
+							autoClose: 5000,
+						},
+						type: 'success',
+					});
+				}
 				if (updatedLayoutColumns) {
 					setLayoutColumns(updatedLayoutColumns);
 				}
@@ -164,6 +178,9 @@ const Layout = ({
 			<Breadcrumbs entries={breadcrumbEntries} />
 
 			<MillerColumns
+				createPageTemplateURL={createPageTemplateURL}
+				getItemActionsURL={getItemActionsURL}
+				getPageTemplateCollectionsURL={getPageTemplateCollectionsURL}
 				initialColumns={layoutColumns}
 				isPrivateLayoutsEnabled={isPrivateLayoutsEnabled}
 				isSiteTemplate={isSiteTemplate}
@@ -182,7 +199,10 @@ export default function ({
 	context: {namespace},
 	props: {
 		breadcrumbEntries,
+		createLayoutPageTemplateEntryURL,
+		getItemActionsURL,
 		getItemChildrenURL,
+		getLayoutPageTemplateCollectionsURL,
 		isLayoutSetPrototype = false,
 		isPrivateLayoutsEnabled,
 		languageId,
@@ -193,7 +213,10 @@ export default function ({
 }) {
 	return (
 		<Layout
+			createPageTemplateURL={createLayoutPageTemplateEntryURL}
+			getItemActionsURL={getItemActionsURL}
 			getItemChildrenURL={getItemChildrenURL}
+			getPageTemplateCollectionsURL={getLayoutPageTemplateCollectionsURL}
 			initialBreadcrumbEntries={breadcrumbEntries}
 			initialLayoutColumns={layoutColumns}
 			isLayoutSetPrototype={isLayoutSetPrototype}

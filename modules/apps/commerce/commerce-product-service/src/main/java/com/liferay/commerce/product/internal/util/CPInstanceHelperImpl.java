@@ -13,8 +13,6 @@ import com.liferay.commerce.product.availability.CPAvailabilityChecker;
 import com.liferay.commerce.product.catalog.CPCatalogEntry;
 import com.liferay.commerce.product.catalog.CPSku;
 import com.liferay.commerce.product.constants.CPAttachmentFileEntryConstants;
-import com.liferay.commerce.product.exception.CPDefinitionIgnoreSKUCombinationsException;
-import com.liferay.commerce.product.exception.NoSuchCPInstanceException;
 import com.liferay.commerce.product.internal.catalog.CPSkuImpl;
 import com.liferay.commerce.product.internal.util.comparator.CPDefinitionOptionRelComparator;
 import com.liferay.commerce.product.model.CPAttachmentFileEntry;
@@ -30,6 +28,7 @@ import com.liferay.commerce.product.service.CPDefinitionOptionRelLocalService;
 import com.liferay.commerce.product.service.CPDefinitionOptionValueRelLocalService;
 import com.liferay.commerce.product.service.CPInstanceLocalService;
 import com.liferay.commerce.product.service.CPInstanceOptionValueRelLocalService;
+import com.liferay.commerce.product.util.CPCollectionProviderHelper;
 import com.liferay.commerce.product.util.CPInstanceHelper;
 import com.liferay.commerce.product.util.CPJSONUtil;
 import com.liferay.commerce.product.util.comparator.CPDefinitionOptionValueRelPriorityComparator;
@@ -87,7 +86,7 @@ public class CPInstanceHelperImpl implements CPInstanceHelper {
 
 	@Override
 	public CPInstance fetchCPInstance(
-			long cpDefinitionId, String serializedDDMFormValues)
+			long cpDefinitionId, String serializedFormFieldValues)
 		throws PortalException {
 
 		CPDefinition cpDefinition = _cpDefinitionLocalService.getCPDefinition(
@@ -97,11 +96,11 @@ public class CPInstanceHelperImpl implements CPInstanceHelper {
 			return getDefaultCPInstance(cpDefinitionId);
 		}
 
-		if (CPJSONUtil.isEmpty(serializedDDMFormValues)) {
+		if (CPJSONUtil.isEmpty(serializedFormFieldValues)) {
 			return null;
 		}
 
-		return _fetchCPInstance(cpDefinitionId, serializedDDMFormValues);
+		return _fetchCPInstance(cpDefinitionId, serializedFormFieldValues);
 	}
 
 	@Override
@@ -114,7 +113,7 @@ public class CPInstanceHelperImpl implements CPInstanceHelper {
 
 		if ((cpInstance == null) || !cpInstance.isDiscontinued() ||
 			_cpAvailabilityChecker.check(
-				commerceChannelGroupId, cpInstance,
+				commerceChannelGroupId, cpInstance, StringPool.BLANK,
 				_cpDefinitionInventoryEngine.getMinOrderQuantity(cpInstance))) {
 
 			return null;
@@ -180,19 +179,19 @@ public class CPInstanceHelperImpl implements CPInstanceHelper {
 	@Override
 	public List<CPAttachmentFileEntry> getCPAttachmentFileEntries(
 			long commerceAccountId, long commerceChannelGroupId,
-			long cpDefinitionId, String serializedDDMFormValues, int type)
+			long cpDefinitionId, String serializedFormFieldValues, int type)
 		throws Exception {
 
 		return getCPAttachmentFileEntries(
 			commerceAccountId, commerceChannelGroupId, cpDefinitionId,
-			serializedDDMFormValues, type, QueryUtil.ALL_POS,
+			serializedFormFieldValues, type, QueryUtil.ALL_POS,
 			QueryUtil.ALL_POS);
 	}
 
 	@Override
 	public List<CPAttachmentFileEntry> getCPAttachmentFileEntries(
 			long commerceAccountId, long commerceChannelGroupId,
-			long cpDefinitionId, String serializedDDMFormValues, int type,
+			long cpDefinitionId, String serializedFormFieldValues, int type,
 			int start, int end)
 		throws Exception {
 
@@ -201,7 +200,7 @@ public class CPInstanceHelperImpl implements CPInstanceHelper {
 			commerceChannelGroupId, cpDefinitionId);
 
 		return _cpAttachmentFileEntryLocalService.getCPAttachmentFileEntries(
-			cpDefinitionId, serializedDDMFormValues, type, start, end);
+			cpDefinitionId, true, serializedFormFieldValues, type, start, end);
 	}
 
 	@Override
@@ -239,6 +238,15 @@ public class CPInstanceHelperImpl implements CPInstanceHelper {
 					getCPInstanceCPDefinitionOptionValueRels(
 						cpDefinitionId,
 						cpDefinitionOptionRel.getCPDefinitionOptionRelId()));
+
+				continue;
+			}
+
+			if (cpDefinitionOptionRel.isDefinedExternally()) {
+				cpDefinitionOptionRelsMap.put(
+					cpDefinitionOptionRel,
+					_cpCollectionProviderHelper.getCPDefinitionOptionValueRels(
+						cpDefinitionOptionRel, null, null));
 
 				continue;
 			}
@@ -316,9 +324,9 @@ public class CPInstanceHelperImpl implements CPInstanceHelper {
 			commerceAccountId, companyId, cpInstanceId);
 
 		String originalImgTag = StringBundler.concat(
-			"<img class=\"aspect-ratio-bg-cover aspect-ratio-item ",
-			"aspect-ratio-item-center-middle aspect-ratio-item-fluid ",
-			"card-type-asset-icon\" src=\"",
+			"<img alt=\"thumbnail\" class=\"aspect-ratio-bg-cover ",
+			"aspect-ratio-item aspect-ratio-item-center-middle ",
+			"aspect-ratio-item-fluid card-type-asset-icon\" src=\"",
 			getCPInstanceThumbnailSrc(commerceAccountId, cpInstanceId),
 			"\" />");
 
@@ -348,7 +356,7 @@ public class CPInstanceHelperImpl implements CPInstanceHelper {
 
 		List<CPAttachmentFileEntry> cpAttachmentFileEntries =
 			_cpAttachmentFileEntryLocalService.getCPAttachmentFileEntries(
-				cpInstance.getCPDefinitionId(), jsonArray.toString(),
+				cpInstance.getCPDefinitionId(), null, jsonArray.toString(),
 				CPAttachmentFileEntryConstants.TYPE_IMAGE, 0, 1);
 
 		if (cpAttachmentFileEntries.isEmpty()) {
@@ -490,7 +498,7 @@ public class CPInstanceHelperImpl implements CPInstanceHelper {
 
 		List<CPAttachmentFileEntry> cpAttachmentFileEntries =
 			_cpAttachmentFileEntryLocalService.getCPAttachmentFileEntries(
-				cpInstance.getCPDefinitionId(), jsonArray.toString(),
+				cpInstance.getCPDefinitionId(), null, jsonArray.toString(),
 				CPAttachmentFileEntryConstants.TYPE_IMAGE, 0, 1);
 
 		if (cpAttachmentFileEntries.isEmpty()) {
@@ -544,7 +552,7 @@ public class CPInstanceHelperImpl implements CPInstanceHelper {
 
 		List<CPAttachmentFileEntry> cpAttachmentFileEntries =
 			_cpAttachmentFileEntryLocalService.getCPAttachmentFileEntries(
-				cpInstance.getCPDefinitionId(), jsonArray.toString(),
+				cpInstance.getCPDefinitionId(), null, jsonArray.toString(),
 				CPAttachmentFileEntryConstants.TYPE_IMAGE, 0, 1);
 
 		if (cpAttachmentFileEntries.isEmpty()) {
@@ -565,38 +573,12 @@ public class CPInstanceHelperImpl implements CPInstanceHelper {
 	public CPInstance getDefaultCPInstance(long cpDefinitionId)
 		throws PortalException {
 
-		CPDefinition cpDefinition = _cpDefinitionLocalService.getCPDefinition(
-			cpDefinitionId);
-
-		if (!cpDefinition.isIgnoreSKUCombinations()) {
-			throw new CPDefinitionIgnoreSKUCombinationsException(
-				"Unable to get default CP instance if SKU combination present");
-		}
-
-		List<CPInstance> approvedCPInstances =
-			_cpInstanceLocalService.getCPDefinitionApprovedCPInstances(
-				cpDefinitionId);
-
-		if (approvedCPInstances.isEmpty()) {
-			return null;
-		}
-
-		if (approvedCPInstances.size() > 1) {
-			throw new NoSuchCPInstanceException(
-				"Unable to find default CP instance for CP definition ID " +
-					cpDefinitionId);
-		}
-
-		return approvedCPInstances.get(0);
+		return _cpInstanceLocalService.fetchDefaultCPInstance(cpDefinitionId);
 	}
 
 	@Override
 	public CPSku getDefaultCPSku(CPCatalogEntry cpCatalogEntry)
 		throws Exception {
-
-		if (!cpCatalogEntry.isIgnoreSKUCombinations()) {
-			return null;
-		}
 
 		CPInstance cpInstance = getDefaultCPInstance(
 			cpCatalogEntry.getCPDefinitionId());
@@ -841,7 +823,7 @@ public class CPInstanceHelperImpl implements CPInstanceHelper {
 
 		if ((cpInstance == null) || !cpInstance.isDiscontinued() ||
 			_cpAvailabilityChecker.check(
-				commerceChannelGroupId, cpInstance,
+				commerceChannelGroupId, cpInstance, StringPool.BLANK,
 				_cpDefinitionInventoryEngine.getMinOrderQuantity(cpInstance))) {
 
 			return cpInstance;
@@ -907,6 +889,9 @@ public class CPInstanceHelperImpl implements CPInstanceHelper {
 
 	@Reference
 	private CPAvailabilityChecker _cpAvailabilityChecker;
+
+	@Reference
+	private CPCollectionProviderHelper _cpCollectionProviderHelper;
 
 	@Reference
 	private CPDefinitionInventoryEngine _cpDefinitionInventoryEngine;

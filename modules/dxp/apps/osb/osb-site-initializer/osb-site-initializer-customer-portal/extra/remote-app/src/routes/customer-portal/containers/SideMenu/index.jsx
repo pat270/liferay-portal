@@ -11,6 +11,7 @@ import {Button} from '../../../../common/components';
 import getKebabCase from '../../../../common/utils/getKebabCase';
 import {useCustomerPortal} from '../../context';
 import {MENU_TYPES, PRODUCT_TYPES} from '../../utils/constants';
+import { getProperProductNames } from '../../utils/getProperProductNames';
 import SideMenuSkeleton from './Skeleton';
 import MenuItem from './components/MenuItem';
 
@@ -88,7 +89,7 @@ const SideMenu = () => {
 							setActive={menuUpdateStatus}
 							to={`${ACTIVATION_PATH}/${redirectPage}`}
 						>
-							{name}
+							{getProperProductNames(name)}
 						</MenuItem>
 					);
 				}
@@ -101,52 +102,59 @@ const SideMenu = () => {
 	}
 
 	return (
-		<div className="bg-neutral-1 cp-side-menu pl-4 pt-4">
+		<div className="bg-neutral-1 cp-side-menu ml-4 pl-4 pt-4">
 			<ul className="list-unstyled mr-2">
-				<MenuItem to="">
-					{i18n.translate(getKebabCase(MENU_TYPES.overview))}
-				</MenuItem>
+				<div className="d-flex">
+					<MenuItem iconKey="overview" to="">
+						{i18n.translate(getKebabCase(MENU_TYPES.overview))}
+					</MenuItem>
+				</div>
 
 				{featureFlags.includes('LPS-153478') &&
 					hasLiferayExperienceCloud && (
-						<MenuItem
-							to={getKebabCase(
-								PRODUCT_TYPES.liferayExperienceCloud
-							)}
-						>
-							{MENU_TYPES.liferayExperienceCloud}
-						</MenuItem>
+						<div className="d-flex">
+							<MenuItem
+								iconKey="experienceCloud"
+								to={getKebabCase(
+									PRODUCT_TYPES.liferayExperienceCloud
+								)}
+							>
+								{getProperProductNames(MENU_TYPES.liferayExperienceCloud)}
+							</MenuItem>
+						</div>
 					)}
 
 				<li>
-					<Button
-						appendIcon={
-							!!activationSubscriptionGroups.length &&
-							'angle-right-small'
-						}
-						appendIconClassName="ml-auto"
-						className={classNames(
-							'align-items-center btn-borderless d-flex px-2 py-2 rounded w-100',
-							{
-								'cp-product-activation-active': isOpenedProductsMenu,
-								'cp-products-list-active': hasSomeMenuItemActive,
-								'text-neutral-4':
-									activationSubscriptionGroups.length < 1,
-								'text-neutral-10': !!activationSubscriptionGroups.length,
+					<div className="d-flex">
+						<Button
+							appendIcon={
+								!!activationSubscriptionGroups.length &&
+								'angle-right-small'
 							}
-						)}
-						disabled={activationSubscriptionGroups.length < 1}
-						onClick={() =>
-							setIsOpenedProductsMenu(
-								(previousIsOpenedProductsMenu) =>
-									!previousIsOpenedProductsMenu
-							)
-						}
-					>
-						{i18n.translate(
-							getKebabCase(MENU_TYPES.productActivation)
-						)}
-					</Button>
+							appendIconClassName="ml-auto"
+							className={classNames(
+								'align-items-center btn-borderless d-flex px-2 py-2 rounded w-100',
+								{
+									'cp-product-activation-active': isOpenedProductsMenu,
+									'text-neutral-4':
+										activationSubscriptionGroups.length < 1,
+									'text-neutral-10': !!activationSubscriptionGroups.length,
+								}
+							)}
+							disabled={activationSubscriptionGroups.length < 1}
+							iconKey="productActivation"
+							onClick={() =>
+								setIsOpenedProductsMenu(
+									(previousIsOpenedProductsMenu) =>
+										!previousIsOpenedProductsMenu
+								)
+							}
+						>
+							{i18n.translate(
+								getKebabCase(MENU_TYPES.productActivation)
+							)}
+						</Button>
+					</div>
 
 					<ul
 						className={classNames(
@@ -161,9 +169,27 @@ const SideMenu = () => {
 					</ul>
 				</li>
 
-				<MenuItem to={getKebabCase(MENU_TYPES.teamMembers)}>
-					{i18n.translate(getKebabCase(MENU_TYPES.teamMembers))}
-				</MenuItem>
+				{featureFlags.includes('ISSD-119') && (
+					<div className="d-flex">
+						<MenuItem
+							iconKey="attachments"
+							to={getKebabCase(MENU_TYPES.attachments)}
+						>
+							{i18n.translate(
+								getKebabCase(MENU_TYPES.attachments)
+							)}
+						</MenuItem>
+					</div>
+				)}
+
+				<div className="d-flex">
+					<MenuItem
+						iconKey="teamMembers"
+						to={getKebabCase(MENU_TYPES.teamMembers)}
+					>
+						{i18n.translate(getKebabCase(MENU_TYPES.teamMembers))}
+					</MenuItem>
+				</div>
 			</ul>
 		</div>
 	);

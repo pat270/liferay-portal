@@ -1,13 +1,20 @@
 {
 	"dependencies": {
+		"@clayui/form": "3.113.0",
+		"@clayui/icon": "3.111.0",
+		"@liferay/frontend-js-react-web": "*",
+		"@liferay/frontend-js-state-web": "*",
+		"classnames": "2.3.1",
 		"commerce-frontend-js": "*",
-		"frontend-js-web": "*"
+		"frontend-js-web": "*",
+		"react": "16.12.0"
 	},
+	"main": "js/index.js",
 	"name": "@liferay/commerce-product-definitions-web",
 	"scripts": {
 		"build": "liferay-npm-scripts build",
 		"checkFormat": "liferay-npm-scripts check",
 		"format": "liferay-npm-scripts fix"
 	},
-	"version": "7.0.108"
+	"version": "7.0.130"
 }

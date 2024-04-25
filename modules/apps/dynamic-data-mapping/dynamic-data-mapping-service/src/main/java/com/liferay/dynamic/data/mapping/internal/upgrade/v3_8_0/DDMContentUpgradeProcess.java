@@ -25,6 +25,7 @@ import java.sql.ResultSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -70,10 +71,8 @@ public class DDMContentUpgradeProcess extends UpgradeProcess {
 
 					List<DDMFormField> fieldSetDDMFormFields = ListUtil.filter(
 						ddmForm.getDDMFormFields(),
-						ddmFormField -> ddmFormField.getType(
-						).equals(
-							"fieldset"
-						));
+						ddmFormField -> Objects.equals(
+							ddmFormField.getType(), "fieldset"));
 
 					if (fieldSetDDMFormFields.isEmpty()) {
 						continue;

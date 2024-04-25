@@ -19,7 +19,7 @@ CPMeasurementUnitsDisplayContext cpMeasurementUnitsDisplayContext = (CPMeasureme
 
 	<clay:management-toolbar
 		managementToolbarDisplayContext="<%= new CPMeasurementUnitsManagementToolbarDisplayContext(cpMeasurementUnitsDisplayContext, request, liferayPortletRequest, liferayPortletResponse) %>"
-		propsTransformer="js/CPMeasurementUnitsManagementToolbarPropsTransformer"
+		propsTransformer="{CPMeasurementUnitsManagementToolbarPropsTransformer} from commerce-product-measurement-unit-web"
 	/>
 
 	<div class="container-fluid container-fluid-max-xl">
@@ -45,8 +45,6 @@ CPMeasurementUnitsDisplayContext cpMeasurementUnitsDisplayContext = (CPMeasureme
 								renderResponse
 							).setMVCRenderCommandName(
 								"/cp_measurement_unit/edit_cp_measurement_unit"
-							).setRedirect(
-								currentURL
 							).setParameter(
 								"cpMeasurementUnitId", cpMeasurementUnit.getCPMeasurementUnitId()
 							).setParameter(

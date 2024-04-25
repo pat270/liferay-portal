@@ -2,7 +2,7 @@
 definition {
 
 	property app.server.bundles.size = "1";
-	property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=";
+	property custom.properties = "auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}tunneling.servlet.shared.secret=1234567890123456";
 	property databases.size = "1";
 	property minimum.slave.ram = "24";
 	property portal.release = "true";
@@ -58,10 +58,11 @@ definition {
 	}
 
 	@description = "This ensures that the image in depot can be removed and republished in Blogs cover image when enabling remote staging."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanDeleteBlogCoverImage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
@@ -162,10 +163,11 @@ definition {
 	}
 
 	@description = "This ensures that the image in depot can be removed and republished in Blogs inline image when enabling remote staging."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanDeleteBlogInlineImage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
@@ -269,10 +271,11 @@ definition {
 	}
 
 	@description = "This ensures that the blog small image from a depot can be removed and republished when enabling remote staging."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanDeleteBlogSmallImage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
@@ -379,6 +382,7 @@ definition {
 	test CanDeleteDMImage {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
@@ -480,6 +484,7 @@ definition {
 	@refactordone
 	test CanDeleteDocument {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
@@ -577,15 +582,13 @@ definition {
 	}
 
 	@description = "This ensures that custom field in document from depot can be deleted and republished in the site when enabling remote staging."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanDeleteDocumentWithCustomField {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Custom Fields");
+		CustomFields.openCustomFieldAdmin();
 
 		CustomFields.addCP(
 			customFieldName = "Text Field",
@@ -593,10 +596,7 @@ definition {
 			customInputDataType = "Text",
 			resourceName = "Document");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Custom Fields");
+		CustomFields.openCustomFieldAdmin();
 
 		LAR.exportPortlet(larFileName = "Custom_Fields.lar");
 
@@ -607,10 +607,7 @@ definition {
 			specificURL = "http://localhost:9080",
 			userEmailAddress = "test@liferay.com");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Custom Fields");
+		CustomFields.openCustomFieldAdmin(baseURL = "http://localhost:9080");
 
 		LAR.importPortlet(larFileName = "Custom_Fields.lar");
 
@@ -712,10 +709,11 @@ definition {
 	}
 
 	@description = "This ensures that the image in depot can be removed and republished in open graph when enabling remote staging."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanDeleteOpenGraphImage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
@@ -844,6 +842,7 @@ definition {
 	@refactordone
 	test CanDeleteVideoShortcut {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		DepotNavigator.openDepotDocumentsAndMediaAdmin(depotName = "Test Depot Name");
 
@@ -970,6 +969,7 @@ definition {
 	@refactordone
 	test CanDeleteWCImage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
@@ -1091,10 +1091,11 @@ definition {
 	}
 
 	@description = "This ensures that the blog image from a depot can be edited and republished when enabling remote staging."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanEditBlogCoverImage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		for (var num : list "1,2") {
 			JSONDocument.addFileWithUploadedFile(
@@ -1201,10 +1202,11 @@ definition {
 	}
 
 	@description = "This ensures that the blog inline image from a depot can be edited and republished when enabling remote staging."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanEditBlogInlineImage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		for (var num : list "1,2") {
 			JSONDocument.addFileWithUploadedFile(
@@ -1319,10 +1321,11 @@ definition {
 	}
 
 	@description = "This ensures that the blog small image from a depot can be edited and republished when enabling remote staging."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanEditBlogSmallImage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		for (var num : list "1,2") {
 			JSONDocument.addFileWithUploadedFile(
@@ -1418,10 +1421,11 @@ definition {
 	}
 
 	@description = "This ensures that an image in depot can be replaced and republished in AP through widget config manual selection when enabling remote staging."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanEditDMImage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
@@ -1520,6 +1524,7 @@ definition {
 	@refactordone
 	test CanEditDocument {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
@@ -1614,15 +1619,13 @@ definition {
 	}
 
 	@description = "This ensures that the custom field in document from depot can be edited and republished in the site when enabling remote staging."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanEditDocumentWithCustomField {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Custom Fields");
+		CustomFields.openCustomFieldAdmin();
 
 		CustomFields.addCP(
 			customFieldName = "Text Field",
@@ -1630,10 +1633,7 @@ definition {
 			customInputDataType = "Text",
 			resourceName = "Document");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Custom Fields");
+		CustomFields.openCustomFieldAdmin();
 
 		LAR.exportPortlet(larFileName = "Custom_Fields.lar");
 
@@ -1644,10 +1644,7 @@ definition {
 			specificURL = "http://localhost:9080",
 			userEmailAddress = "test@liferay.com");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Custom Fields");
+		CustomFields.openCustomFieldAdmin(baseURL = "http://localhost:9080");
 
 		LAR.importPortlet(larFileName = "Custom_Fields.lar");
 
@@ -1765,6 +1762,7 @@ definition {
 	@refactordone
 	test CanEditInternalVideo {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		DMNavigator.openToConfigInSystemSettings(portlet = "FFMPEG Video Converter");
 
@@ -1906,6 +1904,7 @@ definition {
 	@refactordone
 	test CanEditOpenGraphImage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		for (var num : list "1,2") {
 			JSONDocument.addFileWithUploadedFile(
@@ -2022,10 +2021,11 @@ definition {
 	}
 
 	@description = "This ensures that the image in depot can be replaced and republished in web content when enabling remote staging."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanEditWCImage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		for (var num : list "1,2") {
 			JSONDocument.addFileWithUploadedFile(
@@ -2149,10 +2149,11 @@ definition {
 	}
 
 	@description = "This ensures that a document pending review cannot be searched for in a staged site when enabling remote staging."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanNotSearchForPendingDocument {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONFolder.addFolder(
 			dmFolderDescription = "DM Folder Description",
@@ -2181,20 +2182,21 @@ definition {
 			pageName = "Test Page",
 			siteName = "Site Name");
 
-		SearchPortlets.addWidgetsViaUI(searchPortletList = "Search Results,Search Bar");
+		SearchPage.addWidgetsOnWidgetPageViaUI(searchPortletList = "Search Results,Search Bar");
 
-		SearchPortlets.searchWidget(searchTerm = "DM Document Title");
+		SearchPage.searchWidget(searchTerm = "DM Document Title");
 
-		SearchResultPortlet.viewSearchResultNotPresent(
+		SearchResults.viewSearchResultNotPresent(
 			searchAssetTitle = "DM Document Title",
 			searchAssetType = "Document");
 	}
 
 	@description = "This ensures that an unavailable structure from a depot can not be viewed in the staged site when enabling remote staging."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanNotSelectUnavailableStructure {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		DepotNavigator.openDepotDocumentsAndMediaAdmin(depotName = "Test Depot Name");
 
@@ -2223,6 +2225,7 @@ definition {
 	@refactordone
 	test CanNotViewImageFromDisconnectedSite {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Navigator.openSitePage(
 			pageName = "Test Page",
@@ -2269,10 +2272,11 @@ definition {
 	}
 
 	@description = "This ensures that a pending image in depot cannot be found in remote staging site."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanNotViewPendingImage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONFolder.addFolder(
 			dmFolderDescription = "DM Folder Description",
@@ -2317,6 +2321,7 @@ definition {
 	@priority = 4
 	test CanPublishAssetFromSiteWidget {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONFolder.addFolder(
 			dmFolderDescription = "DM Folder Description",
@@ -2379,6 +2384,7 @@ definition {
 	@priority = 4
 	test CanPublishDeletedDocumentFromFolderViaWidget {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONFolder.addFolder(
 			dmFolderDescription = "DM Folder Description",
@@ -2469,6 +2475,7 @@ definition {
 	@priority = 4
 	test CanPublishDeletedDocumentViaWidget {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Description",
@@ -2552,6 +2559,7 @@ definition {
 	@priority = 4
 	test CanPublishDeletedImageFromFolderViaWidget {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONFolder.addFolder(
 			dmFolderDescription = "DM Folder Description",
@@ -2642,6 +2650,7 @@ definition {
 	@priority = 4
 	test CanPublishDeletedImageViaWidget {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Description",
@@ -2722,10 +2731,11 @@ definition {
 	}
 
 	@description = "This ensures that a document using a custom document type from a depot can be published in the staging site when enabling remote staging."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanPublishDMWithDocumentType {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		DepotNavigator.openDepotDocumentsAndMediaAdmin(depotName = "Test Depot Name");
 
@@ -2790,10 +2800,11 @@ definition {
 	}
 
 	@description = "This ensures that a folder with a document in depot can be published in AP through widget config manual selection when enabling remote staging."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanPublishDocumentFolder {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONFolder.addFolder(
 			dmFolderDescription = "DM Folder Description",
@@ -2858,9 +2869,10 @@ definition {
 	}
 
 	@description = "This ensures that a document stored in a DM folder of asset library can be published in DM widget when remote staging is enabled."
-	@priority = 5
+	@priority = 4
 	test CanPublishDocumentFromFolderViaWidget {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONFolder.addFolder(
 			dmFolderDescription = "DM Folder Description",
@@ -2920,9 +2932,10 @@ definition {
 	}
 
 	@description = "This ensures that a document stored in an asset library can be published in DM widget when remote staging is enabled."
-	@priority = 5
+	@priority = 4
 	test CanPublishDocumentViaWidget {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Description",
@@ -2979,6 +2992,7 @@ definition {
 	@priority = 4
 	test CanPublishEditedDocumentFromFolderViaWidget {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONFolder.addFolder(
 			dmFolderDescription = "DM Folder Description",
@@ -3069,6 +3083,7 @@ definition {
 	@priority = 4
 	test CanPublishEditedDocumentViaWidget {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Description",
@@ -3149,6 +3164,7 @@ definition {
 	@priority = 4
 	test CanPublishEditedImageFromFolderViaWidget {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONFolder.addFolder(
 			dmFolderDescription = "DM Folder Description",
@@ -3239,6 +3255,7 @@ definition {
 	@priority = 4
 	test CanPublishEditedImageViaWidget {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Image Description",
@@ -3319,6 +3336,7 @@ definition {
 	@priority = 4
 	test CanPublishImageAfterChangingDepot {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDepot.addDepot(
 			depotDescription = "This is the description of a depot",
@@ -3428,6 +3446,7 @@ definition {
 	@priority = 4
 	test CanPublishImageAfterChangingRootFolder {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONFolder.addFolder(
 			dmFolderDescription = "DM Folder Description",
@@ -3515,10 +3534,11 @@ definition {
 	}
 
 	@description = "This ensures that the shortcut to an image in the depot can be added and published in the staging site when enabling remote staging."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanPublishImageShortcut {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
@@ -3574,6 +3594,7 @@ definition {
 	@priority = 5
 	test CanPublishImageViaWidget {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Image Description",
@@ -3627,15 +3648,13 @@ definition {
 	}
 
 	@description = "This ensures that an image with custom field in depot can be published in remote staging site."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanPublishImageWithCustomField {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Custom Fields");
+		CustomFields.openCustomFieldAdmin();
 
 		CustomFields.addCP(
 			customFieldName = "Text Field",
@@ -3643,10 +3662,7 @@ definition {
 			customInputDataType = "Text",
 			resourceName = "Document");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Custom Fields");
+		CustomFields.openCustomFieldAdmin();
 
 		LAR.exportPortlet(larFileName = "Custom_Fields.lar");
 
@@ -3657,10 +3673,7 @@ definition {
 			specificURL = "http://localhost:9080",
 			userEmailAddress = "test@liferay.com");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Custom Fields");
+		CustomFields.openCustomFieldAdmin(baseURL = "http://localhost:9080");
 
 		LAR.importPortlet(larFileName = "Custom_Fields.lar");
 
@@ -3723,6 +3736,7 @@ definition {
 	@refactordone
 	test CanPublishImageWithLatestVersion {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
@@ -3810,6 +3824,7 @@ definition {
 	@refactordone
 	test CanPublishImageWithLatestVersionInBlogs {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
@@ -3877,6 +3892,7 @@ definition {
 	@refactordone
 	test CanPublishVideoShortcutThumbnail {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		DepotNavigator.openDepotDocumentsAndMediaAdmin(depotName = "Test Depot Name");
 
@@ -3932,10 +3948,11 @@ definition {
 	}
 
 	@description = "This ensures that a document can be accessed in a staged site through the item selector after it has been approved when enabling remote staging."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanViewApprovedDocument {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONFolder.addFolder(
 			dmFolderDescription = "DM Folder Description",
@@ -4019,6 +4036,7 @@ definition {
 	@priority = 5
 	test CanViewBlogsCoverImageAfterFriendlyURLIsUpdated {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Image Description",
@@ -4099,6 +4117,7 @@ definition {
 	@priority = 5
 	test CanViewBlogsSmallImageAfterFriendlyURLIsUpdated {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Image Description",
@@ -4178,6 +4197,7 @@ definition {
 	@priority = 5
 	test CanViewExternalVideoFromBlogsContentFieldAfterFriendlyURLIsUpdated {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		DepotNavigator.openDepotDocumentsAndMediaAdmin(depotName = "Test Depot Name");
 
@@ -4211,6 +4231,8 @@ definition {
 		Staging.gotoPublishToLive();
 
 		Staging.publishToLive(remoteStaging = "true");
+
+		Refresh();
 
 		DepotNavigator.openToEditDMEntryInDepot(
 			depotName = "Test Depot Name",
@@ -4255,6 +4277,7 @@ definition {
 	@priority = 4
 	test CanViewExternalVideotInWCAfterFriendlyURLIsUpdated {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		DepotNavigator.openDepotDocumentsAndMediaAdmin(depotName = "Test Depot Name");
 
@@ -4298,6 +4321,8 @@ definition {
 
 		Staging.publishToLive(remoteStaging = "true");
 
+		Refresh();
+
 		DepotNavigator.openToEditDMEntryInDepot(
 			depotName = "Test Depot Name",
 			dmDocumentTitle = "Test YouTube Video");
@@ -4334,10 +4359,11 @@ definition {
 	}
 
 	@description = "This ensures that a depot image can be displayed in the Blog's item selector after scoped everywhere filter when enabling remote staging."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanViewImageAfterScopedFilter {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
@@ -4362,9 +4388,10 @@ definition {
 	}
 
 	@description = "This test covers LPS-154436. It ensures that an image with a custom friendlyURL can be correctly rendered in the Blog content field on a site after its friendlyURL is edited and published from an asset library."
-	@priority = 5
+	@priority = 4
 	test CanViewImageFromBlogsContentFieldAfterFriendlyURLIsUpdated {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
@@ -4444,6 +4471,7 @@ definition {
 	@priority = 4
 	test CanViewImageInDynamicCollectionViaAPAfterFriendlyURLIsUpdated {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Image Description",
@@ -4526,6 +4554,7 @@ definition {
 	@priority = 4
 	test CanViewImagetInWCAfterFriendlyURLIsUpdated {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Image Description",
@@ -4607,9 +4636,10 @@ definition {
 	}
 
 	@description = "This test covers LPS-155797. It ensures that an image that was published in a depot can still be accessed after remote staging is disabled."
-	@priority = 5
+	@priority = 3
 	test ImageIsStillAccessibleAfterDisablingStaging {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Image Description",

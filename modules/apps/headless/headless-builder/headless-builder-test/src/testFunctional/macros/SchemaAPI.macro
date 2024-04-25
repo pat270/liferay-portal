@@ -1,0 +1,161 @@
+definition {
+
+	@summary = "Default summary"
+	macro _curlAPISchema(requestSchemaId = null, responseSchemaId = null, endpointId = null, virtualHost = null, responseSchemaErc = null, requestSchemaErc = null, endpointErc = null) {
+		if (isSet(virtualHost)) {
+			if (!(isSet(port))) {
+				var port = 8080;
+			}
+
+			var portalURL = "http://${virtualHost}:${port}";
+		}
+		else {
+			var portalURL = JSONCompany.getPortalURL();
+		}
+
+		var api = "headless-builder/schemas";
+
+		if (isSet(requestSchemaId) && isSet(endpointId)) {
+			var api = "${api}/${requestSchemaId}/requestAPISchemaToAPIEndpoints/${endpointId}";
+		}
+
+		if (isSet(responseSchemaId) && isSet(endpointId)) {
+			var api = "${api}/${responseSchemaId}/responseAPISchemaToAPIEndpoints/${endpointId}";
+		}
+
+		if (isSet(responseSchemaErc) && isSet(endpointErc)) {
+			var api = "${api}/by-external-reference-code/${responseSchemaErc}/responseAPISchemaToAPIEndpoints/${endpointErc}";
+		}
+
+		if (isSet(requestSchemaErc) && isSet(endpointErc)) {
+			var api = "${api}/by-external-reference-code/${requestSchemaErc}/requestAPISchemaToAPIEndpoints/${endpointErc}";
+		}
+
+		var curl = '''
+			${portalURL}/o/${api} \
+				-u test@liferay.com:test \
+				-H Content-Type: application/json
+		''';
+
+		return ${curl};
+	}
+
+	@summary = "Default summary"
+	macro createAPISchema(mainObjectDefinitionERC = null, name = null, virtualHost = null, apiApplicationERC = null) {
+		Variables.assertDefined(parameterList = "${mainObjectDefinitionERC},${name},${apiApplicationERC}");
+
+		if (!(isSet(schemaERC))) {
+			var schemaERC = ${name};
+		}
+
+		var curl = SchemaAPI._curlAPISchema(virtualHost = ${virtualHost});
+		var body = '''
+			-d {
+				"externalReferenceCode": "${schemaERC}",
+				"mainObjectDefinitionERC": "${mainObjectDefinitionERC}",
+				"name": "${name}",
+				"r_apiApplicationToAPISchemas_c_apiApplicationERC": "${apiApplicationERC}"
+			}
+		''';
+
+		var curl = StringUtil.add(${curl}, " \ ${body}", "");
+
+		var response = JSONCurlUtil.post(${curl});
+
+		return ${response};
+	}
+
+	@summary = "Default summary"
+	macro createNAPISchemas(numberOfSchemas = null, mainObjectDefinitionERC = null, name = null, externalReferenceCode = null) {
+		Variables.assertDefined(parameterList = "${numberOfSchemas},${mainObjectDefinitionERC},${name},${apiApplicationERC}");
+
+		var i = 0;
+
+		while (${i} != ${numberOfSchemas}) {
+			var i = ${i} + 1;
+
+			SchemaAPI.createAPISchema(
+				apiApplicationERC = ${apiApplicationERC},
+				mainObjectDefinitionERC = ${mainObjectDefinitionERC},
+				name = "${name}${i}");
+		}
+	}
+
+	@summary = "Default summary"
+	macro getAPISchemas(virtualHost = null) {
+		var curl = SchemaAPI._curlAPISchema(virtualHost = ${virtualHost});
+
+		var response = JSONCurlUtil.get(${curl});
+
+		return ${response};
+	}
+
+	@summary = "Default summary"
+	macro relateRequestSchemaToEndpointByErc(requestSchemaErc = null, endpointErc = null) {
+		Variables.assertDefined(parameterList = "${endpointErc},${requestSchemaErc}");
+
+		var curl = SchemaAPI._curlAPISchema(
+			endpointErc = ${endpointErc},
+			requestSchemaErc = ${requestSchemaErc});
+
+		var response = JSONCurlUtil.put(${curl});
+
+		var schemaErc = JSONUtil.getWithJSONPath(${response}, "$.r_requestAPISchemaToAPIEndpoints_c_apiSchemaERC");
+
+		TestUtils.assertEquals(
+			actual = ${schemaErc},
+			expected = ${requestSchemaErc});
+	}
+
+	@summary = "Default summary"
+	macro relateRequestSchemaToEndpointByIds(requestSchemaId = null, endpointId = null) {
+		Variables.assertDefined(parameterList = "${requestSchemaId},${endpointId}");
+
+		var curl = SchemaAPI._curlAPISchema(
+			endpointId = ${endpointId},
+			requestSchemaId = ${requestSchemaId});
+
+		var response = JSONCurlUtil.put(${curl});
+
+		var schemaId = JSONUtil.getWithJSONPath(${response}, "$.r_requestAPISchemaToAPIEndpoints_c_apiSchemaId");
+
+		TestUtils.assertEquals(
+			actual = ${schemaId},
+			expected = ${requestSchemaId});
+	}
+
+	@summary = "Default summary"
+	macro relateResponseSchemaToEndpointByErc(responseSchemaErc = null, endpointErc = null) {
+		Variables.assertDefined(parameterList = "${endpointErc},${responseSchemaErc}");
+
+		var curl = SchemaAPI._curlAPISchema(
+			endpointErc = ${endpointErc},
+			responseSchemaErc = ${responseSchemaErc});
+
+		var response = JSONCurlUtil.put(${curl});
+
+		var schemaErc = JSONUtil.getWithJSONPath(${response}, "$.r_responseAPISchemaToAPIEndpoints_c_apiSchemaERC");
+
+		TestUtils.assertEquals(
+			actual = ${schemaErc},
+			expected = ${responseSchemaErc});
+	}
+
+	@summary = "Default summary"
+	macro relateResponseSchemaToEndpointByIds(responseSchemaId = null, endpointId = null) {
+		Variables.assertDefined(parameterList = "${responseSchemaId},${endpointId}");
+
+		var curl = SchemaAPI._curlAPISchema(
+			endpointId = ${endpointId},
+			responseSchemaId = ${responseSchemaId});
+
+		var response = JSONCurlUtil.put(${curl});
+
+		var schemaId = JSONUtil.getWithJSONPath(${response}, "$.r_responseAPISchemaToAPIEndpoints_c_apiSchemaId");
+
+		TestUtils.assertEquals(
+			actual = ${schemaId},
+			expected = ${responseSchemaId});
+	}
+
+}

@@ -7,10 +7,12 @@ package com.liferay.knowledge.base.model;
 
 import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.ExternalReferenceCodeModel;
 import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ResourcedModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.model.StagedGroupedModel;
+import com.liferay.portal.kernel.model.TrashedModel;
 import com.liferay.portal.kernel.model.WorkflowedModel;
 import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
@@ -31,8 +33,9 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface KBArticleModel
-	extends BaseModel<KBArticle>, CTModel<KBArticle>, MVCCModel, ResourcedModel,
-			ShardedModel, StagedGroupedModel, WorkflowedModel {
+	extends BaseModel<KBArticle>, CTModel<KBArticle>,
+			ExternalReferenceCodeModel, MVCCModel, ResourcedModel, ShardedModel,
+			StagedGroupedModel, TrashedModel, WorkflowedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -257,6 +260,7 @@ public interface KBArticleModel
 	 * @return the external reference code of this kb article
 	 */
 	@AutoEscape
+	@Override
 	public String getExternalReferenceCode();
 
 	/**
@@ -264,6 +268,7 @@ public interface KBArticleModel
 	 *
 	 * @param externalReferenceCode the external reference code of this kb article
 	 */
+	@Override
 	public void setExternalReferenceCode(String externalReferenceCode);
 
 	/**
@@ -620,6 +625,22 @@ public interface KBArticleModel
 	 */
 	@Override
 	public void setStatusDate(Date statusDate);
+
+	/**
+	 * Returns the class primary key of the trash entry for this kb article.
+	 *
+	 * @return the class primary key of the trash entry for this kb article
+	 */
+	@Override
+	public long getTrashEntryClassPK();
+
+	/**
+	 * Returns <code>true</code> if this kb article is in the Recycle Bin.
+	 *
+	 * @return <code>true</code> if this kb article is in the Recycle Bin; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isInTrash();
 
 	/**
 	 * Returns <code>true</code> if this kb article is approved.

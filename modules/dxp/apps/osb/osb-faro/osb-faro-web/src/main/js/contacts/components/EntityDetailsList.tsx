@@ -3,7 +3,6 @@ import Card from 'shared/components/Card';
 import Checkbox from 'shared/components/Checkbox';
 import getCN from 'classnames';
 import Nav from 'shared/components/Nav';
-import Promise from 'metal-promise';
 import React from 'react';
 import SearchableEntityTable from 'shared/components/SearchableEntityTable';
 import {detailsListColumns} from 'shared/util/table-columns';
@@ -147,16 +146,30 @@ export default class EntityDetailsList extends React.Component<IEntityDetailsLis
 					<Card.Title>{title}</Card.Title>
 
 					<div className='secondary-info'>
-						{sub(
-							Liferay.Language.get(
-								'x-known-attributes-of-x-total'
-							),
-							[
-								<b key='KNOWN'>{this._knownCount}</b>,
-								<b key='TOTAL'>{this._detailsData.length}</b>
-							],
-							false
-						)}
+						{this._knownCount === 1
+							? sub(
+									Liferay.Language.get(
+										'1-known-individual-is-available-of-x-total'
+									),
+									[
+										<b key='TOTAL'>
+											{this._detailsData.length}
+										</b>
+									],
+									false
+							  )
+							: sub(
+									Liferay.Language.get(
+										'x-known-individuals-are-available-of-x-total'
+									),
+									[
+										<b key='KNOWN'>{this._knownCount}</b>,
+										<b key='TOTAL'>
+											{this._detailsData.length}
+										</b>
+									],
+									false
+							  )}
 					</div>
 				</Card.Header>
 

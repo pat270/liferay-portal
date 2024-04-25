@@ -3,7 +3,15 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-// Address API
+// Align API
+
+export {
+	ALIGN_POSITIONS,
+	align,
+	getAlignBestRegion,
+	getAlignRegion,
+	suggestAlignBestRegion,
+} from './liferay/align';
 
 // Aop API
 
@@ -62,8 +70,9 @@ export {
 } from './liferay/modal/Modal';
 
 export {default as openAlertModal} from './liferay/modal/commands/open_alert_modal';
+export {default as openCategorySelectionModal} from './liferay/modal/commands/openCategorySelectionModal';
 export {default as openConfirmModal} from './liferay/modal/commands/open_confirm_modal';
-
+export {default as openTagSelectionModal} from './liferay/modal/commands/openTagSelectionModal';
 export {default as openSimpleInputModal} from './liferay/modal/commands/OpenSimpleInputModal.es';
 
 // PortletURL API
@@ -73,15 +82,11 @@ export {default as createPortletURL} from './liferay/util/portlet_url/create_por
 export {default as createRenderURL} from './liferay/util/portlet_url/create_render_url.es';
 export {default as createResourceURL} from './liferay/util/portlet_url/create_resource_url.es';
 
-// Align API
+// Client Extensions API
 
-export {
-	ALIGN_POSITIONS,
-	align,
-	getAlignBestRegion,
-	getAlignRegion,
-	suggestAlignBestRegion,
-} from './liferay/align';
+export {default as loadClientExtensions} from './utils/client_extensions/loadClientExtensions';
+export {default as loadEditorClientExtensions} from './utils/client_extensions/loadEditorClientExtensions';
+export {loadModule} from './utils/client_extensions/loadModule';
 
 // Session API
 
@@ -128,6 +133,7 @@ export {default as memoize} from './liferay/util/memoize';
 export {default as navigate} from './liferay/util/navigate.es';
 export {default as normalizeFriendlyURL} from './liferay/util/normalize_friendly_url';
 export {default as openWindow} from './liferay/util/open_window';
+export {default as printPage} from './liferay/util/print_page';
 export {default as removeEntitySelection} from './liferay/util/remove_entity_selection';
 export {default as showCapsLock} from './liferay/util/show_caps_lock';
 export {default as runScriptsInElement} from './liferay/util/run_scripts_in_element.es';

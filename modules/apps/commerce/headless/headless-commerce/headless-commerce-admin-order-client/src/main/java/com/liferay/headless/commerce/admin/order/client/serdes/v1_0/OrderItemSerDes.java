@@ -7,6 +7,7 @@ package com.liferay.headless.commerce.admin.order.client.serdes.v1_0;
 
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.CustomField;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
+import com.liferay.headless.commerce.admin.order.client.dto.v1_0.VirtualItem;
 import com.liferay.headless.commerce.admin.order.client.json.BaseJSONParser;
 
 import java.math.BigDecimal;
@@ -509,6 +510,20 @@ public class OrderItemSerDes {
 			sb.append("\"");
 		}
 
+		if (orderItem.getUnitOfMeasureKey() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"unitOfMeasureKey\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(orderItem.getUnitOfMeasureKey()));
+
+			sb.append("\"");
+		}
+
 		if (orderItem.getUnitPrice() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -546,6 +561,26 @@ public class OrderItemSerDes {
 				sb.append("\"");
 
 				if ((i + 1) < orderItem.getVirtualItemURLs().length) {
+					sb.append(", ");
+				}
+			}
+
+			sb.append("]");
+		}
+
+		if (orderItem.getVirtualItems() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"virtualItems\": ");
+
+			sb.append("[");
+
+			for (int i = 0; i < orderItem.getVirtualItems().length; i++) {
+				sb.append(String.valueOf(orderItem.getVirtualItems()[i]));
+
+				if ((i + 1) < orderItem.getVirtualItems().length) {
 					sb.append(", ");
 				}
 			}
@@ -912,6 +947,15 @@ public class OrderItemSerDes {
 				"unitOfMeasure", String.valueOf(orderItem.getUnitOfMeasure()));
 		}
 
+		if (orderItem.getUnitOfMeasureKey() == null) {
+			map.put("unitOfMeasureKey", null);
+		}
+		else {
+			map.put(
+				"unitOfMeasureKey",
+				String.valueOf(orderItem.getUnitOfMeasureKey()));
+		}
+
 		if (orderItem.getUnitPrice() == null) {
 			map.put("unitPrice", null);
 		}
@@ -935,6 +979,14 @@ public class OrderItemSerDes {
 			map.put(
 				"virtualItemURLs",
 				String.valueOf(orderItem.getVirtualItemURLs()));
+		}
+
+		if (orderItem.getVirtualItems() == null) {
+			map.put("virtualItems", null);
+		}
+		else {
+			map.put(
+				"virtualItems", String.valueOf(orderItem.getVirtualItems()));
 		}
 
 		return map;
@@ -1169,7 +1221,7 @@ public class OrderItemSerDes {
 			else if (Objects.equals(jsonParserFieldName, "quantity")) {
 				if (jsonParserFieldValue != null) {
 					orderItem.setQuantity(
-						Integer.valueOf((String)jsonParserFieldValue));
+						new BigDecimal((String)jsonParserFieldValue));
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "replacedSku")) {
@@ -1194,7 +1246,7 @@ public class OrderItemSerDes {
 			else if (Objects.equals(jsonParserFieldName, "shippedQuantity")) {
 				if (jsonParserFieldValue != null) {
 					orderItem.setShippedQuantity(
-						Integer.valueOf((String)jsonParserFieldValue));
+						new BigDecimal((String)jsonParserFieldValue));
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "shippingAddress")) {
@@ -1239,6 +1291,11 @@ public class OrderItemSerDes {
 					orderItem.setUnitOfMeasure((String)jsonParserFieldValue);
 				}
 			}
+			else if (Objects.equals(jsonParserFieldName, "unitOfMeasureKey")) {
+				if (jsonParserFieldValue != null) {
+					orderItem.setUnitOfMeasureKey((String)jsonParserFieldValue);
+				}
+			}
 			else if (Objects.equals(jsonParserFieldName, "unitPrice")) {
 				if (jsonParserFieldValue != null) {
 					orderItem.setUnitPrice(
@@ -1257,6 +1314,22 @@ public class OrderItemSerDes {
 				if (jsonParserFieldValue != null) {
 					orderItem.setVirtualItemURLs(
 						toStrings((Object[])jsonParserFieldValue));
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "virtualItems")) {
+				if (jsonParserFieldValue != null) {
+					Object[] jsonParserFieldValues =
+						(Object[])jsonParserFieldValue;
+
+					VirtualItem[] virtualItemsArray =
+						new VirtualItem[jsonParserFieldValues.length];
+
+					for (int i = 0; i < virtualItemsArray.length; i++) {
+						virtualItemsArray[i] = VirtualItemSerDes.toDTO(
+							(String)jsonParserFieldValues[i]);
+					}
+
+					orderItem.setVirtualItems(virtualItemsArray);
 				}
 			}
 		}

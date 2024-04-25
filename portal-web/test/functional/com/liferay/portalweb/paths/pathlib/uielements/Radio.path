@@ -16,6 +16,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ANY_CHECKED</td>
+	<td>//label[contains(.,'${radioLabel}')]/input[@type='radio' and @checked]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>APPEND</td>
 	<td>//label[contains(.,'Append')]/input</td>
 	<td></td>
@@ -48,6 +53,11 @@
 <tr>
 	<td>CHOOSE_CONTENT_DATE_RANGE_CHANGE</td>
 	<td>//input[contains(@id,'rangeDateRange')]//following-sibling::span</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CHOOSE_CONTENT_FROM_LAST_PUBLISH_DATE_CHANGE</td>
+	<td>//input[contains(@id,'rangeLastPublish')]//following-sibling::span</td>
 	<td></td>
 </tr>
 <tr>

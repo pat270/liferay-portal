@@ -1,6 +1,7 @@
 definition {
 
-	macro addAnyFolder {
+	@summary = "Default summary"
+	macro addAnyFolder(folderName = null) {
 		IFrame.selectModalFrame();
 
 		LexiconEntry.gotoAdd();
@@ -22,43 +23,55 @@ definition {
 			value1 = ${folderName});
 	}
 
-	macro assertOptionAndDescriptionOnRequestFiles {
-		Click(locator1 = "ObjectField#REQUEST_FILES_INPUT");
+	@summary = "Default summary"
+	macro addTranslatableTextEntryViaUI(mainEntryValue = null, fieldLabel = null, buttonFieldEntryLanguage = null, locale = null, translatedEntryValue = null) {
+		LexiconEntry.gotoAdd();
 
-		AssertElementPresent(
-			key_fieldType = ${option},
-			locator1 = "ObjectField#TYPE_OPTION");
+		Type(
+			key_fieldLabel = ${fieldLabel},
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = ${mainEntryValue});
 
-		AssertTextEquals(
-			key_type = ${option},
-			locator1 = "ObjectField#FIELD_TYPE_DESCRIPTION",
-			value1 = ${description});
+		Click(
+			key_buttonFieldEntryLanguage = ${buttonFieldEntryLanguage},
+			locator1 = "ObjectField#BUTTON_FIELD_ENTRY_LANGUAGE");
+
+		Click(
+			key_locale = ${locale},
+			locator1 = "Translation#DROPDOWN_MENU_ITEM");
+
+		Type(
+			key_fieldLabel = ${fieldLabel},
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = ${translatedEntryValue});
+
+		Button.clickSave();
 	}
 
-	macro checkLimitCharacters {
+	@summary = "Default summary"
+	macro checkLimitCharacters() {
 		Click(
 			key_labelName = "Limit Characters",
 			locator1 = "ObjectField#DEFAULT_TOGGLE_SWITCH");
 	}
 
-	macro checkToggleMandatory {
+	@summary = "Default summary"
+	macro checkToggleMandatory() {
 		Check.checkToggleSwitch(locator1 = "ObjectField#MANDATORY_TOGGLE");
 	}
 
-	macro closeModal {
+	@summary = "Default summary"
+	macro closeModal() {
 		Click(locator1 = "ObjectField#MODAL_CLOSE_BUTTON");
 	}
 
-	macro editFormulaField {
+	@summary = "Default summary"
+	macro editFormulaField(newContent = null, formulaScript = null, newTypeFormula = null) {
 		ObjectField.typeLabel(content = ${newContent});
 
-		Click(
-			key_filterLabel = "Output",
-			locator1 = "ObjectCustomViews#SELECT_FILTER_GENERIC");
-
-		Click(
-			key_dropdownItem = ${newTypeFormula},
-			locator1 = "ObjectField#SELECT_FORMULA_FIELD_OPTION");
+		ObjectAdmin.selectDropdownItem(
+			labelName = "Output",
+			optionName = ${newTypeFormula});
 
 		Type(
 			key_text = "Formula Builder",
@@ -66,69 +79,62 @@ definition {
 			value1 = ${formulaScript});
 	}
 
-	macro save {
+	@summary = "Default summary"
+	macro save() {
 		Click(locator1 = "ObjectField#SAVE_BUTTON");
 
 		Refresh();
 	}
 
-	macro selectOptionOnRequestFiles {
-		Click(locator1 = "ObjectField#REQUEST_FILES_INPUT");
-
-		Click(
-			key_fieldType = ${option},
-			locator1 = "ObjectField#TYPE_OPTION");
+	@summary = "Default summary"
+	macro selectOptionOnRequestFiles(option = null) {
+		ObjectAdmin.selectDropdownItem(
+			labelName = "Request Files",
+			optionName = ${option});
 	}
 
-	macro selectPicklist {
-		if (!(isSet(dropdownLabel))) {
-			var dropdownLabel = "Picklist";
-		}
-
-		Click(
-			dropdownLabel = ${dropdownLabel},
-			locator1 = "ObjectField#ANY_DROPDOWN_LABEL");
-
-		MenuItem.click(menuItem = ${picklistName});
+	@summary = "Default summary"
+	macro selectType(fieldType = null) {
+		ObjectAdmin.selectDropdownItem(
+			labelName = "Type",
+			optionName = ${fieldType});
 	}
 
-	macro selectType {
-		Click(locator1 = "ObjectField#TYPE_FIELD");
-
-		Click(
-			key_fieldType = ${fieldType},
-			locator1 = "ObjectField#TYPE_OPTION");
-	}
-
-	macro toggleMandatory {
+	@summary = "Default summary"
+	macro toggleMandatory() {
 		Check.toggleSwitch(locator1 = "ObjectField#MANDATORY_TOGGLE");
 	}
 
-	macro typeLabel {
+	@summary = "Default summary"
+	macro typeLabel(content = null) {
 		Type(
 			locator1 = "ObjectField#LABEL_LOCALIZED",
 			value1 = ${content});
 	}
 
-	macro typeName {
+	@summary = "Default summary"
+	macro typeName(fieldName = null) {
 		Type(
 			locator1 = "ObjectField#NAME_FIELD",
 			value1 = ${fieldName});
 	}
 
-	macro typeStorageFolder {
+	@summary = "Default summary"
+	macro typeStorageFolder(content = null) {
 		Type(
 			locator1 = "ObjectField#STORAGE_FOLDER_INPUT",
 			value1 = ${content});
 	}
 
-	macro typeValueOnLimitCharacters {
+	@summary = "Default summary"
+	macro typeValueOnLimitCharacters(newValue = null) {
 		Type(
 			locator1 = "ObjectField#TYPE_MAXIMUM_NUMBER_CHARACTERS",
 			value1 = ${newValue});
 	}
 
-	macro viewToogleOnSidePanelShowFilesInDM {
+	@summary = "Default summary"
+	macro viewToogleOnSidePanelShowFilesInDM(isDisabled = null) {
 		if (${isDisabled} == "Yes") {
 			AssertElementPresent(locator1 = "ObjectField#SHOW_FILES_IN_DM_SIDE_PANEL_DISABLED");
 		}

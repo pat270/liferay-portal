@@ -18,12 +18,15 @@ import {EDITABLE_TYPE_LABELS} from '../../../../../app/config/constants/editable
 import {EDITABLE_TYPES} from '../../../../../app/config/constants/editableTypes';
 import {FRAGMENT_ENTRY_TYPES} from '../../../../../app/config/constants/fragmentEntryTypes';
 import {FREEMARKER_FRAGMENT_ENTRY_PROCESSOR} from '../../../../../app/config/constants/freemarkerFragmentEntryProcessor';
+import {ITEM_ACTIVATION_ORIGINS} from '../../../../../app/config/constants/itemActivationOrigins';
 import {ITEM_TYPES} from '../../../../../app/config/constants/itemTypes';
 import {
 	ARROW_DOWN_KEY_CODE,
 	ARROW_LEFT_KEY_CODE,
 	ARROW_RIGHT_KEY_CODE,
 	ARROW_UP_KEY_CODE,
+	ENTER_KEY_CODE,
+	SPACE_KEY_CODE,
 } from '../../../../../app/config/constants/keyboardCodes';
 import {LAYOUT_DATA_ITEM_TYPES} from '../../../../../app/config/constants/layoutDataItemTypes';
 import {LAYOUT_TYPES} from '../../../../../app/config/constants/layoutTypes';
@@ -32,6 +35,7 @@ import {
 	useActiveItemId,
 	useHoverItem,
 	useHoveredItemId,
+	useSelectItem,
 } from '../../../../../app/contexts/ControlsContext';
 import {useMovementTarget} from '../../../../../app/contexts/KeyboardMovementContext';
 import {
@@ -43,7 +47,6 @@ import selectCanUpdateEditables from '../../../../../app/selectors/selectCanUpda
 import selectCanUpdateItemConfiguration from '../../../../../app/selectors/selectCanUpdateItemConfiguration';
 import selectCanUpdatePageStructure from '../../../../../app/selectors/selectCanUpdatePageStructure';
 import selectLayoutDataItemLabel from '../../../../../app/selectors/selectLayoutDataItemLabel';
-import {selectPageContents} from '../../../../../app/selectors/selectPageContents';
 import canActivateEditable from '../../../../../app/utils/canActivateEditable';
 import {DragAndDropContextProvider} from '../../../../../app/utils/drag_and_drop/useDragAndDrop';
 import isMapped from '../../../../../app/utils/editable_value/isMapped';
@@ -51,9 +54,11 @@ import isMappedToCollection from '../../../../../app/utils/editable_value/isMapp
 import findPageContent from '../../../../../app/utils/findPageContent';
 import {formIsMapped} from '../../../../../app/utils/formIsMapped';
 import {formIsRestricted} from '../../../../../app/utils/formIsRestricted';
+import getFirstControlsId from '../../../../../app/utils/getFirstControlsId';
 import getMappingFieldsKey from '../../../../../app/utils/getMappingFieldsKey';
-import {getResponsiveConfig} from '../../../../../app/utils/getResponsiveConfig';
 import getSelectedField from '../../../../../app/utils/getSelectedField';
+import {isItemHidden} from '../../../../../app/utils/isItemHidden';
+import usePageContents from '../../../../../app/utils/usePageContents';
 import StructureTreeNode from './StructureTreeNode';
 import StructureTreeNodeActions from './StructureTreeNodeActions';
 import VisibilityButton from './VisibilityButton';
@@ -88,9 +93,10 @@ export default function PageStructureSidebar() {
 	);
 	const fragmentEntryLinks = useSelector((state) => state.fragmentEntryLinks);
 	const layoutData = useSelector((state) => state.layoutData);
-	const pageContents = useSelector(selectPageContents);
+	const pageContents = usePageContents();
 	const hoverItem = useHoverItem();
 	const hoveredItemId = useHoveredItemId();
+	const selectItem = useSelectItem();
 
 	const mappingFields = useSelector((state) => state.mappingFields);
 	const masterLayoutData = useSelector(
@@ -325,6 +331,28 @@ export default function PageStructureSidebar() {
 		}
 	}, [getAncestorsIds, keyboardMovementTargetId, layoutData]);
 
+	const onKeyDown = (event, item) => {
+		const {code} = event.nativeEvent;
+
+		if (![ENTER_KEY_CODE, SPACE_KEY_CODE].includes(code)) {
+			return;
+		}
+
+		const itemId = getFirstControlsId({
+			item,
+			layoutData: layoutDataRef.current,
+		});
+
+		if (item.activable) {
+			selectItem(itemId, {
+				itemType: item.itemType,
+				origin: ITEM_ACTIVATION_ORIGINS.sidebar,
+			});
+
+			hoverItem(null);
+		}
+	};
+
 	return (
 		<div
 			className="overflow-auto page-editor__page-structure__structure-tree pt-4"
@@ -384,6 +412,7 @@ export default function PageStructureSidebar() {
 										? ''
 										: 'right'
 								}
+								onKeyDown={(event) => onKeyDown(event, item)}
 								onMouseLeave={(event) => {
 									if (item.hovered) {
 										event.stopPropagation();
@@ -555,15 +584,6 @@ function fragmentIsMapped(item, fragmentEntryLinks) {
 	return false;
 }
 
-function isItemHidden(item, selectedViewportSize) {
-	const responsiveConfig = getResponsiveConfig(
-		item.config,
-		selectedViewportSize
-	);
-
-	return responsiveConfig.styles.display === 'none';
-}
-
 function isHidable(item, fragmentEntryLinks, layoutData) {
 	if (!isRemovable(item, layoutData)) {
 		return false;
@@ -619,7 +639,7 @@ function visit(
 		masterLayoutData &&
 		Object.keys(masterLayoutData.items).includes(item.itemId);
 
-	const hidden = isItemHidden(item, selectedViewportSize);
+	const hidden = isItemHidden(layoutData, item.itemId, selectedViewportSize);
 
 	let icon = LAYOUT_DATA_ITEM_TYPE_ICONS[item.type];
 
@@ -732,12 +752,9 @@ function visit(
 			if (
 				(item.type === LAYOUT_DATA_ITEM_TYPES.collection &&
 					(!item.config.collection ||
-						(Liferay.FeatureFlags['LPS-169923'] &&
-							restrictedItemIds.has(item.itemId)))) ||
+						restrictedItemIds.has(item.itemId))) ||
 				(item.type === LAYOUT_DATA_ITEM_TYPES.form &&
-					(!formIsMapped(item) ||
-						(Liferay.FeatureFlags['LPS-169923'] &&
-							formIsRestricted(item))))
+					(!formIsMapped(item) || formIsRestricted(item)))
 			) {
 				return;
 			}

@@ -22,6 +22,7 @@ import com.liferay.portal.kernel.service.BaseLocalService;
 import com.liferay.portal.kernel.service.PersistedModelLocalService;
 import com.liferay.portal.kernel.service.change.tracking.CTService;
 import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
+import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
@@ -45,6 +46,11 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @CTAware
+@OSGiBeanProperties(
+	property = {
+		"model.class.name=com.liferay.expando.kernel.model.ExpandoColumn"
+	}
+)
 @ProviderType
 @Transactional(
 	isolation = Isolation.PORTAL,
@@ -226,6 +232,13 @@ public interface ExpandoColumnLocalService
 		DynamicQuery dynamicQuery, Projection projection);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public ExpandoColumn fetchColumn(
+		long companyId, long classNameId, String tableName, String name);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public ExpandoColumn fetchColumn(long tableId, String name);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public ExpandoColumn fetchExpandoColumn(long columnId);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -236,10 +249,12 @@ public interface ExpandoColumnLocalService
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public ExpandoColumn getColumn(
-		long companyId, long classNameId, String tableName, String name);
+			long companyId, long classNameId, String tableName, String name)
+		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public ExpandoColumn getColumn(long tableId, String name);
+	public ExpandoColumn getColumn(long tableId, String name)
+		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public ExpandoColumn getColumn(

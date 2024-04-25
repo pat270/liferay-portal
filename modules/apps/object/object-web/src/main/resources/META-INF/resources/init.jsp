@@ -1,6 +1,6 @@
 <%--
 /**
- * SPDX-FileCopyrightText: (c) 2000 Liferay, Inc. https://liferay.com
+ * SPDX-FileCopyrightText: (c) 2023 Liferay, Inc. https://liferay.com
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 --%>
@@ -21,8 +21,8 @@ taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %><%@
 taglib uri="http://liferay.com/tld/util" prefix="liferay-util" %>
 
 <%@ page import="com.liferay.asset.kernel.model.AssetVocabularyConstants" %><%@
+page import="com.liferay.learn.LearnMessageUtil" %><%@
 page import="com.liferay.list.type.model.ListTypeDefinition" %><%@
-page import="com.liferay.object.constants.ObjectFieldConstants" %><%@
 page import="com.liferay.object.constants.ObjectLayoutBoxConstants" %><%@
 page import="com.liferay.object.constants.ObjectWebKeys" %><%@
 page import="com.liferay.object.display.context.ObjectEntryDisplayContext" %><%@
@@ -30,6 +30,7 @@ page import="com.liferay.object.model.ObjectAction" %><%@
 page import="com.liferay.object.model.ObjectDefinition" %><%@
 page import="com.liferay.object.model.ObjectEntry" %><%@
 page import="com.liferay.object.model.ObjectField" %><%@
+page import="com.liferay.object.model.ObjectFolder" %><%@
 page import="com.liferay.object.model.ObjectLayout" %><%@
 page import="com.liferay.object.model.ObjectLayoutBox" %><%@
 page import="com.liferay.object.model.ObjectLayoutTab" %><%@
@@ -57,6 +58,7 @@ page import="com.liferay.portal.kernel.language.LanguageUtil" %><%@
 page import="com.liferay.portal.kernel.model.LayoutConstants" %><%@
 page import="com.liferay.portal.kernel.model.ModelHintsConstants" %><%@
 page import="com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder" %><%@
+page import="com.liferay.portal.kernel.url.URLBuilder" %><%@
 page import="com.liferay.portal.kernel.util.Constants" %><%@
 page import="com.liferay.portal.kernel.util.HashMapBuilder" %><%@
 page import="com.liferay.portal.kernel.util.HtmlUtil" %><%@

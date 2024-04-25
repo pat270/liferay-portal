@@ -23,8 +23,9 @@ import java.util.Objects;
 public class ListTypeLocalServiceImpl extends ListTypeLocalServiceBaseImpl {
 
 	@Override
-	public ListType addListType(String name, String type) {
-		ListType listType = listTypePersistence.fetchByN_T(name, type);
+	public ListType addListType(long companyId, String name, String type) {
+		ListType listType = listTypePersistence.fetchByC_N_T(
+			companyId, name, type);
 
 		if (listType != null) {
 			return listType;
@@ -35,6 +36,7 @@ public class ListTypeLocalServiceImpl extends ListTypeLocalServiceBaseImpl {
 
 		listType = listTypePersistence.create(listTypeId);
 
+		listType.setCompanyId(companyId);
 		listType.setName(name);
 		listType.setType(type);
 
@@ -42,18 +44,30 @@ public class ListTypeLocalServiceImpl extends ListTypeLocalServiceBaseImpl {
 	}
 
 	@Override
-	public ListType getListType(long listTypeId) throws PortalException {
-		return listTypePersistence.findByPrimaryKey(listTypeId);
+	public void deleteListTypes(long companyId) {
+		List<ListType> listTypes = listTypePersistence.findByCompanyId(
+			companyId);
+
+		for (ListType listType : listTypes) {
+			listTypeLocalService.deleteListType(listType);
+		}
 	}
 
 	@Override
-	public ListType getListType(String name, String type) {
-		return listTypePersistence.fetchByN_T(name, type);
+	public ListType getListType(long companyId, String name, String type) {
+		return listTypePersistence.fetchByC_N_T(companyId, name, type);
 	}
 
 	@Override
-	public List<ListType> getListTypes(String type) {
-		return listTypePersistence.findByType(type);
+	public long getListTypeId(long companyId, String name, String type) {
+		ListType listType = getListType(companyId, name, type);
+
+		return listType.getListTypeId();
+	}
+
+	@Override
+	public List<ListType> getListTypes(long companyId, String type) {
+		return listTypePersistence.findByC_T(companyId, type);
 	}
 
 	@Override

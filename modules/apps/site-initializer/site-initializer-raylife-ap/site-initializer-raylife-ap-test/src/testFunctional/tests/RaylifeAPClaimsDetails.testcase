@@ -19,7 +19,10 @@ definition {
 		}
 
 		task ("Create a new Raylife AP Site") {
-			Raylife.createRaylifeSite(siteName = "Raylife D2C");
+			HeadlessSite.addSite(
+				siteName = "Raylife D2C",
+				templateName = "Raylife D2C",
+				templateType = "Site Initializer");
 
 			Raylife.createRaylifeSite(siteName = "Raylife AP");
 		}
@@ -52,6 +55,7 @@ definition {
 	@priority = 4
 	test CanUserAccessPolicyDetails {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given I go to the Applications page") {
 			RaylifeAPNavigator.gotoSidebarItem(itemName = "Claims");
@@ -76,6 +80,7 @@ definition {
 	@priority = 4
 	test CanUserCanGoBackToClaimsPage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given I go to the Applications page") {
 			RaylifeAPNavigator.gotoSidebarItem(itemName = "Claims");
@@ -98,6 +103,7 @@ definition {
 	@priority = 4
 	test VerifyDisplayedStatusGreen {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given I go to the Applications page") {
 			RaylifeAPNavigator.gotoSidebarItem(itemName = "Claims");
@@ -116,6 +122,7 @@ definition {
 	@priority = 4
 	test VerifyStatusNotSettled {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given I go to the Applications page") {
 			RaylifeAPNavigator.gotoSidebarItem(itemName = "Claims");

@@ -1,7 +1,7 @@
 @component-name = "portal-calendar"
 definition {
 
-	property custom.properties = "default.layout.template.id=1_column${line.separator}company.default.time.zone=America/Los_Angeles";
+	property custom.properties = "company.default.time.zone=America/Los_Angeles${line.separator}default.layout.template.id=1_column";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Calendar";
@@ -159,10 +159,7 @@ definition {
 
 	@priority = 3
 	test AddAllDayWithUserInviteAccept {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea@liferay.com",
@@ -170,10 +167,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.editPasswordCP(
 			userEmailAddress = "userea@liferay.com",
@@ -398,10 +392,7 @@ definition {
 
 	@priority = 4
 	test AddRegularWithUserInviteAccept {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea@liferay.com",
@@ -409,10 +400,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.editPasswordCP(
 			userEmailAddress = "userea@liferay.com",
@@ -636,12 +624,7 @@ definition {
 
 	@priority = 3
 	test AddRepeatingWithUserInviteAccept {
-		property portal.upstream = "quarantine";
-
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea@liferay.com",
@@ -649,10 +632,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.editPasswordCP(
 			userEmailAddress = "userea@liferay.com",
@@ -1034,6 +1014,41 @@ definition {
 		CalendarEvent.viewDescription(eventDescription = "Calendar Event Description");
 	}
 
+	@description = "LPD-20217 - verify that user can edit the event by the Month view"
+	@priority = 4
+	test CanEditEventMonthView {
+		CalendarEvent.enableEventBySiteCalendarName(calendarName = "Liferay DXP");
+
+		CalendarNavigator.gotoAddEventMonth();
+
+		CalendarEvent.editTitle(eventTitle = "Calendar Event Title");
+
+		CalendarEvent.setDatesToday();
+
+		CalendarEvent.setTimes(
+			endDateTime = " 8:00 PM",
+			startDateTime = " 7:00 PM");
+
+		Button.clickPublish();
+
+		IFrame.closeFrame();
+
+		CalendarEvent.view(eventTitle = "Calendar Event Title");
+
+		CalendarEvent.addDescription(
+			eventTitle = "Calendar Event Title",
+			fieldName = "Description",
+			fieldValue = "Calendar Event Description");
+
+		Button.clickPublish();
+
+		IFrame.closeFrame();
+
+		CalendarNavigator.gotoEventDetails(eventTitle = "Calendar Event Title");
+
+		CalendarEvent.viewDescription(eventDescription = "Calendar Event Description");
+	}
+
 	@description = "LRQA-71887 - Verify that the user can Reject an event"
 	@priority = 3
 	test CanRejectEvent {
@@ -1139,10 +1154,7 @@ definition {
 	@description = "This is a use case for LPS-46700."
 	@priority = 3
 	test InviteAndViewAdditionalUsers {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea@liferay.com",
@@ -1240,6 +1252,8 @@ definition {
 		Navigator.gotoPage(pageName = "Calendar Page");
 
 		CalendarNavigator.gotoEditEvent(eventTitle = "Calendar Event Title");
+
+		Panel.expandPanel(panel = "Invitations");
 
 		CalendarEvent.viewRSVPAccepted(resourceName = ${siteName});
 

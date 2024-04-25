@@ -9,7 +9,6 @@ import com.liferay.commerce.product.constants.CommerceChannelConstants;
 import com.liferay.commerce.product.definitions.web.internal.display.context.CPDefinitionDisplayLayoutDisplayContext;
 import com.liferay.commerce.product.model.CommerceChannel;
 import com.liferay.commerce.product.portlet.action.ActionHelper;
-import com.liferay.commerce.product.service.CPDefinitionService;
 import com.liferay.commerce.product.service.CPDisplayLayoutService;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.frontend.taglib.servlet.taglib.ScreenNavigationEntry;
@@ -24,7 +23,7 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
-import com.liferay.portal.kernel.service.permission.GroupPermission;
+import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.io.IOException;
@@ -55,7 +54,7 @@ public class CommerceChannelProductDisplayLayoutsScreenNavigationEntry
 	@Override
 	public boolean isVisible(User user, CommerceChannel commerceChannel) {
 		try {
-			if (!_groupPermission.contains(
+			if (!GroupPermissionUtil.contains(
 					PermissionThreadLocal.getPermissionChecker(),
 					commerceChannel.getSiteGroupId(), ActionKeys.ADD_LAYOUT)) {
 
@@ -87,9 +86,9 @@ public class CommerceChannelProductDisplayLayoutsScreenNavigationEntry
 			cpDefinitionDisplayLayoutDisplayContext =
 				new CPDefinitionDisplayLayoutDisplayContext(
 					_actionHelper, httpServletRequest,
-					_commerceChannelLocalService, _cpDefinitionService,
-					_cpDisplayLayoutService, _groupLocalService, _itemSelector,
-					_layoutLocalService, _layoutPageTemplateEntryLocalService);
+					_commerceChannelLocalService, _cpDisplayLayoutService,
+					_groupLocalService, _itemSelector, _layoutLocalService,
+					_layoutPageTemplateEntryLocalService);
 
 		httpServletRequest.setAttribute(
 			WebKeys.PORTLET_DISPLAY_CONTEXT,
@@ -110,16 +109,10 @@ public class CommerceChannelProductDisplayLayoutsScreenNavigationEntry
 	private CommerceChannelLocalService _commerceChannelLocalService;
 
 	@Reference
-	private CPDefinitionService _cpDefinitionService;
-
-	@Reference
 	private CPDisplayLayoutService _cpDisplayLayoutService;
 
 	@Reference
 	private GroupLocalService _groupLocalService;
-
-	@Reference
-	private GroupPermission _groupPermission;
 
 	@Reference
 	private ItemSelector _itemSelector;

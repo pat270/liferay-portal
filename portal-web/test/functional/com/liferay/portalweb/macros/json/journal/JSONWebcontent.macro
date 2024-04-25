@@ -1,13 +1,16 @@
 definition {
 
-	macro addBasicWebContentLocalized {
+	@summary = "Default summary"
+	macro addBasicWebContentLocalized(userPassword = null, contentMap = null, description = null, userEmailAddress = null, workflowAction = null, title = null, content = null, groupName = null, assetCategoryIds = null, assetTagNames = null, folderName = null) {
 		Variables.assertDefined(parameterList = ${groupName});
 
 		var groupId = JSONWebcontentSetter.setGroupId(groupName = ${groupName});
 		var contentXml = JSONWebcontentSetter.setContentXML(
 			content = ${content},
 			contentMap = ${contentMap});
-		var descriptionMap = JSONWebcontentSetter.setDescriptionMap(description = ${description});
+		var descriptionMap = JSONWebcontentSetter.setDescriptionMap(
+			description = ${description},
+			descriptionMap = ${descriptionMap});
 		var folderId = JSONWebcontentSetter.setFolderId(
 			folderName = ${folderName},
 			groupId = ${groupId});
@@ -31,7 +34,8 @@ definition {
 			userPassword = ${userPassword});
 	}
 
-	macro addFolder {
+	@summary = "Default summary"
+	macro addFolder(parentFolderName = null, groupName = null, site = null, userPassword = null, folderDescription = null, userEmailAddress = null, folderName = null) {
 		Variables.assertDefined(parameterList = "${folderName},${groupName}");
 
 		var groupId = JSONWebcontentSetter.setGroupId(
@@ -51,7 +55,8 @@ definition {
 			userPassword = ${userPassword});
 	}
 
-	macro addWebContent {
+	@summary = "Default summary"
+	macro addWebContent(userPassword = null, description = null, userEmailAddress = null, source = null, title = null, workflowAction = null, content = null, groupName = null, site = null, assetCategoryIds = null, assetTagNames = null, folderName = null) {
 		Variables.assertDefined(parameterList = "${content},${title}");
 
 		if (!(isSet(groupId))) {
@@ -85,7 +90,8 @@ definition {
 			userPassword = ${userPassword});
 	}
 
-	macro deleteWebContent {
+	@summary = "Default summary"
+	macro deleteWebContent(groupName = null, site = null, title = null) {
 		Variables.assertDefined(parameterList = "${groupName},${title}");
 
 		var groupId = JSONWebcontentSetter.setGroupId(
@@ -101,7 +107,8 @@ definition {
 			groupId = ${groupId});
 	}
 
-	macro getFolderIdByFolderName {
+	@summary = "Default summary"
+	macro getFolderIdByFolderName(groupName = null, folderName = null) {
 		Variables.assertDefined(parameterList = "${folderName},${groupName}");
 
 		var groupId = JSONWebcontentSetter.setGroupId(groupName = ${groupName});
@@ -113,7 +120,8 @@ definition {
 		return ${folderId};
 	}
 
-	macro getFolderUuidByFolderName {
+	@summary = "Default summary"
+	macro getFolderUuidByFolderName(groupName = null, site = null, folderName = null) {
 		Variables.assertDefined(parameterList = "${folderName},${groupName}");
 
 		var groupId = JSONWebcontentSetter.setGroupId(
@@ -127,7 +135,8 @@ definition {
 		return ${folderUuid};
 	}
 
-	macro getResourcePrimKeyByURLTitle {
+	@summary = "Default summary"
+	macro getResourcePrimKeyByURLTitle(groupName = null, title = null) {
 		Variables.assertDefined(parameterList = "${groupName},${title}");
 
 		var urlTitle = StringUtil.replace(${title}, " ", "-");
@@ -141,7 +150,8 @@ definition {
 		return ${resourcePrimKey};
 	}
 
-	macro moveWebContentToTrash {
+	@summary = "Default summary"
+	macro moveWebContentToTrash(groupName = null, title = null) {
 		Variables.assertDefined(parameterList = "${groupName},${title}");
 
 		var groupId = JSONWebcontentSetter.setGroupId(groupName = ${groupName});
@@ -154,7 +164,8 @@ definition {
 			groupId = ${groupId});
 	}
 
-	macro restoreWebContentFromTrashViaResourcePrimKey {
+	@summary = "Default summary"
+	macro restoreWebContentFromTrashViaResourcePrimKey() {
 		var resourcePrimKey = ${resourcePrimKey};
 		var portalURL = JSONCompany.getPortalURL();
 		var userLoginInfo = JSONUtil2.formatJSONUser();
@@ -168,7 +179,8 @@ definition {
 		com.liferay.poshi.runner.util.JSONCurlUtil.post(${curl});
 	}
 
-	macro updateStatus {
+	@summary = "Default summary"
+	macro updateStatus(groupName = null, statusKey = null, title = null) {
 		Variables.assertDefined(parameterList = "${groupName},${statusKey},${title}");
 
 		var articleId = JSONWebcontentSetter.setArticleId(

@@ -15,7 +15,6 @@ import com.liferay.journal.model.JournalArticle;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.StagedModel;
 import com.liferay.portal.kernel.util.MapUtil;
-import com.liferay.portal.kernel.util.Portal;
 
 import java.util.List;
 import java.util.Map;
@@ -144,9 +143,9 @@ public class AMJournalArticleExportImportContentProcessor
 		return false;
 	}
 
-	@Reference
-	private AMJournalArticleContentHTMLReplacer
-		_amJournalArticleContentHTMLReplacer;
+	private final AMJournalArticleContentHTMLReplacer
+		_amJournalArticleContentHTMLReplacer =
+			new AMJournalArticleContentHTMLReplacer();
 
 	@Reference
 	private DDMStructureLocalService _ddmStructureLocalService;
@@ -160,8 +159,5 @@ public class AMJournalArticleExportImportContentProcessor
 	)
 	private ExportImportContentProcessor<String>
 		_journalArticleExportImportContentProcessor;
-
-	@Reference
-	private Portal _portal;
 
 }

@@ -42,11 +42,18 @@ definition {
 		}
 
 		for (var fieldName : list "Select from List,Single Selection,Multiple Selection") {
+			DataEngine.viewField(
+				fieldFieldLabel = ${fieldName},
+				fieldName = ${fieldName});
+
 			for (var index : list "1,2,3") {
 				DataEngine.addFieldOption(
-					fieldFieldLabel = ${fieldName},
 					index = ${index},
 					optionValue = "Option ${index}");
+
+				if (${index} != 3) {
+					FormFields.clickAddOptionButton();
+				}
 			}
 		}
 
@@ -63,9 +70,12 @@ definition {
 		}
 
 		for (var fieldName : list "Select from List,Single Selection,Multiple Selection") {
+			DataEngine.viewField(
+				fieldFieldLabel = "${fieldName} - pt-BR",
+				fieldName = ${fieldName});
+
 			for (var index : list "1,2,3") {
 				DataEngine.addFieldOption(
-					fieldFieldLabel = "${fieldName} - pt-BR",
 					index = ${index},
 					optionValue = "Option ${index} - pt-BR");
 			}
@@ -110,9 +120,12 @@ definition {
 		}
 
 		for (var fieldName : list "Select from List,Single Selection,Multiple Selection") {
+			DataEngine.viewField(
+				fieldFieldLabel = "${fieldName} - edited",
+				fieldName = ${fieldName});
+
 			for (var index : list "1,2,3") {
 				DataEngine.addFieldOption(
-					fieldFieldLabel = "${fieldName} - edited",
 					index = ${index},
 					optionValue = "Option ${index} - edited");
 			}
@@ -127,9 +140,12 @@ definition {
 		}
 
 		for (var fieldName : list "Select from List,Single Selection,Multiple Selection") {
+			DataEngine.viewField(
+				fieldFieldLabel = "${fieldName} - pt-BR edited",
+				fieldName = ${fieldName});
+
 			for (var index : list "1,2,3") {
 				DataEngine.addFieldOption(
-					fieldFieldLabel = "${fieldName} - pt-BR edited",
 					index = ${index},
 					optionValue = "Option ${index} - pt-BR edited");
 			}
@@ -816,16 +832,16 @@ definition {
 		WebContentNavigator.gotoEditCP(webContentTitle = "Test");
 
 		AssertAttributeValue(
-			attribute1 = "value",
 			locator1 = "TextInput#TITLE",
-			value1 = "Test");
+			value1 = "value",
+			value2 = "Test");
 
 		PortletEntry.changeLocale(locale = "zh-CN");
 
 		AssertAttributeValue(
-			attribute1 = "value",
 			locator1 = "TextInput#TITLE",
-			value1 = "测试");
+			value1 = "value",
+			value2 = "测试");
 	}
 
 	@description = "This is a test for LPS-122317. As Content Creator, I want to leverage the structures' translations without nested fields or fieldsets when creating a new Web Content"
@@ -907,20 +923,30 @@ definition {
 			fieldFieldLabel = "Grid",
 			fieldName = "Grid");
 
+		DataEngine.viewField(
+			fieldFieldLabel = "Grid",
+			fieldName = "Grid");
+
 		for (var index : list "1,2,3") {
 			DataEngine.addFieldOption(
-				fieldFieldLabel = "Grid",
 				index = ${index},
 				optionFieldLabel = "Rows",
 				optionValue = "Option ${index}");
+
+			if (${index} != 3) {
+				FormFields.clickAddOptionButton(gridOptionType = "Rows");
+			}
 		}
 
 		for (var index : list "1,2,3") {
 			DataEngine.addFieldOption(
-				fieldFieldLabel = "Grid",
 				index = ${index},
 				optionFieldLabel = "Columns",
 				optionValue = "Option ${index}");
+
+			if (${index} != 3) {
+				FormFields.clickAddOptionButton(gridOptionType = "Columns");
+			}
 		}
 
 		WebContentStructures.addTranslations(localeList = "ca-ES");
@@ -1115,10 +1141,7 @@ definition {
 	@description = "This is a test for LRQA-66639. This test validates the creation, edition, deletion and persistence of fields into Web Contents in different instance language."
 	@priority = 5
 	test LocalizedWebContentWithDifferentInstanceLanguage {
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Instance Settings");
+		PortalSettings.openInstanceSettingsAdmin();
 
 		SystemSettings.gotoConfiguration(
 			configurationCategory = "Localization",
@@ -1277,10 +1300,7 @@ definition {
 			key_ddlDataDefinitionName = "WC Structure Title",
 			locator1 = "DDMSelectStructure#DDM_STRUCTURE_TABLE_NAME_LINK");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Instance Settings");
+		PortalSettings.openInstanceSettingsAdmin();
 
 		SystemSettings.gotoConfiguration(
 			configurationCategory = "Localization",

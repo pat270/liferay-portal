@@ -28,7 +28,7 @@ if (notificationUnread) {
 	</c:when>
 	<c:otherwise>
 		<liferay-ui:search-container-column-text>
-			<liferay-ui:user-portrait
+			<liferay-user:user-portrait
 				userId="<%= 0 %>"
 			/>
 		</liferay-ui:search-container-column-text>
@@ -72,9 +72,16 @@ if (notificationUnread) {
 					<%@ include file="/notifications/user_notification_entry_body.jspf" %>
 				</liferay-ui:search-container-column-text>
 
-				<liferay-ui:search-container-column-jsp
-					path="/notifications/notification_action.jsp"
-				/>
+				<%
+				UserNotificationEventActionDropdownItem userNotificationEventActionDropdownItem = new UserNotificationEventActionDropdownItem(request, renderResponse);
+				%>
+
+				<liferay-ui:search-container-column-text>
+					<clay:dropdown-actions
+						aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
+						dropdownItems="<%= userNotificationEventActionDropdownItem.getActionDropdownItems(userNotificationEvent, userNotificationFeedEntry) %>"
+					/>
+				</liferay-ui:search-container-column-text>
 			</c:otherwise>
 		</c:choose>
 	</c:otherwise>

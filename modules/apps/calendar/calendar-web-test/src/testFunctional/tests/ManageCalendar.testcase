@@ -1,7 +1,7 @@
 @component-name = "portal-calendar"
 definition {
 
-	property custom.properties = "default.layout.template.id=1_column${line.separator}company.default.time.zone=America/Los_Angeles";
+	property custom.properties = "company.default.time.zone=America/Los_Angeles${line.separator}default.layout.template.id=1_column";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Calendar";
@@ -254,10 +254,7 @@ definition {
 
 	@priority = 4
 	test DeactivateAndDeleteSiteCalendarAndViewSiteCalendarEvent {
-		ApplicationsMenu.gotoPortlet(
-			category = "Sites",
-			panel = "Control Panel",
-			portlet = "Sites");
+		Site.openSitesAdmin();
 
 		Site.addBlankCP(siteName = "Site Name");
 
@@ -283,10 +280,7 @@ definition {
 
 		CalendarEvent.view(eventTitle = "Site Name Calendar Event Regular");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Sites",
-			panel = "Control Panel",
-			portlet = "Sites");
+		Site.openSitesAdmin();
 
 		Site.deactivateCP(
 			siteName = "Site Name",
@@ -300,10 +294,7 @@ definition {
 
 		CalendarEvent.view(eventTitle = "Site Name Calendar Event Regular");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Sites",
-			panel = "Control Panel",
-			portlet = "Sites");
+		Site.openSitesAdmin();
 
 		Site.deleteCP(siteName = "Site Name");
 
@@ -378,10 +369,7 @@ definition {
 
 	@priority = 3
 	test EditUserCalendarOtherCalendars {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea@liferay.com",
@@ -422,13 +410,11 @@ definition {
 	test SearchForOtherCalendars {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var siteName = TestCase.getSiteName(siteName = ${siteName});
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea@liferay.com",
@@ -436,19 +422,13 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.editPasswordCP(
 			userEmailAddress = "userea@liferay.com",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.assignRegularRoleCP(
 			roleTitle = "Administrator",
@@ -542,6 +522,7 @@ definition {
 	test ViewAvailableCalendars {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		HeadlessSite.addSite(siteName = "Site Name");
 
@@ -627,10 +608,7 @@ definition {
 
 	@priority = 3
 	test ViewSiteNameUpdate {
-		ApplicationsMenu.gotoPortlet(
-			category = "Sites",
-			panel = "Control Panel",
-			portlet = "Sites");
+		Site.openSitesAdmin();
 
 		Site.addBlankCP(siteName = "Site Name");
 

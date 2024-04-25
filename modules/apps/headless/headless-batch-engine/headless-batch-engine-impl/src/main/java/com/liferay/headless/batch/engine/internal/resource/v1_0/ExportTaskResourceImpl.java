@@ -9,7 +9,7 @@ import com.liferay.batch.engine.BatchEngineExportTaskExecutor;
 import com.liferay.batch.engine.BatchEngineTaskExecuteStatus;
 import com.liferay.batch.engine.ItemClassRegistry;
 import com.liferay.batch.engine.model.BatchEngineExportTask;
-import com.liferay.batch.engine.service.BatchEngineExportTaskLocalService;
+import com.liferay.batch.engine.service.BatchEngineExportTaskService;
 import com.liferay.headless.batch.engine.dto.v1_0.ExportTask;
 import com.liferay.headless.batch.engine.internal.resource.v1_0.util.ParametersUtil;
 import com.liferay.headless.batch.engine.resource.v1_0.ExportTaskResource;
@@ -17,6 +17,8 @@ import com.liferay.petra.executor.PortalExecutorManager;
 import com.liferay.petra.io.StreamUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+
+import java.io.InputStream;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -45,7 +47,7 @@ public class ExportTaskResourceImpl extends BaseExportTaskResourceImpl {
 	@Override
 	public ExportTask getExportTask(Long exportTaskId) throws Exception {
 		return _toExportTask(
-			_batchEngineExportTaskLocalService.getBatchEngineExportTask(
+			_batchEngineExportTaskService.getBatchEngineExportTask(
 				exportTaskId));
 	}
 
@@ -55,7 +57,7 @@ public class ExportTaskResourceImpl extends BaseExportTaskResourceImpl {
 		throws Exception {
 
 		return _toExportTask(
-			_batchEngineExportTaskLocalService.
+			_batchEngineExportTaskService.
 				getBatchEngineExportTaskByExternalReferenceCode(
 					externalReferenceCode, contextCompany.getCompanyId()));
 	}
@@ -66,7 +68,7 @@ public class ExportTaskResourceImpl extends BaseExportTaskResourceImpl {
 		throws Exception {
 
 		BatchEngineExportTask batchEngineExportTask =
-			_batchEngineExportTaskLocalService.
+			_batchEngineExportTaskService.
 				getBatchEngineExportTaskByExternalReferenceCode(
 					externalReferenceCode, contextCompany.getCompanyId());
 
@@ -76,7 +78,7 @@ public class ExportTaskResourceImpl extends BaseExportTaskResourceImpl {
 	@Override
 	public Response getExportTaskContent(Long exportTaskId) throws Exception {
 		return _getExportTaskContent(
-			_batchEngineExportTaskLocalService.getBatchEngineExportTask(
+			_batchEngineExportTaskService.getBatchEngineExportTask(
 				exportTaskId));
 	}
 
@@ -99,7 +101,7 @@ public class ExportTaskResourceImpl extends BaseExportTaskResourceImpl {
 				ExportTaskResourceImpl.class.getName());
 
 		BatchEngineExportTask batchEngineExportTask =
-			_batchEngineExportTaskLocalService.addBatchEngineExportTask(
+			_batchEngineExportTaskService.addBatchEngineExportTask(
 				externalReferenceCode, contextCompany.getCompanyId(),
 				contextUser.getUserId(), callbackURL, className,
 				StringUtil.upperCase(contentType),
@@ -116,7 +118,8 @@ public class ExportTaskResourceImpl extends BaseExportTaskResourceImpl {
 	}
 
 	private Response _getExportTaskContent(
-		BatchEngineExportTask batchEngineExportTask) {
+			BatchEngineExportTask batchEngineExportTask)
+		throws Exception {
 
 		BatchEngineTaskExecuteStatus batchEngineTaskExecuteStatus =
 			BatchEngineTaskExecuteStatus.valueOf(
@@ -125,11 +128,13 @@ public class ExportTaskResourceImpl extends BaseExportTaskResourceImpl {
 		if (batchEngineTaskExecuteStatus ==
 				BatchEngineTaskExecuteStatus.COMPLETED) {
 
+			InputStream contentInputStream =
+				_batchEngineExportTaskService.openContentInputStream(
+					batchEngineExportTask.getBatchEngineExportTaskId());
+
 			StreamingOutput streamingOutput =
 				outputStream -> StreamUtil.transfer(
-					_batchEngineExportTaskLocalService.openContentInputStream(
-						batchEngineExportTask.getBatchEngineExportTaskId()),
-					outputStream);
+					contentInputStream, outputStream);
 
 			return Response.ok(
 				streamingOutput
@@ -149,19 +154,20 @@ public class ExportTaskResourceImpl extends BaseExportTaskResourceImpl {
 
 		return new ExportTask() {
 			{
-				className = batchEngineExportTask.getClassName();
-				contentType = batchEngineExportTask.getContentType();
-				endTime = batchEngineExportTask.getEndTime();
-				errorMessage = batchEngineExportTask.getErrorMessage();
-				executeStatus = ExportTask.ExecuteStatus.create(
-					batchEngineExportTask.getExecuteStatus());
-				externalReferenceCode =
-					batchEngineExportTask.getExternalReferenceCode();
-				id = batchEngineExportTask.getBatchEngineExportTaskId();
-				processedItemsCount =
-					batchEngineExportTask.getProcessedItemsCount();
-				startTime = batchEngineExportTask.getStartTime();
-				totalItemsCount = batchEngineExportTask.getTotalItemsCount();
+				setClassName(batchEngineExportTask::getClassName);
+				setContentType(batchEngineExportTask::getContentType);
+				setEndTime(batchEngineExportTask::getEndTime);
+				setErrorMessage(batchEngineExportTask::getErrorMessage);
+				setExecuteStatus(
+					() -> ExportTask.ExecuteStatus.create(
+						batchEngineExportTask.getExecuteStatus()));
+				setExternalReferenceCode(
+					batchEngineExportTask::getExternalReferenceCode);
+				setId(batchEngineExportTask::getBatchEngineExportTaskId);
+				setProcessedItemsCount(
+					batchEngineExportTask::getProcessedItemsCount);
+				setStartTime(batchEngineExportTask::getStartTime);
+				setTotalItemsCount(batchEngineExportTask::getTotalItemsCount);
 			}
 		};
 	}
@@ -175,14 +181,13 @@ public class ExportTaskResourceImpl extends BaseExportTaskResourceImpl {
 	}
 
 	private static final Set<String> _ignoredParameters = new HashSet<>(
-		Arrays.asList("callbackURL", "fieldNames"));
+		Arrays.asList("callbackURL", "fieldNames", "taskItemDelegateName"));
 
 	@Reference
 	private BatchEngineExportTaskExecutor _batchEngineExportTaskExecutor;
 
 	@Reference
-	private BatchEngineExportTaskLocalService
-		_batchEngineExportTaskLocalService;
+	private BatchEngineExportTaskService _batchEngineExportTaskService;
 
 	@Reference
 	private ItemClassRegistry _itemClassRegistry;

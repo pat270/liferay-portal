@@ -14,6 +14,11 @@ import java.util.regex.Pattern;
  */
 public class RegexUtil {
 
+	public static String escapeRegexChars(Object regex) {
+		return StringUtil.regexReplaceAll(
+			String.valueOf(regex), _REGEX_META, "\\\\$0");
+	}
+
 	public static String getGroup(String content, String regex, int group) {
 		Pattern pattern = Pattern.compile(regex, Pattern.DOTALL);
 
@@ -37,5 +42,8 @@ public class RegexUtil {
 
 		return null;
 	}
+
+	private static final String _REGEX_META =
+		"[\\\\\\^\\$\\{\\}\\[\\]\\(\\)\\.\\*\\+\\?\\|\\<\\>\\-\\&\\%]";
 
 }

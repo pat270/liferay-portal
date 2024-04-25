@@ -20,12 +20,12 @@ public class RankingEntryDisplayContext {
 		return null;
 	}
 
-	public String getHiddenResultsCount() {
-		return _hiddenResultsCount;
+	public String getGroupExternalReferenceCode() {
+		return _groupExternalReferenceCode;
 	}
 
-	public boolean getInactive() {
-		return _inactive;
+	public String getHiddenResultsCount() {
+		return _hiddenResultsCount;
 	}
 
 	public String getIndex() {
@@ -44,6 +44,18 @@ public class RankingEntryDisplayContext {
 		return _pinnedResultsCount;
 	}
 
+	public String getStatus() {
+		return _status;
+	}
+
+	public String getSXPBlueprintExternalReferenceCode() {
+		return _sxpBlueprintExternalReferenceCode;
+	}
+
+	public String getSXPBlueprintTitle() {
+		return _sxpBlueprintTitle;
+	}
+
 	public String getUid() {
 		return _uid;
 	}
@@ -52,12 +64,14 @@ public class RankingEntryDisplayContext {
 		_aliases = aliases;
 	}
 
-	public void setHiddenResultsCount(String hiddenResultsCount) {
-		_hiddenResultsCount = hiddenResultsCount;
+	public void setGroupExternalReferenceCode(
+		String groupExternalReferenceCode) {
+
+		_groupExternalReferenceCode = groupExternalReferenceCode;
 	}
 
-	public void setInactive(boolean inactive) {
-		_inactive = inactive;
+	public void setHiddenResultsCount(String hiddenResultsCount) {
+		_hiddenResultsCount = hiddenResultsCount;
 	}
 
 	public void setIndex(String index) {
@@ -72,16 +86,33 @@ public class RankingEntryDisplayContext {
 		_pinnedResultsCount = pinnedResultsCount;
 	}
 
+	public void setStatus(String status) {
+		_status = status;
+	}
+
+	public void setSXPBlueprintExternalReferenceCode(
+		String sxpBlueprintExternalReferenceCode) {
+
+		_sxpBlueprintExternalReferenceCode = sxpBlueprintExternalReferenceCode;
+	}
+
+	public void setSXPBlueprintTitle(String sxpBlueprintTitle) {
+		_sxpBlueprintTitle = sxpBlueprintTitle;
+	}
+
 	public void setUid(String uid) {
 		_uid = uid;
 	}
 
 	private String _aliases;
+	private String _groupExternalReferenceCode;
 	private String _hiddenResultsCount;
-	private boolean _inactive;
 	private String _index;
 	private String _keywords;
 	private String _pinnedResultsCount;
+	private String _status;
+	private String _sxpBlueprintExternalReferenceCode;
+	private String _sxpBlueprintTitle;
 	private String _uid;
 
 }

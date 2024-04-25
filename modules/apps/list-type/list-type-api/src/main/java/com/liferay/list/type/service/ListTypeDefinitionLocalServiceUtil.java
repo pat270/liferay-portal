@@ -54,21 +54,21 @@ public class ListTypeDefinitionLocalServiceUtil {
 	}
 
 	public static ListTypeDefinition addListTypeDefinition(
-			String externalReferenceCode, long userId)
+			String externalReferenceCode, long userId, boolean system)
 		throws PortalException {
 
 		return getService().addListTypeDefinition(
-			externalReferenceCode, userId);
+			externalReferenceCode, userId, system);
 	}
 
 	public static ListTypeDefinition addListTypeDefinition(
 			String externalReferenceCode, long userId,
-			Map<java.util.Locale, String> nameMap,
+			Map<java.util.Locale, String> nameMap, boolean system,
 			List<com.liferay.list.type.model.ListTypeEntry> listTypeEntries)
 		throws PortalException {
 
 		return getService().addListTypeDefinition(
-			externalReferenceCode, userId, nameMap, listTypeEntries);
+			externalReferenceCode, userId, nameMap, system, listTypeEntries);
 	}
 
 	/**

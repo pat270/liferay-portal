@@ -45,7 +45,7 @@ import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.kernel.uuid.PortalUUID;
+import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 
 import java.io.Serializable;
 
@@ -10037,7 +10037,7 @@ public class CommerceOrderPersistenceImpl
 		commerceOrder.setNew(true);
 		commerceOrder.setPrimaryKey(commerceOrderId);
 
-		String uuid = _portalUUID.generate();
+		String uuid = PortalUUIDUtil.generate();
 
 		commerceOrder.setUuid(uuid);
 
@@ -10156,7 +10156,7 @@ public class CommerceOrderPersistenceImpl
 			(CommerceOrderModelImpl)commerceOrder;
 
 		if (Validator.isNull(commerceOrder.getUuid())) {
-			String uuid = _portalUUID.generate();
+			String uuid = PortalUUIDUtil.generate();
 
 			commerceOrder.setUuid(uuid);
 		}
@@ -10165,6 +10165,40 @@ public class CommerceOrderPersistenceImpl
 			commerceOrder.setExternalReferenceCode(commerceOrder.getUuid());
 		}
 		else {
+			if (!Objects.equals(
+					commerceOrderModelImpl.getColumnOriginalValue(
+						"externalReferenceCode"),
+					commerceOrder.getExternalReferenceCode())) {
+
+				long userId = GetterUtil.getLong(
+					PrincipalThreadLocal.getName());
+
+				if (userId > 0) {
+					long companyId = commerceOrder.getCompanyId();
+
+					long groupId = commerceOrder.getGroupId();
+
+					long classPK = 0;
+
+					if (!isNew) {
+						classPK = commerceOrder.getPrimaryKey();
+					}
+
+					try {
+						commerceOrder.setExternalReferenceCode(
+							SanitizerUtil.sanitize(
+								companyId, groupId, userId,
+								CommerceOrder.class.getName(), classPK,
+								ContentTypes.TEXT_HTML, Sanitizer.MODE_ALL,
+								commerceOrder.getExternalReferenceCode(),
+								null));
+					}
+					catch (SanitizerException sanitizerException) {
+						throw new SystemException(sanitizerException);
+					}
+				}
+			}
+
 			CommerceOrder ercCommerceOrder = fetchByERC_C(
 				commerceOrder.getExternalReferenceCode(),
 				commerceOrder.getCompanyId());
@@ -10954,8 +10988,5 @@ public class CommerceOrderPersistenceImpl
 	protected FinderCache getFinderCache() {
 		return finderCache;
 	}
-
-	@Reference
-	private PortalUUID _portalUUID;
 
 }

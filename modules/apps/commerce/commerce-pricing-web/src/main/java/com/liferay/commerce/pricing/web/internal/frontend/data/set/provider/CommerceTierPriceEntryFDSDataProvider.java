@@ -13,6 +13,9 @@ import com.liferay.commerce.price.list.service.CommercePriceEntryService;
 import com.liferay.commerce.price.list.service.CommerceTierPriceEntryService;
 import com.liferay.commerce.pricing.web.internal.constants.CommercePricingFDSNames;
 import com.liferay.commerce.pricing.web.internal.model.TierPriceEntry;
+import com.liferay.commerce.product.model.CPInstance;
+import com.liferay.commerce.product.service.CPInstanceLocalService;
+import com.liferay.commerce.util.CommerceQuantityFormatter;
 import com.liferay.frontend.data.set.provider.FDSDataProvider;
 import com.liferay.frontend.data.set.provider.search.FDSKeywords;
 import com.liferay.frontend.data.set.provider.search.FDSPagination;
@@ -27,8 +30,6 @@ import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
-
-import java.math.BigDecimal;
 
 import java.text.DateFormat;
 import java.text.Format;
@@ -85,6 +86,10 @@ public class CommerceTierPriceEntryFDSDataProvider
 					fdsPagination.getStartPosition(),
 					fdsPagination.getEndPosition(), sort);
 
+		CPInstance cpInstance = _cpInstanceLocalService.fetchCProductInstance(
+			commercePriceEntry.getCProductId(),
+			commercePriceEntry.getCPInstanceUuid());
+
 		for (CommerceTierPriceEntry commerceTierPriceEntry :
 				commerceTierPriceEntryBaseModelSearchResult.getBaseModels()) {
 
@@ -92,15 +97,15 @@ public class CommerceTierPriceEntryFDSDataProvider
 				commerceTierPriceEntry.getPriceCommerceMoney(
 					commercePriceList.getCommerceCurrencyId());
 
-			BigDecimal minQuantity = commerceTierPriceEntry.getMinQuantity();
-
 			tierPriceEntries.add(
 				new TierPriceEntry(
 					_getDiscountLevels(commerceTierPriceEntry),
 					_getEndDate(commerceTierPriceEntry, dateTimeFormat),
 					_getOverride(commerceTierPriceEntry, httpServletRequest),
 					priceCommerceMoney.format(themeDisplay.getLocale()),
-					minQuantity.intValue(),
+					_commerceQuantityFormatter.format(
+						cpInstance, commerceTierPriceEntry.getMinQuantity(),
+						commercePriceEntry.getUnitOfMeasureKey()),
 					dateTimeFormat.format(
 						commerceTierPriceEntry.getDisplayDate()),
 					commerceTierPriceEntry.getCommerceTierPriceEntryId()));
@@ -163,7 +168,13 @@ public class CommerceTierPriceEntryFDSDataProvider
 	private CommercePriceEntryService _commercePriceEntryService;
 
 	@Reference
+	private CommerceQuantityFormatter _commerceQuantityFormatter;
+
+	@Reference
 	private CommerceTierPriceEntryService _commerceTierPriceEntryService;
+
+	@Reference
+	private CPInstanceLocalService _cpInstanceLocalService;
 
 	@Reference
 	private Language _language;

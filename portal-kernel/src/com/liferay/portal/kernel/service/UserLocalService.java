@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.service.change.tracking.CTService;
 import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
+import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
@@ -53,6 +54,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @CTAware
+@OSGiBeanProperties(
+	property = {"model.class.name=com.liferay.portal.kernel.model.User"}
+)
 @ProviderType
 @Transactional(
 	isolation = Isolation.PORTAL,
@@ -110,6 +114,9 @@ public interface UserLocalService
 	 */
 	public boolean addDefaultRoles(long userId) throws PortalException;
 
+	public User addDefaultServiceAccountUser(long companyId)
+		throws PortalException;
+
 	/**
 	 * Adds the user to the default user groups, unless the user is already in
 	 * these user groups. The default user groups can be specified in
@@ -122,36 +129,36 @@ public interface UserLocalService
 	 */
 	public boolean addDefaultUserGroups(long userId) throws PortalException;
 
-	public void addGroupUser(long groupId, long userId);
+	public boolean addGroupUser(long groupId, long userId);
 
-	public void addGroupUser(long groupId, User user);
+	public boolean addGroupUser(long groupId, User user);
 
 	/**
 	 * @throws PortalException
 	 */
-	public void addGroupUsers(long groupId, List<User> users)
+	public boolean addGroupUsers(long groupId, List<User> users)
 		throws PortalException;
 
 	/**
 	 * @throws PortalException
 	 */
-	public void addGroupUsers(long groupId, long[] userIds)
+	public boolean addGroupUsers(long groupId, long[] userIds)
 		throws PortalException;
 
-	public void addOrganizationUser(long organizationId, long userId);
+	public boolean addOrganizationUser(long organizationId, long userId);
 
-	public void addOrganizationUser(long organizationId, User user);
+	public boolean addOrganizationUser(long organizationId, User user);
 
 	/**
 	 * @throws PortalException
 	 */
-	public void addOrganizationUsers(long organizationId, List<User> users)
+	public boolean addOrganizationUsers(long organizationId, List<User> users)
 		throws PortalException;
 
 	/**
 	 * @throws PortalException
 	 */
-	public void addOrganizationUsers(long organizationId, long[] userIds)
+	public boolean addOrganizationUsers(long organizationId, long[] userIds)
 		throws PortalException;
 
 	public User addOrUpdateUser(
@@ -173,36 +180,36 @@ public interface UserLocalService
 	 */
 	public void addPasswordPolicyUsers(long passwordPolicyId, long[] userIds);
 
-	public void addRoleUser(long roleId, long userId);
+	public boolean addRoleUser(long roleId, long userId);
 
-	public void addRoleUser(long roleId, User user);
+	public boolean addRoleUser(long roleId, User user);
 
 	/**
 	 * @throws PortalException
 	 */
-	public void addRoleUsers(long roleId, List<User> users)
+	public boolean addRoleUsers(long roleId, List<User> users)
 		throws PortalException;
 
 	/**
 	 * @throws PortalException
 	 */
-	public void addRoleUsers(long roleId, long[] userIds)
+	public boolean addRoleUsers(long roleId, long[] userIds)
 		throws PortalException;
 
-	public void addTeamUser(long teamId, long userId);
+	public boolean addTeamUser(long teamId, long userId);
 
-	public void addTeamUser(long teamId, User user);
+	public boolean addTeamUser(long teamId, User user);
 
 	/**
 	 * @throws PortalException
 	 */
-	public void addTeamUsers(long teamId, List<User> users)
+	public boolean addTeamUsers(long teamId, List<User> users)
 		throws PortalException;
 
 	/**
 	 * @throws PortalException
 	 */
-	public void addTeamUsers(long teamId, long[] userIds)
+	public boolean addTeamUsers(long teamId, long[] userIds)
 		throws PortalException;
 
 	/**
@@ -275,20 +282,20 @@ public interface UserLocalService
 	@Indexable(type = IndexableType.REINDEX)
 	public User addUser(User user);
 
-	public void addUserGroupUser(long userGroupId, long userId);
+	public boolean addUserGroupUser(long userGroupId, long userId);
 
-	public void addUserGroupUser(long userGroupId, User user);
+	public boolean addUserGroupUser(long userGroupId, User user);
 
 	/**
 	 * @throws PortalException
 	 */
-	public void addUserGroupUsers(long userGroupId, List<User> users)
+	public boolean addUserGroupUsers(long userGroupId, List<User> users)
 		throws PortalException;
 
 	/**
 	 * @throws PortalException
 	 */
-	public void addUserGroupUsers(long userGroupId, long[] userIds)
+	public boolean addUserGroupUsers(long userGroupId, long[] userIds)
 		throws PortalException;
 
 	/**
@@ -1803,12 +1810,13 @@ public interface UserLocalService
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<User> searchBySocial(
-		long companyId, long[] groupIds, String keywords, int start, int end);
+		long companyId, long[] groupIds, long[] userGroupIds, String keywords,
+		int start, int end);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<User> searchBySocial(
-		long companyId, long[] groupIds, String keywords, int start, int end,
-		OrderByComparator<User> orderByComparator);
+		long companyId, long[] groupIds, long[] userGroupIds, String keywords,
+		int start, int end, OrderByComparator<User> orderByComparator);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<User> searchBySocial(
@@ -1907,22 +1915,12 @@ public interface UserLocalService
 			User user, String emailAddress, ServiceContext serviceContext)
 		throws PortalException;
 
-	/**
-	 * Sends the password email to the user with the email address. The content
-	 * of this email can be specified in <code>portal.properties</code> with the
-	 * <code>admin.email.password</code> keys.
-	 *
-	 * @param companyId the primary key of the user's company
-	 * @param emailAddress the user's email address
-	 * @param fromName the name of the individual that the email should be from
-	 * @param fromAddress the address of the individual that the email should be
-	 from
-	 * @param subject the email subject. If <code>null</code>, the subject
-	 specified in <code>portal.properties</code> will be used.
-	 * @param body the email body. If <code>null</code>, the body specified in
-	 <code>portal.properties</code> will be used.
-	 * @param serviceContext the service context to be applied
-	 */
+	public boolean sendEmailUserCreationAttempt(
+			long companyId, String emailAddress, String fromName,
+			String fromAddress, String subject, String body,
+			ServiceContext serviceContext)
+		throws PortalException;
+
 	public boolean sendPassword(
 			long companyId, String emailAddress, String fromName,
 			String fromAddress, String subject, String body,
@@ -1994,6 +1992,12 @@ public interface UserLocalService
 	 contains a reset link
 	 */
 	public boolean sendPasswordByUserId(long userId) throws PortalException;
+
+	public boolean sendPasswordLockout(
+			long companyId, String emailAddress, String fromName,
+			String fromAddress, String subject, String body,
+			ServiceContext serviceContext)
+		throws PortalException;
 
 	public void setGroupUsers(long groupId, long[] userIds);
 
@@ -2169,6 +2173,16 @@ public interface UserLocalService
 			long userId, boolean emailAddressVerified)
 		throws PortalException;
 
+	@Indexable(type = IndexableType.REINDEX)
+	public User updateExternalReferenceCode(
+			long userId, String externalReferenceCode)
+		throws PortalException;
+
+	@Indexable(type = IndexableType.REINDEX)
+	public User updateExternalReferenceCode(
+			User user, String externalReferenceCode)
+		throws PortalException;
+
 	/**
 	 * Updates the user's Facebook ID.
 	 *
@@ -2258,6 +2272,9 @@ public interface UserLocalService
 	 */
 	@Indexable(type = IndexableType.REINDEX)
 	public User updateJobTitle(long userId, String jobTitle)
+		throws PortalException;
+
+	public User updateLanguageId(long userId, String languageId)
 		throws PortalException;
 
 	/**

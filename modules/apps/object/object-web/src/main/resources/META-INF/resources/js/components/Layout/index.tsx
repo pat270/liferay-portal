@@ -122,11 +122,11 @@ const Layout: React.FC<React.HTMLAttributes<HTMLElement>> = () => {
 				objectDefinitionExternalReferenceCode
 			);
 
-			const objectFields = await API.getObjectFieldsByExternalReferenceCode(
+			const objectFields = await API.getObjectDefinitionByExternalReferenceCodeObjectFields(
 				objectDefinitionExternalReferenceCode
 			);
 
-			const objectRelationships = await API.getObjectRelationshipsByExternalReferenceCode(
+			const objectRelationships = await API.getObjectDefinitionByExternalReferenceCodeObjectRelationships(
 				objectDefinitionExternalReferenceCode
 			);
 
@@ -150,14 +150,10 @@ const Layout: React.FC<React.HTMLAttributes<HTMLElement>> = () => {
 				type: TYPES.ADD_OBJECT_LAYOUT,
 			});
 
-			const filteredObjectFields = objectFields.filter(
-				({system}) => !system
-			);
-
 			dispatch({
 				payload: {
 					objectFields: normalizeObjectFields({
-						objectFields: filteredObjectFields,
+						objectFields,
 						objectLayout,
 					}),
 				},
@@ -205,10 +201,10 @@ const Layout: React.FC<React.HTMLAttributes<HTMLElement>> = () => {
 		}
 
 		try {
-			await API.save(
-				`/o/object-admin/v1.0/object-layouts/${objectLayoutId}`,
-				objectLayout
-			);
+			await API.save({
+				item: objectLayout,
+				url: `/o/object-admin/v1.0/object-layouts/${objectLayoutId}`,
+			});
 			saveAndReload();
 			openToast({
 				message: Liferay.Language.get(
@@ -254,20 +250,20 @@ const Layout: React.FC<React.HTMLAttributes<HTMLElement>> = () => {
 
 interface ILayoutWrapperProps extends React.HTMLAttributes<HTMLElement> {
 	isViewOnly: boolean;
-	objectFieldTypes: ObjectFieldType[];
+	objectFieldBusinessTypes: ObjectFieldBusinessType[];
 	objectLayoutId: string;
 }
 
 export default function LayoutWrapper({
 	isViewOnly,
-	objectFieldTypes,
+	objectFieldBusinessTypes,
 	objectLayoutId,
 }: ILayoutWrapperProps) {
 	return (
 		<LayoutContextProvider
 			value={{
 				isViewOnly,
-				objectFieldTypes,
+				objectFieldBusinessTypes,
 				objectLayoutId,
 			}}
 		>

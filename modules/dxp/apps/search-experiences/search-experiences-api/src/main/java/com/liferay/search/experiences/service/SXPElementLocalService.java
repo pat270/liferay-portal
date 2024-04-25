@@ -63,8 +63,8 @@ public interface SXPElementLocalService
 	public SXPElement addSXPElement(
 			String externalReferenceCode, long userId,
 			Map<Locale, String> descriptionMap, String elementDefinitionJSON,
-			boolean readOnly, String schemaVersion,
-			Map<Locale, String> titleMap, int type,
+			String fallbackDescription, String fallbackTitle, boolean readOnly,
+			String schemaVersion, Map<Locale, String> titleMap, int type,
 			ServiceContext serviceContext)
 		throws PortalException;
 
@@ -310,9 +310,10 @@ public interface SXPElementLocalService
 
 	@Indexable(type = IndexableType.REINDEX)
 	public SXPElement updateSXPElement(
-			long userId, long sxpElementId, Map<Locale, String> descriptionMap,
-			String elementDefinitionJSON, boolean hidden, String schemaVersion,
-			Map<Locale, String> titleMap, ServiceContext serviceContext)
+			String externalReferenceCode, long userId, long sxpElementId,
+			Map<Locale, String> descriptionMap, String elementDefinitionJSON,
+			boolean hidden, String schemaVersion, Map<Locale, String> titleMap,
+			ServiceContext serviceContext)
 		throws PortalException;
 
 	/**

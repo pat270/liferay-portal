@@ -20,7 +20,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.json.JSONObject;
@@ -66,15 +65,13 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		Set<File> releaseModuleAppDirs = _getReleaseModuleAppDirs();
 
-		if (releaseModuleAppDirs == null) {
-			return includesJobProperties;
-		}
-
-		for (File releaseModuleAppDir : releaseModuleAppDirs) {
-			includesJobProperties.add(
-				getJobProperty(
-					"test.batch.class.names.includes.modules",
-					releaseModuleAppDir, JobProperty.Type.INCLUDE_GLOB));
+		if (!releaseModuleAppDirs.isEmpty()) {
+			for (File releaseModuleAppDir : releaseModuleAppDirs) {
+				includesJobProperties.add(
+					getJobProperty(
+						"test.batch.class.names.includes.modules",
+						releaseModuleAppDir, JobProperty.Type.INCLUDE_GLOB));
+			}
 		}
 
 		return includesJobProperties;
@@ -111,7 +108,7 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 			}
 
 			excludesJobProperties.addAll(
-				_getJobProperties(
+				getJobProperties(
 					modifiedFile,
 					"modules.includes.required.test.batch.class.names.excludes",
 					JobProperty.Type.MODULE_EXCLUDE_GLOB, null));
@@ -157,30 +154,9 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		Set<JobProperty> includesJobProperties = new HashSet<>();
 
-		String moduleName = null;
-
-		Matcher matcher = _singleModuleBatchNamePattern.matcher(batchName);
-
-		if (matcher.find()) {
-			moduleName = matcher.group("moduleName");
-		}
-
 		for (File modifiedModuleDir : modifiedModuleDirsSet) {
 			if (modifiedPoshiModulesList.contains(modifiedModuleDir) &&
 				!modifiedNonposhiModulesList.contains(modifiedModuleDir)) {
-
-				continue;
-			}
-
-			String modifiedModuleAbsolutePath =
-				JenkinsResultsParserUtil.getCanonicalPath(modifiedModuleDir);
-
-			String modifiedModuleRelativePath =
-				modifiedModuleAbsolutePath.substring(
-					modifiedModuleAbsolutePath.indexOf("modules/"));
-
-			if ((moduleName != null) &&
-				!modifiedModuleRelativePath.contains("/" + moduleName)) {
 
 				continue;
 			}
@@ -189,11 +165,6 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 				getJobProperty(
 					"test.batch.class.names.includes.modules",
 					modifiedModuleDir, JobProperty.Type.INCLUDE_GLOB));
-
-			includesJobProperties.add(
-				getJobProperty(
-					"modules.includes.required.test.batch.class.names.includes",
-					modifiedModuleDir, JobProperty.Type.MODULE_INCLUDE_GLOB));
 		}
 
 		for (File modifiedFile :
@@ -208,13 +179,13 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 			if (modifiedFileCanonicalPath.contains("modules")) {
 				includesJobProperties.addAll(
-					_getJobProperties(
+					getJobProperties(
 						modifiedFile, "test.batch.class.names.includes.modules",
 						JobProperty.Type.MODULE_INCLUDE_GLOB, null));
 			}
 
 			includesJobProperties.addAll(
-				_getJobProperties(
+				getJobProperties(
 					modifiedFile,
 					"modules.includes.required.test.batch.class.names.includes",
 					JobProperty.Type.MODULE_INCLUDE_GLOB, null));
@@ -265,65 +236,25 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		return bundledAppNames;
 	}
 
-	private List<JobProperty> _getJobProperties(
-		File file, String basePropertyName, JobProperty.Type jobType,
-		Set<File> traversedPropertyFileSet) {
+	private Set<String> _getBundledModuleNames() {
+		Set<String> bundledModuleNames = new HashSet<>();
 
-		List<JobProperty> jobPropertiesList = new ArrayList<>();
+		File liferayHome = _getLiferayHome();
 
-		File modulesBaseDir = new File(
-			portalGitWorkingDirectory.getWorkingDirectory(), "modules");
-
-		if ((file == null) || file.equals(modulesBaseDir) ||
-			JenkinsResultsParserUtil.isPoshiFile(file)) {
-
-			return jobPropertiesList;
+		if ((liferayHome == null) || !liferayHome.exists()) {
+			return bundledModuleNames;
 		}
 
-		if (!file.isDirectory()) {
-			file = file.getParentFile();
+		List<File> bundledModules = JenkinsResultsParserUtil.findFiles(
+			liferayHome, ".*\\.jar");
+
+		for (File bundledModule : bundledModules) {
+			String bundledModuleName = bundledModule.getName();
+
+			bundledModuleNames.add(bundledModuleName);
 		}
 
-		File testPropertiesFile = new File(file, "test.properties");
-
-		if (traversedPropertyFileSet == null) {
-			traversedPropertyFileSet = new HashSet<>();
-		}
-
-		if (testPropertiesFile.exists() &&
-			!traversedPropertyFileSet.contains(testPropertiesFile)) {
-
-			JobProperty jobProperty = getJobProperty(
-				basePropertyName, file, jobType);
-
-			String jobPropertyValue = jobProperty.getValue();
-
-			if (!JenkinsResultsParserUtil.isNullOrEmpty(jobPropertyValue) &&
-				!jobPropertiesList.contains(jobProperty)) {
-
-				jobPropertiesList.add(jobProperty);
-			}
-
-			traversedPropertyFileSet.add(testPropertiesFile);
-		}
-
-		JobProperty ignoreParentsJobProperty = getJobProperty(
-			"ignoreParents[" + getTestSuiteName() + "]", file,
-			JobProperty.Type.MODULE_TEST_DIR);
-
-		boolean ignoreParents = Boolean.valueOf(
-			ignoreParentsJobProperty.getValue());
-
-		if (ignoreParents) {
-			return jobPropertiesList;
-		}
-
-		jobPropertiesList.addAll(
-			_getJobProperties(
-				file.getParentFile(), basePropertyName, jobType,
-				traversedPropertyFileSet));
-
-		return jobPropertiesList;
+		return bundledModuleNames;
 	}
 
 	private File _getLiferayHome() {
@@ -339,6 +270,22 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		}
 
 		return new File(liferayHomePath);
+	}
+
+	private File _getReleaseModuleAppDir(File releaseModuleDir) {
+		if (releaseModuleDir.equals(
+				portalGitWorkingDirectory.getWorkingDirectory())) {
+
+			return null;
+		}
+
+		File appBndFile = new File(releaseModuleDir, "app.bnd");
+
+		if (appBndFile.exists()) {
+			return releaseModuleDir;
+		}
+
+		return _getReleaseModuleAppDir(releaseModuleDir.getParentFile());
 	}
 
 	private Set<File> _getReleaseModuleAppDirs() {
@@ -375,10 +322,61 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 			}
 		}
 
+		if (releaseModuleAppDirs.isEmpty()) {
+			for (File releaseModuleDir : _getReleaseModuleDirs()) {
+				File releaseModuleAppDir = _getReleaseModuleAppDir(
+					releaseModuleDir);
+
+				if (releaseModuleAppDir == null) {
+					continue;
+				}
+
+				releaseModuleAppDirs.add(releaseModuleAppDir);
+			}
+		}
+
 		return releaseModuleAppDirs;
 	}
 
-	private static final Pattern _singleModuleBatchNamePattern =
-		Pattern.compile("modules-unit-(?<moduleName>\\S+)-jdk\\d+");
+	private Set<File> _getReleaseModuleDirs() {
+		Set<String> bundledModuleNames = _getBundledModuleNames();
+
+		Set<File> releaseModuleDirs = new HashSet<>();
+
+		for (File moduleDir : portalGitWorkingDirectory.getModuleDirs()) {
+			File bndBndFile = new File(moduleDir, "bnd.bnd");
+
+			String symbolicName = _getSymbolicName(bndBndFile);
+
+			for (String bundledModuleName : bundledModuleNames) {
+				if (!bundledModuleName.equals(symbolicName + ".jar")) {
+					continue;
+				}
+
+				List<File> skipTestIntegrationCheckFiles =
+					JenkinsResultsParserUtil.findFiles(
+						moduleDir, ".lfrbuild-ci-skip-test-integration-check");
+
+				if (!skipTestIntegrationCheckFiles.isEmpty()) {
+					System.out.println("Ignoring " + moduleDir);
+
+					continue;
+				}
+
+				releaseModuleDirs.add(moduleDir);
+
+				break;
+			}
+		}
+
+		return releaseModuleDirs;
+	}
+
+	private String _getSymbolicName(File bndBndFile) {
+		Properties bndBndProperties = JenkinsResultsParserUtil.getProperties(
+			bndBndFile);
+
+		return bndBndProperties.getProperty("Bundle-SymbolicName");
+	}
 
 }

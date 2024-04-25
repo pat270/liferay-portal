@@ -16,15 +16,16 @@ import com.liferay.document.library.web.internal.helper.DLTrashHelper;
 import com.liferay.document.library.web.internal.security.permission.resource.DLFolderPermission;
 import com.liferay.document.library.web.internal.security.permission.resource.DLPermission;
 import com.liferay.document.library.web.internal.util.DLFolderUtil;
+import com.liferay.document.library.web.internal.util.FolderItemSelectorURLProvider;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
+import com.liferay.item.selector.ItemSelector;
 import com.liferay.learn.LearnMessage;
 import com.liferay.learn.LearnMessageUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.ResultRow;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -45,7 +46,6 @@ import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.portal.kernel.workflow.WorkflowEngineManagerUtil;
 import com.liferay.portal.kernel.workflow.WorkflowHandler;
 import com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil;
 import com.liferay.portal.util.RepositoryUtil;
@@ -97,7 +97,13 @@ public class FolderActionDisplayContext {
 							dropdownItem.setLabel(
 								LanguageUtil.get(_httpServletRequest, "edit"));
 						}
-					).add(
+					).build());
+				dropdownGroupItem.setSeparator(true);
+			}
+		).addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					DropdownItemListBuilder.add(
 						this::_isMoveFolderActionVisible,
 						dropdownItem -> {
 							dropdownItem.setHref(_getMoveFolderURL());
@@ -371,11 +377,18 @@ public class FolderActionDisplayContext {
 		return PortletURLBuilder.createRenderURL(
 			_dlRequestHelper.getLiferayPortletResponse()
 		).setMVCRenderCommandName(
-			"/document_library/copy_folder"
+			"/document_library/copy_dl_objects"
 		).setRedirect(
 			_dlRequestHelper.getCurrentURL()
 		).setParameter(
-			"sourceFolderId", _getFolderId()
+			"dlObjectIds", _getFolderId()
+		).setParameter(
+			"sourceFolderId",
+			() -> {
+				Folder folder = _getFolder();
+
+				return folder.getParentFolderId();
+			}
 		).setParameter(
 			"sourceRepositoryId", _getRepositoryId()
 		).buildString();
@@ -541,13 +554,29 @@ public class FolderActionDisplayContext {
 		return themeDisplay.getScopeGroupName();
 	}
 
-	private String _getMoveFolderURL() {
+	private String _getMoveFolderURL() throws PortalException {
 		LiferayPortletResponse liferayPortletResponse =
 			_dlRequestHelper.getLiferayPortletResponse();
 
+		FolderItemSelectorURLProvider folderItemSelectorURLProvider =
+			new FolderItemSelectorURLProvider(
+				_httpServletRequest,
+				(ItemSelector)_httpServletRequest.getAttribute(
+					ItemSelector.class.getName()));
+
 		return StringBundler.concat(
 			"javascript:", liferayPortletResponse.getNamespace(),
-			"move(1, 'rowIdsFolder', ", _getFolderId(), ");");
+			"move(1, 'rowIdsFolder', ", _getFolderId(), ", '",
+			HtmlUtil.escapeJS(
+				folderItemSelectorURLProvider.getSelectMoveToFolderURL(
+					_getRepositoryId(), _getParentFolderId(), _getFolderId())),
+			"');");
+	}
+
+	private long _getParentFolderId() {
+		Folder folder = _getFolder();
+
+		return folder.getParentFolderId();
 	}
 
 	private String _getParentFolderURL() {
@@ -790,12 +819,6 @@ public class FolderActionDisplayContext {
 	}
 
 	private Boolean _isCopyActionVisible() throws PortalException {
-		if (!FeatureFlagManagerUtil.isEnabled(
-				_dlRequestHelper.getCompanyId(), "LPS-182512")) {
-
-			return false;
-		}
-
 		Folder folder = _getFolder();
 
 		if ((folder == null) ||
@@ -1032,10 +1055,6 @@ public class FolderActionDisplayContext {
 	}
 
 	private boolean _isWorkflowEnabled() {
-		if (!WorkflowEngineManagerUtil.isDeployed()) {
-			return false;
-		}
-
 		WorkflowHandler<Object> workflowHandler =
 			WorkflowHandlerRegistryUtil.getWorkflowHandler(
 				DLFileEntry.class.getName());

@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
@@ -17,6 +18,8 @@ import com.liferay.batch.engine.model.BatchEngineImportTask;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.IOException;
@@ -24,11 +27,14 @@ import java.io.Serializable;
 
 import java.lang.reflect.Field;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Ivica Cardic
@@ -63,9 +69,11 @@ public class BatchEngineImportTaskItemReaderUtil {
 			if (field != null) {
 				field.setAccessible(true);
 
+				ObjectMapper objectMapper = _getObjectMapper(field);
+
 				field.set(
 					item,
-					_objectMapper.convertValue(
+					objectMapper.convertValue(
 						entry.getValue(), field.getType()));
 
 				continue;
@@ -131,14 +139,87 @@ public class BatchEngineImportTaskItemReaderUtil {
 					targetFieldNameValueMap.put(
 						targetFieldName, entry.getValue());
 				}
+
+				continue;
+			}
+
+			String[] fieldNameParts = StringUtil.split(
+				entry.getKey(), StringPool.PERIOD);
+
+			targetFieldName = (String)fieldNameMappingMap.get(
+				fieldNameParts[0]);
+
+			if (Validator.isNull(targetFieldName)) {
+				continue;
+			}
+
+			Matcher multiselectPicklistMatcher =
+				_multiselectPicklistPattern.matcher(fieldNameParts[1]);
+
+			if (multiselectPicklistMatcher.matches()) {
+				if (fieldNameParts[1].startsWith("name_")) {
+					continue;
+				}
+
+				List<Object> list =
+					(List<Object>)targetFieldNameValueMap.computeIfAbsent(
+						targetFieldName, key -> new ArrayList<>());
+
+				list.add(entry.getValue());
+
+				continue;
+			}
+
+			Map<String, Object> map =
+				(Map<String, Object>)targetFieldNameValueMap.computeIfAbsent(
+					targetFieldName, key -> new HashMap<>());
+
+			for (int i = 1; i < fieldNameParts.length; i++) {
+				if ((fieldNameParts.length - 1) > i) {
+					map = (Map<String, Object>)map.computeIfAbsent(
+						fieldNameParts[i], key -> new HashMap<>());
+
+					continue;
+				}
+
+				map.put(fieldNameParts[i], entry.getValue());
 			}
 		}
 
 		return targetFieldNameValueMap;
 	}
 
+	private static ObjectMapper _getObjectMapper(Field field)
+		throws IllegalAccessException, InstantiationException {
+
+		JsonDeserialize[] jsonDeserializes = field.getAnnotationsByType(
+			JsonDeserialize.class);
+
+		if (ArrayUtil.isEmpty(jsonDeserializes)) {
+			return _objectMapper;
+		}
+
+		JsonDeserialize jsonDeserialize = jsonDeserializes[0];
+
+		return new ObjectMapper() {
+			{
+				SimpleModule simpleModule = new SimpleModule();
+
+				simpleModule.addDeserializer(
+					field.getType(),
+					jsonDeserialize.using(
+					).newInstance());
+
+				registerModule(simpleModule);
+			}
+		};
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		BatchEngineImportTaskItemReaderUtil.class);
+
+	private static final Pattern _multiselectPicklistPattern = Pattern.compile(
+		"key_\\d+|name_\\d+");
 
 	private static final ObjectMapper _objectMapper = new ObjectMapper() {
 		{

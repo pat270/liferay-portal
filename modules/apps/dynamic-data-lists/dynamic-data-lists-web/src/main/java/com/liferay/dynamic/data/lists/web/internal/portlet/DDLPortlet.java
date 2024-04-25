@@ -15,14 +15,15 @@ import com.liferay.dynamic.data.lists.service.DDLRecordService;
 import com.liferay.dynamic.data.lists.service.DDLRecordSetLocalService;
 import com.liferay.dynamic.data.lists.service.DDLRecordSetService;
 import com.liferay.dynamic.data.lists.util.DDL;
-import com.liferay.dynamic.data.lists.web.internal.configuration.activator.DDLWebConfigurationActivator;
+import com.liferay.dynamic.data.lists.web.internal.configuration.DDLWebConfiguration;
 import com.liferay.dynamic.data.lists.web.internal.display.context.DDLDisplayContext;
 import com.liferay.dynamic.data.mapping.security.permission.DDMPermissionSupport;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateLocalService;
-import com.liferay.dynamic.data.mapping.storage.StorageEngine;
-import com.liferay.dynamic.data.mapping.util.DDMDisplayRegistry;
+import com.liferay.dynamic.data.mapping.storage.DDMStorageEngineManager;
+import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.PortletPreferencesException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
@@ -36,6 +37,8 @@ import com.liferay.portal.kernel.util.WebKeys;
 
 import java.io.IOException;
 
+import java.util.Map;
+
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.Portlet;
@@ -43,21 +46,24 @@ import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Marcellus Tavares
  */
 @Component(
+	configurationPid = "com.liferay.dynamic.data.lists.web.internal.configuration.DDLWebConfiguration",
 	property = {
 		"com.liferay.portlet.add-default-resource=true",
 		"com.liferay.portlet.css-class-wrapper=portlet-dynamic-data-lists",
 		"com.liferay.portlet.display-category=category.hidden",
-		"com.liferay.portlet.header-portal-javascript=/o/dynamic-data-mapping-web/js/custom_fields.js",
-		"com.liferay.portlet.header-portal-javascript=/o/dynamic-data-mapping-web/js/main.js",
+		"com.liferay.portlet.header-portal-javascript=/o/dynamic-data-mapping-web/js/legacy/custom_fields.js",
+		"com.liferay.portlet.header-portal-javascript=/o/dynamic-data-mapping-web/js/legacy/main.js",
 		"com.liferay.portlet.header-portlet-css=/css/main.css",
-		"com.liferay.portlet.header-portlet-javascript=/js/main.js",
+		"com.liferay.portlet.header-portlet-javascript=/js/legacy/main.js",
 		"com.liferay.portlet.icon=/icons/dynamic_data_lists.png",
 		"com.liferay.portlet.preferences-owned-by-group=true",
 		"com.liferay.portlet.preferences-unique-per-layout=false",
@@ -95,6 +101,10 @@ public class DDLPortlet extends MVCPortlet {
 			RenderRequest renderRequest, RenderResponse renderResponse)
 		throws IOException, PortletException {
 
+		if (!FeatureFlagManagerUtil.isEnabled("LPS-196935")) {
+			return;
+		}
+
 		try {
 			setDDLRecordRequestAttribute(renderRequest);
 
@@ -102,9 +112,8 @@ public class DDLPortlet extends MVCPortlet {
 
 			DDLDisplayContext ddlDisplayContext = new DDLDisplayContext(
 				renderRequest, renderResponse, _ddl, _ddlRecordSetLocalService,
-				_ddlWebConfigurationActivator.getDDLWebConfiguration(),
-				_ddmDisplayRegistry, _ddmPermissionSupport,
-				_ddmTemplateLocalService, _storageEngine);
+				_ddlWebConfiguration, _ddmPermissionSupport,
+				_ddmStorageEngineManager, _ddmTemplateLocalService);
 
 			renderRequest.setAttribute(
 				WebKeys.PORTLET_DISPLAY_CONTEXT, ddlDisplayContext);
@@ -123,6 +132,13 @@ public class DDLPortlet extends MVCPortlet {
 		}
 
 		super.render(renderRequest, renderResponse);
+	}
+
+	@Activate
+	@Modified
+	protected void activate(Map<String, Object> properties) {
+		_ddlWebConfiguration = ConfigurableUtil.createConfigurable(
+			DDLWebConfiguration.class, properties);
 	}
 
 	@Override
@@ -213,22 +229,18 @@ public class DDLPortlet extends MVCPortlet {
 	@Reference
 	private DDLRecordSetService _ddlRecordSetService;
 
-	@Reference
-	private DDLWebConfigurationActivator _ddlWebConfigurationActivator;
-
-	@Reference
-	private DDMDisplayRegistry _ddmDisplayRegistry;
+	private volatile DDLWebConfiguration _ddlWebConfiguration;
 
 	@Reference
 	private DDMPermissionSupport _ddmPermissionSupport;
+
+	@Reference
+	private DDMStorageEngineManager _ddmStorageEngineManager;
 
 	@Reference
 	private DDMTemplateLocalService _ddmTemplateLocalService;
 
 	@Reference
 	private Portal _portal;
-
-	@Reference
-	private StorageEngine _storageEngine;
 
 }

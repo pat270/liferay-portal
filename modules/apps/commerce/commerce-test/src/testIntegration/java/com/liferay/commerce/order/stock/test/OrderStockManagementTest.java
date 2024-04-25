@@ -23,6 +23,7 @@ import com.liferay.commerce.service.CommerceOrderLocalService;
 import com.liferay.commerce.shipment.test.util.CommerceShipmentTestUtil;
 import com.liferay.commerce.test.util.CommerceInventoryTestUtil;
 import com.liferay.commerce.test.util.CommerceTestUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.UserLocalService;
@@ -32,9 +33,12 @@ import com.liferay.portal.kernel.test.rule.Sync;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.kernel.util.BigDecimalUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
+
+import java.math.BigDecimal;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -109,7 +113,7 @@ public class OrderStockManagementTest {
 		CommerceTestUtil.updateBackOrderCPDefinitionInventory(
 			cpInstance.getCPDefinition());
 
-		int orderedQuantity = 4;
+		BigDecimal orderedQuantity = BigDecimal.valueOf(4);
 
 		CommerceOrderItem commerceOrderItem =
 			CommerceTestUtil.addCommerceOrderItem(
@@ -152,13 +156,13 @@ public class OrderStockManagementTest {
 			commerceInventoryWarehouse.getCommerceInventoryWarehouseId(),
 			_commerceChannel.getCommerceChannelId());
 
-		int quantity = 10;
-		int orderedQuantity = 4;
+		BigDecimal quantity = BigDecimal.TEN;
+		BigDecimal orderedQuantity = BigDecimal.valueOf(4);
 
 		CommerceInventoryWarehouseItem commerceInventoryWarehouseItem =
 			CommerceInventoryTestUtil.addCommerceInventoryWarehouseItem(
-				_user.getUserId(), commerceInventoryWarehouse,
-				cpInstance.getSku(), quantity);
+				_user.getUserId(), commerceInventoryWarehouse, quantity,
+				cpInstance.getSku(), StringPool.BLANK);
 
 		CommerceOrderItem commerceOrderItem =
 			CommerceTestUtil.addCommerceOrderItem(
@@ -175,9 +179,10 @@ public class OrderStockManagementTest {
 					commerceInventoryWarehouseItem.
 						getCommerceInventoryWarehouseItemId());
 
-		Assert.assertEquals(
-			commerceInventoryWarehouseItem.toString(), quantity,
-			commerceInventoryWarehouseItem.getQuantity());
+		Assert.assertTrue(
+			commerceInventoryWarehouseItem.toString(),
+			BigDecimalUtil.eq(
+				quantity, commerceInventoryWarehouseItem.getQuantity()));
 
 		CommerceShipmentTestUtil.createOrderShipment(
 			_user.getGroupId(), commerceOrder.getCommerceOrderId(),
@@ -189,10 +194,11 @@ public class OrderStockManagementTest {
 					commerceInventoryWarehouseItem.
 						getCommerceInventoryWarehouseItemId());
 
-		Assert.assertEquals(
+		Assert.assertTrue(
 			commerceInventoryWarehouseItem.toString(),
-			quantity - orderedQuantity,
-			commerceInventoryWarehouseItem.getQuantity());
+			BigDecimalUtil.eq(
+				quantity.subtract(orderedQuantity),
+				commerceInventoryWarehouseItem.getQuantity()));
 	}
 
 	@Test
@@ -223,10 +229,10 @@ public class OrderStockManagementTest {
 			_commerceChannel.getCommerceChannelId());
 
 		CommerceInventoryTestUtil.addCommerceInventoryWarehouseItem(
-			_user.getUserId(), commerceInventoryWarehouse, cpInstance.getSku(),
-			10);
+			_user.getUserId(), commerceInventoryWarehouse, BigDecimal.TEN,
+			cpInstance.getSku(), StringPool.BLANK);
 
-		int orderedQuantity = 2;
+		BigDecimal orderedQuantity = BigDecimal.valueOf(2);
 
 		CommerceOrderItem commerceOrderItem =
 			CommerceTestUtil.addCommerceOrderItem(
@@ -260,7 +266,7 @@ public class OrderStockManagementTest {
 
 		CommerceTestUtil.addCommerceOrderItem(
 			commerceOrder.getCommerceOrderId(), cpInstance.getCPInstanceId(),
-			2);
+			BigDecimal.valueOf(2));
 	}
 
 	@Test(expected = CommerceOrderValidatorException.class)
@@ -295,12 +301,12 @@ public class OrderStockManagementTest {
 			_commerceChannel.getCommerceChannelId());
 
 		CommerceInventoryTestUtil.addCommerceInventoryWarehouseItem(
-			_user.getUserId(), commerceInventoryWarehouse, cpInstance.getSku(),
-			10);
+			_user.getUserId(), commerceInventoryWarehouse, BigDecimal.TEN,
+			cpInstance.getSku(), StringPool.BLANK);
 
 		CommerceTestUtil.addCommerceOrderItem(
 			commerceOrder.getCommerceOrderId(), cpInstance.getCPInstanceId(),
-			20);
+			BigDecimal.valueOf(20));
 	}
 
 	@Test(expected = CommerceOrderValidatorException.class)
@@ -342,12 +348,12 @@ public class OrderStockManagementTest {
 			_commerceChannel.getCommerceChannelId());
 
 		CommerceInventoryTestUtil.addCommerceInventoryWarehouseItem(
-			_user.getUserId(), commerceInventoryWarehouse, cpInstance.getSku(),
-			10);
+			_user.getUserId(), commerceInventoryWarehouse, BigDecimal.TEN,
+			cpInstance.getSku(), StringPool.BLANK);
 
 		CommerceTestUtil.addCommerceOrderItem(
 			commerceOrder1.getCommerceOrderId(), cpInstance.getCPInstanceId(),
-			4);
+			BigDecimal.valueOf(4));
 
 		CommerceShipmentTestUtil.createOrderShipment(
 			_user.getGroupId(), commerceOrder1.getCommerceOrderId(),
@@ -355,7 +361,7 @@ public class OrderStockManagementTest {
 
 		CommerceTestUtil.addCommerceOrderItem(
 			commerceOrder2.getCommerceOrderId(), cpInstance.getCPInstanceId(),
-			8);
+			BigDecimal.valueOf(8));
 	}
 
 	@Rule

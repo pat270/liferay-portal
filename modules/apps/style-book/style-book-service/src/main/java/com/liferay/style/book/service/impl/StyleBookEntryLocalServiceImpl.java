@@ -7,7 +7,6 @@ package com.liferay.style.book.service.impl;
 
 import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.petra.string.CharPool;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.dao.orm.custom.sql.CustomSQL;
@@ -50,19 +49,9 @@ public class StyleBookEntryLocalServiceImpl
 
 	@Override
 	public StyleBookEntry addStyleBookEntry(
-			long userId, long groupId, String name, String styleBookEntryKey,
+			long userId, long groupId, boolean defaultStyleBookEntry,
+			String frontendTokensValues, String name, String styleBookEntryKey,
 			ServiceContext serviceContext)
-		throws PortalException {
-
-		return addStyleBookEntry(
-			userId, groupId, StringPool.BLANK, name, styleBookEntryKey,
-			serviceContext);
-	}
-
-	@Override
-	public StyleBookEntry addStyleBookEntry(
-			long userId, long groupId, String frontendTokensValues, String name,
-			String styleBookEntryKey, ServiceContext serviceContext)
 		throws PortalException {
 
 		User user = _userLocalService.getUser(userId);
@@ -100,7 +89,7 @@ public class StyleBookEntryLocalServiceImpl
 		styleBookEntry.setUserId(user.getUserId());
 		styleBookEntry.setUserName(user.getFullName());
 		styleBookEntry.setCreateDate(serviceContext.getCreateDate(new Date()));
-		styleBookEntry.setDefaultStyleBookEntry(false);
+		styleBookEntry.setDefaultStyleBookEntry(defaultStyleBookEntry);
 		styleBookEntry.setFrontendTokensValues(frontendTokensValues);
 		styleBookEntry.setName(name);
 		styleBookEntry.setStyleBookEntryKey(styleBookEntryKey);
@@ -117,15 +106,12 @@ public class StyleBookEntryLocalServiceImpl
 		StyleBookEntry sourceStyleBookEntry = getStyleBookEntry(
 			sourceStyleBookEntryId);
 
-		String name = StringBundler.concat(
-			sourceStyleBookEntry.getName(), StringPool.SPACE,
-			StringPool.OPEN_PARENTHESIS,
-			_language.get(LocaleUtil.getMostRelevantLocale(), "copy"),
-			StringPool.CLOSE_PARENTHESIS);
+		String name = _getUniqueCopyName(sourceStyleBookEntry);
 
 		StyleBookEntry targetStyleBookEntry = addStyleBookEntry(
-			userId, groupId, sourceStyleBookEntry.getFrontendTokensValues(),
-			name, StringPool.BLANK, serviceContext);
+			userId, groupId, false,
+			sourceStyleBookEntry.getFrontendTokensValues(), name,
+			StringPool.BLANK, serviceContext);
 
 		long previewFileEntryId = _copyStyleBookEntryPreviewFileEntry(
 			userId, groupId, sourceStyleBookEntry, targetStyleBookEntry);
@@ -488,6 +474,28 @@ public class StyleBookEntryLocalServiceImpl
 		}
 
 		return StringPool.BLANK;
+	}
+
+	private String _getUniqueCopyName(StyleBookEntry styleBookEntry) {
+		String copy = _language.get(LocaleUtil.getSiteDefault(), "copy");
+
+		String name = StringUtil.appendParentheticalSuffix(
+			styleBookEntry.getName(), copy);
+
+		for (int i = 1;; i++) {
+			StyleBookEntry existingStyleBookEntry =
+				styleBookEntryPersistence.fetchByG_LikeN_First(
+					styleBookEntry.getGroupId(), name, null);
+
+			if (existingStyleBookEntry == null) {
+				break;
+			}
+
+			name = StringUtil.appendParentheticalSuffix(
+				styleBookEntry.getName(), copy + StringPool.SPACE + i);
+		}
+
+		return name;
 	}
 
 	private void _validate(String name) throws PortalException {

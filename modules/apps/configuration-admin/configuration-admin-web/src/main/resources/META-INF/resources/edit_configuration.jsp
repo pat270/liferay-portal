@@ -44,9 +44,7 @@ String viewCategoryHREF = ConfigurationCategoryUtil.getHREF(configurationCategor
 
 PortalUtil.addPortletBreadcrumbEntry(request, categoryDisplayName, viewCategoryHREF);
 
-ResourceBundleLoaderProvider resourceBundleLoaderProvider = (ResourceBundleLoaderProvider)request.getAttribute(ConfigurationAdminWebKeys.RESOURCE_BUNDLE_LOADER_PROVIDER);
-
-ResourceBundleLoader resourceBundleLoader = resourceBundleLoaderProvider.getResourceBundleLoader(configurationModel.getBundleSymbolicName());
+ResourceBundleLoader resourceBundleLoader = ResourceBundleLoaderProviderUtil.getResourceBundleLoader(configurationModel.getBundleSymbolicName());
 
 ResourceBundle componentResourceBundle = resourceBundleLoader.loadResourceBundle(PortalUtil.getLocale(request));
 
@@ -68,7 +66,7 @@ renderResponse.setTitle(categoryDisplayName);
 	ConfigurationModelListenerException cmle = (ConfigurationModelListenerException)errorException;
 	%>
 
-	<liferay-ui:message key="<%= cmle.causeMessage %>" localizeKey="<%= false %>" />
+	<liferay-ui:message key="<%= HtmlUtil.escape(cmle.causeMessage) %>" localizeKey="<%= false %>" />
 </liferay-ui:error>
 
 <portlet:actionURL name="/configuration_admin/bind_configuration" var="bindConfigurationActionURL" />
@@ -198,9 +196,9 @@ renderResponse.setTitle(categoryDisplayName);
 					</h2>
 
 					<c:if test="<%= configurationModel.hasScopeConfiguration(configurationScopeDisplayContext.getScope()) && configurationModel.isReadOnly() %>">
-						<aui:alert closeable="<%= false %>" id="readonlyAlert" type="info">
-							<liferay-ui:message key="this-configuration-is-read-only" />
-						</aui:alert>
+						<clay:alert
+							message="this-configuration-is-read-only"
+						/>
 					</c:if>
 
 					<c:if test="<%= !configurationModel.hasScopeConfiguration(configurationScopeDisplayContext.getScope()) %>">
@@ -230,27 +228,27 @@ renderResponse.setTitle(categoryDisplayName);
 					<liferay-util:dynamic-include key='<%= "com.liferay.configuration.admin.web#/edit_configuration.jsp#" + configurationModel.getFactoryPid() + "#post" %>' />
 
 					<c:if test="<%= !configurationModel.isReadOnly() %>">
-						<aui:button-row>
-							<c:choose>
-								<c:when test="<%= configurationModel.hasScopeConfiguration(configurationScopeDisplayContext.getScope()) %>">
-									<aui:button name="update" type="submit" value="update" />
-								</c:when>
-								<c:otherwise>
-									<aui:button name="save" type="submit" value="save" />
-								</c:otherwise>
-							</c:choose>
+						<div class="align-items-center d-flex justify-content-between">
+							<aui:button-row>
+								<c:choose>
+									<c:when test="<%= configurationModel.hasScopeConfiguration(configurationScopeDisplayContext.getScope()) %>">
+										<aui:button data-qa-id="submitConfiguration" name="update" type="submit" value="update" />
+									</c:when>
+									<c:otherwise>
+										<aui:button data-qa-id="submitConfiguration" name="save" type="submit" value="save" />
+									</c:otherwise>
+								</c:choose>
 
-							<aui:button cssClass="ml-3" href="<%= redirect %>" name="cancel" type="cancel" />
+								<aui:button cssClass="ml-3" href="<%= redirect %>" name="cancel" type="cancel" />
+							</aui:button-row>
 
 							<c:if test="<%= Validator.isNotNull(configurationModel.getLiferayLearnMessageKey()) && Validator.isNotNull(configurationModel.getLiferayLearnMessageResource()) %>">
-								<div class="btn float-right">
-									<liferay-learn:message
-										key="<%= configurationModel.getLiferayLearnMessageKey() %>"
-										resource="<%= configurationModel.getLiferayLearnMessageResource() %>"
-									/>
-								</div>
+								<liferay-learn:message
+									key="<%= configurationModel.getLiferayLearnMessageKey() %>"
+									resource="<%= configurationModel.getLiferayLearnMessageResource() %>"
+								/>
 							</c:if>
-						</aui:button-row>
+						</div>
 					</c:if>
 				</aui:form>
 			</clay:sheet>

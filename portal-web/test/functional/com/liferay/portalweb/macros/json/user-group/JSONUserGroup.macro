@@ -1,6 +1,7 @@
 definition {
 
-	macro addLayout {
+	@summary = "Default summary"
+	macro addLayout(workflowAction = null, layoutName = null, assetCategoryIds = null, userGroupName = null, assetTagNames = null) {
 		Variables.assertDefined(parameterList = "${userGroupName},${layoutName}");
 
 		var friendlyURL = JSONLayoutSetter.setFriendlyURL(friendlyURL = ${friendlyURL});
@@ -33,7 +34,8 @@ definition {
 			type = ${type});
 	}
 
-	macro addUserGroup {
+	@summary = "Default summary"
+	macro addUserGroup(userGroupName = null, userGroupDescription = null) {
 		Variables.assertDefined(parameterList = ${userGroupName});
 
 		JSONUserGroupAPI._addUserGroup(
@@ -41,10 +43,14 @@ definition {
 			userGroupName = ${userGroupName});
 	}
 
-	macro assignGroupRoleToUserGroup {
-		Variables.assertDefined(parameterList = "${groupName},${roleTitle},${userGroupName}");
+	@summary = "Default summary"
+	macro assignGroupRoleToUserGroup(groupName = null, roleTitle = null, userGroupName = null) {
+		Variables.assertDefined(parameterList = "${roleTitle},${userGroupName}");
 
-		var groupId = JSONGroupSetter.setGroupId(groupName = ${groupName});
+		if (!(isSet(groupId))) {
+			var groupId = JSONGroupSetter.setGroupId(groupName = ${groupName});
+		}
+
 		var roleId = JSONRoleAPI._getRoleIdByName(name = ${roleTitle});
 		var userGroupId = JSONUserGroupAPI._getUserGroupIdByName(userGroupName = ${userGroupName});
 

@@ -12,10 +12,10 @@ import com.liferay.friendly.url.info.item.provider.InfoItemFriendlyURLProvider;
 import com.liferay.info.item.ClassPKInfoItemIdentifier;
 import com.liferay.info.item.InfoItemIdentifier;
 import com.liferay.info.item.InfoItemReference;
+import com.liferay.layout.display.page.BaseLayoutDisplayPageProvider;
 import com.liferay.layout.display.page.LayoutDisplayPageObjectProvider;
 import com.liferay.layout.display.page.LayoutDisplayPageProvider;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.portlet.constants.FriendlyURLResolverConstants;
@@ -30,7 +30,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(service = LayoutDisplayPageProvider.class)
 public class BlogsLayoutDisplayPageProvider
-	implements LayoutDisplayPageProvider<BlogsEntry> {
+	extends BaseLayoutDisplayPageProvider<BlogsEntry> {
 
 	@Override
 	public String getClassName() {
@@ -38,79 +38,81 @@ public class BlogsLayoutDisplayPageProvider
 	}
 
 	@Override
+	public String getDefaultURLSeparator() {
+		return FriendlyURLResolverConstants.URL_SEPARATOR_BLOGS_ENTRY;
+	}
+
+	@Override
+	public LayoutDisplayPageObjectProvider<BlogsEntry>
+		getLayoutDisplayPageObjectProvider(BlogsEntry blogsEntry) {
+
+		if ((blogsEntry == null) || blogsEntry.isDraft() ||
+			blogsEntry.isInTrash()) {
+
+			return null;
+		}
+
+		return new BlogsLayoutDisplayPageObjectProvider(
+			_assetHelper, blogsEntry, _infoItemFriendlyURLProvider, _language);
+	}
+
+	@Override
 	public LayoutDisplayPageObjectProvider<BlogsEntry>
 		getLayoutDisplayPageObjectProvider(
 			InfoItemReference infoItemReference) {
 
-		try {
-			InfoItemIdentifier infoItemIdentifier =
+		InfoItemIdentifier infoItemIdentifier =
+			infoItemReference.getInfoItemIdentifier();
+
+		if (!(infoItemIdentifier instanceof ClassPKInfoItemIdentifier)) {
+			return null;
+		}
+
+		ClassPKInfoItemIdentifier classPKInfoItemIdentifier =
+			(ClassPKInfoItemIdentifier)
 				infoItemReference.getInfoItemIdentifier();
 
-			if (!(infoItemIdentifier instanceof ClassPKInfoItemIdentifier)) {
-				return null;
-			}
+		BlogsEntry blogsEntry = _blogsEntryLocalService.fetchBlogsEntry(
+			classPKInfoItemIdentifier.getClassPK());
 
-			ClassPKInfoItemIdentifier classPKInfoItemIdentifier =
-				(ClassPKInfoItemIdentifier)
-					infoItemReference.getInfoItemIdentifier();
+		if ((blogsEntry == null) || blogsEntry.isDraft() ||
+			blogsEntry.isInTrash()) {
 
-			BlogsEntry blogsEntry = _blogsEntryLocalService.fetchBlogsEntry(
-				classPKInfoItemIdentifier.getClassPK());
-
-			if ((blogsEntry == null) || blogsEntry.isDraft() ||
-				blogsEntry.isInTrash()) {
-
-				return null;
-			}
-
-			return new BlogsLayoutDisplayPageObjectProvider(
-				_assetHelper, blogsEntry, _infoItemFriendlyURLProvider,
-				_language);
+			return null;
 		}
-		catch (PortalException portalException) {
-			throw new RuntimeException(portalException);
-		}
+
+		return new BlogsLayoutDisplayPageObjectProvider(
+			_assetHelper, blogsEntry, _infoItemFriendlyURLProvider, _language);
 	}
 
 	@Override
 	public LayoutDisplayPageObjectProvider<BlogsEntry>
 		getLayoutDisplayPageObjectProvider(long groupId, String urlTitle) {
 
-		try {
-			if (urlTitle.contains(StringPool.SLASH)) {
-				String[] urlNames = urlTitle.split(StringPool.SLASH);
+		if (urlTitle.contains(StringPool.SLASH)) {
+			String[] urlNames = urlTitle.split(StringPool.SLASH);
 
-				if (urlNames.length > 1) {
-					Group group = _groupLocalService.fetchFriendlyURLGroup(
-						CompanyThreadLocal.getCompanyId(),
-						StringPool.SLASH + urlNames[0]);
+			if (urlNames.length > 1) {
+				Group group = _groupLocalService.fetchFriendlyURLGroup(
+					CompanyThreadLocal.getCompanyId(),
+					StringPool.SLASH + urlNames[0]);
 
-					if (group != null) {
-						return getLayoutDisplayPageObjectProvider(
-							group.getGroupId(), urlNames[1]);
-					}
+				if (group != null) {
+					return getLayoutDisplayPageObjectProvider(
+						group.getGroupId(), urlNames[1]);
 				}
 			}
-
-			BlogsEntry blogsEntry = _blogsEntryLocalService.getEntry(
-				groupId, urlTitle);
-
-			if (blogsEntry.isInTrash()) {
-				return null;
-			}
-
-			return new BlogsLayoutDisplayPageObjectProvider(
-				_assetHelper, blogsEntry, _infoItemFriendlyURLProvider,
-				_language);
 		}
-		catch (PortalException portalException) {
-			throw new RuntimeException(portalException);
-		}
-	}
 
-	@Override
-	public String getURLSeparator() {
-		return FriendlyURLResolverConstants.URL_SEPARATOR_BLOGS_ENTRY;
+		BlogsEntry blogsEntry = _blogsEntryLocalService.fetchEntry(
+			groupId, urlTitle);
+
+		if ((blogsEntry == null) || blogsEntry.isInTrash()) {
+			return null;
+		}
+
+		return new BlogsLayoutDisplayPageObjectProvider(
+			_assetHelper, blogsEntry, _infoItemFriendlyURLProvider, _language);
 	}
 
 	@Reference

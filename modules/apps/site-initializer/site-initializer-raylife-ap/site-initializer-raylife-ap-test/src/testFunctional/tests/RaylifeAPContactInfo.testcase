@@ -21,7 +21,10 @@ definition {
 		task ("Create a new Raylife AP Site") {
 			Site.openSitesAdmin();
 
-			Raylife.createRaylifeSite(siteName = "Raylife D2C");
+			HeadlessSite.addSite(
+				siteName = "Raylife D2C",
+				templateName = "Raylife D2C",
+				templateType = "Site Initializer");
 
 			Raylife.createRaylifeSite(siteName = "Raylife AP");
 		}
@@ -53,6 +56,7 @@ definition {
 	@priority = 3
 	test AssertCenterStatusChangeAfterSaveButtonClicked {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Uskip after it is resolved
 
@@ -88,6 +92,7 @@ definition {
 	@priority = 3
 	test AssertStatusChangeToUnsavedChanges {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -118,6 +123,7 @@ definition {
 	@priority = 4
 	test IfDatePickerWorks {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -146,6 +152,7 @@ definition {
 	@priority = 4
 	test NextButtonWorksWhenFieldsAreFilled {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 

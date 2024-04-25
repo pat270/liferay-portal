@@ -14,6 +14,7 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -117,8 +118,7 @@ public class EntityFieldsProvider {
 					ddmFormField.getFieldReference(), locale, "Number"));
 		}
 		else if (Objects.equals(
-					ddmFormField.getDataType(),
-					DDMFormFieldTypeConstants.RADIO) ||
+					ddmFormField.getType(), DDMFormFieldTypeConstants.RADIO) ||
 				 (Objects.equals(ddmFormField.getIndexType(), "keyword") &&
 				  (Objects.equals(
 					  ddmFormField.getType(),
@@ -148,7 +148,8 @@ public class EntityFieldsProvider {
 			Date date = indexDateFormat.parse(String.valueOf(fieldValue));
 
 			DateFormat searchDateFormat =
-				DateFormatFactoryUtil.getSimpleDateFormat("yyyy-MM-dd");
+				DateFormatFactoryUtil.getSimpleDateFormat(
+					"yyyy-MM-dd", LocaleUtil.US);
 
 			return searchDateFormat.format(date);
 		}

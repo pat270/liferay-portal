@@ -49,8 +49,10 @@ public class CPDefinitionOptionValueRelServiceImpl
 
 	@Override
 	public CPDefinitionOptionValueRel addCPDefinitionOptionValueRel(
-			long cpDefinitionOptionRelId, Map<Locale, String> nameMap,
-			double priority, String key, ServiceContext serviceContext)
+			long cpDefinitionOptionRelId, long cpInstanceId, String key,
+			Map<Locale, String> nameMap, boolean preselected,
+			BigDecimal deltaPrice, double priority, BigDecimal quantity,
+			String unitOfMeasureKey, ServiceContext serviceContext)
 		throws PortalException {
 
 		CPDefinitionOptionRel cpDefinitionOptionRel =
@@ -62,7 +64,28 @@ public class CPDefinitionOptionValueRelServiceImpl
 
 		return cpDefinitionOptionValueRelLocalService.
 			addCPDefinitionOptionValueRel(
-				cpDefinitionOptionRelId, nameMap, priority, key,
+				cpDefinitionOptionRelId, cpInstanceId, key, nameMap,
+				preselected, deltaPrice, priority, quantity, unitOfMeasureKey,
+				serviceContext);
+	}
+
+	@Override
+	public CPDefinitionOptionValueRel addCPDefinitionOptionValueRel(
+			long cpDefinitionOptionRelId, String key,
+			Map<Locale, String> nameMap, double priority,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		CPDefinitionOptionRel cpDefinitionOptionRel =
+			_cpDefinitionOptionRelLocalService.getCPDefinitionOptionRel(
+				cpDefinitionOptionRelId);
+
+		_checkCommerceCatalog(
+			cpDefinitionOptionRel.getCPDefinitionId(), ActionKeys.VIEW);
+
+		return cpDefinitionOptionValueRelLocalService.
+			addCPDefinitionOptionValueRel(
+				cpDefinitionOptionRelId, key, nameMap, priority,
 				serviceContext);
 	}
 
@@ -273,9 +296,9 @@ public class CPDefinitionOptionValueRelServiceImpl
 
 	@Override
 	public CPDefinitionOptionValueRel updateCPDefinitionOptionValueRel(
-			long cpDefinitionOptionValueRelId, Map<Locale, String> nameMap,
-			double priority, String key, long cpInstanceId, int quantity,
-			boolean preselected, BigDecimal price,
+			long cpDefinitionOptionValueRelId, long cpInstanceId, String key,
+			Map<Locale, String> nameMap, boolean preselected, BigDecimal price,
+			double priority, BigDecimal quantity, String unitOfMeasureKey,
 			ServiceContext serviceContext)
 		throws PortalException {
 
@@ -292,8 +315,9 @@ public class CPDefinitionOptionValueRelServiceImpl
 
 		return cpDefinitionOptionValueRelLocalService.
 			updateCPDefinitionOptionValueRel(
-				cpDefinitionOptionValueRelId, nameMap, priority, key,
-				cpInstanceId, quantity, preselected, price, serviceContext);
+				cpDefinitionOptionValueRelId, cpInstanceId, key, nameMap,
+				preselected, price, priority, quantity, unitOfMeasureKey,
+				serviceContext);
 	}
 
 	@Override

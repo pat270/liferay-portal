@@ -288,19 +288,6 @@ public class PortletWrapper
 	}
 
 	/**
-	 * Returns the asset type instances of the portlet.
-	 *
-	 * @return the asset type instances of the portlet
-	 */
-	@Override
-	public java.util.List
-		<com.liferay.asset.kernel.model.AssetRendererFactory<?>>
-			getAssetRendererFactoryInstances() {
-
-		return model.getAssetRendererFactoryInstances();
-	}
-
-	/**
 	 * Returns the names of the parameters that will be automatically propagated
 	 * through the portlet.
 	 *
@@ -310,6 +297,16 @@ public class PortletWrapper
 	@Override
 	public java.util.Set<String> getAutopropagatedParameters() {
 		return model.getAutopropagatedParameters();
+	}
+
+	/**
+	 * Returns the category names of the portlet.
+	 *
+	 * @return the category names of the portlet
+	 */
+	@Override
+	public java.util.Set<String> getCategoryNames() {
+		return model.getCategoryNames();
 	}
 
 	/**
@@ -2459,6 +2456,16 @@ public class PortletWrapper
 		java.util.Set<String> autopropagatedParameters) {
 
 		model.setAutopropagatedParameters(autopropagatedParameters);
+	}
+
+	/**
+	 * Sets the category names of the portlet.
+	 *
+	 * @param categoryNames the category names of the portlet
+	 */
+	@Override
+	public void setCategoryNames(java.util.Set<String> categoryNames) {
+		model.setCategoryNames(categoryNames);
 	}
 
 	/**

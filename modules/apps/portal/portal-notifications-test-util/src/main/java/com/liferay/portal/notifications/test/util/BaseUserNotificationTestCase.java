@@ -39,7 +39,7 @@ public abstract class BaseUserNotificationTestCase {
 
 	@Before
 	public void setUp() throws Exception {
-		user = UserTestUtil.addOmniAdminUser();
+		user = UserTestUtil.addOmniadminUser();
 
 		group = GroupTestUtil.addGroup();
 
@@ -47,6 +47,8 @@ public abstract class BaseUserNotificationTestCase {
 
 		_userNotificationDeliveries = _getUserNotificationDeliveries(
 			user.getUserId());
+
+		MailServiceTestUtil.clearMessages();
 	}
 
 	@After

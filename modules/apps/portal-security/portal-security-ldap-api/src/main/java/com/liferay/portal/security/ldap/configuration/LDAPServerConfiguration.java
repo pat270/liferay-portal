@@ -15,7 +15,7 @@ import org.osgi.annotation.versioning.ProviderType;
  * @author Michael C. Han
  */
 @ExtendedObjectClassDefinition(
-	category = "ldap", factoryInstanceLabelAttribute = "companyId",
+	category = "ldap", factoryInstanceLabelAttribute = "ldapServerId",
 	scope = ExtendedObjectClassDefinition.Scope.COMPANY
 )
 @Meta.OCD(
@@ -36,6 +36,12 @@ public interface LDAPServerConfiguration {
 
 	@Meta.AD(deflt = "", name = "server-name", required = false)
 	public String serverName();
+
+	@Meta.AD(
+		deflt = "3000", description = "ldap-clock-skew-description",
+		name = "clock-skew", required = false
+	)
+	public long clockSkew();
 
 	@Meta.AD(
 		deflt = "ldap://localhost:10389", name = "base-provider-url",

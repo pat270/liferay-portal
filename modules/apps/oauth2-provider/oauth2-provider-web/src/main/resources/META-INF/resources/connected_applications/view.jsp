@@ -12,9 +12,7 @@ String redirect = ParamUtil.getString(request, "redirect");
 
 String backURL = ParamUtil.getString(request, "backURL", redirect);
 
-OAuth2ConnectedApplicationsManagementToolbarDisplayContext oAuth2ConnectedApplicationsManagementToolbarDisplayContext = new OAuth2ConnectedApplicationsManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, currentURLObj);
-
-int userOAuth2AuthorizationsCount = OAuth2AuthorizationServiceUtil.getUserOAuth2AuthorizationsCount();
+OAuth2ConnectedApplicationsDisplayContext oAuth2ConnectedApplicationsDisplayContext = new OAuth2ConnectedApplicationsDisplayContext(liferayPortletRequest, liferayPortletResponse);
 
 if (Validator.isNotNull(backURL)) {
 	portletDisplay.setShowBackIcon(true);
@@ -23,17 +21,8 @@ if (Validator.isNotNull(backURL)) {
 %>
 
 <clay:management-toolbar
-	actionDropdownItems="<%= oAuth2ConnectedApplicationsManagementToolbarDisplayContext.getActionDropdownItems() %>"
-	additionalProps="<%= oAuth2ConnectedApplicationsManagementToolbarDisplayContext.getAdditionalProps() %>"
-	disabled="<%= userOAuth2AuthorizationsCount == 0 %>"
-	filterDropdownItems="<%= oAuth2ConnectedApplicationsManagementToolbarDisplayContext.getFilterDropdownItems() %>"
-	itemsTotal="<%= userOAuth2AuthorizationsCount %>"
-	propsTransformer="connected_applications/js/oAuth2ConnectedApplicationsManagementToolbarPropsTransformer"
-	searchContainerId="oAuth2ConnectedApplicationsSearchContainer"
-	selectable="<%= true %>"
-	showSearch="<%= false %>"
-	sortingOrder="<%= oAuth2ConnectedApplicationsManagementToolbarDisplayContext.getOrderByType() %>"
-	sortingURL="<%= String.valueOf(oAuth2ConnectedApplicationsManagementToolbarDisplayContext.getSortingURL()) %>"
+	managementToolbarDisplayContext="<%= new OAuth2ConnectedApplicationsManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, oAuth2ConnectedApplicationsDisplayContext.getSearchContainer()) %>"
+	propsTransformer="{oAuth2ConnectedApplicationsManagementToolbarPropsTransformer} from oauth2-provider-web"
 />
 
 <clay:container-fluid>
@@ -42,16 +31,8 @@ if (Validator.isNotNull(backURL)) {
 		<aui:input name="oAuth2AuthorizationIds" type="hidden" />
 
 		<liferay-ui:search-container
-			emptyResultsMessage="no-connected-applications-were-found"
-			id="oAuth2ConnectedApplicationsSearchContainer"
-			iteratorURL="<%= currentURLObj %>"
-			rowChecker="<%= new EmptyOnClickRowChecker(renderResponse) %>"
-			total="<%= userOAuth2AuthorizationsCount %>"
+			searchContainer="<%= oAuth2ConnectedApplicationsDisplayContext.getSearchContainer() %>"
 		>
-			<liferay-ui:search-container-results
-				results="<%= OAuth2AuthorizationServiceUtil.getUserOAuth2Authorizations(searchContainer.getStart(), searchContainer.getEnd(), oAuth2ConnectedApplicationsManagementToolbarDisplayContext.getOrderByComparator()) %>"
-			/>
-
 			<liferay-ui:search-container-row
 				className="com.liferay.oauth2.provider.model.OAuth2Authorization"
 				escapedModel="<%= true %>"
@@ -102,6 +83,6 @@ if (Validator.isNotNull(backURL)) {
 	</aui:form>
 </clay:container-fluid>
 
-<script>
+<aui:script>
 	function <portlet:namespace />removeAccess() {}
-</script>
+</aui:script>

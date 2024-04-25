@@ -6,8 +6,12 @@
 /// <reference types="react" />
 
 import {Observer} from '@clayui/modal/lib/types';
+import {
+	MultiSelectItem,
+	MultiSelectItemChild,
+} from '@liferay/object-js-components-web';
 import './ModalAddFilter.scss';
-interface IProps {
+interface ModalAddFilterProps {
 	aggregationFilter?: boolean;
 	creationLanguageId?: Liferay.Language.Locale;
 	currentFilters: CurrentFilter[];
@@ -21,28 +25,26 @@ interface IProps {
 	objectFields: ObjectField[];
 	observer: Observer;
 	onClose: () => void;
-	onSave: (
-		objectFieldName: string,
-		filterBy?: string,
-		fieldLabel?: LocalizedValue<string>,
-		objectFieldBusinessType?: string,
-		filterType?: string,
-		valueList?: IItem[],
-		value?: string
-	) => void;
+	onSave: (props: OnSaveProps) => void;
 	validate: ({
 		checkedItems,
 		disableDateValues,
 		items,
 		selectedFilterBy,
-		selectedFilterType,
+		selectedFilterTypeValue,
 		setErrors,
 		value,
 	}: FilterValidation) => FilterErrors;
-	workflowStatusJSONArray: LabelValueObject[];
+	workflowStatuses: LabelValueObject[];
 }
-interface IItem extends LabelValueObject {
-	checked?: boolean;
+export interface OnSaveProps {
+	fieldLabel?: LocalizedValue<string>;
+	filterBy?: string;
+	filterType?: string;
+	objectFieldBusinessType?: string;
+	objectFieldName: string;
+	value?: string;
+	valueList?: MultiSelectItemChild[];
 }
 export declare type FilterErrors = {
 	endDate?: string;
@@ -53,11 +55,11 @@ export declare type FilterErrors = {
 	value?: string;
 };
 export declare type FilterValidation = {
-	checkedItems: IItem[];
+	checkedItems: MultiSelectItemChild[];
 	disableDateValues?: boolean;
-	items: IItem[];
+	items: MultiSelectItem[] | LabelValueObject[];
 	selectedFilterBy?: ObjectField;
-	selectedFilterType?: LabelValueObject | null;
+	selectedFilterTypeValue?: string;
 	setErrors: (value: FilterErrors) => void;
 	value?: string;
 };
@@ -90,6 +92,6 @@ export declare function ModalAddFilter({
 	onClose,
 	onSave,
 	validate,
-	workflowStatusJSONArray,
-}: IProps): JSX.Element;
+	workflowStatuses,
+}: ModalAddFilterProps): JSX.Element;
 export {};

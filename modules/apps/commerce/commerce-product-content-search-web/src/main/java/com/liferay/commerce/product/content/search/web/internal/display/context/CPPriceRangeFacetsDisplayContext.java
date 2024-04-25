@@ -12,11 +12,13 @@ import com.liferay.commerce.currency.util.CommercePriceFormatter;
 import com.liferay.commerce.product.content.search.web.internal.configuration.CPPriceRangeFacetsPortletInstanceConfiguration;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.search.facet.Facet;
+import com.liferay.portal.kernel.search.facet.collector.FacetCollector;
+import com.liferay.portal.kernel.search.facet.collector.TermCollector;
 import com.liferay.portal.kernel.search.facet.util.RangeParserUtil;
-import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -47,11 +49,10 @@ public class CPPriceRangeFacetsDisplayContext {
 		_themeDisplay = (ThemeDisplay)renderRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		PortletDisplay portletDisplay = _themeDisplay.getPortletDisplay();
-
 		_cpPriceRangeFacetsPortletInstanceConfiguration =
-			portletDisplay.getPortletInstanceConfiguration(
-				CPPriceRangeFacetsPortletInstanceConfiguration.class);
+			ConfigurationProviderUtil.getPortletInstanceConfiguration(
+				CPPriceRangeFacetsPortletInstanceConfiguration.class,
+				_themeDisplay);
 	}
 
 	public String getCurrentCommerceCurrencySymbol() throws PortalException {
@@ -126,6 +127,22 @@ public class CPPriceRangeFacetsDisplayContext {
 			_portletSharedSearchResponse.getParameterValues(
 				fieldName, _renderRequest),
 			fieldValue);
+	}
+
+	public boolean isFacetVisible() {
+		if (_facet == null) {
+			return false;
+		}
+
+		FacetCollector facetCollector = _facet.getFacetCollector();
+
+		for (TermCollector termCollector : facetCollector.getTermCollectors()) {
+			if (termCollector.getFrequency() > 0) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public boolean isShowClear(String fieldName) {

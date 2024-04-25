@@ -12,27 +12,24 @@ import React, {Dispatch, SetStateAction, useState} from 'react';
 
 import {limitStringInputLengh, makeURLPathString} from '../utils/string';
 
-type DataError = {
-	baseURL: boolean;
-	title: boolean;
-};
-
 interface BaseAPIApplicationFieldsProps {
 	basePath: string;
-	data: Partial<APIApplicationItem>;
-	displayError: DataError;
-	setData: Dispatch<SetStateAction<Partial<APIApplicationItem>>>;
-	urlAutoFill?: boolean;
+	data: Partial<APIApplicationUIData>;
+	disableURLAutoFill?: boolean;
+	displayError: ApplicationDataError;
+	setData: Dispatch<SetStateAction<APIApplicationUIData>>;
 }
 
 export default function BaseAPIApplicationFields({
 	basePath,
 	data,
+	disableURLAutoFill,
 	displayError,
 	setData,
-	urlAutoFill,
 }: BaseAPIApplicationFieldsProps) {
-	const [userEditedURL, setUserEditedURL] = useState(urlAutoFill ?? false);
+	const [userEditedURL, setUserEditedURL] = useState(
+		disableURLAutoFill ?? false
+	);
 
 	const [baseURLContent, setBaseURLContent] = useState({
 		errorMessage: Liferay.Language.get(
@@ -112,7 +109,7 @@ export default function BaseAPIApplicationFields({
 
 				<br />
 
-				<Text as="p" id="hostTextPreview" size={2} weight="lighter">
+				<Text as="p" id="hostTextPreview" size={2} weight="semi-bold">
 					{`${window.location.origin}${basePath}`}
 				</Text>
 
@@ -147,7 +144,7 @@ export default function BaseAPIApplicationFields({
 							{baseURLContent.errorMessage}
 						</ClayForm.FeedbackItem>
 					) : (
-						<Text size={3} weight="lighter">
+						<Text color="secondary" size={3}>
 							{Liferay.Language.get('the-url-can-be-modified')}
 						</Text>
 					)}

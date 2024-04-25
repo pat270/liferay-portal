@@ -34,6 +34,7 @@ import com.liferay.portal.vulcan.pagination.Pagination;
 import com.liferay.portal.vulcan.util.SearchUtil;
 
 import java.util.Locale;
+import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -130,15 +131,31 @@ public class NotificationQueueEntryResourceImpl
 
 		notificationContext.setNotificationRecipient(
 			NotificationUtil.toNotificationRecipient(contextUser, 0L));
+
+		for (Object recipient : notificationQueueEntry.getRecipients()) {
+			Map<String, Object> recipientMap = (Map<String, Object>)recipient;
+
+			recipientMap.putAll(
+				notificationType.evaluateNotificationRecipientSettings(
+					contextCompany.getCompanyId(), notificationContext,
+					recipientMap));
+		}
+
 		notificationContext.setNotificationRecipientSettings(
 			NotificationUtil.toNotificationRecipientSetting(
 				0L, notificationType, notificationQueueEntry.getRecipients(),
 				contextUser));
+
 		notificationContext.setType(NotificationConstants.TYPE_EMAIL);
 
-		return _toNotificationQueueEntry(
-			_notificationQueueEntryService.addNotificationQueueEntry(
-				notificationContext));
+		com.liferay.notification.model.NotificationQueueEntry
+			serviceBuilderNotificationQueueEntry =
+				_notificationQueueEntryService.addNotificationQueueEntry(
+					notificationContext);
+
+		notificationType.sendNotification(serviceBuilderNotificationQueueEntry);
+
+		return _toNotificationQueueEntry(serviceBuilderNotificationQueueEntry);
 	}
 
 	@Override
@@ -162,65 +179,76 @@ public class NotificationQueueEntryResourceImpl
 				serviceBuilderNotificationQueueEntry)
 		throws PortalException {
 
-		NotificationRecipient notificationRecipient =
-			serviceBuilderNotificationQueueEntry.getNotificationRecipient();
 		NotificationType notificationType =
 			_notificationTypeServiceTracker.getNotificationType(
 				serviceBuilderNotificationQueueEntry.getType());
 
 		return new NotificationQueueEntry() {
 			{
-				actions = HashMapBuilder.put(
-					"delete",
-					addAction(
-						ActionKeys.DELETE, "deleteNotificationQueueEntry",
-						com.liferay.notification.model.NotificationQueueEntry.
-							class.getName(),
-						serviceBuilderNotificationQueueEntry.
-							getNotificationQueueEntryId())
-				).put(
-					"get",
-					addAction(
-						ActionKeys.VIEW, "getNotificationQueueEntry",
-						com.liferay.notification.model.NotificationQueueEntry.
-							class.getName(),
-						serviceBuilderNotificationQueueEntry.
-							getNotificationQueueEntryId())
-				).put(
-					"update",
-					() -> {
-						if (serviceBuilderNotificationQueueEntry.getStatus() ==
-								NotificationQueueEntryConstants.STATUS_SENT) {
-
-							return null;
-						}
-
-						return addAction(
-							ActionKeys.UPDATE,
-							"putNotificationQueueEntryResend",
+				setActions(
+					() -> HashMapBuilder.put(
+						"delete",
+						addAction(
+							ActionKeys.DELETE, "deleteNotificationQueueEntry",
 							com.liferay.notification.model.
 								NotificationQueueEntry.class.getName(),
 							serviceBuilderNotificationQueueEntry.
-								getNotificationQueueEntryId());
-					}
-				).build();
-				body = serviceBuilderNotificationQueueEntry.getBody();
-				fromName = notificationType.getFromName(
-					serviceBuilderNotificationQueueEntry);
-				id =
-					serviceBuilderNotificationQueueEntry.
-						getNotificationQueueEntryId();
-				recipients = notificationType.toRecipients(
-					notificationRecipient.getNotificationRecipientSettings());
-				recipientsSummary = notificationType.getRecipientSummary(
-					serviceBuilderNotificationQueueEntry);
-				sentDate = serviceBuilderNotificationQueueEntry.getSentDate();
-				status = serviceBuilderNotificationQueueEntry.getStatus();
-				subject = serviceBuilderNotificationQueueEntry.getSubject();
-				type = serviceBuilderNotificationQueueEntry.getType();
-				typeLabel = _language.get(
-					_getLocale(), notificationType.getTypeLanguageKey());
+								getNotificationQueueEntryId())
+					).put(
+						"get",
+						addAction(
+							ActionKeys.VIEW, "getNotificationQueueEntry",
+							com.liferay.notification.model.
+								NotificationQueueEntry.class.getName(),
+							serviceBuilderNotificationQueueEntry.
+								getNotificationQueueEntryId())
+					).put(
+						"update",
+						() -> {
+							int status =
+								serviceBuilderNotificationQueueEntry.
+									getStatus();
 
+							if (status ==
+									NotificationQueueEntryConstants.
+										STATUS_SENT) {
+
+								return null;
+							}
+
+							return addAction(
+								ActionKeys.UPDATE,
+								"putNotificationQueueEntryResend",
+								com.liferay.notification.model.
+									NotificationQueueEntry.class.getName(),
+								serviceBuilderNotificationQueueEntry.
+									getNotificationQueueEntryId());
+						}
+					).build());
+				setBody(serviceBuilderNotificationQueueEntry::getBody);
+				setFromName(
+					() -> notificationType.getFromName(
+						serviceBuilderNotificationQueueEntry));
+				setId(
+					() ->
+						serviceBuilderNotificationQueueEntry.
+							getNotificationQueueEntryId());
+				setRecipients(
+					() -> {
+						NotificationRecipient notificationRecipient =
+							serviceBuilderNotificationQueueEntry.
+								getNotificationRecipient();
+
+						return notificationType.toRecipients(
+							notificationRecipient.
+								getNotificationRecipientSettings());
+					});
+				setRecipientsSummary(
+					() -> notificationType.getRecipientSummary(
+						serviceBuilderNotificationQueueEntry));
+				setSentDate(serviceBuilderNotificationQueueEntry::getSentDate);
+				setStatus(serviceBuilderNotificationQueueEntry::getStatus);
+				setSubject(serviceBuilderNotificationQueueEntry::getSubject);
 				setTriggerBy(
 					() -> {
 						long classNameId =
@@ -246,6 +274,10 @@ public class NotificationQueueEntryResourceImpl
 							contextAcceptLanguage.getPreferredLocale(),
 							"missing-object-definition");
 					});
+				setType(serviceBuilderNotificationQueueEntry::getType);
+				setTypeLabel(
+					() -> _language.get(
+						_getLocale(), notificationType.getTypeLanguageKey()));
 			}
 		};
 	}

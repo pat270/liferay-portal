@@ -72,7 +72,12 @@ public class OptionCategoryResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _optionCategoryResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, OptionCategoryResource>
+					optionCategoryResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_optionCategoryResourceProxyProviderFunction;
+
+				return optionCategoryResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -230,10 +235,6 @@ public class OptionCategoryResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, OptionCategoryResource>
-		_optionCategoryResourceProxyProviderFunction =
-			_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -269,6 +270,14 @@ public class OptionCategoryResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, OptionCategoryResource>
+			_optionCategoryResourceProxyProviderFunction =
+				_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

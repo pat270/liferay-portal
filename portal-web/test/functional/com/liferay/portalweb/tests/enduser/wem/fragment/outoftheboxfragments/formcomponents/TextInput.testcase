@@ -4,7 +4,7 @@ definition {
 	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Fragments";
+	property testray.main.component.name = "Fragment Administration";
 
 	setUp {
 		task ("Set up instance and sign in") {
@@ -35,19 +35,6 @@ definition {
 		}
 	}
 
-	tearDown {
-		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
-
-		if (${testLiferayVirtualInstance} == "true") {
-			PortalInstances.tearDownCP();
-		}
-		else {
-			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
-
-			ObjectAdmin.deleteObjectViaAPI(objectName = "PurchaseOrder");
-		}
-	}
-
 	@description = "This is a test for LPS-149725. The pages designer can map the Text Input fragment entities text fields."
 	@priority = 4
 	test AddCustomTextInputFieldsOnContentPage {
@@ -72,7 +59,7 @@ definition {
 
 		task ("When the pages designer adds a custom name in Text Input fields") {
 			PageEditor.editInput(
-				fragmentName = "Text Input",
+				fragmentName = "Text",
 				helpText = "Custom Help Text",
 				hideHelpText = "false",
 				label = "Custom Content Field",
@@ -86,7 +73,7 @@ definition {
 				placeholder = "Custom Placeholder",
 				showHelpText = "true",
 				showLabel = "true",
-				type = "text-input");
+				type = "text");
 		}
 
 		task ("When the page designer navigates to published content page at view mode") {
@@ -104,7 +91,7 @@ definition {
 				placeholder = "Custom Placeholder",
 				showHelpText = "true",
 				showLabel = "true",
-				type = "text-input");
+				type = "text");
 		}
 
 		task ("When the pages designer hides the label and help text fields") {
@@ -113,7 +100,7 @@ definition {
 				siteName = "Test Site Name");
 
 			PageEditor.editInput(
-				fragmentName = "Text Input",
+				fragmentName = "Text",
 				hideHelpText = "true",
 				hideLabel = "true");
 		}
@@ -124,7 +111,7 @@ definition {
 				label = "Custom Content Field",
 				showHelpText = "false",
 				showLabel = "false",
-				type = "text-input");
+				type = "text");
 		}
 
 		task ("When the page designer navigates to published content page at view mode") {
@@ -141,7 +128,7 @@ definition {
 				label = "Custom Content Field",
 				showHelpText = "false",
 				showLabel = "false",
-				type = "text-input");
+				type = "text");
 		}
 	}
 
@@ -178,7 +165,7 @@ definition {
 
 		task ("When the pages designer adds a custom name in Text Input fields") {
 			PageEditor.editInput(
-				fragmentName = "Text Input",
+				fragmentName = "Text",
 				helpText = "Custom Help Text",
 				hideHelpText = "false",
 				label = "Custom Content Field",
@@ -192,7 +179,7 @@ definition {
 				placeholder = "Custom Placeholder",
 				showHelpText = "true",
 				showLabel = "true",
-				type = "text-input");
+				type = "text");
 		}
 
 		task ("When the pages designer adds a Spanish translation in Text Input fields") {
@@ -201,7 +188,7 @@ definition {
 				locale = "es-ES");
 
 			PageEditor.editInput(
-				fragmentName = "Text Input",
+				fragmentName = "Text",
 				helpText = "Texto de ayuda personalizado",
 				label = "Campo de contenido personalizado",
 				placeholder = "Marcador de posición personalizado");
@@ -214,7 +201,7 @@ definition {
 				placeholder = "Marcador de posición personalizado",
 				showHelpText = "true",
 				showLabel = "true",
-				type = "text-input");
+				type = "text");
 		}
 
 		task ("When the page designer navigates to published content page at view mode") {
@@ -232,7 +219,7 @@ definition {
 				placeholder = "Custom Placeholder",
 				showHelpText = "true",
 				showLabel = "true",
-				type = "text-input");
+				type = "text");
 		}
 
 		task ("When the pages designer changes the user language to Spanish") {
@@ -248,7 +235,7 @@ definition {
 				placeholder = "Marcador de posición personalizado",
 				showHelpText = "true",
 				showLabel = "true",
-				type = "text-input");
+				type = "text");
 		}
 	}
 
@@ -281,12 +268,12 @@ definition {
 		task ("Then the page designer could not view the hide icon on structure tree") {
 			AssertElementNotPresent(
 				key_index = 1,
-				key_nodeName = "Text Input",
+				key_nodeName = "Text",
 				locator1 = "Treeview#PAGE_STRUCTURE_TREE_NODE_HIDE_INDEX");
 		}
 
 		task ("When the page designer accesses to the General panel of Text Input fragment") {
-			PageEditor.clickConfigurableField(fragmentName = "Text Input");
+			PageEditor.clickConfigurableField(fragmentName = "Text");
 		}
 
 		task ("Then the page designer could not view the Hide fragment checkbox on general tab") {
@@ -297,7 +284,7 @@ definition {
 
 		task ("When the page designer opens the dropdown menu of Text Input fragment's topper bar") {
 			Click.waitForMenuToggleJSClick(
-				key_fragmentName = "Text Input",
+				key_fragmentName = "Text",
 				locator1 = "Fragment#FRAGMENT_HEADER_ELLIPSIS");
 		}
 
@@ -346,7 +333,7 @@ definition {
 		task ("Then the pages designer sees alert message below the Text Input field") {
 			PageEditor.viewInputStyle(
 				charactersCount = "Maximum Number of Characters Exceeded: 281 / 280",
-				type = "text-input");
+				type = "text");
 		}
 
 		task ("When the pages designer removes one character from Text Input") {
@@ -361,10 +348,10 @@ definition {
 		}
 
 		task ("Then the pages designer cannot see the alert message") {
-			AssertTextNotEquals.assertNotPartialText(
+			AssertTextNotEquals.assertNotPartialMatch(
 				index = 1,
 				locator1 = "Fragment#INPUT_LENGTH_INFO",
-				type = "text-input",
+				type = "text",
 				value1 = "Maximum Number of Characters Exceeded");
 		}
 	}
@@ -404,7 +391,7 @@ definition {
 		}
 
 		task ("When the page creator accesses to the General panel of Text Input") {
-			PageEditor.gotoConfiguration(fragmentName = "Text Input");
+			PageEditor.gotoConfiguration(fragmentName = "Text");
 		}
 
 		task ("Then the page creator sees the asterisk symbol of Text field in mapping field selector") {
@@ -440,7 +427,7 @@ definition {
 
 			task ("Mark the Text Input fragment as required") {
 				PageEditor.editInput(
-					fragmentName = "Text Input",
+					fragmentName = "Text",
 					markAsRequired = "true");
 
 				PageEditor.publish();
@@ -457,16 +444,16 @@ definition {
 
 		task ("Then the user should see an error message") {
 			AssertAttributeValue(
-				attribute1 = "required",
 				key_text = "Region",
 				locator1 = "TextInput#ANY",
-				value1 = "true");
+				value1 = "required",
+				value2 = "true");
 
 			AssertAttributeValue(
-				attribute1 = "validationMessage",
 				key_text = "Region",
 				locator1 = "TextInput#ANY",
-				value1 = "Please fill out this field.");
+				value1 = "validationMessage",
+				value2 = "Please fill out this field.");
 		}
 	}
 
@@ -514,7 +501,7 @@ definition {
 					panel = "General");
 
 				PageEditor.editInput(
-					fragmentName = "Text Input",
+					fragmentName = "Text",
 					showCharactersCount = "true");
 
 				PageEditor.publish();
@@ -528,7 +515,7 @@ definition {
 
 			PageEditor.viewInputStyle(
 				charactersCount = ": 0 / 20",
-				type = "text-input");
+				type = "text");
 
 			Type(
 				key_text = "Region",
@@ -543,7 +530,7 @@ definition {
 
 			PageEditor.viewInputStyle(
 				charactersCount = "Maximum Number of Characters Exceeded: 33 / 20",
-				type = "text-input");
+				type = "text");
 		}
 
 		task ("When the user removes charactors to 20") {
@@ -566,7 +553,54 @@ definition {
 		task ("Then the page designer cannot see the alert message") {
 			PageEditor.viewInputStyle(
 				charactersCount = ": 20 / 20",
-				type = "text-input");
+				type = "text");
+		}
+	}
+
+	@description = "This is a test for LPS-182728. The user should see the field error below the Text Input fragment."
+	@priority = 3
+	test ViewTextInputFieldErrorMessageWhenPartialValidationFailure {
+		task ("Given a user has a content page where a mapped Text Input fragment has a partial validation") {
+			JSONObject.addObjectValidation(
+				errorMessage = "Please enter a valid region.",
+				fieldName = "region",
+				labelName = "Text Validation",
+				objectName = "PurchaseOrder",
+				outputValidationType = "partialValidation",
+				script = "NOT(contains(region, 'Test'))",
+				validationType = "ddm");
+
+			JSONLayout.addPublicLayout(
+				groupName = "Test Site Name",
+				layoutName = "Test Page Name",
+				type = "content");
+
+			ContentPagesNavigator.openEditContentPage(
+				pageName = "Test Page Name",
+				siteName = "Test Site Name");
+
+			PageEditor.addFragment(
+				collectionName = "Form Components",
+				fragmentName = "Form Container");
+
+			PageEditor.mapFormContainerToObject(contentType = "Purchase Order");
+
+			PageEditor.publish();
+		}
+
+		task ("When the user submits form with invalid value") {
+			Type(
+				key_text = "Region",
+				locator1 = "TextInput#ANY",
+				value1 = "Test");
+
+			Button.clickSubmitButton();
+		}
+
+		task ("Then the user should see a field error message below Text Input") {
+			Alert.viewFieldErrorMessage(
+				errorMessage = "Please enter a valid region.",
+				fieldLabel = "Region");
 		}
 	}
 

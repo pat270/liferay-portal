@@ -2,18 +2,20 @@ import * as breadcrumbs from 'shared/util/breadcrumbs';
 import BasePage from 'shared/components/base-page';
 import BundleRouter from 'route-middleware/BundleRouter';
 import ClayLink from '@clayui/link';
+import DownloadCSVReport from 'shared/components/download-report/DownloadCSVReport';
 import Loading from 'shared/components/Loading';
 import React, {lazy, Suspense} from 'react';
 import RouteNotFound from 'shared/components/RouteNotFound';
 import StatesRenderer from 'shared/components/states-renderer/StatesRenderer';
 import URLConstants from 'shared/util/url-constants';
+import {CSVType} from 'shared/components/download-report/utils';
+import {getMatchedRoute, Routes, toRoute} from 'shared/util/router';
 import {Router} from 'shared/types';
-import {Routes, toRoute} from 'shared/util/router';
 import {Switch, useParams} from 'react-router-dom';
 import {useChannelContext} from 'shared/context/channel';
+import {useCurrentUser} from 'shared/hooks/useCurrentUser';
 import {useDataSource} from 'shared/hooks/useDataSource';
 import {User} from 'shared/util/records';
-import {withCurrentUser} from 'shared/hoc';
 
 const BlogsList = lazy(
 	() => import(/* webpackChunkName: "BlogsList" */ './BlogsList')
@@ -71,10 +73,11 @@ interface IAssetsProps extends React.HTMLAttributes<HTMLElement> {
 	router: Router;
 }
 
-const Assets: React.FC<IAssetsProps> = ({className, currentUser, router}) => {
+const Assets: React.FC<IAssetsProps> = ({className, router}) => {
 	const {channelId, groupId} = useParams();
 	const dataSourceStates = useDataSource();
 	const {selectedChannel} = useChannelContext();
+	const currentUser = useCurrentUser();
 
 	const authorized = currentUser.isAdmin();
 
@@ -102,7 +105,53 @@ const Assets: React.FC<IAssetsProps> = ({className, currentUser, router}) => {
 					routeParams={{channelId, groupId}}
 				/>
 			</BasePage.Header>
-
+			{getMatchedRoute(NAV_ITEMS) === Routes.ASSETS_BLOGS && (
+				<BasePage.SubHeader>
+					<div className='d-flex justify-content-end w-100'>
+						<DownloadCSVReport
+							disabled={dataSourceStates.empty}
+							type={CSVType.Blog}
+							typeLang={Liferay.Language.get('blogs')}
+						/>
+					</div>
+				</BasePage.SubHeader>
+			)}
+			{getMatchedRoute(NAV_ITEMS) ===
+				Routes.ASSETS_DOCUMENTS_AND_MEDIA && (
+				<BasePage.SubHeader>
+					<div className='d-flex justify-content-end w-100'>
+						<DownloadCSVReport
+							disabled={dataSourceStates.empty}
+							type={CSVType.Document}
+							typeLang={Liferay.Language.get(
+								'documents-and-media'
+							)}
+						/>
+					</div>
+				</BasePage.SubHeader>
+			)}
+			{getMatchedRoute(NAV_ITEMS) === Routes.ASSETS_FORMS && (
+				<BasePage.SubHeader>
+					<div className='d-flex justify-content-end w-100'>
+						<DownloadCSVReport
+							disabled={dataSourceStates.empty}
+							type={CSVType.Forms}
+							typeLang={Liferay.Language.get('forms')}
+						/>
+					</div>
+				</BasePage.SubHeader>
+			)}
+			{getMatchedRoute(NAV_ITEMS) === Routes.ASSETS_WEB_CONTENT && (
+				<BasePage.SubHeader>
+					<div className='d-flex justify-content-end w-100'>
+						<DownloadCSVReport
+							disabled={dataSourceStates.empty}
+							type={CSVType.Journal}
+							typeLang={Liferay.Language.get('web-content')}
+						/>
+					</div>
+				</BasePage.SubHeader>
+			)}
 			<BasePage.Body>
 				<BasePage.Context.Provider
 					value={{
@@ -119,7 +168,7 @@ const Assets: React.FC<IAssetsProps> = ({className, currentUser, router}) => {
 											'connect-a-data-source-with-sites-data'
 										)}
 
-										<a
+										<ClayLink
 											className='d-block mb-3'
 											href={
 												URLConstants.DataSourceConnection
@@ -130,7 +179,7 @@ const Assets: React.FC<IAssetsProps> = ({className, currentUser, router}) => {
 											{Liferay.Language.get(
 												'access-our-documentation-to-learn-more'
 											)}
-										</a>
+										</ClayLink>
 
 										{authorized && (
 											<ClayLink
@@ -205,4 +254,4 @@ const Assets: React.FC<IAssetsProps> = ({className, currentUser, router}) => {
 	);
 };
 
-export default withCurrentUser(Assets);
+export default Assets;

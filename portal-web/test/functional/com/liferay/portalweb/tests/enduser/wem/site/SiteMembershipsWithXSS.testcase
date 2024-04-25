@@ -1,6 +1,7 @@
 @component-name = "portal-wcm"
 definition {
 
+	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Sites Administration";
@@ -17,28 +18,10 @@ definition {
 		}
 	}
 
-	tearDown {
-		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
-
-		if (${testLiferayVirtualInstance} == "true") {
-			PortalInstances.tearDownCP();
-		}
-		else {
-			Organization.tearDownCP();
-
-			Site.tearDownCP();
-
-			UserGroup.tearDownCP();
-
-			JSONUser.tearDownNonAdminUsers();
-		}
-	}
-
 	@description = "This is a use case for LPS-124620. Assert no pop up when viewing membership request detail."
 	@priority = 4
 	test AddXSSRequestMembershipComment {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
-		property testray.component.names = "Sites Administration,XSS";
 
 		task ("Add a site") {
 			HeadlessSite.addSite(

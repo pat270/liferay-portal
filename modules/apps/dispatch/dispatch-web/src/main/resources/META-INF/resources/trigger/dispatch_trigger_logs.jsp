@@ -25,7 +25,7 @@ SearchContainer<DispatchLog> dispatchLogSearchContainer = DispatchLogSearchConta
 
 <clay:management-toolbar
 	managementToolbarDisplayContext="<%= new ViewDispatchLogManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, dispatchLogSearchContainer) %>"
-	propsTransformer="trigger/js/DispatchLogManagementToolbarPropsTransformer"
+	propsTransformer="{DispatchLogManagementToolbarPropsTransformer} from dispatch-web"
 />
 
 <div id="<portlet:namespace />triggerLogsContainer">
@@ -97,9 +97,9 @@ SearchContainer<DispatchLog> dispatchLogSearchContainer = DispatchLogSearchConta
 							DispatchTaskStatus dispatchTaskStatus = DispatchTaskStatus.valueOf(dispatchLog.getStatus());
 							%>
 
-							<h6 class="background-task-status-row background-task-status-<%= dispatchTaskStatus.getLabel() %> <%= dispatchTaskStatus.getCssClass() %>">
+							<div class="background-task-status-row background-task-status-<%= dispatchTaskStatus.getLabel() %> h6 <%= dispatchTaskStatus.getCssClass() %>">
 								<liferay-ui:message key="<%= dispatchTaskStatus.getLabel() %>" />
-							</h6>
+							</div>
 						</liferay-ui:search-container-column-text>
 
 						<liferay-ui:search-container-column-jsp

@@ -19,7 +19,7 @@ import com.liferay.portal.kernel.notifications.UserNotificationDefinition;
 import com.liferay.portal.kernel.notifications.UserNotificationHandler;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.Html;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -57,7 +57,7 @@ public class JournalUserNotificationHandler
 		long userId = GetterUtil.getLong(
 			jsonObject.getLong("userId"), journalArticle.getUserId());
 
-		String userFullName = _html.escape(
+		String userFullName = HtmlUtil.escape(
 			_portal.getUserName(userId, StringPool.BLANK));
 
 		int notificationType = jsonObject.getInt("notificationType");
@@ -82,6 +82,13 @@ public class JournalUserNotificationHandler
 				title = _language.get(
 					serviceContext.getLocale(), "a-web-content-has-expired");
 			}
+		}
+		else if (notificationType ==
+					UserNotificationDefinition.NOTIFICATION_TYPE_REVIEW_ENTRY) {
+
+			title = _language.get(
+				serviceContext.getLocale(),
+				"web-content-article-needs-to-be-reviewed");
 		}
 		else if (notificationType ==
 					UserNotificationDefinition.NOTIFICATION_TYPE_UPDATE_ENTRY) {
@@ -125,9 +132,6 @@ public class JournalUserNotificationHandler
 
 		return title;
 	}
-
-	@Reference
-	private Html _html;
 
 	@Reference
 	private Language _language;

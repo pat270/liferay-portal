@@ -30,8 +30,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
@@ -39,8 +37,10 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.RoleTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.test.rule.Inject;
@@ -65,8 +65,6 @@ import java.util.Set;
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-
-import org.apache.commons.lang.time.DateUtils;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -219,7 +217,10 @@ public abstract class BaseNavigationMenuResourceTestCase {
 
 	@Test
 	public void testGraphQLDeleteNavigationMenu() throws Exception {
-		NavigationMenu navigationMenu =
+
+		// No namespace
+
+		NavigationMenu navigationMenu1 =
 			testGraphQLDeleteNavigationMenu_addNavigationMenu();
 
 		Assert.assertTrue(
@@ -229,23 +230,66 @@ public abstract class BaseNavigationMenuResourceTestCase {
 						"deleteNavigationMenu",
 						new HashMap<String, Object>() {
 							{
-								put("navigationMenuId", navigationMenu.getId());
+								put(
+									"navigationMenuId",
+									navigationMenu1.getId());
 							}
 						})),
 				"JSONObject/data", "Object/deleteNavigationMenu"));
-		JSONArray errorsJSONArray = JSONUtil.getValueAsJSONArray(
+
+		JSONArray errorsJSONArray1 = JSONUtil.getValueAsJSONArray(
 			invokeGraphQLQuery(
 				new GraphQLField(
 					"navigationMenu",
 					new HashMap<String, Object>() {
 						{
-							put("navigationMenuId", navigationMenu.getId());
+							put("navigationMenuId", navigationMenu1.getId());
 						}
 					},
 					new GraphQLField("id"))),
 			"JSONArray/errors");
 
-		Assert.assertTrue(errorsJSONArray.length() > 0);
+		Assert.assertTrue(errorsJSONArray1.length() > 0);
+
+		// Using the namespace headlessDelivery_v1_0
+
+		NavigationMenu navigationMenu2 =
+			testGraphQLDeleteNavigationMenu_addNavigationMenu();
+
+		Assert.assertTrue(
+			JSONUtil.getValueAsBoolean(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"headlessDelivery_v1_0",
+						new GraphQLField(
+							"deleteNavigationMenu",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"navigationMenuId",
+										navigationMenu2.getId());
+								}
+							}))),
+				"JSONObject/data", "JSONObject/headlessDelivery_v1_0",
+				"Object/deleteNavigationMenu"));
+
+		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessDelivery_v1_0",
+					new GraphQLField(
+						"navigationMenu",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"navigationMenuId",
+									navigationMenu2.getId());
+							}
+						},
+						new GraphQLField("id")))),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray2.length() > 0);
 	}
 
 	protected NavigationMenu testGraphQLDeleteNavigationMenu_addNavigationMenu()
@@ -279,6 +323,8 @@ public abstract class BaseNavigationMenuResourceTestCase {
 		NavigationMenu navigationMenu =
 			testGraphQLGetNavigationMenu_addNavigationMenu();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				navigationMenu,
@@ -296,11 +342,36 @@ public abstract class BaseNavigationMenuResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/navigationMenu"))));
+
+		// Using the namespace headlessDelivery_v1_0
+
+		Assert.assertTrue(
+			equals(
+				navigationMenu,
+				NavigationMenuSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessDelivery_v1_0",
+								new GraphQLField(
+									"navigationMenu",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"navigationMenuId",
+												navigationMenu.getId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data", "JSONObject/headlessDelivery_v1_0",
+						"Object/navigationMenu"))));
 	}
 
 	@Test
 	public void testGraphQLGetNavigationMenuNotFound() throws Exception {
 		Long irrelevantNavigationMenuId = RandomTestUtil.randomLong();
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -316,6 +387,27 @@ public abstract class BaseNavigationMenuResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessDelivery_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessDelivery_v1_0",
+						new GraphQLField(
+							"navigationMenu",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"navigationMenuId",
+										irrelevantNavigationMenuId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -429,7 +521,7 @@ public abstract class BaseNavigationMenuResourceTestCase {
 			navigationMenuResource.getSiteNavigationMenusPage(
 				siteId, Pagination.of(1, 10));
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if (irrelevantSiteId != null) {
 			NavigationMenu irrelevantNavigationMenu =
@@ -437,12 +529,12 @@ public abstract class BaseNavigationMenuResourceTestCase {
 					irrelevantSiteId, randomIrrelevantNavigationMenu());
 
 			page = navigationMenuResource.getSiteNavigationMenusPage(
-				irrelevantSiteId, Pagination.of(1, 2));
+				irrelevantSiteId, Pagination.of(1, (int)totalCount + 1));
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantNavigationMenu),
+			assertContains(
+				irrelevantNavigationMenu,
 				(List<NavigationMenu>)page.getItems());
 			assertValid(
 				page,
@@ -461,11 +553,10 @@ public abstract class BaseNavigationMenuResourceTestCase {
 		page = navigationMenuResource.getSiteNavigationMenusPage(
 			siteId, Pagination.of(1, 10));
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(navigationMenu1, navigationMenu2),
-			(List<NavigationMenu>)page.getItems());
+		assertContains(navigationMenu1, (List<NavigationMenu>)page.getItems());
+		assertContains(navigationMenu2, (List<NavigationMenu>)page.getItems());
 		assertValid(
 			page, testGetSiteNavigationMenusPage_getExpectedActions(siteId));
 
@@ -498,6 +589,12 @@ public abstract class BaseNavigationMenuResourceTestCase {
 
 		Long siteId = testGetSiteNavigationMenusPage_getSiteId();
 
+		Page<NavigationMenu> navigationMenuPage =
+			navigationMenuResource.getSiteNavigationMenusPage(siteId, null);
+
+		int totalCount = GetterUtil.getInteger(
+			navigationMenuPage.getTotalCount());
+
 		NavigationMenu navigationMenu1 =
 			testGetSiteNavigationMenusPage_addNavigationMenu(
 				siteId, randomNavigationMenu());
@@ -510,35 +607,78 @@ public abstract class BaseNavigationMenuResourceTestCase {
 			testGetSiteNavigationMenusPage_addNavigationMenu(
 				siteId, randomNavigationMenu());
 
-		Page<NavigationMenu> page1 =
-			navigationMenuResource.getSiteNavigationMenusPage(
-				siteId, Pagination.of(1, 2));
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<NavigationMenu> navigationMenus1 =
-			(List<NavigationMenu>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			navigationMenus1.toString(), 2, navigationMenus1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<NavigationMenu> page1 =
+				navigationMenuResource.getSiteNavigationMenusPage(
+					siteId,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+						pageSizeLimit));
 
-		Page<NavigationMenu> page2 =
-			navigationMenuResource.getSiteNavigationMenusPage(
-				siteId, Pagination.of(2, 2));
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(3, page2.getTotalCount());
+			assertContains(
+				navigationMenu1, (List<NavigationMenu>)page1.getItems());
 
-		List<NavigationMenu> navigationMenus2 =
-			(List<NavigationMenu>)page2.getItems();
+			Page<NavigationMenu> page2 =
+				navigationMenuResource.getSiteNavigationMenusPage(
+					siteId,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+						pageSizeLimit));
 
-		Assert.assertEquals(
-			navigationMenus2.toString(), 1, navigationMenus2.size());
+			assertContains(
+				navigationMenu2, (List<NavigationMenu>)page2.getItems());
 
-		Page<NavigationMenu> page3 =
-			navigationMenuResource.getSiteNavigationMenusPage(
-				siteId, Pagination.of(1, 3));
+			Page<NavigationMenu> page3 =
+				navigationMenuResource.getSiteNavigationMenusPage(
+					siteId,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+						pageSizeLimit));
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(navigationMenu1, navigationMenu2, navigationMenu3),
-			(List<NavigationMenu>)page3.getItems());
+			assertContains(
+				navigationMenu3, (List<NavigationMenu>)page3.getItems());
+		}
+		else {
+			Page<NavigationMenu> page1 =
+				navigationMenuResource.getSiteNavigationMenusPage(
+					siteId, Pagination.of(1, totalCount + 2));
+
+			List<NavigationMenu> navigationMenus1 =
+				(List<NavigationMenu>)page1.getItems();
+
+			Assert.assertEquals(
+				navigationMenus1.toString(), totalCount + 2,
+				navigationMenus1.size());
+
+			Page<NavigationMenu> page2 =
+				navigationMenuResource.getSiteNavigationMenusPage(
+					siteId, Pagination.of(2, totalCount + 2));
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<NavigationMenu> navigationMenus2 =
+				(List<NavigationMenu>)page2.getItems();
+
+			Assert.assertEquals(
+				navigationMenus2.toString(), 1, navigationMenus2.size());
+
+			Page<NavigationMenu> page3 =
+				navigationMenuResource.getSiteNavigationMenusPage(
+					siteId, Pagination.of(1, (int)totalCount + 3));
+
+			assertContains(
+				navigationMenu1, (List<NavigationMenu>)page3.getItems());
+			assertContains(
+				navigationMenu2, (List<NavigationMenu>)page3.getItems());
+			assertContains(
+				navigationMenu3, (List<NavigationMenu>)page3.getItems());
+		}
 	}
 
 	protected NavigationMenu testGetSiteNavigationMenusPage_addNavigationMenu(
@@ -576,11 +716,13 @@ public abstract class BaseNavigationMenuResourceTestCase {
 			new GraphQLField("items", getGraphQLFields()),
 			new GraphQLField("page"), new GraphQLField("totalCount"));
 
+		// No namespace
+
 		JSONObject navigationMenusJSONObject = JSONUtil.getValueAsJSONObject(
 			invokeGraphQLQuery(graphQLField), "JSONObject/data",
 			"JSONObject/navigationMenus");
 
-		Assert.assertEquals(0, navigationMenusJSONObject.get("totalCount"));
+		long totalCount = navigationMenusJSONObject.getLong("totalCount");
 
 		NavigationMenu navigationMenu1 =
 			testGraphQLGetSiteNavigationMenusPage_addNavigationMenu();
@@ -591,10 +733,38 @@ public abstract class BaseNavigationMenuResourceTestCase {
 			invokeGraphQLQuery(graphQLField), "JSONObject/data",
 			"JSONObject/navigationMenus");
 
-		Assert.assertEquals(2, navigationMenusJSONObject.getLong("totalCount"));
+		Assert.assertEquals(
+			totalCount + 2, navigationMenusJSONObject.getLong("totalCount"));
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(navigationMenu1, navigationMenu2),
+		assertContains(
+			navigationMenu1,
+			Arrays.asList(
+				NavigationMenuSerDes.toDTOs(
+					navigationMenusJSONObject.getString("items"))));
+		assertContains(
+			navigationMenu2,
+			Arrays.asList(
+				NavigationMenuSerDes.toDTOs(
+					navigationMenusJSONObject.getString("items"))));
+
+		// Using the namespace headlessDelivery_v1_0
+
+		navigationMenusJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessDelivery_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessDelivery_v1_0",
+			"JSONObject/navigationMenus");
+
+		Assert.assertEquals(
+			totalCount + 2, navigationMenusJSONObject.getLong("totalCount"));
+
+		assertContains(
+			navigationMenu1,
+			Arrays.asList(
+				NavigationMenuSerDes.toDTOs(
+					navigationMenusJSONObject.getString("items"))));
+		assertContains(
+			navigationMenu2,
 			Arrays.asList(
 				NavigationMenuSerDes.toDTOs(
 					navigationMenusJSONObject.getString("items"))));
@@ -1192,6 +1362,10 @@ public abstract class BaseNavigationMenuResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -1271,22 +1445,20 @@ public abstract class BaseNavigationMenuResourceTestCase {
 
 		if (entityFieldName.equals("dateCreated")) {
 			if (operator.equals("between")) {
+				Date date = navigationMenu.getDateCreated();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							navigationMenu.getDateCreated(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							navigationMenu.getDateCreated(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -1304,22 +1476,20 @@ public abstract class BaseNavigationMenuResourceTestCase {
 
 		if (entityFieldName.equals("dateModified")) {
 			if (operator.equals("between")) {
+				Date date = navigationMenu.getDateModified();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							navigationMenu.getDateModified(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							navigationMenu.getDateModified(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -1467,9 +1637,9 @@ public abstract class BaseNavigationMenuResourceTestCase {
 	}
 
 	protected NavigationMenuResource navigationMenuResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

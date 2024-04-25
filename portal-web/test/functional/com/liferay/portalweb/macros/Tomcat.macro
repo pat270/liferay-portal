@@ -1,6 +1,7 @@
 definition {
 
-	macro addCompanyProperties {
+	@summary = "Add portal properties arguments via environment variables"
+	macro addCompanyProperties(properties = null) {
 		Variables.assertDefined(parameterList = ${properties});
 
 		var tomcatBinDir = PropsUtil.get("app.server.bin.dir");
@@ -28,7 +29,8 @@ ${propertiesList}''';
 		FileUtil.write(${setenvFile}, ${newFileContent});
 	}
 
-	macro addJVMArguments {
+	@summary = "Add JVM arguments via environment variables"
+	macro addJVMArguments(arguments = null) {
 		Variables.assertDefined(parameterList = ${arguments});
 
 		var tomcatBinDir = PropsUtil.get("app.server.bin.dir");

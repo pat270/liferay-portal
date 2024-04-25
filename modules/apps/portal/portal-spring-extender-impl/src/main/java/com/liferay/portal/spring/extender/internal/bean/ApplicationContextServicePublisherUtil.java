@@ -6,16 +6,18 @@
 package com.liferay.portal.spring.extender.internal.bean;
 
 import com.liferay.petra.reflect.AnnotationLocator;
+import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.service.BaseService;
 import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.ModuleFrameworkPropsValues;
 import com.liferay.portal.kernel.util.ProxyUtil;
+import com.liferay.portal.spring.aop.AopInvocationHandler;
 
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -104,19 +106,13 @@ public class ApplicationContextServicePublisherUtil {
 			InvocationHandler invocationHandler =
 				ProxyUtil.getInvocationHandler(bean);
 
-			Class<?> invocationHandlerClass = invocationHandler.getClass();
+			if (invocationHandler instanceof AopInvocationHandler) {
+				AopInvocationHandler aopInvocationHandler =
+					(AopInvocationHandler)invocationHandler;
 
-			try {
-				Method method = invocationHandlerClass.getMethod("getTarget");
-
-				Object target = method.invoke(invocationHandler);
+				Object target = aopInvocationHandler.getTarget();
 
 				clazz = target.getClass();
-			}
-			catch (ReflectiveOperationException reflectiveOperationException) {
-				if (_log.isDebugEnabled()) {
-					_log.debug(reflectiveOperationException);
-				}
 			}
 		}
 
@@ -138,21 +134,56 @@ public class ApplicationContextServicePublisherUtil {
 			return null;
 		}
 
+		Bundle bundle = bundleContext.getBundle();
+
+		String symbolicName = bundle.getSymbolicName();
+
 		HashMapDictionary<String, Object> properties =
 			HashMapDictionaryBuilder.<String, Object>put(
 				"bean.id", beanName
 			).put(
-				"origin.bundle.symbolic.name",
-				() -> {
-					Bundle bundle = bundleContext.getBundle();
-
-					return bundle.getSymbolicName();
-				}
+				"origin.bundle.symbolic.name", symbolicName
 			).build();
 
 		if (osgiBeanProperties != null) {
 			properties.putAll(
 				OSGiBeanProperties.Convert.toMap(osgiBeanProperties));
+		}
+
+		if (bean instanceof BaseService) {
+			Class<?> beanClass = bean.getClass();
+
+			JSONWebService jsonWebService = beanClass.getAnnotation(
+				JSONWebService.class);
+
+			if (jsonWebService == null) {
+				for (Class<?> interfaceClass : beanClass.getInterfaces()) {
+					if ((interfaceClass == BaseService.class) ||
+						!BaseService.class.isAssignableFrom(interfaceClass)) {
+
+						continue;
+					}
+
+					jsonWebService = interfaceClass.getAnnotation(
+						JSONWebService.class);
+
+					if (jsonWebService != null) {
+						break;
+					}
+				}
+			}
+
+			if (jsonWebService != null) {
+				properties.put("json.web.service.context.name", symbolicName);
+
+				String path = beanClass.getSimpleName();
+
+				if (path.endsWith("ServiceImpl")) {
+					path = path.substring(0, path.length() - 11);
+				}
+
+				properties.put("json.web.service.context.path", path);
+			}
 		}
 
 		return bundleContext.registerService(

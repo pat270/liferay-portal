@@ -68,7 +68,7 @@ public class DLSubscriptionClassTypeTest
 			null, TestPropsValues.getUserId(), group.getGroupId(),
 			containerModelId, RandomTestUtil.randomString() + ".txt",
 			ContentTypes.TEXT_PLAIN, TestDataConstants.TEST_BYTE_ARRAY, null,
-			null, serviceContext);
+			null, null, serviceContext);
 
 		return fileEntry.getFileEntryId();
 	}
@@ -132,7 +132,7 @@ public class DLSubscriptionClassTypeTest
 			ContentTypes.TEXT_PLAIN, RandomTestUtil.randomString(),
 			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
 			DLVersionNumberIncrease.MINOR, TestDataConstants.TEST_BYTE_ARRAY,
-			null, null, serviceContext);
+			null, null, null, serviceContext);
 	}
 
 }

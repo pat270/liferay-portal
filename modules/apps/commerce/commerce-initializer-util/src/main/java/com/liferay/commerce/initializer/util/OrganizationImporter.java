@@ -15,6 +15,7 @@ import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.OrganizationConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.CountryService;
+import com.liferay.portal.kernel.service.ListTypeLocalService;
 import com.liferay.portal.kernel.service.OrganizationLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
@@ -65,10 +66,13 @@ public class OrganizationImporter {
 			serviceContext.getCompanyId(), twoLetterISOCode);
 
 		organization = _organizationLocalService.addOrganization(
-			serviceContext.getUserId(), parentOrganizationId, name,
+			null, serviceContext.getUserId(), parentOrganizationId, name,
 			OrganizationConstants.TYPE_ORGANIZATION, 0, country.getCountryId(),
-			ListTypeConstants.ORGANIZATION_STATUS_DEFAULT, StringPool.BLANK,
-			false, serviceContext);
+			_listTypeLocalService.getListTypeId(
+				serviceContext.getCompanyId(),
+				ListTypeConstants.ORGANIZATION_STATUS_DEFAULT,
+				ListTypeConstants.ORGANIZATION_STATUS),
+			StringPool.BLANK, false, serviceContext);
 
 		JSONArray suborganizationsJSONArray = jsonObject.getJSONArray(
 			"suborganizations");
@@ -84,6 +88,9 @@ public class OrganizationImporter {
 
 	@Reference
 	private CountryService _countryService;
+
+	@Reference
+	private ListTypeLocalService _listTypeLocalService;
 
 	@Reference
 	private OrganizationLocalService _organizationLocalService;

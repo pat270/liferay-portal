@@ -4,7 +4,6 @@
  */
 
 import documentIcon from '../../assets/icons/document_icon.svg';
-import downloadIcon from '../../assets/icons/download_icon.svg';
 import {Header} from '../../components/Header/Header';
 import {NewAppPageFooterButtons} from '../../components/NewAppPageFooterButtons/NewAppPageFooterButtons';
 import {useAppContext} from '../../manage-app-state/AppManageState';
@@ -12,23 +11,22 @@ import {TYPES} from '../../manage-app-state/actionTypes';
 
 import './CreateNewAppPage.scss';
 
-interface CreateNewAppPageProps {
+type CreateNewAppPageProps = {
+	catalogId: string;
 	onClickContinue: () => void;
-}
+};
 
-export function CreateNewAppPage({onClickContinue}: CreateNewAppPageProps) {
+export function CreateNewAppPage({
+	catalogId,
+	onClickContinue,
+}: CreateNewAppPageProps) {
 	const [_, dispatch] = useAppContext();
-	const queryString = window.location.search;
-
-	const urlParams = new URLSearchParams(queryString);
-
-	const catalogId = urlParams.get('catalogId');
 
 	return (
 		<div className="create-new-app-container">
 			<div className="create-new-app-header">
 				<Header
-					description="Review and accept the legal agreement between Acme Co. (publisher), you, and Liferay before proceeding, You are about to create a new app submission."
+					description="Review and accept the legal agreement between you and Liferay before proceeding, You are about to create a new app submission."
 					title="Create new app"
 				/>
 			</div>
@@ -48,15 +46,6 @@ export function CreateNewAppPage({onClickContinue}: CreateNewAppPageProps) {
 							Liferay Publisher License Agreement
 						</span>
 					</div>
-
-					<button className="create-new-app-card-header-button">
-						Download
-						<img
-							alt="Download Icon"
-							className="create-new-app-card-header-button-icon"
-							src={downloadIcon}
-						/>
-					</button>
 				</div>
 
 				<div className="create-new-app-card-body">

@@ -6,14 +6,21 @@
 /// <reference types="react" />
 
 import {TabProps} from './useObjectValidationForm';
-interface BasicInfoProps extends TabProps {
+export interface BasicInfoProps extends TabProps {
 	componentLabel: string;
+	creationLanguageId: Liferay.Language.Locale;
+	customObjectFields: ObjectField[];
+	disabledGroovyValidation: boolean;
 }
 export declare function BasicInfo({
 	componentLabel,
+	creationLanguageId,
+	customObjectFields,
 	disabled,
+	disabledGroovyValidation,
 	errors,
+	scriptManagementConfigurationPortletURL,
+	selectedPartialValidationField,
 	setValues,
 	values,
 }: BasicInfoProps): JSX.Element;
-export {};

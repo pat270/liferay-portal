@@ -122,6 +122,20 @@ public class CTCollectionSerDes {
 			sb.append("\"");
 		}
 
+		if (ctCollection.getExternalReferenceCode() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"externalReferenceCode\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(ctCollection.getExternalReferenceCode()));
+
+			sb.append("\"");
+		}
+
 		if (ctCollection.getId() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -168,6 +182,20 @@ public class CTCollectionSerDes {
 			sb.append("\"status\": ");
 
 			sb.append(String.valueOf(ctCollection.getStatus()));
+		}
+
+		if (ctCollection.getStatusMessage() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"statusMessage\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(ctCollection.getStatusMessage()));
+
+			sb.append("\"");
 		}
 
 		sb.append("}");
@@ -235,6 +263,15 @@ public class CTCollectionSerDes {
 				"description", String.valueOf(ctCollection.getDescription()));
 		}
 
+		if (ctCollection.getExternalReferenceCode() == null) {
+			map.put("externalReferenceCode", null);
+		}
+		else {
+			map.put(
+				"externalReferenceCode",
+				String.valueOf(ctCollection.getExternalReferenceCode()));
+		}
+
 		if (ctCollection.getId() == null) {
 			map.put("id", null);
 		}
@@ -261,6 +298,15 @@ public class CTCollectionSerDes {
 		}
 		else {
 			map.put("status", String.valueOf(ctCollection.getStatus()));
+		}
+
+		if (ctCollection.getStatusMessage() == null) {
+			map.put("statusMessage", null);
+		}
+		else {
+			map.put(
+				"statusMessage",
+				String.valueOf(ctCollection.getStatusMessage()));
 		}
 
 		return map;
@@ -314,6 +360,14 @@ public class CTCollectionSerDes {
 					ctCollection.setDescription((String)jsonParserFieldValue);
 				}
 			}
+			else if (Objects.equals(
+						jsonParserFieldName, "externalReferenceCode")) {
+
+				if (jsonParserFieldValue != null) {
+					ctCollection.setExternalReferenceCode(
+						(String)jsonParserFieldValue);
+				}
+			}
 			else if (Objects.equals(jsonParserFieldName, "id")) {
 				if (jsonParserFieldValue != null) {
 					ctCollection.setId(
@@ -334,6 +388,11 @@ public class CTCollectionSerDes {
 				if (jsonParserFieldValue != null) {
 					ctCollection.setStatus(
 						StatusSerDes.toDTO((String)jsonParserFieldValue));
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "statusMessage")) {
+				if (jsonParserFieldValue != null) {
+					ctCollection.setStatusMessage((String)jsonParserFieldValue);
 				}
 			}
 		}

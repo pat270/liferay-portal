@@ -108,7 +108,7 @@ public class LayoutListRetrieverTest {
 			null, TestPropsValues.getUserId(), _group.getGroupId(),
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			StringUtil.randomString(), ContentTypes.APPLICATION_OCTET_STREAM,
-			new byte[0], null, null,
+			new byte[0], null, null, null,
 			ServiceContextTestUtil.getServiceContext(
 				_group.getGroupId(), TestPropsValues.getUserId(),
 				new String[] {"tag1", "tag2"}));
@@ -118,8 +118,10 @@ public class LayoutListRetrieverTest {
 
 		layoutListRetrieverContext.setContextObject(fileEntry);
 
-		List<Object> list = layoutListRetriever.getList(
+		InfoPage<?> infoPage = layoutListRetriever.getInfoPage(
 			keyListObjectReference, layoutListRetrieverContext);
+
+		List<Object> list = (List<Object>)infoPage.getPageItems();
 
 		Assert.assertEquals(list.toString(), 2, list.size());
 
@@ -156,8 +158,10 @@ public class LayoutListRetrieverTest {
 				JSONUtil.put(
 					"key", TestInfoCollectionProvider.class.getName()));
 
-		List<Object> list = layoutListRetriever.getList(
+		InfoPage<?> infoPage = layoutListRetriever.getInfoPage(
 			keyListObjectReference, new DefaultLayoutListRetrieverContext());
+
+		List<Object> list = (List<Object>)infoPage.getPageItems();
 
 		Assert.assertEquals(list.toString(), 1, list.size());
 		Assert.assertEquals(

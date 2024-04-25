@@ -22,11 +22,12 @@ import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 import com.liferay.saml.opensaml.integration.internal.BaseSamlTestCase;
-import com.liferay.saml.opensaml.integration.internal.metadata.MetadataManager;
 import com.liferay.saml.opensaml.integration.internal.util.SamlUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -64,17 +65,6 @@ public class DefaultAttributeResolverTest extends BaseSamlTestCase {
 
 		ReflectionTestUtil.setFieldValue(
 			_defaultAttributeResolver, "_groupLocalService", groupLocalService);
-
-		_metadataManager = Mockito.mock(MetadataManager.class);
-
-		ReflectionTestUtil.setFieldValue(
-			_defaultAttributeResolver, "_metadataManager", _metadataManager);
-
-		Mockito.when(
-			_metadataManager.isAttributesEnabled(Mockito.eq(SP_ENTITY_ID))
-		).thenReturn(
-			true
-		);
 
 		_user = Mockito.mock(User.class);
 
@@ -122,11 +112,7 @@ public class DefaultAttributeResolverTest extends BaseSamlTestCase {
 			"12345"
 		);
 
-		Mockito.when(
-			_metadataManager.getAttributeNames(Mockito.eq(SP_ENTITY_ID))
-		).thenReturn(
-			new String[] {"expando:customerId"}
-		);
+		_attributeNamesAtomicReference.set(new String[] {"expando:customerId"});
 
 		AttributePublisherImpl attributePublisherImpl =
 			new AttributePublisherImpl();
@@ -141,11 +127,7 @@ public class DefaultAttributeResolverTest extends BaseSamlTestCase {
 
 	@Test
 	public void testResolveGroupsAttributes() throws Exception {
-		Mockito.when(
-			_metadataManager.getAttributeNames(Mockito.eq(SP_ENTITY_ID))
-		).thenReturn(
-			new String[] {"groups"}
-		);
+		_attributeNamesAtomicReference.set(new String[] {"groups"});
 
 		List<Group> groups = new ArrayList<>();
 
@@ -189,11 +171,7 @@ public class DefaultAttributeResolverTest extends BaseSamlTestCase {
 
 	@Test
 	public void testResolveOrganizationRolesAttributes() throws Exception {
-		Mockito.when(
-			_metadataManager.getAttributeNames(Mockito.eq(SP_ENTITY_ID))
-		).thenReturn(
-			new String[] {"organizationRoles"}
-		);
+		_attributeNamesAtomicReference.set(new String[] {"organizationRoles"});
 
 		Group group1 = Mockito.mock(Group.class);
 
@@ -286,11 +264,7 @@ public class DefaultAttributeResolverTest extends BaseSamlTestCase {
 
 	@Test
 	public void testResolveOrganizationsAttributes() throws Exception {
-		Mockito.when(
-			_metadataManager.getAttributeNames(Mockito.eq(SP_ENTITY_ID))
-		).thenReturn(
-			new String[] {"organizations"}
-		);
+		_attributeNamesAtomicReference.set(new String[] {"organizations"});
 
 		List<Organization> organizations = new ArrayList<>();
 
@@ -334,11 +308,7 @@ public class DefaultAttributeResolverTest extends BaseSamlTestCase {
 
 	@Test
 	public void testResolveRolesAttributes() throws Exception {
-		Mockito.when(
-			_metadataManager.getAttributeNames(Mockito.eq(SP_ENTITY_ID))
-		).thenReturn(
-			new String[] {"roles"}
-		);
+		_attributeNamesAtomicReference.set(new String[] {"roles"});
 
 		List<Role> roles = new ArrayList<>();
 
@@ -424,11 +394,7 @@ public class DefaultAttributeResolverTest extends BaseSamlTestCase {
 
 	@Test
 	public void testResolveSiteRolesAttributes() throws Exception {
-		Mockito.when(
-			_metadataManager.getAttributeNames(Mockito.eq(SP_ENTITY_ID))
-		).thenReturn(
-			new String[] {"siteRoles"}
-		);
+		_attributeNamesAtomicReference.set(new String[] {"siteRoles"});
 
 		Group group1 = Mockito.mock(Group.class);
 
@@ -572,14 +538,11 @@ public class DefaultAttributeResolverTest extends BaseSamlTestCase {
 
 	@Test
 	public void testResolveStaticAttributes() throws Exception {
-		Mockito.when(
-			_metadataManager.getAttributeNames(Mockito.eq(SP_ENTITY_ID))
-		).thenReturn(
+		_attributeNamesAtomicReference.set(
 			new String[] {
 				"static:emailAddress=test@liferay.com",
 				"static:screenName=test=test2"
-			}
-		);
+			});
 
 		AttributePublisherImpl attributePublisherImpl =
 			new AttributePublisherImpl();
@@ -631,13 +594,10 @@ public class DefaultAttributeResolverTest extends BaseSamlTestCase {
 			"xxxx-xxxx-xxx-xxxx"
 		);
 
-		Mockito.when(
-			_metadataManager.getAttributeNames(Mockito.eq(SP_ENTITY_ID))
-		).thenReturn(
+		_attributeNamesAtomicReference.set(
 			new String[] {
 				"emailAddress", "firstName", "lastName", "screenName", "uuid"
-			}
-		);
+			});
 
 		AttributePublisherImpl attributePublisherImpl =
 			new AttributePublisherImpl();
@@ -657,11 +617,7 @@ public class DefaultAttributeResolverTest extends BaseSamlTestCase {
 
 	@Test
 	public void testResolveUserGroupRolesAttributes() throws Exception {
-		Mockito.when(
-			_metadataManager.getAttributeNames(Mockito.eq(SP_ENTITY_ID))
-		).thenReturn(
-			new String[] {"userGroupRoles"}
-		);
+		_attributeNamesAtomicReference.set(new String[] {"userGroupRoles"});
 
 		Group group1 = Mockito.mock(Group.class);
 
@@ -772,11 +728,7 @@ public class DefaultAttributeResolverTest extends BaseSamlTestCase {
 
 	@Test
 	public void testResolveUserGroupsAttributes() throws Exception {
-		Mockito.when(
-			_metadataManager.getAttributeNames(Mockito.eq(SP_ENTITY_ID))
-		).thenReturn(
-			new String[] {"userGroups"}
-		);
+		_attributeNamesAtomicReference.set(new String[] {"userGroups"});
 
 		List<UserGroup> userGroups = new ArrayList<>();
 
@@ -849,12 +801,26 @@ public class DefaultAttributeResolverTest extends BaseSamlTestCase {
 		}
 	}
 
+	private final AtomicReference<String[]> _attributeNamesAtomicReference =
+		new AtomicReference<>();
 	private BeanProperties _beanProperties;
+
 	private final DefaultAttributeResolver _defaultAttributeResolver =
-		new DefaultAttributeResolver();
+		new DefaultAttributeResolver() {
+
+			@Override
+			protected String[] getAttributeNames(String entityId) {
+				if (Objects.equals(SP_ENTITY_ID, entityId)) {
+					return _attributeNamesAtomicReference.get();
+				}
+
+				return null;
+			}
+
+		};
+
 	private ExpandoBridge _expandoBridge;
 	private MessageContext<AuthnRequest> _messageContext;
-	private MetadataManager _metadataManager;
 	private RoleLocalService _roleLocalService;
 	private User _user;
 	private UserGroupGroupRoleLocalService _userGroupGroupRoleLocalService;

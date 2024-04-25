@@ -72,7 +72,12 @@ public class FieldMappingInfoResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _fieldMappingInfoResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, FieldMappingInfoResource>
+					fieldMappingInfoResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_fieldMappingInfoResourceProxyProviderFunction;
+
+				return fieldMappingInfoResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -231,10 +236,6 @@ public class FieldMappingInfoResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, FieldMappingInfoResource>
-		_fieldMappingInfoResourceProxyProviderFunction =
-			_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -270,6 +271,15 @@ public class FieldMappingInfoResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function
+			<InvocationHandler, FieldMappingInfoResource>
+				_fieldMappingInfoResourceProxyProviderFunction =
+					_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

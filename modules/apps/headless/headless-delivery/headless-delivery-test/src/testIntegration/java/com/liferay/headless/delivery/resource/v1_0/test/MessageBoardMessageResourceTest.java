@@ -272,6 +272,30 @@ public class MessageBoardMessageResourceTest
 
 	@Override
 	protected MessageBoardMessage
+			testGetSiteUserMessageBoardMessagesActivityPage_addMessageBoardMessage(
+				Long siteId, Long userId,
+				MessageBoardMessage messageBoardMessage)
+		throws Exception {
+
+		return _addMessageBoardMessage(messageBoardMessage, siteId);
+	}
+
+	@Override
+	protected Long testGetSiteUserMessageBoardMessagesActivityPage_getSiteId()
+		throws Exception {
+
+		return TestPropsValues.getGroupId();
+	}
+
+	@Override
+	protected Long testGetSiteUserMessageBoardMessagesActivityPage_getUserId()
+		throws Exception {
+
+		return UserLocalServiceUtil.getDefaultUserId(testGroup.getCompanyId());
+	}
+
+	@Override
+	protected MessageBoardMessage
 			testGraphQLMessageBoardMessage_addMessageBoardMessage()
 		throws Exception {
 
@@ -302,6 +326,14 @@ public class MessageBoardMessageResourceTest
 
 	@Override
 	protected MessageBoardMessage
+			testPutMessageBoardMessageMarkAsAnswer_addMessageBoardMessage()
+		throws Exception {
+
+		return _addMessageBoardMessage();
+	}
+
+	@Override
+	protected MessageBoardMessage
 			testPutMessageBoardMessagePermissionsPage_addMessageBoardMessage()
 		throws Exception {
 
@@ -311,6 +343,14 @@ public class MessageBoardMessageResourceTest
 	@Override
 	protected MessageBoardMessage
 			testPutMessageBoardMessageSubscribe_addMessageBoardMessage()
+		throws Exception {
+
+		return _addMessageBoardMessage();
+	}
+
+	@Override
+	protected MessageBoardMessage
+			testPutMessageBoardMessageUnmarkAsAnswer_addMessageBoardMessage()
 		throws Exception {
 
 		return _addMessageBoardMessage();

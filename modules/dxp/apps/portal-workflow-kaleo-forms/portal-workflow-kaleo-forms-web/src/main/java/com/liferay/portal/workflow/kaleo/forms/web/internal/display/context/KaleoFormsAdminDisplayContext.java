@@ -8,9 +8,9 @@ package com.liferay.portal.workflow.kaleo.forms.web.internal.display.context;
 import com.liferay.dynamic.data.lists.service.DDLRecordLocalService;
 import com.liferay.dynamic.data.mapping.exception.StorageException;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
-import com.liferay.dynamic.data.mapping.storage.StorageEngine;
+import com.liferay.dynamic.data.mapping.storage.DDMStorageEngineManager;
 import com.liferay.dynamic.data.mapping.util.DDMDisplay;
-import com.liferay.dynamic.data.mapping.util.DDMDisplayRegistry;
+import com.liferay.dynamic.data.mapping.util.DDMDisplayRegistryUtil;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
@@ -40,7 +40,6 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.workflow.WorkflowDefinition;
-import com.liferay.portal.kernel.workflow.WorkflowDefinitionManagerUtil;
 import com.liferay.portal.workflow.constants.WorkflowDefinitionConstants;
 import com.liferay.portal.workflow.kaleo.forms.constants.KaleoFormsActionKeys;
 import com.liferay.portal.workflow.kaleo.forms.constants.KaleoFormsPortletKeys;
@@ -49,7 +48,6 @@ import com.liferay.portal.workflow.kaleo.forms.model.KaleoProcess;
 import com.liferay.portal.workflow.kaleo.forms.service.KaleoProcessServiceUtil;
 import com.liferay.portal.workflow.kaleo.forms.util.comparator.KaleoProcessCreateDateComparator;
 import com.liferay.portal.workflow.kaleo.forms.util.comparator.KaleoProcessModifiedDateComparator;
-import com.liferay.portal.workflow.kaleo.forms.web.internal.configuration.KaleoFormsWebConfiguration;
 import com.liferay.portal.workflow.kaleo.forms.web.internal.display.context.helper.KaleoFormsAdminRequestHelper;
 import com.liferay.portal.workflow.kaleo.forms.web.internal.search.KaleoProcessSearch;
 import com.liferay.portal.workflow.kaleo.forms.web.internal.security.permission.resource.KaleoFormsPermission;
@@ -57,6 +55,7 @@ import com.liferay.portal.workflow.kaleo.forms.web.internal.util.filter.KaleoDef
 import com.liferay.portal.workflow.kaleo.forms.web.internal.util.filter.KaleoDefinitionVersionScopePredicate;
 import com.liferay.portal.workflow.kaleo.model.KaleoDefinitionVersion;
 import com.liferay.portal.workflow.kaleo.service.KaleoDefinitionVersionLocalService;
+import com.liferay.portal.workflow.util.WorkflowDefinitionManagerUtil;
 
 import java.util.List;
 import java.util.Objects;
@@ -75,21 +74,17 @@ public class KaleoFormsAdminDisplayContext {
 
 	public KaleoFormsAdminDisplayContext(
 		DDLRecordLocalService ddlRecordLocalService,
-		DDMDisplayRegistry ddmDisplayRegistry, HtmlParser htmlParser,
+		DDMStorageEngineManager ddmStorageEngineManager, HtmlParser htmlParser,
 		KaleoDefinitionVersionLocalService kaleoDefinitionVersionLocalService,
-		KaleoFormsWebConfiguration kaleoFormsWebConfiguration,
-		RenderRequest renderRequest, RenderResponse renderResponse,
-		StorageEngine storageEngine) {
+		RenderRequest renderRequest, RenderResponse renderResponse) {
 
 		_ddlRecordLocalService = ddlRecordLocalService;
-		_ddmDisplayRegistry = ddmDisplayRegistry;
+		_ddmStorageEngineManager = ddmStorageEngineManager;
 		_htmlParser = htmlParser;
 		_kaleoDefinitionVersionLocalService =
 			kaleoDefinitionVersionLocalService;
-		_kaleoFormsWebConfiguration = kaleoFormsWebConfiguration;
 		_renderRequest = renderRequest;
 		_renderResponse = renderResponse;
-		_storageEngine = storageEngine;
 
 		_httpServletRequest = PortalUtil.getHttpServletRequest(renderRequest);
 		_kaleoFormsAdminRequestHelper = new KaleoFormsAdminRequestHelper(
@@ -140,14 +135,19 @@ public class KaleoFormsAdminDisplayContext {
 	}
 
 	public DDMDisplay getDDMDisplay() {
-		return _ddmDisplayRegistry.getDDMDisplay(
+		return DDMDisplayRegistryUtil.getDDMDisplay(
 			_kaleoFormsAdminRequestHelper.getPortletId());
 	}
 
 	public DDMFormValues getDDMFormValues(long ddmStorageId)
 		throws StorageException {
 
-		return _storageEngine.getDDMFormValues(ddmStorageId);
+		try {
+			return _ddmStorageEngineManager.getDDMFormValues(ddmStorageId);
+		}
+		catch (PortalException portalException) {
+			throw new StorageException(portalException);
+		}
 	}
 
 	public String getDisplayStyle() {
@@ -164,7 +164,7 @@ public class KaleoFormsAdminDisplayContext {
 		if (Validator.isNull(_kaleoFormsAdminDisplayStyle)) {
 			_kaleoFormsAdminDisplayStyle = portalPreferences.getValue(
 				KaleoFormsPortletKeys.KALEO_FORMS_ADMIN, "display-style",
-				_kaleoFormsWebConfiguration.defaultDisplayView());
+				"list");
 		}
 		else if (ArrayUtil.contains(
 					getDisplayViews(), _kaleoFormsAdminDisplayStyle)) {
@@ -185,27 +185,6 @@ public class KaleoFormsAdminDisplayContext {
 
 	public String[] getDisplayViews() {
 		return _DISPLAY_VIEWS;
-	}
-
-	public List<DropdownItem> getFilterItemsDropdownItems() {
-		HttpServletRequest httpServletRequest =
-			_kaleoFormsAdminRequestHelper.getRequest();
-
-		return DropdownItemListBuilder.addGroup(
-			dropdownGroupItem -> {
-				dropdownGroupItem.setDropdownItems(
-					getFilterNavigationDropdownItems());
-				dropdownGroupItem.setLabel(
-					LanguageUtil.get(
-						httpServletRequest, "filter-by-navigation"));
-			}
-		).addGroup(
-			dropdownGroupItem -> {
-				dropdownGroupItem.setDropdownItems(getOrderByDropdownItems());
-				dropdownGroupItem.setLabel(
-					LanguageUtil.get(httpServletRequest, "order-by"));
-			}
-		).build();
 	}
 
 	public KaleoFormsViewRecordsDisplayContext
@@ -311,6 +290,14 @@ public class KaleoFormsAdminDisplayContext {
 			"admin-order-by-type", "asc");
 
 		return _orderByType;
+	}
+
+	public List<DropdownItem> getOrderItemsDropdownItems() {
+		return DropdownItemListBuilder.add(
+			_getOrderByDropdownItem("create-date")
+		).add(
+			_getOrderByDropdownItem("modified-date")
+		).build();
 	}
 
 	public PortletURL getPortletURL() {
@@ -519,28 +506,8 @@ public class KaleoFormsAdminDisplayContext {
 		return _tabs1Unpublished;
 	}
 
-	protected List<DropdownItem> getFilterNavigationDropdownItems() {
-		return DropdownItemListBuilder.add(
-			dropdownItem -> {
-				dropdownItem.setActive(true);
-				dropdownItem.setHref(getPortletURL(), "navigation", "all");
-				dropdownItem.setLabel(
-					LanguageUtil.get(
-						_kaleoFormsAdminRequestHelper.getRequest(), "all"));
-			}
-		).build();
-	}
-
 	protected String getKeywords() {
 		return ParamUtil.getString(_renderRequest, "keywords");
-	}
-
-	protected List<DropdownItem> getOrderByDropdownItems() {
-		return DropdownItemListBuilder.add(
-			_getOrderByDropdownItem("create-date")
-		).add(
-			_getOrderByDropdownItem("modified-date")
-		).build();
 	}
 
 	protected boolean hasResults() {
@@ -614,14 +581,13 @@ public class KaleoFormsAdminDisplayContext {
 	private static final String[] _DISPLAY_VIEWS = {"list"};
 
 	private final DDLRecordLocalService _ddlRecordLocalService;
-	private final DDMDisplayRegistry _ddmDisplayRegistry;
+	private final DDMStorageEngineManager _ddmStorageEngineManager;
 	private final HtmlParser _htmlParser;
 	private final HttpServletRequest _httpServletRequest;
 	private final KaleoDefinitionVersionLocalService
 		_kaleoDefinitionVersionLocalService;
 	private String _kaleoFormsAdminDisplayStyle;
 	private final KaleoFormsAdminRequestHelper _kaleoFormsAdminRequestHelper;
-	private final KaleoFormsWebConfiguration _kaleoFormsWebConfiguration;
 	private Long _kaleoProcessId;
 	private String _orderByCol;
 	private String _orderByType;
@@ -629,7 +595,6 @@ public class KaleoFormsAdminDisplayContext {
 	private final RenderResponse _renderResponse;
 	private SearchContainer<?> _searchContainer;
 	private Integer _status;
-	private final StorageEngine _storageEngine;
 	private String _tabs1;
 	private Boolean _tabs1Published;
 	private Boolean _tabs1Unpublished;

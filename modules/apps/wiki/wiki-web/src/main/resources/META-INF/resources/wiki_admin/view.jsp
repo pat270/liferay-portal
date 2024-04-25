@@ -25,10 +25,10 @@ request.setAttribute("view.jsp-orderByType", wikiNodesManagementToolbarDisplayCo
 	additionalProps="<%= wikiNodesManagementToolbarDisplayContext.getAdditionalProps() %>"
 	creationMenu="<%= wikiNodesManagementToolbarDisplayContext.getCreationMenu() %>"
 	disabled="<%= wikiNodesManagementToolbarDisplayContext.isDisabled() %>"
-	filterDropdownItems="<%= wikiNodesManagementToolbarDisplayContext.getFilterDropdownItems() %>"
 	infoPanelId="infoPanelId"
 	itemsTotal="<%= wikiNodesManagementToolbarDisplayContext.getTotalItems() %>"
-	propsTransformer="wiki_admin/js/WikiNodesManagementToolbarPropsTransformer"
+	orderDropdownItems="<%= wikiNodesManagementToolbarDisplayContext.getOrderByDropdownItems() %>"
+	propsTransformer="{WikiNodesManagementToolbarPropsTransformer} from wiki-web"
 	searchContainerId="wikiNodes"
 	selectable="<%= wikiNodesManagementToolbarDisplayContext.isSelectable() %>"
 	showInfoButton="<%= true %>"
@@ -157,7 +157,7 @@ request.setAttribute("view.jsp-orderByType", wikiNodesManagementToolbarDisplayCo
 							<liferay-ui:search-container-column-text
 								cssClass="table-cell-expand-smaller table-cell-ws-nowrap"
 								name="last-post-date"
-								value='<%= (node.getLastPostDate() == null) ? LanguageUtil.get(request, "never") : dateFormatDateTime.format(node.getLastPostDate()) %>'
+								value='<%= (node.getLastPostDate() == null) ? LanguageUtil.get(request, "never") : dateTimeFormat.format(node.getLastPostDate()) %>'
 							/>
 
 							<liferay-ui:search-container-column-jsp

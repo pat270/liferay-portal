@@ -15,17 +15,28 @@ import com.liferay.notification.model.NotificationRecipient;
 import com.liferay.notification.model.NotificationRecipientSetting;
 import com.liferay.notification.model.NotificationTemplate;
 import com.liferay.object.constants.ObjectActionExecutorConstants;
+import com.liferay.object.constants.ObjectActionKeys;
 import com.liferay.object.constants.ObjectActionTriggerConstants;
 import com.liferay.object.constants.ObjectDefinitionConstants;
 import com.liferay.object.rest.dto.v1_0.ObjectEntry;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.ResourceConstants;
+import com.liferay.portal.kernel.model.Role;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.role.RoleConstants;
+import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.UserNotificationEventLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.test.util.RoleTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
@@ -84,6 +95,109 @@ public class UserNotificationTypeTest extends BaseNotificationTypeTest {
 	}
 
 	@Test
+	public void testSendNotificationRecipientTypeTermCreator()
+		throws Exception {
+
+		NotificationTemplate notificationTemplate =
+			notificationTemplateLocalService.addNotificationTemplate(
+				_createNotificationContext(
+					Arrays.asList(
+						createNotificationRecipientSetting(
+							"term", getTermName("creator"))),
+					NotificationRecipientConstants.TYPE_TERM));
+
+		objectActionLocalService.addObjectAction(
+			RandomTestUtil.randomString(), TestPropsValues.getUserId(),
+			childObjectDefinition.getObjectDefinitionId(), true,
+			StringPool.BLANK, RandomTestUtil.randomString(),
+			LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
+			LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
+			RandomTestUtil.randomString(),
+			ObjectActionExecutorConstants.KEY_NOTIFICATION,
+			ObjectActionTriggerConstants.KEY_ON_AFTER_UPDATE,
+			UnicodePropertiesBuilder.put(
+				"notificationTemplateId",
+				notificationTemplate.getNotificationTemplateId()
+			).build(),
+			false);
+
+		PermissionChecker originalPermissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
+		String originalName = PrincipalThreadLocal.getName();
+
+		try {
+			User user = _addUser();
+
+			ObjectEntry objectEntry = objectEntryManager.addObjectEntry(
+				dtoConverterContext, childObjectDefinition,
+				new ObjectEntry() {
+					{
+						properties = HashMapBuilder.putAll(
+							childObjectEntryValues
+						).build();
+					}
+				},
+				group.getGroupKey());
+
+			List<NotificationQueueEntry> notificationQueueEntries =
+				notificationQueueEntryLocalService.getNotificationQueueEntries(
+					QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+
+			Assert.assertEquals(
+				notificationQueueEntries.toString(), 0,
+				notificationQueueEntries.size());
+
+			_addUser();
+
+			objectEntryManager.updateObjectEntry(
+				TestPropsValues.getCompanyId(), dtoConverterContext,
+				objectEntry.getExternalReferenceCode(), childObjectDefinition,
+				new ObjectEntry() {
+					{
+						properties = HashMapBuilder.putAll(
+							childObjectEntryValues
+						).build();
+					}
+				},
+				group.getGroupKey());
+
+			notificationQueueEntries =
+				notificationQueueEntryLocalService.getNotificationQueueEntries(
+					QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+
+			Assert.assertEquals(
+				notificationQueueEntries.toString(), 1,
+				notificationQueueEntries.size());
+
+			NotificationQueueEntry notificationQueueEntry =
+				notificationQueueEntries.get(0);
+
+			NotificationRecipient notificationRecipient =
+				notificationQueueEntry.getNotificationRecipient();
+
+			List<NotificationRecipientSetting> notificationRecipientSettings =
+				notificationRecipient.getNotificationRecipientSettings();
+
+			Assert.assertEquals(
+				notificationRecipientSettings.toString(), 1,
+				notificationRecipientSettings.size());
+			_assertNotificationRecipientSetting(
+				notificationRecipientSettings.get(0), user.getFullName());
+
+			notificationQueueEntryLocalService.deleteNotificationQueueEntry(
+				notificationQueueEntries.get(0));
+
+			_userNotificationEventLocalService.deleteUserNotificationEvents(
+				user.getUserId());
+		}
+		finally {
+			PermissionThreadLocal.setPermissionChecker(
+				originalPermissionChecker);
+			PrincipalThreadLocal.setName(originalName);
+		}
+	}
+
+	@Test
 	public void testSendNotificationRecipientTypeTermCurrentUserTerm()
 		throws Exception {
 
@@ -129,6 +243,33 @@ public class UserNotificationTypeTest extends BaseNotificationTypeTest {
 			NotificationRecipientConstants.TYPE_USER);
 	}
 
+	private User _addUser() throws Exception {
+		User user = UserTestUtil.addUser();
+
+		Role role = RoleTestUtil.addRole(RoleConstants.TYPE_REGULAR);
+
+		resourcePermissionLocalService.addResourcePermission(
+			TestPropsValues.getCompanyId(),
+			childObjectDefinition.getResourceName(),
+			ResourceConstants.SCOPE_COMPANY,
+			String.valueOf(TestPropsValues.getCompanyId()), role.getRoleId(),
+			ObjectActionKeys.ADD_OBJECT_ENTRY);
+		resourcePermissionLocalService.setResourcePermissions(
+			TestPropsValues.getCompanyId(),
+			childObjectDefinition.getClassName(),
+			ResourceConstants.SCOPE_COMPANY,
+			String.valueOf(TestPropsValues.getCompanyId()), role.getRoleId(),
+			new String[] {ActionKeys.UPDATE, ActionKeys.VIEW});
+
+		userLocalService.addRoleUser(role.getRoleId(), user);
+
+		PermissionThreadLocal.setPermissionChecker(
+			PermissionCheckerFactoryUtil.create(user));
+		PrincipalThreadLocal.setName(user.getUserId());
+
+		return user;
+	}
+
 	private void _assertNotificationRecipientSetting(
 		NotificationRecipientSetting notificationRecipientSetting,
 		String userFullName) {
@@ -156,7 +297,8 @@ public class UserNotificationTypeTest extends BaseNotificationTypeTest {
 		notificationTemplate.setName(RandomTestUtil.randomString());
 		notificationTemplate.setRecipientType(recipientType);
 		notificationTemplate.setSubject(
-			ListUtil.toString(getTermNames(), StringPool.BLANK));
+			ListUtil.toString(
+				getTermNames(), StringPool.BLANK, StringPool.SEMICOLON));
 		notificationTemplate.setType(
 			NotificationConstants.TYPE_USER_NOTIFICATION);
 
@@ -207,13 +349,14 @@ public class UserNotificationTypeTest extends BaseNotificationTypeTest {
 			UnicodePropertiesBuilder.put(
 				"notificationTemplateId",
 				notificationTemplate.getNotificationTemplateId()
-			).build());
+			).build(),
+			false);
 
 		ObjectEntry objectEntry = objectEntryManager.addObjectEntry(
 			dtoConverterContext, parentObjectDefinition,
 			new ObjectEntry() {
 				{
-					setProperties(parentObjectEntryValues);
+					properties = parentObjectEntryValues;
 				}
 			},
 			ObjectDefinitionConstants.SCOPE_COMPANY);
@@ -222,16 +365,15 @@ public class UserNotificationTypeTest extends BaseNotificationTypeTest {
 			dtoConverterContext, childObjectDefinition,
 			new ObjectEntry() {
 				{
-					setProperties(
-						HashMapBuilder.putAll(
-							childObjectEntryValues
-						).put(
-							getObjectRelationshipObjectField2Name(),
-							objectEntry.getId()
-						).build());
+					properties = HashMapBuilder.putAll(
+						childObjectEntryValues
+					).put(
+						getObjectRelationshipObjectField2Name(),
+						objectEntry.getId()
+					).build();
 				}
 			},
-			ObjectDefinitionConstants.SCOPE_COMPANY);
+			group.getGroupKey());
 
 		notificationQueueEntries =
 			notificationQueueEntryLocalService.getNotificationQueueEntries(
@@ -246,7 +388,7 @@ public class UserNotificationTypeTest extends BaseNotificationTypeTest {
 		assertTermValues(
 			getTermValues(),
 			ListUtil.fromString(
-				notificationQueueEntry.getSubject(), StringPool.COMMA));
+				notificationQueueEntry.getSubject(), StringPool.SEMICOLON));
 
 		NotificationRecipient notificationRecipient =
 			notificationQueueEntry.getNotificationRecipient();
@@ -303,13 +445,14 @@ public class UserNotificationTypeTest extends BaseNotificationTypeTest {
 			UnicodePropertiesBuilder.put(
 				"notificationTemplateId",
 				notificationTemplate.getNotificationTemplateId()
-			).build());
+			).build(),
+			false);
 
 		ObjectEntry objectEntry = objectEntryManager.addObjectEntry(
 			dtoConverterContext, parentObjectDefinition,
 			new ObjectEntry() {
 				{
-					setProperties(parentObjectEntryValues);
+					properties = parentObjectEntryValues;
 				}
 			},
 			ObjectDefinitionConstants.SCOPE_COMPANY);
@@ -318,16 +461,15 @@ public class UserNotificationTypeTest extends BaseNotificationTypeTest {
 			dtoConverterContext, childObjectDefinition,
 			new ObjectEntry() {
 				{
-					setProperties(
-						HashMapBuilder.putAll(
-							childObjectEntryValues
-						).put(
-							getObjectRelationshipObjectField2Name(),
-							objectEntry.getId()
-						).build());
+					properties = HashMapBuilder.putAll(
+						childObjectEntryValues
+					).put(
+						getObjectRelationshipObjectField2Name(),
+						objectEntry.getId()
+					).build();
 				}
 			},
-			ObjectDefinitionConstants.SCOPE_COMPANY);
+			group.getGroupKey());
 
 		notificationQueueEntries =
 			notificationQueueEntryLocalService.getNotificationQueueEntries(
@@ -342,7 +484,7 @@ public class UserNotificationTypeTest extends BaseNotificationTypeTest {
 		assertTermValues(
 			getTermValues(),
 			ListUtil.fromString(
-				notificationQueueEntry.getSubject(), StringPool.COMMA));
+				notificationQueueEntry.getSubject(), StringPool.SEMICOLON));
 
 		NotificationRecipient notificationRecipient =
 			notificationQueueEntry.getNotificationRecipient();

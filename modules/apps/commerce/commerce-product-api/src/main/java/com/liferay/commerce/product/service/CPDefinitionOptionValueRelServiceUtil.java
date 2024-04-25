@@ -32,13 +32,26 @@ public class CPDefinitionOptionValueRelServiceUtil {
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.commerce.product.service.impl.CPDefinitionOptionValueRelServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
 	public static CPDefinitionOptionValueRel addCPDefinitionOptionValueRel(
-			long cpDefinitionOptionRelId, Map<java.util.Locale, String> nameMap,
-			double priority, String key,
+			long cpDefinitionOptionRelId, long cpInstanceId, String key,
+			Map<java.util.Locale, String> nameMap, boolean preselected,
+			java.math.BigDecimal deltaPrice, double priority,
+			java.math.BigDecimal quantity, String unitOfMeasureKey,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws PortalException {
 
 		return getService().addCPDefinitionOptionValueRel(
-			cpDefinitionOptionRelId, nameMap, priority, key, serviceContext);
+			cpDefinitionOptionRelId, cpInstanceId, key, nameMap, preselected,
+			deltaPrice, priority, quantity, unitOfMeasureKey, serviceContext);
+	}
+
+	public static CPDefinitionOptionValueRel addCPDefinitionOptionValueRel(
+			long cpDefinitionOptionRelId, String key,
+			Map<java.util.Locale, String> nameMap, double priority,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws PortalException {
+
+		return getService().addCPDefinitionOptionValueRel(
+			cpDefinitionOptionRelId, key, nameMap, priority, serviceContext);
 	}
 
 	public static CPDefinitionOptionValueRel deleteCPDefinitionOptionValueRel(
@@ -149,16 +162,17 @@ public class CPDefinitionOptionValueRelServiceUtil {
 	}
 
 	public static CPDefinitionOptionValueRel updateCPDefinitionOptionValueRel(
-			long cpDefinitionOptionValueRelId,
-			Map<java.util.Locale, String> nameMap, double priority, String key,
-			long cpInstanceId, int quantity, boolean preselected,
-			java.math.BigDecimal price,
+			long cpDefinitionOptionValueRelId, long cpInstanceId, String key,
+			Map<java.util.Locale, String> nameMap, boolean preselected,
+			java.math.BigDecimal price, double priority,
+			java.math.BigDecimal quantity, String unitOfMeasureKey,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws PortalException {
 
 		return getService().updateCPDefinitionOptionValueRel(
-			cpDefinitionOptionValueRelId, nameMap, priority, key, cpInstanceId,
-			quantity, preselected, price, serviceContext);
+			cpDefinitionOptionValueRelId, cpInstanceId, key, nameMap,
+			preselected, price, priority, quantity, unitOfMeasureKey,
+			serviceContext);
 	}
 
 	public static CPDefinitionOptionValueRel

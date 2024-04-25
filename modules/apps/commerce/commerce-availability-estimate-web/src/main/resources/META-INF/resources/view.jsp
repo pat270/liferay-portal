@@ -14,7 +14,7 @@ CommerceAvailabilityEstimateDisplayContext commerceAvailabilityEstimateDisplayCo
 <c:if test="<%= commerceAvailabilityEstimateDisplayContext.hasManageCommerceAvailabilityEstimatesPermission() %>">
 	<clay:management-toolbar
 		managementToolbarDisplayContext="<%= new CommerceAvailabilityEstimateManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, commerceAvailabilityEstimateDisplayContext.getSearchContainer()) %>"
-		propsTransformer="js/CommerceAvailabilityEstimateManagementToolbarPropsTransformer"
+		propsTransformer="{CommerceAvailabilityEstimateManagementToolbarPropsTransformer} from commerce-availability-estimate-web"
 	/>
 
 	<div class="container-fluid container-fluid-max-xl">
@@ -41,8 +41,6 @@ CommerceAvailabilityEstimateDisplayContext commerceAvailabilityEstimateDisplayCo
 								renderResponse
 							).setMVCRenderCommandName(
 								"/commerce_availability_estimate/edit_commerce_availability_estimate"
-							).setRedirect(
-								currentURL
 							).setParameter(
 								"commerceAvailabilityEstimateId", commerceAvailabilityEstimate.getCommerceAvailabilityEstimateId()
 							).buildPortletURL()

@@ -71,7 +71,12 @@ public class OrderResourceFactoryImpl implements OrderResource.Factory {
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _orderResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, OrderResource>
+					orderResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_orderResourceProxyProviderFunction;
+
+				return orderResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -226,9 +231,6 @@ public class OrderResourceFactoryImpl implements OrderResource.Factory {
 		}
 	}
 
-	private static final Function<InvocationHandler, OrderResource>
-		_orderResourceProxyProviderFunction = _getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -263,6 +265,13 @@ public class OrderResourceFactoryImpl implements OrderResource.Factory {
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, OrderResource>
+			_orderResourceProxyProviderFunction = _getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

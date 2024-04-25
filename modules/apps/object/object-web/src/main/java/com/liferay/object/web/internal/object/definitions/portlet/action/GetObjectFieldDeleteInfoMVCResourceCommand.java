@@ -6,10 +6,12 @@
 package com.liferay.object.web.internal.object.definitions.portlet.action;
 
 import com.liferay.object.constants.ObjectPortletKeys;
+import com.liferay.object.constants.ObjectValidationRuleSettingConstants;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectField;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectFieldLocalService;
+import com.liferay.object.service.ObjectValidationRuleSettingLocalService;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCResourceCommand;
@@ -50,34 +52,62 @@ public class GetObjectFieldDeleteInfoMVCResourceCommand
 		JSONPortletResponseUtil.writeJSON(
 			resourceRequest, resourceResponse,
 			JSONUtil.put(
-				"showDeletionModal",
-				() -> {
-					if (!objectDefinition.isApproved()) {
-						return false;
-					}
-
-					return true;
-				}
+				"deleteLastPublishedObjectDefinitionObjectField",
+				_deleteLastPublishedObjectDefinitionObjectField(
+					objectDefinition, objectField)
 			).put(
-				"showDeletionNotAllowedModal",
+				"deleteObjectFieldObjectValidationRuleSetting",
+				_deleteObjectFieldObjectValidationRuleSetting(objectField)
+			).put(
+				"showObjectFieldDeletionConfirmationModal",
 				() -> {
-					if (!objectDefinition.isApproved() ||
-						objectDefinition.isUnmodifiableSystemObject()) {
+					if (objectDefinition.isApproved() &&
+						_deleteLastPublishedObjectDefinitionObjectField(
+							objectDefinition, objectField) &&
+						_deleteObjectFieldObjectValidationRuleSetting(
+							objectField)) {
 
-						return false;
+						return true;
 					}
 
-					int customObjectFieldsCount =
-						_objectFieldLocalService.getObjectFieldsCount(
-							objectField.getObjectDefinitionId(), false);
-
-					if (customObjectFieldsCount > 1) {
-						return false;
-					}
-
-					return true;
+					return false;
 				}
 			));
+	}
+
+	private boolean _deleteLastPublishedObjectDefinitionObjectField(
+		ObjectDefinition objectDefinition, ObjectField objectField) {
+
+		if (!objectDefinition.isApproved() || objectDefinition.isSystem()) {
+			return true;
+		}
+
+		int customObjectFieldsCount =
+			_objectFieldLocalService.getObjectFieldsCount(
+				objectField.getObjectDefinitionId(), false);
+
+		if (customObjectFieldsCount <= 1) {
+			return false;
+		}
+
+		return true;
+	}
+
+	private boolean _deleteObjectFieldObjectValidationRuleSetting(
+		ObjectField objectField) {
+
+		int count =
+			_objectValidationRuleSettingLocalService.
+				getObjectValidationRuleSettingsCount(
+					ObjectValidationRuleSettingConstants.
+						NAME_COMPOSITE_KEY_OBJECT_FIELD_ID,
+					String.valueOf(objectField.getObjectFieldId()));
+
+		if (count > 0) {
+			return false;
+		}
+
+		return true;
 	}
 
 	@Reference
@@ -85,5 +115,9 @@ public class GetObjectFieldDeleteInfoMVCResourceCommand
 
 	@Reference
 	private ObjectFieldLocalService _objectFieldLocalService;
+
+	@Reference
+	private ObjectValidationRuleSettingLocalService
+		_objectValidationRuleSettingLocalService;
 
 }

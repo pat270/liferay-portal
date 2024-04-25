@@ -4,7 +4,7 @@
  */
 
 import ClayLoadingIndicator from '@clayui/loading-indicator';
-import {useEffect} from 'react';
+import {useEffect, useState} from 'react';
 import {HashRouter, Route, Routes} from 'react-router-dom';
 import {useAppPropertiesContext} from '~/common/contexts/AppPropertiesContext';
 import getKebabCase from '../../../../../common/utils/getKebabCase';
@@ -18,11 +18,13 @@ import {getWebContents} from '../../../utils/getWebContents';
 import Commerce from '../ActivationKeys/Commerce';
 import EnterpriseSearch from '../ActivationKeys/EnterpriseSearch';
 import AnalyticsCloud from '../AnalyticsCloud';
+import Attachments from '../Attachments';
 import DXP from '../DXP';
 import DXPCloud from '../DXPCloud';
 import LiferayExperienceCloud from '../LiferayExperienceCloud';
 import Overview from '../Overview';
 import Portal from '../Portal';
+import RenewTable from '../RenewTable';
 import TeamMembers from '../TeamMembers';
 import ActivationOutlet from './Outlets/ActivationOutlet';
 import ProductOutlet from './Outlets/ProductOutlet';
@@ -30,6 +32,8 @@ import ProductOutlet from './Outlets/ProductOutlet';
 const ProjectRoutes = () => {
 	const [{project, subscriptionGroups}, dispatch] = useCustomerPortal();
 	const {featureFlags} = useAppPropertiesContext();
+
+	const [hasComplimentaryKey, setHasComplimentaryKey] = useState(false);
 
 	useEffect(() => {
 		if (project && subscriptionGroups) {
@@ -89,12 +93,27 @@ const ProjectRoutes = () => {
 							}
 							path={getKebabCase(PRODUCT_TYPES.portal)}
 						>
-							<Route element={<Portal />} index />
+							<Route
+								element={
+									<Portal
+										hasComplimentaryKey={
+											hasComplimentaryKey
+										}
+									/>
+								}
+								index
+							/>
 
 							<Route
 								element={
 									<GenerateNewKey
+										hasComplimentaryKey={
+											hasComplimentaryKey
+										}
 										productGroupName={PRODUCT_TYPES.portal}
+										setHasComplimentaryKey={
+											setHasComplimentaryKey
+										}
 									/>
 								}
 								path="new"
@@ -111,6 +130,18 @@ const ProjectRoutes = () => {
 									path="deactivate"
 								/>
 							)}
+
+							<Route
+								element={
+									<RenewTable
+										hasComplimentaryKey={
+											hasComplimentaryKey
+										}
+										isRenewTable
+									/>
+								}
+								path="portal-renew"
+							/>
 						</Route>
 
 						<Route
@@ -119,12 +150,27 @@ const ProjectRoutes = () => {
 							}
 							path={getKebabCase(PRODUCT_TYPES.dxp)}
 						>
-							<Route element={<DXP />} index />
+							<Route
+								element={
+									<DXP
+										hasComplimentaryKey={
+											hasComplimentaryKey
+										}
+									/>
+								}
+								index
+							/>
 
 							<Route
 								element={
 									<GenerateNewKey
+										hasComplimentaryKey={
+											hasComplimentaryKey
+										}
 										productGroupName={PRODUCT_TYPES.dxp}
+										setHasComplimentaryKey={
+											setHasComplimentaryKey
+										}
 									/>
 								}
 								path="new"
@@ -138,6 +184,19 @@ const ProjectRoutes = () => {
 									/>
 								}
 								path="deactivate"
+							/>
+
+							<Route
+								element={
+									<RenewTable
+										hasComplimentaryKey={
+											hasComplimentaryKey
+										}
+										isDXPTable
+										isRenewTable
+									/>
+								}
+								path="dxp-renew"
 							/>
 						</Route>
 
@@ -174,6 +233,10 @@ const ProjectRoutes = () => {
 							<Route element={<EnterpriseSearch />} index />
 						</Route>
 					</Route>
+
+					{featureFlags.includes('ISSD-119') && (
+						<Route element={<Attachments />} path="attachments" />
+					)}
 
 					<Route element={<TeamMembers />} path="team-members" />
 

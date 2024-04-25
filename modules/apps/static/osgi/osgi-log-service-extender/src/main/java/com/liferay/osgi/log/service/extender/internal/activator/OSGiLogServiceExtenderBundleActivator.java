@@ -6,14 +6,15 @@
 package com.liferay.osgi.log.service.extender.internal.activator;
 
 import com.liferay.osgi.log.service.extender.internal.osgi.commands.LoggingLevelsOSGiCommands;
+import com.liferay.osgi.util.osgi.commands.OSGiCommands;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
+import com.liferay.portal.kernel.util.PropertiesUtil;
 import com.liferay.portal.log4j.Log4JUtil;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import java.net.URL;
 
@@ -59,13 +60,11 @@ public class OSGiLogServiceExtenderBundleActivator implements BundleActivator {
 
 	public static class Tracked
 		extends AbstractMap.SimpleEntry
-			<BundleTracker<LoggerContext>,
-			 ServiceRegistration<LoggingLevelsOSGiCommands>> {
+			<BundleTracker<LoggerContext>, ServiceRegistration<OSGiCommands>> {
 
 		public Tracked(
 			BundleTracker<LoggerContext> bundleTracker,
-			ServiceRegistration<LoggingLevelsOSGiCommands>
-				serviceRegistration) {
+			ServiceRegistration<OSGiCommands> serviceRegistration) {
 
 			super(bundleTracker, serviceRegistration);
 		}
@@ -101,13 +100,8 @@ public class OSGiLogServiceExtenderBundleActivator implements BundleActivator {
 
 		if (enumeration != null) {
 			while (enumeration.hasMoreElements()) {
-				URL url = enumeration.nextElement();
-
-				Properties properties = new Properties();
-
-				try (InputStream inputStream = url.openStream()) {
-					properties.load(inputStream);
-				}
+				Properties properties = PropertiesUtil.load(
+					enumeration.nextElement());
 
 				for (String name : properties.stringPropertyNames()) {
 					String value = properties.getProperty(name);
@@ -157,9 +151,9 @@ public class OSGiLogServiceExtenderBundleActivator implements BundleActivator {
 			LoggingLevelsOSGiCommands loggingLevelsOSGiCommands =
 				new LoggingLevelsOSGiCommands(loggerAdmin);
 
-			ServiceRegistration<LoggingLevelsOSGiCommands> serviceRegistration =
+			ServiceRegistration<OSGiCommands> serviceRegistration =
 				_bundleContext.registerService(
-					LoggingLevelsOSGiCommands.class, loggingLevelsOSGiCommands,
+					OSGiCommands.class, loggingLevelsOSGiCommands,
 					HashMapDictionaryBuilder.<String, Object>put(
 						"osgi.command.function",
 						new String[] {"levels", "level"}
@@ -179,7 +173,7 @@ public class OSGiLogServiceExtenderBundleActivator implements BundleActivator {
 		public void removedService(
 			ServiceReference<LoggerAdmin> serviceReference, Tracked tracked) {
 
-			ServiceRegistration<LoggingLevelsOSGiCommands> serviceRegistration =
+			ServiceRegistration<OSGiCommands> serviceRegistration =
 				tracked.getValue();
 
 			serviceRegistration.unregister();

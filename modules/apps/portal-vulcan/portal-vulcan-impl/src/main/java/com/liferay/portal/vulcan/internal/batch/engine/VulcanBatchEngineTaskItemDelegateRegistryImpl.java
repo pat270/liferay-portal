@@ -9,6 +9,7 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineTaskItemDelegate;
 import com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineTaskItemDelegateRegistry;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -158,10 +159,10 @@ public class VulcanBatchEngineTaskItemDelegateRegistryImpl
 				serviceReference.getProperty("batch.planner.export.enabled"));
 			boolean batchPlannerImportEnabled = GetterUtil.getBoolean(
 				serviceReference.getProperty("batch.planner.import.enabled"));
-			List<String> companyIdStrings = (List)serviceReference.getProperty(
-				"companyId");
+			List<String> companyIdStrings = _getCompanyIdStrings(
+				serviceReference);
 			String entityClassName = (String)serviceReference.getProperty(
-				"entity.class.name");
+				"batch.engine.entity.class.name");
 			VulcanBatchEngineTaskItemDelegate<?>
 				vulcanBatchEngineTaskItemDelegate = _bundleContext.getService(
 					serviceReference);
@@ -229,15 +230,15 @@ public class VulcanBatchEngineTaskItemDelegateRegistryImpl
 			VulcanBatchEngineTaskItemDelegate<?>
 				vulcanBatchEngineTaskItemDelegate) {
 
-			List<String> companyIdStrings = (List)serviceReference.getProperty(
-				"companyId");
+			List<String> companyIdStrings = _getCompanyIdStrings(
+				serviceReference);
 
 			if (companyIdStrings == null) {
 				return;
 			}
 
 			String entityClassName = (String)serviceReference.getProperty(
-				"entity.class.name");
+				"batch.engine.entity.class.name");
 
 			for (Map.Entry<Long, Map<String, Boolean>> entry :
 					_companyScopedBatchPlannerExportEnabledsMap.entrySet()) {
@@ -293,10 +294,11 @@ public class VulcanBatchEngineTaskItemDelegateRegistryImpl
 			VulcanBatchEngineTaskItemDelegate<?>
 				vulcanBatchEngineTaskItemDelegate) {
 
-			List<String> companyIdStrings = (List)serviceReference.getProperty(
-				"companyId");
+			List<String> companyIdStrings = _getCompanyIdStrings(
+				serviceReference);
+
 			String entityClassName = (String)serviceReference.getProperty(
-				"entity.class.name");
+				"batch.engine.entity.class.name");
 
 			if (companyIdStrings == null) {
 				_batchPlannerExportEnableds.remove(entityClassName);
@@ -336,6 +338,21 @@ public class VulcanBatchEngineTaskItemDelegateRegistryImpl
 			BundleContext bundleContext) {
 
 			_bundleContext = bundleContext;
+		}
+
+		private List<String> _getCompanyIdStrings(
+			ServiceReference<?> serviceReference) {
+
+			Object companyIdObject = serviceReference.getProperty("companyId");
+
+			if (companyIdObject == null) {
+				return null;
+			}
+			else if (companyIdObject instanceof List) {
+				return (List<String>)companyIdObject;
+			}
+
+			return Collections.singletonList(String.valueOf(companyIdObject));
 		}
 
 		private final BundleContext _bundleContext;

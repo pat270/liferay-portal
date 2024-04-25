@@ -102,7 +102,7 @@
 </tr>
 <tr>
 	<td>FILTER_AND_ORDER_DROPDOWN</td>
-	<td>//*[contains(@class, 'dropdown-toggle') and contains(@class, 'nav-link') and contains(@class, 'btn-unstyled')]</td>
+	<td>//*[contains(@class, 'dropdown-toggle') and contains(@class, 'nav-link') and contains(@class, 'btn-unstyled') and @aria-expanded]</td>
 	<td></td>
 </tr>
 <tr>
@@ -177,7 +177,7 @@
 </tr>
 <tr>
 	<td>INFO_PANEL_TAGS_TITLE</td>
-	<td>//*[contains(@class,'font-weight-semi-bold') and contains (text(),'Tags')]</td>
+	<td>//div[contains(@class,'panel-title')][normalize-space()='Tags']</td>
 	<td></td>
 </tr>
 <tr>

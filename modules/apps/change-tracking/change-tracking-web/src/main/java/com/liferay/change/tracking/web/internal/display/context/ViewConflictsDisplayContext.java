@@ -7,6 +7,7 @@ package com.liferay.change.tracking.web.internal.display.context;
 
 import com.liferay.change.tracking.conflict.ConflictInfo;
 import com.liferay.change.tracking.constants.CTConstants;
+import com.liferay.change.tracking.constants.CTPortletKeys;
 import com.liferay.change.tracking.model.CTCollection;
 import com.liferay.change.tracking.model.CTEntry;
 import com.liferay.change.tracking.service.CTEntryLocalService;
@@ -23,6 +24,7 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
@@ -30,13 +32,16 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.TimeZone;
 
@@ -209,6 +214,32 @@ public class ViewConflictsDisplayContext {
 				_themeDisplay.getCompanyId())
 		).put(
 			"unresolvedConflicts", unresolvedConflictsJSONArray
+		).put(
+			"unscheduleURL",
+			() -> {
+				if (_ctCollection.getStatus() !=
+						WorkflowConstants.STATUS_SCHEDULED) {
+
+					return null;
+				}
+
+				return PortletURLBuilder.createActionURL(
+					_renderResponse
+				).setActionName(
+					"/change_tracking/unschedule_publication"
+				).setRedirect(
+					() -> {
+						String namespace = _portal.getPortletNamespace(
+							CTPortletKeys.PUBLICATIONS);
+
+						return HttpComponentsUtil.addParameter(
+							_portal.getCurrentURL(_renderRequest),
+							namespace + "schedule", true);
+					}
+				).setParameter(
+					"ctCollectionId", _ctCollection.getCtCollectionId()
+				).buildString();
+			}
 		).build();
 	}
 
@@ -310,48 +341,66 @@ public class ViewConflictsDisplayContext {
 					_themeDisplay.getLocale())
 			);
 
-			if (!conflictInfo.isResolved()) {
+			if (!conflictInfo.isResolved() &&
+				(_ctCollection.getStatus() !=
+					WorkflowConstants.STATUS_SCHEDULED)) {
+
 				JSONArray actionsJSONArray = JSONFactoryUtil.createJSONArray();
 
-				String editURL = _ctDisplayRendererRegistry.getEditURL(
-					_httpServletRequest, ctEntry);
+				String conflictDescription =
+					conflictInfo.getConflictDescription(resourceBundle);
 
-				if (Validator.isNotNull(editURL)) {
-					actionsJSONArray.put(
-						_createEditActionJSONObject(
-							_language.format(
-								_httpServletRequest,
-								"you-are-currently-working-on-production.-" +
-									"work-on-x",
-								new Object[] {_ctCollection.getName()}, false),
-							_ctCollection.getCtCollectionId(), editURL,
-							_language.format(
-								_httpServletRequest, "edit-in-x",
-								new Object[] {_ctCollection.getName()},
-								false)));
+				if (!conflictDescription.equals(
+						LanguageUtil.get(
+							resourceBundle,
+							"deletion-modification-conflict"))) {
 
-					T productionModel = _ctDisplayRendererRegistry.fetchCTModel(
-						modelClassNameId, conflictInfo.getTargetPrimaryKey());
+					String editURL = _ctDisplayRendererRegistry.getEditURL(
+						_httpServletRequest, ctEntry);
 
-					if (productionModel != null) {
+					if (Validator.isNotNull(editURL)) {
 						actionsJSONArray.put(
 							_createEditActionJSONObject(
 								_language.format(
 									_httpServletRequest,
-									"you-are-currently-working-on-x.-work-on-" +
-										"production",
+									"you-are-currently-working-on-" +
+										"production.-work-on-x",
 									new Object[] {_ctCollection.getName()},
 									false),
-								CTConstants.CT_COLLECTION_ID_PRODUCTION,
-								_ctDisplayRendererRegistry.getEditURL(
-									CTConstants.CT_COLLECTION_ID_PRODUCTION,
-									CTSQLModeThreadLocal.CTSQLMode.DEFAULT,
-									_httpServletRequest, productionModel,
-									modelClassNameId),
-								_language.get(
-									_httpServletRequest,
-									"edit-in-production")));
+								_ctCollection.getCtCollectionId(), editURL,
+								_language.format(
+									_httpServletRequest, "edit-in-x",
+									new Object[] {_ctCollection.getName()},
+									false)));
 					}
+				}
+
+				T productionModel = _ctDisplayRendererRegistry.fetchCTModel(
+					modelClassNameId, conflictInfo.getTargetPrimaryKey());
+
+				if ((productionModel != null) &&
+					!Objects.equals(
+						conflictInfo.getResolutionDescription(resourceBundle),
+						LanguageUtil.get(
+							resourceBundle,
+							"deletion-conflicts-with-modifications-in-" +
+								"another-publication"))) {
+
+					actionsJSONArray.put(
+						_createEditActionJSONObject(
+							_language.format(
+								_httpServletRequest,
+								"you-are-currently-working-on-x.-work-on-" +
+									"production",
+								new Object[] {_ctCollection.getName()}, false),
+							CTConstants.CT_COLLECTION_ID_PRODUCTION,
+							_ctDisplayRendererRegistry.getEditURL(
+								CTConstants.CT_COLLECTION_ID_PRODUCTION,
+								CTSQLModeThreadLocal.CTSQLMode.DEFAULT,
+								_httpServletRequest, productionModel,
+								modelClassNameId),
+							_language.get(
+								_httpServletRequest, "edit-in-production")));
 				}
 
 				actionsJSONArray.put(

@@ -30,6 +30,7 @@ definition {
 		property skip.clean-app-server-deploy-dir = "true";
 		property test.assert.warning.exceptions = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Blueprints.openBlueprintsAdmin();
 
@@ -60,6 +61,7 @@ definition {
 		AssertJavaScriptErrors();
 	}
 
+	@priority = 3
 	test AddBlueprintWithDescription {
 		Blueprints.openBlueprintsAdmin();
 
@@ -79,6 +81,7 @@ definition {
 			value1 = "Test Description");
 	}
 
+	@priority = 3
 	test AddElementToQueryBuilder {
 		property environment.acceptance = "true";
 		property operating.system.types = "alpine,amazonlinux,centos,debian,fedora,orcllinux,osx,redhat,rockylinux,solaris,suse,ubuntu,windows";
@@ -99,8 +102,10 @@ definition {
 			locator1 = "Blueprints#BLUEPRINTS_ADDED_ELEMENT");
 	}
 
+	@priority = 3
 	test ApplyBlueprintIDToSearchViaLLSO {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Blueprints.openBlueprintsAdmin();
 
@@ -116,54 +121,35 @@ definition {
 
 		PortletEntry.save();
 
-		Search.openSearchPage();
+		SearchPage.openSearchPage();
 
 		JSONWebcontent.addWebContent(
 			content = "",
 			groupName = "Guest",
 			title = "apple");
 
-		SearchPortlets.addWidgets(searchPortletList = "Low Level Search Options");
+		SearchPage.addWidgets(searchPortletList = "Low Level Search Options");
 
-		SearchPortlets.searchEmbedded(searchTerm = "apple");
+		SearchPage.searchEmbedded(searchTerm = "apple");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "apple",
 			searchAssetType = "Web Content Article");
 
 		var blueprintId = Blueprints.getBlueprintID(title = "Test Blueprint");
 
-		SearchPortlets.configureLowLevelSearchOptions(
+		SearchPage.configureLowLevelSearchOptions(
 			attributesKey = "search.experiences.blueprint.id",
 			attributesValue = ${blueprintId});
 
-		SearchPortlets.searchEmbedded(searchTerm = "apple");
+		SearchPage.searchEmbedded(searchTerm = "apple");
 
-		SearchResultPortlet.viewSearchResultNotPresent(
+		SearchResults.viewSearchResultNotPresent(
 			searchAssetTitle = "apple",
 			searchAssetType = "Web Content Article");
 	}
 
-	test ApplyBlueprintJSONToSearchViaLLSO {
-		property test.liferay.virtual.instance = "false";
-
-		SearchPortlets.addWidgets(searchPortletList = "Search Insights,Low Level Search Options");
-
-		Search.openSearchPage();
-
-		var blueprintJson = '''{"configuration":{"generalConfiguration":{"includeResponseString":false}}}''';
-
-		SearchPortlets.configureLowLevelSearchOptions(
-			attributesKey = "search.experiences.blueprint.json",
-			attributesValue = ${blueprintJson});
-
-		SearchPortlets.searchEmbedded(searchTerm = "test");
-
-		AssertElementNotPresent(
-			key_text = "hits",
-			locator1 = "SearchResults#SEARCH_INSIGHTS_WIDGET_RESPONSE_QUERY");
-	}
-
+	@priority = 3
 	test ApplyBlueprintToContentPageViaBlueprintsOptions {
 		JSONBlog.addEntry(
 			entryContent = "",
@@ -220,13 +206,15 @@ definition {
 			pageName = "Content Search Page",
 			siteName = "Guest");
 
-		SearchPortlets.searchWidget(searchTerm = "apple");
+		SearchPage.searchWidget(searchTerm = "apple");
 
-		SearchResultPortlet.viewSearchResultsSpecificOrder(resultsList = "WC Title,apple apple apple");
+		SearchResults.viewSearchResultsSpecificOrder(resultsList = "WC Title,apple apple apple");
 	}
 
+	@priority = 3
 	test ApplyBlueprintToContentPageViaLLSO {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONBlog.addEntry(
 			entryContent = "",
@@ -277,7 +265,7 @@ definition {
 
 		var blueprintId = Blueprints.getBlueprintID(title = "Test Blueprint");
 
-		SearchPortlets.configureLowLevelSearchOptions(
+		SearchPage.configureLowLevelSearchOptions(
 			attributesKey = "search.experiences.blueprint.id",
 			attributesValue = ${blueprintId});
 
@@ -287,9 +275,9 @@ definition {
 			pageName = "Content Search Page",
 			siteName = "Guest");
 
-		SearchPortlets.searchWidget(searchTerm = "apple");
+		SearchPage.searchWidget(searchTerm = "apple");
 
-		SearchResultPortlet.viewSearchResultsSpecificOrder(resultsList = "WC Title,apple apple apple");
+		SearchResults.viewSearchResultsSpecificOrder(resultsList = "WC Title,apple apple apple");
 	}
 
 	@description = "This is a use case for LPS-177882. Can apply blueprint to blueprint options widget in a non-root portal context."
@@ -300,6 +288,7 @@ definition {
 		property skip.clean-app-server-deploy-dir = "true";
 		property test.assert.warning.exceptions = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONBlog.addEntry(
 			entryContent = "",
@@ -328,15 +317,16 @@ definition {
 
 		PortletEntry.save();
 
-		Search.openSearchPage();
+		SearchPage.openSearchPage();
 
 		Blueprints.applyBlueprintViaOptionsWidget(blueprintTitle = "Test Blueprint");
 
-		SearchPortlets.searchWidget(searchTerm = "apple");
+		SearchPage.searchWidget(searchTerm = "apple");
 
-		SearchResultPortlet.viewSearchResultsSpecificOrder(resultsList = "WC Title,apple apple apple");
+		SearchResults.viewSearchResultsSpecificOrder(resultsList = "WC Title,apple apple apple");
 	}
 
+	@priority = 3
 	test ApplyBlueprintWithOOTBElement {
 		Blueprints.openBlueprintsAdmin();
 
@@ -356,7 +346,7 @@ definition {
 
 		PortletEntry.save();
 
-		Search.openSearchPage();
+		SearchPage.openSearchPage();
 
 		JSONWebcontent.addWebContent(
 			content = "Liferay",
@@ -367,28 +357,26 @@ definition {
 			entryContent = "Liferay Liferay",
 			entryTitle = "Liferay Blogs Entry");
 
-		SearchPortlets.searchEmbedded(searchTerm = "liferay");
+		SearchPage.searchEmbedded(searchTerm = "liferay");
 
-		SearchResultPortlet.viewSearchResultsSpecificOrder(resultsList = "Liferay Blogs Entry,Liferay Web Content");
+		SearchResults.viewSearchResultsSpecificOrder(resultsList = "Liferay Blogs Entry,Liferay Web Content");
 
 		Blueprints.applyBlueprintViaOptionsWidget(blueprintTitle = "Test Blueprint");
 
-		SearchPortlets.searchEmbedded(searchTerm = "liferay");
+		SearchPage.searchEmbedded(searchTerm = "liferay");
 
-		SearchResultPortlet.viewSearchResultsSpecificOrder(resultsList = "Liferay Web Content,Liferay Blogs Entry");
+		SearchResults.viewSearchResultsSpecificOrder(resultsList = "Liferay Web Content,Liferay Blogs Entry");
 	}
 
 	@description = "This is a use case for LPS-147264."
+	@priority = 3
 	test ApplyUserCustomFieldVariableToCustomElement {
 		JSONWebcontent.addWebContent(
 			content = "",
 			groupName = "Guest",
 			title = "Employee eyes only");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Custom Fields");
+		CustomFields.openCustomFieldAdmin();
 
 		CustomFields.addCP(
 			customFieldName = "Employee",
@@ -401,10 +389,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		UserNavigator.gotoUser(userScreenName = "usersn");
 
@@ -484,13 +469,13 @@ definition {
 
 		PortletEntry.save();
 
-		Search.openSearchPage();
+		SearchPage.openSearchPage();
 
 		Blueprints.applyBlueprintViaOptionsWidget(blueprintTitle = "Test Blueprint");
 
-		SearchPortlets.searchEmbedded(searchTerm = "Employee");
+		SearchPage.searchEmbedded(searchTerm = "Employee");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Employee eyes only",
 			searchAssetType = "Web Content Article");
 
@@ -498,14 +483,15 @@ definition {
 			userLoginEmailAddress = "userea@liferay.com",
 			userLoginFullName = "userfn userln");
 
-		SearchPortlets.searchEmbedded(searchTerm = "Employee");
+		SearchPage.searchEmbedded(searchTerm = "Employee");
 
-		SearchResultPortlet.viewSearchResultNotPresent(
+		SearchResults.viewSearchResultNotPresent(
 			searchAssetTitle = "Employee eyes only",
 			searchAssetType = "Web Content Article");
 	}
 
 	@description = "This is a use case for LPS-151209."
+	@priority = 3
 	test AssertBlueprintsPreviewResultsPresentWithSkippedElement {
 		Blueprints.openBlueprintsAdmin();
 
@@ -528,8 +514,10 @@ definition {
 			locator1 = "Blueprints#BLUEPRINTS_PREVIEW_SEARCH_RESULT_TITLE");
 	}
 
+	@priority = 3
 	test AssertBlueprintStillAppliedAfterRename {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONWebcontent.addWebContent(
 			content = "apple apple apple",
@@ -555,13 +543,13 @@ definition {
 
 		PortletEntry.save();
 
-		Search.openSearchPage();
+		SearchPage.openSearchPage();
 
 		Blueprints.applyBlueprintViaOptionsWidget(blueprintTitle = "Test Blueprint");
 
-		SearchPortlets.searchEmbedded(searchTerm = "apple");
+		SearchPage.searchEmbedded(searchTerm = "apple");
 
-		SearchResultPortlet.viewSearchResultsSpecificOrder(resultsList = "WC Longer,WC Shorter");
+		SearchResults.viewSearchResultsSpecificOrder(resultsList = "WC Longer,WC Shorter");
 
 		Blueprints.openBlueprintsAdmin();
 
@@ -575,14 +563,15 @@ definition {
 
 		PortletEntry.save();
 
-		Search.openSearchPage();
+		SearchPage.openSearchPage();
 
-		SearchPortlets.searchEmbedded(searchTerm = "apple");
+		SearchPage.searchEmbedded(searchTerm = "apple");
 
-		SearchResultPortlet.viewSearchResultsSpecificOrder(resultsList = "WC Longer,WC Shorter");
+		SearchResults.viewSearchResultsSpecificOrder(resultsList = "WC Longer,WC Shorter");
 	}
 
 	@description = "This is a use case for LPS-136868."
+	@priority = 3
 	test AssertCommerceItemsSearchableViaPreview {
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
@@ -597,6 +586,7 @@ definition {
 			locator1 = "Blueprints#BLUEPRINTS_PREVIEW_SEARCH_RESULT_TITLE");
 	}
 
+	@priority = 3
 	test AssertDisabledQueryElementNotAppliedToSearch {
 		JSONWebcontent.addWebContent(
 			content = "",
@@ -625,13 +615,13 @@ definition {
 
 		PortletEntry.save();
 
-		Search.openSearchPage();
+		SearchPage.openSearchPage();
 
 		Blueprints.applyBlueprintViaOptionsWidget(blueprintTitle = "Test Blueprint");
 
-		SearchPortlets.searchEmbedded(searchTerm = "apple");
+		SearchPage.searchEmbedded(searchTerm = "apple");
 
-		SearchResultPortlet.viewSearchResultsSpecificOrder(resultsList = "gala,apple apple apple");
+		SearchResults.viewSearchResultsSpecificOrder(resultsList = "gala,apple apple apple");
 
 		Blueprints.openBlueprintsAdmin();
 
@@ -643,11 +633,11 @@ definition {
 
 		PortletEntry.save();
 
-		Search.openSearchPage();
+		SearchPage.openSearchPage();
 
-		SearchPortlets.searchEmbedded(searchTerm = "apple");
+		SearchPage.searchEmbedded(searchTerm = "apple");
 
-		SearchResultPortlet.viewSearchResultsSpecificOrder(resultsList = "apple apple apple,gala");
+		SearchResults.viewSearchResultsSpecificOrder(resultsList = "apple apple apple,gala");
 	}
 
 	@description = "This is a use case for LPS-185939 - Federated search requests should inherit parent request's search context properties."
@@ -692,15 +682,15 @@ definition {
 		}
 
 		task ("Create a Content Page with Search widgets") {
-			Search.openSearchPage();
+			SearchPage.openSearchPage();
 
-			SearchPortlets.configureEmbeddedSearchBar(
+			SearchPage.configureEmbeddedSearchBar(
 				federatedSearchKey = "key",
 				searchScope = "Everything");
 
-			SearchResultPortlet.configureSearchResults(federatedSearchKey = "key");
+			SearchResults.configureSearchResults(federatedSearchKey = "key");
 
-			SearchPortlets.configureSearchOptions(
+			SearchPage.configureSearchOptions(
 				allowEmptySearches = "true",
 				federatedSearchKey = "key");
 
@@ -714,16 +704,77 @@ definition {
 				userLoginEmailAddress = "userea@liferay.com",
 				userLoginFullName = "userfn userln");
 
-			Search.openSearchPage();
+			SearchPage.openSearchPage();
 
-			SearchResultPortlet.viewSearchResults(
+			SearchResults.viewSearchResults(
 				searchAssetTitle = "WC WebContent Title",
 				searchAssetType = "Web Content Article");
 
-			SearchResultPortlet.viewMultipleSearchResultsNotPresent(noResultsList = "astronaut.png/Document,earth.png/Document,moon.png/Document");
+			SearchResults.viewMultipleSearchResultsNotPresent(noResultsList = "astronaut.png,earth.png,moon.png");
 		}
 	}
 
+	@description = "This is a use case for LPS-192211."
+	@priority = 3
+	test AssertGlobalCategoryVisibleInHideContentAssetCategory {
+		task ("Add a global vocabulary and with a category") {
+			JSONCategory.addVocabulary(
+				groupName = "Global",
+				title = "Test Vocabulary");
+
+			var categoryID = JSONCategory.addCategory(
+				groupName = "Global",
+				title = "Test Category",
+				vocabularyName = "Test Vocabulary");
+		}
+
+		task ("Create a blueprint and add the 'Hide Contents in a Category' element") {
+			Blueprints.openBlueprintsAdmin();
+
+			Blueprints.createBlueprint(title = "Test Blueprint");
+
+			Blueprints.addElementViaDescription(
+				element = "Hide contents in the given category.",
+				searchTerm = "Hide Contents in a Category");
+		}
+
+		task ("Assert that the global category is present when searching in the text field") {
+			Type(
+				key_elementName = "Hide Contents in a Category",
+				key_fieldLabel = "Asset Category Name (ID)",
+				locator1 = "Blueprints#BLUEPRINTS_ADDED_ELEMENT_INPUT_FIELD",
+				value1 = "Test");
+
+			AssertElementPresent(
+				key_assetCategory = "Test Category (ID: ${categoryID})",
+				locator1 = "Blueprints#BLUEPRINTS_ASSET_CATEGORY_FIELD_AUTOCOMPLETE_DROPDOWN_ITEM");
+		}
+
+		task ("Assert that the global category is present when opening the select modal frame") {
+			Click(locator1 = "Button#SELECT");
+
+			SelectFrameTop();
+
+			Click(
+				key_dropdownName = "Select Site",
+				locator1 = "Blueprints#BLUEPRINTS_ADDED_ELEMENT_GENERIC_DROPDOWN");
+
+			Click.clickNoMouseOver(
+				key_dropdownName = "Select Site",
+				key_option = "Global",
+				locator1 = "Blueprints#BLUEPRINTS_ADDED_ELEMENT_GENERIC_DROPDOWN_OPTION");
+
+			Click(
+				key_treeItem = "Test Vocabulary",
+				locator1 = "Blueprints#BLUEPRINTS_ASSET_CATEGORY_TREE_VIEW_ITEM");
+
+			AssertElementPresent(
+				key_treeItem = "Test Category (ID: ${categoryID})",
+				locator1 = "Blueprints#BLUEPRINTS_ASSET_CATEGORY_TREE_VIEW_ITEM_SELECT");
+		}
+	}
+
+	@priority = 3
 	test AssertLocalizedFieldsAddLocaleDropdown {
 		Blueprints.openBlueprintsAdmin();
 
@@ -743,6 +794,7 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-144359."
+	@priority = 3
 	test AssertNoBlueprintsPreviewResultsDueToEmptyRequiredFields {
 		Blueprints.openBlueprintsAdmin();
 
@@ -761,6 +813,7 @@ definition {
 		Alert.viewRequiredField();
 	}
 
+	@priority = 3
 	test AssertNonAdminsCannotAccessBlueprintsPortlet {
 		JSONUser.addUser(
 			userEmailAddress = "userea@liferay.com",
@@ -780,6 +833,7 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-132856."
+	@priority = 3
 	test AssertTitleAndDescriptionNoXSS {
 		Blueprints.openBlueprintsAdmin();
 
@@ -797,7 +851,7 @@ definition {
 
 		AssertAlertNotPresent();
 
-		Search.openSearchPage();
+		SearchPage.openSearchPage();
 
 		Blueprints.applyBlueprintViaOptionsWidget(blueprintTitle = "<script>alert(123);</script>");
 
@@ -806,6 +860,7 @@ definition {
 		AssertAlertNotPresent();
 	}
 
+	@priority = 3
 	test AssertUsingCopiedElementJSONWithinCustomElement {
 		JSONBlog.addEntry(
 			entryContent = "",
@@ -852,7 +907,7 @@ definition {
 			key_text = "Cancel",
 			locator1 = "Link#ANY");
 
-		Confirm();
+		Confirm(value1 = "null");
 
 		Blueprints.createElement(
 			elementSourceJson = ${customElementJson},
@@ -866,15 +921,16 @@ definition {
 
 		PortletEntry.save();
 
-		Search.openSearchPage();
+		SearchPage.openSearchPage();
 
 		Blueprints.applyBlueprintViaOptionsWidget(blueprintTitle = "Test Blueprint");
 
-		SearchPortlets.searchEmbedded(searchTerm = "apple");
+		SearchPage.searchEmbedded(searchTerm = "apple");
 
-		SearchResultPortlet.viewSearchResultsSpecificOrder(resultsList = "WC Title,apple apple apple");
+		SearchResults.viewSearchResultsSpecificOrder(resultsList = "WC Title,apple apple apple");
 	}
 
+	@priority = 3
 	test AssertUsingCopiedElementJSONWithinCustomJSONElement {
 		JSONBlog.addEntry(
 			entryContent = "",
@@ -927,15 +983,16 @@ definition {
 
 		PortletEntry.save();
 
-		Search.openSearchPage();
+		SearchPage.openSearchPage();
 
 		Blueprints.applyBlueprintViaOptionsWidget(blueprintTitle = "Test Blueprint");
 
-		SearchPortlets.searchEmbedded(searchTerm = "apple");
+		SearchPage.searchEmbedded(searchTerm = "apple");
 
-		SearchResultPortlet.viewSearchResultsSpecificOrder(resultsList = "WC Title,apple apple apple");
+		SearchResults.viewSearchResultsSpecificOrder(resultsList = "WC Title,apple apple apple");
 	}
 
+	@priority = 3
 	test BoostCustomLiferayObjectType {
 		ObjectAdmin.addObjectViaAPI(
 			labelName = "Custom Object 501",
@@ -970,11 +1027,11 @@ definition {
 			groupName = "Guest",
 			title = "red apple");
 
-		Search.openSearchPage();
+		SearchPage.openSearchPage();
 
-		SearchPortlets.searchEmbedded(searchTerm = "red apple");
+		SearchPage.searchEmbedded(searchTerm = "red apple");
 
-		SearchResultPortlet.viewSearchResultsSpecificOrder(resultsList = "red apple,reddish apple");
+		SearchResults.viewSearchResultsSpecificOrder(resultsList = "red apple,reddish apple");
 
 		Blueprints.openBlueprintsAdmin();
 
@@ -1017,15 +1074,16 @@ definition {
 
 		PortletEntry.save();
 
-		Search.openSearchPage();
+		SearchPage.openSearchPage();
 
 		Blueprints.applyBlueprintViaOptionsWidget(blueprintTitle = "Boost Custom Object Blueprint");
 
-		SearchPortlets.searchEmbedded(searchTerm = "red apple");
+		SearchPage.searchEmbedded(searchTerm = "red apple");
 
-		SearchResultPortlet.viewSearchResultsSpecificOrder(resultsList = "reddish apple,red apple");
+		SearchResults.viewSearchResultsSpecificOrder(resultsList = "reddish apple,red apple");
 	}
 
+	@priority = 3
 	test BoostWithCustomElasticsearchQuery {
 		JSONWebcontent.addWebContent(
 			content = "Los Angeles",
@@ -1065,21 +1123,22 @@ definition {
 
 		PortletEntry.save();
 
-		Search.openSearchPage();
+		SearchPage.openSearchPage();
 
 		Blueprints.applyBlueprintViaOptionsWidget(blueprintTitle = "Test Blueprint");
 
-		SearchPortlets.searchEmbedded(searchTerm = "food");
+		SearchPage.searchEmbedded(searchTerm = "food");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Delicious Food",
 			searchAssetType = "Web Content Article");
 
-		SearchResultPortlet.viewSearchResultNotPresent(
+		SearchResults.viewSearchResultNotPresent(
 			searchAssetTitle = "Good Food",
 			searchAssetType = "Web Content Article");
 	}
 
+	@priority = 3
 	test CancelChangesToBlueprintForm {
 		Blueprints.openBlueprintsAdmin();
 
@@ -1116,7 +1175,7 @@ definition {
 			key_text = "Cancel",
 			locator1 = "Link#ANY");
 
-		Confirm();
+		Confirm(value1 = "null");
 
 		Blueprints.gotoBlueprint(title = "Test Blueprint");
 
@@ -1135,6 +1194,7 @@ definition {
 		AssertTextNotPresent(value1 = "aggs");
 	}
 
+	@priority = 3
 	test CancelChangesToQuerySettings {
 		Blueprints.openBlueprintsAdmin();
 
@@ -1150,13 +1210,14 @@ definition {
 			key_text = "Cancel",
 			locator1 = "Link#ANY");
 
-		Confirm();
+		Confirm(value1 = "null");
 
 		Blueprints.gotoBlueprint(title = "Test Blueprint");
 
 		AssertElementPresent(locator1 = "Blueprints#BLUEPRINTS_ADDED_ELEMENTS_EMPTY");
 	}
 
+	@priority = 3
 	test CopyCustomElement {
 		Blueprints.openBlueprintsAdmin();
 
@@ -1190,6 +1251,7 @@ definition {
 			value1 = "Copy Element");
 	}
 
+	@priority = 3
 	test CopyElementJSONViaBlueprintsQueryBuilder {
 		Blueprints.openBlueprintsAdmin();
 
@@ -1209,9 +1271,10 @@ definition {
 
 		PortletEntry.save();
 
-		SearchPortlets.viewCopiedContent(text = "clauses");
+		WebContent.viewClipboardContent(text = "clauses");
 	}
 
+	@priority = 3
 	test CopyElementJSONViaEditElementPreview {
 		Blueprints.openBlueprintsAdmin();
 
@@ -1231,10 +1294,11 @@ definition {
 
 		Click.javaScriptClick(locator1 = "Button#COPY");
 
-		SearchPortlets.viewCopiedContent(text = "queryConfiguration");
+		WebContent.viewClipboardContent(text = "queryConfiguration");
 	}
 
 	@description = "This is a use case for LPS-165923."
+	@priority = 3
 	test CopyRawRequestViaBlueprintsPreview {
 		Blueprints.openBlueprintsAdmin();
 
@@ -1250,9 +1314,10 @@ definition {
 
 		Click.javaScriptClick(locator1 = "Button#COPY");
 
-		SearchPortlets.viewCopiedContent(text = "hits");
+		WebContent.viewClipboardContent(text = "hits");
 	}
 
+	@priority = 3
 	test CopyRawResponseViaBlueprintsPreview {
 		Blueprints.openBlueprintsAdmin();
 
@@ -1268,9 +1333,10 @@ definition {
 
 		Click.javaScriptClick(locator1 = "Button#COPY");
 
-		SearchPortlets.viewCopiedContent(text = "hits");
+		WebContent.viewClipboardContent(text = "hits");
 	}
 
+	@priority = 3
 	test CopyScoreExplanationViaBlueprintsPreview {
 		Blueprints.openBlueprintsAdmin();
 
@@ -1286,9 +1352,10 @@ definition {
 
 		Click.javaScriptClick(locator1 = "Button#COPY");
 
-		SearchPortlets.viewCopiedContent(text = "PerFieldSimilarity");
+		WebContent.viewClipboardContent(text = "PerFieldSimilarity");
 	}
 
+	@priority = 3
 	test CreateBlueprint {
 		Blueprints.openBlueprintsAdmin();
 
@@ -1299,6 +1366,7 @@ definition {
 		Blueprints.viewEntryTitle(title = "Test Blueprint");
 	}
 
+	@priority = 3
 	test CreateElement {
 		Blueprints.openBlueprintsAdmin();
 
@@ -1307,6 +1375,7 @@ definition {
 		Blueprints.viewEntryTitle(title = "Test Element");
 	}
 
+	@priority = 3
 	test CreateElementWithDescription {
 		Blueprints.openBlueprintsAdmin();
 
@@ -1333,6 +1402,7 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-146582."
+	@priority = 3
 	test DefaultHighlightAppliedWithBlueprints {
 		Blueprints.openBlueprintsAdmin();
 
@@ -1345,25 +1415,26 @@ definition {
 			groupName = "Guest",
 			title = "WC Title");
 
-		Search.openSearchPage();
+		SearchPage.openSearchPage();
 
 		Blueprints.applyBlueprintViaOptionsWidget(blueprintTitle = "Test Blueprint");
 
-		SearchPortlets.searchEmbedded(searchTerm = "WC Title");
+		SearchPage.searchEmbedded(searchTerm = "WC Title");
 
 		AssertCssValue(
 			key_searchAssetTitle = "WC",
-			locator1 = "SearchResults#ASSET_ENTRY_TABLE_TITLE_SPECIFIC_HIGHLIGHT",
+			locator1 = "SearchPage#RESULT_TITLE_SPECIFIC_HIGHLIGHT",
 			locator2 = "background-color",
 			value1 = "rgba(252, 248, 227, 1)");
 
 		AssertCssValue(
 			key_searchAssetTitle = "Title",
-			locator1 = "SearchResults#ASSET_ENTRY_TABLE_TITLE_SPECIFIC_HIGHLIGHT",
+			locator1 = "SearchPage#RESULT_TITLE_SPECIFIC_HIGHLIGHT",
 			locator2 = "background-color",
 			value1 = "rgba(252, 248, 227, 1)");
 	}
 
+	@priority = 3
 	test DefineBlueprintsRolePermissions {
 		JSONRole.addRegularRole(
 			roleKey = "Search Blueprints Admin",
@@ -1433,6 +1504,7 @@ definition {
 		Blueprints.viewNoEntry(title = "Edited Blueprint");
 	}
 
+	@priority = 3
 	test DefineElementsRolePermissions {
 		JSONRole.addRegularRole(
 			roleKey = "Search Elements Admin",
@@ -1510,6 +1582,7 @@ definition {
 		Blueprints.viewNoEntry(element = "Edited Element");
 	}
 
+	@priority = 3
 	test DeleteBlueprint {
 		Blueprints.openBlueprintsAdmin();
 
@@ -1522,6 +1595,7 @@ definition {
 		Blueprints.viewNoEntry(title = "Test Blueprint");
 	}
 
+	@priority = 3
 	test DeleteElement {
 		Blueprints.openBlueprintsAdmin();
 
@@ -1532,6 +1606,7 @@ definition {
 		Blueprints.viewNoEntry(title = "Test Element");
 	}
 
+	@priority = 3
 	test DownloadElementJSONViaBlueprintsQueryBuilder {
 		Blueprints.openBlueprintsAdmin();
 
@@ -1552,6 +1627,7 @@ definition {
 			text = "clauses");
 	}
 
+	@priority = 3
 	test DownloadElementJSONViaElementsEditPreview {
 		Blueprints.openBlueprintsAdmin();
 
@@ -1576,6 +1652,7 @@ definition {
 			text = "queryConfiguration");
 	}
 
+	@priority = 3
 	test DownloadRawResponseViaBlueprintsPreview {
 		Blueprints.openBlueprintsAdmin();
 
@@ -1596,6 +1673,7 @@ definition {
 			text = "hits");
 	}
 
+	@priority = 3
 	test DownloadScoreExplanationViaBlueprintsPreview {
 		Blueprints.openBlueprintsAdmin();
 
@@ -1616,6 +1694,7 @@ definition {
 			text = "PerFieldSimilarity");
 	}
 
+	@priority = 3
 	test EditBlueprintDescription {
 		Blueprints.openBlueprintsAdmin();
 
@@ -1639,6 +1718,7 @@ definition {
 			value1 = "Edited Description");
 	}
 
+	@priority = 3
 	test EditBlueprintTitle {
 		Blueprints.openBlueprintsAdmin();
 
@@ -1661,6 +1741,7 @@ definition {
 		Blueprints.viewNoEntry(title = "Test Blueprint");
 	}
 
+	@priority = 3
 	test ExportImportBlueprint {
 		Blueprints.openBlueprintsAdmin();
 
@@ -1752,6 +1833,7 @@ definition {
 		AssertTextPresent(value1 = "aggs");
 	}
 
+	@priority = 3
 	test ExportImportElement {
 		Blueprints.openBlueprintsAdmin();
 
@@ -1801,6 +1883,7 @@ definition {
 		AssertTextPresent(value1 = "Import Element");
 	}
 
+	@priority = 3
 	test FederatedSearchKeyAppliesToBlueprintsOptions {
 		JSONDocument.addFile(
 			dmDocumentTitle = "Apple",
@@ -1839,27 +1922,28 @@ definition {
 
 		PortletEntry.save();
 
-		Search.openSearchPage();
+		SearchPage.openSearchPage();
 
 		Blueprints.applyBlueprintViaOptionsWidget(blueprintTitle = "Test Blueprint");
 
 		Blueprints.configureFederatedSearchKeyForOptionsWidget(federatedSearchKey = "key");
 
-		SearchPortlets.configureSearchBarWidget(federatedSearchKey = "key");
+		SearchPage.configureSearchBarWidget(federatedSearchKey = "key");
 
-		SearchResultPortlet.configureSearchResults(federatedSearchKey = "key");
+		SearchResults.configureSearchResults(federatedSearchKey = "key");
 
-		SearchPortlets.searchWidget(searchTerm = "apple");
+		SearchPage.searchWidget(searchTerm = "apple");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Apple Pie",
 			searchAssetType = "Web Content Article");
 
-		SearchResultPortlet.viewSearchResultNotPresent(
+		SearchResults.viewSearchResultNotPresent(
 			searchAssetTitle = "Apple",
 			searchAssetType = "Document");
 	}
 
+	@priority = 3
 	test HideAndShowAddElementsSidebar {
 		Blueprints.openBlueprintsAdmin();
 
@@ -1892,6 +1976,7 @@ definition {
 		AssertVisible(locator1 = "Blueprints#BLUEPRINTS_ADD_ELEMENTS_SIDEBAR_HEADER");
 	}
 
+	@priority = 3
 	test HideWebContentViaCustomElement {
 		JSONWebcontent.addWebContent(
 			content = "",
@@ -1976,21 +2061,22 @@ definition {
 
 		PortletEntry.save();
 
-		Search.openSearchPage();
+		SearchPage.openSearchPage();
 
 		Blueprints.applyBlueprintViaOptionsWidget(blueprintTitle = "Test Blueprint");
 
-		SearchPortlets.searchEmbedded(searchTerm = "Content");
+		SearchPage.searchEmbedded(searchTerm = "Content");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Show This Content",
 			searchAssetType = "Web Content Article");
 
-		SearchResultPortlet.viewSearchResultNotPresent(
+		SearchResults.viewSearchResultNotPresent(
 			searchAssetTitle = "Hide This Content",
 			searchAssetType = "Web Content Article");
 	}
 
+	@priority = 3
 	test ModifyBlueprintsAdminTableFields {
 		Blueprints.openBlueprintsAdmin();
 
@@ -2043,6 +2129,7 @@ definition {
 		}
 	}
 
+	@priority = 3
 	test ModifyIndexerClausesToggle {
 		Blueprints.openBlueprintsAdmin();
 
@@ -2073,6 +2160,7 @@ definition {
 		AssertChecked.assertCheckedNotVisible(locator1 = "Blueprints#BLUEPRINTS_SEARCH_FRAMEWORK_INDEXER_CLAUSES_ON_OFF_TOGGLE");
 	}
 
+	@priority = 3
 	test NavigateToEditPageViaMenu {
 		Blueprints.openBlueprintsAdmin();
 
@@ -2087,6 +2175,7 @@ definition {
 		ControlMenu.viewHeaderTitle(headerTitle = "Edit Blueprint");
 	}
 
+	@priority = 3
 	test NavigateToEditPageViaTitleLink {
 		Blueprints.openBlueprintsAdmin();
 
@@ -2099,6 +2188,7 @@ definition {
 		ControlMenu.viewHeaderTitle(headerTitle = "Edit Blueprint");
 	}
 
+	@priority = 3
 	test PaginateBlueprintsAdmin {
 		Blueprints.openBlueprintsAdmin();
 
@@ -2183,6 +2273,7 @@ definition {
 			locator1 = "Blueprints#BLUEPRINTS_ADMIN_NTH_ENTRY");
 	}
 
+	@priority = 3
 	test PaginateBlueprintsPreview {
 		for (var count : list "1,2,3,4,5,6,7,8,9,10,11") {
 			JSONWebcontent.addWebContent(
@@ -2240,6 +2331,7 @@ definition {
 			locator1 = "Blueprints#BLUEPRINTS_PREVIEW_SEARCH_RESULT_SPECIFIC_RANKING");
 	}
 
+	@priority = 3
 	test PaginateElementsAdmin {
 		Blueprints.openBlueprintsAdmin();
 
@@ -2326,6 +2418,7 @@ definition {
 			locator1 = "Blueprints#BLUEPRINTS_ADMIN_NTH_ENTRY");
 	}
 
+	@priority = 3
 	test RemoveElementAddedToQueryBuilder {
 		Blueprints.openBlueprintsAdmin();
 
@@ -2351,6 +2444,7 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-143567."
+	@priority = 3
 	test SaveAndEditCustomJSONElement {
 		JSONWebcontent.addWebContent(
 			content = "",
@@ -2443,6 +2537,7 @@ definition {
 			locator1 = "Blueprints#BLUEPRINTS_ADDED_ELEMENT");
 	}
 
+	@priority = 3
 	test SearchBlueprintsAdminTable {
 		Blueprints.openBlueprintsAdmin();
 
@@ -2469,6 +2564,7 @@ definition {
 		Blueprints.viewNoEntry(title = "Blueprint Two");
 	}
 
+	@priority = 3
 	test SearchElementsAdminTable {
 		Blueprints.openBlueprintsAdmin();
 
@@ -2499,6 +2595,7 @@ definition {
 		Blueprints.viewNoEntry(title = "Element Two");
 	}
 
+	@priority = 3
 	test SearchViaBlueprintsPreview {
 		Blueprints.openBlueprintsAdmin();
 
@@ -2511,6 +2608,7 @@ definition {
 			locator1 = "Blueprints#BLUEPRINTS_PREVIEW_SEARCH_RESULT_TITLE");
 	}
 
+	@priority = 3
 	test SearchViaBlueprintsPreviewWithAttributes {
 		JSONCategory.addVocabulary(
 			groupName = "Guest",
@@ -2582,6 +2680,7 @@ definition {
 			value1 = "gala");
 	}
 
+	@priority = 3
 	test SearchViaBlueprintsPreviewWithNoResults {
 		Blueprints.openBlueprintsAdmin();
 
@@ -2592,6 +2691,7 @@ definition {
 		AssertElementPresent(locator1 = "Blueprints#BLUEPRINTS_PREVIEW_SEARCH_RESULT_EMPTY");
 	}
 
+	@priority = 3
 	test SearchWithCopiedBlueprint {
 		JSONBlog.addEntry(
 			entryContent = "",
@@ -2639,6 +2739,7 @@ definition {
 			value1 = "apple apple apple");
 	}
 
+	@priority = 3
 	test SearchWithCopiedOOTBElement {
 		JSONWebcontent.addWebContent(
 			content = "",
@@ -2689,6 +2790,7 @@ definition {
 			locator1 = "Blueprints#BLUEPRINTS_PREVIEW_SEARCH_RESULT_TITLE");
 	}
 
+	@priority = 3
 	test SearchWithSelectedAssetType {
 		JSONWebcontent.addWebContent(
 			content = "",
@@ -2739,6 +2841,7 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-145977."
+	@priority = 3
 	test SearchWithUsersLanguageOption {
 		JSONWebcontent.addWebContent(
 			content = "",
@@ -2758,6 +2861,7 @@ definition {
 			locator1 = "Blueprints#BLUEPRINTS_PREVIEW_SEARCH_RESULT_TITLE");
 	}
 
+	@priority = 3
 	test SortBlueprintsAdminTable {
 		Blueprints.openBlueprintsAdmin();
 
@@ -2803,6 +2907,7 @@ definition {
 	}
 
 	@description = "LPS-172131 - A user can use Blueprints to sort by custom object fields"
+	@priority = 3
 	test SortByCustomObjectFieldsViaBlueprintsConfig {
 		task ("Create a site scoped object and add the following custom fields to it: 'title' as a keyword, 'siteID' as an integer, and 'date' as a date") {
 			ObjectAdmin.addObjectViaAPI(
@@ -3040,6 +3145,7 @@ definition {
 		}
 	}
 
+	@priority = 3
 	test SortElementsAdminTable {
 		Blueprints.openBlueprintsAdmin();
 
@@ -3207,6 +3313,7 @@ definition {
 		}
 	}
 
+	@priority = 3
 	test ViewBlueprintEditTitle {
 		Blueprints.openBlueprintsAdmin();
 
@@ -3218,6 +3325,7 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-162659."
+	@priority = 3
 	test ViewBlueprintLocalizationWithinBlueprintsOptionsWidget {
 		Blueprints.openBlueprintsAdmin();
 
@@ -3239,9 +3347,9 @@ definition {
 
 		PortletEntry.save();
 
-		SearchPortlets.addWidgets(searchPortletList = "Blueprints Options");
+		SearchPage.addWidgets(searchPortletList = "Blueprints Options");
 
-		Search.openSearchPage(locale = "es-ES");
+		SearchPage.openSearchPage(locale = "es-ES");
 
 		Portlet.gotoPortletOptions(
 			portletName = "Opciones de planos",
@@ -3259,6 +3367,7 @@ definition {
 			value1 = "Descripción en Español");
 	}
 
+	@priority = 3
 	test ViewBlueprintsAdminBulkDeletion {
 		Blueprints.openBlueprintsAdmin();
 
@@ -3333,6 +3442,7 @@ definition {
 		Blueprints.viewNoEntry(title = "Test Blueprint 4");
 	}
 
+	@priority = 3
 	test ViewBlueprintsAdminTableValues {
 		Blueprints.openBlueprintsAdmin();
 
@@ -3383,6 +3493,7 @@ definition {
 			value1 = ${currentDate});
 	}
 
+	@priority = 3
 	test ViewBlueprintsConfigurationValidation {
 		Blueprints.openBlueprintsAdmin();
 
@@ -3443,7 +3554,7 @@ definition {
 			key_text = "Cancel",
 			locator1 = "Link#ANY");
 
-		Confirm();
+		Confirm(value1 = "null");
 
 		Blueprints.gotoBlueprint(title = "Test Blueprint");
 
@@ -3452,6 +3563,7 @@ definition {
 		AssertTextNotPresent(value1 = "invalid");
 	}
 
+	@priority = 3
 	test ViewBlueprintsPreviewLocalizedResults {
 		Blueprints.openBlueprintsAdmin();
 
@@ -3498,6 +3610,7 @@ definition {
 			locator1 = "Blueprints#BLUEPRINTS_PREVIEW_SEARCH_RESULT_TITLE");
 	}
 
+	@priority = 3
 	test ViewBlueprintsPreviewValidationForInvalidJSONProperty {
 		Blueprints.openBlueprintsAdmin();
 
@@ -3521,6 +3634,7 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-134492."
+	@priority = 3
 	test ViewBlueprintTitleAndDescriptionLocalization {
 		Blueprints.openBlueprintsAdmin();
 
@@ -3570,6 +3684,7 @@ definition {
 			value1 = "Description in English");
 	}
 
+	@priority = 3
 	test ViewClauseContributorsFilterAndSort {
 		Blueprints.openBlueprintsAdmin();
 
@@ -3770,6 +3885,7 @@ definition {
 			value1 = "User Keyword Query Contributor");
 	}
 
+	@priority = 3
 	test ViewClauseContributorsUI {
 		Blueprints.openBlueprintsAdmin();
 
@@ -3858,6 +3974,7 @@ definition {
 			locator1 = "Blueprints#BLUEPRINTS_CLAUSE_CONTRIBUTOR_NTH_ITEM");
 	}
 
+	@priority = 3
 	test ViewCollapsibleAddedElements {
 		Blueprints.openBlueprintsAdmin();
 
@@ -3906,6 +4023,7 @@ definition {
 		AssertElementNotPresent(locator1 = "Blueprints#BLUEPRINTS_ADDED_ELEMENT_EXPAND_BUTTON");
 	}
 
+	@priority = 3
 	test ViewCopiedBlueprintContent {
 		Blueprints.openBlueprintsAdmin();
 
@@ -3979,6 +4097,49 @@ definition {
 		AssertTextPresent(value1 = "aggs");
 	}
 
+	@priority = 3
+	test ViewCustomElementJSONTitleAndDescriptionChanges {
+		task ("Create a new element and edit the title and description in the JSON editor") {
+			Blueprints.openBlueprintsAdmin();
+
+			Blueprints.createElement(title = "Test Element Title");
+
+			Blueprints.gotoElement(element = "Test Element Title");
+
+			var customJson = '''
+{
+	"description_i18n": {
+		"en_US": "Edited Description"
+	},
+	"elementDefinition": {
+		"category": "custom",
+		"configuration": {},
+		"icon": "custom-field"
+	},
+	"title_i18n": {
+		"en_US": "Edited Title"
+	},
+	"type": 0
+}
+			''';
+
+			Type.typeCodeMirrorEditorNoError(
+				locator1 = "Blueprints#CODE_MIRROR_EDITOR",
+				value1 = ${customJson});
+		}
+
+		task ("Assert that the element title and description headers automatically update with the JSON change") {
+			AssertTextEquals(
+				locator1 = "Blueprints#BLUEPRINTS_EDIT_PAGE_HEADER_TITLE",
+				value1 = "Edited Title");
+
+			AssertTextEquals(
+				locator1 = "Blueprints#BLUEPRINTS_EDIT_PAGE_HEADER_DESCRIPTION",
+				value1 = "Edited Description");
+		}
+	}
+
+	@priority = 3
 	test ViewCustomElementLocalizedPredefinedVariables {
 		Blueprints.openBlueprintsAdmin();
 
@@ -4016,6 +4177,7 @@ definition {
 			locator1 = "Blueprints#ELEMENTS_EDIT_PAGE_PREDEFINED_VARIABLES_SIDEBAR_ITEM");
 	}
 
+	@priority = 3
 	test ViewCustomElementPredefinedVariablesUI {
 		Blueprints.openBlueprintsAdmin();
 
@@ -4072,6 +4234,7 @@ definition {
 			value1 = "context.company_id");
 	}
 
+	@priority = 3
 	test ViewCustomElementsJSONValidation {
 		Blueprints.openBlueprintsAdmin();
 
@@ -4235,6 +4398,7 @@ definition {
 		AssertTextPresent(value1 = "apple");
 	}
 
+	@priority = 3
 	test ViewElementJSONViaBlueprintsQueryBuilder {
 		Blueprints.openBlueprintsAdmin();
 
@@ -4255,6 +4419,7 @@ definition {
 			locator1 = "Blueprints#BLUEPRINTS_EDIT_PAGE_VIEW_ELEMENT_JSON_TEXT");
 	}
 
+	@priority = 3
 	test ViewElementLocalizationWithinElementsAdmin {
 		Blueprints.openBlueprintsAdmin();
 
@@ -4335,9 +4500,25 @@ definition {
 			description = "Description in English",
 			title = "Title in English");
 
+		Blueprints.gotoEntry(title = "Title in English");
+
+		Click(locator1 = "Button#PREVIEW");
+
+		AssertElementPresent(
+			key_text = "Title in English",
+			locator1 = "Blueprints#ELEMENT_EDIT_PAGE_PREVIEW_TEXT");
+
+		AssertElementPresent(
+			key_text = "Description in English",
+			locator1 = "Blueprints#ELEMENT_EDIT_PAGE_PREVIEW_TEXT");
+
+		Navigator.gotoBack();
+
 		Navigator.ensureLocaleURL(locale = "es");
 
 		Blueprints.viewEntryTitle(title = "Título en Español");
+
+		Navigator.gotoNavItem(navItem = "Elementos");
 
 		Blueprints.viewEntryDescription(
 			description = "Descripción en Español",
@@ -4352,8 +4533,21 @@ definition {
 		Blueprints.viewEntryDescription(
 			description = "Beschreibung auf Deutsch",
 			title = "Titel auf Deutsch");
+
+		Blueprints.gotoEntry(title = "Titel auf Deutsch");
+
+		Click(locator1 = "//button[contains(.,'Vorschau')]");
+
+		AssertElementPresent(
+			key_text = "Titel auf Deutsch",
+			locator1 = "Blueprints#ELEMENT_EDIT_PAGE_PREVIEW_TEXT");
+
+		AssertElementPresent(
+			key_text = "Beschreibung auf Deutsch",
+			locator1 = "Blueprints#ELEMENT_EDIT_PAGE_PREVIEW_TEXT");
 	}
 
+	@priority = 3
 	test ViewElementLocalizationWithinQueryBuilder {
 		Blueprints.openBlueprintsAdmin();
 
@@ -4404,6 +4598,7 @@ definition {
 			locator1 = "Blueprints#BLUEPRINTS_ADD_ELEMENTS_SIDEBAR_ELEMENT_NAME");
 	}
 
+	@priority = 3
 	test ViewElementsAdminBulkDeletion {
 		Blueprints.openBlueprintsAdmin();
 
@@ -4478,6 +4673,7 @@ definition {
 		Blueprints.viewNoEntry(title = "Test Element 4");
 	}
 
+	@priority = 3
 	test ViewElementsAdminPreview {
 		Blueprints.openBlueprintsAdmin();
 
@@ -4492,6 +4688,7 @@ definition {
 			value1 = "Boost All Keywords Match");
 	}
 
+	@priority = 3
 	test ViewElementsAdminTableValues {
 		Blueprints.openBlueprintsAdmin();
 
@@ -4548,6 +4745,7 @@ definition {
 			value1 = ${currentDate});
 	}
 
+	@priority = 3
 	test ViewExpandedAndCollapsedBlueprintsPreviewResult {
 		JSONWebcontent.addWebContent(
 			content = "",
@@ -4576,6 +4774,7 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-147066."
+	@priority = 3
 	test ViewLinksToLiferayDocumentation {
 		Blueprints.openBlueprintsAdmin();
 
@@ -4586,11 +4785,11 @@ definition {
 			key_linkText = "Learn more",
 			locator1 = "Blueprints#DOC_LINK_GENERIC");
 
-		SelectWindow(locator1 = "Search Blueprints Elements Reference - Liferay Learn");
+		SelectWindow(value1 = "Search Blueprints Elements Reference - Liferay Learn");
 
 		var siteName = TestCase.getSiteName(siteName = ${siteName});
 
-		Close.closeAndSelectWindow(locator1 = "Edit Blueprint - ${siteName}");
+		Close.closeAndSelectWindow(value1 = "Edit Blueprint - ${siteName}");
 
 		Navigator.gotoNavNested(navNested = "Query Settings");
 
@@ -4601,9 +4800,9 @@ definition {
 			key_linkText = "Learn more",
 			locator1 = "Blueprints#DOC_LINK_GENERIC");
 
-		SelectWindow(locator1 = "Creating and Managing Search Blueprints - Liferay Learn");
+		SelectWindow(value1 = "Creating and Managing Search Blueprints - Liferay Learn");
 
-		Close.closeAndSelectWindow(locator1 = "Edit Blueprint - ${siteName}");
+		Close.closeAndSelectWindow(value1 = "Edit Blueprint - ${siteName}");
 
 		Check.checkNotVisible(
 			locator1 = "Radio#ANY",
@@ -4616,9 +4815,9 @@ definition {
 			key_linkText = "Learn more",
 			locator1 = "Blueprints#DOC_LINK_GENERIC");
 
-		SelectWindow(locator1 = "Creating and Managing Search Blueprints - Liferay Learn");
+		SelectWindow(value1 = "Creating and Managing Search Blueprints - Liferay Learn");
 
-		Close.closeAndSelectWindow(locator1 = "Edit Blueprint - ${siteName}");
+		Close.closeAndSelectWindow(value1 = "Edit Blueprint - ${siteName}");
 
 		Navigator.gotoNavTab(navTab = "Configuration");
 
@@ -4627,54 +4826,54 @@ definition {
 			key_linkText = "Learn more",
 			locator1 = "Blueprints#DOC_LINK_GENERIC");
 
-		SelectWindow(locator1 = "Search Blueprints Configuration Reference - Liferay Learn");
+		SelectWindow(value1 = "Search Blueprints Configuration Reference - Liferay Learn");
 
-		Close.closeAndSelectWindow(locator1 = "Edit Blueprint - ${siteName}");
+		Close.closeAndSelectWindow(value1 = "Edit Blueprint - ${siteName}");
 
 		Click(
 			key_linkContext = "Add aggregations to those already present",
 			key_linkText = "Learn more",
 			locator1 = "Blueprints#DOC_LINK_GENERIC");
 
-		SelectWindow(locator1 = "Search Blueprints Configuration Reference - Liferay Learn");
+		SelectWindow(value1 = "Search Blueprints Configuration Reference - Liferay Learn");
 
-		Close.closeAndSelectWindow(locator1 = "Edit Blueprint - ${siteName}");
+		Close.closeAndSelectWindow(value1 = "Edit Blueprint - ${siteName}");
 
 		Click(
 			key_linkContext = "Override the default search highlight configuration",
 			key_linkText = "Learn more",
 			locator1 = "Blueprints#DOC_LINK_GENERIC");
 
-		SelectWindow(locator1 = "Search Blueprints Configuration Reference - Liferay Learn");
+		SelectWindow(value1 = "Search Blueprints Configuration Reference - Liferay Learn");
 
-		Close.closeAndSelectWindow(locator1 = "Edit Blueprint - ${siteName}");
+		Close.closeAndSelectWindow(value1 = "Edit Blueprint - ${siteName}");
 
 		Click(
 			key_linkContext = "Add sorts to those already present in the search request",
 			key_linkText = "Learn more",
 			locator1 = "Blueprints#DOC_LINK_GENERIC");
 
-		SelectWindow(locator1 = "Search Blueprints Configuration Reference - Liferay Learn");
+		SelectWindow(value1 = "Search Blueprints Configuration Reference - Liferay Learn");
 
-		Close.closeAndSelectWindow(locator1 = "Edit Blueprint - ${siteName}");
+		Close.closeAndSelectWindow(value1 = "Edit Blueprint - ${siteName}");
 
 		Click(
 			key_linkContext = "Declare new template variables from search context attributes",
 			key_linkText = "Learn more",
 			locator1 = "Blueprints#DOC_LINK_GENERIC");
 
-		SelectWindow(locator1 = "Search Blueprints Configuration Reference - Liferay Learn");
+		SelectWindow(value1 = "Search Blueprints Configuration Reference - Liferay Learn");
 
-		Close.closeAndSelectWindow(locator1 = "Edit Blueprint - ${siteName}");
+		Close.closeAndSelectWindow(value1 = "Edit Blueprint - ${siteName}");
 
 		Click(
 			key_linkContext = "Add source includes and excludes as search request parameters",
 			key_linkText = "Learn more",
 			locator1 = "Blueprints#DOC_LINK_GENERIC");
 
-		SelectWindow(locator1 = "Search Blueprints Configuration Reference - Liferay Learn");
+		SelectWindow(value1 = "Search Blueprints Configuration Reference - Liferay Learn");
 
-		Close.closeAndSelectWindow(locator1 = "Edit Blueprint - ${siteName}");
+		Close.closeAndSelectWindow(value1 = "Edit Blueprint - ${siteName}");
 
 		ClickNoError(
 			key_text = "Cancel",
@@ -4689,13 +4888,13 @@ definition {
 			key_linkText = "Learn more",
 			locator1 = "Blueprints#DOC_LINK_GENERIC");
 
-		SelectWindow(locator1 = "Creating Elements - Liferay Learn");
+		SelectWindow(value1 = "Creating Elements - Liferay Learn");
 
-		Close.closeAndSelectWindow(locator1 = "View Element - ${siteName}");
+		Close.closeAndSelectWindow(value1 = "View Element - ${siteName}");
 
-		SearchPortlets.addWidgets(searchPortletList = "Blueprints Options");
+		SearchPage.addWidgets(searchPortletList = "Blueprints Options");
 
-		Search.openSearchPage();
+		SearchPage.openSearchPage();
 
 		Portlet.gotoPortletOptions(
 			portletName = "Blueprints Options",
@@ -4708,9 +4907,226 @@ definition {
 			key_linkText = "Learn how",
 			locator1 = "Blueprints#DOC_LINK_GENERIC");
 
-		SelectWindow(locator1 = "Using a Search Blueprint on a Search Page - Liferay Learn");
+		SelectWindow(value1 = "Using a Search Blueprint on a Search Page - Liferay Learn");
 	}
 
+	@priority = 3
+	test ViewMappedAssetInBlueprintCollectionProvider {
+		property custom.properties = "feature.flag.LPS-129412=true${line.separator}feature.flag.LPS-193551=true";
+
+		task ("Create a test structure and a few sample web contents with the structure") {
+			WebContentNavigator.openWebContentAdmin(siteURLKey = "guest");
+
+			NavItem.gotoStructures();
+
+			WebContentStructures.addCP(structureName = "Test Structure");
+
+			DEBuilder.addField(
+				fieldLabel = "Custom Title",
+				fieldName = "Text");
+
+			DEBuilder.addField(
+				fieldLabel = "Custom Content",
+				fieldName = "Rich Text");
+
+			WebContentStructures.saveCP();
+
+			WebContentNavigator.openWebContentAdmin(siteURLKey = "guest");
+
+			for (var count : list "1,2,3") {
+				WebContentNavigator.gotoAddWithStructureCP(structureName = "Test Structure");
+
+				WebContent.addWithStructureCP(
+					structureName = "Test Structure",
+					webContentRichText = "Some HTML ${count}",
+					webContentRichTextFieldLabel = "Custom Content",
+					webContentText = "Test Web Content ${count}",
+					webContentTextFieldLabel = "Custom Title",
+					webContentTitle = "Test Web Content ${count}");
+
+				PortletEntry.publish();
+			}
+		}
+
+		task ("Create a blueprint and configure to only search for Web Content Articles") {
+			Blueprints.openBlueprintsAdmin();
+
+			Blueprints.createBlueprint(title = "Test Blueprint");
+
+			Navigator.gotoNavNested(navNested = "Query Settings");
+
+			Check.checkNotVisible(
+				locator1 = "Radio#ANY",
+				radioLabel = "Selected Types");
+
+			Button.click(button = "Select Asset Types");
+
+			Check.checkNotVisible(
+				key_assetType = "Web Content Article",
+				locator1 = "Blueprints#BLUEPRINTS_SEARCHABLE_ASSET_TYPE_CHECKBOX");
+
+			Button.clickDone();
+		}
+
+		task ("Fetch the ddmStructureKey of the created test structure") {
+			Navigator.gotoNavTab(navTab = "Configuration");
+
+			var customJson = '''
+	{
+		"source": {
+			"fetchSource": true
+		}
+	}
+		''';
+
+			Type.typeCodeMirrorEditorNoError(
+				key_configurationField = "Advanced Configuration",
+				locator1 = "Blueprints#BLUEPRINTS_CONFIGURATION_EDITOR",
+				value1 = ${customJson});
+
+			Navigator.gotoNavTab(navTab = "Query Builder");
+
+			Blueprints.searchBlueprintsPreview(searchTerm = "Test Web Content 1");
+
+			Click(locator1 = "Blueprints#BLUEPRINTS_PREVIEW_EXPAND_RESULT_BUTTON");
+
+			var ddmStructureKey = selenium.getText("//div[contains(@class,'preview-results-list')]//*[contains(@class,'row')]//*[contains(.,'ddmStructureKey')]/following-sibling::div");
+		}
+
+		task ("Add a Filter by Exact Terms Mtach element to the blueprint with the ddmStructureKey") {
+			Click(
+				ariaLabel = "Add Query Element",
+				locator1 = "Button#ANY_WITH_ARIA_LABEL");
+
+			Blueprints.addElement(element = "Filter by Exact Terms Match");
+
+			Type(
+				key_elementName = "Filter by Exact Terms Match",
+				key_fieldLabel = "Field",
+				locator1 = "Blueprints#BLUEPRINTS_ADDED_ELEMENT_INPUT_FIELD",
+				value1 = "ddmStructureKey");
+
+			Type(
+				key_elementName = "Filter by Exact Terms Match",
+				key_fieldLabel = "Values",
+				locator1 = "Blueprints#BLUEPRINTS_ADDED_ELEMENT_INPUT_FIELD",
+				value1 = ${ddmStructureKey});
+		}
+
+		task ("Assert in the preview sidebar that the test web contents appear as the only results") {
+			Blueprints.searchBlueprintsPreview(searchTerm = "");
+
+			Click(locator1 = "Blueprints#BLUEPRINTS_PREVIEW_EXPAND_RESULT_BUTTON");
+
+			AssertElementPresent(
+				key_resultTitle = "Test Web Content 1",
+				locator1 = "Blueprints#BLUEPRINTS_PREVIEW_SEARCH_RESULT_TITLE");
+
+			AssertElementPresent(
+				key_resultTitle = "Test Web Content 2",
+				locator1 = "Blueprints#BLUEPRINTS_PREVIEW_SEARCH_RESULT_TITLE");
+
+			AssertElementPresent(
+				key_resultTitle = "Test Web Content 3",
+				locator1 = "Blueprints#BLUEPRINTS_PREVIEW_SEARCH_RESULT_TITLE");
+
+			AssertElementPresent(
+				key_resultTotal = "3 Results",
+				locator1 = "Blueprints#BLUEPRINTS_PREVIEW_SEARCH_RESULT_TOTAL_HITS");
+
+			PortletEntry.save();
+		}
+
+		task ("Create a test content page with a collection display fragment") {
+			JSONLayout.addPublicLayout(
+				groupName = "Guest",
+				layoutName = "Test Content Page",
+				type = "content");
+
+			JSONLayout.publishLayout(
+				groupName = "Guest",
+				layoutName = "Test Content Page");
+
+			ContentPagesNavigator.openEditContentPage(
+				pageName = "Test Content Page",
+				siteName = "Guest");
+
+			PageEditor.addFragment(
+				collectionName = "Content Display",
+				fragmentName = "Collection Display");
+		}
+
+		task ("Select the collection provider for 'Web Content Article - Test Structure'") {
+			PageEditor.clickConfigurableField(
+				fragmentName = "Collection Display",
+				index = 1);
+
+			AssertVisible(
+				key_sidebarButton = "Browser",
+				locator1 = "PageEditor#FRAGMENT_SIDEBAR_TITLE");
+
+			Navigator.gotoNavTab(navTab = "General");
+
+			Click(
+				key_fieldLabel = "Collection",
+				key_text = "plus",
+				locator1 = "Icon#ANY_ITEM_SELECTOR");
+
+			SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+			NavItem.click(navItem = "Collection Providers");
+
+			ManagementBar.setFilterAndOrder(filterBy = "Web Content Article");
+
+			LexiconCard.clickCard(card = "Test Blueprint");
+
+			SelectFrameTop();
+
+			PageEditor.waitForAutoSave();
+		}
+
+		task ("Add Heading and HTML fragment to collection display and map them to Custom Title and Content respectively") {
+			PageEditor.addFragmentToCollectionDisplay(
+				collectionName = "Basic Components",
+				entryTitle = "Test Web Content 1",
+				fragmentName = "Heading");
+
+			PageEditorMapping.mapEditableTextToField(
+				field = "Custom Title",
+				fragmentName = "Heading",
+				id = "element-text");
+
+			PageEditor.addFragmentToCollectionDisplay(
+				collectionName = "Basic Components",
+				fragmentName = "HTML",
+				targetFragmentName = "Heading");
+
+			PageEditorMapping.gotoEditableFieldMapping(
+				fragmentName = "HTML",
+				id = "element-html");
+
+			Select(
+				key_fieldLabel = "Field",
+				locator1 = "Select#GENERIC_SELECT_FIELD",
+				value1 = "Custom Content");
+		}
+
+		task ("Publish and assert that only the sample test structure contents are shown") {
+			PageEditor.publish();
+
+			for (var count : list "1,2,3") {
+				AssertElementPresent(
+					key_text = "Test Web Content ${count}",
+					locator1 = "PageEditor#COLLECTION_ITEM_CONTENT");
+
+				AssertElementPresent(
+					key_text = "Some HTML ${count}",
+					locator1 = "PageEditor#COLLECTION_ITEM_CONTENT");
+			}
+		}
+	}
+
+	@priority = 3
 	test ViewOOTBElement {
 		Blueprints.openBlueprintsAdmin();
 
@@ -4752,6 +5168,7 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-147329."
+	@priority = 3
 	test ViewOOTBElementsLocalization {
 		task ("Assert the title and description of an OOTB Element within the Blueprint query builder add element sidebar are not using language keys") {
 			Blueprints.openBlueprintsAdmin();
@@ -4760,7 +5177,7 @@ definition {
 
 			Blueprints.addElement(element = "Limit Search to PDF files");
 
-			AssertTextNotEquals.assertNotPartialText(
+			AssertTextNotEquals.assertNotPartialMatch(
 				key_element = "Limit Search to PDF files",
 				locator1 = "Blueprints#BLUEPRINTS_ADD_ELEMENTS_SIDEBAR_ELEMENT_DESCRIPTION",
 				value1 = "limit-search-to-pdf-files-description");
@@ -4832,6 +5249,7 @@ definition {
 		}
 	}
 
+	@priority = 3
 	test ViewQueryBuilderAssetCategoryMultiselectField {
 		JSONCategory.addVocabulary(
 			groupName = "Guest",
@@ -4878,7 +5296,7 @@ definition {
 			key_fieldLabel = "Asset Category Name (IDs)",
 			locator1 = "Blueprints#BLUEPRINTS_ADDED_ELEMENT_INPUT_FIELD_CLEAR_ALL_BUTTON");
 
-		AssertTextNotEquals.assertNotPartialText(
+		AssertTextNotEquals.assertNotPartialMatch(
 			key_element = "Boost Contents in a Category",
 			locator1 = "Blueprints#BLUEPRINTS_ADDED_ELEMENT",
 			value1 = "Test Category");
@@ -4980,6 +5398,7 @@ definition {
 		AssertElementNotPresent(locator1 = "Message#ERROR");
 	}
 
+	@priority = 3
 	test ViewQueryBuilderAssetCategorySingleSelectField {
 		JSONCategory.addVocabulary(
 			groupName = "Guest",
@@ -5112,6 +5531,7 @@ definition {
 		Alert.viewErrorMessage(errorMessage = "Unable to save due to invalid or missing configuration values.");
 	}
 
+	@priority = 3
 	test ViewQueryBuilderFieldValidation {
 		Blueprints.openBlueprintsAdmin();
 
@@ -5124,7 +5544,7 @@ definition {
 				{
 					"fields": [
 						{
-							"defaultValue": [
+							"fieldMappings": [
 								{
 									"field": "localized_title",
 									"locale": "hu_HU"
@@ -5212,7 +5632,7 @@ definition {
 				{
 					"fields": [
 						{
-							"defaultValue": [
+							"fieldMappings": [
 								{
 									"field": "localized_title",
 									"locale": "hu_HU"
@@ -5288,6 +5708,7 @@ definition {
 		AssertElementNotPresent(locator1 = "Message#ERROR_1");
 	}
 
+	@priority = 3
 	test ViewRawResponseViaBlueprintsPreview {
 		Blueprints.openBlueprintsAdmin();
 
@@ -5308,6 +5729,7 @@ definition {
 			locator1 = "Blueprints#BLUEPRINTS_PREVIEW_RAW_RESPONSE_JSON");
 	}
 
+	@priority = 3
 	test ViewSearchResultsScoreViaBlueprintsPreview {
 		Blueprints.openBlueprintsAdmin();
 
@@ -5328,6 +5750,7 @@ definition {
 			locator1 = "Blueprints#BLUEPRINTS_PREVIEW_SEARCH_RESULT_SCORE_EXPLANATION");
 	}
 
+	@priority = 3
 	test ViewSelectedAssetTypesUI {
 		task ("Create a test blueprint and navigate to the 'Query Settings' tab") {
 			Blueprints.openBlueprintsAdmin();
@@ -5440,6 +5863,7 @@ definition {
 		}
 	}
 
+	@priority = 3
 	test ViewUnsavedChangesAlertForBlueprints {
 		Blueprints.openBlueprintsAdmin();
 
@@ -5494,6 +5918,7 @@ definition {
 		AssertElementPresent(locator1 = "Blueprints#BLUEPRINTS_ADDED_ELEMENTS_EMPTY");
 	}
 
+	@priority = 3
 	test ViewUnsavedChangesAlertForElements {
 		Blueprints.openBlueprintsAdmin();
 
@@ -5539,7 +5964,7 @@ definition {
 
 		Blueprints.gotoElement(element = "Test Element");
 
-		AssertTextNotEquals.assertNotPartialText(
+		AssertTextNotEquals.assertNotPartialMatch(
 			locator1 = "Blueprints#CODE_MIRROR_EDITOR",
 			value1 = "Unsaved Element");
 
@@ -5571,7 +5996,7 @@ definition {
 
 		Blueprints.gotoElement(element = "Test Element");
 
-		AssertTextNotEquals.assertNotPartialText(
+		AssertTextNotEquals.assertNotPartialMatch(
 			locator1 = "Blueprints#CODE_MIRROR_EDITOR",
 			value1 = "Unsaved Element");
 	}

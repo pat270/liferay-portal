@@ -133,7 +133,7 @@
 </tr>
 <tr>
 	<td>PAGES_TO_PUBLISH_PAGE_NAME</td>
-	<td>//span[contains(@id,'pages-tree') and contains(.,'${key_pageName}')]</td>
+	<td>//div[contains(@class,'autofit-col')]//span[contains(.,'${key_pageName}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -231,6 +231,11 @@
 <tr>
 	<td>PUBLICATION_TITLE</td>
 	<td>//input[contains(@id,'StagingProcessesPortlet_name')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>WARNING_SPECIFIC</td>
+	<td>//ul[not(contains(@class,'hide'))]/div[contains(@class,'alert') and (contains(@class,'alert-warning'))][contains(.,'${key_warningMessage}')]</td>
 	<td></td>
 </tr>
 </tbody>

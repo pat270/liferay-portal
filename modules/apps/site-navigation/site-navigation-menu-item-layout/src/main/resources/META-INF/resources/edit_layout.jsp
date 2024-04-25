@@ -58,7 +58,6 @@ LayoutItemSelectorCriterion layoutItemSelectorCriterion = new LayoutItemSelector
 
 layoutItemSelectorCriterion.setDesiredItemSelectorReturnTypes(new UUIDItemSelectorReturnType());
 layoutItemSelectorCriterion.setShowBreadcrumb(false);
-layoutItemSelectorCriterion.setShowHiddenPages(true);
 
 PortletURL itemSelectorURL = itemSelector.getItemSelectorURL(RequestBackedPortletURLFactoryUtil.create(renderRequest), eventName, layoutItemSelectorCriterion);
 
@@ -78,13 +77,13 @@ if (selLayout != null) {
 	cssClass="mb-4"
 	displayType="secondary"
 	id='<%= liferayPortletResponse.getNamespace() + "chooseLayout" %>'
-	label='<%= LanguageUtil.get(resourceBundle, "choose") %>'
-	propsTransformer="js/ChooseLayoutButtonPropsTransformer"
+	label="choose"
+	propsTransformer="{ChooseLayoutButtonPropsTransformer} from site-navigation-menu-item-layout"
 	small="<%= true %>"
 />
 
 <liferay-frontend:component
 	componentId='<%= liferayPortletResponse.getNamespace() + "editLayout" %>'
-	module="js/EditLayout"
+	module="{EditLayout} from site-navigation-menu-item-layout"
 	servletContext="<%= application %>"
 />

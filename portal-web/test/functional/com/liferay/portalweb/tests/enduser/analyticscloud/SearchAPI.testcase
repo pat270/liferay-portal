@@ -6,6 +6,7 @@ definition {
 	property portal.release = "false";
 	property portal.upstream = "true";
 	property property.group = "analytics.cloud.profile";
+	property test.liferay.virtual.instance = "false";
 	property testray.main.component.name = "Analytics Cloud";
 
 	setUp {
@@ -18,7 +19,7 @@ definition {
 		task ("Set up instance and sign in DXP") {
 			TestCase.setUpPortalInstance();
 
-			ACUtils.launchDXP();
+			ACUtils.launchDXPUI();
 		}
 
 		task ("Connect the DXP to AC") {
@@ -29,21 +30,19 @@ definition {
 	tearDown {
 		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
 
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
-		//ACUtils.tearDownAC();
-
 		ACUtils.tearDownDXP();
 
 		if (${testLiferayVirtualInstance} == "true") {
 			PortalInstances.tearDownCP();
 		}
+
+		ACUtils.tearDownAC();
 	}
 
 	@description = "Feature ID: LRAC-12058 | Automation ID: LRAC-12141 | Test Summary: Request search keywords using all parameters"
 	@priority = 3
 	test RequestKeywordsUsingAllParameters {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var groupId = JSONGroupSetter.setGroupId(groupName = "Guest");
 		var keyword = "all parameters";
@@ -60,7 +59,15 @@ definition {
 		}
 
 		task ("Type keyword in search bar") {
-			SearchPortlets.searchEmbedded(searchTerm = ${keyword});
+			for (var n : list "1,2,3,4") {
+				SearchPage.searchEmbedded(searchTerm = ${keyword});
+
+				ACUtils.waitForSendingRequest();
+			}
+		}
+
+		task ("Close sessions") {
+			ACUtils.closeAllSessionsAndWait();
 		}
 
 		task ("Run curl command to get keyword results") {
@@ -75,7 +82,7 @@ definition {
 	@description = "Feature ID: LRAC-12058 | Automation ID: LRAC-12143 | Test Summary: Fetch keywords with displayLanguageId parameter"
 	@priority = 3
 	test RequestKeywordsUsingDisplayLanguageId {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var parametersDisplay1 = "size=10\&displayLanguageId=${displayLanguageId1}\&page=0\&sort=counts,desc,lastModifiedDate,desc";
 		var parametersDisplay2 = "size=10\&displayLanguageId=${displayLanguageId2}\&page=0\&sort=counts,desc,lastModifiedDate,desc";
@@ -94,7 +101,15 @@ definition {
 		}
 
 		task ("Go to the search bar and search for a keyword") {
-			SearchPortlets.searchEmbedded(searchTerm = ${keyword});
+			for (var n : list "1,2,3,4") {
+				SearchPage.searchEmbedded(searchTerm = ${keyword});
+
+				ACUtils.waitForSendingRequest();
+			}
+		}
+
+		task ("Close sessions") {
+			ACUtils.closeAllSessionsAndWait();
 		}
 
 		task ("Run curl command to get keyword results using languageId = en-US") {
@@ -123,7 +138,7 @@ definition {
 	@description = "Feature ID: LRAC-12058 | Automation ID: LRAC-12144 | Test Summary: Request search keywords using groupID"
 	@priority = 3
 	test RequestKeywordsUsingGroupID {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		HeadlessSite.addSite(siteName = "Site Name");
 
@@ -144,7 +159,15 @@ definition {
 		}
 
 		task ("Go to the search bar and search for a keyword") {
-			SearchPortlets.searchEmbedded(searchTerm = ${keyword});
+			for (var n : list "1,2,3,4") {
+				SearchPage.searchEmbedded(searchTerm = ${keyword});
+
+				ACUtils.waitForSendingRequest();
+			}
+		}
+
+		task ("Close sessions") {
+			ACUtils.closeAllSessionsAndWait();
 		}
 
 		task ("Run curl command to get keyword results using group Guest") {
@@ -173,7 +196,7 @@ definition {
 	@description = "Feature ID: LRAC-12058 | Automation ID: LRAC-12142 | Test Summary: Fetch keywords without optional parameters"
 	@priority = 3
 	test RequestKeywordsUsingNoParameters {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var keyword1 = "without optional parameters 1";
 		var keyword2 = "without optional parameters 2";
@@ -189,9 +212,15 @@ definition {
 		}
 
 		task ("Type keyword in search bar") {
-			for (var keyword : list "${keyword1},${keyword2}") {
-				SearchPortlets.searchEmbedded(searchTerm = ${keyword});
+			for (var keyword : list "${keyword1},${keyword1},${keyword1},${keyword2},${keyword2},${keyword2}") {
+				SearchPage.searchEmbedded(searchTerm = ${keyword});
+
+				ACUtils.waitForSendingRequest();
 			}
+		}
+
+		task ("Close sessions") {
+			ACUtils.closeAllSessionsAndWait();
 		}
 
 		task ("Run curl command without optional parameters to get keyword results") {
@@ -212,7 +241,7 @@ definition {
 	@description = "Feature ID: LRAC-12058 | Automation ID: LRAC-12145 | Test Summary: Fetch keywords with page parameter"
 	@priority = 3
 	test RequestKeywordsUsingPage {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var parametersFirstPage = "size=${size}\&page=${firstPage}\&sort=counts,desc,lastModifiedDate,desc";
 		var parametersSecondPage = "size=${size}\&page=${secondPage}\&sort=counts,desc,lastModifiedDate,desc";
@@ -234,8 +263,14 @@ definition {
 
 		task ("Go to the search bar and search for a keyword") {
 			for (var keyword : list "${firstKeyword},${secondKeyword}") {
-				SearchPortlets.searchEmbedded(searchTerm = ${keyword});
+				SearchPage.searchEmbedded(searchTerm = ${keyword});
+
+				ACUtils.waitForSendingRequest();
 			}
+		}
+
+		task ("Close sessions") {
+			ACUtils.closeAllSessionsAndWait();
 		}
 
 		task ("Run curl command to get keyword results using page = 0") {
@@ -282,7 +317,7 @@ definition {
 	@description = "Feature ID: LRAC-12058 | Automation ID: LRAC-12146 | Test Summary: Fetch keywords with size parameter "
 	@priority = 3
 	test RequestKeywordsUsingSize {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var keyword1 = "with size parameters 1";
 		var keyword2 = "with size parameters 2";
@@ -302,8 +337,14 @@ definition {
 
 		task ("Type keyword in search bar") {
 			for (var keyword : list "${keyword1},${keyword2},${keyword3}") {
-				SearchPortlets.searchEmbedded(searchTerm = ${keyword});
+				SearchPage.searchEmbedded(searchTerm = ${keyword});
+
+				ACUtils.waitForSendingRequest();
 			}
+		}
+
+		task ("Close sessions") {
+			ACUtils.closeAllSessionsAndWait();
 		}
 
 		task ("Run curl command to get keyword results") {
@@ -330,7 +371,7 @@ definition {
 	@description = "Feature ID: LRAC-12058 | Automation ID: LRAC-12147 | Test Summary: Request search keywords using sort"
 	@priority = 3
 	test RequestKeywordsUsingSort {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var keyword1 = "first key word";
 		var keyword2 = "second key word";
@@ -348,8 +389,14 @@ definition {
 
 		task ("Type keyword in search bar") {
 			for (var keyword : list "${keyword1},${keyword1},${keyword2}") {
-				SearchPortlets.searchEmbedded(searchTerm = ${keyword});
+				SearchPage.searchEmbedded(searchTerm = ${keyword});
+
+				ACUtils.waitForSendingRequest();
 			}
+		}
+
+		task ("Close sessions") {
+			ACUtils.closeAllSessionsAndWait();
 		}
 
 		task ("Run curl command to get keyword results") {

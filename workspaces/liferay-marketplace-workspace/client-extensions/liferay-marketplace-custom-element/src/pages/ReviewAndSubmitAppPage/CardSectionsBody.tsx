@@ -5,25 +5,38 @@
 
 import brightnessEmptyIcon from '../../assets/icons/brightness_empty_icon.svg';
 import calendarMonthIcon from '../../assets/icons/calendar_month_icon.svg';
+import cancelIcon from '../../assets/icons/cancel_icon.svg';
 import creditCardIcon from '../../assets/icons/credit_card_icon.svg';
 import documentIcon from '../../assets/icons/document_icon.svg';
 import scheduleIcon from '../../assets/icons/schedule_icon.svg';
+import taskCheckedIcon from '../../assets/icons/task_checked_icon.svg';
 import {CardLink} from '../../components/Card/CardLink';
 import {CardView} from '../../components/Card/CardView';
-import {LicensePriceChildren} from '../../components/LicensePriceCard/LicensePriceChildren';
 import {Tag} from '../../components/Tag/Tag';
-import {extractHTMLText, removeUnnecessaryURLString} from '../../utils/string';
+import {removeUnnecessaryURLString} from '../../utils/string';
 import {CardSection} from './CardSection';
 import {App} from './ReviewAndSubmitAppPageUtil';
 
 import './CardSectionsBody.scss';
 
+import DOMPurify from 'dompurify';
+
+import LicensePriceChildren from '../../components/LicensePriceCard/LicensePriceChildren';
+import i18n from '../../i18n';
+
 interface CardSectionsBodyProps {
 	app: App;
+	isApp?: boolean;
 	readonly: boolean;
 }
 
-export function CardSectionsBody({app, readonly}: CardSectionsBodyProps) {
+export function CardSectionsBody({
+	app,
+	isApp = true,
+	readonly,
+}: CardSectionsBodyProps) {
+	const isCloud = app?.type === 'cloud';
+
 	return (
 		<>
 			<CardSection
@@ -32,162 +45,176 @@ export function CardSectionsBody({app, readonly}: CardSectionsBodyProps) {
 				required
 				sectionName="Description"
 			>
-				<p className="card-section-body-section-paragraph">
-					{extractHTMLText(app?.description)}
-				</p>
+				<p
+					className="card-section-body-section-paragraph"
+					dangerouslySetInnerHTML={{
+						__html: DOMPurify.sanitize(app?.description),
+					}}
+				></p>
 			</CardSection>
 
-			<CardSection
-				enableEdit={!readonly}
-				localized
-				required
-				sectionName="Categories"
-			>
+			<CardSection required sectionName="Categories">
 				<div className="card-section-body-section-tags">
-					{app?.categories.map((tag, index) => {
+					{app?.categories?.map((tag, index) => {
 						return <Tag key={index} label={tag}></Tag>;
 					})}
 				</div>
 			</CardSection>
 
-			<CardSection
-				enableEdit={!readonly}
-				localized
-				required
-				sectionName="Tags"
-			>
+			<CardSection required sectionName="Tags">
 				<div className="card-section-body-section-tags">
-					{app?.tags.map((tag, index) => {
+					{app?.tags?.map((tag, index) => {
 						return <Tag key={index} label={tag}></Tag>;
 					})}
 				</div>
 			</CardSection>
 
-			<CardSection
-				enableEdit={!readonly}
-				localized
-				required
-				sectionName="Build"
-			>
-				<div className="card-section-body-section-file">
-					<div className="card-section-body-section-file-container">
-						<img
-							alt="Folder Icon"
-							className="card-section-body-section-file-container-icon"
-							src={documentIcon}
+			{isApp && (
+				<CardSection required sectionName="Cloud Compatible">
+					<div className="card-section-body-cloud-compatible">
+						<CardView
+							description={
+								isCloud
+									? i18n.translate(
+											'create-a-cloud-app-to-be-delivered-as-a-live-service'
+									  )
+									: i18n.translate(
+											'create-a-dxp-app-to-be-delivered-as-a-download'
+									  )
+							}
+							icon={isCloud ? taskCheckedIcon : cancelIcon}
+							title={isCloud ? 'Yes' : 'No'}
 						/>
 					</div>
-
-					<img
-						alt="Document Icon"
-						className="card-section-body-section-file-icon"
-						src={documentIcon}
-					/>
-
-					<span className="card-section-body-section-file-name">
-						{app?.attachmentTitle}
-					</span>
-				</div>
-			</CardSection>
-
-			<CardSection
-				enableEdit={!readonly}
-				localized
-				required
-				sectionName="Pricing"
-			>
-				<CardView
-					description={
-						app?.priceModel === 'Free'
-							? 'The app is offered in the Marketplace with no charge.'
-							: 'To enable paid apps, you must be a business and enter payment information in your Marketplace account profile.'
-					}
-					icon={
-						app?.priceModel === 'Free'
-							? brightnessEmptyIcon
-							: creditCardIcon
-					}
-					title={app?.priceModel as string}
-				/>
-			</CardSection>
-
-			<CardSection
-				enableEdit={!readonly}
-				localized
-				required
-				sectionName="Licensing"
-			>
-				<CardView
-					description={
-						app?.licenseType === 'Perpetual'
-							? 'License never expires.'
-							: 'License must be renewed annually.'
-					}
-					icon={
-						app?.licenseType === 'Perpetual'
-							? scheduleIcon
-							: calendarMonthIcon
-					}
-					title={
-						app?.licenseType === 'Perpetual'
-							? 'Perpetual License'
-							: 'Non-perpetual License'
-					}
+				</CardSection>
+			)}
+			{isCloud && (
+				<CardSection
+					enableEdit={readonly}
+					required
+					sectionName={i18n.translate('resource-requirements')}
 				>
-					{app?.priceModel === 'Paid' && (
-						<LicensePriceChildren
-							currency="USD"
-							quantity={{
-								from: '1',
-								to: '1',
-							}}
-							value={
-								app?.price.toLocaleString('en-US', {
-									currency: 'USD',
-									style: 'currency',
-								}) as string
+					<div className="card-section-body-section-requirements d-flex justify-content-between">
+						<CardView
+							description={app?.resourceRequirements?.cpu}
+							title={i18n.translate('number-of-cpus')}
+							tooltip={
+								readonly ? '' : i18n.translate('more-info')
 							}
 						/>
-					)}
-				</CardView>
-			</CardSection>
 
-			<CardSection
-				enableEdit={!readonly}
-				localized
-				required
-				sectionName="Storefront"
-			>
-				<div>
-					{app?.storefront?.map(({id, src, title}) => {
-						return (
-							<div
-								className="card-section-body-section-files"
-								key={id}
-							>
-								<div className="card-section-body-section-files-container">
-									<img
-										className="preview-image"
-										src={removeUnnecessaryURLString(src)}
-									/>
-								</div>
-
-								<div className="card-section-body-section-files-data">
-									<img
-										alt={title['en_US']}
-										className="card-section-body-section-files-data-icon"
-										src={documentIcon}
-									/>
-
-									<span className="card-section-body-section-files-data-name">
-										{title['en_US']}
-									</span>
-
-									<span className="card-section-body-section-files-data-description"></span>
-								</div>
+						<CardView
+							description={`${app?.resourceRequirements?.ram} GB`}
+							title="Ram in GB"
+							tooltip={
+								readonly ? '' : i18n.translate('more-info')
+							}
+						/>
+					</div>
+				</CardSection>
+			)}
+			{isApp && (
+				<>
+					<CardSection required sectionName="Build">
+						<div className="card-section-body-section-file">
+							<div className="card-section-body-section-file-container">
+								<img
+									alt="Folder Icon"
+									className="card-section-body-section-file-container-icon"
+									src={documentIcon}
+								/>
 							</div>
-						);
-					})}
+
+							<img
+								alt="Document Icon"
+								className="card-section-body-section-file-icon"
+								src={documentIcon}
+							/>
+
+							<span className="card-section-body-section-file-name">
+								{app?.attachmentTitle}
+							</span>
+						</div>
+					</CardSection>
+
+					<CardSection required sectionName="Pricing">
+						<CardView
+							description={
+								app?.['price-model'] === 'Free'
+									? 'The app is offered in the Marketplace with no charge.'
+									: 'To enable paid apps, you must be a business and enter payment information in your Marketplace account profile.'
+							}
+							icon={
+								app?.['price-model'] === 'Free'
+									? brightnessEmptyIcon
+									: creditCardIcon
+							}
+							title={app?.['price-model'] as string}
+						/>
+					</CardSection>
+
+					<CardSection required sectionName="Licensing">
+						<CardView
+							description={
+								app?.['license-type'] === 'Perpetual'
+									? 'License never expires.'
+									: 'App License must be renewed annually.'
+							}
+							icon={
+								app?.['license-type'] === 'Perpetual'
+									? scheduleIcon
+									: calendarMonthIcon
+							}
+							title={
+								app?.['license-type'] === 'Perpetual'
+									? 'Perpetual License'
+									: 'Subscription License'
+							}
+						>
+							{app?.['price-model'] === 'Paid' && (
+								<LicensePriceChildren
+									app={app}
+									isCloud={isCloud}
+									tierPrices={app.tierPrice}
+								/>
+							)}
+						</CardView>
+					</CardSection>
+				</>
+			)}
+
+			<CardSection required sectionName="Storefront">
+				<div>
+					{app?.storefront?.map(({id, priority, src, title}) => (
+						<div
+							className="card-section-body-section-files"
+							key={id}
+						>
+							<strong>{isApp ?? priority}</strong>
+
+							<div className="card-section-body-section-files-container">
+								<img
+									alt="Image preview"
+									className="preview-image"
+									src={removeUnnecessaryURLString(src)}
+								/>
+							</div>
+
+							<div className="card-section-body-section-files-data">
+								<img
+									alt={title['en_US']}
+									className="card-section-body-section-files-data-icon"
+									src={documentIcon}
+								/>
+
+								<span className="card-section-body-section-files-data-name">
+									{title['en_US']}
+								</span>
+
+								<span className="card-section-body-section-files-data-description"></span>
+							</div>
+						</div>
+					))}
 
 					<div className="card-section-body-section-files-info">
 						Important: Images will be displayed following the
@@ -196,46 +223,41 @@ export function CardSectionsBody({app, readonly}: CardSectionsBodyProps) {
 				</div>
 			</CardSection>
 
-			<CardSection
-				enableEdit={!readonly}
-				localized
-				required
-				sectionName="Version"
-			>
-				<div className="card-section-body-section-version">
-					<div className="card-section-body-section-version-container">
-						<div className="card-section-body-section-version-container-icon">
-							{app?.version}
+			{isApp && (
+				<>
+					<CardSection required sectionName="Version">
+						<div className="card-section-body-section-version">
+							<div className="card-section-body-section-version-container">
+								<div className="card-section-body-section-version-container-icon">
+									{app?.version}
+								</div>
+							</div>
+
+							<div className="card-section-body-section-version-data">
+								<span className="card-section-body-section-version-data-name">
+									Release Notes
+								</span>
+
+								<span className="card-section-body-section-version-data-description">
+									{app?.versionDescription}
+								</span>
+							</div>
 						</div>
-					</div>
-
-					<div className="card-section-body-section-version-data">
-						<span className="card-section-body-section-version-data-name">
-							Release Notes
-						</span>
-
-						<span className="card-section-body-section-version-data-description">
-							{app?.versionDescription}
-						</span>
-					</div>
-				</div>
-			</CardSection>
-
-			<CardSection
-				enableEdit={!readonly}
-				localized
-				required
-				sectionName="Support & Help"
-			>
-				{app?.supportAndHelp.map(({icon, link, title}) => (
-					<CardLink
-						description={link as string}
-						icon={icon}
-						key={title}
-						title={title as string}
-					/>
-				))}
-			</CardSection>
+					</CardSection>
+					<CardSection required sectionName="Support & Help">
+						{app?.supportAndHelp.map(
+							({icon, link, title}, index) => (
+								<CardLink
+									description={link as string}
+									icon={icon}
+									key={index}
+									title={title as string}
+								/>
+							)
+						)}
+					</CardSection>
+				</>
+			)}
 		</>
 	);
 }

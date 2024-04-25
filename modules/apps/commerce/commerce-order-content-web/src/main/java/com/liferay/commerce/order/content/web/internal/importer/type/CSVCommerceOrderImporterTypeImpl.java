@@ -30,13 +30,14 @@ import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.frontend.data.set.provider.search.FDSPagination;
 import com.liferay.frontend.taglib.servlet.taglib.util.JSPRenderer;
 import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
@@ -48,6 +49,8 @@ import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.IOException;
+
+import java.math.BigDecimal;
 
 import java.nio.charset.Charset;
 
@@ -171,10 +174,6 @@ public class CSVCommerceOrderImporterTypeImpl
 	public boolean isActive(CommerceOrder commerceOrder)
 		throws PortalException {
 
-		if (!_commerceOrderImporterTypeConfiguration.enabled()) {
-			return false;
-		}
-
 		CommerceChannel commerceChannel =
 			_commerceChannelLocalService.getCommerceChannelByOrderGroupId(
 				commerceOrder.getGroupId());
@@ -262,7 +261,8 @@ public class CSVCommerceOrderImporterTypeImpl
 		throws Exception {
 
 		String sku = GetterUtil.getString(csvRecord.get("sku"));
-		int quantity = GetterUtil.getInteger(csvRecord.get("quantity"));
+		BigDecimal quantity = BigDecimal.valueOf(
+			GetterUtil.getInteger(csvRecord.get("quantity")));
 
 		CPInstance cpInstance = null;
 
@@ -307,7 +307,8 @@ public class CSVCommerceOrderImporterTypeImpl
 
 			if ((firstAvailableReplacementCPInstance != null) &&
 				!_cpAvailabilityChecker.check(
-					commerceChannelGroupId, cpInstance, quantity)) {
+					commerceChannelGroupId, cpInstance, StringPool.BLANK,
+					quantity)) {
 
 				commerceOrderImporterItemImpl.setReplacingSKU(
 					cpInstance.getSku());
@@ -328,6 +329,7 @@ public class CSVCommerceOrderImporterTypeImpl
 
 		commerceOrderImporterItemImpl.setJSON("[]");
 		commerceOrderImporterItemImpl.setQuantity(quantity);
+		commerceOrderImporterItemImpl.setUnitOfMeasureKey(StringPool.BLANK);
 
 		if (csvRecord.isMapped(_REQUESTED_DELIVERY_DATE_FIELD_NAME) &&
 			csvRecord.isSet(_REQUESTED_DELIVERY_DATE_FIELD_NAME)) {

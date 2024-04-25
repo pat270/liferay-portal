@@ -46,10 +46,7 @@ definition {
 
 	@priority = 4
 	test AddBlogsEntriesWithPortalScopeWorkflowAndAssertWorkflowScope {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -57,10 +54,7 @@ definition {
 			workflowDefinition = "Single Approver",
 			workflowResourceValue = "Blogs Entry");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Sites",
-			panel = "Control Panel",
-			portlet = "Sites");
+		Site.openSitesAdmin();
 
 		Site.addBlankCP(siteName = "Site Name");
 
@@ -205,10 +199,7 @@ definition {
 
 	@priority = 4
 	test AddBlogsEntriesWithSiteScopeWorkflowAndAssertWorkflowScope {
-		ApplicationsMenu.gotoPortlet(
-			category = "Sites",
-			panel = "Control Panel",
-			portlet = "Sites");
+		Site.openSitesAdmin();
 
 		Site.addBlankCP(siteName = "Site Name");
 
@@ -299,12 +290,10 @@ definition {
 	test AddDDLRecordWithDoubleApproverDefinition {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 		property testray.component.names = "Training";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Workflow.addNewDefinition(workflowDefinitionTitle = "Double Approver Definition");
 
@@ -465,13 +454,10 @@ definition {
 
 	@priority = 4
 	test AddWebContentWithCategorySpecificDefinition {
-		property portal.upstream = "quarantine";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Workflow.addNewDefinition(workflowDefinitionTitle = "Category Specific");
 
@@ -658,10 +644,7 @@ definition {
 
 		Portlet.addPG(portletName = "Wiki");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.addCP(
 			userEmailAddress = "userea@liferay.com",
@@ -669,19 +652,17 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		Site.openSiteSettingsAdmin(siteURLKey = "guest");
+
+		Site.manageMembershipOptions(allowManualMembershipManagement = "true");
+
+		User.openUsersAdmin();
 
 		User.editPasswordCP(
 			userEmailAddress = "userea@liferay.com",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.editUserSiteCP(
 			siteName = ${siteName},
@@ -796,23 +777,112 @@ definition {
 			wikiPageTitle = "Wiki Page Title");
 	}
 
-	@priority = 5
-	test UnpublishAndDeleteUploadedDefinition {
-		property portal.acceptance = "quarantine";
+	@description = "LPS-193788: Verify if it is not possible by default to add a workflow at a virtual instance"
+	@priority = 3
+	test CanNotAddWorkflowProcessInAVirtualInstance {
 		property test.liferay.virtual.instance = "false";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		task ("Given administrators publish and edit workflows configuration is disabled") {
+			ApplicationsMenu.gotoPortlet(
+				category = "Configuration",
+				panel = "Control Panel",
+				portlet = "System Settings");
+
+			SystemSettings.gotoConfiguration(
+				configurationCategory = "Workflow",
+				configurationName = "Workflow Definition",
+				configurationScope = "System Scope");
+
+			AssertNotChecked.assertNotCheckedNotVisible(
+				key_settingFieldName = "Allow Administrators to Publish and Edit Workflows",
+				locator1 = "SystemSettings#SETTING_FIELD_NAME_CHECKBOX");
+		}
+
+		task ("When navigation to process builder page") {
+			HeadlessPortalInstanceAPI.addPortalInstance(
+				domain = "liferay.com",
+				portalInstanceId = "www.able.com",
+				virtualHost = "www.able.com");
+
+			Navigator.openSpecificURL(url = "http://www.able.com:8080");
+
+			User.firstLoginPG(
+				password = "test",
+				userEmailAddress = "test@liferay.com",
+				virtualHostsURL = "http://www.able.com:8080");
+
+			Workflow.openWorkflowListView(baseURL = "http://www.able.com:8080");
+		}
+
+		task ("Then the add button is not present") {
+			AssertElementNotPresent(locator1 = "Button#PLUS");
+		}
+	}
+
+	@description = "LPS-192072: Verify if it is possible to configure the system on a main instance and then publish a workflow to a virtual instance"
+	@priority = 5
+	test CanPublishWorkflowAtVirtualInstance {
+		property test.liferay.virtual.instance = "false";
+
+		task ("Given administrators publish and edit workflows configuration is enabled") {
+			ApplicationsMenu.gotoPortlet(
+				category = "Configuration",
+				panel = "Control Panel",
+				portlet = "System Settings");
+
+			SystemSettings.gotoConfiguration(
+				configurationCategory = "Workflow",
+				configurationName = "Workflow Definition",
+				configurationScope = "System Scope");
+
+			SystemSettings.configureSystemSetting(
+				enableSetting = "true",
+				settingFieldName = "Allow Administrators to Publish and Edit Workflows");
+		}
+
+		task ("When creating a workflow in a virtual instance") {
+			HeadlessPortalInstanceAPI.addPortalInstance(
+				domain = "liferay.com",
+				portalInstanceId = "www.able.com",
+				virtualHost = "www.able.com");
+
+			Navigator.openSpecificURL(url = "http://www.able.com:8080");
+
+			User.firstLoginPG(
+				password = "test",
+				userEmailAddress = "test@liferay.com",
+				virtualHostsURL = "http://www.able.com:8080");
+
+			Workflow.openWorkflowListView(baseURL = "http://www.able.com:8080");
+
+			Workflow.addNewDefinition(workflowDefinitionTitle = "Workflow Definition for Able");
+
+			ProcessBuilderKaleoDesignerReact.addConnector(
+				connectorIn = "end",
+				connectorOut = "start",
+				key_direction = "right");
+		}
+
+		task ("Then the workflow can be published") {
+			Button.clickPublish();
+
+			Workflow.openWorkflowListView(baseURL = "http://www.able.com:8080");
+
+			AssertVisible(
+				key_workflowDefinitionTitle = "Workflow Definition for Able",
+				locator1 = "WorkflowDefinition#DEFINITION_TABLE_TITLE_PUBLISHED");
+		}
+	}
+
+	@priority = 5
+	test UnpublishAndDeleteUploadedDefinition {
+		property test.liferay.virtual.instance = "false";
+
+		Workflow.openWorkflowListView();
 
 		Workflow.addNewDefinition(workflowDefinitionTitle = "New Uploaded Definition");
 
 		ProcessBuilderKaleoDesignerReact.uploadDefinition(workflowDefinitionFile = "1-workflow-definition.xml");
-
-		ProcessBuilderKaleoDesignerReact.diagramSourceSwitchView();
-
-		Button.clickSave();
 
 		Button.clickPublish();
 
@@ -822,10 +892,7 @@ definition {
 
 		Workflow.unpublishWorkflowDefinition(workflowDefinitionTitle = "New Uploaded Definition");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Workflow.viewDefinitionUnpublished(workflowDefinitionTitle = "New Uploaded Definition");
 
@@ -835,17 +902,11 @@ definition {
 
 		Workflow.viewDefinitionPublished(workflowDefinitionTitle = "New Uploaded Definition");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Workflow.unpublishWorkflowDefinition(workflowDefinitionTitle = "New Uploaded Definition");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Workflow.viewDefinitionUnpublished(workflowDefinitionTitle = "New Uploaded Definition");
 
@@ -928,11 +989,9 @@ definition {
 	@priority = 4
 	test ViewInvalidDefinitionAlert {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Workflow.addNewDefinition(workflowDefinitionTitle = "Invalid Definition");
 
@@ -995,43 +1054,10 @@ definition {
 		AssertElementNotPresent(locator1 = "xpath=(//div[contains(@id,'workflowTasksSearchContainer')]//tr[@data-qa-id])[6]");
 	}
 
-	@priority = 3
-	test ViewWebContentConfigurationCP {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content & Data",
-			panel = "Site Administration",
-			portlet = "Web Content");
-
-		WebContent.viewEmailConfigurationCP(webContentWorkflowEnabled = "false");
-
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content & Data",
-			panel = "Site Administration",
-			portlet = "Web Content");
-
-		Workflow.configureWCWorkflowViaFolderInfo(workflowDefinition = "Single Approver");
-
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content & Data",
-			panel = "Site Administration",
-			portlet = "Web Content");
-
-		WebContent.viewEmailConfigurationCP(webContentWorkflowEnabled = "true");
-	}
-
 	@description = "This is a use case for LPS-59108."
 	@priority = 4
 	test ViewWorkflowConfigurationScope {
-		ApplicationsMenu.gotoPortlet(
-			category = "Sites",
-			panel = "Control Panel",
-			portlet = "Sites");
+		Site.openSitesAdmin();
 
 		Site.addBlankCP(siteName = "New Site");
 
@@ -1053,10 +1079,7 @@ definition {
 			workflowDefinition = "Single Approver",
 			workflowResourceValue = "Calendar Event");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 

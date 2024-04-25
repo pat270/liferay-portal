@@ -101,12 +101,21 @@ else {
 	/>
 </c:if>
 
+<%@ include file="/deprecated_warning.jspf" %>
+
 <div class="closed sidenav-container sidenav-right" id="<portlet:namespace />infoPanelId">
 	<c:if test="<%= recordVersion != null %>">
 		<div class="sidenav-menu-slider">
 			<div class="sidebar sidebar-light sidenav-menu">
 				<div class="sidebar-header">
-					<aui:icon cssClass="d-inline-block d-sm-none icon-monospaced sidenav-close text-default" image="times" markupView="lexicon" url="javascript:void(0);" />
+					<clay:button
+						aria-label="<%= LanguageUtil.get(request, "close") %>"
+						cssClass="d-sm-none icon-monospaced lfr-portal-tooltip sidenav-close"
+						displayType="unstyled"
+						icon="times"
+						small="<%= true %>"
+						title="close"
+					/>
 				</div>
 
 				<liferay-ui:tabs
@@ -135,10 +144,10 @@ else {
 								<li class="sidebar-dd">
 
 									<%
-									Format dateFormatDateTime = FastDateFormatFactoryUtil.getDateTime(locale, timeZone);
+									Format dateTimeFormat = FastDateFormatFactoryUtil.getDateTime(locale, timeZone);
 									%>
 
-									<liferay-ui:message arguments="<%= new Object[] {HtmlUtil.escape(recordVersion.getUserName()), dateFormatDateTime.format(recordVersion.getCreateDate())} %>" key="by-x-on-x" translateArguments="<%= false %>" />
+									<liferay-ui:message arguments="<%= new Object[] {HtmlUtil.escape(recordVersion.getUserName()), dateTimeFormat.format(recordVersion.getCreateDate())} %>" key="by-x-on-x" translateArguments="<%= false %>" />
 								</li>
 							</ul>
 						</div>

@@ -60,7 +60,7 @@ public class ObjectRelationshipServiceTest {
 
 		_objectDefinition1 =
 			_objectDefinitionLocalService.addCustomObjectDefinition(
-				TestPropsValues.getUserId(), false, false,
+				TestPropsValues.getUserId(), 0, false, false, false,
 				LocalizedMapUtil.getLocalizedMap("Able"), "Able", null, null,
 				LocalizedMapUtil.getLocalizedMap("Ables"), true,
 				ObjectDefinitionConstants.SCOPE_COMPANY,
@@ -78,7 +78,7 @@ public class ObjectRelationshipServiceTest {
 
 		_objectDefinition2 =
 			_objectDefinitionLocalService.addCustomObjectDefinition(
-				TestPropsValues.getUserId(), false, false,
+				TestPropsValues.getUserId(), 0, false, false, false,
 				LocalizedMapUtil.getLocalizedMap("Baker"), "Baker", null, null,
 				LocalizedMapUtil.getLocalizedMap("Bakers"), true,
 				ObjectDefinitionConstants.SCOPE_COMPANY,
@@ -204,12 +204,12 @@ public class ObjectRelationshipServiceTest {
 		throws Exception {
 
 		return _objectRelationshipLocalService.addObjectRelationship(
-			user.getUserId(), _objectDefinition1.getObjectDefinitionId(),
+			null, user.getUserId(), _objectDefinition1.getObjectDefinitionId(),
 			_objectDefinition2.getObjectDefinitionId(), 0,
 			ObjectRelationshipConstants.DELETION_TYPE_PREVENT,
 			LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
-			StringUtil.randomId(),
-			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
+			StringUtil.randomId(), false,
+			ObjectRelationshipConstants.TYPE_MANY_TO_MANY, null);
 	}
 
 	private void _setUser(User user) {
@@ -227,13 +227,13 @@ public class ObjectRelationshipServiceTest {
 
 			objectRelationship =
 				_objectRelationshipService.addObjectRelationship(
-					_objectDefinition1.getObjectDefinitionId(),
+					null, _objectDefinition1.getObjectDefinitionId(),
 					_objectDefinition2.getObjectDefinitionId(), 0,
 					ObjectRelationshipConstants.DELETION_TYPE_PREVENT,
 					LocalizedMapUtil.getLocalizedMap(
 						RandomTestUtil.randomString()),
-					StringUtil.randomId(),
-					ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
+					StringUtil.randomId(), false,
+					ObjectRelationshipConstants.TYPE_MANY_TO_MANY, null);
 		}
 		finally {
 			if (objectRelationship != null) {
@@ -313,9 +313,10 @@ public class ObjectRelationshipServiceTest {
 
 			objectRelationship =
 				_objectRelationshipService.updateObjectRelationship(
+					objectRelationship.getExternalReferenceCode(),
 					objectRelationship.getObjectRelationshipId(), 0,
-					objectRelationship.getDeletionType(),
-					LocalizedMapUtil.getLocalizedMap("Baker"));
+					objectRelationship.getDeletionType(), false,
+					LocalizedMapUtil.getLocalizedMap("Baker"), null);
 		}
 		finally {
 			if (objectRelationship != null) {

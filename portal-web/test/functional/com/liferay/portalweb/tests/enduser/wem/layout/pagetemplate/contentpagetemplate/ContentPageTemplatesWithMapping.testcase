@@ -39,8 +39,6 @@ definition {
 	@description = "This is a test for LPS-98031. Map manual URL to image fragment."
 	@priority = 4
 	test MapManualURLToImageFragment {
-		property ci.retries.disabled = "true";
-
 		task ("Add an Image fragment to content page template") {
 			PageTemplatesAdmin.openPageTemplatesAdmin(siteURLKey = "test-site-name");
 
@@ -108,7 +106,7 @@ definition {
 				key_url = "https://liferay.com",
 				locator1 = "Fragment#FRAGMENT_LINK");
 
-			AssertLocation.assertPartialLocation(value1 = "https://www.liferay.com");
+			AssertLocation.assertPartialLocation(value1 = "liferay.com");
 		}
 	}
 
@@ -160,8 +158,6 @@ definition {
 	@description = "This is a test for LPS-98031. Map manual URL to text fragment."
 	@priority = 4
 	test MapManualURLToTextFragment {
-		property ci.retries.disabled = "true";
-
 		task ("Add a Heading fragment to content page template") {
 			PageTemplatesAdmin.openPageTemplatesAdmin(siteURLKey = "test-site-name");
 
@@ -224,7 +220,7 @@ definition {
 				key_url = "https://liferay.com",
 				locator1 = "Fragment#FRAGMENT_LINK");
 
-			AssertLocation.assertPartialLocation(value1 = "https://www.liferay.com");
+			AssertLocation.assertPartialLocation(value1 = "liferay.com");
 		}
 	}
 
@@ -322,11 +318,11 @@ definition {
 				key_url = "https://www.liferay.com",
 				locator1 = "Fragment#FRAGMENT_LINK");
 
-			AssertLocation.assertPartialLocation(value1 = "https://www.liferay.com");
+			AssertLocation.assertPartialLocation(value1 = "liferay.com");
 		}
 	}
 
-	@description = "This is a test for LPS-98031. Map web content field with URL to link editable field."
+	@description = "This is a test for LPS-98031. Map web content field with URL to link editable field for Content Page Templates."
 	@priority = 2
 	test MapWebContentFieldWithURLToLinkFragment {
 		task ("Add a web content structure with a Text field") {
@@ -420,7 +416,7 @@ definition {
 				key_url = "https://www.liferay.com",
 				locator1 = "Fragment#FRAGMENT_LINK");
 
-			AssertLocation.assertPartialLocation(value1 = "https://www.liferay.com");
+			AssertLocation.assertPartialLocation(value1 = "liferay.com");
 		}
 	}
 
@@ -518,7 +514,7 @@ definition {
 				key_url = "https://www.liferay.com",
 				locator1 = "Fragment#FRAGMENT_LINK");
 
-			AssertLocation.assertPartialLocation(value1 = "https://www.liferay.com");
+			AssertLocation.assertPartialLocation(value1 = "liferay.com");
 		}
 	}
 

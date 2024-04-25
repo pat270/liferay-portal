@@ -7,7 +7,7 @@ package com.liferay.portal.search.tuning.rankings.web.internal.results.builder;
 
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONUtil;
-import com.liferay.portal.search.tuning.rankings.web.internal.index.Ranking;
+import com.liferay.portal.search.tuning.rankings.index.Ranking;
 import com.liferay.portal.search.tuning.rankings.web.internal.searcher.helper.RankingSearchRequestHelper;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 
@@ -36,9 +36,10 @@ public class RankingGetVisibleResultsBuilderTest
 
 		_rankingGetVisibleResultsBuilder = new RankingGetVisibleResultsBuilder(
 			complexQueryPartBuilderFactory, dlAppLocalService,
-			fastDateFormatFactory, rankingIndexName, rankingIndexReader,
-			_rankingSearchRequestHelper, resourceActions, resourceRequest,
-			resourceResponse, queries, searcher, searchRequestBuilderFactory);
+			fastDateFormatFactory, groupLocalService, rankingIndexName,
+			rankingIndexReader, _rankingSearchRequestHelper, resourceActions,
+			resourceRequest, resourceResponse, queries, searcher,
+			searchRequestBuilderFactory);
 	}
 
 	@Test

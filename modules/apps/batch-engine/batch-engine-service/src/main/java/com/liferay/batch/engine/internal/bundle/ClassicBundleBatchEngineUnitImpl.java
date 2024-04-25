@@ -7,8 +7,9 @@ package com.liferay.batch.engine.internal.bundle;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.liferay.batch.engine.unit.BatchEngineUnit;
 import com.liferay.batch.engine.unit.BatchEngineUnitConfiguration;
+import com.liferay.batch.engine.unit.BatchEngineUnitMetaInfo;
+import com.liferay.batch.engine.unit.BundleBatchEngineUnit;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,7 +25,7 @@ import org.osgi.framework.Bundle;
  * @author Raymond Augé
  * @author Igor Beslic
  */
-public class ClassicBundleBatchEngineUnitImpl implements BatchEngineUnit {
+public class ClassicBundleBatchEngineUnitImpl implements BundleBatchEngineUnit {
 
 	public ClassicBundleBatchEngineUnitImpl(Bundle bundle, List<URL> urls) {
 		_bundle = bundle;
@@ -57,6 +58,16 @@ public class ClassicBundleBatchEngineUnitImpl implements BatchEngineUnit {
 	}
 
 	@Override
+	public BatchEngineUnitMetaInfo getBatchEngineUnitMetaInfo() {
+		return _batchEngineUnitMetaInfo;
+	}
+
+	@Override
+	public Bundle getBundle() {
+		return _bundle;
+	}
+
+	@Override
 	public InputStream getConfigurationInputStream() throws IOException {
 		return _configurationURL.openStream();
 	}
@@ -85,6 +96,12 @@ public class ClassicBundleBatchEngineUnitImpl implements BatchEngineUnit {
 		return true;
 	}
 
+	public void setBatchEngineUnitMetaInfo(
+		BatchEngineUnitMetaInfo batchEngineUnitMetaInfo) {
+
+		_batchEngineUnitMetaInfo = batchEngineUnitMetaInfo;
+	}
+
 	private boolean _isBatchEngineConfiguration(URL url) {
 		if (url == null) {
 			return false;
@@ -101,6 +118,7 @@ public class ClassicBundleBatchEngineUnitImpl implements BatchEngineUnit {
 		return false;
 	}
 
+	private BatchEngineUnitMetaInfo _batchEngineUnitMetaInfo;
 	private final Bundle _bundle;
 	private URL _configurationURL;
 	private URL _dataURL;

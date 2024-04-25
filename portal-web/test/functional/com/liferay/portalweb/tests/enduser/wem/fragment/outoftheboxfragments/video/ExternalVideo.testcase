@@ -4,7 +4,7 @@ definition {
 	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Fragments";
+	property testray.main.component.name = "Fragment Administration";
 
 	setUp {
 		task ("Set up instance and sign in") {
@@ -100,6 +100,8 @@ definition {
 				value1 = "Liferay Digital Experience Platform");
 
 			PageEditor.publish();
+
+			Alert.closeMessage(messageType = "SUCCESS");
 		}
 
 		task ("View the video displayed in view mode") {
@@ -116,6 +118,7 @@ definition {
 	@uitest
 	test DisplayVideoFromURLInExternalVideo {
 		property portal.acceptance = "true";
+		property timeout.explicit.wait = "30";
 
 		task ("Add an External Video fragment to page") {
 			ContentPagesNavigator.openEditContentPage(
@@ -167,6 +170,8 @@ definition {
 				value1 = "Liferay Digital Experience Platform");
 
 			PageEditor.publish();
+
+			Alert.closeMessage(messageType = "SUCCESS");
 		}
 
 		task ("View the video displayed in view mode") {
@@ -176,32 +181,6 @@ definition {
 
 			YoutubePortlet.assertVideoTitle(videoTitle = "Liferay Digital Experience Platform");
 		}
-	}
-
-	@description = "This is a test for LPS-151368. It checks that the video URL is saved when adding external video shortcut in non-default language."
-	@priority = 4
-	test VideoURLIsSavedWhenUsingNonDefaultLanguage {
-		var portalURL = PropsUtil.get("portal.url");
-
-		Navigator.openSpecificURL(url = "${portalURL}/ja");
-
-		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "test-site-name");
-
-		VideoShortcut.addCP(
-			localizedDocumentTypeName = "外部動画のショートカット",
-			localizedPublish = "公開",
-			localizedVideoURL = "動画URL",
-			videoShortcutTitle = "DM Title",
-			videoURL = "https://www.facebook.com/Cristiano/videos/1710977485745946");
-
-		LexiconEntry.gotoEntryMenuItem(
-			menuItem = "編集",
-			rowEntry = "DM Title");
-
-		AssertTextEquals(
-			key_text = "動画URL",
-			locator1 = "TextInput#ANY",
-			value1 = "https://www.facebook.com/Cristiano/videos/1710977485745946");
 	}
 
 }

@@ -127,7 +127,8 @@ public class CPSpecificationOptionIndexer
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
-				"Indexing specification option " + cpSpecificationOption);
+				"Indexing commerce product specification option " +
+					cpSpecificationOption);
 		}
 
 		Document document = getBaseModelDocument(
@@ -170,9 +171,13 @@ public class CPSpecificationOptionIndexer
 				_localization.getLocalizedName(Field.TITLE, languageId), title);
 		}
 
+		document.addNumberSortable(
+			Field.PRIORITY, cpSpecificationOption.getPriority());
+
 		if (_log.isDebugEnabled()) {
 			_log.debug(
-				"Document " + cpSpecificationOption + " indexed successfully");
+				"Commerce product specification option " +
+					cpSpecificationOption + " indexed successfully");
 		}
 
 		return document;
@@ -230,12 +235,9 @@ public class CPSpecificationOptionIndexer
 				}
 				catch (PortalException portalException) {
 					if (_log.isWarnEnabled()) {
-						long cpSpecificationOptionId =
-							cpSpecificationOption.getCPSpecificationOptionId();
-
 						_log.warn(
 							"Unable to index commerce product specification " +
-								"option " + cpSpecificationOptionId,
+								"option " + cpSpecificationOption,
 							portalException);
 					}
 				}

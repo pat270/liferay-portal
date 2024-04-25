@@ -11,16 +11,14 @@ import com.liferay.commerce.price.list.model.CommercePriceEntry;
 import com.liferay.commerce.price.list.model.CommercePriceList;
 import com.liferay.commerce.price.list.model.CommerceTierPriceEntry;
 import com.liferay.commerce.price.list.service.CommerceTierPriceEntryService;
-import com.liferay.commerce.product.model.CPInstance;
-import com.liferay.commerce.product.model.CPInstanceUnitOfMeasure;
-import com.liferay.commerce.product.service.CPInstanceUnitOfMeasureLocalService;
+import com.liferay.commerce.product.service.CPInstanceLocalService;
+import com.liferay.commerce.util.CommerceQuantityFormatter;
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.headless.commerce.admin.pricing.dto.v2_0.TierPrice;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 import java.util.Locale;
 
@@ -67,71 +65,56 @@ public class TierPriceDTOConverter
 
 		return new TierPrice() {
 			{
-				actions = dtoConverterContext.getActions();
-				customFields = expandoBridge.getAttributes();
-				discountDiscovery =
-					commerceTierPriceEntry.isDiscountDiscovery();
-				discountLevel1 = commerceTierPriceEntry.getDiscountLevel1();
-				discountLevel2 = commerceTierPriceEntry.getDiscountLevel2();
-				discountLevel3 = commerceTierPriceEntry.getDiscountLevel3();
-				discountLevel4 = commerceTierPriceEntry.getDiscountLevel4();
-				displayDate = commerceTierPriceEntry.getDisplayDate();
-				expirationDate = commerceTierPriceEntry.getExpirationDate();
-				externalReferenceCode =
-					commerceTierPriceEntry.getExternalReferenceCode();
-				id = commerceTierPriceEntry.getCommerceTierPriceEntryId();
-				price = tierPriceEntryPrice.doubleValue();
-				priceEntryExternalReferenceCode =
-					commercePriceEntry.getExternalReferenceCode();
-				priceEntryId = commercePriceEntry.getCommercePriceEntryId();
-				priceFormatted = _formatPrice(
-					tierPriceEntryPrice, commerceCurrency, locale);
-
+				setActions(dtoConverterContext::getActions);
+				setCustomFields(expandoBridge::getAttributes);
+				setDiscountDiscovery(
+					commerceTierPriceEntry::isDiscountDiscovery);
+				setDiscountLevel1(commerceTierPriceEntry::getDiscountLevel1);
+				setDiscountLevel2(commerceTierPriceEntry::getDiscountLevel2);
+				setDiscountLevel3(commerceTierPriceEntry::getDiscountLevel3);
+				setDiscountLevel4(commerceTierPriceEntry::getDiscountLevel4);
+				setDisplayDate(commerceTierPriceEntry::getDisplayDate);
+				setExpirationDate(commerceTierPriceEntry::getExpirationDate);
+				setExternalReferenceCode(
+					commerceTierPriceEntry::getExternalReferenceCode);
+				setId(commerceTierPriceEntry::getCommerceTierPriceEntryId);
 				setMinimumQuantity(
+					() -> _commerceQuantityFormatter.format(
+						_cpInstanceLocalService.fetchCPInstance(
+							commercePriceEntry.getCProductId(),
+							commercePriceEntry.getCPInstanceUuid()),
+						commerceTierPriceEntry.getMinQuantity(),
+						commercePriceEntry.getUnitOfMeasureKey()));
+				setPrice(tierPriceEntryPrice::doubleValue);
+				setPriceEntryExternalReferenceCode(
+					commercePriceEntry::getExternalReferenceCode);
+				setPriceEntryId(commercePriceEntry::getCommercePriceEntryId);
+				setPriceFormatted(
 					() -> {
-						CPInstance cpInstance =
-							commercePriceEntry.getCPInstance();
+						BigDecimal price = tierPriceEntryPrice;
 
-						CPInstanceUnitOfMeasure cpInstanceUnitOfMeasure =
-							_cpInstanceUnitOfMeasureLocalService.
-								fetchCPInstanceUnitOfMeasure(
-									cpInstance.getCPInstanceId(),
-									commercePriceEntry.getUnitOfMeasureKey());
-
-						if (cpInstanceUnitOfMeasure != null) {
-							BigDecimal tierPriceEntryMinQuantity =
-								commerceTierPriceEntry.getMinQuantity();
-
-							return tierPriceEntryMinQuantity.setScale(
-								cpInstanceUnitOfMeasure.getPrecision(),
-								RoundingMode.HALF_UP);
+						if (price == null) {
+							price = BigDecimal.ZERO;
 						}
 
-						return commerceTierPriceEntry.getMinQuantity();
+						return _commercePriceFormatter.format(
+							commerceCurrency, price, locale);
 					});
+				setUnitOfMeasureKey(commercePriceEntry::getUnitOfMeasureKey);
 			}
 		};
-	}
-
-	private String _formatPrice(
-			BigDecimal price, CommerceCurrency commerceCurrency, Locale locale)
-		throws Exception {
-
-		if (price == null) {
-			price = BigDecimal.ZERO;
-		}
-
-		return _commercePriceFormatter.format(commerceCurrency, price, locale);
 	}
 
 	@Reference
 	private CommercePriceFormatter _commercePriceFormatter;
 
 	@Reference
+	private CommerceQuantityFormatter _commerceQuantityFormatter;
+
+	@Reference
 	private CommerceTierPriceEntryService _commerceTierPriceEntryService;
 
 	@Reference
-	private CPInstanceUnitOfMeasureLocalService
-		_cpInstanceUnitOfMeasureLocalService;
+	private CPInstanceLocalService _cpInstanceLocalService;
 
 }

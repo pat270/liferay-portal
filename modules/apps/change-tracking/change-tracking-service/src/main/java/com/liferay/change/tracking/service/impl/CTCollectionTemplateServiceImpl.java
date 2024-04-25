@@ -23,7 +23,6 @@ import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
-import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.OrderByComparator;
 
 import java.util.List;
@@ -56,6 +55,7 @@ public class CTCollectionTemplateServiceImpl
 			getUserId(), name, description, json);
 	}
 
+	@Override
 	public List<CTCollectionTemplate> getCTCollectionTemplates(
 		String keywords, int start, int end,
 		OrderByComparator<CTCollectionTemplate> orderByComparator) {
@@ -90,6 +90,7 @@ public class CTCollectionTemplateServiceImpl
 		return ctCollectionTemplatePersistence.dslQuery(dslQuery);
 	}
 
+	@Override
 	public int getCTCollectionTemplatesCount(String keywords) {
 		String[] keywordsArray = _customSQL.keywords(
 			keywords, true, WildcardMode.SURROUND);
@@ -140,8 +141,5 @@ public class CTCollectionTemplateServiceImpl
 
 	@Reference(target = "(resource.name=" + CTConstants.RESOURCE_NAME + ")")
 	private PortletResourcePermission _portletResourcePermission;
-
-	@Reference
-	private UserLocalService _userLocalService;
 
 }

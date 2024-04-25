@@ -5,6 +5,10 @@
 
 package com.liferay.headless.admin.user.resource.v1_0.test;
 
+import com.liferay.account.constants.AccountConstants;
+import com.liferay.account.constants.AccountListTypeConstants;
+import com.liferay.account.model.AccountEntry;
+import com.liferay.account.service.AccountEntryLocalService;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.headless.admin.user.client.dto.v1_0.Phone;
 import com.liferay.portal.kernel.model.Contact;
@@ -18,7 +22,10 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.OrganizationTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.SynchronousMailTestRule;
 
 import java.util.List;
@@ -45,7 +52,16 @@ public class PhoneResourceTest extends BasePhoneResourceTestCase {
 		super.setUp();
 
 		_organization = OrganizationTestUtil.addOrganization();
+
 		_user = UserTestUtil.addGroupAdminUser(testGroup);
+
+		_accountEntry = _accountEntryLocalService.addAccountEntry(
+			_user.getUserId(), AccountConstants.PARENT_ACCOUNT_ENTRY_ID_DEFAULT,
+			RandomTestUtil.randomString(), null, null,
+			RandomTestUtil.randomString() + "@liferay.com", null, null,
+			AccountConstants.ACCOUNT_ENTRY_TYPE_GUEST,
+			WorkflowConstants.STATUS_APPROVED,
+			ServiceContextTestUtil.getServiceContext());
 	}
 
 	@Override
@@ -65,12 +81,66 @@ public class PhoneResourceTest extends BasePhoneResourceTestCase {
 	}
 
 	@Override
+	protected Phone testGetAccountByExternalReferenceCodePhonesPage_addPhone(
+			String externalReferenceCode, Phone phone)
+		throws Exception {
+
+		return _addPhone(
+			phone, AccountEntry.class.getName(),
+			_accountEntry.getAccountEntryId(),
+			AccountListTypeConstants.ACCOUNT_ENTRY_PHONE);
+	}
+
+	@Override
+	protected String
+			testGetAccountByExternalReferenceCodePhonesPage_getExternalReferenceCode()
+		throws Exception {
+
+		return _accountEntry.getExternalReferenceCode();
+	}
+
+	@Override
+	protected Phone testGetAccountPhonesPage_addPhone(
+			Long accountId, Phone phone)
+		throws Exception {
+
+		return _addPhone(
+			phone, AccountEntry.class.getName(), accountId,
+			AccountListTypeConstants.ACCOUNT_ENTRY_PHONE);
+	}
+
+	@Override
+	protected Long testGetAccountPhonesPage_getAccountId() throws Exception {
+		return _accountEntry.getAccountEntryId();
+	}
+
+	@Override
+	protected Phone
+			testGetOrganizationByExternalReferenceCodePhonesPage_addPhone(
+				String externalReferenceCode, Phone phone)
+		throws Exception {
+
+		return _addPhone(
+			phone, Organization.class.getName(),
+			_organization.getOrganizationId(),
+			ListTypeConstants.ORGANIZATION_PHONE);
+	}
+
+	@Override
+	protected String
+			testGetOrganizationByExternalReferenceCodePhonesPage_getExternalReferenceCode()
+		throws Exception {
+
+		return _organization.getExternalReferenceCode();
+	}
+
+	@Override
 	protected Phone testGetOrganizationPhonesPage_addPhone(
 			String organizationId, Phone phone)
 		throws Exception {
 
 		return _addPhone(
-			phone, _organization.getModelClassName(),
+			phone, Organization.class.getName(),
 			_organization.getOrganizationId(),
 			ListTypeConstants.ORGANIZATION_PHONE);
 	}
@@ -85,6 +155,25 @@ public class PhoneResourceTest extends BasePhoneResourceTestCase {
 		return _addPhone(
 			randomPhone(), Contact.class.getName(), _user.getContactId(),
 			ListTypeConstants.CONTACT_PHONE);
+	}
+
+	@Override
+	protected Phone
+			testGetUserAccountByExternalReferenceCodePhonesPage_addPhone(
+				String externalReferenceCode, Phone phone)
+		throws Exception {
+
+		return _addPhone(
+			phone, Contact.class.getName(), _user.getContactId(),
+			ListTypeConstants.CONTACT_PHONE);
+	}
+
+	@Override
+	protected String
+			testGetUserAccountByExternalReferenceCodePhonesPage_getExternalReferenceCode()
+		throws Exception {
+
+		return _user.getExternalReferenceCode();
 	}
 
 	@Override
@@ -119,7 +208,8 @@ public class PhoneResourceTest extends BasePhoneResourceTestCase {
 	}
 
 	private long _getListTypeId(String listTypeId) {
-		List<ListType> listTypes = ListTypeServiceUtil.getListTypes(listTypeId);
+		List<ListType> listTypes = ListTypeServiceUtil.getListTypes(
+			_user.getCompanyId(), listTypeId);
 
 		ListType listType = listTypes.get(0);
 
@@ -136,6 +226,12 @@ public class PhoneResourceTest extends BasePhoneResourceTestCase {
 			}
 		};
 	}
+
+	@DeleteAfterTestRun
+	private AccountEntry _accountEntry;
+
+	@Inject
+	private AccountEntryLocalService _accountEntryLocalService;
 
 	@DeleteAfterTestRun
 	private Organization _organization;

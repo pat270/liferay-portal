@@ -1,5 +1,6 @@
-const options = input.attributes.options || [];
 const numberOfOptions = configuration.numberOfOptions;
+const options = input.attributes.options || [];
+const values = input.value.split(',');
 
 const button = fragmentElement.querySelector('.multiselect-list-button');
 const fieldSet = fragmentElement.querySelector('.multiselect-list-fieldset');
@@ -8,7 +9,12 @@ const allInputs = Array.from(
 	fragmentElement.querySelectorAll('.custom-control-input')
 );
 
-if (layoutMode === 'edit') {
+if (input.attributes?.readOnly) {
+	allInputs.forEach((input) => {
+		input.addEventListener('click', (event) => event.preventDefault());
+	});
+}
+else if (layoutMode === 'edit') {
 	allInputs.forEach((input) => {
 		input.setAttribute('disabled', true);
 	});
@@ -48,6 +54,10 @@ if (numberOfOptions < options.length) {
 			input.value = option.value;
 			// eslint-disable-next-line no-undef
 			input.id = `${fragmentEntryLinkNamespace}-checkbox-${option.value}`;
+
+			if (values.includes(option.value)) {
+				input.checked = true;
+			}
 
 			if (layoutMode === 'edit') {
 				input.setAttribute('disabled', true);

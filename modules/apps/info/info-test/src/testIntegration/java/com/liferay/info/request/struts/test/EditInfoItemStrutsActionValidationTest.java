@@ -13,29 +13,28 @@ import com.liferay.fragment.listener.FragmentEntryLinkListener;
 import com.liferay.fragment.listener.FragmentEntryLinkListenerRegistry;
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.service.FragmentEntryLinkLocalService;
-import com.liferay.info.exception.InfoFormException;
 import com.liferay.info.exception.InfoFormInvalidGroupException;
 import com.liferay.info.exception.InfoFormInvalidLayoutModeException;
 import com.liferay.info.exception.InfoFormValidationException;
 import com.liferay.info.field.InfoField;
 import com.liferay.info.field.InfoFieldSet;
 import com.liferay.info.field.type.TextInfoFieldType;
-import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.info.item.capability.InfoItemCapability;
 import com.liferay.info.localized.InfoLocalizedValue;
 import com.liferay.info.test.util.MockInfoServiceRegistrationHolder;
 import com.liferay.info.test.util.info.item.creator.MockInfoItemCreator;
 import com.liferay.info.test.util.model.MockObject;
 import com.liferay.layout.page.template.info.item.capability.EditPageInfoItemCapability;
-import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
 import com.liferay.layout.provider.LayoutStructureProvider;
 import com.liferay.layout.test.util.ContentLayoutTestUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
+import com.liferay.portal.kernel.exception.InfoFormException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
@@ -62,8 +61,10 @@ import com.liferay.segments.service.SegmentsExperienceLocalService;
 
 import java.util.List;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -84,6 +85,18 @@ public class EditInfoItemStrutsActionValidationTest {
 		new AggregateTestRule(
 			new LiferayIntegrationTestRule(),
 			PermissionCheckerMethodTestRule.INSTANCE);
+
+	@BeforeClass
+	public static void setUpClass() throws Exception {
+		_originalName = PrincipalThreadLocal.getName();
+
+		PrincipalThreadLocal.setName(TestPropsValues.getUserId());
+	}
+
+	@AfterClass
+	public static void tearDownClass() throws Exception {
+		PrincipalThreadLocal.setName(_originalName);
+	}
 
 	@Before
 	public void setUp() throws Exception {
@@ -131,14 +144,10 @@ public class EditInfoItemStrutsActionValidationTest {
 	public void testEditInfoItemStrutsActionCaptchaException()
 		throws Exception {
 
-		InfoField<TextInfoFieldType> infoField = _getInfoField();
-
 		try (MockInfoServiceRegistrationHolder
 				mockInfoServiceRegistrationHolder =
 					new MockInfoServiceRegistrationHolder(
 						InfoFieldSet.builder(
-						).infoFieldSetEntries(
-							ListUtil.fromArray(infoField)
 						).build(),
 						_editPageInfoItemCapability)) {
 
@@ -148,7 +157,7 @@ public class EditInfoItemStrutsActionValidationTest {
 				true,
 				String.valueOf(
 					_portal.getClassNameId(MockObject.class.getName())),
-				"0", layout, _layoutStructureProvider, infoField);
+				"0", layout, _layoutStructureProvider);
 
 			MockHttpServletRequest mockHttpServletRequest =
 				_getMockHttpServletRequest(layout, formItemId);
@@ -176,18 +185,20 @@ public class EditInfoItemStrutsActionValidationTest {
 			}
 
 			Assert.assertTrue(
-				SessionErrors.contains(mockHttpServletRequest, formItemId));
+				SessionErrors.contains(
+					mockHttpServletRequest, InfoFormException.class));
 
 			InfoFormException infoFormException =
 				(InfoFormException)SessionErrors.get(
-					mockHttpServletRequest, formItemId);
+					mockHttpServletRequest, InfoFormException.class);
 
 			Assert.assertTrue(
 				infoFormException instanceof
 					InfoFormValidationException.InvalidCaptcha);
 
 			Assert.assertFalse(
-				SessionMessages.contains(mockHttpServletRequest, formItemId));
+				SessionMessages.contains(
+					mockHttpServletRequest, InfoFormException.class));
 		}
 	}
 
@@ -584,6 +595,7 @@ public class EditInfoItemStrutsActionValidationTest {
 
 		inputFragmentEntryLink =
 			_fragmentEntryLinkLocalService.updateFragmentEntryLink(
+				TestPropsValues.getUserId(),
 				inputFragmentEntryLink.getFragmentEntryLinkId(),
 				editableValuesJSONObject.toString());
 
@@ -598,6 +610,8 @@ public class EditInfoItemStrutsActionValidationTest {
 
 	private static final String _CLASS_NAME =
 		"com.liferay.captcha.simplecaptcha.SimpleCaptchaImpl";
+
+	private static String _originalName;
 
 	@Inject
 	private CompanyLocalService _companyLocalService;
@@ -619,13 +633,6 @@ public class EditInfoItemStrutsActionValidationTest {
 
 	@DeleteAfterTestRun
 	private Group _group;
-
-	@Inject
-	private InfoItemServiceRegistry _infoItemServiceRegistry;
-
-	@Inject
-	private LayoutPageTemplateStructureLocalService
-		_layoutPageTemplateStructureLocalService;
 
 	@Inject
 	private LayoutStructureProvider _layoutStructureProvider;

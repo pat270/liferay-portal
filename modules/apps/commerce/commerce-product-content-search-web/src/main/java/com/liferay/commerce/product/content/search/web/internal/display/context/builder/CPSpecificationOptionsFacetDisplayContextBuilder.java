@@ -10,6 +10,7 @@ import com.liferay.commerce.product.content.search.web.internal.display.context.
 import com.liferay.commerce.product.content.search.web.internal.display.context.CPSpecificationOptionsSearchFacetDisplayContext;
 import com.liferay.commerce.product.content.search.web.internal.display.context.CPSpecificationOptionsSearchFacetTermDisplayContext;
 import com.liferay.commerce.product.content.search.web.internal.util.CPSpecificationOptionFacetsUtil;
+import com.liferay.commerce.product.model.CPOptionCategory;
 import com.liferay.commerce.product.model.CPSpecificationOption;
 import com.liferay.commerce.product.service.CPSpecificationOptionLocalService;
 import com.liferay.petra.string.StringPool;
@@ -33,6 +34,7 @@ import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -85,7 +87,8 @@ public class CPSpecificationOptionsFacetDisplayContextBuilder
 	}
 
 	private CPSpecificationOptionsSearchFacetDisplayContext
-		_buildCPSpecificationOptionsSearchFacetDisplayContext() {
+			_buildCPSpecificationOptionsSearchFacetDisplayContext()
+		throws PortalException {
 
 		_tuples = _getTuples(_facet.getFacetCollector());
 
@@ -105,6 +108,17 @@ public class CPSpecificationOptionsFacetDisplayContextBuilder
 			_getFirstParameterValueString());
 		cpSpecificationOptionsSearchFacetDisplayContext.setRenderRequest(
 			_renderRequest);
+
+		CPSpecificationOption cpSpecificationOption = _getCPSpecificationOption(
+			_facet.getFieldName());
+
+		cpSpecificationOptionsSearchFacetDisplayContext.setPriority(
+			_getCPSpecificationOptionsSearchFacetDisplayContextPriority(
+				cpSpecificationOption.getCPOptionCategory(),
+				cpSpecificationOption,
+				_portletSharedSearchResponse.getPortletPreferences(
+					_renderRequest)));
+
 		cpSpecificationOptionsSearchFacetDisplayContext.setTermDisplayContexts(
 			_buildTermDisplayContexts());
 		cpSpecificationOptionsSearchFacetDisplayContext.
@@ -115,10 +129,11 @@ public class CPSpecificationOptionsFacetDisplayContextBuilder
 	}
 
 	private CPSpecificationOptionsSearchFacetDisplayContext
-		_buildCPSpecificationOptionsSearchFacetDisplayContext(
-			Facet facet,
-			PortletSharedSearchResponse portletSharedSearchResponse,
-			RenderRequest renderRequest) {
+			_buildCPSpecificationOptionsSearchFacetDisplayContext(
+				Facet facet,
+				PortletSharedSearchResponse portletSharedSearchResponse,
+				RenderRequest renderRequest)
+		throws PortalException {
 
 		_facet = facet;
 
@@ -136,10 +151,14 @@ public class CPSpecificationOptionsFacetDisplayContextBuilder
 		_portletSharedSearchResponse = _portletSharedSearchRequest.search(
 			_renderRequest);
 
-		List<Facet> filledFacets = new ArrayList<>();
-
 		Facet facet = _portletSharedSearchResponse.getFacet(
 			CPField.SPECIFICATION_NAMES);
+
+		if (facet == null) {
+			return Collections.emptyList();
+		}
+
+		List<Facet> filledFacets = new ArrayList<>();
 
 		FacetCollector facetCollector = facet.getFacetCollector();
 
@@ -157,6 +176,8 @@ public class CPSpecificationOptionsFacetDisplayContextBuilder
 				_frequenciesVisible);
 			_maxTerms = GetterUtil.getInteger(
 				portletPreferences.getValue("maxTerms", null), _maxTerms);
+			_specificationsOrder = portletPreferences.getValue(
+				"specificationsOrder", _specificationsOrder);
 		}
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)_renderRequest.getAttribute(
@@ -168,11 +189,17 @@ public class CPSpecificationOptionsFacetDisplayContextBuilder
 					themeDisplay.getCompanyId(), termCollector.getTerm());
 
 			if (cpSpecificationOption.isFacetable()) {
-				filledFacets.add(
+				Facet cpSpecificationOptionFacet =
 					_portletSharedSearchResponse.getFacet(
 						CPSpecificationOptionFacetsUtil.getIndexFieldName(
 							termCollector.getTerm(),
-							themeDisplay.getLanguageId())));
+							themeDisplay.getLanguageId()));
+
+				if (cpSpecificationOptionFacet == null) {
+					continue;
+				}
+
+				filledFacets.add(cpSpecificationOptionFacet);
 			}
 		}
 
@@ -192,8 +219,32 @@ public class CPSpecificationOptionsFacetDisplayContextBuilder
 						filledFacet, _portletSharedSearchResponse,
 						_renderRequest);
 
-			cpSpecificationOptionsSearchFacetDisplayContexts.add(
-				cpSpecificationOptionsSearchFacetDisplayContext);
+			List<CPSpecificationOptionsSearchFacetTermDisplayContext>
+				cpSpecificationOptionsSearchFacetTermDisplayContexts =
+					cpSpecificationOptionsSearchFacetDisplayContext.
+						getTermDisplayContexts();
+
+			if (!cpSpecificationOptionsSearchFacetTermDisplayContexts.
+					isEmpty()) {
+
+				cpSpecificationOptionsSearchFacetDisplayContexts.add(
+					cpSpecificationOptionsSearchFacetDisplayContext);
+			}
+		}
+
+		if (_specificationsOrder != null) {
+			Comparator<CPSpecificationOptionsSearchFacetDisplayContext>
+				comparator = Comparator.comparing(
+					CPSpecificationOptionsSearchFacetDisplayContext::
+						getPriority);
+
+			if (_specificationsOrder.equals("label-priority:desc") ||
+				_specificationsOrder.equals("priority:desc")) {
+
+				comparator = comparator.reversed();
+			}
+
+			cpSpecificationOptionsSearchFacetDisplayContexts.sort(comparator);
 		}
 
 		return cpSpecificationOptionsSearchFacetDisplayContexts;
@@ -309,6 +360,33 @@ public class CPSpecificationOptionsFacetDisplayContextBuilder
 				getCPSpecificationOptionKeyFromIndexFieldName(fieldName));
 	}
 
+	private double _getCPSpecificationOptionsSearchFacetDisplayContextPriority(
+		CPOptionCategory cpOptionCategory,
+		CPSpecificationOption cpSpecificationOption,
+		PortletPreferences portletPreferences) {
+
+		double priority = GetterUtil.DEFAULT_DOUBLE;
+
+		if (portletPreferences != null) {
+			String specificationsOrder = portletPreferences.getValue(
+				"specificationsOrder", _specificationsOrder);
+
+			if (specificationsOrder.equals("label-priority:asc") ||
+				specificationsOrder.equals("label-priority:desc")) {
+
+				priority = cpSpecificationOption.getPriority();
+			}
+			else if (cpOptionCategory != null) {
+				priority = cpOptionCategory.getPriority();
+			}
+		}
+		else if (cpOptionCategory != null) {
+			priority = cpOptionCategory.getPriority();
+		}
+
+		return priority;
+	}
+
 	private String _getFirstParameterValueString() {
 		if (_parameterValues != null) {
 			for (String parameterValue : _parameterValues) {
@@ -381,6 +459,7 @@ public class CPSpecificationOptionsFacetDisplayContextBuilder
 	private PortletSharedSearchRequest _portletSharedSearchRequest;
 	private PortletSharedSearchResponse _portletSharedSearchResponse;
 	private RenderRequest _renderRequest;
+	private String _specificationsOrder = "priority:asc";
 	private List<Tuple> _tuples;
 
 }

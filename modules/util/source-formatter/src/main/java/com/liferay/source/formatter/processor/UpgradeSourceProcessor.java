@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * @author Hugo Huijswer
+ * @author Hugo Huijser
  */
 public class UpgradeSourceProcessor extends BaseSourceProcessor {
 
@@ -25,8 +25,8 @@ public class UpgradeSourceProcessor extends BaseSourceProcessor {
 	}
 
 	private static final String[] _INCLUDES = {
-		"**/*.bnd", "**/*.ftl", "**/*.gradle", "**/*.java", "**/*.jsp",
-		"**/*.jspf", "**/*.vm"
+		"**/*.bnd", "**/*.ftl", "**/*.gradle", "**/*.java", "**/*.json",
+		"**/*.jsp", "**/*.jspf", "**/*.scss", "**/*.vm"
 	};
 
 }

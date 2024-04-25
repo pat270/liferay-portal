@@ -1,7 +1,7 @@
 @component-name = "portal-batch-engine"
 definition {
 
-	property custom.properties = "feature.flag.COMMERCE-8087=true";
+	property custom.properties = "feature.flag.COMMERCE-8087=true${line.separator}feature.flag.LPS-186620=true";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.component.names = "Object";
@@ -28,7 +28,7 @@ definition {
 	@priority = 3
 	test JSONTConfigurationObjectContainsCallbackURL {
 		task ("When in Import/Export: exporting DSEnvelope Entity type with JSONT format with all fields to include selected") {
-			ImportExport.exportEntityWithAllFieldsInJsontFormat(entityType = "DSEnvelope (v1_0 - Liferay Digital Signature REST)");
+			ImportExport.exportEntityWithAllFieldsInJsontFormat(entityType = "BlogPosting (v1_0 - Liferay Headless Delivery)");
 		}
 
 		task ("And When I download generated file") {

@@ -30,10 +30,6 @@ definition {
 	tearDown {
 		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
 
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
-		//ACUtils.tearDownAC();
-
 		ACUtils.tearDownDXP();
 
 		if (${testLiferayVirtualInstance} == "true") {
@@ -42,6 +38,8 @@ definition {
 		else {
 			JSONGroup.deleteGroupByName(groupName = "Site Name");
 		}
+
+		ACUtils.tearDownAC();
 	}
 
 	@description = "Feature ID: LRAC-6433 | Automation ID: LRAC-10166 | Test Summary: Search Events Blocked List"
@@ -137,7 +135,7 @@ definition {
 	@description = "Bug: LRAC-10359 | Automation ID: LRAC-10360 | Test Summary: Sort blocked events by Event Name and Last Seen"
 	@priority = 4
 	test CanSortBlockedEventsByNameAndLastSeen {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Add a Web Content Display to page and display the custom event") {
 			var customEventName = ACCustomEvents.generateCustomEventName();
@@ -222,7 +220,7 @@ definition {
 	@description = "Feature ID: LRAC-6433 | Automation ID: LRAC-10164 | Test Summary: Check custom event list and blocked event list when more than 100 events are created"
 	@priority = 5
 	test CheckBlockedEventsListWhenMore100EventsCreated {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Add a Web Content Display to page and display the custom event") {
 			var customEventName = ACCustomEvents.generateCustomEventName();
@@ -304,7 +302,7 @@ definition {
 		task ("Try to unblock a custom event with the list having reached the limit") {
 			ACCustomEvents.unblockAllCustomEvents();
 
-			Alert.viewErrorMessage(errorMessage = "Error:Your workspace is over the event limit. Please remove some events from the allow list to continue. Visit our documentation to learn more.");
+			Alert.viewErrorMessage(errorMessage = "Error:Your workspace is over the event limit. Please remove some events from the allow list to continue. Visit our documentation (Opens a new window) to learn more.");
 
 			ACUtils.viewPartialNameList(nameList = ${customEventName});
 		}

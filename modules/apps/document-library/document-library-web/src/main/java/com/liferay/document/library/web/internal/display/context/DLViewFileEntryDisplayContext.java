@@ -5,6 +5,7 @@
 
 package com.liferay.document.library.web.internal.display.context;
 
+import com.liferay.document.library.constants.DLPortletKeys;
 import com.liferay.document.library.display.context.DLDisplayContextProvider;
 import com.liferay.document.library.display.context.DLViewFileVersionDisplayContext;
 import com.liferay.document.library.kernel.model.DLFileEntryConstants;
@@ -27,9 +28,10 @@ import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
-import com.liferay.portal.kernel.util.Html;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
@@ -55,13 +57,12 @@ public class DLViewFileEntryDisplayContext {
 
 	public DLViewFileEntryDisplayContext(
 		DLAdminDisplayContext dlAdminDisplayContext,
-		DLDisplayContextProvider dlDisplayContextProvider, Html html,
+		DLDisplayContextProvider dlDisplayContextProvider,
 		HttpServletRequest httpServletRequest, Language language, Portal portal,
 		RenderRequest renderRequest, RenderResponse renderResponse) {
 
 		_dlAdminDisplayContext = dlAdminDisplayContext;
 		_dlDisplayContextProvider = dlDisplayContextProvider;
-		_html = html;
 		_httpServletRequest = httpServletRequest;
 		_language = language;
 		_portal = portal;
@@ -172,14 +173,14 @@ public class DLViewFileEntryDisplayContext {
 		return _fileVersion;
 	}
 
-	public String getLockInfoCssClass() {
+	public String getLockInfoDisplayType() {
 		FileEntry fileEntry = getFileEntry();
 
 		if (!fileEntry.hasLock()) {
-			return "alert-danger";
+			return "danger";
 		}
 
-		return "alert-info";
+		return "info";
 	}
 
 	public String getLockInfoMessage(Locale locale) {
@@ -188,7 +189,7 @@ public class DLViewFileEntryDisplayContext {
 		if (!fileEntry.hasLock()) {
 			Lock lock = _getLock();
 
-			Format dateFormatDateTime = FastDateFormatFactoryUtil.getDateTime(
+			Format dateTimeFormat = FastDateFormatFactoryUtil.getDateTime(
 				locale, _themeDisplay.getTimeZone());
 
 			return _language.format(
@@ -196,11 +197,11 @@ public class DLViewFileEntryDisplayContext {
 				"you-cannot-modify-this-document-because-it-was-locked-by-x-" +
 					"on-x",
 				new Object[] {
-					_html.escape(
+					HtmlUtil.escape(
 						_portal.getUserName(
 							lock.getUserId(),
 							String.valueOf(lock.getUserId()))),
-					dateFormatDateTime.format(lock.getCreateDate())
+					dateTimeFormat.format(lock.getCreateDate())
 				},
 				false);
 		}
@@ -232,21 +233,29 @@ public class DLViewFileEntryDisplayContext {
 			return _redirect;
 		}
 
-		long parentFolderId = _getParentFolderId();
+		PortletDisplay portletDisplay = _themeDisplay.getPortletDisplay();
 
-		String mvcRenderCommandName = "/document_library/view";
+		String portletName = portletDisplay.getPortletName();
 
-		if (parentFolderId != DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
-			mvcRenderCommandName = "/document_library/view_folder";
+		if (portletName.equals(DLPortletKeys.DOCUMENT_LIBRARY) ||
+			portletName.equals(DLPortletKeys.DOCUMENT_LIBRARY_ADMIN)) {
+
+			long parentFolderId = _getParentFolderId();
+
+			String mvcRenderCommandName = "/document_library/view";
+
+			if (parentFolderId != DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
+				mvcRenderCommandName = "/document_library/view_folder";
+			}
+
+			_redirect = PortletURLBuilder.createRenderURL(
+				_renderResponse
+			).setMVCRenderCommandName(
+				mvcRenderCommandName
+			).setParameter(
+				"folderId", parentFolderId
+			).buildString();
 		}
-
-		_redirect = PortletURLBuilder.createRenderURL(
-			_renderResponse
-		).setMVCRenderCommandName(
-			mvcRenderCommandName
-		).setParameter(
-			"folderId", parentFolderId
-		).buildString();
 
 		return _redirect;
 	}
@@ -407,7 +416,6 @@ public class DLViewFileEntryDisplayContext {
 	private String _documentTitle;
 	private FileEntry _fileEntry;
 	private FileVersion _fileVersion;
-	private final Html _html;
 	private final HttpServletRequest _httpServletRequest;
 	private final HttpServletResponse _httpServletResponse;
 	private final Language _language;

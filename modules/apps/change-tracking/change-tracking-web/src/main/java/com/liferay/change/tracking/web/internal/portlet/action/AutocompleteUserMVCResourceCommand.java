@@ -22,7 +22,7 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
 import com.liferay.portal.kernel.service.UserLocalService;
-import com.liferay.portal.kernel.service.permission.PortletPermission;
+import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -88,14 +88,15 @@ public class AutocompleteUserMVCResourceCommand extends BaseMVCResourceCommand {
 		User user = themeDisplay.getUser();
 
 		long[] groupIds = user.getGroupIds();
+		long[] userGroupIds = user.getUserGroupIds();
 
-		if (ArrayUtil.isEmpty(groupIds)) {
+		if (ArrayUtil.isEmpty(groupIds) && ArrayUtil.isEmpty(userGroupIds)) {
 			return Collections.emptyList();
 		}
 
 		return _userLocalService.searchBySocial(
-			themeDisplay.getCompanyId(), groupIds, keywords, 0, 20,
-			new UserScreenNameComparator(true));
+			themeDisplay.getCompanyId(), groupIds, userGroupIds, keywords, 0,
+			20, new UserScreenNameComparator(true));
 	}
 
 	private JSONArray _getUsersJSONArray(ResourceRequest resourceRequest)
@@ -136,13 +137,13 @@ public class AutocompleteUserMVCResourceCommand extends BaseMVCResourceCommand {
 					"fullName", user.getFullName()
 				).put(
 					"hasPublicationsAccess",
-					_portletPermission.contains(
+					PortletPermissionUtil.contains(
 						permissionChecker, PortletKeys.PORTAL,
 						ActionKeys.VIEW_CONTROL_PANEL) &&
-					_portletPermission.contains(
+					PortletPermissionUtil.contains(
 						permissionChecker, CTPortletKeys.PUBLICATIONS,
 						ActionKeys.ACCESS_IN_CONTROL_PANEL) &&
-					_portletPermission.contains(
+					PortletPermissionUtil.contains(
 						permissionChecker, CTPortletKeys.PUBLICATIONS,
 						ActionKeys.VIEW)
 				).put(
@@ -164,9 +165,6 @@ public class AutocompleteUserMVCResourceCommand extends BaseMVCResourceCommand {
 
 	@Reference
 	private JSONFactory _jsonFactory;
-
-	@Reference
-	private PortletPermission _portletPermission;
 
 	@Reference
 	private UserLocalService _userLocalService;

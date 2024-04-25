@@ -6,7 +6,7 @@
 package com.liferay.portal.image;
 
 import com.liferay.portal.kernel.image.ImageBag;
-import com.liferay.portal.kernel.image.ImageTool;
+import com.liferay.portal.kernel.model.ImageConstants;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
@@ -91,12 +91,12 @@ public class ImageToolImplTest {
 
 	@Test
 	public void testRotation90Degrees() throws Exception {
-		ImageBag imageBag = _imageTool.read(
+		ImageBag imageBag = ImageToolUtil.read(
 			new File(_FILE_DIR, "rotation_90_degrees.jpg"));
 
 		RenderedImage originalImage = imageBag.getRenderedImage();
 
-		RenderedImage rotatedImage = _imageTool.rotate(originalImage, 90);
+		RenderedImage rotatedImage = ImageToolUtil.rotate(originalImage, 90);
 
 		Assert.assertEquals(originalImage.getHeight(), rotatedImage.getWidth());
 		Assert.assertEquals(originalImage.getWidth(), rotatedImage.getHeight());
@@ -105,7 +105,7 @@ public class ImageToolImplTest {
 	private void _testCrop(
 		RenderedImage renderedImage, int height, int width, int x, int y) {
 
-		RenderedImage croppedRenderedImage = _imageTool.crop(
+		RenderedImage croppedRenderedImage = ImageToolUtil.crop(
 			renderedImage, height, width, x, y);
 
 		Assert.assertEquals(
@@ -121,7 +121,7 @@ public class ImageToolImplTest {
 
 		// Crop bottom right
 
-		ImageBag imageBag = _imageTool.read(new File(_FILE_DIR, fileName));
+		ImageBag imageBag = ImageToolUtil.read(new File(_FILE_DIR, fileName));
 
 		RenderedImage image = imageBag.getRenderedImage();
 
@@ -173,7 +173,7 @@ public class ImageToolImplTest {
 		String expectedType = FileUtil.getExtension(fileName);
 
 		if (expectedType.equals("jpeg")) {
-			expectedType = ImageTool.TYPE_JPEG;
+			expectedType = ImageConstants.TYPE_JPEG;
 		}
 
 		RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r");
@@ -182,7 +182,7 @@ public class ImageToolImplTest {
 
 		randomAccessFile.readFully(bytes);
 
-		ImageBag imageBag = _imageTool.read(bytes);
+		ImageBag imageBag = ImageToolUtil.read(bytes);
 
 		RenderedImage resultImage = imageBag.getRenderedImage();
 
@@ -226,7 +226,5 @@ public class ImageToolImplTest {
 
 	private static final String _FILE_DIR =
 		"portal-impl/test/unit/com/liferay/portal/image/dependencies";
-
-	private final ImageTool _imageTool = ImageToolImpl.getInstance();
 
 }

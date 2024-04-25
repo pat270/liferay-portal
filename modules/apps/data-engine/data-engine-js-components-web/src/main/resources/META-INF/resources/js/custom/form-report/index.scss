@@ -175,10 +175,20 @@
 	}
 }
 
+.document-title-link {
+	color: #272833;
+	font-size: 0.875rem;
+	font-weight: 600;
+
+	&:hover {
+		color: #272833;
+	}
+}
+
 .lfr-de__form-report {
 	display: flex;
 	&-sidebar {
-		top: 56px;
+		top: var(--control-menu-container-height);
 		transform: translateX(100%);
 		transition: transform 0.3s ease-in-out;
 		width: 720px !important;

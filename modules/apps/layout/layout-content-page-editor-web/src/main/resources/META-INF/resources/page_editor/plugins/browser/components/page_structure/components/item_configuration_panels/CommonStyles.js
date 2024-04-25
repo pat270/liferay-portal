@@ -21,6 +21,7 @@ import {FieldSet, fieldIsDisabled} from './FieldSet';
 export function CommonStyles({
 	className,
 	commonStylesValues,
+	embedInCollapsableSection = true,
 	role = COMMON_STYLES_ROLES.styles,
 	item,
 }) {
@@ -68,10 +69,14 @@ export function CommonStyles({
 	return (
 		<>
 			<div
-				className={classNames('page-editor__common-styles', className)}
+				className={classNames(
+					'page-editor__common-styles panel-group-sm',
+					className
+				)}
 			>
 				{spacingFieldSets.length ? (
 					<FieldSet
+						embedInCollapsableSection={embedInCollapsableSection}
 						fields={[
 							{
 								displaySize: '',
@@ -96,6 +101,9 @@ export function CommonStyles({
 					return (
 						<FieldSet
 							description={fieldSet.description}
+							embedInCollapsableSection={
+								embedInCollapsableSection
+							}
 							fields={fieldSet.styles}
 							fragmentEntryLinks={fragmentEntryLinksRef.current}
 							item={item}

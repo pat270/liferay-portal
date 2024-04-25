@@ -9,15 +9,16 @@ import com.liferay.commerce.exception.NoSuchWarehouseItemException;
 import com.liferay.commerce.inventory.model.CommerceInventoryWarehouseItem;
 import com.liferay.commerce.inventory.service.CommerceInventoryWarehouseItemService;
 import com.liferay.commerce.product.constants.CPPortletKeys;
+import com.liferay.commerce.util.CommerceOrderItemQuantityFormatter;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.Portal;
+
+import java.math.BigDecimal;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -67,33 +68,35 @@ public class EditCommerceInventoryWarehouseItemMVCActionCommand
 
 	private CommerceInventoryWarehouseItem
 			_updateCommerceInventoryWarehouseItem(ActionRequest actionRequest)
-		throws PortalException {
-
-		long commerceInventoryWarehouseItemId = ParamUtil.getLong(
-			actionRequest, "commerceInventoryWarehouseItemId");
-		int quantity = ParamUtil.getInteger(actionRequest, "quantity");
+		throws Exception {
 
 		CommerceInventoryWarehouseItem commerceInventoryWarehouseItem = null;
 
-		if (commerceInventoryWarehouseItemId > 0) {
-			long mvccVersion = ParamUtil.getLong(actionRequest, "mvccVersion");
+		long commerceInventoryWarehouseItemId = ParamUtil.getLong(
+			actionRequest, "commerceInventoryWarehouseItemId");
 
+		BigDecimal quantity = _commerceOrderItemQuantityFormatter.parse(
+			actionRequest, "quantity");
+		String unitOfMeasureKey = ParamUtil.getString(
+			actionRequest, "unitOfMeasureKey");
+
+		if (commerceInventoryWarehouseItemId > 0) {
 			commerceInventoryWarehouseItem =
 				_commerceInventoryWarehouseItemService.
 					updateCommerceInventoryWarehouseItem(
-						commerceInventoryWarehouseItemId, quantity,
-						mvccVersion);
+						commerceInventoryWarehouseItemId,
+						ParamUtil.getLong(actionRequest, "mvccVersion"),
+						quantity, unitOfMeasureKey);
 		}
 		else {
-			long commerceInventoryWarehouseId = ParamUtil.getLong(
-				actionRequest, "commerceInventoryWarehouseId");
-			String sku = ParamUtil.getString(actionRequest, "sku");
-
 			commerceInventoryWarehouseItem =
 				_commerceInventoryWarehouseItemService.
 					addCommerceInventoryWarehouseItem(
-						StringPool.BLANK, commerceInventoryWarehouseId,
-						quantity, sku, StringPool.BLANK);
+						StringPool.BLANK,
+						ParamUtil.getLong(
+							actionRequest, "commerceInventoryWarehouseId"),
+						quantity, ParamUtil.getString(actionRequest, "sku"),
+						unitOfMeasureKey);
 		}
 
 		return commerceInventoryWarehouseItem;
@@ -104,6 +107,7 @@ public class EditCommerceInventoryWarehouseItemMVCActionCommand
 		_commerceInventoryWarehouseItemService;
 
 	@Reference
-	private Portal _portal;
+	private CommerceOrderItemQuantityFormatter
+		_commerceOrderItemQuantityFormatter;
 
 }

@@ -10,6 +10,8 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItemList;
+import com.liferay.organizations.search.OrganizationSearch;
+import com.liferay.organizations.search.OrganizationSearchTerms;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -34,8 +36,6 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.util.PropsValues;
-import com.liferay.portlet.usersadmin.search.OrganizationSearch;
-import com.liferay.portlet.usersadmin.search.OrganizationSearchTerms;
 import com.liferay.users.admin.web.internal.search.OrganizationChecker;
 
 import java.util.LinkedHashMap;
@@ -138,26 +138,26 @@ public class ViewOrganizationsManagementToolbarDisplayContext {
 		};
 	}
 
-	public List<DropdownItem> getFilterDropdownItems() {
-		return DropdownItemListBuilder.addGroup(
-			dropdownGroupItem -> {
-				dropdownGroupItem.setDropdownItems(
-					_getFilterNavigationDropdownItems());
-				dropdownGroupItem.setLabel(
-					LanguageUtil.get(
-						_httpServletRequest, "filter-by-navigation"));
-			}
-		).addGroup(
-			dropdownGroupItem -> {
-				dropdownGroupItem.setDropdownItems(_getOrderByDropdownItems());
-				dropdownGroupItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "order-by"));
-			}
-		).build();
-	}
-
 	public String getOrderByCol() {
 		return _organizationSearch.getOrderByCol();
+	}
+
+	public List<DropdownItem> getOrderByDropdownItems() {
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.setActive(Objects.equals(getOrderByCol(), "name"));
+				dropdownItem.setHref(getPortletURL(), "orderByCol", "name");
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "name"));
+			}
+		).add(
+			dropdownItem -> {
+				dropdownItem.setActive(Objects.equals(getOrderByCol(), "type"));
+				dropdownItem.setHref(getPortletURL(), "orderByCol", "type");
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "type"));
+			}
+		).build();
 	}
 
 	public String getOrderByType() {
@@ -301,35 +301,6 @@ public class ViewOrganizationsManagementToolbarDisplayContext {
 
 		return PortalPermissionUtil.contains(
 			themeDisplay.getPermissionChecker(), ActionKeys.ADD_ORGANIZATION);
-	}
-
-	private List<DropdownItem> _getFilterNavigationDropdownItems() {
-		return DropdownItemListBuilder.add(
-			dropdownItem -> {
-				dropdownItem.setActive(true);
-				dropdownItem.setHref(StringPool.BLANK);
-				dropdownItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "all"));
-			}
-		).build();
-	}
-
-	private List<DropdownItem> _getOrderByDropdownItems() {
-		return DropdownItemListBuilder.add(
-			dropdownItem -> {
-				dropdownItem.setActive(Objects.equals(getOrderByCol(), "name"));
-				dropdownItem.setHref(getPortletURL(), "orderByCol", "name");
-				dropdownItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "name"));
-			}
-		).add(
-			dropdownItem -> {
-				dropdownItem.setActive(Objects.equals(getOrderByCol(), "type"));
-				dropdownItem.setHref(getPortletURL(), "orderByCol", "type");
-				dropdownItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "type"));
-			}
-		).build();
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

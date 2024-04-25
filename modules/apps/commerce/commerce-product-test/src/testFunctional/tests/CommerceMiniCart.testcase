@@ -1,13 +1,14 @@
 @component-name = "portal-commerce"
 definition {
 
+	property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property release.feature.flags.disable.DISABLE_PRIVATE_LAYOUTS = "true";
 	property testray.main.component.name = "Shopping Experience";
 
 	setUp {
-		CommerceConfiguration.commerceSetUp();
+		CommerceConfiguration.commerceSetUp(minium = "true");
 	}
 
 	tearDown {
@@ -21,11 +22,7 @@ definition {
 
 		// TODO Review
 
-		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
-
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceProducts.searchProduct(search = "U-Joint");
 
@@ -91,11 +88,7 @@ definition {
 		var product = "U-Joint";
 		var productSku = "MIN55861";
 
-		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
-
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceNavigator.searchEntry(entryName = ${product});
 
@@ -175,9 +168,7 @@ definition {
 	test AssertQuantityInMiniCartItemCanBeOverlappedUsingNormalAndQuickAdd {
 		property portal.acceptance = "false";
 
-		task ("Given a Minium site with an account") {
-			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
-
+		task ("Given a commerce account is created") {
 			Navigator.openWithAppendToBaseURL(urlAppend = "web/minium");
 
 			CommerceNavigator.gotoMiniumSidebarItem(menuItem = "Account Management");
@@ -236,11 +227,7 @@ definition {
 		var product = "U-Joint";
 		var productSku = "MIN55861";
 
-		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
-
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceProducts.searchProduct(search = ${product});
 
@@ -322,11 +309,7 @@ definition {
 		var product = "U-Joint";
 		var productSku = "MIN55861";
 
-		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
-
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceProducts.searchProduct(search = ${product});
 
@@ -401,15 +384,68 @@ definition {
 		}
 	}
 
+	@description = "This is a test for COMMERCE-12621.Can view that product image cotains img tag and has the alt attribute "
+	@priority = 5
+	test CanAssertProductImagesAltAttribute {
+		property portal.acceptance = "true";
+
+		task ("Given a commerce account with a buyer user is created") {
+			CommerceEntry.addAccountEntryUser(
+				accountName = "Commerce Account",
+				accountType = "Business",
+				agreeToTermsAndAnswerReminderQuery = "true",
+				createNewAccount = "true",
+				requireReset = "false",
+				userEmailAddress = "buyer@liferay.com",
+				userFirstName = "Buyer",
+				userLastName = "User",
+				userRole = "Buyer",
+				userScreenName = "buyeruser",
+				userSiteMembership = "Minium");
+		}
+
+		task ("When the buyer adds the product to the cart and opens the mini-cart") {
+			User.logoutPG();
+
+			CommerceLogin.miniumLogin(
+				password = "test",
+				urlAppend = "web/minium",
+				userEmailAddress = "buyer@liferay.com");
+
+			FrontStore.addInitializerProductToCart(
+				productName = "U-Joint",
+				productQuantity = 1);
+
+			CommerceNavigator.gotoMiniCart();
+		}
+
+		task ("Then the buyer can check the alt attribute is present on the mini-cart and in the checkout") {
+			AssertElementPresent(
+				key_cartItemSku = "MIN55861",
+				locator1 = "CommerceAccelerators#MINI_CART_ITEM_THUMBNAIL");
+
+			CommerceCheckout.gotoCheckoutViaMiniCart();
+
+			CommerceCheckout.initializersCheckout(
+				newAddressAddress = "Test Address",
+				newAddressCity = "Test City",
+				newAddressCountry = "United States",
+				newAddressName = "Address Name",
+				newAddressZipCode = "Test Zip Code",
+				productImage = "U-Joint",
+				productName = "U-Joint",
+				productQuantity = 1,
+				productUnitPrice = 24,
+				shippingMethod = "Standard");
+		}
+	}
+
 	@description = "Verify products with long names are truncated in the mini-cart."
 	@priority = 3
 	test CanSeeProductNameTruncated {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
 		property portal.acceptance = "false";
 
-		task ("Given a Minium site with a buyer user") {
-			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
-
+		task ("Given a commerce account with a buyer user is created") {
 			CommerceEntry.addAccountEntryUser(
 				accountName = "Commerce Account",
 				accountType = "Business",
@@ -456,14 +492,9 @@ definition {
 	@description = "This is a test for COMMERCE-7870. CanUpdateSubscriptionProductQuantity"
 	@priority = 4
 	test CanUpdateSubscriptionProductQuantity {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
 		property portal.acceptance = "false";
 
-		task ("Given a Minium site with an account and buyer user") {
-			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
-
-			ApplicationsMenu.gotoSite(site = "Minium");
-
+		task ("Given a commerce account with a buyer user is created") {
 			CommerceEntry.addAccountEntryUser(
 				accountName = "Commerce Account",
 				accountType = "Business",
@@ -479,9 +510,7 @@ definition {
 		}
 
 		task ("And given a product with subscription") {
-			CommerceNavigator.gotoPortlet(
-				category = "Product Management",
-				portlet = "Products");
+			CommerceProducts.openProductsAdmin();
 
 			CommerceProducts.searchProduct(search = "ABS Sensor");
 
@@ -571,12 +600,7 @@ definition {
 	@description = "COMMERCE-10247 Verify that the buyer can complete the checkout using the mini cart widget"
 	@priority = 4
 	test CanUseMiniCartWidgetToCheckout {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
 		property portal.acceptance = "false";
-
-		task ("Given a Minium Site is created") {
-			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
-		}
 
 		task ("Given a buyer user associated with the Commerce Account") {
 			CommerceEntry.addAccountEntryUser(
@@ -636,14 +660,8 @@ definition {
 
 		var approvedCount = 0;
 
-		task ("Given a Minium Site is created") {
-			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
-		}
-
 		task ("Given the admin enabled the 'Buyer Order Approval Workflow' for Minium Portal") {
-			CommerceNavigator.gotoPortlet(
-				category = "Store Management",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -726,9 +744,7 @@ definition {
 	test ClickOnCartItemRedirectToProductDetails {
 		property portal.acceptance = "true";
 
-		task ("Given a Commerce Minium site") {
-			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
-
+		task ("Given a commerce account is created") {
 			ApplicationsMenu.gotoSite(site = "Minium");
 
 			CommerceNavigator.gotoMiniumSidebarItem(menuItem = "Account Management");
@@ -788,9 +804,7 @@ definition {
 	test ClickOnCartItemWidgetRedirectToProductDetails {
 		property portal.acceptance = "false";
 
-		task ("Given a Commerce Minium Site") {
-			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
-
+		task ("Given a commerce account is created") {
 			ApplicationsMenu.gotoSite(site = "Minium");
 
 			CommerceNavigator.gotoMiniumSidebarItem(menuItem = "Account Management");
@@ -828,12 +842,9 @@ definition {
 	@description = "COMMERCE-6335. As a buyer, I want to edit the quantity of an bundled product in the mini-cart using it's quantity selector and I want to view the changes applied to the mini-cart summary and the bundled items to change their quantity"
 	@priority = 5
 	test EditBundledProductQuantityFromMiniCart {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
 		property portal.acceptance = "true";
 
-		task ("Given a Commerce Account with a buyer user") {
-			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
-
+		task ("Given a commerce account with a buyer user is created") {
 			CommerceEntry.addAccountEntryUser(
 				accountName = "Commerce Account",
 				accountType = "Business",
@@ -873,9 +884,7 @@ definition {
 		}
 
 		task ("When creating a simple product with a set option value") {
-			CommerceNavigator.gotoPortlet(
-				category = "Product Management",
-				portlet = "Products");
+			CommerceProducts.openProductsAdmin();
 
 			CPCommerceCatalog.newProductsEntry(
 				productCatalog = "Minium",
@@ -911,7 +920,9 @@ definition {
 
 			CommerceEntry.gotoMenuTab(menuTab = "SKUs");
 
-			CommerceSKUs.addSKU(optionValuesList = "Black:10.0");
+			CommerceSKUs.addSKU(
+				optionValuesList = "Black:10.0",
+				priceList = "Minium Base Price List");
 
 			Refresh();
 		}
@@ -919,12 +930,9 @@ definition {
 		task ("and adding the product to the bundled product to the cart") {
 			ApplicationsMenu.gotoSite(site = "Minium");
 
-			CommerceAccelerators.viewAllVariants(productName = "Bundled Product");
-
-			FrontStore.addToCartFromProductDetails(
-				optionNamesAndValues = "Color:Black",
+			FrontStore.addInitializerProductToCart(
 				productName = "Bundled Product",
-				productSku = "BLACKSKU");
+				productQuantity = 1);
 		}
 
 		task ("Then as an admin and a buyer, the user is able to edit and view the bundled product details in the mini cart.") {
@@ -992,12 +1000,9 @@ definition {
 	@description = "COMMERCE-6333. As a buyer, I want to edit the quantity of an item in the mini-cart using the quantity selector and I want to view the changes applied to the mini-cart summary"
 	@priority = 5
 	test EditCartItemQuantityFromMiniCart {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
 		property portal.acceptance = "true";
 
-		task ("Given a Commerce account with a buyer user") {
-			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
-
+		task ("Given a commerce account with a buyer user is created") {
 			CommerceEntry.addAccountEntryUser(
 				accountName = "Commerce Account",
 				accountType = "Business",
@@ -1089,12 +1094,9 @@ definition {
 	@description = "COMMERCE-6330. As a buyer, I want to be able to empty my open cart after clicking on 'Remove All Items'(Yes/No)"
 	@priority = 3
 	test RemoveAllItemsFromMiniCart {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
 		property portal.acceptance = "false";
 
-		task ("Given a Minium site with a Commerce Account with a buyer user") {
-			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
-
+		task ("Given a commerce account with a buyer user is created") {
 			CommerceEntry.addAccountEntryUser(
 				accountName = "Commerce Account",
 				accountType = "Business",
@@ -1212,12 +1214,9 @@ definition {
 	@description = "COMMERCE-6331. As a buyer, I want to be able to remove an item from cart by clicking on the delete button('x')"
 	@priority = 3
 	test RemoveSingleCartItemFromMiniCart {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
 		property portal.acceptance = "false";
 
-		task ("Given a Minium site with a Commerce Account with a buyer user") {
-			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
-
+		task ("Given a commerce account with a buyer user is created") {
 			CommerceEntry.addAccountEntryUser(
 				accountName = "Commerce Account",
 				accountType = "Business",
@@ -1289,9 +1288,7 @@ definition {
 	test VerifyTheProductDetailPageRedirectWithTwoProducts {
 		property portal.acceptance = "false";
 
-		task ("Given a Commerce Minium Site") {
-			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
-
+		task ("Given a commerce account is created") {
 			ApplicationsMenu.gotoSite(site = "Minium");
 
 			CommerceNavigator.gotoMiniumSidebarItem(menuItem = "Account Management");
@@ -1360,11 +1357,7 @@ definition {
 		var product = "U-Joint";
 		var productSku = "MIN55861";
 
-		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
-
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceNavigator.searchEntry(entryName = ${product});
 
@@ -1462,11 +1455,7 @@ definition {
 		var product = "U-Joint";
 		var productSku = "MIN55861";
 
-		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
-
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceNavigator.searchEntry(entryName = ${product});
 
@@ -1562,12 +1551,9 @@ definition {
 	@description = "COMMERCE-6334. The user is able to view a bundled product details in the mini cart(Name, SKU, Bundled Items, Quantity, List Price, Image)"
 	@priority = 3
 	test ViewMiniCartBundledProductDetails {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
 		property portal.acceptance = "false";
 
-		task ("Given a Minium site with a Commerce Account with a buyer user") {
-			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
-
+		task ("Given a commerce account with a buyer user is created") {
 			CommerceEntry.addAccountEntryUser(
 				accountName = "Commerce Account",
 				accountType = "Business",
@@ -1607,9 +1593,7 @@ definition {
 		}
 
 		task ("When creating a simple product with a set option value") {
-			CommerceNavigator.gotoPortlet(
-				category = "Product Management",
-				portlet = "Products");
+			CommerceProducts.openProductsAdmin();
 
 			CPCommerceCatalog.newProductsEntry(
 				productCatalog = "Minium",
@@ -1645,7 +1629,9 @@ definition {
 
 			CommerceEntry.gotoMenuTab(menuTab = "SKUs");
 
-			CommerceSKUs.addSKU(optionValuesList = "Black:10.0");
+			CommerceSKUs.addSKU(
+				optionValuesList = "Black:10.0",
+				priceList = "Minium Base Price List");
 
 			Refresh();
 		}
@@ -1653,12 +1639,9 @@ definition {
 		task ("and adding the product to the bundled product to the cart") {
 			ApplicationsMenu.gotoSite(site = "Minium");
 
-			CommerceAccelerators.viewAllVariants(productName = "Bundled Product");
-
-			FrontStore.addToCartFromProductDetails(
-				optionNamesAndValues = "Color:Black",
+			FrontStore.addInitializerProductToCart(
 				productName = "Bundled Product",
-				productSku = "BLACKSKU");
+				productQuantity = 1);
 		}
 
 		task ("Then as an admin and a buyer, the user is able to view the bundled product details in the mini cart.") {
@@ -1708,12 +1691,9 @@ definition {
 	@description = "COMMERCE-6332. As a buyer, I want to view cart item details in the mini-cart(Name, SKU, Quantity, Options(if present), List Price, Image) and I want to be able to view the number of different products I have in my cart"
 	@priority = 5
 	test ViewMiniCartItemDetails {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
 		property portal.acceptance = "true";
 
-		task ("Given a Minium site with a Commerce Account with a buyer user") {
-			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
-
+		task ("Given a commerce account with a buyer user is created") {
 			CommerceEntry.addAccountEntryUser(
 				accountName = "Commerce Account",
 				accountType = "Business",
@@ -1835,11 +1815,7 @@ definition {
 	test ViewMiniCartItemWithBulkPrice {
 		property portal.acceptance = "false";
 
-		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
-
-		CommerceNavigator.gotoPortlet(
-			category = "Pricing",
-			portlet = "Price Lists");
+		CommerceNavigator.goToPriceListAdmin();
 
 		CommerceNavigator.gotoEntry(entryName = "Minium Base Price List");
 
@@ -1937,11 +1913,7 @@ definition {
 
 		// TODO Review
 
-		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
-
-		CommerceNavigator.gotoPortlet(
-			category = "Pricing",
-			portlet = "Discounts");
+		CommerceNavigator.goToDiscountAdmin();
 
 		Click(locator1 = "Button#PLUS");
 
@@ -1986,10 +1958,9 @@ definition {
 	test ViewMiniCartItemWithDiscountLevels {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// TODO Review
-
-		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
 		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
@@ -2008,9 +1979,7 @@ definition {
 
 		CommerceUtilities.checkSuccessAlertAppearsAndDisappears();
 
-		CommerceNavigator.gotoPortlet(
-			category = "Pricing",
-			portlet = "Price Lists");
+		CommerceNavigator.goToPriceListAdmin();
 
 		CommerceNavigator.gotoEntry(entryName = "Minium Base Price List");
 
@@ -2084,11 +2053,7 @@ definition {
 
 		// TODO Review
 
-		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
-
-		CommerceNavigator.gotoPortlet(
-			category = "Pricing",
-			portlet = "Discounts");
+		CommerceNavigator.goToDiscountAdmin();
 
 		Click(locator1 = "Button#PLUS");
 
@@ -2146,11 +2111,7 @@ definition {
 
 		// TODO Review
 
-		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
-
-		CommerceNavigator.gotoPortlet(
-			category = "Pricing",
-			portlet = "Discounts");
+		CommerceNavigator.goToDiscountAdmin();
 
 		Click(locator1 = "Button#PLUS");
 
@@ -2208,8 +2169,6 @@ definition {
 
 		// TODO Review
 
-		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
-
 		Navigator.openWithAppendToBaseURL(urlAppend = "web/minium");
 
 		CommerceNavigator.gotoMiniumSidebarItem(menuItem = "Account Management");
@@ -2242,11 +2201,7 @@ definition {
 
 		// TODO Review
 
-		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
-
-		CommerceNavigator.gotoPortlet(
-			category = "Pricing",
-			portlet = "Price Lists");
+		CommerceNavigator.goToPriceListAdmin();
 
 		CommerceNavigator.gotoEntry(entryName = "Minium Base Price List");
 

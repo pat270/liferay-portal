@@ -73,6 +73,25 @@ DigitalSignatureConfiguration digitalSignatureConfiguration = (DigitalSignatureC
 	</div>
 
 	<div class="form-group row">
+		<div class="col-md-6">
+			<aui:select disabled="<%= disabled %>" label="environment" name="environment" required="<%= true %>" value="<%= GetterUtil.getString(request.getAttribute(DigitalSignatureWebKeys.DIGITAL_SIGNATURE_ENVIRONMENT)) %>">
+				<aui:option label="" value="" />
+
+				<%
+				for (String environment : DigitalSignatureConstants.ENVIRONMENTS) {
+				%>
+
+					<aui:option label="<%= environment %>" value="<%= environment %>" />
+
+				<%
+				}
+				%>
+
+			</aui:select>
+		</div>
+	</div>
+
+	<div class="form-group row">
 		<div class="col-md-12">
 			<aui:input disabled="<%= disabled %>" label="rsa-private-key" name="rsaPrivateKey" type="textarea" value="<%= GetterUtil.getString(request.getAttribute(DigitalSignatureWebKeys.DIGITAL_SIGNATURE_RSA_PRIVATE_KEY)) %>" />
 		</div>

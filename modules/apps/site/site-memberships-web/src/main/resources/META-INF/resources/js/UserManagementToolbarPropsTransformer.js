@@ -74,6 +74,22 @@ export default function propsTransformer({portletNamespace, ...otherProps}) {
 		});
 	};
 
+	const selectTeams = (itemData) => {
+		openSelectionModal({
+			onSelect: (selectedItem) => {
+				const itemValue = JSON.parse(selectedItem.value);
+
+				location.href = addParams(
+					`${`${portletNamespace}teamId`}=${itemValue.teamId}`,
+					itemData.viewTeamURL
+				);
+			},
+			selectEventName: `${portletNamespace}selectTeams`,
+			title: Liferay.Language.get('select-team'),
+			url: itemData?.selectTeamsURL,
+		});
+	};
+
 	const selectUsers = (itemData) => {
 		openSelectionModal({
 			buttonAddLabel: Liferay.Language.get('done'),
@@ -137,6 +153,9 @@ export default function propsTransformer({portletNamespace, ...otherProps}) {
 		onFilterDropdownItemClick(event, {item}) {
 			if (item?.data?.action === 'selectRoles') {
 				selectRoles(item?.data);
+			}
+			else if (item?.data?.action === 'selectTeams') {
+				selectTeams(item?.data);
 			}
 		},
 	};

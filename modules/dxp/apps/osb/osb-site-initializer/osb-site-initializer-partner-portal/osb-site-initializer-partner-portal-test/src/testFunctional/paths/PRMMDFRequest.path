@@ -56,6 +56,16 @@
 	<td></td>
 </tr>
 <tr>
+	<td>MDF_ID</td>
+	<td>xpath=(//tbody//th//*[contains(.,'${key_mdfType}-${key_requestID}')])</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MDF_ID_BY_INDEX</td>
+	<td>xpath=(//tbody//th//*[contains(.,'${key_mdfType}-')])[${key_index}]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>STATUS_BUTTON</td>
 	<td>//div[@class='status-buttons']//button[contains(text(),'${key_statusButton}')]</td>
 	<td></td>
@@ -122,7 +132,7 @@
 </tr>
 <tr>
 	<td>ACTIVITY_TOTAL_COST</td>
-	<td>//*[@route='mdf-request-form']//div[contains(@class,'text-paragraph') and contains(text(),'Total cost')]//following-sibling::div</td>
+	<td>//*[@path='mdf-request-form']//div[contains(@class,'text-paragraph') and contains(text(),'Total cost')]//following-sibling::div</td>
 	<td></td>
 </tr>
 <tr>

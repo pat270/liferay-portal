@@ -7,7 +7,7 @@ package com.liferay.object.admin.rest.resource.v1_0.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.object.admin.rest.client.dto.v1_0.ObjectRelationship;
-import com.liferay.object.constants.ObjectDefinitionConstants;
+import com.liferay.object.admin.rest.resource.v1_0.test.util.ObjectDefinitionTestUtil;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.petra.string.StringPool;
@@ -16,9 +16,6 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
-import com.liferay.portal.vulcan.util.LocalizedMapUtil;
-
-import java.util.Collections;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -31,6 +28,7 @@ import org.junit.runner.RunWith;
  * @author Javier Gamarra
  * @author Murilo Stodolni
  */
+@FeatureFlags("LPS-187142")
 @RunWith(Arquillian.class)
 public class ObjectRelationshipResourceTest
 	extends BaseObjectRelationshipResourceTestCase {
@@ -40,8 +38,10 @@ public class ObjectRelationshipResourceTest
 	public void setUp() throws Exception {
 		super.setUp();
 
-		_objectDefinition1 = _addObjectDefinition();
-		_objectDefinition2 = _addObjectDefinition();
+		_objectDefinition1 =
+			ObjectDefinitionTestUtil.addCustomObjectDefinition();
+		_objectDefinition2 =
+			ObjectDefinitionTestUtil.addCustomObjectDefinition();
 	}
 
 	@After
@@ -84,7 +84,6 @@ public class ObjectRelationshipResourceTest
 	public void testGraphQLGetObjectRelationshipNotFound() {
 	}
 
-	@FeatureFlags("LPS-167253")
 	@Override
 	@Test
 	public void testPostObjectDefinitionObjectRelationship() throws Exception {
@@ -116,10 +115,68 @@ public class ObjectRelationshipResourceTest
 	}
 
 	@Override
+	@Test
+	public void testPutObjectRelationshipByExternalReferenceCode()
+		throws Exception {
+
+		// TODO Modify REST builder because of LPS-201121
+
+		ObjectRelationship postObjectRelationship =
+			testPutObjectRelationshipByExternalReferenceCode_addObjectRelationship();
+
+		ObjectRelationship randomObjectRelationship =
+			randomObjectRelationship();
+
+		ObjectRelationship putObjectRelationship =
+			objectRelationshipResource.
+				putObjectRelationshipByExternalReferenceCode(
+					postObjectRelationship.getExternalReferenceCode(),
+					randomObjectRelationship);
+
+		assertEquals(randomObjectRelationship, putObjectRelationship);
+		assertValid(putObjectRelationship);
+
+		ObjectRelationship getObjectRelationship =
+			objectRelationshipResource.getObjectRelationship(
+				putObjectRelationship.getId());
+
+		assertEquals(randomObjectRelationship, getObjectRelationship);
+		assertValid(getObjectRelationship);
+
+		ObjectRelationship newObjectRelationship =
+			testPutObjectRelationshipByExternalReferenceCode_createObjectRelationship();
+
+		putObjectRelationship =
+			objectRelationshipResource.
+				putObjectRelationshipByExternalReferenceCode(
+					newObjectRelationship.getExternalReferenceCode(),
+					newObjectRelationship);
+
+		assertEquals(newObjectRelationship, putObjectRelationship);
+		assertValid(putObjectRelationship);
+
+		getObjectRelationship =
+			objectRelationshipResource.getObjectRelationship(
+				putObjectRelationship.getId());
+
+		assertEquals(newObjectRelationship, getObjectRelationship);
+
+		Assert.assertEquals(
+			newObjectRelationship.getExternalReferenceCode(),
+			putObjectRelationship.getExternalReferenceCode());
+	}
+
+	@Override
+	protected String[] getIgnoredEntityFieldNames() {
+		return new String[] {"dateCreated", "dateModified", "label", "userId"};
+	}
+
+	@Override
 	protected ObjectRelationship randomObjectRelationship() throws Exception {
 		ObjectRelationship objectRelationship =
 			super.randomObjectRelationship();
 
+		objectRelationship.setEdge(false);
 		objectRelationship.setName("a" + RandomTestUtil.randomString());
 		objectRelationship.setObjectDefinitionExternalReferenceCode1(
 			_objectDefinition1.getExternalReferenceCode());
@@ -214,16 +271,13 @@ public class ObjectRelationshipResourceTest
 			randomObjectRelationship());
 	}
 
-	private ObjectDefinition _addObjectDefinition() throws Exception {
-		String value = "A" + RandomTestUtil.randomString();
+	@Override
+	protected ObjectRelationship
+			testPutObjectRelationshipByExternalReferenceCode_addObjectRelationship()
+		throws Exception {
 
-		return _objectDefinitionLocalService.addCustomObjectDefinition(
-			TestPropsValues.getUserId(), false, false,
-			LocalizedMapUtil.getLocalizedMap(value), value, null, null,
-			LocalizedMapUtil.getLocalizedMap(value), true,
-			ObjectDefinitionConstants.SCOPE_COMPANY,
-			ObjectDefinitionConstants.STORAGE_TYPE_DEFAULT,
-			Collections.emptyList());
+		return testPostObjectDefinitionObjectRelationship_addObjectRelationship(
+			randomObjectRelationship());
 	}
 
 	private ObjectDefinition _objectDefinition1;

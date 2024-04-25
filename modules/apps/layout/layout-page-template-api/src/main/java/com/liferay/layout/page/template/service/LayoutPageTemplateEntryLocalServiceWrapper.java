@@ -114,13 +114,13 @@ public class LayoutPageTemplateEntryLocalServiceWrapper
 	@Override
 	public LayoutPageTemplateEntry copyLayoutPageTemplateEntry(
 			long userId, long groupId, long layoutPageTemplateCollectionId,
-			long sourceLayoutPageTemplateEntryId,
+			long sourceLayoutPageTemplateEntryId, boolean copyPermissions,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws Exception {
 
 		return _layoutPageTemplateEntryLocalService.copyLayoutPageTemplateEntry(
 			userId, groupId, layoutPageTemplateCollectionId,
-			sourceLayoutPageTemplateEntryId, serviceContext);
+			sourceLayoutPageTemplateEntryId, copyPermissions, serviceContext);
 	}
 
 	/**
@@ -423,6 +423,14 @@ public class LayoutPageTemplateEntryLocalServiceWrapper
 
 	@Override
 	public java.util.List<LayoutPageTemplateEntry> getLayoutPageTemplateEntries(
+		long groupId, int status) {
+
+		return _layoutPageTemplateEntryLocalService.
+			getLayoutPageTemplateEntries(groupId, status);
+	}
+
+	@Override
+	public java.util.List<LayoutPageTemplateEntry> getLayoutPageTemplateEntries(
 		long groupId, long layoutPageTemplateCollectionId) {
 
 		return _layoutPageTemplateEntryLocalService.
@@ -632,6 +640,14 @@ public class LayoutPageTemplateEntryLocalServiceWrapper
 			primaryKeyObj);
 	}
 
+	@Override
+	public String getUniqueLayoutPageTemplateEntryName(
+		long groupId, String name, int type) {
+
+		return _layoutPageTemplateEntryLocalService.
+			getUniqueLayoutPageTemplateEntryName(groupId, name, type);
+	}
+
 	/**
 	 * Updates the layout page template entry in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
@@ -667,6 +683,16 @@ public class LayoutPageTemplateEntryLocalServiceWrapper
 		return _layoutPageTemplateEntryLocalService.
 			updateLayoutPageTemplateEntry(
 				layoutPageTemplateEntryId, previewFileEntryId);
+	}
+
+	@Override
+	public LayoutPageTemplateEntry updateLayoutPageTemplateEntry(
+			long layoutPageTemplateEntryId, long classNameId, long classTypeId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _layoutPageTemplateEntryLocalService.
+			updateLayoutPageTemplateEntry(
+				layoutPageTemplateEntryId, classNameId, classTypeId);
 	}
 
 	@Override

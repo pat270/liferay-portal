@@ -33,7 +33,7 @@ List<KBArticle> kbArticles = KBArticleServiceUtil.getKBArticleVersions(scopeGrou
 				</div>
 
 				<div class="list-group-subtitle">
-					<liferay-ui:message arguments="<%= new Object[] {HtmlUtil.escape(curKBArticle.getUserName()), dateFormatDateTime.format(curKBArticle.getModifiedDate())} %>" key="by-x-on-x" translateArguments="<%= false %>" />
+					<liferay-ui:message arguments="<%= new Object[] {HtmlUtil.escape(curKBArticle.getUserName()), dateTimeFormat.format(curKBArticle.getModifiedDate())} %>" key="by-x-on-x" translateArguments="<%= false %>" />
 				</div>
 			</div>
 
@@ -104,7 +104,7 @@ List<KBArticle> kbArticles = KBArticleServiceUtil.getKBArticleVersions(scopeGrou
 	<portlet:param name="resourcePrimKey" value="<%= String.valueOf(kbArticle.getResourcePrimKey()) %>" />
 </portlet:renderURL>
 
-<script>
+<aui:script>
 	function <portlet:namespace />openCompareVersionsPopup(selectVersionUrl) {
 		Liferay.Util.openSelectionModal({
 			onSelect: function (event) {
@@ -126,4 +126,4 @@ List<KBArticle> kbArticles = KBArticleServiceUtil.getKBArticleVersions(scopeGrou
 			url: selectVersionUrl,
 		});
 	}
-</script>
+</aui:script>

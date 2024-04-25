@@ -19,22 +19,34 @@ import java.util.List;
 public interface LayoutsImporter {
 
 	public void importFile(
-			long userId, long groupId, File file, boolean overwrite)
+			long userId, long groupId, File file,
+			LayoutsImportStrategy layoutsImportStrategy,
+			boolean preserveItemIds)
 		throws Exception;
 
 	public List<LayoutsImporterResultEntry> importFile(
 			long userId, long groupId, long layoutPageTemplateCollectionId,
-			File file, boolean overwrite)
+			File file, LayoutsImportStrategy layoutsImportStrategy,
+			boolean preserveItemIds)
+		throws Exception;
+
+	public Layout importLayoutSettings(
+			long userId, Layout layout, String settingsJSON)
 		throws Exception;
 
 	public List<FragmentEntryLink> importPageElement(
 			Layout layout, LayoutStructure layoutStructure, String parentItemId,
-			String pageElementJSON, int position)
+			String pageElementJSON, int position, boolean preserveItemIds)
 		throws Exception;
 
 	public List<FragmentEntryLink> importPageElement(
 			Layout layout, LayoutStructure layoutStructure, String parentItemId,
-			String pageElementJSON, int position, long segmentsExperienceId)
+			String pageElementJSON, int position, boolean preserveItemIds,
+			long segmentsExperienceId)
+		throws Exception;
+
+	public boolean validateFile(
+			long groupId, long layoutPageTemplateCollectionId, File file)
 		throws Exception;
 
 }

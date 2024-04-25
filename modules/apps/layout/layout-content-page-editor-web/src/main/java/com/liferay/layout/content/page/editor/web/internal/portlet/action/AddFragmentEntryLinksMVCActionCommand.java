@@ -13,11 +13,12 @@ import com.liferay.fragment.model.FragmentComposition;
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.service.FragmentCompositionService;
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortletKeys;
-import com.liferay.layout.content.page.editor.web.internal.util.FragmentEntryLinkManager;
+import com.liferay.layout.content.page.editor.web.internal.manager.FragmentEntryLinkManager;
 import com.liferay.layout.content.page.editor.web.internal.util.layout.structure.LayoutStructureUtil;
 import com.liferay.layout.importer.LayoutsImporter;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.layout.util.structure.LayoutStructureItem;
+import com.liferay.portal.kernel.exception.LockedLayoutException;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
@@ -66,6 +67,10 @@ public class AddFragmentEntryLinksMVCActionCommand
 	@Override
 	protected JSONObject processException(
 		ActionRequest actionRequest, Exception exception) {
+
+		if (exception instanceof LockedLayoutException) {
+			return processLockedLayoutException(actionRequest);
+		}
 
 		String errorMessage = "an-unexpected-error-occurred";
 
@@ -119,7 +124,8 @@ public class AddFragmentEntryLinksMVCActionCommand
 		List<FragmentEntryLink> fragmentEntryLinks =
 			_layoutsImporter.importPageElement(
 				themeDisplay.getLayout(), layoutStructure, parentItemId,
-				fragmentComposition.getData(), position, segmentsExperienceId);
+				fragmentComposition.getData(), position, false,
+				segmentsExperienceId);
 
 		for (FragmentEntryLink fragmentEntryLink : fragmentEntryLinks) {
 			for (FragmentEntryLinkListener fragmentEntryLinkListener :

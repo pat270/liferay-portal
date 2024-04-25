@@ -6,7 +6,7 @@
 package com.liferay.portal.remote.jaxrs.whiteboard.internal.servlet.filter;
 
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
-import com.liferay.portal.kernel.util.MapUtil;
+import com.liferay.portal.remote.jaxrs.whiteboard.lifecycle.JAXRSLifecycle;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -18,6 +18,7 @@ import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Shuyang Zhou
@@ -27,8 +28,6 @@ public class JAXRSActivationFilterTracker {
 
 	@Activate
 	protected void activate(BundleContext bundleContext) {
-		_bundleContext = bundleContext;
-
 		_countDownLatch = new CountDownLatch(1);
 
 		_filterServiceRegistration = bundleContext.registerService(
@@ -49,12 +48,6 @@ public class JAXRSActivationFilterTracker {
 	@Deactivate
 	protected synchronized void deactivate() {
 		_unregister();
-
-		if (_readyServiceRegistration != null) {
-			_readyServiceRegistration.unregister();
-
-			_readyServiceRegistration = null;
-		}
 	}
 
 	protected synchronized void setReady() throws ServletException {
@@ -65,14 +58,9 @@ public class JAXRSActivationFilterTracker {
 			throw new ServletException(interruptedException);
 		}
 
-		if (_readyServiceRegistration == null) {
-			_readyServiceRegistration = _bundleContext.registerService(
-				Object.class, new Object(),
-				MapUtil.singletonDictionary(
-					"liferay.jaxrs.whiteboard.ready", true));
+		_jaxrsLifecycle.ensureReady();
 
-			_unregister();
-		}
+		_unregister();
 	}
 
 	private void _unregister() {
@@ -83,9 +71,10 @@ public class JAXRSActivationFilterTracker {
 		}
 	}
 
-	private BundleContext _bundleContext;
 	private CountDownLatch _countDownLatch;
 	private ServiceRegistration<Filter> _filterServiceRegistration;
-	private ServiceRegistration<?> _readyServiceRegistration;
+
+	@Reference
+	private JAXRSLifecycle _jaxrsLifecycle;
 
 }

@@ -6,11 +6,16 @@
 package com.liferay.portal.osgi.web.portlet.tracker.internal;
 
 import com.liferay.osgi.util.StringPlus;
-import com.liferay.petra.executor.PortalExecutorManager;
+import com.liferay.petra.concurrent.DCLSingleton;
+import com.liferay.petra.lang.SafeCloseable;
+import com.liferay.petra.lang.ThreadContextClassLoaderUtil;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.events.StartupHelperUtil;
 import com.liferay.portal.kernel.application.type.ApplicationType;
 import com.liferay.portal.kernel.bean.BeanProperties;
+import com.liferay.portal.kernel.concurrent.SystemExecutorServiceUtil;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.configuration.ConfigurationFactoryUtil;
 import com.liferay.portal.kernel.dependency.manager.DependencyManagerSyncUtil;
@@ -38,8 +43,8 @@ import com.liferay.portal.kernel.portlet.PortletInstanceFactory;
 import com.liferay.portal.kernel.security.permission.ResourceActions;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.PortletLocalService;
-import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
+import com.liferay.portal.kernel.servlet.InitialRequestSyncUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.DelegateProxyFactory;
@@ -49,6 +54,7 @@ import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.URLUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.xml.QName;
@@ -81,10 +87,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.function.Supplier;
 
 import javax.portlet.Portlet;
 import javax.portlet.PortletMode;
@@ -100,7 +105,6 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.http.runtime.HttpServiceRuntime;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
@@ -110,10 +114,10 @@ import org.osgi.util.tracker.ServiceTrackerCustomizer;
 @Component(service = {})
 public class PortletTracker
 	implements ServiceTrackerCustomizer
-		<Portlet, com.liferay.portal.kernel.model.Portlet> {
+		<Portlet, Supplier<com.liferay.portal.kernel.model.Portlet>> {
 
 	@Override
-	public com.liferay.portal.kernel.model.Portlet addingService(
+	public Supplier<com.liferay.portal.kernel.model.Portlet> addingService(
 		ServiceReference<Portlet> serviceReference) {
 
 		Portlet portlet = _bundleContext.getService(serviceReference);
@@ -165,25 +169,69 @@ public class PortletTracker
 			_log.info("Adding " + serviceReference);
 		}
 
-		portletModel = _addingPortlet(
-			serviceReference, portlet, portletName, portletId);
+		String finalPortletName = portletName;
+		String finalPortletId = portletId;
 
-		if (portletModel == null) {
-			_bundleContext.ungetService(serviceReference);
+		FutureTask<com.liferay.portal.kernel.model.Portlet> futureTask =
+			new FutureTask<>(
+				() -> {
+					com.liferay.portal.kernel.model.Portlet addedPortletModel =
+						_addingPortlet(
+							serviceReference, portlet, finalPortletName,
+							finalPortletId);
+
+					if (addedPortletModel == null) {
+						_bundleContext.ungetService(serviceReference);
+					}
+
+					return addedPortletModel;
+				});
+
+		if (_parallel &&
+			GetterUtil.getBoolean(
+				serviceReference.getProperty(
+					"com.liferay.portlet.deploy.parallel"),
+				true)) {
+
+			ExecutorService executorService =
+				SystemExecutorServiceUtil.getExecutorService();
+
+			executorService.submit(futureTask);
+		}
+		else {
+			futureTask.run();
 		}
 
-		return portletModel;
+		return () -> {
+			try {
+				return futureTask.get();
+			}
+			catch (Exception exception) {
+				return ReflectionUtil.throwException(exception);
+			}
+		};
 	}
 
 	@Override
 	public void modifiedService(
 		ServiceReference<Portlet> serviceReference,
-		com.liferay.portal.kernel.model.Portlet portletModel) {
+		Supplier<com.liferay.portal.kernel.model.Portlet>
+			portletModelSupplier) {
 
-		removedService(serviceReference, portletModel);
+		com.liferay.portal.kernel.model.Portlet portletModel =
+			portletModelSupplier.get();
 
-		com.liferay.portal.kernel.model.Portlet newPortletModel = addingService(
-			serviceReference);
+		removedService(serviceReference, portletModelSupplier);
+
+		Supplier<com.liferay.portal.kernel.model.Portlet>
+			newPortletModelSupplier = addingService(serviceReference);
+
+		if (newPortletModelSupplier == null) {
+			return;
+		}
+
+		com.liferay.portal.kernel.model.Portlet newPortletModel =
+			newPortletModelSupplier.get();
 
 		if (newPortletModel == null) {
 			return;
@@ -195,7 +243,15 @@ public class PortletTracker
 	@Override
 	public void removedService(
 		ServiceReference<Portlet> serviceReference,
-		com.liferay.portal.kernel.model.Portlet portletModel) {
+		Supplier<com.liferay.portal.kernel.model.Portlet>
+			portletModelSupplier) {
+
+		com.liferay.portal.kernel.model.Portlet portletModel =
+			portletModelSupplier.get();
+
+		if (portletModel == null) {
+			return;
+		}
 
 		portletModel.unsetReady();
 
@@ -262,13 +318,10 @@ public class PortletTracker
 	}
 
 	@Activate
-	protected void activate(
-		BundleContext bundleContext, Map<String, Object> properties) {
-
+	protected void activate(BundleContext bundleContext) {
 		_bundleContext = bundleContext;
 
-		_executorService = _portalExecutorManager.getPortalExecutor(
-			PortletTracker.class.getName());
+		_parallel = StartupHelperUtil.isDBWarmed();
 
 		_serviceTracker = new ServiceTracker<>(
 			_bundleContext, Portlet.class, this);
@@ -288,7 +341,7 @@ public class PortletTracker
 									_resourcePermissionLocalService),
 								null);
 
-					DependencyManagerSyncUtil.registerSyncCallable(
+					InitialRequestSyncUtil.registerSyncCallable(
 						() -> {
 							serviceRegistration.unregister();
 
@@ -309,8 +362,6 @@ public class PortletTracker
 	@Deactivate
 	protected void deactivate() {
 		_serviceTracker.close();
-
-		_executorService.shutdownNow();
 
 		if (_log.isInfoEnabled()) {
 			_log.info("Deactivated");
@@ -335,16 +386,12 @@ public class PortletTracker
 
 		ClassLoader bundleClassLoader = bundleWiring.getClassLoader();
 
-		Thread thread = Thread.currentThread();
-
-		ClassLoader contextClassLoader = thread.getContextClassLoader();
-
-		thread.setContextClassLoader(bundleWiring.getClassLoader());
-
 		ServiceRegistrations serviceRegistrations = _getServiceRegistrations(
 			bundle);
 
-		try {
+		try (SafeCloseable safeCloseable = ThreadContextClassLoaderUtil.swap(
+				bundleWiring.getClassLoader())) {
+
 			PortletApp portletApp = _createBundlePortletApp(
 				bundle, bundleClassLoader, serviceRegistrations);
 
@@ -434,9 +481,6 @@ public class PortletTracker
 				exception);
 
 			return null;
-		}
-		finally {
-			thread.setContextClassLoader(contextClassLoader);
 		}
 	}
 
@@ -1014,7 +1058,7 @@ public class PortletTracker
 
 			if (url != null) {
 				try {
-					defaultPreferences = StringUtil.read(url.openStream());
+					defaultPreferences = URLUtil.toString(url);
 				}
 				catch (IOException ioException) {
 					_log.error(ioException);
@@ -1313,34 +1357,10 @@ public class PortletTracker
 			return;
 		}
 
-		List<Future<Void>> futures = new ArrayList<>();
-
-		List<Company> companies = _companyLocalService.getCompanies();
-
-		for (Company company : companies) {
-			futures.add(
-				_executorService.submit(
-					() -> {
-						_portletLocalService.deployRemotePortlet(
-							new long[] {company.getCompanyId()}, portletModel,
-							ArrayUtil.toStringArray(categoryNames), false,
-							false);
-
-						return null;
-					}));
-		}
-
-		for (Future<Void> future : futures) {
-			try {
-				future.get();
-			}
-			catch (Exception exception) {
-				if (exception instanceof ExecutionException) {
-					throw new PortalException(exception.getCause());
-				}
-
-				throw new PortalException(exception);
-			}
+		for (Company company : _companyLocalService.getCompanies()) {
+			_portletLocalService.deployRemotePortlet(
+				new long[] {company.getCompanyId()}, portletModel,
+				ArrayUtil.toStringArray(categoryNames), false, false);
 		}
 
 		_portletLocalService.clearCache();
@@ -1443,21 +1463,15 @@ public class PortletTracker
 	@Reference
 	private DelegateProxyFactory _delegateProxyFactory;
 
-	private ExecutorService _executorService;
-
-	@Reference
-	private HttpServiceRuntime _httpServiceRuntime;
-
 	@Reference(
 		target = ModuleServiceLifecycle.PORTLETS_INITIALIZED, unbind = "-"
 	)
 	private ModuleServiceLifecycle _moduleServiceLifecycle;
 
-	@Reference
-	private Portal _portal;
+	private boolean _parallel;
 
 	@Reference
-	private PortalExecutorManager _portalExecutorManager;
+	private Portal _portal;
 
 	private com.liferay.portal.kernel.model.Portlet _portalPortletModel;
 
@@ -1474,9 +1488,6 @@ public class PortletTracker
 		new PortletPropertyValidator();
 
 	@Reference
-	private ResourceActionLocalService _resourceActionLocalService;
-
-	@Reference
 	private ResourceActions _resourceActions;
 
 	@Reference
@@ -1487,8 +1498,7 @@ public class PortletTracker
 
 	private final ConcurrentMap<Long, ServiceRegistrations>
 		_serviceRegistrations = new ConcurrentHashMap<>();
-	private ServiceTracker<Portlet, com.liferay.portal.kernel.model.Portlet>
-		_serviceTracker;
+	private ServiceTracker<Portlet, ?> _serviceTracker;
 
 	@Reference
 	private ServletContextHelperFactory _servletContextHelperFactory;
@@ -1503,22 +1513,46 @@ public class PortletTracker
 		public List<ResourcePermission> getResourcePermissions(
 			long companyId, String name) {
 
+			DCLSingleton<Map<String, List<ResourcePermission>>>
+				resourcePermissionsDCLSingleton = _resourcePermissionMaps.get(
+					companyId);
+
+			if (resourcePermissionsDCLSingleton == null) {
+				resourcePermissionsDCLSingleton = new DCLSingleton<>();
+
+				DCLSingleton<Map<String, List<ResourcePermission>>>
+					previousResourcePermissionsDCLSingleton =
+						_resourcePermissionMaps.putIfAbsent(
+							companyId, resourcePermissionsDCLSingleton);
+
+				if (previousResourcePermissionsDCLSingleton != null) {
+					resourcePermissionsDCLSingleton =
+						previousResourcePermissionsDCLSingleton;
+				}
+			}
+
 			Map<String, List<ResourcePermission>> resourcePermissions =
-				_resourcePermissionMaps.computeIfAbsent(
-					companyId,
-					_resourcePermissionLocalService::
-						getIndividualPortletResourcePermissions);
+				resourcePermissionsDCLSingleton.getSingleton(
+					() ->
+						_resourcePermissionLocalService.
+							getIndividualPortletResourcePermissions(companyId));
 
 			return resourcePermissions.get(name);
 		}
 
 		@Override
 		public void removeResourcePermissions(long companyId, String name) {
-			Map<String, List<ResourcePermission>> resourcePermissions =
-				_resourcePermissionMaps.get(companyId);
+			DCLSingleton<Map<String, List<ResourcePermission>>>
+				resourcePermissionsDCLSingleton = _resourcePermissionMaps.get(
+					companyId);
 
-			if (resourcePermissions != null) {
-				resourcePermissions.remove(name);
+			if (resourcePermissionsDCLSingleton != null) {
+				Map<String, List<ResourcePermission>> resourcePermissions =
+					resourcePermissionsDCLSingleton.getSingleton(() -> null);
+
+				if (resourcePermissions != null) {
+					resourcePermissions.remove(name);
+				}
 			}
 		}
 
@@ -1530,8 +1564,9 @@ public class PortletTracker
 
 		private final ResourcePermissionLocalService
 			_resourcePermissionLocalService;
-		private final Map<Long, Map<String, List<ResourcePermission>>>
-			_resourcePermissionMaps = new ConcurrentHashMap<>();
+		private final Map
+			<Long, DCLSingleton<Map<String, List<ResourcePermission>>>>
+				_resourcePermissionMaps = new ConcurrentHashMap<>();
 
 	}
 

@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayButton from '@clayui/button';
 import ClayLayout from '@clayui/layout';
 import {ReactPortal, useIsMounted} from '@liferay/frontend-js-react-web';
 import classNames from 'classnames';
@@ -21,14 +20,15 @@ import {useSelectItem} from '../contexts/ControlsContext';
 import {useEditableProcessorUniqueId} from '../contexts/EditableProcessorContext';
 import {useDispatch, useSelector} from '../contexts/StoreContext';
 import selectCanPublish from '../selectors/selectCanPublish';
-import redo from '../thunks/redo';
-import undo from '../thunks/undo';
 import {useDropClear} from '../utils/drag_and_drop/useDragAndDrop';
+import DiscardDraftButton from './DiscardDraftButton';
 import EditModeSelector from './EditModeSelector';
 import ExperimentsLabel from './ExperimentsLabel';
 import HideSidebarButton from './HideSidebarButton';
 import NetworkStatusBar from './NetworkStatusBar';
 import PublishButton from './PublishButton';
+import ToggleConfigurationSidebarButton from './ToggleConfigurationSidebarButton';
+import ToolbarActionsDropdown from './ToolbarActionsDropdown';
 import Translation from './Translation';
 import UnsafeHTML from './UnsafeHTML';
 import ViewportSizeSelector from './ViewportSizeSelector';
@@ -38,6 +38,7 @@ import Undo from './undo/Undo';
 const {Suspense, useCallback, useRef} = React;
 
 function ToolbarBody({className}) {
+	const discardDraftFormRef = useRef();
 	const dispatch = useDispatch();
 	const dropClearRef = useDropClear();
 	const editableProcessorUniqueId = useEditableProcessorUniqueId();
@@ -51,7 +52,6 @@ function ToolbarBody({className}) {
 	const canPublish = selectCanPublish(store);
 
 	const [publishPending, setPublishPending] = useState(false);
-	const [enableDiscard, setEnableDiscard] = useState(false);
 
 	const {
 		network,
@@ -60,19 +60,11 @@ function ToolbarBody({className}) {
 		selectedViewportSize,
 	} = store;
 
-	useEffect(() => {
-		setEnableDiscard(
-			network.status === SERVICE_NETWORK_STATUS_TYPES.draftSaved ||
-				store.draft ||
-				config.isConversionDraft
-		);
-	}, [network, store.draft]);
-
 	const loadingRef = useRef(() => {
 		Promise.all(
 			config.toolbarPlugins.map((toolbarPlugin) => {
-				const {pluginEntryPoint} = toolbarPlugin;
-				const promise = load(pluginEntryPoint, pluginEntryPoint);
+				const {pluginClass} = toolbarPlugin;
+				const promise = load(pluginClass, pluginClass);
 
 				const app = {
 					Actions,
@@ -81,13 +73,13 @@ function ToolbarBody({className}) {
 					store,
 				};
 
-				return register(pluginEntryPoint, promise, {
+				return register(pluginClass, promise, {
 					app,
 					toolbarPlugin,
 				}).then((plugin) => {
 					if (!plugin) {
 						throw new Error(
-							`Failed to get instance from ${pluginEntryPoint}`
+							`Failed to get instance from ${pluginClass}`
 						);
 					}
 					else if (isMounted()) {
@@ -123,19 +115,6 @@ function ToolbarBody({className}) {
 		}, [])
 	);
 
-	const handleDiscardDraft = (event) => {
-		openConfirmModal({
-			message: Liferay.Language.get(
-				'are-you-sure-you-want-to-discard-current-draft-and-apply-latest-published-changes'
-			),
-			onConfirm: (isConfirmed) => {
-				if (!isConfirmed) {
-					event.preventDefault();
-				}
-			},
-		});
-	};
-
 	const onPublish = () => {
 		if (!config.masterUsed) {
 			setPublishPending(true);
@@ -154,28 +133,11 @@ function ToolbarBody({className}) {
 		}
 	};
 
-	const onUndo = () => {
-		dispatch(undo({store}));
-	};
-
-	const onRedo = () => {
-		dispatch(redo({store}));
-	};
-
 	const deselectItem = (event) => {
 		if (event.target === event.currentTarget) {
 			selectItem(null);
 		}
 	};
-
-	let draftButtonLabel = Liferay.Language.get('discard-draft');
-
-	if (config.isConversionDraft) {
-		draftButtonLabel = Liferay.Language.get('discard-conversion-draft');
-	}
-	else if (config.singleSegmentsExperienceMode) {
-		draftButtonLabel = Liferay.Language.get('discard-variant');
-	}
 
 	let publishButtonLabel = Liferay.Language.get('publish');
 
@@ -209,14 +171,15 @@ function ToolbarBody({className}) {
 			)}
 			onClick={deselectItem}
 			ref={dropClearRef}
+			size={Liferay?.FeatureFlags?.['LPS-184404'] ? false : 'xl'}
 		>
 			<ZoomAlert />
 
 			<ul className="navbar-nav start" onClick={deselectItem}>
 				{config.toolbarPlugins.map(
-					({loadingPlaceholder, pluginEntryPoint}) => {
+					({loadingPlaceholder, pluginClass}) => {
 						return (
-							<li className="nav-item" key={pluginEntryPoint}>
+							<li className="nav-item" key={pluginClass}>
 								<ErrorBoundary>
 									<Suspense
 										fallback={
@@ -230,7 +193,7 @@ function ToolbarBody({className}) {
 									>
 										<ToolbarSection
 											getInstance={getInstance}
-											pluginId={pluginEntryPoint}
+											pluginId={pluginClass}
 										/>
 									</Suspense>
 								</ErrorBoundary>
@@ -279,15 +242,15 @@ function ToolbarBody({className}) {
 					<NetworkStatusBar {...network} />
 				</li>
 
-				<li className="nav-item">
-					<Undo onRedo={onRedo} onUndo={onUndo} />
+				<li className="d-lg-flex d-none nav-item">
+					<Undo />
 				</li>
 
 				<li className="nav-item">
 					<EditModeSelector />
 				</li>
 
-				<li className="nav-item">
+				<li className="d-lg-flex d-none nav-item">
 					<ul className="navbar-nav">
 						<li className="nav-item">
 							<HideSidebarButton />
@@ -295,19 +258,20 @@ function ToolbarBody({className}) {
 					</ul>
 				</li>
 
-				<li className="nav-item">
-					<form action={config.discardDraftURL} method="POST">
-						<ClayButton
-							className="btn btn-secondary"
-							disabled={!enableDiscard}
-							displayType="secondary"
-							onClick={handleDiscardDraft}
-							size="sm"
-							type="submit"
-						>
-							{draftButtonLabel}
-						</ClayButton>
+				<li className="d-lg-flex d-none nav-item">
+					<form
+						action={config.discardDraftURL}
+						method="POST"
+						ref={discardDraftFormRef}
+					>
+						<DiscardDraftButton />
 					</form>
+				</li>
+
+				<li className="d-lg-none nav-item">
+					<ToolbarActionsDropdown
+						discardDraftFormRef={discardDraftFormRef}
+					/>
 				</li>
 
 				<li className="nav-item">
@@ -317,6 +281,10 @@ function ToolbarBody({className}) {
 						label={publishButtonLabel}
 						onPublish={onPublish}
 					/>
+				</li>
+
+				<li className="d-md-none nav-item">
+					<ToggleConfigurationSidebarButton />
 				</li>
 			</ul>
 		</ClayLayout.ContainerFluid>

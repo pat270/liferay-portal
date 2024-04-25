@@ -17,10 +17,12 @@ renderResponse.setTitle(ParamUtil.getString(request, "fdsViewLabel"));
 %>
 
 <react:component
-	module="js/FDSView"
+	module="{FDSView} from frontend-data-set-views-web"
 	props='<%=
 		HashMapBuilder.<String, Object>put(
 			"fdsClientExtensionCellRenderers", fdsViewsDisplayContext.getFDSCellRendererCETsJSONArray()
+		).put(
+			"fdsFilterClientExtensions", fdsViewsDisplayContext.getFDSFilterCETsJSONArray()
 		).put(
 			"fdsViewId", ParamUtil.getString(request, "fdsViewId")
 		).put(
@@ -29,6 +31,8 @@ renderResponse.setTitle(ParamUtil.getString(request, "fdsViewLabel"));
 			"namespace", liferayPortletResponse.getNamespace()
 		).put(
 			"saveFDSFieldsURL", fdsViewsDisplayContext.getSaveFDSFieldsURL()
+		).put(
+			"spritemap", themeDisplay.getPathThemeSpritemap()
 		).build()
 	%>'
 />

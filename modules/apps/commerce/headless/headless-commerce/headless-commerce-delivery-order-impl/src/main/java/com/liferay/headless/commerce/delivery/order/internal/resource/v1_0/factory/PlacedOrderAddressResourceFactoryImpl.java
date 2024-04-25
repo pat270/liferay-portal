@@ -72,7 +72,12 @@ public class PlacedOrderAddressResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _placedOrderAddressResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, PlacedOrderAddressResource>
+					placedOrderAddressResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_placedOrderAddressResourceProxyProviderFunction;
+
+				return placedOrderAddressResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -232,10 +237,6 @@ public class PlacedOrderAddressResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, PlacedOrderAddressResource>
-		_placedOrderAddressResourceProxyProviderFunction =
-			_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -271,6 +272,15 @@ public class PlacedOrderAddressResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function
+			<InvocationHandler, PlacedOrderAddressResource>
+				_placedOrderAddressResourceProxyProviderFunction =
+					_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

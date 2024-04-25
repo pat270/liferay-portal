@@ -1014,69 +1014,6 @@ public class AssetTagUtil {
 	}
 
 	/**
-	 * Returns the asset tag where groupId = &#63; and name = &#63; or throws a <code>NoSuchTagException</code> if it could not be found.
-	 *
-	 * @param groupId the group ID
-	 * @param name the name
-	 * @return the matching asset tag
-	 * @throws NoSuchTagException if a matching asset tag could not be found
-	 */
-	public static AssetTag findByG_N(long groupId, String name)
-		throws com.liferay.asset.kernel.exception.NoSuchTagException {
-
-		return getPersistence().findByG_N(groupId, name);
-	}
-
-	/**
-	 * Returns the asset tag where groupId = &#63; and name = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param groupId the group ID
-	 * @param name the name
-	 * @return the matching asset tag, or <code>null</code> if a matching asset tag could not be found
-	 */
-	public static AssetTag fetchByG_N(long groupId, String name) {
-		return getPersistence().fetchByG_N(groupId, name);
-	}
-
-	/**
-	 * Returns the asset tag where groupId = &#63; and name = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
-	 *
-	 * @param groupId the group ID
-	 * @param name the name
-	 * @param useFinderCache whether to use the finder cache
-	 * @return the matching asset tag, or <code>null</code> if a matching asset tag could not be found
-	 */
-	public static AssetTag fetchByG_N(
-		long groupId, String name, boolean useFinderCache) {
-
-		return getPersistence().fetchByG_N(groupId, name, useFinderCache);
-	}
-
-	/**
-	 * Removes the asset tag where groupId = &#63; and name = &#63; from the database.
-	 *
-	 * @param groupId the group ID
-	 * @param name the name
-	 * @return the asset tag that was removed
-	 */
-	public static AssetTag removeByG_N(long groupId, String name)
-		throws com.liferay.asset.kernel.exception.NoSuchTagException {
-
-		return getPersistence().removeByG_N(groupId, name);
-	}
-
-	/**
-	 * Returns the number of asset tags where groupId = &#63; and name = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param name the name
-	 * @return the number of matching asset tags
-	 */
-	public static int countByG_N(long groupId, String name) {
-		return getPersistence().countByG_N(groupId, name);
-	}
-
-	/**
 	 * Returns all the asset tags where groupId = &#63; and name LIKE &#63;.
 	 *
 	 * @param groupId the group ID
@@ -1595,9 +1532,10 @@ public class AssetTagUtil {
 	 *
 	 * @param pk the primary key of the asset tag
 	 * @param assetEntryPK the primary key of the asset entry
+	 * @return <code>true</code> if an association between the asset tag and the asset entry was added; <code>false</code> if they were already associated
 	 */
-	public static void addAssetEntry(long pk, long assetEntryPK) {
-		getPersistence().addAssetEntry(pk, assetEntryPK);
+	public static boolean addAssetEntry(long pk, long assetEntryPK) {
+		return getPersistence().addAssetEntry(pk, assetEntryPK);
 	}
 
 	/**
@@ -1605,11 +1543,12 @@ public class AssetTagUtil {
 	 *
 	 * @param pk the primary key of the asset tag
 	 * @param assetEntry the asset entry
+	 * @return <code>true</code> if an association between the asset tag and the asset entry was added; <code>false</code> if they were already associated
 	 */
-	public static void addAssetEntry(
+	public static boolean addAssetEntry(
 		long pk, com.liferay.asset.kernel.model.AssetEntry assetEntry) {
 
-		getPersistence().addAssetEntry(pk, assetEntry);
+		return getPersistence().addAssetEntry(pk, assetEntry);
 	}
 
 	/**
@@ -1617,9 +1556,10 @@ public class AssetTagUtil {
 	 *
 	 * @param pk the primary key of the asset tag
 	 * @param assetEntryPKs the primary keys of the asset entries
+	 * @return <code>true</code> if at least one association between the asset tag and the asset entries was added; <code>false</code> if they were all already associated
 	 */
-	public static void addAssetEntries(long pk, long[] assetEntryPKs) {
-		getPersistence().addAssetEntries(pk, assetEntryPKs);
+	public static boolean addAssetEntries(long pk, long[] assetEntryPKs) {
+		return getPersistence().addAssetEntries(pk, assetEntryPKs);
 	}
 
 	/**
@@ -1627,11 +1567,12 @@ public class AssetTagUtil {
 	 *
 	 * @param pk the primary key of the asset tag
 	 * @param assetEntries the asset entries
+	 * @return <code>true</code> if at least one association between the asset tag and the asset entries was added; <code>false</code> if they were all already associated
 	 */
-	public static void addAssetEntries(
+	public static boolean addAssetEntries(
 		long pk, List<com.liferay.asset.kernel.model.AssetEntry> assetEntries) {
 
-		getPersistence().addAssetEntries(pk, assetEntries);
+		return getPersistence().addAssetEntries(pk, assetEntries);
 	}
 
 	/**

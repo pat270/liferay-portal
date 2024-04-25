@@ -28,11 +28,9 @@ definition {
 	@priority = 4
 	test CanBeTranslatedWithDifferentInstanceLanguages {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Instance Settings");
+		PortalSettings.openInstanceSettingsAdmin();
 
 		SystemSettings.gotoConfiguration(
 			configurationCategory = "Localization",
@@ -81,10 +79,7 @@ definition {
 			webContentContent = "WC WebContent Content en-US",
 			webContentTitle = "WC WebContent Title en-US");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Instance Settings");
+		PortalSettings.openInstanceSettingsAdmin();
 
 		SystemSettings.gotoConfiguration(
 			configurationCategory = "Localization",
@@ -347,9 +342,13 @@ definition {
 			locator1 = "TextInput#TITLE",
 			value1 = "Test");
 
-		DERenderer.assertDataInSelectFromListField(
-			fieldLabel = "Select from List",
-			optionValue = "Option 1");
+		Click(
+			key_fieldName = "Select from List",
+			locator1 = "FormFields#SELECT_FIELD");
+
+		AssertElementPresent(
+			key_menuItem = "Option 1",
+			locator1 = "MenuItem#DROPDOWN_MENU_ITEM");
 
 		PortletEntry.changeLocale(locale = "zh-CN");
 
@@ -357,9 +356,13 @@ definition {
 			locator1 = "TextInput#TITLE",
 			value1 = "测试");
 
-		DERenderer.assertDataInSelectFromListField(
-			fieldLabel = "下拉列表",
-			optionValue = "Option 2");
+		Click(
+			key_fieldName = "下拉列表",
+			locator1 = "FormFields#SELECT_FIELD");
+
+		AssertElementPresent(
+			key_menuItem = "Option 2",
+			locator1 = "MenuItem#DROPDOWN_MENU_ITEM");
 	}
 
 	@description = "Verify that is possible to choose different options for Single Selection field for a translated language"
@@ -536,6 +539,7 @@ definition {
 	@priority = 5
 	test CanDefaulfLanguageChangeTranslationsAfterEdited {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
@@ -571,10 +575,7 @@ definition {
 
 		WebContentStructures.saveCP();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Instance Settings");
+		PortalSettings.openInstanceSettingsAdmin();
 
 		SystemSettings.gotoConfiguration(
 			configurationCategory = "Localization",
@@ -605,10 +606,7 @@ definition {
 				fieldName = "Numeric");
 		}
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Instance Settings");
+		PortalSettings.openInstanceSettingsAdmin();
 
 		SystemSettings.gotoConfiguration(
 			configurationCategory = "Localization",
@@ -672,11 +670,9 @@ definition {
 	@priority = 5
 	test CanDefaultLanguageBeChanged {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Instance Settings");
+		PortalSettings.openInstanceSettingsAdmin();
 
 		SystemSettings.gotoConfiguration(
 			configurationCategory = "Localization",
@@ -695,10 +691,7 @@ definition {
 			key_locale = "pt-BR",
 			locator1 = "Translation#CURRENT_LOCALE");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Instance Settings");
+		PortalSettings.openInstanceSettingsAdmin();
 
 		SystemSettings.gotoConfiguration(
 			configurationCategory = "Localization",
@@ -712,6 +705,7 @@ definition {
 	@priority = 5
 	test CanDefaultLanguageBeEditedAndRemainTranslations {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
@@ -749,10 +743,7 @@ definition {
 
 		WebContentStructures.saveCP();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Instance Settings");
+		PortalSettings.openInstanceSettingsAdmin();
 
 		SystemSettings.gotoConfiguration(
 			configurationCategory = "Localization",
@@ -787,10 +778,7 @@ definition {
 				fieldPlaceholder = "Placeholder Text ${language}");
 		}
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Instance Settings");
+		PortalSettings.openInstanceSettingsAdmin();
 
 		SystemSettings.gotoConfiguration(
 			configurationCategory = "Localization",
@@ -804,11 +792,9 @@ definition {
 	@priority = 3
 	test CanFieldWithoutTranslationFollowsDefaultLanguage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Instance Settings");
+		PortalSettings.openInstanceSettingsAdmin();
 
 		SystemSettings.gotoConfiguration(
 			configurationCategory = "Localization",
@@ -841,10 +827,7 @@ definition {
 			key_locale = "pt-BR",
 			locator1 = "Translation#CURRENT_LOCALE");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Instance Settings");
+		PortalSettings.openInstanceSettingsAdmin();
 
 		SystemSettings.gotoConfiguration(
 			configurationCategory = "Localization",
@@ -1152,7 +1135,7 @@ definition {
 
 		DERenderer.assertDataInColorField(
 			fieldLabel = "颜色",
-			value = "ff0d0d");
+			value = "FF0D0D");
 	}
 
 	@description = "Verify that is possible to translate input data on the Date Field"
@@ -1818,11 +1801,9 @@ definition {
 	@priority = 4
 	test CanPortalLanguageBeChanged {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Instance Settings");
+		PortalSettings.openInstanceSettingsAdmin();
 
 		SystemSettings.gotoConfiguration(
 			configurationCategory = "Localization",
@@ -1863,10 +1844,7 @@ definition {
 				fieldFieldLabelEdit = "Numeric - ${language}");
 		}
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Instance Settings");
+		PortalSettings.openInstanceSettingsAdmin();
 
 		SystemSettings.gotoConfiguration(
 			configurationCategory = "Localization",

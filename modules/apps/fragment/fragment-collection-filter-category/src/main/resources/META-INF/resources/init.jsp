@@ -5,8 +5,8 @@
  */
 --%>
 
-<%@ taglib uri="http://liferay.com/tld/react" prefix="react" %><%@
-taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
+<%@ taglib uri="http://liferay.com/tld/clay" prefix="clay" %><%@
+taglib uri="http://liferay.com/tld/react" prefix="react" %>
 
 <%@ page import="com.liferay.fragment.collection.filter.category.display.context.FragmentCollectionFilterCategoryDisplayContext" %>
 

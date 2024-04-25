@@ -27,7 +27,7 @@
 </tr>
 <tr>
 	<td>ASSET_LIST_ENTRY_TYPE</td>
-	<td>//*[contains(@class,'list-group-item')]//h6[contains(.,'${key_type}')]</td>
+	<td>//*[contains(@class,'list-group-item')]//div[contains(.,'${key_type}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -62,7 +62,7 @@
 </tr>
 <tr>
 	<td>VARIATION_TITLE</td>
-	<td>//nav[@role='navigation']//a//span[text()='${key_variation}']</td>
+	<td>//nav[@role='navigation']//a[normalize-space()='${key_variation}']</td>
 	<td></td>
 </tr>
 <tr>

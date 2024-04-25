@@ -1,9 +1,9 @@
-@component-name = "portal-lima"
+@component-name = "portal-content-management"
 definition {
 
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Redirect";
+	property testray.main.component.name = "URL Redirections";
 
 	setUp {
 		TestCase.setUpPortalInstance();
@@ -83,6 +83,7 @@ definition {
 	@priority = 5
 	test CanRedirectToDestinationURLWhenUserAgentConfiguredAsBot {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var portalURL = PropsUtil.get("portal.url");
 
@@ -181,9 +182,9 @@ definition {
 		Redirect.openToPatterns(siteURLKey = "test-site");
 
 		AssertAttributeValue(
-			attribute1 = "value",
 			locator1 = "TextInput#REDIRECT_DESTINATION_URL",
-			value1 = "/web/test-site/$1/000000000000000000000000000000000");
+			value1 = "value",
+			value2 = "/web/test-site/$1/000000000000000000000000000000000");
 
 		AssertCssValue(
 			locator1 = "TextInput#REDIRECT_DESTINATION_URL",

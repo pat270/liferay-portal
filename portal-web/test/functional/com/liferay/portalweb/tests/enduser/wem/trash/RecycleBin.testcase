@@ -1,6 +1,7 @@
-@component-name = "portal-wcm"
+@component-name = "portal-content-management"
 definition {
 
+	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Recycle Bin";
@@ -19,17 +20,6 @@ definition {
 		Navigator.gotoSitePage(
 			pageName = "Test Page",
 			siteName = "Site Name");
-	}
-
-	tearDown {
-		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
-
-		if (${testLiferayVirtualInstance} == "true") {
-			PortalInstances.tearDownCP();
-		}
-		else {
-			JSONGroup.deleteGroupByName(groupName = "Site Name");
-		}
 	}
 
 	@description = "This is a use case for LPS-109555. Can bulk restore multiple items from recycle bin."
@@ -134,7 +124,9 @@ definition {
 		}
 
 		task ("Go to recycle bin to view entry and restore") {
-			RecycleBin.openRecycleBinAdmin(siteURLKey = "site-name");
+			ProductMenu.gotoPortlet(
+				category = "Recycle Bin",
+				portlet = "Recycle Bin");
 
 			RecycleBin.viewCP(
 				assetName = "Blogs Entry Title",
@@ -221,7 +213,7 @@ definition {
 	@description = "Assert scheduled clean up in recycle bin works."
 	@priority = 3
 	test RecycleBinScheduledCleanup {
-		property custom.properties = "trash.entry.check.interval=1${line.separator}trash.entries.max.age=1";
+		property custom.properties = "trash.entries.max.age=0";
 
 		task ("Add a blogs widget to page and a blog entry") {
 			JSONLayout.addWidgetToPublicLayout(
@@ -246,23 +238,23 @@ definition {
 				entryTitle = "Blogs Entry Title");
 		}
 
-		task ("Go to recycle bin and wait 2 minutes") {
-			RecycleBin.openRecycleBinAdmin(siteURLKey = "site-name");
+		task ("Run check entry scheduler job") {
+			ApplicationsMenu.gotoPortlet(
+				category = "Configuration",
+				panel = "Control Panel",
+				portlet = "Job Scheduler");
 
-			RecycleBin.viewCP(
-				assetName = "Blogs Entry Title",
-				assetType = "Blogs Entry",
-				customMaxAge = "1 minute",
-				deleteUser = "Test Test");
+			Navigator.gotoNavTab(navTab = "Scheduled Jobs");
 
-			// We need this pause to check issue due trash.entry.check.interval=1
-			// To be investigated in LPS-157883
+			Pagination.changePagination(itemsPerPage = 60);
 
-			Pause(locator1 = 120000);
+			Click(locator1 = "xpath=(//tr[@data-qa-id='row'][contains(.,'CheckEntrySchedulerJobConfiguration')])[2]//td[contains(@class,'action-column')]//a[normalize-space()='Run Now']");
+
+			Alert.viewSuccessMessage();
 		}
 
-		task ("Refresh and assert no blog entry") {
-			Refresh();
+		task ("Assert no blog entry in recycle bin") {
+			RecycleBin.openRecycleBinAdmin(siteURLKey = "site-name");
 
 			RecycleBin.viewDefaultCP(assetName = "Blogs Entry Title");
 		}
@@ -436,7 +428,9 @@ definition {
 		}
 
 		task ("View wiki page and wiki node and restore them") {
-			RecycleBin.openRecycleBinAdmin(siteURLKey = "site-name");
+			ProductMenu.gotoPortlet(
+				category = "Recycle Bin",
+				portlet = "Recycle Bin");
 
 			RecycleBin.viewCP(
 				assetName = "Wiki Page Title",
@@ -543,49 +537,139 @@ definition {
 		}
 	}
 
-	@description = "Restore DM document in DM folder in recycle bin."
+	@description = "This is a test for LPS-190757. The Home folder of document should be visible on Warning modal."
 	@priority = 5
-	test RestoreDMDocumentFromFolderCP {
+	test RestoreDocumentToExistingFolder {
 		property portal.acceptance = "true";
-		property portal.upstream = "true";
 
-		task ("Add a DM folder and 3 documents to the folder") {
-			JSONFolder.addFolder(
-				dmFolderName = "DM Folder Name",
-				groupName = "Site Name");
+		task ("Given a site administrator has folders with documents") {
+			for (var i : list "1,2") {
+				JSONFolder.addFolder(
+					dmFolderName = "DM Folder Name ${i}",
+					groupName = "Site Name");
+			}
 
 			for (var i : list "1,2,3") {
 				JSONDocument.addFile(
 					dmDocumentDescription = "DM Document Description ${i}",
 					dmDocumentTitle = "DM Document Title ${i}",
-					folderName = "DM Folder Name",
+					folderName = "DM Folder Name 1",
 					groupName = "Site Name");
 			}
 		}
 
-		task ("Move document to recycle bin and restore") {
+		task ("When the site administrator moves a folder with documents into the Recycle Bin") {
 			DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "site-name");
 
 			DMFolder.moveToRecycleBinCP(
 				assetType = "Documents Folder",
-				dmFolderName = "DM Folder Name");
+				dmFolderName = "DM Folder Name 1");
+		}
 
+		task ("Then the site administrator could restore documents to existing folders") {
 			RecycleBin.openRecycleBinAdmin(siteURLKey = "site-name");
 
 			RecycleBin.restoreContentFromFolderCP(
-				assetName = "DM Folder Name",
+				assetName = "DM Folder Name 1",
 				assetRestoreLocation = "Home",
 				assetType = "Documents Folder",
 				assetType2 = "Document",
+				breadcrumbName = "Home",
 				documentName = "DM Document Title 2");
-		}
 
-		task ("View document is restored") {
 			DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "site-name");
 
 			DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document Title 2");
 
 			DMDocument.viewCP(dmDocumentTitle = "DM Document Title 2");
+
+			RecycleBin.openRecycleBinAdmin(siteURLKey = "site-name");
+
+			RecycleBin.restoreContentFromFolderCP(
+				assetName = "DM Folder Name 1",
+				assetRestoreLocation = "DM Folder Name 2",
+				assetType = "Documents Folder",
+				assetType2 = "Document",
+				breadcrumbName = "Home",
+				documentName = "DM Document Title 3");
+
+			DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "site-name");
+
+			DMNavigator.gotoFolder(dmFolderName = "DM Folder Name 2");
+
+			DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document Title 3");
+
+			DMDocument.viewCP(dmDocumentTitle = "DM Document Title 3");
+		}
+	}
+
+	@description = "This is a test for LPS-190757. The Home folder of web content should be visible on Warning modal."
+	@priority = 4
+	test RestoreWebContentToExistingFolder {
+		task ("Given a site administrator has folders with web contents") {
+			for (var i : list "1,2") {
+				JSONWebcontent.addFolder(
+					folderName = "WC Folder Name ${i}",
+					groupName = "Site Name");
+			}
+
+			for (var i : list "1,2,3") {
+				HeadlessWebcontent.addBasicWebContent(
+					content = "Web Content Content ${i}",
+					folderName = "WC Folder Name 1",
+					groupName = "Site Name",
+					title = "Web Content Title ${i}");
+			}
+		}
+
+		task ("When the site administrator moves a folder with web contents into the Recycle Bin") {
+			WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name");
+
+			WebContentFolder.moveToRecycleBinCP(
+				assetType = "Web Content Folder",
+				folderName = "WC Folder Name 1");
+		}
+
+		task ("Then the site administrator could restore web contents to existing folders") {
+			RecycleBin.openRecycleBinAdmin(siteURLKey = "site-name");
+
+			RecycleBin.restoreContentFromFolderCP(
+				assetName = "WC Folder Name 1",
+				assetRestoreLocation = "Home",
+				assetType = "Web Content Folder",
+				assetType2 = "Web Content Article",
+				breadcrumbName = "Home",
+				documentName = "Web Content Title 1");
+
+			WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name");
+
+			WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Title 1");
+
+			WebContent.viewCP(
+				webContentContent = "Web Content Content 1",
+				webContentTitle = "Web Content Title 1");
+
+			RecycleBin.openRecycleBinAdmin(siteURLKey = "site-name");
+
+			RecycleBin.restoreContentFromFolderCP(
+				assetName = "WC Folder Name 1",
+				assetRestoreLocation = "WC Folder Name 2",
+				assetType = "Web Content Folder",
+				assetType2 = "Web Content Article",
+				breadcrumbName = "Home",
+				documentName = "Web Content Title 2");
+
+			WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name");
+
+			WebContentFolder.gotoCP(
+				folderName = "WC Folder Name 2",
+				webContentTitle = "WC Folder Name 2");
+
+			WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Title 2");
+
+			WebContent.viewCP(
+				webContentContent = "Web Content Content 2",
+				webContentTitle = "Web Content Title 2");
 		}
 	}
 
@@ -635,7 +719,7 @@ definition {
 
 			AssertTextEquals(
 				locator1 = "Search#SEARCH_INFO",
-				value1 = "2 Results for \"Comment\"");
+				value1 = "2 Results Found for \"Comment\"");
 
 			for (var title : list "Blogs Entry Title 1,Blogs Entry Title 2") {
 				Blogs.viewEntryTitle(entryTitle = ${title});
@@ -653,7 +737,7 @@ definition {
 
 			AssertTextEquals(
 				locator1 = "Search#SEARCH_INFO",
-				value1 = "1 Result for \"Comment\"");
+				value1 = "1 Result Found for \"Comment\"");
 
 			Blogs.viewEntryTitle(entryTitle = "Blogs Entry Title 2");
 

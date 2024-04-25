@@ -95,6 +95,9 @@ definition {
 	@description = "Verify that the user can only choose one Workflow."
 	@priority = 4
 	test CanOnlyChooseOneWorkflow {
+		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
+
 		KaleoFormsAdmin.addProcess();
 
 		KaleoFormsAdmin.addProcessDetails(
@@ -186,8 +189,6 @@ definition {
 	@description = "Verify that the translation icon next to the -Name- and -Description- field is in English by default."
 	@priority = 3
 	test IconTranslationEnglishByDefault {
-		property portal.upstream = "quarantine";
-
 		KaleoFormsAdmin.addProcess();
 
 		KaleoFormsAdmin.viewSelectedLanguage(
@@ -199,6 +200,9 @@ definition {
 	@description = "Verify that a workflow added on the creation of a new process appears on Process Builder tab."
 	@priority = 4
 	test NewProcessAppearsOnProcessBuilder {
+		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
+
 		KaleoFormsAdmin.addProcess();
 
 		KaleoFormsAdmin.addProcessDetails(
@@ -219,10 +223,7 @@ definition {
 
 		KaleoFormsAdmin.publishWorkflow(workflowDefinitionTitle = "Workflow Definition Title");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Workflow.viewDefinitionPublished(workflowDefinitionTitle = "Workflow Definition Title");
 	}

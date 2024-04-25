@@ -50,6 +50,8 @@ public class PlacedCommerceOrderItemTableFDSView extends BaseTableFDSView {
 		).add(
 			"formattedQuantity", "quantity"
 		).add(
+			"unitOfMeasureKey", "uom"
+		).add(
 			"total", "total"
 		).add(
 			"shippedQuantity", "shipped-quantity"

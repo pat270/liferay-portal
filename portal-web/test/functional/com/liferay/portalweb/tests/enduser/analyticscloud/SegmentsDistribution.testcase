@@ -46,10 +46,6 @@ definition {
 	tearDown {
 		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
 
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
-		//ACUtils.tearDownAC();
-
 		ACUtils.tearDownDXP();
 
 		if (${testLiferayVirtualInstance} == "true") {
@@ -58,6 +54,8 @@ definition {
 		else {
 			JSONGroup.deleteGroupByName(groupName = "Site Name");
 		}
+
+		ACUtils.tearDownAC();
 	}
 
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8626 | Test Summary: Segment distribution chart can be filtered by date property"
@@ -69,6 +67,8 @@ definition {
 				userLoginFullName = "userfn userln");
 
 			ACUtils.navigateToSitePage(
+				actionType = "View WC",
+				documentTitleList = "1,2,3,4",
 				pageName = "AC Page",
 				siteName = "Site Name");
 		}
@@ -106,7 +106,7 @@ definition {
 		task ("Filter Attribute") {
 			ACNavigation.switchTab(tabName = "Distribution");
 
-			ACSegments.selectDistributionByAttribute(attribute = "createDate");
+			ACSegments.selectDistributionByAttribute(attribute = "modifiedDate");
 		}
 
 		task ("Get current date") {

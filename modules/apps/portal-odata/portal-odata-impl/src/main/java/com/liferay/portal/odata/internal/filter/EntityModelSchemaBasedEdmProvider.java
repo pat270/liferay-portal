@@ -79,9 +79,15 @@ public class EntityModelSchemaBasedEdmProvider extends SchemaBasedEdmProvider {
 
 		ComplexEntityField complexEntityField = (ComplexEntityField)entityField;
 
+		if (_csdlComplexTypes.containsKey(complexEntityField.getTypeKey())) {
+			return _csdlComplexTypes.get(complexEntityField.getTypeKey());
+		}
+
 		CsdlComplexType csdlComplexType = new CsdlComplexType();
 
-		csdlComplexType.setName(entityField.getName());
+		_csdlComplexTypes.put(complexEntityField.getTypeKey(), csdlComplexType);
+
+		csdlComplexType.setName(complexEntityField.getTypeKey());
 
 		Map<String, EntityField> entityFieldsMap =
 			complexEntityField.getEntityFieldsMap();
@@ -228,11 +234,15 @@ public class EntityModelSchemaBasedEdmProvider extends SchemaBasedEdmProvider {
 		String namespace, EntityField entityField) {
 
 		if (Objects.equals(entityField.getType(), EntityField.Type.COMPLEX)) {
+			ComplexEntityField complexEntityField =
+				(ComplexEntityField)entityField;
+
 			CsdlProperty csdlProperty = new CsdlProperty();
 
-			csdlProperty.setName(entityField.getName());
+			csdlProperty.setName(complexEntityField.getName());
 			csdlProperty.setType(
-				new FullQualifiedName(namespace, entityField.getName()));
+				new FullQualifiedName(
+					namespace, complexEntityField.getTypeKey()));
 
 			return csdlProperty;
 		}
@@ -346,5 +356,8 @@ public class EntityModelSchemaBasedEdmProvider extends SchemaBasedEdmProvider {
 	}
 
 	private static final String _NAMESPACE = "HypermediaRestApis";
+
+	private final HashMap<String, CsdlComplexType> _csdlComplexTypes =
+		new HashMap<>();
 
 }

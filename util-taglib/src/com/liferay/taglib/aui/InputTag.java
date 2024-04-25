@@ -36,7 +36,7 @@ public class InputTag extends BaseInputTag {
 
 	@Override
 	public int doEndTag() throws JspException {
-		updateFormCheckboxNames();
+		_updateFormCheckboxNames();
 
 		return super.doEndTag();
 	}
@@ -320,7 +320,7 @@ public class InputTag extends BaseInputTag {
 		}
 	}
 
-	protected void updateFormCheckboxNames() {
+	private void _updateFormCheckboxNames() {
 		if (!Objects.equals(getBaseType(), "checkbox")) {
 			return;
 		}

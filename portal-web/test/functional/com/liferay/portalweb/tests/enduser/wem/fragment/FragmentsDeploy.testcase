@@ -4,7 +4,7 @@ definition {
 	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Fragments";
+	property testray.main.component.name = "Fragment Administration";
 
 	setUp {
 		task ("Set up instance and sign in") {
@@ -35,6 +35,7 @@ definition {
 	test CanDeleteSiteScopedReadOnlyDeployedFragmentInThatSite {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Deploy fragments zip to Test Site Name") {
 			FragmentsDeploy.deployZipOnLiferayPortal(fragmentsZip = "card.zip");
@@ -42,6 +43,10 @@ definition {
 
 		task ("Assert deployed fragment is read-only") {
 			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "test-site-name");
+
+			if (IsElementNotPresent(key_menuBar = "Imported", key_stackName = "Test Site Name", locator1 = "MenuBar#NAV_LINK_IN_STACK")) {
+				Refresh();
+			}
 
 			FragmentsAdminNavigator.gotoSpecificScopeCollection(
 				collectionName = "Imported",
@@ -84,6 +89,7 @@ definition {
 	test CanDeleteSystemScopedReadOnlyDeployedFragmentInGlobalSiteOfDefaultInstance {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Deploy fragments zip are available in System wide") {
 			FragmentsDeploy.deployZipOnLiferayPortal(fragmentsZip = "image.zip");
@@ -91,6 +97,10 @@ definition {
 
 		task ("Assert deployed fragment is read-only") {
 			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "global");
+
+			if (IsElementNotPresent(key_menuBar = "Imported", key_stackName = "Default", locator1 = "MenuBar#NAV_LINK_IN_STACK")) {
+				Refresh();
+			}
 
 			FragmentsAdminNavigator.gotoSpecificScopeCollection(
 				collectionName = "Imported",
@@ -135,6 +145,7 @@ definition {
 	test CanDeleteVirtualInstanceScopedReadOnlyDeployedFragmentInGlobalSiteOfThatInstance {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Deploy fragments zip are available in Liferay.com intance") {
 			FragmentsDeploy.deployZipOnLiferayPortal(fragmentsZip = "link.zip");
@@ -142,6 +153,10 @@ definition {
 
 		task ("Assert deployed fragment is read-only") {
 			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "global");
+
+			if (IsElementNotPresent(key_menuBar = "Imported", key_stackName = "Global", locator1 = "MenuBar#NAV_LINK_IN_STACK")) {
+				Refresh();
+			}
 
 			FragmentsAdminNavigator.gotoSpecificScopeCollection(
 				collectionName = "Imported",
@@ -178,77 +193,15 @@ definition {
 		}
 	}
 
-	@description = "This is a test for LPS-106253. Can not delete read-only deployed fragments of virtual instance-scoped and system-scoped in normal site."
-	@priority = 3
-	test CannotDeleteSystemAndVirtualInstanceScopedReadOnlyDeployedFragmentInNormalSite {
-		property test.liferay.virtual.instance = "false";
-
-		task ("Deploy fragments zip are available in Liferay.com intance") {
-			FragmentsDeploy.deployZipOnLiferayPortal(fragmentsZip = "link.zip");
-		}
-
-		task ("Deploy fragments zip are available in System wide") {
-			FragmentsDeploy.deployZipOnLiferayPortal(fragmentsZip = "image.zip");
-		}
-
-		task ("Assert can not delete virtual instance read-only scoped deployed fragment in normal site") {
-			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "test-site-name");
-
-			FragmentsAdminNavigator.gotoSpecificScopeCollection(
-				collectionName = "Imported",
-				scope = "Global");
-
-			FragmentsAdmin.viewEntryPresent(entry = "Link");
-
-			Click.waitForMenuToggleJSClick(
-				key_card = "Link",
-				locator1 = "Card#CARD_ELLIPSIS");
-
-			MenuItem.viewNotPresent(menuItem = "Delete");
-
-			FragmentsAdminNavigator.gotoSpecificScopeCollection(
-				collectionName = "Imported",
-				scope = "Global");
-
-			Click.waitForMenuToggleJSClick(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS");
-
-			MenuItem.viewNotPresent(menuItem = "Delete");
-		}
-
-		task ("Assert can not delete system scoped read-only deployed fragment in normal site") {
-			FragmentsAdminNavigator.gotoSpecificScopeCollection(
-				collectionName = "Imported",
-				scope = "Default");
-
-			FragmentsAdmin.viewEntryPresent(entry = "Image");
-
-			Click.waitForMenuToggleJSClick(
-				key_card = "Image",
-				locator1 = "Card#CARD_ELLIPSIS");
-
-			MenuItem.viewNotPresent(menuItem = "Delete");
-
-			FragmentsAdminNavigator.gotoSpecificScopeCollection(
-				collectionName = "Imported",
-				scope = "Default");
-
-			Click.waitForMenuToggleJSClick(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS");
-
-			MenuItem.viewNotPresent(menuItem = "Delete");
-		}
-	}
-
 	@description = "This is a test for LPS-106253. Can not delete read-only deployed fragments of system-scoped in other virtual instances."
 	@priority = 3
 	test CannotDeleteSystemScopedReadOnlyDeployedFragmentInOtherVirtualInstance {
 		property custom.properties = "virtual.hosts.valid.hosts=localhost,127.0.0.1,www.able.com";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Add a new Virtual Instance") {
-			ApplicationsMenu.gotoPortlet(
-				category = "System",
-				panel = "Control Panel",
-				portlet = "Virtual Instances");
+			PortalInstances.openVirtualInstancesAdmin();
 
 			PortalInstances.addCP(
 				mailDomain = "www.able.com",
@@ -272,6 +225,10 @@ definition {
 				baseURL = "http://www.able.com:8080",
 				siteURLKey = "global");
 
+			if (IsElementNotPresent(key_menuBar = "Imported", key_stackName = "Default", locator1 = "MenuBar#NAV_LINK_IN_STACK")) {
+				Refresh();
+			}
+
 			FragmentsAdminNavigator.gotoSpecificScopeCollection(
 				collectionName = "Imported",
 				scope = "Default");
@@ -294,12 +251,49 @@ definition {
 		}
 	}
 
+	@description = "This is a test for LPS-106253. Can not delete read-only deployed fragments of virtual instance-scoped in normal site."
+	@priority = 3
+	test CannotDeleteVirtualInstanceScopedReadOnlyDeployedFragmentInNormalSite {
+		task ("Deploy fragments zip are available in Liferay.com intance") {
+			FragmentsDeploy.deployZipOnLiferayPortal(fragmentsZip = "link.zip");
+		}
+
+		task ("Assert can not delete virtual instance read-only scoped deployed fragment in normal site") {
+			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "test-site-name");
+
+			if (IsElementNotPresent(key_menuBar = "Imported", key_stackName = "Global", locator1 = "MenuBar#NAV_LINK_IN_STACK")) {
+				Refresh();
+			}
+
+			FragmentsAdminNavigator.gotoSpecificScopeCollection(
+				collectionName = "Imported",
+				scope = "Global");
+
+			FragmentsAdmin.viewEntryPresent(entry = "Link");
+
+			Click.waitForMenuToggleJSClick(
+				key_card = "Link",
+				locator1 = "Card#CARD_ELLIPSIS");
+
+			MenuItem.viewNotPresent(menuItem = "Delete");
+
+			FragmentsAdminNavigator.gotoSpecificScopeCollection(
+				collectionName = "Imported",
+				scope = "Global");
+
+			Click.waitForMenuToggleJSClick(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS");
+
+			MenuItem.viewNotPresent(menuItem = "Delete");
+		}
+	}
+
 	@description = "This is a test for LPS-105110. A system administrator can deploy a zip file of fragments in the deploy folder to a specific site. Fragments deployed to a specific site are not available in other sites."
 	@priority = 5
 	@uitest
 	test DeployFragmentsToSpecificSite {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Deploy fragments zip to Test Site Name") {
 			FragmentsDeploy.deployZipOnLiferayPortal(fragmentsZip = "card.zip");
@@ -311,6 +305,10 @@ definition {
 
 		task ("Assert new fragment exists in specific site") {
 			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "test-site-name");
+
+			if (IsElementNotPresent(key_menuBar = "Imported", key_stackName = "Test Site Name", locator1 = "MenuBar#NAV_LINK_IN_STACK")) {
+				Refresh();
+			}
 
 			FragmentsAdminNavigator.gotoSpecificScopeCollection(
 				collectionName = "Imported",
@@ -338,12 +336,10 @@ definition {
 		property custom.properties = "virtual.hosts.valid.hosts=localhost,127.0.0.1,www.able.com";
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Add a new Virtual Instance") {
-			ApplicationsMenu.gotoPortlet(
-				category = "System",
-				panel = "Control Panel",
-				portlet = "Virtual Instances");
+			PortalInstances.openVirtualInstancesAdmin();
 
 			PortalInstances.addCP(
 				mailDomain = "www.able.com",
@@ -371,6 +367,10 @@ definition {
 				baseURL = "http://www.able.com:8080",
 				siteURLKey = "guest");
 
+			if (IsElementNotPresent(key_menuBar = "Imported", key_stackName = "Global", locator1 = "MenuBar#NAV_LINK_IN_STACK")) {
+				Refresh();
+			}
+
 			FragmentsAdminNavigator.gotoSpecificScopeCollection(
 				collectionName = "Imported",
 				scope = "Global");
@@ -387,6 +387,7 @@ definition {
 	test ViewFragmentsDeployedToSystemWideAreAvailableForExistAndFutureSite {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Deploy fragments zip are available in System wide") {
 			FragmentsDeploy.deployZipOnLiferayPortal(fragmentsZip = "image.zip");
@@ -398,6 +399,10 @@ definition {
 
 		task ("Assert new fragment exists in exist sites") {
 			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "guest");
+
+			if (IsElementNotPresent(key_menuBar = "Imported", key_stackName = "Default", locator1 = "MenuBar#NAV_LINK_IN_STACK")) {
+				Refresh();
+			}
 
 			FragmentsAdminNavigator.gotoSpecificScopeCollection(
 				collectionName = "Imported",
@@ -439,6 +444,7 @@ definition {
 		property custom.properties = "virtual.hosts.valid.hosts=localhost,127.0.0.1,www.able.com";
 		property database.partition.enabled = "false";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Deploy fragments zip are available in System wide") {
 			FragmentsDeploy.deployZipOnLiferayPortal(fragmentsZip = "image.zip");
@@ -451,6 +457,10 @@ definition {
 		task ("Assert new fragment exists in exist virtual instance") {
 			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "guest");
 
+			if (IsElementNotPresent(key_menuBar = "Imported", key_stackName = "Default", locator1 = "MenuBar#NAV_LINK_IN_STACK")) {
+				Refresh();
+			}
+
 			FragmentsAdminNavigator.gotoSpecificScopeCollection(
 				collectionName = "Imported",
 				scope = "Default");
@@ -461,10 +471,7 @@ definition {
 		}
 
 		task ("Assert new fragment exists in future virtual instance") {
-			ApplicationsMenu.gotoPortlet(
-				category = "System",
-				panel = "Control Panel",
-				portlet = "Virtual Instances");
+			PortalInstances.openVirtualInstancesAdmin();
 
 			PortalInstances.addCP(
 				mailDomain = "www.able.com",

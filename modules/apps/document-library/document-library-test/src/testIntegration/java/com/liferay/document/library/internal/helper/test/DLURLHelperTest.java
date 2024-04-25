@@ -65,7 +65,7 @@ public class DLURLHelperTest {
 			ContentTypes.APPLICATION_OCTET_STREAM,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
-			(byte[])null, null, null,
+			(byte[])null, null, null, null,
 			ServiceContextTestUtil.getServiceContext(
 				_group.getGroupId(), _user.getUserId()));
 
@@ -86,7 +86,7 @@ public class DLURLHelperTest {
 			ContentTypes.APPLICATION_OCTET_STREAM,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
-			(byte[])null, null, null,
+			(byte[])null, null, null, null,
 			ServiceContextTestUtil.getServiceContext(
 				_group.getGroupId(), _user.getUserId()));
 
@@ -109,7 +109,7 @@ public class DLURLHelperTest {
 			ContentTypes.APPLICATION_OCTET_STREAM,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
-			(byte[])null, null, null,
+			(byte[])null, null, null, null,
 			ServiceContextTestUtil.getServiceContext(
 				_group.getGroupId(), _user.getUserId()));
 
@@ -132,7 +132,7 @@ public class DLURLHelperTest {
 			ContentTypes.APPLICATION_OCTET_STREAM,
 			RandomTestUtil.randomString(), urlTitle,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
-			(byte[])null, null, null,
+			(byte[])null, null, null, null,
 			ServiceContextTestUtil.getServiceContext(
 				_group.getGroupId(), _user.getUserId()));
 
@@ -156,7 +156,7 @@ public class DLURLHelperTest {
 			ContentTypes.APPLICATION_OCTET_STREAM,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
-			(byte[])null, null, null,
+			(byte[])null, null, null, null,
 			ServiceContextTestUtil.getServiceContext(
 				_group.getGroupId(), _user.getUserId()));
 
@@ -177,7 +177,7 @@ public class DLURLHelperTest {
 			ContentTypes.APPLICATION_OCTET_STREAM,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
-			(byte[])null, null, null,
+			(byte[])null, null, null, null,
 			ServiceContextTestUtil.getServiceContext(
 				_group.getGroupId(), _user.getUserId()));
 
@@ -197,7 +197,7 @@ public class DLURLHelperTest {
 			ContentTypes.APPLICATION_OCTET_STREAM,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
-			(byte[])null, null, null,
+			(byte[])null, null, null, null,
 			ServiceContextTestUtil.getServiceContext(
 				_group.getGroupId(), _user.getUserId()));
 
@@ -220,7 +220,7 @@ public class DLURLHelperTest {
 			ContentTypes.APPLICATION_OCTET_STREAM,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
-			(byte[])null, null, null,
+			(byte[])null, null, null, null,
 			ServiceContextTestUtil.getServiceContext(
 				_group.getGroupId(), _user.getUserId()));
 
@@ -243,7 +243,7 @@ public class DLURLHelperTest {
 			ContentTypes.APPLICATION_OCTET_STREAM,
 			RandomTestUtil.randomString(), urlTitle,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
-			(byte[])null, null, null,
+			(byte[])null, null, null, null,
 			ServiceContextTestUtil.getServiceContext(
 				_group.getGroupId(), _user.getUserId()));
 
@@ -266,7 +266,7 @@ public class DLURLHelperTest {
 			ContentTypes.APPLICATION_OCTET_STREAM,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
-			(byte[])null, null, null,
+			(byte[])null, null, null, null,
 			ServiceContextTestUtil.getServiceContext(
 				_group.getGroupId(), _user.getUserId()));
 
@@ -287,7 +287,7 @@ public class DLURLHelperTest {
 			ContentTypes.APPLICATION_OCTET_STREAM,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
-			(byte[])null, null, null,
+			(byte[])null, null, null, null,
 			ServiceContextTestUtil.getServiceContext(
 				_group.getGroupId(), _user.getUserId()));
 
@@ -311,13 +311,13 @@ public class DLURLHelperTest {
 			ContentTypes.APPLICATION_OCTET_STREAM,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
-			(byte[])null, null, null, serviceContext);
+			(byte[])null, null, null, null, serviceContext);
 
 		fileEntry = _dlAppLocalService.updateFileEntry(
 			_user.getUserId(), fileEntry.getFileEntryId(), StringPool.BLANK,
 			ContentTypes.TEXT_PLAIN, RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(), StringPool.BLANK, null,
-			DLVersionNumberIncrease.MAJOR, (byte[])null, null, null,
+			DLVersionNumberIncrease.MAJOR, (byte[])null, null, null, null,
 			serviceContext);
 
 		String previewURL = _dlURLHelper.getPreviewURL(

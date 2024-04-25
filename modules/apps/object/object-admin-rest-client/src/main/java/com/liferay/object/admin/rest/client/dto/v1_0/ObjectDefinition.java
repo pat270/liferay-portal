@@ -244,6 +244,28 @@ public class ObjectDefinition implements Cloneable, Serializable {
 
 	protected Boolean enableLocalization;
 
+	public Boolean getEnableObjectEntryDraft() {
+		return enableObjectEntryDraft;
+	}
+
+	public void setEnableObjectEntryDraft(Boolean enableObjectEntryDraft) {
+		this.enableObjectEntryDraft = enableObjectEntryDraft;
+	}
+
+	public void setEnableObjectEntryDraft(
+		UnsafeSupplier<Boolean, Exception>
+			enableObjectEntryDraftUnsafeSupplier) {
+
+		try {
+			enableObjectEntryDraft = enableObjectEntryDraftUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Boolean enableObjectEntryDraft;
+
 	public Boolean getEnableObjectEntryHistory() {
 		return enableObjectEntryHistory;
 	}
@@ -409,6 +431,32 @@ public class ObjectDefinition implements Cloneable, Serializable {
 	}
 
 	protected ObjectField[] objectFields;
+
+	public String getObjectFolderExternalReferenceCode() {
+		return objectFolderExternalReferenceCode;
+	}
+
+	public void setObjectFolderExternalReferenceCode(
+		String objectFolderExternalReferenceCode) {
+
+		this.objectFolderExternalReferenceCode =
+			objectFolderExternalReferenceCode;
+	}
+
+	public void setObjectFolderExternalReferenceCode(
+		UnsafeSupplier<String, Exception>
+			objectFolderExternalReferenceCodeUnsafeSupplier) {
+
+		try {
+			objectFolderExternalReferenceCode =
+				objectFolderExternalReferenceCodeUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String objectFolderExternalReferenceCode;
 
 	public ObjectLayout[] getObjectLayouts() {
 		return objectLayouts;
@@ -626,6 +674,32 @@ public class ObjectDefinition implements Cloneable, Serializable {
 	}
 
 	protected String restContextPath;
+
+	public String getRootObjectDefinitionExternalReferenceCode() {
+		return rootObjectDefinitionExternalReferenceCode;
+	}
+
+	public void setRootObjectDefinitionExternalReferenceCode(
+		String rootObjectDefinitionExternalReferenceCode) {
+
+		this.rootObjectDefinitionExternalReferenceCode =
+			rootObjectDefinitionExternalReferenceCode;
+	}
+
+	public void setRootObjectDefinitionExternalReferenceCode(
+		UnsafeSupplier<String, Exception>
+			rootObjectDefinitionExternalReferenceCodeUnsafeSupplier) {
+
+		try {
+			rootObjectDefinitionExternalReferenceCode =
+				rootObjectDefinitionExternalReferenceCodeUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String rootObjectDefinitionExternalReferenceCode;
 
 	public String getScope() {
 		return scope;

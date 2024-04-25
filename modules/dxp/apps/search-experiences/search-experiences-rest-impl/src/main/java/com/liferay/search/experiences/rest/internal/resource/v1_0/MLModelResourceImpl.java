@@ -35,6 +35,7 @@ import org.osgi.service.component.annotations.ServiceScope;
 )
 public class MLModelResourceImpl extends BaseMLModelResourceImpl {
 
+	@Override
 	public Page<MLModel> getSentenceTransformerMLModelsPage(
 			Integer limit, String pipelineTag, String query, String tag)
 		throws Exception {
@@ -89,7 +90,8 @@ public class MLModelResourceImpl extends BaseMLModelResourceImpl {
 					mlModels.add(
 						new MLModel() {
 							{
-								modelId = jsonObject.getString("modelId");
+								setModelId(
+									() -> jsonObject.getString("modelId"));
 							}
 						});
 				});

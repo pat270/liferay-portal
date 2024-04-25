@@ -7,6 +7,7 @@ package com.liferay.headless.commerce.delivery.cart.internal.resource.v1_0;
 
 import com.liferay.commerce.context.CommerceContext;
 import com.liferay.commerce.context.CommerceContextFactory;
+import com.liferay.commerce.exception.NoSuchOrderException;
 import com.liferay.commerce.model.CommerceOrder;
 import com.liferay.commerce.model.CommerceOrderItem;
 import com.liferay.commerce.service.CommerceOrderItemService;
@@ -14,6 +15,7 @@ import com.liferay.commerce.service.CommerceOrderService;
 import com.liferay.headless.commerce.core.util.ServiceContextHelper;
 import com.liferay.headless.commerce.delivery.cart.dto.v1_0.Cart;
 import com.liferay.headless.commerce.delivery.cart.dto.v1_0.CartItem;
+import com.liferay.headless.commerce.delivery.cart.dto.v1_0.SkuUnitOfMeasure;
 import com.liferay.headless.commerce.delivery.cart.internal.dto.v1_0.converter.CartItemDTOConverterContext;
 import com.liferay.headless.commerce.delivery.cart.internal.dto.v1_0.converter.constants.DTOConverterConstants;
 import com.liferay.headless.commerce.delivery.cart.resource.v1_0.CartItemResource;
@@ -24,9 +26,10 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.fields.NestedField;
 import com.liferay.portal.vulcan.fields.NestedFieldId;
-import com.liferay.portal.vulcan.fields.NestedFieldSupport;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
+
+import java.math.BigDecimal;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,11 +50,10 @@ import org.osgi.service.component.annotations.ServiceScope;
  */
 @Component(
 	properties = "OSGI-INF/liferay/rest/v1_0/cart-item.properties",
-	scope = ServiceScope.PROTOTYPE,
-	service = {CartItemResource.class, NestedFieldSupport.class}
+	property = "nested.field.support=true", scope = ServiceScope.PROTOTYPE,
+	service = CartItemResource.class
 )
-public class CartItemResourceImpl
-	extends BaseCartItemResourceImpl implements NestedFieldSupport {
+public class CartItemResourceImpl extends BaseCartItemResourceImpl {
 
 	@Override
 	public Response deleteCartItem(Long cartItemId) throws Exception {
@@ -71,6 +73,41 @@ public class CartItemResourceImpl
 		Response.ResponseBuilder responseBuilder = Response.noContent();
 
 		return responseBuilder.build();
+	}
+
+	@Override
+	public Page<CartItem> getCartByExternalReferenceCodeItemsPage(
+			String externalReferenceCode, Long skuId, Pagination pagination)
+		throws Exception {
+
+		CommerceOrder commerceOrder =
+			_commerceOrderService.fetchByExternalReferenceCode(
+				externalReferenceCode, contextCompany.getCompanyId());
+
+		if (commerceOrder == null) {
+			throw new NoSuchOrderException(
+				"Unable to find order with external reference code " +
+					externalReferenceCode);
+		}
+
+		return Page.of(
+			_filterCartItems(
+				transform(
+					_commerceOrderItemService.getCommerceOrderItems(
+						commerceOrder.getCommerceOrderId(), QueryUtil.ALL_POS,
+						QueryUtil.ALL_POS),
+					commerceOrderItem -> {
+						if ((skuId != null) &&
+							!Objects.equals(
+								commerceOrderItem.getCPInstanceId(), skuId)) {
+
+							return null;
+						}
+
+						return _toCartItem(
+							commerceOrder.getCommerceAccountId(),
+							commerceOrderItem);
+					})));
 	}
 
 	@Override
@@ -124,20 +161,65 @@ public class CartItemResourceImpl
 	}
 
 	@Override
-	public CartItem postCartItem(Long cartId, CartItem cartItem)
+	public CartItem postCartByExternalReferenceCodeItem(
+			String externalReferenceCode, CartItem cartItem)
 		throws Exception {
 
-		CommerceOrder commerceOrder = _commerceOrderService.getCommerceOrder(
-			cartId);
+		CommerceOrder commerceOrder =
+			_commerceOrderService.fetchByExternalReferenceCode(
+				externalReferenceCode, contextCompany.getCompanyId());
+
+		if (commerceOrder == null) {
+			throw new NoSuchOrderException(
+				"Unable to find order with external reference code " +
+					externalReferenceCode);
+		}
+
+		SkuUnitOfMeasure skuUnitOfMeasure = cartItem.getSkuUnitOfMeasure();
+		String skuUnitOfMeasureKey = StringPool.BLANK;
+
+		if (skuUnitOfMeasure != null) {
+			skuUnitOfMeasureKey = skuUnitOfMeasure.getKey();
+		}
 
 		return _toCartItem(
 			commerceOrder.getCommerceAccountId(),
 			_commerceOrderItemService.addOrUpdateCommerceOrderItem(
 				commerceOrder.getCommerceOrderId(), cartItem.getSkuId(),
 				cartItem.getOptions(),
-				GetterUtil.get(cartItem.getQuantity(), 1),
-				GetterUtil.getLong(cartItem.getReplacedSkuId()), 0,
-				StringPool.BLANK,
+				BigDecimal.valueOf(GetterUtil.get(cartItem.getQuantity(), 1)),
+				GetterUtil.getLong(cartItem.getReplacedSkuId()),
+				BigDecimal.ZERO, skuUnitOfMeasureKey,
+				_commerceContextFactory.create(
+					contextCompany.getCompanyId(), commerceOrder.getGroupId(),
+					contextUser.getUserId(), commerceOrder.getCommerceOrderId(),
+					commerceOrder.getCommerceAccountId()),
+				_serviceContextHelper.getServiceContext(
+					commerceOrder.getGroupId())));
+	}
+
+	@Override
+	public CartItem postCartItem(Long cartId, CartItem cartItem)
+		throws Exception {
+
+		CommerceOrder commerceOrder = _commerceOrderService.getCommerceOrder(
+			cartId);
+
+		SkuUnitOfMeasure skuUnitOfMeasure = cartItem.getSkuUnitOfMeasure();
+		String skuUnitOfMeasureKey = StringPool.BLANK;
+
+		if (skuUnitOfMeasure != null) {
+			skuUnitOfMeasureKey = skuUnitOfMeasure.getKey();
+		}
+
+		return _toCartItem(
+			commerceOrder.getCommerceAccountId(),
+			_commerceOrderItemService.addOrUpdateCommerceOrderItem(
+				commerceOrder.getCommerceOrderId(), cartItem.getSkuId(),
+				cartItem.getOptions(),
+				BigDecimal.valueOf(GetterUtil.get(cartItem.getQuantity(), 1)),
+				GetterUtil.getLong(cartItem.getReplacedSkuId()),
+				BigDecimal.ZERO, skuUnitOfMeasureKey,
 				_commerceContextFactory.create(
 					contextCompany.getCompanyId(), commerceOrder.getGroupId(),
 					contextUser.getUserId(), cartId,
@@ -188,12 +270,14 @@ public class CartItemResourceImpl
 				continue;
 			}
 
-			if (parentCartItem.getCartItems() == null) {
-				parentCartItem.setCartItems(new CartItem[0]);
+			CartItem[] parentCartItemCartItems = parentCartItem.getCartItems();
+
+			if (parentCartItemCartItems == null) {
+				parentCartItem.setCartItems(() -> new CartItem[0]);
 			}
 
 			parentCartItem.setCartItems(
-				ArrayUtil.append(parentCartItem.getCartItems(), cartItem));
+				() -> ArrayUtil.append(parentCartItemCartItems, cartItem));
 
 			cartItemsMap.remove(cartItem.getId());
 		}

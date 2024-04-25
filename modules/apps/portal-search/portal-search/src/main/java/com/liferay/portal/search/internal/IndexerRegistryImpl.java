@@ -7,6 +7,7 @@ package com.liferay.portal.search.internal;
 
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -14,7 +15,6 @@ import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerPostProcessor;
 import com.liferay.portal.kernel.search.IndexerRegistry;
 import com.liferay.portal.kernel.search.dummy.DummyIndexer;
-import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
@@ -31,8 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.commons.lang.ClassUtils;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -227,13 +225,10 @@ public class IndexerRegistryImpl implements IndexerRegistry {
 			indexer.getClassName());
 
 		if (proxiedIndexer == null) {
-			List<?> interfaces = ClassUtils.getAllInterfaces(
-				indexer.getClass());
-
 			BufferedIndexerInvocationHandler bufferedIndexerInvocationHandler =
 				new BufferedIndexerInvocationHandler(
-					indexer, _indexStatusManager, _indexerRegistryConfiguration,
-					_persistedModelLocalServiceRegistry);
+					indexer, _indexStatusManager,
+					_indexerRegistryConfiguration);
 
 			bufferedIndexerInvocationHandler.
 				setIndexerRequestBufferOverflowHandler(
@@ -244,7 +239,7 @@ public class IndexerRegistryImpl implements IndexerRegistry {
 
 			proxiedIndexer = (Indexer<?>)ProxyUtil.newProxyInstance(
 				PortalClassLoaderUtil.getClassLoader(),
-				interfaces.toArray(new Class<?>[0]),
+				ReflectionUtil.getInterfaces(indexer),
 				bufferedIndexerInvocationHandler);
 
 			_proxiedIndexers.put(indexer.getClassName(), proxiedIndexer);
@@ -272,10 +267,6 @@ public class IndexerRegistryImpl implements IndexerRegistry {
 
 	@Reference
 	private IndexStatusManager _indexStatusManager;
-
-	@Reference
-	private PersistedModelLocalServiceRegistry
-		_persistedModelLocalServiceRegistry;
 
 	private final Map<String, Indexer<? extends Object>> _proxiedIndexers =
 		new ConcurrentHashMap<>();

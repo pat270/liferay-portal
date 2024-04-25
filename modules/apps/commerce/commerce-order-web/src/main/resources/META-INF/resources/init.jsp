@@ -17,7 +17,8 @@ taglib uri="http://liferay.com/tld/frontend" prefix="liferay-frontend" %><%@
 taglib uri="http://liferay.com/tld/frontend-data-set" prefix="frontend-data-set" %><%@
 taglib uri="http://liferay.com/tld/portlet" prefix="liferay-portlet" %><%@
 taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %><%@
-taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
+taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %><%@
+taglib uri="http://liferay.com/tld/user" prefix="liferay-user" %>
 
 <%@ page import="com.liferay.account.model.AccountEntry" %><%@
 page import="com.liferay.commerce.constants.CommerceOrderPaymentConstants" %><%@
@@ -34,6 +35,8 @@ page import="com.liferay.commerce.exception.CommerceOrderShippingMethodException
 page import="com.liferay.commerce.exception.CommerceOrderStatusException" %><%@
 page import="com.liferay.commerce.exception.CommerceOrderTypeExpirationDateException" %><%@
 page import="com.liferay.commerce.exception.CommerceOrderValidatorException" %><%@
+page import="com.liferay.commerce.exception.DuplicateCommerceOrderExternalReferenceCodeException" %><%@
+page import="com.liferay.commerce.exception.DuplicateCommerceOrderTypeExternalReferenceCodeException" %><%@
 page import="com.liferay.commerce.exception.NoSuchOrderException" %><%@
 page import="com.liferay.commerce.exception.NoSuchOrderNoteException" %><%@
 page import="com.liferay.commerce.model.CommerceAddress" %><%@
@@ -41,20 +44,28 @@ page import="com.liferay.commerce.model.CommerceOrder" %><%@
 page import="com.liferay.commerce.model.CommerceOrderItem" %><%@
 page import="com.liferay.commerce.model.CommerceOrderNote" %><%@
 page import="com.liferay.commerce.model.CommerceOrderType" %><%@
+page import="com.liferay.commerce.model.CommerceReturn" %><%@
 page import="com.liferay.commerce.model.CommerceShipment" %><%@
 page import="com.liferay.commerce.notification.model.CommerceNotificationQueueEntry" %><%@
 page import="com.liferay.commerce.order.CommerceOrderValidatorResult" %><%@
 page import="com.liferay.commerce.order.web.internal.constants.CommerceOrderFDSNames" %><%@
 page import="com.liferay.commerce.order.web.internal.constants.CommerceOrderScreenNavigationConstants" %><%@
 page import="com.liferay.commerce.order.web.internal.constants.CommerceOrderTypeScreenNavigationConstants" %><%@
+page import="com.liferay.commerce.order.web.internal.constants.CommerceReturnFDSNames" %><%@
+page import="com.liferay.commerce.order.web.internal.constants.CommerceReturnScreenNavigationConstants" %><%@
 page import="com.liferay.commerce.order.web.internal.display.context.CommerceOrderEditDisplayContext" %><%@
 page import="com.liferay.commerce.order.web.internal.display.context.CommerceOrderListDisplayContext" %><%@
 page import="com.liferay.commerce.order.web.internal.display.context.CommerceOrderNoteEditDisplayContext" %><%@
 page import="com.liferay.commerce.order.web.internal.display.context.CommerceOrderTypeDisplayContext" %><%@
 page import="com.liferay.commerce.order.web.internal.display.context.CommerceOrderTypeQualifiersDisplayContext" %><%@
+page import="com.liferay.commerce.order.web.internal.display.context.CommerceReturnEditDisplayContext" %><%@
+page import="com.liferay.commerce.order.web.internal.display.context.CommerceReturnListDisplayContext" %><%@
 page import="com.liferay.commerce.order.web.internal.security.permission.resource.CommerceOrderPermission" %><%@
 page import="com.liferay.commerce.product.model.CPMeasurementUnit" %><%@
 page import="com.liferay.commerce.term.model.CommerceTermEntry" %><%@
+page import="com.liferay.object.exception.DuplicateObjectEntryExternalReferenceCodeException" %><%@
+page import="com.liferay.object.exception.NoSuchObjectEntryException" %><%@
+page import="com.liferay.object.model.ObjectEntry" %><%@
 page import="com.liferay.petra.string.StringBundler" %><%@
 page import="com.liferay.petra.string.StringPool" %><%@
 page import="com.liferay.portal.kernel.bean.BeanParamUtil" %><%@
@@ -90,7 +101,3 @@ page import="java.util.Objects" %>
 <liferay-theme:defineObjects />
 
 <portlet:defineObjects />
-
-<%
-String redirect = ParamUtil.getString(request, "redirect");
-%>

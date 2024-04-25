@@ -5,6 +5,7 @@
 
 package com.liferay.portal.upgrade.internal.registry;
 
+import com.liferay.petra.concurrent.DCLSingleton;
 import com.liferay.portal.kernel.upgrade.DummyUpgradeStep;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.upgrade.UpgradeStep;
@@ -17,6 +18,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
 
 /**
@@ -24,59 +27,34 @@ import org.osgi.framework.Version;
  */
 public class UpgradeStepRegistry implements UpgradeStepRegistrator.Registry {
 
-	public UpgradeStepRegistry(int buildNumber) {
-		_buildNumber = buildNumber;
+	public UpgradeStepRegistry(
+		BundleContext bundleContext, boolean portalUpgraded,
+		ServiceReference<UpgradeStepRegistrator> serviceReference) {
+
+		_bundleContext = bundleContext;
+		_portalUpgraded = portalUpgraded;
+		_serviceReference = serviceReference;
+	}
+
+	public void destroy() {
+		_upgradeInfosDCLSingleton.destroy(
+			upgradeInfos -> _bundleContext.ungetService(_serviceReference));
 	}
 
 	public List<UpgradeStep> getReleaseCreationUpgradeSteps() {
+		getUpgradeInfos();
+
 		return _releaseCreationUpgradeSteps;
 	}
 
-	public List<UpgradeInfo> getUpgradeInfos(boolean portalUpgraded) {
-		if (_initialization && portalUpgraded) {
-			if (_upgradeInfos.isEmpty()) {
-				return Arrays.asList(
-					new UpgradeInfo(
-						"0.0.0", "1.0.0", _buildNumber,
-						new DummyUpgradeStep()));
-			}
-
-			return ListUtil.concat(
-				Arrays.asList(
-					new UpgradeInfo(
-						"0.0.0", _getFinalSchemaVersion(_upgradeInfos),
-						_buildNumber, new DummyUpgradeStep())),
-				_upgradeInfos);
-		}
-
-		return _upgradeInfos;
+	public List<UpgradeInfo> getUpgradeInfos() {
+		return _upgradeInfosDCLSingleton.getSingleton(this::_getUpgradeInfos);
 	}
 
 	@Override
 	public void register(
 		String fromSchemaVersionString, String toSchemaVersionString,
 		UpgradeStep... upgradeSteps) {
-
-		_createUpgradeInfos(
-			fromSchemaVersionString, toSchemaVersionString, _buildNumber,
-			upgradeSteps);
-	}
-
-	@Override
-	public void registerInitialization() {
-		_initialization = true;
-	}
-
-	@Override
-	public void registerReleaseCreationUpgradeSteps(
-		UpgradeStep... upgradeSteps) {
-
-		Collections.addAll(_releaseCreationUpgradeSteps, upgradeSteps);
-	}
-
-	private void _createUpgradeInfos(
-		String fromSchemaVersionString, String toSchemaVersionString,
-		int buildNumber, UpgradeStep... upgradeSteps) {
 
 		if (ArrayUtil.isEmpty(upgradeSteps)) {
 			return;
@@ -102,13 +80,13 @@ public class UpgradeStepRegistry implements UpgradeStepRegistrator.Registry {
 		if (upgradeStepsList.size() == 1) {
 			_upgradeInfos.add(
 				new UpgradeInfo(
-					fromSchemaVersionString, toSchemaVersionString, buildNumber,
+					fromSchemaVersionString, toSchemaVersionString,
 					upgradeStepsList.get(0)));
 		}
 		else {
 			_upgradeInfos.add(
 				new UpgradeInfo(
-					fromSchemaVersionString, toSchemaVersionString, buildNumber,
+					fromSchemaVersionString, toSchemaVersionString,
 					() -> {
 						for (UpgradeStep upgradeStep : upgradeStepsList) {
 							upgradeStep.upgrade();
@@ -117,14 +95,24 @@ public class UpgradeStepRegistry implements UpgradeStepRegistrator.Registry {
 		}
 	}
 
+	@Override
+	public void registerInitialization() {
+		_initialization = true;
+	}
+
+	@Override
+	public void registerReleaseCreationUpgradeSteps(
+		UpgradeStep... upgradeSteps) {
+
+		Collections.addAll(_releaseCreationUpgradeSteps, upgradeSteps);
+	}
+
 	private String _getFinalSchemaVersion(List<UpgradeInfo> upgradeInfos) {
 		Version finalSchemaVersion = null;
 
 		for (UpgradeInfo upgradeInfo : upgradeInfos) {
-			String toSchemaVersion = upgradeInfo.getToSchemaVersionString();
-
 			Version schemaVersion = Version.parseVersion(
-				toSchemaVersion.substring(0, 5));
+				upgradeInfo.getToSchemaVersionString());
 
 			if (finalSchemaVersion == null) {
 				finalSchemaVersion = schemaVersion;
@@ -139,10 +127,37 @@ public class UpgradeStepRegistry implements UpgradeStepRegistrator.Registry {
 		return finalSchemaVersion.toString();
 	}
 
-	private final int _buildNumber;
+	private List<UpgradeInfo> _getUpgradeInfos() {
+		UpgradeStepRegistrator upgradeStepRegistrator =
+			_bundleContext.getService(_serviceReference);
+
+		upgradeStepRegistrator.register(this);
+
+		if (_initialization && _portalUpgraded) {
+			if (_upgradeInfos.isEmpty()) {
+				return Arrays.asList(
+					new UpgradeInfo("0.0.0", "1.0.0", new DummyUpgradeStep()));
+			}
+
+			return ListUtil.concat(
+				Arrays.asList(
+					new UpgradeInfo(
+						"0.0.0", _getFinalSchemaVersion(_upgradeInfos),
+						new DummyUpgradeStep())),
+				_upgradeInfos);
+		}
+
+		return _upgradeInfos;
+	}
+
+	private final BundleContext _bundleContext;
 	private boolean _initialization;
+	private final boolean _portalUpgraded;
 	private final List<UpgradeStep> _releaseCreationUpgradeSteps =
 		new ArrayList<>();
+	private final ServiceReference<UpgradeStepRegistrator> _serviceReference;
 	private final List<UpgradeInfo> _upgradeInfos = new ArrayList<>();
+	private final DCLSingleton<List<UpgradeInfo>> _upgradeInfosDCLSingleton =
+		new DCLSingleton<>();
 
 }

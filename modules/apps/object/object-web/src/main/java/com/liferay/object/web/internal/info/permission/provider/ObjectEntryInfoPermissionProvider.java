@@ -16,7 +16,7 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
 import com.liferay.portal.kernel.service.PortletLocalService;
-import com.liferay.portal.kernel.service.permission.PortletPermission;
+import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
 
 /**
  * @author Lourdes Fernández Besada
@@ -27,12 +27,10 @@ public class ObjectEntryInfoPermissionProvider
 	public ObjectEntryInfoPermissionProvider(
 		ObjectDefinition objectDefinition,
 		PortletLocalService portletLocalService,
-		PortletPermission portletPermission,
 		PortletResourcePermission portletResourcePermission) {
 
 		_objectDefinition = objectDefinition;
 		_portletLocalService = portletLocalService;
-		_portletPermission = portletPermission;
 		_portletResourcePermission = portletResourcePermission;
 	}
 
@@ -52,6 +50,10 @@ public class ObjectEntryInfoPermissionProvider
 
 	@Override
 	public boolean hasViewPermission(PermissionChecker permissionChecker) {
+		if (_objectDefinition.isModifiable() && _objectDefinition.isSystem()) {
+			return false;
+		}
+
 		Portlet portlet = _portletLocalService.getPortletById(
 			_objectDefinition.getCompanyId(), _objectDefinition.getPortletId());
 
@@ -60,7 +62,7 @@ public class ObjectEntryInfoPermissionProvider
 		}
 
 		try {
-			return _portletPermission.contains(
+			return PortletPermissionUtil.contains(
 				permissionChecker, portlet.getRootPortletId(), ActionKeys.VIEW);
 		}
 		catch (Exception exception) {
@@ -77,7 +79,6 @@ public class ObjectEntryInfoPermissionProvider
 
 	private final ObjectDefinition _objectDefinition;
 	private final PortletLocalService _portletLocalService;
-	private final PortletPermission _portletPermission;
 	private final PortletResourcePermission _portletResourcePermission;
 
 }

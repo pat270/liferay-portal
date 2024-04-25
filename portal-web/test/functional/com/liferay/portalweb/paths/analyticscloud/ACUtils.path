@@ -12,7 +12,7 @@
 <tbody>
 <tr>
 	<td>NAME_LIST</td>
-	<td>//div[contains(@class,'table-title')][normalize-space()='${key_nameList}']</td>
+	<td>//*[contains(@class,'table-title')][normalize-space()='${key_nameList}']</td>
 	<td></td>
 </tr>
 <tr>
@@ -82,13 +82,18 @@
 <!-- FILTER ORDER -->
 
 <tr>
+	<td>PAGE_SEGMENT_FILTER</td>
+	<td>//button[contains(@class,'dropdown-item') and text()='${key_nameList}']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ORDER_ARROW_BUTTON_ASC</td>
-	<td>//a[contains(@class, 'nav-link-monospaced btn-outline-borderless')][*[name()='svg'][contains(@class,'lexicon-icon-order-arrow-ascending')]]</td>
+	<td>//*[contains(@class,'lexicon-icon-order-arrow-up')]//ancestor::a</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ORDER_ARROW_BUTTON_DES</td>
-	<td>//a[contains(@class, 'nav-link-monospaced btn-outline-borderless')][*[name()='svg'][contains(@class,'lexicon-icon-order-arrow-descending')]]</td>
+	<td>//*[contains(@class,'lexicon-icon-order-arrow-down')]//ancestor::a</td>
 	<td></td>
 </tr>
 <tr>
@@ -168,6 +173,16 @@
 <tr>
 	<td>METRIC_VALUE_PERCENTAGE</td>
 	<td>xpath=(//*[contains(@class,'recharts-pie-labels')])[${key_index}]//*[contains(text(),'${key_percentage}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>AUDIENCE_TOTAL_METRIC</td>
+	<td>xpath=(//div[@class='audience-report-chart-donut'])[${key_index}]//*[text()='${key_metricValue}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>VIEWER_SEGMENTS_CHART</td>
+	<td>//div[contains(@class,'analytics-bar-chart')]//span[text()='${key_segmentName}']</td>
 	<td></td>
 </tr>
 

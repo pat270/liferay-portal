@@ -6,17 +6,20 @@
 package com.liferay.segments.service.impl;
 
 import com.liferay.portal.aop.AopService;
+import com.liferay.portal.kernel.exception.LockedLayoutException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.security.auth.GuestOrUserUtil;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ResourceLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
+import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.GroupThreadLocal;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -110,6 +113,8 @@ public class SegmentsExperienceLocalServiceImpl
 			UnicodeProperties typeSettingsUnicodeProperties,
 			ServiceContext serviceContext)
 		throws PortalException {
+
+		_checkUnlockedLayout(plid, userId);
 
 		// Segments experience
 
@@ -226,6 +231,11 @@ public class SegmentsExperienceLocalServiceImpl
 					segmentsExperience.getSegmentsExperienceId());
 		}
 
+		if (!GroupThreadLocal.isDeleteInProcess()) {
+			_checkUnlockedLayout(
+				segmentsExperience.getPlid(), GuestOrUserUtil.getUserId());
+		}
+
 		segmentsExperiencePersistence.remove(segmentsExperience);
 
 		segmentsExperiencePersistence.flush();
@@ -238,13 +248,10 @@ public class SegmentsExperienceLocalServiceImpl
 
 		// Segments experiments
 
-		for (SegmentsExperiment segmentsExperiment :
-				_segmentsExperimentPersistence.findByS_P(
-					segmentsExperience.getSegmentsExperienceId(),
-					_getPublishedLayoutPlid(segmentsExperience.getPlid()))) {
-
-			_deleteSegmentsExperiment(segmentsExperiment);
-		}
+		_deleteSegmentsExperiment(
+			segmentsExperience.getGroupId(),
+			segmentsExperience.getSegmentsExperienceId(),
+			_getPublishedLayoutPlid(segmentsExperience.getPlid()));
 
 		// Resources
 
@@ -264,13 +271,9 @@ public class SegmentsExperienceLocalServiceImpl
 			groupId, SegmentsExperienceConstants.KEY_DEFAULT, plid);
 
 		if (defaultSegmentsExperience != null) {
-			for (SegmentsExperiment segmentsExperiment :
-					_segmentsExperimentPersistence.findByS_P(
-						defaultSegmentsExperience.getSegmentsExperienceId(),
-						_getPublishedLayoutPlid(plid))) {
-
-				_deleteSegmentsExperiment(segmentsExperiment);
-			}
+			_deleteSegmentsExperiment(
+				groupId, defaultSegmentsExperience.getSegmentsExperienceId(),
+				_getPublishedLayoutPlid(plid));
 		}
 
 		// Segments experiences
@@ -438,6 +441,9 @@ public class SegmentsExperienceLocalServiceImpl
 					" has a locked segments experiment");
 		}
 
+		_checkUnlockedLayout(
+			segmentsExperience.getPlid(), GuestOrUserUtil.getUserId());
+
 		segmentsExperience.setSegmentsEntryId(segmentsEntryId);
 		segmentsExperience.setNameMap(nameMap);
 		segmentsExperience.setActive(active);
@@ -455,6 +461,9 @@ public class SegmentsExperienceLocalServiceImpl
 		SegmentsExperience segmentsExperience =
 			segmentsExperiencePersistence.findByPrimaryKey(
 				segmentsExperienceId);
+
+		_checkUnlockedLayout(
+			segmentsExperience.getPlid(), GuestOrUserUtil.getUserId());
 
 		segmentsExperience.setActive(active);
 
@@ -475,6 +484,9 @@ public class SegmentsExperienceLocalServiceImpl
 				"Segments experience " + segmentsExperienceId +
 					" has a locked segments experiment");
 		}
+
+		_checkUnlockedLayout(
+			segmentsExperience.getPlid(), GuestOrUserUtil.getUserId());
 
 		boolean swap = true;
 
@@ -525,6 +537,16 @@ public class SegmentsExperienceLocalServiceImpl
 			segmentsExperience.getSegmentsExperienceId());
 	}
 
+	private void _checkUnlockedLayout(long plid, long userId)
+		throws PortalException {
+
+		Layout layout = _layoutLocalService.fetchLayout(plid);
+
+		if ((layout != null) && !layout.isUnlocked(Constants.EDIT, userId)) {
+			throw new LockedLayoutException();
+		}
+	}
+
 	private void _compactSegmentsExperiencesPriorities(
 		SegmentsExperience segmentsExperience) {
 
@@ -568,8 +590,16 @@ public class SegmentsExperienceLocalServiceImpl
 	}
 
 	private void _deleteSegmentsExperiment(
-			SegmentsExperiment segmentsExperiment)
+			long groupId, long segmentsExperienceId, long plid)
 		throws PortalException {
+
+		SegmentsExperiment segmentsExperiment =
+			_segmentsExperimentPersistence.fetchByG_S_P(
+				groupId, segmentsExperienceId, _getPublishedLayoutPlid(plid));
+
+		if (segmentsExperiment == null) {
+			return;
+		}
 
 		_segmentsExperimentPersistence.remove(segmentsExperiment);
 

@@ -18,7 +18,7 @@ OrganizationsDisplayContext organizationsDisplayContext = new OrganizationsDispl
 
 <clay:management-toolbar
 	managementToolbarDisplayContext="<%= new OrganizationsManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, organizationsDisplayContext) %>"
-	propsTransformer="js/OrganizationsManagementToolbarPropsTransformer"
+	propsTransformer="{OrganizationsManagementToolbarPropsTransformer} from site-memberships-web"
 />
 
 <div class="closed sidenav-container sidenav-right" id="<portlet:namespace />infoPanelId">
@@ -66,7 +66,7 @@ OrganizationsDisplayContext organizationsDisplayContext = new OrganizationsDispl
 							<c:when test='<%= displayStyle.equals("icon") %>'>
 								<liferay-ui:search-container-column-text>
 									<clay:user-card
-										propsTransformer="js/OrganizationCardPropsTransformer"
+										propsTransformer="{OrganizationCardPropsTransformer} from site-memberships-web"
 										userCard="<%= new OrganizationsUserCard(organization, renderRequest, renderResponse, searchContainer.getRowChecker()) %>"
 									/>
 								</liferay-ui:search-container-column-text>
@@ -82,19 +82,19 @@ OrganizationsDisplayContext organizationsDisplayContext = new OrganizationsDispl
 								>
 									<h5><%= organization.getName() %></h5>
 
-									<h6 class="text-default">
+									<div class="h6 text-default">
 										<span><%= HtmlUtil.escape(organization.getParentOrganizationName()) %></span>
-									</h6>
+									</div>
 
-									<h6 class="text-default">
+									<div class="h6 text-default">
 										<span><liferay-ui:message key="<%= organization.getType() %>" /></span>
-									</h6>
+									</div>
 
-									<h6 class="text-default">
+									<div class="h6 text-default">
 										<span><%= HtmlUtil.escape(organization.getAddress().getCity()) %></span>
-										<span><%= UsersAdmin.ORGANIZATION_REGION_NAME_ACCESSOR.get(organization) %></span>
-										<span><%= UsersAdmin.ORGANIZATION_COUNTRY_NAME_ACCESSOR.get(organization) %></span>
-									</h6>
+										<span><%= UsersAdminUtil.ORGANIZATION_REGION_NAME_ACCESSOR.get(organization) %></span>
+										<span><%= UsersAdminUtil.ORGANIZATION_COUNTRY_NAME_ACCESSOR.get(organization) %></span>
+									</div>
 								</liferay-ui:search-container-column-text>
 
 								<%
@@ -105,7 +105,7 @@ OrganizationsDisplayContext organizationsDisplayContext = new OrganizationsDispl
 									<clay:dropdown-actions
 										aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 										dropdownItems="<%= organizationActionDropdownItemsProvider.getActionDropdownItems() %>"
-										propsTransformer="js/OrganizationDropdownDefaultPropsTransformer"
+										propsTransformer="{OrganizationDropdownDefaultPropsTransformer} from site-memberships-web"
 									/>
 								</liferay-ui:search-container-column-text>
 							</c:when>
@@ -139,13 +139,13 @@ OrganizationsDisplayContext organizationsDisplayContext = new OrganizationsDispl
 								<liferay-ui:search-container-column-text
 									cssClass="table-cell-expand-smallest table-cell-minw-150"
 									name="region"
-									value="<%= UsersAdmin.ORGANIZATION_REGION_NAME_ACCESSOR.get(organization) %>"
+									value="<%= UsersAdminUtil.ORGANIZATION_REGION_NAME_ACCESSOR.get(organization) %>"
 								/>
 
 								<liferay-ui:search-container-column-text
 									cssClass="table-cell-expand-smallest table-cell-minw-150"
 									name="country"
-									value="<%= UsersAdmin.ORGANIZATION_COUNTRY_NAME_ACCESSOR.get(organization) %>"
+									value="<%= UsersAdminUtil.ORGANIZATION_COUNTRY_NAME_ACCESSOR.get(organization) %>"
 								/>
 
 								<%
@@ -156,7 +156,7 @@ OrganizationsDisplayContext organizationsDisplayContext = new OrganizationsDispl
 									<clay:dropdown-actions
 										aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 										dropdownItems="<%= organizationActionDropdownItemsProvider.getActionDropdownItems() %>"
-										propsTransformer="js/OrganizationDropdownDefaultPropsTransformer"
+										propsTransformer="{OrganizationDropdownDefaultPropsTransformer} from site-memberships-web"
 									/>
 								</liferay-ui:search-container-column-text>
 							</c:otherwise>

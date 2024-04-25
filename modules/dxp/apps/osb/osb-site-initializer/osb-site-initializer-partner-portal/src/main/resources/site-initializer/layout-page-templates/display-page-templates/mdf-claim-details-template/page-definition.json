@@ -41,94 +41,27 @@
 					],
 					"indexed": true,
 					"layout": {
-						"borderWidth": 0,
-						"marginBottom": 0,
-						"marginLeft": 0,
-						"marginRight": 0,
-						"marginTop": 0,
 						"paddingBottom": 2,
-						"paddingLeft": 0,
-						"paddingRight": 0,
-						"paddingTop": 6,
-						"widthType": "Fluid"
+						"paddingTop": 6
 					},
 					"name": "Page"
 				},
 				"pageElements": [
 					{
 						"definition": {
+							"fragment": {
+								"key": "back-button"
+							},
+							"fragmentConfig": {
+							},
+							"fragmentFields": [
+							],
 							"fragmentStyle": {
 								"marginBottom": "3"
 							},
-							"indexed": true,
-							"layout": {
-								"borderWidth": 0,
-								"marginBottom": 1,
-								"marginLeft": 0,
-								"marginRight": 0,
-								"marginTop": 0,
-								"opacity": 100,
-								"paddingBottom": 0,
-								"paddingLeft": 0,
-								"paddingRight": 0,
-								"paddingTop": 0,
-								"widthType": "Fluid"
-							},
-							"name": "Back Container"
+							"indexed": true
 						},
-						"pageElements": [
-							{
-								"definition": {
-									"fragment": {
-										"key": "BASIC_COMPONENT-button"
-									},
-									"fragmentConfig": {
-										"buttonSize": "nm",
-										"buttonType": "secondary"
-									},
-									"fragmentFields": [
-										{
-											"id": "link",
-											"value": {
-												"fragmentLink": {
-													"value": {
-														"href": {
-															"mapping": {
-																"itemReference": {
-																	"className": "com.liferay.portal.kernel.model.Layout",
-																	"fields": [
-																		{
-																			"fieldName": "friendlyURL",
-																			"fieldValue": "/marketing/mdf-claims"
-																		},
-																		{
-																			"fieldName": "privatePage",
-																			"fieldValue": "false"
-																		},
-																		{
-																			"fieldName": "siteKey",
-																			"fieldValue": "[$GROUP_KEY$]"
-																		}
-																	]
-																}
-															}
-														}
-													}
-												},
-												"text": {
-													"value_i18n": {
-														"en_US": "← Back"
-													}
-												}
-											}
-										}
-									],
-									"indexed": true
-								},
-								"type": "Fragment"
-							}
-						],
-						"type": "Section"
+						"type": "Fragment"
 					},
 					{
 						"definition": {
@@ -145,16 +78,11 @@
 							},
 							"indexed": true,
 							"layout": {
-								"borderWidth": 0,
 								"marginBottom": 1,
-								"marginLeft": 0,
-								"marginRight": 0,
-								"marginTop": 0,
 								"paddingBottom": 2,
 								"paddingLeft": 2,
 								"paddingRight": 2,
-								"paddingTop": 2,
-								"widthType": "Fluid"
+								"paddingTop": 2
 							},
 							"name": "Header"
 						},
@@ -179,20 +107,9 @@
 									"indexed": true,
 									"layout": {
 										"align": "Start",
-										"borderWidth": 0,
 										"contentDisplay": "FlexRow",
 										"flexWrap": "Wrap",
-										"justify": "SpaceBetween",
-										"marginBottom": 0,
-										"marginLeft": 0,
-										"marginRight": 0,
-										"marginTop": 0,
-										"opacity": 100,
-										"paddingBottom": 0,
-										"paddingLeft": 0,
-										"paddingRight": 0,
-										"paddingTop": 0,
-										"widthType": "Fluid"
+										"justify": "SpaceBetween"
 									}
 								},
 								"pageElements": [
@@ -207,68 +124,150 @@
 											"indexed": true,
 											"layout": {
 												"align": "Start",
-												"borderWidth": 0,
 												"contentDisplay": "FlexColumn",
-												"flexWrap": "Wrap",
-												"marginBottom": 0,
-												"marginLeft": 0,
-												"marginRight": 0,
-												"marginTop": 0,
-												"opacity": 100,
-												"paddingBottom": 0,
-												"paddingLeft": 0,
-												"paddingRight": 0,
-												"paddingTop": 0,
-												"widthType": "Fluid"
+												"flexWrap": "Wrap"
 											}
 										},
 										"pageElements": [
 											{
 												"definition": {
-													"fragment": {
-														"key": "DIALECT-dialect-text"
-													},
-													"fragmentConfig": {
-														"textType": "h1",
-														"truncateText": false
-													},
-													"fragmentFields": [
-														{
-															"id": "element-text",
-															"value": {
-																"fragmentLink": {
-																},
-																"text": {
-																	"value_i18n": {
-																		"ar_SA": "MDF Claim",
-																		"ca_ES": "MDF Claim",
-																		"de_DE": "MDF Claim",
-																		"en_US": "MDF Claim",
-																		"es_ES": "MDF Claim",
-																		"fi_FI": "MDF Claim",
-																		"fr_FR": "MDF Claim",
-																		"hu_HU": "MDF Claim",
-																		"ja_JP": "MDF Claim",
-																		"nl_NL": "MDF Claim",
-																		"pt_BR": "MDF Claim",
-																		"sv_SE": "MDF Claim",
-																		"zh_CN": "MDF Claim"
+													"indexed": true,
+													"layout": {
+														"align": "Center",
+														"contentDisplay": "FlexRow",
+														"justify": "SpaceBetween"
+													}
+												},
+												"pageElements": [
+													{
+														"definition": {
+															"fragment": {
+																"key": "DIALECT-dialect-text"
+															},
+															"fragmentConfig": {
+																"textType": "h1",
+																"truncateText": false
+															},
+															"fragmentFields": [
+																{
+																	"id": "element-text",
+																	"value": {
+																		"fragmentLink": {
+																		},
+																		"text": {
+																			"value_i18n": {
+																				"ar_SA": "MDF Claim",
+																				"ca_ES": "MDF Claim",
+																				"de_DE": "MDF Claim",
+																				"en_US": "MDF Claim",
+																				"es_ES": "MDF Claim",
+																				"fi_FI": "MDF Claim",
+																				"fr_FR": "MDF Claim",
+																				"hu_HU": "MDF Claim",
+																				"ja_JP": "MDF Claim",
+																				"nl_NL": "MDF Claim",
+																				"pt_BR": "MDF Claim",
+																				"sv_SE": "MDF Claim",
+																				"zh_CN": "MDF Claim"
+																			}
+																		}
 																	}
 																}
-															}
-														}
-													],
-													"fragmentStyle": {
-														"borderRadius": "",
-														"fontWeight": "fontWeightBold",
-														"paddingBottom": "1",
-														"shadow": "",
-														"textAlign": "",
-														"textColor": "colorNeutral10"
+															],
+															"fragmentStyle": {
+																"borderRadius": "",
+																"fontWeight": "fontWeightBold",
+																"paddingBottom": "1",
+																"shadow": "",
+																"textAlign": "",
+																"textColor": "colorNeutral10"
+															},
+															"indexed": true
+														},
+														"type": "Fragment"
 													},
-													"indexed": true
-												},
-												"type": "Fragment"
+													{
+														"definition": {
+															"fragment": {
+																"key": "DIALECT-dialect-text"
+															},
+															"fragmentConfig": {
+																"textType": "h1",
+																"truncateText": false
+															},
+															"fragmentFields": [
+																{
+																	"id": "element-text",
+																	"value": {
+																		"fragmentLink": {
+																		},
+																		"text": {
+																			"value_i18n": {
+																				"ar_SA": "-",
+																				"ca_ES": "-",
+																				"de_DE": "-",
+																				"en_US": "-",
+																				"es_ES": "-",
+																				"fi_FI": "-",
+																				"fr_FR": "-",
+																				"hu_HU": "-",
+																				"ja_JP": "-",
+																				"nl_NL": "-",
+																				"pt_BR": "-",
+																				"sv_SE": "-",
+																				"zh_CN": "-"
+																			}
+																		}
+																	}
+																}
+															],
+															"fragmentStyle": {
+																"borderRadius": "",
+																"fontWeight": "fontWeightBold",
+																"marginLeft": "2",
+																"marginRight": "2",
+																"shadow": "",
+																"textAlign": "",
+																"textColor": "colorNeutral10"
+															},
+															"indexed": true
+														},
+														"type": "Fragment"
+													},
+													{
+														"definition": {
+															"fragment": {
+																"key": "DIALECT-dialect-text"
+															},
+															"fragmentConfig": {
+																"textType": "h1"
+															},
+															"fragmentFields": [
+																{
+																	"id": "element-text",
+																	"value": {
+																		"fragmentLink": {
+																		},
+																		"text": {
+																			"mapping": {
+																				"fieldKey": "ObjectEntry_objectEntryId",
+																				"itemReference": {
+																					"contextSource": "DisplayPageItem"
+																				}
+																			}
+																		}
+																	}
+																}
+															],
+															"fragmentStyle": {
+																"fontWeight": "fontWeightBold"
+															},
+															"indexed": true
+														},
+														"type": "Fragment"
+													}
+												],
+												"type": "Section"
 											},
 											{
 												"definition": {
@@ -280,19 +279,8 @@
 													},
 													"indexed": true,
 													"layout": {
-														"borderWidth": 0,
 														"contentDisplay": "FlexRow",
-														"flexWrap": "Wrap",
-														"marginBottom": 0,
-														"marginLeft": 0,
-														"marginRight": 0,
-														"marginTop": 0,
-														"opacity": 100,
-														"paddingBottom": 0,
-														"paddingLeft": 0,
-														"paddingRight": 0,
-														"paddingTop": 0,
-														"widthType": "Fluid"
+														"flexWrap": "Wrap"
 													}
 												},
 												"pageElements": [
@@ -359,7 +347,7 @@
 																		},
 																		"text": {
 																			"mapping": {
-																				"fieldKey": "ObjectEntry_createDate",
+																				"fieldKey": "ObjectEntry_submitDate",
 																				"itemReference": {
 																					"contextSource": "DisplayPageItem"
 																				}
@@ -478,20 +466,9 @@
 											"indexed": true,
 											"layout": {
 												"align": "Center",
-												"borderWidth": 0,
 												"contentDisplay": "FlexRow",
 												"flexWrap": "Wrap",
-												"justify": "End",
-												"marginBottom": 0,
-												"marginLeft": 0,
-												"marginRight": 0,
-												"marginTop": 0,
-												"opacity": 100,
-												"paddingBottom": 0,
-												"paddingLeft": 0,
-												"paddingRight": 0,
-												"paddingTop": 0,
-												"widthType": "Fluid"
+												"justify": "End"
 											}
 										},
 										"pageElements": [
@@ -542,28 +519,17 @@
 							},
 							{
 								"definition": {
-									"fragment": {
-										"key": "mdf-claim-manager-status"
+									"fragmentStyle": {
+										"height": "51px"
 									},
-									"fragmentConfig": {
-									},
-									"fragmentFields": [
-									],
-									"indexed": true
-								},
-								"pageElements": [
-									{
-										"definition": {
+									"widgetInstance": {
+										"widgetConfig": {
+											"properties": "path=mdf-claim-manager-status"
 										},
-										"type": "FragmentDropZone"
-									},
-									{
-										"definition": {
-										},
-										"type": "FragmentDropZone"
+										"widgetName": "com_liferay_client_extension_web_internal_portlet_ClientExtensionEntryPortlet_[$COMPANY_ID$]_LXC_liferay_partner_custom_element"
 									}
-								],
-								"type": "Fragment"
+								},
+								"type": "Widget"
 							}
 						],
 						"type": "Section"
@@ -583,16 +549,11 @@
 							},
 							"indexed": true,
 							"layout": {
-								"borderWidth": 0,
 								"marginBottom": 1,
-								"marginLeft": 0,
-								"marginRight": 0,
-								"marginTop": 0,
 								"paddingBottom": 2,
 								"paddingLeft": 2,
 								"paddingRight": 2,
-								"paddingTop": 2,
-								"widthType": "Fluid"
+								"paddingTop": 2
 							},
 							"name": "Summary"
 						},
@@ -683,16 +644,6 @@
 							},
 							"indexed": true,
 							"layout": {
-								"borderWidth": 0,
-								"marginBottom": 0,
-								"marginLeft": 0,
-								"marginRight": 0,
-								"marginTop": 0,
-								"paddingBottom": 0,
-								"paddingLeft": 0,
-								"paddingRight": 0,
-								"paddingTop": 0,
-								"widthType": "Fluid"
 							},
 							"name": "Body"
 						},
@@ -760,7 +711,8 @@
 														"backgroundColor": "colorNeutral0",
 														"borderRadius": "borderRadiusSm",
 														"borderWidth": "0",
-														"paddingBottom": "4",
+														"marginBottom": "3",
+														"paddingBottom": "3",
 														"paddingLeft": "3",
 														"paddingRight": "4",
 														"paddingTop": "4",
@@ -769,17 +721,12 @@
 													},
 													"indexed": true,
 													"layout": {
-														"borderWidth": 0,
 														"contentDisplay": "FlexColumn",
-														"marginBottom": 0,
-														"marginLeft": 0,
-														"marginRight": 0,
-														"marginTop": 0,
-														"paddingBottom": 2,
+														"marginBottom": 1,
+														"paddingBottom": 1,
 														"paddingLeft": 1,
 														"paddingRight": 2,
-														"paddingTop": 2,
-														"widthType": "Fluid"
+														"paddingTop": 2
 													}
 												},
 												"pageElements": [
@@ -799,19 +746,19 @@
 																		},
 																		"text": {
 																			"value_i18n": {
-																				"ar_SA": "Invoice",
-																				"ca_ES": "Invoice",
-																				"de_DE": "Invoice",
-																				"en_US": "Invoice",
-																				"es_ES": "Invoice",
-																				"fi_FI": "Invoice",
-																				"fr_FR": "Invoice",
-																				"hu_HU": "Invoice",
-																				"ja_JP": "Invoice",
-																				"nl_NL": "Invoice",
-																				"pt_BR": "Invoice",
-																				"sv_SE": "Invoice",
-																				"zh_CN": "Invoice"
+																				"ar_SA": "<p>Reimbursement Invoices</p>\n",
+																				"ca_ES": "<p>Reimbursement Invoices</p>\n",
+																				"de_DE": "<p>Reimbursement Invoices</p>\n",
+																				"en_US": "<p>Reimbursement Invoices</p>\n",
+																				"es_ES": "<p>Reimbursement Invoices</p>\n",
+																				"fi_FI": "<p>Reimbursement Invoices</p>\n",
+																				"fr_FR": "<p>Reimbursement Invoices</p>\n",
+																				"hu_HU": "<p>Reimbursement Invoices</p>\n",
+																				"ja_JP": "<p>Reimbursement Invoices</p>\n",
+																				"nl_NL": "<p>Reimbursement Invoices</p>\n",
+																				"pt_BR": "<p>Reimbursement Invoices</p>\n",
+																				"sv_SE": "<p>Reimbursement Invoices</p>\n",
+																				"zh_CN": "<p>Reimbursement Invoices</p>\n"
 																			}
 																		}
 																	}
@@ -819,7 +766,6 @@
 															],
 															"fragmentStyle": {
 																"fontWeight": "fontWeightBold",
-																"marginBottom": "1",
 																"textAlign": "",
 																"textColor": "colorNeutral9"
 															},
@@ -858,11 +804,202 @@
 															"indexed": true
 														},
 														"type": "Fragment"
+													}
+												],
+												"type": "Section"
+											},
+											{
+												"definition": {
+													"fragmentStyle": {
+														"backgroundColor": "colorNeutral0",
+														"borderRadius": "borderRadiusSm",
+														"borderWidth": "0",
+														"marginBottom": "3",
+														"paddingLeft": "3",
+														"paddingRight": "4",
+														"paddingTop": "4",
+														"textAlign": "",
+														"textColor": "colorNeutral10"
+													},
+													"indexed": true,
+													"layout": {
+														"contentDisplay": "FlexColumn",
+														"marginBottom": 1,
+														"paddingLeft": 1,
+														"paddingRight": 2,
+														"paddingTop": 2
+													}
+												},
+												"pageElements": [
+													{
+														"definition": {
+															"fragment": {
+																"key": "DIALECT-dialect-text"
+															},
+															"fragmentConfig": {
+																"textType": "h5"
+															},
+															"fragmentFields": [
+																{
+																	"id": "element-text",
+																	"value": {
+																		"fragmentLink": {
+																		},
+																		"text": {
+																			"value_i18n": {
+																				"ar_SA": "Claimed Activities",
+																				"ca_ES": "Claimed Activities",
+																				"de_DE": "Claimed Activities",
+																				"en_US": "Claimed Activities",
+																				"es_ES": "Claimed Activities",
+																				"fi_FI": "Claimed Activities",
+																				"fr_FR": "Claimed Activities",
+																				"hu_HU": "Claimed Activities",
+																				"ja_JP": "Claimed Activities",
+																				"nl_NL": "Claimed Activities",
+																				"pt_BR": "Claimed Activities",
+																				"sv_SE": "Claimed Activities",
+																				"zh_CN": "Claimed Activities"
+																			}
+																		}
+																	}
+																}
+															],
+															"fragmentStyle": {
+																"fontWeight": "fontWeightBold",
+																"marginBottom": "1",
+																"textAlign": "",
+																"textColor": "colorNeutral9"
+															},
+															"indexed": true
+														},
+														"type": "Fragment"
+													},
+													{
+														"definition": {
+															"fragment": {
+																"key": "BASIC_COMPONENT-separator"
+															},
+															"fragmentConfig": {
+																"bottomSpacing": "3",
+																"separatorColor": ""
+															},
+															"fragmentFields": [
+															],
+															"fragmentStyle": {
+																"marginTop": "1",
+																"textAlign": ""
+															},
+															"indexed": true
+														},
+														"type": "Fragment"
 													},
 													{
 														"definition": {
 															"fragment": {
 																"key": "claim-detail-activity-list"
+															},
+															"fragmentConfig": {
+															},
+															"fragmentFields": [
+															],
+															"indexed": true
+														},
+														"type": "Fragment"
+													}
+												],
+												"type": "Section"
+											},
+											{
+												"definition": {
+													"fragmentStyle": {
+														"backgroundColor": "colorNeutral0",
+														"borderRadius": "borderRadiusSm",
+														"borderWidth": "0",
+														"paddingBottom": "4",
+														"paddingLeft": "3",
+														"paddingRight": "4",
+														"paddingTop": "4",
+														"textAlign": "",
+														"textColor": "colorNeutral10"
+													},
+													"indexed": true,
+													"layout": {
+														"contentDisplay": "FlexColumn",
+														"paddingBottom": 2,
+														"paddingLeft": 1,
+														"paddingRight": 2,
+														"paddingTop": 2
+													}
+												},
+												"pageElements": [
+													{
+														"definition": {
+															"fragment": {
+																"key": "DIALECT-dialect-text"
+															},
+															"fragmentConfig": {
+																"textType": "h5"
+															},
+															"fragmentFields": [
+																{
+																	"id": "element-text",
+																	"value": {
+																		"fragmentLink": {
+																		},
+																		"text": {
+																			"value_i18n": {
+																				"ar_SA": "<p>Partner Information</p>\n",
+																				"ca_ES": "<p>Partner Information</p>\n",
+																				"de_DE": "<p>Partner Information</p>\n",
+																				"en_US": "<p>Partner Information</p>\n",
+																				"es_ES": "<p>Partner Information</p>\n",
+																				"fi_FI": "<p>Partner Information</p>\n",
+																				"fr_FR": "<p>Partner Information</p>\n",
+																				"hu_HU": "<p>Partner Information</p>\n",
+																				"ja_JP": "<p>Partner Information</p>\n",
+																				"nl_NL": "<p>Partner Information</p>\n",
+																				"pt_BR": "<p>Partner Information</p>\n",
+																				"sv_SE": "<p>Partner Information</p>\n",
+																				"zh_CN": "<p>Partner Information</p>\n"
+																			}
+																		}
+																	}
+																}
+															],
+															"fragmentStyle": {
+																"fontWeight": "fontWeightBold",
+																"marginBottom": "1",
+																"textAlign": "",
+																"textColor": "colorNeutral9"
+															},
+															"indexed": true
+														},
+														"type": "Fragment"
+													},
+													{
+														"definition": {
+															"fragment": {
+																"key": "BASIC_COMPONENT-separator"
+															},
+															"fragmentConfig": {
+																"bottomSpacing": "3",
+																"separatorColor": ""
+															},
+															"fragmentFields": [
+															],
+															"fragmentStyle": {
+																"marginTop": "1",
+																"textAlign": ""
+															},
+															"indexed": true
+														},
+														"type": "Fragment"
+													},
+													{
+														"definition": {
+															"fragment": {
+																"key": "mdf-claim-info-contact"
 															},
 															"fragmentConfig": {
 															},
@@ -916,16 +1053,10 @@
 													},
 													"indexed": true,
 													"layout": {
-														"borderWidth": 0,
-														"marginBottom": 0,
-														"marginLeft": 0,
-														"marginRight": 0,
-														"marginTop": 0,
 														"paddingBottom": 2,
 														"paddingLeft": 2,
 														"paddingRight": 2,
-														"paddingTop": 2,
-														"widthType": "Fluid"
+														"paddingTop": 2
 													}
 												},
 												"pageElements": [
@@ -1000,6 +1131,8 @@
 														},
 														"pageElements": [
 															{
+																"definition": {
+																},
 																"pageElements": [
 																	{
 																		"definition": {

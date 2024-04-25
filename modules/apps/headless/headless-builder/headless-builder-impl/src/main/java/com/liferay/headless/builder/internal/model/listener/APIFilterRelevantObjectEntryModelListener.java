@@ -5,16 +5,11 @@
 
 package com.liferay.headless.builder.internal.model.listener;
 
-import com.liferay.headless.builder.internal.helper.ObjectEntryHelper;
-import com.liferay.object.exception.ObjectEntryValuesException;
+import com.liferay.headless.builder.internal.helper.ValidationHelper;
 import com.liferay.object.model.ObjectEntry;
 import com.liferay.object.model.listener.RelevantObjectEntryModelListener;
 import com.liferay.portal.kernel.exception.ModelListenerException;
 import com.liferay.portal.kernel.model.BaseModelListener;
-
-import java.io.Serializable;
-
-import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -48,25 +43,11 @@ public class APIFilterRelevantObjectEntryModelListener
 	}
 
 	private void _validate(ObjectEntry objectEntry) {
-		try {
-			Map<String, Serializable> values = objectEntry.getValues();
-
-			if (!_objectEntryHelper.isValidObjectEntry(
-					(long)values.get(
-						"r_apiEndpointToAPIFilters_c_apiEndpointId"),
-					"L_API_ENDPOINT")) {
-
-				throw new ObjectEntryValuesException.InvalidObjectField(
-					"An API filter must be related to an API endpoint",
-					"an-api-filter-must-be-related-to-an-api-endpoint", null);
-			}
-		}
-		catch (Exception exception) {
-			throw new ModelListenerException(exception);
-		}
+		_validationHelper.validateAPIEndpointRelationship(
+			"API filter", objectEntry, "apiEndpointToAPIFilters");
 	}
 
 	@Reference
-	private ObjectEntryHelper _objectEntryHelper;
+	private ValidationHelper _validationHelper;
 
 }

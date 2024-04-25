@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.io.Serializable;
@@ -69,10 +70,16 @@ public class SaveFDSFieldsMVCResourceCommand
 			JSONObject creationDataJSONObject =
 				creationDataJSONArray.getJSONObject(i);
 
+			String type = String.valueOf(creationDataJSONObject.get("type"));
+
 			ObjectEntry objectEntry = _objectEntryService.addObjectEntry(
 				0, objectDefinition.getObjectDefinitionId(),
 				HashMapBuilder.<String, Serializable>put(
-					"label", String.valueOf(creationDataJSONObject.get("name"))
+					"label_i18n",
+					HashMapBuilder.put(
+						themeDisplay.getLanguageId(),
+						String.valueOf(creationDataJSONObject.get("name"))
+					).build()
 				).put(
 					"name", String.valueOf(creationDataJSONObject.get("name"))
 				).put(
@@ -80,9 +87,9 @@ public class SaveFDSFieldsMVCResourceCommand
 				).put(
 					"renderer", "default"
 				).put(
-					"sortable", true
+					"sortable", !StringUtil.equals(type, "object")
 				).put(
-					"type", String.valueOf(creationDataJSONObject.get("type"))
+					"type", type
 				).build(),
 				new ServiceContext());
 

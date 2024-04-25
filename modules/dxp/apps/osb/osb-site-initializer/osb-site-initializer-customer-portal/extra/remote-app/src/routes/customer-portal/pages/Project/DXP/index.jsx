@@ -8,12 +8,13 @@ import {useCustomerPortal} from '../../../context';
 import DeveloperKeysLayouts from '../../../layouts/DeveloperKeysLayout';
 import {LIST_TYPES} from '../../../utils/constants';
 
-const DXP = () => {
+const DXP = ({hasComplimentaryKey}) => {
 	const [{project, sessionId}] = useCustomerPortal();
 
 	return (
 		<div className="mr-4">
 			<ActivationKeysTable
+				hasComplimentaryKey={hasComplimentaryKey}
 				initialFilter="(startswith(productName,'DXP') or startswith(productName,'Digital'))"
 				productName="DXP"
 				project={project}
@@ -24,7 +25,7 @@ const DXP = () => {
 				<DeveloperKeysLayouts.Inputs
 					accountKey={project.accountKey}
 					downloadTextHelper={i18n.translate(
-						'select-the-liferay-dxp-version-for-your-developer-key-to-download'
+						'select-the-liferay-self-hosted-version-for-your-developer-key-to-download'
 					)}
 					dxpVersion={project.dxpVersion}
 					listType={LIST_TYPES.dxpVersion}

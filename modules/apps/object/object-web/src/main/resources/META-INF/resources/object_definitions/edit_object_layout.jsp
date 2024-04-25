@@ -13,12 +13,12 @@ ObjectLayout objectLayout = (ObjectLayout)request.getAttribute(ObjectWebKeys.OBJ
 %>
 
 <react:component
-	module="js/components/Layout/index"
+	module="{Layout} from object-web"
 	props='<%=
 		HashMapBuilder.<String, Object>put(
 			"isViewOnly", !objectDefinitionsLayoutsDisplayContext.hasUpdateObjectDefinitionPermission()
 		).put(
-			"objectFieldTypes", objectDefinitionsLayoutsDisplayContext.getObjectFieldBusinessTypeMaps(locale)
+			"objectFieldBusinessTypes", objectDefinitionsLayoutsDisplayContext.getObjectFieldBusinessTypeMaps(locale)
 		).put(
 			"objectLayoutId", objectLayout.getObjectLayoutId()
 		).build()

@@ -106,6 +106,15 @@ public class SegmentsExperimentImpl extends SegmentsExperimentBaseImpl {
 	}
 
 	@Override
+	public String getType() {
+		UnicodeProperties typeSettingsUnicodeProperties =
+			getTypeSettingsProperties();
+
+		return GetterUtil.getString(
+			typeSettingsUnicodeProperties.getProperty("type"));
+	}
+
+	@Override
 	public UnicodeProperties getTypeSettingsProperties() {
 		if (_typeSettingsUnicodeProperties == null) {
 			_typeSettingsUnicodeProperties = new UnicodeProperties(true);
@@ -145,6 +154,13 @@ public class SegmentsExperimentImpl extends SegmentsExperimentBaseImpl {
 				winnerSegmentsExperienceId);
 
 		return winnerSegmentsExperience.getSegmentsExperienceKey();
+	}
+
+	@Override
+	public void setTypeSettings(String typeSettings) {
+		super.setTypeSettings(typeSettings);
+
+		_typeSettingsUnicodeProperties = null;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

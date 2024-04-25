@@ -27,7 +27,6 @@ import com.liferay.layout.page.template.info.item.provider.DisplayPageInfoItemFi
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -60,7 +59,8 @@ public class JournalArticleInfoItemFormProvider
 				_assetEntryInfoItemFieldSetProvider.getInfoFieldSet(
 					JournalArticle.class.getName()),
 				_displayPageInfoItemFieldSetProvider.getInfoFieldSet(
-					JournalArticle.class.getName(), StringPool.BLANK, 0));
+					JournalArticle.class.getName(), StringPool.BLANK,
+					JournalArticle.class.getSimpleName(), 0));
 		}
 		catch (NoSuchFormVariationException noSuchFormVariationException) {
 			throw new RuntimeException(noSuchFormVariationException);
@@ -82,7 +82,8 @@ public class JournalArticleInfoItemFormProvider
 						article.getResourcePrimKey())),
 				_displayPageInfoItemFieldSetProvider.getInfoFieldSet(
 					JournalArticle.class.getName(),
-					String.valueOf(ddmStructureId), 0));
+					String.valueOf(ddmStructureId),
+					JournalArticle.class.getSimpleName(), 0));
 		}
 		catch (NoSuchClassTypeException noSuchClassTypeException) {
 			throw new RuntimeException(
@@ -108,7 +109,8 @@ public class JournalArticleInfoItemFormProvider
 				JournalArticle.class.getName(),
 				GetterUtil.getLong(formVariationKey), groupId),
 			_displayPageInfoItemFieldSetProvider.getInfoFieldSet(
-				JournalArticle.class.getName(), formVariationKey, groupId));
+				JournalArticle.class.getName(), formVariationKey,
+				JournalArticle.class.getSimpleName(), groupId));
 	}
 
 	private InfoFieldSet _getBasicInformationInfoFieldSet() {
@@ -131,17 +133,6 @@ public class JournalArticleInfoItemFormProvider
 			InfoLocalizedValue.localize(getClass(), "basic-information")
 		).name(
 			"basic-information"
-		).build();
-	}
-
-	private InfoFieldSet _getDisplayPageInfoFieldSet() {
-		return InfoFieldSet.builder(
-		).infoFieldSetEntry(
-			JournalArticleInfoItemFields.displayPageURLInfoField
-		).labelInfoLocalizedValue(
-			InfoLocalizedValue.localize(getClass(), "display-page")
-		).name(
-			"display-page"
 		).build();
 	}
 
@@ -186,17 +177,7 @@ public class JournalArticleInfoItemFormProvider
 				_templateInfoItemFieldSetProvider.getInfoFieldSet(
 					JournalArticle.class.getName(), formVariationKey)
 			).infoFieldSetEntry(
-				unsafeConsumer -> {
-					if (!FeatureFlagManagerUtil.isEnabled("LPS-183727")) {
-						unsafeConsumer.accept(_getDisplayPageInfoFieldSet());
-					}
-				}
-			).infoFieldSetEntry(
-				unsafeConsumer -> {
-					if (FeatureFlagManagerUtil.isEnabled("LPS-183727")) {
-						unsafeConsumer.accept(displayPageInfoFieldSet);
-					}
-				}
+				displayPageInfoFieldSet
 			).infoFieldSetEntry(
 				_getFeaturedImageInfoFieldSet()
 			).infoFieldSetEntry(

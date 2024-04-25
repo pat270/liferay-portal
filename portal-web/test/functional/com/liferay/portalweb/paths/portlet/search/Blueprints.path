@@ -351,6 +351,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>BLUEPRINTS_PREVIEW_SEARCH_RESULT_TOTAL_HITS</td>
+	<td>//span[contains(@class,'total-hits-label') and contains(.,'${key_resultTotal}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>BLUEPRINTS_SEARCH_FRAMEWORK_INDEXER_CLAUSES_INFO_BUTTON</td>
 	<td>//button[contains(.,'Search Framework Indexer Clauses')]//span[*[name()='svg'][contains(@class,'lexicon-icon-question-circle')]]</td>
 	<td></td>
@@ -403,6 +408,11 @@
 <tr>
 	<td>DOC_LINK_GENERIC</td>
 	<td>//div[contains(@class,'${key_linkContext}')]//a[contains(.,'${key_linkText}')] | //div[span[contains(.,'${key_linkContext}')]]//a[contains(.,'${key_linkText}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ELEMENT_EDIT_PAGE_PREVIEW_TEXT</td>
+	<td>//div[contains(@class, 'sxp-preview-modal-root show')]//p[contains(text(), '${key_text}')]</td>
 	<td></td>
 </tr>
 <tr>

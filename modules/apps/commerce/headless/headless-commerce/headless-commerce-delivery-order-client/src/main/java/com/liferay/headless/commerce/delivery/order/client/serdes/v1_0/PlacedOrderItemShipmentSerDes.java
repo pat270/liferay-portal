@@ -8,6 +8,8 @@ package com.liferay.headless.commerce.delivery.order.client.serdes.v1_0;
 import com.liferay.headless.commerce.delivery.order.client.dto.v1_0.PlacedOrderItemShipment;
 import com.liferay.headless.commerce.delivery.order.client.json.BaseJSONParser;
 
+import java.math.BigDecimal;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
@@ -140,6 +142,21 @@ public class PlacedOrderItemShipmentSerDes {
 			sb.append("\"");
 		}
 
+		if (placedOrderItemShipment.getExternalReferenceCode() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"externalReferenceCode\": ");
+
+			sb.append("\"");
+
+			sb.append(
+				_escape(placedOrderItemShipment.getExternalReferenceCode()));
+
+			sb.append("\"");
+		}
+
 		if (placedOrderItemShipment.getId() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -254,6 +271,34 @@ public class PlacedOrderItemShipmentSerDes {
 			sb.append("\"");
 		}
 
+		if (placedOrderItemShipment.getTrackingURL() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"trackingURL\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(placedOrderItemShipment.getTrackingURL()));
+
+			sb.append("\"");
+		}
+
+		if (placedOrderItemShipment.getUnitOfMeasureKey() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"unitOfMeasureKey\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(placedOrderItemShipment.getUnitOfMeasureKey()));
+
+			sb.append("\"");
+		}
+
 		sb.append("}");
 
 		return sb.toString();
@@ -332,6 +377,16 @@ public class PlacedOrderItemShipmentSerDes {
 				"estimatedShippingDate",
 				liferayToJSONDateFormat.format(
 					placedOrderItemShipment.getEstimatedShippingDate()));
+		}
+
+		if (placedOrderItemShipment.getExternalReferenceCode() == null) {
+			map.put("externalReferenceCode", null);
+		}
+		else {
+			map.put(
+				"externalReferenceCode",
+				String.valueOf(
+					placedOrderItemShipment.getExternalReferenceCode()));
 		}
 
 		if (placedOrderItemShipment.getId() == null) {
@@ -423,6 +478,24 @@ public class PlacedOrderItemShipmentSerDes {
 				String.valueOf(placedOrderItemShipment.getTrackingNumber()));
 		}
 
+		if (placedOrderItemShipment.getTrackingURL() == null) {
+			map.put("trackingURL", null);
+		}
+		else {
+			map.put(
+				"trackingURL",
+				String.valueOf(placedOrderItemShipment.getTrackingURL()));
+		}
+
+		if (placedOrderItemShipment.getUnitOfMeasureKey() == null) {
+			map.put("unitOfMeasureKey", null);
+		}
+		else {
+			map.put(
+				"unitOfMeasureKey",
+				String.valueOf(placedOrderItemShipment.getUnitOfMeasureKey()));
+		}
+
 		return map;
 	}
 
@@ -484,6 +557,14 @@ public class PlacedOrderItemShipmentSerDes {
 						toDate((String)jsonParserFieldValue));
 				}
 			}
+			else if (Objects.equals(
+						jsonParserFieldName, "externalReferenceCode")) {
+
+				if (jsonParserFieldValue != null) {
+					placedOrderItemShipment.setExternalReferenceCode(
+						(String)jsonParserFieldValue);
+				}
+			}
 			else if (Objects.equals(jsonParserFieldName, "id")) {
 				if (jsonParserFieldValue != null) {
 					placedOrderItemShipment.setId(
@@ -505,7 +586,7 @@ public class PlacedOrderItemShipmentSerDes {
 			else if (Objects.equals(jsonParserFieldName, "quantity")) {
 				if (jsonParserFieldValue != null) {
 					placedOrderItemShipment.setQuantity(
-						Integer.valueOf((String)jsonParserFieldValue));
+						new BigDecimal((String)jsonParserFieldValue));
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "shippingAddressId")) {
@@ -543,6 +624,18 @@ public class PlacedOrderItemShipmentSerDes {
 			else if (Objects.equals(jsonParserFieldName, "trackingNumber")) {
 				if (jsonParserFieldValue != null) {
 					placedOrderItemShipment.setTrackingNumber(
+						(String)jsonParserFieldValue);
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "trackingURL")) {
+				if (jsonParserFieldValue != null) {
+					placedOrderItemShipment.setTrackingURL(
+						(String)jsonParserFieldValue);
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "unitOfMeasureKey")) {
+				if (jsonParserFieldValue != null) {
+					placedOrderItemShipment.setUnitOfMeasureKey(
 						(String)jsonParserFieldValue);
 				}
 			}

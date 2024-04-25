@@ -12,16 +12,20 @@
 <div id="<%= liferayPortletResponse.getNamespace() %>-questions-root">
 
 	<%
-	QuestionsConfiguration questionsConfiguration = portletDisplay.getPortletInstanceConfiguration(QuestionsConfiguration.class);
+	QuestionsConfiguration questionsConfiguration = ConfigurationProviderUtil.getPortletInstanceConfiguration(QuestionsConfiguration.class, themeDisplay);
 	%>
 
 	<react:component
-		module="js/index.es"
+		module="{Main} from questions-web"
 		props='<%=
 			HashMapBuilder.<String, Object>put(
+				"askQuestionButtonText", LocalizationUtil.getLocalization(questionsConfiguration.askQuestionButtonTextAsLocalizedXML(), themeDisplay.getLanguageId())
+			).put(
 				"companyName", renderRequest.getAttribute(QuestionsWebKeys.COMPANY_NAME)
 			).put(
 				"defaultRank", renderRequest.getAttribute(QuestionsWebKeys.DEFAULT_RANK)
+			).put(
+				"editQuestionPageTitle", LocalizationUtil.getLocalization(questionsConfiguration.editQuestionPageTitleAsLocalizedXML(), themeDisplay.getLanguageId())
 			).put(
 				"flagsProperties", renderRequest.getAttribute(QuestionsWebKeys.FLAGS_PROPERTIES)
 			).put(
@@ -33,9 +37,15 @@
 			).put(
 				"includeContextPath", renderRequest.getAttribute("javax.servlet.include.context_path")
 			).put(
-				"isOmniAdmin", permissionChecker.isOmniadmin()
+				"isContentReviewer", permissionChecker.isContentReviewer(themeDisplay.getCompanyId(), themeDisplay.getScopeGroupId())
+			).put(
+				"isOmniadmin", permissionChecker.isOmniadmin()
+			).put(
+				"newQuestionPageTitle", LocalizationUtil.getLocalization(questionsConfiguration.newQuestionPageTitleAsLocalizedXML(), themeDisplay.getLanguageId())
 			).put(
 				"npmResolvedPackageName", npmResolvedPackageName
+			).put(
+				"postYourQuestionButtonText", LocalizationUtil.getLocalization(questionsConfiguration.postYourQuestionButtonTextAsLocalizedXML(), themeDisplay.getLanguageId())
 			).put(
 				"redirectToLogin", questionsConfiguration.enableRedirectToLogin()
 			).put(
@@ -48,6 +58,8 @@
 				"tagSelectorURL", renderRequest.getAttribute(QuestionsWebKeys.TAG_SELECTOR_URL)
 			).put(
 				"trustedUser", renderRequest.getAttribute(QuestionsWebKeys.TRUSTED_USER)
+			).put(
+				"updateYourQuestionButtonText", LocalizationUtil.getLocalization(questionsConfiguration.updateYourQuestionButtonTextAsLocalizedXML(), themeDisplay.getLanguageId())
 			).put(
 				"userId", String.valueOf(themeDisplay.getUserId())
 			).put(

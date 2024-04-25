@@ -97,20 +97,17 @@ public class ObjectStateFlowUtil {
 			ListTypeEntryLocalServiceUtil.fetchListTypeEntry(
 				listTypeDefinitionId, objectStateTransition.getKey());
 
-		if ((objectStateFlowId == 0) && (sourceObjectStateId == 0)) {
-			serviceBuilderObjectStateTransition.
-				setTargetObjectStateListTypeEntryId(
-					listTypeEntry.getListTypeEntryId());
-
-			return serviceBuilderObjectStateTransition;
-		}
-
 		ObjectState targetObjectState =
-			ObjectStateLocalServiceUtil.getObjectStateFlowObjectState(
+			ObjectStateLocalServiceUtil.fetchObjectStateFlowObjectState(
 				listTypeEntry.getListTypeEntryId(), objectStateFlowId);
 
-		serviceBuilderObjectStateTransition.setTargetObjectStateId(
-			targetObjectState.getObjectStateId());
+		if (targetObjectState != null) {
+			serviceBuilderObjectStateTransition.setTargetObjectStateId(
+				targetObjectState.getObjectStateId());
+		}
+
+		serviceBuilderObjectStateTransition.setTargetObjectStateListTypeEntryId(
+			listTypeEntry.getListTypeEntryId());
 
 		return serviceBuilderObjectStateTransition;
 	}

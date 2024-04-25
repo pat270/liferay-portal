@@ -79,10 +79,7 @@ definition {
 
 		OAuth2.deleteApplication(applicationName = "OAuth Application");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "System",
-			panel = "Control Panel",
-			portlet = "Virtual Instances");
+		PortalInstances.openVirtualInstancesAdmin();
 
 		PortalInstances.deleteCP(virtualHost = "www.able.com");
 
@@ -97,11 +94,12 @@ definition {
 	test CanCreateObjectEntryByScopeKey {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("When I use postScopeScopeKey and scopeKey to create an object entry in default instance") {
 			var defaultInstanceToken = OAuth2ForObject.createTokenWithOAuth2Scopes(
-				resourceCheckList = "C_Test.everything,liferay-json-web-services.everything",
-				resourcePanels = "C_Test,Portal Services");
+				resourceCheckList = "c_test.everything,liferay-json-web-services.everything",
+				resourcePanels = "c_test,Portal Services");
 
 			CustomObjectAPI.createObjectEntryWithFields(
 				en_US_plural_label = "tests",
@@ -129,12 +127,13 @@ definition {
 	test CanCreateObjectEntryInVirtualInstance {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("When I use postTest to create an object entry in www.able.com instance") {
 			var virtualInstanceToken = OAuth2ForObject.createTokenWithOAuth2Scopes(
 				baseURL = "http://www.able.com:8080",
-				resourceCheckList = "C_Test.everything",
-				resourcePanels = "C_Test");
+				resourceCheckList = "c_test.everything",
+				resourcePanels = "c_test");
 
 			CustomObjectAPI.createObjectEntryWithFields(
 				en_US_plural_label = "tests",
@@ -162,6 +161,7 @@ definition {
 	test CanIncludeObjectFieldInAPIExplorer {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given navigate to www.able.com:8080/o/c/tests") {
 			APIExplorer.navigateToOpenAPI(
@@ -194,9 +194,10 @@ definition {
 
 	@priority = 4
 	test CanScopeObjectByInstanceInExportTask {
-		property custom.properties = "feature.flag.COMMERCE-8087=true";
+		property custom.properties = "feature.flag.COMMERCE-8087=true${line.separator}feature.flag.LPS-186620=true";
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("And Given an object definition Student with a custom field is created and published on virtual instance") {
 			var virtualInstanceToken = OAuth2ForObject.createTokenWithOAuth2Scopes(

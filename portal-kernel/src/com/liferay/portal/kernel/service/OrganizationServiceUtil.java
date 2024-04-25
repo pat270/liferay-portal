@@ -73,9 +73,9 @@ public class OrganizationServiceUtil {
 	 * @return the organization
 	 */
 	public static Organization addOrganization(
-			long parentOrganizationId, String name, String type, long regionId,
-			long countryId, long statusListTypeId, String comments,
-			boolean site,
+			String externalReferenceCode, long parentOrganizationId,
+			String name, String type, long regionId, long countryId,
+			long statusListTypeId, String comments, boolean site,
 			List<com.liferay.portal.kernel.model.Address> addresses,
 			List<com.liferay.portal.kernel.model.EmailAddress> emailAddresses,
 			List<com.liferay.portal.kernel.model.OrgLabor> orgLabors,
@@ -85,9 +85,9 @@ public class OrganizationServiceUtil {
 		throws PortalException {
 
 		return getService().addOrganization(
-			parentOrganizationId, name, type, regionId, countryId,
-			statusListTypeId, comments, site, addresses, emailAddresses,
-			orgLabors, phones, websites, serviceContext);
+			externalReferenceCode, parentOrganizationId, name, type, regionId,
+			countryId, statusListTypeId, comments, site, addresses,
+			emailAddresses, orgLabors, phones, websites, serviceContext);
 	}
 
 	/**
@@ -114,14 +114,15 @@ public class OrganizationServiceUtil {
 	 * @return the organization
 	 */
 	public static Organization addOrganization(
-			long parentOrganizationId, String name, String type, long regionId,
-			long countryId, long statusListTypeId, String comments,
-			boolean site, ServiceContext serviceContext)
+			String externalReferenceCode, long parentOrganizationId,
+			String name, String type, long regionId, long countryId,
+			long statusListTypeId, String comments, boolean site,
+			ServiceContext serviceContext)
 		throws PortalException {
 
 		return getService().addOrganization(
-			parentOrganizationId, name, type, regionId, countryId,
-			statusListTypeId, comments, site, serviceContext);
+			externalReferenceCode, parentOrganizationId, name, type, regionId,
+			countryId, statusListTypeId, comments, site, serviceContext);
 	}
 
 	public static com.liferay.portal.kernel.model.User
@@ -218,6 +219,14 @@ public class OrganizationServiceUtil {
 		throws PortalException {
 
 		return getService().fetchOrganization(organizationId);
+	}
+
+	public static Organization fetchOrganizationByExternalReferenceCode(
+			String externalReferenceCode, long companyId)
+		throws PortalException {
+
+		return getService().fetchOrganizationByExternalReferenceCode(
+			externalReferenceCode, companyId);
 	}
 
 	public static List<Organization> getGtOrganizations(
@@ -456,9 +465,10 @@ public class OrganizationServiceUtil {
 	 * @return the organization
 	 */
 	public static Organization updateOrganization(
-			long organizationId, long parentOrganizationId, String name,
-			String type, long regionId, long countryId, long statusListTypeId,
-			String comments, boolean hasLogo, byte[] logoBytes, boolean site,
+			String externalReferenceCode, long organizationId,
+			long parentOrganizationId, String name, String type, long regionId,
+			long countryId, long statusListTypeId, String comments,
+			boolean hasLogo, byte[] logoBytes, boolean site,
 			List<com.liferay.portal.kernel.model.Address> addresses,
 			List<com.liferay.portal.kernel.model.EmailAddress> emailAddresses,
 			List<com.liferay.portal.kernel.model.OrgLabor> orgLabors,
@@ -468,10 +478,10 @@ public class OrganizationServiceUtil {
 		throws PortalException {
 
 		return getService().updateOrganization(
-			organizationId, parentOrganizationId, name, type, regionId,
-			countryId, statusListTypeId, comments, hasLogo, logoBytes, site,
-			addresses, emailAddresses, orgLabors, phones, websites,
-			serviceContext);
+			externalReferenceCode, organizationId, parentOrganizationId, name,
+			type, regionId, countryId, statusListTypeId, comments, hasLogo,
+			logoBytes, site, addresses, emailAddresses, orgLabors, phones,
+			websites, serviceContext);
 	}
 
 	/**
@@ -495,14 +505,16 @@ public class OrganizationServiceUtil {
 	 * @return the organization
 	 */
 	public static Organization updateOrganization(
-			long organizationId, long parentOrganizationId, String name,
-			String type, long regionId, long countryId, long statusListTypeId,
-			String comments, boolean site, ServiceContext serviceContext)
+			String externalReferenceCode, long organizationId,
+			long parentOrganizationId, String name, String type, long regionId,
+			long countryId, long statusListTypeId, String comments,
+			boolean site, ServiceContext serviceContext)
 		throws PortalException {
 
 		return getService().updateOrganization(
-			organizationId, parentOrganizationId, name, type, regionId,
-			countryId, statusListTypeId, comments, site, serviceContext);
+			externalReferenceCode, organizationId, parentOrganizationId, name,
+			type, regionId, countryId, statusListTypeId, comments, site,
+			serviceContext);
 	}
 
 	public static OrganizationService getService() {

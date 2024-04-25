@@ -7,6 +7,7 @@ import ClayModal from '@clayui/modal';
 import {memo} from 'react';
 
 import {useAppPropertiesContext} from '~/common/contexts/AppPropertiesContext';
+import { getProperProductNames } from '~/routes/customer-portal/utils/getProperProductNames';
 import i18n from '../../../../../../../../../../../common/I18n';
 
 import {
@@ -22,6 +23,7 @@ import getRows from './utils/getRows';
 const accountSubscriptionGroupNames = ['DXP', 'Portal'];
 
 const AccountSubscriptionModal = ({
+	IsPortalOrDXP,
 	accountKey,
 	accountSubscriptionGroup,
 	accountSubscriptionProductKey,
@@ -43,7 +45,8 @@ const AccountSubscriptionModal = ({
 		loading: accountSubscriptionUsageLoading,
 	} = useGetAccountSubscriptionUsage(
 		accountKey,
-		accountSubscriptionProductKey
+		accountSubscriptionProductKey,
+		IsPortalOrDXP
 	);
 
 	const totalCount = data?.orderItems.totalCount;
@@ -60,11 +63,11 @@ const AccountSubscriptionModal = ({
 			<div className="pt-4 px-4">
 				<div className="d-flex justify-content-between mb-4">
 					<div className="flex-row mb-1">
-						<h6 className="text-brand-primary">
+						<div className="h6 text-brand-primary">
 							{i18n.translate('subscription-terms').toUpperCase()}
-						</h6>
+						</div>
 
-						<h2 className="text-neutral-10">{title}</h2>
+						<h2 className="text-neutral-10">{getProperProductNames(title)}</h2>
 					</div>
 
 					<Button

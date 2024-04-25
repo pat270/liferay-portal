@@ -5,30 +5,36 @@
 
 /// <reference types="react" />
 
-import {IClientExtensionCellRenderer} from './api';
-import '../css/FDSView.scss';
+import {IClientExtensionRenderer} from '@liferay/frontend-data-set-web';
 import {FDSViewType} from './FDSViews';
-interface IFDSViewSectionInterface {
-	fdsClientExtensionCellRenderers: IClientExtensionCellRenderer[];
+interface IFDSViewSectionProps {
+	fdsClientExtensionCellRenderers: IClientExtensionRenderer[];
+	fdsFilterClientExtensions: IClientExtensionRenderer[];
 	fdsView: FDSViewType;
 	fdsViewsURL: string;
 	namespace: string;
+	onActiveSectionChange: (section: number) => void;
 	onFDSViewUpdate: (data: FDSViewType) => void;
 	saveFDSFieldsURL: string;
+	spritemap: string;
 }
-interface IFDSViewInterface {
-	fdsClientExtensionCellRenderers: IClientExtensionCellRenderer[];
+interface IFDSViewProps {
+	fdsClientExtensionCellRenderers: IClientExtensionRenderer[];
+	fdsFilterClientExtensions: IClientExtensionRenderer[];
 	fdsViewId: string;
 	fdsViewsURL: string;
 	namespace: string;
 	saveFDSFieldsURL: string;
+	spritemap: string;
 }
 declare const FDSView: ({
 	fdsClientExtensionCellRenderers,
+	fdsFilterClientExtensions,
 	fdsViewId,
 	fdsViewsURL,
 	namespace,
 	saveFDSFieldsURL,
-}: IFDSViewInterface) => JSX.Element;
-export {IFDSViewSectionInterface};
+	spritemap,
+}: IFDSViewProps) => JSX.Element;
+export {IFDSViewSectionProps};
 export default FDSView;

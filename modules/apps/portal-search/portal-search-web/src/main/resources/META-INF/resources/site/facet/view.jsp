@@ -12,6 +12,7 @@
 <%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %><%@
 taglib uri="http://liferay.com/tld/clay" prefix="clay" %><%@
 taglib uri="http://liferay.com/tld/ddm" prefix="liferay-ddm" %><%@
+taglib uri="http://liferay.com/tld/frontend" prefix="liferay-frontend" %><%@
 taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
 
 <%@ page import="com.liferay.petra.string.StringPool" %><%@
@@ -37,11 +38,11 @@ SiteFacetPortletInstanceConfiguration siteFacetPortletInstanceConfiguration = sc
 
 <c:choose>
 	<c:when test="<%= scopeSearchFacetDisplayContext.isRenderNothing() %>">
-		<aui:input autocomplete="off" name="<%= HtmlUtil.escapeAttribute(scopeSearchFacetDisplayContext.getParameterName()) %>" type="hidden" value="<%= scopeSearchFacetDisplayContext.getParameterValue() %>" />
+		<aui:input name="<%= HtmlUtil.escapeAttribute(scopeSearchFacetDisplayContext.getParameterName()) %>" type="hidden" value="<%= scopeSearchFacetDisplayContext.getParameterValue() %>" />
 	</c:when>
 	<c:otherwise>
 		<aui:form action="#" method="post" name="fm">
-			<aui:input autocomplete="off" name="<%= HtmlUtil.escapeAttribute(scopeSearchFacetDisplayContext.getParameterName()) %>" type="hidden" value="<%= scopeSearchFacetDisplayContext.getParameterValue() %>" />
+			<aui:input name="<%= HtmlUtil.escapeAttribute(scopeSearchFacetDisplayContext.getParameterName()) %>" type="hidden" value="<%= scopeSearchFacetDisplayContext.getParameterValue() %>" />
 			<aui:input cssClass="facet-parameter-name" name="facet-parameter-name" type="hidden" value="<%= scopeSearchFacetDisplayContext.getParameterName() %>" />
 			<aui:input cssClass="start-parameter-name" name="start-parameter-name" type="hidden" value="<%= scopeSearchFacetDisplayContext.getPaginationStartParameterName() %>" />
 
@@ -141,8 +142,11 @@ SiteFacetPortletInstanceConfiguration siteFacetPortletInstanceConfiguration = sc
 	</c:otherwise>
 </c:choose>
 
-<aui:script use="liferay-search-facet-util">
-	Liferay.Search.FacetUtil.enableInputs(
-		document.querySelectorAll('#<portlet:namespace />fm .facet-term')
-	);
-</aui:script>
+<liferay-frontend:component
+	context='<%=
+		HashMapBuilder.<String, Object>put(
+			"namespace", liferayPortletResponse.getNamespace()
+		).build()
+	%>'
+	module="{FacetUtil} from portal-search-web"
+/>

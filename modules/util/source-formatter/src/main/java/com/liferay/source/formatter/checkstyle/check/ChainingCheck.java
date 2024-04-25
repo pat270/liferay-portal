@@ -9,7 +9,7 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.URLUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.source.formatter.parser.JavaClass;
 import com.liferay.source.formatter.parser.JavaClassParser;
@@ -49,6 +49,10 @@ public class ChainingCheck extends BaseCheck {
 
 	@Override
 	protected void doVisitToken(DetailAST detailAST) {
+		if (detailAST.getType() == TokenTypes.RPAREN) {
+			_checkChainingOnParentheses(detailAST);
+		}
+
 		DetailAST parentDetailAST = detailAST.getParent();
 
 		if (parentDetailAST != null) {
@@ -90,6 +94,29 @@ public class ChainingCheck extends BaseCheck {
 			if (chainSize > 3) {
 				_checkChainOrder(methodCallDetailAST, chainedMethodNames);
 			}
+		}
+	}
+
+	private void _checkChainingOnParentheses(DetailAST detailAST) {
+		if (_isInsideConstructorThisCall(detailAST) ||
+			hasParentWithTokenType(detailAST, TokenTypes.SUPER_CTOR_CALL)) {
+
+			return;
+		}
+
+		DetailAST parentDetailAST = detailAST.getParent();
+
+		if (parentDetailAST.getType() != TokenTypes.DOT) {
+			return;
+		}
+
+		DetailAST previousSiblingDetailAST = detailAST.getPreviousSibling();
+
+		if (previousSiblingDetailAST.getType() != TokenTypes.TYPECAST) {
+			log(detailAST, _MSG_AVOID_PARENTHESES_CHAINING);
+		}
+		else if (isAttributeValue(_APPLY_TO_TYPE_CAST_KEY)) {
+			log(detailAST, _MSG_AVOID_TYPE_CAST_CHAINING);
 		}
 	}
 
@@ -146,6 +173,16 @@ public class ChainingCheck extends BaseCheck {
 		if (fullyQualifiedClassName.equals("org.json.JSONObject")) {
 			requiredChainingMethodNames = Arrays.asList(
 				"put", "putOnce", "putOpt");
+		}
+		else if (fullyQualifiedClassName.startsWith(
+					"com.liferay.frontend.data.set.view.table.") &&
+				 fullyQualifiedClassName.endsWith("FDSTableSchemaField")) {
+
+			requiredChainingMethodNames = Arrays.asList(
+				"setActionId", "setContentRenderer",
+				"setContentRendererClientExtension",
+				"setContentRendererModuleURL", "setFieldName", "setLabel",
+				"setLocalizeLabel", "setSortable", "setSortingOrder");
 		}
 		else {
 			requiredChainingMethodNames = _getRequiredChainingMethodNames(
@@ -229,7 +266,8 @@ public class ChainingCheck extends BaseCheck {
 
 		if (classOrVariableName.equals(
 				getClassOrVariableName(nextMethodCallDetailAST)) &&
-			!Objects.equals(getMethodName(nextMethodCallDetailAST), "remove")) {
+			requiredChainingMethodNames.contains(
+				getMethodName(nextMethodCallDetailAST))) {
 
 			log(
 				methodCallDetailAST, _MSG_REQUIRED_CHAINING,
@@ -261,8 +299,7 @@ public class ChainingCheck extends BaseCheck {
 					requiredChainingClassFileName));
 
 			return JavaClassParser.parseJavaClass(
-				requiredChainingClassFileName,
-				StringUtil.read(url.openStream()));
+				requiredChainingClassFileName, URLUtil.toString(url));
 		}
 		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
@@ -323,6 +360,32 @@ public class ChainingCheck extends BaseCheck {
 
 		return _requiredChainingMethodNamesMap.get(fullyQualifiedClassName);
 	}
+
+	private boolean _isInsideConstructorThisCall(DetailAST detailAST) {
+		DetailAST parentDetailAST = detailAST.getParent();
+
+		while (parentDetailAST != null) {
+			String parentDetailASTText = parentDetailAST.getText();
+
+			if ((parentDetailAST.getType() == TokenTypes.CTOR_CALL) &&
+				parentDetailASTText.equals("this")) {
+
+				return true;
+			}
+
+			parentDetailAST = parentDetailAST.getParent();
+		}
+
+		return false;
+	}
+
+	private static final String _APPLY_TO_TYPE_CAST_KEY = "applyToTypeCast";
+
+	private static final String _MSG_AVOID_PARENTHESES_CHAINING =
+		"chaining.avoid.parentheses";
+
+	private static final String _MSG_AVOID_TYPE_CAST_CHAINING =
+		"chaining.avoid.type.cast";
 
 	private static final String _MSG_REQUIRED_CHAINING = "chaining.required";
 

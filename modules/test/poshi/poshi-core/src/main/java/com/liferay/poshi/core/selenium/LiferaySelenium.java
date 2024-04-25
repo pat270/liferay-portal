@@ -5,6 +5,7 @@
 
 package com.liferay.poshi.core.selenium;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -19,7 +20,8 @@ public interface LiferaySelenium {
 
 	public void antCommand(String fileName, String target) throws Exception;
 
-	public void assertAccessible() throws Exception;
+	public void assertAccessible(List<String> ignorableImpacts)
+		throws Exception;
 
 	public void assertAlert(String pattern) throws Exception;
 
@@ -53,7 +55,9 @@ public interface LiferaySelenium {
 
 	public void assertEditable(String locator) throws Exception;
 
-	public void assertElementAccessible(String locator) throws Exception;
+	public void assertElementAccessible(
+			String locator, List<String> ignorableImpacts)
+		throws Exception;
 
 	public void assertElementFocused(String locator) throws Exception;
 
@@ -149,6 +153,9 @@ public interface LiferaySelenium {
 	public void assertTextPresent(String pattern) throws Exception;
 
 	public void assertValue(String locator, String pattern) throws Exception;
+
+	public void assertValueMatches(String locator, String regex)
+		throws Exception;
 
 	public void assertVisible(String locator) throws Exception;
 
@@ -397,6 +404,9 @@ public interface LiferaySelenium {
 	public void refresh();
 
 	public void replyToEmail(String to, String body) throws Exception;
+
+	public Map<String, Object> returnCDPCommand(
+		String commandName, Map<String, Object> commandParameters);
 
 	public void rightClick(String locator);
 

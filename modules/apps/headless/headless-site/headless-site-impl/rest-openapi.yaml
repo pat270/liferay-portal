@@ -48,7 +48,7 @@ components:
 info:
     description:
         "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID
-        'com.liferay.headless.site.client', and version '1.0.7'."
+        'com.liferay.headless.site.client', and version '1.0.15'."
     license:
         name: Apache 2.0
         url: http://www.apache.org/licenses/LICENSE-2.0.html
@@ -56,6 +56,25 @@ info:
     version: v1.0
 openapi: 3.0.1
 paths:
+    "/sites/{siteId}":
+        delete:
+            description:
+                # @review
+                Deletes a site and all of its associated content.
+            operationId: deleteSite
+            parameters:
+                - in: path
+                  name: siteId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+            responses:
+                204:
+                    content:
+                        application/json: {}
+                        application/xml: {}
+            tags: ["Site"]
     /sites:
         post:
             description:
@@ -69,6 +88,15 @@ paths:
                     application/xml:
                         schema:
                             $ref: "#/components/schemas/Site"
+                    multipart/form-data:
+                        schema:
+                            properties:
+                                file:
+                                    format: binary
+                                    type: string
+                                site:
+                                    $ref: "#/components/schemas/Site"
+                            type: object
             responses:
                 200:
                     content:
@@ -83,6 +111,43 @@ paths:
             # @review
             tags: ["Site"]
     /sites/by-external-reference-code/{externalReferenceCode}:
+        delete:
+            # @review
+            description:
+                Deletes a site and all of its associated content.
+            operationId: deleteSiteByExternalReferenceCode
+            parameters:
+                - in: path
+                  name: externalReferenceCode
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                204:
+                    content:
+                        application/json: {}
+                        application/xml: {}
+            tags: ["Site"]
+        get:
+            operationId: getSiteByExternalReferenceCode
+            parameters:
+                - in: path
+                  name: externalReferenceCode
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Site"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/Site"
+                    description:
+                        default response
+            tags: ["Site"]
         put:
             description:
                 Adds or update a new site
@@ -113,4 +178,21 @@ paths:
                                 $ref: "#/components/schemas/Site"
                     description:
                         default response
+            tags: ["Site"]
+    /sites/by-external-reference-code/{externalReferenceCode}/site-initializer:
+        get:
+            operationId: getSiteByExternalReferenceCodeSiteInitializer
+            parameters:
+                - in: path
+                  name: externalReferenceCode
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                200:
+                    content:
+                        application/zip:
+                            schema:
+                                format: binary
+                                type: string
             tags: ["Site"]

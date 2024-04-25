@@ -13,10 +13,12 @@ import com.liferay.dynamic.data.mapping.service.DDMStructureServiceUtil;
 import com.liferay.dynamic.data.mapping.util.DDMUtil;
 import com.liferay.item.selector.ItemSelectorReturnType;
 import com.liferay.item.selector.ItemSelectorViewDescriptor;
+import com.liferay.item.selector.TableItemView;
 import com.liferay.item.selector.constants.ItemSelectorPortletKeys;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.portlet.SearchOrderByUtil;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -37,9 +39,11 @@ public class DDMStructureItemSelectorViewDescriptor
 
 	public DDMStructureItemSelectorViewDescriptor(
 		DDMStructureItemSelectorCriterion ddmStructureItemSelectorCriterion,
+		GroupLocalService groupLocalService,
 		HttpServletRequest httpServletRequest, PortletURL portletURL) {
 
 		_ddmStructureItemSelectorCriterion = ddmStructureItemSelectorCriterion;
+		_groupLocalService = groupLocalService;
 		_httpServletRequest = httpServletRequest;
 		_portletURL = portletURL;
 
@@ -60,7 +64,7 @@ public class DDMStructureItemSelectorViewDescriptor
 	@Override
 	public ItemDescriptor getItemDescriptor(DDMStructure ddmStructure) {
 		return new DDMStructureItemDescriptor(
-			ddmStructure, _httpServletRequest);
+			ddmStructure, _groupLocalService, _httpServletRequest);
 	}
 
 	@Override
@@ -107,49 +111,69 @@ public class DDMStructureItemSelectorViewDescriptor
 			emptyResultsMessage = "no-structures-were-found";
 		}
 
-		SearchContainer<DDMStructure> ddmStructureSearch =
+		SearchContainer<DDMStructure> ddmStructureSearchContainer =
 			new SearchContainer<>(
 				(PortletRequest)_httpServletRequest.getAttribute(
 					JavaConstants.JAVAX_PORTLET_REQUEST),
 				_portletURL, null, emptyResultsMessage);
 
-		ddmStructureSearch.setOrderByCol(getOrderByCol());
-		ddmStructureSearch.setOrderByComparator(
+		ddmStructureSearchContainer.setOrderByCol(getOrderByCol());
+		ddmStructureSearchContainer.setOrderByComparator(
 			DDMUtil.getStructureOrderByComparator(
 				getOrderByCol(), getOrderByType()));
-		ddmStructureSearch.setOrderByType(getOrderByType());
+		ddmStructureSearchContainer.setOrderByType(getOrderByType());
 
-		long[] groupIds =
-			SiteConnectedGroupGroupProviderUtil.
-				getCurrentAndAncestorSiteAndDepotGroupIds(
-					_themeDisplay.getScopeGroupId(), true);
+		long[] groupIds;
+
+		if (_ddmStructureItemSelectorCriterion.isSelectAncestorScopes()) {
+			groupIds =
+				SiteConnectedGroupGroupProviderUtil.
+					getCurrentAndAncestorSiteAndDepotGroupIds(
+						_themeDisplay.getScopeGroupId(), true);
+		}
+		else {
+			groupIds = new long[] {_themeDisplay.getScopeGroupId()};
+		}
 
 		if (Validator.isNotNull(_getKeywords())) {
-			ddmStructureSearch.setResultsAndTotal(
+			ddmStructureSearchContainer.setResultsAndTotal(
 				() -> DDMStructureServiceUtil.search(
 					_themeDisplay.getCompanyId(), groupIds,
 					_ddmStructureItemSelectorCriterion.getClassNameId(),
 					_getKeywords(), WorkflowConstants.STATUS_ANY,
-					ddmStructureSearch.getStart(), ddmStructureSearch.getEnd(),
-					ddmStructureSearch.getOrderByComparator()),
+					ddmStructureSearchContainer.getStart(),
+					ddmStructureSearchContainer.getEnd(),
+					ddmStructureSearchContainer.getOrderByComparator()),
 				DDMStructureServiceUtil.searchCount(
 					_themeDisplay.getCompanyId(), groupIds,
 					_ddmStructureItemSelectorCriterion.getClassNameId(),
 					_getKeywords(), WorkflowConstants.STATUS_ANY));
 		}
 		else {
-			ddmStructureSearch.setResultsAndTotal(
+			ddmStructureSearchContainer.setResultsAndTotal(
 				() -> DDMStructureServiceUtil.getStructures(
 					_themeDisplay.getCompanyId(), groupIds,
 					_ddmStructureItemSelectorCriterion.getClassNameId(),
-					ddmStructureSearch.getStart(), ddmStructureSearch.getEnd(),
-					ddmStructureSearch.getOrderByComparator()),
+					ddmStructureSearchContainer.getStart(),
+					ddmStructureSearchContainer.getEnd(),
+					ddmStructureSearchContainer.getOrderByComparator()),
 				DDMStructureServiceUtil.getStructuresCount(
 					_themeDisplay.getCompanyId(), groupIds,
 					_ddmStructureItemSelectorCriterion.getClassNameId()));
 		}
 
-		return ddmStructureSearch;
+		return ddmStructureSearchContainer;
+	}
+
+	@Override
+	public TableItemView getTableItemView(DDMStructure ddmStructure) {
+		return new DDMStructureItemTableItemView(
+			ddmStructure, _groupLocalService, _themeDisplay);
+	}
+
+	@Override
+	public boolean isMultipleSelection() {
+		return _ddmStructureItemSelectorCriterion.isMultiSelection();
 	}
 
 	@Override
@@ -179,6 +203,7 @@ public class DDMStructureItemSelectorViewDescriptor
 
 	private final DDMStructureItemSelectorCriterion
 		_ddmStructureItemSelectorCriterion;
+	private final GroupLocalService _groupLocalService;
 	private final HttpServletRequest _httpServletRequest;
 	private String _keywords;
 	private String _orderByCol;

@@ -1,0 +1,21 @@
+[#assign color = configuration.color /]
+[#assign forceEqualHeightColumn = configuration.forceEqualHeightColumn /]
+[#assign interactive = configuration.interactive /]
+[#assign padding = configuration.padding /]
+[#assign url = configuration.url /]
+
+<div class="f-content-container f-content-container-${fragmentEntryLinkNamespace} ${forceEqualHeightColumn?then('force-equal-height', '')} text-decoration-none">
+	[#if url?has_content]
+		<a class="content-container content-container-${color} d-block ${interactive?then('interactive', '')} ${padding}" href="${url}" target="${configuration.newTab?then('_blank', '_self')}">
+	[#else]
+		<div class="content-container content-container-${color} ${interactive?then('interactive', '')} ${padding}">
+	[/#if]
+		<lfr-drop-zone>
+
+		</lfr-drop-zone>
+	[#if url?has_content]
+		</a>
+	[#else]
+		</div>
+	[/#if]
+</div>

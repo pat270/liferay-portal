@@ -74,6 +74,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>METRIC_VALUE_BY_METRIC_TITLE</td>
+	<td>//span[@class='title'and text()='${key_metricTitle}']/..//div[text()]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>NO_RESULTS_TITLE</td>
 	<td>//h4[@class='no-results-title' and contains(.,'${key_cardTitle}')]</td>
 	<td></td>
@@ -96,6 +101,11 @@
 <tr>
 	<td>TOTAL_COUNT</td>
 	<td>//h5[contains(@class,'card-title')][normalize-space()='${key_cardTitle}']/../..//div[contains(@class,'total')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TOTAL_COUNT_VALUE</td>
+	<td>//h5[contains(@class,'card-title')][normalize-space()='${key_cardTitle}']/../..//div[contains(@class,'total') and text()='${key_count}']</td>
 	<td></td>
 </tr>
 <tr>

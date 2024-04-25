@@ -6,12 +6,14 @@
 package com.liferay.source.formatter.check;
 
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.source.formatter.check.comparator.PropertyValueComparator;
 import com.liferay.source.formatter.check.util.SourceUtil;
+import com.liferay.source.formatter.util.FileUtil;
 
 import java.io.File;
 import java.io.InputStream;
@@ -39,13 +41,139 @@ public class PropertiesSourceFormatterFileCheck extends BaseFileCheck {
 			String fileName, String absolutePath, String content)
 		throws Exception {
 
-		if (absolutePath.endsWith("/source-formatter.properties")) {
-			content = _fixCheckProperties(content);
-
-			return _formatSourceFormatterProperties(fileName, content);
+		if (!absolutePath.endsWith("/source-formatter.properties")) {
+			return content;
 		}
 
-		return content;
+		content = _fixCheckProperties(content);
+
+		_checkCheckstylePropertiesGroupAndOrder(
+			fileName, content, "checkstyle.");
+		_checkSourceCheckPropertiesGroupAndOrder(
+			fileName, content, "source.check.");
+
+		_checkPropertiesOrder(fileName, absolutePath, content);
+
+		return _formatSourceFormatterProperties(fileName, content);
+	}
+
+	private void _checkCheckstylePropertiesGroupAndOrder(
+		String fileName, String content, String prefix) {
+
+		String properties = _getProperites(content, prefix);
+
+		if (properties == null) {
+			return;
+		}
+
+		_checkPropertiesGroupAndOrder(fileName, prefix, properties);
+	}
+
+	private void _checkPropertiesGroupAndOrder(
+		String fileName, String prefix, String content) {
+
+		String previousPropertyKey = StringPool.BLANK;
+
+		for (String line : content.split("\n")) {
+			String propertyKey = _getPropertyKey(line);
+
+			if (propertyKey == null) {
+				continue;
+			}
+
+			if (!StringUtil.startsWith(propertyKey, prefix)) {
+				addMessage(
+					fileName,
+					StringBundler.concat(
+						"Property '", propertyKey,
+						"' should not be in the group for '", prefix, "*'"));
+
+				return;
+			}
+
+			if (Validator.isNotNull(previousPropertyKey) &&
+				(previousPropertyKey.compareToIgnoreCase(propertyKey) > 0)) {
+
+				addMessage(
+					fileName,
+					StringBundler.concat(
+						"Incorrect order of properties: '", propertyKey,
+						"' should come before '", previousPropertyKey, "'"));
+
+				return;
+			}
+
+			previousPropertyKey = propertyKey;
+		}
+	}
+
+	private void _checkPropertiesOrder(
+			String fileName, String absolutePath, String content)
+		throws Exception {
+
+		int pos = absolutePath.lastIndexOf(CharPool.SLASH);
+
+		String fileLocation = absolutePath.substring(0, pos);
+
+		String rootDirName = SourceUtil.getRootDirName(absolutePath);
+
+		if (fileLocation.equals(rootDirName)) {
+			return;
+		}
+
+		List<String> sourceFormatterProperties =
+			_getSourceFormatterProperties();
+
+		if (ListUtil.isEmpty(sourceFormatterProperties)) {
+			return;
+		}
+
+		int previousPropertyPosition = -1;
+		String propertyKey = null;
+		String previousPropertyKey = null;
+
+		for (String line : content.split("\n")) {
+			propertyKey = _getPropertyKey(line);
+
+			if (propertyKey == null) {
+				continue;
+			}
+
+			pos = sourceFormatterProperties.indexOf(propertyKey);
+
+			if (pos == -1) {
+				continue;
+			}
+
+			if ((previousPropertyPosition != -1) &&
+				(pos < previousPropertyPosition)) {
+
+				addMessage(
+					fileName,
+					StringBundler.concat(
+						"Incorrect order of properties: '", propertyKey,
+						"' should come before '", previousPropertyKey,
+						"', see the order in ", rootDirName,
+						"/source-formatter.properties"));
+
+				return;
+			}
+
+			previousPropertyKey = propertyKey;
+			previousPropertyPosition = pos;
+		}
+	}
+
+	private void _checkSourceCheckPropertiesGroupAndOrder(
+		String fileName, String content, String prefix) {
+
+		String properties = _getProperites(content, prefix);
+
+		if (properties == null) {
+			return;
+		}
+
+		_checkPropertiesGroupAndOrder(fileName, prefix, properties);
 	}
 
 	private String _fixCheckProperties(String content) throws Exception {
@@ -104,7 +232,9 @@ public class PropertiesSourceFormatterFileCheck extends BaseFileCheck {
 				content = _sortPropertyValues(content, key, propertyValues);
 			}
 
-			if (!key.endsWith("excludes") && !key.endsWith("FileNames")) {
+			if (!key.endsWith("DirNames") && !key.endsWith("FileNames") &&
+				!key.endsWith("excludes")) {
+
 				continue;
 			}
 
@@ -123,13 +253,21 @@ public class PropertiesSourceFormatterFileCheck extends BaseFileCheck {
 					propertyFileName = propertyFileName.substring(0, pos);
 				}
 
+				pos = propertyFileName.indexOf("->");
+
+				if (pos != -1) {
+					propertyFileName = propertyFileName.substring(pos + 2);
+				}
+
 				File file = getFile(propertyFileName, getMaxDirLevel());
 
 				if (file == null) {
 					addMessage(
 						fileName,
-						"Property value '" + propertyFileName +
-							"' points to file that does not exist");
+						StringBundler.concat(
+							"Property value '", propertyFileName,
+							"' points to file or directory that does not ",
+							"exist"));
 				}
 			}
 		}
@@ -169,6 +307,38 @@ public class PropertiesSourceFormatterFileCheck extends BaseFileCheck {
 		}
 
 		return checkstyleCheckNames;
+	}
+
+	private String _getProperites(String content, String prefix) {
+		int x = content.indexOf(StringPool.FOUR_SPACES + prefix);
+
+		if (x == -1) {
+			return null;
+		}
+
+		int y = content.lastIndexOf(StringPool.FOUR_SPACES + prefix);
+
+		y = content.indexOf("=", y + 1);
+
+		return content.substring(x, y + 1);
+	}
+
+	private String _getPropertyKey(String line) {
+		String trimmedLine = line.trim();
+
+		if (Validator.isNull(trimmedLine) ||
+			trimmedLine.startsWith(StringPool.POUND)) {
+
+			return null;
+		}
+
+		int x = trimmedLine.indexOf(CharPool.EQUAL);
+
+		if (x == -1) {
+			return null;
+		}
+
+		return trimmedLine.substring(0, x);
 	}
 
 	private Element _getRootElement(String fileName) throws Exception {
@@ -216,6 +386,36 @@ public class PropertiesSourceFormatterFileCheck extends BaseFileCheck {
 		}
 
 		return sourceCheckCheckNames;
+	}
+
+	private synchronized List<String> _getSourceFormatterProperties()
+		throws Exception {
+
+		if (_sourceFormatterProperties != null) {
+			return _sourceFormatterProperties;
+		}
+
+		File file = new File(getPortalDir() + "/source-formatter.properties");
+
+		String content = FileUtil.read(file);
+
+		if (content == null) {
+			return Collections.emptyList();
+		}
+
+		_sourceFormatterProperties = new ArrayList<>();
+
+		for (String line : content.split("\n")) {
+			String propertyKey = _getPropertyKey(line);
+
+			if (propertyKey == null) {
+				continue;
+			}
+
+			_sourceFormatterProperties.add(propertyKey);
+		}
+
+		return _sourceFormatterProperties;
 	}
 
 	private synchronized boolean _hasPrivateAppsDir() {
@@ -318,6 +518,7 @@ public class PropertiesSourceFormatterFileCheck extends BaseFileCheck {
 
 	private static final Pattern _checkPropertyPattern = Pattern.compile(
 		"\n\\s*#?(checkstyle|source\\.check)\\.(.*\\.check)\\.");
+	private static List<String> _sourceFormatterProperties;
 
 	private Boolean _hasPrivateAppsDir;
 

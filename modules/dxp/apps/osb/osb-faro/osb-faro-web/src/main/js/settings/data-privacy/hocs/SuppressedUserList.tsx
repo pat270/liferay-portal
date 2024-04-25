@@ -1,5 +1,6 @@
 import Card from 'shared/components/Card';
 import ClayButton from '@clayui/button';
+import ClayLink from '@clayui/link';
 import DataControlRequest from '../queries/DataControlRequestMutation';
 import getMetricsMapper from 'shared/hoc/mappers/metrics';
 import NoResultsDisplay from 'shared/components/NoResultsDisplay';
@@ -7,7 +8,7 @@ import React from 'react';
 import SuppressedUsersListQuery from '../queries/SuppressedUsersListQuery';
 import URLConstants from 'shared/util/url-constants';
 import {addAlert} from 'shared/actions/alerts';
-import {Alert, Router} from 'shared/types';
+import {Alert} from 'shared/types';
 import {
 	compose,
 	withBaseResults,
@@ -53,12 +54,15 @@ const withQueryOptions = Component => ({
 }) => {
 	const [unsuppressUser] = useMutation(DataControlRequest);
 
+	const authorized = currentUser.isAdmin();
+
 	return (
 		<Component
 			{...otherProps}
 			renderInlineRowActions={({
 				data: {dataControlTaskStatus, emailAddress}
 			}) =>
+				authorized &&
 				dataControlTaskStatus !== GDPRRequestStatuses.Pending && (
 					<ClayButton
 						className='button-root unsuppress'
@@ -68,7 +72,9 @@ const withQueryOptions = Component => ({
 								variables: {
 									emailAddresses: [emailAddress],
 									ownerId: currentUser.id,
-									types: [GDPRRequestTypes.Unsuppress]
+									types: [GDPRRequestTypes.Unsuppress],
+									userId: currentUser.userId,
+									userName: currentUser.name
 								}
 							})
 								.then(() => {
@@ -143,7 +149,6 @@ type PropsFromRedux = ConnectedProps<typeof connector>;
 
 interface ISuppressedUserListProps extends PropsFromRedux {
 	currentUser: User;
-	router: Router;
 	timeZoneId: string;
 }
 
@@ -163,7 +168,7 @@ const SuppressedUserList: React.FC<ISuppressedUserListProps> = props => (
 								'to-suppress-a-user,-go-to-data-control-&-privacy-under-settings-and-create-a-new-request-on-the-request-log'
 							)}
 
-							<a
+							<ClayLink
 								className='d-block mb-3'
 								href={URLConstants.SuppressedUsersDocumentation}
 								key='DOCUMENTATION'
@@ -172,7 +177,7 @@ const SuppressedUserList: React.FC<ISuppressedUserListProps> = props => (
 								{Liferay.Language.get(
 									'access-our-documentation-to-learn-more'
 								)}
-							</a>
+							</ClayLink>
 						</>
 					}
 					icon={{
@@ -190,5 +195,5 @@ const SuppressedUserList: React.FC<ISuppressedUserListProps> = props => (
 export default compose<any>(
 	connector,
 	withQueryPagination({initialOrderIOMap: createOrderIOMap(CREATE_DATE)}),
-	withQueryRangeSelectors({})
+	withQueryRangeSelectors()
 )(SuppressedUserList);

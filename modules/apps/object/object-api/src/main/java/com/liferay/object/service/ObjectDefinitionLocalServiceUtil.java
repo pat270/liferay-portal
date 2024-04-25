@@ -37,7 +37,8 @@ public class ObjectDefinitionLocalServiceUtil {
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.object.service.impl.ObjectDefinitionLocalServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
 	public static ObjectDefinition addCustomObjectDefinition(
-			long userId, boolean enableComments, boolean enableLocalization,
+			long userId, long objectFolderId, boolean enableComments,
+			boolean enableLocalization, boolean enableObjectEntryDraft,
 			Map<java.util.Locale, String> labelMap, String name,
 			String panelAppOrder, String panelCategoryKey,
 			Map<java.util.Locale, String> pluralLabelMap, boolean portlet,
@@ -46,9 +47,10 @@ public class ObjectDefinitionLocalServiceUtil {
 		throws PortalException {
 
 		return getService().addCustomObjectDefinition(
-			userId, enableComments, enableLocalization, labelMap, name,
-			panelAppOrder, panelCategoryKey, pluralLabelMap, portlet, scope,
-			storageType, objectFields);
+			userId, objectFolderId, enableComments, enableLocalization,
+			enableObjectEntryDraft, labelMap, name, panelAppOrder,
+			panelCategoryKey, pluralLabelMap, portlet, scope, storageType,
+			objectFields);
 	}
 
 	/**
@@ -68,41 +70,48 @@ public class ObjectDefinitionLocalServiceUtil {
 	}
 
 	public static ObjectDefinition addObjectDefinition(
-			String externalReferenceCode, long userId, boolean modifiable,
-			boolean system)
+			String externalReferenceCode, long userId, long objectFolderId,
+			long rootObjectDefinitionId, boolean modifiable, boolean system)
 		throws PortalException {
 
 		return getService().addObjectDefinition(
-			externalReferenceCode, userId, modifiable, system);
+			externalReferenceCode, userId, objectFolderId,
+			rootObjectDefinitionId, modifiable, system);
 	}
 
 	public static ObjectDefinition addOrUpdateSystemObjectDefinition(
-			long companyId,
+			long companyId, long objectFolderId,
 			com.liferay.object.system.SystemObjectDefinitionManager
 				systemObjectDefinitionManager)
 		throws PortalException {
 
 		return getService().addOrUpdateSystemObjectDefinition(
-			companyId, systemObjectDefinitionManager);
+			companyId, objectFolderId, systemObjectDefinitionManager);
 	}
 
 	public static ObjectDefinition addSystemObjectDefinition(
-			String externalReferenceCode, long userId, String className,
-			String dbTableName, boolean enableComments,
+			String externalReferenceCode, long userId, long objectFolderId,
+			String className, String dbTableName, boolean enableComments,
 			Map<java.util.Locale, String> labelMap, boolean modifiable,
 			String name, String panelAppOrder, String panelCategoryKey,
 			String pkObjectFieldDBColumnName, String pkObjectFieldName,
-			Map<java.util.Locale, String> pluralLabelMap, String scope,
-			String titleObjectFieldName, int version, int status,
+			Map<java.util.Locale, String> pluralLabelMap, boolean portlet,
+			String scope, String titleObjectFieldName, int version, int status,
 			List<com.liferay.object.model.ObjectField> objectFields)
 		throws PortalException {
 
 		return getService().addSystemObjectDefinition(
-			externalReferenceCode, userId, className, dbTableName,
-			enableComments, labelMap, modifiable, name, panelAppOrder,
-			panelCategoryKey, pkObjectFieldDBColumnName, pkObjectFieldName,
-			pluralLabelMap, scope, titleObjectFieldName, version, status,
-			objectFields);
+			externalReferenceCode, userId, objectFolderId, className,
+			dbTableName, enableComments, labelMap, modifiable, name,
+			panelAppOrder, panelCategoryKey, pkObjectFieldDBColumnName,
+			pkObjectFieldName, pluralLabelMap, portlet, scope,
+			titleObjectFieldName, version, status, objectFields);
+	}
+
+	public static void bindObjectDefinitions(long[] objectRelationshipIds)
+		throws PortalException {
+
+		getService().bindObjectDefinitions(objectRelationshipIds);
 	}
 
 	/**
@@ -177,6 +186,12 @@ public class ObjectDefinitionLocalServiceUtil {
 		throws PortalException {
 
 		return getService().deletePersistedModel(persistedModel);
+	}
+
+	public static void deployInactiveObjectDefinition(
+		ObjectDefinition objectDefinition) {
+
+		getService().deployInactiveObjectDefinition(objectDefinition);
 	}
 
 	public static void deployObjectDefinition(
@@ -336,6 +351,13 @@ public class ObjectDefinitionLocalServiceUtil {
 		return getService().getActionableDynamicQuery();
 	}
 
+	public static List<ObjectDefinition> getBoundObjectDefinitions(
+		long companyId, long rootObjectDefinitionId) {
+
+		return getService().getBoundObjectDefinitions(
+			companyId, rootObjectDefinitionId);
+	}
+
 	public static List<ObjectDefinition> getCustomObjectDefinitions(
 		int status) {
 
@@ -357,13 +379,6 @@ public class ObjectDefinitionLocalServiceUtil {
 		return getService().getIndexableActionableDynamicQuery();
 	}
 
-	public static List<ObjectDefinition> getModifiableObjectDefinitions(
-		long companyId, boolean active, int status) {
-
-		return getService().getModifiableObjectDefinitions(
-			companyId, active, status);
-	}
-
 	/**
 	 * Returns the object definition with the primary key.
 	 *
@@ -375,6 +390,13 @@ public class ObjectDefinitionLocalServiceUtil {
 		throws PortalException {
 
 		return getService().getObjectDefinition(objectDefinitionId);
+	}
+
+	public static ObjectDefinition getObjectDefinition(
+			long companyId, String name)
+		throws PortalException {
+
+		return getService().getObjectDefinition(companyId, name);
 	}
 
 	public static ObjectDefinition getObjectDefinitionByExternalReferenceCode(
@@ -399,6 +421,12 @@ public class ObjectDefinitionLocalServiceUtil {
 
 		return getService().getObjectDefinitionByUuidAndCompanyId(
 			uuid, companyId);
+	}
+
+	public static List<ObjectDefinition> getObjectDefinitions(
+		boolean accountEntryRestricted) {
+
+		return getService().getObjectDefinitions(accountEntryRestricted);
 	}
 
 	/**
@@ -431,6 +459,12 @@ public class ObjectDefinitionLocalServiceUtil {
 		return getService().getObjectDefinitions(companyId, active, status);
 	}
 
+	public static List<ObjectDefinition> getObjectDefinitions(
+		long companyId, int status) {
+
+		return getService().getObjectDefinitions(companyId, status);
+	}
+
 	/**
 	 * Returns the number of object definitions.
 	 *
@@ -444,6 +478,19 @@ public class ObjectDefinitionLocalServiceUtil {
 		throws PortalException {
 
 		return getService().getObjectDefinitionsCount(companyId);
+	}
+
+	public static List<ObjectDefinition> getObjectFolderObjectDefinitions(
+		long objectFolderId) {
+
+		return getService().getObjectFolderObjectDefinitions(objectFolderId);
+	}
+
+	public static int getObjectFolderObjectDefinitionsCount(long objectFolderId)
+		throws PortalException {
+
+		return getService().getObjectFolderObjectDefinitionsCount(
+			objectFolderId);
 	}
 
 	/**
@@ -468,6 +515,12 @@ public class ObjectDefinitionLocalServiceUtil {
 		return getService().getSystemObjectDefinitions();
 	}
 
+	public static List<ObjectDefinition> getUnmodifiableSystemObjectDefinitions(
+		long companyId) {
+
+		return getService().getUnmodifiableSystemObjectDefinitions(companyId);
+	}
+
 	public static boolean hasObjectRelationship(long objectDefinitionId) {
 		return getService().hasObjectRelationship(objectDefinitionId);
 	}
@@ -488,6 +541,12 @@ public class ObjectDefinitionLocalServiceUtil {
 			userId, objectDefinitionId);
 	}
 
+	public static void unbindObjectDefinition(long objectDefinitionId)
+		throws PortalException {
+
+		getService().unbindObjectDefinition(objectDefinitionId);
+	}
+
 	public static void undeployObjectDefinition(
 		ObjectDefinition objectDefinition) {
 
@@ -497,22 +556,25 @@ public class ObjectDefinitionLocalServiceUtil {
 	public static ObjectDefinition updateCustomObjectDefinition(
 			String externalReferenceCode, long objectDefinitionId,
 			long accountEntryRestrictedObjectFieldId,
-			long descriptionObjectFieldId, long titleObjectFieldId,
-			boolean accountEntryRestricted, boolean active,
-			boolean enableCategorization, boolean enableComments,
-			boolean enableLocalization, boolean enableObjectEntryHistory,
+			long descriptionObjectFieldId, long objectFolderId,
+			long titleObjectFieldId, boolean accountEntryRestricted,
+			boolean active, boolean enableCategorization,
+			boolean enableComments, boolean enableLocalization,
+			boolean enableObjectEntryDraft, boolean enableObjectEntryHistory,
 			Map<java.util.Locale, String> labelMap, String name,
 			String panelAppOrder, String panelCategoryKey, boolean portlet,
-			Map<java.util.Locale, String> pluralLabelMap, String scope)
+			Map<java.util.Locale, String> pluralLabelMap, String scope,
+			int status)
 		throws PortalException {
 
 		return getService().updateCustomObjectDefinition(
 			externalReferenceCode, objectDefinitionId,
 			accountEntryRestrictedObjectFieldId, descriptionObjectFieldId,
-			titleObjectFieldId, accountEntryRestricted, active,
+			objectFolderId, titleObjectFieldId, accountEntryRestricted, active,
 			enableCategorization, enableComments, enableLocalization,
-			enableObjectEntryHistory, labelMap, name, panelAppOrder,
-			panelCategoryKey, portlet, pluralLabelMap, scope);
+			enableObjectEntryDraft, enableObjectEntryHistory, labelMap, name,
+			panelAppOrder, panelCategoryKey, portlet, pluralLabelMap, scope,
+			status);
 	}
 
 	public static ObjectDefinition updateExternalReferenceCode(
@@ -539,13 +601,36 @@ public class ObjectDefinitionLocalServiceUtil {
 		return getService().updateObjectDefinition(objectDefinition);
 	}
 
+	public static ObjectDefinition updateObjectFolderId(
+			long objectDefinitionId, long objectFolderId)
+		throws PortalException {
+
+		return getService().updateObjectFolderId(
+			objectDefinitionId, objectFolderId);
+	}
+
+	public static ObjectDefinition updatePortlet(long objectDefinitionId)
+		throws PortalException {
+
+		return getService().updatePortlet(objectDefinitionId);
+	}
+
+	public static ObjectDefinition updateRootObjectDefinitionId(
+			long objectDefinitionId, long rootObjectDefinitionId)
+		throws PortalException {
+
+		return getService().updateRootObjectDefinitionId(
+			objectDefinitionId, rootObjectDefinitionId);
+	}
+
 	public static ObjectDefinition updateSystemObjectDefinition(
 			String externalReferenceCode, long objectDefinitionId,
-			long titleObjectFieldId)
+			long objectFolderId, long titleObjectFieldId)
 		throws PortalException {
 
 		return getService().updateSystemObjectDefinition(
-			externalReferenceCode, objectDefinitionId, titleObjectFieldId);
+			externalReferenceCode, objectDefinitionId, objectFolderId,
+			titleObjectFieldId);
 	}
 
 	public static ObjectDefinition updateTitleObjectFieldId(

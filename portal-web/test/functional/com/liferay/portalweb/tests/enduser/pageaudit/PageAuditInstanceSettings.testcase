@@ -1,6 +1,7 @@
 @component-name = "portal-page-audit"
 definition {
 
+	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Page Audit";
@@ -24,25 +25,12 @@ definition {
 		}
 	}
 
-	tearDown {
-		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
-
-		TestUtils.hardRefresh();
-
-		PageAudit.tearDownInstanceSettingsConfigurations();
-
-		JSONGroup.deleteGroupByName(groupName = "Test Site Name");
-
-		if (${testLiferayVirtualInstance} == "true") {
-			PortalInstances.tearDownCP();
-		}
-	}
-
 	@description = "LPS-128383 Given the preferred strategy dropdown in the Site Scope section When the value is void (""Choose an option"") Then the call is made for Google Page Speed default value - desktop"
 	@priority = 3
 	test DefaultStrategyAtInstanceSettings {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Set a custom page as canonical URL to have data already loaded") {
 			PageAudit.setSEOcanonicalURL(url = "https://liferay-echo.github.io/liferay-portal/page-audit-test");
@@ -74,6 +62,7 @@ definition {
 	test InstanceSettingsHierarchy {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Set Google PageSpeed API") {
 			PageAudit.setAPIViaInstanceSettings(preferredStrategy = "Mobile");
@@ -98,7 +87,8 @@ definition {
 				value1 = "AIzaSyAq-oKsvIhlYHdk1UXCFy63h74ECIgbgbE");
 
 			AssertTextEquals(
-				locator1 = "Dropdown#SELECTED_VALUE",
+				key_fieldLabel = "Preferred Strategy",
+				locator1 = "Dropdown#COMBOBOX_WITH_LABEL",
 				value1 = "Mobile");
 		}
 	}
@@ -108,6 +98,7 @@ definition {
 	test MobileStrategyAtInstanceSettings {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Set a custom page as canonical URL to have data already loaded") {
 			PageAudit.setSEOcanonicalURL(url = "https://liferay-echo.github.io/liferay-portal/page-audit-test");
@@ -139,6 +130,7 @@ definition {
 	test SiteSettingsHierarchyOverInstanceSettings {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Set a custom page as canonical URL to have data already loaded") {
 			PageAudit.setSEOcanonicalURL(url = "https://liferay-echo.github.io/liferay-portal/page-audit-test");
@@ -176,6 +168,7 @@ definition {
 	test UncheckedInstanceSettingsSiteScopeThenUncheckedAtSiteSettings {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Uncheck PageSpeed at Instance Settings") {
 			PageAudit.disableGooglePageSpeedViaInstanceSettings(scope = "Site Scope");
@@ -203,6 +196,7 @@ definition {
 	@priority = 3
 	test UncheckedInstanceSettingsVirtualInstanceThenNotVisibleAtSiteScope {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Uncheck PageSpeed at Instance Settings") {
 			PageAudit.disableGooglePageSpeedViaInstanceSettings();
@@ -221,6 +215,7 @@ definition {
 	test UncheckedInstanceSettingsVirtualInstanceThenNotVisibleAtSiteSettings {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Uncheck PageSpeed at Instance Settings") {
 			PageAudit.disableGooglePageSpeedViaInstanceSettings();
@@ -249,6 +244,7 @@ definition {
 	test UncheckedInstanceSettingsVirtualInstanceThenNotVisiblePageAuditIcon {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Uncheck PageSpeed at Instance Settings") {
 			PageAudit.disableGooglePageSpeedViaInstanceSettings();

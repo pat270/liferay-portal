@@ -278,6 +278,7 @@ definition {
 		property portal.acceptance = "true";
 		property portal.upstream = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		FormsAdmin.addForm();
 
@@ -496,6 +497,7 @@ definition {
 		property portal.acceptance = "true";
 		property portal.upstream = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		FormsAdmin.addForm();
 
@@ -773,7 +775,7 @@ definition {
 	@description = "Verify that a Calculate Rule can be created using Numeric Fields in the calculation"
 	@priority = 5
 	test CanIncludeNumericFieldsInCalculations {
-		property portal.acceptance = "true";
+		property portal.acceptance = "quarantine";
 
 		FormsAdmin.addForm();
 
@@ -1014,13 +1016,10 @@ definition {
 		property portal.acceptance = "true";
 		property portal.upstream = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Go to Content > Forms and add a Data Provider") {
-			FormsAdmin.openFormsAdmin(siteURLKey = "guest");
-
-			Navigator.gotoNavItem(navItem = "Data Providers");
-
-			FormsAdminNavigator.gotoAddDataProvider();
+			FormsAdminNavigator.gotoRESTDataProvider();
 
 			FormsAdmin.editDataProvider(
 				inputParameterLabel = "zipcode",
@@ -1118,16 +1117,13 @@ definition {
 	test CanUtilizeDataProvidersToCreateAnAutofillRule {
 		property portal.acceptance = "false";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var portalURL = PropsUtil.get("portal.url");
 
-		FormsAdminNavigator.enableLocalNetworkDataProvider();
+		FormsAdmin.enableLocalNetworkDataProvider();
 
-		FormsAdmin.openFormsAdmin(siteURLKey = "guest");
-
-		Navigator.gotoNavItem(navItem = "Data Providers");
-
-		FormsAdminNavigator.gotoAddDataProvider();
+		FormsAdminNavigator.gotoRESTDataProvider();
 
 		FormsAdmin.editDataProvider(
 			name = "Liferay Countries",
@@ -1166,6 +1162,8 @@ definition {
 		FormFields.editOptionsRow(
 			optionName = "Select1",
 			optionValue = "Select 1");
+
+		FormFields.clickAddOptionButton();
 
 		FormFields.editOptionsRow(
 			optionName = "Select2",
@@ -1261,6 +1259,7 @@ definition {
 		property portal.acceptance = "true";
 		property portal.upstream = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		FormsAdmin.addForm();
 

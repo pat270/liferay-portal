@@ -5,17 +5,13 @@ import React from 'react';
 import StatesRenderer from 'shared/components/states-renderer/StatesRenderer';
 import URLConstants from 'shared/util/url-constants';
 import {Routes, toRoute} from 'shared/util/router';
+import {useCurrentUser} from 'shared/hooks/useCurrentUser';
 import {useDataSource} from 'shared/hooks/useDataSource';
 import {useParams} from 'react-router-dom';
-import {User} from 'shared/util/records';
-import {withCurrentUser} from 'shared/hoc';
 
-interface IInterestsPageProps extends React.HTMLAttributes<HTMLElement> {
-	currentUser: User;
-}
-
-const InterestsPage: React.FC<IInterestsPageProps> = ({currentUser}) => {
+const InterestsPage = () => {
 	const {groupId} = useParams();
+	const currentUser = useCurrentUser();
 	const authorized = currentUser.isAdmin();
 
 	const dataSourceStates = useDataSource();
@@ -30,7 +26,7 @@ const InterestsPage: React.FC<IInterestsPageProps> = ({currentUser}) => {
 								'connect-a-data-source-with-sites-data'
 							)}
 
-							<a
+							<ClayLink
 								className='d-block mb-3'
 								href={URLConstants.DataSourceConnection}
 								key='DOCUMENTATION'
@@ -39,7 +35,7 @@ const InterestsPage: React.FC<IInterestsPageProps> = ({currentUser}) => {
 								{Liferay.Language.get(
 									'access-our-documentation-to-learn-more'
 								)}
-							</a>
+							</ClayLink>
 
 							{authorized && (
 								<ClayLink
@@ -76,4 +72,4 @@ const InterestsPage: React.FC<IInterestsPageProps> = ({currentUser}) => {
 	);
 };
 
-export default withCurrentUser(InterestsPage);
+export default InterestsPage;

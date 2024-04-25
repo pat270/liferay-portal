@@ -5,15 +5,13 @@
 
 package com.liferay.dynamic.data.mapping.form.evaluator.internal.function;
 
-import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
-import com.liferay.portal.util.DateFormatFactoryImpl;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,11 +26,6 @@ public class PastDatesFunctionTest {
 	public static final LiferayUnitTestRule liferayUnitTestRule =
 		LiferayUnitTestRule.INSTANCE;
 
-	@Before
-	public void setUp() throws Exception {
-		_setUpDateFormatFactoryUtil();
-	}
-
 	@Test
 	public void testApplyFalse() {
 		LocalDate tomorrowLocalDate = _todayLocalDate.plusDays(1);
@@ -45,10 +38,24 @@ public class PastDatesFunctionTest {
 	@Test
 	public void testApplyTrue() {
 		LocalDate yesterdayLocalDate = _todayLocalDate.minusDays(1);
+		LocalDateTime yesterdayLocalDateTime = _todayLocalDateTime.minusDays(1);
 
 		Assert.assertTrue(
 			_pastDatesFunction.apply(
 				yesterdayLocalDate.toString(), _todayLocalDate.toString()));
+
+		Assert.assertTrue(
+			_pastDatesFunction.apply(
+				yesterdayLocalDate.toString(), _todayLocalDateTime.toString()));
+
+		Assert.assertTrue(
+			_pastDatesFunction.apply(
+				yesterdayLocalDateTime.toString(), _todayLocalDate.toString()));
+
+		Assert.assertTrue(
+			_pastDatesFunction.apply(
+				yesterdayLocalDateTime.toString(),
+				_todayLocalDateTime.toString()));
 
 		Assert.assertTrue(
 			_pastDatesFunction.apply(
@@ -63,15 +70,10 @@ public class PastDatesFunctionTest {
 			_pastDatesFunction.apply(_todayLocalDate.toString(), null));
 	}
 
-	private void _setUpDateFormatFactoryUtil() {
-		DateFormatFactoryUtil dateFormatFactoryUtil =
-			new DateFormatFactoryUtil();
-
-		dateFormatFactoryUtil.setDateFormatFactory(new DateFormatFactoryImpl());
-	}
-
 	private final PastDatesFunction _pastDatesFunction =
 		new PastDatesFunction();
 	private final LocalDate _todayLocalDate = LocalDate.now(ZoneId.of("UTC"));
+	private final LocalDateTime _todayLocalDateTime = LocalDateTime.now(
+		ZoneId.of("UTC"));
 
 }

@@ -19,7 +19,10 @@ import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
-import com.liferay.portal.kernel.uuid.PortalUUID;
+import com.liferay.portal.kernel.util.BigDecimalUtil;
+import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
+
+import java.math.BigDecimal;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -40,9 +43,9 @@ public class CPDefinitionInventoryLocalServiceImpl
 			long userId, long cpDefinitionId,
 			String cpDefinitionInventoryEngine, String lowStockActivity,
 			boolean displayAvailability, boolean displayStockQuantity,
-			int minStockQuantity, boolean backOrders, int minOrderQuantity,
-			int maxOrderQuantity, String allowedOrderQuantities,
-			int multipleOrderQuantity)
+			BigDecimal minStockQuantity, boolean backOrders,
+			BigDecimal minOrderQuantity, BigDecimal maxOrderQuantity,
+			String allowedOrderQuantities, BigDecimal multipleOrderQuantity)
 		throws PortalException {
 
 		_validateOrderQuantity(
@@ -96,7 +99,7 @@ public class CPDefinitionInventoryLocalServiceImpl
 			CPDefinitionInventory newCPDefinitionInventory =
 				(CPDefinitionInventory)cpDefinitionInventory.clone();
 
-			newCPDefinitionInventory.setUuid(_portalUUID.generate());
+			newCPDefinitionInventory.setUuid(PortalUUIDUtil.generate());
 			newCPDefinitionInventory.setCPDefinitionInventoryId(
 				counterLocalService.increment());
 			newCPDefinitionInventory.setCPDefinitionId(newCPDefinitionId);
@@ -170,9 +173,10 @@ public class CPDefinitionInventoryLocalServiceImpl
 	public CPDefinitionInventory updateCPDefinitionInventory(
 			long cpDefinitionInventoryId, String cpDefinitionInventoryEngine,
 			String lowStockActivity, boolean displayAvailability,
-			boolean displayStockQuantity, int minStockQuantity,
-			boolean backOrders, int minOrderQuantity, int maxOrderQuantity,
-			String allowedOrderQuantities, int multipleOrderQuantity)
+			boolean displayStockQuantity, BigDecimal minStockQuantity,
+			boolean backOrders, BigDecimal minOrderQuantity,
+			BigDecimal maxOrderQuantity, String allowedOrderQuantities,
+			BigDecimal multipleOrderQuantity)
 		throws PortalException {
 
 		_validateOrderQuantity(
@@ -210,33 +214,30 @@ public class CPDefinitionInventoryLocalServiceImpl
 	}
 
 	private void _validateOrderQuantity(
-			int minOrderQuantity, int maxOrderQuantity,
-			int multipleOrderQuantity)
+			BigDecimal minOrderQuantity, BigDecimal maxOrderQuantity,
+			BigDecimal multipleOrderQuantity)
 		throws CPDefinitionInventoryMaxOrderQuantityException,
 			   CPDefinitionInventoryMinOrderQuantityException,
 			   CPDefinitionInventoryMultipleOrderQuantityException {
 
-		if (minOrderQuantity < 1) {
+		if (BigDecimalUtil.lte(minOrderQuantity, BigDecimal.ZERO)) {
 			throw new CPDefinitionInventoryMinOrderQuantityException(
-				"Minimum order quantity must be greater than or equal to 1");
+				"Minimum order quantity must be greater than 0");
 		}
 
-		if (maxOrderQuantity < 1) {
+		if (BigDecimalUtil.lte(maxOrderQuantity, BigDecimal.ZERO)) {
 			throw new CPDefinitionInventoryMaxOrderQuantityException(
-				"Maximum order quantity must be greater than or equal to 1");
+				"Maximum order quantity must be greater than 0");
 		}
 
-		if (multipleOrderQuantity < 1) {
+		if (BigDecimalUtil.lte(multipleOrderQuantity, BigDecimal.ZERO)) {
 			throw new CPDefinitionInventoryMultipleOrderQuantityException(
-				"Multiple order quantity must be greater than or equal to 1");
+				"Multiple order quantity must be greater than 0");
 		}
 	}
 
 	@Reference
 	private CPDefinitionLocalService _cpDefinitionLocalService;
-
-	@Reference
-	private PortalUUID _portalUUID;
 
 	@Reference
 	private UserLocalService _userLocalService;

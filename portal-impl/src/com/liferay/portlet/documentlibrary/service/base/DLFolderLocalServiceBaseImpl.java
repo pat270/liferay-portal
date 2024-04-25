@@ -47,7 +47,6 @@ import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiServic
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
-import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 import com.liferay.portal.kernel.transaction.Transactional;
@@ -589,37 +588,41 @@ public abstract class DLFolderLocalServiceBaseImpl
 	/**
 	 */
 	@Override
-	public void addDLFileEntryTypeDLFolder(
+	public boolean addDLFileEntryTypeDLFolder(
 		long fileEntryTypeId, long folderId) {
 
-		dlFileEntryTypePersistence.addDLFolder(fileEntryTypeId, folderId);
+		return dlFileEntryTypePersistence.addDLFolder(
+			fileEntryTypeId, folderId);
 	}
 
 	/**
 	 */
 	@Override
-	public void addDLFileEntryTypeDLFolder(
+	public boolean addDLFileEntryTypeDLFolder(
 		long fileEntryTypeId, DLFolder dlFolder) {
 
-		dlFileEntryTypePersistence.addDLFolder(fileEntryTypeId, dlFolder);
+		return dlFileEntryTypePersistence.addDLFolder(
+			fileEntryTypeId, dlFolder);
 	}
 
 	/**
 	 */
 	@Override
-	public void addDLFileEntryTypeDLFolders(
+	public boolean addDLFileEntryTypeDLFolders(
 		long fileEntryTypeId, long[] folderIds) {
 
-		dlFileEntryTypePersistence.addDLFolders(fileEntryTypeId, folderIds);
+		return dlFileEntryTypePersistence.addDLFolders(
+			fileEntryTypeId, folderIds);
 	}
 
 	/**
 	 */
 	@Override
-	public void addDLFileEntryTypeDLFolders(
+	public boolean addDLFileEntryTypeDLFolders(
 		long fileEntryTypeId, List<DLFolder> dlFolders) {
 
-		dlFileEntryTypePersistence.addDLFolders(fileEntryTypeId, dlFolders);
+		return dlFileEntryTypePersistence.addDLFolders(
+			fileEntryTypeId, dlFolders);
 	}
 
 	/**
@@ -819,17 +822,10 @@ public abstract class DLFolderLocalServiceBaseImpl
 	}
 
 	public void afterPropertiesSet() {
-		persistedModelLocalServiceRegistry.register(
-			"com.liferay.document.library.kernel.model.DLFolder",
-			dlFolderLocalService);
-
 		DLFolderLocalServiceUtil.setService(dlFolderLocalService);
 	}
 
 	public void destroy() {
-		persistedModelLocalServiceRegistry.unregister(
-			"com.liferay.document.library.kernel.model.DLFolder");
-
 		DLFolderLocalServiceUtil.setService(null);
 	}
 
@@ -909,9 +905,5 @@ public abstract class DLFolderLocalServiceBaseImpl
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		DLFolderLocalServiceBaseImpl.class);
-
-	@BeanReference(type = PersistedModelLocalServiceRegistry.class)
-	protected PersistedModelLocalServiceRegistry
-		persistedModelLocalServiceRegistry;
 
 }

@@ -1,10 +1,11 @@
 definition {
 
-	macro _deleteAllCommerceAccountGroups {
+	@summary = "Default summary"
+	macro _deleteAllCommerceAccountGroups() {
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var accountGroupsCount = CommerceJSONAccountGroupsAPI._getCommerceAccountGroupsCount();
@@ -31,13 +32,14 @@ definition {
 		}
 	}
 
-	macro _getAccountGroupId {
+	@summary = "Default summary"
+	macro _getAccountGroupId(accountGroupName = null) {
 		Variables.assertDefined(parameterList = ${accountGroupName});
 
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		if (isSet(accountGroupCount)) {
@@ -60,11 +62,12 @@ definition {
 		return ${accountGroupId};
 	}
 
-	macro _getCommerceAccountGroupIds {
+	@summary = "Default summary"
+	macro _getCommerceAccountGroupIds(accountGroupCount = null) {
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		if (isSet(accountGroupCount)) {
@@ -87,11 +90,12 @@ definition {
 		return ${accountGroupIds};
 	}
 
-	macro _getCommerceAccountGroupsCount {
+	@summary = "Default summary"
+	macro _getCommerceAccountGroupsCount() {
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var userLoginInfo = JSONUtil2.formatJSONUser();

@@ -119,6 +119,10 @@ public final class AllowedIPAddressesValidatorFactory {
 				InetAddress allowedIpAddress, String[] ipAddressAndNetmask)
 			throws UnknownHostException {
 
+			if (allowedIpAddress == null) {
+				throw new UnknownHostException("Allowed IP address is null");
+			}
+
 			_allowedIpAddress = allowedIpAddress;
 
 			_allowedIpAddressBytes = allowedIpAddress.getAddress();

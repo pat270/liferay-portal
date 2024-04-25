@@ -51,11 +51,15 @@ public interface Job {
 
 	public List<String> getDistNodes();
 
+	public List<String> getDistNodes(String networkName);
+
 	public DistType getDistType();
 
 	public Set<String> getDistTypes();
 
 	public Set<String> getDistTypesExcludingTomcat();
+
+	public Set<JenkinsCohort> getJenkinsCohorts();
 
 	public JobHistory getJobHistory();
 
@@ -69,6 +73,8 @@ public interface Job {
 
 	public JSONObject getJSONObject();
 
+	public Set<String> getNetworkNames();
+
 	public Set<String> getSegmentNames();
 
 	public List<SegmentTestClassGroup> getSegmentTestClassGroups();
@@ -79,9 +85,13 @@ public interface Job {
 
 	public boolean isDownstreamEnabled();
 
+	public boolean isJUnitTestsModifiedOnly();
+
 	public boolean isSegmentEnabled();
 
 	public boolean isValidationRequired();
+
+	public boolean testAnalyticsCloud();
 
 	public boolean testHotfixChanges();
 
@@ -90,6 +100,8 @@ public interface Job {
 	public boolean testReleaseBundle();
 
 	public boolean testRelevantChanges();
+
+	public boolean testRelevantChangesInStable();
 
 	public static enum BuildProfile {
 

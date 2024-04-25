@@ -12,9 +12,11 @@ import com.liferay.portal.kernel.model.Address;
 import com.liferay.portal.kernel.model.ListType;
 import com.liferay.portal.kernel.model.ListTypeConstants;
 import com.liferay.portal.kernel.model.Region;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.AddressLocalServiceUtil;
 import com.liferay.portal.kernel.service.ListTypeLocalServiceUtil;
 import com.liferay.portal.kernel.util.AggregateResourceBundle;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 
@@ -55,7 +57,7 @@ public class AddressDisplay {
 	}
 
 	public String getRegionName() {
-		return _region.getName();
+		return HtmlUtil.escape(_region.getName());
 	}
 
 	public String getStreet() {
@@ -79,13 +81,9 @@ public class AddressDisplay {
 	private AddressDisplay() {
 		_addressId = 0;
 		_city = StringPool.BLANK;
-
-		ListType listType = ListTypeLocalServiceUtil.getListType(
-			"billing-and-shipping",
+		_listTypeId = ListTypeLocalServiceUtil.getListTypeId(
+			CompanyThreadLocal.getCompanyId(), "billing-and-shipping",
 			AccountEntry.class.getName() + ListTypeConstants.ADDRESS);
-
-		_listTypeId = listType.getListTypeId();
-
 		_listTypeName = StringPool.BLANK;
 		_name = StringPool.BLANK;
 		_region = null;
@@ -95,13 +93,13 @@ public class AddressDisplay {
 
 	private AddressDisplay(Address address) {
 		_addressId = address.getAddressId();
-		_city = address.getCity();
+		_city = HtmlUtil.escape(address.getCity());
 		_listTypeId = address.getListTypeId();
 		_listTypeName = _getListTypeName(address);
-		_name = address.getName();
+		_name = HtmlUtil.escape(address.getName());
 		_region = address.getRegion();
-		_street = address.getStreet1();
-		_zip = address.getZip();
+		_street = HtmlUtil.escape(address.getStreet1());
+		_zip = HtmlUtil.escape(address.getZip());
 	}
 
 	private String _getListTypeName(Address address) {

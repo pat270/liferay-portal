@@ -3,13 +3,18 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {useState} from 'react';
+
 import {Header} from '../../components/Header/Header';
 import {Input} from '../../components/Input/Input';
 import {NewAppPageFooterButtons} from '../../components/NewAppPageFooterButtons/NewAppPageFooterButtons';
 import {Section} from '../../components/Section/Section';
 import {useAppContext} from '../../manage-app-state/AppManageState';
 import {TYPES} from '../../manage-app-state/actionTypes';
-import {saveSpecification} from '../../utils/util';
+import {
+	getTemporaryProductIdForSpefication,
+	submitSpecification,
+} from '../../utils/util';
 
 import './ProvideAppSupportAndHelpPage.scss';
 
@@ -22,6 +27,7 @@ export function ProvideAppSupportAndHelpPage({
 	onClickBack,
 	onClickContinue,
 }: ProvideAppSupportAndHelpPageProps) {
+	const [processing, setProcessing] = useState(false);
 	const [
 		{
 			appDocumentationURL,
@@ -34,6 +40,11 @@ export function ProvideAppSupportAndHelpPage({
 		},
 		dispatch,
 	] = useAppContext();
+
+	const _tempProductId = getTemporaryProductIdForSpefication({
+		appId,
+		appProductId,
+	});
 
 	return (
 		<div className="provide-app-support-and-help-page-container">
@@ -61,7 +72,6 @@ export function ProvideAppSupportAndHelpPage({
 						})
 					}
 					placeholder="http:// Enter app name"
-					required
 					value={supportURL?.value}
 				/>
 
@@ -118,21 +128,23 @@ export function ProvideAppSupportAndHelpPage({
 								id: appInstallationGuideURL?.id,
 								value: target.value,
 							},
-							type: TYPES.UPDATE_APP_INSTALLATION_AND_UNINSTALLATION_GUIDE_URL,
+							type:
+								TYPES.UPDATE_APP_INSTALLATION_AND_UNINSTALLATION_GUIDE_URL,
 						})
 					}
-					placeholder="http:// Enter app name"
+					placeholder="http://Enter app name"
 					value={appInstallationGuideURL?.value}
 				/>
 			</Section>
 
 			<NewAppPageFooterButtons
-				disableContinueButton={!supportURL?.value}
+				disableContinueButton={processing}
+				isLoading={processing}
 				onClickBack={() => onClickBack()}
 				onClickContinue={async () => {
-					const supportURLSpecificationId = await saveSpecification(
-						appId,
-						appProductId,
+					setProcessing(true);
+					const supportURLSpecificationId = await submitSpecification(
+						_tempProductId,
 						supportURL?.id,
 						'supportURL',
 						'Support URL',
@@ -159,15 +171,13 @@ export function ProvideAppSupportAndHelpPage({
 					}
 
 					if (publisherWebsiteURL?.value) {
-						const publisherWebsiteURLSpecificationId =
-							await saveSpecification(
-								appId,
-								appProductId,
-								publisherWebsiteURL?.id,
-								'publisherWebsiteURL',
-								'Publisher Web site URL',
-								publisherWebsiteURL?.value
-							);
+						const publisherWebsiteURLSpecificationId = await submitSpecification(
+							_tempProductId,
+							publisherWebsiteURL?.id,
+							'publisherWebsiteURL',
+							'Publisher Web site URL',
+							publisherWebsiteURL?.value
+						);
 
 						if (publisherWebsiteURLSpecificationId !== -1) {
 							dispatch({
@@ -189,15 +199,13 @@ export function ProvideAppSupportAndHelpPage({
 						}
 					}
 					if (appUsageTermsURL?.value) {
-						const appUsageTermsURLSpecificationId =
-							await saveSpecification(
-								appId,
-								appProductId,
-								appUsageTermsURL?.id,
-								'appUsageTermsURL',
-								'App Usage Terms URL',
-								appUsageTermsURL?.value
-							);
+						const appUsageTermsURLSpecificationId = await submitSpecification(
+							_tempProductId,
+							appUsageTermsURL?.id,
+							'appUsageTermsURL',
+							'App Usage Terms URL',
+							appUsageTermsURL?.value
+						);
 
 						if (appUsageTermsURLSpecificationId !== -1) {
 							dispatch({
@@ -219,15 +227,13 @@ export function ProvideAppSupportAndHelpPage({
 						}
 					}
 					if (appDocumentationURL?.value) {
-						const appDocumentationURLSpecificationId =
-							await saveSpecification(
-								appId,
-								appProductId,
-								appDocumentationURL?.id,
-								'appDocumentationURL',
-								'App Documentation URL',
-								appDocumentationURL?.value
-							);
+						const appDocumentationURLSpecificationId = await submitSpecification(
+							_tempProductId,
+							appDocumentationURL?.id,
+							'appDocumentationURL',
+							'App Documentation URL',
+							appDocumentationURL?.value
+						);
 
 						if (appDocumentationURLSpecificationId !== -1) {
 							dispatch({
@@ -249,15 +255,13 @@ export function ProvideAppSupportAndHelpPage({
 						}
 					}
 					if (appInstallationGuideURL?.value) {
-						const appInstallationGuideURLSpecificationId =
-							await saveSpecification(
-								appId,
-								appProductId,
-								appInstallationGuideURL?.id,
-								'appInstallationGuideURL',
-								'App Installation Guide URL',
-								appInstallationGuideURL?.value
-							);
+						const appInstallationGuideURLSpecificationId = await submitSpecification(
+							_tempProductId,
+							appInstallationGuideURL?.id,
+							'appInstallationGuideURL',
+							'App Installation Guide URL',
+							appInstallationGuideURL?.value
+						);
 
 						if (appInstallationGuideURLSpecificationId !== -1) {
 							dispatch({
@@ -265,7 +269,8 @@ export function ProvideAppSupportAndHelpPage({
 									id: appInstallationGuideURLSpecificationId,
 									value: appInstallationGuideURL.value,
 								},
-								type: TYPES.UPDATE_APP_INSTALLATION_AND_UNINSTALLATION_GUIDE_URL,
+								type:
+									TYPES.UPDATE_APP_INSTALLATION_AND_UNINSTALLATION_GUIDE_URL,
 							});
 						}
 						else {
@@ -274,10 +279,13 @@ export function ProvideAppSupportAndHelpPage({
 									id: appInstallationGuideURL?.id,
 									value: appInstallationGuideURL.value,
 								},
-								type: TYPES.UPDATE_APP_INSTALLATION_AND_UNINSTALLATION_GUIDE_URL,
+								type:
+									TYPES.UPDATE_APP_INSTALLATION_AND_UNINSTALLATION_GUIDE_URL,
 							});
 						}
 					}
+					setProcessing(false);
+
 					onClickContinue();
 				}}
 				showBackButton={true}

@@ -14,7 +14,7 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.security.permission.BaseModelPermissionCheckerUtil;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionUtil;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.permission.LayoutPermission;
@@ -72,6 +72,22 @@ public class FragmentEntryLinkServiceImpl
 	}
 
 	@Override
+	public FragmentEntryLink updateDeleted(
+			long fragmentEntryLinkId, boolean deleted)
+		throws PortalException {
+
+		FragmentEntryLink fragmentEntryLink =
+			fragmentEntryLinkPersistence.findByPrimaryKey(fragmentEntryLinkId);
+
+		_checkPermission(
+			fragmentEntryLink.getGroupId(), fragmentEntryLink.getPlid(), true,
+			true);
+
+		return fragmentEntryLinkLocalService.updateDeleted(
+			getUserId(), fragmentEntryLinkId, deleted);
+	}
+
+	@Override
 	public FragmentEntryLink updateFragmentEntryLink(
 			long fragmentEntryLinkId, String editableValues)
 		throws PortalException {
@@ -94,7 +110,8 @@ public class FragmentEntryLinkServiceImpl
 			true);
 
 		return fragmentEntryLinkLocalService.updateFragmentEntryLink(
-			fragmentEntryLinkId, editableValues, updateClassedModel);
+			getUserId(), fragmentEntryLinkId, editableValues,
+			updateClassedModel);
 	}
 
 	private void _checkPermission(
@@ -123,7 +140,7 @@ public class FragmentEntryLinkServiceImpl
 		}
 
 		if (GetterUtil.getBoolean(
-				BaseModelPermissionCheckerUtil.containsBaseModelPermission(
+				ModelResourcePermissionUtil.contains(
 					getPermissionChecker(), groupId, className, classPK,
 					ActionKeys.UPDATE))) {
 

@@ -22,8 +22,9 @@ class List extends PureComponent {
 	static propTypes = {
 		dataLoading: PropTypes.bool,
 		dataMap: PropTypes.object,
+		disabled: PropTypes.bool,
 		displayError: PropTypes.bool,
-		fetchDocumentsSearchUrl: PropTypes.string,
+		fetchDocumentsSearchURL: PropTypes.string,
 		onAddResultSubmit: PropTypes.func,
 		onClickHide: PropTypes.func,
 		onClickPin: PropTypes.func,
@@ -36,6 +37,7 @@ class List extends PureComponent {
 
 	static defaultProps = {
 		dataLoading: false,
+		disabled: false,
 		resultIds: [],
 	};
 
@@ -173,7 +175,7 @@ class List extends PureComponent {
 	 * @param {number} index The item's position in the list.
 	 */
 	_renderItem = (id, index) => {
-		const {dataMap, onClickHide, onMove} = this.props;
+		const {dataMap, disabled, onClickHide, onMove} = this.props;
 
 		const {focusIndex, reorder, selectedIds} = this.state;
 
@@ -187,6 +189,7 @@ class List extends PureComponent {
 				date={item.date}
 				deleted={item.deleted}
 				description={item.description}
+				disabled={disabled}
 				focus={index === focusIndex}
 				hidden={item.hidden}
 				icon={item.icon}
@@ -214,8 +217,9 @@ class List extends PureComponent {
 		const {
 			dataLoading,
 			dataMap,
+			disabled,
 			displayError,
-			fetchDocumentsSearchUrl,
+			fetchDocumentsSearchURL,
 			onAddResultSubmit,
 			onClickHide,
 			onClickPin,
@@ -232,7 +236,8 @@ class List extends PureComponent {
 
 					<SearchBar
 						dataMap={dataMap}
-						fetchDocumentsSearchUrl={fetchDocumentsSearchUrl}
+						disabled={disabled}
+						fetchDocumentsSearchURL={fetchDocumentsSearchURL}
 						onAddResultSubmit={onAddResultSubmit}
 						onClickHide={onClickHide}
 						onClickPin={onClickPin}

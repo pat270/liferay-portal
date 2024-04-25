@@ -59,31 +59,41 @@ exports[`Individuals Dashboard Distribution renders 1`] = `
                         class=""
                       >
                         <div
-                          aria-haspopup="true"
-                          class="input-group base-select-input-root select-input-root"
+                          class="dropdown dropdown-root base-select-container"
                         >
                           <div
-                            class="input-group-item"
+                            aria-controls="clay-dropdown-menu-1"
+                            aria-expanded="false"
+                            aria-haspopup="true"
+                            class="dropdown-toggle"
                           >
-                            <input
-                              autocomplete="off"
-                              class="input-root form-control input-group-inset input-group-inset-after"
-                              id="breakdown"
-                              placeholder="Select Field"
-                              type="text"
-                              value=""
-                            />
                             <div
-                              class="input-group-inset-item input-group-inset-item-after"
+                              class="input-group base-select-input-root select-input-root"
                             >
-                              <svg
-                                class="lexicon-icon lexicon-icon-caret-bottom icon-root"
-                                role="presentation"
+                              <div
+                                class="input-group-item"
                               >
-                                <use
-                                  xlink:href="#caret-bottom"
+                                <input
+                                  autocomplete="off"
+                                  class="input-root form-control input-group-inset input-group-inset-after"
+                                  id="breakdown"
+                                  placeholder="Select Field"
+                                  type="text"
+                                  value=""
                                 />
-                              </svg>
+                                <div
+                                  class="input-group-inset-item input-group-inset-item-after"
+                                >
+                                  <svg
+                                    class="lexicon-icon lexicon-icon-caret-bottom icon-root"
+                                    role="presentation"
+                                  >
+                                    <use
+                                      href="#caret-bottom"
+                                    />
+                                  </svg>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -108,7 +118,7 @@ exports[`Individuals Dashboard Distribution renders 1`] = `
                           role="presentation"
                         >
                           <use
-                            xlink:href="#ac-satellite"
+                            href="#ac-satellite"
                           />
                         </svg>
                       </div>
@@ -124,9 +134,15 @@ exports[`Individuals Dashboard Distribution renders 1`] = `
                         <a
                           class="d-block"
                           href="https://learn.liferay.com/analytics-cloud/latest/en/people/individuals/individuals-dashboard.html#breakdown"
+                          rel="noreferrer noopener"
                           target="_blank"
                         >
                           Learn more about distribution.
+                          <span
+                            class="sr-only"
+                          >
+                            (Opens a new window)
+                          </span>
                         </a>
                       </div>
                     </div>
@@ -145,7 +161,7 @@ exports[`Individuals Dashboard Distribution renders 1`] = `
 exports[`Individuals Dashboard Distribution renders with data source empty state 1`] = `
 <div>
   <div
-    class="no-results-root flex-grow-1 display-card"
+    class="no-results-root display-card flex-grow-1"
   >
     <div
       class="no-results-content"
@@ -158,7 +174,7 @@ exports[`Individuals Dashboard Distribution renders with data source empty state
           role="presentation"
         >
           <use
-            xlink:href="#ac-satellite"
+            href="#ac-satellite"
           />
         </svg>
       </div>
@@ -174,9 +190,15 @@ exports[`Individuals Dashboard Distribution renders with data source empty state
         <a
           class="d-block mb-3"
           href="https://learn.liferay.com/analytics-cloud/latest/en/getting-started/connecting-liferay-dxp-to-analytics-cloud.html"
+          rel="noreferrer noopener"
           target="_blank"
         >
           Access our documentation to learn more.
+          <span
+            class="sr-only"
+          >
+            (Opens a new window)
+          </span>
         </a>
         <a
           class="button-root btn btn-primary"

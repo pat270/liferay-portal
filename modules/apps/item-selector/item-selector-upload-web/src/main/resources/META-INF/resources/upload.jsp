@@ -28,7 +28,7 @@ if (Validator.isNotNull(namespace)) {
 	id="itemSelectorUploadContainer"
 >
 	<liferay-util:html-top
-		outputKey="item_selector_repository_entry_browser"
+		outputKey="com.liferay.item.selector.upload.web#/upload.jsp"
 	>
 		<link href="<%= PortalUtil.getStaticResourceURL(request, PortalUtil.getPathModule() + "/item-selector-taglib/repository_entry_browser/css/main.css") %>" rel="stylesheet" />
 	</liferay-util:html-top>
@@ -37,7 +37,7 @@ if (Validator.isNotNull(namespace)) {
 		<div class="dropzone dropzone-disabled"><span aria-hidden="true" class="loading-animation loading-animation-sm"></span></div>
 
 		<react:component
-			module="js/ItemSelectorRepositoryEntryBrowser"
+			module="{ItemSelectorRepositoryEntryBrowser} from item-selector-upload-web"
 			props='<%=
 				HashMapBuilder.<String, Object>put(
 					"closeCaption", itemSelectorUploadViewDisplayContext.getTitle(locale)

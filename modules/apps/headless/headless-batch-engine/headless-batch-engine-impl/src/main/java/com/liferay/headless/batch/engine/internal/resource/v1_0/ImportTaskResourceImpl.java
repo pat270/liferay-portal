@@ -17,8 +17,7 @@ import com.liferay.batch.engine.constants.BatchEngineImportTaskConstants;
 import com.liferay.batch.engine.constants.CreateStrategy;
 import com.liferay.batch.engine.model.BatchEngineImportTask;
 import com.liferay.batch.engine.model.BatchEngineImportTaskError;
-import com.liferay.batch.engine.service.BatchEngineImportTaskErrorLocalService;
-import com.liferay.batch.engine.service.BatchEngineImportTaskLocalService;
+import com.liferay.batch.engine.service.BatchEngineImportTaskService;
 import com.liferay.headless.batch.engine.dto.v1_0.FailedItem;
 import com.liferay.headless.batch.engine.dto.v1_0.ImportTask;
 import com.liferay.headless.batch.engine.internal.resource.v1_0.util.ParametersUtil;
@@ -27,7 +26,7 @@ import com.liferay.petra.executor.PortalExecutorManager;
 import com.liferay.petra.io.StreamUtil;
 import com.liferay.petra.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.petra.io.unsync.UnsyncByteArrayOutputStream;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.util.File;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PropsUtil;
@@ -47,6 +46,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -111,7 +111,7 @@ public class ImportTaskResourceImpl extends BaseImportTaskResourceImpl {
 	@Override
 	public ImportTask getImportTask(Long importTaskId) throws Exception {
 		return _toImportTask(
-			_batchEngineImportTaskLocalService.getBatchEngineImportTask(
+			_batchEngineImportTaskService.getBatchEngineImportTask(
 				importTaskId));
 	}
 
@@ -121,7 +121,7 @@ public class ImportTaskResourceImpl extends BaseImportTaskResourceImpl {
 		throws Exception {
 
 		return _toImportTask(
-			_batchEngineImportTaskLocalService.
+			_batchEngineImportTaskService.
 				getBatchEngineImportTaskByExternalReferenceCode(
 					externalReferenceCode, contextCompany.getCompanyId()));
 	}
@@ -132,7 +132,7 @@ public class ImportTaskResourceImpl extends BaseImportTaskResourceImpl {
 		throws Exception {
 
 		return _getImportTaskContent(
-			_batchEngineImportTaskLocalService.
+			_batchEngineImportTaskService.
 				getBatchEngineImportTaskByExternalReferenceCode(
 					externalReferenceCode, contextCompany.getCompanyId()));
 	}
@@ -143,7 +143,7 @@ public class ImportTaskResourceImpl extends BaseImportTaskResourceImpl {
 		throws Exception {
 
 		BatchEngineImportTask batchEngineImportTask =
-			_batchEngineImportTaskLocalService.
+			_batchEngineImportTaskService.
 				getBatchEngineImportTaskByExternalReferenceCode(
 					externalReferenceCode, contextCompany.getCompanyId());
 
@@ -154,7 +154,7 @@ public class ImportTaskResourceImpl extends BaseImportTaskResourceImpl {
 	@Override
 	public Response getImportTaskContent(Long importTaskId) throws Exception {
 		return _getImportTaskContent(
-			_batchEngineImportTaskLocalService.getBatchEngineImportTask(
+			_batchEngineImportTaskService.getBatchEngineImportTask(
 				importTaskId));
 	}
 
@@ -320,7 +320,8 @@ public class ImportTaskResourceImpl extends BaseImportTaskResourceImpl {
 	}
 
 	private Response _getImportTaskContent(
-		BatchEngineImportTask batchEngineImportTask) {
+			BatchEngineImportTask batchEngineImportTask)
+		throws Exception {
 
 		BatchEngineTaskExecuteStatus batchEngineTaskExecuteStatus =
 			BatchEngineTaskExecuteStatus.valueOf(
@@ -336,10 +337,12 @@ public class ImportTaskResourceImpl extends BaseImportTaskResourceImpl {
 			).build();
 		}
 
+		InputStream contentInputStream =
+			_batchEngineImportTaskService.openContentInputStream(
+				batchEngineImportTask.getBatchEngineImportTaskId());
+
 		StreamingOutput streamingOutput = outputStream -> StreamUtil.transfer(
-			_batchEngineImportTaskLocalService.openContentInputStream(
-				batchEngineImportTask.getBatchEngineImportTaskId()),
-			outputStream);
+			contentInputStream, outputStream);
 
 		return Response.ok(
 			streamingOutput
@@ -349,7 +352,16 @@ public class ImportTaskResourceImpl extends BaseImportTaskResourceImpl {
 		).build();
 	}
 
-	private Response _getImportTaskFailedItemReport(long importTaskId) {
+	private Response _getImportTaskFailedItemReport(long importTaskId)
+		throws Exception {
+
+		BatchEngineImportTask batchEngineImportTask =
+			_batchEngineImportTaskService.getBatchEngineImportTask(
+				importTaskId);
+
+		List<BatchEngineImportTaskError> batchEngineImportTaskErrors =
+			batchEngineImportTask.getBatchEngineImportTaskErrors();
+
 		StreamingOutput streamingOutput = outputStream -> {
 			try (CSVPrinter csvPrinter = new CSVPrinter(
 					new BufferedWriter(new OutputStreamWriter(outputStream)),
@@ -358,8 +370,7 @@ public class ImportTaskResourceImpl extends BaseImportTaskResourceImpl {
 				csvPrinter.printRecord("item", "itemIndex", "message");
 
 				for (BatchEngineImportTaskError batchEngineImportTaskError :
-						_batchEngineImportTaskErrorLocalService.
-							getBatchEngineImportTaskErrors(importTaskId)) {
+						batchEngineImportTaskErrors) {
 
 					csvPrinter.printRecord(
 						batchEngineImportTaskError.getItem(),
@@ -458,7 +469,7 @@ public class ImportTaskResourceImpl extends BaseImportTaskResourceImpl {
 		}
 
 		BatchEngineImportTask batchEngineImportTask =
-			_batchEngineImportTaskLocalService.addBatchEngineImportTask(
+			_batchEngineImportTaskService.addBatchEngineImportTask(
 				externalReferenceCode, contextCompany.getCompanyId(),
 				contextUser.getUserId(),
 				_itemClassBatchSizeMap.getOrDefault(
@@ -484,9 +495,9 @@ public class ImportTaskResourceImpl extends BaseImportTaskResourceImpl {
 
 		return new FailedItem() {
 			{
-				item = batchEngineImportTaskError.getItem();
-				itemIndex = batchEngineImportTaskError.getItemIndex();
-				message = batchEngineImportTaskError.getMessage();
+				setItem(batchEngineImportTaskError::getItem);
+				setItemIndex(batchEngineImportTaskError::getItemIndex);
+				setMessage(batchEngineImportTaskError::getMessage);
 			}
 		};
 	}
@@ -508,29 +519,33 @@ public class ImportTaskResourceImpl extends BaseImportTaskResourceImpl {
 
 		return new ImportTask() {
 			{
-				className = batchEngineImportTask.getClassName();
-				contentType = batchEngineImportTask.getContentType();
-				endTime = batchEngineImportTask.getEndTime();
-				errorMessage = batchEngineImportTask.getErrorMessage();
-				executeStatus = ImportTask.ExecuteStatus.create(
-					batchEngineImportTask.getExecuteStatus());
-				externalReferenceCode =
-					batchEngineImportTask.getExternalReferenceCode();
-				failedItems = transformToArray(
-					batchEngineImportTask.getBatchEngineImportTaskErrors(),
-					batchEngineImportTaskError -> _toFailedItem(
-						batchEngineImportTaskError),
-					FailedItem.class);
-				id = batchEngineImportTask.getBatchEngineImportTaskId();
-				importStrategy = ImportTask.ImportStrategy.create(
-					BatchEngineImportTaskConstants.getImportStrategyString(
-						batchEngineImportTask.getImportStrategy()));
-				operation = ImportTask.Operation.create(
-					batchEngineImportTask.getOperation());
-				processedItemsCount =
-					batchEngineImportTask.getProcessedItemsCount();
-				startTime = batchEngineImportTask.getStartTime();
-				totalItemsCount = batchEngineImportTask.getTotalItemsCount();
+				setClassName(batchEngineImportTask::getClassName);
+				setContentType(batchEngineImportTask::getContentType);
+				setEndTime(batchEngineImportTask::getEndTime);
+				setErrorMessage(batchEngineImportTask::getErrorMessage);
+				setExecuteStatus(
+					() -> ImportTask.ExecuteStatus.create(
+						batchEngineImportTask.getExecuteStatus()));
+				setExternalReferenceCode(
+					batchEngineImportTask::getExternalReferenceCode);
+				setFailedItems(
+					() -> transformToArray(
+						batchEngineImportTask.getBatchEngineImportTaskErrors(),
+						batchEngineImportTaskError -> _toFailedItem(
+							batchEngineImportTaskError),
+						FailedItem.class));
+				setId(batchEngineImportTask::getBatchEngineImportTaskId);
+				setImportStrategy(
+					() -> ImportTask.ImportStrategy.create(
+						BatchEngineImportTaskConstants.getImportStrategyString(
+							batchEngineImportTask.getImportStrategy())));
+				setOperation(
+					() -> ImportTask.Operation.create(
+						batchEngineImportTask.getOperation()));
+				setProcessedItemsCount(
+					batchEngineImportTask::getProcessedItemsCount);
+				setStartTime(batchEngineImportTask::getStartTime);
+				setTotalItemsCount(batchEngineImportTask::getTotalItemsCount);
 			}
 		};
 	}
@@ -555,18 +570,14 @@ public class ImportTaskResourceImpl extends BaseImportTaskResourceImpl {
 	}
 
 	private static final Set<String> _ignoredParameters = new HashSet<>(
-		Arrays.asList("callbackURL", "fieldNameMapping"));
-
-	@Reference
-	private BatchEngineImportTaskErrorLocalService
-		_batchEngineImportTaskErrorLocalService;
+		Arrays.asList(
+			"callbackURL", "fieldNameMapping", "taskItemDelegateName"));
 
 	@Reference
 	private BatchEngineImportTaskExecutor _batchEngineImportTaskExecutor;
 
 	@Reference
-	private BatchEngineImportTaskLocalService
-		_batchEngineImportTaskLocalService;
+	private BatchEngineImportTaskService _batchEngineImportTaskService;
 
 	@Reference
 	private ConfigurationProvider _configurationProvider;

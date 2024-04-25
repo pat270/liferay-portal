@@ -28,8 +28,8 @@ if ((classPK > 0) && (structureClassNameId == classNameId)) {
 	clearResultsURL="<%= ddmDisplayContext.getClearResultsURL() %>"
 	creationMenu="<%= ddmDisplayContext.getTemplateCreationMenu() %>"
 	disabled="<%= ddmDisplayContext.isDisabledManagementBar(DDMWebKeys.DYNAMIC_DATA_MAPPING_TEMPLATE) %>"
-	filterDropdownItems="<%= ddmDisplayContext.getFilterItemsDropdownItems() %>"
 	itemsTotal="<%= ddmDisplayContext.getTotalItems(DDMWebKeys.DYNAMIC_DATA_MAPPING_TEMPLATE) %>"
+	orderDropdownItems="<%= ddmDisplayContext.getOrderItemsDropdownItems() %>"
 	searchActionURL="<%= ddmDisplayContext.getSelectTemplateSearchActionURL() %>"
 	searchFormName="searchForm"
 	selectable="<%= false %>"
@@ -40,7 +40,7 @@ if ((classPK > 0) && (structureClassNameId == classNameId)) {
 <aui:form action="<%= ddmDisplayContext.getSelectTemplateSearchActionURL() %>" method="post" name="selectTemplateFm">
 	<clay:container-fluid>
 		<liferay-ui:search-container
-			searchContainer="<%= ddmDisplayContext.getTemplateSearch() %>"
+			searchContainer="<%= ddmDisplayContext.getDDMTemplateSearchContainer() %>"
 		>
 			<liferay-ui:search-container-row
 				className="com.liferay.dynamic.data.mapping.model.DDMTemplate"

@@ -263,9 +263,9 @@ AUI.add(
 								fieldNamePrefix,
 								fieldNameSuffix,
 								id,
+								languageId,
 								name: A.Lang.String.escapeHTML(name),
 								namespace,
-								value: languageId,
 							})
 						);
 
@@ -437,6 +437,22 @@ AUI.add(
 							props,
 							modalContainer
 						);
+				},
+
+				_onMarkAsTranslated(event) {
+					const instance = this;
+
+					const languageId = event.selectedLanguageId;
+
+					const translatedLanguages = instance.get(
+						'translatedLanguages'
+					);
+
+					translatedLanguages.add(languageId);
+
+					this.updateInputLanguage(this.getValue(), languageId);
+
+					instance._updateTranslationStatus(languageId);
 				},
 
 				_onSelectFlag(event) {
@@ -701,7 +717,7 @@ AUI.add(
 				},
 
 				INPUT_HIDDEN_TEMPLATE:
-					'<input id="{namespace}{id}_{value}" name="{namespace}{fieldNamePrefix}{name}_{value}{fieldNameSuffix}" type="hidden" value="" />',
+					'<input data-field-name={name} data-languageid={languageId} id="{namespace}{id}_{languageId}" name="{namespace}{fieldNamePrefix}{name}_{languageId}{fieldNameSuffix}" type="hidden" value="" />',
 
 				TRANSLATION_STATUS_TEMPLATE:
 					'<span aria-label="{translationAriaLabel}" role="button" tabindex="0"> {languageId} <span class="dropdown-item-indicator-end w-auto"><span class="label label-{translationStatusCssClass}">{translationStatus}</span></span></span>',
@@ -772,6 +788,10 @@ AUI.add(
 						Liferay.on(
 							'inputLocalized:localeChanged',
 							A.bind('_onLocaleChanged', instance)
+						),
+						Liferay.on(
+							'inputLocalized:markAsTranslated',
+							A.bind('_onMarkAsTranslated', instance)
 						),
 						Liferay.on(
 							'submitForm',

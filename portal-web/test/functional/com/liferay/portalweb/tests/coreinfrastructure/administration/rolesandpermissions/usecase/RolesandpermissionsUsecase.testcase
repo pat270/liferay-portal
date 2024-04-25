@@ -1,4 +1,4 @@
-@component-name = "portal-security"
+@component-name = "portal-user-management"
 definition {
 
 	property portal.release = "true";
@@ -86,7 +86,7 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-157219. It ensures a user can only view the portlets he has permissions from applications menu."
-	@priority = 3
+	@priority = 4
 	test CanOnlyViewPortletsWithPermissionsGranted {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
 
@@ -181,7 +181,7 @@ definition {
 	}
 
 	@description = "This is a test for LPS-148855. The default site role shouldn't be inherited by Guest."
-	@priority = 5
+	@priority = 4
 	test DefaultSiteRoleIsNotInheritedByGuestUser {
 		task ("Assign default site to a new regular Role") {
 			JSONRole.addRegularRole(
@@ -240,6 +240,7 @@ definition {
 	@priority = 4
 	test EditTeamPermissions {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Permissions.definePermissionViaJSONAPI(
 			resourceAction = "VIEW_CONTROL_PANEL",
@@ -282,10 +283,7 @@ definition {
 				roleType = "site");
 		}
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Sites",
-			panel = "Control Panel",
-			portlet = "Sites");
+		Site.openSitesAdmin();
 
 		Site.addBlankCP(siteName = "Site Name");
 
@@ -301,28 +299,23 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.editPasswordCP(
 			userEmailAddress = "userea@liferay.com",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		Site.openSiteSettingsAdmin(siteURLKey = "site-name");
+
+		Site.manageMembershipOptions(allowManualMembershipManagement = "true");
+
+		User.openUsersAdmin();
 
 		User.editUserSiteCP(
 			siteName = "Site Name",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.assignSiteRoleCP(
 			siteRoleName = "Roles Siterole Name",
@@ -410,7 +403,7 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-124190."
-	@priority = 3
+	@priority = 4
 	test ExportRoleWithSiteAssignee {
 		HeadlessSite.addSite(siteName = "Site Name");
 
@@ -477,6 +470,7 @@ definition {
 		property osgi.app.includes = "bookmarks";
 		property portal.release = "false";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var siteName = TestCase.getSiteName(siteName = ${siteName});
 
@@ -512,10 +506,7 @@ definition {
 
 		Navigator.gotoPage(pageName = "Bookmarks Page");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Sites",
-			panel = "Control Panel",
-			portlet = "Sites");
+		Site.openSitesAdmin();
 
 		Site.addCP(
 			siteName = "google.com Name",
@@ -556,6 +547,10 @@ definition {
 			agreeToTermsAndAnswerReminderQuery = "true",
 			requireReset = "false",
 			userEmailAddress = "userea@liferay.com");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "google.com-name");
+
+		Site.manageMembershipOptions(allowManualMembershipManagement = "true");
 
 		User.openUsersAdmin();
 
@@ -606,15 +601,12 @@ definition {
 			userEmailAddress = "test@liferay.com");
 	}
 
-	@priority = 3
+	@priority = 4
 	test NoGuestRolePermissionsFromPrivateLayout {
 		property custom.properties = "permissions.check.guest.enabled=false";
 		property release.feature.flags.disable.DISABLE_PRIVATE_LAYOUTS = "true";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Sites",
-			panel = "Control Panel",
-			portlet = "Sites");
+		Site.openSitesAdmin();
 
 		Site.addBlankCP(siteName = "Site Name");
 
@@ -695,19 +687,17 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.editPasswordCP(
 			userEmailAddress = "userea@liferay.com",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		Site.openSiteSettingsAdmin(siteURLKey = "guest");
+
+		Site.manageMembershipOptions(allowManualMembershipManagement = "true");
+
+		User.openUsersAdmin();
 
 		User.editUserSiteCP(
 			siteName = ${siteName},
@@ -729,10 +719,7 @@ definition {
 			password = "test",
 			userEmailAddress = "test@liferay.com");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.assignSiteRoleCP(
 			siteRoleName = "Roles Siterole Name",
@@ -761,10 +748,7 @@ definition {
 
 	@priority = 4
 	test TeamPermissionsSite {
-		ApplicationsMenu.gotoPortlet(
-			category = "Sites",
-			panel = "Control Panel",
-			portlet = "Sites");
+		Site.openSitesAdmin();
 
 		Site.addBlankCP(siteName = "Site Name");
 
@@ -775,19 +759,17 @@ definition {
 				userLastName = "userln${userNumber}",
 				userScreenName = "usersn${userNumber}");
 
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Users and Organizations");
+			User.openUsersAdmin();
 
 			User.editPasswordCP(
 				userEmailAddress = "userea${userNumber}@liferay.com",
 				userScreenName = "usersn${userNumber}");
 
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Users and Organizations");
+			Site.openSiteSettingsAdmin(siteURLKey = "site-name");
+
+			Site.manageMembershipOptions(allowManualMembershipManagement = "true");
+
+			User.openUsersAdmin();
 
 			User.editUserSiteCP(
 				siteName = "Site Name",
@@ -832,15 +814,15 @@ definition {
 
 		Role.removePermissionPG(
 			permissionDefinitionKey = "CONTENT_PERMISSIONS_VIEW_CHECKBOX",
-			roleTitle = "guest");
+			roleTitle = "Guest");
 
 		Role.removePermissionPG(
 			permissionDefinitionKey = "CONTENT_PERMISSIONS_ADD_DISCUSSION_CHECKBOX",
-			roleTitle = "site-member");
+			roleTitle = "Site Member");
 
 		Role.removePermissionPG(
 			permissionDefinitionKey = "CONTENT_PERMISSIONS_VIEW_CHECKBOX",
-			roleTitle = "site-member");
+			roleTitle = "Site Member");
 
 		for (var permissionDefinitionKey : list "ACTION_ADD_DISCUSSION,ACTION_ADD_LAYOUT,ACTION_CONFIGURE_PORTLETS,ACTION_CUSTOMIZE,ACTION_DELETE,ACTION_DELETE_DISCUSSION,ACTION_PERMISSIONS,ACTION_UPDATE,ACTION_UPDATE_DISCUSSION,ACTION_VIEW") {
 			Team.definePermissionPG(
@@ -915,10 +897,7 @@ definition {
 				userEmailAddress = "userea${userNum}@liferay.com");
 		}
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.assignOrgRoleCP(
 			roleTitle = "Roles Orgrole Name",
@@ -965,14 +944,14 @@ definition {
 			pageName = "Search Page",
 			siteName = "Organization Name");
 
-		SearchPortlets.searchWidget(searchTerm = "Test Blog");
+		SearchPage.searchWidget(searchTerm = "Test Blog");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetSummary = "Blog Entry Content.",
 			searchAssetTitle = "Test Blog",
 			searchAssetType = "Blogs Entry");
 
-		Search.gotoResultAssetViaTitle(searchAssetTitle = "Test Blog");
+		SearchPage.gotoResultDetails(searchAssetTitle = "Test Blog");
 
 		BlogsEntry.viewPG(
 			entryContent = "Blog Entry Content.",
@@ -1004,9 +983,9 @@ definition {
 			pageName = "Search Page",
 			siteName = "Organization Name");
 
-		SearchPortlets.searchWidget(searchTerm = "\"Test Blog\"");
+		SearchPage.searchWidget(searchTerm = "\"Test Blog\"");
 
-		SearchResultPortlet.viewNoSearchResults(searchTerm = "\"Test Blog\"");
+		SearchResults.viewNoSearchResults(searchTerm = "\"Test Blog\"");
 
 		User.logoutPG();
 
@@ -1026,14 +1005,14 @@ definition {
 			pageName = "Search Page",
 			siteName = "Organization Name");
 
-		SearchPortlets.searchWidget(searchTerm = "Test Blog");
+		SearchPage.searchWidget(searchTerm = "Test Blog");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetSummary = "Blog Entry Content.",
 			searchAssetTitle = "Test Blog",
 			searchAssetType = "Blogs Entry");
 
-		Search.gotoResultAssetViaTitle(searchAssetTitle = "Test Blog");
+		SearchPage.gotoResultDetails(searchAssetTitle = "Test Blog");
 
 		BlogsEntry.viewPG(
 			entryContent = "Blog Entry Content.",
@@ -1119,13 +1098,13 @@ definition {
 
 		Navigator.gotoPage(pageName = "Blogs Page");
 
-		SearchPortlets.searchEmbedded(searchTerm = "Test Blog");
+		SearchPage.searchEmbedded(searchTerm = "Test Blog");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Test Blog",
 			searchAssetType = "Blogs Entry");
 
-		Search.gotoResultAssetViaTitle(searchAssetTitle = "Test Blog");
+		SearchPage.gotoResultDetails(searchAssetTitle = "Test Blog");
 
 		BlogsEntry.viewPG(
 			entryContent = "Blog Entry Content.",
@@ -1151,9 +1130,9 @@ definition {
 
 		Blogs.viewNoEntryCP();
 
-		SearchPortlets.searchEmbedded(searchTerm = "Test Blog");
+		SearchPage.searchEmbedded(searchTerm = "Test Blog");
 
-		SearchResultPortlet.viewSearchResultNotPresent(
+		SearchResults.viewSearchResultNotPresent(
 			searchAssetTitle = "Test Blog",
 			searchAssetType = "Blogs Entry");
 
@@ -1169,13 +1148,13 @@ definition {
 			entryContent = "Blog Entry Content.",
 			entryTitle = "Test Blog");
 
-		SearchPortlets.searchEmbedded(searchTerm = "Test Blog");
+		SearchPage.searchEmbedded(searchTerm = "Test Blog");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Test Blog",
 			searchAssetType = "Blogs Entry");
 
-		Search.gotoResultAssetViaTitle(searchAssetTitle = "Test Blog");
+		SearchPage.gotoResultDetails(searchAssetTitle = "Test Blog");
 
 		BlogsEntry.viewPG(
 			entryContent = "Blog Entry Content.",
@@ -1274,26 +1253,17 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.editPasswordCP(
 			userEmailAddress = "userea@liferay.com",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "User Groups");
+		UserGroup.openUserGroupsAdmin();
 
 		UserGroup.addCP(userGroupName = "UG UserGroup Name");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "User Groups");
+		UserGroup.openUserGroupsAdmin();
 
 		UserGroup.assignMemberCP(
 			userGroupName = "UG UserGroup Name",
@@ -1327,6 +1297,7 @@ definition {
 	test ViewRegRolePermissionsDefaultView {
 		property release.feature.flags.disable.DISABLE_PRIVATE_LAYOUTS = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONRole.addRegularRole(
 			roleKey = "Roles Regrole Name",
@@ -1362,10 +1333,7 @@ definition {
 			resourceName = "com.liferay.dynamic.data.mapping.model.DDMStructure-com.liferay.journal.model.JournalArticle",
 			roleTitle = "Roles Regrole Name");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Sites",
-			panel = "Control Panel",
-			portlet = "Sites");
+		Site.openSitesAdmin();
 
 		Site.addBlankCP(siteName = "Site Name");
 
@@ -1383,37 +1351,29 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.editPasswordCP(
 			userEmailAddress = "userea@liferay.com",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		Site.openSiteSettingsAdmin(siteURLKey = "site-name");
+
+		Site.manageMembershipOptions(allowManualMembershipManagement = "true");
+
+		User.openUsersAdmin();
 
 		User.editUserSiteCP(
 			siteName = "Site Name",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.assignRegularRoleCP(
 			roleTitle = "Roles Regrole Name",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.logoutPG();
 
@@ -1476,10 +1436,11 @@ definition {
 		var siteName = TestCase.getSiteName(siteName = ${siteName});
 
 		task ("Assgin Default Site to new user") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Users and Organizations");
+			Site.openSiteSettingsAdmin(siteURLKey = "guest");
+
+			Site.manageMembershipOptions(allowManualMembershipManagement = "true");
+
+			User.openUsersAdmin();
 
 			User.editUserSiteCP(
 				siteName = ${siteName},
@@ -1487,10 +1448,7 @@ definition {
 		}
 
 		task ("Assgin New Site Role to new user") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Users and Organizations");
+			User.openUsersAdmin();
 
 			User.assignSiteRoleCP(
 				siteRoleName = "Roles Siterole Name",

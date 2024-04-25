@@ -14,8 +14,11 @@ import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.service.FragmentCollectionLocalService;
 import com.liferay.fragment.service.FragmentEntryLinkLocalService;
 import com.liferay.fragment.service.FragmentEntryLocalService;
+import com.liferay.layout.importer.LayoutsImportStrategy;
 import com.liferay.layout.importer.LayoutsImporter;
 import com.liferay.layout.importer.LayoutsImporterResultEntry;
+import com.liferay.layout.page.template.constants.LayoutPageTemplateCollectionTypeConstants;
+import com.liferay.layout.page.template.constants.LayoutPageTemplateConstants;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateCollection;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
@@ -98,7 +101,10 @@ public class LayoutsImporterTest {
 			_layoutPageTemplateCollectionLocalService.
 				addLayoutPageTemplateCollection(
 					TestPropsValues.getUserId(), _group1.getGroupId(),
+					LayoutPageTemplateConstants.
+						PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
 					"Page Template Collection", StringPool.BLANK,
+					LayoutPageTemplateCollectionTypeConstants.BASIC,
 					_serviceContext1);
 
 		LayoutPageTemplateEntry layoutPageTemplateEntry1 =
@@ -107,9 +113,8 @@ public class LayoutsImporterTest {
 				_serviceContext1.getScopeGroupId(),
 				layoutPageTemplateCollection.
 					getLayoutPageTemplateCollectionId(),
-				"Page Template One",
-				LayoutPageTemplateEntryTypeConstants.TYPE_BASIC, 0,
-				WorkflowConstants.STATUS_APPROVED, _serviceContext1);
+				"Page Template One", LayoutPageTemplateEntryTypeConstants.BASIC,
+				0, WorkflowConstants.STATUS_APPROVED, _serviceContext1);
 
 		String html =
 			"<lfr-editable id=\"element-text\" type=\"text\">Test Text " +
@@ -181,7 +186,7 @@ public class LayoutsImporterTest {
 		try {
 			layoutsImporterResultEntries = _layoutsImporter.importFile(
 				TestPropsValues.getUserId(), _group2.getGroupId(), 0, file,
-				false);
+				LayoutsImportStrategy.DO_NOT_OVERWRITE, true);
 		}
 		finally {
 			ServiceContextThreadLocal.popServiceContext();
@@ -304,7 +309,7 @@ public class LayoutsImporterTest {
 			TestPropsValues.getUserId(), groupId,
 			fragmentCollection.getFragmentCollectionId(), key, name,
 			StringPool.BLANK, html, StringPool.BLANK, false, StringPool.BLANK,
-			null, 0, FragmentConstants.TYPE_COMPONENT, null,
+			null, 0, false, FragmentConstants.TYPE_COMPONENT, null,
 			WorkflowConstants.STATUS_APPROVED, serviceContext);
 	}
 

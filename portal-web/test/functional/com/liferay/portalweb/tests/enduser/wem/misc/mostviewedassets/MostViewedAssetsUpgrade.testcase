@@ -1,10 +1,13 @@
 @component-name = "portal-upgrades"
 definition {
 
+	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.component.names = "Most Viewed Assets,Upgrades WEM";
-	property testray.main.component.name = "Upgrades WEM";
+	property test.liferay.virtual.instance = "false";
+	property test.run.type = "single";
+	property testray.component.names = "Upgrades WEM";
+	property testray.main.component.name = "Asset Publisher Widget";
 
 	setUp {
 		SignIn.signIn();
@@ -16,7 +19,7 @@ definition {
 		SearchAdministration.executeReindex();
 	}
 
-	@description = "This is a test for LPS-125952. View displayed assets on Most Viewed Assets widget."
+	@description = "This is a test for LPS-125952. View displayed assets on Most Viewed Assets widget after upgrade from 706."
 	@priority = 4
 	test ViewDisplayedAssetsOnMostViewedAssetsAfterUpgrade706 {
 		property data.archive.type = "data-archive-most-viewed-assets";
@@ -26,7 +29,7 @@ definition {
 		ValidateMostViewedAssetsUpgrade.viewOrderOfAssetsOnMostedViewedAssets();
 	}
 
-	@description = "This is a test for LPS-125952. View displayed assets on Most Viewed Assets widget."
+	@description = "This is a test for LPS-125952. View displayed assets on Most Viewed Assets widget after upgred from 701016."
 	@priority = 4
 	test ViewDisplayedAssetsOnMostViewedAssetsAfterUpgrade701016 {
 		property data.archive.type = "data-archive-most-viewed-assets";

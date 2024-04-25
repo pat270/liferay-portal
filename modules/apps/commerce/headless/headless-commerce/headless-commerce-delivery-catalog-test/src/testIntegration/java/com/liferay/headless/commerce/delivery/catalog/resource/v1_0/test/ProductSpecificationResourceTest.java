@@ -10,6 +10,7 @@ import com.liferay.commerce.product.model.CPDefinition;
 import com.liferay.commerce.product.model.CPDefinitionSpecificationOptionValue;
 import com.liferay.commerce.product.model.CPOptionCategory;
 import com.liferay.commerce.product.model.CPSpecificationOption;
+import com.liferay.commerce.product.model.CProduct;
 import com.liferay.commerce.product.model.CommerceChannel;
 import com.liferay.commerce.product.service.CPDefinitionSpecificationOptionValueLocalService;
 import com.liferay.commerce.product.service.CPOptionCategoryLocalService;
@@ -66,7 +67,8 @@ public class ProductSpecificationResourceTest
 				_user.getUserId(), _cpOptionCategory.getCPOptionCategoryId(),
 				RandomTestUtil.randomLocaleStringMap(),
 				RandomTestUtil.randomLocaleStringMap(), true,
-				RandomTestUtil.randomString(), _serviceContext);
+				RandomTestUtil.randomString(), RandomTestUtil.randomDouble(),
+				_serviceContext);
 	}
 
 	@Override
@@ -85,6 +87,36 @@ public class ProductSpecificationResourceTest
 				value = StringUtil.toLowerCase(RandomTestUtil.randomString());
 			}
 		};
+	}
+
+	@Override
+	protected ProductSpecification
+			testGetChannelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeProductSpecificationsPage_addProductSpecification(
+				String channelExternalReferenceCode,
+				String productExternalReferenceCode,
+				ProductSpecification productSpecification)
+		throws Exception {
+
+		return _addCPDefinitionSpecificationOptionValue(
+			_cpDefinition.getCProductId(), productSpecification);
+	}
+
+	@Override
+	protected String
+			testGetChannelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeProductSpecificationsPage_getChannelExternalReferenceCode()
+		throws Exception {
+
+		return _commerceChannel.getExternalReferenceCode();
+	}
+
+	@Override
+	protected String
+			testGetChannelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeProductSpecificationsPage_getProductExternalReferenceCode()
+		throws Exception {
+
+		CProduct cProduct = _cpDefinition.getCProduct();
+
+		return cProduct.getExternalReferenceCode();
 	}
 
 	@Override
@@ -132,8 +164,9 @@ public class ProductSpecificationResourceTest
 						_cpDefinition.getCPDefinitionId(),
 						productSpecification.getSpecificationId(),
 						productSpecification.getOptionCategoryId(),
+						productSpecification.getPriority(),
 						RandomTestUtil.randomLocaleStringMap(),
-						productSpecification.getPriority(), _serviceContext);
+						_serviceContext);
 
 		_cpDefinitionSpecificationOptionValues.add(
 			cpDefinitionSpecificationOptionValue);

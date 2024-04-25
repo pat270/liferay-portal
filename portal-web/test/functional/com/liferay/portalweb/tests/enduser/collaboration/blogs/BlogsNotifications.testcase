@@ -1,4 +1,4 @@
-@component-name = "portal-lima"
+@component-name = "portal-content-management"
 definition {
 
 	property portal.acceptance = "true";
@@ -72,7 +72,7 @@ definition {
 	}
 
 	@description = "This checks that an administrator will receive a notification when a blog entry is flagged."
-	@priority = 4
+	@priority = 3
 	@refactordone
 	test CanViewEmailNotificationForFlaggedEntry {
 		property test.smtp.server.enabled = "true";
@@ -101,7 +101,7 @@ definition {
 			subject = "Inappropriate Content Flagged in ${siteName}");
 	}
 
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanViewEmailNotificationsAfterAddingAndUpdatingEntry {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
@@ -330,7 +330,7 @@ definition {
 
 		// We need to wait for the system time to pass by 1 minute in order for a scheduled blog entry to be published. There is currently no easy way to manipulate the system time in CI for automation. 1 minute is the shortest value we can set while ensuring the stability of the test. See LPS-157957.
 
-		Pause(locator1 = 60000);
+		Pause(value1 = 60000);
 
 		MockMock.viewMail(
 			asset = "Test Test Updated",

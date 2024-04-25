@@ -8,8 +8,6 @@
 <%@ include file="/init.jsp" %>
 
 <%
-String redirect = ParamUtil.getString(request, "redirect");
-
 CPOptionDisplayContext cpOptionDisplayContext = (CPOptionDisplayContext)request.getAttribute(WebKeys.PORTLET_DISPLAY_CONTEXT);
 
 CPOption cpOption = cpOptionDisplayContext.getCPOption();
@@ -17,13 +15,7 @@ CPOption cpOption = cpOptionDisplayContext.getCPOption();
 long cpOptionId = cpOptionDisplayContext.getCPOptionId();
 
 portletDisplay.setShowBackIcon(true);
-
-if (Validator.isNull(redirect)) {
-	portletDisplay.setURLBack(String.valueOf(renderResponse.createRenderURL()));
-}
-else {
-	portletDisplay.setURLBack(redirect);
-}
+portletDisplay.setURLBack(String.valueOf(renderResponse.createRenderURL()));
 %>
 
 <portlet:actionURL name="/cp_options/edit_cp_option" var="editOptionActionURL" />
@@ -55,7 +47,7 @@ else {
 		>
 
 			<%
-			List<DDMFormFieldType> ddmFormFieldTypes = cpOptionDisplayContext.getDDMFormFieldTypes();
+			List<CommerceOptionType> commerceOptionTypes = cpOptionDisplayContext.getCommerceOptionTypes();
 			%>
 
 			<liferay-ui:error-marker
@@ -72,13 +64,13 @@ else {
 
 				<aui:input name="description" wrapperCssClass="commerce-product-option-description" />
 
-				<aui:select label="option-field-type" name="DDMFormFieldTypeName" showEmptyOption="<%= true %>">
+				<aui:select label="option-field-type" name="commerceOptionTypeKey" showEmptyOption="<%= true %>">
 
 					<%
-					for (DDMFormFieldType ddmFormFieldType : ddmFormFieldTypes) {
+					for (CommerceOptionType commerceOptionType : commerceOptionTypes) {
 					%>
 
-						<aui:option label="<%= cpOptionDisplayContext.getDDMFormFieldTypeLabel(ddmFormFieldType, locale) %>" selected="<%= (cpOption != null) && cpOption.getDDMFormFieldTypeName().equals(ddmFormFieldType.getName()) %>" value="<%= ddmFormFieldType.getName() %>" />
+						<aui:option label="<%= commerceOptionType.getLabel(locale) %>" selected="<%= (cpOption != null) && cpOption.getCommerceOptionTypeKey().equals(commerceOptionType.getKey()) %>" value="<%= commerceOptionType.getKey() %>" />
 
 					<%
 					}
@@ -126,5 +118,5 @@ else {
 </aui:form>
 
 <liferay-frontend:component
-	module="js/edit_cp_option_and_value"
+	module="{editCpOptionAndValue} from commerce-product-options-web"
 />

@@ -23,12 +23,18 @@ import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
+import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.sanitizer.Sanitizer;
+import com.liferay.portal.kernel.sanitizer.SanitizerException;
+import com.liferay.portal.kernel.sanitizer.SanitizerUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
+import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PropsKeys;
@@ -37,7 +43,7 @@ import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.kernel.uuid.PortalUUID;
+import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 
 import java.io.Serializable;
 
@@ -2457,6 +2463,1072 @@ public class ObjectRelationshipPersistenceImpl
 	private static final String _FINDER_COLUMN_OBJECTFIELDID2_OBJECTFIELDID2_2 =
 		"objectRelationship.objectFieldId2 = ?";
 
+	private FinderPath _finderPathWithPaginationFindByParameterObjectFieldId;
+	private FinderPath _finderPathWithoutPaginationFindByParameterObjectFieldId;
+	private FinderPath _finderPathCountByParameterObjectFieldId;
+
+	/**
+	 * Returns all the object relationships where parameterObjectFieldId = &#63;.
+	 *
+	 * @param parameterObjectFieldId the parameter object field ID
+	 * @return the matching object relationships
+	 */
+	@Override
+	public List<ObjectRelationship> findByParameterObjectFieldId(
+		long parameterObjectFieldId) {
+
+		return findByParameterObjectFieldId(
+			parameterObjectFieldId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+	}
+
+	/**
+	 * Returns a range of all the object relationships where parameterObjectFieldId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectRelationshipModelImpl</code>.
+	 * </p>
+	 *
+	 * @param parameterObjectFieldId the parameter object field ID
+	 * @param start the lower bound of the range of object relationships
+	 * @param end the upper bound of the range of object relationships (not inclusive)
+	 * @return the range of matching object relationships
+	 */
+	@Override
+	public List<ObjectRelationship> findByParameterObjectFieldId(
+		long parameterObjectFieldId, int start, int end) {
+
+		return findByParameterObjectFieldId(
+			parameterObjectFieldId, start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the object relationships where parameterObjectFieldId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectRelationshipModelImpl</code>.
+	 * </p>
+	 *
+	 * @param parameterObjectFieldId the parameter object field ID
+	 * @param start the lower bound of the range of object relationships
+	 * @param end the upper bound of the range of object relationships (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching object relationships
+	 */
+	@Override
+	public List<ObjectRelationship> findByParameterObjectFieldId(
+		long parameterObjectFieldId, int start, int end,
+		OrderByComparator<ObjectRelationship> orderByComparator) {
+
+		return findByParameterObjectFieldId(
+			parameterObjectFieldId, start, end, orderByComparator, true);
+	}
+
+	/**
+	 * Returns an ordered range of all the object relationships where parameterObjectFieldId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectRelationshipModelImpl</code>.
+	 * </p>
+	 *
+	 * @param parameterObjectFieldId the parameter object field ID
+	 * @param start the lower bound of the range of object relationships
+	 * @param end the upper bound of the range of object relationships (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the ordered range of matching object relationships
+	 */
+	@Override
+	public List<ObjectRelationship> findByParameterObjectFieldId(
+		long parameterObjectFieldId, int start, int end,
+		OrderByComparator<ObjectRelationship> orderByComparator,
+		boolean useFinderCache) {
+
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
+
+		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
+			(orderByComparator == null)) {
+
+			if (useFinderCache) {
+				finderPath =
+					_finderPathWithoutPaginationFindByParameterObjectFieldId;
+				finderArgs = new Object[] {parameterObjectFieldId};
+			}
+		}
+		else if (useFinderCache) {
+			finderPath = _finderPathWithPaginationFindByParameterObjectFieldId;
+			finderArgs = new Object[] {
+				parameterObjectFieldId, start, end, orderByComparator
+			};
+		}
+
+		List<ObjectRelationship> list = null;
+
+		if (useFinderCache) {
+			list = (List<ObjectRelationship>)finderCache.getResult(
+				finderPath, finderArgs, this);
+
+			if ((list != null) && !list.isEmpty()) {
+				for (ObjectRelationship objectRelationship : list) {
+					if (parameterObjectFieldId !=
+							objectRelationship.getParameterObjectFieldId()) {
+
+						list = null;
+
+						break;
+					}
+				}
+			}
+		}
+
+		if (list == null) {
+			StringBundler sb = null;
+
+			if (orderByComparator != null) {
+				sb = new StringBundler(
+					3 + (orderByComparator.getOrderByFields().length * 2));
+			}
+			else {
+				sb = new StringBundler(3);
+			}
+
+			sb.append(_SQL_SELECT_OBJECTRELATIONSHIP_WHERE);
+
+			sb.append(
+				_FINDER_COLUMN_PARAMETEROBJECTFIELDID_PARAMETEROBJECTFIELDID_2);
+
+			if (orderByComparator != null) {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+			}
+			else {
+				sb.append(ObjectRelationshipModelImpl.ORDER_BY_JPQL);
+			}
+
+			String sql = sb.toString();
+
+			Session session = null;
+
+			try {
+				session = openSession();
+
+				Query query = session.createQuery(sql);
+
+				QueryPos queryPos = QueryPos.getInstance(query);
+
+				queryPos.add(parameterObjectFieldId);
+
+				list = (List<ObjectRelationship>)QueryUtil.list(
+					query, getDialect(), start, end);
+
+				cacheResult(list);
+
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
+			}
+			catch (Exception exception) {
+				throw processException(exception);
+			}
+			finally {
+				closeSession(session);
+			}
+		}
+
+		return list;
+	}
+
+	/**
+	 * Returns the first object relationship in the ordered set where parameterObjectFieldId = &#63;.
+	 *
+	 * @param parameterObjectFieldId the parameter object field ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching object relationship
+	 * @throws NoSuchObjectRelationshipException if a matching object relationship could not be found
+	 */
+	@Override
+	public ObjectRelationship findByParameterObjectFieldId_First(
+			long parameterObjectFieldId,
+			OrderByComparator<ObjectRelationship> orderByComparator)
+		throws NoSuchObjectRelationshipException {
+
+		ObjectRelationship objectRelationship =
+			fetchByParameterObjectFieldId_First(
+				parameterObjectFieldId, orderByComparator);
+
+		if (objectRelationship != null) {
+			return objectRelationship;
+		}
+
+		StringBundler sb = new StringBundler(4);
+
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
+
+		sb.append("parameterObjectFieldId=");
+		sb.append(parameterObjectFieldId);
+
+		sb.append("}");
+
+		throw new NoSuchObjectRelationshipException(sb.toString());
+	}
+
+	/**
+	 * Returns the first object relationship in the ordered set where parameterObjectFieldId = &#63;.
+	 *
+	 * @param parameterObjectFieldId the parameter object field ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching object relationship, or <code>null</code> if a matching object relationship could not be found
+	 */
+	@Override
+	public ObjectRelationship fetchByParameterObjectFieldId_First(
+		long parameterObjectFieldId,
+		OrderByComparator<ObjectRelationship> orderByComparator) {
+
+		List<ObjectRelationship> list = findByParameterObjectFieldId(
+			parameterObjectFieldId, 0, 1, orderByComparator);
+
+		if (!list.isEmpty()) {
+			return list.get(0);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the last object relationship in the ordered set where parameterObjectFieldId = &#63;.
+	 *
+	 * @param parameterObjectFieldId the parameter object field ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching object relationship
+	 * @throws NoSuchObjectRelationshipException if a matching object relationship could not be found
+	 */
+	@Override
+	public ObjectRelationship findByParameterObjectFieldId_Last(
+			long parameterObjectFieldId,
+			OrderByComparator<ObjectRelationship> orderByComparator)
+		throws NoSuchObjectRelationshipException {
+
+		ObjectRelationship objectRelationship =
+			fetchByParameterObjectFieldId_Last(
+				parameterObjectFieldId, orderByComparator);
+
+		if (objectRelationship != null) {
+			return objectRelationship;
+		}
+
+		StringBundler sb = new StringBundler(4);
+
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
+
+		sb.append("parameterObjectFieldId=");
+		sb.append(parameterObjectFieldId);
+
+		sb.append("}");
+
+		throw new NoSuchObjectRelationshipException(sb.toString());
+	}
+
+	/**
+	 * Returns the last object relationship in the ordered set where parameterObjectFieldId = &#63;.
+	 *
+	 * @param parameterObjectFieldId the parameter object field ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching object relationship, or <code>null</code> if a matching object relationship could not be found
+	 */
+	@Override
+	public ObjectRelationship fetchByParameterObjectFieldId_Last(
+		long parameterObjectFieldId,
+		OrderByComparator<ObjectRelationship> orderByComparator) {
+
+		int count = countByParameterObjectFieldId(parameterObjectFieldId);
+
+		if (count == 0) {
+			return null;
+		}
+
+		List<ObjectRelationship> list = findByParameterObjectFieldId(
+			parameterObjectFieldId, count - 1, count, orderByComparator);
+
+		if (!list.isEmpty()) {
+			return list.get(0);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the object relationships before and after the current object relationship in the ordered set where parameterObjectFieldId = &#63;.
+	 *
+	 * @param objectRelationshipId the primary key of the current object relationship
+	 * @param parameterObjectFieldId the parameter object field ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next object relationship
+	 * @throws NoSuchObjectRelationshipException if a object relationship with the primary key could not be found
+	 */
+	@Override
+	public ObjectRelationship[] findByParameterObjectFieldId_PrevAndNext(
+			long objectRelationshipId, long parameterObjectFieldId,
+			OrderByComparator<ObjectRelationship> orderByComparator)
+		throws NoSuchObjectRelationshipException {
+
+		ObjectRelationship objectRelationship = findByPrimaryKey(
+			objectRelationshipId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			ObjectRelationship[] array = new ObjectRelationshipImpl[3];
+
+			array[0] = getByParameterObjectFieldId_PrevAndNext(
+				session, objectRelationship, parameterObjectFieldId,
+				orderByComparator, true);
+
+			array[1] = objectRelationship;
+
+			array[2] = getByParameterObjectFieldId_PrevAndNext(
+				session, objectRelationship, parameterObjectFieldId,
+				orderByComparator, false);
+
+			return array;
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected ObjectRelationship getByParameterObjectFieldId_PrevAndNext(
+		Session session, ObjectRelationship objectRelationship,
+		long parameterObjectFieldId,
+		OrderByComparator<ObjectRelationship> orderByComparator,
+		boolean previous) {
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			sb = new StringBundler(3);
+		}
+
+		sb.append(_SQL_SELECT_OBJECTRELATIONSHIP_WHERE);
+
+		sb.append(
+			_FINDER_COLUMN_PARAMETEROBJECTFIELDID_PARAMETEROBJECTFIELDID_2);
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				sb.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			sb.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC);
+					}
+					else {
+						sb.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			sb.append(ObjectRelationshipModelImpl.ORDER_BY_JPQL);
+		}
+
+		String sql = sb.toString();
+
+		Query query = session.createQuery(sql);
+
+		query.setFirstResult(0);
+		query.setMaxResults(2);
+
+		QueryPos queryPos = QueryPos.getInstance(query);
+
+		queryPos.add(parameterObjectFieldId);
+
+		if (orderByComparator != null) {
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(
+						objectRelationship)) {
+
+				queryPos.add(orderByConditionValue);
+			}
+		}
+
+		List<ObjectRelationship> list = query.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
+	 * Removes all the object relationships where parameterObjectFieldId = &#63; from the database.
+	 *
+	 * @param parameterObjectFieldId the parameter object field ID
+	 */
+	@Override
+	public void removeByParameterObjectFieldId(long parameterObjectFieldId) {
+		for (ObjectRelationship objectRelationship :
+				findByParameterObjectFieldId(
+					parameterObjectFieldId, QueryUtil.ALL_POS,
+					QueryUtil.ALL_POS, null)) {
+
+			remove(objectRelationship);
+		}
+	}
+
+	/**
+	 * Returns the number of object relationships where parameterObjectFieldId = &#63;.
+	 *
+	 * @param parameterObjectFieldId the parameter object field ID
+	 * @return the number of matching object relationships
+	 */
+	@Override
+	public int countByParameterObjectFieldId(long parameterObjectFieldId) {
+		FinderPath finderPath = _finderPathCountByParameterObjectFieldId;
+
+		Object[] finderArgs = new Object[] {parameterObjectFieldId};
+
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+
+		if (count == null) {
+			StringBundler sb = new StringBundler(2);
+
+			sb.append(_SQL_COUNT_OBJECTRELATIONSHIP_WHERE);
+
+			sb.append(
+				_FINDER_COLUMN_PARAMETEROBJECTFIELDID_PARAMETEROBJECTFIELDID_2);
+
+			String sql = sb.toString();
+
+			Session session = null;
+
+			try {
+				session = openSession();
+
+				Query query = session.createQuery(sql);
+
+				QueryPos queryPos = QueryPos.getInstance(query);
+
+				queryPos.add(parameterObjectFieldId);
+
+				count = (Long)query.uniqueResult();
+
+				finderCache.putResult(finderPath, finderArgs, count);
+			}
+			catch (Exception exception) {
+				throw processException(exception);
+			}
+			finally {
+				closeSession(session);
+			}
+		}
+
+		return count.intValue();
+	}
+
+	private static final String
+		_FINDER_COLUMN_PARAMETEROBJECTFIELDID_PARAMETEROBJECTFIELDID_2 =
+			"objectRelationship.parameterObjectFieldId = ?";
+
+	private FinderPath _finderPathWithPaginationFindByODI1_E;
+	private FinderPath _finderPathWithoutPaginationFindByODI1_E;
+	private FinderPath _finderPathCountByODI1_E;
+
+	/**
+	 * Returns all the object relationships where objectDefinitionId1 = &#63; and edge = &#63;.
+	 *
+	 * @param objectDefinitionId1 the object definition id1
+	 * @param edge the edge
+	 * @return the matching object relationships
+	 */
+	@Override
+	public List<ObjectRelationship> findByODI1_E(
+		long objectDefinitionId1, boolean edge) {
+
+		return findByODI1_E(
+			objectDefinitionId1, edge, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			null);
+	}
+
+	/**
+	 * Returns a range of all the object relationships where objectDefinitionId1 = &#63; and edge = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectRelationshipModelImpl</code>.
+	 * </p>
+	 *
+	 * @param objectDefinitionId1 the object definition id1
+	 * @param edge the edge
+	 * @param start the lower bound of the range of object relationships
+	 * @param end the upper bound of the range of object relationships (not inclusive)
+	 * @return the range of matching object relationships
+	 */
+	@Override
+	public List<ObjectRelationship> findByODI1_E(
+		long objectDefinitionId1, boolean edge, int start, int end) {
+
+		return findByODI1_E(objectDefinitionId1, edge, start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the object relationships where objectDefinitionId1 = &#63; and edge = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectRelationshipModelImpl</code>.
+	 * </p>
+	 *
+	 * @param objectDefinitionId1 the object definition id1
+	 * @param edge the edge
+	 * @param start the lower bound of the range of object relationships
+	 * @param end the upper bound of the range of object relationships (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching object relationships
+	 */
+	@Override
+	public List<ObjectRelationship> findByODI1_E(
+		long objectDefinitionId1, boolean edge, int start, int end,
+		OrderByComparator<ObjectRelationship> orderByComparator) {
+
+		return findByODI1_E(
+			objectDefinitionId1, edge, start, end, orderByComparator, true);
+	}
+
+	/**
+	 * Returns an ordered range of all the object relationships where objectDefinitionId1 = &#63; and edge = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectRelationshipModelImpl</code>.
+	 * </p>
+	 *
+	 * @param objectDefinitionId1 the object definition id1
+	 * @param edge the edge
+	 * @param start the lower bound of the range of object relationships
+	 * @param end the upper bound of the range of object relationships (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the ordered range of matching object relationships
+	 */
+	@Override
+	public List<ObjectRelationship> findByODI1_E(
+		long objectDefinitionId1, boolean edge, int start, int end,
+		OrderByComparator<ObjectRelationship> orderByComparator,
+		boolean useFinderCache) {
+
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
+
+		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
+			(orderByComparator == null)) {
+
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByODI1_E;
+				finderArgs = new Object[] {objectDefinitionId1, edge};
+			}
+		}
+		else if (useFinderCache) {
+			finderPath = _finderPathWithPaginationFindByODI1_E;
+			finderArgs = new Object[] {
+				objectDefinitionId1, edge, start, end, orderByComparator
+			};
+		}
+
+		List<ObjectRelationship> list = null;
+
+		if (useFinderCache) {
+			list = (List<ObjectRelationship>)finderCache.getResult(
+				finderPath, finderArgs, this);
+
+			if ((list != null) && !list.isEmpty()) {
+				for (ObjectRelationship objectRelationship : list) {
+					if ((objectDefinitionId1 !=
+							objectRelationship.getObjectDefinitionId1()) ||
+						(edge != objectRelationship.isEdge())) {
+
+						list = null;
+
+						break;
+					}
+				}
+			}
+		}
+
+		if (list == null) {
+			StringBundler sb = null;
+
+			if (orderByComparator != null) {
+				sb = new StringBundler(
+					4 + (orderByComparator.getOrderByFields().length * 2));
+			}
+			else {
+				sb = new StringBundler(4);
+			}
+
+			sb.append(_SQL_SELECT_OBJECTRELATIONSHIP_WHERE);
+
+			sb.append(_FINDER_COLUMN_ODI1_E_OBJECTDEFINITIONID1_2);
+
+			sb.append(_FINDER_COLUMN_ODI1_E_EDGE_2);
+
+			if (orderByComparator != null) {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+			}
+			else {
+				sb.append(ObjectRelationshipModelImpl.ORDER_BY_JPQL);
+			}
+
+			String sql = sb.toString();
+
+			Session session = null;
+
+			try {
+				session = openSession();
+
+				Query query = session.createQuery(sql);
+
+				QueryPos queryPos = QueryPos.getInstance(query);
+
+				queryPos.add(objectDefinitionId1);
+
+				queryPos.add(edge);
+
+				list = (List<ObjectRelationship>)QueryUtil.list(
+					query, getDialect(), start, end);
+
+				cacheResult(list);
+
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
+			}
+			catch (Exception exception) {
+				throw processException(exception);
+			}
+			finally {
+				closeSession(session);
+			}
+		}
+
+		return list;
+	}
+
+	/**
+	 * Returns the first object relationship in the ordered set where objectDefinitionId1 = &#63; and edge = &#63;.
+	 *
+	 * @param objectDefinitionId1 the object definition id1
+	 * @param edge the edge
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching object relationship
+	 * @throws NoSuchObjectRelationshipException if a matching object relationship could not be found
+	 */
+	@Override
+	public ObjectRelationship findByODI1_E_First(
+			long objectDefinitionId1, boolean edge,
+			OrderByComparator<ObjectRelationship> orderByComparator)
+		throws NoSuchObjectRelationshipException {
+
+		ObjectRelationship objectRelationship = fetchByODI1_E_First(
+			objectDefinitionId1, edge, orderByComparator);
+
+		if (objectRelationship != null) {
+			return objectRelationship;
+		}
+
+		StringBundler sb = new StringBundler(6);
+
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
+
+		sb.append("objectDefinitionId1=");
+		sb.append(objectDefinitionId1);
+
+		sb.append(", edge=");
+		sb.append(edge);
+
+		sb.append("}");
+
+		throw new NoSuchObjectRelationshipException(sb.toString());
+	}
+
+	/**
+	 * Returns the first object relationship in the ordered set where objectDefinitionId1 = &#63; and edge = &#63;.
+	 *
+	 * @param objectDefinitionId1 the object definition id1
+	 * @param edge the edge
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching object relationship, or <code>null</code> if a matching object relationship could not be found
+	 */
+	@Override
+	public ObjectRelationship fetchByODI1_E_First(
+		long objectDefinitionId1, boolean edge,
+		OrderByComparator<ObjectRelationship> orderByComparator) {
+
+		List<ObjectRelationship> list = findByODI1_E(
+			objectDefinitionId1, edge, 0, 1, orderByComparator);
+
+		if (!list.isEmpty()) {
+			return list.get(0);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the last object relationship in the ordered set where objectDefinitionId1 = &#63; and edge = &#63;.
+	 *
+	 * @param objectDefinitionId1 the object definition id1
+	 * @param edge the edge
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching object relationship
+	 * @throws NoSuchObjectRelationshipException if a matching object relationship could not be found
+	 */
+	@Override
+	public ObjectRelationship findByODI1_E_Last(
+			long objectDefinitionId1, boolean edge,
+			OrderByComparator<ObjectRelationship> orderByComparator)
+		throws NoSuchObjectRelationshipException {
+
+		ObjectRelationship objectRelationship = fetchByODI1_E_Last(
+			objectDefinitionId1, edge, orderByComparator);
+
+		if (objectRelationship != null) {
+			return objectRelationship;
+		}
+
+		StringBundler sb = new StringBundler(6);
+
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
+
+		sb.append("objectDefinitionId1=");
+		sb.append(objectDefinitionId1);
+
+		sb.append(", edge=");
+		sb.append(edge);
+
+		sb.append("}");
+
+		throw new NoSuchObjectRelationshipException(sb.toString());
+	}
+
+	/**
+	 * Returns the last object relationship in the ordered set where objectDefinitionId1 = &#63; and edge = &#63;.
+	 *
+	 * @param objectDefinitionId1 the object definition id1
+	 * @param edge the edge
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching object relationship, or <code>null</code> if a matching object relationship could not be found
+	 */
+	@Override
+	public ObjectRelationship fetchByODI1_E_Last(
+		long objectDefinitionId1, boolean edge,
+		OrderByComparator<ObjectRelationship> orderByComparator) {
+
+		int count = countByODI1_E(objectDefinitionId1, edge);
+
+		if (count == 0) {
+			return null;
+		}
+
+		List<ObjectRelationship> list = findByODI1_E(
+			objectDefinitionId1, edge, count - 1, count, orderByComparator);
+
+		if (!list.isEmpty()) {
+			return list.get(0);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the object relationships before and after the current object relationship in the ordered set where objectDefinitionId1 = &#63; and edge = &#63;.
+	 *
+	 * @param objectRelationshipId the primary key of the current object relationship
+	 * @param objectDefinitionId1 the object definition id1
+	 * @param edge the edge
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next object relationship
+	 * @throws NoSuchObjectRelationshipException if a object relationship with the primary key could not be found
+	 */
+	@Override
+	public ObjectRelationship[] findByODI1_E_PrevAndNext(
+			long objectRelationshipId, long objectDefinitionId1, boolean edge,
+			OrderByComparator<ObjectRelationship> orderByComparator)
+		throws NoSuchObjectRelationshipException {
+
+		ObjectRelationship objectRelationship = findByPrimaryKey(
+			objectRelationshipId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			ObjectRelationship[] array = new ObjectRelationshipImpl[3];
+
+			array[0] = getByODI1_E_PrevAndNext(
+				session, objectRelationship, objectDefinitionId1, edge,
+				orderByComparator, true);
+
+			array[1] = objectRelationship;
+
+			array[2] = getByODI1_E_PrevAndNext(
+				session, objectRelationship, objectDefinitionId1, edge,
+				orderByComparator, false);
+
+			return array;
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected ObjectRelationship getByODI1_E_PrevAndNext(
+		Session session, ObjectRelationship objectRelationship,
+		long objectDefinitionId1, boolean edge,
+		OrderByComparator<ObjectRelationship> orderByComparator,
+		boolean previous) {
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			sb = new StringBundler(4);
+		}
+
+		sb.append(_SQL_SELECT_OBJECTRELATIONSHIP_WHERE);
+
+		sb.append(_FINDER_COLUMN_ODI1_E_OBJECTDEFINITIONID1_2);
+
+		sb.append(_FINDER_COLUMN_ODI1_E_EDGE_2);
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				sb.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			sb.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC);
+					}
+					else {
+						sb.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			sb.append(ObjectRelationshipModelImpl.ORDER_BY_JPQL);
+		}
+
+		String sql = sb.toString();
+
+		Query query = session.createQuery(sql);
+
+		query.setFirstResult(0);
+		query.setMaxResults(2);
+
+		QueryPos queryPos = QueryPos.getInstance(query);
+
+		queryPos.add(objectDefinitionId1);
+
+		queryPos.add(edge);
+
+		if (orderByComparator != null) {
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(
+						objectRelationship)) {
+
+				queryPos.add(orderByConditionValue);
+			}
+		}
+
+		List<ObjectRelationship> list = query.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
+	 * Removes all the object relationships where objectDefinitionId1 = &#63; and edge = &#63; from the database.
+	 *
+	 * @param objectDefinitionId1 the object definition id1
+	 * @param edge the edge
+	 */
+	@Override
+	public void removeByODI1_E(long objectDefinitionId1, boolean edge) {
+		for (ObjectRelationship objectRelationship :
+				findByODI1_E(
+					objectDefinitionId1, edge, QueryUtil.ALL_POS,
+					QueryUtil.ALL_POS, null)) {
+
+			remove(objectRelationship);
+		}
+	}
+
+	/**
+	 * Returns the number of object relationships where objectDefinitionId1 = &#63; and edge = &#63;.
+	 *
+	 * @param objectDefinitionId1 the object definition id1
+	 * @param edge the edge
+	 * @return the number of matching object relationships
+	 */
+	@Override
+	public int countByODI1_E(long objectDefinitionId1, boolean edge) {
+		FinderPath finderPath = _finderPathCountByODI1_E;
+
+		Object[] finderArgs = new Object[] {objectDefinitionId1, edge};
+
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+
+		if (count == null) {
+			StringBundler sb = new StringBundler(3);
+
+			sb.append(_SQL_COUNT_OBJECTRELATIONSHIP_WHERE);
+
+			sb.append(_FINDER_COLUMN_ODI1_E_OBJECTDEFINITIONID1_2);
+
+			sb.append(_FINDER_COLUMN_ODI1_E_EDGE_2);
+
+			String sql = sb.toString();
+
+			Session session = null;
+
+			try {
+				session = openSession();
+
+				Query query = session.createQuery(sql);
+
+				QueryPos queryPos = QueryPos.getInstance(query);
+
+				queryPos.add(objectDefinitionId1);
+
+				queryPos.add(edge);
+
+				count = (Long)query.uniqueResult();
+
+				finderCache.putResult(finderPath, finderArgs, count);
+			}
+			catch (Exception exception) {
+				throw processException(exception);
+			}
+			finally {
+				closeSession(session);
+			}
+		}
+
+		return count.intValue();
+	}
+
+	private static final String _FINDER_COLUMN_ODI1_E_OBJECTDEFINITIONID1_2 =
+		"objectRelationship.objectDefinitionId1 = ? AND ";
+
+	private static final String _FINDER_COLUMN_ODI1_E_EDGE_2 =
+		"objectRelationship.edge = ?";
+
 	private FinderPath _finderPathWithPaginationFindByODI1_N;
 	private FinderPath _finderPathWithoutPaginationFindByODI1_N;
 	private FinderPath _finderPathCountByODI1_N;
@@ -4138,6 +5210,586 @@ public class ObjectRelationshipPersistenceImpl
 
 	private static final String _FINDER_COLUMN_ODI2_R_REVERSE_2 =
 		"objectRelationship.reverse = ?";
+
+	private FinderPath _finderPathFetchByDTN_R;
+	private FinderPath _finderPathCountByDTN_R;
+
+	/**
+	 * Returns the object relationship where dbTableName = &#63; and reverse = &#63; or throws a <code>NoSuchObjectRelationshipException</code> if it could not be found.
+	 *
+	 * @param dbTableName the db table name
+	 * @param reverse the reverse
+	 * @return the matching object relationship
+	 * @throws NoSuchObjectRelationshipException if a matching object relationship could not be found
+	 */
+	@Override
+	public ObjectRelationship findByDTN_R(String dbTableName, boolean reverse)
+		throws NoSuchObjectRelationshipException {
+
+		ObjectRelationship objectRelationship = fetchByDTN_R(
+			dbTableName, reverse);
+
+		if (objectRelationship == null) {
+			StringBundler sb = new StringBundler(6);
+
+			sb.append(_NO_SUCH_ENTITY_WITH_KEY);
+
+			sb.append("dbTableName=");
+			sb.append(dbTableName);
+
+			sb.append(", reverse=");
+			sb.append(reverse);
+
+			sb.append("}");
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(sb.toString());
+			}
+
+			throw new NoSuchObjectRelationshipException(sb.toString());
+		}
+
+		return objectRelationship;
+	}
+
+	/**
+	 * Returns the object relationship where dbTableName = &#63; and reverse = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
+	 *
+	 * @param dbTableName the db table name
+	 * @param reverse the reverse
+	 * @return the matching object relationship, or <code>null</code> if a matching object relationship could not be found
+	 */
+	@Override
+	public ObjectRelationship fetchByDTN_R(
+		String dbTableName, boolean reverse) {
+
+		return fetchByDTN_R(dbTableName, reverse, true);
+	}
+
+	/**
+	 * Returns the object relationship where dbTableName = &#63; and reverse = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
+	 *
+	 * @param dbTableName the db table name
+	 * @param reverse the reverse
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the matching object relationship, or <code>null</code> if a matching object relationship could not be found
+	 */
+	@Override
+	public ObjectRelationship fetchByDTN_R(
+		String dbTableName, boolean reverse, boolean useFinderCache) {
+
+		dbTableName = Objects.toString(dbTableName, "");
+
+		Object[] finderArgs = null;
+
+		if (useFinderCache) {
+			finderArgs = new Object[] {dbTableName, reverse};
+		}
+
+		Object result = null;
+
+		if (useFinderCache) {
+			result = finderCache.getResult(
+				_finderPathFetchByDTN_R, finderArgs, this);
+		}
+
+		if (result instanceof ObjectRelationship) {
+			ObjectRelationship objectRelationship = (ObjectRelationship)result;
+
+			if (!Objects.equals(
+					dbTableName, objectRelationship.getDBTableName()) ||
+				(reverse != objectRelationship.isReverse())) {
+
+				result = null;
+			}
+		}
+
+		if (result == null) {
+			StringBundler sb = new StringBundler(4);
+
+			sb.append(_SQL_SELECT_OBJECTRELATIONSHIP_WHERE);
+
+			boolean bindDBTableName = false;
+
+			if (dbTableName.isEmpty()) {
+				sb.append(_FINDER_COLUMN_DTN_R_DBTABLENAME_3);
+			}
+			else {
+				bindDBTableName = true;
+
+				sb.append(_FINDER_COLUMN_DTN_R_DBTABLENAME_2);
+			}
+
+			sb.append(_FINDER_COLUMN_DTN_R_REVERSE_2);
+
+			String sql = sb.toString();
+
+			Session session = null;
+
+			try {
+				session = openSession();
+
+				Query query = session.createQuery(sql);
+
+				QueryPos queryPos = QueryPos.getInstance(query);
+
+				if (bindDBTableName) {
+					queryPos.add(dbTableName);
+				}
+
+				queryPos.add(reverse);
+
+				List<ObjectRelationship> list = query.list();
+
+				if (list.isEmpty()) {
+					if (useFinderCache) {
+						finderCache.putResult(
+							_finderPathFetchByDTN_R, finderArgs, list);
+					}
+				}
+				else {
+					if (list.size() > 1) {
+						Collections.sort(list, Collections.reverseOrder());
+
+						if (_log.isWarnEnabled()) {
+							if (!useFinderCache) {
+								finderArgs = new Object[] {
+									dbTableName, reverse
+								};
+							}
+
+							_log.warn(
+								"ObjectRelationshipPersistenceImpl.fetchByDTN_R(String, boolean, boolean) with parameters (" +
+									StringUtil.merge(finderArgs) +
+										") yields a result set with more than 1 result. This violates the logical unique restriction. There is no order guarantee on which result is returned by this finder.");
+						}
+					}
+
+					ObjectRelationship objectRelationship = list.get(0);
+
+					result = objectRelationship;
+
+					cacheResult(objectRelationship);
+				}
+			}
+			catch (Exception exception) {
+				throw processException(exception);
+			}
+			finally {
+				closeSession(session);
+			}
+		}
+
+		if (result instanceof List<?>) {
+			return null;
+		}
+		else {
+			return (ObjectRelationship)result;
+		}
+	}
+
+	/**
+	 * Removes the object relationship where dbTableName = &#63; and reverse = &#63; from the database.
+	 *
+	 * @param dbTableName the db table name
+	 * @param reverse the reverse
+	 * @return the object relationship that was removed
+	 */
+	@Override
+	public ObjectRelationship removeByDTN_R(String dbTableName, boolean reverse)
+		throws NoSuchObjectRelationshipException {
+
+		ObjectRelationship objectRelationship = findByDTN_R(
+			dbTableName, reverse);
+
+		return remove(objectRelationship);
+	}
+
+	/**
+	 * Returns the number of object relationships where dbTableName = &#63; and reverse = &#63;.
+	 *
+	 * @param dbTableName the db table name
+	 * @param reverse the reverse
+	 * @return the number of matching object relationships
+	 */
+	@Override
+	public int countByDTN_R(String dbTableName, boolean reverse) {
+		dbTableName = Objects.toString(dbTableName, "");
+
+		FinderPath finderPath = _finderPathCountByDTN_R;
+
+		Object[] finderArgs = new Object[] {dbTableName, reverse};
+
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+
+		if (count == null) {
+			StringBundler sb = new StringBundler(3);
+
+			sb.append(_SQL_COUNT_OBJECTRELATIONSHIP_WHERE);
+
+			boolean bindDBTableName = false;
+
+			if (dbTableName.isEmpty()) {
+				sb.append(_FINDER_COLUMN_DTN_R_DBTABLENAME_3);
+			}
+			else {
+				bindDBTableName = true;
+
+				sb.append(_FINDER_COLUMN_DTN_R_DBTABLENAME_2);
+			}
+
+			sb.append(_FINDER_COLUMN_DTN_R_REVERSE_2);
+
+			String sql = sb.toString();
+
+			Session session = null;
+
+			try {
+				session = openSession();
+
+				Query query = session.createQuery(sql);
+
+				QueryPos queryPos = QueryPos.getInstance(query);
+
+				if (bindDBTableName) {
+					queryPos.add(dbTableName);
+				}
+
+				queryPos.add(reverse);
+
+				count = (Long)query.uniqueResult();
+
+				finderCache.putResult(finderPath, finderArgs, count);
+			}
+			catch (Exception exception) {
+				throw processException(exception);
+			}
+			finally {
+				closeSession(session);
+			}
+		}
+
+		return count.intValue();
+	}
+
+	private static final String _FINDER_COLUMN_DTN_R_DBTABLENAME_2 =
+		"objectRelationship.dbTableName = ? AND ";
+
+	private static final String _FINDER_COLUMN_DTN_R_DBTABLENAME_3 =
+		"(objectRelationship.dbTableName IS NULL OR objectRelationship.dbTableName = '') AND ";
+
+	private static final String _FINDER_COLUMN_DTN_R_REVERSE_2 =
+		"objectRelationship.reverse = ?";
+
+	private FinderPath _finderPathFetchByERC_C_ODI1;
+	private FinderPath _finderPathCountByERC_C_ODI1;
+
+	/**
+	 * Returns the object relationship where externalReferenceCode = &#63; and companyId = &#63; and objectDefinitionId1 = &#63; or throws a <code>NoSuchObjectRelationshipException</code> if it could not be found.
+	 *
+	 * @param externalReferenceCode the external reference code
+	 * @param companyId the company ID
+	 * @param objectDefinitionId1 the object definition id1
+	 * @return the matching object relationship
+	 * @throws NoSuchObjectRelationshipException if a matching object relationship could not be found
+	 */
+	@Override
+	public ObjectRelationship findByERC_C_ODI1(
+			String externalReferenceCode, long companyId,
+			long objectDefinitionId1)
+		throws NoSuchObjectRelationshipException {
+
+		ObjectRelationship objectRelationship = fetchByERC_C_ODI1(
+			externalReferenceCode, companyId, objectDefinitionId1);
+
+		if (objectRelationship == null) {
+			StringBundler sb = new StringBundler(8);
+
+			sb.append(_NO_SUCH_ENTITY_WITH_KEY);
+
+			sb.append("externalReferenceCode=");
+			sb.append(externalReferenceCode);
+
+			sb.append(", companyId=");
+			sb.append(companyId);
+
+			sb.append(", objectDefinitionId1=");
+			sb.append(objectDefinitionId1);
+
+			sb.append("}");
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(sb.toString());
+			}
+
+			throw new NoSuchObjectRelationshipException(sb.toString());
+		}
+
+		return objectRelationship;
+	}
+
+	/**
+	 * Returns the object relationship where externalReferenceCode = &#63; and companyId = &#63; and objectDefinitionId1 = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
+	 *
+	 * @param externalReferenceCode the external reference code
+	 * @param companyId the company ID
+	 * @param objectDefinitionId1 the object definition id1
+	 * @return the matching object relationship, or <code>null</code> if a matching object relationship could not be found
+	 */
+	@Override
+	public ObjectRelationship fetchByERC_C_ODI1(
+		String externalReferenceCode, long companyId,
+		long objectDefinitionId1) {
+
+		return fetchByERC_C_ODI1(
+			externalReferenceCode, companyId, objectDefinitionId1, true);
+	}
+
+	/**
+	 * Returns the object relationship where externalReferenceCode = &#63; and companyId = &#63; and objectDefinitionId1 = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
+	 *
+	 * @param externalReferenceCode the external reference code
+	 * @param companyId the company ID
+	 * @param objectDefinitionId1 the object definition id1
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the matching object relationship, or <code>null</code> if a matching object relationship could not be found
+	 */
+	@Override
+	public ObjectRelationship fetchByERC_C_ODI1(
+		String externalReferenceCode, long companyId, long objectDefinitionId1,
+		boolean useFinderCache) {
+
+		externalReferenceCode = Objects.toString(externalReferenceCode, "");
+
+		Object[] finderArgs = null;
+
+		if (useFinderCache) {
+			finderArgs = new Object[] {
+				externalReferenceCode, companyId, objectDefinitionId1
+			};
+		}
+
+		Object result = null;
+
+		if (useFinderCache) {
+			result = finderCache.getResult(
+				_finderPathFetchByERC_C_ODI1, finderArgs, this);
+		}
+
+		if (result instanceof ObjectRelationship) {
+			ObjectRelationship objectRelationship = (ObjectRelationship)result;
+
+			if (!Objects.equals(
+					externalReferenceCode,
+					objectRelationship.getExternalReferenceCode()) ||
+				(companyId != objectRelationship.getCompanyId()) ||
+				(objectDefinitionId1 !=
+					objectRelationship.getObjectDefinitionId1())) {
+
+				result = null;
+			}
+		}
+
+		if (result == null) {
+			StringBundler sb = new StringBundler(5);
+
+			sb.append(_SQL_SELECT_OBJECTRELATIONSHIP_WHERE);
+
+			boolean bindExternalReferenceCode = false;
+
+			if (externalReferenceCode.isEmpty()) {
+				sb.append(_FINDER_COLUMN_ERC_C_ODI1_EXTERNALREFERENCECODE_3);
+			}
+			else {
+				bindExternalReferenceCode = true;
+
+				sb.append(_FINDER_COLUMN_ERC_C_ODI1_EXTERNALREFERENCECODE_2);
+			}
+
+			sb.append(_FINDER_COLUMN_ERC_C_ODI1_COMPANYID_2);
+
+			sb.append(_FINDER_COLUMN_ERC_C_ODI1_OBJECTDEFINITIONID1_2);
+
+			String sql = sb.toString();
+
+			Session session = null;
+
+			try {
+				session = openSession();
+
+				Query query = session.createQuery(sql);
+
+				QueryPos queryPos = QueryPos.getInstance(query);
+
+				if (bindExternalReferenceCode) {
+					queryPos.add(externalReferenceCode);
+				}
+
+				queryPos.add(companyId);
+
+				queryPos.add(objectDefinitionId1);
+
+				List<ObjectRelationship> list = query.list();
+
+				if (list.isEmpty()) {
+					if (useFinderCache) {
+						finderCache.putResult(
+							_finderPathFetchByERC_C_ODI1, finderArgs, list);
+					}
+				}
+				else {
+					if (list.size() > 1) {
+						Collections.sort(list, Collections.reverseOrder());
+
+						if (_log.isWarnEnabled()) {
+							if (!useFinderCache) {
+								finderArgs = new Object[] {
+									externalReferenceCode, companyId,
+									objectDefinitionId1
+								};
+							}
+
+							_log.warn(
+								"ObjectRelationshipPersistenceImpl.fetchByERC_C_ODI1(String, long, long, boolean) with parameters (" +
+									StringUtil.merge(finderArgs) +
+										") yields a result set with more than 1 result. This violates the logical unique restriction. There is no order guarantee on which result is returned by this finder.");
+						}
+					}
+
+					ObjectRelationship objectRelationship = list.get(0);
+
+					result = objectRelationship;
+
+					cacheResult(objectRelationship);
+				}
+			}
+			catch (Exception exception) {
+				throw processException(exception);
+			}
+			finally {
+				closeSession(session);
+			}
+		}
+
+		if (result instanceof List<?>) {
+			return null;
+		}
+		else {
+			return (ObjectRelationship)result;
+		}
+	}
+
+	/**
+	 * Removes the object relationship where externalReferenceCode = &#63; and companyId = &#63; and objectDefinitionId1 = &#63; from the database.
+	 *
+	 * @param externalReferenceCode the external reference code
+	 * @param companyId the company ID
+	 * @param objectDefinitionId1 the object definition id1
+	 * @return the object relationship that was removed
+	 */
+	@Override
+	public ObjectRelationship removeByERC_C_ODI1(
+			String externalReferenceCode, long companyId,
+			long objectDefinitionId1)
+		throws NoSuchObjectRelationshipException {
+
+		ObjectRelationship objectRelationship = findByERC_C_ODI1(
+			externalReferenceCode, companyId, objectDefinitionId1);
+
+		return remove(objectRelationship);
+	}
+
+	/**
+	 * Returns the number of object relationships where externalReferenceCode = &#63; and companyId = &#63; and objectDefinitionId1 = &#63;.
+	 *
+	 * @param externalReferenceCode the external reference code
+	 * @param companyId the company ID
+	 * @param objectDefinitionId1 the object definition id1
+	 * @return the number of matching object relationships
+	 */
+	@Override
+	public int countByERC_C_ODI1(
+		String externalReferenceCode, long companyId,
+		long objectDefinitionId1) {
+
+		externalReferenceCode = Objects.toString(externalReferenceCode, "");
+
+		FinderPath finderPath = _finderPathCountByERC_C_ODI1;
+
+		Object[] finderArgs = new Object[] {
+			externalReferenceCode, companyId, objectDefinitionId1
+		};
+
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+
+		if (count == null) {
+			StringBundler sb = new StringBundler(4);
+
+			sb.append(_SQL_COUNT_OBJECTRELATIONSHIP_WHERE);
+
+			boolean bindExternalReferenceCode = false;
+
+			if (externalReferenceCode.isEmpty()) {
+				sb.append(_FINDER_COLUMN_ERC_C_ODI1_EXTERNALREFERENCECODE_3);
+			}
+			else {
+				bindExternalReferenceCode = true;
+
+				sb.append(_FINDER_COLUMN_ERC_C_ODI1_EXTERNALREFERENCECODE_2);
+			}
+
+			sb.append(_FINDER_COLUMN_ERC_C_ODI1_COMPANYID_2);
+
+			sb.append(_FINDER_COLUMN_ERC_C_ODI1_OBJECTDEFINITIONID1_2);
+
+			String sql = sb.toString();
+
+			Session session = null;
+
+			try {
+				session = openSession();
+
+				Query query = session.createQuery(sql);
+
+				QueryPos queryPos = QueryPos.getInstance(query);
+
+				if (bindExternalReferenceCode) {
+					queryPos.add(externalReferenceCode);
+				}
+
+				queryPos.add(companyId);
+
+				queryPos.add(objectDefinitionId1);
+
+				count = (Long)query.uniqueResult();
+
+				finderCache.putResult(finderPath, finderArgs, count);
+			}
+			catch (Exception exception) {
+				throw processException(exception);
+			}
+			finally {
+				closeSession(session);
+			}
+		}
+
+		return count.intValue();
+	}
+
+	private static final String
+		_FINDER_COLUMN_ERC_C_ODI1_EXTERNALREFERENCECODE_2 =
+			"objectRelationship.externalReferenceCode = ? AND ";
+
+	private static final String
+		_FINDER_COLUMN_ERC_C_ODI1_EXTERNALREFERENCECODE_3 =
+			"(objectRelationship.externalReferenceCode IS NULL OR objectRelationship.externalReferenceCode = '') AND ";
+
+	private static final String _FINDER_COLUMN_ERC_C_ODI1_COMPANYID_2 =
+		"objectRelationship.companyId = ? AND ";
+
+	private static final String
+		_FINDER_COLUMN_ERC_C_ODI1_OBJECTDEFINITIONID1_2 =
+			"objectRelationship.objectDefinitionId1 = ?";
 
 	private FinderPath _finderPathWithPaginationFindByODI1_ODI2_T;
 	private FinderPath _finderPathWithoutPaginationFindByODI1_ODI2_T;
@@ -7786,6 +9438,7 @@ public class ObjectRelationshipPersistenceImpl
 		Map<String, String> dbColumnNames = new HashMap<String, String>();
 
 		dbColumnNames.put("uuid", "uuid_");
+		dbColumnNames.put("system", "system_");
 		dbColumnNames.put("type", "type_");
 
 		setDBColumnNames(dbColumnNames);
@@ -7812,6 +9465,23 @@ public class ObjectRelationshipPersistenceImpl
 		finderCache.putResult(
 			_finderPathFetchByObjectFieldId2,
 			new Object[] {objectRelationship.getObjectFieldId2()},
+			objectRelationship);
+
+		finderCache.putResult(
+			_finderPathFetchByDTN_R,
+			new Object[] {
+				objectRelationship.getDBTableName(),
+				objectRelationship.isReverse()
+			},
+			objectRelationship);
+
+		finderCache.putResult(
+			_finderPathFetchByERC_C_ODI1,
+			new Object[] {
+				objectRelationship.getExternalReferenceCode(),
+				objectRelationship.getCompanyId(),
+				objectRelationship.getObjectDefinitionId1()
+			},
 			objectRelationship);
 
 		finderCache.putResult(
@@ -7910,6 +9580,26 @@ public class ObjectRelationshipPersistenceImpl
 			objectRelationshipModelImpl);
 
 		args = new Object[] {
+			objectRelationshipModelImpl.getDBTableName(),
+			objectRelationshipModelImpl.isReverse()
+		};
+
+		finderCache.putResult(_finderPathCountByDTN_R, args, Long.valueOf(1));
+		finderCache.putResult(
+			_finderPathFetchByDTN_R, args, objectRelationshipModelImpl);
+
+		args = new Object[] {
+			objectRelationshipModelImpl.getExternalReferenceCode(),
+			objectRelationshipModelImpl.getCompanyId(),
+			objectRelationshipModelImpl.getObjectDefinitionId1()
+		};
+
+		finderCache.putResult(
+			_finderPathCountByERC_C_ODI1, args, Long.valueOf(1));
+		finderCache.putResult(
+			_finderPathFetchByERC_C_ODI1, args, objectRelationshipModelImpl);
+
+		args = new Object[] {
 			objectRelationshipModelImpl.getObjectDefinitionId1(),
 			objectRelationshipModelImpl.getObjectDefinitionId2(),
 			objectRelationshipModelImpl.getName(),
@@ -7937,7 +9627,7 @@ public class ObjectRelationshipPersistenceImpl
 		objectRelationship.setNew(true);
 		objectRelationship.setPrimaryKey(objectRelationshipId);
 
-		String uuid = _portalUUID.generate();
+		String uuid = PortalUUIDUtil.generate();
 
 		objectRelationship.setUuid(uuid);
 
@@ -8062,9 +9752,49 @@ public class ObjectRelationshipPersistenceImpl
 			(ObjectRelationshipModelImpl)objectRelationship;
 
 		if (Validator.isNull(objectRelationship.getUuid())) {
-			String uuid = _portalUUID.generate();
+			String uuid = PortalUUIDUtil.generate();
 
 			objectRelationship.setUuid(uuid);
+		}
+
+		if (Validator.isNull(objectRelationship.getExternalReferenceCode())) {
+			objectRelationship.setExternalReferenceCode(
+				objectRelationship.getUuid());
+		}
+		else {
+			if (!Objects.equals(
+					objectRelationshipModelImpl.getColumnOriginalValue(
+						"externalReferenceCode"),
+					objectRelationship.getExternalReferenceCode())) {
+
+				long userId = GetterUtil.getLong(
+					PrincipalThreadLocal.getName());
+
+				if (userId > 0) {
+					long companyId = objectRelationship.getCompanyId();
+
+					long groupId = 0;
+
+					long classPK = 0;
+
+					if (!isNew) {
+						classPK = objectRelationship.getPrimaryKey();
+					}
+
+					try {
+						objectRelationship.setExternalReferenceCode(
+							SanitizerUtil.sanitize(
+								companyId, groupId, userId,
+								ObjectRelationship.class.getName(), classPK,
+								ContentTypes.TEXT_HTML, Sanitizer.MODE_ALL,
+								objectRelationship.getExternalReferenceCode(),
+								null));
+					}
+					catch (SanitizerException sanitizerException) {
+						throw new SystemException(sanitizerException);
+					}
+				}
+			}
 		}
 
 		ServiceContext serviceContext =
@@ -8487,6 +10217,47 @@ public class ObjectRelationshipPersistenceImpl
 			new String[] {Long.class.getName()},
 			new String[] {"objectFieldId2"}, false);
 
+		_finderPathWithPaginationFindByParameterObjectFieldId = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findByParameterObjectFieldId",
+			new String[] {
+				Long.class.getName(), Integer.class.getName(),
+				Integer.class.getName(), OrderByComparator.class.getName()
+			},
+			new String[] {"parameterObjectFieldId"}, true);
+
+		_finderPathWithoutPaginationFindByParameterObjectFieldId =
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+				"findByParameterObjectFieldId",
+				new String[] {Long.class.getName()},
+				new String[] {"parameterObjectFieldId"}, true);
+
+		_finderPathCountByParameterObjectFieldId = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByParameterObjectFieldId",
+			new String[] {Long.class.getName()},
+			new String[] {"parameterObjectFieldId"}, false);
+
+		_finderPathWithPaginationFindByODI1_E = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByODI1_E",
+			new String[] {
+				Long.class.getName(), Boolean.class.getName(),
+				Integer.class.getName(), Integer.class.getName(),
+				OrderByComparator.class.getName()
+			},
+			new String[] {"objectDefinitionId1", "edge"}, true);
+
+		_finderPathWithoutPaginationFindByODI1_E = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByODI1_E",
+			new String[] {Long.class.getName(), Boolean.class.getName()},
+			new String[] {"objectDefinitionId1", "edge"}, true);
+
+		_finderPathCountByODI1_E = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByODI1_E",
+			new String[] {Long.class.getName(), Boolean.class.getName()},
+			new String[] {"objectDefinitionId1", "edge"}, false);
+
 		_finderPathWithPaginationFindByODI1_N = new FinderPath(
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByODI1_N",
 			new String[] {
@@ -8543,6 +10314,38 @@ public class ObjectRelationshipPersistenceImpl
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByODI2_R",
 			new String[] {Long.class.getName(), Boolean.class.getName()},
 			new String[] {"objectDefinitionId2", "reverse"}, false);
+
+		_finderPathFetchByDTN_R = new FinderPath(
+			FINDER_CLASS_NAME_ENTITY, "fetchByDTN_R",
+			new String[] {String.class.getName(), Boolean.class.getName()},
+			new String[] {"dbTableName", "reverse"}, true);
+
+		_finderPathCountByDTN_R = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByDTN_R",
+			new String[] {String.class.getName(), Boolean.class.getName()},
+			new String[] {"dbTableName", "reverse"}, false);
+
+		_finderPathFetchByERC_C_ODI1 = new FinderPath(
+			FINDER_CLASS_NAME_ENTITY, "fetchByERC_C_ODI1",
+			new String[] {
+				String.class.getName(), Long.class.getName(),
+				Long.class.getName()
+			},
+			new String[] {
+				"externalReferenceCode", "companyId", "objectDefinitionId1"
+			},
+			true);
+
+		_finderPathCountByERC_C_ODI1 = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByERC_C_ODI1",
+			new String[] {
+				String.class.getName(), Long.class.getName(),
+				Long.class.getName()
+			},
+			new String[] {
+				"externalReferenceCode", "companyId", "objectDefinitionId1"
+			},
+			false);
 
 		_finderPathWithPaginationFindByODI1_ODI2_T = new FinderPath(
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByODI1_ODI2_T",
@@ -8783,14 +10586,11 @@ public class ObjectRelationshipPersistenceImpl
 		ObjectRelationshipPersistenceImpl.class);
 
 	private static final Set<String> _badColumnNames = SetUtil.fromArray(
-		new String[] {"uuid", "type"});
+		new String[] {"uuid", "system", "type"});
 
 	@Override
 	protected FinderCache getFinderCache() {
 		return finderCache;
 	}
-
-	@Reference
-	private PortalUUID _portalUUID;
 
 }

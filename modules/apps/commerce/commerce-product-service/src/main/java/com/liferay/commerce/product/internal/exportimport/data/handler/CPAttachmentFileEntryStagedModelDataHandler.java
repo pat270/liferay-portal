@@ -115,6 +115,13 @@ public class CPAttachmentFileEntryStagedModelDataHandler
 
 		CPAttachmentFileEntry importedCPAttachmentFileEntry = null;
 
+		Map<Long, Long> fileEntryIds =
+			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
+				FileEntry.class);
+
+		long fileEntryId = MapUtil.getLong(
+			fileEntryIds, cpAttachmentFileEntry.getFileEntryId(), 0);
+
 		Date displayDate = cpAttachmentFileEntry.getDisplayDate();
 
 		int displayDateMonth = 0;
@@ -213,13 +220,13 @@ public class CPAttachmentFileEntryStagedModelDataHandler
 					externalReferenceCode, cpAttachmentFileEntry.getUserId(),
 					portletDataContext.getScopeGroupId(),
 					cpAttachmentFileEntry.getClassNameId(), classPK,
-					cpAttachmentFileEntry.getFileEntryId(),
-					cpAttachmentFileEntry.isCDNEnabled(),
+					fileEntryId, cpAttachmentFileEntry.isCDNEnabled(),
 					cpAttachmentFileEntry.getCDNURL(), displayDateMonth,
 					displayDateDay, displayDateYear, displayDateHour,
 					displayDateMinute, expirationDateMonth, expirationDateDay,
 					expirationDateYear, expirationDateHour,
 					expirationDateMinute, neverExpire,
+					cpAttachmentFileEntry.isGalleryEnabled(),
 					cpAttachmentFileEntry.getTitleMap(),
 					cpAttachmentFileEntry.getJson(),
 					cpAttachmentFileEntry.getPriority(),
@@ -230,30 +237,18 @@ public class CPAttachmentFileEntryStagedModelDataHandler
 				_cpAttachmentFileEntryLocalService.updateCPAttachmentFileEntry(
 					cpAttachmentFileEntry.getUserId(),
 					existingCPAttachmentFileEntry.getCPAttachmentFileEntryId(),
-					cpAttachmentFileEntry.getFileEntryId(),
-					cpAttachmentFileEntry.isCDNEnabled(),
+					fileEntryId, cpAttachmentFileEntry.isCDNEnabled(),
 					cpAttachmentFileEntry.getCDNURL(), displayDateMonth,
 					displayDateDay, displayDateYear, displayDateHour,
 					displayDateMinute, expirationDateMonth, expirationDateDay,
 					expirationDateYear, expirationDateHour,
 					expirationDateMinute, neverExpire,
+					cpAttachmentFileEntry.isGalleryEnabled(),
 					cpAttachmentFileEntry.getTitleMap(),
 					cpAttachmentFileEntry.getJson(),
 					cpAttachmentFileEntry.getPriority(),
 					cpAttachmentFileEntry.getType(), serviceContext);
 		}
-
-		Map<Long, Long> fileEntryIds =
-			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
-				FileEntry.class);
-
-		importedCPAttachmentFileEntry.setFileEntryId(
-			MapUtil.getLong(
-				fileEntryIds, cpAttachmentFileEntry.getFileEntryId(), 0));
-
-		importedCPAttachmentFileEntry =
-			_cpAttachmentFileEntryLocalService.updateCPAttachmentFileEntry(
-				importedCPAttachmentFileEntry);
 
 		if ((existingCPAttachmentFileEntry != null) &&
 			(existingCPAttachmentFileEntry.getFileEntryId() != 0) &&

@@ -59,7 +59,13 @@ public class PersonalMenuProductNavigationControlMenuEntry
 
 		User user = themeDisplay.getUser();
 
-		if (!user.isGuestUser() &&
+		PersonalMenuConfiguration personalMenuConfiguration =
+			_personalMenuConfigurationRegistry.
+				getCompanyPersonalMenuConfiguration(
+					themeDisplay.getCompanyId());
+
+		if (personalMenuConfiguration.showNotificationBadgeInPersonalMenu() &&
+			!user.isGuestUser() &&
 			(_userNotificationEventLocalService != null)) {
 
 			httpServletRequest.setAttribute(
@@ -81,6 +87,12 @@ public class PersonalMenuProductNavigationControlMenuEntry
 		ThemeDisplay themeDisplay =
 			(ThemeDisplay)httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
+
+		User user = themeDisplay.getUser();
+
+		if (user.isOnDemandUser()) {
+			return false;
+		}
 
 		PersonalMenuConfiguration personalMenuConfiguration =
 			_personalMenuConfigurationRegistry.

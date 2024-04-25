@@ -15,7 +15,10 @@ definition {
 
 		User.firstLoginPG();
 
-		Raylife.createRaylifeSite(siteName = ${testSiteName});
+		HeadlessSite.addSite(
+			siteName = ${testSiteName},
+			templateName = "Raylife D2C",
+			templateType = "Site Initializer");
 	}
 
 	tearDown {
@@ -35,6 +38,7 @@ definition {
 	@priority = 4
 	test CanRetrieveAllQuote {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -83,6 +87,7 @@ definition {
 	@priority = 3
 	test CanViewEmailFragmentSent {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -113,6 +118,7 @@ definition {
 	@priority = 3
 	test CanViewErrorMessageForEmailDifferent {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -135,6 +141,7 @@ definition {
 	@priority = 3
 	test CanViewErrorMessageForEmailInvalid {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -157,6 +164,7 @@ definition {
 	@priority = 3
 	test CanViewQuoteFragment {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -177,6 +185,7 @@ definition {
 	@priority = 5
 	test CanViewRetrieveAQuoteInHomePage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -191,6 +200,7 @@ definition {
 	@priority = 3
 	test ClickingStartNewQuoteGoesHomePage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -207,6 +217,7 @@ definition {
 	@priority = 4
 	test EmailEqualsApplication {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -237,6 +248,7 @@ definition {
 	@priority = 3
 	test IsContinueQuoteButtonEnabledOnRetrieveAQuote {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 
@@ -265,6 +277,7 @@ definition {
 	@priority = 4
 	test NameEqualsApplication {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		// Skip portal instance due to LRQA-79129. Unskip after it is resolved
 

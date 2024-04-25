@@ -7,6 +7,7 @@ import ClayForm, {ClayCheckbox, ClayInput} from '@clayui/form';
 import {useIsMounted} from '@liferay/frontend-js-react-web';
 import {useControlledState} from '@liferay/layout-js-components-web';
 import classNames from 'classnames';
+import {useId} from 'frontend-js-components-web';
 import {sub} from 'frontend-js-web';
 import PropTypes from 'prop-types';
 import React, {useEffect, useState} from 'react';
@@ -15,13 +16,13 @@ import {PAGINATION_ERROR_MESSAGES} from '../../../../../../../app/config/constan
 import {config} from '../../../../../../../app/config/index';
 import CollectionService from '../../../../../../../app/services/CollectionService';
 import {WarningMessage} from '../../../../../../../common/components/WarningMessage';
-import {useId} from '../../../../../../../common/hooks/useId';
 
 export function NoPaginationOptions({
 	collection,
 	displayAllItems,
 	handleConfigurationChanged,
 	initialNumberOfItems,
+	warningMessage,
 }) {
 	const collectionNumberOfItemsId = useId();
 	const isMounted = useIsMounted();
@@ -36,7 +37,6 @@ export function NoPaginationOptions({
 		if (collection) {
 			CollectionService.getCollectionItemCount({
 				collection,
-				onNetworkStatus: () => {},
 			}).then(({totalNumberOfItems}) => {
 				if (isMounted()) {
 					setTotalNumberOfItems(totalNumberOfItems);
@@ -83,7 +83,7 @@ export function NoPaginationOptions({
 	};
 
 	return (
-		<>
+		<ClayForm.Group small>
 			<div className="mb-2 pt-1">
 				<ClayCheckbox
 					checked={displayAllItems}
@@ -92,23 +92,11 @@ export function NoPaginationOptions({
 				/>
 			</div>
 
-			{displayAllItems && (
-				<p className="mt-1 small text-secondary">
-					{sub(
-						Liferay.Language.get(
-							'this-setting-can-affect-page-performance-severely-if-the-number-of-collection-items-is-above-x.-we-strongly-recommend-using-pagination-instead'
-						),
-						config.searchContainerPageMaxDelta
-					)}
-				</p>
-			)}
-
 			{!displayAllItems && (
 				<ClayForm.Group
 					className={classNames({
 						'has-warning': numberOfItemsError,
 					})}
-					small
 				>
 					<label htmlFor={collectionNumberOfItemsId}>
 						{Liferay.Language.get(
@@ -127,21 +115,31 @@ export function NoPaginationOptions({
 						value={numberOfItems || ''}
 					/>
 
+					{warningMessage ? null : (
+						<p className="mt-1 small text-secondary">
+							{sub(
+								Liferay.Language.get(
+									'setting-a-value-above-x-can-affect-page-performance-severely'
+								),
+								config.searchContainerPageMaxDelta
+							)}
+						</p>
+					)}
+
 					{numberOfItemsError && (
 						<WarningMessage message={numberOfItemsError} />
 					)}
-
-					<p className="mt-1 small text-secondary">
-						{sub(
-							Liferay.Language.get(
-								'setting-a-value-above-x-can-affect-page-performance-severely'
-							),
-							config.searchContainerPageMaxDelta
-						)}
-					</p>
 				</ClayForm.Group>
 			)}
-		</>
+
+			{warningMessage && warningMessage.description && (
+				<WarningMessage
+					fontWeight="normal"
+					message={warningMessage.description}
+					title={warningMessage.title}
+				/>
+			)}
+		</ClayForm.Group>
 	);
 }
 
@@ -150,4 +148,5 @@ NoPaginationOptions.propTypes = {
 	displayAllItems: PropTypes.bool.isRequired,
 	handleConfigurationChanged: PropTypes.func.isRequired,
 	initialNumberOfItems: PropTypes.number.isRequired,
+	warningMessage: PropTypes.object,
 };

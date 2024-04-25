@@ -3,6 +3,7 @@
 		"@liferay/frontend-icons-web": "*",
 		"frontend-js-web": "*"
 	},
+	"main": "js/index.js",
 	"name": "document-library-opener-onedrive-web",
 	"private": true,
 	"scripts": {
@@ -11,5 +12,5 @@
 		"format": "liferay-npm-scripts fix",
 		"test": "liferay-npm-scripts test"
 	},
-	"version": "3.0.45"
+	"version": "3.0.54"
 }

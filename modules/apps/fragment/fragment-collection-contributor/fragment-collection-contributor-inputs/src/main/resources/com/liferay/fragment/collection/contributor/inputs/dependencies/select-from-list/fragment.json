@@ -1,8 +1,8 @@
 {
 	"cacheable": false,
 	"fragmentEntryKey": "select-from-list",
-	"icon": "select-from-list",
-	"name": "select-from-list",
+	"icon": "select",
+	"name": "select",
 	"type": "input",
 	"typeOptions": {
 		"fieldTypes": [

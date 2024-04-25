@@ -12,9 +12,9 @@ long kbFolderClassNameId = PortalUtil.getClassNameId(KBFolderConstants.getClassN
 
 long parentResourceClassNameId = ParamUtil.getLong(request, "parentResourceClassNameId", kbFolderClassNameId);
 
-KBAdminManagementToolbarDisplayContext kbAdminManagementToolbarDisplayContext = new KBAdminManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, renderRequest, renderResponse, portletConfig);
+KBAdminManagementToolbarDisplayContext kbAdminManagementToolbarDisplayContext = new KBAdminManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, renderRequest, renderResponse, portletConfig, trashHelper);
 KBArticleURLHelper kbArticleURLHelper = new KBArticleURLHelper(renderRequest, renderResponse);
-KBArticleViewDisplayContext kbArticleViewDisplayContext = new KBArticleViewDisplayContext(request, liferayPortletRequest, liferayPortletResponse, renderResponse);
+KBArticleViewDisplayContext kbArticleViewDisplayContext = new KBArticleViewDisplayContext(request, liferayPortletRequest, liferayPortletResponse, renderResponse, trashHelper);
 %>
 
 <liferay-ui:search-container
@@ -40,10 +40,13 @@ KBArticleViewDisplayContext kbArticleViewDisplayContext = new KBArticleViewDispl
 				%>
 
 				<liferay-ui:search-container-column-text
+					cssClass="table-cell-expand"
 					name="title"
 				>
 					<clay:content-row>
-						<clay:content-col>
+						<clay:content-col
+							cssClass="pr-1"
+						>
 							<clay:sticker
 								cssClass="sticker-secondary"
 								icon="folder"
@@ -51,6 +54,7 @@ KBArticleViewDisplayContext kbArticleViewDisplayContext = new KBArticleViewDispl
 						</clay:content-col>
 
 						<clay:content-col
+							cssClass="pl-1"
 							expand="<%= true %>"
 						>
 							<liferay-portlet:renderURL varImpl="rowURL">
@@ -61,9 +65,12 @@ KBArticleViewDisplayContext kbArticleViewDisplayContext = new KBArticleViewDispl
 								<portlet:param name="selectedItemId" value="<%= String.valueOf(kbFolder.getKbFolderId()) %>" />
 							</liferay-portlet:renderURL>
 
-							<aui:a href="<%= rowURL.toString() %>">
-								<%= HtmlUtil.escape(kbFolder.getName()) %>
-							</aui:a>
+							<clay:link
+								aria-label="<%= HtmlUtil.escape(kbFolder.getName()) %>"
+								href="<%= rowURL.toString() %>"
+								label="<%= HtmlUtil.escape(kbFolder.getName()) %>"
+								translated="<%= false %>"
+							/>
 						</clay:content-col>
 					</clay:content-row>
 				</liferay-ui:search-container-column-text>
@@ -103,6 +110,7 @@ KBArticleViewDisplayContext kbArticleViewDisplayContext = new KBArticleViewDispl
 				</liferay-ui:search-container-column-text>
 
 				<liferay-ui:search-container-column-text
+					cssClass="table-cell-minw-150"
 					name="status"
 					value="--"
 				/>
@@ -112,13 +120,13 @@ KBArticleViewDisplayContext kbArticleViewDisplayContext = new KBArticleViewDispl
 				>
 
 					<%
-					KBDropdownItemsProvider kbDropdownItemsProvider = new KBDropdownItemsProvider(liferayPortletRequest, liferayPortletResponse);
+					KBDropdownItemsProvider kbDropdownItemsProvider = new KBDropdownItemsProvider(liferayPortletRequest, liferayPortletResponse, trashHelper);
 					%>
 
 					<clay:dropdown-actions
 						aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 						dropdownItems="<%= kbDropdownItemsProvider.getKBFolderDropdownItems(kbFolder) %>"
-						propsTransformer="admin/js/KBDropdownPropsTransformer"
+						propsTransformer="{KBDropdownPropsTransformer} from knowledge-base-web"
 					/>
 				</liferay-ui:search-container-column-text>
 			</c:when>
@@ -136,10 +144,13 @@ KBArticleViewDisplayContext kbArticleViewDisplayContext = new KBArticleViewDispl
 				%>
 
 				<liferay-ui:search-container-column-text
+					cssClass="table-cell-expand"
 					name="title"
 				>
 					<clay:content-row>
-						<clay:content-col>
+						<clay:content-col
+							cssClass="pr-1"
+						>
 							<clay:sticker
 								cssClass="sticker-secondary"
 								icon="document-text"
@@ -147,6 +158,7 @@ KBArticleViewDisplayContext kbArticleViewDisplayContext = new KBArticleViewDispl
 						</clay:content-col>
 
 						<clay:content-col
+							cssClass="pl-1"
 							expand="<%= true %>"
 						>
 
@@ -154,9 +166,12 @@ KBArticleViewDisplayContext kbArticleViewDisplayContext = new KBArticleViewDispl
 							PortletURL viewURL = kbArticleURLHelper.createViewWithRedirectURL(kbArticle, currentURL);
 							%>
 
-							<aui:a href="<%= viewURL.toString() %>">
-								<%= HtmlUtil.escape(kbArticle.getTitle()) %>
-							</aui:a>
+							<clay:link
+								aria-label="<%= HtmlUtil.escape(kbArticle.getTitle()) %>"
+								href="<%= viewURL.toString() %>"
+								label="<%= HtmlUtil.escape(kbArticle.getTitle()) %>"
+								translated="<%= false %>"
+							/>
 						</clay:content-col>
 					</clay:content-row>
 				</liferay-ui:search-container-column-text>
@@ -191,31 +206,48 @@ KBArticleViewDisplayContext kbArticleViewDisplayContext = new KBArticleViewDispl
 				</liferay-ui:search-container-column-text>
 
 				<liferay-ui:search-container-column-text
+					cssClass="table-cell-minw-150"
 					name="status"
 				>
+					<c:choose>
+						<c:when test='<%= FeatureFlagManagerUtil.isEnabled("LPS-188058") && kbArticle.isScheduled() %>'>
 
-					<%
-					String expirationDateString = StringPool.BLANK;
+							<%
+							String displayDateString = StringPool.BLANK;
 
-					if (kbArticle.getExpirationDate() != null) {
-						expirationDateString = dateFormatDateTime.format(kbArticle.getExpirationDate());
-					}
-					%>
+							if (kbArticle.getDisplayDate() != null) {
+								displayDateString = dateTimeFormat.format(kbArticle.getDisplayDate());
+							}
+							%>
 
-					<aui:workflow-status helpMessage="<%= kbArticle.isExpired() ? expirationDateString : StringPool.BLANK %>" markupView="lexicon" showHelpMessage="<%= kbArticle.isExpired() %>" showIcon="<%= false %>" showLabel="<%= false %>" status="<%= kbArticle.getStatus() %>" />
+							<aui:workflow-status helpMessage="<%= kbArticle.isScheduled() ? displayDateString : StringPool.BLANK %>" markupView="lexicon" showHelpMessage="<%= kbArticle.isScheduled() %>" showIcon="<%= false %>" showLabel="<%= false %>" status="<%= kbArticle.getStatus() %>" />
+						</c:when>
+						<c:otherwise>
 
-					<c:if test="<%= kbArticleViewDisplayContext.isExpiringSoon(kbArticle) %>">
-						<span class="label label-warning">
-							<span class="label-item label-item-expand"><liferay-ui:message key="expiring-soon" /></span>
-						</span>
+							<%
+							String expirationDateString = StringPool.BLANK;
 
-						<clay:icon
-							aria-label="<%= expirationDateString %>"
-							cssClass="lfr-portal-tooltip"
-							symbol="question-circle-full"
-							title="<%= expirationDateString %>"
-						/>
-					</c:if>
+							if (kbArticle.getExpirationDate() != null) {
+								expirationDateString = dateTimeFormat.format(kbArticle.getExpirationDate());
+							}
+							%>
+
+							<aui:workflow-status helpMessage="<%= kbArticle.isExpired() ? expirationDateString : StringPool.BLANK %>" markupView="lexicon" showHelpMessage="<%= kbArticle.isExpired() %>" showIcon="<%= false %>" showLabel="<%= false %>" status="<%= kbArticle.getStatus() %>" />
+
+							<c:if test="<%= kbArticleViewDisplayContext.isExpiringSoon(kbArticle) %>">
+								<span class="label label-warning">
+									<span class="label-item label-item-expand"><liferay-ui:message key="expiring-soon" /></span>
+								</span>
+
+								<clay:icon
+									aria-label="<%= expirationDateString %>"
+									cssClass="lfr-portal-tooltip"
+									symbol="question-circle-full"
+									title="<%= expirationDateString %>"
+								/>
+							</c:if>
+						</c:otherwise>
+					</c:choose>
 				</liferay-ui:search-container-column-text>
 
 				<liferay-ui:search-container-column-text
@@ -224,7 +256,7 @@ KBArticleViewDisplayContext kbArticleViewDisplayContext = new KBArticleViewDispl
 					<clay:dropdown-actions
 						aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 						dropdownItems="<%= kbArticleViewDisplayContext.getKBArticleDropdownItems(kbArticle) %>"
-						propsTransformer="admin/js/KBDropdownPropsTransformer"
+						propsTransformer="{KBDropdownPropsTransformer} from knowledge-base-web"
 					/>
 				</liferay-ui:search-container-column-text>
 			</c:otherwise>

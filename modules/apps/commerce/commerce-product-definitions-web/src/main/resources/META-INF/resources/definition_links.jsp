@@ -29,12 +29,12 @@ long cpDefinitionId = cpDefinitionLinkDisplayContext.getCPDefinitionId();
 		<portlet:actionURL name="/cp_definitions/edit_cp_definition" var="editProductDefinitionLinksActionURL" />
 
 		<aui:form action="<%= editProductDefinitionLinksActionURL %>" method="post" name="fm">
-			<aui:input name="<%= Constants.CMD %>" type="hidden" />
 			<aui:input name="redirect" type="hidden" value="<%= currentURL %>" />
 			<aui:input name="cpDefinitionId" type="hidden" value="<%= cpDefinitionId %>" />
 			<aui:input name="workflowAction" type="hidden" value="<%= WorkflowConstants.ACTION_SAVE_DRAFT %>" />
 
 			<frontend-data-set:classic-display
+				bulkActionDropdownItems="<%= cpDefinitionLinkDisplayContext.getBulkActionDropdownItems() %>"
 				contextParams='<%=
 					HashMapBuilder.<String, String>put(
 						"cpDefinitionId", String.valueOf(cpDefinitionLinkDisplayContext.getCPDefinitionId())
@@ -45,6 +45,8 @@ long cpDefinitionId = cpDefinitionLinkDisplayContext.getCPDefinitionId();
 				formName="fm"
 				id="<%= CommerceProductFDSNames.PRODUCT_LINKS %>"
 				itemsPerPage="<%= 10 %>"
+				selectedItemsKey="cpdefinitionLinkId"
+				selectionType="multiple"
 				style="stacked"
 			/>
 		</aui:form>
@@ -95,7 +97,7 @@ long cpDefinitionId = cpDefinitionLinkDisplayContext.getCPDefinitionId();
 							}
 						},
 						title:
-							'<liferay-ui:message arguments="<%= HtmlUtil.escapeJS(cpDefinition.getName(languageId)) %>" key="add-new-product-to-x" />',
+							'<liferay-ui:message arguments="<%= cpDefinition.getName(languageId) %>" key="add-new-product-to-x" />',
 						url:
 							'<%= cpDefinitionLinkDisplayContext.getItemSelectorUrl(type) %>',
 					});

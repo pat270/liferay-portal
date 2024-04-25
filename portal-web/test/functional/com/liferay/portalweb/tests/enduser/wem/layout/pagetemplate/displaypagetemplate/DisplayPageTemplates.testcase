@@ -27,17 +27,6 @@ definition {
 		}
 	}
 
-	tearDown {
-		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
-
-		if (${testLiferayVirtualInstance} == "true") {
-			PortalInstances.tearDownCP();
-		}
-		else {
-			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
-		}
-	}
-
 	@description = "User cannot delete a display page template with usage."
 	@priority = 4
 	@uitest
@@ -70,8 +59,10 @@ definition {
 
 			DisplayPageTemplatesAdmin.deleteDisplayPage(displayPageName = "Display Page Name");
 
+			Alert.viewErrorMessage(errorMessage = "Error:One or more entries could not be deleted.");
+
 			AssertTextEquals.assertPartialText(
-				locator1 = "Message#ERROR",
+				locator1 = "Message#ERROR_2",
 				value1 = "Error:You cannot delete display page templates that are used by one or more items. Please view the usages and try to unassign them.");
 
 			DisplayPageTemplatesAdmin.viewDisplayPagePresent(displayPageName = "Display Page Name");
@@ -141,7 +132,7 @@ definition {
 		task ("Then the page creator could configure display page template in a new tab") {
 			LexiconEntry.gotoHeaderMenuItem(menuItem = "Configure");
 
-			SelectWindow.selectPopUp(locator1 = "null");
+			SelectWindow.selectPopUp(value1 = "null");
 
 			Navigator.gotoNavTab(navTab = "SEO");
 
@@ -156,6 +147,200 @@ definition {
 			AssertElementPresent(
 				key_title = "Sitemap",
 				locator1 = "Header#H3_TITLE");
+		}
+	}
+
+	@description = "This is a test for LPS-193213. It is possible to access the configuration of an existing Display Page Template from the ellipsis menu of the card."
+	@priority = 4
+	test ConfigureDisplayPageTemplateInPageTemplatesAdmin {
+		task ("Given a user has a display page template") {
+			PageEditor.addFragment(
+				collectionName = "Basic Components",
+				fragmentName = "Heading");
+
+			PageEditor.publish();
+		}
+
+		task ("When the user accesses to the Page Templates admin") {
+			DisplayPageTemplatesAdmin.viewDisplayPagePresent(displayPageName = "Display Page Name");
+		}
+
+		task ("Then the user could configure display page template") {
+			DisplayPageTemplatesAdmin.gotoDisplayPageEllipsisItem(
+				displayPageName = "Display Page Name",
+				item = "Configure");
+
+			Navigator.gotoNavTab(navTab = "Design");
+
+			Theme.configureLookAndFeelSpecificLook();
+
+			Theme.changeCurrentTheme(themeName = "Speedwell");
+
+			PortletEntry.save();
+
+			Navigator.gotoBack();
+
+			DisplayPageTemplatesAdmin.gotoDisplayPage(displayPageName = "Display Page Name");
+
+			AssertCssValue(
+				fragmentName = "heading",
+				id = "element-text",
+				index = 1,
+				locator1 = "Fragment#CONTRIBUTED_FRAGMENT_TEXT",
+				locator2 = "font-size",
+				value1 = "40px");
+
+			LexiconEntry.gotoHeaderMenuItem(menuItem = "Configure");
+
+			SelectWindow.selectPopUp(value1 = "null");
+
+			Navigator.gotoNavTab(navTab = "Design Draft");
+
+			PagesAdmin.viewCurrentTheme(themeName = "Speedwell");
+		}
+	}
+
+	@description = "This is a test for LPS-191986. Can configure friendly URL for default display page template."
+	@priority = 3
+	test ConfigureFriendlyURLOfDefaultDisplayPageTemplate {
+		task ("Given a user has a default display page template") {
+			PageEditor.publish();
+
+			DisplayPageTemplatesAdmin.markDisplayPageAsDefault(displayPageName = "Display Page Name");
+		}
+
+		task ("When the user accesses to the configuration page of display page template") {
+			DisplayPageTemplatesAdmin.gotoDisplayPage(displayPageName = "Display Page Name");
+
+			LexiconEntry.gotoHeaderMenuItem(menuItem = "Configure");
+		}
+
+		task ("Then the user could configure the friendly URL of display page template") {
+			Navigator.viewActivatedNavTab(navTab = "General");
+
+			AssertTextEquals(
+				key_text = "Friendly URL",
+				locator1 = "TextInput#ANY",
+				value1 = "/display-page-name");
+
+			PagesAdmin.editFriendlyURL(friendlyURLEdit = "/welcome");
+
+			AssertTextEquals(
+				key_text = "Friendly URL",
+				locator1 = "TextInput#ANY",
+				value1 = "/welcome");
+		}
+
+		task ("When the user accesses to the SEO sheet") {
+			Navigator.gotoNavTab(navTab = "SEO");
+		}
+
+		task ("Then the user could configure the Robots and Sitemap settings") {
+			AssertEditable(
+				key_label = "Robots",
+				locator1 = "TextArea#ANY_LABELED");
+
+			AssertAttributeValue(
+				key_label = "Robots",
+				locator1 = "TextArea#ANY_LABELED",
+				value1 = "placeholder",
+				value2 = "Robots");
+
+			AssertEditable(
+				key_fieldLabel = "Include",
+				locator1 = "Select#GENERIC_SELECT_FIELD");
+
+			AssertSelectedLabel(
+				key_fieldLabel = "Include",
+				locator1 = "Select#GENERIC_SELECT_FIELD",
+				value1 = "Yes");
+
+			AssertEditable(
+				key_text = "Page Priority",
+				locator1 = "TextInput#ANY");
+
+			AssertAttributeValue(
+				key_text = "Page Priority",
+				locator1 = "TextInput#ANY",
+				value1 = "placeholder",
+				value2 = "0.0");
+
+			AssertEditable(
+				key_fieldLabel = "Change Frequency",
+				locator1 = "Select#GENERIC_SELECT_FIELD");
+
+			AssertSelectedLabel(
+				key_fieldLabel = "Change Frequency",
+				locator1 = "Select#GENERIC_SELECT_FIELD",
+				value1 = "Daily");
+		}
+	}
+
+	@description = "This is a test for LPS-191986. Can configure friendly URL for non-default display page template."
+	@priority = 4
+	test ConfigureFriendlyURLOfDisplayPageTemplate {
+		task ("When the user accesses to the configuration page of display page template") {
+			LexiconEntry.gotoHeaderMenuItem(menuItem = "Configure");
+		}
+
+		task ("Then the user could configure the friendly URL of display page template") {
+			Navigator.viewActivatedNavTab(navTab = "General");
+
+			AssertTextEquals(
+				key_text = "Friendly URL",
+				locator1 = "TextInput#ANY",
+				value1 = "/display-page-name");
+
+			PagesAdmin.editFriendlyURL(friendlyURLEdit = "/welcome");
+
+			AssertTextEquals(
+				key_text = "Friendly URL",
+				locator1 = "TextInput#ANY",
+				value1 = "/welcome");
+		}
+
+		task ("When the user accesses to the SEO sheet") {
+			Navigator.gotoNavTab(navTab = "SEO");
+		}
+
+		task ("Then the user could configure the Robots and Sitemap settings") {
+			AssertEditable(
+				key_label = "Robots",
+				locator1 = "TextArea#ANY_LABELED");
+
+			AssertAttributeValue(
+				key_label = "Robots",
+				locator1 = "TextArea#ANY_LABELED",
+				value1 = "placeholder",
+				value2 = "Robots");
+
+			AssertEditable(
+				key_fieldLabel = "Include",
+				locator1 = "Select#GENERIC_SELECT_FIELD");
+
+			AssertSelectedLabel(
+				key_fieldLabel = "Include",
+				locator1 = "Select#GENERIC_SELECT_FIELD",
+				value1 = "Yes");
+
+			AssertEditable(
+				key_text = "Page Priority",
+				locator1 = "TextInput#ANY");
+
+			AssertAttributeValue(
+				key_text = "Page Priority",
+				locator1 = "TextInput#ANY",
+				value1 = "placeholder",
+				value2 = "0.0");
+
+			AssertEditable(
+				key_fieldLabel = "Change Frequency",
+				locator1 = "Select#GENERIC_SELECT_FIELD");
+
+			AssertSelectedLabel(
+				key_fieldLabel = "Change Frequency",
+				locator1 = "Select#GENERIC_SELECT_FIELD",
+				value1 = "Daily");
 		}
 	}
 
@@ -216,16 +401,14 @@ definition {
 	@uitest
 	test ConfigureTheme {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Publish the display page template") {
 			PageEditor.publish();
 		}
 
 		task ("Import a theme") {
-			ApplicationsMenu.gotoPortlet(
-				category = "System",
-				panel = "Control Panel",
-				portlet = "App Manager");
+			AppManager.openAppManagerAdmin();
 
 			AppManager.uploadApp(
 				appName = "test-theme",
@@ -285,6 +468,232 @@ definition {
 			AssertElementPresent(locator1 = "//link[contains(@href,'test-theme')]");
 
 			AssertElementNotPresent(locator1 = "//link[contains(@href,'classic-theme')]");
+		}
+	}
+
+	@description = "This is a test for LPS-192724. It is possible to copy an existing Display Page Template from the ellipsis menu of the card."
+	@priority = 5
+	test CopyDisplayPageTemplate {
+		property portal.acceptance = "true";
+
+		task ("When the page creator navigates to the Display Page Templates admin") {
+			DisplayPageTemplatesAdmin.openDisplayPagesAdmin(siteURLKey = "test-site-name");
+		}
+
+		task ("Then the page creator cannot make a copy of display page template without published version") {
+			Click.waitForMenuToggleJSClick(
+				key_card = "Display Page Name",
+				locator1 = "Card#SPECIFIC_CARD_ELLIPSIS");
+
+			MenuItem.viewDisabled(menuItem = "Make a Copy");
+		}
+
+		task ("When the page creator publishes the display page template") {
+			DisplayPageTemplatesAdmin.gotoDisplayPage(displayPageName = "Display Page Name");
+
+			PageEditor.publish();
+		}
+
+		task ("Then the page creator could make a copy of display page template") {
+			DisplayPageTemplatesAdmin.gotoDisplayPageEllipsisItem(
+				displayPageName = "Display Page Name",
+				item = "Make a Copy");
+
+			MenuItem.click(menuItem = "Display Page");
+
+			Alert.viewSuccessMessage();
+
+			DisplayPageTemplatesAdmin.viewDisplayPagePresent(displayPageName = "Display Page Name (Copy)");
+
+			LexiconCard.viewCardSubtitle(
+				card = "Display Page Name (Copy)",
+				cardSubtitle = "Web Content Article - Basic Web Content");
+
+			LexiconCard.viewCardLabel(
+				card = "Display Page Name (Copy)",
+				cardLabel = "Draft");
+		}
+
+		task ("When the page creator makes a copy of the original display page template again") {
+			DisplayPageTemplatesAdmin.gotoDisplayPageEllipsisItem(
+				displayPageName = "Display Page Name",
+				item = "Make a Copy");
+
+			MenuItem.click(menuItem = "Display Page");
+
+			Alert.viewSuccessMessage();
+		}
+
+		task ("Then the copy name should have a sequential number 1") {
+			DisplayPageTemplatesAdmin.viewDisplayPagePresent(displayPageName = "Display Page Name (Copy 1)");
+		}
+
+		task ("When the page creator makes a copy of the original display page template again") {
+			DisplayPageTemplatesAdmin.gotoDisplayPageEllipsisItem(
+				displayPageName = "Display Page Name",
+				item = "Make a Copy");
+
+			MenuItem.click(menuItem = "Display Page");
+
+			Alert.viewSuccessMessage();
+		}
+
+		task ("Then the copy name should have a sequential number 2") {
+			DisplayPageTemplatesAdmin.viewDisplayPagePresent(displayPageName = "Display Page Name (Copy 2)");
+		}
+
+		task ("When the page creator makes a copy of the first copy") {
+			DisplayPageTemplatesAdmin.gotoDisplayPage(displayPageName = "Display Page Name (Copy)");
+
+			PageEditor.publish();
+
+			DisplayPageTemplatesAdmin.gotoDisplayPageEllipsisItem(
+				displayPageName = "Display Page Name (Copy)",
+				item = "Make a Copy");
+
+			MenuItem.click(menuItem = "Display Page");
+
+			Alert.viewSuccessMessage();
+		}
+
+		task ("Then the (Copy) should be appended to copy name") {
+			DisplayPageTemplatesAdmin.viewDisplayPagePresent(displayPageName = "Display Page Name (Copy) (Copy)");
+		}
+	}
+
+	@description = "This is a test for LPS-192724. When copying a published DPT, the copy is the same as the published one. The copy of a DPT is the same as the last version."
+	@priority = 4
+	test CopyDisplayPageTemplateWithContent {
+		task ("Given a page creator has a published display page template with content") {
+			PageEditor.addFragment(
+				collectionName = "Basic Components",
+				fragmentName = "Heading");
+
+			PageEditor.publish();
+		}
+
+		task ("When the page creator makes a copy of display page template") {
+			DisplayPageTemplatesAdmin.gotoDisplayPageEllipsisItem(
+				displayPageName = "Display Page Name",
+				item = "Make a Copy");
+
+			MenuItem.click(menuItem = "Display Page");
+
+			Alert.viewSuccessMessage();
+		}
+
+		task ("Then the copy of display page template should keep the content") {
+			DisplayPageTemplatesAdmin.gotoDisplayPage(displayPageName = "Display Page Name (Copy)");
+
+			PageEditor.viewFragment(fragmentName = "Heading");
+		}
+
+		task ("When the page creator makes a copy of original display page template with draft") {
+			DisplayPageTemplatesAdmin.openDisplayPagesAdmin(siteURLKey = "test-site-name");
+
+			DisplayPageTemplatesAdmin.gotoDisplayPage(displayPageName = "Display Page Name");
+
+			PageEditor.editFragmentText(
+				fragmentName = "Heading",
+				id = "element-text",
+				text = "Welcome to Liferay");
+
+			DisplayPageTemplatesAdmin.openDisplayPagesAdmin(siteURLKey = "test-site-name");
+
+			DisplayPageTemplatesAdmin.gotoDisplayPageEllipsisItem(
+				displayPageName = "Display Page Name",
+				item = "Make a Copy");
+
+			MenuItem.click(menuItem = "Display Page");
+
+			Alert.viewSuccessMessage();
+		}
+
+		task ("Then the copy of display page template should keep the same content with last published version") {
+			DisplayPageTemplatesAdmin.gotoDisplayPage(displayPageName = "Display Page Name (Copy 1)");
+
+			PageEditor.viewFragment(fragmentName = "Heading");
+		}
+	}
+
+	@description = "This is a test for LPS-192724. The site administrator could copy a display page template with mapping."
+	@priority = 4
+	test CopyDisplayPageTemplateWithMapping {
+		task ("Given a page creator has a published display page template with mapping") {
+			PageEditor.addFragment(
+				collectionName = "Basic Components",
+				fragmentName = "Heading");
+
+			PageEditorMapping.mapEditableTextToField(
+				field = "Title",
+				fragmentName = "Heading",
+				id = "element-text");
+
+			PageEditor.publish();
+		}
+
+		task ("When the page creator makes a copy of display page template") {
+			DisplayPageTemplatesAdmin.gotoDisplayPageEllipsisItem(
+				displayPageName = "Display Page Name",
+				item = "Make a Copy");
+
+			MenuItem.click(menuItem = "Display Page");
+
+			Alert.viewSuccessMessage();
+		}
+
+		task ("Then the copy of display page template should keep the mapping") {
+			DisplayPageTemplatesAdmin.gotoDisplayPage(displayPageName = "Display Page Name (Copy)");
+
+			PageEditorMapping.gotoEditableFieldMapping(
+				fragmentName = "Heading",
+				id = "element-text");
+
+			AssertSelectedLabel(
+				key_fieldLabel = "Field",
+				locator1 = "Select#GENERIC_SELECT_FIELD",
+				value1 = "Title");
+		}
+	}
+
+	@description = "This is a test for LPS-192724. The site administrator could copy a display page template with permissions."
+	@priority = 4
+	test CopyDisplayPageTemplateWithPermissions {
+		task ("Given a page creator has a published display page template with permissions") {
+			PageEditor.publish();
+
+			DisplayPageTemplatesAdmin.gotoDisplayPageEllipsisItem(
+				displayPageName = "Display Page Name",
+				item = "Permissions");
+
+			PermissionsInline.addOrRemoveAnyPermissionsFromSpecificRole(
+				addOrRemoveViewPermission = "Remove",
+				permissionsKeyList = "CONFIGURATION_PERMISSIONS_VIEW_CHECKBOX",
+				roleTitle = "Guest");
+
+			IFrame.closeFrame();
+		}
+
+		task ("When the page creator makes a copy of display page template") {
+			DisplayPageTemplatesAdmin.gotoDisplayPageEllipsisItem(
+				displayPageName = "Display Page Name",
+				item = "Make a Copy");
+
+			MenuItem.click(menuItem = "Display Page With Permissions");
+
+			Alert.viewSuccessMessage();
+		}
+
+		task ("Then the copy of display page template should keep the permissions") {
+			DisplayPageTemplatesAdmin.gotoDisplayPageEllipsisItem(
+				displayPageName = "Display Page Name (Copy)",
+				item = "Permissions");
+
+			SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+			PermissionsInline.viewPermissionsRemoved(
+				permissionDefinitionKey = "CONFIGURATION_PERMISSIONS_VIEW_CHECKBOX",
+				roleTitle = "Guest");
 		}
 	}
 
@@ -624,6 +1033,137 @@ definition {
 				locator1 = "Panel#PANEL");
 
 			Breadcrumb.viewActiveEntry(breadcrumbName = "Container");
+		}
+	}
+
+	@description = "This is a test for LPS-192724. The copied pages are now separate entities."
+	@priority = 4
+	test ViewCopyOfDisplayPageTemplateAndOriginCannotAffectEachOther {
+		task ("Given a page creator has a copy of display page template") {
+			PageEditor.addFragment(
+				collectionName = "Basic Components",
+				fragmentName = "Heading");
+
+			PageEditor.publish();
+
+			DisplayPageTemplatesAdmin.gotoDisplayPageEllipsisItem(
+				displayPageName = "Display Page Name",
+				item = "Make a Copy");
+
+			MenuItem.click(menuItem = "Display Page");
+
+			Alert.viewSuccessMessage();
+		}
+
+		task ("When the page creator makes some changes in copy of display page template") {
+			DisplayPageTemplatesAdmin.gotoDisplayPage(displayPageName = "Display Page Name (Copy)");
+
+			PageEditor.editFragmentText(
+				fragmentName = "Heading",
+				id = "element-text",
+				text = "Welcome to Liferay");
+
+			PageEditor.publish();
+		}
+
+		task ("Then the original display page template shouldn't be updated") {
+			DisplayPageTemplatesAdmin.gotoDisplayPage(displayPageName = "Display Page Name");
+
+			PageEditor.viewFragmentEditableText(
+				editableText = "Heading Example",
+				fragmentName = "Heading",
+				id = "element-text");
+		}
+
+		task ("When the page creator makes some changes in original display page template") {
+			PageEditor.addFragment(
+				collectionName = "Basic Components",
+				fragmentName = "Button",
+				targetFragmentName = "Heading");
+
+			PageEditor.publish();
+		}
+
+		task ("Then the copy of display page template shouldn't be updated") {
+			DisplayPageTemplatesAdmin.gotoDisplayPage(displayPageName = "Display Page Name (Copy)");
+
+			PageEditor.viewFragmentEditableText(
+				editableText = "Welcome to Liferay",
+				fragmentName = "Heading",
+				id = "element-text");
+
+			PageEditor.viewFragmentNotPresent(fragmentName = "Button");
+		}
+	}
+
+	@description = "This is a test for LPS-189857. View the display page info in folder."
+	@priority = 3
+	test ViewInfoPanelOfDisplayPageTemplateInsideFolder {
+		property custom.properties = "feature.flag.LPS-189856=true";
+
+		task ("Given a site administrator has a default display page template inside a folder") {
+			DisplayPageTemplatesAdmin.openDisplayPagesAdmin(siteURLKey = "test-site-name");
+
+			DisplayPageTemplatesAdmin.addFolder(folderName = "Test Folder Name");
+
+			DisplayPageTemplatesAdmin.gotoFolder(folderName = "Test Folder Name");
+
+			DisplayPageTemplatesAdmin.addDisplayPage(
+				contentType = "Web Content Article",
+				displayPageName = "Liferay DXP",
+				subType = "Basic Web Content");
+
+			PageEditor.addFragment(
+				collectionName = "Basic Components",
+				fragmentName = "Heading");
+
+			PageEditor.publish();
+		}
+
+		task ("When the site administrator opens the info panel of display page template") {
+			DisplayPageTemplatesAdmin.markDisplayPageAsDefault(displayPageName = "Liferay DXP");
+
+			LexiconCard.checkCardCheckbox(card = "Liferay DXP");
+
+			ManagementBar.clickInfo();
+		}
+
+		task ("Then the site administrator could see the relevant information") {
+			AssertTextEquals(
+				locator1 = "Sidebar#COMPONENT_TITLE",
+				value1 = "Liferay DXP");
+
+			AssertTextEquals(
+				locator1 = "Sidebar#COMPONENT_SUBTITLE",
+				value1 = "Display Page Template");
+
+			AssertVisible(
+				key_labelName = "Default",
+				locator1 = "Sidebar#HEADER_LABEL");
+
+			AssertVisible(
+				key_labelName = "Approved",
+				locator1 = "Sidebar#HEADER_LABEL");
+
+			AssertTextEquals(
+				locator1 = "Sidebar#LOCALTION",
+				value1 = "Home > Test Folder Name");
+
+			AssertTextEquals(
+				locator1 = "Sidebar#CONTENT_TYPE",
+				value1 = "Web Content Article");
+
+			AssertTextEquals(
+				locator1 = "Sidebar#SUBTYPE",
+				value1 = "Basic Web Content");
+
+			AssertTextMatches(
+				locator1 = "Sidebar#CREATED",
+				value1 = "^\w\w\w\s[0-9]{1,2},\s(\d{2}|\d{4})\s[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}\s\w\w\sby\sTest\sTest$");
+
+			AssertTextMatches(
+				locator1 = "Sidebar#MODIFIED",
+				value1 = "^\w\w\w\s[0-9]{1,2},\s(\d{2}|\d{4})\s[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}\s\w\w\sby\sTest\sTest$");
 		}
 	}
 

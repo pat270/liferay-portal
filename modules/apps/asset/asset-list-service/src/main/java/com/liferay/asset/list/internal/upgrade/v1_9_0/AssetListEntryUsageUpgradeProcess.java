@@ -51,6 +51,7 @@ public class AssetListEntryUsageUpgradeProcess extends UpgradeProcess {
 		_portal = portal;
 	}
 
+	@Override
 	protected void doUpgrade() throws Exception {
 		long layoutPageTemplateStructureClassNameId = _portal.getClassNameId(
 			LayoutPageTemplateStructure.class);
@@ -230,7 +231,7 @@ public class AssetListEntryUsageUpgradeProcess extends UpgradeProcess {
 		}
 
 		if (layoutPageTemplateEntry.getType() ==
-				LayoutPageTemplateEntryTypeConstants.TYPE_DISPLAY_PAGE) {
+				LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE) {
 
 			return AssetListEntryUsageConstants.TYPE_DISPLAY_PAGE_TEMPLATE;
 		}

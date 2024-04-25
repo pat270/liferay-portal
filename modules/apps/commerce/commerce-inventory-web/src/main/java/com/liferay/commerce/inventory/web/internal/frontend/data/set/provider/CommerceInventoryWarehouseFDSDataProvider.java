@@ -19,6 +19,8 @@ import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 
+import java.math.BigDecimal;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,12 +49,14 @@ public class CommerceInventoryWarehouseFDSDataProvider
 		List<Warehouse> warehouses = new ArrayList<>();
 
 		String sku = ParamUtil.getString(httpServletRequest, "sku");
+		String unitOfMeasureKey = ParamUtil.getString(
+			httpServletRequest, "unitOfMeasureKey");
 
 		List<CommerceInventoryWarehouseItem> commerceInventoryWarehouseItems =
 			_commerceInventoryWarehouseItemService.
-				getCommerceInventoryWarehouseItemsByCompanyIdAndSku(
+				getCommerceInventoryWarehouseItemsByCompanyIdSkuAndUnitOfMeasureKey(
 					_portal.getCompanyId(httpServletRequest), sku,
-					fdsPagination.getStartPosition(),
+					unitOfMeasureKey, fdsPagination.getStartPosition(),
 					fdsPagination.getEndPosition());
 
 		for (CommerceInventoryWarehouseItem commerceInventoryWarehouseItem :
@@ -61,19 +65,48 @@ public class CommerceInventoryWarehouseFDSDataProvider
 			CommerceInventoryWarehouse commerceInventoryWarehouse =
 				commerceInventoryWarehouseItem.getCommerceInventoryWarehouse();
 
+			BigDecimal stockQuantity = BigDecimal.ZERO;
+
+			BigDecimal commerceInventoryWarehouseItemQuantity =
+				commerceInventoryWarehouseItem.getQuantity();
+
+			if (commerceInventoryWarehouseItemQuantity != null) {
+				stockQuantity = commerceInventoryWarehouseItemQuantity;
+			}
+
+			BigDecimal reservedQuantity = BigDecimal.ZERO;
+
+			BigDecimal commerceInventoryWarehouseItemReservedQuantity =
+				commerceInventoryWarehouseItem.getReservedQuantity();
+
+			if (commerceInventoryWarehouseItemReservedQuantity != null) {
+				reservedQuantity =
+					commerceInventoryWarehouseItemReservedQuantity;
+			}
+
+			BigDecimal replenishmentQuantity = BigDecimal.ZERO;
+
+			BigDecimal commerceInventoryReplenishmentItemsCount =
+				_commerceInventoryReplenishmentItemService.
+					getCommerceInventoryReplenishmentItemsCount(
+						commerceInventoryWarehouse.
+							getCommerceInventoryWarehouseId(),
+						sku, unitOfMeasureKey);
+
+			if (commerceInventoryReplenishmentItemsCount != null) {
+				replenishmentQuantity =
+					commerceInventoryReplenishmentItemsCount;
+			}
+
 			warehouses.add(
 				new Warehouse(
+					commerceInventoryWarehouseItem.
+						getCommerceInventoryWarehouseId(),
 					commerceInventoryWarehouseItem.
 						getCommerceInventoryWarehouseItemId(),
 					commerceInventoryWarehouse.getName(
 						_portal.getLocale(httpServletRequest)),
-					commerceInventoryWarehouseItem.getQuantity(),
-					commerceInventoryWarehouseItem.getReservedQuantity(),
-					_commerceInventoryReplenishmentItemService.
-						getCommerceInventoryReplenishmentItemsCount(
-							commerceInventoryWarehouse.
-								getCommerceInventoryWarehouseId(),
-							sku)));
+					replenishmentQuantity, reservedQuantity, stockQuantity));
 		}
 
 		return warehouses;
@@ -85,10 +118,13 @@ public class CommerceInventoryWarehouseFDSDataProvider
 		throws PortalException {
 
 		String sku = ParamUtil.getString(httpServletRequest, "sku");
+		String unitOfMeasureKey = ParamUtil.getString(
+			httpServletRequest, "unitOfMeasureKey");
 
 		return _commerceInventoryWarehouseItemService.
 			getCommerceInventoryWarehouseItemsCount(
-				_portal.getCompanyId(httpServletRequest), sku);
+				_portal.getCompanyId(httpServletRequest), sku,
+				unitOfMeasureKey);
 	}
 
 	@Reference

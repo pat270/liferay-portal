@@ -17,6 +17,8 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.transaction.Propagation;
@@ -120,6 +122,9 @@ public class ObjectValidationRulePersistenceTest {
 
 		newObjectValidationRule.setUuid(RandomTestUtil.randomString());
 
+		newObjectValidationRule.setExternalReferenceCode(
+			RandomTestUtil.randomString());
+
 		newObjectValidationRule.setCompanyId(RandomTestUtil.nextLong());
 
 		newObjectValidationRule.setUserId(RandomTestUtil.nextLong());
@@ -145,6 +150,8 @@ public class ObjectValidationRulePersistenceTest {
 
 		newObjectValidationRule.setScript(RandomTestUtil.randomString());
 
+		newObjectValidationRule.setSystem(RandomTestUtil.randomBoolean());
+
 		_objectValidationRules.add(
 			_persistence.update(newObjectValidationRule));
 
@@ -158,6 +165,9 @@ public class ObjectValidationRulePersistenceTest {
 		Assert.assertEquals(
 			existingObjectValidationRule.getUuid(),
 			newObjectValidationRule.getUuid());
+		Assert.assertEquals(
+			existingObjectValidationRule.getExternalReferenceCode(),
+			newObjectValidationRule.getExternalReferenceCode());
 		Assert.assertEquals(
 			existingObjectValidationRule.getObjectValidationRuleId(),
 			newObjectValidationRule.getObjectValidationRuleId());
@@ -199,6 +209,9 @@ public class ObjectValidationRulePersistenceTest {
 		Assert.assertEquals(
 			existingObjectValidationRule.getScript(),
 			newObjectValidationRule.getScript());
+		Assert.assertEquals(
+			existingObjectValidationRule.isSystem(),
+			newObjectValidationRule.isSystem());
 	}
 
 	@Test
@@ -235,12 +248,40 @@ public class ObjectValidationRulePersistenceTest {
 	}
 
 	@Test
+	public void testCountByODI_E() throws Exception {
+		_persistence.countByODI_E(RandomTestUtil.nextLong(), "");
+
+		_persistence.countByODI_E(0L, "null");
+
+		_persistence.countByODI_E(0L, (String)null);
+	}
+
+	@Test
 	public void testCountByODI_O() throws Exception {
 		_persistence.countByODI_O(RandomTestUtil.nextLong(), "");
 
 		_persistence.countByODI_O(0L, "null");
 
 		_persistence.countByODI_O(0L, (String)null);
+	}
+
+	@Test
+	public void testCountByA_E() throws Exception {
+		_persistence.countByA_E(RandomTestUtil.randomBoolean(), "");
+
+		_persistence.countByA_E(RandomTestUtil.randomBoolean(), "null");
+
+		_persistence.countByA_E(RandomTestUtil.randomBoolean(), (String)null);
+	}
+
+	@Test
+	public void testCountByERC_C_ODI() throws Exception {
+		_persistence.countByERC_C_ODI(
+			"", RandomTestUtil.nextLong(), RandomTestUtil.nextLong());
+
+		_persistence.countByERC_C_ODI("null", 0L, 0L);
+
+		_persistence.countByERC_C_ODI((String)null, 0L, 0L);
 	}
 
 	@Test
@@ -272,10 +313,11 @@ public class ObjectValidationRulePersistenceTest {
 	protected OrderByComparator<ObjectValidationRule> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
 			"ObjectValidationRule", "mvccVersion", true, "uuid", true,
-			"objectValidationRuleId", true, "companyId", true, "userId", true,
-			"userName", true, "createDate", true, "modifiedDate", true,
-			"objectDefinitionId", true, "active", true, "engine", true,
-			"errorLabel", true, "name", true, "outputType", true);
+			"externalReferenceCode", true, "objectValidationRuleId", true,
+			"companyId", true, "userId", true, "userName", true, "createDate",
+			true, "modifiedDate", true, "objectDefinitionId", true, "active",
+			true, "engine", true, "errorLabel", true, "name", true,
+			"outputType", true, "system", true);
 	}
 
 	@Test
@@ -512,6 +554,80 @@ public class ObjectValidationRulePersistenceTest {
 		Assert.assertEquals(0, result.size());
 	}
 
+	@Test
+	public void testResetOriginalValues() throws Exception {
+		ObjectValidationRule newObjectValidationRule =
+			addObjectValidationRule();
+
+		_persistence.clearCache();
+
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(
+				newObjectValidationRule.getPrimaryKey()));
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		ObjectValidationRule newObjectValidationRule =
+			addObjectValidationRule();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			ObjectValidationRule.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"objectValidationRuleId",
+				newObjectValidationRule.getObjectValidationRuleId()));
+
+		List<ObjectValidationRule> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(
+		ObjectValidationRule objectValidationRule) {
+
+		Assert.assertEquals(
+			objectValidationRule.getExternalReferenceCode(),
+			ReflectionTestUtil.invoke(
+				objectValidationRule, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "externalReferenceCode"));
+		Assert.assertEquals(
+			Long.valueOf(objectValidationRule.getCompanyId()),
+			ReflectionTestUtil.<Long>invoke(
+				objectValidationRule, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "companyId"));
+		Assert.assertEquals(
+			Long.valueOf(objectValidationRule.getObjectDefinitionId()),
+			ReflectionTestUtil.<Long>invoke(
+				objectValidationRule, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "objectDefinitionId"));
+	}
+
 	protected ObjectValidationRule addObjectValidationRule() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
@@ -520,6 +636,9 @@ public class ObjectValidationRulePersistenceTest {
 		objectValidationRule.setMvccVersion(RandomTestUtil.nextLong());
 
 		objectValidationRule.setUuid(RandomTestUtil.randomString());
+
+		objectValidationRule.setExternalReferenceCode(
+			RandomTestUtil.randomString());
 
 		objectValidationRule.setCompanyId(RandomTestUtil.nextLong());
 
@@ -544,6 +663,8 @@ public class ObjectValidationRulePersistenceTest {
 		objectValidationRule.setOutputType(RandomTestUtil.randomString());
 
 		objectValidationRule.setScript(RandomTestUtil.randomString());
+
+		objectValidationRule.setSystem(RandomTestUtil.randomBoolean());
 
 		_objectValidationRules.add(_persistence.update(objectValidationRule));
 

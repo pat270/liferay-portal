@@ -47,12 +47,30 @@ import org.osgi.annotation.versioning.ProviderType;
 @ProviderType
 public interface PostalAddressResource {
 
+	public Page<PostalAddress>
+			getAccountByExternalReferenceCodePostalAddressesPage(
+				String externalReferenceCode)
+		throws Exception;
+
 	public Page<PostalAddress> getAccountPostalAddressesPage(Long accountId)
 		throws Exception;
 
 	public Response postAccountPostalAddressesPageExportBatch(
 			Long accountId, String callbackURL, String contentType,
 			String fieldNames)
+		throws Exception;
+
+	public PostalAddress postAccountPostalAddress(
+			Long accountId, PostalAddress postalAddress)
+		throws Exception;
+
+	public Response postAccountPostalAddressBatch(
+			Long accountId, String callbackURL, Object object)
+		throws Exception;
+
+	public Page<PostalAddress>
+			getOrganizationByExternalReferenceCodePostalAddressesPage(
+				String externalReferenceCode)
 		throws Exception;
 
 	public Page<PostalAddress> getOrganizationPostalAddressesPage(
@@ -64,7 +82,28 @@ public interface PostalAddressResource {
 			String fieldNames)
 		throws Exception;
 
+	public void deletePostalAddress(Long postalAddressId) throws Exception;
+
+	public Response deletePostalAddressBatch(String callbackURL, Object object)
+		throws Exception;
+
 	public PostalAddress getPostalAddress(Long postalAddressId)
+		throws Exception;
+
+	public PostalAddress patchPostalAddress(
+			Long postalAddressId, PostalAddress postalAddress)
+		throws Exception;
+
+	public PostalAddress putPostalAddress(
+			Long postalAddressId, PostalAddress postalAddress)
+		throws Exception;
+
+	public Response putPostalAddressBatch(String callbackURL, Object object)
+		throws Exception;
+
+	public Page<PostalAddress>
+			getUserAccountByExternalReferenceCodePostalAddressesPage(
+				String externalReferenceCode)
 		throws Exception;
 
 	public Page<PostalAddress> getUserAccountPostalAddressesPage(

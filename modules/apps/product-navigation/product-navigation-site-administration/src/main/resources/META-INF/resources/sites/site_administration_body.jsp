@@ -10,9 +10,7 @@
 <%
 PanelCategory panelCategory = (PanelCategory)request.getAttribute(ApplicationListWebKeys.PANEL_CATEGORY);
 
-SiteAdministrationPanelCategoryDisplayContext siteAdministrationPanelCategoryDisplayContext = new SiteAdministrationPanelCategoryDisplayContext(liferayPortletRequest, liferayPortletResponse, null);
-
-Group group = siteAdministrationPanelCategoryDisplayContext.getGroup();
+SiteAdministrationPanelCategoryDisplayContext siteAdministrationPanelCategoryDisplayContext = new SiteAdministrationPanelCategoryDisplayContext(liferayPortletRequest, null);
 %>
 
 <c:if test="<%= siteAdministrationPanelCategoryDisplayContext.getGroup() != null %>">
@@ -92,7 +90,7 @@ Group group = siteAdministrationPanelCategoryDisplayContext.getGroup();
 					displayType="unstyled"
 					icon="pages-tree"
 					id='<%= liferayPortletResponse.getNamespace() + "pagesTreeSidenavToggleId" %>'
-					label='<%= LanguageUtil.get(resourceBundle, "page-tree") %>'
+					label="page-tree"
 				/>
 			</c:if>
 		</clay:col>
@@ -105,7 +103,7 @@ Group group = siteAdministrationPanelCategoryDisplayContext.getGroup();
 	</c:if>
 </c:if>
 
-<c:if test="<%= (group != null) && !group.isCompany() && !group.isDepot() %>">
+<c:if test="<%= (siteAdministrationPanelCategoryDisplayContext.getGroup() != null) && siteAdministrationPanelCategoryDisplayContext.isShowLayoutsTree() %>">
 	<aui:script sandbox="<%= true %>">
 		var pagesTreeToggle = document.getElementById(
 			'<portlet:namespace />pagesTreeSidenavToggleId'

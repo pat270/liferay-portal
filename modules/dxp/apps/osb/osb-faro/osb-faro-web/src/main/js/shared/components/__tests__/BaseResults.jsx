@@ -1,11 +1,11 @@
 import * as data from 'test/data';
 import BaseResults from '../BaseResults';
-import Promise from 'metal-promise';
 import React from 'react';
 import {cleanup, fireEvent, render} from '@testing-library/react';
 import {noop, times} from 'lodash';
 import {SelectionProvider} from 'shared/context/selection';
 import {StaticRouter} from 'react-router';
+import {waitForLoadingToBeRemoved} from 'test/helpers';
 
 jest.unmock('react-dom');
 
@@ -38,8 +38,8 @@ describe('BaseResults', () => {
 		expect(container).toMatchSnapshot();
 	});
 
-	it('should render w/ an error display', () => {
-		const {getByText} = render(
+	it('should render w/ an error display', async () => {
+		const {container, getByText} = render(
 			<DefaultComponent
 				dataSourceFn={() => Promise.reject({})}
 				groupId='23'
@@ -49,11 +49,13 @@ describe('BaseResults', () => {
 
 		jest.runAllTimers();
 
+		await waitForLoadingToBeRemoved(container);
+
 		expect(getByText('An unexpected error occurred.')).toBeInTheDocument;
 	});
 
-	it('should render w/a no results display', () => {
-		const {getByText} = render(
+	it('should render w/a no results display', async () => {
+		const {container, getByText} = render(
 			<DefaultComponent
 				dataSourceFn={() => Promise.resolve({items: [], total: 0})}
 				groupId='23'
@@ -63,6 +65,9 @@ describe('BaseResults', () => {
 		);
 
 		jest.runAllTimers();
+
+		await waitForLoadingToBeRemoved(container);
+
 		expect(getByText('There are no results found.')).toBeInTheDocument();
 	});
 
@@ -85,8 +90,8 @@ describe('BaseResults', () => {
 		);
 	});
 
-	it('should not render a subnav if there is a datasourceFn error', () => {
-		const {queryByText} = render(
+	it('should not render a subnav if there is a datasourceFn error', async () => {
+		const {container, queryByText} = render(
 			<DefaultComponent
 				dataSourceFn={() => Promise.reject(new Error())}
 				groupId='23'
@@ -96,10 +101,13 @@ describe('BaseResults', () => {
 		);
 
 		jest.runAllTimers();
+
+		await waitForLoadingToBeRemoved(container);
+
 		expect(queryByText('subnav content')).toBeNull();
 	});
 
-	it('should render with search disabled when disableSearch is TRUE', () => {
+	it('should render with search disabled when disableSearch is TRUE', async () => {
 		const {container} = render(
 			<DefaultComponent
 				dataSourceFn={() =>
@@ -115,11 +123,14 @@ describe('BaseResults', () => {
 		);
 
 		jest.runAllTimers();
+
+		await waitForLoadingToBeRemoved(container);
+
 		expect(container.querySelector('.search input').disabled).toBe(true);
 	});
 
-	it('should not include disabled items when calculating whether all the items are checked', () => {
-		const {getByTestId} = render(
+	it('should not include disabled items when calculating whether all the items are checked', async () => {
+		const {container, getByTestId} = render(
 			<DefaultComponent
 				checkDisabled={item => item.id === '0'}
 				dataSourceFn={() =>
@@ -135,9 +146,13 @@ describe('BaseResults', () => {
 
 		jest.runAllTimers();
 
+		await waitForLoadingToBeRemoved(container);
+
 		fireEvent.click(selectAllCheckbox);
 
 		jest.runAllTimers();
+
+		await waitForLoadingToBeRemoved(container);
 
 		expect(selectAllCheckbox.checked).toBe(true);
 	});

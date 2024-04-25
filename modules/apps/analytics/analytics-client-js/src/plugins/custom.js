@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {closest, getClosestAssetElement} from '../utils/assets';
+import {closest, getClosestAssetElement, isTrackable} from '../utils/assets';
 import {CUSTOM, DEBOUNCE} from '../utils/constants';
 import {debounce} from '../utils/debounce';
 import {clickEvent, onReady} from '../utils/events';
@@ -30,15 +30,6 @@ function getCustomAssetPayload({dataset}) {
 }
 
 /**
- * Wether a Custom Asset is trackable or not.
- * @param {Object} element The Custom DOM element
- * @returns {boolean} True if the element is trackable.
- */
-function isTrackableCustomAsset(element) {
-	return element && 'analyticsAssetId' in element.dataset;
-}
-
-/**
  * Sends information when user clicks on a Custom Asset.
  * @param {Object} analytics The Analytics client instance
  */
@@ -51,7 +42,13 @@ function trackCustomAssetDownloaded(analytics) {
 
 		const customAssetElement = getClosestAssetElement(target, 'custom');
 
-		if (actionElement && isTrackableCustomAsset(customAssetElement)) {
+		if (
+			actionElement &&
+			isTrackable(customAssetElement, [
+				'analyticsAssetId',
+				'analyticsAssetType',
+			])
+		) {
 			analytics.send(
 				'assetDownloaded',
 				applicationId,
@@ -100,10 +97,14 @@ function trackCustomAssetSubmitted(analytics) {
 	const onSubmit = (event) => {
 		const {target} = event;
 		const customAssetElement = getClosestAssetElement(target, 'custom');
+		const isElementTrackable = isTrackable(customAssetElement, [
+			'analyticsAssetId',
+			'analyticsAssetType',
+		]);
 
 		if (
-			!isTrackableCustomAsset(customAssetElement) ||
-			(isTrackableCustomAsset(customAssetElement) &&
+			!isElementTrackable ||
+			(isElementTrackable &&
 				(target.tagName !== 'FORM' || event.defaultPrevented))
 		) {
 			return;
@@ -134,7 +135,9 @@ function trackCustomAssetViewed(analytics) {
 					'[data-analytics-asset-type="custom"]'
 				)
 			)
-			.filter((element) => isTrackableCustomAsset(element))
+			.filter((element) =>
+				isTrackable(element, ['analyticsAssetId', 'analyticsAssetType'])
+			)
 			.forEach((element) => {
 				const formEnabled = !!element.getElementsByTagName('form')
 					.length;
@@ -169,7 +172,8 @@ function trackCustomAssetClick(analytics) {
 		applicationId,
 		eventType: 'assetClicked',
 		getPayload: getCustomAssetPayload,
-		isTrackable: isTrackableCustomAsset,
+		isTrackable: (element) =>
+			isTrackable(element, ['analyticsAssetId', 'analyticsAssetType']),
 		type: 'custom',
 	});
 }

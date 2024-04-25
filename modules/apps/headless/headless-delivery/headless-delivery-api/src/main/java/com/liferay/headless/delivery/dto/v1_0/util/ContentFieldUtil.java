@@ -14,6 +14,7 @@ import com.liferay.dynamic.data.mapping.model.DDMFormFieldType;
 import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 import com.liferay.dynamic.data.mapping.model.Value;
 import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
+import com.liferay.headless.delivery.dto.v1_0.ContentDocument;
 import com.liferay.headless.delivery.dto.v1_0.ContentField;
 import com.liferay.headless.delivery.dto.v1_0.ContentFieldValue;
 import com.liferay.headless.delivery.dto.v1_0.Geo;
@@ -78,28 +79,12 @@ public class ContentFieldUtil {
 
 		return new ContentField() {
 			{
-				contentFieldValue = _toContentFieldValue(
-					ddmFormField, dlAppService, dlURLHelper,
-					dtoConverterContext, journalArticleService,
-					layoutLocalService, dtoConverterContext.getLocale(),
-					ddmFormFieldValue.getValue());
-				dataType = ContentStructureUtil.toDataType(ddmFormField);
-				inputControl = ContentStructureUtil.toInputControl(
-					ddmFormField);
-				label = localizedValue.getString(
-					dtoConverterContext.getLocale());
-				label_i18n = LocalizedMapUtil.getI18nMap(
-					dtoConverterContext.isAcceptAllLanguages(),
-					localizedValue.getValues());
-				name = ddmFormField.getFieldReference();
-				nestedContentFields = TransformUtil.transformToArray(
-					ddmFormFieldValue.getNestedDDMFormFieldValues(),
-					value -> toContentField(
-						value, dlAppService, dlURLHelper, dtoConverterContext,
-						journalArticleService, layoutLocalService),
-					ContentField.class);
-				repeatable = ddmFormField.isRepeatable();
-
+				setContentFieldValue(
+					() -> _toContentFieldValue(
+						ddmFormField, dlAppService, dlURLHelper,
+						dtoConverterContext, journalArticleService,
+						layoutLocalService, dtoConverterContext.getLocale(),
+						ddmFormFieldValue.getValue()));
 				setContentFieldValue_i18n(
 					() -> {
 						if (!dtoConverterContext.isAcceptAllLanguages()) {
@@ -110,10 +95,23 @@ public class ContentFieldUtil {
 
 						Value value = ddmFormFieldValue.getValue();
 
+						Locale defaultLocale = value.getDefaultLocale();
+
 						Map<Locale, String> values = value.getValues();
 
 						if (values == null) {
 							values = Collections.emptyMap();
+						}
+
+						if (!values.containsKey(defaultLocale)) {
+							map.put(
+								LocaleUtil.toBCP47LanguageId(defaultLocale),
+								_getContentFieldValue(
+									ddmFormField, dlAppService, dlURLHelper,
+									dtoConverterContext, journalArticleService,
+									layoutLocalService, defaultLocale,
+									String.valueOf(
+										value.getString(defaultLocale))));
 						}
 
 						for (Map.Entry<Locale, String> entry :
@@ -132,6 +130,27 @@ public class ContentFieldUtil {
 
 						return map;
 					});
+				setDataType(
+					() -> ContentStructureUtil.toDataType(ddmFormField));
+				setInputControl(
+					() -> ContentStructureUtil.toInputControl(ddmFormField));
+				setLabel(
+					() -> localizedValue.getString(
+						dtoConverterContext.getLocale()));
+				setLabel_i18n(
+					() -> LocalizedMapUtil.getI18nMap(
+						dtoConverterContext.isAcceptAllLanguages(),
+						localizedValue.getValues()));
+				setName(ddmFormField::getFieldReference);
+				setNestedContentFields(
+					() -> TransformUtil.transformToArray(
+						ddmFormFieldValue.getNestedDDMFormFieldValues(),
+						value -> toContentField(
+							value, dlAppService, dlURLHelper,
+							dtoConverterContext, journalArticleService,
+							layoutLocalService),
+						ContentField.class));
+				setRepeatable(ddmFormField::isRepeatable);
 			}
 		};
 	}
@@ -146,12 +165,29 @@ public class ContentFieldUtil {
 		try {
 			UriInfo uriInfo = dtoConverterContext.getUriInfo();
 
-			if (Objects.equals(DDMFormFieldType.DATE, ddmFormField.getType()) ||
-				Objects.equals(ddmFormField.getType(), "date")) {
+			if (Objects.equals(
+					DDMFormFieldType.CHECKBOX, ddmFormField.getType())) {
 
 				return new ContentFieldValue() {
 					{
-						data = _toDateString(locale, valueString);
+						setData(
+							() -> {
+								if (Validator.isNull(valueString)) {
+									return Boolean.FALSE.toString();
+								}
+
+								return valueString;
+							});
+					}
+				};
+			}
+			else if (Objects.equals(
+						DDMFormFieldType.DATE, ddmFormField.getType()) ||
+					 Objects.equals(ddmFormField.getType(), "date")) {
+
+				return new ContentFieldValue() {
+					{
+						setData(() -> _toDateString(locale, valueString));
 					}
 				};
 			}
@@ -170,10 +206,11 @@ public class ContentFieldUtil {
 
 				return new ContentFieldValue() {
 					{
-						document = ContentDocumentUtil.toContentDocument(
-							dlURLHelper,
-							"contentFields.contentFieldValue.document",
-							fileEntry, uriInfo);
+						setDocument(
+							() -> ContentDocumentUtil.toContentDocument(
+								dlURLHelper,
+								"contentFields.contentFieldValue.document",
+								fileEntry, uriInfo));
 					}
 				};
 			}
@@ -186,12 +223,15 @@ public class ContentFieldUtil {
 
 				return new ContentFieldValue() {
 					{
-						geo = new Geo() {
-							{
-								latitude = jsonObject.getDouble("lat");
-								longitude = jsonObject.getDouble("lng");
-							}
-						};
+						setGeo(
+							() -> new Geo() {
+								{
+									setLatitude(
+										() -> jsonObject.getDouble("lat"));
+									setLongitude(
+										() -> jsonObject.getDouble("lng"));
+								}
+							});
 					}
 				};
 			}
@@ -203,12 +243,16 @@ public class ContentFieldUtil {
 
 				return new ContentFieldValue() {
 					{
-						geo = new Geo() {
-							{
-								latitude = jsonObject.getDouble("latitude");
-								longitude = jsonObject.getDouble("longitude");
-							}
-						};
+						setGeo(
+							() -> new Geo() {
+								{
+									setLatitude(
+										() -> jsonObject.getDouble("latitude"));
+									setLongitude(
+										() -> jsonObject.getDouble(
+											"longitude"));
+								}
+							});
 					}
 				};
 			}
@@ -256,8 +300,10 @@ public class ContentFieldUtil {
 				return new ContentFieldValue() {
 					{
 						setData(
-							JSONUtil.toString(localizedSelectedDataJSONObject));
-						setValue(JSONUtil.toString(selectedValuesJSONObject));
+							() -> JSONUtil.toString(
+								localizedSelectedDataJSONObject));
+						setValue(
+							() -> JSONUtil.toString(selectedValuesJSONObject));
 					}
 				};
 			}
@@ -278,24 +324,35 @@ public class ContentFieldUtil {
 
 				return new ContentFieldValue() {
 					{
-						image = ContentDocumentUtil.toContentDocument(
-							dlURLHelper,
-							"contentFields.contentFieldValue.image",
-							dlAppService.getFileEntry(fileEntryId), uriInfo);
+						setImage(
+							() -> {
+								ContentDocument contentDocument =
+									ContentDocumentUtil.toContentDocument(
+										dlURLHelper,
+										"contentFields.contentFieldValue.image",
+										dlAppService.getFileEntry(fileEntryId),
+										uriInfo);
 
-						String alt = jsonObject.getString("alt");
+								String alt = jsonObject.getString("alt");
 
-						if (Validator.isNotNull(alt) &&
-							JSONUtil.isJSONObject(alt)) {
+								contentDocument.setDescription(
+									() -> {
+										if (Validator.isNotNull(alt) &&
+											JSONUtil.isJSONObject(alt)) {
 
-							JSONObject altJSONObject = jsonObject.getJSONObject(
-								"alt");
+											JSONObject altJSONObject =
+												jsonObject.getJSONObject("alt");
 
-							alt = altJSONObject.getString(
-								LocaleUtil.toLanguageId(locale));
-						}
+											return altJSONObject.getString(
+												LocaleUtil.toLanguageId(
+													locale));
+										}
 
-						image.setDescription(alt);
+										return alt;
+									});
+
+								return contentDocument;
+							});
 					}
 				};
 			}
@@ -321,16 +378,20 @@ public class ContentFieldUtil {
 
 				return new ContentFieldValue() {
 					{
-						structuredContentLink = new StructuredContentLink() {
-							{
-								contentType = "StructuredContent";
-								embeddedStructuredContent =
-									_toStructuredContent(
-										classPK, dtoConverterContext);
-								id = journalArticle.getResourcePrimKey();
-								title = journalArticle.getTitle();
-							}
-						};
+						setStructuredContentLink(
+							() -> new StructuredContentLink() {
+								{
+									setContentType(() -> "StructuredContent");
+									setEmbeddedStructuredContent(
+										() -> _toStructuredContent(
+											classPK, dtoConverterContext));
+									setId(
+										() ->
+											journalArticle.
+												getResourcePrimKey());
+									setTitle(journalArticle::getTitle);
+								}
+							});
 					}
 				};
 			}
@@ -358,7 +419,7 @@ public class ContentFieldUtil {
 
 				return new ContentFieldValue() {
 					{
-						link = layoutByUuidAndGroupId.getFriendlyURL();
+						setLink(layoutByUuidAndGroupId::getFriendlyURL);
 					}
 				};
 			}
@@ -427,10 +488,10 @@ public class ContentFieldUtil {
 				return new ContentFieldValue() {
 					{
 						setData(
-							selectedOptionLabelLocalizedValue.getString(
+							() -> selectedOptionLabelLocalizedValue.getString(
 								locale));
 						setValue(
-							ddmFormFieldOptions.getOptionReference(
+							() -> ddmFormFieldOptions.getOptionReference(
 								valueString));
 					}
 				};
@@ -438,7 +499,7 @@ public class ContentFieldUtil {
 
 			return new ContentFieldValue() {
 				{
-					data = valueString;
+					setData(() -> valueString);
 				}
 			};
 		}

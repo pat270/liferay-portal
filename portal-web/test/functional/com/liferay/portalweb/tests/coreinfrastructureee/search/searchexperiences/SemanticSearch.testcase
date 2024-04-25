@@ -22,15 +22,27 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-168704."
+	@priority = 3
 	test AssertBlacklistedTextEmbeddingProvidersAreUnavailable {
 		property custom.properties = "feature.flag.LPS-122920=true";
-		property osgi.module.configuration.file.names = "com.liferay.portal.component.blacklist.internal.configuration.ComponentBlacklistConfiguration.config";
-		property osgi.module.configurations = "blacklistComponentNames=[\"com.liferay.search.experiences.internal.ml.embedding.text.TXTAITextEmbeddingProvider\",\"com.liferay.search.experiences.internal.ml.embedding.text.HuggingFaceInferenceAPITextEmbeddingProvider\"]";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		WaitForConsoleTextPresent(value1 = "Disabling com.liferay.search.experiences.internal.ml.embedding.text.TXTAITextEmbeddingProvider");
+		ServerAdministration.openServerAdmin();
 
-		WaitForConsoleTextPresent(value1 = "Disabling com.liferay.search.experiences.internal.ml.embedding.text.HuggingFaceInferenceAPITextEmbeddingProvider");
+		ServerAdministration.addCategoryLogLevels(
+			categoryLevel = "DEBUG",
+			categoryName = "com.liferay.search.experiences.internal.ml.embedding.text.TextEmbeddingRetrieverImpl");
+
+		var liferayHome = PropsUtil.get("liferay.home.dir.name");
+
+		FileUtil.write("${liferayHome}/osgi/configs/com.liferay.search.experiences.internal.ml.embedding.text.TextEmbeddingRetrieverImpl.config", "disabledProviders=[\"txtai\",\"huggingFaceInferenceAPI\"]");
+
+		OSGiConfig.waitForOSGiConfig();
+
+		WaitForConsoleTextPresent(value1 = "Disabling txtai");
+
+		WaitForConsoleTextPresent(value1 = "Disabling huggingFaceInferenceAPI");
 
 		SystemSettings.openToConfigInSystemSettings(portletId = "com.liferay.search.experiences.configuration.SemanticSearchConfiguration");
 
@@ -56,11 +68,11 @@ definition {
 			key_value = "Hugging Face Inference API",
 			locator1 = "Select#GENERIC_SELECT_VALUE");
 
-		OSGiConfig.deleteOSGiConfigFile(osgiConfigFileName = "com.liferay.portal.component.blacklist.internal.configuration.ComponentBlacklistConfiguration.config");
+		OSGiConfig.deleteOSGiConfigFile(osgiConfigFileName = "com.liferay.search.experiences.internal.ml.embedding.text.TextEmbeddingRetrieverImpl.config");
 
-		WaitForConsoleTextPresent(value1 = "Enabling com.liferay.search.experiences.internal.ml.embedding.text.TXTAITextEmbeddingProvider");
+		WaitForConsoleTextPresent(value1 = "Enabling txtai");
 
-		WaitForConsoleTextPresent(value1 = "Enabling com.liferay.search.experiences.internal.ml.embedding.text.HuggingFaceInferenceAPITextEmbeddingProvider");
+		WaitForConsoleTextPresent(value1 = "Enabling huggingFaceInferenceAPI");
 
 		Refresh();
 
@@ -88,9 +100,11 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-174623."
+	@priority = 3
 	test AssertReindexWarningAppearsForCriticalChanges {
 		property custom.properties = "feature.flag.LPS-122920=true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("When System Settings are using default configurations, assert the warning is not present") {
 			SystemSettings.openToConfigInSystemSettings(portletId = "com.liferay.search.experiences.configuration.SemanticSearchConfiguration");
@@ -140,7 +154,7 @@ definition {
 				text = "albert");
 
 			Click(
-				key_itemName = "albert-base-v1",
+				key_itemName = "albert/albert-base-v1",
 				locator1 = "FormFields#FIELD_DROPDOWN_ITEM");
 		}
 
@@ -213,7 +227,7 @@ definition {
 				text = "albert");
 
 			Click(
-				key_itemName = "albert-base-v1",
+				key_itemName = "albert/albert-base-v1",
 				locator1 = "FormFields#FIELD_DROPDOWN_ITEM");
 
 			AssertElementNotPresent(
@@ -297,6 +311,7 @@ definition {
 		}
 	}
 
+	@priority = 3
 	test AssertSearchUsingTxtaiWithTextEmbeddingElementHasNoError {
 		property custom.properties = "feature.flag.LPS-122920=true";
 		property txtai.enabled = "true";
@@ -314,19 +329,20 @@ definition {
 
 		PortletEntry.save();
 
-		Search.openSearchPage();
+		SearchPage.openSearchPage();
 
 		Blueprints.applyBlueprintViaOptionsWidget(blueprintTitle = "Test Blueprint");
 
-		SearchPortlets.searchEmbedded(searchTerm = "test");
+		SearchPage.searchEmbedded(searchTerm = "test");
 
-		SearchResultPortlet.viewSearchResults(
+		SearchResults.viewSearchResults(
 			searchAssetTitle = "Test Web Content",
 			searchAssetType = "Web Content Article");
 
 		AssertElementNotPresent(locator1 = "Message#ERROR");
 	}
 
+	@priority = 3
 	test AssertTxtaiTextEmbeddingIndexFieldAddedToAssets {
 		property custom.properties = "feature.flag.LPS-122920=true";
 		property txtai.enabled = "true";
@@ -357,20 +373,21 @@ definition {
 			wikiPageContent = "",
 			wikiPageName = "Test Wiki Page");
 
-		Search.openSearchPage();
+		SearchPage.openSearchPage();
 
-		SearchResultPortlet.configureSearchResults(displayDocumentForm = "true");
+		SearchResults.configureSearchResults(displayDocumentForm = "true");
 
-		SearchPortlets.searchEmbedded(searchTerm = "test");
+		SearchPage.searchEmbedded(searchTerm = "test");
 
 		for (var assetTitle : list "Test Web Content,Test Blog,Test Knowledge Base Article,Test Message Board Thread,Test Wiki Page") {
-			SearchResultPortlet.viewDocumentDetailValue(
+			SearchResults.viewDocumentDetailValue(
 				documentDetailKey = "text_embedding_768_en_US",
 				documentDetailKeyValue = "0.0",
 				searchAssetTitle = ${assetTitle});
 		}
 	}
 
+	@priority = 3
 	test AssertTxtaiWithTextEmbeddingElementAffectsBlueprintPreview {
 		property custom.properties = "feature.flag.LPS-122920=true";
 		property txtai.enabled = "true";
@@ -417,6 +434,7 @@ definition {
 		}
 	}
 
+	@priority = 3
 	test ViewHuggingFaceSystemSettingsRequiredFieldValidation {
 		property custom.properties = "feature.flag.LPS-122920=true";
 
@@ -494,9 +512,11 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-170345 and LPS-172161."
+	@priority = 3
 	test ViewSystemAndInstanceSettingsSaveUI {
 		property custom.properties = "feature.flag.LPS-122920=true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Within System Settings, fill out required fields for Hugging Face Inference API and save") {
 			SystemSettings.openToConfigInSystemSettings(portletId = "com.liferay.search.experiences.configuration.SemanticSearchConfiguration");
@@ -593,7 +613,7 @@ definition {
 				text = "albert");
 
 			Click(
-				key_itemName = "albert-base-v1",
+				key_itemName = "albert/albert-base-v1",
 				locator1 = "FormFields#FIELD_DROPDOWN_ITEM");
 
 			SemanticSearch.saveAndContinue();
@@ -612,7 +632,7 @@ definition {
 
 			SystemSettings.viewInputText(
 				fieldLabel = "Model",
-				fieldValue = "albert-base-v1");
+				fieldValue = "albert/albert-base-v1");
 		}
 
 		task ("Refresh the page and assert form fields retain the values added earlier") {
@@ -624,7 +644,7 @@ definition {
 
 			SystemSettings.viewInputText(
 				fieldLabel = "Model",
-				fieldValue = "albert-base-v1");
+				fieldValue = "albert/albert-base-v1");
 		}
 
 		task ("Back in System Settings, fill out required fields for Hugging Face Inference API and save") {
@@ -662,7 +682,7 @@ definition {
 
 			SystemSettings.viewInputText(
 				fieldLabel = "Model",
-				fieldValue = "albert-base-v1");
+				fieldValue = "albert/albert-base-v1");
 		}
 
 		task ("Assert Instance Settings field values use the System Settings values when resetting to default") {
@@ -683,9 +703,11 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-173824."
+	@priority = 3
 	test ViewSystemSettingUnsuccessfulConnectionWarning {
 		property custom.properties = "feature.flag.LPS-122920=true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 		property txtai.enabled = "true";
 
 		task ("Assert the warning doesn't appear when connection is successful and changes persist when configuration is saved") {
@@ -758,6 +780,7 @@ definition {
 		}
 	}
 
+	@priority = 3
 	test ViewTxtaiSystemSettingsRequiredFieldValidation {
 		property custom.properties = "feature.flag.LPS-122920=true";
 
@@ -789,9 +812,11 @@ definition {
 		SemanticSearch.saveAndContinue();
 	}
 
+	@priority = 3
 	test ViewTxtaiSystemSettingsTestConfiguration {
 		property custom.properties = "feature.flag.LPS-122920=true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 		property txtai.enabled = "true";
 
 		SystemSettings.openToConfigInSystemSettings(portletId = "com.liferay.search.experiences.configuration.SemanticSearchConfiguration");

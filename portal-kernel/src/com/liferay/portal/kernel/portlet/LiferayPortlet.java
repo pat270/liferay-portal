@@ -6,6 +6,7 @@
 package com.liferay.portal.kernel.portlet;
 
 import com.liferay.petra.string.CharPool;
+import com.liferay.portal.kernel.change.tracking.CTRequiredModelException;
 import com.liferay.portal.kernel.change.tracking.CTTransactionException;
 import com.liferay.portal.kernel.exception.DuplicateExternalReferenceCodeException;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -96,7 +97,14 @@ public class LiferayPortlet extends GenericPortlet {
 		catch (PortletException portletException) {
 			Throwable throwable = portletException.getCause();
 
-			if (throwable instanceof CTTransactionException) {
+			if (throwable.getCause() instanceof CTRequiredModelException) {
+				throwable = throwable.getCause();
+
+				SessionErrors.add(
+					PortalUtil.getHttpServletRequest(actionRequest),
+					throwable.getClass(), throwable);
+			}
+			else if (throwable instanceof CTTransactionException) {
 				_log.error(throwable, throwable);
 
 				SessionErrors.add(

@@ -5,7 +5,6 @@
 
 package com.liferay.blogs.web.internal.info.item.provider;
 
-import com.liferay.asset.display.page.portlet.AssetDisplayPageFriendlyURLProvider;
 import com.liferay.asset.info.item.provider.AssetEntryInfoItemFieldSetProvider;
 import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.blogs.web.internal.info.item.BlogsEntryInfoItemFields;
@@ -21,7 +20,6 @@ import com.liferay.info.type.WebImage;
 import com.liferay.layout.page.template.info.item.provider.DisplayPageInfoItemFieldSetProvider;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -62,7 +60,8 @@ public class BlogsEntryInfoItemFieldValuesProvider
 				_displayPageInfoItemFieldSetProvider.getInfoFieldValues(
 					new InfoItemReference(
 						BlogsEntry.class.getName(), blogsEntry.getEntryId()),
-					StringPool.BLANK, _getThemeDisplay())
+					StringPool.BLANK, BlogsEntry.class.getSimpleName(),
+					blogsEntry, _getThemeDisplay())
 			).infoFieldValues(
 				_expandoInfoItemFieldSetProvider.getInfoFieldValues(
 					BlogsEntry.class.getName(), blogsEntry)
@@ -196,16 +195,6 @@ public class BlogsEntryInfoItemFieldValuesProvider
 				new InfoFieldValue<>(
 					BlogsEntryInfoItemFields.publishDateInfoField,
 					blogsEntry.getDisplayDate()));
-
-			if ((themeDisplay != null) &&
-				!FeatureFlagManagerUtil.isEnabled("LPS-183727")) {
-
-				blogsEntryFieldValues.add(
-					new InfoFieldValue<>(
-						BlogsEntryInfoItemFields.displayPageURLInfoField,
-						_getDisplayPageURL(blogsEntry)));
-			}
-
 			blogsEntryFieldValues.add(
 				new InfoFieldValue<>(
 					BlogsEntryInfoItemFields.contentInfoField,
@@ -218,16 +207,6 @@ public class BlogsEntryInfoItemFieldValuesProvider
 		}
 	}
 
-	private String _getDisplayPageURL(BlogsEntry blogsEntry)
-		throws PortalException {
-
-		return _assetDisplayPageFriendlyURLProvider.getFriendlyURL(
-			new InfoItemReference(
-				BlogsEntry.class.getName(),
-				new ClassPKInfoItemIdentifier(blogsEntry.getEntryId())),
-			_getThemeDisplay());
-	}
-
 	private ThemeDisplay _getThemeDisplay() {
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
@@ -238,10 +217,6 @@ public class BlogsEntryInfoItemFieldValuesProvider
 
 		return null;
 	}
-
-	@Reference
-	private AssetDisplayPageFriendlyURLProvider
-		_assetDisplayPageFriendlyURLProvider;
 
 	@Reference
 	private AssetEntryInfoItemFieldSetProvider

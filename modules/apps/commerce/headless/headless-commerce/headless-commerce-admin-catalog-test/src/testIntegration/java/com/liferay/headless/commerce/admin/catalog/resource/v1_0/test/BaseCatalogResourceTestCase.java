@@ -28,8 +28,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -38,6 +36,7 @@ import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.search.test.util.SearchTestRule;
@@ -63,8 +62,6 @@ import java.util.Set;
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-
-import org.apache.commons.lang.time.DateUtils;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -247,6 +244,8 @@ public abstract class BaseCatalogResourceTestCase {
 		Catalog catalog =
 			testGraphQLGetCatalogByExternalReferenceCode_addCatalog();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				catalog,
@@ -268,6 +267,33 @@ public abstract class BaseCatalogResourceTestCase {
 								getGraphQLFields())),
 						"JSONObject/data",
 						"Object/catalogByExternalReferenceCode"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		Assert.assertTrue(
+			equals(
+				catalog,
+				CatalogSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminCatalog_v1_0",
+								new GraphQLField(
+									"catalogByExternalReferenceCode",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"externalReferenceCode",
+												"\"" +
+													catalog.
+														getExternalReferenceCode() +
+															"\"");
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminCatalog_v1_0",
+						"Object/catalogByExternalReferenceCode"))));
 	}
 
 	@Test
@@ -276,6 +302,8 @@ public abstract class BaseCatalogResourceTestCase {
 
 		String irrelevantExternalReferenceCode =
 			"\"" + RandomTestUtil.randomString() + "\"";
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -291,6 +319,27 @@ public abstract class BaseCatalogResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0",
+						new GraphQLField(
+							"catalogByExternalReferenceCode",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"externalReferenceCode",
+										irrelevantExternalReferenceCode);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -328,7 +377,10 @@ public abstract class BaseCatalogResourceTestCase {
 
 	@Test
 	public void testGraphQLDeleteCatalog() throws Exception {
-		Catalog catalog = testGraphQLDeleteCatalog_addCatalog();
+
+		// No namespace
+
+		Catalog catalog1 = testGraphQLDeleteCatalog_addCatalog();
 
 		Assert.assertTrue(
 			JSONUtil.getValueAsBoolean(
@@ -337,23 +389,60 @@ public abstract class BaseCatalogResourceTestCase {
 						"deleteCatalog",
 						new HashMap<String, Object>() {
 							{
-								put("id", catalog.getId());
+								put("id", catalog1.getId());
 							}
 						})),
 				"JSONObject/data", "Object/deleteCatalog"));
-		JSONArray errorsJSONArray = JSONUtil.getValueAsJSONArray(
+
+		JSONArray errorsJSONArray1 = JSONUtil.getValueAsJSONArray(
 			invokeGraphQLQuery(
 				new GraphQLField(
 					"catalog",
 					new HashMap<String, Object>() {
 						{
-							put("id", catalog.getId());
+							put("id", catalog1.getId());
 						}
 					},
 					new GraphQLField("id"))),
 			"JSONArray/errors");
 
-		Assert.assertTrue(errorsJSONArray.length() > 0);
+		Assert.assertTrue(errorsJSONArray1.length() > 0);
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		Catalog catalog2 = testGraphQLDeleteCatalog_addCatalog();
+
+		Assert.assertTrue(
+			JSONUtil.getValueAsBoolean(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0",
+						new GraphQLField(
+							"deleteCatalog",
+							new HashMap<String, Object>() {
+								{
+									put("id", catalog2.getId());
+								}
+							}))),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminCatalog_v1_0",
+				"Object/deleteCatalog"));
+
+		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminCatalog_v1_0",
+					new GraphQLField(
+						"catalog",
+						new HashMap<String, Object>() {
+							{
+								put("id", catalog2.getId());
+							}
+						},
+						new GraphQLField("id")))),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray2.length() > 0);
 	}
 
 	protected Catalog testGraphQLDeleteCatalog_addCatalog() throws Exception {
@@ -379,6 +468,8 @@ public abstract class BaseCatalogResourceTestCase {
 	public void testGraphQLGetCatalog() throws Exception {
 		Catalog catalog = testGraphQLGetCatalog_addCatalog();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				catalog,
@@ -394,11 +485,35 @@ public abstract class BaseCatalogResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/catalog"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		Assert.assertTrue(
+			equals(
+				catalog,
+				CatalogSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminCatalog_v1_0",
+								new GraphQLField(
+									"catalog",
+									new HashMap<String, Object>() {
+										{
+											put("id", catalog.getId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminCatalog_v1_0",
+						"Object/catalog"))));
 	}
 
 	@Test
 	public void testGraphQLGetCatalogNotFound() throws Exception {
 		Long irrelevantId = RandomTestUtil.randomLong();
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -412,6 +527,25 @@ public abstract class BaseCatalogResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0",
+						new GraphQLField(
+							"catalog",
+							new HashMap<String, Object>() {
+								{
+									put("id", irrelevantId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -533,10 +667,10 @@ public abstract class BaseCatalogResourceTestCase {
 
 	@Test
 	public void testGetCatalogsPageWithPagination() throws Exception {
-		Page<Catalog> totalPage = catalogResource.getCatalogsPage(
+		Page<Catalog> catalogPage = catalogResource.getCatalogsPage(
 			null, null, null, null);
 
-		int totalCount = GetterUtil.getInteger(totalPage.getTotalCount());
+		int totalCount = GetterUtil.getInteger(catalogPage.getTotalCount());
 
 		Catalog catalog1 = testGetCatalogsPage_addCatalog(randomCatalog());
 
@@ -544,29 +678,65 @@ public abstract class BaseCatalogResourceTestCase {
 
 		Catalog catalog3 = testGetCatalogsPage_addCatalog(randomCatalog());
 
-		Page<Catalog> page1 = catalogResource.getCatalogsPage(
-			null, null, Pagination.of(1, totalCount + 2), null);
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<Catalog> catalogs1 = (List<Catalog>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			catalogs1.toString(), totalCount + 2, catalogs1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<Catalog> page1 = catalogResource.getCatalogsPage(
+				null, null,
+				Pagination.of(
+					(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+					pageSizeLimit),
+				null);
 
-		Page<Catalog> page2 = catalogResource.getCatalogsPage(
-			null, null, Pagination.of(2, totalCount + 2), null);
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+			assertContains(catalog1, (List<Catalog>)page1.getItems());
 
-		List<Catalog> catalogs2 = (List<Catalog>)page2.getItems();
+			Page<Catalog> page2 = catalogResource.getCatalogsPage(
+				null, null,
+				Pagination.of(
+					(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+					pageSizeLimit),
+				null);
 
-		Assert.assertEquals(catalogs2.toString(), 1, catalogs2.size());
+			assertContains(catalog2, (List<Catalog>)page2.getItems());
 
-		Page<Catalog> page3 = catalogResource.getCatalogsPage(
-			null, null, Pagination.of(1, totalCount + 3), null);
+			Page<Catalog> page3 = catalogResource.getCatalogsPage(
+				null, null,
+				Pagination.of(
+					(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+					pageSizeLimit),
+				null);
 
-		assertContains(catalog1, (List<Catalog>)page3.getItems());
-		assertContains(catalog2, (List<Catalog>)page3.getItems());
-		assertContains(catalog3, (List<Catalog>)page3.getItems());
+			assertContains(catalog3, (List<Catalog>)page3.getItems());
+		}
+		else {
+			Page<Catalog> page1 = catalogResource.getCatalogsPage(
+				null, null, Pagination.of(1, totalCount + 2), null);
+
+			List<Catalog> catalogs1 = (List<Catalog>)page1.getItems();
+
+			Assert.assertEquals(
+				catalogs1.toString(), totalCount + 2, catalogs1.size());
+
+			Page<Catalog> page2 = catalogResource.getCatalogsPage(
+				null, null, Pagination.of(2, totalCount + 2), null);
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<Catalog> catalogs2 = (List<Catalog>)page2.getItems();
+
+			Assert.assertEquals(catalogs2.toString(), 1, catalogs2.size());
+
+			Page<Catalog> page3 = catalogResource.getCatalogsPage(
+				null, null, Pagination.of(1, (int)totalCount + 3), null);
+
+			assertContains(catalog1, (List<Catalog>)page3.getItems());
+			assertContains(catalog2, (List<Catalog>)page3.getItems());
+			assertContains(catalog3, (List<Catalog>)page3.getItems());
+		}
 	}
 
 	@Test
@@ -576,7 +746,7 @@ public abstract class BaseCatalogResourceTestCase {
 			(entityField, catalog1, catalog2) -> {
 				BeanTestUtil.setProperty(
 					catalog1, entityField.getName(),
-					DateUtils.addMinutes(new Date(), -2));
+					new Date(System.currentTimeMillis() - (2 * Time.MINUTE)));
 			});
 	}
 
@@ -674,22 +844,23 @@ public abstract class BaseCatalogResourceTestCase {
 
 		catalog2 = testGetCatalogsPage_addCatalog(catalog2);
 
+		Page<Catalog> page = catalogResource.getCatalogsPage(
+			null, null, null, null);
+
 		for (EntityField entityField : entityFields) {
 			Page<Catalog> ascPage = catalogResource.getCatalogsPage(
-				null, null, Pagination.of(1, 2),
+				null, null, Pagination.of(1, (int)page.getTotalCount() + 1),
 				entityField.getName() + ":asc");
 
-			assertEquals(
-				Arrays.asList(catalog1, catalog2),
-				(List<Catalog>)ascPage.getItems());
+			assertContains(catalog1, (List<Catalog>)ascPage.getItems());
+			assertContains(catalog2, (List<Catalog>)ascPage.getItems());
 
 			Page<Catalog> descPage = catalogResource.getCatalogsPage(
-				null, null, Pagination.of(1, 2),
+				null, null, Pagination.of(1, (int)page.getTotalCount() + 1),
 				entityField.getName() + ":desc");
 
-			assertEquals(
-				Arrays.asList(catalog2, catalog1),
-				(List<Catalog>)descPage.getItems());
+			assertContains(catalog2, (List<Catalog>)descPage.getItems());
+			assertContains(catalog1, (List<Catalog>)descPage.getItems());
 		}
 	}
 
@@ -713,6 +884,8 @@ public abstract class BaseCatalogResourceTestCase {
 			new GraphQLField("items", getGraphQLFields()),
 			new GraphQLField("page"), new GraphQLField("totalCount"));
 
+		// No namespace
+
 		JSONObject catalogsJSONObject = JSONUtil.getValueAsJSONObject(
 			invokeGraphQLQuery(graphQLField), "JSONObject/data",
 			"JSONObject/catalogs");
@@ -724,6 +897,27 @@ public abstract class BaseCatalogResourceTestCase {
 
 		catalogsJSONObject = JSONUtil.getValueAsJSONObject(
 			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/catalogs");
+
+		Assert.assertEquals(
+			totalCount + 2, catalogsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			catalog1,
+			Arrays.asList(
+				CatalogSerDes.toDTOs(catalogsJSONObject.getString("items"))));
+		assertContains(
+			catalog2,
+			Arrays.asList(
+				CatalogSerDes.toDTOs(catalogsJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		catalogsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminCatalog_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminCatalog_v1_0",
 			"JSONObject/catalogs");
 
 		Assert.assertEquals(
@@ -799,6 +993,8 @@ public abstract class BaseCatalogResourceTestCase {
 		Catalog catalog =
 			testGraphQLGetProductByExternalReferenceCodeCatalog_addCatalog();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				catalog,
@@ -819,6 +1015,32 @@ public abstract class BaseCatalogResourceTestCase {
 								getGraphQLFields())),
 						"JSONObject/data",
 						"Object/productByExternalReferenceCodeCatalog"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		Assert.assertTrue(
+			equals(
+				catalog,
+				CatalogSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminCatalog_v1_0",
+								new GraphQLField(
+									"productByExternalReferenceCodeCatalog",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"externalReferenceCode",
+												"\"" +
+													testGraphQLGetProductByExternalReferenceCodeCatalog_getExternalReferenceCode(
+														catalog) + "\"");
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminCatalog_v1_0",
+						"Object/productByExternalReferenceCodeCatalog"))));
 	}
 
 	protected String
@@ -836,6 +1058,8 @@ public abstract class BaseCatalogResourceTestCase {
 		String irrelevantExternalReferenceCode =
 			"\"" + RandomTestUtil.randomString() + "\"";
 
+		// No namespace
+
 		Assert.assertEquals(
 			"Not Found",
 			JSONUtil.getValueAsString(
@@ -850,6 +1074,27 @@ public abstract class BaseCatalogResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0",
+						new GraphQLField(
+							"productByExternalReferenceCodeCatalog",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"externalReferenceCode",
+										irrelevantExternalReferenceCode);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -887,6 +1132,8 @@ public abstract class BaseCatalogResourceTestCase {
 	public void testGraphQLGetProductIdCatalog() throws Exception {
 		Catalog catalog = testGraphQLGetProductIdCatalog_addCatalog();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				catalog,
@@ -905,6 +1152,31 @@ public abstract class BaseCatalogResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/productIdCatalog"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		Assert.assertTrue(
+			equals(
+				catalog,
+				CatalogSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminCatalog_v1_0",
+								new GraphQLField(
+									"productIdCatalog",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"id",
+												testGraphQLGetProductIdCatalog_getId(
+													catalog));
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminCatalog_v1_0",
+						"Object/productIdCatalog"))));
 	}
 
 	protected Long testGraphQLGetProductIdCatalog_getId(Catalog catalog)
@@ -916,6 +1188,8 @@ public abstract class BaseCatalogResourceTestCase {
 	@Test
 	public void testGraphQLGetProductIdCatalogNotFound() throws Exception {
 		Long irrelevantId = RandomTestUtil.randomLong();
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -929,6 +1203,25 @@ public abstract class BaseCatalogResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0",
+						new GraphQLField(
+							"productIdCatalog",
+							new HashMap<String, Object>() {
+								{
+									put("id", irrelevantId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -1318,6 +1611,10 @@ public abstract class BaseCatalogResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -1657,9 +1954,9 @@ public abstract class BaseCatalogResourceTestCase {
 	}
 
 	protected CatalogResource catalogResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

@@ -6,12 +6,14 @@
 package com.liferay.portlet.configuration.web.internal.display.context;
 
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.ResourcePrimKeyException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.PortletConstants;
@@ -20,7 +22,6 @@ import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.role.RoleConstants;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletProvider;
@@ -50,11 +51,10 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.configuration.web.internal.configuration.RoleVisibilityConfiguration;
 import com.liferay.portlet.configuration.web.internal.constants.PortletConfigurationPortletKeys;
-import com.liferay.portlet.rolesadmin.search.RoleSearch;
-import com.liferay.portlet.rolesadmin.search.RoleSearchTerms;
 import com.liferay.roles.admin.role.type.contributor.RoleTypeContributor;
 import com.liferay.roles.admin.role.type.contributor.provider.RoleTypeContributorProvider;
-import com.liferay.sites.kernel.util.SitesUtil;
+import com.liferay.roles.admin.search.RoleSearch;
+import com.liferay.roles.admin.search.RoleSearchTerms;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -242,7 +242,7 @@ public class PortletConfigurationPermissionsDisplayContext {
 		// LPS-32515
 
 		if ((_selLayout != null) && _group.isGuest() &&
-			SitesUtil.isFirstLayout(
+			_isFirstLayout(
 				_selLayout.getGroupId(), _selLayout.isPrivateLayout(),
 				_selLayout.getLayoutId())) {
 
@@ -719,6 +719,19 @@ public class PortletConfigurationPermissionsDisplayContext {
 		_roleTypesParam = ParamUtil.getString(_httpServletRequest, "roleTypes");
 
 		return _roleTypesParam;
+	}
+
+	private boolean _isFirstLayout(
+		long groupId, boolean privateLayout, long layoutId) {
+
+		Layout firstLayout = LayoutLocalServiceUtil.fetchFirstLayout(
+			groupId, privateLayout, LayoutConstants.DEFAULT_PARENT_LAYOUT_ID);
+
+		if ((firstLayout != null) && (firstLayout.getLayoutId() == layoutId)) {
+			return true;
+		}
+
+		return false;
 	}
 
 	private static final int[] _TYPES_DEPOT_AND_REGULAR = {

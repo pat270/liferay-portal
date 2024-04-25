@@ -11,11 +11,9 @@ import com.liferay.layout.model.LayoutClassedModelUsage;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
-import com.liferay.layout.service.LayoutClassedModelUsageLocalService;
 import com.liferay.layout.util.constants.LayoutClassedModelUsageConstants;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
@@ -190,7 +188,7 @@ public class LayoutClassedModelUsagesHelper {
 
 		if ((layoutPageTemplateEntry == null) ||
 			(layoutPageTemplateEntry.getType() ==
-				LayoutPageTemplateEntryTypeConstants.TYPE_WIDGET_PAGE)) {
+				LayoutPageTemplateEntryTypeConstants.WIDGET_PAGE)) {
 
 			return false;
 		}
@@ -199,14 +197,7 @@ public class LayoutClassedModelUsagesHelper {
 	}
 
 	@Reference
-	private JSONFactory _jsonFactory;
-
-	@Reference
 	private Language _language;
-
-	@Reference
-	private LayoutClassedModelUsageLocalService
-		_layoutClassedModelUsageLocalService;
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;

@@ -4,7 +4,7 @@ definition {
 	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Fragments";
+	property testray.main.component.name = "Fragment Administration";
 
 	setUp {
 		task ("Set up instance and sign in") {
@@ -253,23 +253,25 @@ definition {
 	test ViewAppliedCategoryAndKeywordsFilters {
 		property portal.acceptance = "true";
 
+		var groupId = JSONGroupSetter.setGroupId(groupName = "Test Site Name");
+
 		task ("Add a vocabulary") {
 			JSONCategory.addVocabulary(
-				groupName = "Test Site Name",
+				groupId = ${groupId},
 				title = "Size");
 		}
 
 		task ("Add three categories in Size vocabulary") {
 			var largeId = JSONCategory.addCategory(
-				groupName = "Test Site Name",
+				groupId = ${groupId},
 				title = "Large",
 				vocabularyName = "Size");
 			var mediumId = JSONCategory.addCategory(
-				groupName = "Test Site Name",
+				groupId = ${groupId},
 				title = "Medium",
 				vocabularyName = "Size");
 			var smallId = JSONCategory.addCategory(
-				groupName = "Test Site Name",
+				groupId = ${groupId},
 				title = "Small",
 				vocabularyName = "Size");
 		}
@@ -278,7 +280,7 @@ definition {
 			JSONWebcontent.addWebContent(
 				assetCategoryIds = ${largeId},
 				content = "Levis 511",
-				groupName = "Test Site Name",
+				groupId = ${groupId},
 				title = "Levis 511");
 		}
 
@@ -286,7 +288,7 @@ definition {
 			JSONWebcontent.addWebContent(
 				assetCategoryIds = ${mediumId},
 				content = "Levis 501",
-				groupName = "Test Site Name",
+				groupId = ${groupId},
 				title = "Levis 501");
 		}
 
@@ -294,15 +296,16 @@ definition {
 			JSONWebcontent.addWebContent(
 				assetCategoryIds = ${smallId},
 				content = "Levis 510",
-				groupName = "Test Site Name",
+				groupId = ${groupId},
 				title = "Levis 510");
 		}
 
 		task ("Add a dynamic collection for All Types") {
-			JSONAssetlist.addDynamicAssetListEntryWithItemType(
-				groupName = "Test Site Name",
-				itemType = "All Types",
-				title = "Dynamic Collection");
+			AssetListsAdmin.openAssetListsAdmin(siteURLKey = "test-site-name");
+
+			AssetListsAdmin.addDynamicSelection(assetListTitle = "Dynamic Collection");
+
+			AssetListsAdmin.configureItemTypeInDynamicCollection(itemType = "All Types");
 		}
 
 		task ("Add the first collection page based on dynamic collection") {
@@ -805,9 +808,9 @@ definition {
 			}
 
 			AssertAttributeValue(
-				attribute1 = "style",
 				locator1 = "PageEditor#APPLIED_FILTERS_FILTER_LIST",
-				value1 = "max-height: 4em;");
+				value1 = "style",
+				value2 = "max-height: 4em;");
 
 			var n = 1;
 
@@ -826,9 +829,9 @@ definition {
 				locator1 = "PageEditor#APPLIED_FILTERS_INNER_BUTTON");
 
 			AssertAttributeValue(
-				attribute1 = "style",
 				locator1 = "PageEditor#APPLIED_FILTERS_FILTER_LIST",
-				value1 = "");
+				value1 = "style",
+				value2 = "");
 
 			for (var filterName : list "Levis,Female,Yellow,White,Red,Green,Brown") {
 				AssertVisible(
@@ -841,9 +844,9 @@ definition {
 				locator1 = "PageEditor#APPLIED_FILTERS_INNER_BUTTON");
 
 			AssertAttributeValue(
-				attribute1 = "style",
 				locator1 = "PageEditor#APPLIED_FILTERS_FILTER_LIST",
-				value1 = "max-height: 4em;");
+				value1 = "style",
+				value2 = "max-height: 4em;");
 
 			for (var filterName : list "Levis,Female") {
 				AssertVisible(
@@ -920,9 +923,9 @@ definition {
 			}
 
 			AssertAttributeValue(
-				attribute1 = "style",
 				locator1 = "PageEditor#APPLIED_FILTERS_FILTER_LIST",
-				value1 = "max-height: 4em;");
+				value1 = "style",
+				value2 = "max-height: 4em;");
 
 			var n = 1;
 
@@ -941,9 +944,9 @@ definition {
 				locator1 = "PageEditor#APPLIED_FILTERS_INNER_BUTTON");
 
 			AssertAttributeValue(
-				attribute1 = "style",
 				locator1 = "PageEditor#APPLIED_FILTERS_FILTER_LIST",
-				value1 = "");
+				value1 = "style",
+				value2 = "");
 
 			for (var filterName : list "Levis,Female,Yellow,White,Red,Green,Brown") {
 				AssertVisible(
@@ -956,9 +959,9 @@ definition {
 				locator1 = "PageEditor#APPLIED_FILTERS_INNER_BUTTON");
 
 			AssertAttributeValue(
-				attribute1 = "style",
 				locator1 = "PageEditor#APPLIED_FILTERS_FILTER_LIST",
-				value1 = "max-height: 4em;");
+				value1 = "style",
+				value2 = "max-height: 4em;");
 
 			for (var filterName : list "Levis,Female,Yellow,White") {
 				AssertVisible(

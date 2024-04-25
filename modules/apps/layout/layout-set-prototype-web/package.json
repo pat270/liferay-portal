@@ -1,12 +1,18 @@
 {
 	"dependencies": {
-		"frontend-js-web": "*"
+		"@clayui/button": "3.113.0",
+		"@clayui/link": "3.111.0",
+		"@clayui/popover": "3.113.0",
+		"@liferay/frontend-js-react-web": "*",
+		"frontend-js-web": "*",
+		"react": "16.12.0"
 	},
+	"main": "js/index.js",
 	"name": "layout-set-prototype-web",
 	"scripts": {
 		"build": "liferay-npm-scripts build",
 		"checkFormat": "liferay-npm-scripts check",
 		"format": "liferay-npm-scripts fix"
 	},
-	"version": "5.0.40"
+	"version": "5.0.55"
 }

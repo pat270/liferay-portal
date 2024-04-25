@@ -358,13 +358,6 @@ public class UserWrapper
 	}
 
 	@Override
-	public void addRemotePreference(
-		com.liferay.portal.kernel.util.RemotePreference remotePreference) {
-
-		model.addRemotePreference(remotePreference);
-	}
-
-	@Override
 	public User cloneWithOriginalValues() {
 		return wrap(model.cloneWithOriginalValues());
 	}
@@ -1115,20 +1108,6 @@ public class UserWrapper
 	}
 
 	@Override
-	public com.liferay.portal.kernel.util.RemotePreference getRemotePreference(
-		String name) {
-
-		return model.getRemotePreference(name);
-	}
-
-	@Override
-	public Iterable<com.liferay.portal.kernel.util.RemotePreference>
-		getRemotePreferences() {
-
-		return model.getRemotePreferences();
-	}
-
-	@Override
 	public long[] getRoleIds() {
 		return model.getRoleIds();
 	}
@@ -1382,6 +1361,11 @@ public class UserWrapper
 		return model.isMale();
 	}
 
+	@Override
+	public boolean isOnDemandUser() {
+		return model.isOnDemandUser();
+	}
+
 	/**
 	 * Returns <code>true</code> if this user is password encrypted.
 	 *
@@ -1405,6 +1389,11 @@ public class UserWrapper
 	@Override
 	public boolean isPasswordReset() {
 		return model.isPasswordReset();
+	}
+
+	@Override
+	public boolean isPasswordResetRequired() {
+		return model.isPasswordResetRequired();
 	}
 
 	@Override
@@ -1597,6 +1586,11 @@ public class UserWrapper
 		model.setGreeting(greeting);
 	}
 
+	@Override
+	public void setGroupIds(long[] groupIds) {
+		model.setGroupIds(groupIds);
+	}
+
 	/**
 	 * Sets the job title of this user.
 	 *
@@ -1747,6 +1741,11 @@ public class UserWrapper
 		model.setOpenId(openId);
 	}
 
+	@Override
+	public void setOrganizationIds(long[] organizationIds) {
+		model.setOrganizationIds(organizationIds);
+	}
+
 	/**
 	 * Sets the password of this user.
 	 *
@@ -1837,6 +1836,11 @@ public class UserWrapper
 		model.setReminderQueryQuestion(reminderQueryQuestion);
 	}
 
+	@Override
+	public void setRoleIds(long[] roleIds) {
+		model.setRoleIds(roleIds);
+	}
+
 	/**
 	 * Sets the screen name of this user.
 	 *
@@ -1857,6 +1861,11 @@ public class UserWrapper
 		model.setStatus(status);
 	}
 
+	@Override
+	public void setTeamIds(long[] teamIds) {
+		model.setTeamIds(teamIds);
+	}
+
 	/**
 	 * Sets the time zone ID of this user.
 	 *
@@ -1875,6 +1884,11 @@ public class UserWrapper
 	@Override
 	public void setType(int type) {
 		model.setType(type);
+	}
+
+	@Override
+	public void setUserGroupIds(long[] userGroupIds) {
+		model.setUserGroupIds(userGroupIds);
 	}
 
 	/**

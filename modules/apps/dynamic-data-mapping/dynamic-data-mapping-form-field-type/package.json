@@ -1,33 +1,48 @@
 {
 	"dependencies": {
+		"@clayui/autocomplete": "3.113.0",
+		"@clayui/button": "3.113.0",
+		"@clayui/card": "3.113.0",
+		"@clayui/color-picker": "3.113.0",
+		"@clayui/core": "3.113.0",
+		"@clayui/data-provider": "3.113.0",
+		"@clayui/date-picker": "3.113.0",
+		"@clayui/drop-down": "3.113.0",
+		"@clayui/form": "3.113.0",
+		"@clayui/icon": "3.111.0",
+		"@clayui/label": "3.111.0",
+		"@clayui/layout": "3.111.0",
+		"@clayui/modal": "3.113.0",
+		"@clayui/multi-select": "3.113.0",
+		"@clayui/panel": "3.113.0",
+		"@clayui/popover": "3.113.0",
+		"@clayui/progress-bar": "3.111.0",
+		"@clayui/table": "3.111.0",
+		"@clayui/tooltip": "3.113.0",
+		"@liferay/frontend-js-react-web": "*",
 		"@liferay/map-google-maps": "*",
 		"@liferay/map-openstreetmap": "*",
-		"axios": "0.24.0",
-		"clay-icon": "2.24.1",
+		"@liferay/object-js-components-web": "*",
+		"classnames": "2.3.1",
 		"data-engine-js-components-web": "*",
+		"frontend-editor-ckeditor-web": "*",
 		"frontend-js-web": "*",
 		"leaflet": "1.7.1",
-		"metal-component": "2.16.8",
-		"metal-soy": "2.16.9",
-		"metal-state": "2.16.8",
 		"moment": "2.29.4",
 		"react": "16.12.0",
+		"react-dnd": "11.1.1",
+		"react-dnd-html5-backend": "11.1.1",
+		"react-dom": "16.12.0",
+		"resize-observer-polyfill": "1.5.1",
 		"text-mask-addons": "^3.7.1",
 		"text-mask-core": "^5.1.2"
 	},
 	"jest": {
 		"setupFiles": [
 			"<rootDir>/jest-setup.config.js"
-		],
-		"snapshotSerializers": [
-			"metal-jest-serializer"
-		],
-		"testPathIgnorePatterns": [
-			"Tooltip",
-			"withContextMock"
 		]
 	},
-	"main": "index.js",
+	"main": "index.ts",
 	"name": "dynamic-data-mapping-form-field-type",
 	"private": true,
 	"scripts": {
@@ -36,5 +51,5 @@
 		"format": "liferay-npm-scripts fix",
 		"test": "liferay-npm-scripts test"
 	},
-	"version": "6.0.148"
+	"version": "6.0.170"
 }

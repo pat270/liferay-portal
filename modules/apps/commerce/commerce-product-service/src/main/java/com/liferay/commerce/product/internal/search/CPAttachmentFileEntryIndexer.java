@@ -76,23 +76,8 @@ public class CPAttachmentFileEntryIndexer
 			BooleanFilter contextBooleanFilter, SearchContext searchContext)
 		throws Exception {
 
-		int status = GetterUtil.getInteger(
-			searchContext.getAttribute(Field.STATUS),
-			WorkflowConstants.STATUS_APPROVED);
-
-		if (status != WorkflowConstants.STATUS_ANY) {
-			contextBooleanFilter.addRequiredTerm(Field.STATUS, status);
-		}
-
 		long classNameId = GetterUtil.getLong(
 			searchContext.getAttribute(CPField.RELATED_ENTITY_CLASS_NAME_ID));
-
-		int type = GetterUtil.getInteger(
-			searchContext.getAttribute(Field.TYPE), -1);
-
-		if (type >= 0) {
-			contextBooleanFilter.addRequiredTerm(Field.TYPE, type);
-		}
 
 		if (classNameId > 0) {
 			contextBooleanFilter.addRequiredTerm(
@@ -105,6 +90,29 @@ public class CPAttachmentFileEntryIndexer
 		if (classPK > 0) {
 			contextBooleanFilter.addRequiredTerm(
 				CPField.RELATED_ENTITY_CLASS_PK, classPK);
+		}
+
+		Boolean galleryEnabled = (Boolean)searchContext.getAttribute(
+			CPField.GALLERY_ENABLED);
+
+		if (galleryEnabled != null) {
+			contextBooleanFilter.addRequiredTerm(
+				CPField.GALLERY_ENABLED, galleryEnabled);
+		}
+
+		int status = GetterUtil.getInteger(
+			searchContext.getAttribute(Field.STATUS),
+			WorkflowConstants.STATUS_APPROVED);
+
+		if (status != WorkflowConstants.STATUS_ANY) {
+			contextBooleanFilter.addRequiredTerm(Field.STATUS, status);
+		}
+
+		int type = GetterUtil.getInteger(
+			searchContext.getAttribute(Field.TYPE), -1);
+
+		if (type >= 0) {
+			contextBooleanFilter.addRequiredTerm(Field.TYPE, type);
 		}
 
 		String[] fieldNames = (String[])searchContext.getAttribute("OPTIONS");
@@ -182,7 +190,8 @@ public class CPAttachmentFileEntryIndexer
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
-				"Indexing attachment file entry " + cpAttachmentFileEntry);
+				"Indexing commerce product attachment file entry " +
+					cpAttachmentFileEntry);
 		}
 
 		Document document = getBaseModelDocument(
@@ -194,6 +203,8 @@ public class CPAttachmentFileEntryIndexer
 			CPField.DISPLAY_DATE, cpAttachmentFileEntry.getDisplayDate());
 		document.addNumber(
 			CPField.FILE_ENTRY_ID, cpAttachmentFileEntry.getFileEntryId());
+		document.addKeyword(
+			CPField.GALLERY_ENABLED, cpAttachmentFileEntry.isGalleryEnabled());
 		document.addNumber(
 			CPField.RELATED_ENTITY_CLASS_NAME_ID,
 			cpAttachmentFileEntry.getClassNameId());
@@ -234,7 +245,8 @@ public class CPAttachmentFileEntryIndexer
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
-				"Document " + cpAttachmentFileEntry + " indexed successfully");
+				"Commerce product attachment file entry " +
+					cpAttachmentFileEntry + " indexed successfully");
 		}
 
 		return document;
@@ -293,12 +305,9 @@ public class CPAttachmentFileEntryIndexer
 				}
 				catch (PortalException portalException) {
 					if (_log.isWarnEnabled()) {
-						long cpAttachmentFileEntryId =
-							cpAttachmentFileEntry.getCPAttachmentFileEntryId();
-
 						_log.warn(
 							"Unable to index commerce product attachment " +
-								"file entry " + cpAttachmentFileEntryId,
+								"file entry " + cpAttachmentFileEntry,
 							portalException);
 					}
 				}

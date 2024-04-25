@@ -124,6 +124,15 @@ const getEstimatedTimeMockFactory = (days) => () => {
 };
 
 describe('ReviewExperimentModal', () => {
+	beforeAll(() => {
+		window.Liferay = {
+			...Liferay,
+			FeatureFlags: {
+				'LRAC-15017': true,
+			},
+		};
+	});
+
 	describe('Estimated days', () => {
 		afterEach(() => {
 			jest.clearAllTimers();
@@ -247,7 +256,7 @@ describe('ReviewExperimentModal', () => {
 				expect(getEstimatedTimeMock).toHaveBeenCalledTimes(1)
 			);
 
-			await findByText('x-days');
+			await findByText('20-days');
 		});
 	});
 });

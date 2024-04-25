@@ -6,8 +6,8 @@
 package com.liferay.document.library.preview.document.internal;
 
 import com.liferay.document.library.constants.DLFileVersionPreviewConstants;
-import com.liferay.document.library.kernel.util.DLProcessorRegistryUtil;
-import com.liferay.document.library.kernel.util.PDFProcessorUtil;
+import com.liferay.document.library.kernel.processor.DLProcessorHelperUtil;
+import com.liferay.document.library.kernel.processor.PDFProcessorUtil;
 import com.liferay.document.library.preview.DLPreviewRenderer;
 import com.liferay.document.library.preview.DLPreviewRendererProvider;
 import com.liferay.document.library.preview.exception.DLFileEntryPreviewGenerationException;
@@ -45,7 +45,11 @@ public class DocumentPreviewRendererProvider
 	public DLPreviewRenderer getPreviewDLPreviewRenderer(
 		FileVersion fileVersion) {
 
-		if (!PDFProcessorUtil.isDocumentSupported(fileVersion)) {
+		if ((fileVersion == null) || (fileVersion.getSize() == 0) ||
+			(!PDFProcessorUtil.hasImages(fileVersion) &&
+			 !PDFProcessorUtil.isDocumentSupported(
+				 fileVersion.getMimeType()))) {
+
 			return null;
 		}
 
@@ -80,8 +84,10 @@ public class DocumentPreviewRendererProvider
 		}
 
 		if (!PDFProcessorUtil.hasImages(fileVersion)) {
-			if (!DLProcessorRegistryUtil.isPreviewableSize(fileVersion)) {
-				throw new DLPreviewSizeException();
+			if (!DLProcessorHelperUtil.isPreviewableSize(fileVersion)) {
+				throw new DLPreviewSizeException(
+					DLProcessorHelperUtil.getPreviewableProcessorMaxSize(
+						fileVersion.getGroupId()));
 			}
 
 			throw new DLPreviewGenerationInProcessException();

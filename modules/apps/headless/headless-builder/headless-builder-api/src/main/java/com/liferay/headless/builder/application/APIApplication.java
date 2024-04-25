@@ -8,6 +8,7 @@ package com.liferay.headless.builder.application;
 import com.liferay.portal.kernel.util.Http;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Alejandro Tardín
@@ -36,15 +37,67 @@ public interface APIApplication {
 
 		public String getPath();
 
+		public String getPathParameter();
+
 		public Schema getRequestSchema();
 
 		public Schema getResponseSchema();
 
+		public RetrieveType getRetrieveType();
+
 		public Scope getScope();
+
+		public Sort getSort();
+
+		public enum RetrieveType {
+
+			COLLECTION("collection"), SINGLE_ELEMENT("singleElement");
+
+			public static RetrieveType parse(String value) {
+				for (RetrieveType retrieveType : RetrieveType.values()) {
+					if (Objects.equals(retrieveType.getValue(), value)) {
+						return retrieveType;
+					}
+				}
+
+				throw new IllegalArgumentException("Invalid value " + value);
+			}
+
+			public String getValue() {
+				return _value;
+			}
+
+			private RetrieveType(String value) {
+				_value = value;
+			}
+
+			private final String _value;
+
+		}
 
 		public enum Scope {
 
-			COMPANY, GROUP
+			COMPANY("company"), SITE("site");
+
+			public static Scope parse(String value) {
+				for (Scope scope : Scope.values()) {
+					if (Objects.equals(scope.getValue(), value)) {
+						return scope;
+					}
+				}
+
+				throw new IllegalArgumentException("Invalid value " + value);
+			}
+
+			public String getValue() {
+				return _value;
+			}
+
+			private Scope(String value) {
+				_value = value;
+			}
+
+			private final String _value;
 
 		}
 
@@ -66,6 +119,8 @@ public interface APIApplication {
 
 		public List<String> getObjectRelationshipNames();
 
+		public List<Property> getProperties();
+
 		public String getSourceFieldName();
 
 		public Type getType();
@@ -74,7 +129,7 @@ public interface APIApplication {
 
 			AGGREGATION, ATTACHMENT, BOOLEAN, DATE, DATE_TIME, DECIMAL, INTEGER,
 			LONG_INTEGER, LONG_TEXT, MULTISELECT_PICKLIST, PICKLIST,
-			PRECISION_DECIMAL, RICH_TEXT, TEXT
+			PRECISION_DECIMAL, RECORD, RICH_TEXT, TEXT
 
 		}
 
@@ -91,6 +146,12 @@ public interface APIApplication {
 		public String getName();
 
 		public List<Property> getProperties();
+
+	}
+
+	public interface Sort {
+
+		public String getODataSortString();
 
 	}
 

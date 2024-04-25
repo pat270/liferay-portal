@@ -69,6 +69,27 @@ public class Option implements Cloneable, Serializable {
 
 	protected Long catalogId;
 
+	public CustomField[] getCustomFields() {
+		return customFields;
+	}
+
+	public void setCustomFields(CustomField[] customFields) {
+		this.customFields = customFields;
+	}
+
+	public void setCustomFields(
+		UnsafeSupplier<CustomField[], Exception> customFieldsUnsafeSupplier) {
+
+		try {
+			customFields = customFieldsUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected CustomField[] customFields;
+
 	public Map<String, String> getDescription() {
 		return description;
 	}
@@ -340,7 +361,7 @@ public class Option implements Cloneable, Serializable {
 
 		CHECKBOX("checkbox"), CHECKBOX_MULTIPLE("checkbox_multiple"),
 		DATE("date"), NUMERIC("numeric"), RADIO("radio"), SELECT("select"),
-		TEXT("text");
+		SELECT_DATE("select_date"), TEXT("text");
 
 		public static FieldType create(String value) {
 			for (FieldType fieldType : values()) {

@@ -72,7 +72,12 @@ public class EmailAddressResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _emailAddressResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, EmailAddressResource>
+					emailAddressResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_emailAddressResourceProxyProviderFunction;
+
+				return emailAddressResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -229,10 +234,6 @@ public class EmailAddressResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, EmailAddressResource>
-		_emailAddressResourceProxyProviderFunction =
-			_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -268,6 +269,14 @@ public class EmailAddressResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, EmailAddressResource>
+			_emailAddressResourceProxyProviderFunction =
+				_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

@@ -31,7 +31,7 @@ FormInstancePermissionCheckerHelper formInstancePermissionCheckerHelper = ddmFor
 				<liferay-ui:search-container
 					id="<%= ddmFormAdminDisplayContext.getSearchContainerId() %>"
 					rowChecker="<%= new DDMFormInstanceRowChecker(renderResponse) %>"
-					searchContainer="<%= ddmFormAdminDisplayContext.getSearch() %>"
+					searchContainer="<%= ddmFormAdminDisplayContext.getSearchContainer() %>"
 				>
 					<liferay-ui:search-container-row
 						className="com.liferay.dynamic.data.mapping.model.DDMFormInstance"
@@ -68,7 +68,7 @@ FormInstancePermissionCheckerHelper formInstancePermissionCheckerHelper = ddmFor
 									<clay:dropdown-actions
 										aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 										dropdownItems="<%= ddmFormAdminDisplayContext.getActionDropdownItems(formInstance) %>"
-										propsTransformer="admin/js/DDMFormAdminActionDropdownPropsTransformer"
+										propsTransformer="{DDMFormAdminActionDropdownPropsTransformer} from dynamic-data-mapping-form-web"
 									/>
 								</liferay-ui:search-container-column-text>
 							</c:when>
@@ -169,7 +169,7 @@ FormInstancePermissionCheckerHelper formInstancePermissionCheckerHelper = ddmFor
 									<clay:dropdown-actions
 										aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 										dropdownItems="<%= ddmFormAdminDisplayContext.getActionDropdownItems(formInstance) %>"
-										propsTransformer="admin/js/DDMFormAdminActionDropdownPropsTransformer"
+										propsTransformer="{DDMFormAdminActionDropdownPropsTransformer} from dynamic-data-mapping-form-web"
 									/>
 								</liferay-ui:search-container-column-text>
 							</c:otherwise>

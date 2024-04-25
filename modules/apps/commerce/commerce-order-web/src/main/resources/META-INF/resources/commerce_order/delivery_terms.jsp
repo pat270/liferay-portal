@@ -28,9 +28,9 @@ long deliveryCommerceTermEntryId = commerceOrder.getDeliveryCommerceTermEntryId(
 				<clay:col
 					size="12"
 				>
-					<aui:alert type="info">
-						<liferay-ui:message key="there-are-no-available-delivery-terms" />
-					</aui:alert>
+					<clay:alert
+						message="there-are-no-available-delivery-terms"
+					/>
 				</clay:col>
 			</clay:row>
 
@@ -84,7 +84,7 @@ long deliveryCommerceTermEntryId = commerceOrder.getDeliveryCommerceTermEntryId(
 						"terms", terms
 					).build()
 				%>'
-				module="js/termsDescriptionHandler"
+				module="{termsDescriptionHandler} from commerce-order-web"
 			/>
 		</c:otherwise>
 	</c:choose>

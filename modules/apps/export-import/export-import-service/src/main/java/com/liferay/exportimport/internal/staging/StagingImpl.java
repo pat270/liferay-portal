@@ -52,8 +52,11 @@ import com.liferay.exportimport.kernel.staging.constants.StagingConstants;
 import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.exportimport.staged.model.repository.StagedModelRepositoryHelper;
 import com.liferay.exportimport.staged.model.repository.StagedModelRepositoryRegistryUtil;
+import com.liferay.petra.lang.SafeCloseable;
+import com.liferay.petra.lang.ThreadContextClassLoaderUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskManager;
 import com.liferay.portal.kernel.exception.LayoutPrototypeException;
@@ -91,7 +94,6 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.WorkflowInstanceLink;
 import com.liferay.portal.kernel.model.WorkflowedModel;
 import com.liferay.portal.kernel.model.adapter.StagedTheme;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.scheduler.CronTextUtil;
 import com.liferay.portal.kernel.scheduler.SchedulerException;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
@@ -117,7 +119,7 @@ import com.liferay.portal.kernel.service.RecentLayoutSetBranchLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.WorkflowInstanceLinkLocalService;
-import com.liferay.portal.kernel.service.permission.GroupPermission;
+import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
 import com.liferay.portal.kernel.servlet.ServletResponseConstants;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.upload.UploadRequestSizeException;
@@ -1765,12 +1767,15 @@ public class StagingImpl implements Staging {
 
 				long scopeGroupId = stagingGroup.getGroupId();
 
-				boolean hasManageStagingPermission = _groupPermission.contains(
-					permissionChecker, scopeGroupId, ActionKeys.MANAGE_STAGING);
-				boolean hasPublishStagingPermission = _groupPermission.contains(
-					permissionChecker, scopeGroupId,
-					ActionKeys.PUBLISH_STAGING);
-				boolean hasViewStagingPermission = _groupPermission.contains(
+				boolean hasManageStagingPermission =
+					GroupPermissionUtil.contains(
+						permissionChecker, scopeGroupId,
+						ActionKeys.MANAGE_STAGING);
+				boolean hasPublishStagingPermission =
+					GroupPermissionUtil.contains(
+						permissionChecker, scopeGroupId,
+						ActionKeys.PUBLISH_STAGING);
+				boolean hasViewStagingPermission = GroupPermissionUtil.contains(
 					permissionChecker, scopeGroupId, ActionKeys.VIEW_STAGING);
 
 				if (hasManageStagingPermission || hasPublishStagingPermission ||
@@ -1850,20 +1855,12 @@ public class StagingImpl implements Staging {
 
 		Layout layout = _layoutLocalService.fetchLayout(plid);
 
-		Thread thread = Thread.currentThread();
-
-		ClassLoader threadClassLoader = thread.getContextClassLoader();
-
-		try {
-			thread.setContextClassLoader(
-				PortalClassLoaderUtil.getClassLoader());
+		try (SafeCloseable safeCloseable = ThreadContextClassLoaderUtil.swap(
+				PortalClassLoaderUtil.getClassLoader())) {
 
 			return LayoutServiceHttp.getLayoutByUuidAndGroupId(
 				httpPrincipal, layout.getUuid(),
 				stagingGroup.getRemoteLiveGroupId(), layout.isPrivateLayout());
-		}
-		finally {
-			thread.setContextClassLoader(threadClassLoader);
 		}
 	}
 
@@ -1881,7 +1878,7 @@ public class StagingImpl implements Staging {
 
 		Layout layout = _layoutLocalService.fetchLayout(plid);
 
-		return LayoutServiceHttp.getLayoutPlid(
+		return LayoutServiceHttp.fetchLayoutPlid(
 			httpPrincipal, layout.getUuid(),
 			stagingGroup.getRemoteLiveGroupId(), layout.isPrivateLayout());
 	}
@@ -3349,10 +3346,6 @@ public class StagingImpl implements Staging {
 			throw remoteOptionsException;
 		}
 
-		Thread currentThread = Thread.currentThread();
-
-		ClassLoader contextClassLoader = currentThread.getContextClassLoader();
-
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
@@ -3365,9 +3358,8 @@ public class StagingImpl implements Staging {
 			remoteURL, user.getLogin(), user.getPassword(),
 			user.isPasswordEncrypted());
 
-		try {
-			currentThread.setContextClassLoader(
-				PortalClassLoaderUtil.getClassLoader());
+		try (SafeCloseable safeCloseable = ThreadContextClassLoaderUtil.swap(
+				PortalClassLoaderUtil.getClassLoader())) {
 
 			// Ping the remote host and verify that the remote group exists in
 			// the same company as the remote user
@@ -3471,8 +3463,6 @@ public class StagingImpl implements Staging {
 		}
 		finally {
 			_setGroupTypeSetting(groupId, "validationTimestamp", null);
-
-			currentThread.setContextClassLoader(contextClassLoader);
 		}
 	}
 
@@ -3816,7 +3806,7 @@ public class StagingImpl implements Staging {
 			ExportImportConfiguration exportImportConfiguration)
 		throws PortalException {
 
-		_groupPermission.check(
+		GroupPermissionUtil.check(
 			PermissionThreadLocal.getPermissionChecker(),
 			exportImportConfiguration.getGroupId(), ActionKeys.PUBLISH_STAGING);
 	}
@@ -4078,9 +4068,6 @@ public class StagingImpl implements Staging {
 
 	@Reference
 	private GroupLocalService _groupLocalService;
-
-	@Reference
-	private GroupPermission _groupPermission;
 
 	@Reference
 	private JSONFactory _jsonFactory;

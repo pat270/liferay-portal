@@ -6,15 +6,21 @@
 package com.liferay.portal.upgrade.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.model.Release;
-import com.liferay.portal.kernel.model.ReleaseConstants;
 import com.liferay.portal.kernel.service.ReleaseLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.upgrade.ReleaseManager;
+import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.version.Version;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+import com.liferay.portal.upgrade.PortalUpgradeProcess;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
+import com.liferay.portal.util.PropsUtil;
+
+import java.sql.Connection;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -48,7 +54,7 @@ public class ReleaseManagerTest {
 
 	@Test
 	public void testSuccessfulUpgrade() throws Exception {
-		Assert.assertTrue(_releaseManager.isUpgraded());
+		Assert.assertEquals("success", _releaseManager.getStatus());
 		Assert.assertTrue(
 			Validator.isBlank(_releaseManager.getShortStatusMessage(false)));
 		Assert.assertTrue(
@@ -59,59 +65,82 @@ public class ReleaseManagerTest {
 	public void testUnsuccessfulUpgradeByMissingModuleUpgrade()
 		throws Exception {
 
-		Bundle bundle = FrameworkUtil.getBundle(ReleaseManagerTest.class);
+		_testUnsuccessfulUpgradeByMissingModuleUpgrade(false, "unresolved");
+	}
 
-		BundleContext bundleContext = bundle.getBundleContext();
+	@Test
+	public void testUnsuccessfulUpgradeByMissingModuleUpgradeWithAutorun()
+		throws Exception {
 
-		_serviceRegistration = bundleContext.registerService(
-			UpgradeStepRegistrator.class,
-			new ReleaseManagerTest.TestUpgradeStepRegistrator(), null);
-
-		Release release = _releaseLocalService.fetchRelease(
-			bundle.getSymbolicName());
-
-		try {
-			release.setSchemaVersion("0.0.0");
-
-			release = _releaseLocalService.updateRelease(release);
-
-			Assert.assertFalse(_releaseManager.isUpgraded());
-			Assert.assertFalse(
-				Validator.isBlank(
-					_releaseManager.getShortStatusMessage(false)));
-			Assert.assertFalse(
-				Validator.isBlank(_releaseManager.getStatusMessage(false)));
-		}
-		finally {
-			_releaseLocalService.deleteRelease(release);
-		}
+		_testUnsuccessfulUpgradeByMissingModuleUpgrade(true, "failure");
 	}
 
 	@Test
 	public void testUnsuccessfulUpgradeByMissingPortalUpgrade()
 		throws Exception {
 
-		Release release = _releaseLocalService.fetchRelease(
-			ReleaseConstants.DEFAULT_SERVLET_CONTEXT_NAME);
+		try (Connection connection = DataAccess.getConnection()) {
+			Version version = PortalUpgradeProcess.getCurrentSchemaVersion(
+				connection);
 
-		String currentSchemaVersion = release.getSchemaVersion();
+			PortalUpgradeProcess.updateSchemaVersion(
+				connection, new Version(0, 0, 0));
+
+			try {
+				Assert.assertEquals("failure", _releaseManager.getStatus());
+				Assert.assertFalse(
+					Validator.isBlank(
+						_releaseManager.getShortStatusMessage(false)));
+				Assert.assertFalse(
+					Validator.isBlank(_releaseManager.getStatusMessage(false)));
+			}
+			finally {
+				PortalUpgradeProcess.updateSchemaVersion(connection, version);
+			}
+		}
+	}
+
+	private void _testUnsuccessfulUpgradeByMissingModuleUpgrade(
+			boolean autorun, String status)
+		throws Exception {
+
+		String upgradeDatabaseAutoRun = PropsUtil.get(
+			PropsKeys.UPGRADE_DATABASE_AUTO_RUN);
 
 		try {
-			release.setSchemaVersion("0.0.0");
+			PropsUtil.set(
+				PropsKeys.UPGRADE_DATABASE_AUTO_RUN, String.valueOf(autorun));
 
-			release = _releaseLocalService.updateRelease(release);
+			Bundle bundle = FrameworkUtil.getBundle(ReleaseManagerTest.class);
 
-			Assert.assertFalse(_releaseManager.isUpgraded());
-			Assert.assertFalse(
-				Validator.isBlank(
-					_releaseManager.getShortStatusMessage(false)));
-			Assert.assertFalse(
-				Validator.isBlank(_releaseManager.getStatusMessage(false)));
+			BundleContext bundleContext = bundle.getBundleContext();
+
+			_serviceRegistration = bundleContext.registerService(
+				UpgradeStepRegistrator.class,
+				new ReleaseManagerTest.TestUpgradeStepRegistrator(), null);
+
+			Release release = _releaseLocalService.fetchRelease(
+				bundle.getSymbolicName());
+
+			try {
+				release.setSchemaVersion("0.0.0");
+
+				release = _releaseLocalService.updateRelease(release);
+
+				Assert.assertEquals(status, _releaseManager.getStatus());
+				Assert.assertFalse(
+					Validator.isBlank(
+						_releaseManager.getShortStatusMessage(false)));
+				Assert.assertFalse(
+					Validator.isBlank(_releaseManager.getStatusMessage(false)));
+			}
+			finally {
+				_releaseLocalService.deleteRelease(release);
+			}
 		}
 		finally {
-			release.setSchemaVersion(currentSchemaVersion);
-
-			_releaseLocalService.updateRelease(release);
+			PropsUtil.set(
+				PropsKeys.UPGRADE_DATABASE_AUTO_RUN, upgradeDatabaseAutoRun);
 		}
 	}
 

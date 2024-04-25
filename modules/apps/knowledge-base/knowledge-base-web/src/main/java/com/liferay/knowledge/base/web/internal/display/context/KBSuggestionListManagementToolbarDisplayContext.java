@@ -96,14 +96,7 @@ public class KBSuggestionListManagementToolbarDisplayContext {
 				dropdownGroupItem.setDropdownItems(
 					_getFilterNavigationDropdownItems());
 				dropdownGroupItem.setLabel(
-					LanguageUtil.get(
-						_httpServletRequest, "filter-by-navigation"));
-			}
-		).addGroup(
-			dropdownGroupItem -> {
-				dropdownGroupItem.setDropdownItems(_getOrderByDropdownItems());
-				dropdownGroupItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "order-by"));
+					LanguageUtil.get(_httpServletRequest, "filter-by"));
 			}
 		).build();
 	}
@@ -128,6 +121,42 @@ public class KBSuggestionListManagementToolbarDisplayContext {
 					LanguageUtil.get(_httpServletRequest, navigation));
 			}
 		).build();
+	}
+
+	public List<DropdownItem> getOrderByDropdownItems() {
+		return new DropdownItemList() {
+			{
+				Map<String, String> orderColumnsMap = new HashMap<>();
+
+				String navigation = _getNavigation();
+
+				if (navigation.equals("all")) {
+					orderColumnsMap.put("status", "status");
+				}
+
+				orderColumnsMap.put("modified-date", "modified-date");
+				orderColumnsMap.put("user-name", "user-name");
+
+				for (Map.Entry<String, String> orderByColEntry :
+						orderColumnsMap.entrySet()) {
+
+					add(
+						dropdownItem -> {
+							String orderByCol = orderByColEntry.getKey();
+
+							dropdownItem.setActive(
+								orderByCol.equals(_getOrderByCol()));
+
+							dropdownItem.setHref(
+								_getCurrentSortingURL(), "orderByCol",
+								orderByColEntry.getValue());
+							dropdownItem.setLabel(
+								LanguageUtil.get(
+									_httpServletRequest, orderByCol));
+						});
+				}
+			}
+		};
 	}
 
 	public String getOrderByType() {
@@ -214,42 +243,6 @@ public class KBSuggestionListManagementToolbarDisplayContext {
 
 	private String _getOrderByCol() {
 		return _searchContainer.getOrderByCol();
-	}
-
-	private List<DropdownItem> _getOrderByDropdownItems() {
-		return new DropdownItemList() {
-			{
-				final Map<String, String> orderColumnsMap = new HashMap<>();
-
-				String navigation = _getNavigation();
-
-				if (navigation.equals("all")) {
-					orderColumnsMap.put("status", "status");
-				}
-
-				orderColumnsMap.put("modified-date", "modified-date");
-				orderColumnsMap.put("user-name", "user-name");
-
-				for (Map.Entry<String, String> orderByColEntry :
-						orderColumnsMap.entrySet()) {
-
-					add(
-						dropdownItem -> {
-							String orderByCol = orderByColEntry.getKey();
-
-							dropdownItem.setActive(
-								orderByCol.equals(_getOrderByCol()));
-
-							dropdownItem.setHref(
-								_getCurrentSortingURL(), "orderByCol",
-								orderByColEntry.getValue());
-							dropdownItem.setLabel(
-								LanguageUtil.get(
-									_httpServletRequest, orderByCol));
-						});
-				}
-			}
-		};
 	}
 
 	private final PortletURL _currentURLObj;

@@ -7,8 +7,9 @@ package com.liferay.portal.monitoring.internal.statistics.jmx;
 
 import com.liferay.portal.kernel.monitoring.MonitoringException;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.monitoring.internal.statistics.SummaryStatistics;
 import com.liferay.portal.monitoring.internal.statistics.portal.CompanyStatistics;
-import com.liferay.portal.monitoring.internal.statistics.portal.ServerStatistics;
+import com.liferay.portal.monitoring.internal.statistics.portal.ServerStatisticsHelper;
 import com.liferay.portal.monitoring.internal.statistics.portal.ServerSummaryStatistics;
 
 import java.util.Set;
@@ -17,6 +18,7 @@ import javax.management.DynamicMBean;
 import javax.management.NotCompliantMBeanException;
 import javax.management.StandardMBean;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -39,7 +41,7 @@ public class PortalManager extends StandardMBean implements PortalManagerMBean {
 	}
 
 	@Override
-	public long getAverageTime() {
+	public long getAverageTime() throws MonitoringException {
 		return _serverSummaryStatistics.getAverageTime();
 	}
 
@@ -59,13 +61,13 @@ public class PortalManager extends StandardMBean implements PortalManagerMBean {
 
 	@Override
 	public long[] getCompanyIds() {
-		Set<Long> companyIds = _serverStatistics.getCompanyIds();
+		Set<Long> companyIds = _serverStatisticsHelper.getCompanyIds();
 
 		return ArrayUtil.toArray(companyIds.toArray(new Long[0]));
 	}
 
 	@Override
-	public long getErrorCount() {
+	public long getErrorCount() throws MonitoringException {
 		return _serverSummaryStatistics.getErrorCount();
 	}
 
@@ -84,7 +86,7 @@ public class PortalManager extends StandardMBean implements PortalManagerMBean {
 	}
 
 	@Override
-	public long getMaxTime() {
+	public long getMaxTime() throws MonitoringException {
 		return _serverSummaryStatistics.getMaxTime();
 	}
 
@@ -99,7 +101,7 @@ public class PortalManager extends StandardMBean implements PortalManagerMBean {
 	}
 
 	@Override
-	public long getMinTime() {
+	public long getMinTime() throws MonitoringException {
 		return _serverSummaryStatistics.getMinTime();
 	}
 
@@ -114,7 +116,7 @@ public class PortalManager extends StandardMBean implements PortalManagerMBean {
 	}
 
 	@Override
-	public long getRequestCount() {
+	public long getRequestCount() throws MonitoringException {
 		return _serverSummaryStatistics.getRequestCount();
 	}
 
@@ -134,20 +136,20 @@ public class PortalManager extends StandardMBean implements PortalManagerMBean {
 
 	public long getStartTime(long companyId) throws MonitoringException {
 		CompanyStatistics companyStatistics =
-			_serverStatistics.getCompanyStatistics(companyId);
+			_serverStatisticsHelper.getCompanyStatistics(companyId);
 
 		return companyStatistics.getStartTime();
 	}
 
 	public long getStartTime(String webId) throws MonitoringException {
 		CompanyStatistics companyStatistics =
-			_serverStatistics.getCompanyStatistics(webId);
+			_serverStatisticsHelper.getCompanyStatistics(webId);
 
 		return companyStatistics.getStartTime();
 	}
 
 	@Override
-	public long getSuccessCount() {
+	public long getSuccessCount() throws MonitoringException {
 		return _serverSummaryStatistics.getSuccessCount();
 	}
 
@@ -166,7 +168,7 @@ public class PortalManager extends StandardMBean implements PortalManagerMBean {
 	}
 
 	@Override
-	public long getTimeoutCount() {
+	public long getTimeoutCount() throws MonitoringException {
 		return _serverSummaryStatistics.getTimeoutCount();
 	}
 
@@ -187,7 +189,7 @@ public class PortalManager extends StandardMBean implements PortalManagerMBean {
 	@Override
 	public long getUptime(long companyId) throws MonitoringException {
 		CompanyStatistics companyStatistics =
-			_serverStatistics.getCompanyStatistics(companyId);
+			_serverStatisticsHelper.getCompanyStatistics(companyId);
 
 		return companyStatistics.getUptime();
 	}
@@ -195,37 +197,42 @@ public class PortalManager extends StandardMBean implements PortalManagerMBean {
 	@Override
 	public long getUptime(String webId) throws MonitoringException {
 		CompanyStatistics companyStatistics =
-			_serverStatistics.getCompanyStatistics(webId);
+			_serverStatisticsHelper.getCompanyStatistics(webId);
 
 		return companyStatistics.getUptime();
 	}
 
 	@Override
 	public String[] getWebIds() {
-		Set<String> webIds = _serverStatistics.getWebIds();
+		Set<String> webIds = _serverStatisticsHelper.getWebIds();
 
 		return webIds.toArray(new String[0]);
 	}
 
 	@Override
 	public void reset() {
-		_serverStatistics.reset();
+		_serverStatisticsHelper.reset();
 	}
 
 	@Override
 	public void reset(long companyId) {
-		_serverStatistics.reset(companyId);
+		_serverStatisticsHelper.reset(companyId);
 	}
 
 	@Override
 	public void reset(String webId) {
-		_serverStatistics.reset(webId);
+		_serverStatisticsHelper.reset(webId);
+	}
+
+	@Activate
+	protected void activate() {
+		_serverSummaryStatistics = new ServerSummaryStatistics(
+			_serverStatisticsHelper);
 	}
 
 	@Reference
-	private ServerStatistics _serverStatistics;
+	private ServerStatisticsHelper _serverStatisticsHelper;
 
-	@Reference
-	private ServerSummaryStatistics _serverSummaryStatistics;
+	private SummaryStatistics _serverSummaryStatistics;
 
 }

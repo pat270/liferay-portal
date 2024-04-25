@@ -25,7 +25,6 @@ import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.UserLocalService;
-import com.liferay.portal.kernel.settings.SettingsFactoryUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
@@ -81,8 +80,7 @@ public class SegmentsEntryRoleContributorTest {
 					"roleSegmentationEnabled", true
 				).put(
 					"segmentationEnabled", true
-				).build(),
-				SettingsFactoryUtil.getSettingsFactory());
+				).build());
 
 		_configurationTemporarySwapper = new ConfigurationTemporarySwapper(
 			"com.liferay.segments.configuration.SegmentsConfiguration",
@@ -345,8 +343,7 @@ public class SegmentsEntryRoleContributorTest {
 			Criteria.Conjunction.AND);
 
 		return SegmentsTestUtil.addSegmentsEntry(
-			_group.getGroupId(), CriteriaSerializer.serialize(criteria),
-			User.class.getName());
+			_group.getGroupId(), CriteriaSerializer.serialize(criteria));
 	}
 
 	private SegmentsEntry _addSegmentsEntry(User user) throws Exception {
@@ -364,8 +361,7 @@ public class SegmentsEntryRoleContributorTest {
 					).put(
 						"typeValue", "model"
 					))
-			).toString(),
-			User.class.getName());
+			).toString());
 	}
 
 	private void _setUpHasGroupPermissionTest() throws Exception {

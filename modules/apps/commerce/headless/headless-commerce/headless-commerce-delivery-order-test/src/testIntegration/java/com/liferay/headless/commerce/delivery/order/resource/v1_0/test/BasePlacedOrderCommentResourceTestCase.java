@@ -26,13 +26,12 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
@@ -174,6 +173,7 @@ public abstract class BasePlacedOrderCommentResourceTestCase {
 
 		placedOrderComment.setAuthor(regex);
 		placedOrderComment.setContent(regex);
+		placedOrderComment.setExternalReferenceCode(regex);
 
 		String json = PlacedOrderCommentSerDes.toJSON(placedOrderComment);
 
@@ -183,6 +183,146 @@ public abstract class BasePlacedOrderCommentResourceTestCase {
 
 		Assert.assertEquals(regex, placedOrderComment.getAuthor());
 		Assert.assertEquals(regex, placedOrderComment.getContent());
+		Assert.assertEquals(
+			regex, placedOrderComment.getExternalReferenceCode());
+	}
+
+	@Test
+	public void testGetPlacedOrderCommentByExternalReferenceCode()
+		throws Exception {
+
+		PlacedOrderComment postPlacedOrderComment =
+			testGetPlacedOrderCommentByExternalReferenceCode_addPlacedOrderComment();
+
+		PlacedOrderComment getPlacedOrderComment =
+			placedOrderCommentResource.
+				getPlacedOrderCommentByExternalReferenceCode(
+					postPlacedOrderComment.getExternalReferenceCode());
+
+		assertEquals(postPlacedOrderComment, getPlacedOrderComment);
+		assertValid(getPlacedOrderComment);
+	}
+
+	protected PlacedOrderComment
+			testGetPlacedOrderCommentByExternalReferenceCode_addPlacedOrderComment()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGraphQLGetPlacedOrderCommentByExternalReferenceCode()
+		throws Exception {
+
+		PlacedOrderComment placedOrderComment =
+			testGraphQLGetPlacedOrderCommentByExternalReferenceCode_addPlacedOrderComment();
+
+		// No namespace
+
+		Assert.assertTrue(
+			equals(
+				placedOrderComment,
+				PlacedOrderCommentSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"placedOrderCommentByExternalReferenceCode",
+								new HashMap<String, Object>() {
+									{
+										put(
+											"externalReferenceCode",
+											"\"" +
+												placedOrderComment.
+													getExternalReferenceCode() +
+														"\"");
+									}
+								},
+								getGraphQLFields())),
+						"JSONObject/data",
+						"Object/placedOrderCommentByExternalReferenceCode"))));
+
+		// Using the namespace headlessCommerceDeliveryOrder_v1_0
+
+		Assert.assertTrue(
+			equals(
+				placedOrderComment,
+				PlacedOrderCommentSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceDeliveryOrder_v1_0",
+								new GraphQLField(
+									"placedOrderCommentByExternalReferenceCode",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"externalReferenceCode",
+												"\"" +
+													placedOrderComment.
+														getExternalReferenceCode() +
+															"\"");
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceDeliveryOrder_v1_0",
+						"Object/placedOrderCommentByExternalReferenceCode"))));
+	}
+
+	@Test
+	public void testGraphQLGetPlacedOrderCommentByExternalReferenceCodeNotFound()
+		throws Exception {
+
+		String irrelevantExternalReferenceCode =
+			"\"" + RandomTestUtil.randomString() + "\"";
+
+		// No namespace
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"placedOrderCommentByExternalReferenceCode",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"externalReferenceCode",
+									irrelevantExternalReferenceCode);
+							}
+						},
+						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceDeliveryOrder_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceDeliveryOrder_v1_0",
+						new GraphQLField(
+							"placedOrderCommentByExternalReferenceCode",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"externalReferenceCode",
+										irrelevantExternalReferenceCode);
+								}
+							},
+							getGraphQLFields()))),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+	}
+
+	protected PlacedOrderComment
+			testGraphQLGetPlacedOrderCommentByExternalReferenceCode_addPlacedOrderComment()
+		throws Exception {
+
+		return testGraphQLPlacedOrderComment_addPlacedOrderComment();
 	}
 
 	@Test
@@ -211,6 +351,8 @@ public abstract class BasePlacedOrderCommentResourceTestCase {
 		PlacedOrderComment placedOrderComment =
 			testGraphQLGetPlacedOrderComment_addPlacedOrderComment();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				placedOrderComment,
@@ -228,11 +370,37 @@ public abstract class BasePlacedOrderCommentResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/placedOrderComment"))));
+
+		// Using the namespace headlessCommerceDeliveryOrder_v1_0
+
+		Assert.assertTrue(
+			equals(
+				placedOrderComment,
+				PlacedOrderCommentSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceDeliveryOrder_v1_0",
+								new GraphQLField(
+									"placedOrderComment",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"placedOrderCommentId",
+												placedOrderComment.getId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceDeliveryOrder_v1_0",
+						"Object/placedOrderComment"))));
 	}
 
 	@Test
 	public void testGraphQLGetPlacedOrderCommentNotFound() throws Exception {
 		Long irrelevantPlacedOrderCommentId = RandomTestUtil.randomLong();
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -250,6 +418,27 @@ public abstract class BasePlacedOrderCommentResourceTestCase {
 						getGraphQLFields())),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
+
+		// Using the namespace headlessCommerceDeliveryOrder_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceDeliveryOrder_v1_0",
+						new GraphQLField(
+							"placedOrderComment",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"placedOrderCommentId",
+										irrelevantPlacedOrderCommentId);
+								}
+							},
+							getGraphQLFields()))),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
 	}
 
 	protected PlacedOrderComment
@@ -257,6 +446,222 @@ public abstract class BasePlacedOrderCommentResourceTestCase {
 		throws Exception {
 
 		return testGraphQLPlacedOrderComment_addPlacedOrderComment();
+	}
+
+	@Test
+	public void testGetPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage_getExternalReferenceCode();
+		String irrelevantExternalReferenceCode =
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage_getIrrelevantExternalReferenceCode();
+
+		Page<PlacedOrderComment> page =
+			placedOrderCommentResource.
+				getPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage(
+					externalReferenceCode, Pagination.of(1, 10));
+
+		long totalCount = page.getTotalCount();
+
+		if (irrelevantExternalReferenceCode != null) {
+			PlacedOrderComment irrelevantPlacedOrderComment =
+				testGetPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage_addPlacedOrderComment(
+					irrelevantExternalReferenceCode,
+					randomIrrelevantPlacedOrderComment());
+
+			page =
+				placedOrderCommentResource.
+					getPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage(
+						irrelevantExternalReferenceCode,
+						Pagination.of(1, (int)totalCount + 1));
+
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
+
+			assertContains(
+				irrelevantPlacedOrderComment,
+				(List<PlacedOrderComment>)page.getItems());
+			assertValid(
+				page,
+				testGetPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage_getExpectedActions(
+					irrelevantExternalReferenceCode));
+		}
+
+		PlacedOrderComment placedOrderComment1 =
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage_addPlacedOrderComment(
+				externalReferenceCode, randomPlacedOrderComment());
+
+		PlacedOrderComment placedOrderComment2 =
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage_addPlacedOrderComment(
+				externalReferenceCode, randomPlacedOrderComment());
+
+		page =
+			placedOrderCommentResource.
+				getPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage(
+					externalReferenceCode, Pagination.of(1, 10));
+
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
+
+		assertContains(
+			placedOrderComment1, (List<PlacedOrderComment>)page.getItems());
+		assertContains(
+			placedOrderComment2, (List<PlacedOrderComment>)page.getItems());
+		assertValid(
+			page,
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage_getExpectedActions(
+				externalReferenceCode));
+	}
+
+	protected Map<String, Map<String, String>>
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage_getExpectedActions(
+				String externalReferenceCode)
+		throws Exception {
+
+		Map<String, Map<String, String>> expectedActions = new HashMap<>();
+
+		return expectedActions;
+	}
+
+	@Test
+	public void testGetPlacedOrderByExternalReferenceCodePlacedOrderCommentsPageWithPagination()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage_getExternalReferenceCode();
+
+		Page<PlacedOrderComment> placedOrderCommentPage =
+			placedOrderCommentResource.
+				getPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage(
+					externalReferenceCode, null);
+
+		int totalCount = GetterUtil.getInteger(
+			placedOrderCommentPage.getTotalCount());
+
+		PlacedOrderComment placedOrderComment1 =
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage_addPlacedOrderComment(
+				externalReferenceCode, randomPlacedOrderComment());
+
+		PlacedOrderComment placedOrderComment2 =
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage_addPlacedOrderComment(
+				externalReferenceCode, randomPlacedOrderComment());
+
+		PlacedOrderComment placedOrderComment3 =
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage_addPlacedOrderComment(
+				externalReferenceCode, randomPlacedOrderComment());
+
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
+
+		int pageSizeLimit = 500;
+
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<PlacedOrderComment> page1 =
+				placedOrderCommentResource.
+					getPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage(
+						externalReferenceCode,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+							pageSizeLimit));
+
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
+
+			assertContains(
+				placedOrderComment1,
+				(List<PlacedOrderComment>)page1.getItems());
+
+			Page<PlacedOrderComment> page2 =
+				placedOrderCommentResource.
+					getPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage(
+						externalReferenceCode,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+							pageSizeLimit));
+
+			assertContains(
+				placedOrderComment2,
+				(List<PlacedOrderComment>)page2.getItems());
+
+			Page<PlacedOrderComment> page3 =
+				placedOrderCommentResource.
+					getPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage(
+						externalReferenceCode,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+							pageSizeLimit));
+
+			assertContains(
+				placedOrderComment3,
+				(List<PlacedOrderComment>)page3.getItems());
+		}
+		else {
+			Page<PlacedOrderComment> page1 =
+				placedOrderCommentResource.
+					getPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage(
+						externalReferenceCode,
+						Pagination.of(1, totalCount + 2));
+
+			List<PlacedOrderComment> placedOrderComments1 =
+				(List<PlacedOrderComment>)page1.getItems();
+
+			Assert.assertEquals(
+				placedOrderComments1.toString(), totalCount + 2,
+				placedOrderComments1.size());
+
+			Page<PlacedOrderComment> page2 =
+				placedOrderCommentResource.
+					getPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage(
+						externalReferenceCode,
+						Pagination.of(2, totalCount + 2));
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<PlacedOrderComment> placedOrderComments2 =
+				(List<PlacedOrderComment>)page2.getItems();
+
+			Assert.assertEquals(
+				placedOrderComments2.toString(), 1,
+				placedOrderComments2.size());
+
+			Page<PlacedOrderComment> page3 =
+				placedOrderCommentResource.
+					getPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage(
+						externalReferenceCode,
+						Pagination.of(1, (int)totalCount + 3));
+
+			assertContains(
+				placedOrderComment1,
+				(List<PlacedOrderComment>)page3.getItems());
+			assertContains(
+				placedOrderComment2,
+				(List<PlacedOrderComment>)page3.getItems());
+			assertContains(
+				placedOrderComment3,
+				(List<PlacedOrderComment>)page3.getItems());
+		}
+	}
+
+	protected PlacedOrderComment
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage_addPlacedOrderComment(
+				String externalReferenceCode,
+				PlacedOrderComment placedOrderComment)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected String
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage_getExternalReferenceCode()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected String
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage_getIrrelevantExternalReferenceCode()
+		throws Exception {
+
+		return null;
 	}
 
 	@Test
@@ -270,7 +675,7 @@ public abstract class BasePlacedOrderCommentResourceTestCase {
 			placedOrderCommentResource.getPlacedOrderPlacedOrderCommentsPage(
 				placedOrderId, Pagination.of(1, 10));
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if (irrelevantPlacedOrderId != null) {
 			PlacedOrderComment irrelevantPlacedOrderComment =
@@ -281,12 +686,13 @@ public abstract class BasePlacedOrderCommentResourceTestCase {
 			page =
 				placedOrderCommentResource.
 					getPlacedOrderPlacedOrderCommentsPage(
-						irrelevantPlacedOrderId, Pagination.of(1, 2));
+						irrelevantPlacedOrderId,
+						Pagination.of(1, (int)totalCount + 1));
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantPlacedOrderComment),
+			assertContains(
+				irrelevantPlacedOrderComment,
 				(List<PlacedOrderComment>)page.getItems());
 			assertValid(
 				page,
@@ -305,11 +711,12 @@ public abstract class BasePlacedOrderCommentResourceTestCase {
 		page = placedOrderCommentResource.getPlacedOrderPlacedOrderCommentsPage(
 			placedOrderId, Pagination.of(1, 10));
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(placedOrderComment1, placedOrderComment2),
-			(List<PlacedOrderComment>)page.getItems());
+		assertContains(
+			placedOrderComment1, (List<PlacedOrderComment>)page.getItems());
+		assertContains(
+			placedOrderComment2, (List<PlacedOrderComment>)page.getItems());
 		assertValid(
 			page,
 			testGetPlacedOrderPlacedOrderCommentsPage_getExpectedActions(
@@ -333,6 +740,13 @@ public abstract class BasePlacedOrderCommentResourceTestCase {
 		Long placedOrderId =
 			testGetPlacedOrderPlacedOrderCommentsPage_getPlacedOrderId();
 
+		Page<PlacedOrderComment> placedOrderCommentPage =
+			placedOrderCommentResource.getPlacedOrderPlacedOrderCommentsPage(
+				placedOrderId, null);
+
+		int totalCount = GetterUtil.getInteger(
+			placedOrderCommentPage.getTotalCount());
+
 		PlacedOrderComment placedOrderComment1 =
 			testGetPlacedOrderPlacedOrderCommentsPage_addPlacedOrderComment(
 				placedOrderId, randomPlacedOrderComment());
@@ -345,36 +759,91 @@ public abstract class BasePlacedOrderCommentResourceTestCase {
 			testGetPlacedOrderPlacedOrderCommentsPage_addPlacedOrderComment(
 				placedOrderId, randomPlacedOrderComment());
 
-		Page<PlacedOrderComment> page1 =
-			placedOrderCommentResource.getPlacedOrderPlacedOrderCommentsPage(
-				placedOrderId, Pagination.of(1, 2));
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<PlacedOrderComment> placedOrderComments1 =
-			(List<PlacedOrderComment>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			placedOrderComments1.toString(), 2, placedOrderComments1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<PlacedOrderComment> page1 =
+				placedOrderCommentResource.
+					getPlacedOrderPlacedOrderCommentsPage(
+						placedOrderId,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+							pageSizeLimit));
 
-		Page<PlacedOrderComment> page2 =
-			placedOrderCommentResource.getPlacedOrderPlacedOrderCommentsPage(
-				placedOrderId, Pagination.of(2, 2));
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(3, page2.getTotalCount());
+			assertContains(
+				placedOrderComment1,
+				(List<PlacedOrderComment>)page1.getItems());
 
-		List<PlacedOrderComment> placedOrderComments2 =
-			(List<PlacedOrderComment>)page2.getItems();
+			Page<PlacedOrderComment> page2 =
+				placedOrderCommentResource.
+					getPlacedOrderPlacedOrderCommentsPage(
+						placedOrderId,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+							pageSizeLimit));
 
-		Assert.assertEquals(
-			placedOrderComments2.toString(), 1, placedOrderComments2.size());
+			assertContains(
+				placedOrderComment2,
+				(List<PlacedOrderComment>)page2.getItems());
 
-		Page<PlacedOrderComment> page3 =
-			placedOrderCommentResource.getPlacedOrderPlacedOrderCommentsPage(
-				placedOrderId, Pagination.of(1, 3));
+			Page<PlacedOrderComment> page3 =
+				placedOrderCommentResource.
+					getPlacedOrderPlacedOrderCommentsPage(
+						placedOrderId,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+							pageSizeLimit));
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(
-				placedOrderComment1, placedOrderComment2, placedOrderComment3),
-			(List<PlacedOrderComment>)page3.getItems());
+			assertContains(
+				placedOrderComment3,
+				(List<PlacedOrderComment>)page3.getItems());
+		}
+		else {
+			Page<PlacedOrderComment> page1 =
+				placedOrderCommentResource.
+					getPlacedOrderPlacedOrderCommentsPage(
+						placedOrderId, Pagination.of(1, totalCount + 2));
+
+			List<PlacedOrderComment> placedOrderComments1 =
+				(List<PlacedOrderComment>)page1.getItems();
+
+			Assert.assertEquals(
+				placedOrderComments1.toString(), totalCount + 2,
+				placedOrderComments1.size());
+
+			Page<PlacedOrderComment> page2 =
+				placedOrderCommentResource.
+					getPlacedOrderPlacedOrderCommentsPage(
+						placedOrderId, Pagination.of(2, totalCount + 2));
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<PlacedOrderComment> placedOrderComments2 =
+				(List<PlacedOrderComment>)page2.getItems();
+
+			Assert.assertEquals(
+				placedOrderComments2.toString(), 1,
+				placedOrderComments2.size());
+
+			Page<PlacedOrderComment> page3 =
+				placedOrderCommentResource.
+					getPlacedOrderPlacedOrderCommentsPage(
+						placedOrderId, Pagination.of(1, (int)totalCount + 3));
+
+			assertContains(
+				placedOrderComment1,
+				(List<PlacedOrderComment>)page3.getItems());
+			assertContains(
+				placedOrderComment2,
+				(List<PlacedOrderComment>)page3.getItems());
+			assertContains(
+				placedOrderComment3,
+				(List<PlacedOrderComment>)page3.getItems());
+		}
 	}
 
 	protected PlacedOrderComment
@@ -510,6 +979,16 @@ public abstract class BasePlacedOrderCommentResourceTestCase {
 
 			if (Objects.equals("content", additionalAssertFieldName)) {
 				if (placedOrderComment.getContent() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"externalReferenceCode", additionalAssertFieldName)) {
+
+				if (placedOrderComment.getExternalReferenceCode() == null) {
 					valid = false;
 				}
 
@@ -675,6 +1154,19 @@ public abstract class BasePlacedOrderCommentResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals(
+					"externalReferenceCode", additionalAssertFieldName)) {
+
+				if (!Objects.deepEquals(
+						placedOrderComment1.getExternalReferenceCode(),
+						placedOrderComment2.getExternalReferenceCode())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("id", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						placedOrderComment1.getId(),
@@ -744,6 +1236,10 @@ public abstract class BasePlacedOrderCommentResourceTestCase {
 
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
+
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
 
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
@@ -904,6 +1400,52 @@ public abstract class BasePlacedOrderCommentResourceTestCase {
 			return sb.toString();
 		}
 
+		if (entityFieldName.equals("externalReferenceCode")) {
+			Object object = placedOrderComment.getExternalReferenceCode();
+
+			String value = String.valueOf(object);
+
+			if (operator.equals("contains")) {
+				sb = new StringBundler();
+
+				sb.append("contains(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 2)) {
+					sb.append(value.substring(1, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else if (operator.equals("startswith")) {
+				sb = new StringBundler();
+
+				sb.append("startswith(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 1)) {
+					sb.append(value.substring(0, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else {
+				sb.append("'");
+				sb.append(value);
+				sb.append("'");
+			}
+
+			return sb.toString();
+		}
+
 		if (entityFieldName.equals("id")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
@@ -965,6 +1507,8 @@ public abstract class BasePlacedOrderCommentResourceTestCase {
 			{
 				author = StringUtil.toLowerCase(RandomTestUtil.randomString());
 				content = StringUtil.toLowerCase(RandomTestUtil.randomString());
+				externalReferenceCode = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
 				id = RandomTestUtil.randomLong();
 				orderId = RandomTestUtil.randomLong();
 				restricted = RandomTestUtil.randomBoolean();
@@ -988,9 +1532,9 @@ public abstract class BasePlacedOrderCommentResourceTestCase {
 	}
 
 	protected PlacedOrderCommentResource placedOrderCommentResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

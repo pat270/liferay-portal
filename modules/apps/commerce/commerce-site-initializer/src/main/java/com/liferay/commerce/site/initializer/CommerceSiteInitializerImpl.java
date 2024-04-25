@@ -5,6 +5,9 @@
 
 package com.liferay.commerce.site.initializer;
 
+import com.liferay.account.settings.AccountEntryGroupSettings;
+import com.liferay.commerce.configuration.CommerceAccountGroupServiceConfiguration;
+import com.liferay.commerce.constants.CommerceConstants;
 import com.liferay.commerce.currency.service.CommerceCurrencyLocalService;
 import com.liferay.commerce.initializer.util.CPDefinitionsImporter;
 import com.liferay.commerce.initializer.util.CPOptionCategoriesImporter;
@@ -25,6 +28,7 @@ import com.liferay.commerce.product.constants.CPConstants;
 import com.liferay.commerce.product.model.CPDefinition;
 import com.liferay.commerce.product.model.CPInstance;
 import com.liferay.commerce.product.model.CPOption;
+import com.liferay.commerce.product.model.CProduct;
 import com.liferay.commerce.product.model.CommerceChannel;
 import com.liferay.commerce.product.service.CPDefinitionLocalService;
 import com.liferay.commerce.product.service.CPInstanceLocalService;
@@ -34,6 +38,7 @@ import com.liferay.commerce.product.service.CommerceCatalogLocalService;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.commerce.product.service.CommerceChannelService;
 import com.liferay.commerce.service.CommerceOrderTypeLocalService;
+import com.liferay.commerce.util.AccountEntryAllowedTypesUtil;
 import com.liferay.commerce.util.CommerceAccountRoleHelper;
 import com.liferay.headless.commerce.admin.account.dto.v1_0.AdminAccountGroup;
 import com.liferay.headless.commerce.admin.account.resource.v1_0.AdminAccountGroupResource;
@@ -48,6 +53,9 @@ import com.liferay.headless.commerce.admin.channel.resource.v1_0.ChannelResource
 import com.liferay.headless.commerce.admin.order.dto.v1_0.OrderType;
 import com.liferay.headless.commerce.admin.order.resource.v1_0.OrderTypeResource;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -61,16 +69,17 @@ import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.permission.ModelPermissionsFactory;
+import com.liferay.portal.kernel.settings.FallbackKeysSettingsUtil;
 import com.liferay.portal.kernel.settings.GroupServiceSettingsLocator;
 import com.liferay.portal.kernel.settings.ModifiableSettings;
 import com.liferay.portal.kernel.settings.Settings;
-import com.liferay.portal.kernel.settings.SettingsFactory;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.URLUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
 import com.liferay.portal.kernel.util.Validator;
@@ -102,6 +111,7 @@ import org.osgi.service.component.annotations.Reference;
 @Component(service = CommerceSiteInitializer.class)
 public class CommerceSiteInitializerImpl implements CommerceSiteInitializer {
 
+	@Override
 	public void addAccountGroups(
 			ServiceContext serviceContext, ServletContext servletContext)
 		throws Exception {
@@ -137,10 +147,11 @@ public class CommerceSiteInitializerImpl implements CommerceSiteInitializer {
 		}
 	}
 
+	@Override
 	public void addCPDefinitions(
-			Bundle bundle, Map<String, String> documentsStringUtilReplaceValues,
-			Map<String, String> objectDefinitionIdsStringUtilReplaceValues,
-			ServiceContext serviceContext, ServletContext servletContext)
+			Bundle bundle, ServiceContext serviceContext,
+			ServletContext servletContext,
+			Map<String, String> stringUtilReplaceValues)
 		throws Exception {
 
 		Channel channel = _addOrUpdateCommerceChannel(
@@ -153,14 +164,14 @@ public class CommerceSiteInitializerImpl implements CommerceSiteInitializer {
 		_addOrUpdateCommerceCatalogs(
 			bundle, channel,
 			_addCommerceInventoryWarehouses(serviceContext, servletContext),
-			serviceContext, servletContext);
+			serviceContext, servletContext, stringUtilReplaceValues);
 		_addCommerceNotificationTemplates(
-			bundle, channel.getId(), documentsStringUtilReplaceValues,
-			objectDefinitionIdsStringUtilReplaceValues, serviceContext,
-			servletContext);
+			bundle, channel.getId(), serviceContext, servletContext,
+			stringUtilReplaceValues);
 		_addOrUpdateCommerceOrderTypes(serviceContext, servletContext);
 	}
 
+	@Override
 	public void addPortletSettings(
 			ClassLoader classLoader, ServiceContext serviceContext,
 			ServletContext servletContext)
@@ -184,6 +195,7 @@ public class CommerceSiteInitializerImpl implements CommerceSiteInitializer {
 			serviceContext.getUserId());
 	}
 
+	@Override
 	public long getCommerceChannelGroupId(long siteGroupId) {
 		CommerceChannel commerceChannel =
 			_commerceChannelLocalService.fetchCommerceChannelBySiteGroupId(
@@ -192,6 +204,7 @@ public class CommerceSiteInitializerImpl implements CommerceSiteInitializer {
 		return commerceChannel.getGroupId();
 	}
 
+	@Override
 	public String getCommerceOrderClassName() {
 		return CommerceOrder.class.getName();
 	}
@@ -214,7 +227,7 @@ public class CommerceSiteInitializerImpl implements CommerceSiteInitializer {
 		Map<String, Object> map1 = jsonObject.toMap();
 
 		for (Map.Entry<String, Object> entry1 : map1.entrySet()) {
-			Settings settings = _settingsFactory.getSettings(
+			Settings settings = FallbackKeysSettingsUtil.getSettings(
 				new GroupServiceSettingsLocator(
 					commerceChannel.getGroupId(), entry1.getKey()));
 
@@ -230,6 +243,10 @@ public class CommerceSiteInitializerImpl implements CommerceSiteInitializer {
 
 			modifiableSettings.store();
 		}
+
+		_accountEntryGroupSettings.setAllowedTypes(
+			commerceChannel.getSiteGroupId(),
+			_getAllowedTypes(commerceChannel.getGroupId()));
 	}
 
 	private List<CommerceInventoryWarehouse> _addCommerceInventoryWarehouses(
@@ -246,11 +263,9 @@ public class CommerceSiteInitializerImpl implements CommerceSiteInitializer {
 	}
 
 	private void _addCommerceNotificationTemplate(
-			Bundle bundle, long commerceChannelId,
-			Map<String, String> documentsStringUtilReplaceValues,
-			Map<String, String> objectDefinitionIdsStringUtilReplaceValues,
-			String resourcePath, ServiceContext serviceContext,
-			ServletContext servletContext)
+			Bundle bundle, long commerceChannelId, String resourcePath,
+			ServiceContext serviceContext, ServletContext servletContext,
+			Map<String, String> stringUtilReplaceValues)
 		throws Exception {
 
 		String json = SiteInitializerUtil.read(
@@ -280,8 +295,8 @@ public class CommerceSiteInitializerImpl implements CommerceSiteInitializer {
 					FileUtil.getShortFileName(
 						FileUtil.stripExtension(url.getPath())),
 					StringUtil.replace(
-						StringUtil.read(url.openStream()), "[$", "$]",
-						documentsStringUtilReplaceValues));
+						URLUtil.toString(url), "[$", "$]",
+						stringUtilReplaceValues));
 			}
 		}
 
@@ -299,7 +314,7 @@ public class CommerceSiteInitializerImpl implements CommerceSiteInitializer {
 				commerceNotificationTemplateJSONObject.getString("bcc"),
 				StringUtil.replace(
 					commerceNotificationTemplateJSONObject.getString("type"),
-					"[$", "$]", objectDefinitionIdsStringUtilReplaceValues),
+					"[$", "$]", stringUtilReplaceValues),
 				commerceNotificationTemplateJSONObject.getBoolean("enabled"),
 				SiteInitializerUtil.toMap(
 					commerceNotificationTemplateJSONObject.getString(
@@ -310,9 +325,8 @@ public class CommerceSiteInitializerImpl implements CommerceSiteInitializer {
 
 	private void _addCommerceNotificationTemplates(
 			Bundle bundle, long commerceChannelId,
-			Map<String, String> documentsStringUtilReplaceValues,
-			Map<String, String> objectDefinitionIdsStringUtilReplaceValues,
-			ServiceContext serviceContext, ServletContext servletContext)
+			ServiceContext serviceContext, ServletContext servletContext,
+			Map<String, String> stringUtilReplaceValues)
 		throws Exception {
 
 		Set<String> resourcePaths = servletContext.getResourcePaths(
@@ -324,9 +338,8 @@ public class CommerceSiteInitializerImpl implements CommerceSiteInitializer {
 
 		for (String resourcePath : resourcePaths) {
 			_addCommerceNotificationTemplate(
-				bundle, commerceChannelId, documentsStringUtilReplaceValues,
-				objectDefinitionIdsStringUtilReplaceValues, resourcePath,
-				serviceContext, servletContext);
+				bundle, commerceChannelId, resourcePath, serviceContext,
+				servletContext, stringUtilReplaceValues);
 		}
 	}
 
@@ -369,16 +382,17 @@ public class CommerceSiteInitializerImpl implements CommerceSiteInitializer {
 			ProductSpecification productSpecification =
 				new ProductSpecification() {
 					{
-						productId = cpDefinition.getCPDefinitionId();
-						specificationKey = jsonObject.getString("key");
-						value = JSONUtil.toStringMap(
-							jsonObject.getJSONObject(
-								"productSpecificationValue"));
+						setProductId(cpDefinition::getCProductId);
+						setSpecificationKey(() -> jsonObject.getString("key"));
+						setValue(
+							() -> JSONUtil.toStringMap(
+								jsonObject.getJSONObject(
+									"productSpecificationValue")));
 					}
 				};
 
 			productSpecificationResource.postProductIdProductSpecification(
-				cpDefinition.getCPDefinitionId(), productSpecification);
+				cpDefinition.getCProductId(), productSpecification);
 		}
 	}
 
@@ -387,8 +401,26 @@ public class CommerceSiteInitializerImpl implements CommerceSiteInitializer {
 			Channel channel,
 			List<CommerceInventoryWarehouse> commerceInventoryWarehouses,
 			String resourcePath, ServiceContext serviceContext,
-			ServletContext servletContext)
+			ServletContext servletContext,
+			Map<String, String> stringUtilReplaceValues)
 		throws Exception {
+
+		Group commerceCatalogGroup =
+			_commerceCatalogLocalService.getCommerceCatalogGroup(
+				catalog.getId());
+
+		List<CPDefinition> existingCPDefinitions =
+			_cpDefinitionLocalService.getCPDefinitions(
+				commerceCatalogGroup.getGroupId(), WorkflowConstants.STATUS_ANY,
+				QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+
+		for (CPDefinition cpDefinition : existingCPDefinitions) {
+			CProduct cProduct = cpDefinition.getCProduct();
+
+			stringUtilReplaceValues.put(
+				"CP_DEFINITION_ID:" + cProduct.getExternalReferenceCode(),
+				String.valueOf(cpDefinition.getCPDefinitionId()));
+		}
 
 		String json = SiteInitializerUtil.read(resourcePath, servletContext);
 
@@ -397,10 +429,6 @@ public class CommerceSiteInitializerImpl implements CommerceSiteInitializer {
 		}
 
 		BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
-
-		Group commerceCatalogGroup =
-			_commerceCatalogLocalService.getCommerceCatalogGroup(
-				catalog.getId());
 
 		List<CPDefinition> cpDefinitions =
 			_cpDefinitionsImporter.importCPDefinitions(
@@ -419,6 +447,12 @@ public class CommerceSiteInitializerImpl implements CommerceSiteInitializer {
 		}
 
 		for (CPDefinition cpDefinition : cpDefinitions) {
+			CProduct cProduct = cpDefinition.getCProduct();
+
+			stringUtilReplaceValues.put(
+				"CP_DEFINITION_ID:" + cProduct.getExternalReferenceCode(),
+				String.valueOf(cpDefinition.getCPDefinitionId()));
+
 			List<CPInstance> cpInstances = cpDefinition.getCPInstances();
 
 			if (ListUtil.isEmpty(cpInstances)) {
@@ -481,14 +515,15 @@ public class CommerceSiteInitializerImpl implements CommerceSiteInitializer {
 				new ProductOption[] {
 					new ProductOption() {
 						{
-							facetable = cpOption.isFacetable();
-							fieldType = cpOption.getDDMFormFieldTypeName();
-							key = cpOption.getKey();
-							name = LocalizedMapUtil.getI18nMap(
-								cpOption.getNameMap());
-							optionId = cpOption.getCPOptionId();
-							required = cpOption.isRequired();
-							skuContributor = cpOption.isSkuContributor();
+							setFacetable(cpOption::isFacetable);
+							setFieldType(cpOption::getCommerceOptionTypeKey);
+							setKey(cpOption::getKey);
+							setName(
+								() -> LocalizedMapUtil.getI18nMap(
+									cpOption.getNameMap()));
+							setOptionId(cpOption::getCPOptionId);
+							setRequired(cpOption::isRequired);
+							setSkuContributor(cpOption::isSkuContributor);
 						}
 					}
 				});
@@ -574,7 +609,7 @@ public class CommerceSiteInitializerImpl implements CommerceSiteInitializer {
 		CommerceChannel commerceChannel =
 			_commerceChannelService.getCommerceChannel(channel.getId());
 
-		Settings settings = _settingsFactory.getSettings(
+		Settings settings = FallbackKeysSettingsUtil.getSettings(
 			new GroupServiceSettingsLocator(
 				commerceChannel.getGroupId(),
 				CPConstants.RESOURCE_NAME_CP_DISPLAY_LAYOUT));
@@ -619,7 +654,8 @@ public class CommerceSiteInitializerImpl implements CommerceSiteInitializer {
 	private void _addOrUpdateCommerceCatalogs(
 			Bundle bundle, Channel channel,
 			List<CommerceInventoryWarehouse> commerceInventoryWarehouses,
-			ServiceContext serviceContext, ServletContext servletContext)
+			ServiceContext serviceContext, ServletContext servletContext,
+			Map<String, String> stringUtilReplaceValues)
 		throws Exception {
 
 		Set<String> resourcePaths = servletContext.getResourcePaths(
@@ -675,7 +711,7 @@ public class CommerceSiteInitializerImpl implements CommerceSiteInitializer {
 				assetVocabularyName, bundle, catalog, channel,
 				commerceInventoryWarehouses,
 				StringUtil.replaceLast(resourcePath, ".json", ".products.json"),
-				serviceContext, servletContext);
+				serviceContext, servletContext, stringUtilReplaceValues);
 
 			_addOrUpdateCPOptionCategories(serviceContext, servletContext);
 
@@ -840,7 +876,7 @@ public class CommerceSiteInitializerImpl implements CommerceSiteInitializer {
 		CommercePriceEntry commercePriceEntry =
 			_commercePriceEntryLocalService.fetchCommercePriceEntry(
 				commercePriceList.getCommercePriceListId(),
-				cpInstance.getCPInstanceUuid());
+				cpInstance.getCPInstanceUuid(), StringPool.BLANK);
 
 		BigDecimal price = cpInstance.getPrice();
 
@@ -860,8 +896,9 @@ public class CommerceSiteInitializerImpl implements CommerceSiteInitializer {
 				BigDecimal.ZERO, null, serviceContext);
 		}
 		else {
-			_commercePriceEntryLocalService.updateCommercePriceEntry(
-				commercePriceEntry.getCommercePriceEntryId(), price,
+			_commercePriceEntryLocalService.updatePricingInfo(
+				commercePriceEntry.getCommercePriceEntryId(),
+				commercePriceEntry.isBulkPricing(), price,
 				commercePriceEntry.isPriceOnApplication(), BigDecimal.ZERO,
 				null, serviceContext);
 		}
@@ -885,6 +922,21 @@ public class CommerceSiteInitializerImpl implements CommerceSiteInitializer {
 		_cpOptionCategoriesImporter.importCPOptionCategories(
 			jsonArray, serviceContext.getScopeGroupId(),
 			serviceContext.getUserId());
+	}
+
+	private String[] _getAllowedTypes(long commerceChannelGroupId)
+		throws Exception {
+
+		CommerceAccountGroupServiceConfiguration
+			commerceAccountGroupServiceConfiguration =
+				_configurationProvider.getConfiguration(
+					CommerceAccountGroupServiceConfiguration.class,
+					new GroupServiceSettingsLocator(
+						commerceChannelGroupId,
+						CommerceConstants.SERVICE_NAME_COMMERCE_ACCOUNT));
+
+		return AccountEntryAllowedTypesUtil.getAllowedTypes(
+			commerceAccountGroupServiceConfiguration.commerceSiteType());
 	}
 
 	private void _updateCPInstanceProperties(
@@ -951,6 +1003,9 @@ public class CommerceSiteInitializerImpl implements CommerceSiteInitializer {
 		CommerceSiteInitializerImpl.class);
 
 	@Reference
+	private AccountEntryGroupSettings _accountEntryGroupSettings;
+
+	@Reference
 	private AdminAccountGroupResource.Factory _adminAccountGroupResourceFactory;
 
 	@Reference
@@ -990,6 +1045,9 @@ public class CommerceSiteInitializerImpl implements CommerceSiteInitializer {
 
 	@Reference
 	private CommercePriceListLocalService _commercePriceListLocalService;
+
+	@Reference
+	private ConfigurationProvider _configurationProvider;
 
 	@Reference
 	private CPDefinitionLocalService _cpDefinitionLocalService;
@@ -1039,8 +1097,5 @@ public class CommerceSiteInitializerImpl implements CommerceSiteInitializer {
 
 	@Reference
 	private ResourcePermissionLocalService _resourcePermissionLocalService;
-
-	@Reference
-	private SettingsFactory _settingsFactory;
 
 }

@@ -17,8 +17,10 @@ import com.liferay.commerce.product.model.CPInstance;
 import com.liferay.commerce.product.model.CommerceCatalog;
 import com.liferay.commerce.product.service.CPDefinitionOptionRelLocalService;
 import com.liferay.commerce.product.service.CPInstanceService;
+import com.liferay.commerce.product.service.CPInstanceUnitOfMeasureLocalService;
 import com.liferay.commerce.product.util.CPInstanceHelper;
 import com.liferay.commerce.product.util.CPJSONUtil;
+import com.liferay.commerce.util.CommerceQuantityFormatter;
 import com.liferay.frontend.data.set.provider.FDSDataProvider;
 import com.liferay.frontend.data.set.provider.search.FDSKeywords;
 import com.liferay.frontend.data.set.provider.search.FDSPagination;
@@ -93,9 +95,14 @@ public class CommerceProductInstanceFDSDataProvider
 			JSONArray jsonArray = CPJSONUtil.toJSONArray(
 				cpDefinitionOptionRelKeysCPDefinitionOptionValueRelKeys);
 
-			int stockQuantity = _commerceInventoryEngine.getStockQuantity(
-				cpInstance.getCompanyId(), cpDefinition.getGroupId(),
-				cpInstance.getSku());
+			String availableQuantity = String.valueOf(
+				_commerceQuantityFormatter.format(
+					_cpInstanceUnitOfMeasureLocalService.
+						fetchPrimaryCPInstanceUnitOfMeasure(
+							cpInstance.getCPInstanceId()),
+					_commerceInventoryEngine.getStockQuantity(
+						cpInstance.getCompanyId(), cpDefinition.getGroupId(),
+						cpInstance.getSku(), StringPool.BLANK)));
 
 			String statusDisplayStyle = StringPool.BLANK;
 
@@ -117,7 +124,7 @@ public class CommerceProductInstanceFDSDataProvider
 							cpInstance.getCPDefinitionId(),
 							jsonArray.toString(), locale)),
 					HtmlUtil.escape(_formatPrice(cpInstance, locale)),
-					cpDefinitionName, stockQuantity,
+					cpDefinitionName, availableQuantity,
 					new LabelField(
 						statusDisplayStyle,
 						_language.get(
@@ -163,7 +170,8 @@ public class CommerceProductInstanceFDSDataProvider
 				cpInstance.getCPInstanceId(),
 				_commerceCurrencyLocalService.getCommerceCurrency(
 					cpInstance.getCompanyId(),
-					commerceCatalog.getCommerceCurrencyCode()));
+					commerceCatalog.getCommerceCurrencyCode()),
+				StringPool.BLANK);
 
 		return commerceMoney.format(locale);
 	}
@@ -230,6 +238,9 @@ public class CommerceProductInstanceFDSDataProvider
 	private CommerceProductPriceCalculation _commerceProductPriceCalculation;
 
 	@Reference
+	private CommerceQuantityFormatter _commerceQuantityFormatter;
+
+	@Reference
 	private CPDefinitionOptionRelLocalService
 		_cpDefinitionOptionRelLocalService;
 
@@ -238,6 +249,10 @@ public class CommerceProductInstanceFDSDataProvider
 
 	@Reference
 	private CPInstanceService _cpInstanceService;
+
+	@Reference
+	private CPInstanceUnitOfMeasureLocalService
+		_cpInstanceUnitOfMeasureLocalService;
 
 	@Reference
 	private Language _language;

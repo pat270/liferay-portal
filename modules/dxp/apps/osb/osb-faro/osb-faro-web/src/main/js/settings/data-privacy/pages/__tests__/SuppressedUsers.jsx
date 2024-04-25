@@ -12,6 +12,19 @@ import {waitForLoading} from 'test/helpers';
 
 jest.unmock('react-dom');
 
+jest.mock('shared/hooks/useCurrentUser', () => ({
+	useCurrentUser: () => ({
+		id: '123',
+		isAdmin: () => true,
+		name: 'Marcos',
+		userId: '456'
+	})
+}));
+
+jest.mock('shared/hooks/useTimeZone', () => ({
+	useTimeZone: () => ({timeZoneId: 'UTC'})
+}));
+
 const mockItems = [
 	{
 		createDate: data.getTimestamp(),

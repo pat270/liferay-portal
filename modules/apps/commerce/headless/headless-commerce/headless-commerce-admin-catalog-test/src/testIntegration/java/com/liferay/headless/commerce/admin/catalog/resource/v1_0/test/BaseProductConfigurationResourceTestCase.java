@@ -25,8 +25,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -346,6 +344,28 @@ public abstract class BaseProductConfigurationResourceTestCase {
 			}
 
 			if (Objects.equals(
+					"availabilityEstimateId", additionalAssertFieldName)) {
+
+				if (productConfiguration.getAvailabilityEstimateId() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"availabilityEstimateName", additionalAssertFieldName)) {
+
+				if (productConfiguration.getAvailabilityEstimateName() ==
+						null) {
+
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
 					"displayAvailability", additionalAssertFieldName)) {
 
 				if (productConfiguration.getDisplayAvailability() == null) {
@@ -561,6 +581,35 @@ public abstract class BaseProductConfigurationResourceTestCase {
 			}
 
 			if (Objects.equals(
+					"availabilityEstimateId", additionalAssertFieldName)) {
+
+				if (!Objects.deepEquals(
+						productConfiguration1.getAvailabilityEstimateId(),
+						productConfiguration2.getAvailabilityEstimateId())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"availabilityEstimateName", additionalAssertFieldName)) {
+
+				if (!equals(
+						(Map)
+							productConfiguration1.getAvailabilityEstimateName(),
+						(Map)
+							productConfiguration2.
+								getAvailabilityEstimateName())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
 					"displayAvailability", additionalAssertFieldName)) {
 
 				if (!Objects.deepEquals(
@@ -691,6 +740,10 @@ public abstract class BaseProductConfigurationResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -764,6 +817,16 @@ public abstract class BaseProductConfigurationResourceTestCase {
 		}
 
 		if (entityFieldName.equals("allowedOrderQuantities")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
+		if (entityFieldName.equals("availabilityEstimateId")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
+		if (entityFieldName.equals("availabilityEstimateName")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
 		}
@@ -871,32 +934,23 @@ public abstract class BaseProductConfigurationResourceTestCase {
 		}
 
 		if (entityFieldName.equals("maxOrderQuantity")) {
-			sb.append(
-				String.valueOf(productConfiguration.getMaxOrderQuantity()));
-
-			return sb.toString();
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
 		}
 
 		if (entityFieldName.equals("minOrderQuantity")) {
-			sb.append(
-				String.valueOf(productConfiguration.getMinOrderQuantity()));
-
-			return sb.toString();
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
 		}
 
 		if (entityFieldName.equals("minStockQuantity")) {
-			sb.append(
-				String.valueOf(productConfiguration.getMinStockQuantity()));
-
-			return sb.toString();
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
 		}
 
 		if (entityFieldName.equals("multipleOrderQuantity")) {
-			sb.append(
-				String.valueOf(
-					productConfiguration.getMultipleOrderQuantity()));
-
-			return sb.toString();
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
 		}
 
 		throw new IllegalArgumentException(
@@ -946,16 +1000,13 @@ public abstract class BaseProductConfigurationResourceTestCase {
 		return new ProductConfiguration() {
 			{
 				allowBackOrder = RandomTestUtil.randomBoolean();
+				availabilityEstimateId = RandomTestUtil.randomLong();
 				displayAvailability = RandomTestUtil.randomBoolean();
 				displayStockQuantity = RandomTestUtil.randomBoolean();
 				inventoryEngine = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
 				lowStockAction = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
-				maxOrderQuantity = RandomTestUtil.randomInt();
-				minOrderQuantity = RandomTestUtil.randomInt();
-				minStockQuantity = RandomTestUtil.randomInt();
-				multipleOrderQuantity = RandomTestUtil.randomInt();
 			}
 		};
 	}
@@ -976,9 +1027,9 @@ public abstract class BaseProductConfigurationResourceTestCase {
 	}
 
 	protected ProductConfigurationResource productConfigurationResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

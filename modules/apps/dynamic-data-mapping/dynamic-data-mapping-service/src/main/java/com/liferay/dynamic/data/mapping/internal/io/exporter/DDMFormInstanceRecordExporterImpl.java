@@ -32,7 +32,7 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
-import com.liferay.portal.kernel.util.Html;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -84,9 +84,10 @@ public class DDMFormInstanceRecordExporterImpl
 				ddmFormInstanceId);
 
 			byte[] content = write(
-				type, getDDMFormFieldsLabel(ddmFormFields, locale),
+				ddmFormFields, getDDMFormFieldsLabel(ddmFormFields, locale),
 				getDDMFormFieldValues(
-					ddmFormFields, ddmFormInstanceRecords, locale));
+					ddmFormFields, ddmFormInstanceRecords, locale),
+				type);
 
 			builder = builder.withContent(content);
 		}
@@ -146,7 +147,7 @@ public class DDMFormInstanceRecordExporterImpl
 
 		sb.setIndex(sb.index() - 1);
 
-		return _html.unescape(sb.toString());
+		return HtmlUtil.unescape(sb.toString());
 	}
 
 	protected List<Map<String, String>> getDDMFormFieldValues(
@@ -266,25 +267,23 @@ public class DDMFormInstanceRecordExporterImpl
 	}
 
 	protected byte[] write(
-			String type, Map<String, String> ddmFormFieldsLabel,
-			List<Map<String, String>> ddmFormFieldValues)
+			Map<String, DDMFormField> ddmFormFields,
+			Map<String, String> ddmFormFieldsLabel,
+			List<Map<String, String>> ddmFormFieldValues, String type)
 		throws Exception {
 
 		DDMFormInstanceRecordWriter ddmFormInstanceRecordWriter =
 			ddmFormInstanceRecordWriterRegistry.getDDMFormInstanceRecordWriter(
 				type);
 
-		DDMFormInstanceRecordWriterRequest.Builder builder =
-			DDMFormInstanceRecordWriterRequest.Builder.newBuilder(
-				ddmFormFieldsLabel, ddmFormFieldValues);
-
-		DDMFormInstanceRecordWriterRequest ddmFormInstanceRecordWriterRequest =
-			builder.build();
-
 		DDMFormInstanceRecordWriterResponse
 			ddmFormInstanceRecordWriterResponse =
 				ddmFormInstanceRecordWriter.write(
-					ddmFormInstanceRecordWriterRequest);
+					DDMFormInstanceRecordWriterRequest.Builder.newBuilder(
+						ddmFormFieldsLabel, ddmFormFieldValues
+					).withDDMFormFields(
+						ddmFormFields
+					).build());
 
 		return ddmFormInstanceRecordWriterResponse.getContent();
 	}
@@ -311,9 +310,6 @@ public class DDMFormInstanceRecordExporterImpl
 	private static final String _KEY_MODIFIED_DATE = "modifiedDate";
 
 	private static final String _KEY_STATUS = "status";
-
-	@Reference
-	private Html _html;
 
 	@Reference
 	private Language _language;

@@ -25,6 +25,18 @@ public class UpstreamPortalTopLevelBuild
 	}
 
 	@Override
+	public String getBranchName() {
+		String portalUpstreamBranchName = getParameterValue(
+			"PORTAL_UPSTREAM_BRANCH_NAME");
+
+		if (!JenkinsResultsParserUtil.isNullOrEmpty(portalUpstreamBranchName)) {
+			return portalUpstreamBranchName;
+		}
+
+		return super.getBranchName();
+	}
+
+	@Override
 	public PortalWorkspace getPortalWorkspace() {
 		Workspace workspace = getWorkspace();
 
@@ -45,7 +57,6 @@ public class UpstreamPortalTopLevelBuild
 
 			portalWorkspace.setBuildProfile(getBuildProfile());
 			portalWorkspace.setOSBAsahGitHubURL(_getOSBAsahGitHubURL());
-			portalWorkspace.setOSBFaroGitHubURL(_getOSBFaroGitHubURL());
 			portalWorkspace.setPortalPrivateGitHubURL(
 				_getPortalPrivateGitHubURL());
 		}
@@ -79,22 +90,6 @@ public class UpstreamPortalTopLevelBuild
 
 		if (controllerBuild != null) {
 			return controllerBuild.getParameterValue("OSB_ASAH_GITHUB_URL");
-		}
-
-		return null;
-	}
-
-	private String _getOSBFaroGitHubURL() {
-		String osbFaroGitHubURL = getParameterValue("OSB_FARO_GITHUB_URL");
-
-		if (!JenkinsResultsParserUtil.isNullOrEmpty(osbFaroGitHubURL)) {
-			return osbFaroGitHubURL;
-		}
-
-		Build controllerBuild = getControllerBuild();
-
-		if (controllerBuild != null) {
-			return controllerBuild.getParameterValue("OSB_FARO_GITHUB_URL");
 		}
 
 		return null;
@@ -199,7 +194,9 @@ public class UpstreamPortalTopLevelBuild
 	private String _getPortalPrivateGitHubURL() {
 		String branchName = getBranchName();
 
-		if (branchName.startsWith("ee-") || branchName.endsWith("-private")) {
+		if (branchName.startsWith("ee-") || branchName.endsWith("-private") ||
+			branchName.startsWith("release-")) {
+
 			return null;
 		}
 

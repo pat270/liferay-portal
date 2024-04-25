@@ -3,7 +3,13 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {addParams, navigate, openSelectionModal} from 'frontend-js-web';
+import {
+	addParams,
+	navigate,
+	openCategorySelectionModal,
+	openSelectionModal,
+	openTagSelectionModal,
+} from 'frontend-js-web';
 
 const DEFAULT_VALUES = {
 	buttonAddLabel: Liferay.Language.get('select'),
@@ -54,13 +60,19 @@ const _handleOnSelect = ({data, portletNamespace, selection}) => {
 		selection = Object.values(selection).filter((item) => !item.unchecked);
 	}
 
-	navigate(
+	const url = new URL(
 		_getRedirectURLWithParams({
 			data,
 			portletNamespace,
 			selection,
 		})
 	);
+
+	const resetCurParam = `_${url.searchParams.get('p_p_id')}_resetCur`;
+
+	url.searchParams.set(resetCurParam, 'true');
+
+	navigate(url.href);
 };
 
 export default function propsTransformer({portletNamespace, ...otherProps}) {
@@ -84,7 +96,15 @@ export default function propsTransformer({portletNamespace, ...otherProps}) {
 						);
 					});
 
-					navigate(redirectURL);
+					const url = new URL(redirectURL);
+
+					const resetCurParam = `_${url.searchParams.get(
+						'p_p_id'
+					)}_resetCur`;
+
+					url.searchParams.set(resetCurParam, 'true');
+
+					navigate(url.href);
 				}
 			},
 			selectEventName: `${portletNamespace}selectedAuthorItem`,
@@ -95,63 +115,20 @@ export default function propsTransformer({portletNamespace, ...otherProps}) {
 	};
 
 	const selectAssetCategory = (itemData) => {
-		openSelectionModal({
-			buttonAddLabel: Liferay.Language.get('select'),
-			height: '70vh',
-			iframeBodyCssClass: '',
-			multiple: true,
-			onSelect: (selectedItem) => {
-				if (selectedItem) {
-					const assetCategories = Object.keys(selectedItem).filter(
-						(key) => !selectedItem[key].unchecked
-					);
-
-					let redirectURL = itemData?.redirectURL;
-
-					assetCategories.forEach((assetCategory) => {
-						redirectURL = addParams(
-							`${portletNamespace}assetCategoryId=${selectedItem[assetCategory].categoryId}`,
-							redirectURL
-						);
-					});
-
-					navigate(redirectURL);
-				}
-			},
-			selectEventName: `${portletNamespace}selectedAssetCategory`,
-			size: 'md',
+		openCategorySelectionModal({
+			portletNamespace,
+			redirectURL: itemData?.redirectURL,
+			selectCategoryURL: itemData?.selectAssetCategoryURL,
 			title: itemData?.dialogTitle,
-			url: itemData?.selectAssetCategoryURL,
 		});
 	};
 
 	const selectAssetTag = (itemData) => {
-		openSelectionModal({
-			buttonAddLabel: Liferay.Language.get('select'),
-			height: '70vh',
-			multiple: true,
-			onSelect: (selectedItem) => {
-				if (selectedItem) {
-					const assetTags = selectedItem.map((tag) => tag.value);
-
-					let redirectURL = itemData?.redirectURL;
-
-					assetTags.forEach((assetTag) => {
-						const selectedValue = JSON.parse(assetTag);
-
-						redirectURL = addParams(
-							`${portletNamespace}assetTagId=${selectedValue.tagName}`,
-							redirectURL
-						);
-					});
-
-					navigate(redirectURL);
-				}
-			},
-			selectEventName: `${portletNamespace}selectedAssetTag`,
-			size: 'lg',
+		openTagSelectionModal({
+			portletNamespace,
+			redirectURL: itemData?.redirectURL,
+			selectTagURL: itemData?.selectTagURL,
 			title: itemData?.dialogTitle,
-			url: itemData?.selectTagURL,
 		});
 	};
 
@@ -172,7 +149,15 @@ export default function propsTransformer({portletNamespace, ...otherProps}) {
 					);
 				});
 
-				navigate(redirectURL);
+				const url = new URL(redirectURL);
+
+				const resetCurParam = `_${url.searchParams.get(
+					'p_p_id'
+				)}_resetCur`;
+
+				url.searchParams.set(resetCurParam, 'true');
+
+				navigate(url.href);
 			},
 			selectEventName: `${portletNamespace}selectedContentDashboardItemSubtype`,
 			size: 'md',
@@ -186,12 +171,20 @@ export default function propsTransformer({portletNamespace, ...otherProps}) {
 			height: '70vh',
 			id: `${portletNamespace}selectedScopeIdItem`,
 			onSelect: (selectedItem) => {
-				navigate(
-					addParams(
-						`${portletNamespace}scopeId=${selectedItem.groupid}`,
-						itemData?.redirectURL
-					)
+				const redirectURL = addParams(
+					`${portletNamespace}scopeId=${selectedItem.groupid}`,
+					itemData?.redirectURL
 				);
+
+				const url = new URL(redirectURL);
+
+				const resetCurParam = `_${url.searchParams.get(
+					'p_p_id'
+				)}_resetCur`;
+
+				url.searchParams.set(resetCurParam, 'true');
+
+				navigate(url.href);
 			},
 			selectEventName: `${portletNamespace}selectedScopeIdItem`,
 			size: 'lg',
@@ -205,7 +198,7 @@ export default function propsTransformer({portletNamespace, ...otherProps}) {
 		onFilterDropdownItemClick(_event, {item = {}}) {
 			const {data} = item;
 
-			if (!Object.keys(data).length) {
+			if (!data || !Object.keys(data).length) {
 				return;
 			}
 

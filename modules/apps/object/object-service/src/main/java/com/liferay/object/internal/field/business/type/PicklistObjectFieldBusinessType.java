@@ -131,17 +131,32 @@ public class PicklistObjectFieldBusinessType
 	}
 
 	@Override
+	public Object getValue(
+			ObjectField objectField, long userId, Map<String, Object> values)
+		throws PortalException {
+
+		Object value = values.get(objectField.getName());
+
+		if (value instanceof ListEntry) {
+			ListEntry listEntry = (ListEntry)value;
+
+			values.put(objectField.getName(), listEntry.getKey());
+		}
+		else if (value instanceof Map) {
+			values.put(
+				objectField.getName(),
+				MapUtil.getString((Map<String, String>)value, "key"));
+		}
+
+		return ObjectFieldBusinessType.super.getValue(
+			objectField, userId, values);
+	}
+
+	@Override
 	public void predefineObjectFieldSettings(
 			ObjectField newObjectField, ObjectField oldObjectField,
 			List<ObjectFieldSetting> objectFieldSettings)
 		throws PortalException {
-
-		if (oldObjectField != null) {
-			_objectStateFlowLocalService.updateDefaultObjectStateFlow(
-				newObjectField, oldObjectField);
-
-			return;
-		}
 
 		for (ObjectFieldSetting objectFieldSetting : objectFieldSettings) {
 			if (!StringUtil.equals(
@@ -152,12 +167,29 @@ public class PicklistObjectFieldBusinessType
 				continue;
 			}
 
-			ObjectStateFlow objectStateFlow =
+			ObjectStateFlow newObjectStateFlow =
 				objectFieldSetting.getObjectStateFlow();
 
-			_objectStateFlowLocalService.addObjectStateFlow(
-				newObjectField.getUserId(), newObjectField.getObjectFieldId(),
-				objectStateFlow.getObjectStates());
+			if (oldObjectField != null) {
+				ObjectStateFlow oldObjectStateFlow =
+					_objectStateFlowLocalService.
+						fetchObjectFieldObjectStateFlow(
+							oldObjectField.getObjectFieldId());
+
+				_objectStateFlowLocalService.updateObjectStateFlow(
+					newObjectField.getUserId(),
+					oldObjectStateFlow.getObjectStateFlowId(),
+					newObjectStateFlow.getObjectStates());
+
+				_objectStateFlowLocalService.updateDefaultObjectStateFlow(
+					newObjectField, oldObjectField);
+			}
+			else {
+				_objectStateFlowLocalService.addObjectStateFlow(
+					newObjectField.getUserId(),
+					newObjectField.getObjectFieldId(),
+					newObjectStateFlow.getObjectStates());
+			}
 
 			return;
 		}

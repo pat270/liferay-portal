@@ -8,6 +8,8 @@ package com.liferay.portal.vulcan.internal.template;
 import com.liferay.petra.io.unsync.UnsyncStringWriter;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONFactory;
+import com.liferay.portal.kernel.security.access.control.AccessControlUtil;
+import com.liferay.portal.kernel.security.auth.AccessControlContext;
 import com.liferay.portal.kernel.servlet.PipingServletResponse;
 import com.liferay.portal.kernel.servlet.ServletContextPool;
 import com.liferay.portal.kernel.template.TemplateContextContributor;
@@ -42,12 +44,17 @@ public class RESTClientTemplateContextContributor
 		Map<String, Object> contextObjects,
 		HttpServletRequest httpServletRequest) {
 
-		contextObjects.put("restClient", new RESTClient(httpServletRequest));
+		contextObjects.put(
+			"restClient", new RESTClient(contextObjects, httpServletRequest));
 	}
 
 	public class RESTClient {
 
-		public RESTClient(HttpServletRequest httpServletRequest) {
+		public RESTClient(
+			Map<String, Object> contextObjects,
+			HttpServletRequest httpServletRequest) {
+
+			_contextObjects = contextObjects;
 			_httpServletRequest = httpServletRequest;
 		}
 
@@ -62,9 +69,20 @@ public class RESTClientTemplateContextContributor
 			HttpServletResponse httpServletResponse = new PipingServletResponse(
 				new RESTClientHttpResponse(), unsyncStringWriter);
 
-			requestDispatcher.forward(
-				new RESTClientHttpRequest(_httpServletRequest),
-				httpServletResponse);
+			AccessControlContext accessControlContext =
+				AccessControlUtil.getAccessControlContext();
+
+			try {
+				AccessControlUtil.setAccessControlContext(null);
+
+				requestDispatcher.forward(
+					new RESTClientHttpRequest(
+						_contextObjects, _httpServletRequest),
+					httpServletResponse);
+			}
+			finally {
+				AccessControlUtil.setAccessControlContext(accessControlContext);
+			}
 
 			String responseString = unsyncStringWriter.toString();
 
@@ -78,6 +96,7 @@ public class RESTClientTemplateContextContributor
 			return responseString;
 		}
 
+		private final Map<String, Object> _contextObjects;
 		private final HttpServletRequest _httpServletRequest;
 
 	}

@@ -25,10 +25,6 @@ definition {
 	tearDown {
 		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
 
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
-		//ACUtils.tearDownAC();
-
 		ACUtils.tearDownDXP();
 
 		if (${testLiferayVirtualInstance} == "true") {
@@ -37,6 +33,8 @@ definition {
 		else {
 			JSONGroup.deleteGroupByName(groupName = "Site Name");
 		}
+
+		ACUtils.tearDownAC();
 	}
 
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8112 | Test Summary: Assert clicking on a page in the pages lists navigates to the page profile"
@@ -79,11 +77,11 @@ definition {
 		task ("Navigate to page report entry") {
 			var dataSourceName = StringUtil.extractFirst(${assignedPropertyName}, " ");
 
-			ACNavigation.openItem(itemName = "AC Page - Site Name - ${dataSourceName}");
+			ACNavigation.openItem(itemName = "Blogs AC Title - Site Name - ${dataSourceName}");
 		}
 
 		task ("Assert Page Profile") {
-			ACUtils.assertPageTitle(pageTitle = "AC Page - Site Name - ${dataSourceName}");
+			ACUtils.assertPageTitle(pageTitle = "Blogs AC Title - Site Name - ${dataSourceName}");
 
 			for (var cardTitle : list "Visitors Behavior,Audience,Views by Location,Views by Technology") {
 				ACCards.viewCards(cardTitle = ${cardTitle});

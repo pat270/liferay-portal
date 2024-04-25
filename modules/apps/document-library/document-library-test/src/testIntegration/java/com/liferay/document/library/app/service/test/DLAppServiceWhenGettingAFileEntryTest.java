@@ -6,9 +6,9 @@
 package com.liferay.document.library.app.service.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.document.library.app.service.test.util.DLAppServiceTestUtil;
 import com.liferay.document.library.kernel.exception.NoSuchFileEntryException;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
-import com.liferay.document.library.kernel.service.DLAppServiceUtil;
 import com.liferay.document.library.test.util.BaseDLAppTestCase;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
@@ -34,7 +34,7 @@ public class DLAppServiceWhenGettingAFileEntryTest extends BaseDLAppTestCase {
 
 	@Test(expected = NoSuchFileEntryException.class)
 	public void testShouldFailIfNotPresentInRootFolder() throws Exception {
-		DLAppServiceUtil.getFileEntry(
+		dlAppService.getFileEntry(
 			group.getGroupId(), DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			StringUtil.randomString());
 	}
@@ -44,7 +44,7 @@ public class DLAppServiceWhenGettingAFileEntryTest extends BaseDLAppTestCase {
 		FileEntry fileEntry1 = DLAppServiceTestUtil.addFileEntry(
 			group.getGroupId(), DLFolderConstants.DEFAULT_PARENT_FOLDER_ID);
 
-		FileEntry fileEntry2 = DLAppServiceUtil.getFileEntry(
+		FileEntry fileEntry2 = dlAppService.getFileEntry(
 			group.getGroupId(), DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			fileEntry1.getTitle());
 

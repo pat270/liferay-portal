@@ -1,6 +1,7 @@
 definition {
 
-	macro addClassificationRuleCP {
+	@summary = "Add a new classification rule "
+	macro addClassificationRuleCP(deviceType = null, ruleOsScope = null, classificationName = null, classificationDescription = null) {
 
 		// Workaround for LPS-92682
 
@@ -31,7 +32,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro addDeviceFamilyCP {
+	@summary = "Add a new device family"
+	macro addDeviceFamilyCP(deviceDescription = null, deviceFamilyName = null) {
 		Click(locator1 = "Button#PLUS");
 
 		AssertTextEquals.assertPartialText(
@@ -49,7 +51,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro assertRedirectActionPG {
+	@summary = "Assert the ${redirectPageName} action"
+	macro assertRedirectActionPG(redirectPageName = null, pageName = null) {
 		var key_pageName = ${pageName};
 
 		AssertClick(
@@ -61,7 +64,35 @@ definition {
 		AssertVisible(locator1 = "Home#PAGE_ACTIVE");
 	}
 
-	macro previewPG {
+	@summary = "Preview by Experience or Segment"
+	macro previewBy(previewBy = null, segment = null, experience = null) {
+		if (isSet(previewBy)) {
+			Click.waitForMenuToggleJSClick(
+				key_fieldLabel = "Preview By",
+				locator1 = "Dropdown#DROPDOWN_TOGGLE_BUTTON_WITH_LABEL");
+
+			DropdownMenuItem.click(menuItem = ${previewBy});
+		}
+
+		if (isSet(experience)) {
+			Click.waitForMenuToggleJSClick(
+				key_fieldLabel = "Experience",
+				locator1 = "Dropdown#DROPDOWN_TOGGLE_BUTTON_WITH_LABEL");
+
+			DropdownMenuItem.click(menuItem = ${experience});
+		}
+
+		if (isSet(segment)) {
+			Click.waitForMenuToggleJSClick(
+				key_fieldLabel = "Segment",
+				locator1 = "Dropdown#DROPDOWN_TOGGLE_BUTTON_WITH_LABEL");
+
+			DropdownMenuItem.click(menuItem = ${segment});
+		}
+	}
+
+	@summary = "Preview page on ${deviceType}"
+	macro previewPG(deviceType = null, applyCustomSize = null, width = null, height = null) {
 		Click.waitForMenuToggleJSClick(locator1 = "ControlMenu#SIMULATION");
 
 		AssertElementNotPresent(locator1 = "IFrame#LOADING_MESSAGE");
@@ -113,21 +144,27 @@ definition {
 			takeScreenshot();
 
 			if (isSet(height)) {
-				Type(
+				WaitForEditable(locator1 = "ControlMenuPreviewPanel#PREVIEW_CUSTOM_HEIGHT_FIELD");
+
+				TripleClick(locator1 = "ControlMenuPreviewPanel#PREVIEW_CUSTOM_HEIGHT_FIELD");
+
+				Type.sendKeys(
 					locator1 = "ControlMenuPreviewPanel#PREVIEW_CUSTOM_HEIGHT_FIELD",
 					value1 = ${height});
 			}
-			else {
-				var height = 400;
-			}
 
 			if (isSet(width)) {
-				Type(
+				WaitForEditable(locator1 = "ControlMenuPreviewPanel#PREVIEW_CUSTOM_HEIGHT_FIELD");
+
+				TripleClick(locator1 = "ControlMenuPreviewPanel#PREVIEW_CUSTOM_WIDTH_FIELD");
+
+				Type.sendKeys(
 					locator1 = "ControlMenuPreviewPanel#PREVIEW_CUSTOM_WIDTH_FIELD",
 					value1 = ${width});
 			}
-			else {
-				var width = 400;
+
+			if (${applyCustomSize} == "true") {
+				Button.click(button = "Apply Custom Size");
 			}
 
 			takeScreenshot();

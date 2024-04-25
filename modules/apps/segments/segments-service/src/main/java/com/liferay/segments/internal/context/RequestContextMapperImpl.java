@@ -16,7 +16,6 @@ import com.liferay.portal.kernel.mobile.device.Dimensions;
 import com.liferay.portal.kernel.mobile.device.UnknownDevice;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.Field;
-import com.liferay.portal.kernel.servlet.BrowserSniffer;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -32,6 +31,7 @@ import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.odata.entity.IdEntityField;
 import com.liferay.portal.odata.entity.IntegerEntityField;
 import com.liferay.portal.odata.entity.StringEntityField;
+import com.liferay.portal.servlet.BrowserSnifferUtil;
 import com.liferay.segments.context.Context;
 import com.liferay.segments.context.RequestContextMapper;
 import com.liferay.segments.context.contributor.RequestContextContributor;
@@ -74,7 +74,8 @@ public class RequestContextMapperImpl implements RequestContextMapper {
 		Context context = new Context();
 
 		context.put(
-			Context.BROWSER, _browserSniffer.getBrowserId(httpServletRequest));
+			Context.BROWSER,
+			BrowserSnifferUtil.getBrowserId(httpServletRequest));
 		context.put(Context.COOKIES, _getCookies(httpServletRequest));
 
 		Device device = DeviceDetectionUtil.detectDevice(httpServletRequest);
@@ -157,7 +158,7 @@ public class RequestContextMapperImpl implements RequestContextMapper {
 		context.put(Context.USER_AGENT, userAgent);
 
 		for (RequestContextContributor requestContextContributor :
-				_requestContextContributorServiceTrackerMap.values()) {
+				_serviceTrackerMap.values()) {
 
 			requestContextContributor.contribute(context, httpServletRequest);
 		}
@@ -172,17 +173,16 @@ public class RequestContextMapperImpl implements RequestContextMapper {
 			MapUtil.singletonDictionary(
 				"entity.model.name", ContextEntityModel.NAME));
 
-		_requestContextContributorServiceTrackerMap =
-			ServiceTrackerMapFactory.openSingleValueMap(
-				bundleContext, RequestContextContributor.class,
-				"request.context.contributor.key",
-				new RequestContextContributorServiceTrackerCustomizer(
-					bundleContext));
+		_serviceTrackerMap = ServiceTrackerMapFactory.openSingleValueMap(
+			bundleContext, RequestContextContributor.class,
+			"request.context.contributor.key",
+			new RequestContextContributorServiceTrackerCustomizer(
+				bundleContext));
 	}
 
 	@Deactivate
 	protected void deactivate() {
-		_requestContextContributorServiceTrackerMap.close();
+		_serviceTrackerMap.close();
 
 		_serviceRegistration.unregister();
 	}
@@ -228,18 +228,15 @@ public class RequestContextMapperImpl implements RequestContextMapper {
 	private static final Log _log = LogFactoryUtil.getLog(
 		RequestContextMapperImpl.class);
 
-	@Reference
-	private BrowserSniffer _browserSniffer;
-
 	private final ContextEntityModel _contextEntityModel =
 		new ContextEntityModel(Collections.emptyList());
 
 	@Reference
 	private Portal _portal;
 
-	private ServiceTrackerMap<String, RequestContextContributor>
-		_requestContextContributorServiceTrackerMap;
 	private ServiceRegistration<EntityModel> _serviceRegistration;
+	private ServiceTrackerMap<String, RequestContextContributor>
+		_serviceTrackerMap;
 
 	private class RequestContextContributorServiceTrackerCustomizer
 		implements ServiceTrackerCustomizer

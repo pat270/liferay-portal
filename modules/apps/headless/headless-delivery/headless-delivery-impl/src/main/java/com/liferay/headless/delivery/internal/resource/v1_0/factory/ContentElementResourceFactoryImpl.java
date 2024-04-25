@@ -72,7 +72,12 @@ public class ContentElementResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _contentElementResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, ContentElementResource>
+					contentElementResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_contentElementResourceProxyProviderFunction;
+
+				return contentElementResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -230,10 +235,6 @@ public class ContentElementResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, ContentElementResource>
-		_contentElementResourceProxyProviderFunction =
-			_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -269,6 +270,14 @@ public class ContentElementResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, ContentElementResource>
+			_contentElementResourceProxyProviderFunction =
+				_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

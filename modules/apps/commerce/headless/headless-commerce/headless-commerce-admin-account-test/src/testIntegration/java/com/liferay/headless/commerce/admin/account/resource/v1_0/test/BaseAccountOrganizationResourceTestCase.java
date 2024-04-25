@@ -26,13 +26,12 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
@@ -202,7 +201,7 @@ public abstract class BaseAccountOrganizationResourceTestCase {
 				getAccountByExternalReferenceCodeAccountOrganizationsPage(
 					externalReferenceCode, Pagination.of(1, 10));
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if (irrelevantExternalReferenceCode != null) {
 			AccountOrganization irrelevantAccountOrganization =
@@ -213,12 +212,13 @@ public abstract class BaseAccountOrganizationResourceTestCase {
 			page =
 				accountOrganizationResource.
 					getAccountByExternalReferenceCodeAccountOrganizationsPage(
-						irrelevantExternalReferenceCode, Pagination.of(1, 2));
+						irrelevantExternalReferenceCode,
+						Pagination.of(1, (int)totalCount + 1));
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantAccountOrganization),
+			assertContains(
+				irrelevantAccountOrganization,
 				(List<AccountOrganization>)page.getItems());
 			assertValid(
 				page,
@@ -239,11 +239,12 @@ public abstract class BaseAccountOrganizationResourceTestCase {
 				getAccountByExternalReferenceCodeAccountOrganizationsPage(
 					externalReferenceCode, Pagination.of(1, 10));
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(accountOrganization1, accountOrganization2),
-			(List<AccountOrganization>)page.getItems());
+		assertContains(
+			accountOrganization1, (List<AccountOrganization>)page.getItems());
+		assertContains(
+			accountOrganization2, (List<AccountOrganization>)page.getItems());
 		assertValid(
 			page,
 			testGetAccountByExternalReferenceCodeAccountOrganizationsPage_getExpectedActions(
@@ -267,6 +268,14 @@ public abstract class BaseAccountOrganizationResourceTestCase {
 		String externalReferenceCode =
 			testGetAccountByExternalReferenceCodeAccountOrganizationsPage_getExternalReferenceCode();
 
+		Page<AccountOrganization> accountOrganizationPage =
+			accountOrganizationResource.
+				getAccountByExternalReferenceCodeAccountOrganizationsPage(
+					externalReferenceCode, null);
+
+		int totalCount = GetterUtil.getInteger(
+			accountOrganizationPage.getTotalCount());
+
 		AccountOrganization accountOrganization1 =
 			testGetAccountByExternalReferenceCodeAccountOrganizationsPage_addAccountOrganization(
 				externalReferenceCode, randomAccountOrganization());
@@ -279,40 +288,94 @@ public abstract class BaseAccountOrganizationResourceTestCase {
 			testGetAccountByExternalReferenceCodeAccountOrganizationsPage_addAccountOrganization(
 				externalReferenceCode, randomAccountOrganization());
 
-		Page<AccountOrganization> page1 =
-			accountOrganizationResource.
-				getAccountByExternalReferenceCodeAccountOrganizationsPage(
-					externalReferenceCode, Pagination.of(1, 2));
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<AccountOrganization> accountOrganizations1 =
-			(List<AccountOrganization>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			accountOrganizations1.toString(), 2, accountOrganizations1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<AccountOrganization> page1 =
+				accountOrganizationResource.
+					getAccountByExternalReferenceCodeAccountOrganizationsPage(
+						externalReferenceCode,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+							pageSizeLimit));
 
-		Page<AccountOrganization> page2 =
-			accountOrganizationResource.
-				getAccountByExternalReferenceCodeAccountOrganizationsPage(
-					externalReferenceCode, Pagination.of(2, 2));
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(3, page2.getTotalCount());
+			assertContains(
+				accountOrganization1,
+				(List<AccountOrganization>)page1.getItems());
 
-		List<AccountOrganization> accountOrganizations2 =
-			(List<AccountOrganization>)page2.getItems();
+			Page<AccountOrganization> page2 =
+				accountOrganizationResource.
+					getAccountByExternalReferenceCodeAccountOrganizationsPage(
+						externalReferenceCode,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+							pageSizeLimit));
 
-		Assert.assertEquals(
-			accountOrganizations2.toString(), 1, accountOrganizations2.size());
+			assertContains(
+				accountOrganization2,
+				(List<AccountOrganization>)page2.getItems());
 
-		Page<AccountOrganization> page3 =
-			accountOrganizationResource.
-				getAccountByExternalReferenceCodeAccountOrganizationsPage(
-					externalReferenceCode, Pagination.of(1, 3));
+			Page<AccountOrganization> page3 =
+				accountOrganizationResource.
+					getAccountByExternalReferenceCodeAccountOrganizationsPage(
+						externalReferenceCode,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+							pageSizeLimit));
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(
-				accountOrganization1, accountOrganization2,
-				accountOrganization3),
-			(List<AccountOrganization>)page3.getItems());
+			assertContains(
+				accountOrganization3,
+				(List<AccountOrganization>)page3.getItems());
+		}
+		else {
+			Page<AccountOrganization> page1 =
+				accountOrganizationResource.
+					getAccountByExternalReferenceCodeAccountOrganizationsPage(
+						externalReferenceCode,
+						Pagination.of(1, totalCount + 2));
+
+			List<AccountOrganization> accountOrganizations1 =
+				(List<AccountOrganization>)page1.getItems();
+
+			Assert.assertEquals(
+				accountOrganizations1.toString(), totalCount + 2,
+				accountOrganizations1.size());
+
+			Page<AccountOrganization> page2 =
+				accountOrganizationResource.
+					getAccountByExternalReferenceCodeAccountOrganizationsPage(
+						externalReferenceCode,
+						Pagination.of(2, totalCount + 2));
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<AccountOrganization> accountOrganizations2 =
+				(List<AccountOrganization>)page2.getItems();
+
+			Assert.assertEquals(
+				accountOrganizations2.toString(), 1,
+				accountOrganizations2.size());
+
+			Page<AccountOrganization> page3 =
+				accountOrganizationResource.
+					getAccountByExternalReferenceCodeAccountOrganizationsPage(
+						externalReferenceCode,
+						Pagination.of(1, (int)totalCount + 3));
+
+			assertContains(
+				accountOrganization1,
+				(List<AccountOrganization>)page3.getItems());
+			assertContains(
+				accountOrganization2,
+				(List<AccountOrganization>)page3.getItems());
+			assertContains(
+				accountOrganization3,
+				(List<AccountOrganization>)page3.getItems());
+		}
 	}
 
 	protected AccountOrganization
@@ -402,7 +465,7 @@ public abstract class BaseAccountOrganizationResourceTestCase {
 			accountOrganizationResource.getAccountIdAccountOrganizationsPage(
 				id, Pagination.of(1, 10));
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if (irrelevantId != null) {
 			AccountOrganization irrelevantAccountOrganization =
@@ -412,12 +475,12 @@ public abstract class BaseAccountOrganizationResourceTestCase {
 			page =
 				accountOrganizationResource.
 					getAccountIdAccountOrganizationsPage(
-						irrelevantId, Pagination.of(1, 2));
+						irrelevantId, Pagination.of(1, (int)totalCount + 1));
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantAccountOrganization),
+			assertContains(
+				irrelevantAccountOrganization,
 				(List<AccountOrganization>)page.getItems());
 			assertValid(
 				page,
@@ -436,11 +499,12 @@ public abstract class BaseAccountOrganizationResourceTestCase {
 		page = accountOrganizationResource.getAccountIdAccountOrganizationsPage(
 			id, Pagination.of(1, 10));
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(accountOrganization1, accountOrganization2),
-			(List<AccountOrganization>)page.getItems());
+		assertContains(
+			accountOrganization1, (List<AccountOrganization>)page.getItems());
+		assertContains(
+			accountOrganization2, (List<AccountOrganization>)page.getItems());
 		assertValid(
 			page,
 			testGetAccountIdAccountOrganizationsPage_getExpectedActions(id));
@@ -461,6 +525,13 @@ public abstract class BaseAccountOrganizationResourceTestCase {
 
 		Long id = testGetAccountIdAccountOrganizationsPage_getId();
 
+		Page<AccountOrganization> accountOrganizationPage =
+			accountOrganizationResource.getAccountIdAccountOrganizationsPage(
+				id, null);
+
+		int totalCount = GetterUtil.getInteger(
+			accountOrganizationPage.getTotalCount());
+
 		AccountOrganization accountOrganization1 =
 			testGetAccountIdAccountOrganizationsPage_addAccountOrganization(
 				id, randomAccountOrganization());
@@ -473,37 +544,91 @@ public abstract class BaseAccountOrganizationResourceTestCase {
 			testGetAccountIdAccountOrganizationsPage_addAccountOrganization(
 				id, randomAccountOrganization());
 
-		Page<AccountOrganization> page1 =
-			accountOrganizationResource.getAccountIdAccountOrganizationsPage(
-				id, Pagination.of(1, 2));
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<AccountOrganization> accountOrganizations1 =
-			(List<AccountOrganization>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			accountOrganizations1.toString(), 2, accountOrganizations1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<AccountOrganization> page1 =
+				accountOrganizationResource.
+					getAccountIdAccountOrganizationsPage(
+						id,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+							pageSizeLimit));
 
-		Page<AccountOrganization> page2 =
-			accountOrganizationResource.getAccountIdAccountOrganizationsPage(
-				id, Pagination.of(2, 2));
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(3, page2.getTotalCount());
+			assertContains(
+				accountOrganization1,
+				(List<AccountOrganization>)page1.getItems());
 
-		List<AccountOrganization> accountOrganizations2 =
-			(List<AccountOrganization>)page2.getItems();
+			Page<AccountOrganization> page2 =
+				accountOrganizationResource.
+					getAccountIdAccountOrganizationsPage(
+						id,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+							pageSizeLimit));
 
-		Assert.assertEquals(
-			accountOrganizations2.toString(), 1, accountOrganizations2.size());
+			assertContains(
+				accountOrganization2,
+				(List<AccountOrganization>)page2.getItems());
 
-		Page<AccountOrganization> page3 =
-			accountOrganizationResource.getAccountIdAccountOrganizationsPage(
-				id, Pagination.of(1, 3));
+			Page<AccountOrganization> page3 =
+				accountOrganizationResource.
+					getAccountIdAccountOrganizationsPage(
+						id,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+							pageSizeLimit));
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(
-				accountOrganization1, accountOrganization2,
-				accountOrganization3),
-			(List<AccountOrganization>)page3.getItems());
+			assertContains(
+				accountOrganization3,
+				(List<AccountOrganization>)page3.getItems());
+		}
+		else {
+			Page<AccountOrganization> page1 =
+				accountOrganizationResource.
+					getAccountIdAccountOrganizationsPage(
+						id, Pagination.of(1, totalCount + 2));
+
+			List<AccountOrganization> accountOrganizations1 =
+				(List<AccountOrganization>)page1.getItems();
+
+			Assert.assertEquals(
+				accountOrganizations1.toString(), totalCount + 2,
+				accountOrganizations1.size());
+
+			Page<AccountOrganization> page2 =
+				accountOrganizationResource.
+					getAccountIdAccountOrganizationsPage(
+						id, Pagination.of(2, totalCount + 2));
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<AccountOrganization> accountOrganizations2 =
+				(List<AccountOrganization>)page2.getItems();
+
+			Assert.assertEquals(
+				accountOrganizations2.toString(), 1,
+				accountOrganizations2.size());
+
+			Page<AccountOrganization> page3 =
+				accountOrganizationResource.
+					getAccountIdAccountOrganizationsPage(
+						id, Pagination.of(1, (int)totalCount + 3));
+
+			assertContains(
+				accountOrganization1,
+				(List<AccountOrganization>)page3.getItems());
+			assertContains(
+				accountOrganization2,
+				(List<AccountOrganization>)page3.getItems());
+			assertContains(
+				accountOrganization3,
+				(List<AccountOrganization>)page3.getItems());
+		}
 	}
 
 	protected AccountOrganization
@@ -923,6 +1048,10 @@ public abstract class BaseAccountOrganizationResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -1210,9 +1339,9 @@ public abstract class BaseAccountOrganizationResourceTestCase {
 	}
 
 	protected AccountOrganizationResource accountOrganizationResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

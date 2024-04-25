@@ -48,6 +48,8 @@ public class ObjectDefinitionWrapper
 			getAccountEntryRestrictedObjectFieldId());
 		attributes.put(
 			"descriptionObjectFieldId", getDescriptionObjectFieldId());
+		attributes.put("objectFolderId", getObjectFolderId());
+		attributes.put("rootObjectDefinitionId", getRootObjectDefinitionId());
 		attributes.put("titleObjectFieldId", getTitleObjectFieldId());
 		attributes.put("accountEntryRestricted", isAccountEntryRestricted());
 		attributes.put("active", isActive());
@@ -57,6 +59,7 @@ public class ObjectDefinitionWrapper
 		attributes.put("enableCategorization", isEnableCategorization());
 		attributes.put("enableComments", isEnableComments());
 		attributes.put("enableLocalization", isEnableLocalization());
+		attributes.put("enableObjectEntryDraft", isEnableObjectEntryDraft());
 		attributes.put(
 			"enableObjectEntryHistory", isEnableObjectEntryHistory());
 		attributes.put("modifiable", isModifiable());
@@ -149,6 +152,19 @@ public class ObjectDefinitionWrapper
 			setDescriptionObjectFieldId(descriptionObjectFieldId);
 		}
 
+		Long objectFolderId = (Long)attributes.get("objectFolderId");
+
+		if (objectFolderId != null) {
+			setObjectFolderId(objectFolderId);
+		}
+
+		Long rootObjectDefinitionId = (Long)attributes.get(
+			"rootObjectDefinitionId");
+
+		if (rootObjectDefinitionId != null) {
+			setRootObjectDefinitionId(rootObjectDefinitionId);
+		}
+
 		Long titleObjectFieldId = (Long)attributes.get("titleObjectFieldId");
 
 		if (titleObjectFieldId != null) {
@@ -204,6 +220,13 @@ public class ObjectDefinitionWrapper
 
 		if (enableLocalization != null) {
 			setEnableLocalization(enableLocalization);
+		}
+
+		Boolean enableObjectEntryDraft = (Boolean)attributes.get(
+			"enableObjectEntryDraft");
+
+		if (enableObjectEntryDraft != null) {
+			setEnableObjectEntryDraft(enableObjectEntryDraft);
 		}
 
 		Boolean enableObjectEntryHistory = (Boolean)attributes.get(
@@ -424,6 +447,16 @@ public class ObjectDefinitionWrapper
 	}
 
 	/**
+	 * Returns the enable object entry draft of this object definition.
+	 *
+	 * @return the enable object entry draft of this object definition
+	 */
+	@Override
+	public boolean getEnableObjectEntryDraft() {
+		return model.getEnableObjectEntryDraft();
+	}
+
+	/**
 	 * Returns the enable object entry history of this object definition.
 	 *
 	 * @return the enable object entry history of this object definition
@@ -577,6 +610,21 @@ public class ObjectDefinitionWrapper
 	@Override
 	public long getObjectDefinitionId() {
 		return model.getObjectDefinitionId();
+	}
+
+	@Override
+	public String getObjectFolderExternalReferenceCode() {
+		return model.getObjectFolderExternalReferenceCode();
+	}
+
+	/**
+	 * Returns the object folder ID of this object definition.
+	 *
+	 * @return the object folder ID of this object definition
+	 */
+	@Override
+	public long getObjectFolderId() {
+		return model.getObjectFolderId();
 	}
 
 	@Override
@@ -738,6 +786,21 @@ public class ObjectDefinitionWrapper
 	@Override
 	public String getRESTContextPath() {
 		return model.getRESTContextPath();
+	}
+
+	@Override
+	public String getRootObjectDefinitionExternalReferenceCode() {
+		return model.getRootObjectDefinitionExternalReferenceCode();
+	}
+
+	/**
+	 * Returns the root object definition ID of this object definition.
+	 *
+	 * @return the root object definition ID of this object definition
+	 */
+	@Override
+	public long getRootObjectDefinitionId() {
+		return model.getRootObjectDefinitionId();
 	}
 
 	/**
@@ -906,6 +969,16 @@ public class ObjectDefinitionWrapper
 	}
 
 	/**
+	 * Returns <code>true</code> if this object definition is enable object entry draft.
+	 *
+	 * @return <code>true</code> if this object definition is enable object entry draft; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isEnableObjectEntryDraft() {
+		return model.isEnableObjectEntryDraft();
+	}
+
+	/**
 	 * Returns <code>true</code> if this object definition is enable object entry history.
 	 *
 	 * @return <code>true</code> if this object definition is enable object entry history; <code>false</code> otherwise
@@ -913,6 +986,11 @@ public class ObjectDefinitionWrapper
 	@Override
 	public boolean isEnableObjectEntryHistory() {
 		return model.isEnableObjectEntryHistory();
+	}
+
+	@Override
+	public boolean isLinkedToObjectFolder(long objectFolderId) {
+		return model.isLinkedToObjectFolder(objectFolderId);
 	}
 
 	/**
@@ -925,6 +1003,11 @@ public class ObjectDefinitionWrapper
 		return model.isModifiable();
 	}
 
+	@Override
+	public boolean isNodeCandidate() {
+		return model.isNodeCandidate();
+	}
+
 	/**
 	 * Returns <code>true</code> if this object definition is portlet.
 	 *
@@ -933,6 +1016,16 @@ public class ObjectDefinitionWrapper
 	@Override
 	public boolean isPortlet() {
 		return model.isPortlet();
+	}
+
+	@Override
+	public boolean isRootDescendantNode() {
+		return model.isRootDescendantNode();
+	}
+
+	@Override
+	public boolean isRootNode() {
+		return model.isRootNode();
 	}
 
 	/**
@@ -1084,6 +1177,16 @@ public class ObjectDefinitionWrapper
 	}
 
 	/**
+	 * Sets whether this object definition is enable object entry draft.
+	 *
+	 * @param enableObjectEntryDraft the enable object entry draft of this object definition
+	 */
+	@Override
+	public void setEnableObjectEntryDraft(boolean enableObjectEntryDraft) {
+		model.setEnableObjectEntryDraft(enableObjectEntryDraft);
+	}
+
+	/**
 	 * Sets whether this object definition is enable object entry history.
 	 *
 	 * @param enableObjectEntryHistory the enable object entry history of this object definition
@@ -1218,6 +1321,16 @@ public class ObjectDefinitionWrapper
 	}
 
 	/**
+	 * Sets the object folder ID of this object definition.
+	 *
+	 * @param objectFolderId the object folder ID of this object definition
+	 */
+	@Override
+	public void setObjectFolderId(long objectFolderId) {
+		model.setObjectFolderId(objectFolderId);
+	}
+
+	/**
 	 * Sets the panel app order of this object definition.
 	 *
 	 * @param panelAppOrder the panel app order of this object definition
@@ -1342,6 +1455,16 @@ public class ObjectDefinitionWrapper
 	@Override
 	public void setPrimaryKey(long primaryKey) {
 		model.setPrimaryKey(primaryKey);
+	}
+
+	/**
+	 * Sets the root object definition ID of this object definition.
+	 *
+	 * @param rootObjectDefinitionId the root object definition ID of this object definition
+	 */
+	@Override
+	public void setRootObjectDefinitionId(long rootObjectDefinitionId) {
+		model.setRootObjectDefinitionId(rootObjectDefinitionId);
 	}
 
 	/**

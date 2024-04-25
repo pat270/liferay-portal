@@ -35,15 +35,12 @@ import com.liferay.portal.kernel.service.LayoutService;
 import com.liferay.portal.kernel.service.LayoutServiceUtil;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
-import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
-import com.liferay.portal.kernel.util.HtmlUtil;
-import com.liferay.portal.kernel.util.JavaDetector;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
-import com.liferay.portal.util.DateFormatFactoryImpl;
 import com.liferay.portal.util.FastDateFormatFactoryImpl;
-import com.liferay.portal.util.HtmlImpl;
+
+import java.util.Locale;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -68,10 +65,8 @@ public class DDMFormFieldValueRendererTest extends BaseDDMTestCase {
 	public void setUp() throws Exception {
 		super.setUp();
 
-		setUpDateFormatFactoryUtil();
 		setUpDLAppLocalServiceUtil();
 		setUpFastDateFormatFactoryUtil();
-		setUpHtmlUtil();
 		setUpJSONFactoryUtil();
 		setUpLanguageUtil();
 		setUpLayoutServiceUtil();
@@ -143,6 +138,11 @@ public class DDMFormFieldValueRendererTest extends BaseDDMTestCase {
 			ddmFormFieldValue, LocaleUtil.BRAZIL);
 
 		Assert.assertEquals("22/10/2014", renderedValue);
+
+		renderedValue = ddmFormFieldValueRenderer.render(
+			ddmFormFieldValue, Locale.forLanguageTag("zh-Hant"));
+
+		Assert.assertEquals("2014/10/22", renderedValue);
 	}
 
 	@Test
@@ -235,26 +235,12 @@ public class DDMFormFieldValueRendererTest extends BaseDDMTestCase {
 		String renderedValue = ddmFormFieldValueRenderer.render(
 			ddmFormFieldValue, LocaleUtil.SPAIN);
 
-		if (JavaDetector.isJDK8()) {
-			Assert.assertEquals(
-				"Latitud: 9,877, Longitud: 1,234", renderedValue);
-		}
-		else {
-			Assert.assertEquals(
-				"Latitud: 9,876, Longitud: 1,234", renderedValue);
-		}
+		Assert.assertEquals("Latitud: 9,877, Longitud: 1,234", renderedValue);
 
 		renderedValue = ddmFormFieldValueRenderer.render(
 			ddmFormFieldValue, LocaleUtil.US);
 
-		if (JavaDetector.isJDK8()) {
-			Assert.assertEquals(
-				"Latitude: 9.877, Longitude: 1.234", renderedValue);
-		}
-		else {
-			Assert.assertEquals(
-				"Latitude: 9.876, Longitude: 1.234", renderedValue);
-		}
+		Assert.assertEquals("Latitude: 9.877, Longitude: 1.234", renderedValue);
 	}
 
 	@Test
@@ -468,13 +454,6 @@ public class DDMFormFieldValueRendererTest extends BaseDDMTestCase {
 		return ddmForm;
 	}
 
-	protected void setUpDateFormatFactoryUtil() {
-		DateFormatFactoryUtil dateFormatFactoryUtil =
-			new DateFormatFactoryUtil();
-
-		dateFormatFactoryUtil.setDateFormatFactory(new DateFormatFactoryImpl());
-	}
-
 	protected void setUpDLAppLocalServiceUtil() throws PortalException {
 		FileEntry fileEntry = Mockito.mock(FileEntry.class);
 
@@ -504,12 +483,6 @@ public class DDMFormFieldValueRendererTest extends BaseDDMTestCase {
 
 		fastDateFormatFactoryUtil.setFastDateFormatFactory(
 			new FastDateFormatFactoryImpl());
-	}
-
-	protected void setUpHtmlUtil() {
-		HtmlUtil htmlUtil = new HtmlUtil();
-
-		htmlUtil.setHtml(new HtmlImpl());
 	}
 
 	protected void setUpLayoutServiceUtil() throws Exception {

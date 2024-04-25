@@ -8,7 +8,7 @@ import React from 'react';
 
 import '@testing-library/jest-dom/extend-expect';
 
-import TemplatesPanel from '../../../../src/main/resources/META-INF/resources/admin/js/components/TemplatesPanel';
+import TemplatesPanel from '../../../../src/main/resources/META-INF/resources/js/admin/components/TemplatesPanel';
 
 const EMPTY_STATE_TEXT = 'there-are-no-article-templates';
 
@@ -41,7 +41,7 @@ describe('Templates Panel', () => {
 	it('renders empty message if there are no items', () => {
 		const {getAllByRole, getByText} = render(<TemplatesPanel />);
 
-		expect(getAllByRole('img').length).toBe(1);
+		expect(getAllByRole('img').length).toBe(2);
 		expect(getByText(EMPTY_STATE_TEXT)).toBeInTheDocument();
 	});
 });

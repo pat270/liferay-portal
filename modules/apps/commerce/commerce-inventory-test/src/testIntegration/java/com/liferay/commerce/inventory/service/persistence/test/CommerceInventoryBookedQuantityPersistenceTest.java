@@ -30,6 +30,8 @@ import com.liferay.portal.test.rule.TransactionalTestRule;
 
 import java.io.Serializable;
 
+import java.math.BigDecimal;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -145,7 +147,7 @@ public class CommerceInventoryBookedQuantityPersistenceTest {
 			RandomTestUtil.nextDate());
 
 		newCommerceInventoryBookedQuantity.setQuantity(
-			RandomTestUtil.nextInt());
+			new BigDecimal(RandomTestUtil.nextDouble()));
 
 		newCommerceInventoryBookedQuantity.setSku(
 			RandomTestUtil.randomString());
@@ -224,12 +226,12 @@ public class CommerceInventoryBookedQuantityPersistenceTest {
 	}
 
 	@Test
-	public void testCountByC_S() throws Exception {
-		_persistence.countByC_S(RandomTestUtil.nextLong(), "");
+	public void testCountByC_S_U() throws Exception {
+		_persistence.countByC_S_U(RandomTestUtil.nextLong(), "", "");
 
-		_persistence.countByC_S(0L, "null");
+		_persistence.countByC_S_U(0L, "null", "null");
 
-		_persistence.countByC_S(0L, (String)null);
+		_persistence.countByC_S_U(0L, (String)null, (String)null);
 	}
 
 	@Test
@@ -555,7 +557,8 @@ public class CommerceInventoryBookedQuantityPersistenceTest {
 		commerceInventoryBookedQuantity.setExpirationDate(
 			RandomTestUtil.nextDate());
 
-		commerceInventoryBookedQuantity.setQuantity(RandomTestUtil.nextInt());
+		commerceInventoryBookedQuantity.setQuantity(
+			new BigDecimal(RandomTestUtil.nextDouble()));
 
 		commerceInventoryBookedQuantity.setSku(RandomTestUtil.randomString());
 

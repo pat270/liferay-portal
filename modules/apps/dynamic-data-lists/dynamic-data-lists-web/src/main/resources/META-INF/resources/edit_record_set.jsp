@@ -59,6 +59,8 @@ if (ddlDisplayContext.isAdminPortlet()) {
 	<portlet:param name="mvcPath" value="/edit_record_set.jsp" />
 </portlet:actionURL>
 
+<%@ include file="/deprecated_warning.jspf" %>
+
 <clay:container-fluid
 	cssClass="container-form-lg"
 >
@@ -105,7 +107,7 @@ if (ddlDisplayContext.isAdminPortlet()) {
 						/>
 					</div>
 
-					<c:if test="<%= WorkflowEngineManagerUtil.isDeployed() && (WorkflowHandlerRegistryUtil.getWorkflowHandler(DDLRecord.class.getName()) != null) && !scopeGroup.isLayoutSetPrototype() %>">
+					<c:if test="<%= (WorkflowHandlerRegistryUtil.getWorkflowHandler(DDLRecord.class.getName()) != null) && !scopeGroup.isLayoutSetPrototype() %>">
 						<aui:select label="workflow" name="workflowDefinition">
 
 							<%
@@ -204,7 +206,7 @@ if (ddlDisplayContext.isAdminPortlet()) {
 				"selectEventName", "<portlet:namespace />selectDDMStructure"
 			).build()
 		%>'
-		module="js/EditRecordSetStructureSelector"
+		module="{EditRecordSetStructureSelector} from dynamic-data-lists-web"
 	/>
 
 	function <portlet:namespace />saveRecordSet() {

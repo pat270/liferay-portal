@@ -4,21 +4,22 @@ definition {
 	var userPassword = "test";
 	var userPasswordReminderAnswer = "test";
 
-	macro _signIn {
+	@summary = "Default summary"
+	macro _signIn(virtualHostsURL = null, userEmailAddress = null) {
 		var appServerType = PropsUtil.get("app.server.type");
 
 		if (${appServerType} == "weblogic") {
 
 			// Pausing 2 seconds due to LPS-159595
 
-			Pause(locator1 = 2000);
+			Pause(value1 = 2000);
 		}
 
 		if (isSet(virtualHostsURL)) {
 			Navigator.openSpecificURL(url = "${virtualHostsURL}/web/guest?SM_USER=${userEmailAddress}");
 		}
 		else {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 
 			Navigator.openSpecificURL(url = "${baseURL}/web/guest?SM_USER=${userEmailAddress}");
 		}
@@ -33,7 +34,8 @@ definition {
 		WaitForLiferayEvent.initializeLiferayEventLog();
 	}
 
-	macro agreeToTermsOfUse {
+	@summary = "Default summary"
+	macro agreeToTermsOfUse() {
 		AssertClick(
 			locator1 = "Button#I_AGREE",
 			value1 = "I Agree");
@@ -41,7 +43,8 @@ definition {
 		AssertElementNotPresent(locator1 = "Button#I_AGREE");
 	}
 
-	macro setPasswordReminder {
+	@summary = "Default summary"
+	macro setPasswordReminder(userPasswordReminderAnswer = null) {
 		Type(
 			locator1 = "TextInput#ANSWER",
 			value1 = ${userPasswordReminderAnswer});
@@ -49,34 +52,48 @@ definition {
 		Button.clickSave();
 	}
 
-	macro signIn {
+	@summary = "Default summary"
+	macro signIn(userPassword = null, userEmailAddress = null) {
 		SignIn._signIn(
 			userEmailAddress = ${userEmailAddress},
 			userPassword = ${userPassword});
 	}
 
-	macro signInPortalInstanceSetUp {
-		var portalURL = PropsUtil.get("portal.url");
+	@summary = "Default summary"
+	macro signInPortalInstanceSetUp(authenticationMethod = null) {
+		var portalURL = JSONCompany.getPortalURL();
 
 		var portalURL = Regex.removeHTTP(url = ${portalURL});
 
 		var portalURL = Regex.removePortNumber(url = ${portalURL});
+		var domain = JSONCompany.getDomain();
 
 		HeadlessPortalInstanceAPI.addPortalInstance(
 			authenticationMethod = ${authenticationMethod},
-			domain = "liferay.com",
+			domain = ${domain},
 			portalInstanceId = ${portalURL},
 			virtualHost = ${portalURL});
+
+		var isLXC = JSONUtil2.getLXCEnvironment();
+
+		if (${isLXC} == "true") {
+
+			// Workaround for LXC server performance issues LRQA-81713
+
+			Pause(value1 = 190000);
+		}
 	}
 
-	macro signInSpecificURL {
+	@summary = "Default summary"
+	macro signInSpecificURL(userPassword = null, userEmailAddress = null, url = null) {
 		SignIn._signIn(
 			userEmailAddress = ${userEmailAddress},
 			userPassword = ${userPassword},
 			virtualHostsURL = ${url});
 	}
 
-	macro signInTestSetup {
+	@summary = "Default summary"
+	macro signInTestSetup(userPassword = null, licenseExpired = null) {
 		var userEmailAddress = JSONUtil2.getDefaultUserEmail();
 
 		JSONUser.agreeToTermsAndAnswerReminderQuery(userEmailAddress = ${userEmailAddress});

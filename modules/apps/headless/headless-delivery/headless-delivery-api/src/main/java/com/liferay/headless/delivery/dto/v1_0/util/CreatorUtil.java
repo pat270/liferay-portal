@@ -6,34 +6,36 @@
 package com.liferay.headless.delivery.dto.v1_0.util;
 
 import com.liferay.headless.delivery.dto.v1_0.Creator;
+import com.liferay.headless.delivery.dto.v1_0.UserGroupBrief;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Portal;
-
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.UriInfo;
+import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
 
 /**
  * @author Cristina González
  */
 public class CreatorUtil {
 
-	public static Creator toCreator(Portal portal, UriInfo uriInfo, User user) {
+	public static Creator toCreator(
+		DTOConverterContext dtoConverterContext, Portal portal, User user) {
+
 		if ((user == null) || user.isGuestUser()) {
 			return null;
 		}
 
 		return new Creator() {
 			{
-				additionalName = user.getMiddleName();
-				contentType = "UserAccount";
-				familyName = user.getLastName();
-				givenName = user.getFirstName();
-				id = user.getUserId();
-				name = user.getFullName();
-
+				setAdditionalName(user::getMiddleName);
+				setContentType(() -> "UserAccount");
+				setFamilyName(user::getLastName);
+				setGivenName(user::getFirstName);
+				setId(user::getUserId);
 				setImage(
 					() -> {
 						if (user.getPortraitId() == 0) {
@@ -48,20 +50,12 @@ public class CreatorUtil {
 
 						return user.getPortraitURL(themeDisplay);
 					});
+				setName(user::getFullName);
 				setProfileURL(
 					() -> {
-						if (uriInfo == null) {
-							return null;
-						}
-
-						MultivaluedMap<String, String> queryParameters =
-							uriInfo.getQueryParameters();
-
-						String nestedFields = queryParameters.getFirst(
-							"nestedFields");
-
-						if ((nestedFields == null) ||
-							!nestedFields.contains("profileURL")) {
+						if ((dtoConverterContext == null) ||
+							!dtoConverterContext.containsNestedFieldsValue(
+								"profileURL")) {
 
 							return null;
 						}
@@ -76,6 +70,29 @@ public class CreatorUtil {
 						};
 
 						return group.getDisplayURL(themeDisplay);
+					});
+				setUserGroupBriefs(
+					() -> {
+						if (!FeatureFlagManagerUtil.isEnabled("LPS-185892") ||
+							(dtoConverterContext == null) ||
+							!(GetterUtil.getBoolean(
+								dtoConverterContext.getAttribute(
+									"userGroupBriefs")) ||
+							  dtoConverterContext.containsNestedFieldsValue(
+								  "userGroupBriefs"))) {
+
+							return null;
+						}
+
+						return TransformUtil.transformToArray(
+							user.getUserGroups(),
+							userGroup -> new UserGroupBrief() {
+								{
+									setId(userGroup::getUserGroupId);
+									setName(userGroup::getName);
+								}
+							},
+							UserGroupBrief.class);
 					});
 			}
 		};

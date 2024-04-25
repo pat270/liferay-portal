@@ -26,8 +26,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -36,6 +34,7 @@ import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.test.rule.Inject;
@@ -60,8 +59,6 @@ import java.util.Set;
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-
-import org.apache.commons.lang.time.DateUtils;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -245,12 +242,13 @@ public abstract class BaseAccountCategoryForecastResourceTestCase {
 	public void testGetAccountCategoryForecastsByMonthlyRevenuePageWithPagination()
 		throws Exception {
 
-		Page<AccountCategoryForecast> totalPage =
+		Page<AccountCategoryForecast> accountCategoryForecastPage =
 			accountCategoryForecastResource.
 				getAccountCategoryForecastsByMonthlyRevenuePage(
 					null, null, null, null, null, null);
 
-		int totalCount = GetterUtil.getInteger(totalPage.getTotalCount());
+		int totalCount = GetterUtil.getInteger(
+			accountCategoryForecastPage.getTotalCount());
 
 		AccountCategoryForecast accountCategoryForecast1 =
 			testGetAccountCategoryForecastsByMonthlyRevenuePage_addAccountCategoryForecast(
@@ -264,49 +262,94 @@ public abstract class BaseAccountCategoryForecastResourceTestCase {
 			testGetAccountCategoryForecastsByMonthlyRevenuePage_addAccountCategoryForecast(
 				randomAccountCategoryForecast());
 
-		Page<AccountCategoryForecast> page1 =
-			accountCategoryForecastResource.
-				getAccountCategoryForecastsByMonthlyRevenuePage(
-					null, null, null, null, null,
-					Pagination.of(1, totalCount + 2));
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<AccountCategoryForecast> accountCategoryForecasts1 =
-			(List<AccountCategoryForecast>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			accountCategoryForecasts1.toString(), totalCount + 2,
-			accountCategoryForecasts1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<AccountCategoryForecast> page1 =
+				accountCategoryForecastResource.
+					getAccountCategoryForecastsByMonthlyRevenuePage(
+						null, null, null, null, null,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+							pageSizeLimit));
 
-		Page<AccountCategoryForecast> page2 =
-			accountCategoryForecastResource.
-				getAccountCategoryForecastsByMonthlyRevenuePage(
-					null, null, null, null, null,
-					Pagination.of(2, totalCount + 2));
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+			assertContains(
+				accountCategoryForecast1,
+				(List<AccountCategoryForecast>)page1.getItems());
 
-		List<AccountCategoryForecast> accountCategoryForecasts2 =
-			(List<AccountCategoryForecast>)page2.getItems();
+			Page<AccountCategoryForecast> page2 =
+				accountCategoryForecastResource.
+					getAccountCategoryForecastsByMonthlyRevenuePage(
+						null, null, null, null, null,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+							pageSizeLimit));
 
-		Assert.assertEquals(
-			accountCategoryForecasts2.toString(), 1,
-			accountCategoryForecasts2.size());
+			assertContains(
+				accountCategoryForecast2,
+				(List<AccountCategoryForecast>)page2.getItems());
 
-		Page<AccountCategoryForecast> page3 =
-			accountCategoryForecastResource.
-				getAccountCategoryForecastsByMonthlyRevenuePage(
-					null, null, null, null, null,
-					Pagination.of(1, totalCount + 3));
+			Page<AccountCategoryForecast> page3 =
+				accountCategoryForecastResource.
+					getAccountCategoryForecastsByMonthlyRevenuePage(
+						null, null, null, null, null,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+							pageSizeLimit));
 
-		assertContains(
-			accountCategoryForecast1,
-			(List<AccountCategoryForecast>)page3.getItems());
-		assertContains(
-			accountCategoryForecast2,
-			(List<AccountCategoryForecast>)page3.getItems());
-		assertContains(
-			accountCategoryForecast3,
-			(List<AccountCategoryForecast>)page3.getItems());
+			assertContains(
+				accountCategoryForecast3,
+				(List<AccountCategoryForecast>)page3.getItems());
+		}
+		else {
+			Page<AccountCategoryForecast> page1 =
+				accountCategoryForecastResource.
+					getAccountCategoryForecastsByMonthlyRevenuePage(
+						null, null, null, null, null,
+						Pagination.of(1, totalCount + 2));
+
+			List<AccountCategoryForecast> accountCategoryForecasts1 =
+				(List<AccountCategoryForecast>)page1.getItems();
+
+			Assert.assertEquals(
+				accountCategoryForecasts1.toString(), totalCount + 2,
+				accountCategoryForecasts1.size());
+
+			Page<AccountCategoryForecast> page2 =
+				accountCategoryForecastResource.
+					getAccountCategoryForecastsByMonthlyRevenuePage(
+						null, null, null, null, null,
+						Pagination.of(2, totalCount + 2));
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<AccountCategoryForecast> accountCategoryForecasts2 =
+				(List<AccountCategoryForecast>)page2.getItems();
+
+			Assert.assertEquals(
+				accountCategoryForecasts2.toString(), 1,
+				accountCategoryForecasts2.size());
+
+			Page<AccountCategoryForecast> page3 =
+				accountCategoryForecastResource.
+					getAccountCategoryForecastsByMonthlyRevenuePage(
+						null, null, null, null, null,
+						Pagination.of(1, (int)totalCount + 3));
+
+			assertContains(
+				accountCategoryForecast1,
+				(List<AccountCategoryForecast>)page3.getItems());
+			assertContains(
+				accountCategoryForecast2,
+				(List<AccountCategoryForecast>)page3.getItems());
+			assertContains(
+				accountCategoryForecast3,
+				(List<AccountCategoryForecast>)page3.getItems());
+		}
 	}
 
 	protected AccountCategoryForecast
@@ -749,6 +792,10 @@ public abstract class BaseAccountCategoryForecastResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -896,22 +943,20 @@ public abstract class BaseAccountCategoryForecastResourceTestCase {
 
 		if (entityFieldName.equals("timestamp")) {
 			if (operator.equals("between")) {
+				Date date = accountCategoryForecast.getTimestamp();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							accountCategoryForecast.getTimestamp(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							accountCategoryForecast.getTimestamp(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -1046,9 +1091,9 @@ public abstract class BaseAccountCategoryForecastResourceTestCase {
 	}
 
 	protected AccountCategoryForecastResource accountCategoryForecastResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

@@ -72,7 +72,12 @@ public class DiscountSkuResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _discountSkuResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, DiscountSkuResource>
+					discountSkuResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_discountSkuResourceProxyProviderFunction;
+
+				return discountSkuResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -229,9 +234,6 @@ public class DiscountSkuResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, DiscountSkuResource>
-		_discountSkuResourceProxyProviderFunction = _getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -267,6 +269,14 @@ public class DiscountSkuResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, DiscountSkuResource>
+			_discountSkuResourceProxyProviderFunction =
+				_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

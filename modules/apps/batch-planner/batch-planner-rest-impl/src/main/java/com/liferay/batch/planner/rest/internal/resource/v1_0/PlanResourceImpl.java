@@ -5,17 +5,21 @@
 
 package com.liferay.batch.planner.rest.internal.resource.v1_0;
 
+import com.liferay.batch.planner.batch.engine.task.TaskItemUtil;
 import com.liferay.batch.planner.model.BatchPlannerMapping;
 import com.liferay.batch.planner.model.BatchPlannerPlan;
 import com.liferay.batch.planner.model.BatchPlannerPolicy;
 import com.liferay.batch.planner.rest.dto.v1_0.Mapping;
 import com.liferay.batch.planner.rest.dto.v1_0.Plan;
 import com.liferay.batch.planner.rest.dto.v1_0.Policy;
-import com.liferay.batch.planner.rest.internal.vulcan.batch.engine.FieldProvider;
+import com.liferay.batch.planner.rest.internal.vulcan.batch.engine.util.FieldProviderUtil;
+import com.liferay.batch.planner.rest.internal.vulcan.yaml.openapi.OpenAPIYAMLProvider;
 import com.liferay.batch.planner.rest.resource.v1_0.PlanResource;
 import com.liferay.batch.planner.service.BatchPlannerMappingService;
 import com.liferay.batch.planner.service.BatchPlannerPlanService;
 import com.liferay.batch.planner.service.BatchPlannerPolicyService;
+import com.liferay.object.rest.openapi.v1_0.ObjectEntryOpenAPIResourceProvider;
+import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -65,12 +69,16 @@ public class PlanResourceImpl extends BasePlanResourceImpl {
 	}
 
 	@Override
-	public Response getPlanTemplate(String internalClassName) throws Exception {
+	public Response getPlanTemplate(String internalClassNameKey)
+		throws Exception {
+
 		return _getResponse(
-			internalClassName.substring(
-				internalClassName.lastIndexOf(StringPool.PERIOD) + 1),
-			_fieldProvider.getFields(
-				contextCompany.getCompanyId(), internalClassName));
+			TaskItemUtil.getSimpleClassName(internalClassNameKey),
+			FieldProviderUtil.getFields(
+				contextCompany.getCompanyId(), internalClassNameKey,
+				_objectDefinitionLocalService,
+				_objectEntryOpenAPIResourceProvider, _openAPIYAMLProvider,
+				contextUriInfo));
 	}
 
 	@Override
@@ -137,7 +145,7 @@ public class PlanResourceImpl extends BasePlanResourceImpl {
 	}
 
 	private Response _getResponse(String dtoEntityName, List<Field> fields) {
-		fields = _fieldProvider.filter(fields, Field.AccessType.READ);
+		fields = FieldProviderUtil.filter(fields, Field.AccessType.READ);
 
 		Iterator<Field> iterator = fields.iterator();
 
@@ -179,13 +187,13 @@ public class PlanResourceImpl extends BasePlanResourceImpl {
 	private Mapping _toMapping(BatchPlannerMapping batchPlannerMapping) {
 		return new Mapping() {
 			{
-				externalFieldName = batchPlannerMapping.getExternalFieldName();
-				externalFieldType = batchPlannerMapping.getExternalFieldType();
-				id = batchPlannerMapping.getBatchPlannerMappingId();
-				internalFieldName = batchPlannerMapping.getInternalFieldName();
-				internalFieldType = batchPlannerMapping.getInternalFieldType();
-				planId = batchPlannerMapping.getBatchPlannerPlanId();
-				script = batchPlannerMapping.getScript();
+				setExternalFieldName(batchPlannerMapping::getExternalFieldName);
+				setExternalFieldType(batchPlannerMapping::getExternalFieldType);
+				setId(batchPlannerMapping::getBatchPlannerMappingId);
+				setInternalFieldName(batchPlannerMapping::getInternalFieldName);
+				setInternalFieldType(batchPlannerMapping::getInternalFieldType);
+				setPlanId(batchPlannerMapping::getBatchPlannerPlanId);
+				setScript(batchPlannerMapping::getScript);
 			}
 		};
 	}
@@ -193,26 +201,32 @@ public class PlanResourceImpl extends BasePlanResourceImpl {
 	private Plan _toPlan(BatchPlannerPlan batchPlannerPlan) throws Exception {
 		return new Plan() {
 			{
-				active = batchPlannerPlan.isActive();
-				export = batchPlannerPlan.isExport();
-				externalType = batchPlannerPlan.getExternalType();
-				externalURL = batchPlannerPlan.getExternalURL();
-				id = batchPlannerPlan.getBatchPlannerPlanId();
-				internalClassName = batchPlannerPlan.getInternalClassName();
-				mappings = transformToArray(
-					_batchPlannerMappingService.getBatchPlannerMappings(
-						batchPlannerPlan.getBatchPlannerPlanId()),
-					batchPlannerMapping -> _toMapping(batchPlannerMapping),
-					Mapping.class);
-				name = batchPlannerPlan.getName();
-				policies = transformToArray(
-					_batchPlannerPolicyService.getBatchPlannerPolicies(
-						batchPlannerPlan.getBatchPlannerPlanId()),
-					batchPlannerPolicy -> _toPolicy(batchPlannerPolicy),
-					Policy.class);
-				taskItemDelegateName =
-					batchPlannerPlan.getTaskItemDelegateName();
-				template = batchPlannerPlan.isTemplate();
+				setActive(batchPlannerPlan::isActive);
+				setExport(batchPlannerPlan::isExport);
+				setExternalType(batchPlannerPlan::getExternalType);
+				setExternalURL(batchPlannerPlan::getExternalURL);
+				setId(batchPlannerPlan::getBatchPlannerPlanId);
+				setInternalClassName(batchPlannerPlan::getInternalClassName);
+				setInternalClassNameKey(
+					() -> TaskItemUtil.getInternalClassNameKey(
+						batchPlannerPlan.getInternalClassName(),
+						batchPlannerPlan.getTaskItemDelegateName()));
+				setMappings(
+					() -> transformToArray(
+						_batchPlannerMappingService.getBatchPlannerMappings(
+							batchPlannerPlan.getBatchPlannerPlanId()),
+						batchPlannerMapping -> _toMapping(batchPlannerMapping),
+						Mapping.class));
+				setName(batchPlannerPlan::getName);
+				setPolicies(
+					() -> transformToArray(
+						_batchPlannerPolicyService.getBatchPlannerPolicies(
+							batchPlannerPlan.getBatchPlannerPlanId()),
+						batchPlannerPolicy -> _toPolicy(batchPlannerPolicy),
+						Policy.class));
+				setTaskItemDelegateName(
+					batchPlannerPlan::getTaskItemDelegateName);
+				setTemplate(batchPlannerPlan::isTemplate);
 			}
 		};
 	}
@@ -220,10 +234,10 @@ public class PlanResourceImpl extends BasePlanResourceImpl {
 	private Policy _toPolicy(BatchPlannerPolicy batchPlannerPolicy) {
 		return new Policy() {
 			{
-				id = batchPlannerPolicy.getBatchPlannerPolicyId();
-				name = batchPlannerPolicy.getName();
-				planId = batchPlannerPolicy.getBatchPlannerPlanId();
-				value = batchPlannerPolicy.getValue();
+				setId(batchPlannerPolicy::getBatchPlannerPolicyId);
+				setName(batchPlannerPolicy::getName);
+				setPlanId(batchPlannerPolicy::getBatchPlannerPlanId);
+				setValue(batchPlannerPolicy::getValue);
 			}
 		};
 	}
@@ -238,6 +252,13 @@ public class PlanResourceImpl extends BasePlanResourceImpl {
 	private BatchPlannerPolicyService _batchPlannerPolicyService;
 
 	@Reference
-	private FieldProvider _fieldProvider;
+	private ObjectDefinitionLocalService _objectDefinitionLocalService;
+
+	@Reference
+	private ObjectEntryOpenAPIResourceProvider
+		_objectEntryOpenAPIResourceProvider;
+
+	@Reference
+	private OpenAPIYAMLProvider _openAPIYAMLProvider;
 
 }

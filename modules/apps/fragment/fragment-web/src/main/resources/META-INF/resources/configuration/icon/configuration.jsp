@@ -10,6 +10,7 @@
 <%
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(ParamUtil.getString(request, "backURL", String.valueOf(renderResponse.createRenderURL())));
+portletDisplay.setURLBackTitle(portletDisplay.getPortletDisplayName());
 
 renderResponse.setTitle(LanguageUtil.get(request, "fragment-configuration"));
 
@@ -21,6 +22,6 @@ ConfigurationDisplayContext configurationDisplayContext = new ConfigurationDispl
 
 	<react:component
 		data="<%= configurationDisplayContext.getData() %>"
-		module="js/FormFragmentsConfiguration"
+		module="{FormFragmentsConfiguration} from fragment-web"
 	/>
 </div>

@@ -19,9 +19,11 @@ JournalArticleItemSelectorViewDisplayContext journalArticleItemSelectorViewDispl
 	cssClass="item-selector lfr-item-viewer"
 	id='<%= liferayPortletResponse.getNamespace() + "articlesContainer" %>'
 >
-	<liferay-site-navigation:breadcrumb
-		breadcrumbEntries="<%= journalArticleItemSelectorViewDisplayContext.getPortletBreadcrumbEntries() %>"
-	/>
+	<c:if test="<%= journalArticleItemSelectorViewDisplayContext.isShowBreadcrumb() %>">
+		<liferay-site-navigation:breadcrumb
+			breadcrumbEntries="<%= journalArticleItemSelectorViewDisplayContext.getPortletBreadcrumbEntries() %>"
+		/>
+	</c:if>
 
 	<liferay-ui:search-container
 		emptyResultsMessage="no-web-content-was-found"
@@ -48,14 +50,11 @@ JournalArticleItemSelectorViewDisplayContext journalArticleItemSelectorViewDispl
 			%>
 
 			<c:choose>
-				<c:when test="<%= curArticle != null %>">
+				<c:when test="<%= (curArticle != null) && !journalArticleItemSelectorViewDisplayContext.isRefererArticle(curArticle) %>">
 
 					<%
 					row.setCssClass("articles " + row.getCssClass());
-
-					if (!journalArticleItemSelectorViewDisplayContext.isRefererArticle(curArticle)) {
-						row.setCssClass("selector-button " + row.getCssClass());
-					}
+					row.setCssClass("selector-button " + row.getCssClass());
 
 					row.setData(
 						HashMapBuilder.<String, Object>put(
@@ -68,13 +67,11 @@ JournalArticleItemSelectorViewDisplayContext journalArticleItemSelectorViewDispl
 						<c:when test='<%= Objects.equals(journalArticleItemSelectorViewDisplayContext.getDisplayStyle(), "descriptive") %>'>
 
 							<%
-							if (!journalArticleItemSelectorViewDisplayContext.isRefererArticle(curArticle)) {
-								row.setCssClass("item-preview " + row.getCssClass());
-							}
+							row.setCssClass("item-preview " + row.getCssClass());
 							%>
 
 							<liferay-ui:search-container-column-text>
-								<liferay-ui:user-portrait
+								<liferay-user:user-portrait
 									userId="<%= curArticle.getUserId() %>"
 								/>
 							</liferay-ui:search-container-column-text>
@@ -95,10 +92,18 @@ JournalArticleItemSelectorViewDisplayContext journalArticleItemSelectorViewDispl
 
 								<p class="font-weight-bold h5">
 									<%= HtmlUtil.escape(curArticle.getTitle(locale, true)) %>
+									<c:if test="<%= !journalArticleItemSelectorViewDisplayContext.hasGuestViewPermission(curArticle) %>">
+										<clay:icon
+											aria-label="<%= LanguageUtil.get(request, "not-visible-to-guest-users") %>"
+											cssClass="c-ml-1 c-mt-0 lfr-portal-tooltip text-4 text-secondary"
+											data-title="<%= LanguageUtil.get(request, "not-visible-to-guest-users") %>"
+											symbol="password-policies"
+										/>
+									</c:if>
 								</p>
 
 								<c:if test="<%= journalArticleItemSelectorViewDisplayContext.isSearchEverywhere() %>">
-									<h6 class="text-default">
+									<div class="h6 text-default">
 										<liferay-ui:message key="location" />:
 										<span class="text-secondary">
 											<clay:icon
@@ -107,7 +112,23 @@ JournalArticleItemSelectorViewDisplayContext journalArticleItemSelectorViewDispl
 
 											<small><%= journalArticleItemSelectorViewDisplayContext.getGroupLabel(curArticle.getGroupId(), locale) %></small>
 										</span>
-									</h6>
+									</div>
+								</c:if>
+
+								<c:if test="<%= journalArticleItemSelectorViewDisplayContext.getStatus() == WorkflowConstants.STATUS_ANY %>">
+									<span class="text-default">
+										<c:if test="<%= !curArticle.isApproved() && curArticle.hasApprovedVersion() %>">
+											<clay:label
+												displayType="success"
+												label="approved"
+											/>
+										</c:if>
+
+										<clay:label
+											displayType="<%= WorkflowConstants.getStatusStyle(curArticle.getStatus()) %>"
+											label="<%= WorkflowConstants.getStatusLabel(curArticle.getStatus()) %>"
+										/>
+									</span>
 								</c:if>
 							</liferay-ui:search-container-column-text>
 						</c:when>
@@ -120,16 +141,14 @@ JournalArticleItemSelectorViewDisplayContext journalArticleItemSelectorViewDispl
 							<liferay-ui:search-container-column-text>
 								<clay:vertical-card
 									disabled="<%= journalArticleItemSelectorViewDisplayContext.isRefererArticle(curArticle) %>"
-									verticalCard="<%= new JournalArticleItemSelectorVerticalCard(curArticle, renderRequest, journalArticleItemSelectorViewDisplayContext.isMultiSelection()) %>"
+									verticalCard="<%= new JournalArticleItemSelectorVerticalCard(curArticle, journalArticleItemSelectorViewDisplayContext, renderRequest, journalArticleItemSelectorViewDisplayContext.isMultiSelection()) %>"
 								/>
 							</liferay-ui:search-container-column-text>
 						</c:when>
 						<c:otherwise>
 
 							<%
-							if (!journalArticleItemSelectorViewDisplayContext.isRefererArticle(curArticle)) {
-								row.setCssClass("item-preview " + row.getCssClass());
-							}
+							row.setCssClass("item-preview " + row.getCssClass());
 							%>
 
 							<c:if test="<%= journalArticleItemSelectorViewDisplayContext.showArticleId() %>">
@@ -142,8 +161,17 @@ JournalArticleItemSelectorViewDisplayContext journalArticleItemSelectorViewDispl
 							<liferay-ui:search-container-column-text
 								cssClass="table-cell-expand table-cell-minw-200 table-title"
 								name="title"
-								value="<%= curArticle.getTitle(locale, true) %>"
-							/>
+							>
+								<%= HtmlUtil.escape(curArticle.getTitle(locale, true)) %>
+								<c:if test="<%= !journalArticleItemSelectorViewDisplayContext.hasGuestViewPermission(curArticle) %>">
+									<clay:icon
+										aria-label="<%= LanguageUtil.get(request, "not-visible-to-guest-users") %>"
+										cssClass="c-ml-1 c-mt-0 lfr-portal-tooltip text-4 text-secondary"
+										data-title="<%= LanguageUtil.get(request, "not-visible-to-guest-users") %>"
+										symbol="password-policies"
+									/>
+								</c:if>
+							</liferay-ui:search-container-column-text>
 
 							<liferay-ui:search-container-column-text
 								cssClass="table-cell-expand table-cell-minw-200 text-truncate"
@@ -170,6 +198,25 @@ JournalArticleItemSelectorViewDisplayContext journalArticleItemSelectorViewDispl
 								name="author"
 								value="<%= HtmlUtil.escape(PortalUtil.getUserName(curArticle)) %>"
 							/>
+
+							<c:if test="<%= journalArticleItemSelectorViewDisplayContext.getStatus() == WorkflowConstants.STATUS_ANY %>">
+								<liferay-ui:search-container-column-text
+									cssClass="text-nowrap"
+									name="status"
+								>
+									<c:if test="<%= !curArticle.isApproved() && curArticle.hasApprovedVersion() %>">
+										<clay:label
+											displayType="success"
+											label="approved"
+										/>
+									</c:if>
+
+									<clay:label
+										displayType="<%= WorkflowConstants.getStatusStyle(curArticle.getStatus()) %>"
+										label="<%= WorkflowConstants.getStatusLabel(curArticle.getStatus()) %>"
+									/>
+								</liferay-ui:search-container-column-text>
+							</c:if>
 
 							<liferay-ui:search-container-column-date
 								cssClass="table-cell-expand-smallest table-cell-ws-nowrap"
@@ -235,7 +282,7 @@ JournalArticleItemSelectorViewDisplayContext journalArticleItemSelectorViewDispl
 								</p>
 
 								<c:if test="<%= journalArticleItemSelectorViewDisplayContext.isSearchEverywhere() %>">
-									<h6 class="text-default">
+									<div class="h6 text-default">
 										<liferay-ui:message key="location" />:
 										<span class="text-secondary">
 											<clay:icon
@@ -244,7 +291,7 @@ JournalArticleItemSelectorViewDisplayContext journalArticleItemSelectorViewDispl
 
 											<small><%= journalArticleItemSelectorViewDisplayContext.getGroupLabel(curFolder.getGroupId(), locale) %></small>
 										</span>
-									</h6>
+									</div>
 								</c:if>
 							</liferay-ui:search-container-column-text>
 						</c:when>
@@ -322,6 +369,14 @@ JournalArticleItemSelectorViewDisplayContext journalArticleItemSelectorViewDispl
 								value="<%= HtmlUtil.escape(PortalUtil.getUserName(curFolder)) %>"
 							/>
 
+							<c:if test="<%= journalArticleItemSelectorViewDisplayContext.getStatus() == WorkflowConstants.STATUS_ANY %>">
+								<liferay-ui:search-container-column-text
+									cssClass="text-nowrap"
+									name="status"
+									value="--"
+								/>
+							</c:if>
+
 							<liferay-ui:search-container-column-date
 								cssClass="table-cell-expand-smallest table-cell-ws-nowrap"
 								name="modified-date"
@@ -348,7 +403,7 @@ JournalArticleItemSelectorViewDisplayContext journalArticleItemSelectorViewDispl
 		<liferay-ui:search-iterator
 			displayStyle="<%= journalArticleItemSelectorViewDisplayContext.getDisplayStyle() %>"
 			markupView="lexicon"
-			resultRowSplitter="<%= new JournalResultRowSplitter() %>"
+			resultRowSplitter='<%= Objects.equals(journalArticleItemSelectorViewDisplayContext.getDisplayStyle(), "icon") ? new JournalResultRowSplitter() : null %>'
 			searchContainer="<%= searchContainer %>"
 		/>
 	</liferay-ui:search-container>

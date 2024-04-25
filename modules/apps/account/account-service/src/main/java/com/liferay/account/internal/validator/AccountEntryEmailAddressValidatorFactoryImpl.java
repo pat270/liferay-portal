@@ -6,14 +6,15 @@
 package com.liferay.account.internal.validator;
 
 import com.liferay.account.configuration.AccountEntryEmailDomainsConfiguration;
+import com.liferay.account.internal.validator.util.DomainValidatorFactoryUtil;
 import com.liferay.account.validator.AccountEntryEmailAddressValidator;
 import com.liferay.account.validator.AccountEntryEmailAddressValidatorFactory;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.security.auth.EmailAddressValidator;
 import com.liferay.portal.kernel.util.StringUtil;
 
@@ -59,7 +60,7 @@ public class AccountEntryEmailAddressValidatorFactoryImpl
 		String[] blockedDomains, long companyId, String[] customTLDs,
 		boolean emailAddressDomainValidationEnabled, String[] validDomains) {
 
-		DomainValidator domainValidator = _domainValidatorFactory.create(
+		DomainValidator domainValidator = DomainValidatorFactoryUtil.create(
 			customTLDs);
 
 		return new AccountEntryEmailAddressValidatorImpl(
@@ -93,9 +94,6 @@ public class AccountEntryEmailAddressValidatorFactoryImpl
 
 	@Reference
 	private ConfigurationProvider _configurationProvider;
-
-	@Reference
-	private DomainValidatorFactory _domainValidatorFactory;
 
 	@Reference
 	private EmailAddressValidator _emailAddressValidator;

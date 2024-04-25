@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.ListType;
 import com.liferay.portal.kernel.model.ListTypeTable;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.persistence.ListTypePersistence;
 import com.liferay.portal.kernel.service.persistence.ListTypeUtil;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
@@ -72,67 +73,68 @@ public class ListTypePersistenceImpl
 	private FinderPath _finderPathWithPaginationFindAll;
 	private FinderPath _finderPathWithoutPaginationFindAll;
 	private FinderPath _finderPathCountAll;
-	private FinderPath _finderPathWithPaginationFindByType;
-	private FinderPath _finderPathWithoutPaginationFindByType;
-	private FinderPath _finderPathCountByType;
+	private FinderPath _finderPathWithPaginationFindByCompanyId;
+	private FinderPath _finderPathWithoutPaginationFindByCompanyId;
+	private FinderPath _finderPathCountByCompanyId;
 
 	/**
-	 * Returns all the list types where type = &#63;.
+	 * Returns all the list types where companyId = &#63;.
 	 *
-	 * @param type the type
+	 * @param companyId the company ID
 	 * @return the matching list types
 	 */
 	@Override
-	public List<ListType> findByType(String type) {
-		return findByType(type, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+	public List<ListType> findByCompanyId(long companyId) {
+		return findByCompanyId(
+			companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
 	}
 
 	/**
-	 * Returns a range of all the list types where type = &#63;.
+	 * Returns a range of all the list types where companyId = &#63;.
 	 *
 	 * <p>
 	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeModelImpl</code>.
 	 * </p>
 	 *
-	 * @param type the type
+	 * @param companyId the company ID
 	 * @param start the lower bound of the range of list types
 	 * @param end the upper bound of the range of list types (not inclusive)
 	 * @return the range of matching list types
 	 */
 	@Override
-	public List<ListType> findByType(String type, int start, int end) {
-		return findByType(type, start, end, null);
+	public List<ListType> findByCompanyId(long companyId, int start, int end) {
+		return findByCompanyId(companyId, start, end, null);
 	}
 
 	/**
-	 * Returns an ordered range of all the list types where type = &#63;.
+	 * Returns an ordered range of all the list types where companyId = &#63;.
 	 *
 	 * <p>
 	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeModelImpl</code>.
 	 * </p>
 	 *
-	 * @param type the type
+	 * @param companyId the company ID
 	 * @param start the lower bound of the range of list types
 	 * @param end the upper bound of the range of list types (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
 	 * @return the ordered range of matching list types
 	 */
 	@Override
-	public List<ListType> findByType(
-		String type, int start, int end,
+	public List<ListType> findByCompanyId(
+		long companyId, int start, int end,
 		OrderByComparator<ListType> orderByComparator) {
 
-		return findByType(type, start, end, orderByComparator, true);
+		return findByCompanyId(companyId, start, end, orderByComparator, true);
 	}
 
 	/**
-	 * Returns an ordered range of all the list types where type = &#63;.
+	 * Returns an ordered range of all the list types where companyId = &#63;.
 	 *
 	 * <p>
 	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeModelImpl</code>.
 	 * </p>
 	 *
-	 * @param type the type
+	 * @param companyId the company ID
 	 * @param start the lower bound of the range of list types
 	 * @param end the upper bound of the range of list types (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
@@ -140,11 +142,9 @@ public class ListTypePersistenceImpl
 	 * @return the ordered range of matching list types
 	 */
 	@Override
-	public List<ListType> findByType(
-		String type, int start, int end,
+	public List<ListType> findByCompanyId(
+		long companyId, int start, int end,
 		OrderByComparator<ListType> orderByComparator, boolean useFinderCache) {
-
-		type = Objects.toString(type, "");
 
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
@@ -153,13 +153,15 @@ public class ListTypePersistenceImpl
 			(orderByComparator == null)) {
 
 			if (useFinderCache) {
-				finderPath = _finderPathWithoutPaginationFindByType;
-				finderArgs = new Object[] {type};
+				finderPath = _finderPathWithoutPaginationFindByCompanyId;
+				finderArgs = new Object[] {companyId};
 			}
 		}
 		else if (useFinderCache) {
-			finderPath = _finderPathWithPaginationFindByType;
-			finderArgs = new Object[] {type, start, end, orderByComparator};
+			finderPath = _finderPathWithPaginationFindByCompanyId;
+			finderArgs = new Object[] {
+				companyId, start, end, orderByComparator
+			};
 		}
 
 		List<ListType> list = null;
@@ -170,7 +172,7 @@ public class ListTypePersistenceImpl
 
 			if ((list != null) && !list.isEmpty()) {
 				for (ListType listType : list) {
-					if (!type.equals(listType.getType())) {
+					if (companyId != listType.getCompanyId()) {
 						list = null;
 
 						break;
@@ -192,15 +194,520 @@ public class ListTypePersistenceImpl
 
 			sb.append(_SQL_SELECT_LISTTYPE_WHERE);
 
+			sb.append(_FINDER_COLUMN_COMPANYID_COMPANYID_2);
+
+			if (orderByComparator != null) {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+			}
+			else {
+				sb.append(ListTypeModelImpl.ORDER_BY_JPQL);
+			}
+
+			String sql = sb.toString();
+
+			Session session = null;
+
+			try {
+				session = openSession();
+
+				Query query = session.createQuery(sql);
+
+				QueryPos queryPos = QueryPos.getInstance(query);
+
+				queryPos.add(companyId);
+
+				list = (List<ListType>)QueryUtil.list(
+					query, getDialect(), start, end);
+
+				cacheResult(list);
+
+				if (useFinderCache) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
+			}
+			catch (Exception exception) {
+				throw processException(exception);
+			}
+			finally {
+				closeSession(session);
+			}
+		}
+
+		return list;
+	}
+
+	/**
+	 * Returns the first list type in the ordered set where companyId = &#63;.
+	 *
+	 * @param companyId the company ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching list type
+	 * @throws NoSuchListTypeException if a matching list type could not be found
+	 */
+	@Override
+	public ListType findByCompanyId_First(
+			long companyId, OrderByComparator<ListType> orderByComparator)
+		throws NoSuchListTypeException {
+
+		ListType listType = fetchByCompanyId_First(
+			companyId, orderByComparator);
+
+		if (listType != null) {
+			return listType;
+		}
+
+		StringBundler sb = new StringBundler(4);
+
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
+
+		sb.append("companyId=");
+		sb.append(companyId);
+
+		sb.append("}");
+
+		throw new NoSuchListTypeException(sb.toString());
+	}
+
+	/**
+	 * Returns the first list type in the ordered set where companyId = &#63;.
+	 *
+	 * @param companyId the company ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching list type, or <code>null</code> if a matching list type could not be found
+	 */
+	@Override
+	public ListType fetchByCompanyId_First(
+		long companyId, OrderByComparator<ListType> orderByComparator) {
+
+		List<ListType> list = findByCompanyId(
+			companyId, 0, 1, orderByComparator);
+
+		if (!list.isEmpty()) {
+			return list.get(0);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the last list type in the ordered set where companyId = &#63;.
+	 *
+	 * @param companyId the company ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching list type
+	 * @throws NoSuchListTypeException if a matching list type could not be found
+	 */
+	@Override
+	public ListType findByCompanyId_Last(
+			long companyId, OrderByComparator<ListType> orderByComparator)
+		throws NoSuchListTypeException {
+
+		ListType listType = fetchByCompanyId_Last(companyId, orderByComparator);
+
+		if (listType != null) {
+			return listType;
+		}
+
+		StringBundler sb = new StringBundler(4);
+
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
+
+		sb.append("companyId=");
+		sb.append(companyId);
+
+		sb.append("}");
+
+		throw new NoSuchListTypeException(sb.toString());
+	}
+
+	/**
+	 * Returns the last list type in the ordered set where companyId = &#63;.
+	 *
+	 * @param companyId the company ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching list type, or <code>null</code> if a matching list type could not be found
+	 */
+	@Override
+	public ListType fetchByCompanyId_Last(
+		long companyId, OrderByComparator<ListType> orderByComparator) {
+
+		int count = countByCompanyId(companyId);
+
+		if (count == 0) {
+			return null;
+		}
+
+		List<ListType> list = findByCompanyId(
+			companyId, count - 1, count, orderByComparator);
+
+		if (!list.isEmpty()) {
+			return list.get(0);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the list types before and after the current list type in the ordered set where companyId = &#63;.
+	 *
+	 * @param listTypeId the primary key of the current list type
+	 * @param companyId the company ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next list type
+	 * @throws NoSuchListTypeException if a list type with the primary key could not be found
+	 */
+	@Override
+	public ListType[] findByCompanyId_PrevAndNext(
+			long listTypeId, long companyId,
+			OrderByComparator<ListType> orderByComparator)
+		throws NoSuchListTypeException {
+
+		ListType listType = findByPrimaryKey(listTypeId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			ListType[] array = new ListTypeImpl[3];
+
+			array[0] = getByCompanyId_PrevAndNext(
+				session, listType, companyId, orderByComparator, true);
+
+			array[1] = listType;
+
+			array[2] = getByCompanyId_PrevAndNext(
+				session, listType, companyId, orderByComparator, false);
+
+			return array;
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected ListType getByCompanyId_PrevAndNext(
+		Session session, ListType listType, long companyId,
+		OrderByComparator<ListType> orderByComparator, boolean previous) {
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			sb = new StringBundler(3);
+		}
+
+		sb.append(_SQL_SELECT_LISTTYPE_WHERE);
+
+		sb.append(_FINDER_COLUMN_COMPANYID_COMPANYID_2);
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				sb.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			sb.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC);
+					}
+					else {
+						sb.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			sb.append(ListTypeModelImpl.ORDER_BY_JPQL);
+		}
+
+		String sql = sb.toString();
+
+		Query query = session.createQuery(sql);
+
+		query.setFirstResult(0);
+		query.setMaxResults(2);
+
+		QueryPos queryPos = QueryPos.getInstance(query);
+
+		queryPos.add(companyId);
+
+		if (orderByComparator != null) {
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(listType)) {
+
+				queryPos.add(orderByConditionValue);
+			}
+		}
+
+		List<ListType> list = query.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
+	 * Removes all the list types where companyId = &#63; from the database.
+	 *
+	 * @param companyId the company ID
+	 */
+	@Override
+	public void removeByCompanyId(long companyId) {
+		for (ListType listType :
+				findByCompanyId(
+					companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null)) {
+
+			remove(listType);
+		}
+	}
+
+	/**
+	 * Returns the number of list types where companyId = &#63;.
+	 *
+	 * @param companyId the company ID
+	 * @return the number of matching list types
+	 */
+	@Override
+	public int countByCompanyId(long companyId) {
+		FinderPath finderPath = _finderPathCountByCompanyId;
+
+		Object[] finderArgs = new Object[] {companyId};
+
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
+
+		if (count == null) {
+			StringBundler sb = new StringBundler(2);
+
+			sb.append(_SQL_COUNT_LISTTYPE_WHERE);
+
+			sb.append(_FINDER_COLUMN_COMPANYID_COMPANYID_2);
+
+			String sql = sb.toString();
+
+			Session session = null;
+
+			try {
+				session = openSession();
+
+				Query query = session.createQuery(sql);
+
+				QueryPos queryPos = QueryPos.getInstance(query);
+
+				queryPos.add(companyId);
+
+				count = (Long)query.uniqueResult();
+
+				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+			}
+			catch (Exception exception) {
+				throw processException(exception);
+			}
+			finally {
+				closeSession(session);
+			}
+		}
+
+		return count.intValue();
+	}
+
+	private static final String _FINDER_COLUMN_COMPANYID_COMPANYID_2 =
+		"listType.companyId = ?";
+
+	private FinderPath _finderPathWithPaginationFindByC_T;
+	private FinderPath _finderPathWithoutPaginationFindByC_T;
+	private FinderPath _finderPathCountByC_T;
+
+	/**
+	 * Returns all the list types where companyId = &#63; and type = &#63;.
+	 *
+	 * @param companyId the company ID
+	 * @param type the type
+	 * @return the matching list types
+	 */
+	@Override
+	public List<ListType> findByC_T(long companyId, String type) {
+		return findByC_T(
+			companyId, type, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+	}
+
+	/**
+	 * Returns a range of all the list types where companyId = &#63; and type = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeModelImpl</code>.
+	 * </p>
+	 *
+	 * @param companyId the company ID
+	 * @param type the type
+	 * @param start the lower bound of the range of list types
+	 * @param end the upper bound of the range of list types (not inclusive)
+	 * @return the range of matching list types
+	 */
+	@Override
+	public List<ListType> findByC_T(
+		long companyId, String type, int start, int end) {
+
+		return findByC_T(companyId, type, start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the list types where companyId = &#63; and type = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeModelImpl</code>.
+	 * </p>
+	 *
+	 * @param companyId the company ID
+	 * @param type the type
+	 * @param start the lower bound of the range of list types
+	 * @param end the upper bound of the range of list types (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching list types
+	 */
+	@Override
+	public List<ListType> findByC_T(
+		long companyId, String type, int start, int end,
+		OrderByComparator<ListType> orderByComparator) {
+
+		return findByC_T(companyId, type, start, end, orderByComparator, true);
+	}
+
+	/**
+	 * Returns an ordered range of all the list types where companyId = &#63; and type = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeModelImpl</code>.
+	 * </p>
+	 *
+	 * @param companyId the company ID
+	 * @param type the type
+	 * @param start the lower bound of the range of list types
+	 * @param end the upper bound of the range of list types (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the ordered range of matching list types
+	 */
+	@Override
+	public List<ListType> findByC_T(
+		long companyId, String type, int start, int end,
+		OrderByComparator<ListType> orderByComparator, boolean useFinderCache) {
+
+		type = Objects.toString(type, "");
+
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
+
+		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
+			(orderByComparator == null)) {
+
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByC_T;
+				finderArgs = new Object[] {companyId, type};
+			}
+		}
+		else if (useFinderCache) {
+			finderPath = _finderPathWithPaginationFindByC_T;
+			finderArgs = new Object[] {
+				companyId, type, start, end, orderByComparator
+			};
+		}
+
+		List<ListType> list = null;
+
+		if (useFinderCache) {
+			list = (List<ListType>)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
+
+			if ((list != null) && !list.isEmpty()) {
+				for (ListType listType : list) {
+					if ((companyId != listType.getCompanyId()) ||
+						!type.equals(listType.getType())) {
+
+						list = null;
+
+						break;
+					}
+				}
+			}
+		}
+
+		if (list == null) {
+			StringBundler sb = null;
+
+			if (orderByComparator != null) {
+				sb = new StringBundler(
+					4 + (orderByComparator.getOrderByFields().length * 2));
+			}
+			else {
+				sb = new StringBundler(4);
+			}
+
+			sb.append(_SQL_SELECT_LISTTYPE_WHERE);
+
+			sb.append(_FINDER_COLUMN_C_T_COMPANYID_2);
+
 			boolean bindType = false;
 
 			if (type.isEmpty()) {
-				sb.append(_FINDER_COLUMN_TYPE_TYPE_3);
+				sb.append(_FINDER_COLUMN_C_T_TYPE_3);
 			}
 			else {
 				bindType = true;
 
-				sb.append(_FINDER_COLUMN_TYPE_TYPE_2);
+				sb.append(_FINDER_COLUMN_C_T_TYPE_2);
 			}
 
 			if (orderByComparator != null) {
@@ -221,6 +728,8 @@ public class ListTypePersistenceImpl
 				Query query = session.createQuery(sql);
 
 				QueryPos queryPos = QueryPos.getInstance(query);
+
+				queryPos.add(companyId);
 
 				if (bindType) {
 					queryPos.add(type);
@@ -247,29 +756,35 @@ public class ListTypePersistenceImpl
 	}
 
 	/**
-	 * Returns the first list type in the ordered set where type = &#63;.
+	 * Returns the first list type in the ordered set where companyId = &#63; and type = &#63;.
 	 *
+	 * @param companyId the company ID
 	 * @param type the type
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the first matching list type
 	 * @throws NoSuchListTypeException if a matching list type could not be found
 	 */
 	@Override
-	public ListType findByType_First(
-			String type, OrderByComparator<ListType> orderByComparator)
+	public ListType findByC_T_First(
+			long companyId, String type,
+			OrderByComparator<ListType> orderByComparator)
 		throws NoSuchListTypeException {
 
-		ListType listType = fetchByType_First(type, orderByComparator);
+		ListType listType = fetchByC_T_First(
+			companyId, type, orderByComparator);
 
 		if (listType != null) {
 			return listType;
 		}
 
-		StringBundler sb = new StringBundler(4);
+		StringBundler sb = new StringBundler(6);
 
 		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		sb.append("type=");
+		sb.append("companyId=");
+		sb.append(companyId);
+
+		sb.append(", type=");
 		sb.append(type);
 
 		sb.append("}");
@@ -278,17 +793,20 @@ public class ListTypePersistenceImpl
 	}
 
 	/**
-	 * Returns the first list type in the ordered set where type = &#63;.
+	 * Returns the first list type in the ordered set where companyId = &#63; and type = &#63;.
 	 *
+	 * @param companyId the company ID
 	 * @param type the type
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the first matching list type, or <code>null</code> if a matching list type could not be found
 	 */
 	@Override
-	public ListType fetchByType_First(
-		String type, OrderByComparator<ListType> orderByComparator) {
+	public ListType fetchByC_T_First(
+		long companyId, String type,
+		OrderByComparator<ListType> orderByComparator) {
 
-		List<ListType> list = findByType(type, 0, 1, orderByComparator);
+		List<ListType> list = findByC_T(
+			companyId, type, 0, 1, orderByComparator);
 
 		if (!list.isEmpty()) {
 			return list.get(0);
@@ -298,29 +816,34 @@ public class ListTypePersistenceImpl
 	}
 
 	/**
-	 * Returns the last list type in the ordered set where type = &#63;.
+	 * Returns the last list type in the ordered set where companyId = &#63; and type = &#63;.
 	 *
+	 * @param companyId the company ID
 	 * @param type the type
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the last matching list type
 	 * @throws NoSuchListTypeException if a matching list type could not be found
 	 */
 	@Override
-	public ListType findByType_Last(
-			String type, OrderByComparator<ListType> orderByComparator)
+	public ListType findByC_T_Last(
+			long companyId, String type,
+			OrderByComparator<ListType> orderByComparator)
 		throws NoSuchListTypeException {
 
-		ListType listType = fetchByType_Last(type, orderByComparator);
+		ListType listType = fetchByC_T_Last(companyId, type, orderByComparator);
 
 		if (listType != null) {
 			return listType;
 		}
 
-		StringBundler sb = new StringBundler(4);
+		StringBundler sb = new StringBundler(6);
 
 		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		sb.append("type=");
+		sb.append("companyId=");
+		sb.append(companyId);
+
+		sb.append(", type=");
 		sb.append(type);
 
 		sb.append("}");
@@ -329,24 +852,26 @@ public class ListTypePersistenceImpl
 	}
 
 	/**
-	 * Returns the last list type in the ordered set where type = &#63;.
+	 * Returns the last list type in the ordered set where companyId = &#63; and type = &#63;.
 	 *
+	 * @param companyId the company ID
 	 * @param type the type
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the last matching list type, or <code>null</code> if a matching list type could not be found
 	 */
 	@Override
-	public ListType fetchByType_Last(
-		String type, OrderByComparator<ListType> orderByComparator) {
+	public ListType fetchByC_T_Last(
+		long companyId, String type,
+		OrderByComparator<ListType> orderByComparator) {
 
-		int count = countByType(type);
+		int count = countByC_T(companyId, type);
 
 		if (count == 0) {
 			return null;
 		}
 
-		List<ListType> list = findByType(
-			type, count - 1, count, orderByComparator);
+		List<ListType> list = findByC_T(
+			companyId, type, count - 1, count, orderByComparator);
 
 		if (!list.isEmpty()) {
 			return list.get(0);
@@ -356,17 +881,18 @@ public class ListTypePersistenceImpl
 	}
 
 	/**
-	 * Returns the list types before and after the current list type in the ordered set where type = &#63;.
+	 * Returns the list types before and after the current list type in the ordered set where companyId = &#63; and type = &#63;.
 	 *
 	 * @param listTypeId the primary key of the current list type
+	 * @param companyId the company ID
 	 * @param type the type
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the previous, current, and next list type
 	 * @throws NoSuchListTypeException if a list type with the primary key could not be found
 	 */
 	@Override
-	public ListType[] findByType_PrevAndNext(
-			long listTypeId, String type,
+	public ListType[] findByC_T_PrevAndNext(
+			long listTypeId, long companyId, String type,
 			OrderByComparator<ListType> orderByComparator)
 		throws NoSuchListTypeException {
 
@@ -381,13 +907,13 @@ public class ListTypePersistenceImpl
 
 			ListType[] array = new ListTypeImpl[3];
 
-			array[0] = getByType_PrevAndNext(
-				session, listType, type, orderByComparator, true);
+			array[0] = getByC_T_PrevAndNext(
+				session, listType, companyId, type, orderByComparator, true);
 
 			array[1] = listType;
 
-			array[2] = getByType_PrevAndNext(
-				session, listType, type, orderByComparator, false);
+			array[2] = getByC_T_PrevAndNext(
+				session, listType, companyId, type, orderByComparator, false);
 
 			return array;
 		}
@@ -399,32 +925,34 @@ public class ListTypePersistenceImpl
 		}
 	}
 
-	protected ListType getByType_PrevAndNext(
-		Session session, ListType listType, String type,
+	protected ListType getByC_T_PrevAndNext(
+		Session session, ListType listType, long companyId, String type,
 		OrderByComparator<ListType> orderByComparator, boolean previous) {
 
 		StringBundler sb = null;
 
 		if (orderByComparator != null) {
 			sb = new StringBundler(
-				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
+				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			sb = new StringBundler(3);
+			sb = new StringBundler(4);
 		}
 
 		sb.append(_SQL_SELECT_LISTTYPE_WHERE);
 
+		sb.append(_FINDER_COLUMN_C_T_COMPANYID_2);
+
 		boolean bindType = false;
 
 		if (type.isEmpty()) {
-			sb.append(_FINDER_COLUMN_TYPE_TYPE_3);
+			sb.append(_FINDER_COLUMN_C_T_TYPE_3);
 		}
 		else {
 			bindType = true;
 
-			sb.append(_FINDER_COLUMN_TYPE_TYPE_2);
+			sb.append(_FINDER_COLUMN_C_T_TYPE_2);
 		}
 
 		if (orderByComparator != null) {
@@ -496,6 +1024,8 @@ public class ListTypePersistenceImpl
 
 		QueryPos queryPos = QueryPos.getInstance(query);
 
+		queryPos.add(companyId);
+
 		if (bindType) {
 			queryPos.add(type);
 		}
@@ -519,50 +1049,56 @@ public class ListTypePersistenceImpl
 	}
 
 	/**
-	 * Removes all the list types where type = &#63; from the database.
+	 * Removes all the list types where companyId = &#63; and type = &#63; from the database.
 	 *
+	 * @param companyId the company ID
 	 * @param type the type
 	 */
 	@Override
-	public void removeByType(String type) {
+	public void removeByC_T(long companyId, String type) {
 		for (ListType listType :
-				findByType(type, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null)) {
+				findByC_T(
+					companyId, type, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+					null)) {
 
 			remove(listType);
 		}
 	}
 
 	/**
-	 * Returns the number of list types where type = &#63;.
+	 * Returns the number of list types where companyId = &#63; and type = &#63;.
 	 *
+	 * @param companyId the company ID
 	 * @param type the type
 	 * @return the number of matching list types
 	 */
 	@Override
-	public int countByType(String type) {
+	public int countByC_T(long companyId, String type) {
 		type = Objects.toString(type, "");
 
-		FinderPath finderPath = _finderPathCountByType;
+		FinderPath finderPath = _finderPathCountByC_T;
 
-		Object[] finderArgs = new Object[] {type};
+		Object[] finderArgs = new Object[] {companyId, type};
 
 		Long count = (Long)FinderCacheUtil.getResult(
 			finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler sb = new StringBundler(2);
+			StringBundler sb = new StringBundler(3);
 
 			sb.append(_SQL_COUNT_LISTTYPE_WHERE);
+
+			sb.append(_FINDER_COLUMN_C_T_COMPANYID_2);
 
 			boolean bindType = false;
 
 			if (type.isEmpty()) {
-				sb.append(_FINDER_COLUMN_TYPE_TYPE_3);
+				sb.append(_FINDER_COLUMN_C_T_TYPE_3);
 			}
 			else {
 				bindType = true;
 
-				sb.append(_FINDER_COLUMN_TYPE_TYPE_2);
+				sb.append(_FINDER_COLUMN_C_T_TYPE_2);
 			}
 
 			String sql = sb.toString();
@@ -575,6 +1111,8 @@ public class ListTypePersistenceImpl
 				Query query = session.createQuery(sql);
 
 				QueryPos queryPos = QueryPos.getInstance(query);
+
+				queryPos.add(companyId);
 
 				if (bindType) {
 					queryPos.add(type);
@@ -595,35 +1133,41 @@ public class ListTypePersistenceImpl
 		return count.intValue();
 	}
 
-	private static final String _FINDER_COLUMN_TYPE_TYPE_2 =
-		"listType.type = ?";
+	private static final String _FINDER_COLUMN_C_T_COMPANYID_2 =
+		"listType.companyId = ? AND ";
 
-	private static final String _FINDER_COLUMN_TYPE_TYPE_3 =
+	private static final String _FINDER_COLUMN_C_T_TYPE_2 = "listType.type = ?";
+
+	private static final String _FINDER_COLUMN_C_T_TYPE_3 =
 		"(listType.type IS NULL OR listType.type = '')";
 
-	private FinderPath _finderPathFetchByN_T;
-	private FinderPath _finderPathCountByN_T;
+	private FinderPath _finderPathFetchByC_N_T;
+	private FinderPath _finderPathCountByC_N_T;
 
 	/**
-	 * Returns the list type where name = &#63; and type = &#63; or throws a <code>NoSuchListTypeException</code> if it could not be found.
+	 * Returns the list type where companyId = &#63; and name = &#63; and type = &#63; or throws a <code>NoSuchListTypeException</code> if it could not be found.
 	 *
+	 * @param companyId the company ID
 	 * @param name the name
 	 * @param type the type
 	 * @return the matching list type
 	 * @throws NoSuchListTypeException if a matching list type could not be found
 	 */
 	@Override
-	public ListType findByN_T(String name, String type)
+	public ListType findByC_N_T(long companyId, String name, String type)
 		throws NoSuchListTypeException {
 
-		ListType listType = fetchByN_T(name, type);
+		ListType listType = fetchByC_N_T(companyId, name, type);
 
 		if (listType == null) {
-			StringBundler sb = new StringBundler(6);
+			StringBundler sb = new StringBundler(8);
 
 			sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-			sb.append("name=");
+			sb.append("companyId=");
+			sb.append(companyId);
+
+			sb.append(", name=");
 			sb.append(name);
 
 			sb.append(", type=");
@@ -642,28 +1186,30 @@ public class ListTypePersistenceImpl
 	}
 
 	/**
-	 * Returns the list type where name = &#63; and type = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
+	 * Returns the list type where companyId = &#63; and name = &#63; and type = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
 	 *
+	 * @param companyId the company ID
 	 * @param name the name
 	 * @param type the type
 	 * @return the matching list type, or <code>null</code> if a matching list type could not be found
 	 */
 	@Override
-	public ListType fetchByN_T(String name, String type) {
-		return fetchByN_T(name, type, true);
+	public ListType fetchByC_N_T(long companyId, String name, String type) {
+		return fetchByC_N_T(companyId, name, type, true);
 	}
 
 	/**
-	 * Returns the list type where name = &#63; and type = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
+	 * Returns the list type where companyId = &#63; and name = &#63; and type = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
 	 *
+	 * @param companyId the company ID
 	 * @param name the name
 	 * @param type the type
 	 * @param useFinderCache whether to use the finder cache
 	 * @return the matching list type, or <code>null</code> if a matching list type could not be found
 	 */
 	@Override
-	public ListType fetchByN_T(
-		String name, String type, boolean useFinderCache) {
+	public ListType fetchByC_N_T(
+		long companyId, String name, String type, boolean useFinderCache) {
 
 		name = Objects.toString(name, "");
 		type = Objects.toString(type, "");
@@ -671,20 +1217,21 @@ public class ListTypePersistenceImpl
 		Object[] finderArgs = null;
 
 		if (useFinderCache) {
-			finderArgs = new Object[] {name, type};
+			finderArgs = new Object[] {companyId, name, type};
 		}
 
 		Object result = null;
 
 		if (useFinderCache) {
 			result = FinderCacheUtil.getResult(
-				_finderPathFetchByN_T, finderArgs, this);
+				_finderPathFetchByC_N_T, finderArgs, this);
 		}
 
 		if (result instanceof ListType) {
 			ListType listType = (ListType)result;
 
-			if (!Objects.equals(name, listType.getName()) ||
+			if ((companyId != listType.getCompanyId()) ||
+				!Objects.equals(name, listType.getName()) ||
 				!Objects.equals(type, listType.getType())) {
 
 				result = null;
@@ -692,30 +1239,32 @@ public class ListTypePersistenceImpl
 		}
 
 		if (result == null) {
-			StringBundler sb = new StringBundler(4);
+			StringBundler sb = new StringBundler(5);
 
 			sb.append(_SQL_SELECT_LISTTYPE_WHERE);
+
+			sb.append(_FINDER_COLUMN_C_N_T_COMPANYID_2);
 
 			boolean bindName = false;
 
 			if (name.isEmpty()) {
-				sb.append(_FINDER_COLUMN_N_T_NAME_3);
+				sb.append(_FINDER_COLUMN_C_N_T_NAME_3);
 			}
 			else {
 				bindName = true;
 
-				sb.append(_FINDER_COLUMN_N_T_NAME_2);
+				sb.append(_FINDER_COLUMN_C_N_T_NAME_2);
 			}
 
 			boolean bindType = false;
 
 			if (type.isEmpty()) {
-				sb.append(_FINDER_COLUMN_N_T_TYPE_3);
+				sb.append(_FINDER_COLUMN_C_N_T_TYPE_3);
 			}
 			else {
 				bindType = true;
 
-				sb.append(_FINDER_COLUMN_N_T_TYPE_2);
+				sb.append(_FINDER_COLUMN_C_N_T_TYPE_2);
 			}
 
 			String sql = sb.toString();
@@ -728,6 +1277,8 @@ public class ListTypePersistenceImpl
 				Query query = session.createQuery(sql);
 
 				QueryPos queryPos = QueryPos.getInstance(query);
+
+				queryPos.add(companyId);
 
 				if (bindName) {
 					queryPos.add(name);
@@ -742,7 +1293,7 @@ public class ListTypePersistenceImpl
 				if (list.isEmpty()) {
 					if (useFinderCache) {
 						FinderCacheUtil.putResult(
-							_finderPathFetchByN_T, finderArgs, list);
+							_finderPathFetchByC_N_T, finderArgs, list);
 					}
 				}
 				else {
@@ -770,65 +1321,69 @@ public class ListTypePersistenceImpl
 	}
 
 	/**
-	 * Removes the list type where name = &#63; and type = &#63; from the database.
+	 * Removes the list type where companyId = &#63; and name = &#63; and type = &#63; from the database.
 	 *
+	 * @param companyId the company ID
 	 * @param name the name
 	 * @param type the type
 	 * @return the list type that was removed
 	 */
 	@Override
-	public ListType removeByN_T(String name, String type)
+	public ListType removeByC_N_T(long companyId, String name, String type)
 		throws NoSuchListTypeException {
 
-		ListType listType = findByN_T(name, type);
+		ListType listType = findByC_N_T(companyId, name, type);
 
 		return remove(listType);
 	}
 
 	/**
-	 * Returns the number of list types where name = &#63; and type = &#63;.
+	 * Returns the number of list types where companyId = &#63; and name = &#63; and type = &#63;.
 	 *
+	 * @param companyId the company ID
 	 * @param name the name
 	 * @param type the type
 	 * @return the number of matching list types
 	 */
 	@Override
-	public int countByN_T(String name, String type) {
+	public int countByC_N_T(long companyId, String name, String type) {
 		name = Objects.toString(name, "");
 		type = Objects.toString(type, "");
 
-		FinderPath finderPath = _finderPathCountByN_T;
+		FinderPath finderPath = _finderPathCountByC_N_T;
 
-		Object[] finderArgs = new Object[] {name, type};
+		Object[] finderArgs = new Object[] {companyId, name, type};
 
 		Long count = (Long)FinderCacheUtil.getResult(
 			finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler sb = new StringBundler(3);
+			StringBundler sb = new StringBundler(4);
 
 			sb.append(_SQL_COUNT_LISTTYPE_WHERE);
+
+			sb.append(_FINDER_COLUMN_C_N_T_COMPANYID_2);
 
 			boolean bindName = false;
 
 			if (name.isEmpty()) {
-				sb.append(_FINDER_COLUMN_N_T_NAME_3);
+				sb.append(_FINDER_COLUMN_C_N_T_NAME_3);
 			}
 			else {
 				bindName = true;
 
-				sb.append(_FINDER_COLUMN_N_T_NAME_2);
+				sb.append(_FINDER_COLUMN_C_N_T_NAME_2);
 			}
 
 			boolean bindType = false;
 
 			if (type.isEmpty()) {
-				sb.append(_FINDER_COLUMN_N_T_TYPE_3);
+				sb.append(_FINDER_COLUMN_C_N_T_TYPE_3);
 			}
 			else {
 				bindType = true;
 
-				sb.append(_FINDER_COLUMN_N_T_TYPE_2);
+				sb.append(_FINDER_COLUMN_C_N_T_TYPE_2);
 			}
 
 			String sql = sb.toString();
@@ -841,6 +1396,8 @@ public class ListTypePersistenceImpl
 				Query query = session.createQuery(sql);
 
 				QueryPos queryPos = QueryPos.getInstance(query);
+
+				queryPos.add(companyId);
 
 				if (bindName) {
 					queryPos.add(name);
@@ -865,15 +1422,19 @@ public class ListTypePersistenceImpl
 		return count.intValue();
 	}
 
-	private static final String _FINDER_COLUMN_N_T_NAME_2 =
+	private static final String _FINDER_COLUMN_C_N_T_COMPANYID_2 =
+		"listType.companyId = ? AND ";
+
+	private static final String _FINDER_COLUMN_C_N_T_NAME_2 =
 		"listType.name = ? AND ";
 
-	private static final String _FINDER_COLUMN_N_T_NAME_3 =
+	private static final String _FINDER_COLUMN_C_N_T_NAME_3 =
 		"(listType.name IS NULL OR listType.name = '') AND ";
 
-	private static final String _FINDER_COLUMN_N_T_TYPE_2 = "listType.type = ?";
+	private static final String _FINDER_COLUMN_C_N_T_TYPE_2 =
+		"listType.type = ?";
 
-	private static final String _FINDER_COLUMN_N_T_TYPE_3 =
+	private static final String _FINDER_COLUMN_C_N_T_TYPE_3 =
 		"(listType.type IS NULL OR listType.type = '')";
 
 	public ListTypePersistenceImpl() {
@@ -902,8 +1463,11 @@ public class ListTypePersistenceImpl
 			ListTypeImpl.class, listType.getPrimaryKey(), listType);
 
 		FinderCacheUtil.putResult(
-			_finderPathFetchByN_T,
-			new Object[] {listType.getName(), listType.getType()}, listType);
+			_finderPathFetchByC_N_T,
+			new Object[] {
+				listType.getCompanyId(), listType.getName(), listType.getType()
+			},
+			listType);
 	}
 
 	private int _valueObjectFinderCacheListThreshold;
@@ -977,12 +1541,14 @@ public class ListTypePersistenceImpl
 		ListTypeModelImpl listTypeModelImpl) {
 
 		Object[] args = new Object[] {
-			listTypeModelImpl.getName(), listTypeModelImpl.getType()
+			listTypeModelImpl.getCompanyId(), listTypeModelImpl.getName(),
+			listTypeModelImpl.getType()
 		};
 
-		FinderCacheUtil.putResult(_finderPathCountByN_T, args, Long.valueOf(1));
 		FinderCacheUtil.putResult(
-			_finderPathFetchByN_T, args, listTypeModelImpl);
+			_finderPathCountByC_N_T, args, Long.valueOf(1));
+		FinderCacheUtil.putResult(
+			_finderPathFetchByC_N_T, args, listTypeModelImpl);
 	}
 
 	/**
@@ -997,6 +1563,8 @@ public class ListTypePersistenceImpl
 
 		listType.setNew(true);
 		listType.setPrimaryKey(listTypeId);
+
+		listType.setCompanyId(CompanyThreadLocal.getCompanyId());
 
 		return listType;
 	}
@@ -1412,33 +1980,58 @@ public class ListTypePersistenceImpl
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
 			new String[0], new String[0], false);
 
-		_finderPathWithPaginationFindByType = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByType",
+		_finderPathWithPaginationFindByCompanyId = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
 			new String[] {
-				String.class.getName(), Integer.class.getName(),
+				Long.class.getName(), Integer.class.getName(),
 				Integer.class.getName(), OrderByComparator.class.getName()
 			},
-			new String[] {"type_"}, true);
+			new String[] {"companyId"}, true);
 
-		_finderPathWithoutPaginationFindByType = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByType",
-			new String[] {String.class.getName()}, new String[] {"type_"},
+		_finderPathWithoutPaginationFindByCompanyId = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCompanyId",
+			new String[] {Long.class.getName()}, new String[] {"companyId"},
 			true);
 
-		_finderPathCountByType = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByType",
-			new String[] {String.class.getName()}, new String[] {"type_"},
+		_finderPathCountByCompanyId = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCompanyId",
+			new String[] {Long.class.getName()}, new String[] {"companyId"},
 			false);
 
-		_finderPathFetchByN_T = new FinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByN_T",
-			new String[] {String.class.getName(), String.class.getName()},
-			new String[] {"name", "type_"}, true);
+		_finderPathWithPaginationFindByC_T = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_T",
+			new String[] {
+				Long.class.getName(), String.class.getName(),
+				Integer.class.getName(), Integer.class.getName(),
+				OrderByComparator.class.getName()
+			},
+			new String[] {"companyId", "type_"}, true);
 
-		_finderPathCountByN_T = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByN_T",
-			new String[] {String.class.getName(), String.class.getName()},
-			new String[] {"name", "type_"}, false);
+		_finderPathWithoutPaginationFindByC_T = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_T",
+			new String[] {Long.class.getName(), String.class.getName()},
+			new String[] {"companyId", "type_"}, true);
+
+		_finderPathCountByC_T = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_T",
+			new String[] {Long.class.getName(), String.class.getName()},
+			new String[] {"companyId", "type_"}, false);
+
+		_finderPathFetchByC_N_T = new FinderPath(
+			FINDER_CLASS_NAME_ENTITY, "fetchByC_N_T",
+			new String[] {
+				Long.class.getName(), String.class.getName(),
+				String.class.getName()
+			},
+			new String[] {"companyId", "name", "type_"}, true);
+
+		_finderPathCountByC_N_T = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_N_T",
+			new String[] {
+				Long.class.getName(), String.class.getName(),
+				String.class.getName()
+			},
+			new String[] {"companyId", "name", "type_"}, false);
 
 		ListTypeUtil.setPersistence(this);
 	}

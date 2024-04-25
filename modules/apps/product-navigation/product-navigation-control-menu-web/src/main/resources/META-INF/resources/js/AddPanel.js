@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {DragPreview} from '@liferay/layout-js-components-web';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import React, {useEffect, useMemo, useState} from 'react';
@@ -10,7 +11,6 @@ import {DndProvider} from 'react-dnd';
 import {HTML5Backend} from 'react-dnd-html5-backend';
 
 import DragAndDrop from './DragAndDrop';
-import DragPreview from './DragPreview';
 import TabsPanel from './TabsPanel';
 import {LAYOUT_DATA_ITEM_TYPES} from './constants/layoutDataItemTypes';
 
@@ -19,6 +19,7 @@ const INITIAL_STATE = {
 	contents: null,
 	displayGrid: false,
 	getContentsURL: null,
+	hasAddContentPermission: false,
 	namespace: null,
 	plid: null,
 	portletNamespace: null,
@@ -131,6 +132,7 @@ const AddPanel = ({
 	addContentsURLs,
 	contents,
 	getContentsURL,
+	hasAddContentPermission,
 	languageDirection,
 	languageId,
 	namespace,
@@ -174,19 +176,23 @@ const AddPanel = ({
 				id: 'widgets',
 				label: Liferay.Language.get('widgets'),
 			},
-			{
-				collections: [
-					{
-						children: contents.map(normalizeContent),
-						collectionId: 'recent-content',
-						label: Liferay.Language.get('recent'),
-					},
-				],
-				id: 'content',
-				label: Liferay.Language.get('content'),
-			},
+			...(hasAddContentPermission
+				? [
+						{
+							collections: [
+								{
+									children: contents.map(normalizeContent),
+									collectionId: 'recent-content',
+									label: Liferay.Language.get('recent'),
+								},
+							],
+							id: 'content',
+							label: Liferay.Language.get('content'),
+						},
+				  ]
+				: []),
 		],
-		[contents, widgets]
+		[contents, hasAddContentPermission, widgets]
 	);
 
 	return (
@@ -206,7 +212,7 @@ const AddPanel = ({
 				}}
 			>
 				<DndProvider backend={HTML5Backend}>
-					<DragPreview rtl={rtl} />
+					<DragPreview />
 
 					<DragAndDrop />
 
@@ -221,6 +227,7 @@ AddPanel.propTypes = {
 	addContentsURLs: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
 	contents: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
 	getContentsURL: PropTypes.string.isRequired,
+	hasAddContentPermission: PropTypes.bool.isRequired,
 	languageDirection: PropTypes.shape({}),
 	languageId: PropTypes.string.isRequired,
 	namespace: PropTypes.string.isRequired,

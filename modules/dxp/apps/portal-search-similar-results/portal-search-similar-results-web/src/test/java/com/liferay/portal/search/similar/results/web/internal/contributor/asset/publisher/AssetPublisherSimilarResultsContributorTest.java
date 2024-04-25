@@ -6,7 +6,6 @@
 package com.liferay.portal.search.similar.results.web.internal.contributor.asset.publisher;
 
 import com.liferay.petra.string.StringBundler;
-import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.search.similar.results.web.internal.builder.DestinationBuilderImpl;
 import com.liferay.portal.search.similar.results.web.internal.builder.RouteBuilderImpl;
@@ -38,22 +37,18 @@ public class AssetPublisherSimilarResultsContributorTest
 	@Before
 	public void setUp() throws Exception {
 		_assetPublisherSimilarResultsContributor =
-			new AssetPublisherSimilarResultsContributor();
+			new AssetPublisherSimilarResultsContributor(
+				assetEntryLocalService, blogsEntryLocalService, uidFactory,
+				wikiPageLocalService);
 	}
 
 	@Test
 	public void testDetectRoute() {
-		ReflectionTestUtil.setFieldValue(
-			_assetPublisherSimilarResultsContributor, "_httpHelper",
-			setUpHttpHelper());
-
 		RouteBuilderImpl routeBuilderImpl = new RouteBuilderImpl();
 
 		RouteHelper routeHelper = () -> StringBundler.concat(
 			"http://localhost:8080/web/guest/ap-page/-/asset_publisher",
-			"/BNPTUvWUBXIr/content/id",
-			"?_com_liferay_asset_publisher_web_portlet_AssetPublisherPortlet_",
-			"INSTANCE_BNPTUvWUBXIr_assetEntryId=43152",
+			"/BNPTUvWUBXIr/content/id?p_r_p_assetEntryId=43152",
 			"&_com_liferay_asset_publisher_web_portlet_AssetPublisherPortlet_",
 			"INSTANCE_BNPTUvWUBXIr_redirect=");
 
@@ -72,10 +67,6 @@ public class AssetPublisherSimilarResultsContributorTest
 
 	@Test
 	public void testResolveCriteria() {
-		ReflectionTestUtil.setFieldValue(
-			_assetPublisherSimilarResultsContributor, "_assetEntryLocalService",
-			assetEntryLocalService);
-
 		CriteriaBuilderImpl criteriaBuilderImpl = new CriteriaBuilderImpl();
 
 		setUpAssetEntryLocalServiceFetchAssetEntry(
@@ -98,10 +89,8 @@ public class AssetPublisherSimilarResultsContributorTest
 			new DestinationBuilderImpl(
 				StringBundler.concat(
 					"http://localhost:8080/web/guest/ap-page/-/asset_publisher",
-					"/BNPTUvWUBXIr/content/id",
-					"?_com_liferay_asset_publisher_web_portlet_",
-					"AssetPublisherPortlet_INSTANCE_BNPTUvWUBXIr_assetEntryId",
-					"=12345&_com_liferay_asset_publisher_web_portlet_",
+					"/BNPTUvWUBXIr/content/id?p_r_p_assetEntryId=12345",
+					"&_com_liferay_asset_publisher_web_portlet_",
 					"AssetPublisherPortlet_INSTANCE_BNPTUvWUBXIr_redirect="));
 
 		setUpDestinationHelper(WikiPage.class.getName());
@@ -116,9 +105,8 @@ public class AssetPublisherSimilarResultsContributorTest
 		Assert.assertEquals(
 			StringBundler.concat(
 				"http://localhost:8080/web/guest/ap-page/-/asset_publisher",
-				"/BNPTUvWUBXIr/wiki/id?_com_liferay_asset_publisher_web",
-				"_portlet_AssetPublisherPortlet_INSTANCE_BNPTUvWUBXIr",
-				"_assetEntryId=54321&_com_liferay_asset_publisher_web_portlet_",
+				"/BNPTUvWUBXIr/wiki/id?p_r_p_assetEntryId=54321",
+				"&_com_liferay_asset_publisher_web_portlet_",
 				"AssetPublisherPortlet_INSTANCE_BNPTUvWUBXIr_redirect="),
 			destinationBuilderImpl.build());
 	}

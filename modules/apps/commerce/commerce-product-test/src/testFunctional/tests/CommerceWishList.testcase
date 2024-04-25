@@ -1,9 +1,7 @@
 @component-name = "portal-commerce"
 definition {
 
-	property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
-	property osgi.module.configuration.file.names = "com.liferay.commerce.configuration.CommerceOrderImporterTypeConfiguration.config";
-	property osgi.module.configurations = "enabled=\"true\"";
+	property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property release.feature.flags.disable.DISABLE_PRIVATE_LAYOUTS = "true";
@@ -646,9 +644,7 @@ definition {
 				userLoginEmailAddress = "test@liferay.com",
 				userLoginFullName = "Test Test");
 
-			CommerceNavigator.gotoPortlet(
-				category = "Pricing",
-				portlet = "Discounts");
+			CommerceNavigator.goToDiscountAdmin();
 
 			Click(locator1 = "Button#PLUS");
 

@@ -2,49 +2,53 @@
 @summary = "Assert that '${locator1}' does not equal the value '${value1}'"
 definition {
 
-	function assertNotPartialText {
+	function assertNotPartialMatch(locator1, value1) {
 		WaitForSPARefresh();
 
-		selenium.waitForVisible();
+		selenium.waitForVisible(${locator1}, "false");
 
-		selenium.waitForNotPartialText();
+		var value = GetterUtil.getString(${value1});
 
-		selenium.assertNotPartialText();
+		var regex = RegexUtil.escapeRegexChars(${value});
 
-		selenium.assertJavaScriptErrors();
+		selenium.waitForTextMatches(${locator1}, "^((?!${regex}).)*$");
+
+		selenium.assertTextMatches(${locator1}, "^((?!${regex}).)*$");
+
+		selenium.assertJavaScriptErrors("true");
 
 		selenium.assertLiferayErrors();
 	}
 
-	function assertNotText {
+	function assertNotText(locator1, value1) {
 		WaitForSPARefresh();
 
-		selenium.waitForVisible();
+		selenium.waitForVisible(${locator1}, "false");
 
-		selenium.waitForNotText();
+		selenium.waitForNotText(${locator1}, ${value1});
 
-		selenium.assertNotText();
+		selenium.assertNotText(${locator1}, ${value1});
 
-		selenium.assertJavaScriptErrors();
+		selenium.assertJavaScriptErrors("true");
 
 		selenium.assertLiferayErrors();
 	}
 
-	function assertNotValue {
+	function assertNotValue(locator1, value1) {
 		WaitForSPARefresh();
 
-		selenium.waitForVisible();
+		selenium.waitForVisible(${locator1}, "false");
 
-		selenium.waitForNotValue();
+		selenium.waitForNotValue(${locator1}, ${value1});
 
-		selenium.assertNotValue();
+		selenium.assertNotValue(${locator1}, ${value1});
 
-		selenium.assertJavaScriptErrors();
+		selenium.assertJavaScriptErrors("true");
 
 		selenium.assertLiferayErrors();
 	}
 
-	function assertTextNotEquals {
+	function assertTextNotEquals(locator1) {
 		WaitForSPARefresh();
 
 		if (contains(${locator1}, "/input")) {

@@ -15,10 +15,7 @@ definition {
 
 		Navigator.openURL();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+		Workflow.openWorkflowMetrics();
 	}
 
 	tearDown {
@@ -35,24 +32,6 @@ definition {
 	test AdministratorUserCanReassignAndTransitionAnyTasks {
 
 		// TODO AdministratorUserCanReassignAndTransitionAnyTasks pending implementation
-
-	}
-
-	@description = "Verify that any user with administrator role can reassign allowed tasks"
-	@ignore = "Test Stub"
-	@priority = 5
-	test AdministratorUserCanReassignAnyTasks {
-
-		// TODO AdministratorUserCanReassignAnyTasks pending implementation
-
-	}
-
-	@description = "Verify that an administrator user that it's not asset creator can reassign multiple already assigned tasks to different users"
-	@ignore = "Test Stub"
-	@priority = 5
-	test AdministratorUserCanReassignMultipleTasksAssignedToOtherUsers {
-
-		// TODO AdministratorUserCanReassignMultipleTasksAssignedToOtherUsers pending implementation
 
 	}
 
@@ -79,10 +58,7 @@ definition {
 			workflowDefinition = "Single Approver",
 			workflowResourceValue = "Blogs Entry");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		JSONUser.addUser(
 			userEmailAddress = "AUser@liferay.com",
@@ -90,10 +66,7 @@ definition {
 			userLastName = "A Userl",
 			userScreenName = "Auser_");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.assignRegularRoleCP(
 			roleTitle = "Power User",
@@ -105,10 +78,7 @@ definition {
 			userLastName = "B Userl",
 			userScreenName = "Buser_");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.assignRegularRoleCP(
 			roleTitle = "Power User",
@@ -199,10 +169,7 @@ definition {
 			entryContent = "Test Content",
 			entryTitle = "Test Blog");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+		Workflow.openWorkflowMetrics();
 
 		WorkflowMetrics.goToWorkflowAllItems(workflowProcessName = "Single Approver");
 
@@ -226,6 +193,7 @@ definition {
 	test CanIdentifyMultipleCurrentNode {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Workflow.openWorkflowListView();
 
@@ -270,6 +238,7 @@ definition {
 	@priority = 3
 	test CanIdentifyPastStagesOnWorkflow {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Workflow.openWorkflowListView();
 
@@ -303,7 +272,7 @@ definition {
 
 		WorkflowMetrics.goToWorkflowAllItems(workflowProcessName = "Multi Task Process");
 
-		WorkflowMetrics.goToBulkTransitionSelectTasks();
+		WorkflowMetrics.goToTransitionSteps();
 
 		WorkflowMetrics.selectAllTransitionTasks();
 
@@ -311,7 +280,11 @@ definition {
 			taskName = "Task1",
 			transitionOption = "task1_join_join");
 
-		WorkflowMetrics.goToKebabMenuOptions(dropdownItem = "Track Workflow");
+		Click(
+			key_text = "Blogs Entry: Blogs Entry Title",
+			locator1 = "Icon#ANY_VERTICAL_ELLIPSIS");
+
+		MenuItem.click(menuItem = "Track Workflow");
 
 		WorkflowMetrics.viewCurrentNodeCircleIcon(currentNode = "task2");
 
@@ -326,6 +299,7 @@ definition {
 	@priority = 5
 	test CanOrderByAssignee {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var siteName = TestCase.getSiteName(siteName = ${siteName});
 
@@ -384,6 +358,10 @@ definition {
 	test CanOrderByCreatedBy {
 		var siteName = TestCase.getSiteName(siteName = ${siteName});
 
+		Site.openSiteSettingsAdmin(siteURLKey = "guest");
+
+		Site.manageMembershipOptions(allowManualMembershipManagement = "true");
+
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
 			portlet = "Workflow",
@@ -412,12 +390,7 @@ definition {
 			roleTitle = "Administrator",
 			userEmailAddress = "user1@liferay.com");
 
-		Navigator.openURL();
-
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Instance Settings");
+		PortalSettings.openInstanceSettingsAdmin();
 
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "User Authentication",
@@ -501,10 +474,7 @@ definition {
 			entryContent = "Test Content",
 			entryTitle = "Test Blog");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+		Workflow.openWorkflowMetrics();
 
 		WorkflowMetrics.goToWorkflowAllItems(workflowProcessName = "Single Approver");
 
@@ -569,26 +539,22 @@ definition {
 			entryContent = "Test Content",
 			entryTitle = "Test Blog");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+		Workflow.openWorkflowMetrics();
 
 		WorkflowMetrics.goToDashboardAllItemsWithFilter(
 			workflowFilterOption = "PENDING",
 			workflowMetricsTab = "DASHBOARD",
 			workflowProcess = "Single Approver");
 
-		WorkflowMetrics.viewKebabMenuOptionsIsAvailable(dropdownItem = "Track Workflow");
+		Click(locator1 = "Icon#SVG_ELLIPSIS");
+
+		MenuItem.viewPresent(menuItem = "Track Workflow");
 	}
 
 	@description = "LPS-92053 - Verify that, at the items table, users should be able to click on process ID column and open a modal for the respective item details"
 	@priority = 3
 	test ClickOnProcessIdColumnToSeeItemDetailsPage {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -612,10 +578,7 @@ definition {
 			workflowAssetType = "Blogs Entry",
 			workflowTask = "Review");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+		Workflow.openWorkflowMetrics();
 
 		WorkflowMetrics.goToDashboardAllItemsWithFilter(
 			workflowFilterOption = "COMPLETED",
@@ -642,10 +605,7 @@ definition {
 	@description = "LPS-86652 - Verify that every column displays the correct info for a item"
 	@priority = 5
 	test ColumnsDiplayCorrectInfo {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -672,10 +632,7 @@ definition {
 	@description = "LPS-86652 - Validate that the correct number of entries is showed when user chooses 4, 8, 20, 40, 60"
 	@priority = 3
 	test CorrectNumberOfEntriesDisplayedWhenPaginationEdited {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -726,6 +683,10 @@ definition {
 	@description = "LPS-130218 - Verify that once the order/sorting is made by the user, this definition should be preserved when the user change pagination number"
 	@priority = 3
 	test CreatedBySortIsPreservedWhenChangesPagination {
+		Site.openSiteSettingsAdmin(siteURLKey = "guest");
+
+		Site.manageMembershipOptions(allowManualMembershipManagement = "true");
+
 		JSONUser.addUser(
 			userEmailAddress = "user2@liferay.com",
 			userFirstName = "user2",
@@ -741,12 +702,7 @@ definition {
 			roleTitle = "Administrator",
 			userEmailAddress = "user2@liferay.com");
 
-		Navigator.openURL();
-
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Instance Settings");
+		PortalSettings.openInstanceSettingsAdmin();
 
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "User Authentication",
@@ -767,10 +723,7 @@ definition {
 			userLastName = "user2",
 			userScreenName = "user2");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -820,10 +773,7 @@ definition {
 	@description = "LPS-130217 - Verify that the header title Creation Date is underline and bold on mouse hover"
 	@priority = 2
 	test CreationDateTitleIsUnderlineAndBold {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -850,10 +800,7 @@ definition {
 	@description = "LPS-130217 - Verify that once the order/sorting is made by the user, this definition should be preserved when the user change pagination number"
 	@priority = 3
 	test DefinitionIsPreservedWhenChangesPagination {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -893,10 +840,7 @@ definition {
 	@description = "LPS-86652 - Verify that the correct columns are displayed ID, Due Date, Item Subject, Process Step, Assignee, Created By, Creation Date"
 	@priority = 5
 	test DisplayColumns {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -908,10 +852,7 @@ definition {
 			entryContent = "Test content",
 			entryTitle = "Test Blog");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+		Workflow.openWorkflowMetrics();
 
 		WorkflowMetrics.goToDashboardAllItemsWithFilter(
 			workflowFilterOption = "PENDING",
@@ -934,18 +875,57 @@ definition {
 	}
 
 	@description = "LPS-92043 - Verify that the Due Date is displayed with a hyphen if a SLA didn't start counting"
-	@ignore = "Test Stub"
 	@priority = 4
 	test DisplayDueDateWithHyphenWhenSLANotStarted {
+		task ("Given a workflow with an SLA Definition") {
+			WorkflowMetrics.executeIndexActions(actionDescription = "Workflow Indexes");
 
-		// TODO LRQA-67729 DisplayDueDateWithHyphenWhenSLANotStarted pending implementation
+			WorkflowMetrics.goToWorkflowSLASettings(workflowProcessName = "Single Approver");
 
+			Click(locator1 = "WorkflowMetricsSLA#ADD_NEW_SLA_BUTTON");
+
+			WorkflowMetrics.fillSLAForm(
+				slaDefinitionDays = 0,
+				slaDefinitionDescription = "SLA Description",
+				slaDefinitionEnd = "Process Ends: Approved",
+				slaDefinitionHours = "00:01",
+				slaDefinitionName = "SLA Name",
+				slaDefinitionStart = "Process Begins");
+
+			Button.clickSave();
+		}
+
+		task ("When the workflow is configured to an asset and the asset is created") {
+			Workflow.openWorkflowListView();
+
+			Navigator.gotoNavItem(navItem = "Configuration");
+
+			Workflow.configureWorkflow(
+				workflowDefinition = "Single Approver",
+				workflowResourceValue = "Blogs Entry");
+
+			JSONBlog.addEntry(
+				entryContent = "Blogs Entry Content",
+				entryTitle = "Blogs Entry Title");
+		}
+
+		task ("Then the due date should display with a hyphen and the SLA hasn't started counting") {
+			WorkflowMetrics.goToWorkflowProcessMetrics(workflowProcessName = "Single Approver");
+
+			Click(locator1 = "WorkflowMetrics#DASHBOARD_TOTAL_PENDING_ITEMS_TITLE");
+
+			AssertElementPresent(
+				key_columnName = "Due Date",
+				key_fieldName = "-",
+				locator1 = "WorkflowAllItems#WORKFLOW_ALL_ITEMS_ASSERT_ITEM");
+		}
 	}
 
 	@description = "LPS-92043 - Verify that the Due Date displays the next SLA in line when a SLA didn't start counting"
 	@priority = 3
 	test DisplayNextSLAInLineWhenSLANotStarted {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		WorkflowMetrics.setSLADefinitionsJobInterval(
 			definitionsJobInterval = 1,
@@ -979,10 +959,7 @@ definition {
 
 		Button.clickSave();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -1030,10 +1007,7 @@ definition {
 			entryContent = "Test Content",
 			entryTitle = "Test Blog");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+		Workflow.openWorkflowMetrics();
 
 		WorkflowMetrics.goToDashboardAllItemsWithFilter(
 			workflowFilterOption = "PENDING",
@@ -1047,19 +1021,11 @@ definition {
 		WorkflowMetricsAllItemsList.viewNodesDisplayed(nodesTrackWorkflow = "Created,Review,Update,Approved");
 	}
 
-	@description = "LPS-92053 - Verify that, in the item detail modal, the Due Date by SLA will group SLAs into Open or Resolved"
-	@ignore = "Test Stub"
-	@priority = 3
-	test DueDateBySlaGroupsSlaIntoOpenOrResolved {
-
-		// TODO LRQA-67743 DueDateBySlaGroupsSlaIntoOpenOrResolved pending implementation
-
-	}
-
 	@description = "LPS-92053 - Verify that, in the item detail modal, the Due Date by SLA will provide a summary for the total number of entries for each group next to the section title"
 	@priority = 3
 	test DueDateBySlaProvidesSummaryForTotalNumberOfEntries {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		WorkflowMetrics.setSLADefinitionsJobInterval(
 			definitionsJobInterval = 1,
@@ -1093,10 +1059,7 @@ definition {
 
 		Button.clickSave();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -1128,6 +1091,9 @@ definition {
 	test DueDateHasIconSlaNameDueDateAndResolutionStatus {
 		property portal.upstream = "quarantine";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
+
+		WorkflowMetrics.executeIndexActions(actionDescription = "Workflow Indexes");
 
 		var siteName = TestCase.getSiteName(siteName = ${siteName});
 
@@ -1262,10 +1228,7 @@ definition {
 
 		Button.clickSave();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -1279,10 +1242,7 @@ definition {
 				entryTitle = "Blogs Entry Title ${addBlogs}");
 		}
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+		Workflow.openWorkflowMetrics();
 
 		WorkflowMetrics.goToDashboardAllItemsWithFilter(
 			workflowFilterOption = "PENDING",
@@ -1297,10 +1257,7 @@ definition {
 	@description = "LPS-94146 - Verify that user can close the filters shown as tags clicking on x and the result is applied on items list"
 	@priority = 4
 	test FiltersCanBeClosedAndResultAppliedOnList {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -1338,7 +1295,7 @@ definition {
 			isPresent = "Blogs Entry Title 2",
 			taskName = "Review");
 
-		WorkflowMetrics.clearAllFilter();
+		ManagementBar.clearFilter();
 
 		WorkflowMetrics.verifyFiltersFromDashboardNotPresent(isNotPresent = "Pending");
 
@@ -1439,10 +1396,7 @@ definition {
 	test IconOnModalTitleIsGreyWhenItemIsCompletedNoSLA {
 		property ci.retries.disabled = "true";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -1484,8 +1438,12 @@ definition {
 	@description = "LPS-92053 - Verify that, in the item detail modal, when an item is completed On Time, the icon on modal title will keep informing the SLA status but styled in grey color"
 	@priority = 3
 	test IconOnModalTitleIsGreyWhenItemIsCompletedOnTime {
-		property portal.acceptance = "quarantine";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
+
+		WorkflowMetrics.setSLADefinitionsJobInterval(
+			definitionsJobInterval = 1,
+			slaJobInterval = 1);
 
 		WorkflowMetrics.goToWorkflowSLASettings(workflowProcessName = "Single Approver");
 
@@ -1495,16 +1453,13 @@ definition {
 			slaDefinitionDays = 1,
 			slaDefinitionDescription = "SLA Description",
 			slaDefinitionEnd = "Process Ends: Approved",
-			slaDefinitionHours = "00:05",
+			slaDefinitionHours = 0005,
 			slaDefinitionName = "SLA Definition",
 			slaDefinitionStart = "Process Begins");
 
 		Button.clickSave();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -1543,8 +1498,12 @@ definition {
 	@description = "LPS-92053 - Verify that, in the item detail modal, when an item is completed Overdue, the icon on modal title will keep informing the SLA status but styled in grey color "
 	@priority = 3
 	test IconOnModalTitleIsGreyWhenItemIsCompletedOverdue {
-		property portal.acceptance = "quarantine";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
+
+		WorkflowMetrics.setSLADefinitionsJobInterval(
+			definitionsJobInterval = 1,
+			slaJobInterval = 1);
 
 		WorkflowMetrics.goToWorkflowSLASettings(workflowProcessName = "Single Approver");
 
@@ -1554,16 +1513,13 @@ definition {
 			slaDefinitionDays = 0,
 			slaDefinitionDescription = "SLA Description",
 			slaDefinitionEnd = "Process Ends: Approved",
-			slaDefinitionHours = "00:01",
+			slaDefinitionHours = 0001,
 			slaDefinitionName = "SLA Definition",
 			slaDefinitionStart = "Process Begins");
 
 		Button.clickSave();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -1611,6 +1567,7 @@ definition {
 	@priority = 4
 	test ItemIsConsideredOverdueWhenItHasOneSlaOverdue {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		WorkflowMetrics.setSLADefinitionsJobInterval(
 			definitionsJobInterval = 1,
@@ -1648,10 +1605,7 @@ definition {
 
 		Button.clickSave();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -1733,10 +1687,7 @@ definition {
 	@description = "LPS-92053 - Verify that the item modal places an icon before the modal title referring to the SLA status: No SLA"
 	@priority = 3
 	test ItemModalPlacesIconReferringToSlaStatusNoSla {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -1760,13 +1711,14 @@ definition {
 	@description = "LPS-92053 - Verify that the item modal places an icon before the modal title referring to the SLA status: On Time"
 	@priority = 3
 	test ItemModalPlacesIconReferringToSlaStatusOnTime {
-		property portal.acceptance = "quarantine";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		WorkflowMetrics.setSLADefinitionsJobInterval(
+			definitionsJobInterval = 1,
+			slaJobInterval = 1);
+
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -1812,15 +1764,13 @@ definition {
 	@priority = 3
 	test ItemModalPlacesIconReferringToSlaStatusOverdue {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		WorkflowMetrics.setSLADefinitionsJobInterval(
 			definitionsJobInterval = 1,
 			slaJobInterval = 1);
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -1865,11 +1815,9 @@ definition {
 	@priority = 3
 	test ItemOrdetationIsPreservedWhenChangesPagination {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -1965,10 +1913,7 @@ definition {
 			workflowAssetType = "Web Content Article",
 			workflowTask = "Review");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+		Workflow.openWorkflowMetrics();
 
 		WorkflowMetrics.goToWorkflowProcessMetricsAndTotalCompleted(workflowProcessName = "Single Approver");
 
@@ -2001,10 +1946,7 @@ definition {
 			entryContent = "Blogs Entry Content",
 			entryTitle = "Blogs Entry Title");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		User.assignRegularRoleCP(
 			roleTitle = "Administrator",
@@ -2020,10 +1962,7 @@ definition {
 			assigneeName = "buyerbuyerbuyerbuyerbuyer (buyerbuyerbuyerbuyerbuyer buyerbuyerbuyerbuyerbuyer)",
 			workflowTask = "Review");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+		Workflow.openWorkflowMetrics();
 
 		WorkflowMetrics.goToDashboardAllItemsWithFilter(
 			workflowFilterOption = "PENDING",
@@ -2038,10 +1977,7 @@ definition {
 	@description = "LPS-98517 - Verify that a long username that exceeds 240px in the assignee dropdown option is placed in more than one line, respecting the alignment of the field"
 	@priority = 3
 	test LongUserNameIsDisplayedInMoreThanOneLineInDropdown {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -2100,10 +2036,7 @@ definition {
 	@description = "LPS-92053 - Verify that the Go to submission page button opens the submission page in another tab"
 	@priority = 4
 	test OpenSubmissionPageInAnotherTab {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -2159,6 +2092,7 @@ definition {
 	@priority = 3
 	test PopoverDisplaysUpTo2SlasOrderFromMostToLeastCritical {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var siteName = TestCase.getSiteName(siteName = ${siteName});
 
@@ -2242,10 +2176,7 @@ definition {
 	@description = "LPS-130166 - Verify that the popover is not displayd when hovering untracked items on Due Date column item"
 	@priority = 3
 	test PopoverIsNotDisplayedForUntrackedItems {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -2278,10 +2209,7 @@ definition {
 	@description = "LPS-130217 - Verify that user is able to click on the table header title to order items by Creation Date: old-new / new-old"
 	@priority = 4
 	test ReorderEntriesClickingCreationDateColumn {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -2309,17 +2237,14 @@ definition {
 			entryContent = "Blogs Entry Content",
 			entryTitle = "Blogs Entry Title 2");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+		Workflow.openWorkflowMetrics();
 
 		WorkflowMetrics.goToDashboardAllItemsWithFilter(
 			workflowFilterOption = "COMPLETED",
 			workflowMetricsTab = "PERFORMANCE",
 			workflowProcess = "Single Approver");
 
-		WorkflowMetrics.clearAllFilter();
+		ManagementBar.clearFilter();
 
 		AssertElementPresent(
 			key_order = 1,
@@ -2348,6 +2273,9 @@ definition {
 	@priority = 3
 	test ReorderEntriesClickingDueDateColumn {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
+
+		SearchAdministration.executeReindex();
 
 		var siteName = TestCase.getSiteName(siteName = ${siteName});
 
@@ -2424,6 +2352,7 @@ definition {
 	@priority = 3
 	test SearchBarIsAddedOnAssigneeDropdownMenuWhenItIsHigherThan496px {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var siteName = TestCase.getSiteName(siteName = ${siteName});
 
@@ -2463,10 +2392,7 @@ definition {
 	@description = "LPS-92053 - Verify that, in the item detail modal, when one of the sections has no entries, the section title is completely removed"
 	@priority = 4
 	test SectionIsRemovedWhenItHasNoEntries {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -2515,6 +2441,7 @@ definition {
 	@priority = 3
 	test SortConsidersOnlyTheFirstAssignee {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var siteName = TestCase.getSiteName(siteName = ${siteName});
 
@@ -2540,10 +2467,7 @@ definition {
 
 		Navigator.openURL();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Workflow.addNewDefinition(workflowDefinitionTitle = "Similar Single Approver Process");
 
@@ -2571,7 +2495,7 @@ definition {
 
 		WorkflowMetrics.goToWorkflowAllItems(workflowProcessName = "Similar Single Approver Process");
 
-		WorkflowMetrics.goToBulkReassignSelectTasks();
+		WorkflowMetrics.goToReassignTask();
 
 		WorkflowMetrics.selectReassignTasks(taskList = "task1");
 
@@ -2583,7 +2507,7 @@ definition {
 			nameOfAssignee = "user1 user1",
 			taskList = "task1");
 
-		WorkflowMetrics.goToBulkReassignSelectTasks();
+		WorkflowMetrics.goToReassignTask();
 
 		WorkflowMetrics.selectReassignTasks(taskList = "task2");
 
@@ -2595,7 +2519,7 @@ definition {
 			nameOfAssignee = "user2 user2",
 			taskList = "task2");
 
-		WorkflowMetrics.goToBulkReassignSelectTasks();
+		WorkflowMetrics.goToReassignTask();
 
 		WorkflowMetrics.selectReassignTasks(taskList = "task3");
 
@@ -2686,10 +2610,7 @@ definition {
 	@description = "LPS-92053 - Verify that, in the item detail modal, when an item is completed, the summary section should hide the info Current Step and replace it with End Date"
 	@priority = 3
 	test SummarySectionDisplaysEndDateInsteadOfCurrentStep {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -2701,10 +2622,7 @@ definition {
 			entryContent = "Test Content",
 			entryTitle = "Test Blog");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+		Workflow.openWorkflowMetrics();
 
 		WorkflowMetrics.goToWorkflowProcessMetrics(workflowProcessName = "Single Approver");
 
@@ -2732,10 +2650,7 @@ definition {
 			workflowAssetType = "Blogs Entry",
 			workflowTask = "Review");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+		Workflow.openWorkflowMetrics();
 
 		WorkflowMetrics.goToWorkflowProcessMetrics(workflowProcessName = "Single Approver");
 
@@ -2750,16 +2665,125 @@ definition {
 		AssertElementPresent(locator1 = "WorkflowAllItems#DETAIL_PAGE_END_DATE");
 	}
 
+	@description = "LPS-98517 - Verify that tasks can be assigned to more than one user and listed with commas"
+	@priority = 3
+	test TaskReassignedToMultipleUsers {
+		property portal.upstream = "quarantine";
+
+		task ("Given a primary user who creates a secondary Power user with a membership") {
+			property test.liferay.virtual.instance = "false";
+			property test.run.type = "single";
+
+			Site.openSiteSettingsAdmin(siteURLKey = "guest");
+
+			Site.manageMembershipOptions(allowManualMembershipManagement = "true");
+
+			WorkflowMetrics.executeIndexActions(actionDescription = "Workflow Indexes");
+
+			JSONUser.addUser(
+				userEmailAddress = "tester@liferay.com",
+				userFirstName = "tester",
+				userLastName = "tester",
+				userScreenName = "tester");
+
+			JSONUser.setFirstPassword(
+				agreeToTermsAndAnswerReminderQuery = "true",
+				requireReset = "false",
+				userEmailAddress = "tester@liferay.com");
+
+			JSONRole.assignRoleToUser(
+				roleTitle = "Administrator",
+				userEmailAddress = "tester@liferay.com");
+
+			JSONRole.assignRoleToUser(
+				roleTitle = "Power User",
+				userEmailAddress = "tester@liferay.com");
+
+			Navigator.openURL();
+
+			ProductMenu.gotoPortlet(
+				category = "People",
+				panel = "Site Administration",
+				portlet = "Memberships");
+
+			Site.assignUserAsMemberCP(
+				userFirstName = "tester",
+				userLastName = "tester",
+				userScreenName = "tester");
+		}
+
+		task ("and Given a multi task process configured to an asset") {
+			Workflow.openWorkflowListView();
+
+			Workflow.addNewDefinition(workflowDefinitionTitle = "Multi Task Process");
+
+			ProcessBuilderKaleoDesignerReact.uploadDefinition(workflowDefinitionFile = "multi-task-process-workflow-definition.xml");
+
+			ProcessBuilderKaleoDesignerReact.diagramSourceSwitchView();
+
+			Button.clickPublish();
+
+			Workflow.openWorkflowListView();
+
+			Navigator.gotoNavItem(navItem = "Configuration");
+
+			Workflow.configureWorkflow(
+				workflowDefinition = "Multi Task Process",
+				workflowResourceValue = "Blogs Entry");
+
+			JSONBlog.addEntry(
+				entryContent = "Blogs Entry",
+				entryTitle = "Blogs Entry Title");
+		}
+
+		task ("When tasks are assigned to the Power user") {
+			WorkflowMetrics.goToWorkflowAllItems(workflowProcessName = "Multi Task Process");
+
+			WorkflowMetrics.goToReassignTask();
+
+			WorkflowMetrics.selectReassignTasks(taskList = "task1,task2");
+
+			AssertElementPresent(locator1 = "WorkflowReassignModal#PERMISSION_TOOLTIP");
+
+			AssertElementPresent(locator1 = "WorkflowReassignModal#NEXT_BUTTON_DISABLED");
+
+			WorkflowMetrics.selectNewAssignee(
+				nameOfAssignee = "tester tester",
+				taskList = "task1,task2");
+		}
+
+		task ("and When a task is assigned to Primary user") {
+			WorkflowMetrics.goToReassignTask();
+
+			WorkflowMetrics.selectReassignTasks(taskList = "task3");
+
+			AssertElementPresent(locator1 = "WorkflowReassignModal#PERMISSION_TOOLTIP");
+
+			AssertElementPresent(locator1 = "WorkflowReassignModal#NEXT_BUTTON_DISABLED");
+
+			WorkflowMetrics.selectNewAssignee(
+				nameOfAssignee = "Test Test",
+				taskList = "task3");
+		}
+
+		task ("Then the tasks are reassigned to multiple users, separated by commas") {
+			Refresh();
+
+			AssertElementPresent(
+				key_workflowInstanceAssignee = "Test Test, tester tester",
+				key_workflowInstanceName = "Blogs Entry: Blogs Entry Title",
+				locator1 = "WorkflowAllItems#WORKFLOW_ALL_ITEMS_TABLE_CURRENT_ASSIGNEE_VALUE");
+		}
+	}
+
 	@description = "LPS-86652 - Verify that hovering the cursor on the process step, when it contains more than 1 option, the toolip will display a bullet list"
 	@priority = 3
 	test TooltipDisplaysStepsListWhenMultipleItems {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Workflow.addNewDefinition(workflowDefinitionTitle = "Multi Task Process");
 
@@ -2789,10 +2813,7 @@ definition {
 	@description = "LPS-92053 - Verify that the Go to submission page button, on hover, displays a tooltip saying Open page in new tab"
 	@priority = 3
 	test TooltipIsDisplayedWhenHoveringButton {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -2819,6 +2840,9 @@ definition {
 	@priority = 4
 	test TrackApprovalDisplayCorrectVersionAfterChange {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
+
+		WorkflowMetrics.executeIndexActions(actionDescription = "Workflow Indexes");
 
 		Workflow.openWorkflowListView();
 
@@ -2853,10 +2877,7 @@ definition {
 			nodeType = "task",
 			update = "true");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+		Workflow.openWorkflowMetrics();
 
 		WorkflowMetrics.goToDashboardAllItemsWithFilter(
 			workflowFilterOption = "PENDING",
@@ -2875,6 +2896,7 @@ definition {
 	test TrackApprovalDisplayWorkflowInUse {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Workflow.openWorkflowListView();
 
@@ -2929,12 +2951,7 @@ definition {
 			roleTitle = "Power User",
 			userEmailAddress = "user@liferay.com");
 
-		Navigator.openURL();
-
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Instance Settings");
+		PortalSettings.openInstanceSettingsAdmin();
 
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "User Authentication",
@@ -2943,10 +2960,7 @@ definition {
 
 		PortalSettings.uncheckStrangersVerifyEmailCheckbox();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -2975,23 +2989,13 @@ definition {
 		MouseOver.mouseOverNotVisible(locator1 = "WorkflowAllItems#WORKFLOW_DROPDOWN_DISABLED");
 	}
 
-	@description = "LPS-98517 - Verify that the usernames in the result table are separated by a comma when there is more than one assignee per item"
-	@priority = 3
-	test UsernamesAreSeparatedByComma {
-
-		// TODO LRQA-67751 UsernamesAreSeparatedByComma pending implementation
-
-	}
-
 	@description = "LPS-98517 - Verify that, in the item detail modal, the usernames are separated by a comma when there is more than one assignee per item under the Process Details section"
 	@priority = 3
 	test UsernamesAreSeparatedByCommaInItemDetailModal {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Workflow.addNewDefinition(workflowDefinitionTitle = "Multi Task Process");
 
@@ -3034,7 +3038,7 @@ definition {
 
 		WorkflowMetrics.goToWorkflowAllItems(workflowProcessName = "Multi Task Process");
 
-		WorkflowMetrics.goToBulkReassignSelectTasks();
+		WorkflowMetrics.goToReassignTask();
 
 		WorkflowMetrics.selectReassignTasks(taskList = "task1");
 
@@ -3042,7 +3046,7 @@ definition {
 			nameOfAssignee = "User User",
 			taskList = "task1");
 
-		WorkflowMetrics.goToBulkReassignSelectTasks();
+		WorkflowMetrics.goToReassignTask();
 
 		WorkflowMetrics.selectReassignTasks(taskList = "task3");
 
@@ -3066,10 +3070,7 @@ definition {
 	@description = "This is a use case for LPS-98825."
 	@priority = 5
 	test ViewMyWorkflowTasksOrderResults {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -3125,10 +3126,7 @@ definition {
 
 		Button.clickSave();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -3205,10 +3203,7 @@ definition {
 		}
 
 		task ("When a blog entry is created with a Single Approver Workflow") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Workflow",
-				panel = "Applications",
-				portlet = "Process Builder");
+			Workflow.openWorkflowListView();
 
 			Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -3224,7 +3219,7 @@ definition {
 		task ("Then the SLA status should be related to the moment the pause timer triggered") {
 			WorkflowMetrics.goToWorkflowAllItems(workflowProcessName = "Single Approver");
 
-			Pause(locator1 = 60000);
+			Pause(value1 = 60000);
 
 			Click(locator1 = "WorkflowAllItems#WORKFLOW_INSTANCE_ID");
 

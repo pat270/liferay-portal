@@ -1,5 +1,5 @@
 dependencies {
-	compileOnly group: "com.liferay", name: "org.apache.felix.configadmin", version: "1.9.8.LIFERAY-PATCHED-6"
+	compileOnly group: "com.liferay", name: "org.apache.felix.configadmin", version: "1.9.8.LIFERAY-PATCHED-8"
 	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.impl", version: "default"
 	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.kernel", version: "default"
 	compileOnly group: "com.liferay.portal", name: "com.liferay.util.taglib", version: "default"
@@ -28,6 +28,6 @@ dependencies {
 	compileOnly project(":core:petra:petra-sql-dsl-api")
 	compileOnly project(":core:petra:petra-string")
 
-	testCompile project(":apps:dynamic-data-mapping:dynamic-data-mapping-test-util")
-	testCompile project(":core:petra:petra-io")
+	testImplementation project(":apps:dynamic-data-mapping:dynamic-data-mapping-test-util")
+	testImplementation project(":core:petra:petra-io")
 }

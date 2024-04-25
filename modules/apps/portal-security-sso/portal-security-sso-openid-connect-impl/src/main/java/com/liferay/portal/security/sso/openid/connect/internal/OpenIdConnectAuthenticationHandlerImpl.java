@@ -22,12 +22,13 @@ import com.liferay.portal.security.sso.openid.connect.OpenIdConnectAuthenticatio
 import com.liferay.portal.security.sso.openid.connect.OpenIdConnectServiceException;
 import com.liferay.portal.security.sso.openid.connect.constants.OpenIdConnectConstants;
 import com.liferay.portal.security.sso.openid.connect.constants.OpenIdConnectWebKeys;
-import com.liferay.portal.security.sso.openid.connect.internal.configuration.admin.service.OpenIdConnectProviderManagedServiceFactory;
 import com.liferay.portal.security.sso.openid.connect.internal.session.manager.OfflineOpenIdConnectSessionManager;
+import com.liferay.portal.security.sso.openid.connect.internal.util.OpenIdConnectProviderUtil;
 import com.liferay.portal.security.sso.openid.connect.internal.util.OpenIdConnectRequestParametersUtil;
 import com.liferay.portal.security.sso.openid.connect.internal.util.OpenIdConnectTokenRequestUtil;
 
 import com.nimbusds.jwt.JWT;
+import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.langtag.LangTag;
 import com.nimbusds.langtag.LangTagException;
 import com.nimbusds.oauth2.sdk.ErrorObject;
@@ -137,8 +138,32 @@ public class OpenIdConnectAuthenticationHandlerImpl
 			_getLoginRedirectURI(httpServletRequest),
 			oAuthClientEntry.getTokenRequestParametersJSON());
 
-		String userInfoJSON = _requestUserInfoJSON(
-			oidcTokens.getAccessToken(), oidcProviderMetadata);
+		String userInfoJSON = null;
+
+		if (oidcProviderMetadata.getUserInfoEndpointURI() == null) {
+			JWT jwt = oidcTokens.getIDToken();
+
+			JWTClaimsSet jwtClaimsSet = jwt.getJWTClaimsSet();
+
+			JSONObject jsonObject = jwtClaimsSet.toJSONObject();
+
+			List<String> emails = jwtClaimsSet.getStringListClaim("emails");
+
+			jsonObject.put("email", emails.get(0));
+
+			jsonObject.put(
+				"family_name", jwtClaimsSet.getStringClaim("family_name"));
+			jsonObject.put(
+				"given_name", jwtClaimsSet.getStringClaim("given_name"));
+
+			UserInfo userInfo = new UserInfo(jsonObject);
+
+			userInfoJSON = userInfo.toJSONString();
+		}
+		else {
+			userInfoJSON = _requestUserInfoJSON(
+				oidcTokens.getAccessToken(), oidcProviderMetadata);
+		}
 
 		long userId = _oidcUserInfoProcessor.processUserInfo(
 			_portal.getCompanyId(httpServletRequest),
@@ -200,7 +225,7 @@ public class OpenIdConnectAuthenticationHandlerImpl
 			).put(
 				"state", new State()
 			).put(
-				"ui_Locals", _getLangTags(httpServletRequest)
+				"ui_locales", _getLangTags(httpServletRequest)
 			).build();
 
 		try {
@@ -243,9 +268,9 @@ public class OpenIdConnectAuthenticationHandlerImpl
 		throws PortalException {
 
 		requestAuthentication(
-			_openIdConnectProviderManagedServiceFactory.getOAuthClientEntryId(
+			OpenIdConnectProviderUtil.getOAuthClientEntryId(
 				_portal.getCompanyId(httpServletRequest),
-				openIdConnectProviderName),
+				openIdConnectProviderName, _oAuthClientEntryLocalService),
 			httpServletRequest, httpServletResponse);
 	}
 
@@ -465,10 +490,6 @@ public class OpenIdConnectAuthenticationHandlerImpl
 
 	@Reference
 	private OIDCUserInfoProcessor _oidcUserInfoProcessor;
-
-	@Reference
-	private OpenIdConnectProviderManagedServiceFactory
-		_openIdConnectProviderManagedServiceFactory;
 
 	@Reference
 	private Portal _portal;

@@ -1,21 +1,21 @@
 /**
- * SPDX-FileCopyrightText: (c) 2000 Liferay, Inc. https://liferay.com
+ * SPDX-FileCopyrightText: (c) 2023 Liferay, Inc. https://liferay.com
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
 package com.liferay.jethr0;
 
-import com.liferay.jethr0.event.handler.EventHandler;
-import com.liferay.jethr0.event.handler.EventHandlerFactory;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import com.liferay.jethr0.event.EventHandler;
+import com.liferay.jethr0.event.liferay.LiferayEventHandlerFactory;
 
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,58 +26,28 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class Jethr0RestController {
 
-	@PostMapping(consumes = "application/json", produces = "application/json")
-	public ResponseEntity<String> process(@RequestBody String body) {
-		if (_log.isDebugEnabled()) {
-			_log.debug("Processing " + body);
+	@PostMapping("/object-actions")
+	public ResponseEntity<String> action(
+		@AuthenticationPrincipal Jwt jwt, @RequestBody String body) {
+
+		try {
+			EventHandler eventHandler =
+				_liferayEventHandlerFactory.newEventHandler(
+					new JSONObject(body));
+
+			return new ResponseEntity<>(eventHandler.process(), HttpStatus.OK);
 		}
-
-		JSONObject bodyJSONObject = new JSONObject(body);
-
-		EventHandler.EventType eventType = EventHandler.EventType.valueOf(
-			bodyJSONObject.optString("eventTrigger"));
-
-		if ((eventType == EventHandler.EventType.BUILD_COMPLETED) ||
-			(eventType == EventHandler.EventType.BUILD_STARTED) ||
-			(eventType == EventHandler.EventType.COMPUTER_BUSY) ||
-			(eventType == EventHandler.EventType.COMPUTER_IDLE) ||
-			(eventType == EventHandler.EventType.COMPUTER_OFFLINE) ||
-			(eventType == EventHandler.EventType.COMPUTER_ONLINE) ||
-			(eventType ==
-				EventHandler.EventType.COMPUTER_TEMPORARILY_OFFLINE) ||
-			(eventType == EventHandler.EventType.COMPUTER_TEMPORARILY_ONLINE) ||
-			(eventType == EventHandler.EventType.CREATE_BUILD) ||
-			(eventType == EventHandler.EventType.CREATE_PROJECT) ||
-			(eventType == EventHandler.EventType.QUEUE_PROJECT)) {
-
-			EventHandler eventHandler = _eventHandlerFactory.newEventHandler(
-				bodyJSONObject);
-
-			if (eventHandler == null) {
-				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-			}
-
-			try {
-				return new ResponseEntity<>(
-					eventHandler.process(), HttpStatus.OK);
-			}
-			catch (Exception exception) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(exception);
-				}
-
-				return new ResponseEntity<>(
-					exception.getMessage(), HttpStatus.BAD_REQUEST);
-			}
+		catch (Exception exception) {
+			throw new RuntimeException(exception);
 		}
-
-		return new ResponseEntity<>("{}", HttpStatus.OK);
 	}
 
-	private static final Log _log = LogFactory.getLog(
-		Jethr0RestController.class);
+	@GetMapping("/ready")
+	public String ready() {
+		return "READY";
+	}
 
 	@Autowired
-	private EventHandlerFactory _eventHandlerFactory;
+	private LiferayEventHandlerFactory _liferayEventHandlerFactory;
 
 }

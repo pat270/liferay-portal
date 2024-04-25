@@ -10,7 +10,6 @@ import com.liferay.account.constants.AccountConstants;
 import com.liferay.account.constants.AccountPortletKeys;
 import com.liferay.account.settings.AccountEntryGroupSettings;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Portal;
@@ -52,20 +51,12 @@ public class AccountEntriesManagementPortlet extends MVCPortlet {
 		throws IOException, PortletException {
 
 		try {
-			if (FeatureFlagManagerUtil.isEnabled("COMMERCE-10890")) {
-				renderRequest.setAttribute(
-					AccountWebKeys.ACCOUNT_ENTRY_ALLOWED_TYPES,
-					ArrayUtil.append(
-						_accountEntryGroupSettings.getAllowedTypes(
-							_portal.getScopeGroupId(renderRequest)),
-						AccountConstants.ACCOUNT_ENTRY_TYPE_SUPPLIER));
-			}
-			else {
-				renderRequest.setAttribute(
-					AccountWebKeys.ACCOUNT_ENTRY_ALLOWED_TYPES,
+			renderRequest.setAttribute(
+				AccountWebKeys.ACCOUNT_ENTRY_ALLOWED_TYPES,
+				ArrayUtil.append(
 					_accountEntryGroupSettings.getAllowedTypes(
-						_portal.getScopeGroupId(renderRequest)));
-			}
+						_portal.getScopeGroupId(renderRequest)),
+					AccountConstants.ACCOUNT_ENTRY_TYPE_SUPPLIER));
 
 			super.doDispatch(renderRequest, renderResponse);
 		}

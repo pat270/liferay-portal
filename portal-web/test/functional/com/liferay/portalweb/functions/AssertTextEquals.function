@@ -2,71 +2,77 @@
 @summary = "Assert that '${locator1}' equals the value '${value1}'"
 definition {
 
-	function assertPartialText {
+	function assertPartialText(locator1, value1) {
 		WaitForSPARefresh();
 
-		selenium.waitForVisible();
+		selenium.waitForVisible(${locator1}, "false");
 
-		selenium.waitForPartialTextCaseInsensitive();
+		var regex = RegexUtil.escapeRegexChars(${value1});
 
-		selenium.assertPartialTextCaseInsensitive();
+		selenium.waitForTextMatches(${locator1}, "(?iu).*${regex}.*");
 
-		selenium.assertJavaScriptErrors();
+		selenium.assertTextMatches(${locator1}, "(?iu).*${regex}.*");
+
+		selenium.assertJavaScriptErrors("true");
 
 		selenium.assertLiferayErrors();
 	}
 
-	function assertPartialTextAceEditor {
+	function assertPartialTextAceEditor(locator1, value1) {
 		WaitForSPARefresh();
 
-		selenium.waitForVisible();
+		selenium.waitForVisible(${locator1}, "false");
 
-		selenium.waitForPartialTextAceEditor();
+		selenium.waitForPartialTextAceEditor(${locator1}, ${value1});
 
-		selenium.assertPartialTextAceEditor();
+		selenium.assertPartialTextAceEditor(${locator1}, ${value1});
 
-		selenium.assertJavaScriptErrors();
+		selenium.assertJavaScriptErrors("true");
 
 		selenium.assertLiferayErrors();
 	}
 
-	function assertPartialTextCaseSensitive {
-		selenium.waitForVisible();
+	function assertPartialTextCaseSensitive(locator1, value1) {
+		selenium.waitForVisible(${locator1}, "false");
 
-		selenium.waitForPartialText();
+		var regex = RegexUtil.escapeRegexChars(${value1});
 
-		selenium.assertPartialText();
+		selenium.waitForTextMatches(${locator1}, ".*${regex}.*");
+
+		selenium.assertTextMatches(${locator1}, ".*${regex}.*");
 	}
 
-	function assertText {
+	function assertText(locator1, value1) {
 		WaitForSPARefresh();
 
-		selenium.waitForVisible();
+		selenium.waitForVisible(${locator1}, "false");
 
-		selenium.waitForTextCaseInsensitive();
+		var regex = RegexUtil.escapeRegexChars(${value1});
 
-		selenium.assertTextCaseInsensitive();
+		selenium.waitForTextMatches(${locator1}, "(?iu)${regex}");
 
-		selenium.assertJavaScriptErrors();
+		selenium.assertTextMatches(${locator1}, "(?iu)${regex}");
+
+		selenium.assertJavaScriptErrors("true");
 
 		selenium.assertLiferayErrors();
 	}
 
-	function assertTextCaseSensitive {
+	function assertTextCaseSensitive(locator1, value1) {
 		WaitForSPARefresh();
 
-		selenium.waitForVisible();
+		selenium.waitForVisible(${locator1}, "false");
 
-		selenium.waitForText();
+		selenium.waitForText(${locator1}, ${value1});
 
-		selenium.assertText();
+		selenium.assertText(${locator1}, ${value1});
 
-		selenium.assertJavaScriptErrors();
+		selenium.assertJavaScriptErrors("true");
 
 		selenium.assertLiferayErrors();
 	}
 
-	function assertTextEquals {
+	function assertTextEquals(locator1) {
 		WaitForSPARefresh();
 
 		if (contains(${locator1}, "/input")) {
@@ -77,16 +83,16 @@ definition {
 		}
 	}
 
-	function assertValue {
+	function assertValue(locator1, value1) {
 		WaitForSPARefresh();
 
-		selenium.waitForVisible();
+		selenium.waitForVisible(${locator1}, "false");
 
-		selenium.waitForValue();
+		selenium.waitForValue(${locator1}, ${value1});
 
-		selenium.assertValue();
+		selenium.assertValue(${locator1}, ${value1});
 
-		selenium.assertJavaScriptErrors();
+		selenium.assertJavaScriptErrors("true");
 
 		selenium.assertLiferayErrors();
 	}

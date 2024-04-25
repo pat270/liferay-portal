@@ -12,8 +12,7 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AbstractTestRule;
 import com.liferay.portal.kernel.util.FileUtil;
-import com.liferay.portal.kernel.util.Html;
-import com.liferay.portal.kernel.util.HtmlUtil;
+import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -63,6 +62,8 @@ public class InitializeKernelUtilTestRule
 	protected Void beforeClass(Description description)
 		throws ReflectiveOperationException {
 
+		_setUpPortalClassLoader();
+
 		Class<?> clazz = description.getTestClass();
 
 		PortalProps portalProps = clazz.getAnnotation(PortalProps.class);
@@ -76,7 +77,6 @@ public class InitializeKernelUtilTestRule
 
 		_setUpFileUtil();
 		_setUpJSONFactoryUtil();
-		_setUpHtmlUtil();
 
 		return null;
 	}
@@ -130,21 +130,6 @@ public class InitializeKernelUtilTestRule
 				"_fileImpl"));
 	}
 
-	private void _setUpHtmlUtil() throws ReflectiveOperationException {
-		Thread thread = Thread.currentThread();
-
-		ClassLoader classLoader = thread.getContextClassLoader();
-
-		HtmlUtil htmlUtil = new HtmlUtil();
-
-		Class<?> clazz = classLoader.loadClass(
-			"com.liferay.portal.util.HtmlImpl");
-
-		Constructor<?> constructor = clazz.getDeclaredConstructor();
-
-		htmlUtil.setHtml((Html)constructor.newInstance());
-	}
-
 	private void _setUpJSONFactoryUtil() throws ReflectiveOperationException {
 		Thread thread = Thread.currentThread();
 
@@ -158,6 +143,15 @@ public class InitializeKernelUtilTestRule
 		Constructor<?> constructor = clazz.getDeclaredConstructor();
 
 		jsonFactoryUtil.setJSONFactory((JSONFactory)constructor.newInstance());
+	}
+
+	private void _setUpPortalClassLoader() {
+		ClassLoader portalClassLoader = PortalClassLoaderUtil.getClassLoader();
+
+		if (portalClassLoader == null) {
+			PortalClassLoaderUtil.setClassLoader(
+				InitializeKernelUtilTestRule.class.getClassLoader());
+		}
 	}
 
 	private Properties _setUpPropsUtil(Map<String, String> map)

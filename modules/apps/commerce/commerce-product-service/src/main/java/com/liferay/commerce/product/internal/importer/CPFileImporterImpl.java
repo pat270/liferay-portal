@@ -30,6 +30,7 @@ import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -243,6 +244,16 @@ public class CPFileImporterImpl implements CPFileImporter {
 		throws Exception {
 
 		for (int i = 0; i < jsonArray.length(); i++) {
+			JSONObject layoutJSONObject = jsonArray.getJSONObject(i);
+
+			String layoutName = layoutJSONObject.getString("name");
+
+			if (layoutName.equals("Returns") &&
+				!FeatureFlagManagerUtil.isEnabled("LPD-10562")) {
+
+				continue;
+			}
+
 			_createLayout(
 				jsonArray.getJSONObject(i), parentLayout, classLoader,
 				dependenciesFilePath, serviceContext);
@@ -364,7 +375,7 @@ public class CPFileImporterImpl implements CPFileImporter {
 			ddmStructure.getStructureId(), ddmTemplateKey, StringPool.BLANK,
 			displayDateMonth, displayDateDay, displayDateYear, displayDateHour,
 			displayDateMinute, 0, 0, 0, 0, 0, true, 0, 0, 0, 0, 0, true, true,
-			false, StringPool.BLANK, null, null, StringPool.BLANK,
+			false, 0, 0, StringPool.BLANK, null, null, StringPool.BLANK,
 			serviceContext);
 
 		JSONArray permissionsJSONArray = jsonObject.getJSONArray("permissions");
@@ -607,7 +618,7 @@ public class CPFileImporterImpl implements CPFileImporter {
 			null, serviceContext.getUserId(), serviceContext.getScopeGroupId(),
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID, fileName, mimeType,
 			fileName, StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
-			byteArray, null, null, serviceContext);
+			byteArray, null, null, null, serviceContext);
 	}
 
 	private long _getAssetEntryId(

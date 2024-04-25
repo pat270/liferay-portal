@@ -15,13 +15,12 @@ import com.liferay.commerce.inventory.CPDefinitionInventoryEngineRegistry;
 import com.liferay.commerce.inventory.engine.CommerceInventoryEngine;
 import com.liferay.commerce.model.CPDefinitionInventory;
 import com.liferay.commerce.price.CommerceProductPriceCalculation;
-import com.liferay.commerce.product.content.util.CPContentHelper;
+import com.liferay.commerce.product.content.helper.CPContentHelper;
 import com.liferay.commerce.product.content.web.internal.info.CPDefinitionInfoItemFields;
 import com.liferay.commerce.product.model.CPDefinition;
 import com.liferay.commerce.product.model.CPInstance;
 import com.liferay.commerce.product.model.CommerceChannel;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
-import com.liferay.commerce.product.util.CPDefinitionHelper;
 import com.liferay.commerce.product.util.CPInstanceHelper;
 import com.liferay.commerce.service.CPDefinitionInventoryLocalService;
 import com.liferay.expando.info.item.provider.ExpandoInfoItemFieldSetProvider;
@@ -36,13 +35,14 @@ import com.liferay.layout.page.template.info.item.provider.DisplayPageInfoItemFi
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.template.info.item.provider.TemplateInfoItemFieldSetProvider;
+
+import java.math.BigDecimal;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -80,7 +80,8 @@ public class CPDefinitionInfoItemFieldValuesProvider
 					new InfoItemReference(
 						CPDefinition.class.getName(),
 						cpDefinition.getCPDefinitionId()),
-					StringPool.BLANK, _getThemeDisplay())
+					StringPool.BLANK, CPDefinition.class.getSimpleName(),
+					cpDefinition, _getThemeDisplay())
 			).infoFieldValues(
 				_templateInfoItemFieldSetProvider.getInfoFieldValues(
 					CPDefinition.class.getName(), cpDefinition)
@@ -134,7 +135,7 @@ public class CPDefinitionInfoItemFieldValuesProvider
 				cpInstance.getCompanyId(), cpInstance.getGroupId(),
 				commerceChannel.getGroupId(),
 				cpDefinitionInventoryEngine.getMinStockQuantity(cpInstance),
-				cpInstance.getSku());
+				cpInstance.getSku(), StringPool.BLANK);
 		}
 
 		return StringPool.BLANK;
@@ -278,15 +279,6 @@ public class CPDefinitionInfoItemFieldValuesProvider
 				new InfoFieldValue<>(
 					CPDefinitionInfoItemFields.displayDateInfoField,
 					cpDefinition.getDisplayDate()));
-
-			if (themeDisplay != null) {
-				cpDefinitionInfoFieldValues.add(
-					new InfoFieldValue<>(
-						CPDefinitionInfoItemFields.displayPageUrlInfoField,
-						_cpDefinitionHelper.getFriendlyURL(
-							cpDefinition.getCPDefinitionId(), themeDisplay)));
-			}
-
 			cpDefinitionInfoFieldValues.add(
 				new InfoFieldValue<>(
 					CPDefinitionInfoItemFields.draftInfoField,
@@ -332,9 +324,7 @@ public class CPDefinitionInfoItemFieldValuesProvider
 					CPDefinitionInfoItemFields.incompleteInfoField,
 					cpDefinition.isIncomplete()));
 
-			if ((themeDisplay != null) &&
-				!FeatureFlagManagerUtil.isEnabled("LPS-183727")) {
-
+			if (themeDisplay != null) {
 				cpDefinitionInfoFieldValues.add(
 					new InfoFieldValue<>(
 						CPDefinitionInfoItemFields.inventoryInfoField,
@@ -530,7 +520,7 @@ public class CPDefinitionInfoItemFieldValuesProvider
 
 		CommerceMoney commerceMoney =
 			_commerceProductPriceCalculation.getFinalPrice(
-				cpInstance.getCPInstanceId(), 1,
+				cpInstance.getCPInstanceId(), BigDecimal.ONE, StringPool.BLANK,
 				CommerceContextThreadLocal.get());
 
 		if (commerceMoney.isEmpty()) {
@@ -540,7 +530,7 @@ public class CPDefinitionInfoItemFieldValuesProvider
 		return commerceMoney.format(themeDisplay.getLocale());
 	}
 
-	private Integer _getInventory(
+	private BigDecimal _getInventory(
 			CPInstance cpInstance, ThemeDisplay themeDisplay)
 		throws PortalException {
 
@@ -568,7 +558,7 @@ public class CPDefinitionInfoItemFieldValuesProvider
 
 			return _commerceInventoryEngine.getStockQuantity(
 				cpInstance.getCompanyId(), cpInstance.getGroupId(),
-				commerceChannelGroupId, cpInstance.getSku());
+				commerceChannelGroupId, cpInstance.getSku(), StringPool.BLANK);
 		}
 
 		return null;
@@ -611,9 +601,6 @@ public class CPDefinitionInfoItemFieldValuesProvider
 
 	@Reference
 	private CPContentHelper _cpContentHelper;
-
-	@Reference
-	private CPDefinitionHelper _cpDefinitionHelper;
 
 	@Reference
 	private CPDefinitionInventoryEngineRegistry

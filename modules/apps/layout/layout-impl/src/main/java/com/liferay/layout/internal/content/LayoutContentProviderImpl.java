@@ -12,7 +12,6 @@ import com.liferay.layout.crawler.LayoutCrawler;
 import com.liferay.layout.internal.search.util.LayoutPageTemplateStructureRenderUtil;
 import com.liferay.layout.page.template.model.LayoutPageTemplateStructure;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
-import com.liferay.osgi.util.service.Snapshot;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
@@ -22,12 +21,13 @@ import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.ResourcePermission;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.role.RoleConstants;
+import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.servlet.DynamicServletRequest;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
-import com.liferay.portal.kernel.util.Html;
+import com.liferay.portal.kernel.util.HtmlParser;
 import com.liferay.portal.kernel.util.RenderLayoutContentThreadLocal;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -95,7 +95,8 @@ public class LayoutContentProviderImpl implements LayoutContentProvider {
 			httpServletRequest = DynamicServletRequest.addQueryString(
 				httpServletRequest,
 				StringBundler.concat(
-					"p_l_id=", layout.getPlid(), "&p_l_mode=", Constants.VIEW),
+					"p_l_id=", layout.getPlid(), "&p_l_mode=",
+					Constants.SEARCH),
 				false);
 
 			Layout originalRequestLayout =
@@ -112,12 +113,17 @@ public class LayoutContentProviderImpl implements LayoutContentProvider {
 			long originalThemeDisplayPlid = themeDisplay.getPlid();
 
 			try {
-				httpServletRequest.setAttribute(WebKeys.LAYOUT, layout);
 				httpServletRequest.setAttribute(
 					WebKeys.SHOW_PORTLET_TOPPER, Boolean.FALSE);
 
-				themeDisplay.setLayout(layout);
-				themeDisplay.setPlid(layout.getPlid());
+				if ((layout != originalRequestLayout) ||
+					(layout != themeDisplay.getLayout())) {
+
+					httpServletRequest.setAttribute(WebKeys.LAYOUT, layout);
+
+					themeDisplay.setLayout(layout);
+					themeDisplay.setPlid(layout.getPlid());
+				}
 
 				themeDisplay.setRequest(httpServletRequest);
 
@@ -143,15 +149,20 @@ public class LayoutContentProviderImpl implements LayoutContentProvider {
 					}
 				}
 
-				return _html.stripHtml(content);
+				return _htmlParser.extractText(content);
 			}
 			finally {
-				httpServletRequest.setAttribute(
-					WebKeys.LAYOUT, originalRequestLayout);
 				httpServletRequest.removeAttribute(WebKeys.SHOW_PORTLET_TOPPER);
 
-				themeDisplay.setLayout(originalThemeDisplayLayout);
-				themeDisplay.setPlid(originalThemeDisplayPlid);
+				if ((layout != originalRequestLayout) ||
+					(layout != themeDisplay.getLayout())) {
+
+					httpServletRequest.setAttribute(
+						WebKeys.LAYOUT, originalRequestLayout);
+
+					themeDisplay.setLayout(originalThemeDisplayLayout);
+					themeDisplay.setPlid(originalThemeDisplayPlid);
+				}
 
 				themeDisplay.setRequest(originalThemeDisplayHttpServletRequest);
 			}
@@ -169,7 +180,7 @@ public class LayoutContentProviderImpl implements LayoutContentProvider {
 			return layoutContent;
 		}
 
-		return _html.stripHtml(
+		return _htmlParser.extractText(
 			layoutContent.substring(wrapperIndex + _WRAPPER_ELEMENT.length()));
 	}
 
@@ -215,7 +226,7 @@ public class LayoutContentProviderImpl implements LayoutContentProvider {
 	private FragmentRendererController _fragmentRendererController;
 
 	@Reference
-	private Html _html;
+	private HtmlParser _htmlParser;
 
 	@Reference
 	private LayoutPageTemplateStructureLocalService

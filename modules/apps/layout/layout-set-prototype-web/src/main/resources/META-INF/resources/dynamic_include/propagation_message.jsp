@@ -13,6 +13,7 @@ PropagationMessageDisplayContext propagationMessageDisplayContext = new Propagat
 
 <li class="control-menu-nav-item">
 	<clay:button
+		cssClass="control-menu-nav-link"
 		displayType="unstyled"
 		icon="merge"
 		monospaced="<%= true %>"
@@ -21,6 +22,6 @@ PropagationMessageDisplayContext propagationMessageDisplayContext = new Propagat
 
 	<react:component
 		data="<%= propagationMessageDisplayContext.getData() %>"
-		module="js/dynamic_include/PropagationMessage"
+		module="{PropagationMessage} from layout-set-prototype-web"
 	/>
 </li>

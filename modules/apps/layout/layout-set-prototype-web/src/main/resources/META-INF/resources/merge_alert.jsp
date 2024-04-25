@@ -11,7 +11,7 @@
 LayoutSetPrototype layoutSetPrototype = (LayoutSetPrototype)request.getAttribute("edit_layout_set_prototype.jsp-layoutSetPrototype");
 String redirect = (String)request.getAttribute("edit_layout_set_prototype.jsp-redirect");
 
-int mergeFailCount = SitesUtil.getMergeFailCount(layoutSetPrototype);
+int mergeFailCount = layoutSetPrototype.getMergeFailCount();
 %>
 
 <c:if test="<%= mergeFailCount > PropsValues.LAYOUT_SET_PROTOTYPE_MERGE_FAIL_THRESHOLD %>">
@@ -28,7 +28,7 @@ int mergeFailCount = SitesUtil.getMergeFailCount(layoutSetPrototype);
 		<aui:button id='<%= randomNamespace + "resetButton" %>' useNamespace="<%= false %>" value="reset" />
 	</div>
 
-	<script>
+	<aui:script position="inline">
 		(function () {
 			var resetButton = document.getElementById(
 				'<%= randomNamespace %>resetButton'
@@ -45,5 +45,5 @@ int mergeFailCount = SitesUtil.getMergeFailCount(layoutSetPrototype);
 				});
 			}
 		})();
-	</script>
+	</aui:script>
 </c:if>

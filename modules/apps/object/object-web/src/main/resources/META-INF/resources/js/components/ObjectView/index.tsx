@@ -67,7 +67,7 @@ const CustomView: React.FC<React.HTMLAttributes<HTMLElement>> = () => {
 				`/o/object-admin/v1.0/object-views/${objectViewId}`
 			);
 
-			const objectFields = await API.getObjectFieldsByExternalReferenceCode(
+			const objectFields = await API.getObjectDefinitionByExternalReferenceCodeObjectFields(
 				objectDefinitionExternalReferenceCode
 			);
 
@@ -164,10 +164,10 @@ const CustomView: React.FC<React.HTMLAttributes<HTMLElement>> = () => {
 
 		if (!objectView.defaultObjectView || objectViewColumns.length !== 0) {
 			try {
-				await API.save(
-					`/o/object-admin/v1.0/object-views/${objectViewId}`,
-					newObjectView
-				);
+				await API.save({
+					item: newObjectView,
+					url: `/o/object-admin/v1.0/object-views/${objectViewId}`,
+				});
 				saveAndReload();
 
 				openToast({
@@ -226,7 +226,7 @@ interface ICustomViewWrapperProps extends React.HTMLAttributes<HTMLElement> {
 	isViewOnly: boolean;
 	objectDefinitionExternalReferenceCode: string;
 	objectViewId: string;
-	workflowStatusJSONArray: TWorkflowStatus[];
+	workflowStatuses: TWorkflowStatus[];
 }
 
 const CustomViewWrapper: React.FC<ICustomViewWrapperProps> = ({
@@ -234,7 +234,7 @@ const CustomViewWrapper: React.FC<ICustomViewWrapperProps> = ({
 	isViewOnly,
 	objectDefinitionExternalReferenceCode,
 	objectViewId,
-	workflowStatusJSONArray,
+	workflowStatuses,
 }) => {
 	return (
 		<ViewContextProvider
@@ -243,7 +243,7 @@ const CustomViewWrapper: React.FC<ICustomViewWrapperProps> = ({
 				isViewOnly,
 				objectDefinitionExternalReferenceCode,
 				objectViewId,
-				workflowStatusJSONArray,
+				workflowStatuses,
 			}}
 		>
 			<CustomView />

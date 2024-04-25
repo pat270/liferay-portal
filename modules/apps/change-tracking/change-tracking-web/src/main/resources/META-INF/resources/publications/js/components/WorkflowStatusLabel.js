@@ -6,12 +6,13 @@
 import ClayLabel from '@clayui/label';
 import React from 'react';
 
-const WORKFLOW_STATUS_APPROVED = 0;
-const WORKFLOW_STATUS_DENIED = 4;
-const WORKFLOW_STATUS_DRAFT = 2;
-const WORKFLOW_STATUS_PENDING = 1;
+export const WORKFLOW_STATUS_APPROVED = 0;
+export const WORKFLOW_STATUS_DENIED = 4;
+export const WORKFLOW_STATUS_DRAFT = 2;
+export const WORKFLOW_STATUS_IN_TRASH = 8;
+export const WORKFLOW_STATUS_PENDING = 1;
 
-const WorkflowStatusLabel = ({workflowStatus}) => {
+export function WorkflowStatusLabel({workflowStatus}) {
 	let displayType = null;
 	let label = null;
 
@@ -27,6 +28,10 @@ const WorkflowStatusLabel = ({workflowStatus}) => {
 		displayType = 'secondary';
 		label = Liferay.Language.get('draft');
 	}
+	else if (workflowStatus === WORKFLOW_STATUS_IN_TRASH) {
+		displayType = 'secondary';
+		label = Liferay.Language.get('in-trash');
+	}
 	else if (workflowStatus === WORKFLOW_STATUS_PENDING) {
 		displayType = 'info';
 		label = Liferay.Language.get('pending');
@@ -35,6 +40,4 @@ const WorkflowStatusLabel = ({workflowStatus}) => {
 	return displayType && label ? (
 		<ClayLabel displayType={displayType}>{label}</ClayLabel>
 	) : null;
-};
-
-export default WorkflowStatusLabel;
+}

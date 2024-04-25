@@ -6,10 +6,8 @@
 package com.liferay.change.tracking.web.internal.portlet.action;
 
 import com.liferay.change.tracking.constants.CTPortletKeys;
-import com.liferay.change.tracking.service.CTCollectionService;
 import com.liferay.change.tracking.web.internal.constants.CTWebKeys;
 import com.liferay.change.tracking.web.internal.display.context.ViewScheduledDisplayContext;
-import com.liferay.change.tracking.web.internal.scheduler.PublishScheduler;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
 import com.liferay.portal.kernel.util.Portal;
@@ -38,9 +36,8 @@ public class ViewScheduledMVCRenderCommand implements MVCRenderCommand {
 
 		ViewScheduledDisplayContext viewScheduledDisplayContext =
 			new ViewScheduledDisplayContext(
-				_ctCollectionService,
 				_portal.getHttpServletRequest(renderRequest), _language,
-				_publishScheduler, renderRequest, renderResponse);
+				renderRequest, renderResponse);
 
 		renderRequest.setAttribute(
 			CTWebKeys.VIEW_SCHEDULED_DISPLAY_CONTEXT,
@@ -50,15 +47,9 @@ public class ViewScheduledMVCRenderCommand implements MVCRenderCommand {
 	}
 
 	@Reference
-	private CTCollectionService _ctCollectionService;
-
-	@Reference
 	private Language _language;
 
 	@Reference
 	private Portal _portal;
-
-	@Reference
-	private PublishScheduler _publishScheduler;
 
 }

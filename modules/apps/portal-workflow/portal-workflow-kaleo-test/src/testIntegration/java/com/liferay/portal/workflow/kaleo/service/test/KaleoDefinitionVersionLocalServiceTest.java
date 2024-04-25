@@ -16,6 +16,7 @@ import com.liferay.portal.workflow.kaleo.exception.NoSuchDefinitionVersionExcept
 import com.liferay.portal.workflow.kaleo.model.KaleoDefinition;
 import com.liferay.portal.workflow.kaleo.model.KaleoDefinitionVersion;
 import com.liferay.portal.workflow.kaleo.service.KaleoDefinitionVersionLocalService;
+import com.liferay.portal.workflow.kaleo.util.comparator.KaleoDefinitionVersionTitleComparator;
 
 import java.util.Arrays;
 
@@ -60,16 +61,17 @@ public class KaleoDefinitionVersionLocalServiceTest
 
 	@Test
 	public void testGetLatestKaleoDefinitionVersions() throws Exception {
+		KaleoDefinitionVersionTitleComparator
+			kaleoDefinitionVersionTitleComparator =
+				new KaleoDefinitionVersionTitleComparator(true);
 		KaleoDefinitionVersion kaleoDefinitionVersion1 =
 			getLatestKaleoDefinitionVersion(
 				addKaleoDefinition(
 					"Name 1", "First definition", "Description 1"));
-
 		KaleoDefinitionVersion kaleoDefinitionVersion2 =
 			getLatestKaleoDefinitionVersion(
 				addKaleoDefinition(
 					"Name 2", "My title 2", RandomTestUtil.randomString()));
-
 		KaleoDefinitionVersion kaleoDefinitionVersion3 =
 			getLatestKaleoDefinitionVersion(
 				addKaleoDefinition(
@@ -81,20 +83,20 @@ public class KaleoDefinitionVersionLocalServiceTest
 			kaleoDefinitionVersionLocalService.getLatestKaleoDefinitionVersions(
 				kaleoDefinitionVersion1.getCompanyId(), "desc",
 				WorkflowConstants.STATUS_ANY, QueryUtil.ALL_POS,
-				QueryUtil.ALL_POS, null));
+				QueryUtil.ALL_POS, kaleoDefinitionVersionTitleComparator));
 		Assert.assertEquals(
 			Arrays.asList(kaleoDefinitionVersion2, kaleoDefinitionVersion3),
 			kaleoDefinitionVersionLocalService.getLatestKaleoDefinitionVersions(
 				kaleoDefinitionVersion1.getCompanyId(), "my",
 				WorkflowConstants.STATUS_ANY, QueryUtil.ALL_POS,
-				QueryUtil.ALL_POS, null));
+				QueryUtil.ALL_POS, kaleoDefinitionVersionTitleComparator));
 
 		Assert.assertEquals(
 			Arrays.asList(kaleoDefinitionVersion1, kaleoDefinitionVersion2),
 			kaleoDefinitionVersionLocalService.getLatestKaleoDefinitionVersions(
 				kaleoDefinitionVersion1.getCompanyId(), "name",
 				WorkflowConstants.STATUS_ANY, QueryUtil.ALL_POS,
-				QueryUtil.ALL_POS, null));
+				QueryUtil.ALL_POS, kaleoDefinitionVersionTitleComparator));
 	}
 
 	@Test

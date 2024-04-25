@@ -6,10 +6,10 @@
 package com.liferay.asset.link.internal.exportimport.staged.model.repository;
 
 import com.liferay.asset.kernel.model.AssetEntry;
-import com.liferay.asset.kernel.model.AssetLink;
-import com.liferay.asset.kernel.model.adapter.StagedAssetLink;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
-import com.liferay.asset.kernel.service.AssetLinkLocalService;
+import com.liferay.asset.link.model.AssetLink;
+import com.liferay.asset.link.model.adapter.StagedAssetLink;
+import com.liferay.asset.link.service.AssetLinkLocalService;
 import com.liferay.asset.util.StagingAssetEntryHelper;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
@@ -23,8 +23,8 @@ import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.Property;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.model.adapter.ModelAdapterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.model.adapter.util.ModelAdapterUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -36,7 +36,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Akos Thurzo
  */
 @Component(
-	property = "model.class.name=com.liferay.asset.kernel.model.adapter.StagedAssetLink",
+	property = "model.class.name=com.liferay.asset.link.model.adapter.StagedAssetLink",
 	service = StagedModelRepository.class
 )
 public class StagedAssetLinkStagedModelRepository

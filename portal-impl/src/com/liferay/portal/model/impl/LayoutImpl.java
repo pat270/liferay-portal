@@ -15,7 +15,6 @@ import com.liferay.portal.kernel.exception.LayoutFriendlyURLException;
 import com.liferay.portal.kernel.exception.NoSuchGroupException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.lock.Lock;
 import com.liferay.portal.kernel.lock.LockManagerUtil;
@@ -28,6 +27,7 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.LayoutFriendlyURL;
 import com.liferay.portal.kernel.model.LayoutSet;
+import com.liferay.portal.kernel.model.LayoutSetPrototype;
 import com.liferay.portal.kernel.model.LayoutType;
 import com.liferay.portal.kernel.model.LayoutTypeController;
 import com.liferay.portal.kernel.model.LayoutTypePortlet;
@@ -46,6 +46,7 @@ import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutFriendlyURLLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutSetLocalServiceUtil;
+import com.liferay.portal.kernel.service.LayoutSetPrototypeLocalServiceUtil;
 import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
 import com.liferay.portal.kernel.service.PortletPreferencesLocalServiceUtil;
 import com.liferay.portal.kernel.service.ThemeLocalServiceUtil;
@@ -75,6 +76,7 @@ import com.liferay.portal.util.LayoutClone;
 import com.liferay.portal.util.LayoutCloneFactory;
 import com.liferay.portal.util.LayoutTypeControllerTracker;
 import com.liferay.portal.util.PropsValues;
+import com.liferay.sites.kernel.util.Sites;
 
 import java.io.IOException;
 
@@ -463,10 +465,10 @@ public class LayoutImpl extends LayoutBaseImpl {
 
 	@Override
 	public List<Portlet> getEmbeddedPortlets(long groupId) {
-		List<PortletPreferences> portletPreferences = _getPortletPreferences(
-			groupId);
+		List<PortletPreferences> portletPreferencesList =
+			_getPortletPreferences(groupId);
 
-		if (portletPreferences.isEmpty()) {
+		if (portletPreferencesList.isEmpty()) {
 			return Collections.emptyList();
 		}
 
@@ -474,8 +476,8 @@ public class LayoutImpl extends LayoutBaseImpl {
 
 		Set<String> layoutPortletIds = _getLayoutPortletIds();
 
-		for (PortletPreferences portletPreference : portletPreferences) {
-			String portletId = portletPreference.getPortletId();
+		for (PortletPreferences portletPreferences : portletPreferencesList) {
+			String portletId = portletPreferences.getPortletId();
 
 			Portlet portlet = PortletLocalServiceUtil.getPortletById(
 				getCompanyId(), portletId);
@@ -688,6 +690,10 @@ public class LayoutImpl extends LayoutBaseImpl {
 	 */
 	@Override
 	public String getHTMLTitle(String localeLanguageId) {
+		if (isDraftLayout() && isTypeContent()) {
+			return getName(localeLanguageId);
+		}
+
 		String htmlTitle = getTitle(localeLanguageId);
 
 		if (Validator.isNull(htmlTitle)) {
@@ -747,6 +753,33 @@ public class LayoutImpl extends LayoutBaseImpl {
 		}
 
 		return _layoutSet;
+	}
+
+	@Override
+	public Layout getLayoutSetPrototypeLayout() {
+		try {
+			LayoutSet layoutSet = getLayoutSet();
+
+			if (!layoutSet.isLayoutSetPrototypeLinkActive()) {
+				return null;
+			}
+
+			LayoutSetPrototype layoutSetPrototype =
+				LayoutSetPrototypeLocalServiceUtil.
+					getLayoutSetPrototypeByUuidAndCompanyId(
+						layoutSet.getLayoutSetPrototypeUuid(), getCompanyId());
+
+			return LayoutLocalServiceUtil.fetchLayoutByUuidAndGroupId(
+				getSourcePrototypeLayoutUuid(), layoutSetPrototype.getGroupId(),
+				true);
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to fetch the the layout set prototype's layout",
+				exception);
+		}
+
+		return null;
 	}
 
 	/**
@@ -1146,6 +1179,35 @@ public class LayoutImpl extends LayoutBaseImpl {
 		return false;
 	}
 
+	@Override
+	public boolean isLayoutDeleteable() {
+		try {
+			if (Validator.isNull(getSourcePrototypeLayoutUuid())) {
+				return true;
+			}
+
+			LayoutSet layoutSet = getLayoutSet();
+
+			if (!layoutSet.isLayoutSetPrototypeLinkActive()) {
+				return true;
+			}
+
+			if (LayoutLocalServiceUtil.hasLayoutSetPrototypeLayout(
+					layoutSet.getLayoutSetPrototypeUuid(), getCompanyId(),
+					getSourcePrototypeLayoutUuid())) {
+
+				return false;
+			}
+		}
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception);
+			}
+		}
+
+		return true;
+	}
+
 	/**
 	 * Returns <code>true</code> if the current layout is built from a layout
 	 * template and still maintains an active connection to it.
@@ -1163,6 +1225,56 @@ public class LayoutImpl extends LayoutBaseImpl {
 		}
 
 		return false;
+	}
+
+	@Override
+	public boolean isLayoutSortable() {
+		return isLayoutDeleteable();
+	}
+
+	@Override
+	public boolean isLayoutUpdateable() {
+		try {
+			if (Validator.isNull(getLayoutPrototypeUuid()) &&
+				Validator.isNull(getSourcePrototypeLayoutUuid())) {
+
+				return true;
+			}
+
+			LayoutSet layoutSet = getLayoutSet();
+
+			if (layoutSet.isLayoutSetPrototypeLinkActive()) {
+				boolean layoutSetPrototypeUpdateable =
+					layoutSet.isLayoutSetPrototypeUpdateable();
+
+				if (!layoutSetPrototypeUpdateable) {
+					return false;
+				}
+
+				Layout layoutSetPrototypeLayout = getLayoutSetPrototypeLayout();
+
+				if (layoutSetPrototypeLayout == null) {
+					return true;
+				}
+
+				String layoutUpdateable =
+					layoutSetPrototypeLayout.getTypeSettingsProperty(
+						Sites.LAYOUT_UPDATEABLE);
+
+				if (Validator.isNull(layoutUpdateable)) {
+					return true;
+				}
+
+				return GetterUtil.getBoolean(layoutUpdateable);
+			}
+		}
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception);
+			}
+		}
+
+		return true;
 	}
 
 	@Override
@@ -1322,6 +1434,7 @@ public class LayoutImpl extends LayoutBaseImpl {
 	public boolean isTypeContent() {
 		if (Objects.equals(getType(), LayoutConstants.TYPE_COLLECTION) ||
 			Objects.equals(getType(), LayoutConstants.TYPE_CONTENT) ||
+			Objects.equals(getType(), LayoutConstants.TYPE_UTILITY) ||
 			Objects.equals(
 				_getLayoutTypeControllerType(), LayoutConstants.TYPE_CONTENT)) {
 
@@ -1404,10 +1517,17 @@ public class LayoutImpl extends LayoutBaseImpl {
 	}
 
 	@Override
-	public boolean isUnlocked(String mode, long userId) {
-		if (!FeatureFlagManagerUtil.isEnabled("LPS-180328") ||
-			!Objects.equals(mode, Constants.EDIT) || !isDraftLayout()) {
+	public boolean isTypeUtility() {
+		if (Objects.equals(getType(), LayoutConstants.TYPE_UTILITY)) {
+			return true;
+		}
 
+		return false;
+	}
+
+	@Override
+	public boolean isUnlocked(String mode, long userId) {
+		if (!Objects.equals(mode, Constants.EDIT) || !isDraftLayout()) {
 			return true;
 		}
 
@@ -1538,13 +1658,13 @@ public class LayoutImpl extends LayoutBaseImpl {
 	private Set<String> _getLayoutPortletIds() {
 		Set<String> layoutPortletIds = new HashSet<>();
 
-		List<PortletPreferences> portletPreferences =
+		List<PortletPreferences> portletPreferencesList =
 			PortletPreferencesLocalServiceUtil.getPortletPreferences(
 				PortletKeys.PREFS_OWNER_ID_DEFAULT,
 				PortletKeys.PREFS_OWNER_TYPE_LAYOUT, getPlid());
 
-		for (PortletPreferences portletPreference : portletPreferences) {
-			layoutPortletIds.add(portletPreference.getPortletId());
+		for (PortletPreferences portletPreferences : portletPreferencesList) {
+			layoutPortletIds.add(portletPreferences.getPortletId());
 		}
 
 		return layoutPortletIds;

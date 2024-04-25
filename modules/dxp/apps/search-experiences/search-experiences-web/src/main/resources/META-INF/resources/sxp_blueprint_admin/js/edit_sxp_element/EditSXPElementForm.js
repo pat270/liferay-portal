@@ -34,6 +34,7 @@ import {CONFIG_PREFIX} from '../utils/constants';
 import {DEFAULT_ERROR} from '../utils/errorMessages';
 import {DEFAULT_HEADERS} from '../utils/fetch/fetch_data';
 import isDefined from '../utils/functions/is_defined';
+import traverseAndEncodeJSONStrings from '../utils/functions/traverse_and_encode_json_strings';
 import formatLocaleWithDashes from '../utils/language/format_locale_with_dashes';
 import formatLocaleWithUnderscores from '../utils/language/format_locale_with_underscores';
 import renameKeys from '../utils/language/rename_keys';
@@ -173,6 +174,7 @@ const validateConfigKeys = (
 function EditSXPElementForm({
 	initialDescription = '',
 	initialElementJSONEditorValue = {},
+	initialExternalReferenceCode,
 	initialTitle = '',
 	predefinedVariables = [],
 	readOnly,
@@ -204,6 +206,9 @@ function EditSXPElementForm({
 	] = useState(false);
 	const [elementJSONEditorValue, setElementJSONEditorValue] = useState(
 		initialElementJSONEditorValueString
+	);
+	const [externalReferenceCode, setExternalReferenceCode] = useState(
+		initialExternalReferenceCode
 	);
 
 	/**
@@ -391,7 +396,7 @@ function EditSXPElementForm({
 			}
 
 			if (!sxpElementJSONObjectNew.title_i18n[defaultLocale]) {
-				throw Liferay.Language.get('error.default-locale-title-empty');
+				throw Liferay.Language.get('error.default-locale-title-blank');
 			}
 		}
 		catch (error) {
@@ -447,13 +452,15 @@ function EditSXPElementForm({
 					body: JSON.stringify({
 						description_i18n:
 							sxpElementJSONObjectNew.description_i18n,
-						elementDefinition:
-							sxpElementJSONObjectNew.elementDefinition,
+						elementDefinition: traverseAndEncodeJSONStrings(
+							sxpElementJSONObjectNew.elementDefinition
+						),
+						externalReferenceCode,
 						title_i18n: sxpElementJSONObjectNew.title_i18n,
 						type,
 					}),
 					headers: DEFAULT_HEADERS,
-					method: 'PATCH',
+					method: 'PUT',
 				}
 			).then((response) => {
 				if (!response.ok) {
@@ -565,8 +572,11 @@ function EditSXPElementForm({
 						formatLocaleWithDashes
 					)}
 					disableTitleAndDescriptionModal={isSXPElementJSONInvalid}
+					entityId={sxpElementId}
+					externalReferenceCode={externalReferenceCode}
 					isSubmitting={isSubmitting}
 					onCancel={redirectURL}
+					onExternalReferenceCodeChange={setExternalReferenceCode}
 					onSubmit={_handleSubmit}
 					onTitleAndDescriptionChange={
 						_handleTitleAndDescriptionChange
@@ -807,6 +817,7 @@ EditSXPElementForm.propTypes = {
 	initialTitle: PropTypes.string,
 	predefinedVariables: PropTypes.arrayOf(PropTypes.object),
 	readOnly: PropTypes.bool,
+	sxpElementExternalReferenceCode: PropTypes.string,
 	sxpElementId: PropTypes.string,
 	type: PropTypes.number,
 };

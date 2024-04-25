@@ -9,9 +9,9 @@ import com.liferay.petra.function.UnsafeBiConsumer;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.GroupedModel;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
@@ -19,10 +19,12 @@ import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.kernel.servlet.ServletContextPool;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.odata.filter.ExpressionConvert;
 import com.liferay.portal.odata.filter.FilterParser;
@@ -201,7 +203,7 @@ public abstract class BaseSXPElementResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/search-experiences-rest/v1.0/sxp-elements' -d $'{"createDate": ___, "description": ___, "description_i18n": ___, "elementDefinition": ___, "externalReferenceCode": ___, "hidden": ___, "id": ___, "modifiedDate": ___, "readOnly": ___, "schemaVersion": ___, "title": ___, "title_i18n": ___, "type": ___, "userName": ___, "version": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/search-experiences-rest/v1.0/sxp-elements' -d $'{"createDate": ___, "description": ___, "description_i18n": ___, "elementDefinition": ___, "externalReferenceCode": ___, "fallbackDescription": ___, "fallbackTitle": ___, "hidden": ___, "id": ___, "modifiedDate": ___, "readOnly": ___, "schemaVersion": ___, "title": ___, "title_i18n": ___, "type": ___, "userName": ___, "version": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.tags.Tags(
 		value = {@io.swagger.v3.oas.annotations.tags.Tag(name = "SXPElement")}
@@ -218,7 +220,7 @@ public abstract class BaseSXPElementResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/search-experiences-rest/v1.0/sxp-elements/batch' -d $'{"createDate": ___, "description": ___, "description_i18n": ___, "elementDefinition": ___, "externalReferenceCode": ___, "hidden": ___, "id": ___, "modifiedDate": ___, "readOnly": ___, "schemaVersion": ___, "title": ___, "title_i18n": ___, "type": ___, "userName": ___, "version": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/search-experiences-rest/v1.0/sxp-elements/batch' -d $'{"createDate": ___, "description": ___, "description_i18n": ___, "elementDefinition": ___, "externalReferenceCode": ___, "fallbackDescription": ___, "fallbackTitle": ___, "hidden": ___, "id": ___, "modifiedDate": ___, "readOnly": ___, "schemaVersion": ___, "title": ___, "title_i18n": ___, "type": ___, "userName": ___, "version": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
@@ -295,7 +297,7 @@ public abstract class BaseSXPElementResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'PUT' 'http://localhost:8080/o/search-experiences-rest/v1.0/sxp-elements/by-external-reference-code/{externalReferenceCode}' -d $'{"createDate": ___, "description": ___, "description_i18n": ___, "elementDefinition": ___, "externalReferenceCode": ___, "hidden": ___, "id": ___, "modifiedDate": ___, "readOnly": ___, "schemaVersion": ___, "title": ___, "title_i18n": ___, "type": ___, "userName": ___, "version": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'PUT' 'http://localhost:8080/o/search-experiences-rest/v1.0/sxp-elements/by-external-reference-code/{externalReferenceCode}' -d $'{"createDate": ___, "description": ___, "description_i18n": ___, "elementDefinition": ___, "externalReferenceCode": ___, "fallbackDescription": ___, "fallbackTitle": ___, "hidden": ___, "id": ___, "modifiedDate": ___, "readOnly": ___, "schemaVersion": ___, "title": ___, "title_i18n": ___, "type": ___, "userName": ___, "version": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
@@ -329,7 +331,7 @@ public abstract class BaseSXPElementResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/search-experiences-rest/v1.0/sxp-elements/preview' -d $'{"createDate": ___, "description": ___, "description_i18n": ___, "elementDefinition": ___, "externalReferenceCode": ___, "hidden": ___, "id": ___, "modifiedDate": ___, "readOnly": ___, "schemaVersion": ___, "title": ___, "title_i18n": ___, "type": ___, "userName": ___, "version": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/search-experiences-rest/v1.0/sxp-elements/preview' -d $'{"createDate": ___, "description": ___, "description_i18n": ___, "elementDefinition": ___, "externalReferenceCode": ___, "fallbackDescription": ___, "fallbackTitle": ___, "hidden": ___, "id": ___, "modifiedDate": ___, "readOnly": ___, "schemaVersion": ___, "title": ___, "title_i18n": ___, "type": ___, "userName": ___, "version": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.tags.Tags(
 		value = {@io.swagger.v3.oas.annotations.tags.Tag(name = "SXPElement")}
@@ -475,7 +477,7 @@ public abstract class BaseSXPElementResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'PATCH' 'http://localhost:8080/o/search-experiences-rest/v1.0/sxp-elements/{sxpElementId}' -d $'{"createDate": ___, "description": ___, "description_i18n": ___, "elementDefinition": ___, "externalReferenceCode": ___, "hidden": ___, "id": ___, "modifiedDate": ___, "readOnly": ___, "schemaVersion": ___, "title": ___, "title_i18n": ___, "type": ___, "userName": ___, "version": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'PATCH' 'http://localhost:8080/o/search-experiences-rest/v1.0/sxp-elements/{sxpElementId}' -d $'{"createDate": ___, "description": ___, "description_i18n": ___, "elementDefinition": ___, "externalReferenceCode": ___, "fallbackDescription": ___, "fallbackTitle": ___, "hidden": ___, "id": ___, "modifiedDate": ___, "readOnly": ___, "schemaVersion": ___, "title": ___, "title_i18n": ___, "type": ___, "userName": ___, "version": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
@@ -501,7 +503,159 @@ public abstract class BaseSXPElementResourceImpl
 			SXPElement sxpElement)
 		throws Exception {
 
+		SXPElement existingSXPElement = getSXPElement(sxpElementId);
+
+		if (sxpElement.getCreateDate() != null) {
+			existingSXPElement.setCreateDate(sxpElement.getCreateDate());
+		}
+
+		if (sxpElement.getDescription() != null) {
+			existingSXPElement.setDescription(sxpElement.getDescription());
+		}
+
+		if (sxpElement.getDescription_i18n() != null) {
+			existingSXPElement.setDescription_i18n(
+				sxpElement.getDescription_i18n());
+		}
+
+		if (sxpElement.getExternalReferenceCode() != null) {
+			existingSXPElement.setExternalReferenceCode(
+				sxpElement.getExternalReferenceCode());
+		}
+
+		if (sxpElement.getFallbackDescription() != null) {
+			existingSXPElement.setFallbackDescription(
+				sxpElement.getFallbackDescription());
+		}
+
+		if (sxpElement.getFallbackTitle() != null) {
+			existingSXPElement.setFallbackTitle(sxpElement.getFallbackTitle());
+		}
+
+		if (sxpElement.getHidden() != null) {
+			existingSXPElement.setHidden(sxpElement.getHidden());
+		}
+
+		if (sxpElement.getModifiedDate() != null) {
+			existingSXPElement.setModifiedDate(sxpElement.getModifiedDate());
+		}
+
+		if (sxpElement.getReadOnly() != null) {
+			existingSXPElement.setReadOnly(sxpElement.getReadOnly());
+		}
+
+		if (sxpElement.getSchemaVersion() != null) {
+			existingSXPElement.setSchemaVersion(sxpElement.getSchemaVersion());
+		}
+
+		if (sxpElement.getTitle() != null) {
+			existingSXPElement.setTitle(sxpElement.getTitle());
+		}
+
+		if (sxpElement.getTitle_i18n() != null) {
+			existingSXPElement.setTitle_i18n(sxpElement.getTitle_i18n());
+		}
+
+		if (sxpElement.getType() != null) {
+			existingSXPElement.setType(sxpElement.getType());
+		}
+
+		if (sxpElement.getUserName() != null) {
+			existingSXPElement.setUserName(sxpElement.getUserName());
+		}
+
+		if (sxpElement.getVersion() != null) {
+			existingSXPElement.setVersion(sxpElement.getVersion());
+		}
+
+		preparePatch(sxpElement, existingSXPElement);
+
+		return putSXPElement(sxpElementId, existingSXPElement);
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'PUT' 'http://localhost:8080/o/search-experiences-rest/v1.0/sxp-elements/{sxpElementId}' -d $'{"createDate": ___, "description": ___, "description_i18n": ___, "elementDefinition": ___, "externalReferenceCode": ___, "fallbackDescription": ___, "fallbackTitle": ___, "hidden": ___, "id": ___, "modifiedDate": ___, "readOnly": ___, "schemaVersion": ___, "title": ___, "title_i18n": ___, "type": ___, "userName": ___, "version": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 */
+	@io.swagger.v3.oas.annotations.Parameters(
+		value = {
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
+				name = "sxpElementId"
+			)
+		}
+	)
+	@io.swagger.v3.oas.annotations.tags.Tags(
+		value = {@io.swagger.v3.oas.annotations.tags.Tag(name = "SXPElement")}
+	)
+	@javax.ws.rs.Consumes({"application/json", "application/xml"})
+	@javax.ws.rs.Path("/sxp-elements/{sxpElementId}")
+	@javax.ws.rs.Produces({"application/json", "application/xml"})
+	@javax.ws.rs.PUT
+	@Override
+	public SXPElement putSXPElement(
+			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
+			@javax.validation.constraints.NotNull
+			@javax.ws.rs.PathParam("sxpElementId")
+			Long sxpElementId,
+			SXPElement sxpElement)
+		throws Exception {
+
 		return new SXPElement();
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'PUT' 'http://localhost:8080/o/search-experiences-rest/v1.0/sxp-elements/{sxpElementId}/batch' -d $'{"createDate": ___, "description": ___, "description_i18n": ___, "elementDefinition": ___, "externalReferenceCode": ___, "fallbackDescription": ___, "fallbackTitle": ___, "hidden": ___, "id": ___, "modifiedDate": ___, "readOnly": ___, "schemaVersion": ___, "title": ___, "title_i18n": ___, "type": ___, "userName": ___, "version": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 */
+	@io.swagger.v3.oas.annotations.Parameters(
+		value = {
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
+				name = "sxpElementId"
+			),
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
+				name = "callbackURL"
+			)
+		}
+	)
+	@io.swagger.v3.oas.annotations.tags.Tags(
+		value = {@io.swagger.v3.oas.annotations.tags.Tag(name = "SXPElement")}
+	)
+	@javax.ws.rs.Consumes("application/json")
+	@javax.ws.rs.Path("/sxp-elements/{sxpElementId}/batch")
+	@javax.ws.rs.Produces("application/json")
+	@javax.ws.rs.PUT
+	@Override
+	public Response putSXPElementBatch(
+			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
+			@javax.validation.constraints.NotNull
+			@javax.ws.rs.PathParam("sxpElementId")
+			Long sxpElementId,
+			SXPElement sxpElement,
+			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
+			@javax.ws.rs.QueryParam("callbackURL")
+			String callbackURL,
+			Object object)
+		throws Exception {
+
+		vulcanBatchEngineImportTaskResource.setContextAcceptLanguage(
+			contextAcceptLanguage);
+		vulcanBatchEngineImportTaskResource.setContextCompany(contextCompany);
+		vulcanBatchEngineImportTaskResource.setContextHttpServletRequest(
+			contextHttpServletRequest);
+		vulcanBatchEngineImportTaskResource.setContextUriInfo(contextUriInfo);
+		vulcanBatchEngineImportTaskResource.setContextUser(contextUser);
+
+		Response.ResponseBuilder responseBuilder = Response.accepted();
+
+		return responseBuilder.entity(
+			vulcanBatchEngineImportTaskResource.putImportTask(
+				SXPElement.class.getName(), callbackURL, object)
+		).build();
 	}
 
 	/**
@@ -587,6 +741,12 @@ public abstract class BaseSXPElementResourceImpl
 			String updateStrategy = (String)parameters.getOrDefault(
 				"updateStrategy", "UPDATE");
 
+			if (StringUtil.equalsIgnoreCase(updateStrategy, "UPDATE")) {
+				sxpElementUnsafeFunction =
+					sxpElement -> putSXPElementByExternalReferenceCode(
+						sxpElement.getExternalReferenceCode(), sxpElement);
+			}
+
 			if (StringUtil.equalsIgnoreCase(updateStrategy, "PARTIAL_UPDATE")) {
 				sxpElementUnsafeFunction = sxpElement -> {
 					SXPElement persistedSXPElement = null;
@@ -645,11 +805,11 @@ public abstract class BaseSXPElementResourceImpl
 	}
 
 	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray("UPSERT", "INSERT");
+		return SetUtil.fromArray("INSERT", "UPSERT");
 	}
 
 	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray("PARTIAL_UPDATE");
+		return SetUtil.fromArray("PARTIAL_UPDATE", "UPDATE");
 	}
 
 	@Override
@@ -721,6 +881,13 @@ public abstract class BaseSXPElementResourceImpl
 				sxpElement);
 		}
 
+		if (StringUtil.equalsIgnoreCase(updateStrategy, "UPDATE")) {
+			sxpElementUnsafeFunction = sxpElement -> putSXPElement(
+				sxpElement.getId() != null ? sxpElement.getId() :
+					_parseLong((String)parameters.get("sxpElementId")),
+				sxpElement);
+		}
+
 		if (sxpElementUnsafeFunction == null) {
 			throw new NotSupportedException(
 				"Update strategy \"" + updateStrategy +
@@ -779,6 +946,13 @@ public abstract class BaseSXPElementResourceImpl
 
 	public void setContextHttpServletRequest(
 		HttpServletRequest contextHttpServletRequest) {
+
+		if ((contextHttpServletRequest != null) &&
+			(contextHttpServletRequest.getAttribute(WebKeys.CTX) == null)) {
+
+			contextHttpServletRequest.setAttribute(
+				WebKeys.CTX, ServletContextPool.get(StringPool.BLANK));
+		}
 
 		this.contextHttpServletRequest = contextHttpServletRequest;
 	}
@@ -917,7 +1091,9 @@ public abstract class BaseSXPElementResourceImpl
 	}
 
 	protected Map<String, String> addAction(
-		String actionName, GroupedModel groupedModel, String methodName) {
+		String actionName,
+		com.liferay.portal.kernel.model.GroupedModel groupedModel,
+		String methodName) {
 
 		return ActionUtil.addAction(
 			actionName, getClass(), groupedModel, methodName,
@@ -950,6 +1126,10 @@ public abstract class BaseSXPElementResourceImpl
 			actionName, siteId, methodName, null, permissionName, siteId);
 	}
 
+	protected void preparePatch(
+		SXPElement sxpElement, SXPElement existingSxpElement) {
+	}
+
 	protected <T, R, E extends Throwable> List<R> transform(
 		Collection<T> collection, UnsafeFunction<T, R, E> unsafeFunction) {
 
@@ -957,14 +1137,15 @@ public abstract class BaseSXPElementResourceImpl
 	}
 
 	protected <T, R, E extends Throwable> R[] transform(
-		T[] array, UnsafeFunction<T, R, E> unsafeFunction, Class<?> clazz) {
+		T[] array, UnsafeFunction<T, R, E> unsafeFunction,
+		Class<? extends R> clazz) {
 
 		return TransformUtil.transform(array, unsafeFunction, clazz);
 	}
 
 	protected <T, R, E extends Throwable> R[] transformToArray(
 		Collection<T> collection, UnsafeFunction<T, R, E> unsafeFunction,
-		Class<?> clazz) {
+		Class<? extends R> clazz) {
 
 		return TransformUtil.transformToArray(
 			collection, unsafeFunction, clazz);
@@ -990,7 +1171,8 @@ public abstract class BaseSXPElementResourceImpl
 	}
 
 	protected <T, R, E extends Throwable> R[] unsafeTransform(
-			T[] array, UnsafeFunction<T, R, E> unsafeFunction, Class<?> clazz)
+			T[] array, UnsafeFunction<T, R, E> unsafeFunction,
+			Class<? extends R> clazz)
 		throws E {
 
 		return TransformUtil.unsafeTransform(array, unsafeFunction, clazz);
@@ -998,7 +1180,7 @@ public abstract class BaseSXPElementResourceImpl
 
 	protected <T, R, E extends Throwable> R[] unsafeTransformToArray(
 			Collection<T> collection, UnsafeFunction<T, R, E> unsafeFunction,
-			Class<?> clazz)
+			Class<? extends R> clazz)
 		throws E {
 
 		return TransformUtil.unsafeTransformToArray(

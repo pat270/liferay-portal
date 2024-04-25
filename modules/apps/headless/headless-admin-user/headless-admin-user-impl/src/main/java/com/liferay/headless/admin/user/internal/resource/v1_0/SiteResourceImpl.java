@@ -15,7 +15,7 @@ import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.GroupService;
 import com.liferay.portal.kernel.service.UserLocalService;
-import com.liferay.portal.kernel.service.permission.GroupPermission;
+import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.vulcan.pagination.Page;
@@ -68,7 +68,7 @@ public class SiteResourceImpl extends BaseSiteResourceImpl {
 				"No site exists with friendly URL " + url);
 		}
 
-		_groupPermission.check(
+		GroupPermissionUtil.check(
 			PermissionThreadLocal.getPermissionChecker(), group,
 			ActionKeys.VIEW);
 
@@ -78,45 +78,52 @@ public class SiteResourceImpl extends BaseSiteResourceImpl {
 	private Site _toSite(Group group) throws Exception {
 		return new Site() {
 			{
-				Set<Locale> availableLocales = _language.getAvailableLocales(
-					group.getGroupId());
+				setAvailableLanguages(
+					() -> {
+						Set<Locale> availableLocales =
+							_language.getAvailableLocales(group.getGroupId());
 
-				availableLanguages = LocaleUtil.toW3cLanguageIds(
-					availableLocales.toArray(new Locale[0]));
+						return LocaleUtil.toW3cLanguageIds(
+							availableLocales.toArray(new Locale[0]));
+					});
 
-				creator = CreatorUtil.toCreator(
-					_portal,
-					_userLocalService.fetchUser(group.getCreatorUserId()));
-				description = group.getDescription(
-					contextAcceptLanguage.getPreferredLocale());
-				description_i18n = LocalizedMapUtil.getI18nMap(
-					contextAcceptLanguage.isAcceptAllLanguages(),
-					group.getDescriptionMap());
-				descriptiveName = group.getDescriptiveName(
-					contextAcceptLanguage.getPreferredLocale());
-				friendlyUrlPath = group.getFriendlyURL();
-				id = group.getGroupId();
-				key = group.getGroupKey();
-				membershipType = group.getTypeLabel();
-				name = group.getName(
-					contextAcceptLanguage.getPreferredLocale());
-				name_i18n = LocalizedMapUtil.getI18nMap(
-					contextAcceptLanguage.isAcceptAllLanguages(),
-					group.getNameMap());
-				parentSiteId = group.getParentGroupId();
-				sites = transformToArray(
-					_groupService.getGroups(
-						group.getCompanyId(), group.getGroupId(), true),
-					SiteResourceImpl.this::_toSite, Site.class);
+				setCreator(
+					() -> CreatorUtil.toCreator(
+						_portal,
+						_userLocalService.fetchUser(group.getCreatorUserId())));
+				setDescription(
+					() -> group.getDescription(
+						contextAcceptLanguage.getPreferredLocale()));
+				setDescription_i18n(
+					() -> LocalizedMapUtil.getI18nMap(
+						contextAcceptLanguage.isAcceptAllLanguages(),
+						group.getDescriptionMap()));
+				setDescriptiveName(
+					() -> group.getDescriptiveName(
+						contextAcceptLanguage.getPreferredLocale()));
+				setFriendlyUrlPath(group::getFriendlyURL);
+				setId(group::getGroupId);
+				setKey(group::getGroupKey);
+				setMembershipType(group::getTypeLabel);
+				setName(
+					() -> group.getName(
+						contextAcceptLanguage.getPreferredLocale()));
+				setName_i18n(
+					() -> LocalizedMapUtil.getI18nMap(
+						contextAcceptLanguage.isAcceptAllLanguages(),
+						group.getNameMap()));
+				setParentSiteId(group::getParentGroupId);
+				setSites(
+					() -> transformToArray(
+						_groupService.getGroups(
+							group.getCompanyId(), group.getGroupId(), true),
+						SiteResourceImpl.this::_toSite, Site.class));
 			}
 		};
 	}
 
 	@Reference
 	private GroupLocalService _groupLocalService;
-
-	@Reference
-	private GroupPermission _groupPermission;
 
 	@Reference
 	private GroupService _groupService;

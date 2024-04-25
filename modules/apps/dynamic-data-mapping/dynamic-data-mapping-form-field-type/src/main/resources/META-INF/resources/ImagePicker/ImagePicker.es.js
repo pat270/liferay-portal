@@ -10,7 +10,7 @@ import {usePrevious} from '@liferay/frontend-js-react-web';
 import {addParams, openSelectionModal, sub} from 'frontend-js-web';
 import React, {useState} from 'react';
 
-import {FieldBase} from '../FieldBase/ReactFieldBase.es';
+import FieldBase from '../FieldBase/ReactFieldBase.es';
 import {useSyncValue} from '../hooks/useSyncValue.es';
 
 const defaultValue = {description: '', title: '', url: ''};
@@ -81,6 +81,25 @@ const ImagePicker = ({
 					onFieldChanged(mergedValues)
 				);
 			});
+
+			selectedImage.addEventListener('error', (event) => {
+				const imageData = {
+					...{
+						description: '',
+						event,
+						height: 0,
+						title: '',
+						url: '',
+						width: 0,
+					},
+					...selectedItemValue,
+				};
+
+				dispatchValue({value: imageData}, (mergedValues) =>
+					onFieldChanged(mergedValues)
+				);
+			});
+
 			selectedImage.src = selectedItemValue.url;
 		}
 	};
@@ -214,6 +233,12 @@ const ImagePicker = ({
 								alt={imageValues.description}
 								className="d-block img-fluid mb-2 rounded"
 								onClick={() => setModalVisible(true)}
+								onError={(event) =>
+									event.currentTarget.classList.add('hide')
+								}
+								onLoad={(event) =>
+									event.currentTarget.classList.remove('hide')
+								}
 								src={imageValues.url}
 								style={{
 									cursor: 'pointer',

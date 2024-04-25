@@ -14,6 +14,8 @@ import com.liferay.info.item.InfoItemIdentifier;
 import com.liferay.info.item.InfoItemReference;
 import com.liferay.info.localized.InfoLocalizedValue;
 import com.liferay.petra.function.UnsafeConsumer;
+import com.liferay.petra.lang.SafeCloseable;
+import com.liferay.petra.lang.ThreadContextClassLoaderUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Layout;
@@ -24,7 +26,6 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.DocumentException;
-import com.liferay.portal.kernel.xml.SAXReader;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import com.liferay.segments.model.SegmentsExperience;
 import com.liferay.segments.service.SegmentsExperienceLocalService;
@@ -80,19 +81,16 @@ import org.osgi.service.component.annotations.Reference;
 public class XLIFFTranslationSnapshotProvider
 	implements TranslationSnapshotProvider {
 
+	@Override
 	public TranslationSnapshot getTranslationSnapshot(
 			long groupId, InfoItemReference infoItemReference,
 			InputStream inputStream, boolean includeSource)
 		throws IOException, XLIFFFileException {
 
-		Thread currentThread = Thread.currentThread();
+		try (SafeCloseable safeCloseable = ThreadContextClassLoaderUtil.swap(
+				XLIFFTranslationSnapshotProvider.class.getClassLoader());
+			AutoXLIFFFilter autoXLIFFFilter = new AutoXLIFFFilter()) {
 
-		ClassLoader contextClassLoader = currentThread.getContextClassLoader();
-
-		currentThread.setContextClassLoader(
-			XLIFFTranslationSnapshotProvider.class.getClassLoader());
-
-		try (AutoXLIFFFilter autoXLIFFFilter = new AutoXLIFFFilter()) {
 			List<Event> events = new ArrayList<>();
 
 			File tempFile = FileUtil.createTempFile(inputStream);
@@ -143,9 +141,6 @@ public class XLIFFTranslationSnapshotProvider
 		catch (InvalidParameterException invalidParameterException) {
 			throw new XLIFFFileException.MustHaveValidParameter(
 				invalidParameterException);
-		}
-		finally {
-			currentThread.setContextClassLoader(contextClassLoader);
 		}
 	}
 
@@ -664,9 +659,6 @@ public class XLIFFTranslationSnapshotProvider
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;
-
-	@Reference
-	private SAXReader _saxReader;
 
 	@Reference
 	private SegmentsExperienceLocalService _segmentsExperienceLocalService;

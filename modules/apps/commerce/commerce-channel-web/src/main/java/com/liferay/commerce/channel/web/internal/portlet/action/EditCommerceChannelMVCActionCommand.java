@@ -27,8 +27,8 @@ import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseTransactionalMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.repository.model.FileEntry;
@@ -37,10 +37,10 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalService;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
+import com.liferay.portal.kernel.settings.FallbackKeysSettingsUtil;
 import com.liferay.portal.kernel.settings.GroupServiceSettingsLocator;
 import com.liferay.portal.kernel.settings.ModifiableSettings;
 import com.liferay.portal.kernel.settings.Settings;
-import com.liferay.portal.kernel.settings.SettingsFactory;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ObjectValuePair;
@@ -48,7 +48,6 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PropertiesParamUtil;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.upload.UploadHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -198,7 +197,7 @@ public class EditCommerceChannelMVCActionCommand
 			ActionRequest actionRequest, CommerceChannel commerceChannel)
 		throws Exception {
 
-		Settings settings = _settingsFactory.getSettings(
+		Settings settings = FallbackKeysSettingsUtil.getSettings(
 			new GroupServiceSettingsLocator(
 				commerceChannel.getGroupId(),
 				CommerceConstants.SERVICE_NAME_COMMERCE_ORDER_FIELDS));
@@ -250,7 +249,7 @@ public class EditCommerceChannelMVCActionCommand
 			ActionRequest actionRequest, CommerceChannel commerceChannel)
 		throws Exception {
 
-		Settings settings = _settingsFactory.getSettings(
+		Settings settings = FallbackKeysSettingsUtil.getSettings(
 			new GroupServiceSettingsLocator(
 				commerceChannel.getGroupId(),
 				CommerceConstants.SERVICE_NAME_COMMERCE_ORDER));
@@ -272,7 +271,7 @@ public class EditCommerceChannelMVCActionCommand
 			ActionRequest actionRequest, CommerceChannel commerceChannel)
 		throws Exception {
 
-		Settings settings = _settingsFactory.getSettings(
+		Settings settings = FallbackKeysSettingsUtil.getSettings(
 			new GroupServiceSettingsLocator(
 				commerceChannel.getGroupId(),
 				CommerceConstants.
@@ -295,7 +294,7 @@ public class EditCommerceChannelMVCActionCommand
 			ActionRequest actionRequest, CommerceChannel commerceChannel)
 		throws Exception {
 
-		Settings settings = _settingsFactory.getSettings(
+		Settings settings = FallbackKeysSettingsUtil.getSettings(
 			new GroupServiceSettingsLocator(
 				commerceChannel.getGroupId(),
 				CommerceConstants.SERVICE_NAME_COMMERCE_TAX));
@@ -317,7 +316,7 @@ public class EditCommerceChannelMVCActionCommand
 			ActionRequest actionRequest, CommerceChannel commerceChannel)
 		throws Exception {
 
-		Settings settings = _settingsFactory.getSettings(
+		Settings settings = FallbackKeysSettingsUtil.getSettings(
 			new GroupServiceSettingsLocator(
 				commerceChannel.getGroupId(),
 				CommerceConstants.SERVICE_NAME_COMMERCE_ACCOUNT));
@@ -426,7 +425,8 @@ public class EditCommerceChannelMVCActionCommand
 					newFileEntry.getFileName(), newFileEntry.getMimeType(),
 					formattedFileName, StringPool.BLANK, StringPool.BLANK,
 					StringPool.BLANK, newFileEntry.getContentStream(),
-					newFileEntry.getSize(), null, null, new ServiceContext());
+					newFileEntry.getSize(), null, null, null,
+					new ServiceContext());
 			}
 			finally {
 				_dlAppLocalService.deleteFileEntry(fileEntryId);
@@ -439,7 +439,7 @@ public class EditCommerceChannelMVCActionCommand
 				existingFileEntry.getTitle(), StringPool.BLANK,
 				existingFileEntry.getDescription(), StringPool.BLANK,
 				DLVersionNumberIncrease.NONE, newFileEntry.getContentStream(),
-				newFileEntry.getSize(), null, null, new ServiceContext());
+				newFileEntry.getSize(), null, null, null, new ServiceContext());
 		}
 	}
 
@@ -463,12 +463,6 @@ public class EditCommerceChannelMVCActionCommand
 
 	@Reference
 	private Portal _portal;
-
-	@Reference
-	private SettingsFactory _settingsFactory;
-
-	@Reference
-	private UploadHandler _uploadHandler;
 
 	@Reference
 	private WorkflowDefinitionLinkLocalService

@@ -9,19 +9,21 @@ import ClayIcon from '@clayui/icon';
 import ClayLayout from '@clayui/layout';
 import ClayList from '@clayui/list';
 import classNames from 'classnames';
-import {fetch, navigate, openToast} from 'frontend-js-web';
+import {fetch, navigate} from 'frontend-js-web';
 import React, {useRef, useState} from 'react';
 
-import {API_URL} from '../Constants';
-import {IFDSViewSectionInterface} from '../FDSView';
+import {IFDSViewSectionProps} from '../FDSView';
 import RequiredMark from '../components/RequiredMark';
+import {API_URL} from '../utils/constants';
+import openDefaultFailureToast from '../utils/openDefaultFailureToast';
+import openDefaultSuccessToast from '../utils/openDefaultSuccessToast';
 
 const Details = ({
 	fdsView,
 	fdsViewsURL,
 	namespace,
 	onFDSViewUpdate,
-}: IFDSViewSectionInterface) => {
+}: IFDSViewSectionProps) => {
 	const [labelValidationError, setLabelValidationError] = useState(false);
 
 	const fdsViewDescriptionRef = useRef<HTMLInputElement>(null);
@@ -45,15 +47,16 @@ const Details = ({
 			}
 		);
 
+		if (!response.ok) {
+			openDefaultFailureToast();
+
+			return;
+		}
+
 		const responseJSON = await response.json();
 
 		if (responseJSON?.id) {
-			openToast({
-				message: Liferay.Language.get(
-					'your-request-completed-successfully'
-				),
-				type: 'success',
-			});
+			openDefaultSuccessToast();
 
 			const controlMenuHeaderTitles = document.getElementsByClassName(
 				'control-menu-level-1-heading'
@@ -67,12 +70,7 @@ const Details = ({
 			onFDSViewUpdate(responseJSON);
 		}
 		else {
-			openToast({
-				message: Liferay.Language.get(
-					'your-request-failed-to-complete'
-				),
-				type: 'danger',
-			});
+			openDefaultFailureToast();
 		}
 	};
 

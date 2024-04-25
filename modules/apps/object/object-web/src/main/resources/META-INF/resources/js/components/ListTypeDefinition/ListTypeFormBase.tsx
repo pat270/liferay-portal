@@ -5,7 +5,7 @@
 
 import {
 	FormError,
-	REQUIRED_MSG,
+	constantsUtils,
 	invalidateRequired,
 	useForm,
 } from '@liferay/object-js-components-web';
@@ -13,22 +13,22 @@ import {
 import {defaultLanguageId} from '../../utils/constants';
 
 export function useListTypeForm({initialValues, onSubmit}: IUseListTypeForm) {
-	const validate = (picklist: Partial<PickList>) => {
+	const validate = (picklist: Partial<ListTypeDefinition>) => {
 		const errors: ObjectValidationErrors = {};
 		const label = picklist.name_i18n?.[defaultLanguageId];
 
 		if (invalidateRequired(label)) {
-			errors.name_i18n = REQUIRED_MSG;
+			errors.name_i18n = constantsUtils.REQUIRED_MSG;
 		}
 		if (invalidateRequired(picklist.externalReferenceCode)) {
-			errors.externalReferenceCode = REQUIRED_MSG;
+			errors.externalReferenceCode = constantsUtils.REQUIRED_MSG;
 		}
 
 		return errors;
 	};
 
 	const {errors, handleChange, handleSubmit, setValues, values} = useForm<
-		PickList
+		ListTypeDefinition
 	>({
 		initialValues,
 		onSubmit,
@@ -38,8 +38,8 @@ export function useListTypeForm({initialValues, onSubmit}: IUseListTypeForm) {
 	return {errors, handleChange, handleSubmit, setValues, values};
 }
 interface IUseListTypeForm {
-	initialValues: Partial<PickList>;
-	onSubmit: (picklist: PickList) => void;
+	initialValues: Partial<ListTypeDefinition>;
+	onSubmit: (picklist: ListTypeDefinition) => void;
 }
 
-export type ObjectValidationErrors = FormError<PickList>;
+export type ObjectValidationErrors = FormError<ListTypeDefinition>;

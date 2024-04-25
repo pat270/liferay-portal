@@ -15,13 +15,15 @@ public interface ModelSearchSettings {
 
 	public String getClassName();
 
+	public long getCompanyId();
+
 	public String[] getDefaultSelectedFieldNames();
 
 	public String[] getDefaultSelectedLocalizedFieldNames();
 
 	public String[] getSearchClassNames();
 
-	public boolean isCommitImmediately();
+	public boolean isPermissionAware();
 
 	public boolean isSearchResultPermissionFilterSuppressed();
 

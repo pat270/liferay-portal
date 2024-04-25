@@ -11,15 +11,14 @@
 List<BreadcrumbEntry> breadcrumbEntries = (List<BreadcrumbEntry>)request.getAttribute("liferay-site-navigation:breadcrumb:breadcrumbEntries");
 %>
 
-<ol class="breadcrumb">
+<ol class="breadcrumb <%= request.getAttribute("liferay-site-navigation:breadcrumb:cssClass") %>">
 
 	<%
-	for (int i = 0; i < breadcrumbEntries.size(); i++) {
-		BreadcrumbEntry breadcrumbEntry = breadcrumbEntries.get(i);
+	for (BreadcrumbEntry breadcrumbEntry : breadcrumbEntries) {
 	%>
 
 		<c:choose>
-			<c:when test="<%= (i < (breadcrumbEntries.size() - 1)) && Validator.isNotNull(breadcrumbEntry.getURL()) %>">
+			<c:when test="<%= Validator.isNotNull(breadcrumbEntry.getURL()) %>">
 				<li class="breadcrumb-item">
 					<a class="breadcrumb-link" href="<%= breadcrumbEntry.getURL() %>">
 						<span class="breadcrumb-text-truncate"><%= HtmlUtil.escape(breadcrumbEntry.getTitle()) %></span>
@@ -27,7 +26,7 @@ List<BreadcrumbEntry> breadcrumbEntries = (List<BreadcrumbEntry>)request.getAttr
 				</li>
 			</c:when>
 			<c:otherwise>
-				<li class="active breadcrumb-item">
+				<li aria-current="page" class="active breadcrumb-item">
 					<span class="breadcrumb-text-truncate"><%= HtmlUtil.escape(breadcrumbEntry.getTitle()) %></span>
 				</li>
 			</c:otherwise>

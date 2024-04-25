@@ -8,10 +8,10 @@ package com.liferay.portal.verify.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.reflect.ReflectionUtil;
-import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.db.DBType;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.test.rule.AssumeTestRule;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.verify.model.VerifiableUUIDModel;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -39,7 +40,15 @@ public class VerifyUUIDTest extends BaseVerifyProcessTestCase {
 	@ClassRule
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
-		new LiferayIntegrationTestRule();
+		new AggregateTestRule(
+			new AssumeTestRule("assume"), new LiferayIntegrationTestRule());
+
+	public static void assume() {
+		DBType dbType = DBManagerUtil.getDBType();
+
+		Assume.assumeTrue(
+			(dbType != DBType.DB2) && (dbType != DBType.HYPERSONIC));
+	}
 
 	@Test
 	public void testVerifyModel() throws Exception {
@@ -185,9 +194,8 @@ public class VerifyUUIDTest extends BaseVerifyProcessTestCase {
 			Exception exception, Map<DBType, String> expectedMessages)
 		throws Exception {
 
-		DB db = DBManagerUtil.getDB();
-
-		String expectedMessagePrefix = expectedMessages.get(db.getDBType());
+		String expectedMessagePrefix = expectedMessages.get(
+			DBManagerUtil.getDBType());
 
 		if (expectedMessagePrefix == null) {
 			throw exception;

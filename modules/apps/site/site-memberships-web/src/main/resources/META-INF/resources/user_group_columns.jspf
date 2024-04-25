@@ -12,7 +12,7 @@ int usersCount = UserLocalServiceUtil.searchCount(
 		"usersUserGroups", Long.valueOf(userGroup.getUserGroupId())
 	).build());
 
-String userGroupGroupRolesString = ListUtil.toString(UserGroupGroupRoleLocalServiceUtil.getUserGroupGroupRoles(userGroup.getUserGroupId(), siteMembershipsDisplayContext.getGroupId()), UsersAdmin.USER_GROUP_GROUP_ROLE_TITLE_ACCESSOR, StringPool.COMMA_AND_SPACE);
+String userGroupGroupRolesString = ListUtil.toString(UserGroupGroupRoleLocalServiceUtil.getUserGroupGroupRoles(userGroup.getUserGroupId(), siteMembershipsDisplayContext.getGroupId()), UsersAdminUtil.USER_GROUP_GROUP_ROLE_TITLE_ACCESSOR, StringPool.COMMA_AND_SPACE);
 %>
 
 <c:choose>
@@ -27,19 +27,19 @@ String userGroupGroupRolesString = ListUtil.toString(UserGroupGroupRoleLocalServ
 		>
 			<h5><%= userGroup.getName() %></h5>
 
-			<h6 class="text-default">
+			<div class="h6 text-default">
 				<span><%= userGroup.getDescription() %></span>
-			</h6>
+			</div>
 
-			<h6 class="text-default">
+			<div class="h6 text-default">
 				<span><liferay-ui:message arguments="<%= usersCount %>" key="x-users" /></span>
-			</h6>
+			</div>
 		</liferay-ui:search-container-column-text>
 
 		<c:if test="<%= !selectUserGroup %>">
-			<h6>
+			<div class="h6">
 				<%= HtmlUtil.escape(userGroupGroupRolesString) %>
-			</h6>
+			</div>
 
 			<liferay-ui:search-container-column-text>
 
@@ -50,7 +50,7 @@ String userGroupGroupRolesString = ListUtil.toString(UserGroupGroupRoleLocalServ
 				<clay:dropdown-actions
 					aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 					dropdownItems="<%= userGroupActionDropdownItemsProvider.getActionDropdownItems() %>"
-					propsTransformer="js/UserGroupsDefaultPropsTransformer"
+					propsTransformer="{UserGroupsDefaultPropsTransformer} from site-memberships-web"
 				/>
 			</liferay-ui:search-container-column-text>
 		</c:if>
@@ -86,7 +86,7 @@ String userGroupGroupRolesString = ListUtil.toString(UserGroupGroupRoleLocalServ
 				<clay:dropdown-actions
 					aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 					dropdownItems="<%= userGroupActionDropdownItemsProvider.getActionDropdownItems() %>"
-					propsTransformer="js/UserGroupsDefaultPropsTransformer"
+					propsTransformer="{UserGroupsDefaultPropsTransformer} from site-memberships-web"
 				/>
 			</liferay-ui:search-container-column-text>
 		</c:if>

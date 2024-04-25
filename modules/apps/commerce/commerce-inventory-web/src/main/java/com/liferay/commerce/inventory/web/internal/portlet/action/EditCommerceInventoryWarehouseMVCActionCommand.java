@@ -11,16 +11,22 @@ import com.liferay.commerce.inventory.model.CommerceInventoryWarehouseItem;
 import com.liferay.commerce.inventory.service.CommerceInventoryReplenishmentItemService;
 import com.liferay.commerce.inventory.service.CommerceInventoryWarehouseItemService;
 import com.liferay.commerce.product.constants.CPPortletKeys;
+import com.liferay.commerce.product.exception.CPInstanceUnitOfMeasureKeyException;
+import com.liferay.commerce.product.exception.NoSuchCPInstanceUnitOfMeasureException;
+import com.liferay.commerce.util.CommerceOrderItemQuantityFormatter;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
+import com.liferay.portal.kernel.portlet.bridges.mvc.BaseTransactionalMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+
+import java.math.BigDecimal;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -39,10 +45,10 @@ import org.osgi.service.component.annotations.Reference;
 	service = MVCActionCommand.class
 )
 public class EditCommerceInventoryWarehouseMVCActionCommand
-	extends BaseMVCActionCommand {
+	extends BaseTransactionalMVCActionCommand {
 
 	@Override
-	protected void doProcessAction(
+	protected void doTransactionalCommand(
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
 
@@ -60,9 +66,12 @@ public class EditCommerceInventoryWarehouseMVCActionCommand
 			}
 		}
 		catch (Exception exception) {
-			if (exception instanceof
+			if (exception instanceof CPInstanceUnitOfMeasureKeyException ||
+				exception instanceof
 					DuplicateCommerceInventoryWarehouseItemException ||
-				exception instanceof MVCCException) {
+				exception instanceof MVCCException ||
+				exception instanceof NoSuchCPInstanceUnitOfMeasureException ||
+				exception instanceof PrincipalException.MustHavePermission) {
 
 				SessionErrors.add(actionRequest, exception.getClass());
 
@@ -78,18 +87,17 @@ public class EditCommerceInventoryWarehouseMVCActionCommand
 	}
 
 	private void _addCommerceInventoryWarehouse(ActionRequest actionRequest)
-		throws PortalException {
-
-		long commerceInventoryWarehouseId = ParamUtil.getLong(
-			actionRequest, "commerceInventoryWarehouseId");
-
-		int quantity = ParamUtil.getInteger(actionRequest, "quantity");
-		String sku = ParamUtil.getString(actionRequest, "sku");
+		throws Exception {
 
 		_commerceInventoryWarehouseItemService.
 			addCommerceInventoryWarehouseItem(
-				StringPool.BLANK, commerceInventoryWarehouseId, quantity, sku,
-				StringPool.BLANK);
+				StringPool.BLANK,
+				ParamUtil.getLong(
+					actionRequest, "commerceInventoryWarehouseId"),
+				_commerceOrderItemQuantityFormatter.parse(
+					actionRequest, "quantity"),
+				ParamUtil.getString(actionRequest, "sku"),
+				ParamUtil.getString(actionRequest, "unitOfMeasure"));
 	}
 
 	private void _deleteCommerceInventoryWarehouse(ActionRequest actionRequest)
@@ -98,34 +106,41 @@ public class EditCommerceInventoryWarehouseMVCActionCommand
 		long companyId = _portal.getCompanyId(actionRequest);
 
 		String sku = ParamUtil.getString(actionRequest, "sku");
+		String unitOfMeasureKey = ParamUtil.getString(
+			actionRequest, "unitOfMeasureKey");
 
 		_commerceInventoryWarehouseItemService.
-			deleteCommerceInventoryWarehouseItems(companyId, sku);
+			deleteCommerceInventoryWarehouseItems(
+				companyId, sku, unitOfMeasureKey);
 
 		_commerceInventoryReplenishmentItemService.
-			deleteCommerceInventoryReplenishmentItems(companyId, sku);
+			deleteCommerceInventoryReplenishmentItems(
+				companyId, sku, unitOfMeasureKey);
 	}
 
 	private void _updateCommerceInventoryWarehouse(ActionRequest actionRequest)
-		throws PortalException {
+		throws Exception {
 
 		long commerceInventoryWarehouseId = ParamUtil.getLong(
 			actionRequest, "commerceInventoryWarehouseId");
 
 		String sku = ParamUtil.getString(actionRequest, "sku");
-
-		int quantity = ParamUtil.getInteger(actionRequest, "quantity");
+		String unitOfMeasureKey = ParamUtil.getString(
+			actionRequest, "unitOfMeasureKey");
 
 		CommerceInventoryWarehouseItem commerceInventoryWarehouseItem =
 			_commerceInventoryWarehouseItemService.
 				fetchCommerceInventoryWarehouseItem(
-					commerceInventoryWarehouseId, sku);
+					commerceInventoryWarehouseId, sku, unitOfMeasureKey);
+
+		BigDecimal quantity = _commerceOrderItemQuantityFormatter.parse(
+			actionRequest, "quantity");
 
 		if (commerceInventoryWarehouseItem == null) {
 			_commerceInventoryWarehouseItemService.
 				addCommerceInventoryWarehouseItem(
 					StringPool.BLANK, commerceInventoryWarehouseId, quantity,
-					sku, StringPool.BLANK);
+					sku, unitOfMeasureKey);
 		}
 		else {
 			_commerceInventoryWarehouseItemService.
@@ -146,6 +161,10 @@ public class EditCommerceInventoryWarehouseMVCActionCommand
 	@Reference
 	private CommerceInventoryWarehouseItemService
 		_commerceInventoryWarehouseItemService;
+
+	@Reference
+	private CommerceOrderItemQuantityFormatter
+		_commerceOrderItemQuantityFormatter;
 
 	@Reference
 	private Portal _portal;

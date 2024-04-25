@@ -4,20 +4,92 @@
  */
 
 import ClayLayout from '@clayui/layout';
+import ClayLoadingIndicator from '@clayui/loading-indicator';
 import ClayPanel from '@clayui/panel';
-import React from 'react';
+import {createPortletURL, fetch, getPortletId} from 'frontend-js-web';
+import React, {useEffect, useState} from 'react';
 
 import TimelineDropdownMenu from './TimelineDropdownMenu';
-import WorkflowStatusLabel from './WorkflowStatusLabel';
+import {
+	WORKFLOW_STATUS_APPROVED,
+	WORKFLOW_STATUS_DRAFT,
+	WORKFLOW_STATUS_PENDING,
+	WorkflowStatusLabel,
+} from './WorkflowStatusLabel';
 
-const PublicationTimeline = ({timelineItems}) => {
+const PublicationTimeline = ({namespace, timelineItemsURL}) => {
+	const [timelineItems, setTimelineItems] = useState([]);
+	const [loading, setLoading] = useState(true);
+
+	const createMVCRenderCommandURL = (
+		ctCollectionId,
+		mvcRenderCommandName,
+		additionalParams = {}
+	) => {
+		return createPortletURL(
+			themeDisplay.getLayoutRelativeControlPanelURL(),
+			{
+				ctCollectionId,
+				mvcRenderCommandName,
+				p_p_id: getPortletId(namespace),
+				...additionalParams,
+			}
+		).toString();
+	};
+
+	const getEditURL = (ctCollectionId) => {
+		return createMVCRenderCommandURL(
+			ctCollectionId,
+			'/change_tracking/edit_ct_collection'
+		);
+	};
+
+	const getRevertURL = (ctCollectionId) => {
+		return createMVCRenderCommandURL(
+			ctCollectionId,
+			'/change_tracking/undo_ct_collection',
+			{revert: true}
+		);
+	};
+	const getReviewURL = (ctCollectionId) => {
+		return createMVCRenderCommandURL(
+			ctCollectionId,
+			'/change_tracking/view_changes'
+		);
+	};
+
+	useEffect(() => {
+		if (!timelineItemsURL) {
+			return;
+		}
+
+		fetch(timelineItemsURL)
+			.then((response) => {
+				return response.json();
+			})
+			.then((jsonResponse) => {
+				setTimelineItems(jsonResponse.items);
+				setLoading(false);
+			});
+	}, [timelineItemsURL]);
+
+	if (loading) {
+		return (
+			<>
+				<ClayLoadingIndicator displayType="secondary" size="sm" />
+			</>
+		);
+	}
 	if (timelineItems && !!timelineItems.length) {
 		return (
 			<div className="publication-timeline">
 				{timelineItems.map((timelineItem) => (
 					<ClayPanel
 						key={timelineItem.id}
-						style={{borderBottomColor: '#e7e7ed', marginBottom: 0}}
+						style={{
+							borderBottomColor: '#e7e7ed',
+							marginBottom: 0,
+						}}
 					>
 						<ClayPanel.Body>
 							<ClayLayout.ContentRow>
@@ -28,7 +100,9 @@ const PublicationTimeline = ({timelineItems}) => {
 										</span>
 
 										<WorkflowStatusLabel
-											workflowStatus={timelineItem.status}
+											workflowStatus={
+												timelineItem.status.code
+											}
 										/>
 									</div>
 
@@ -42,20 +116,44 @@ const PublicationTimeline = ({timelineItems}) => {
 								</ClayLayout.ContentCol>
 
 								<ClayLayout.ContentCol>
-									<TimelineDropdownMenu
-										deleteURL={
-											timelineItem.dropdownMenu.deleteURL
-										}
-										editURL={
-											timelineItem.dropdownMenu.editURL
-										}
-										revertURL={
-											timelineItem.dropdownMenu.revertURL
-										}
-										reviewURL={
-											timelineItem.dropdownMenu.reviewURL
-										}
-									/>
+									{timelineItem.actions ? (
+										<TimelineDropdownMenu
+											deleteURL={
+												timelineItem.status.code ===
+													WORKFLOW_STATUS_DRAFT &&
+												!!timelineItem.actions.delete
+													? timelineItem.actions
+															.delete.href
+													: undefined
+											}
+											editURL={
+												timelineItem.status.code ===
+													WORKFLOW_STATUS_DRAFT &&
+												!!timelineItem.actions.update
+													? getEditURL(
+															timelineItem.id
+													  )
+													: undefined
+											}
+											revertURL={
+												timelineItem.status.code ===
+												WORKFLOW_STATUS_APPROVED
+													? getRevertURL(
+															timelineItem.id
+													  )
+													: undefined
+											}
+											reviewURL={
+												timelineItem.status.code !==
+													WORKFLOW_STATUS_PENDING &&
+												!!timelineItem.actions.get
+													? getReviewURL(
+															timelineItem.id
+													  )
+													: undefined
+											}
+										/>
+									) : null}
 								</ClayLayout.ContentCol>
 							</ClayLayout.ContentRow>
 						</ClayPanel.Body>

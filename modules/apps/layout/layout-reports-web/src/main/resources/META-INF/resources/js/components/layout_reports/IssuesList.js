@@ -15,7 +15,7 @@ import {sub} from 'frontend-js-web';
 import PropTypes from 'prop-types';
 import React, {useContext, useEffect, useMemo, useState} from 'react';
 
-import {SET_SELECTED_ISSUE} from '../../constants/actionTypes';
+import {SET_SELECTED_ITEM} from '../../constants/actionTypes';
 import {
 	StoreDispatchContext,
 	StoreStateContext,
@@ -53,20 +53,22 @@ export default function IssuesList() {
 
 	return (
 		<>
-			{localizedIssues && !loading && (
-				<ClayAlert
-					className="c-mb-4"
-					displayType="info"
-					variant="stripe"
-				>
-					{sub(
-						Liferay.Language.get(
-							'showing-data-from-x-relaunch-to-update-data'
-						),
-						localizedIssues.date
-					)}
-				</ClayAlert>
-			)}
+			{!Liferay.FeatureFlags['LPS-187284'] &&
+				localizedIssues &&
+				!loading && (
+					<ClayAlert
+						className="c-mb-4"
+						displayType="info"
+						variant="stripe"
+					>
+						{sub(
+							Liferay.Language.get(
+								'showing-data-from-x-relaunch-to-update-data'
+							),
+							localizedIssues.date
+						)}
+					</ClayAlert>
+				)}
 			<div
 				className={classNames('c-pb-3', {
 					'c-px-3': !Liferay.FeatureFlags['LPS-187284'],
@@ -151,27 +153,25 @@ const Section = ({section}) => {
 			collapsable
 			defaultExpanded={sectionTotal > 0}
 			displayTitle={
-				<span className="c-inner" tabIndex="-1">
-					<ClayPanel.Title>
-						<ClayLayout.ContentRow>
-							<ClayLayout.ContentCol
-								className="align-self-center panel-title"
-								expand
-							>
-								{section.title}
-							</ClayLayout.ContentCol>
+				<ClayPanel.Title>
+					<ClayLayout.ContentRow>
+						<ClayLayout.ContentCol
+							className="align-self-center panel-title"
+							expand
+						>
+							{section.title}
+						</ClayLayout.ContentCol>
 
-							<ClayLayout.ContentCol>
-								<ClayBadge
-									displayType={
-										sectionTotal === 0 ? 'success' : 'info'
-									}
-									label={sectionTotal}
-								/>
-							</ClayLayout.ContentCol>
-						</ClayLayout.ContentRow>
-					</ClayPanel.Title>
-				</span>
+						<ClayLayout.ContentCol>
+							<ClayBadge
+								displayType={
+									sectionTotal === 0 ? 'success' : 'info'
+								}
+								label={sectionTotal}
+							/>
+						</ClayLayout.ContentCol>
+					</ClayLayout.ContentRow>
+				</ClayPanel.Title>
 			}
 			displayType="unstyled"
 			showCollapseIcon={true}
@@ -187,7 +187,7 @@ const Section = ({section}) => {
 						)}
 					</div>
 				) : (
-					<ClayList>
+					<ClayList className="c-m-0">
 						{section.details.map((issue) => (
 							<Issue issue={issue} key={issue.key} />
 						))}
@@ -214,14 +214,15 @@ const Issue = ({issue}) => {
 	return (
 		issueTotal > 0 && (
 			<ClayButton
-				className="p-1 w-100"
 				displayType="unstyled"
-				onClick={() => dispatch({issue, type: SET_SELECTED_ISSUE})}
+				onClick={() =>
+					dispatch({
+						item: {...issue, type: 'issue'},
+						type: SET_SELECTED_ITEM,
+					})
+				}
 			>
-				<span
-					className="align-items-center c-inner d-flex justify-content-between m-0 px-2 text-secondary w-100"
-					tabIndex="-1"
-				>
+				<span className="align-items-center c-pb-3 d-flex justify-content-between text-secondary">
 					{issue.title}
 
 					<ClayBadge

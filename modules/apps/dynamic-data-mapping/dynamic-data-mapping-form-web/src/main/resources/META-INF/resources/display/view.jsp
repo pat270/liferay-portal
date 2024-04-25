@@ -92,7 +92,7 @@ boolean limitToOneSubmissionPerUser = DDMFormInstanceSubmissionLimitStatusUtil.i
 				%>
 
 				<react:component
-					module="admin/js/components/DefaultPage"
+					module="{DefaultPage} from dynamic-data-mapping-form-web"
 					props='<%=
 						HashMapBuilder.<String, Object>put(
 							"dataEngineModule", ddmFormDisplayContext.getDataEngineModule()
@@ -174,6 +174,16 @@ boolean limitToOneSubmissionPerUser = DDMFormInstanceSubmissionLimitStatusUtil.i
 						<liferay-ui:error exception="<%= NoSuchFormInstanceException.class %>" message="the-selected-form-no-longer-exists" />
 						<liferay-ui:error exception="<%= NoSuchStructureException.class %>" message="unable-to-retrieve-the-definition-of-the-selected-form" />
 						<liferay-ui:error exception="<%= NoSuchStructureLayoutException.class %>" message="unable-to-retrieve-the-layout-of-the-selected-form" />
+
+						<liferay-ui:error exception="<%= ObjectEntryCountException.class %>">
+
+							<%
+							ObjectEntryCountException oece = (ObjectEntryCountException)errorException;
+							%>
+
+							<liferay-ui:message arguments="<%= oece.getObjectDefinitionLabel() %>" key="the-limit-of-guest-entries-for-object-definition-has-been-reached-and-will-no-longer-be-accepted" translateArguments="<%= false %>" />
+						</liferay-ui:error>
+
 						<liferay-ui:error exception="<%= ObjectEntryValuesException.ExceedsIntegerSize.class %>" message="object-entry-value-exceeds-integer-field-allowed-size" />
 						<liferay-ui:error exception="<%= ObjectEntryValuesException.ExceedsLongMaxSize.class %>" message="object-entry-value-exceeds-maximum-long-field-allowed-size" />
 						<liferay-ui:error exception="<%= ObjectEntryValuesException.ExceedsLongMinSize.class %>" message="object-entry-value-falls-below-minimum-long-field-allowed-size" />
@@ -195,11 +205,22 @@ boolean limitToOneSubmissionPerUser = DDMFormInstanceSubmissionLimitStatusUtil.i
 						<c:if test="<%= formShared || preview %>">
 							<clay:container-fluid>
 								<div class="locale-actions">
-									<liferay-ui:language
-										formAction="<%= currentURL %>"
-										languageId="<%= languageId %>"
-										languageIds="<%= ddmFormDisplayContext.getAvailableLanguageIds() %>"
-									/>
+									<c:choose>
+										<c:when test="<%= ddmFormDisplayContext.isPropagateLanguageSelection() %>">
+											<liferay-ui:language
+												languageId="<%= languageId %>"
+												languageIds="<%= ddmFormDisplayContext.getAvailableLanguageIds() %>"
+												useNamespace="<%= false %>"
+											/>
+										</c:when>
+										<c:otherwise>
+											<liferay-ui:language
+												formAction="<%= currentURL %>"
+												languageId="<%= languageId %>"
+												languageIds="<%= ddmFormDisplayContext.getAvailableLanguageIds() %>"
+											/>
+										</c:otherwise>
+									</c:choose>
 								</div>
 							</clay:container-fluid>
 						</c:if>
@@ -237,7 +258,7 @@ boolean limitToOneSubmissionPerUser = DDMFormInstanceSubmissionLimitStatusUtil.i
 
 						<clay:container-fluid>
 							<react:component
-								module="admin/js/util/ShowPartialResultsAlert"
+								module="{ShowPartialResultsAlert} from dynamic-data-mapping-form-web"
 								props='<%=
 									HashMapBuilder.<String, Object>put(
 										"dismissible", true
@@ -259,7 +280,7 @@ boolean limitToOneSubmissionPerUser = DDMFormInstanceSubmissionLimitStatusUtil.i
 							id="<%= ddmFormDisplayContext.getContainerId() %>"
 						>
 							<react:component
-								module="admin/js/FormView"
+								module="{FormView} from dynamic-data-mapping-form-web"
 								props='<%=
 									HashMapBuilder.<String, Object>put(
 										"dataEngineModule", ddmFormDisplayContext.getDataEngineModule()

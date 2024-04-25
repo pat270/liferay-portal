@@ -105,13 +105,13 @@ public class LayoutPageTemplateEntryLocalServiceUtil {
 
 	public static LayoutPageTemplateEntry copyLayoutPageTemplateEntry(
 			long userId, long groupId, long layoutPageTemplateCollectionId,
-			long sourceLayoutPageTemplateEntryId,
+			long sourceLayoutPageTemplateEntryId, boolean copyPermissions,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws Exception {
 
 		return getService().copyLayoutPageTemplateEntry(
 			userId, groupId, layoutPageTemplateCollectionId,
-			sourceLayoutPageTemplateEntryId, serviceContext);
+			sourceLayoutPageTemplateEntryId, copyPermissions, serviceContext);
 	}
 
 	/**
@@ -370,6 +370,12 @@ public class LayoutPageTemplateEntryLocalServiceUtil {
 	}
 
 	public static List<LayoutPageTemplateEntry> getLayoutPageTemplateEntries(
+		long groupId, int status) {
+
+		return getService().getLayoutPageTemplateEntries(groupId, status);
+	}
+
+	public static List<LayoutPageTemplateEntry> getLayoutPageTemplateEntries(
 		long groupId, long layoutPageTemplateCollectionId) {
 
 		return getService().getLayoutPageTemplateEntries(
@@ -547,6 +553,13 @@ public class LayoutPageTemplateEntryLocalServiceUtil {
 		return getService().getPersistedModel(primaryKeyObj);
 	}
 
+	public static String getUniqueLayoutPageTemplateEntryName(
+		long groupId, String name, int type) {
+
+		return getService().getUniqueLayoutPageTemplateEntryName(
+			groupId, name, type);
+	}
+
 	/**
 	 * Updates the layout page template entry in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
@@ -577,6 +590,14 @@ public class LayoutPageTemplateEntryLocalServiceUtil {
 
 		return getService().updateLayoutPageTemplateEntry(
 			layoutPageTemplateEntryId, previewFileEntryId);
+	}
+
+	public static LayoutPageTemplateEntry updateLayoutPageTemplateEntry(
+			long layoutPageTemplateEntryId, long classNameId, long classTypeId)
+		throws PortalException {
+
+		return getService().updateLayoutPageTemplateEntry(
+			layoutPageTemplateEntryId, classNameId, classTypeId);
 	}
 
 	public static LayoutPageTemplateEntry updateLayoutPageTemplateEntry(

@@ -13,7 +13,6 @@ import com.liferay.fragment.service.FragmentEntryLinkLocalServiceUtil;
 import com.liferay.fragment.util.configuration.FragmentConfigurationField;
 import com.liferay.fragment.util.configuration.FragmentEntryConfigurationParser;
 import com.liferay.info.constants.InfoDisplayWebKeys;
-import com.liferay.info.exception.InfoFormException;
 import com.liferay.info.exception.InfoFormValidationException;
 import com.liferay.info.exception.NoSuchFormVariationException;
 import com.liferay.info.exception.NoSuchInfoItemException;
@@ -31,6 +30,8 @@ import com.liferay.info.item.provider.InfoItemFormProvider;
 import com.liferay.info.item.provider.InfoItemObjectProvider;
 import com.liferay.info.search.InfoSearchClassMapperRegistryUtil;
 import com.liferay.info.type.WebImage;
+import com.liferay.info.type.WebURL;
+import com.liferay.layout.helper.structure.LayoutStructureRulesHelper;
 import com.liferay.layout.taglib.internal.servlet.ServletContextUtil;
 import com.liferay.layout.util.constants.LayoutDataItemTypeConstants;
 import com.liferay.layout.util.structure.ContainerStyledLayoutStructureItem;
@@ -46,6 +47,7 @@ import com.liferay.layout.util.structure.StyledLayoutStructureItem;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.exception.InfoFormException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -281,6 +283,13 @@ public class RenderLayoutStructureDisplayContext {
 		return defaultFragmentRendererContext;
 	}
 
+	public Set<String> getDisplayedItemIds() {
+		LayoutStructureRulesHelper.LayoutStructureRulesResult
+			layoutStructureRulesResult = _getLayoutStructureRulesResult();
+
+		return layoutStructureRulesResult.getDisplayedItemIds();
+	}
+
 	public String getEditInfoItemActionURL() {
 		StringBundler sb = new StringBundler(3);
 
@@ -369,6 +378,13 @@ public class RenderLayoutStructureDisplayContext {
 		}
 
 		return successMessageJSONObject.getString("displayPage");
+	}
+
+	public Set<String> getHiddenItemIds() {
+		LayoutStructureRulesHelper.LayoutStructureRulesResult
+			layoutStructureRulesResult = _getLayoutStructureRulesResult();
+
+		return layoutStructureRulesResult.getHiddenItemIds();
 	}
 
 	public InfoForm getInfoForm(
@@ -510,7 +526,7 @@ public class RenderLayoutStructureDisplayContext {
 	public String getStyle(StyledLayoutStructureItem styledLayoutStructureItem)
 		throws Exception {
 
-		StringBundler sb = new StringBundler(8);
+		StringBundler sb = new StringBundler(9);
 
 		JSONObject backgroundImageJSONObject =
 			styledLayoutStructureItem.getBackgroundImageJSONObject();
@@ -563,6 +579,12 @@ public class RenderLayoutStructureDisplayContext {
 			sb.append(": url(");
 			sb.append(backgroundImageURL);
 			sb.append(");");
+		}
+
+		Set<String> displayedItemIds = getDisplayedItemIds();
+
+		if (displayedItemIds.contains(styledLayoutStructureItem.getItemId())) {
+			sb.append("display: block !important;");
 		}
 
 		return sb.toString();
@@ -685,7 +707,7 @@ public class RenderLayoutStructureDisplayContext {
 		String backgroundImageURL = jsonObject.getString("url");
 
 		if (Validator.isNotNull(backgroundImageURL)) {
-			return PortalUtil.getPathContext() + backgroundImageURL;
+			return backgroundImageURL;
 		}
 
 		return StringPool.BLANK;
@@ -931,6 +953,28 @@ public class RenderLayoutStructureDisplayContext {
 		return null;
 	}
 
+	private LayoutStructureRulesHelper.LayoutStructureRulesResult
+		_getLayoutStructureRulesResult() {
+
+		if (_layoutStructureRulesResult != null) {
+			return _layoutStructureRulesResult;
+		}
+
+		LayoutStructureRulesHelper layoutStructureRulesHelper =
+			ServletContextUtil.getLayoutStructureRulesHelper();
+
+		LayoutStructureRulesHelper.LayoutStructureRulesResult
+			layoutStructureRulesResult =
+				layoutStructureRulesHelper.processLayoutStructureRules(
+					_themeDisplay.getScopeGroupId(), _layoutStructure,
+					_themeDisplay.getPermissionChecker(),
+					_getSegmentsEntryIds());
+
+		_layoutStructureRulesResult = layoutStructureRulesResult;
+
+		return _layoutStructureRulesResult;
+	}
+
 	private String _getMainItemId() {
 		if (Validator.isNotNull(_mainItemId)) {
 			return _mainItemId;
@@ -1011,7 +1055,7 @@ public class RenderLayoutStructureDisplayContext {
 
 		_segmentsEntryIds = segmentsEntryRetriever.getSegmentsEntryIds(
 			_themeDisplay.getScopeGroupId(), _themeDisplay.getUserId(),
-			requestContextMapper.map(_httpServletRequest));
+			requestContextMapper.map(_httpServletRequest), new long[0]);
 
 		return _segmentsEntryIds;
 	}
@@ -1055,16 +1099,24 @@ public class RenderLayoutStructureDisplayContext {
 			return (String)value;
 		}
 
-		if (!(value instanceof WebImage)) {
-			return StringPool.BLANK;
+		if (value instanceof WebImage) {
+			WebImage webImage = (WebImage)value;
+
+			String url = webImage.getURL();
+
+			if (Validator.isNotNull(url)) {
+				return url;
+			}
 		}
 
-		WebImage webImage = (WebImage)value;
+		if (value instanceof WebURL) {
+			WebURL webURL = (WebURL)value;
 
-		String url = webImage.getUrl();
+			String url = webURL.getURL();
 
-		if (Validator.isNotNull(url)) {
-			return url;
+			if (Validator.isNotNull(url)) {
+				return url;
+			}
 		}
 
 		return StringPool.BLANK;
@@ -1078,6 +1130,8 @@ public class RenderLayoutStructureDisplayContext {
 
 	private final HttpServletRequest _httpServletRequest;
 	private final LayoutStructure _layoutStructure;
+	private LayoutStructureRulesHelper.LayoutStructureRulesResult
+		_layoutStructureRulesResult;
 	private final String _mainItemId;
 	private final String _mode;
 	private Long _previewClassNameId;

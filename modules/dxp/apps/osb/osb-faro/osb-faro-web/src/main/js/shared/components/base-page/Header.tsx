@@ -9,7 +9,7 @@ import getCN from 'classnames';
 import NotificationAlertList, {
 	useNotificationsAPI
 } from '../NotificationAlertList';
-import React from 'react';
+import React, {useState} from 'react';
 import Row from './Row';
 import TextTruncate from 'shared/components/TextTruncate';
 import {getMatchedRoute, setUriQueryValues, toRoute} from 'shared/util/router';
@@ -35,9 +35,14 @@ const NavBar: React.FC<INavBarProps> = ({
 }) => {
 	const matchedRoute = getMatchedRoute(items);
 
+	const initialItem =
+		items.find(item => item.route === matchedRoute) ?? items[0];
+
+	const [activeLabel, setActiveLabel] = useState(initialItem.label);
+
 	return (
 		<div className='row'>
-			<ClayNavigationBar triggerLabel={matchedRoute}>
+			<ClayNavigationBar triggerLabel={activeLabel}>
 				{items.map(({label, route}) => (
 					<ClayNavigationBar.Item
 						active={matchedRoute === route}
@@ -48,6 +53,7 @@ const NavBar: React.FC<INavBarProps> = ({
 								pickBy(routeQueries),
 								toRoute(route, routeParams)
 							)}
+							onClick={() => setActiveLabel(label)}
 						>
 							{label}
 						</ClayLink>
@@ -62,6 +68,10 @@ interface Action extends React.HTMLAttributes<HTMLElement> {
 	disabled: boolean;
 	label: string;
 	href: string;
+	icon?: {
+		symbol: string;
+	};
+	external?: boolean;
 }
 
 interface IPageActionsProps {
@@ -79,7 +89,7 @@ const PageActions: React.FC<IPageActionsProps> = ({
 }) => (
 	<>
 		{actions.length <= actionsDisplayLimit &&
-			actions.map(({label, ...props}) => {
+			actions.map(({icon, label, ...props}) => {
 				const Button = props.href ? ClayLink : ClayButton;
 
 				return (
@@ -94,6 +104,10 @@ const PageActions: React.FC<IPageActionsProps> = ({
 						key={label}
 						{...props}
 					>
+						{icon && (
+							<ClayIcon className='mr-2' symbol={icon.symbol} />
+						)}
+
 						{label}
 					</Button>
 				);
@@ -146,6 +160,17 @@ interface ITitleSectionProps extends React.HTMLAttributes<HTMLDivElement> {
 	title?: string;
 }
 
+export interface IActionProps extends React.HTMLAttributes<HTMLDivElement> {
+	displayType: string;
+	label: string;
+	redirectURL?: string;
+	onClick?: () => void;
+}
+
+interface IActionsProps extends React.HTMLAttributes<HTMLDivElement> {
+	actions: IActionProps[];
+}
+
 const TitleSection: React.FC<ITitleSectionProps> = ({
 	children,
 	className,
@@ -165,6 +190,34 @@ const TitleSection: React.FC<ITitleSectionProps> = ({
 	</Section>
 );
 
+const Actions: React.FC<IActionsProps> = ({actions = []}) => (
+	<div className='header-actions'>
+		{actions.map(({displayType, label, onClick, redirectURL}, index) =>
+			redirectURL ? (
+				<ClayLink
+					className={getCN(`btn btn-${displayType}`, 'ml-2')}
+					href={redirectURL}
+					key={index}
+					target='_blank'
+				>
+					<ClayIcon className='mr-2' symbol='shortcut' />
+
+					{label}
+				</ClayLink>
+			) : (
+				<ClayButton
+					className='ml-2'
+					displayType={displayType as any}
+					key={index}
+					onClick={onClick}
+				>
+					{label}
+				</ClayButton>
+			)
+		)}
+	</div>
+);
+
 interface IHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
 	breadcrumbs: IBreadcrumbArgs[];
 	groupId: string;
@@ -173,6 +226,7 @@ interface IHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
 const Header: React.FC<IHeaderProps> & {
 	NavBar: typeof NavBar;
 	PageActions: typeof PageActions;
+	Actions: typeof Actions;
 	Section: typeof Section;
 	TitleSection: typeof TitleSection;
 } = ({breadcrumbs, children, groupId}) => {
@@ -199,6 +253,7 @@ const Header: React.FC<IHeaderProps> & {
 	);
 };
 
+Header.Actions = Actions;
 Header.NavBar = NavBar;
 Header.PageActions = PageActions;
 Header.Section = Section;

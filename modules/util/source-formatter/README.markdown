@@ -100,7 +100,7 @@ Checks are configured in the following files:
 - ### By File Extensions:
    - [.action, .function, .jelly, .jrxml, .macro, .pom, .project, .properties, .svg, .testcase, .toggle, .tpl, .wsdl, .xml or .xsd](src/main/resources/documentation/xml_source_processor_checks.markdown#checks-for-action-function-jelly-jrxml-macro-pom-project-properties-svg-testcase-toggle-tpl-wsdl-xml-or-xsd)
    - [.bnd](src/main/resources/documentation/bnd_source_processor_checks.markdown#checks-for-bnd)
-   - [.bnd, .ftl, .gradle, .java, .jsp, .jspf or .vm](src/main/resources/documentation/upgrade_source_processor_checks.markdown#checks-for-bnd-ftl-gradle-java-jsp-jspf-or-vm)
+   - [.bnd, .ftl, .gradle, .java, .json, .jsp, .jspf, .scss or .vm](src/main/resources/documentation/upgrade_source_processor_checks.markdown#checks-for-bnd-ftl-gradle-java-json-jsp-jspf-scss-or-vm)
    - [.bndrun](src/main/resources/documentation/bnd_run_source_processor_checks.markdown#checks-for-bndrun)
    - [.cfg or .config](src/main/resources/documentation/config_source_processor_checks.markdown#checks-for-cfg-or-config)
    - [.cql](src/main/resources/documentation/cql_source_processor_checks.markdown#checks-for-cql)
@@ -120,6 +120,7 @@ Checks are configured in the following files:
    - [.jsp, .jspf, .jspx, .tag, .tpl or .vm](src/main/resources/documentation/jsp_source_processor_checks.markdown#checks-for-jsp-jspf-jspx-tag-tpl-or-vm)
    - [.ldif](src/main/resources/documentation/ldif_source_processor_checks.markdown#checks-for-ldif)
    - [.lfrbuild-*](src/main/resources/documentation/lfr_build_source_processor_checks.markdown#checks-for-lfrbuild)
+   - [.list](src/main/resources/documentation/list_source_processor_checks.markdown#checks-for-list)
    - [.markdown or .md](src/main/resources/documentation/markdown_source_processor_checks.markdown#checks-for-markdown-or-md)
    - [.py](src/main/resources/documentation/python_source_processor_checks.markdown#checks-for-py)
    - [.soy](src/main/resources/documentation/soy_source_processor_checks.markdown#checks-for-soy)

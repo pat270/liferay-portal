@@ -5,15 +5,13 @@
 
 package com.liferay.dynamic.data.mapping.form.evaluator.internal.function;
 
-import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
-import com.liferay.portal.util.DateFormatFactoryImpl;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,11 +27,6 @@ public class FutureDatesFunctionTest {
 	public static final LiferayUnitTestRule liferayUnitTestRule =
 		LiferayUnitTestRule.INSTANCE;
 
-	@Before
-	public void setUp() throws Exception {
-		_setUpDateFormatFactoryUtil();
-	}
-
 	@Test
 	public void testApplyFalse() {
 		LocalDate yesterdayLocalDate = _todayLocalDate.minusDays(1);
@@ -46,14 +39,24 @@ public class FutureDatesFunctionTest {
 	@Test
 	public void testApplyTrue() {
 		LocalDate tomorrowLocalDate = _todayLocalDate.plusDays(1);
-
-		Assert.assertTrue(
-			_futureDatesFunction.apply(
-				tomorrowLocalDate.toString(), _todayLocalDate.toString()));
+		LocalDateTime tomorrowLocalDateTime = _todayLocalDateTime.plusDays(1);
 
 		Assert.assertTrue(
 			_futureDatesFunction.apply(
 				_todayLocalDate.toString(), _todayLocalDate.toString()));
+		Assert.assertTrue(
+			_futureDatesFunction.apply(
+				tomorrowLocalDate.toString(), _todayLocalDate.toString()));
+		Assert.assertTrue(
+			_futureDatesFunction.apply(
+				tomorrowLocalDate.toString(), _todayLocalDateTime.toString()));
+		Assert.assertTrue(
+			_futureDatesFunction.apply(
+				tomorrowLocalDateTime.toString(), _todayLocalDate.toString()));
+		Assert.assertTrue(
+			_futureDatesFunction.apply(
+				tomorrowLocalDateTime.toString(),
+				_todayLocalDateTime.toString()));
 	}
 
 	@Test
@@ -64,15 +67,10 @@ public class FutureDatesFunctionTest {
 			_futureDatesFunction.apply(_todayLocalDate.toString(), null));
 	}
 
-	private void _setUpDateFormatFactoryUtil() {
-		DateFormatFactoryUtil dateFormatFactoryUtil =
-			new DateFormatFactoryUtil();
-
-		dateFormatFactoryUtil.setDateFormatFactory(new DateFormatFactoryImpl());
-	}
-
 	private final FutureDatesFunction _futureDatesFunction =
 		new FutureDatesFunction();
 	private final LocalDate _todayLocalDate = LocalDate.now(ZoneId.of("UTC"));
+	private final LocalDateTime _todayLocalDateTime = LocalDateTime.now(
+		ZoneId.of("UTC"));
 
 }

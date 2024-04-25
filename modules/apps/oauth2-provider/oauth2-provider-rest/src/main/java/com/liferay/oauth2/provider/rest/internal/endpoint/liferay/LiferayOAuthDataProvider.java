@@ -28,6 +28,7 @@ import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -37,7 +38,6 @@ import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
@@ -1329,7 +1329,12 @@ public class LiferayOAuthDataProvider
 				oAuth2Application.getCompanyId(),
 				oAuth2Application.getClientCredentialUserId(),
 				oAuth2Application.getClientCredentialUserName()));
-		client.setTokenEndpointAuthMethod(clientAuthenticationMethod);
+
+		if (!clientAuthenticationMethod.equals(
+				OAuthConstants.TOKEN_ENDPOINT_AUTH_POST)) {
+
+			client.setTokenEndpointAuthMethod(clientAuthenticationMethod);
+		}
 
 		Map<String, String> properties = client.getProperties();
 

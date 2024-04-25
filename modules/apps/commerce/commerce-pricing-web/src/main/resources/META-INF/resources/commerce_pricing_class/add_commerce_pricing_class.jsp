@@ -28,46 +28,16 @@ String defaultLanguageId = LocaleUtil.toLanguageId(defaultLocale);
 		<aui:input name="description" type="textarea" />
 	</aui:form>
 
-	<aui:script require="commerce-frontend-js/utilities/eventsDefinitions as events, commerce-frontend-js/utilities/forms/index as FormUtils, commerce-frontend-js/ServiceProvider/index as ServiceProvider">
-		var CommerceProductGroupsResource = ServiceProvider.default.AdminCatalogAPI(
-			'v1'
-		);
-
-		Liferay.provide(
-			window,
-			'<portlet:namespace />apiSubmit',
-			(form) => {
-				var description = form.querySelector('#description').value;
-				var title = form.querySelector('#title').value;
-
-				var productGroupData = {
-					description: {<%= defaultLanguageId %>: description},
-					title: {<%= defaultLanguageId %>: title},
-				};
-
-				return CommerceProductGroupsResource.addProductGroup(productGroupData)
-					.then((payload) => {
-						var redirectURL = new Liferay.PortletURL.createURL(
-							'<%= editPricingClassPortletURL.toString() %>'
-						);
-
-						redirectURL.setParameter('commercePricingClassId', payload.id);
-						redirectURL.setParameter('p_auth', Liferay.authToken);
-
-						window.parent.Liferay.fire(events.CLOSE_MODAL, {
-							redirectURL: redirectURL.toString(),
-							successNotification: {
-								message:
-									'<liferay-ui:message key="your-request-completed-successfully" />',
-								showSuccessNotification: true,
-							},
-						});
-					})
-					.catch((error) => {
-						return Promise.reject(error);
-					});
-			},
-			['liferay-portlet-url']
-		);
-	</aui:script>
+	<liferay-frontend:component
+		context='<%=
+			HashMapBuilder.<String, Object>put(
+				"defaultLanguageId", defaultLanguageId
+			).put(
+				"editPricingClassPortletURL", String.valueOf(editPricingClassPortletURL)
+			).put(
+				"namespace", liferayPortletResponse.getNamespace()
+			).build()
+		%>'
+		module="{addCommercePricingClass} from commerce-pricing-web"
+	/>
 </commerce-ui:modal-content>

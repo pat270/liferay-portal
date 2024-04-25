@@ -1,6 +1,6 @@
 Bundle-Name: Liferay Portal Search API
 Bundle-SymbolicName: com.liferay.portal.search.api
-Bundle-Version: 13.1.1
+Bundle-Version: 16.0.1
 Export-Package:\
 	com.liferay.portal.search.aggregation,\
 	com.liferay.portal.search.aggregation.bucket,\
@@ -11,6 +11,8 @@ Export-Package:\
 	com.liferay.portal.search.batch,\
 	com.liferay.portal.search.capabilities,\
 	com.liferay.portal.search.ccr,\
+	com.liferay.portal.search.cluster,\
+	com.liferay.portal.search.collapse,\
 	com.liferay.portal.search.configuration,\
 	com.liferay.portal.search.constants,\
 	com.liferay.portal.search.context,\
@@ -20,6 +22,7 @@ Export-Package:\
 	com.liferay.portal.search.document,\
 	com.liferay.portal.search.engine,\
 	com.liferay.portal.search.expando,\
+	com.liferay.portal.search.experiences,\
 	com.liferay.portal.search.facet,\
 	com.liferay.portal.search.facet.category,\
 	com.liferay.portal.search.facet.custom,\
@@ -27,6 +30,7 @@ Export-Package:\
 	com.liferay.portal.search.facet.folder,\
 	com.liferay.portal.search.facet.modified,\
 	com.liferay.portal.search.facet.nested,\
+	com.liferay.portal.search.facet.range,\
 	com.liferay.portal.search.facet.site,\
 	com.liferay.portal.search.facet.tag,\
 	com.liferay.portal.search.facet.type,\

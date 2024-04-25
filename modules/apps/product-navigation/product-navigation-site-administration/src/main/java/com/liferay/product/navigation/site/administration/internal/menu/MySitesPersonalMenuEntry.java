@@ -19,10 +19,12 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.url.builder.AbsolutePortalURLBuilder;
+import com.liferay.portal.url.builder.AbsolutePortalURLBuilderFactory;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.product.navigation.personal.menu.PersonalMenuEntry;
 import com.liferay.site.item.selector.criterion.SiteItemSelectorCriterion;
-import com.liferay.site.util.RecentGroupManager;
+import com.liferay.site.manager.RecentGroupManager;
 import com.liferay.taglib.aui.AUIUtil;
 
 import java.util.List;
@@ -86,6 +88,19 @@ public class MySitesPersonalMenuEntry implements PersonalMenuEntry {
 	}
 
 	@Override
+	public String getOnClickESModule(HttpServletRequest httpServletRequest) {
+		AbsolutePortalURLBuilder absolutePortalURLBuilder =
+			_absolutePortalURLBuilderFactory.getAbsolutePortalURLBuilder(
+				httpServletRequest);
+
+		String moduleURL = absolutePortalURLBuilder.forESModule(
+			"product-navigation-site-administration", "index.js"
+		).build();
+
+		return "{mySitesOpener} from " + moduleURL;
+	}
+
+	@Override
 	public String getPortletURL(HttpServletRequest httpServletRequest) {
 		return null;
 	}
@@ -117,6 +132,9 @@ public class MySitesPersonalMenuEntry implements PersonalMenuEntry {
 
 		return false;
 	}
+
+	@Reference
+	private AbsolutePortalURLBuilderFactory _absolutePortalURLBuilderFactory;
 
 	@Reference
 	private ItemSelector _itemSelector;

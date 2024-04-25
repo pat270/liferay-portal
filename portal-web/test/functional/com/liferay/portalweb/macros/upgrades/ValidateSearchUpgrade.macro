@@ -1,6 +1,7 @@
 definition {
 
-	macro viewClassicSearchPortletConfiguration {
+	@summary = "Default summary"
+	macro viewClassicSearchPortletConfiguration() {
 		Navigator.gotoSitePage(
 			pageName = "Site Page",
 			siteName = "Site Name");
@@ -36,10 +37,13 @@ definition {
 			searchAssetTitle = "WC Title 2",
 			searchAssetType = "Web Content Article");
 
-		AssertElementNotPresent(locator1 = "SearchResults#USER_FACET_ANY_USER");
+		AssertElementNotPresent(
+			key_term = "Any User",
+			locator1 = "SearchPage#USER_FACET_TERM");
 	}
 
-	macro viewResultRankingsEntry {
+	@summary = "Default summary"
+	macro viewResultRankingsEntry() {
 		SearchTuning.openResultRankingsAdmin();
 
 		LexiconEntry.gotoEntryMenuItem(
@@ -55,7 +59,8 @@ definition {
 			locator1 = "SearchTuning#RESULT_RANKINGS_RESULT");
 	}
 
-	macro viewSearchBarWidgetTemplate {
+	@summary = "Default summary"
+	macro viewSearchBarWidgetTemplate() {
 		Navigator.openURL();
 
 		AssertTextEquals.assertPartialText(
@@ -68,21 +73,26 @@ definition {
 
 		SelectFrame(locator1 = "IFrame#CONFIGURATION");
 
-		NavigationMenusAdmin.viewDisplayTemplate(displayTemplate = "Search Bar Test ADT");
+		AssertTextEquals(
+			key_class = "display-template-selector",
+			key_index = 1,
+			locator1 = "Button#ANY_WITH_CLASS_AND_INDEX",
+			value1 = "Search Bar Test ADT");
 
-		ApplicationDisplayTemplates.openWidgetTemplatesAdmin(siteURLKey = "guest");
+		WidgetTemplates.openWidgetTemplatesAdmin(siteURLKey = "guest");
 
 		AssertElementPresent(
 			key_tableEntry = "Search Bar Test ADT",
 			locator1 = "LexiconTable#TABLE_ENTRY_TITLE");
 	}
 
-	macro viewSearchPortletsConfiguration {
+	@summary = "Default summary"
+	macro viewSearchPortletsConfiguration() {
 		Navigator.gotoSitePage(
 			pageName = "Site Page",
 			siteName = "Site Name");
 
-		SearchPortlets.gotoEmbeddedOptions(portletOption = "Configuration");
+		SearchPage.gotoEmbeddedOptions(portletOption = "Configuration");
 
 		SelectFrame(locator1 = "IFrame#CONFIGURATION");
 
@@ -134,7 +144,7 @@ definition {
 
 		IFrame.closeFrame();
 
-		SearchPortlets.searchEmbedded(searchTerm = "WC Title");
+		SearchPage.searchEmbedded(searchTerm = "WC Title");
 
 		Pagination.viewResults(results = "Showing 1 to 2 of 3 entries.");
 
@@ -144,7 +154,8 @@ definition {
 			locator1 = "Search#FACET_TERM_FREQUENCIES");
 	}
 
-	macro viewSynonymsEntry {
+	@summary = "Default summary"
+	macro viewSynonymsEntry() {
 		SearchTuning.openSynonymsAdmin();
 
 		AssertElementPresent(

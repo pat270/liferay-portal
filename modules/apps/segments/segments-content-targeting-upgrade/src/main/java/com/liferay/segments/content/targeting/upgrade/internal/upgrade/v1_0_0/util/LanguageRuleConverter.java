@@ -8,27 +8,20 @@ package com.liferay.segments.content.targeting.upgrade.internal.upgrade.v1_0_0.u
 import com.liferay.segments.criteria.Criteria;
 import com.liferay.segments.criteria.contributor.SegmentsCriteriaContributor;
 
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-
 /**
  * @author Eduardo García
  */
-@Component(
-	property = "rule.converter.key=LanguageRule", service = RuleConverter.class
-)
 public class LanguageRuleConverter implements RuleConverter {
+
+	public static final String RULE_CONVERTER_KEY = "LanguageRule";
 
 	@Override
 	public void convert(
 		long companyId, Criteria criteria, String typeSettings) {
 
-		_contextSegmentsCriteriaContributor.contribute(
+		SegmentsCriteriaContributor.contribute(
 			criteria, "(languageId eq '" + typeSettings + "')",
-			Criteria.Conjunction.AND);
+			Criteria.Conjunction.AND, "context", Criteria.Type.CONTEXT);
 	}
-
-	@Reference(target = "(segments.criteria.contributor.key=context)")
-	private SegmentsCriteriaContributor _contextSegmentsCriteriaContributor;
 
 }

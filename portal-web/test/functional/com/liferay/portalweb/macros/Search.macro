@@ -1,35 +1,14 @@
 definition {
 
-	macro clearSearchResult {
+	@summary = "Default summary"
+	macro clearSearchResult() {
 		Click(locator1 = "Link#CLEAR");
 
 		AssertElementNotPresent(locator1 = "Search#SEARCH_INFO");
 	}
 
-	macro gotoResultAssetViaTitle {
-		AssertClick(
-			key_searchAssetTitle = ${searchAssetTitle},
-			locator1 = "SearchResults#ASSET_ENTRY_TABLE_TITLE",
-			value1 = ${searchAssetTitle});
-	}
-
-	macro openSearchPage {
-		if (!(isSet(siteURLKey))) {
-			var siteURLKey = "guest";
-		}
-
-		if (isSet(searchTerm)) {
-			Navigator.openWithAppendToBaseURL(urlAppend = "web/${siteURLKey}/search?q=${searchTerm}");
-		}
-		else if (isSet(locale)) {
-			Navigator.openWithAppendToBaseURL(urlAppend = "${locale}/web/${siteURLKey}/search");
-		}
-		else {
-			Navigator.openWithAppendToBaseURL(urlAppend = "web/${siteURLKey}/search");
-		}
-	}
-
-	macro searchCP {
+	@summary = "Default summary"
+	macro searchCP(searchTerm = null) {
 		WaitForElementPresent(locator1 = "TextInput#SEARCH");
 
 		AssertElementPresent(locator1 = "Icon#BASIC_SEARCH");
@@ -47,7 +26,8 @@ definition {
 		}
 	}
 
-	macro searchPG {
+	@summary = "Default summary"
+	macro searchPG(searchTerm = null, portletName = null) {
 		var key_portletName = ${portletName};
 
 		AssertElementPresent(locator1 = "Portlet#SEARCH_FIELD");
@@ -65,26 +45,33 @@ definition {
 		}
 	}
 
-	macro viewNoResultAssetTitle {
-		AssertElementNotPresent(
-			key_searchAssetTitle = ${searchAssetTitle},
-			locator1 = "SearchResults#ASSET_ENTRY_TABLE_TITLE");
+	@summary = "Default summary"
+	macro searchWithPastedTerm() {
+		WaitForElementPresent(locator1 = "TextInput#SEARCH");
+
+		AssertElementPresent(locator1 = "Icon#BASIC_SEARCH");
+
+		Type.sendKeys(
+			locator1 = "TextInput#SEARCH",
+			value1 = "keys=CONTROL,v");
+
+		KeyPress(
+			locator1 = "TextInput#SEARCH",
+			value1 = "\RETURN");
+
+		if (!(isSet(modal))) {
+			WaitForLiferayEvent.initializeLiferayEventLog();
+		}
 	}
 
-	macro viewNotPresentInContentBody {
+	@summary = "Default summary"
+	macro viewNotPresentInContentBody(siteName = null, elementValue = null) {
 		AssertClick(
 			key_rowEntry = ${siteName},
 			locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME_LINK",
 			value1 = ${siteName});
 
 		AssertElementNotPresent(locator1 = "//body[.='${elementValue}']");
-	}
-
-	macro viewResultAssetTitle {
-		AssertTextEquals(
-			key_searchAssetTitle = ${searchAssetTitle},
-			locator1 = "SearchResults#ASSET_ENTRY_TABLE_TITLE",
-			value1 = ${searchAssetTitle});
 	}
 
 }

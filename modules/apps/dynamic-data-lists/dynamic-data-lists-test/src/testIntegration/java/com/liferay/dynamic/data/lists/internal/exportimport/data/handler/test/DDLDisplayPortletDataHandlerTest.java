@@ -56,11 +56,16 @@ public class DDLDisplayPortletDataHandlerTest
 
 	@Override
 	protected boolean isDataPortletInstanceLevel() {
-		return true;
+		return false;
 	}
 
 	@Override
 	protected boolean isDataSiteLevel() {
+		return false;
+	}
+
+	@Override
+	protected boolean isDisplayPortlet() {
 		return false;
 	}
 

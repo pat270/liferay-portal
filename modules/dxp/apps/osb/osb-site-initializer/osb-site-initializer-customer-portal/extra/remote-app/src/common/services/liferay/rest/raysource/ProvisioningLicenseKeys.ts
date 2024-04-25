@@ -105,6 +105,10 @@ class ProvisioningLicenseKeys {
 		);
 	}
 
+	public async getUserInOkta(contactEmailAddress: string) {
+		return this.fetcher(`/contacts/${contactEmailAddress}/validate`);
+	}
+
 	public async putDeactivateKeys(licenseKeyIds: string) {
 		return this.fetcher(`/license-keys/deactivate?${licenseKeyIds}`, {
 			method: 'PUT',
@@ -148,6 +152,15 @@ class ProvisioningLicenseKeys {
 	public async getSubscriptionInKey(licenseKeyIds: string) {
 		return this.fetcher(
 			`/license-keys/subscriptions?licenseKeyId=${licenseKeyIds}`
+		);
+	}
+
+	public async getSingleUserSubscriptions(
+		accountKey: string,
+		emailAdress: string
+	) {
+		return this.fetcher(
+			`/accounts/${accountKey}/license-keys?pageSize=999&filter=active+eq+true+and+subscriptionContactEmailAddresses/any(s:s+eq+'${emailAdress}')+and+subscriptionContactCount+eq+1`
 		);
 	}
 }

@@ -76,22 +76,6 @@ public class OAuthClientEntriesManagementToolbarDisplayContext
 		).build();
 	}
 
-	public List<DropdownItem> getFilterDropdownItems() {
-		return DropdownItemListBuilder.addGroup(
-			dropdownGroupItem -> {
-				dropdownGroupItem.setDropdownItems(
-					getOrderByDropdownItems(
-						HashMapBuilder.put(
-							"clientId", "clientId"
-						).put(
-							"createDate", "createDate"
-						).build()));
-				dropdownGroupItem.setLabel(
-					LanguageUtil.get(httpServletRequest, "order-by"));
-			}
-		).build();
-	}
-
 	public OrderByComparator<OAuthClientEntry> getOrderByComparator() {
 		String orderByCol = getOrderByCol();
 
@@ -103,6 +87,15 @@ public class OAuthClientEntriesManagementToolbarDisplayContext
 
 		return OrderByComparatorFactoryUtil.create(
 			"OAuthClient", columnName, Objects.equals(getOrderByType(), "asc"));
+	}
+
+	public List<DropdownItem> getOrderByDropdownItems() {
+		return getOrderByDropdownItems(
+			HashMapBuilder.put(
+				"clientId", "clientId"
+			).put(
+				"createDate", "createDate"
+			).build());
 	}
 
 }

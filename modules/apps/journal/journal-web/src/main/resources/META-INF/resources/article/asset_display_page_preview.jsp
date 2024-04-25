@@ -8,7 +8,7 @@
 <%@ include file="/init.jsp" %>
 
 <%
-JournalEditArticleDisplayContext journalEditArticleDisplayContext = new JournalEditArticleDisplayContext(request, liferayPortletResponse, journalDisplayContext.getArticle());
+JournalEditArticleDisplayContext journalEditArticleDisplayContext = (JournalEditArticleDisplayContext)request.getAttribute(JournalEditArticleDisplayContext.class.getName());
 %>
 
 <p class="text-secondary">
@@ -20,6 +20,6 @@ JournalEditArticleDisplayContext journalEditArticleDisplayContext = new JournalE
 
 	<react:component
 		data="<%= journalEditArticleDisplayContext.getAssetDisplayPagePreviewContext() %>"
-		module="js/article/AssetDisplayPagePreview"
+		module="{AssetDisplayPagePreview} from journal-web"
 	/>
 </div>

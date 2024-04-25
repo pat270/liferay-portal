@@ -3,7 +3,7 @@ import Card from 'shared/components/Card';
 import MetricChart from './MetricChart';
 import MetricTabs from './MetricTabs';
 import React, {createContext, useContext, useReducer} from 'react';
-import {DocumentNode} from 'graphql';
+import {DocumentNode} from 'apollo-boost';
 import {getMetricsChartData} from './util';
 import {Interval, RangeSelectors, Router} from 'shared/types';
 import {Metric} from './metrics';
@@ -63,6 +63,7 @@ function MetricBaseCard<TChartData>({
 	chartDataMapFn = getMetricsChartData,
 	label,
 	legacyDropdownRangeKey = false,
+	id,
 	metrics,
 	queries,
 	showIntervals = false,
@@ -98,6 +99,7 @@ function MetricBaseCard<TChartData>({
 			<MetricContextActions.Provider value={actions}>
 				<BaseCard
 					className='analytics-metrics-card'
+					id={id}
 					label={label}
 					legacyDropdownRangeKey={legacyDropdownRangeKey}
 					minHeight={605}

@@ -5,9 +5,12 @@
 
 package com.liferay.batch.planner.rest.internal.resource.v1_0;
 
+import com.liferay.batch.planner.batch.engine.task.TaskItemUtil;
 import com.liferay.batch.planner.rest.dto.v1_0.SiteScope;
 import com.liferay.batch.planner.rest.internal.vulcan.yaml.openapi.OpenAPIYAMLProvider;
 import com.liferay.batch.planner.rest.resource.v1_0.SiteScopeResource;
+import com.liferay.object.model.ObjectDefinition;
+import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.model.Company;
@@ -20,8 +23,8 @@ import com.liferay.portal.vulcan.util.OpenAPIUtil;
 import com.liferay.portal.vulcan.yaml.openapi.OpenAPIYAML;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -37,25 +40,35 @@ import org.osgi.service.component.annotations.ServiceScope;
 public class SiteScopeResourceImpl extends BaseSiteScopeResourceImpl {
 
 	@Override
-	public Page<SiteScope> getPlanInternalClassNameSiteScopesPage(
-			String internalClassName, Boolean export)
+	public Page<SiteScope> getPlanInternalClassNameKeySiteScopesPage(
+			String internalClassNameKey, Boolean export)
 		throws Exception {
+
+		if (internalClassNameKey.contains(StringPool.POUND)) {
+			ObjectDefinition objectDefinition =
+				_objectDefinitionLocalService.getObjectDefinition(
+					contextCompany.getCompanyId(),
+					TaskItemUtil.getTaskItemDelegateName(internalClassNameKey));
+
+			return Page.of(
+				_getSiteScopes(
+					Collections.singletonList(objectDefinition.getScope())));
+		}
 
 		List<String> entityScopes = null;
 
 		OpenAPIYAML openAPIYAML = _openAPIYAMLProvider.getOpenAPIYAML(
-			contextCompany.getCompanyId(), internalClassName);
-
-		String simpleInternalClassName = internalClassName.substring(
-			internalClassName.lastIndexOf(StringPool.PERIOD) + 1);
+			contextCompany.getCompanyId(), internalClassNameKey);
 
 		if (GetterUtil.getBoolean(export)) {
 			entityScopes = OpenAPIUtil.getReadEntityScopes(
-				simpleInternalClassName, openAPIYAML);
+				TaskItemUtil.getSimpleClassName(internalClassNameKey),
+				openAPIYAML);
 		}
 		else {
 			entityScopes = OpenAPIUtil.getCreateEntityScopes(
-				simpleInternalClassName, openAPIYAML);
+				TaskItemUtil.getSimpleClassName(internalClassNameKey),
+				openAPIYAML);
 		}
 
 		return Page.of(_getSiteScopes(entityScopes));
@@ -71,15 +84,11 @@ public class SiteScopeResourceImpl extends BaseSiteScopeResourceImpl {
 					_groupService.getUserSitesGroups(
 						_CLASS_NAMES, QueryUtil.ALL_POS)) {
 
-				if (Objects.equals(group.getDescriptiveName(), "Global")) {
-					continue;
-				}
-
 				siteScopes.add(
 					new SiteScope() {
 						{
-							label = group.getDescriptiveName();
-							value = group.getGroupId();
+							setLabel(group::getDescriptiveName);
+							setValue(group::getGroupId);
 						}
 					});
 			}
@@ -95,6 +104,9 @@ public class SiteScopeResourceImpl extends BaseSiteScopeResourceImpl {
 
 	@Reference
 	private GroupService _groupService;
+
+	@Reference
+	private ObjectDefinitionLocalService _objectDefinitionLocalService;
 
 	@Reference
 	private OpenAPIYAMLProvider _openAPIYAMLProvider;

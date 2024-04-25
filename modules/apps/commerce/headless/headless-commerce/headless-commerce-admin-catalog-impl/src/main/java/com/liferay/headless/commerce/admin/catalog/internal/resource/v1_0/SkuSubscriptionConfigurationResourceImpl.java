@@ -10,13 +10,12 @@ import com.liferay.commerce.product.model.CPInstance;
 import com.liferay.commerce.product.service.CPInstanceService;
 import com.liferay.headless.commerce.admin.catalog.dto.v1_0.Sku;
 import com.liferay.headless.commerce.admin.catalog.dto.v1_0.SkuSubscriptionConfiguration;
-import com.liferay.headless.commerce.admin.catalog.internal.dto.v1_0.converter.SkuSubscriptionConfigurationDTOConverter;
 import com.liferay.headless.commerce.admin.catalog.resource.v1_0.SkuSubscriptionConfigurationResource;
+import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.fields.NestedField;
 import com.liferay.portal.vulcan.fields.NestedFieldId;
-import com.liferay.portal.vulcan.fields.NestedFieldSupport;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -27,14 +26,11 @@ import org.osgi.service.component.annotations.ServiceScope;
  */
 @Component(
 	properties = "OSGI-INF/liferay/rest/v1_0/sku-subscription-configuration.properties",
-	scope = ServiceScope.PROTOTYPE,
-	service = {
-		NestedFieldSupport.class, SkuSubscriptionConfigurationResource.class
-	}
+	property = "nested.field.support=true", scope = ServiceScope.PROTOTYPE,
+	service = SkuSubscriptionConfigurationResource.class
 )
 public class SkuSubscriptionConfigurationResourceImpl
-	extends BaseSkuSubscriptionConfigurationResourceImpl
-	implements NestedFieldSupport {
+	extends BaseSkuSubscriptionConfigurationResourceImpl {
 
 	@Override
 	public SkuSubscriptionConfiguration
@@ -85,8 +81,10 @@ public class SkuSubscriptionConfigurationResourceImpl
 	@Reference
 	private DTOConverterRegistry _dtoConverterRegistry;
 
-	@Reference
-	private SkuSubscriptionConfigurationDTOConverter
+	@Reference(
+		target = "(component.name=com.liferay.headless.commerce.admin.catalog.internal.dto.v1_0.converter.SkuSubscriptionConfigurationDTOConverter)"
+	)
+	private DTOConverter<CPInstance, SkuSubscriptionConfiguration>
 		_skuSubscriptionConfigurationDTOConverter;
 
 }

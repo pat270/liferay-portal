@@ -7,11 +7,11 @@ package com.liferay.document.library.internal.helper;
 
 import com.liferay.document.library.constants.DLFileVersionPreviewConstants;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
+import com.liferay.document.library.kernel.processor.ImageProcessorUtil;
+import com.liferay.document.library.kernel.processor.PDFProcessorUtil;
+import com.liferay.document.library.kernel.processor.VideoProcessorUtil;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.document.library.kernel.util.DL;
-import com.liferay.document.library.kernel.util.ImageProcessorUtil;
-import com.liferay.document.library.kernel.util.PDFProcessorUtil;
-import com.liferay.document.library.kernel.util.VideoProcessorUtil;
 import com.liferay.document.library.service.DLFileVersionPreviewLocalService;
 import com.liferay.document.library.url.provider.DLFileVersionURLProvider;
 import com.liferay.document.library.util.DLURLHelper;
@@ -33,7 +33,7 @@ import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.Html;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.URLCodec;
@@ -508,7 +508,7 @@ public class DLURLHelperImpl implements DLURLHelper {
 			fileName = _trashHelper.getOriginalTitle(fileEntry.getFileName());
 		}
 
-		sb.append(URLCodec.encodeURL(_html.unescape(fileName), true));
+		sb.append(URLCodec.encodeURL(HtmlUtil.unescape(fileName)));
 
 		sb.append(StringPool.SLASH);
 		sb.append(URLCodec.encodeURL(fileEntry.getUuid()));
@@ -542,9 +542,6 @@ public class DLURLHelperImpl implements DLURLHelper {
 
 	@Reference
 	private GroupLocalService _groupLocalService;
-
-	@Reference
-	private Html _html;
 
 	@Reference
 	private Portal _portal;

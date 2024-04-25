@@ -28,6 +28,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Predicate;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -71,7 +73,9 @@ public class APIApplicationProviderImpl implements APIApplicationProvider {
 				companyId,
 				"apiApplicationToAPIEndpoints/externalReferenceCode eq '" +
 					apiApplicationExternalReferenceCode + "'",
-				Arrays.asList("apiEndpointToAPIFilters"), "L_API_ENDPOINT"),
+				Arrays.asList(
+					"apiEndpointToAPIFilters", "apiEndpointToAPISorts"),
+				"L_API_ENDPOINT", null),
 			objectEntry -> {
 				Map<String, Object> properties = objectEntry.getProperties();
 
@@ -97,6 +101,11 @@ public class APIApplicationProviderImpl implements APIApplicationProvider {
 					}
 
 					@Override
+					public String getPathParameter() {
+						return (String)properties.get("pathParameter");
+					}
+
+					@Override
 					public APIApplication.Schema getRequestSchema() {
 						return _getSchema(
 							(String)properties.get(
@@ -115,12 +124,24 @@ public class APIApplicationProviderImpl implements APIApplicationProvider {
 					}
 
 					@Override
+					public RetrieveType getRetrieveType() {
+						ListEntry listEntry = (ListEntry)properties.get(
+							"retrieveType");
+
+						return RetrieveType.parse(listEntry.getKey());
+					}
+
+					@Override
 					public Scope getScope() {
 						ListEntry listEntry = (ListEntry)properties.get(
 							"scope");
 
-						return Scope.valueOf(
-							StringUtil.toUpperCase(listEntry.getKey()));
+						return Scope.parse(listEntry.getKey());
+					}
+
+					@Override
+					public APIApplication.Sort getSort() {
+						return _getSort(properties);
 					}
 
 				};
@@ -152,11 +173,24 @@ public class APIApplicationProviderImpl implements APIApplicationProvider {
 	}
 
 	private List<APIApplication.Property> _getProperties(
-		Map<String, Object> schemaProperties, long companyId) {
+		long companyId,
+		Predicate<String> parentAPIPropertyExternalReferenceCodePredicate,
+		Map<String, Object> schemaProperties) {
 
 		return TransformUtil.transformToList(
-			(ObjectEntry[])schemaProperties.get("apiSchemaToAPIProperties"),
+			ArrayUtil.filter(
+				(ObjectEntry[])schemaProperties.get("apiSchemaToAPIProperties"),
+				objectEntry ->
+					parentAPIPropertyExternalReferenceCodePredicate.test(
+						(String)objectEntry.getPropertyValue(
+							"apiPropertyToAPIPropertiesERC"))),
 			propertyObjectEntry -> {
+				List<APIApplication.Property> childProperties = _getProperties(
+					companyId,
+					Predicate.isEqual(
+						propertyObjectEntry.getExternalReferenceCode()),
+					schemaProperties);
+
 				Map<String, Object> properties =
 					propertyObjectEntry.getProperties();
 
@@ -183,7 +217,7 @@ public class APIApplicationProviderImpl implements APIApplicationProvider {
 				}
 
 				ObjectField objectField =
-					_objectFieldLocalService.getObjectField(
+					_objectFieldLocalService.fetchObjectField(
 						(String)properties.get("objectFieldERC"),
 						objectDefinition.getObjectDefinitionId());
 
@@ -215,20 +249,37 @@ public class APIApplicationProviderImpl implements APIApplicationProvider {
 					}
 
 					@Override
+					public List<APIApplication.Property> getProperties() {
+						return childProperties;
+					}
+
+					@Override
 					public String getSourceFieldName() {
+						if (objectField == null) {
+							return null;
+						}
+
 						return objectField.getName();
 					}
 
 					@Override
 					public Type getType() {
-						Type type = _propertyTypes.get(
-							objectField.getBusinessType());
+						ListEntry listEntry = (ListEntry)properties.get("type");
+
+						if (Objects.equals(listEntry.getKey(), "record")) {
+							return Type.RECORD;
+						}
+
+						Type type = null;
+
+						if (objectField != null) {
+							type = _propertyTypes.get(
+								objectField.getBusinessType());
+						}
 
 						if (type == null) {
 							throw new IllegalStateException(
-								"Object field business type " +
-									objectField.getBusinessType() +
-										" not supported");
+								"Property type is not supported");
 						}
 
 						return type;
@@ -267,12 +318,13 @@ public class APIApplicationProviderImpl implements APIApplicationProvider {
 				companyId,
 				"apiApplicationToAPISchemas/externalReferenceCode eq '" +
 					apiApplicationObjectEntry.getExternalReferenceCode() + "'",
-				Arrays.asList("apiSchemaToAPIProperties"), "L_API_SCHEMA"),
+				Arrays.asList("apiSchemaToAPIProperties"), "L_API_SCHEMA",
+				null),
 			objectEntry -> {
 				Map<String, Object> properties = objectEntry.getProperties();
 
 				List<APIApplication.Property> applicationProperties =
-					_getProperties(properties, companyId);
+					_getProperties(companyId, Validator::isNull, properties);
 
 				return new APIApplication.Schema() {
 
@@ -306,6 +358,30 @@ public class APIApplicationProviderImpl implements APIApplicationProvider {
 
 				};
 			});
+	}
+
+	private APIApplication.Sort _getSort(
+		Map<String, Object> endpointProperties) {
+
+		ObjectEntry[] objectEntries = (ObjectEntry[])endpointProperties.get(
+			"apiEndpointToAPISorts");
+
+		if (ArrayUtil.isEmpty(objectEntries)) {
+			return null;
+		}
+
+		ObjectEntry objectEntry = objectEntries[0];
+
+		Map<String, Object> properties = objectEntry.getProperties();
+
+		return new APIApplication.Sort() {
+
+			@Override
+			public String getODataSortString() {
+				return (String)properties.get("oDataSort");
+			}
+
+		};
 	}
 
 	private APIApplication _toApiApplication(

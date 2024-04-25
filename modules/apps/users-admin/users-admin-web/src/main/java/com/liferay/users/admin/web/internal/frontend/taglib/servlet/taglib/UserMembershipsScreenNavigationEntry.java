@@ -5,12 +5,21 @@
 
 package com.liferay.users.admin.web.internal.frontend.taglib.servlet.taglib;
 
+import com.liferay.admin.kernel.util.PortalMyAccountApplicationType;
 import com.liferay.frontend.taglib.servlet.taglib.ScreenNavigationEntry;
 import com.liferay.item.selector.ItemSelector;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.portlet.PortletProvider;
+import com.liferay.portal.kernel.portlet.PortletProviderUtil;
+import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
+import com.liferay.portal.kernel.theme.PortletDisplay;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.users.admin.constants.UserScreenNavigationEntryConstants;
 
 import java.io.IOException;
+
+import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -46,6 +55,30 @@ public class UserMembershipsScreenNavigationEntry
 	@Override
 	public String getJspPath() {
 		return "/user/memberships.jsp";
+	}
+
+	@Override
+	public boolean isEditable(
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse) {
+
+		ServiceContext serviceContext =
+			ServiceContextThreadLocal.getServiceContext();
+
+		ThemeDisplay themeDisplay = serviceContext.getThemeDisplay();
+
+		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
+
+		if (Objects.equals(
+				portletDisplay.getPortletName(),
+				PortletProviderUtil.getPortletId(
+					PortalMyAccountApplicationType.MyAccount.CLASS_NAME,
+					PortletProvider.Action.VIEW))) {
+
+			return false;
+		}
+
+		return true;
 	}
 
 	@Override

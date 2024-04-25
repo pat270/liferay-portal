@@ -31,14 +31,28 @@ public class CPDefinitionOptionValueRelServiceWrapper
 
 	@Override
 	public CPDefinitionOptionValueRel addCPDefinitionOptionValueRel(
-			long cpDefinitionOptionRelId,
-			java.util.Map<java.util.Locale, String> nameMap, double priority,
-			String key,
+			long cpDefinitionOptionRelId, long cpInstanceId, String key,
+			java.util.Map<java.util.Locale, String> nameMap,
+			boolean preselected, java.math.BigDecimal deltaPrice,
+			double priority, java.math.BigDecimal quantity,
+			String unitOfMeasureKey,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _cpDefinitionOptionValueRelService.addCPDefinitionOptionValueRel(
-			cpDefinitionOptionRelId, nameMap, priority, key, serviceContext);
+			cpDefinitionOptionRelId, cpInstanceId, key, nameMap, preselected,
+			deltaPrice, priority, quantity, unitOfMeasureKey, serviceContext);
+	}
+
+	@Override
+	public CPDefinitionOptionValueRel addCPDefinitionOptionValueRel(
+			long cpDefinitionOptionRelId, String key,
+			java.util.Map<java.util.Locale, String> nameMap, double priority,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _cpDefinitionOptionValueRelService.addCPDefinitionOptionValueRel(
+			cpDefinitionOptionRelId, key, nameMap, priority, serviceContext);
 	}
 
 	@Override
@@ -165,17 +179,18 @@ public class CPDefinitionOptionValueRelServiceWrapper
 
 	@Override
 	public CPDefinitionOptionValueRel updateCPDefinitionOptionValueRel(
-			long cpDefinitionOptionValueRelId,
-			java.util.Map<java.util.Locale, String> nameMap, double priority,
-			String key, long cpInstanceId, int quantity, boolean preselected,
-			java.math.BigDecimal price,
+			long cpDefinitionOptionValueRelId, long cpInstanceId, String key,
+			java.util.Map<java.util.Locale, String> nameMap,
+			boolean preselected, java.math.BigDecimal price, double priority,
+			java.math.BigDecimal quantity, String unitOfMeasureKey,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _cpDefinitionOptionValueRelService.
 			updateCPDefinitionOptionValueRel(
-				cpDefinitionOptionValueRelId, nameMap, priority, key,
-				cpInstanceId, quantity, preselected, price, serviceContext);
+				cpDefinitionOptionValueRelId, cpInstanceId, key, nameMap,
+				preselected, price, priority, quantity, unitOfMeasureKey,
+				serviceContext);
 	}
 
 	@Override

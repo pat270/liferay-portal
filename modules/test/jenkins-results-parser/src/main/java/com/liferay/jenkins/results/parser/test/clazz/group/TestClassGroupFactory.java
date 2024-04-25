@@ -45,6 +45,10 @@ public class TestClassGroupFactory {
 				(JUnitBatchTestClassGroup)batchTestClassGroup);
 		}
 
+		if (batchTestClassGroup instanceof PlaywrightBatchTestClassGroup) {
+			return new PlaywrightAxisTestClassGroup(batchTestClassGroup);
+		}
+
 		if (batchTestClassGroup instanceof PluginsGulpBatchTestClassGroup) {
 			return new PluginsGulpAxisTestClassGroup(
 				(PluginsGulpBatchTestClassGroup)batchTestClassGroup);
@@ -66,6 +70,11 @@ public class TestClassGroupFactory {
 
 		if (batchTestClassGroup instanceof JUnitBatchTestClassGroup) {
 			return new JUnitAxisTestClassGroup(
+				jsonObject, segmentTestClassGroup);
+		}
+
+		if (batchTestClassGroup instanceof PlaywrightBatchTestClassGroup) {
+			return new PlaywrightAxisTestClassGroup(
 				jsonObject, segmentTestClassGroup);
 		}
 
@@ -170,6 +179,14 @@ public class TestClassGroupFactory {
 
 			return new ModulesSegmentTestClassGroup(batchTestClassGroup);
 		}
+		else if (batchTestClassGroup instanceof PlaywrightBatchTestClassGroup) {
+			if (jsonObject != null) {
+				return new PlaywrightSegmentTestClassGroup(
+					batchTestClassGroup, jsonObject);
+			}
+
+			return new PlaywrightSegmentTestClassGroup(batchTestClassGroup);
+		}
 		else if (batchTestClassGroup instanceof PluginsBatchTestClassGroup) {
 			if (jsonObject != null) {
 				return new PluginsSegmentTestClassGroup(
@@ -243,9 +260,6 @@ public class TestClassGroupFactory {
 			}
 			else if (batchName.startsWith("integration-") ||
 					 batchName.startsWith("junit-test-") ||
-					 batchName.startsWith(
-						 "modules-integration-project-templates-") ||
-					 batchName.startsWith("modules-unit-project-templates-") ||
 					 batchName.startsWith("unit-")) {
 
 				if (jsonObject != null) {
@@ -289,6 +303,21 @@ public class TestClassGroupFactory {
 						batchName, portalTestClassJob);
 				}
 			}
+			else if (batchName.startsWith(
+						"modules-integration-project-templates-") ||
+					 batchName.startsWith("modules-unit-project-templates-")) {
+
+				if (jsonObject != null) {
+					batchTestClassGroup =
+						new ProjectTemplatesJUnitBatchTestClassGroup(
+							jsonObject, portalTestClassJob);
+				}
+				else {
+					batchTestClassGroup =
+						new ProjectTemplatesJUnitBatchTestClassGroup(
+							batchName, portalTestClassJob);
+				}
+			}
 			else if ((batchName.startsWith("modules-integration-") &&
 					  !batchName.startsWith(
 						  "modules-integration-project-templates-")) ||
@@ -314,6 +343,28 @@ public class TestClassGroupFactory {
 				}
 				else {
 					batchTestClassGroup = new SemVerModulesBatchTestClassGroup(
+						batchName, portalTestClassJob);
+				}
+			}
+			else if (batchName.startsWith("playwright-compile-")) {
+				if (jsonObject != null) {
+					batchTestClassGroup =
+						new PlaywrightCompileBatchTestClassGroup(
+							jsonObject, portalTestClassJob);
+				}
+				else {
+					batchTestClassGroup =
+						new PlaywrightCompileBatchTestClassGroup(
+							batchName, portalTestClassJob);
+				}
+			}
+			else if (batchName.startsWith("playwright-js-")) {
+				if (jsonObject != null) {
+					batchTestClassGroup = new PlaywrightBatchTestClassGroup(
+						jsonObject, portalTestClassJob);
+				}
+				else {
+					batchTestClassGroup = new PlaywrightBatchTestClassGroup(
 						batchName, portalTestClassJob);
 				}
 			}
@@ -373,6 +424,16 @@ public class TestClassGroupFactory {
 					batchTestClassGroup =
 						new RESTBuilderModulesBatchTestClassGroup(
 							batchName, portalTestClassJob);
+				}
+			}
+			else if (batchName.startsWith("semantic-versioning")) {
+				if (jsonObject != null) {
+					batchTestClassGroup = new SemanticVersioningTestClassGroup(
+						jsonObject, portalTestClassJob);
+				}
+				else {
+					batchTestClassGroup = new SemanticVersioningTestClassGroup(
+						batchName, portalTestClassJob);
 				}
 			}
 			else if (batchName.startsWith("service-builder-")) {

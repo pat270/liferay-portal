@@ -86,9 +86,9 @@ import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
@@ -102,7 +102,7 @@ import com.liferay.portal.service.base.RoleLocalServiceBaseImpl;
 import com.liferay.portal.util.PortalInstances;
 import com.liferay.portal.util.PropsUtil;
 import com.liferay.portal.util.PropsValues;
-import com.liferay.users.admin.kernel.util.UsersAdminUtil;
+import com.liferay.portlet.usersadmin.util.UsersAdminUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -220,14 +220,21 @@ public class RoleLocalServiceImpl extends RoleLocalServiceBaseImpl {
 	 *
 	 * @param userId the primary key of the user
 	 * @param roleId the primary key of the role
+	 * @return <code>true</code> if the association between the ${userId} and ${roleId} is added; <code>false</code> if it was already added
 	 * @see   UserPersistence#addRole(
 	 *        long, long)
 	 */
 	@Override
-	public void addUserRole(long userId, long roleId) throws PortalException {
-		_userPersistence.addRole(userId, roleId);
+	public boolean addUserRole(long userId, long roleId)
+		throws PortalException {
+
+		if (!super.addUserRole(userId, roleId)) {
+			return false;
+		}
 
 		reindex(userId);
+
+		return true;
 	}
 
 	/**
@@ -235,14 +242,13 @@ public class RoleLocalServiceImpl extends RoleLocalServiceBaseImpl {
 	 *
 	 * @param userId the primary key of the user
 	 * @param role the role
+	 * @return <code>true</code> if the association between the ${userId} and ${role} is added; <code>false</code> if it was already added
 	 * @see   UserPersistence#addRole(
 	 *        long, Role)
 	 */
 	@Override
-	public void addUserRole(long userId, Role role) throws PortalException {
-		_userPersistence.addRole(userId, role);
-
-		reindex(userId);
+	public boolean addUserRole(long userId, Role role) throws PortalException {
+		return addUserRole(userId, role.getRoleId());
 	}
 
 	/**
@@ -251,16 +257,21 @@ public class RoleLocalServiceImpl extends RoleLocalServiceBaseImpl {
 	 *
 	 * @param userId the primary key of the user
 	 * @param roles the roles
+	 * @return <code>true</code> if at least an association between the ${userId} and the ${roles} is added; <code>false</code> if all were already added
 	 * @see   UserPersistence#addRoles(
 	 *        long, List)
 	 */
 	@Override
-	public void addUserRoles(long userId, List<Role> roles)
+	public boolean addUserRoles(long userId, List<Role> roles)
 		throws PortalException {
 
-		_userPersistence.addRoles(userId, roles);
+		if (!super.addUserRoles(userId, roles)) {
+			return false;
+		}
 
 		reindex(userId);
+
+		return true;
 	}
 
 	/**
@@ -269,16 +280,21 @@ public class RoleLocalServiceImpl extends RoleLocalServiceBaseImpl {
 	 *
 	 * @param userId the primary key of the user
 	 * @param roleIds the primary keys of the roles
+	 * @return <code>true</code> if at least an association between the ${userId} and the ${roleIds} is added; <code>false</code> if all were already added
 	 * @see   UserPersistence#addRoles(
 	 *        long, long[])
 	 */
 	@Override
-	public void addUserRoles(long userId, long[] roleIds)
+	public boolean addUserRoles(long userId, long[] roleIds)
 		throws PortalException {
 
-		_userPersistence.addRoles(userId, roleIds);
+		if (!super.addUserRoles(userId, roleIds)) {
+			return false;
+		}
 
 		reindex(userId);
+
+		return true;
 	}
 
 	/**
@@ -306,25 +322,24 @@ public class RoleLocalServiceImpl extends RoleLocalServiceBaseImpl {
 			companyRolesMap.put(role.getName(), role);
 		}
 
+		String defaultLanguageId = LocaleUtil.toLanguageId(
+			LocaleUtil.getDefault());
+
 		// Regular roles
 
 		String[] systemRoles = PortalUtil.getSystemRoles();
 
 		for (String name : systemRoles) {
-			Map<Locale, String> descriptionMap = HashMapBuilder.put(
-				LocaleUtil.getDefault(),
-				PropsUtil.get(
-					StringBundler.concat(
-						"system.role.",
-						StringUtil.replace(
-							name, CharPool.SPACE, CharPool.PERIOD),
-						".description"))
-			).build();
+			String description = LocalizationUtil.getXml(
+				Collections.singletonMap(
+					defaultLanguageId,
+					_getPropertyDescription(name, "system.role.")),
+				defaultLanguageId, "Description");
 
 			int type = RoleConstants.TYPE_REGULAR;
 
 			checkSystemRole(
-				companyRolesMap, companyId, name, descriptionMap, type);
+				companyRolesMap, companyId, name, description, type);
 		}
 
 		// Organization roles
@@ -333,20 +348,16 @@ public class RoleLocalServiceImpl extends RoleLocalServiceBaseImpl {
 			PortalUtil.getSystemOrganizationRoles();
 
 		for (String name : systemOrganizationRoles) {
-			Map<Locale, String> descriptionMap = HashMapBuilder.put(
-				LocaleUtil.getDefault(),
-				PropsUtil.get(
-					StringBundler.concat(
-						"system.organization.role.",
-						StringUtil.replace(
-							name, CharPool.SPACE, CharPool.PERIOD),
-						".description"))
-			).build();
+			String description = LocalizationUtil.getXml(
+				Collections.singletonMap(
+					defaultLanguageId,
+					_getPropertyDescription(name, "system.organization.role.")),
+				defaultLanguageId, "Description");
 
 			int type = RoleConstants.TYPE_ORGANIZATION;
 
 			checkSystemRole(
-				companyRolesMap, companyId, name, descriptionMap, type);
+				companyRolesMap, companyId, name, description, type);
 		}
 
 		// Site roles
@@ -354,21 +365,19 @@ public class RoleLocalServiceImpl extends RoleLocalServiceBaseImpl {
 		String[] systemSiteRoles = PortalUtil.getSystemSiteRoles();
 
 		for (String name : systemSiteRoles) {
-			Map<Locale, String> descriptionMap = HashMapBuilder.put(
-				LocaleUtil.getDefault(),
-				PropsUtil.get(
-					StringBundler.concat(
-						"system.site.role.",
-						StringUtil.replace(
-							name, CharPool.SPACE, CharPool.PERIOD),
-						".description"))
-			).build();
+			String description = LocalizationUtil.getXml(
+				Collections.singletonMap(
+					defaultLanguageId,
+					_getPropertyDescription(name, "system.site.role.")),
+				defaultLanguageId, "Description");
 
 			int type = RoleConstants.TYPE_SITE;
 
 			checkSystemRole(
-				companyRolesMap, companyId, name, descriptionMap, type);
+				companyRolesMap, companyId, name, description, type);
 		}
+
+		List<String> primKeys = new ArrayList<>();
 
 		String[] allSystemRoles = ArrayUtil.append(
 			systemRoles, systemOrganizationRoles, systemSiteRoles);
@@ -376,9 +385,13 @@ public class RoleLocalServiceImpl extends RoleLocalServiceBaseImpl {
 		for (String roleName : allSystemRoles) {
 			Role role = getRole(companyId, roleName);
 
+			primKeys.add(String.valueOf(role.getRoleId()));
+		}
+
+		if (!primKeys.isEmpty()) {
 			_resourceLocalService.addResources(
-				companyId, 0, 0, Role.class.getName(), role.getRoleId(), false,
-				false, false);
+				companyId, 0, 0, Role.class.getName(),
+				primKeys.toArray(new String[0]), false, false, false);
 		}
 
 		// All users should be able to view all system roles by default
@@ -1919,7 +1932,7 @@ public class RoleLocalServiceImpl extends RoleLocalServiceBaseImpl {
 
 	protected void checkSystemRole(
 			Map<String, Role> companyRolesMap, long companyId, String name,
-			Map<Locale, String> descriptionMap, int type)
+			String description, int type)
 		throws PortalException {
 
 		Role role = companyRolesMap.get(name);
@@ -1935,7 +1948,8 @@ public class RoleLocalServiceImpl extends RoleLocalServiceBaseImpl {
 
 			try {
 				role = roleLocalService.addRole(
-					user.getUserId(), null, 0, name, null, descriptionMap, type,
+					user.getUserId(), null, 0, name, null,
+					LocalizationUtil.getLocalizationMap(description), type,
 					null, null);
 			}
 			finally {
@@ -1952,8 +1966,8 @@ public class RoleLocalServiceImpl extends RoleLocalServiceBaseImpl {
 				initPersonalControlPanelPortletsPermissions(role);
 			}
 		}
-		else if (!descriptionMap.equals(role.getDescriptionMap())) {
-			role.setDescriptionMap(descriptionMap);
+		else if (!description.equals(role.getDescription())) {
+			role.setDescription(description);
 
 			roleLocalService.updateRole(role);
 		}
@@ -2118,6 +2132,20 @@ public class RoleLocalServiceImpl extends RoleLocalServiceBaseImpl {
 				RoleConstants.PLACEHOLDER_DEFAULT_GROUP_ROLE +
 					" is a temporary placeholder that must not be persisted");
 		}
+	}
+
+	private String _getPropertyDescription(String name, String property) {
+		String propertyDescription = PropsUtil.get(
+			StringBundler.concat(
+				property,
+				StringUtil.replace(name, CharPool.SPACE, CharPool.PERIOD),
+				".description"));
+
+		if (Validator.isNull(propertyDescription)) {
+			return StringPool.BLANK;
+		}
+
+		return propertyDescription;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

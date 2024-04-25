@@ -5,8 +5,9 @@
 
 package com.liferay.headless.builder.instance.lifecycle.test;
 
+import com.liferay.headless.builder.application.APIApplication;
 import com.liferay.headless.builder.test.BaseTestCase;
-import com.liferay.headless.builder.util.APIApplicationTestUtil;
+import com.liferay.headless.builder.test.util.APIApplicationTestUtil;
 import com.liferay.object.model.ObjectEntry;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -17,6 +18,7 @@ import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.HTTPTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.Http;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
@@ -33,7 +35,7 @@ import org.osgi.util.promise.Promise;
 /**
  * @author Carlos Correa
  */
-@FeatureFlags({"LPS-167253", "LPS-184413", "LPS-186757"})
+@FeatureFlags("LPS-178642")
 public class APIApplicationPublisherPortalInstanceLifecycleListenerTest
 	extends BaseTestCase {
 
@@ -57,7 +59,7 @@ public class APIApplicationPublisherPortalInstanceLifecycleListenerTest
 				_serviceComponentRuntime.getComponentDescriptionDTO(
 					FrameworkUtil.getBundle(clazz), clazz.getName());
 
-		String baseURL = RandomTestUtil.randomString();
+		String baseURL = StringUtil.toLowerCase(RandomTestUtil.randomString());
 
 		try {
 			_disableComponentDescriptionDTO(
@@ -92,6 +94,9 @@ public class APIApplicationPublisherPortalInstanceLifecycleListenerTest
 
 		String apiEndpointExternalReferenceCode = RandomTestUtil.randomString();
 		String apiSchemaExternalReferenceCode = RandomTestUtil.randomString();
+		String path =
+			StringPool.FORWARD_SLASH +
+				StringUtil.toLowerCase(RandomTestUtil.randomString());
 
 		HTTPTestUtil.invokeToJSONObject(
 			JSONUtil.put(
@@ -107,10 +112,14 @@ public class APIApplicationPublisherPortalInstanceLifecycleListenerTest
 					).put(
 						"name", "name"
 					).put(
-						"path",
-						StringPool.FORWARD_SLASH + RandomTestUtil.randomString()
+						"path", path
 					).put(
-						"scope", "company"
+						"retrieveType",
+						APIApplication.Endpoint.RetrieveType.COLLECTION.
+							getValue()
+					).put(
+						"scope",
+						APIApplication.Endpoint.Scope.COMPANY.getValue()
 					))
 			).put(
 				"apiApplicationToAPISchemas",

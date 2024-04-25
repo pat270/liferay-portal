@@ -105,6 +105,8 @@ definition {
 			optionName = "Option1",
 			optionValue = "Option 1");
 
+		FormFields.clickAddOptionButton();
+
 		FormFields.editOptionsRow(
 			optionName = "Option2",
 			optionValue = "Option 2",
@@ -234,6 +236,8 @@ definition {
 			optionName = "Option A",
 			optionValue = 1);
 
+		FormFields.clickAddOptionButton();
+
 		FormFields.addSingleSelectionOption(
 			optionName = "Option B",
 			optionValue = 2);
@@ -281,6 +285,8 @@ definition {
 			optionName = "Option1",
 			optionValue = "Option 1",
 			rowNumber = 1);
+
+		FormFields.clickAddOptionButton();
 
 		FormFields.editOptionsRow(
 			optionName = "Option2",
@@ -356,6 +362,8 @@ definition {
 			optionValue = "Option 1",
 			rowNumber = 1);
 
+		FormFields.clickAddOptionButton();
+
 		FormFields.editOptionsRowValueOrFieldReference(
 			optionValue = "Option 2",
 			rowNumber = 2);
@@ -389,6 +397,8 @@ definition {
 			optionName = "Option1",
 			optionValue = "Option 1",
 			rowNumber = 1);
+
+		FormFields.clickAddOptionButton();
 
 		FormFields.editOptionsRow(
 			optionName = "Option2",
@@ -443,6 +453,7 @@ definition {
 	test LabelCanBeHidden {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		FormsAdmin.addForm();
 
@@ -480,6 +491,7 @@ definition {
 	test LabelCanBeHiddenWithSwitchEnabled {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		FormsAdmin.addForm();
 
@@ -498,7 +510,7 @@ definition {
 
 		AssertElementPresent(
 			key_toggleSwitchLabel = "Switch 1",
-			locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+			locator1 = "ToggleSwitch#TOGGLE_SWITCH_BY_LABEL");
 
 		Form.gotoAdvancedTab();
 
@@ -516,7 +528,7 @@ definition {
 
 		AssertElementPresent(
 			key_toggleSwitchLabel = "Switch 1",
-			locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+			locator1 = "ToggleSwitch#TOGGLE_SWITCH_BY_LABEL");
 	}
 
 	@description = "Verify that options can be added"
@@ -540,6 +552,8 @@ definition {
 			optionName = "Option1",
 			optionValue = "Option 1",
 			rowNumber = 1);
+
+		FormFields.clickAddOptionButton();
 
 		FormFields.editOptionsRow(
 			optionName = "Option2",
@@ -581,6 +595,8 @@ definition {
 			optionValue = "Option 1",
 			rowNumber = 1);
 
+		FormFields.clickAddOptionButton();
+
 		FormFields.editOptionsRow(
 			optionName = "Option2",
 			optionValue = "Option 2",
@@ -617,6 +633,7 @@ definition {
 	@priority = 5
 	test OptionsCanBeDisplayedAsSwitches {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		FormsAdmin.addForm();
 
@@ -635,7 +652,7 @@ definition {
 
 		AssertElementPresent(
 			key_toggleSwitchLabel = "Switch 1",
-			locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+			locator1 = "ToggleSwitch#TOGGLE_SWITCH_BY_LABEL");
 
 		Form.save();
 
@@ -645,7 +662,7 @@ definition {
 
 		AssertElementPresent(
 			key_toggleSwitchLabel = "Switch 1",
-			locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+			locator1 = "ToggleSwitch#TOGGLE_SWITCH_BY_LABEL");
 	}
 
 	@description = "Verify that options can be displayed both inline and as a list"
@@ -666,10 +683,14 @@ definition {
 			optionValue = "Option 1",
 			rowNumber = 1);
 
+		FormFields.clickAddOptionButton();
+
 		FormFields.editOptionsRow(
 			optionName = "Option2",
 			optionValue = "Option 2",
 			rowNumber = 2);
+
+		FormFields.clickAddOptionButton();
 
 		FormFields.editOptionsRow(
 			optionName = "Option3",
@@ -711,6 +732,8 @@ definition {
 			optionValue = "Option 1",
 			rowNumber = 1);
 
+		FormFields.clickAddOptionButton();
+
 		FormFields.editOptionsRow(
 			optionName = "Option2",
 			optionValue = "Option 2",
@@ -743,6 +766,7 @@ definition {
 		property portal.acceptance = "true";
 		property portal.upstream = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		FormsAdmin.addForm();
 
@@ -755,6 +779,10 @@ definition {
 				optionName = "Checkbox${number}",
 				optionValue = "Checkbox ${number}",
 				rowNumber = ${number});
+
+			if (${number} != 4) {
+				FormFields.clickAddOptionButton();
+			}
 		}
 
 		FormFields.moveOptionsRow(
@@ -819,6 +847,8 @@ definition {
 			optionName = "Option 1",
 			optionValue = 1);
 
+		FormFields.clickAddOptionButton();
+
 		FormFields.addSingleSelectionOption(
 			optionName = "Option 2",
 			optionValue = 2);
@@ -863,6 +893,8 @@ definition {
 			optionName = "Option 1",
 			optionValue = 1);
 
+		FormFields.clickAddOptionButton();
+
 		FormFields.addSingleSelectionOption(
 			optionName = "Option 2",
 			optionValue = 2);
@@ -879,7 +911,9 @@ definition {
 
 		Form.gotoAdvancedTab();
 
-		FormFields.viewPredefinedValueDropdownContent(key_textContent = "Choose Options");
+		AssertElementPresent(
+			key_textContent = "Choose Options",
+			locator1 = "FormFields#SIDEBAR_ADVANCED_PREDEFINED_SELECT_FROM_LIST_DROPDOWN_CONTENT");
 	}
 
 	@description = "Verify that the Field Reference can be edited"

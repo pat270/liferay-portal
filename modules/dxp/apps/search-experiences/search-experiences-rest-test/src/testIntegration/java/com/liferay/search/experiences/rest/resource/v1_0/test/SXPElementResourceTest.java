@@ -19,6 +19,7 @@ import com.liferay.search.experiences.rest.client.dto.v1_0.SXPElement;
 import com.liferay.search.experiences.rest.client.http.HttpInvoker;
 import com.liferay.search.experiences.rest.client.pagination.Page;
 import com.liferay.search.experiences.rest.client.serdes.v1_0.ElementDefinitionSerDes;
+import com.liferay.search.experiences.service.SXPElementLocalService;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,6 +61,10 @@ public class SXPElementResourceTest extends BaseSXPElementResourceTestCase {
 				).put(
 					"externalReferenceCode",
 					sxpElement.getExternalReferenceCode()
+				).put(
+					"fallbackDescription", sxpElement.getFallbackDescription()
+				).put(
+					"fallbackTitle", sxpElement.getFallbackTitle()
 				).put(
 					"schemaVersion", postSXPElement.getSchemaVersion()
 				).put(
@@ -127,9 +132,17 @@ public class SXPElementResourceTest extends BaseSXPElementResourceTestCase {
 			JSONUtil.put(
 				"description", description
 			).put(
+				"description_i18n",
+				Collections.singletonMap(
+					LocaleUtil.toLanguageId(LocaleUtil.US), description)
+			).put(
 				"elementDefinition", "{}"
 			).put(
 				"title", title
+			).put(
+				"title_i18n",
+				Collections.singletonMap(
+					LocaleUtil.toLanguageId(LocaleUtil.US), title)
 			).toString());
 
 		SXPElement postSXPElement = testPostSXPElement_addSXPElement(
@@ -289,6 +302,11 @@ public class SXPElementResourceTest extends BaseSXPElementResourceTestCase {
 	}
 
 	@Override
+	protected SXPElement testPutSXPElement_addSXPElement() throws Exception {
+		return _addSXPElement(randomSXPElement());
+	}
+
+	@Override
 	protected SXPElement
 			testPutSXPElementByExternalReferenceCode_addSXPElement()
 		throws Exception {
@@ -336,5 +354,8 @@ public class SXPElementResourceTest extends BaseSXPElementResourceTestCase {
 
 	@Inject
 	private Language _language;
+
+	@Inject
+	private SXPElementLocalService _sxpElementLocalService;
 
 }

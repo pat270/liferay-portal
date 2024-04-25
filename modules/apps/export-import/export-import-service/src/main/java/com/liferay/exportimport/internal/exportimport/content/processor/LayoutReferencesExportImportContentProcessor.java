@@ -15,6 +15,7 @@ import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
@@ -28,13 +29,13 @@ import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.StagedModel;
 import com.liferay.portal.kernel.model.VirtualLayoutConstants;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
-import com.liferay.portal.kernel.portlet.constants.FriendlyURLResolverConstants;
+import com.liferay.portal.kernel.portlet.FriendlyURLResolverRegistryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutFriendlyURLLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.InetAddressUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -879,11 +880,6 @@ public class LayoutReferencesExportImportContentProcessor
 
 		Group group = _groupLocalService.getGroup(groupId);
 
-		String[] friendlyURLSeparators = {
-			"/-/", FriendlyURLResolverConstants.URL_SEPARATOR_BLOGS_ENTRY,
-			FriendlyURLResolverConstants.URL_SEPARATOR_FILE_ENTRY,
-			FriendlyURLResolverConstants.URL_SEPARATOR_JOURNAL_ARTICLE
-		};
 		String[] patterns = {"href=", "[[", "{{"};
 
 		int beginPos = -1;
@@ -945,7 +941,11 @@ public class LayoutReferencesExportImportContentProcessor
 
 			url = content.substring(beginPos + offset, endPos);
 
-			endPos = StringUtil.indexOfAny(url, friendlyURLSeparators);
+			endPos = StringUtil.indexOfAny(
+				url,
+				ArrayUtil.remove(
+					FriendlyURLResolverRegistryUtil.getURLSeparators(),
+					VirtualLayoutConstants.CANONICAL_URL_SEPARATOR));
 
 			if (endPos != -1) {
 				url = url.substring(0, endPos);

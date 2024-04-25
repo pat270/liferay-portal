@@ -98,12 +98,6 @@ public class PlacedOrderItemShipmentResourceTest
 			_accountEntry.getAccountEntryId(),
 			_commerceCurrency.getCommerceCurrencyId());
 
-		_commerceOrder.setOrderStatus(
-			CommerceOrderConstants.ORDER_STATUS_COMPLETED);
-
-		_commerceOrder = _commerceOrderLocalService.updateCommerceOrder(
-			_commerceOrder);
-
 		_commercePriceList =
 			_commercePriceListLocalService.addCommercePriceList(
 				RandomTestUtil.randomString(), testGroup.getGroupId(),
@@ -119,12 +113,22 @@ public class PlacedOrderItemShipmentResourceTest
 			_commerceOrderItemLocalService.addCommerceOrderItem(
 				_user.getUserId(), _commerceOrder.getCommerceOrderId(),
 				_cpInstance.getCPInstanceId(), null,
-				RandomTestUtil.randomInt(1, 10), 0,
-				RandomTestUtil.randomInt(1, 10), StringPool.BLANK,
+				BigDecimal.valueOf(RandomTestUtil.randomInt(1, 10)), 0,
+				BigDecimal.valueOf(RandomTestUtil.randomInt(1, 10)),
+				StringPool.BLANK,
 				new TestCommerceContext(
 					_accountEntry, _commerceCurrency, _commerceChannel, _user,
 					testGroup, _commerceOrder),
 				_serviceContext);
+
+		_commerceOrder = _commerceOrderLocalService.getCommerceOrder(
+			_commerceOrder.getCommerceOrderId());
+
+		_commerceOrder.setOrderStatus(
+			CommerceOrderConstants.ORDER_STATUS_COMPLETED);
+
+		_commerceOrder = _commerceOrderLocalService.updateCommerceOrder(
+			_commerceOrder);
 
 		_country = _countryLocalService.addCountry(
 			"XY", "XYZ", true, true, RandomTestUtil.randomString(),
@@ -160,10 +164,11 @@ public class PlacedOrderItemShipmentResourceTest
 				createDate = RandomTestUtil.nextDate();
 				estimatedDeliveryDate = RandomTestUtil.nextDate();
 				estimatedShippingDate = RandomTestUtil.nextDate();
+				externalReferenceCode = RandomTestUtil.randomString();
 				id = RandomTestUtil.randomLong();
 				modifiedDate = RandomTestUtil.nextDate();
 				orderId = _commerceOrder.getCommerceOrderId();
-				quantity = RandomTestUtil.randomInt(1, 10);
+				quantity = BigDecimal.valueOf(RandomTestUtil.randomInt(1, 10));
 				shippingAddressId = localShippingAddress.getAddressId();
 				shippingMethodId = RandomTestUtil.randomLong();
 				shippingOptionName = StringUtil.toLowerCase(
@@ -172,6 +177,24 @@ public class PlacedOrderItemShipmentResourceTest
 					RandomTestUtil.randomString());
 			}
 		};
+	}
+
+	@Override
+	protected PlacedOrderItemShipment
+			testGetPlacedOrderItemByExternalReferenceCodePlacedOrderItemShipmentsPage_addPlacedOrderItemShipment(
+				String externalReferenceCode,
+				PlacedOrderItemShipment placedOrderItemShipment)
+		throws Exception {
+
+		return _addCommerceShipmentItem(placedOrderItemShipment);
+	}
+
+	@Override
+	protected String
+			testGetPlacedOrderItemByExternalReferenceCodePlacedOrderItemShipmentsPage_getExternalReferenceCode()
+		throws Exception {
+
+		return _commerceOrderItem.getExternalReferenceCode();
 	}
 
 	@Override
@@ -220,7 +243,8 @@ public class PlacedOrderItemShipmentResourceTest
 				RandomTestUtil.randomString(),
 				commerceShipment.getCommerceShipmentId(),
 				_commerceOrderItem.getCommerceOrderItemId(), 0,
-				placedOrderItemShipment.getQuantity(), false, _serviceContext);
+				placedOrderItemShipment.getQuantity(), null, false,
+				_serviceContext);
 
 		_commerceShipmentItems.add(commerceShipmentItem);
 
@@ -233,6 +257,8 @@ public class PlacedOrderItemShipmentResourceTest
 					placedOrderItemShipment.getEstimatedDeliveryDate();
 				estimatedShippingDate =
 					placedOrderItemShipment.getEstimatedShippingDate();
+				externalReferenceCode =
+					placedOrderItemShipment.getExternalReferenceCode();
 				id = commerceShipmentItem.getCommerceShipmentItemId();
 				modifiedDate = commerceShipmentItem.getModifiedDate();
 				orderId = _commerceOrder.getCommerceOrderId();

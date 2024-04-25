@@ -15,10 +15,7 @@ definition {
 
 		Navigator.openURL();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+		Workflow.openWorkflowMetrics();
 	}
 
 	tearDown {
@@ -184,11 +181,9 @@ definition {
 	test CanSeeAllVersionsTogether {
 		property ci.retries.disabled = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -235,10 +230,7 @@ definition {
 			slaBreachedValue = "0 (0%)",
 			stepName = "Update");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Workflow.gotoEditWorkflowDefinition(workflowDefinitionTitle = "Single Approver");
 
@@ -361,11 +353,9 @@ definition {
 	@priority = 3
 	test CardDoesNotDisplayMoreThan10Entries {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Workflow.addNewDefinition(workflowDefinitionTitle = "11 Transitions Definition");
 
@@ -469,11 +459,9 @@ definition {
 	@priority = 4
 	test FilterConsidersStepsTouchedByTaks {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -522,10 +510,7 @@ definition {
 			slaBreachedValue = "0 (0%)",
 			stepName = "Update");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Workflow.gotoEditWorkflowDefinition(workflowDefinitionTitle = "Single Approver");
 
@@ -562,12 +547,10 @@ definition {
 	@priority = 4
 	test FilterConsidersStepsTouchedByTaksOnPage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Configure Single Approver Workflow to Blogs Entry") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Workflow",
-				panel = "Applications",
-				portlet = "Process Builder");
+			Workflow.openWorkflowListView();
 
 			Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -602,10 +585,7 @@ definition {
 		}
 
 		task ("Edit Single Approver Workflow") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Workflow",
-				panel = "Applications",
-				portlet = "Process Builder");
+			Workflow.openWorkflowListView();
 
 			Workflow.gotoEditWorkflowDefinition(workflowDefinitionTitle = "Single Approver");
 
@@ -879,14 +859,12 @@ definition {
 	@priority = 4
 	test PageConsidersClosedInstancesInChosenVersion {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var documentTitle1 = "Blogs Entry Title 1";
 		var documentTitle2 = "Blogs Entry Title 2";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -916,10 +894,7 @@ definition {
 			workflowAssetType = "Blogs Entry",
 			workflowTask = "Review");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Workflow.gotoEditWorkflowDefinition(workflowDefinitionTitle = "Single Approver");
 
@@ -1111,12 +1086,10 @@ definition {
 	@priority = 5
 	test StepIsNotDisplayedForSpecificVersion {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Configure Single Approver Workflow to Blogs Entry") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Workflow",
-				panel = "Applications",
-				portlet = "Process Builder");
+			Workflow.openWorkflowListView();
 
 			Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -1169,10 +1142,7 @@ definition {
 		}
 
 		task ("Edit Single Approver Workflow") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Workflow",
-				panel = "Applications",
-				portlet = "Process Builder");
+			Workflow.openWorkflowListView();
 
 			Workflow.gotoEditWorkflowDefinition(workflowDefinitionTitle = "Single Approver");
 
@@ -1230,10 +1200,7 @@ definition {
 
 		Button.clickSave();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -1319,11 +1286,9 @@ definition {
 	test UserCanSearchNonAsciiChars {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Workflow.addNewDefinition(workflowDefinitionTitle = "11 Transitions Update");
 
@@ -1367,10 +1332,7 @@ definition {
 
 		Button.clickSave();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -1405,7 +1367,7 @@ definition {
 
 		WorkflowMetrics.goToWorkflowSLASettings(workflowProcessName = "Single Approver");
 
-		WorkflowMetrics.goToDeleteSLA(slaName = "Test");
+		WorkflowMetrics.deleteSLA(slaName = "Test");
 
 		WorkflowMetrics.goToWorkflowProcessMetrics(workflowProcessName = "Single Approver");
 

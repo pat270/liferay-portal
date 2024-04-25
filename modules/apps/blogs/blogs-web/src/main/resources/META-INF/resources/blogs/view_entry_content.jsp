@@ -65,7 +65,7 @@ BlogsPortletInstanceConfiguration blogsPortletInstanceConfiguration = BlogsPortl
 						%>'
 						aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 						dropdownItems="<%= blogsEntryActionDropdownItemsProvider.getActionDropdownItems(entry) %>"
-						propsTransformer="blogs_admin/js/ElementsPropsTransformer"
+						propsTransformer="{ElementsPropsTransformer} from blogs-web"
 					/>
 				</clay:content-col>
 			</clay:content-row>
@@ -87,7 +87,7 @@ BlogsPortletInstanceConfiguration blogsPortletInstanceConfiguration = BlogsPortl
 				<clay:content-col
 					cssClass="inline-item-before"
 				>
-					<liferay-ui:user-portrait
+					<liferay-user:user-portrait
 						user="<%= entryUser %>"
 					/>
 				</clay:content-col>
@@ -153,7 +153,7 @@ BlogsPortletInstanceConfiguration blogsPortletInstanceConfiguration = BlogsPortl
 						%>
 
 						<p>
-							<%= StringUtil.shorten(HtmlUtil.stripHtml(summary), PropsValues.BLOGS_PAGE_ABSTRACT_LENGTH) %>
+							<%= StringUtil.shorten(StringUtil.removeSubstring(HtmlUtil.stripHtml(summary), StringPool.NEW_LINE + StringPool.SPACE), PropsValues.BLOGS_PAGE_ABSTRACT_LENGTH) %>
 						</p>
 					</c:when>
 					<c:when test="<%= blogsPortletInstanceConfiguration.displayStyle().equals(BlogsUtil.DISPLAY_STYLE_FULL_CONTENT) %>">

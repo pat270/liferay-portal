@@ -1,0 +1,653 @@
+/**
+ * SPDX-FileCopyrightText: (c) 2023 Liferay, Inc. https://liferay.com
+ * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
+ */
+
+package com.liferay.source.formatter.dependencies.upgrade;
+
+import com.liferay.commerce.constants.CommerceOrderPaymentConstants;
+import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
+import com.liferay.document.library.util.DLURLHelperUtil;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProviderUtil;
+import com.liferay.portal.kernel.cookies.CookiesManagerUtil;
+import com.liferay.portal.kernel.cookies.constants.CookiesConstants;
+import com.liferay.portal.kernel.search.Sort;
+import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
+import com.liferay.portal.kernel.util.HtmlParser;
+import com.liferay.portal.kernel.util.PortalUtil;
+
+import java.util.ArrayList;
+
+import org.osgi.service.component.annotations.Reference;
+
+/**
+ * @author Nícolas Moura
+ */
+public class UpgradeCatchAllCheck implements ConfigurationBeanDeclaration {
+
+	public void method() {
+		AccountPortletKeys.ACCOUNT_USERS_ADMIN;
+		AccountPortletKeys.ACCOUNT_GROUPS_ADMIN;
+
+		CommerceOrderPaymentConstants.STATUS_AUTHORIZED;
+		CommerceOrderPaymentConstants.STATUS_COMPLETED;
+		CommerceOrderPaymentConstants.STATUS_PENDING;
+
+		for (CommerceOrderItem commerceOrderItem : commerceOrder.getCommerceOrderItems()) {
+			commerceOrderItem.getQuantity();
+		}
+
+		_countryService.fetchCountryByA2(123, "test123");
+
+		DestinationNames.COMMERCE_BASE_PRICE_LIST;
+		DestinationNames.COMMERCE_ORDER_STATUS;
+		DestinationNames.COMMERCE_PAYMENT_STATUS;
+		DestinationNames.COMMERCE_SHIPMENT_STATUS;
+		DestinationNames.COMMERCE_STOCK_QUANTITY;
+		DestinationNames.COMMERCE_SUBSCRIPTION_STATUS;
+
+		DLURLHelperUtil.getImagePreviewURL(null, null, null);
+
+		FDSTableSchemaBuilder fDSTableSchemaBuilder = _fDSTableSchemaBuilderFactory.create();
+
+		fDSTableSchemaBuilder.add("test123", "test123");
+
+		_htmlParser.extractText(null);
+
+		new ArrayList<>(LanguageUtil.getAvailableLocales());
+
+		CookiesConstants.NAME_COMMERCE_CONTINUE_AS_GUEST;
+		CookiesConstants.NAME_ID;
+		CookiesConstants.NAME_USER_UUID;
+
+		PortletDisplayTemplateConstants.DISPLAY_STYLE_PREFIX;
+		PortletDisplayTemplateConstants.ENTRIES;
+
+		ServiceTrackerList<Class<E>> serviceTrackerList = ServiceTrackerListFactory.open(null, null);
+	}
+
+	public void method(
+		Address address, EmailAddress emailAddress, OrgLabor orgLabor,
+		Phone phone, Website website) {
+
+		address.getListTypeId();
+		address.setListTypeId();
+		emailAddress.getListTypeId();
+		emailAddress.setListTypeId();
+		orgLabor.getListTypeId();
+		orgLabor.setListTypeId();
+		phone.getListTypeId();
+		phone.setListTypeId();
+		website.getListTypeId();
+		website.setListTypeId();
+	}
+
+	public void method(AssetCategory<?> assetCategory) {
+		AssetCategory::getCategoryId;
+		assetCategory.getCategoryId;
+	}
+
+	public void method(CommerceAddress commerceAddress) {
+		CommerceAddressLocalServiceUtil.updateCommerceAddress(commerceAddress.getCommerceAddressId(), commerceAddress.getName(), commerceAddress.getDescription(), commerceAddress.getStreet1(), commerceAddress.getStreet2(), commerceAddress.getStreet3(), commerceAddress.getCity(), commerceAddress.getZip(), commerceAddress.getRegionId(), commerceAddress.getCountryId(), commerceAddress.getPhoneNumber(), commerceAddress.getType(), ServiceContextThreadLocal.getServiceContext());
+		CommerceAddressLocalServiceUtil.updateCommerceAddress(null);
+		_commerceAddressLocalService.updateCommerceAddress(commerceAddress.getCommerceAddressId(), commerceAddress.getName(), commerceAddress.getDescription(), commerceAddress.getStreet1(), commerceAddress.getStreet2(), commerceAddress.getStreet3(), commerceAddress.getCity(), commerceAddress.getZip(), commerceAddress.getRegionId(), commerceAddress.getCountryId(), commerceAddress.getPhoneNumber(), commerceAddress.getType(), ServiceContextThreadLocal.getServiceContext());
+	}
+
+	public void method(
+		CommerceAddress commerceAddress, Country country, Region region) {
+
+		commerceAddress.getCountry().getA2();
+		country.getA2();
+		country.setA2();
+		country.getA3();
+		country.setA3();
+
+		commerceAddress.getRegion().getRegionCode();
+		region.getRegionCode();
+	}
+
+	public void method(Contact contact) {
+		contact.getPrefixListTypeId();
+		contact.getSuffixListTypeId();
+		contact.setPrefixListTypeId();
+		contact.setSuffixListTypeId();
+	}
+
+	public void method(HttpServletRequest httpServletRequest) {
+		_commerceAccountHelper.getCurrentAccountEntry(0, httpServletRequest);
+		_commerceAccountHelper.getCurrentCommerceAccount(null);
+	}
+
+	public void method(HttpServletRequest httpServletRequest, String name) {
+		CookieKeys.getCookie(httpServletRequest, "test123");
+		CookiesManagerUtil.getCookieValue(name, httpServletRequest);
+
+		CookieUtil.get(httpServletRequest, "test123");
+		CookiesManagerUtil.getCookieValue(name, httpServletRequest);
+	}
+
+	public void method(
+		HttpServletRequest httpServletRequest, String name,
+		boolean toUpperCase) {
+
+		CookieUtil.get(httpServletRequest, "test123", toUpperCase);
+		CookiesManagerUtil.getCookieValue(name, httpServletRequest, toUpperCase);
+	}
+
+	public void method(Indexer<?> indexer) {
+		indexer.getSearchClassNames();
+	}
+
+	public void method(
+		Indexer<?> indexer, ServiceReference<Indexer<?>> serviceReference) {
+
+		Map<Indexer<?>, Indexer<?>> indexerRequests = new LinkedHashMap<>();
+		List<Indexer<?>> indexers = portlet.getIndexerInstances();
+	}
+
+	public void method(long commerceOrderId) {
+		CommerceOrderItemLocalServiceUtil.deleteCommerceOrderItems(0, commerceOrderId);
+		_commerceOrderItemLocalService.deleteCommerceOrderItems(123);
+		_commerceOrderItemLocalService.deleteCommerceOrderItems(0, commerceOrderId);
+	}
+
+	public void method(
+		long groupId, boolean privateLayout, long layoutId, long parentLayoutId,
+		Map<java.util.Locale, String> nameMap,
+		Map<java.util.Locale, String> titleMap,
+		Map<java.util.Locale, String> descriptionMap,
+		Map<java.util.Locale, String> keywordsMap,
+		Map<java.util.Locale, String> robotsMap, String type, boolean hidden,
+		Map<java.util.Locale, String> friendlyURLMap, boolean hasIconImage,
+		byte[] iconBytes, ServiceContext serviceContext) {
+
+		LayoutLocalServiceUtil.updateLayout(groupId, privateLayout, layoutId, parentLayoutId, nameMap, titleMap, descriptionMap, keywordsMap, robotsMap, type, hidden, friendlyURLMap, hasIconImage, iconBytes, 0, 0, 0, serviceContext);
+		LayoutServiceUtil.updateLayout(groupId, privateLayout, 123, parentLayoutId, nameMap, titleMap, descriptionMap, keywordsMap, robotsMap, test, hidden, friendlyURLMap, hasIconImage, iconBytes, serviceContext);
+		LayoutServiceUtil.updateLayout(groupId, privateLayout, layoutId, parentLayoutId, nameMap, titleMap, descriptionMap, keywordsMap, robotsMap, type, hidden, friendlyURLMap, hasIconImage, iconBytes, 0, 0, 0, serviceContext);
+		_layoutLocalService.updateLayout(groupId, privateLayout, layoutId, parentLayoutId, nameMap, titleMap, descriptionMap, keywordsMap, robotsMap, type, hidden, friendlyURLMap, hasIconImage, iconBytes, 0, 0, 0, serviceContext);
+		_layoutService.updateLayout(groupId, privateLayout, layoutId, parentLayoutId, nameMap, titleMap, descriptionMap, keywordsMap, robotsMap, type, hidden, friendlyURLMap, hasIconImage, iconBytes, 0, 0, 0, serviceContext);
+	}
+
+	public void method(
+		long companyId, boolean autoPassword, String password1,
+		String password2, boolean autoScreenName, String screenName,
+		String emailAddress, long facebookId, String openId, Locale locale,
+		String firstName, String middleName, String lastName, long prefixId,
+		long suffixId, boolean male, int birthdayMonth, int birthdayDay,
+		int birthdayYear, String jobTitle, long[] groupIds,
+		long[] organizationIds, long[] roleIds, long[] userGroupIds,
+		boolean sendEmail, ServiceContext serviceContext) {
+
+		UserLocalServiceUtil.addUser(companyId, autoPassword, password1, password2, autoScreenName, screenName, emailAddress, locale, firstName, middleName, lastName, prefixId, suffixId, male, birthdayMonth, birthdayDay, birthdayYear, jobTitle, groupIds, organizationIds, roleIds, userGroupIds, sendEmail, serviceContext);
+		UserServiceUtil.addUser(123, autoPassword, password1, password2, autoScreenName, screenName, emailAddress, facebookId, openId, locale, firstName, middleName, lastName, prefixId, suffixId, male, birthdayMonth, birthdayDay, birthdayYear, jobTitle, groupIds, organizationIds, roleIds, userGroupIds, sendEmail, serviceContext);
+		UserServiceUtil.addUser(companyId, autoPassword, password1, password2, autoScreenName, screenName, emailAddress, locale, firstName, middleName, lastName, prefixId, suffixId, male, birthdayMonth, birthdayDay, birthdayYear, jobTitle, groupIds, organizationIds, roleIds, userGroupIds, sendEmail, serviceContext);
+		_userLocalService.addUser(companyId, autoPassword, password1, password2, autoScreenName, screenName, emailAddress, locale, firstName, middleName, lastName, prefixId, suffixId, male, birthdayMonth, birthdayDay, birthdayYear, jobTitle, groupIds, organizationIds, roleIds, userGroupIds, sendEmail, serviceContext);
+		_userService.addUser(companyId, autoPassword, password1, password2, autoScreenName, screenName, emailAddress, locale, firstName, middleName, lastName, prefixId, suffixId, male, birthdayMonth, birthdayDay, birthdayYear, jobTitle, groupIds, organizationIds, roleIds, userGroupIds, sendEmail, serviceContext);
+	}
+
+	public void method(
+		long companyId, boolean autoPassword, String password1,
+		String password2, boolean autoScreenName, String screenName,
+		String emailAddress, long facebookId, String openId, Locale locale,
+		String firstName, String middleName, String lastName, long prefixId,
+		long suffixId, boolean male, int birthdayMonth, int birthdayDay,
+		int birthdayYear, String jobTitle, long[] groupIds,
+		long[] organizationIds, long[] roleIds, long[] userGroupIds,
+		List<Address> addresses, List<EmailAddress> emailAddresses,
+		List<Phone> phones, List<Website> websites,
+		List<AnnouncementsDelivery> announcementsDelivers, boolean sendEmail,
+		ServiceContext serviceContext) {
+
+		UserLocalServiceUtil.addUser(companyId, autoPassword, password1, password2, autoScreenName, screenName, emailAddress, locale, firstName, middleName, lastName, prefixId, suffixId, male, birthdayMonth, birthdayDay, birthdayYear, jobTitle, groupIds, organizationIds, roleIds, userGroupIds, addresses, emailAddresses, phones, websites, announcementsDelivers, sendEmail, serviceContext);
+		UserServiceUtil.addUser(123, autoPassword, password1, password2, autoScreenName, screenName, emailAddress, facebookId, openId, locale, firstName, middleName, lastName, prefixId, suffixId, male, birthdayMonth, birthdayDay, birthdayYear, jobTitle, groupIds, organizationIds, roleIds, userGroupIds, addresses, emailAddresses, phones, websites, announcementsDelivers, sendEmail, serviceContext);
+		UserServiceUtil.addUser(companyId, autoPassword, password1, password2, autoScreenName, screenName, emailAddress, locale, firstName, middleName, lastName, prefixId, suffixId, male, birthdayMonth, birthdayDay, birthdayYear, jobTitle, groupIds, organizationIds, roleIds, userGroupIds, addresses, emailAddresses, phones, websites, announcementsDelivers, sendEmail, serviceContext);
+		_userLocalService.addUser(companyId, autoPassword, password1, password2, autoScreenName, screenName, emailAddress, locale, firstName, middleName, lastName, prefixId, suffixId, male, birthdayMonth, birthdayDay, birthdayYear, jobTitle, groupIds, organizationIds, roleIds, userGroupIds, addresses, emailAddresses, phones, websites, announcementsDelivers, sendEmail, serviceContext);
+		_userService.addUser(companyId, autoPassword, password1, password2, autoScreenName, screenName, emailAddress, locale, firstName, middleName, lastName, prefixId, suffixId, male, birthdayMonth, birthdayDay, birthdayYear, jobTitle, groupIds, organizationIds, roleIds, userGroupIds, addresses, emailAddresses, phones, websites, announcementsDelivers, sendEmail, serviceContext);
+	}
+
+	public void method(long userId, int status) {
+		UserLocalServiceUtil.updateStatus(userId, status, ServiceContextThreadLocal.getServiceContext());
+		UserServiceUtil.updateStatus(123, status);
+		UserServiceUtil.updateStatus(userId, status, ServiceContextThreadLocal.getServiceContext());
+		_userLocalService.updateStatus(userId, status, ServiceContextThreadLocal.getServiceContext());
+		_userService.updateStatus(userId, status, ServiceContextThreadLocal.getServiceContext());
+	}
+
+	public void method(
+		long userId, long groupId, boolean privateLayout, long parentLayoutId,
+		long classNameId, long classPK, Map<java.util.Locale, String> nameMap,
+		Map<java.util.Locale, String> titleMap,
+		Map<java.util.Locale, String> descriptionMap,
+		Map<java.util.Locale, String> keywordsMap,
+		Map<java.util.Locale, String> robotsMap, String type,
+		String typeSettings, boolean hidden, boolean system,
+		Map<java.util.Locale, String> friendlyURLMap,
+		ServiceContext serviceContext) {
+
+		LayoutLocalServiceUtil.addLayout(userId, groupId, privateLayout, parentLayoutId, classNameId, classPK, nameMap, titleMap, descriptionMap, keywordsMap, robotsMap, type, typeSettings, hidden, system, friendlyURLMap, 0, serviceContext);
+		_layoutLocalService.addLayout(userId, groupId, 123, parentLayoutId, classNameId, classPK, nameMap, titleMap, descriptionMap, keywordsMap, robotsMap, type, typeSettings, hidden, system, friendlyURLMap, serviceContext);
+		_layoutLocalService.addLayout(userId, groupId, privateLayout, parentLayoutId, classNameId, classPK, nameMap, titleMap, descriptionMap, keywordsMap, robotsMap, type, typeSettings, hidden, system, friendlyURLMap, 0, serviceContext);
+	}
+
+	public void method(
+		long userId, long groupId, boolean mountPoint, long parentFolderId,
+		String name, String description, ServiceContext serviceContext) {
+
+		DLFolderServiceUtil.addFolder(123, groupId, mountPoint, parentFolderId, name, description, serviceContext);
+		DLFolderServiceUtil.addFolder(null, userId, groupId, mountPoint, parentFolderId, name, description, serviceContext);
+		_dlFolderService.addFolder(null, userId, groupId, mountPoint, parentFolderId, name, description, serviceContext);
+	}
+
+	public void method(
+		long creatorUserId, long companyId, boolean autoPassword,
+		String password1, String password2, boolean autoScreenName,
+		String screenName, String emailAddress, long facebookId, String openId,
+		Locale locale, String firstName, String middleName, String lastName,
+		long prefixId, long suffixId, boolean male, int birthdayMonth,
+		int birthdayDay, int birthdayYear, String jobTitle, long[] groupIds,
+		long[] organizationIds, long[] roleIds, long[] userGroupIds,
+		boolean sendEmail, ServiceContext serviceContext) {
+
+		UserLocalServiceUtil.addUser(creatorUserId, companyId, autoPassword, password1, password2, autoScreenName, screenName, emailAddress, locale, firstName, middleName, lastName, prefixId, suffixId, male, birthdayMonth, birthdayDay, birthdayYear, jobTitle, 0, groupIds, organizationIds, roleIds, userGroupIds, sendEmail, serviceContext);
+		UserServiceUtil.addUser(123, companyId, autoPassword, password1, password2, autoScreenName, screenName, emailAddress, facebookId, openId, locale, firstName, middleName, lastName, prefixId, suffixId, male, birthdayMonth, birthdayDay, birthdayYear, jobTitle, groupIds, organizationIds, roleIds, userGroupIds, sendEmail, serviceContext);
+		UserServiceUtil.addUser(creatorUserId, companyId, autoPassword, password1, password2, autoScreenName, screenName, emailAddress, locale, firstName, middleName, lastName, prefixId, suffixId, male, birthdayMonth, birthdayDay, birthdayYear, jobTitle, 0, groupIds, organizationIds, roleIds, userGroupIds, sendEmail, serviceContext);
+		_userLocalService.addUser(creatorUserId, companyId, autoPassword, password1, password2, autoScreenName, screenName, emailAddress, locale, firstName, middleName, lastName, prefixId, suffixId, male, birthdayMonth, birthdayDay, birthdayYear, jobTitle, 0, groupIds, organizationIds, roleIds, userGroupIds, sendEmail, serviceContext);
+		_userService.addUser(creatorUserId, companyId, autoPassword, password1, password2, autoScreenName, screenName, emailAddress, locale, firstName, middleName, lastName, prefixId, suffixId, male, birthdayMonth, birthdayDay, birthdayYear, jobTitle, 0, groupIds, organizationIds, roleIds, userGroupIds, sendEmail, serviceContext);
+	}
+
+	public void method(
+		long cpDefinitionId, long cProductId, double priority, String type,
+		ServiceContext serviceContext) {
+
+		CPDefinitionLinkLocalServiceUtil.addCPDefinitionLinkByCProductId(123, cProductId, priority, type, serviceContext);
+		CPDefinitionLinkLocalServiceUtil.addCPDefinitionLinkByCProductId(cpDefinitionId, cProductId, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, true, priority, type, serviceContext);
+		_cpDefinitionLinkLocalService.addCPDefinitionLinkByCProductId(cpDefinitionId, cProductId, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, true, priority, type, serviceContext);
+	}
+
+	public void method(
+		long commerceOrderId, long cpInstanceId, int quantity,
+		int shippedQuantity, String json, CommerceContext commerceContext,
+		ServiceContext serviceContext) {
+
+		CommerceOrderItemLocalServiceUtil.addCommerceOrderItem(commerceOrderId, cpInstanceId, json, BigDecimal.valueOf(quantity), cpInstanceId, BigDecimal.valueOf(shippedQuantity), null, commerceContext, serviceContext);
+		CommerceOrderItemServiceUtil.addCommerceOrderItem(123, cpInstanceId, 123, shippedQuantity, "test", commerceContext, serviceContext);
+		CommerceOrderItemServiceUtil.addCommerceOrderItem(commerceOrderId, cpInstanceId, json, BigDecimal.valueOf(quantity), cpInstanceId, BigDecimal.valueOf(shippedQuantity), null, commerceContext, serviceContext);
+
+		_commerceOrderItemLocalService.addCommerceOrderItem(0, commerceOrderId, cpInstanceId, json, BigDecimal.valueOf(quantity), cpInstanceId, BigDecimal.valueOf(shippedQuantity), null, commerceContext, serviceContext);
+		_commerceOrderItemService.addCommerceOrderItem(123, cpInstanceId, 123, shippedQuantity, "test", commerceContext, serviceContext);
+		_commerceOrderItemService.addCommerceOrderItem(0, commerceOrderId, cpInstanceId, json, BigDecimal.valueOf(quantity), cpInstanceId, BigDecimal.valueOf(shippedQuantity), null, commerceContext, serviceContext);
+	}
+
+	public void method(
+		long userId, long groupId, long repositoryId, boolean mountPoint,
+		long parentFolderId, String name, String description, boolean hidden,
+		ServiceContext serviceContext) {
+
+		DLFolderLocalServiceUtil.addFolder(123, groupId, repositoryId, mountPoint, parentFolderId, name, description, hidden, serviceContext);
+		DLFolderLocalServiceUtil.addFolder(null, userId, groupId, repositoryId, mountPoint, parentFolderId, name, description, hidden, serviceContext);
+		_dlFolderLocalService.addFolder(null, userId, groupId, repositoryId, mountPoint, parentFolderId, name, description, hidden, serviceContext);
+	}
+
+	public void method(
+		long userId, long groupId, long billingAddressId,
+		long commerceAccountId, long commerceCurrencyId,
+		long commerceOrderTypeId, long commerceShippingMethodId,
+		long shippingAddressId, String commercePaymentMethodKey,
+		int orderDateMonth, int orderDateDay, int orderDateYear,
+		int orderDateHour, int orderDateMinute, int orderStatus,
+		int paymentStatus, String purchaseOrderNumber,
+		BigDecimal shippingAmount, String shippingOptionName,
+		BigDecimal shippingWithTaxAmount, BigDecimal subtotal,
+		BigDecimal subtotalWithTaxAmount, BigDecimal taxAmount,
+		BigDecimal total, BigDecimal totalWithTaxAmount,
+		ServiceContext serviceContext) {
+
+		CommerceOrderLocalServiceUtil.addCommerceOrder(123, groupId, billingAddressId, commerceAccountId, commerceCurrencyId, commerceOrderTypeId, commerceShippingMethodId, shippingAddressId, commercePaymentMethodKey, orderDateMonth, orderDateDay, orderDateYear, orderDateHour, orderDateMinute, orderStatus, paymentStatus, purchaseOrderNumber, shippingAmount, "test123", shippingWithTaxAmount, subtotal, subtotalWithTaxAmount, taxAmount, total, totalWithTaxAmount, serviceContext);
+		CommerceOrderLocalServiceUtil.addCommerceOrder(userId, groupId, billingAddressId, commerceAccountId, commerceCurrencyId, commerceOrderTypeId, commerceShippingMethodId, shippingAddressId, commercePaymentMethodKey, orderDateMonth, orderDateDay, orderDateYear, orderDateHour, orderDateMinute, orderStatus, paymentStatus, purchaseOrderNumber, shippingAmount, shippingOptionName);
+		_commerceOrderLocalService.addCommerceOrder(userId, groupId, billingAddressId, commerceAccountId, commerceCurrencyId, commerceOrderTypeId, commerceShippingMethodId, shippingAddressId, commercePaymentMethodKey, orderDateMonth, orderDateDay, orderDateYear, orderDateHour, orderDateMinute, orderStatus, paymentStatus, purchaseOrderNumber, shippingAmount, shippingOptionName);
+	}
+
+	public void method(
+		long userId, long groupId, long parentCategoryId,
+		Map<Locale, String> titleMap, Map<Locale, String> descriptionMap,
+		long vocabularyId, String[] categoryProperties,
+		ServiceContext serviceContext) {
+
+		AssetCategoryLocalServiceUtil.addCategory(123, groupId, parentCategoryId, titleMap, descriptionMap, vocabularyId, categoryProperties, serviceContext);
+		AssetCategoryLocalServiceUtil.addCategory(null, userId, groupId, parentCategoryId, titleMap, descriptionMap, vocabularyId, categoryProperties, serviceContext);
+		_assetCategoryLocalService.addCategory(null, userId, groupId, parentCategoryId, titleMap, descriptionMap, vocabularyId, categoryProperties, serviceContext);
+	}
+
+	public void method(
+		long userId, long repositoryId, long parentFolderId, String name,
+		String description, com.liferay.portal.kernel.service.ServiceContext
+		serviceContext) {
+
+		DLAppLocalServiceUtil.addFolder(null, userId, repositoryId, parentFolderId, name, description, serviceContext);
+		DLAppServiceUtil.addFolder(123, repositoryId, parentFolderId, name, description, serviceContext);
+		DLAppServiceUtil.addFolder(null, userId, repositoryId, parentFolderId, name, description, serviceContext);
+		_dlAppLocalService.addFolder(null, userId, repositoryId, parentFolderId, name, description, serviceContext);
+		_dlAppService.addFolder(null, userId, repositoryId, parentFolderId, name, description, serviceContext);
+	}
+
+	public void method(
+		long userId, long groupId, long parentFolderId, String name,
+		String description, ServiceContext serviceContext) {
+
+		JournalFolderLocalServiceUtil.addFolder(123, groupId, parentFolderId, "test123", description, serviceContext);
+		_journalFolderLocalService.addFolder(null, userId, groupId, parentFolderId, name, description, serviceContext);
+	}
+
+	public void method(
+		long userId, long repositoryId, long folderId, String sourceFileName,
+		String mimeType, String title, String description, String changeLog,
+		byte[] bytes, ServiceContext serviceContext) {
+
+		DLAppLocalServiceUtil.addFileEntry(123, repositoryId, folderId, "test123", mimeType, title, description, changeLog, bytes, serviceContext);
+		DLAppLocalServiceUtil.addFileEntry(null, userId, repositoryId, folderId, sourceFileName, mimeType, title, null, description, changeLog, bytes, null, null, serviceContext);
+		_dlAppLocalService.addFileEntry(null, userId, repositoryId, folderId, sourceFileName, mimeType, title, null, description, changeLog, bytes, null, null, serviceContext);
+	}
+
+	public void method(
+		long groupId, long userId, Map<Locale, String> nameMap,
+		Map<Locale, String> shortDescriptionMap,
+		Map<Locale, String> descriptionMap, Map<Locale, String> urlTitleMap,
+		Map<Locale, String> metaTitleMap,
+		Map<Locale, String> metaDescriptionMap,
+		Map<Locale, String> metaKeywordsMap, String productTypeName,
+		boolean ignoreSKUCombinations, boolean shippable, boolean freeShipping,
+		boolean shipSeparately, double shippingExtraPrice, double width,
+		double height, double depth, double weight, long cpTaxCategoryId,
+		boolean taxExempt, boolean telcoOrElectronics, String ddmStructureKey,
+		boolean published, int displayDateMonth, int displayDateDay,
+		int displayDateYear, int displayDateHour, int displayDateMinute,
+		int expirationDateMonth, int expirationDateDay, int expirationDateYear,
+		int expirationDateHour, int expirationDateMinute, boolean neverExpire,
+		String defaultSku, boolean subscriptionEnabled, int subscriptionLength,
+		String subscriptionType,
+		UnicodeProperties subscriptionTypeSettingsUnicodeProperties,
+		long maxSubscriptionCycles, String externalReferenceCode,
+		ServiceContext serviceContext) {
+
+		CPDefinitionLocalServiceUtil.upsertCPDefinition(externalReferenceCode, groupId, userId, nameMap, shortDescriptionMap, descriptionMap, urlTitleMap, metaTitleMap, metaDescriptionMap, metaKeywordsMap, productTypeName, ignoreSKUCombinations, shippable, freeShipping, shipSeparately, shippingExtraPrice, width, height, depth, weight, cpTaxCategoryId, taxExempt, telcoOrElectronics, ddmStructureKey, published, displayDateMonth, displayDateDay, displayDateYear, displayDateHour, displayDateMinute, expirationDateMonth, expirationDateDay, expirationDateYear, expirationDateHour, expirationDateMinute, neverExpire, defaultSku, subscriptionEnabled, subscriptionLength, subscriptionType, subscriptionTypeSettingsUnicodeProperties, maxSubscriptionCycles, 0, serviceContext);
+		CPDefinitionServiceUtil.upsertCPDefinition(123, userId, nameMap, shortDescriptionMap, descriptionMap, urlTitleMap, metaTitleMap, metaDescriptionMap, metaKeywordsMap, productTypeName, ignoreSKUCombinations, shippable, freeShipping, shipSeparately, shippingExtraPrice, width, height, depth, weight, cpTaxCategoryId, taxExempt, telcoOrElectronics, ddmStructureKey, published, displayDateMonth, displayDateDay, displayDateYear, displayDateHour, displayDateMinute, expirationDateMonth, expirationDateDay, expirationDateYear, expirationDateHour, expirationDateMinute, neverExpire, defaultSku, subscriptionEnabled, subscriptionLength, subscriptionType, subscriptionTypeSettingsUnicodeProperties, maxSubscriptionCycles, externalReferenceCode, serviceContext);
+		CPDefinitionServiceUtil.upsertCPDefinition(externalReferenceCode, groupId, userId, nameMap, shortDescriptionMap, descriptionMap, urlTitleMap, metaTitleMap, metaDescriptionMap, metaKeywordsMap, productTypeName, ignoreSKUCombinations, shippable, freeShipping, shipSeparately, shippingExtraPrice, width, height, depth, weight, cpTaxCategoryId, taxExempt, telcoOrElectronics, ddmStructureKey, published, displayDateMonth, displayDateDay, displayDateYear, displayDateHour, displayDateMinute, expirationDateMonth, expirationDateDay, expirationDateYear, expirationDateHour, expirationDateMinute, neverExpire, defaultSku, subscriptionEnabled, subscriptionLength, subscriptionType, subscriptionTypeSettingsUnicodeProperties, maxSubscriptionCycles, 0, serviceContext);
+		_cpDefinitionLocalService.upsertCPDefinition(externalReferenceCode, groupId, userId, nameMap, shortDescriptionMap, descriptionMap, urlTitleMap, metaTitleMap, metaDescriptionMap, metaKeywordsMap, productTypeName, ignoreSKUCombinations, shippable, freeShipping, shipSeparately, shippingExtraPrice, width, height, depth, weight, cpTaxCategoryId, taxExempt, telcoOrElectronics, ddmStructureKey, published, displayDateMonth, displayDateDay, displayDateYear, displayDateHour, displayDateMinute, expirationDateMonth, expirationDateDay, expirationDateYear, expirationDateHour, expirationDateMinute, neverExpire, defaultSku, subscriptionEnabled, subscriptionLength, subscriptionType, subscriptionTypeSettingsUnicodeProperties, maxSubscriptionCycles, 0, serviceContext);
+		_cpDefinitionService.upsertCPDefinition(externalReferenceCode, groupId, userId, nameMap, shortDescriptionMap, descriptionMap, urlTitleMap, metaTitleMap, metaDescriptionMap, metaKeywordsMap, productTypeName, ignoreSKUCombinations, shippable, freeShipping, shipSeparately, shippingExtraPrice, width, height, depth, weight, cpTaxCategoryId, taxExempt, telcoOrElectronics, ddmStructureKey, published, displayDateMonth, displayDateDay, displayDateYear, displayDateHour, displayDateMinute, expirationDateMonth, expirationDateDay, expirationDateYear, expirationDateHour, expirationDateMinute, neverExpire, defaultSku, subscriptionEnabled, subscriptionLength, subscriptionType, subscriptionTypeSettingsUnicodeProperties, maxSubscriptionCycles, 0, serviceContext);
+	}
+
+	public void method(
+		long companyId, long groupId, String title, int start, int end) {
+
+		_assetVocabularyLocalService.searchVocabularies(companyId, new long[] {groupId}, title, new int[0], start, end, new Sort());
+		_assetVocabularyService.searchVocabularies(companyId, 123, "test123", start, end);
+		_assetVocabularyService.searchVocabularies(companyId, new long[] {groupId}, title, new int[0], start, end, new Sort());
+	}
+
+	public void method(
+		long userId, long fileEntryId, String sourceFileName, String mimeType,
+		String title, String description, String changeLog,
+		boolean majorVersion, byte[] bytes, ServiceContext serviceContext) {
+
+		DLAppLocalServiceUtil.updateFileEntry(123, fileEntryId, "test123", mimeType, title, description, changeLog, majorVersion, bytes, serviceContext);
+		DLAppLocalServiceUtil.updateFileEntry(userId, fileEntryId, sourceFileName, mimeType, title, null, description, changeLog, dlVersionNumberIncrease, majorVersion, null, null, bytes, serviceContext);
+		_dlAppLocalService.updateFileEntry(userId, fileEntryId, sourceFileName, mimeType, title, null, description, changeLog, dlVersionNumberIncrease, majorVersion, null, null, bytes, serviceContext);
+	}
+
+	public void method(
+		long userId, long fileEntryId, String sourceFileName, String mimeType,
+		String title, String description, String changeLog,
+		DLVersionNumberIncrease dlVersionNumberIncrease, byte[] bytes,
+		ServiceContext serviceContext) {
+
+		DLAppLocalServiceUtil.updateFileEntry(123, fileEntryId, "test123", mimeType, title, description, changeLog, dlVersionNumberIncrease, bytes, serviceContext);
+		DLAppLocalServiceUtil.updateFileEntry(userId, fileEntryId, sourceFileName, mimeType, title, null, description, changeLog, dlVersionNumberIncrease, bytes, null, null, serviceContext);
+		_dlAppLocalService.updateFileEntry(userId, fileEntryId, sourceFileName, mimeType, title, null, description, changeLog, dlVersionNumberIncrease, bytes, null, null, serviceContext);
+	}
+
+	public void method(
+		long companyId, long[] groupIds, long[] calendarIds,
+		long[] calendarResourceIds, long parentCalendarBookingId,
+		String keywords, long startTime, long endTime, boolean recurring,
+		int[] statuses, int start, int end,
+		OrderByComparator<CalendarBooking> orderByComparator) {
+
+		CalendarBookingLocalServiceUtil.search(companyId, groupIds, calendarIds, calendarResourceIds, parentCalendarBookingId, keywords, startTime, endTime, null, recurring, statuses, start, end, orderByComparator);
+		CalendarBookingServiceUtil.search(123, groupIds, calendarIds, calendarResourceIds, parentCalendarBookingId, keywords, startTime, endTime, recurring, statuses, start, end, orderByComparator);
+		CalendarBookingServiceUtil.search(companyId, groupIds, calendarIds, calendarResourceIds, parentCalendarBookingId, keywords, startTime, endTime, null, recurring, statuses, start, end, orderByComparator);
+		_calendarBookingLocalService.search(companyId, groupIds, calendarIds, calendarResourceIds, parentCalendarBookingId, keywords, startTime, endTime, null, recurring, statuses, start, end, orderByComparator);
+		_calendarBookingService.search(companyId, groupIds, calendarIds, calendarResourceIds, parentCalendarBookingId, keywords, startTime, endTime, null, recurring, statuses, start, end, orderByComparator);
+	}
+
+	public void method(long companyId, String externalReferenceCode) {
+		AccountGroupLocalServiceUtil.fetchAccountGroupByExternalReferenceCode(externalReferenceCode, companyId);
+		_accountGroupLocalService.fetchCommerceAccountGroupByExternalReferenceCode(123, "test123");
+		_accountGroupLocalService.fetchAccountGroupByExternalReferenceCode(externalReferenceCode, companyId);
+
+		AssetVocabularyLocalServiceUtil.fetchAssetVocabularyByExternalReferenceCode(123, externalReferenceCode);
+		AssetVocabularyLocalServiceUtil.fetchAssetVocabularyByExternalReferenceCode(companyId, externalReferenceCode);
+		_assetVocabularyLocalService.fetchAssetVocabularyByExternalReferenceCode(companyId, externalReferenceCode);
+
+		CommercePriceListLocalServiceUtil.fetchByExternalReferenceCode(externalReferenceCode, companyId);
+		_commercePriceListLocalService.fetchByExternalReferenceCode(123, "test123");
+		_commercePriceListLocalService.fetchByExternalReferenceCode(externalReferenceCode, companyId);
+
+		_cpDefinitionLocalService.fetchCPDefinitionByCProductExternalReferenceCode(externalReferenceCode, companyId);
+		_cpDefinitionService.fetchCPDefinitionByCProductExternalReferenceCode(123, "test123");
+		_cpDefinitionService.fetchCPDefinitionByCProductExternalReferenceCode(externalReferenceCode, companyId);
+
+		CPInstanceLocalServiceUtil.fetchByExternalReferenceCode(123, "test123");
+		CPInstanceLocalServiceUtil.fetchByExternalReferenceCode(externalReferenceCode, companyId);
+		CPInstanceLocalServiceUtil.fetchCPInstanceByExternalReferenceCode(123, "test123");
+		CPInstanceLocalServiceUtil.fetchCPInstanceByExternalReferenceCode(externalReferenceCode, companyId);
+		CPInstanceServiceUtil.fetchByExternalReferenceCode(externalReferenceCode, companyId);
+		_cpInstanceLocalService.fetchByExternalReferenceCode(externalReferenceCode, companyId);
+		_cpInstanceLocalService.fetchCPInstanceByExternalReferenceCode(externalReferenceCode, companyId);
+		_cpInstanceService.fetchByExternalReferenceCode(externalReferenceCode, companyId);
+	}
+
+	public void method(
+		long companyId, String externalReferenceCode, long groupId) {
+
+		AssetCategoryLocalServiceUtil.fetchAssetCategoryByExternalReferenceCode(companyId, externalReferenceCode);
+		AssetCategoryLocalServiceUtil.fetchAssetCategoryByExternalReferenceCode(externalReferenceCode, groupId);
+		_assetCategoryLocalService.fetchAssetCategoryByExternalReferenceCode(companyId, externalReferenceCode);
+	}
+
+	public void method(
+		long userId, String className, long classPK, String number,
+		String extension, long listTypeId, boolean primary) {
+
+		PhoneLocalServiceUtil.addPhone(123, className, classPK, number, extension, listTypeId, primary);
+		PhoneLocalServiceUtil.addPhone(userId, className, classPK, number, extension, listTypeId, primary, ServiceContextThreadLocal.getServiceContext());
+	}
+
+	public void method(
+		long userId, String className, long classPK, String street1,
+		String street2, String street3, String city, String zip, long regionId,
+		long countryId, long typeId, boolean mailing, boolean primary) {
+
+		AddressLocalServiceUtil.addAddress(null, userId, className, classPK, null, null, street1, street2, street3, city, zip, regionId, countryId, typeId, mailing, primary, null, ServiceContextThreadLocal.getServiceContext());
+		AddressServiceUtil.addAddress(123, "test123", classPK, street1, street2, street3, city, zip,regionId, countryId, typeId, mailing, primary);
+		AddressServiceUtil.addAddress(null, userId, className, classPK, null, null, street1, street2, street3, city, zip, regionId, countryId, typeId, mailing, primary, null, ServiceContextThreadLocal.getServiceContext());
+		_addressLocalService.addAddress(null, userId, className, classPK, null, null, street1, street2, street3, city, zip, regionId, countryId, typeId, mailing, primary, null, ServiceContextThreadLocal.getServiceContext());
+		_addressService.addAddress(null, userId, className, classPK, null, null, street1, street2, street3, city, zip, regionId, countryId, typeId, mailing, primary, null, ServiceContextThreadLocal.getServiceContext());
+	}
+
+	public void method(
+		long userId, String className, long classPK, String street1,
+		String street2, String street3, String city, String zip, long regionId,
+		long countryId, long typeId, boolean mailing, boolean primary,
+		ServiceContext serviceContext) {
+
+		AddressLocalServiceUtil.addAddress(null, userId, className, classPK, null, null, street1, street2, street3, city, zip, regionId, countryId, typeId, mailing, primary, null, serviceContext);
+		AddressServiceUtil.addAddress(userId, "test123", 123, street1, street2, street3, city, zip,regionId, countryId, typeId, mailing, primary, serviceContext);
+		AddressServiceUtil.addAddress(null, userId, className, classPK, null, null, street1, street2, street3, city, zip, regionId, countryId, typeId, mailing, primary, null, serviceContext);
+		_addressLocalService.addAddress(null, userId, className, classPK, null, null, street1, street2, street3, city, zip, regionId, countryId, typeId, mailing, primary, null, serviceContext);
+		_addressService.addAddress(null, userId, className, classPK, null, null, street1, street2, street3, city, zip, regionId, countryId, typeId, mailing, primary, null, serviceContext);
+	}
+
+	public void method(long[] segmentsExperienceIds) {
+		DefaultFragmentRendererContext defaultFragmentRendererContext = new DefaultFragmentRendererContext(null);
+
+		defaultFragmentRendererContext.setSegmentsExperienceIds(new long[0]);
+	}
+
+	public void method(Map<String, Object> fieldValues) {
+		DefaultFragmentRendererContext defaultFragmentRendererContext = new DefaultFragmentRendererContext(null);
+
+		defaultFragmentRendererContext.setFieldValues(new HashMap<String, Object>());
+	}
+
+	public void method(Organization organization) {
+		organization.getStatusListTypeId();
+		organization.setStatusListTypeId();
+	}
+
+	public void method(PortletDisplay portletDisplay, Class<T> clazz) {
+		ConfigurationProviderUtil.getPortletInstanceConfiguration(clazz, ServiceContextThreadLocal.getServiceContext().getThemeDisplay());
+		portletDisplay.getPortletInstanceConfiguration(null);
+	}
+
+	public void method(
+		ResourceRequest resourceRequest, ResourceResponse resourceResponse) {
+
+		CaptchaUtil.serveImage(PortalUtil.getHttpServletRequest(resourceRequest), PortalUtil.getHttpServletResponse(resourceResponse));
+	}
+
+	public void method(
+		String className, long classPK, long accountGroupId,
+		ServiceContext serviceContext) {
+
+		AccountGroupRelLocalServiceUtil.addAccountGroupRel(accountGroupId, className, classPK);
+		AccountGroupRelServiceUtil.addCommerceAccountGroupRel("test123", classPK, 123, serviceContext);
+		_accountGroupRelLocalService.addAccountGroupRel(accountGroupId, className, classPK);
+		_accountGroupRelService.addAccountGroupRel(accountGroupId, className, classPK);
+	}
+
+	public void method(
+		String externalReferenceCode, long cProductId, String cpInstanceUuid,
+		long commercePriceListId, BigDecimal price, BigDecimal promoPrice,
+		ServiceContext serviceContext) {
+
+		CommercePriceEntryLocalServiceUtil.addCommercePriceEntry(externalReferenceCode, cProductId, cpInstanceUuid, commercePriceListId, price, false, promoPrice, null, serviceContext);
+		_commercePriceEntryLocalService.addCommercePriceEntry("test123", cProductId, cpInstanceUuid, commercePriceListId, price, promoPrice, serviceContext);
+		_commercePriceEntryLocalService.addCommercePriceEntry(externalReferenceCode, cProductId, cpInstanceUuid, commercePriceListId, price, false, promoPrice, null, serviceContext);
+	}
+
+	public void method(String name, String label, BigDecimal amount) {
+		CommerceShippingOption(amount, "", name, name, 0);
+	}
+
+	public void method(ThemeDisplay themeDisplay) {
+		DLUtil.getGroupIds(null);
+		PortalUtil.getCurrentAndAncestorSiteGroupIds(themeDisplay.getScopeGroupId());
+
+		themeDisplay.getScopeGroupId();
+	}
+
+	@Reference
+	private AccountGroupLocalService _accountGroupLocalService;
+
+	@Reference
+	private AccountGroupRelLocalService _accountGroupRelLocalService;
+
+	@Reference
+	private AccountGroupRelService _accountGroupRelService;
+
+	@Reference
+	private AddressLocalService _addressLocalService;
+
+	@Reference
+	private AddressService _addressService;
+
+	@Reference
+	private AssetCategoryLocalService _assetCategoryLocalService;
+
+	@Reference
+	private AssetVocabularyLocalService _assetVocabularyLocalService;
+
+	@Reference
+	private AssetVocabularyService _assetVocabularyService;
+
+	@Reference
+	private CalendarBookingLocalService _calendarBookingLocalService;
+
+	@Reference
+	private CalendarBookingService _calendarBookingService;
+
+	@Reference
+	private CommerceAccountHelper _commerceAccountHelper;
+
+	@Reference
+	private CommerceAddressLocalService _commerceAddressLocalService;
+
+	@Reference
+	private CommerceOrderItemLocalService _commerceOrderItemLocalService;
+
+	@Reference
+	private CommerceOrderItemService _commerceOrderItemService;
+
+	@Reference
+	private CommerceOrderLocalService _commerceOrderLocalService;
+
+	@Reference
+	private CommercePriceEntryLocalService _commercePriceEntryLocalService;
+
+	@Reference
+	private CommercePriceListLocalService _commercePriceListLocalService;
+
+	@Reference
+	private CountryService _countryService;
+
+	@Reference
+	private CPDefinitionLinkLocalService _cpDefinitionLinkLocalService;
+
+	@Reference
+	private CPDefinitionLocalService _cpDefinitionLocalService;
+
+	@Reference
+	private CPDefinitionService _cpDefinitionService;
+
+	@Reference
+	private CPInstanceLocalService _cpInstanceLocalService;
+
+	@Reference
+	private CPInstanceService _cpInstanceService;
+
+	@Reference
+	private DLAppLocalService _dlAppLocalService;
+
+	@Reference
+	private DLAppService _dlAppService;
+
+	@Reference
+	private DLFolderLocalService _dlFolderLocalService;
+
+	@Reference
+	private DLFolderService _dlFolderService;
+
+	@Reference
+	private FDSTableSchemaBuilderFactory _fDSTableSchemaBuilderFactory;
+
+	@Reference
+	private HtmlParser _htmlParser;
+
+	@Reference
+	private JournalFolderLocalService _journalFolderLocalService;
+
+	@Reference
+	private LayoutLocalService _layoutLocalService;
+
+	@Reference
+	private LayoutService _layoutService;
+
+	private ServiceTrackerList<Class<E>> _serviceTrackerList;
+
+	@Reference
+	private UserLocalService _userLocalService;
+
+	@Reference
+	private UserService _userService;
+
+}

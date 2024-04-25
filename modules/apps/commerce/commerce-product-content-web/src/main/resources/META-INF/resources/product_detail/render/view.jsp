@@ -14,6 +14,7 @@ AccountEntry accountEntry = commerceContext.getAccountEntry();
 CommerceOrder commerceOrder = commerceContext.getCommerceOrder();
 
 CPContentHelper cpContentHelper = (CPContentHelper)request.getAttribute(CPContentWebKeys.CP_CONTENT_HELPER);
+CPContentSkuOptionsHelper cpContentSkuOptionsHelper = (CPContentSkuOptionsHelper)request.getAttribute(CPContentWebKeys.CP_CONTENT_SKU_OPTIONS_HELPER);
 
 CPCatalogEntry cpCatalogEntry = cpContentHelper.getCPCatalogEntry(request);
 
@@ -49,7 +50,12 @@ long cpDefinitionId = cpCatalogEntry.getCPDefinitionId();
 								</span>
 								-
 							</span>
-							<span data-qa-id="in-stock-quantity"><%= LanguageUtil.format(request, "x-in-stock", cpContentHelper.getStockQuantity(request)) %></span>
+
+							<%
+							String stockQuantity = cpContentHelper.getStockQuantity(request);
+							%>
+
+							<span data-qa-id="in-stock-quantity"><%= Validator.isNull(stockQuantity) ? StringPool.BLANK : LanguageUtil.format(request, "x-in-stock", stockQuantity) %></span>
 						</span>
 					</div>
 				</div>
@@ -80,16 +86,11 @@ long cpDefinitionId = cpCatalogEntry.getCPDefinitionId();
 					</p>
 				</c:if>
 
-				<c:choose>
-					<c:when test="<%= cpSku != null %>">
-						<p class="m-0">
-							<%= cpContentHelper.getIncomingQuantityLabel(company.getCompanyId(), locale, cpSku.getSku(), user) %>
-						</p>
-					</c:when>
-					<c:otherwise>
-						<p class="m-0" data-text-cp-instance-incoming-quantity-label></p>
-					</c:otherwise>
-				</c:choose>
+				<p class="m-0" data-text-cp-instance-incoming-quantity-label>
+					<c:if test="<%= cpSku != null %>">
+						<%= cpContentHelper.getIncomingQuantityLabel(company.getCompanyId(), locale, cpSku.getSku(), StringPool.BLANK, user) %>
+					</c:if>
+				</p>
 
 				<%
 				String hideCssClass = StringPool.BLANK;
@@ -138,8 +139,8 @@ long cpDefinitionId = cpCatalogEntry.getCPDefinitionId();
 					/>
 				</c:if>
 
-				<span data-text-cp-instance-subscription-info></span>
-				<span data-text-cp-instance-delivery-subscription-info></span>
+				<span class="d-block" data-text-cp-instance-subscription-info></span>
+				<span class="d-block" data-text-cp-instance-delivery-subscription-info></span>
 			</h4>
 
 			<div class="product-detail-options">
@@ -160,40 +161,45 @@ long cpDefinitionId = cpCatalogEntry.getCPDefinitionId();
 
 			<liferay-util:dynamic-include key="com.liferay.commerce.product.type.grouped.web#/grouped_product_type.jsp#" />
 
+			<c:if test="<%= cpSku != null %>">
+				<div class="mt-3">
+					<liferay-commerce:unit-of-measure-tier-price
+						CPInstanceId="<%= cpSku.getCPInstanceId() %>"
+						CProductId="<%= cpCatalogEntry.getCProductId() %>"
+						namespace="<%= liferayPortletResponse.getNamespace() %>"
+					/>
+				</div>
+			</c:if>
+
 			<div class="mt-3 price-container row">
 				<div class="col col-lg-9 col-xl-6">
 					<commerce-ui:price
 						CPCatalogEntry="<%= cpCatalogEntry %>"
 						namespace="<%= liferayPortletResponse.getNamespace() %>"
+						showDefaultSkuPrice="<%= true %>"
 					/>
 				</div>
 			</div>
 
-			<c:if test="<%= cpSku != null %>">
-				<liferay-commerce:tier-price
-					CPInstanceId="<%= cpSku.getCPInstanceId() %>"
-					taglibQuantityInputId='<%= liferayPortletResponse.getNamespace() + cpDefinitionId + "Quantity" %>'
-				/>
-			</c:if>
-
 			<%
-			int minOrderQuantity = cpContentHelper.getMinOrderQuantity(cpDefinitionId);
+			BigDecimal minOrderQuantity = cpContentHelper.getMinOrderQuantity(cpDefinitionId);
 			%>
 
-			<c:if test="<%= minOrderQuantity > CPDefinitionInventoryConstants.DEFAULT_MIN_ORDER_QUANTITY %>">
+			<c:if test="<%= BigDecimalUtil.gt(minOrderQuantity, CPDefinitionInventoryConstants.DEFAULT_MIN_ORDER_QUANTITY) %>">
 				<span class="min-quantity-per-order">
-					<liferay-ui:message arguments="<%= minOrderQuantity %>" key="minimum-quantity-per-order-x" />
+					<liferay-ui:message arguments="<%= minOrderQuantity.intValue() %>" key="minimum-quantity-per-order-x" />
 				</span>
 			</c:if>
 
-			<div class="align-items-center d-flex mt-3 product-detail-actions">
+			<div class="align-items-end d-flex mt-3 product-detail-actions">
 				<commerce-ui:add-to-cart
 					alignment="left"
 					CPCatalogEntry="<%= cpCatalogEntry %>"
 					inline="<%= true %>"
 					namespace="<%= liferayPortletResponse.getNamespace() %>"
+					showUnitOfMeasureSelector="<%= true %>"
 					size="lg"
-					skuOptions="[]"
+					skuOptions="<%= cpContentSkuOptionsHelper.getDefaultCPInstanceSkuOptions(cpCatalogEntry.getCPDefinitionId(), request) %>"
 				/>
 
 				<commerce-ui:request-quote
@@ -226,10 +232,10 @@ List<CPOptionCategory> cpOptionCategories = cpContentHelper.getCPOptionCategorie
 
 String description = cpCatalogEntry.getDescription();
 
+boolean directReplacement = cpContentHelper.isDirectReplacement(cpSku);
 boolean hasCPDefinitionSpecificationOptionValues = cpContentHelper.hasCPDefinitionSpecificationOptionValues(cpDefinitionId);
 boolean hasCPMedia = !cpMedias.isEmpty();
 boolean hasDescription = !Validator.isBlank(description);
-boolean hasDirectReplacement = cpContentHelper.hasDirectReplacement(cpSku);
 
 String navCPMediaId = liferayPortletResponse.getNamespace() + "navCPMedia";
 String navDescriptionId = liferayPortletResponse.getNamespace() + "navDescription";
@@ -239,16 +245,16 @@ String navSpecificationsId = liferayPortletResponse.getNamespace() + "navSpecifi
 
 <div>
 	<react:component
-		module="product_detail/render/js/Tabs"
+		module="{Tabs} from commerce-product-content-web"
 		props='<%=
 			HashMapBuilder.<String, Object>put(
+				"directReplacement", directReplacement
+			).put(
 				"hasCPDefinitionSpecificationOptionValues", hasCPDefinitionSpecificationOptionValues
 			).put(
 				"hasCPMedia", hasCPMedia
 			).put(
 				"hasDescription", hasDescription
-			).put(
-				"hasReplacements", hasDirectReplacement
 			).put(
 				"namespace", liferayPortletResponse.getNamespace()
 			).put(
@@ -347,7 +353,11 @@ String navSpecificationsId = liferayPortletResponse.getNamespace() + "navSpecifi
 
 					<li class="list-group-item list-group-item-flex">
 						<div class="autofit-col my-auto">
-							<aui:icon cssClass="icon-monospaced" image="document-default" markupView="lexicon" />
+							<span class="icon-monospaced">
+								<clay:icon
+									symbol="document-default"
+								/>
+							</span>
 						</div>
 
 						<div class="autofit-col autofit-col-expand">
@@ -376,7 +386,7 @@ String navSpecificationsId = liferayPortletResponse.getNamespace() + "navSpecifi
 		</div>
 	</c:if>
 
-	<c:if test="<%= hasDirectReplacement %>">
+	<c:if test="<%= directReplacement %>">
 		<div aria-labelledby="navUnderlineReplacementsTab" class="fade <portlet:namespace />tab-element tab-pane" id="<%= navReplacementsId %>" role="tabpanel" style="display: block; height: 0px; visibility: hidden;">
 			<frontend-data-set:classic-display
 				contextParams='<%=

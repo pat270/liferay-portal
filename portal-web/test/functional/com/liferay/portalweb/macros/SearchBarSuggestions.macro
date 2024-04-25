@@ -1,7 +1,8 @@
 definition {
 
-	macro configureEmbeddedSearchBarSuggestions {
-		SearchPortlets.gotoEmbeddedOptions(portletOption = "Configuration");
+	@summary = "Default summary"
+	macro configureEmbeddedSearchBarSuggestions(characterThresholdForDisplayingSuggestions = null, suggestionContributorMinimumSearches = null, addContributor = null, suggestionContributor = null, suggestionContributorDisplayGroupName = null, suggestionContributorBlueprint = null, deleteBasicContributor = null, suggestionContributorActivity = null, suggestionContributorSize = null, characterThreshold = null) {
+		SearchPage.gotoEmbeddedOptions(portletOption = "Configuration");
 
 		SelectFrame(locator1 = "IFrame#CONFIGURATION");
 
@@ -94,7 +95,8 @@ definition {
 		IFrame.closeFrame();
 	}
 
-	macro copyConfiguration {
+	@summary = "Default summary"
+	macro copyConfiguration(contributorOrder = null, suggestionContributor = null) {
 		if (${suggestionContributor} == "Display Group Name") {
 			Click.clickAt(
 				key_suggestionContributorOrder = ${contributorOrder},
@@ -127,7 +129,8 @@ definition {
 		}
 	}
 
-	macro gotoSuggestionResultDetails {
+	@summary = "Default summary"
+	macro gotoSuggestionResultDetails(searchAssetTitle = null) {
 		if (!(isSet(suggestionContributorDisplayGroupName))) {
 			var suggestionContributorDisplayGroupName = "Suggestions";
 		}
@@ -138,7 +141,8 @@ definition {
 			locator1 = "SearchBarSuggestions#RESULTS_LIST_ITEM_TITLE");
 	}
 
-	macro pasteConfiguration {
+	@summary = "Default summary"
+	macro pasteConfiguration(contributorOrder = null, suggestionContributor = null) {
 		if (${suggestionContributor} == "Display Group Name") {
 			Click.clickAt(
 				key_suggestionContributorOrder = ${contributorOrder},
@@ -166,11 +170,13 @@ definition {
 		}
 	}
 
-	macro showMoreSuggestions {
+	@summary = "Default summary"
+	macro showMoreSuggestions() {
 		Click.mouseDownMouseUp(locator1 = "Button#SHOW_MORE");
 	}
 
-	macro viewNoResultAssetTitle {
+	@summary = "Default summary"
+	macro viewNoResultAssetTitle(searchAssetTitle = null) {
 		if (!(isSet(suggestionContributorDisplayGroupName))) {
 			var suggestionContributorDisplayGroupName = "Suggestions";
 		}
@@ -181,13 +187,38 @@ definition {
 			locator1 = "SearchBarSuggestions#RESULTS_LIST_ITEM_TITLE");
 	}
 
-	macro viewSuggestionResultDetails {
+	@summary = "Default summary"
+	macro viewSuggestionResultDetails(searchAssetTitle = null) {
 		AssertTextEquals(
-			locator1 = "SearchResults#ASSET_DETAILS_TITLE",
+			locator1 = "SearchPage#ASSET_DETAILS_TITLE",
 			value1 = ${searchAssetTitle});
 	}
 
-	macro viewSuggestions {
+	@summary = "Default summary"
+	macro viewSuggestionResultDetailsURL(expectedURL = null, searchAssetTitle = null) {
+		Type(
+			locator1 = "Search#EMBEDDED_SEARCH_BAR",
+			value1 = ${searchAssetTitle});
+
+		SearchBarSuggestions.viewSuggestions(
+			searchAssetDescription = "WC WebContent Description",
+			searchAssetTitle = ${searchAssetTitle});
+
+		SearchBarSuggestions.gotoSuggestionResultDetails(searchAssetTitle = ${searchAssetTitle});
+
+		AssertTextEquals(
+			locator1 = "SearchPage#ASSET_DETAILS_TITLE",
+			value1 = ${searchAssetTitle});
+
+		var currentURL = selenium.getCurrentUrl();
+
+		if (!(contains(${currentURL}, ${expectedURL}))) {
+			fail("The suggestion result details page must use the URL of the page the user came from");
+		}
+	}
+
+	@summary = "Default summary"
+	macro viewSuggestions(searchAssetDescription = null, searchAssetTitle = null) {
 		if (!(isSet(suggestionContributorDisplayGroupName))) {
 			var suggestionContributorDisplayGroupName = "Suggestions";
 		}

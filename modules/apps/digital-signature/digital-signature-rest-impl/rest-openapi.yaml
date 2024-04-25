@@ -85,7 +85,7 @@ components:
 info:
     description:
         "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID
-        'com.liferay.digital.signature.rest.client', and version '1.0.16'."
+        'com.liferay.digital.signature.rest.client', and version '1.0.25'."
     license:
         name: "Apache 2.0"
         url: "http://www.apache.org/licenses/LICENSE-2.0.html"
@@ -104,6 +104,18 @@ paths:
                       format: int64
                       type: integer
                 - in: query
+                  name: fromDate
+                  schema:
+                      type: string
+                - in: query
+                  name: keywords
+                  schema:
+                      type: string
+                - in: query
+                  name: order
+                  schema:
+                      type: string
+                - in: query
                   name: page
                   schema:
                       type: integer
@@ -111,6 +123,10 @@ paths:
                   name: pageSize
                   schema:
                       type: integer
+                - in: query
+                  name: status
+                  schema:
+                      type: string
             responses:
                 200:
                     content:

@@ -10,18 +10,18 @@ import {useCustomerPortal} from '../../../context';
 import DeveloperKeysLayouts from '../../../layouts/DeveloperKeysLayout';
 import {LIST_TYPES} from '../../../utils/constants';
 
-const Portal = () => {
+const Portal = ({hasComplimentaryKey}) => {
 	const [{project, sessionId}] = useCustomerPortal();
-	const {setHasQuickLinksPanel, setHasSideMenu} = useOutletContext();
+	const {setHasSideMenu} = useOutletContext();
 
 	useEffect(() => {
-		setHasQuickLinksPanel(true);
 		setHasSideMenu(true);
-	}, [setHasSideMenu, setHasQuickLinksPanel]);
+	}, [setHasSideMenu]);
 
 	return (
 		<div className="mr-4">
 			<ActivationKeysTable
+				hasComplimentaryKey={hasComplimentaryKey}
 				initialFilter="startswith(productName,'Portal')"
 				productName="Portal"
 				project={project}

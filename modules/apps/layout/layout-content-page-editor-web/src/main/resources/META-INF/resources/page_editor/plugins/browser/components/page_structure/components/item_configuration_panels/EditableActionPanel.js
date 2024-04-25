@@ -3,17 +3,20 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayForm, {ClayInput, ClayToggle} from '@clayui/form';
+import ClayButton from '@clayui/button';
+import ClayForm, {ClayInput} from '@clayui/form';
+import {useId} from 'frontend-js-components-web';
 import {debounce, openToast, sub} from 'frontend-js-web';
 import PropTypes from 'prop-types';
 import React, {useCallback, useMemo, useState} from 'react';
 
-import updateItemLocalConfig from '../../../../../../app/actions/updateItemLocalConfig';
 import {CheckboxField} from '../../../../../../app/components/fragment_configuration_fields/CheckboxField';
 import {SelectField} from '../../../../../../app/components/fragment_configuration_fields/SelectField';
 import {EDITABLE_FRAGMENT_ENTRY_PROCESSOR} from '../../../../../../app/config/constants/editableFragmentEntryProcessor';
 import {EDITABLE_TYPES} from '../../../../../../app/config/constants/editableTypes';
+import {LAYOUT_TYPES} from '../../../../../../app/config/constants/layoutTypes';
 import {config} from '../../../../../../app/config/index';
+import {useCollectionConfig} from '../../../../../../app/contexts/CollectionItemContext';
 import {
 	useDispatch,
 	useSelector,
@@ -25,20 +28,22 @@ import selectLanguageId from '../../../../../../app/selectors/selectLanguageId';
 import InfoItemService from '../../../../../../app/services/InfoItemService';
 import updateEditableValues from '../../../../../../app/thunks/updateEditableValues';
 import {CACHE_KEYS} from '../../../../../../app/utils/cache';
+import isMapped from '../../../../../../app/utils/editable_value/isMapped';
 import {updateIn} from '../../../../../../app/utils/updateIn';
 import useCache from '../../../../../../app/utils/useCache';
 import CurrentLanguageFlag from '../../../../../../common/components/CurrentLanguageFlag';
+import DisplayPageSelector from '../../../../../../common/components/DisplayPageSelector';
 import {LayoutSelector} from '../../../../../../common/components/LayoutSelector';
 import MappingSelector from '../../../../../../common/components/MappingSelector';
-import {useId} from '../../../../../../common/hooks/useId';
 import {getEditableItemPropTypes} from '../../../../../../prop_types/index';
 
 const INTERACTION_NONE = 'none';
 const INTERACTION_NOTIFICATION = 'notification';
 const INTERACTION_PAGE = 'page';
 const INTERACTION_URL = 'url';
+const INTERACTION_DISPLAY_PAGE = 'displayPage';
 
-const INTERACTION_OPTIONS = [
+const ERROR_INTERACTION_OPTIONS = [
 	{
 		label: Liferay.Language.get('none'),
 		value: INTERACTION_NONE,
@@ -54,6 +59,14 @@ const INTERACTION_OPTIONS = [
 	{
 		label: Liferay.Language.get('go-to-external-url'),
 		value: INTERACTION_URL,
+	},
+];
+
+const SUCCESS_INTERACTION_OPTIONS = [
+	...ERROR_INTERACTION_OPTIONS,
+	{
+		label: Liferay.Language.get('go-to-entry-display-page'),
+		value: INTERACTION_DISPLAY_PAGE,
 	},
 ];
 
@@ -88,7 +101,6 @@ export default function EditableActionPanel({item}) {
 			),
 		[item.fragmentEntryLinkId]
 	);
-
 	const onValueSelect = (name, value) => {
 		dispatch(
 			updateEditableValues({
@@ -107,7 +119,8 @@ export default function EditableActionPanel({item}) {
 		);
 	};
 
-	const {classNameId, fieldId} = editableValue.config.mappedAction || {};
+	const {mappedAction = {}} = editableValue.config;
+	const {classNameId, fieldId} = mappedAction;
 
 	const defaultError = useCache({
 		fetcher: () =>
@@ -124,28 +137,30 @@ export default function EditableActionPanel({item}) {
 				fieldSelectorLabel={Liferay.Language.get('action')}
 				fieldType={EDITABLE_TYPES.action}
 				itemSelectorURL={config.actionableInfoItemSelectorURL}
-				mappedItem={editableValue.config.mappedAction || {}}
+				mappedItem={mappedAction}
 				onMappingSelect={(action) => {
 					onValueSelect('mappedAction', action);
 				}}
 			/>
 
-			{editableValue.config.mappedAction && (
+			{isMapped(mappedAction) && (
 				<>
 					<InteractionSelector
-						config={editableValue.config}
 						data={INTERACTION_DATA.success}
 						fragmentId={item.parentId}
+						interactionOptions={SUCCESS_INTERACTION_OPTIONS}
+						itemConfig={editableValue.config}
 						onValueSelect={onValueSelect}
 					/>
 
 					<InteractionSelector
-						config={editableValue.config}
 						data={{
 							...INTERACTION_DATA.error,
 							defaultMessage: defaultError,
 						}}
 						fragmentId={item.parentId}
+						interactionOptions={ERROR_INTERACTION_OPTIONS}
+						itemConfig={editableValue.config}
 						onValueSelect={onValueSelect}
 					/>
 				</>
@@ -158,19 +173,27 @@ EditableActionPanel.propTypes = {
 	item: getEditableItemPropTypes(),
 };
 
-function InteractionSelector({config, data, fragmentId, onValueSelect}) {
+function InteractionSelector({
+	data,
+	fragmentId,
+	interactionOptions,
+	itemConfig,
+	onValueSelect,
+}) {
 	const {defaultMessage, field, label, type} = data;
 
-	const interactionConfig = config[field];
+	const interactionConfig = itemConfig[field];
 
-	const {interaction, page, reload, text, url} = interactionConfig || {};
+	const {displayPageUniqueFieldId, interaction, page, reload, text, url} =
+		interactionConfig || {};
 
 	const languageId = useSelector(selectLanguageId);
 	const fragmentConfig = useSelector(
 		({layoutData}) => layoutData.items[fragmentId].config
 	);
 
-	const dispatch = useDispatch();
+	const collectionConfig = useCollectionConfig();
+
 	const previewId = useId();
 	const textInputId = useId();
 
@@ -192,25 +215,29 @@ function InteractionSelector({config, data, fragmentId, onValueSelect}) {
 		[onConfigChange]
 	);
 
-	const onPreviewToggle = (checked) => {
-		setShowPreview(checked);
-
-		dispatch(
-			updateItemLocalConfig({
-				disableUndo: true,
-				itemConfig: {
-					showPreview: checked,
-				},
-				itemId: fragmentId,
-			})
-		);
-	};
-
 	const hidePreview = () => {
 		const previewElement = document.getElementById(previewId);
 
 		previewElement?.remove();
 	};
+
+	let mappingIds = null;
+
+	if (
+		config.layoutType === LAYOUT_TYPES.display &&
+		itemConfig.mappedAction.mappedField
+	) {
+		const {selectedMappingTypes} = config;
+		mappingIds = {
+			classNameId: selectedMappingTypes.type.id,
+			classTypeId: selectedMappingTypes.subtype.id,
+		};
+	}
+	else {
+		mappingIds = collectionConfig
+			? collectionConfig.collection
+			: itemConfig.mappedAction;
+	}
 
 	return (
 		<>
@@ -219,7 +246,7 @@ function InteractionSelector({config, data, fragmentId, onValueSelect}) {
 					label: sub(Liferay.Language.get('x-interaction'), label),
 					name: 'interaction',
 					typeOptions: {
-						validValues: INTERACTION_OPTIONS,
+						validValues: interactionOptions,
 					},
 				}}
 				onValueSelect={(name, value) => {
@@ -227,6 +254,19 @@ function InteractionSelector({config, data, fragmentId, onValueSelect}) {
 				}}
 				value={interaction}
 			/>
+
+			{interaction === INTERACTION_DISPLAY_PAGE && (
+				<DisplayPageSelector
+					mappingIds={mappingIds}
+					onConfigChange={(layout) => {
+						onConfigChange(
+							'displayPageUniqueFieldId',
+							layout.displayPage
+						);
+					}}
+					selectedValue={displayPageUniqueFieldId}
+				/>
+			)}
 
 			{(!interaction ||
 				[INTERACTION_NONE, INTERACTION_NOTIFICATION].includes(
@@ -254,13 +294,13 @@ function InteractionSelector({config, data, fragmentId, onValueSelect}) {
 							{sub(Liferay.Language.get('x-text'), label)}
 						</label>
 
-						<ClayInput.Group small>
+						<ClayInput.Group className="c-mb-2" small>
 							<ClayInput.GroupItem>
 								<ClayInput
 									id={textInputId}
 									onChange={(event) => {
 										if (showPreview) {
-											onPreviewToggle(false);
+											setShowPreview(false);
 											hidePreview();
 										}
 
@@ -285,34 +325,32 @@ function InteractionSelector({config, data, fragmentId, onValueSelect}) {
 								<CurrentLanguageFlag />
 							</ClayInput.GroupItem>
 						</ClayInput.Group>
-					</ClayForm.Group>
 
-					<ClayToggle
-						label={sub(
-							Liferay.Language.get('preview-x-notification'),
-							label
-						)}
-						onToggle={(checked) => {
-							onPreviewToggle(checked);
-
-							if (checked) {
+						<ClayButton
+							aria-label={sub(
+								Liferay.Language.get('preview-x-notification'),
+								label
+							)}
+							disabled={showPreview}
+							displayType="secondary"
+							onClick={() => {
+								setShowPreview(true);
 								openToast({
 									message:
 										textValue[languageId] ||
 										defaultMessage[languageId],
-									onClose: () => onPreviewToggle(false),
+									onClose: () => setShowPreview(false),
 									toastProps: {
 										id: previewId,
 									},
 									type,
 								});
-							}
-							else {
-								hidePreview();
-							}
-						}}
-						toggled={showPreview}
-					/>
+							}}
+							size="sm"
+						>
+							{Liferay.Language.get('preview')}
+						</ClayButton>
+					</ClayForm.Group>
 				</>
 			)}
 
@@ -365,8 +403,8 @@ function InteractionSelector({config, data, fragmentId, onValueSelect}) {
 }
 
 InteractionSelector.propTypes = {
-	config: PropTypes.object.isRequired,
 	data: PropTypes.object.isRequired,
 	fragmentId: PropTypes.string.isRequired,
+	itemConfig: PropTypes.object.isRequired,
 	onValueSelect: PropTypes.func.isRequired,
 };

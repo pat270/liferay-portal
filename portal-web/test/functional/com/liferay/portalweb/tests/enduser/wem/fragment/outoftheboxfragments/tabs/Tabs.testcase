@@ -4,7 +4,7 @@ definition {
 	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Fragments";
+	property testray.main.component.name = "Fragment Administration";
 
 	setUp {
 		task ("Set up instance and sign in") {
@@ -42,6 +42,7 @@ definition {
 	test AddElementToEachPanel {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Add a Tabs fragment to a content page") {
 			ContentPagesNavigator.openEditContentPage(
@@ -97,7 +98,7 @@ definition {
 	@priority = 4
 	test AddElementToEachPanelInMasterPageTemplate {
 		property test.liferay.virtual.instance = "false";
-		property testray.main.component.name = "Master Page Templates";
+		property test.run.type = "single";
 
 		task ("Add a custom master") {
 			JSONLayoutpagetemplate.addMasterPageTemplateEntry(
@@ -238,7 +239,7 @@ definition {
 	@priority = 4
 	test MoveDropZoneIntoPanel {
 		property test.liferay.virtual.instance = "false";
-		property testray.main.component.name = "Master Page Templates";
+		property test.run.type = "single";
 
 		task ("Add a custom master") {
 			JSONLayoutpagetemplate.addMasterPageTemplateEntry(
@@ -476,7 +477,7 @@ definition {
 	@priority = 4
 	test ViewInheriatedTabsWithoutDropzoneInContentPage {
 		property test.liferay.virtual.instance = "false";
-		property testray.main.component.name = "Master Page Templates";
+		property test.run.type = "single";
 
 		task ("Add a custom master") {
 			JSONLayoutpagetemplate.addMasterPageTemplateEntry(
@@ -641,7 +642,7 @@ definition {
 		task ("Then the Tab 1 should be selected after accessing to page on a new window") {
 			var baseURL = PropsUtil.get("portal.url");
 
-			Open.openInTheNewTab(locator1 = "${baseURL}/web/test-site-name/content-page-name?p_l_mode=edit");
+			Open.openInTheNewTab(value1 = "${baseURL}/web/test-site-name/content-page-name?p_l_mode=edit");
 
 			PageEditor.assertFragmentSidebarLoaded();
 

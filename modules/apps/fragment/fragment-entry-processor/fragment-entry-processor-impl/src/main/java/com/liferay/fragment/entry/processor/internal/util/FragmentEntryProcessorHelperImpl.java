@@ -26,6 +26,7 @@ import com.liferay.info.localized.InfoLocalizedValue;
 import com.liferay.info.search.InfoSearchClassMapperRegistry;
 import com.liferay.info.type.Labeled;
 import com.liferay.info.type.WebImage;
+import com.liferay.info.type.WebURL;
 import com.liferay.layout.display.page.LayoutDisplayPageObjectProvider;
 import com.liferay.layout.display.page.constants.LayoutDisplayPageWebKeys;
 import com.liferay.petra.string.StringPool;
@@ -38,7 +39,8 @@ import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.trash.TrashHandlerRegistryUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
-import com.liferay.portal.kernel.util.Html;
+import com.liferay.portal.kernel.util.HtmlUtil;
+import com.liferay.portal.kernel.util.KeyValuePair;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
@@ -88,7 +90,7 @@ public class FragmentEntryProcessorHelperImpl
 	@Override
 	public Object getFieldValue(
 			JSONObject editableValueJSONObject,
-			Map<Long, InfoItemFieldValues> infoDisplaysFieldValues,
+			Map<InfoItemReference, InfoItemFieldValues> infoDisplaysFieldValues,
 			FragmentEntryProcessorContext fragmentEntryProcessorContext)
 		throws PortalException {
 
@@ -99,15 +101,13 @@ public class FragmentEntryProcessorHelperImpl
 			return null;
 		}
 
-		long classPK = 0;
-		String className = StringPool.BLANK;
 		String fieldName = StringPool.BLANK;
+		InfoItemReference infoItemReference = null;
 		Object object = null;
 
 		if (isMapped(editableValueJSONObject)) {
-			className = _portal.getClassName(
+			String className = _portal.getClassName(
 				editableValueJSONObject.getLong("classNameId"));
-			classPK = editableValueJSONObject.getLong("classPK");
 			String externalReferenceCode = editableValueJSONObject.getString(
 				"externalReferenceCode");
 
@@ -120,10 +120,14 @@ public class FragmentEntryProcessorHelperImpl
 					externalReferenceCode);
 			}
 			else {
-				infoItemIdentifier = new ClassPKInfoItemIdentifier(classPK);
+				infoItemIdentifier = new ClassPKInfoItemIdentifier(
+					editableValueJSONObject.getLong("classPK"));
 			}
 
-			if (fragmentEntryProcessorContext.getPreviewClassPK() > 0) {
+			if ((fragmentEntryProcessorContext.getPreviewClassPK() > 0) &&
+				(fragmentEntryProcessorContext.getPreviewClassPK() ==
+					editableValueJSONObject.getLong("classPK"))) {
+
 				infoItemIdentifier = new ClassPKInfoItemIdentifier(
 					fragmentEntryProcessorContext.getPreviewClassPK());
 
@@ -135,29 +139,18 @@ public class FragmentEntryProcessorHelperImpl
 				}
 			}
 
-			object = _getInfoItem(className, infoItemIdentifier);
+			infoItemReference = new InfoItemReference(
+				className, infoItemIdentifier);
+
+			object = _getInfoItem(infoItemReference);
 		}
 		else if (isMappedCollection(editableValueJSONObject)) {
-			InfoItemReference infoItemReference =
+			infoItemReference =
 				fragmentEntryProcessorContext.getContextInfoItemReference();
 
 			if (infoItemReference == null) {
 				return null;
 			}
-
-			InfoItemIdentifier infoItemIdentifier =
-				infoItemReference.getInfoItemIdentifier();
-
-			if (!(infoItemIdentifier instanceof ClassPKInfoItemIdentifier)) {
-				return null;
-			}
-
-			ClassPKInfoItemIdentifier classPKInfoItemIdentifier =
-				(ClassPKInfoItemIdentifier)
-					infoItemReference.getInfoItemIdentifier();
-
-			className = infoItemReference.getClassName();
-			classPK = classPKInfoItemIdentifier.getClassPK();
 
 			fieldName = editableValueJSONObject.getString("collectionFieldId");
 
@@ -181,8 +174,23 @@ public class FragmentEntryProcessorHelperImpl
 				return null;
 			}
 
-			className = layoutDisplayPageObjectProvider.getClassName();
-			classPK = layoutDisplayPageObjectProvider.getClassPK();
+			InfoItemIdentifier infoItemIdentifier = null;
+
+			if (Validator.isNotNull(
+					layoutDisplayPageObjectProvider.
+						getExternalReferenceCode())) {
+
+				infoItemIdentifier = new ERCInfoItemIdentifier(
+					layoutDisplayPageObjectProvider.getExternalReferenceCode());
+			}
+			else {
+				infoItemIdentifier = new ClassPKInfoItemIdentifier(
+					layoutDisplayPageObjectProvider.getClassPK());
+			}
+
+			infoItemReference = new InfoItemReference(
+				layoutDisplayPageObjectProvider.getClassName(),
+				infoItemIdentifier);
 
 			fieldName = editableValueJSONObject.getString("mappedField");
 
@@ -190,30 +198,42 @@ public class FragmentEntryProcessorHelperImpl
 		}
 
 		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			className);
+			infoItemReference.getClassName());
 
-		if ((trashHandler != null) && trashHandler.isInTrash(classPK)) {
-			return null;
+		InfoItemIdentifier infoItemIdentifier =
+			infoItemReference.getInfoItemIdentifier();
+
+		if ((trashHandler != null) &&
+			(infoItemIdentifier instanceof ClassPKInfoItemIdentifier)) {
+
+			ClassPKInfoItemIdentifier classPKInfoItemIdentifier =
+				(ClassPKInfoItemIdentifier)infoItemIdentifier;
+
+			if (trashHandler.isInTrash(
+					classPKInfoItemIdentifier.getClassPK())) {
+
+				return null;
+			}
 		}
 
 		InfoItemFieldValuesProvider infoItemFieldValuesProvider =
-			_getInfoItemFieldValuesProvider(className);
+			_getInfoItemFieldValuesProvider(infoItemReference.getClassName());
 
 		if (infoItemFieldValuesProvider == null) {
 			return null;
 		}
 
 		InfoItemFieldValues infoItemFieldValues = infoDisplaysFieldValues.get(
-			classPK);
+			infoItemReference);
 
-		if (infoItemFieldValues == null) {
+		if ((object != null) && (infoItemFieldValues == null)) {
 			infoItemFieldValues =
 				infoItemFieldValuesProvider.getInfoItemFieldValues(object);
 
-			infoDisplaysFieldValues.put(classPK, infoItemFieldValues);
+			infoDisplaysFieldValues.put(infoItemReference, infoItemFieldValues);
 		}
 
-		return _getMappedInfoItemFieldValue(
+		return getMappedInfoItemFieldValue(
 			editableValueJSONObject, fieldName, infoItemFieldValues,
 			fragmentEntryProcessorContext.getLocale());
 	}
@@ -291,6 +311,155 @@ public class FragmentEntryProcessorHelperImpl
 			(ClassPKInfoItemIdentifier)fileEntryInfoItemIdentifier;
 
 		return classPKInfoItemIdentifier.getClassPK();
+	}
+
+	@Override
+	public Object getMappedInfoItemFieldValue(
+		JSONObject editableValueJSONObject, String fieldName,
+		InfoItemFieldValues infoItemFieldValues, Locale locale) {
+
+		InfoFieldValue<Object> infoFieldValue =
+			infoItemFieldValues.getInfoFieldValue(fieldName);
+
+		if (infoFieldValue == null) {
+			return null;
+		}
+
+		Object value = infoFieldValue.getValue(locale);
+
+		if (value == null) {
+			return StringPool.BLANK;
+		}
+
+		if (value instanceof Collection) {
+			Collection<Object> collection = (Collection<Object>)value;
+
+			if (collection.isEmpty()) {
+				return StringPool.BLANK;
+			}
+
+			Iterator<Object> iterator = collection.iterator();
+
+			Object firstItem = iterator.next();
+
+			Class<?> firstItemClass = firstItem.getClass();
+
+			InfoCollectionTextFormatter<Object> infoCollectionTextFormatter =
+				_getInfoCollectionTextFormatter(firstItemClass.getName());
+
+			return infoCollectionTextFormatter.format(collection, locale);
+		}
+		else if (value instanceof Date) {
+			Date date = (Date)value;
+
+			return _getDateValue(
+				editableValueJSONObject, date,
+				_getShortTimeStylePattern(locale), locale);
+		}
+		else if (value instanceof KeyValuePair) {
+			KeyValuePair keyValuePair = (KeyValuePair)value;
+
+			return HtmlUtil.escape(keyValuePair.getValue());
+		}
+		else if (value instanceof Labeled) {
+			Labeled labeledFieldValue = (Labeled)value;
+
+			return labeledFieldValue.getLabel(locale);
+		}
+		else if (value instanceof String) {
+			InfoField infoField = infoFieldValue.getInfoField();
+
+			if (infoField.getInfoFieldType() instanceof DateInfoFieldType) {
+				Locale dateLocale = LocaleUtil.getSiteDefault();
+
+				if (infoField.isLocalizable()) {
+					InfoLocalizedValue<String> infoLocalizedValue =
+						(InfoLocalizedValue<String>)infoFieldValue.getValue();
+
+					dateLocale = infoLocalizedValue.getDefaultLocale();
+
+					Set<Locale> availableLocales =
+						infoLocalizedValue.getAvailableLocales();
+
+					if (availableLocales.contains(locale)) {
+						dateLocale = locale;
+					}
+				}
+
+				try {
+					DateFormat dateFormat =
+						DateFormatFactoryUtil.getSimpleDateFormat(
+							_getShortTimeStylePattern(dateLocale), dateLocale);
+
+					Date date = dateFormat.parse(value.toString());
+
+					return _getDateValue(
+						editableValueJSONObject, date,
+						_getShortTimeStylePattern(locale), locale);
+				}
+				catch (ParseException parseException1) {
+					if (_log.isDebugEnabled()) {
+						_log.debug(parseException1);
+					}
+
+					try {
+						DateFormat dateFormat =
+							DateFormatFactoryUtil.getSimpleDateFormat(
+								_getDefaultPattern(dateLocale), dateLocale);
+
+						return _getDateValue(
+							editableValueJSONObject,
+							dateFormat.parse(value.toString()),
+							_getDefaultPattern(locale), locale);
+					}
+					catch (ParseException parseException2) {
+						if (_log.isDebugEnabled()) {
+							_log.debug(parseException2);
+						}
+
+						return value;
+					}
+				}
+			}
+			else if (infoField.getInfoFieldType() instanceof
+						TextInfoFieldType) {
+
+				return HtmlUtil.escape((String)value);
+			}
+
+			return (String)value;
+		}
+		else if (value instanceof WebImage) {
+			WebImage webImage = (WebImage)value;
+
+			JSONObject valueJSONObject = webImage.toJSONObject();
+
+			long fileEntryId = getFileEntryId(webImage);
+
+			if (fileEntryId != 0) {
+				valueJSONObject.put("fileEntryId", String.valueOf(fileEntryId));
+			}
+
+			return valueJSONObject;
+		}
+		else if (value instanceof WebURL) {
+			WebURL webURL = (WebURL)value;
+
+			return webURL.toJSONObject();
+		}
+
+		Class<?> fieldValueClass = value.getClass();
+
+		InfoTextFormatter<Object> infoTextFormatter =
+			(InfoTextFormatter<Object>)
+				_infoItemServiceRegistry.getFirstInfoItemService(
+					InfoTextFormatter.class, fieldValueClass.getName());
+
+		if (infoTextFormatter != null) {
+			return infoTextFormatter.format(value, locale);
+		}
+
+		return value.toString();
 	}
 
 	@Override
@@ -458,21 +627,12 @@ public class FragmentEntryProcessorHelperImpl
 	}
 
 	private Object _getInfoItem(InfoItemReference infoItemReference) {
-		if (infoItemReference == null) {
-			return null;
-		}
-
-		return _getInfoItem(
-			infoItemReference.getClassName(),
-			infoItemReference.getInfoItemIdentifier());
-	}
-
-	private Object _getInfoItem(
-		String className, InfoItemIdentifier infoItemIdentifier) {
+		InfoItemIdentifier infoItemIdentifier =
+			infoItemReference.getInfoItemIdentifier();
 
 		InfoItemObjectProvider<Object> infoItemObjectProvider =
 			_infoItemServiceRegistry.getFirstInfoItemService(
-				InfoItemObjectProvider.class, className,
+				InfoItemObjectProvider.class, infoItemReference.getClassName(),
 				infoItemIdentifier.getInfoItemServiceFilter());
 
 		if (infoItemObjectProvider == null) {
@@ -513,148 +673,6 @@ public class FragmentEntryProcessorHelperImpl
 		return infoItemFieldValuesProvider;
 	}
 
-	private Object _getMappedInfoItemFieldValue(
-		JSONObject editableValueJSONObject, String fieldName,
-		InfoItemFieldValues infoItemFieldValues, Locale locale) {
-
-		InfoFieldValue<Object> infoFieldValue =
-			infoItemFieldValues.getInfoFieldValue(fieldName);
-
-		if (infoFieldValue == null) {
-			return null;
-		}
-
-		Object value = infoFieldValue.getValue(locale);
-
-		if (value == null) {
-			return null;
-		}
-
-		if (value instanceof WebImage) {
-			WebImage webImage = (WebImage)value;
-
-			JSONObject valueJSONObject = webImage.toJSONObject();
-
-			long fileEntryId = getFileEntryId(webImage);
-
-			if (fileEntryId != 0) {
-				valueJSONObject.put("fileEntryId", String.valueOf(fileEntryId));
-			}
-
-			return valueJSONObject;
-		}
-
-		if (value instanceof Collection) {
-			Collection<Object> collection = (Collection<Object>)value;
-
-			if (collection.isEmpty()) {
-				return StringPool.BLANK;
-			}
-
-			Iterator<Object> iterator = collection.iterator();
-
-			Object firstItem = iterator.next();
-
-			Class<?> firstItemClass = firstItem.getClass();
-
-			InfoCollectionTextFormatter<Object> infoCollectionTextFormatter =
-				_getInfoCollectionTextFormatter(firstItemClass.getName());
-
-			return infoCollectionTextFormatter.format(collection, locale);
-		}
-
-		if (value instanceof String) {
-			InfoField infoField = infoFieldValue.getInfoField();
-
-			if (infoField.getInfoFieldType() instanceof DateInfoFieldType) {
-				Locale dateLocale = LocaleUtil.getSiteDefault();
-
-				if (infoField.isLocalizable()) {
-					InfoLocalizedValue<String> infoLocalizedValue =
-						(InfoLocalizedValue<String>)infoFieldValue.getValue();
-
-					dateLocale = infoLocalizedValue.getDefaultLocale();
-
-					Set<Locale> availableLocales =
-						infoLocalizedValue.getAvailableLocales();
-
-					if (availableLocales.contains(locale)) {
-						dateLocale = locale;
-					}
-				}
-
-				try {
-					DateFormat dateFormat =
-						DateFormatFactoryUtil.getSimpleDateFormat(
-							_getShortTimeStylePattern(dateLocale), dateLocale);
-
-					Date date = dateFormat.parse(value.toString());
-
-					return _getDateValue(
-						editableValueJSONObject, date,
-						_getShortTimeStylePattern(locale), locale);
-				}
-				catch (ParseException parseException1) {
-					if (_log.isDebugEnabled()) {
-						_log.debug(parseException1);
-					}
-
-					try {
-						DateFormat dateFormat =
-							DateFormatFactoryUtil.getSimpleDateFormat(
-								_getDefaultPattern(dateLocale), dateLocale);
-
-						return _getDateValue(
-							editableValueJSONObject,
-							dateFormat.parse(value.toString()),
-							_getDefaultPattern(locale), locale);
-					}
-					catch (ParseException parseException2) {
-						if (_log.isDebugEnabled()) {
-							_log.debug(parseException2);
-						}
-
-						return value;
-					}
-				}
-			}
-			else if (infoField.getInfoFieldType() instanceof
-						TextInfoFieldType) {
-
-				return _html.escape((String)value);
-			}
-
-			return (String)value;
-		}
-
-		if (value instanceof Labeled) {
-			Labeled labeledFieldValue = (Labeled)value;
-
-			return labeledFieldValue.getLabel(locale);
-		}
-
-		if (value instanceof Date) {
-			Date date = (Date)value;
-
-			return _getDateValue(
-				editableValueJSONObject, date,
-				_getShortTimeStylePattern(locale), locale);
-		}
-
-		Class<?> fieldValueClass = value.getClass();
-
-		InfoTextFormatter<Object> infoTextFormatter =
-			(InfoTextFormatter<Object>)
-				_infoItemServiceRegistry.getFirstInfoItemService(
-					InfoTextFormatter.class, fieldValueClass.getName());
-
-		if (infoTextFormatter != null) {
-			return infoTextFormatter.format(value, locale);
-		}
-
-		return value.toString();
-	}
-
 	private String _getShortTimeStylePattern(Locale locale) {
 		if (_shortTimeStylePatterns.containsKey(locale)) {
 			return _shortTimeStylePatterns.get(locale);
@@ -680,9 +698,6 @@ public class FragmentEntryProcessorHelperImpl
 	private static final Map<Locale, String> _defaultPatterns = new HashMap<>();
 	private static final Map<Locale, String> _shortTimeStylePatterns =
 		new HashMap<>();
-
-	@Reference
-	private Html _html;
 
 	@Reference
 	private InfoItemServiceRegistry _infoItemServiceRegistry;

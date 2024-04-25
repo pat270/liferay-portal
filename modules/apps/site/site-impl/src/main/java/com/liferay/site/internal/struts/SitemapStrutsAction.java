@@ -17,7 +17,7 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutSetLocalService;
 import com.liferay.portal.kernel.service.VirtualHostLocalService;
-import com.liferay.portal.kernel.service.permission.GroupPermission;
+import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
 import com.liferay.portal.kernel.servlet.ServletResponseUtil;
 import com.liferay.portal.kernel.struts.StrutsAction;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -28,7 +28,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.util.PropsValues;
-import com.liferay.site.util.Sitemap;
+import com.liferay.site.manager.SitemapManager;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -88,7 +88,7 @@ public class SitemapStrutsAction implements StrutsAction {
 					Group group = layoutSet.getGroup();
 
 					if (group.isStagingGroup()) {
-						_groupPermission.check(
+						GroupPermissionUtil.check(
 							themeDisplay.getPermissionChecker(),
 							group.getGroupId(), ActionKeys.VIEW_STAGING);
 					}
@@ -116,7 +116,7 @@ public class SitemapStrutsAction implements StrutsAction {
 				String layoutUuid = ParamUtil.getString(
 					httpServletRequest, "layoutUuid");
 
-				String sitemap = _sitemap.getSitemap(
+				String sitemap = _sitemapManager.getSitemap(
 					layoutUuid, layoutSet.getGroupId(),
 					layoutSet.isPrivateLayout(), themeDisplay);
 
@@ -154,16 +154,13 @@ public class SitemapStrutsAction implements StrutsAction {
 	private GroupLocalService _groupLocalService;
 
 	@Reference
-	private GroupPermission _groupPermission;
-
-	@Reference
 	private LayoutSetLocalService _layoutSetLocalService;
 
 	@Reference
 	private Portal _portal;
 
 	@Reference
-	private Sitemap _sitemap;
+	private SitemapManager _sitemapManager;
 
 	@Reference
 	private VirtualHostLocalService _virtualHostLocalService;

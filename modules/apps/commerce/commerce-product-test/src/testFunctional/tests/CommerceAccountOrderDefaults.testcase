@@ -1,7 +1,7 @@
 @component-name = "portal-commerce"
 definition {
 
-	property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+	property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property release.feature.flags.disable.DISABLE_PRIVATE_LAYOUTS = "true";
@@ -44,10 +44,7 @@ definition {
 		}
 
 		task ("and a delivery term is linked to a shipping method") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Store Management",
-				panel = "Commerce",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -179,10 +176,7 @@ definition {
 		}
 
 		task ("and a payment term is linked to a payment method") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Store Management",
-				panel = "Commerce",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -293,7 +287,7 @@ definition {
 				locator1 = "CommerceEntry#PRODUCT_CARD_LIST_PRICE",
 				value1 = "$");
 
-			AssertTextNotEquals.assertNotPartialText(
+			AssertTextNotEquals.assertNotPartialMatch(
 				key_productName = "U-Joint",
 				locator1 = "CommerceEntry#PRODUCT_CARD_LIST_PRICE",
 				value1 = "€");
@@ -693,6 +687,10 @@ definition {
 		property portal.acceptance = "false";
 
 		task ("Given 3 addresses: one billing, one shipping and one shipping and billing for the account") {
+			Account.openAccountsAdmin();
+
+			LexiconEntry.gotoEntry(rowEntry = "Commerce Account");
+
 			Account.gotoAssigneeTab(assigneeTab = "Addresses");
 
 			Account.addAddress(
@@ -767,9 +765,9 @@ definition {
 		task ("Then an error message appears on the modal") {
 			SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
-			AssertTextEquals.assertPartialText(
+			AssertTextEquals.assertText(
 				locator1 = "Message#ERROR_DISMISSIBLE",
-				value1 = "There is already an address defined for the selected channel.");
+				value1 = "Close Error:There is already an address defined for the selected channel.");
 		}
 	}
 
@@ -796,6 +794,10 @@ definition {
 					userRole = "Buyer",
 					userScreenName = "buyeruser${num}",
 					userSiteMembership = "Minium ${num}");
+
+				Account.openAccountsAdmin();
+
+				LexiconEntry.gotoEntry(rowEntry = "Test Account ${num}");
 
 				Account.gotoAssigneeTab(assigneeTab = "Addresses");
 
@@ -932,7 +934,7 @@ definition {
 				locator1 = "CommerceEntry#PRODUCT_CARD_LIST_PRICE",
 				value1 = "$");
 
-			AssertTextNotEquals.assertNotPartialText(
+			AssertTextNotEquals.assertNotPartialMatch(
 				key_productName = "U-Joint",
 				locator1 = "CommerceEntry#PRODUCT_CARD_LIST_PRICE",
 				value1 = "€");
@@ -951,10 +953,7 @@ definition {
 		}
 
 		task ("and two delivery terms are linked to a payment method") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Store Management",
-				panel = "Commerce",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -965,10 +964,7 @@ definition {
 
 			SelectFrame.selectFrameTop();
 
-			ApplicationsMenu.gotoPortlet(
-				category = "Store Management",
-				panel = "Commerce",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -1053,10 +1049,7 @@ definition {
 		}
 
 		task ("and two payment terms are linked to a payment method") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Store Management",
-				panel = "Commerce",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -1068,10 +1061,7 @@ definition {
 
 			SelectFrame.selectFrameTop();
 
-			ApplicationsMenu.gotoPortlet(
-				category = "Store Management",
-				panel = "Commerce",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -1149,6 +1139,10 @@ definition {
 		property portal.acceptance = "false";
 
 		task ("Given 3 addresses: one billing, one shipping and one shipping and billing for the account") {
+			Account.openAccountsAdmin();
+
+			LexiconEntry.gotoEntry(rowEntry = "Commerce Account");
+
 			Account.gotoAssigneeTab(assigneeTab = "Addresses");
 
 			for (var typeList : list "Billing,Shipping,Billing and Shipping") {
@@ -1466,6 +1460,10 @@ definition {
 		property portal.acceptance = "true";
 
 		task ("Given 3 addresses: one billing, one shipping and one shipping and billing for the account") {
+			Account.openAccountsAdmin();
+
+			LexiconEntry.gotoEntry(rowEntry = "Commerce Account");
+
 			Account.gotoAssigneeTab(assigneeTab = "Addresses");
 
 			for (var typeList : list "Billing,Shipping,Billing and Shipping") {
@@ -1616,6 +1614,10 @@ definition {
 		property portal.acceptance = "true";
 
 		task ("Given 3 addresses: one billing, one shipping and one shipping and billing for the account") {
+			Account.openAccountsAdmin();
+
+			LexiconEntry.gotoEntry(rowEntry = "Commerce Account");
+
 			Account.gotoAssigneeTab(assigneeTab = "Addresses");
 
 			for (var typeList : list "Billing,Shipping,Billing and Shipping") {
@@ -1686,6 +1688,10 @@ definition {
 		property portal.acceptance = "true";
 
 		task ("Given 2 Minium sites and a buyer user is associated with both sites, and 3 addresses: one billing, one shipping and one shipping and billing for the account") {
+			Account.openAccountsAdmin();
+
+			LexiconEntry.gotoEntry(rowEntry = "Commerce Account");
+
 			Account.gotoAssigneeTab(assigneeTab = "Addresses");
 
 			for (var typeList : list "Billing,Shipping,Billing and Shipping") {
@@ -1889,6 +1895,10 @@ definition {
 		property portal.acceptance = "true";
 
 		task ("Given 3 addresses: one billing, one shipping and one shipping and billing for the account") {
+			Account.openAccountsAdmin();
+
+			LexiconEntry.gotoEntry(rowEntry = "Commerce Account");
+
 			Account.gotoAssigneeTab(assigneeTab = "Addresses");
 
 			for (var typeList : list "Billing,Shipping,Billing and Shipping") {
@@ -2210,6 +2220,10 @@ definition {
 		property portal.acceptance = "true";
 
 		task ("Given 3 addresses: one billing, one shipping and one shipping and billing for the account") {
+			Account.openAccountsAdmin();
+
+			LexiconEntry.gotoEntry(rowEntry = "Commerce Account");
+
 			Account.gotoAssigneeTab(assigneeTab = "Addresses");
 
 			for (var typeList : list "Billing,Shipping,Billing and Shipping") {
@@ -2517,7 +2531,7 @@ definition {
 				locator1 = "CommerceEntry#PRODUCT_CARD_LIST_PRICE",
 				value1 = "€");
 
-			AssertTextNotEquals.assertNotPartialText(
+			AssertTextNotEquals.assertNotPartialMatch(
 				key_productName = "U-Joint",
 				locator1 = "CommerceEntry#PRODUCT_CARD_LIST_PRICE",
 				value1 = "$");
@@ -2538,7 +2552,7 @@ definition {
 				locator1 = "CommerceEntry#PRODUCT_CARD_LIST_PRICE",
 				value1 = "€");
 
-			AssertTextNotEquals.assertNotPartialText(
+			AssertTextNotEquals.assertNotPartialMatch(
 				key_productName = "U-Joint",
 				locator1 = "CommerceEntry#PRODUCT_CARD_LIST_PRICE",
 				value1 = "$");
@@ -2559,7 +2573,7 @@ definition {
 				locator1 = "CommerceEntry#PRODUCT_CARD_LIST_PRICE",
 				value1 = "$");
 
-			AssertTextNotEquals.assertNotPartialText(
+			AssertTextNotEquals.assertNotPartialMatch(
 				key_productName = "U-Joint",
 				locator1 = "CommerceEntry#PRODUCT_CARD_LIST_PRICE",
 				value1 = "€");
@@ -2582,10 +2596,7 @@ definition {
 				termsCount = 4,
 				termsType = "Delivery");
 
-			ApplicationsMenu.gotoPortlet(
-				category = "Store Management",
-				panel = "Commerce",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -2596,10 +2607,7 @@ definition {
 
 			SelectFrame.selectFrameTop();
 
-			ApplicationsMenu.gotoPortlet(
-				category = "Store Management",
-				panel = "Commerce",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -2610,10 +2618,7 @@ definition {
 
 			SelectFrame.selectFrameTop();
 
-			ApplicationsMenu.gotoPortlet(
-				category = "Store Management",
-				panel = "Commerce",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Test Channel Portal");
 
@@ -2726,9 +2731,7 @@ definition {
 				discountTitle = "Discount 1 10% off",
 				productName = "U-Joint");
 
-			CommerceNavigator.gotoPortlet(
-				category = "Pricing",
-				portlet = "Discounts");
+			CommerceNavigator.goToDiscountAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Discount 1 10% off");
 
@@ -2750,9 +2753,7 @@ definition {
 				discountTitle = "Discount 2 20% off",
 				productName = "U-Joint");
 
-			CommerceNavigator.gotoPortlet(
-				category = "Pricing",
-				portlet = "Discounts");
+			CommerceNavigator.goToDiscountAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Discount 2 20% off");
 
@@ -2774,9 +2775,7 @@ definition {
 				discountTitle = "Discount 3 30% off",
 				productName = "U-Joint");
 
-			CommerceNavigator.gotoPortlet(
-				category = "Pricing",
-				portlet = "Discounts");
+			CommerceNavigator.goToDiscountAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Discount 3 30% off");
 
@@ -2846,9 +2845,7 @@ definition {
 				discountTitle = "Discount 1 10% off",
 				productName = "U-Joint");
 
-			CommerceNavigator.gotoPortlet(
-				category = "Pricing",
-				portlet = "Discounts");
+			CommerceNavigator.goToDiscountAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Discount 1 10% off");
 
@@ -2870,9 +2867,7 @@ definition {
 				discountTitle = "Discount 2 20% off",
 				productName = "U-Joint");
 
-			CommerceNavigator.gotoPortlet(
-				category = "Pricing",
-				portlet = "Discounts");
+			CommerceNavigator.goToDiscountAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Discount 2 20% off");
 
@@ -2894,9 +2889,7 @@ definition {
 				discountTitle = "Discount 3 30% off",
 				productName = "U-Joint");
 
-			CommerceNavigator.gotoPortlet(
-				category = "Pricing",
-				portlet = "Discounts");
+			CommerceNavigator.goToDiscountAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Discount 3 30% off");
 
@@ -2970,9 +2963,7 @@ definition {
 				discountTitle = "Discount 1 10% off",
 				productName = "U-Joint");
 
-			CommerceNavigator.gotoPortlet(
-				category = "Pricing",
-				portlet = "Discounts");
+			CommerceNavigator.goToDiscountAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Discount 1 10% off");
 
@@ -2994,9 +2985,7 @@ definition {
 				discountTitle = "Discount 2 20% off",
 				productName = "U-Joint");
 
-			CommerceNavigator.gotoPortlet(
-				category = "Pricing",
-				portlet = "Discounts");
+			CommerceNavigator.goToDiscountAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Discount 2 20% off");
 
@@ -3018,9 +3007,7 @@ definition {
 				discountTitle = "Discount 3 30% off",
 				productName = "U-Joint");
 
-			CommerceNavigator.gotoPortlet(
-				category = "Pricing",
-				portlet = "Discounts");
+			CommerceNavigator.goToDiscountAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Discount 3 30% off");
 
@@ -3071,10 +3058,7 @@ definition {
 				termsCount = 4,
 				termsType = "Payment");
 
-			ApplicationsMenu.gotoPortlet(
-				category = "Store Management",
-				panel = "Commerce",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -3086,10 +3070,7 @@ definition {
 
 			SelectFrame.selectFrameTop();
 
-			ApplicationsMenu.gotoPortlet(
-				category = "Store Management",
-				panel = "Commerce",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -3099,10 +3080,7 @@ definition {
 
 			SelectFrame.selectFrameTop();
 
-			ApplicationsMenu.gotoPortlet(
-				category = "Store Management",
-				panel = "Commerce",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Test Channel Portal");
 
@@ -3383,10 +3361,7 @@ definition {
 				termsCount = 4,
 				termsType = "Delivery");
 
-			ApplicationsMenu.gotoPortlet(
-				category = "Store Management",
-				panel = "Commerce",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -3397,10 +3372,7 @@ definition {
 
 			SelectFrame.selectFrameTop();
 
-			ApplicationsMenu.gotoPortlet(
-				category = "Store Management",
-				panel = "Commerce",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -3411,10 +3383,7 @@ definition {
 
 			SelectFrame.selectFrameTop();
 
-			ApplicationsMenu.gotoPortlet(
-				category = "Store Management",
-				panel = "Commerce",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Test Channel Portal");
 
@@ -3503,10 +3472,7 @@ definition {
 				termsCount = 4,
 				termsType = "Payment");
 
-			ApplicationsMenu.gotoPortlet(
-				category = "Store Management",
-				panel = "Commerce",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -3518,10 +3484,7 @@ definition {
 
 			SelectFrame.selectFrameTop();
 
-			ApplicationsMenu.gotoPortlet(
-				category = "Store Management",
-				panel = "Commerce",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -3531,10 +3494,7 @@ definition {
 
 			SelectFrame.selectFrameTop();
 
-			ApplicationsMenu.gotoPortlet(
-				category = "Store Management",
-				panel = "Commerce",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Test Channel Portal");
 

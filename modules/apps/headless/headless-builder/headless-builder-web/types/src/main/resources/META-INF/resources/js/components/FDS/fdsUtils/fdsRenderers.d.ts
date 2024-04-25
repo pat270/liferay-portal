@@ -3,8 +3,10 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-/// <reference types="react" />
-
+import {Dispatch, SetStateAction} from 'react';
+export declare function getDisplayType(
+	httpMethodName: string
+): 'success' | 'info';
 export declare function itemMethodRenderer({
 	itemData,
 }: {
@@ -15,11 +17,15 @@ export declare function itemMethodRenderer({
 	};
 }): JSX.Element;
 export declare function itemPathRenderer({
-	itemData,
-}: FDSItem<APIApplicationEndpointItem>): JSX.Element;
+	fdsItem,
+	setMainEndpointNav,
+}: {
+	fdsItem: FDSItem<APIEndpointItem>;
+	setMainEndpointNav: Dispatch<SetStateAction<MainNav>>;
+}): JSX.Element;
 export declare function itemStatusRenderer({
 	itemData,
 }: FDSItem<APIApplicationItem>): JSX.Element;
 export declare function itemURLRenderer({
 	itemData,
-}: FDSItem<APIApplicationItem>): string;
+}: FDSItem<APIApplicationItem>): string | undefined;

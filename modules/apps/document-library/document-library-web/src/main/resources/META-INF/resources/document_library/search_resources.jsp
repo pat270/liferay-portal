@@ -77,7 +77,7 @@ entriesChecker.setRememberCheckBoxStateURLRegex("^(?!.*" + liferayPortletRespons
 							latestFileVersion = fileEntry.getLatestFileVersion();
 						}
 
-						if ((dlSearchContainer.getRowChecker() == null) && (DLFileEntryPermission.contains(permissionChecker, fileEntry, ActionKeys.DELETE) || DLFileEntryPermission.contains(permissionChecker, fileEntry, ActionKeys.UPDATE))) {
+						if ((dlSearchContainer.getRowChecker() == null) && (DLFileEntryPermission.contains(permissionChecker, fileEntry, ActionKeys.DELETE) || DLFileEntryPermission.contains(permissionChecker, fileEntry, ActionKeys.DOWNLOAD) || DLFileEntryPermission.contains(permissionChecker, fileEntry, ActionKeys.UPDATE))) {
 							dlSearchContainer.setRowChecker(entriesChecker);
 						}
 
@@ -148,16 +148,16 @@ entriesChecker.setRememberCheckBoxStateURLRegex("^(?!.*" + liferayPortletRespons
 											<div class="aspect-ratio card-item-first">
 												<div class="custom-checkbox custom-control">
 													<label>
+														<c:if test="<%= searchContainer.getRowChecker() != null %>">
 
-														<%
-														RowChecker rowChecker = searchContainer.getRowChecker();
+															<%
+															RowChecker rowChecker = searchContainer.getRowChecker();
 
-														rowChecker.setCssClass("custom-control-input");
-														%>
+															rowChecker.setCssClass("custom-control-input");
+															%>
 
-														<%= rowChecker.getRowCheckBox(request, row) %>
-
-														<span class="custom-control-label"></span>
+															<%= rowChecker.getRowCheckBox(request, row) %>
+														</c:if>
 
 														<c:choose>
 															<c:when test="<%= dlViewFileVersionDisplayContext.hasCustomThumbnail() %>">
@@ -200,10 +200,34 @@ entriesChecker.setRememberCheckBoxStateURLRegex("^(?!.*" + liferayPortletRespons
 														</div>
 
 														<div class="card-detail">
+															<c:if test='<%= FeatureFlagManagerUtil.isEnabled(latestFileVersion.getCompanyId(), "LPD-10701") && !latestFileVersion.isApproved() && dlViewFileVersionDisplayContext.hasApprovedVersion() %>'>
+																<liferay-portal-workflow:status
+																	showStatusLabel="<%= false %>"
+																	status="<%= WorkflowConstants.STATUS_APPROVED %>"
+																/>
+															</c:if>
+
 															<liferay-portal-workflow:status
 																showStatusLabel="<%= false %>"
 																status="<%= latestFileVersion.getStatus() %>"
 															/>
+
+															<c:if test='<%= FeatureFlagManagerUtil.isEnabled(latestFileVersion.getCompanyId(), "LPD-10701") && latestFileVersion.isScheduled() %>'>
+
+																<%
+																String displayDateString = StringPool.BLANK;
+
+																if (latestFileVersion.getDisplayDate() != null) {
+																	displayDateString = dateTimeFormat.format(latestFileVersion.getDisplayDate());
+																}
+																%>
+
+																<span aria-label="<%= displayDateString %>" class="lfr-portal-tooltip" tabindex="0" title="<%= displayDateString %>">
+																	<clay:icon
+																		symbol="question-circle-full"
+																	/>
+																</span>
+															</c:if>
 
 															<c:choose>
 																<c:when test="<%= fileShortcut != null %>">
@@ -237,7 +261,7 @@ entriesChecker.setRememberCheckBoxStateURLRegex("^(?!.*" + liferayPortletRespons
 															<clay:dropdown-actions
 																aria-label='<%= LanguageUtil.get(request, "actions") %>'
 																dropdownItems="<%= dlViewFileVersionDisplayContext.getActionDropdownItems() %>"
-																propsTransformer="document_library/js/DLFileEntryDropdownPropsTransformer"
+																propsTransformer="{DLFileEntryDropdownPropsTransformer} from document-library-web"
 															/>
 														</div>
 													</c:if>
@@ -260,38 +284,38 @@ entriesChecker.setRememberCheckBoxStateURLRegex("^(?!.*" + liferayPortletRespons
 												name="title"
 											>
 												<div class="autofit-row">
-													<div class="autofit-col">
+													<div class="autofit-col pr-1">
 														<liferay-document-library:mime-type-sticker
 															cssClass="sticker-secondary"
 															fileVersion="<%= latestFileVersion %>"
 														/>
 													</div>
 
-													<div class="autofit-col autofit-col-expand">
+													<div class="autofit-col autofit-col-expand pl-1">
 														<div class="table-title">
 															<clay:link
 																href="<%= dlViewEntriesDisplayContext.getViewFileEntryURL(fileEntry) %>"
 																label="<%= HtmlUtil.unescape(latestFileVersion.getTitle()) %>"
 															/>
+
+															<c:if test="<%= fileEntry.hasLock() || fileEntry.isCheckedOut() %>">
+																<span class="inline-item inline-item-after state-icon">
+																	<clay:icon
+																		symbol="lock"
+																	/>
+																</span>
+															</c:if>
+
+															<c:if test="<%= dlViewFileVersionDisplayContext.isShared() %>">
+																<span class="inline-item inline-item-after lfr-portal-tooltip state-icon" title="<%= LanguageUtil.get(request, "shared") %>">
+																	<clay:icon
+																		symbol="users"
+																	/>
+																</span>
+															</c:if>
 														</div>
 													</div>
 												</div>
-
-												<c:if test="<%= fileEntry.hasLock() || fileEntry.isCheckedOut() %>">
-													<span class="inline-item inline-item-after state-icon">
-														<clay:icon
-															symbol="lock"
-														/>
-													</span>
-												</c:if>
-
-												<c:if test="<%= dlViewFileVersionDisplayContext.isShared() %>">
-													<span class="inline-item inline-item-after lfr-portal-tooltip state-icon" title="<%= LanguageUtil.get(request, "shared") %>">
-														<clay:icon
-															symbol="users"
-														/>
-													</span>
-												</c:if>
 
 												<c:if test="<%= fileShortcut != null %>">
 													<span class="inline-item inline-item-after state-icon">
@@ -342,11 +366,39 @@ entriesChecker.setRememberCheckBoxStateURLRegex("^(?!.*" + liferayPortletRespons
 											/>
 										</c:when>
 										<c:when test='<%= curEntryColumn.equals("status") %>'>
-											<liferay-ui:search-container-column-status
+											<liferay-ui:search-container-column-text
 												cssClass="table-cell-expand-smallest"
 												name="status"
-												status="<%= latestFileVersion.getStatus() %>"
-											/>
+											>
+												<c:if test='<%= FeatureFlagManagerUtil.isEnabled(latestFileVersion.getCompanyId(), "LPD-10701") && !latestFileVersion.isApproved() && dlViewFileVersionDisplayContext.hasApprovedVersion() %>'>
+													<liferay-portal-workflow:status
+														showStatusLabel="<%= false %>"
+														status="<%= WorkflowConstants.STATUS_APPROVED %>"
+													/>
+												</c:if>
+
+												<liferay-portal-workflow:status
+													showStatusLabel="<%= false %>"
+													status="<%= latestFileVersion.getStatus() %>"
+												/>
+
+												<c:if test='<%= FeatureFlagManagerUtil.isEnabled(latestFileVersion.getCompanyId(), "LPD-10701") && latestFileVersion.isScheduled() %>'>
+
+													<%
+													String displayDateString = StringPool.BLANK;
+
+													if (latestFileVersion.getDisplayDate() != null) {
+														displayDateString = dateTimeFormat.format(latestFileVersion.getDisplayDate());
+													}
+													%>
+
+													<span aria-label="<%= displayDateString %>" class="lfr-portal-tooltip" tabindex="0" title="<%= displayDateString %>">
+														<clay:icon
+															symbol="question-circle-full"
+														/>
+													</span>
+												</c:if>
+											</liferay-ui:search-container-column-text>
 										</c:when>
 										<c:when test='<%= curEntryColumn.equals("downloads") %>'>
 											<c:if test="<%= ViewCountManagerUtil.isViewCountEnabled(PortalUtil.getClassNameId(DLFileEntryConstants.getClassName())) %>">
@@ -451,7 +503,7 @@ entriesChecker.setRememberCheckBoxStateURLRegex("^(?!.*" + liferayPortletRespons
 								>
 									<clay:horizontal-card
 										horizontalCard="<%= new FolderHorizontalCard(dlPortletInstanceSettingsHelper, dlTrashHelper, curFolder, request, renderResponse, searchContainer.getRowChecker(), viewFolderURL) %>"
-										propsTransformer="document_library/js/DLFolderDropdownPropsTransformer"
+										propsTransformer="{DLFolderDropdownPropsTransformer} from document-library-web"
 									/>
 								</liferay-ui:search-container-column-text>
 							</c:when>
@@ -468,7 +520,7 @@ entriesChecker.setRememberCheckBoxStateURLRegex("^(?!.*" + liferayPortletRespons
 												name="name"
 											>
 												<div class="autofit-row">
-													<div class="autofit-col">
+													<div class="autofit-col pr-1">
 														<clay:sticker
 															cssClass="sticker-document"
 															displayType="secondary"
@@ -476,7 +528,7 @@ entriesChecker.setRememberCheckBoxStateURLRegex("^(?!.*" + liferayPortletRespons
 														/>
 													</div>
 
-													<div class="autofit-col autofit-col-expand">
+													<div class="autofit-col autofit-col-expand pl-1">
 														<div class="table-title">
 															<clay:link
 																href='<%=
@@ -570,22 +622,11 @@ entriesChecker.setRememberCheckBoxStateURLRegex("^(?!.*" + liferayPortletRespons
 				</c:choose>
 			</liferay-ui:search-container-row>
 
-			<c:choose>
-				<c:when test='<%= FeatureFlagManagerUtil.isEnabled("LPS-84424") %>'>
-					<liferay-ui:search-iterator
-						displayStyle="<%= dlViewEntriesDisplayContext.getDisplayStyle() %>"
-						markupView="lexicon"
-						resultRowSplitter="<%= new DLResultRowSplitter() %>"
-					/>
-				</c:when>
-				<c:otherwise>
-					<liferay-ui:search-iterator
-						displayStyle="descriptive"
-						markupView="lexicon"
-						searchContainer="<%= dlSearchContainer %>"
-					/>
-				</c:otherwise>
-			</c:choose>
+			<liferay-ui:search-iterator
+				displayStyle="<%= dlViewEntriesDisplayContext.getDisplayStyle() %>"
+				markupView="lexicon"
+				resultRowSplitter="<%= new DLResultRowSplitter() %>"
+			/>
 		</liferay-ui:search-container>
 	</div>
 </liferay-util:buffer>

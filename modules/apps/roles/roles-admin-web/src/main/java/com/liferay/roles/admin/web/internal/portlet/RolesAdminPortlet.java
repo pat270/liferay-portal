@@ -6,7 +6,6 @@
 package com.liferay.roles.admin.web.internal.portlet;
 
 import com.liferay.application.list.PanelAppRegistry;
-import com.liferay.application.list.PanelCategoryRegistry;
 import com.liferay.application.list.constants.ApplicationListWebKeys;
 import com.liferay.application.list.constants.PanelCategoryKeys;
 import com.liferay.application.list.display.context.logic.PanelCategoryHelper;
@@ -40,7 +39,7 @@ import com.liferay.portal.kernel.service.RoleService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.service.UserService;
-import com.liferay.portal.kernel.service.permission.RolePermission;
+import com.liferay.portal.kernel.service.permission.RolePermissionUtil;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -491,7 +490,7 @@ public class RolesAdminPortlet extends MVCPortlet {
 				(ThemeDisplay)portletRequest.getAttribute(
 					WebKeys.THEME_DISPLAY);
 
-			_rolePermission.check(
+			RolePermissionUtil.check(
 				themeDisplay.getPermissionChecker(),
 				ParamUtil.getLong(portletRequest, "roleId"),
 				ActionKeys.ASSIGN_MEMBERS);
@@ -620,14 +619,10 @@ public class RolesAdminPortlet extends MVCPortlet {
 			ApplicationListWebKeys.PANEL_APP_REGISTRY, _panelAppRegistry);
 
 		PanelCategoryHelper panelCategoryHelper = new PanelCategoryHelper(
-			_panelAppRegistry, _panelCategoryRegistry);
+			_panelAppRegistry);
 
 		portletRequest.setAttribute(
 			ApplicationListWebKeys.PANEL_CATEGORY_HELPER, panelCategoryHelper);
-
-		portletRequest.setAttribute(
-			ApplicationListWebKeys.PANEL_CATEGORY_REGISTRY,
-			_panelCategoryRegistry);
 
 		PersonalMenuEntryHelper personalMenuEntryHelper =
 			new PersonalMenuEntryHelper(
@@ -743,7 +738,7 @@ public class RolesAdminPortlet extends MVCPortlet {
 		throws Exception {
 
 		PanelCategoryHelper panelCategoryHelper = new PanelCategoryHelper(
-			_panelAppRegistry, _panelCategoryRegistry);
+			_panelAppRegistry);
 
 		String selResource = null;
 		String actionId = null;
@@ -811,9 +806,6 @@ public class RolesAdminPortlet extends MVCPortlet {
 	private PanelAppRegistry _panelAppRegistry;
 
 	@Reference
-	private PanelCategoryRegistry _panelCategoryRegistry;
-
-	@Reference
 	private PanelCategoryRoleTypeMapperRegistry
 		_panelCategoryRoleTypeMapperRegistry;
 
@@ -828,9 +820,6 @@ public class RolesAdminPortlet extends MVCPortlet {
 
 	@Reference
 	private RoleLocalService _roleLocalService;
-
-	@Reference
-	private RolePermission _rolePermission;
 
 	@Reference
 	private RoleService _roleService;

@@ -58,7 +58,7 @@
 							<img alt="${logo_description}" class="mr-2" height="56" src="${site_logo}" />
 
 							<#if show_site_name>
-								<h2 class="font-weight-bold h2 mb-0 text-dark">${site_name}</h2>
+								<h2 <#if show_control_menu>aria-hidden="true"</#if> class="font-weight-bold h2 mb-0 text-dark">${site_name}</h2>
 							</#if>
 						</a>
 
@@ -69,8 +69,6 @@
 		</#if>
 
 		<section class="${portal_content_css_class} flex-fill" id="content">
-			<h2 class="sr-only">${htmlUtil.escape(the_title)}</h2>
-
 			<#if selectable>
 				<@liferay_util["include"] page=content_include />
 			<#else>
@@ -85,7 +83,7 @@
 		</section>
 
 		<#if show_footer>
-			<footer id="footer" role="contentinfo">
+			<footer id="footer">
 				<div class="container">
 					<div class="row">
 						<div class="col-md-12 text-center text-md-left">

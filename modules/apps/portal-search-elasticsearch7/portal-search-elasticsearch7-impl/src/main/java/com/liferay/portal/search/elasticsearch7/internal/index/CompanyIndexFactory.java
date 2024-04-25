@@ -6,7 +6,6 @@
 package com.liferay.portal.search.elasticsearch7.internal.index;
 
 import com.liferay.petra.string.StringBundler;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
@@ -46,38 +45,40 @@ public class CompanyIndexFactory
 	}
 
 	@Override
-	public void createIndices(IndicesClient indicesClient, long companyId) {
+	public boolean createIndices(IndicesClient indicesClient, long companyId) {
 		String indexName = _companyIndexFactoryHelper.getIndexName(companyId);
 
 		if (_companyIndexFactoryHelper.hasIndex(indicesClient, indexName)) {
-			return;
+			return false;
 		}
 
 		_companyIndexFactoryHelper.createIndex(indexName, indicesClient);
+
+		return true;
 	}
 
 	@Override
-	public void deleteIndices(IndicesClient indicesClient, long companyId) {
+	public boolean deleteIndices(IndicesClient indicesClient, long companyId) {
 		String indexName = _companyIndexFactoryHelper.getIndexName(companyId);
 
-		if (FeatureFlagManagerUtil.isEnabled("LPS-177664")) {
-			Company company = _companyLocalService.fetchCompany(companyId);
+		Company company = _companyLocalService.fetchCompany(companyId);
 
-			if ((company != null) &&
-				!Validator.isBlank(company.getIndexNameCurrent())) {
+		if ((company != null) &&
+			!Validator.isBlank(company.getIndexNameCurrent())) {
 
-				indexName = company.getIndexNameCurrent();
-			}
+			indexName = company.getIndexNameCurrent();
 		}
 
 		if (!_companyIndexFactoryHelper.hasIndex(indicesClient, indexName)) {
-			return;
+			return false;
 		}
 
 		_executeIndexContributorsBeforeRemove(indexName);
 
 		_companyIndexFactoryHelper.deleteIndex(
 			indexName, indicesClient, companyId, true);
+
+		return true;
 	}
 
 	@Override
@@ -193,7 +194,7 @@ public class CompanyIndexFactory
 	private CompanyLocalService _companyLocalService;
 
 	@Reference
-	private volatile ElasticsearchConfigurationWrapper
+	private ElasticsearchConfigurationWrapper
 		_elasticsearchConfigurationWrapper;
 
 	@Reference

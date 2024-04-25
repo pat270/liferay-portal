@@ -7,6 +7,8 @@ package com.liferay.layout.content.page.editor.web.internal.portlet.action;
 
 import com.liferay.fragment.exception.FragmentCompositionDescriptionException;
 import com.liferay.fragment.exception.FragmentCompositionNameException;
+import com.liferay.layout.manager.LayoutLockManager;
+import com.liferay.portal.kernel.exception.LockedLayoutException;
 import com.liferay.portal.kernel.exception.PortletIdException;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
@@ -27,6 +29,8 @@ import java.util.concurrent.Callable;
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Eudaldo Alonso
  */
@@ -41,6 +45,10 @@ public abstract class BaseContentPageEditorTransactionalMVCActionCommand
 		JSONObject jsonObject = null;
 
 		try {
+			if (isLayoutLockRequired()) {
+				layoutLockManager.getLock(actionRequest);
+			}
+
 			Callable<JSONObject> callable = () -> doTransactionalCommand(
 				actionRequest, actionResponse);
 
@@ -64,18 +72,26 @@ public abstract class BaseContentPageEditorTransactionalMVCActionCommand
 			jsonObject = processException(actionRequest, exception);
 		}
 
-		hideDefaultSuccessMessage(actionRequest);
-
 		JSONPortletResponseUtil.writeJSON(
 			actionRequest, actionResponse, jsonObject);
+
+		hideDefaultSuccessMessage(actionRequest);
 	}
 
 	protected abstract JSONObject doTransactionalCommand(
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception;
 
+	protected boolean isLayoutLockRequired() {
+		return true;
+	}
+
 	protected JSONObject processException(
 		ActionRequest actionRequest, Exception exception) {
+
+		if (exception instanceof LockedLayoutException) {
+			return processLockedLayoutException(actionRequest);
+		}
 
 		String errorMessage = "an-unexpected-error-occurred";
 
@@ -98,6 +114,17 @@ public abstract class BaseContentPageEditorTransactionalMVCActionCommand
 		return JSONUtil.put(
 			"error", LanguageUtil.get(themeDisplay.getRequest(), errorMessage));
 	}
+
+	protected JSONObject processLockedLayoutException(
+		ActionRequest actionRequest) {
+
+		return JSONUtil.put(
+			"redirectURL",
+			() -> layoutLockManager.getLockedLayoutURL(actionRequest));
+	}
+
+	@Reference
+	protected LayoutLockManager layoutLockManager;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		BaseContentPageEditorTransactionalMVCActionCommand.class);

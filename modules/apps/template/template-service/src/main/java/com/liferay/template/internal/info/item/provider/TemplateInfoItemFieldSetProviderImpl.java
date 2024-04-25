@@ -5,7 +5,9 @@
 
 package com.liferay.template.internal.info.item.provider;
 
+import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
+import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateLocalService;
 import com.liferay.info.field.InfoField;
 import com.liferay.info.field.InfoFieldSet;
@@ -17,11 +19,16 @@ import com.liferay.info.item.provider.InfoItemFieldValuesProvider;
 import com.liferay.info.localized.InfoLocalizedValue;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Company;
+import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portlet.display.template.PortletDisplayTemplate;
 import com.liferay.staging.StagingGroupHelper;
@@ -34,8 +41,10 @@ import com.liferay.template.transformer.TemplateNodeFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -123,13 +132,39 @@ public class TemplateInfoItemFieldSetProviderImpl
 			return Collections.emptyList();
 		}
 
+		Set<Long> groupIds = new HashSet<>();
+
+		Company company = _companyLocalService.fetchCompany(
+			serviceContext.getCompanyId());
+
+		if (company != null) {
+			try {
+				groupIds.add(company.getGroupId());
+			}
+			catch (PortalException portalException) {
+				_log.error(portalException);
+			}
+		}
+
+		long ddmStructureKey = GetterUtil.getLong(infoItemFormVariationKey);
+
+		DDMStructure ddmStructure = _ddmStructureLocalService.fetchStructure(
+			ddmStructureKey);
+
+		if (ddmStructure != null) {
+			groupIds.add(ddmStructure.getGroupId());
+		}
+
+		groupIds.add(
+			_stagingGroupHelper.getStagedPortletGroupId(
+				serviceContext.getScopeGroupId(),
+				TemplatePortletKeys.TEMPLATE));
+
 		try {
 			return _templateEntryLocalService.getTemplateEntries(
-				_stagingGroupHelper.getStagedPortletGroupId(
-					serviceContext.getScopeGroupId(),
-					TemplatePortletKeys.TEMPLATE),
-				infoItemClassName, infoItemFormVariationKey, QueryUtil.ALL_POS,
-				QueryUtil.ALL_POS, null);
+				ArrayUtil.toLongArray(groupIds), infoItemClassName,
+				infoItemFormVariationKey, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+				null);
 		}
 		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
@@ -202,6 +237,12 @@ public class TemplateInfoItemFieldSetProviderImpl
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		TemplateInfoItemFieldSetProviderImpl.class);
+
+	@Reference
+	private CompanyLocalService _companyLocalService;
+
+	@Reference
+	private DDMStructureLocalService _ddmStructureLocalService;
 
 	@Reference
 	private DDMTemplateLocalService _ddmTemplateLocalService;

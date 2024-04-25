@@ -1,13 +1,23 @@
 {
 	"dependencies": {
+		"@clayui/button": "3.113.0",
+		"@clayui/core": "3.113.0",
+		"@clayui/drop-down": "3.113.0",
+		"@clayui/icon": "3.111.0",
+		"@clayui/link": "3.111.0",
+		"@clayui/loading-indicator": "3.111.0",
+		"classnames": "2.3.1",
+		"frontend-js-components-web": "*",
 		"frontend-js-web": "*",
+		"prop-types": "15.7.2",
 		"react": "16.12.0"
 	},
+	"main": "js/index.js",
 	"name": "product-navigation-control-menu-web",
 	"scripts": {
 		"build": "liferay-npm-scripts build",
 		"checkFormat": "liferay-npm-scripts check",
 		"format": "liferay-npm-scripts fix"
 	},
-	"version": "6.0.86"
+	"version": "6.0.102"
 }

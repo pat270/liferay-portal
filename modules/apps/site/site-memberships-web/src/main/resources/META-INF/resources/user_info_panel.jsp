@@ -37,9 +37,9 @@ Group group = siteMembershipsDisplayContext.getGroup();
 				</c:if>
 			</h4>
 
-			<h6 class="text-secondary">
+			<div class="h6 text-secondary">
 				<liferay-ui:message arguments="<%= GroupUtil.getGroupTypeLabel(group, locale) %>" key='<%= "membership-type-" + GroupConstants.getTypeLabel(group.getType()) + "-help" %>' translateArguments="<%= false %>" />
-			</h6>
+			</div>
 		</div>
 
 		<div class="sheet-row">
@@ -75,9 +75,9 @@ Group group = siteMembershipsDisplayContext.getGroup();
 				<%= HtmlUtil.escape(curUser.getFullName()) %>
 			</h4>
 
-			<h6>
+			<div class="h6">
 				<%= curUser.getScreenName() %>
-			</h6>
+			</div>
 		</div>
 
 		<div class="sheet-row">
@@ -87,11 +87,9 @@ Group group = siteMembershipsDisplayContext.getGroup();
 				<clay:tabs-panel>
 
 					<%
-					List<String> names = new ArrayList<String>();
+					List<String> names = TransformUtil.transform(OrganizationLocalServiceUtil.getGroupUserOrganizations(group.getGroupId(), curUser.getUserId()), Organization::getName);
 
-					names.addAll(SitesUtil.getOrganizationNames(group, curUser));
-
-					names.addAll(SitesUtil.getUserGroupNames(group, curUser));
+					names.addAll(TransformUtil.transform(UserGroupLocalServiceUtil.getGroupUserUserGroups(group.getGroupId(), curUser.getUserId()), UserGroup::getName));
 					%>
 
 					<c:if test="<%= ListUtil.isNotEmpty(names) %>">
@@ -124,7 +122,7 @@ Group group = siteMembershipsDisplayContext.getGroup();
 					<%
 					List<Team> teams = TeamLocalServiceUtil.getUserOrUserGroupTeams(siteMembershipsDisplayContext.getGroupId(), curUser.getUserId());
 
-					List<String> rolesAndTeamsNames = ListUtil.toList(UserGroupRoleLocalServiceUtil.getUserGroupRoles(curUser.getUserId(), siteMembershipsDisplayContext.getGroupId()), UsersAdmin.USER_GROUP_ROLE_TITLE_ACCESSOR);
+					List<String> rolesAndTeamsNames = ListUtil.toList(UserGroupRoleLocalServiceUtil.getUserGroupRoles(curUser.getUserId(), siteMembershipsDisplayContext.getGroupId()), UsersAdminUtil.USER_GROUP_ROLE_TITLE_ACCESSOR);
 
 					rolesAndTeamsNames.addAll(ListUtil.toList(teams, Team.NAME_ACCESSOR));
 					%>

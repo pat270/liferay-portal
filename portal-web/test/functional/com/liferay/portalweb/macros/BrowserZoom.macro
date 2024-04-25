@@ -1,0 +1,15 @@
+definition {
+
+	@summary = "Default summary"
+	macro resetZoom() {
+		RobotType.robotTypeShortcut(locator1 = "Ctrl + 0");
+	}
+
+	@summary = "Default summary"
+	macro setZoomTo200() {
+		BrowserZoom.resetZoom();
+
+		RobotType.robotTypeShortcut(locator1 = "Ctrl + + + + + + + + + +");
+	}
+
+}

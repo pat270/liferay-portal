@@ -16,13 +16,28 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ADD_FILTER_BUTTON</td>
+	<td>//button[contains(.,'Add Filter')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CLIENT_ID</td>
+	<td>//input[contains(@id,'PublicationsPortlet_clientId')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CLIENT_SECRET</td>
+	<td>//input[contains(@id,'PublicationsPortlet_clientSecret')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>CONFLICTING_CHANGES_SUCCESS_CONTENT</td>
 	<td>//div[contains(.,'${key_entryTitle}')]//following-sibling::div[contains(.,'${key_successMessage}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CONFLICTING_CHANGES_WARNING_CONTENT</td>
-	<td>//div[contains(.,'${key_entryTitle}')]//following-sibling::div[contains(.,'${key_warningMessage}')]</td>
+	<td>//p[contains(.,'${key_entryTitle}')]//following-sibling::p[contains(text(),'${key_warningMessage}')] | //p[contains(.,'${key_entryTitle}')]//following-sibling::p/strong[contains(text(),'${key_warningMessage}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -41,6 +56,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ENABLE_MANAGE_REMOTELY</td>
+	<td>//input[contains(@id,'enableManageRemotely')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ENABLE_PUBLICATIONS_TOGGLE_SWITCH</td>
 	<td>//input[contains(@id,'enablePublications')]</td>
 	<td></td>
@@ -51,38 +71,33 @@
 	<td></td>
 </tr>
 <tr>
-	<td>KEYWORD_TEXTFIELD</td>
-	<td>//*[@class='form-control-inset']</td>
+	<td>EXCLUDE_TOGGLE_SWITCH</td>
+	<td>//input[contains(@class,'toggle-switch-check') and contains(@id,'autocomplete-exclude-status')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>FILTER_STATUS_BUTTON</td>
+	<td>//button[contains(.,'Status') and contains(@class,'dropdown-item')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>FILTER_PUBLICATION_STATUS</td>
+	<td>//input[@class='custom-control-input' and contains(@aria-label, '${key_statusType}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>INVITED_USER</td>
-	<td>//td[contains(.,'${key_userInvite}')]//following-sibling::td[contains(.,'${key_publicationRole}')]</td>
+	<td>//td[contains(.,'${key_userInvite}')]//following-sibling::td//button[contains(.,'${key_publicationRole}')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>LIST_OUT_OF_DATE_STATUS</td>
-	<td>//a[contains(.,'${key_publicationName}')]//span/span[contains(.,'Out of Date')]</td>
+	<td>IN_PROGRESS_STATUS</td>
+	<td>//div[contains(.,'${key_publicationName}')]//div[(@class="dnd-td") and contains(.,'In Progress')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>LIST_PUBLICATION_ELLIPSIS</td>
-	<td>//*[@data-qa-id='row'][contains(.,'${key_publicationName}')]//*[contains(@class,'lexicon-icon lexicon-icon-ellipsis-v')] | //tr[contains(.,'${key_publicationName}')]//following-sibling::div//*[contains(@class,'lexicon-icon lexicon-icon-ellipsis-v')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>LIST_PUBLISHED_STATUS</td>
-	<td>//p[contains(.,'${key_publicationName}')]//following-sibling::p/span[contains(.,'Published')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>LIST_REVERT_BUTTON</td>
-	<td>//div[contains(.,'${key_publicationName}')]//following-sibling::div//a[contains(.,'Revert')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>LIST_REVERT_DISABLED</td>
-	<td>//div[contains(.,'${key_publicationName}')]//following-sibling::div//a[contains(@class, 'disabled btn') and contains(.,'Revert')]</td>
+	<td>KEYWORD_TEXTFIELD</td>
+	<td>//*[@class='form-control-inset']</td>
 	<td></td>
 </tr>
 <tr>
@@ -101,8 +116,18 @@
 	<td></td>
 </tr>
 <tr>
+	<td>OUT_OF_DATE_STATUS</td>
+	<td>//div[contains(.,'${key_publicationName}')]//div[(@class="dnd-td") and contains(.,'Out of Date')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>PUBLICATION_DESCRIPTION</td>
 	<td>//textarea[contains(@placeholder,'Enter the description of the publication.')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PUBLICATION_ELLIPSIS</td>
+	<td>//div[contains(@class, 'dnd-td') and contains(.,'${key_publicationName}')]//following-sibling::div//*[contains(@class,'lexicon-icon lexicon-icon-ellipsis-v')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -116,13 +141,13 @@
 	<td></td>
 </tr>
 <tr>
-	<td>PUBLICATION_NAME_IN_ONGOING</td>
-	<td>//div[contains(@class,'publication-name') and contains(.,'${key_publicationName}')]</td>
+	<td>PUBLICATION_NAME_VIEW</td>
+	<td>//div[contains(@class,'table-list-title')]/a[ contains(.,'${key_publicationName}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>PUBLICATION_ORDER_IN_HISTORY</td>
-	<td>//ul[contains(@class,'publications-table')]//li[${resultOrder}]/div/p/a</td>
+	<td>//div[contains(@class,'dnd-tbody')]/div[${resultOrder}]/div/div[1]</td>
 	<td></td>
 </tr>
 <tr>
@@ -166,6 +191,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>PUBLICATION_TABLE_ITEM</td>
+	<td>//div[contains(.,'${key_tableItem}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>PUBLICATION_TIMELINE_BUTTON</td>
 	<td>//button[contains(@class,'change-tracking-timeline-button')]</td>
 	<td></td>
@@ -196,23 +226,23 @@
 	<td></td>
 </tr>
 <tr>
-	<td>PUBLISH_TIME_HOURS</td>
-	<td>//input[contains(@class,'clay-time-hours') and @type='text']</td>
+	<td>PUBLISH_TIME</td>
+	<td>//input[@class='form-control' and @type='time']</td>
 	<td></td>
 </tr>
 <tr>
-	<td>PUBLISH_TIME_MINUTES</td>
-	<td>//input[contains(@class,'clay-time-minutes') and @type='text']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>PUBLISHED_PUBLICATION_NAME</td>
-	<td>//div[contains(@class,'publication-name') and contains(.,'${key_publicationName}')]</td>
+	<td>PUBLISHED_STATUS</td>
+	<td>//div[contains(.,'${key_publicationName}')]//div[(@class="dnd-td") and contains(.,'Published')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>RESCHEDULE_BUTTON</td>
 	<td>//*[contains(@class,'btn')][normalize-space(text())='Reschedule']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REVERT_BUTTON</td>
+	<td>//div[contains(.,'${ke_publicationName}')]//following-sibling::div//a[contains(.,'Revert')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -223,6 +253,11 @@
 <tr>
 	<td>REVERT_SCREEN_RADIO_OPTION</td>
 	<td>//div[contains(@class,'publications-radio-label') and contains(.,'${key_radioName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REVIEW_CHANGES_BUTTON</td>
+	<td>//div[contains(@class,'item-actions')]/a[contains(@title,'Review Changes')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -248,44 +283,6 @@
 <tr>
 	<td>TEMPLATE_SELECTOR</td>
 	<td>//select[contains(@id,'templateSelector')]</td>
-	<td></td>
-</tr>
-
-<!--DADASET DISPLAY-->
-
-<tr>
-	<td>ADD_FILTER_BUTTON_IN_DATASET_DIAPLAY</td>
-	<td>//button[contains(.,'Add Filter')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>ELLIPSIS_IN_DATASET_DIAPLAY</td>
-	<td>//div[contains(.,'${key_publicationName}')]//following-sibling::div//*[contains(@class,'lexicon-icon lexicon-icon-ellipsis-v')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>EXCLUDE_TOGGLE_SWITCH_IN_DATASET_DIAPLAY</td>
-	<td>//input[contains(@class,'toggle-switch-check') and contains(@id,'autocomplete-exclude-status')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>PUBLICATION_NAME_IN_DATASET_DIAPLAY</td>
-	<td>//div[contains(@class,'table-list-title') and contains(.,'${key_publicationName}')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>PUBLISHED_STATUS_IN_DATASET_DIAPLAY</td>
-	<td>//div[contains(.,'${key_publicationName}')]//following-sibling::div//strong[contains(.,'Published')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>STATUS_BUTTON_IN_DATASET_DIAPLAY</td>
-	<td>//button[contains(.,'Status') and contains(@class,'dropdown-item')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>STATUS_IN_DATASET_DIAPLAY</td>
-	<td>//input[@class='custom-control-input' and contains(@aria-label, '${key_statusType}')]</td>
 	<td></td>
 </tr>
 </tbody>

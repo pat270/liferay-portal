@@ -6,6 +6,7 @@
 package com.liferay.layout.util.structure;
 
 import com.liferay.layout.util.constants.LayoutDataItemTypeConstants;
+import com.liferay.layout.util.constants.StyledLayoutStructureConstants;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -23,6 +24,14 @@ public class ContainerStyledLayoutStructureItem
 
 	public ContainerStyledLayoutStructureItem(String parentItemId) {
 		super(parentItemId);
+
+		_linkJSONObject = JSONFactoryUtil.createJSONObject();
+	}
+
+	public ContainerStyledLayoutStructureItem(
+		String itemId, String parentItemId) {
+
+		super(itemId, parentItemId);
 
 		_linkJSONObject = JSONFactoryUtil.createJSONObject();
 	}
@@ -370,6 +379,6 @@ public class ContainerStyledLayoutStructureItem
 	private boolean _indexed = true;
 	private String _justify = "";
 	private JSONObject _linkJSONObject;
-	private String _widthType = "fluid";
+	private String _widthType = StyledLayoutStructureConstants.WIDTH_TYPE;
 
 }

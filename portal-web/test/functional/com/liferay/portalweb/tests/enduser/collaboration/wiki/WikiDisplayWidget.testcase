@@ -1,4 +1,4 @@
-@component-name = "portal-lima"
+@component-name = "portal-content-management"
 definition {
 
 	property portal.acceptance = "true";
@@ -40,7 +40,7 @@ definition {
 	}
 
 	@description = "This ensures that a child page can be added via wiki display widget."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanAddChildPageViaWD {
 		JSONWiki.updateWikiPage(

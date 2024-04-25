@@ -7,6 +7,7 @@ package com.liferay.object.service;
 
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.object.model.ObjectDefinition;
+import com.liferay.object.model.ObjectField;
 import com.liferay.object.model.ObjectRelationship;
 import com.liferay.petra.sql.dsl.query.DSLQuery;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
@@ -60,12 +61,6 @@ public interface ObjectRelationshipLocalService
 	 *
 	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.object.service.impl.ObjectRelationshipLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the object relationship local service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link ObjectRelationshipLocalServiceUtil} if injection and service tracking are not available.
 	 */
-	@Indexable(type = IndexableType.REINDEX)
-	public ObjectRelationship addObjectRelationship(
-			long userId, long objectDefinitionId1, long objectDefinitionId2,
-			long parameterObjectFieldId, String deletionType,
-			Map<Locale, String> labelMap, String name, String type)
-		throws PortalException;
 
 	/**
 	 * Adds the object relationship to the database. Also notifies the appropriate model listeners.
@@ -80,6 +75,14 @@ public interface ObjectRelationshipLocalService
 	@Indexable(type = IndexableType.REINDEX)
 	public ObjectRelationship addObjectRelationship(
 		ObjectRelationship objectRelationship);
+
+	@Indexable(type = IndexableType.REINDEX)
+	public ObjectRelationship addObjectRelationship(
+			String externalReferenceCode, long userId, long objectDefinitionId1,
+			long objectDefinitionId2, long parameterObjectFieldId,
+			String deletionType, Map<Locale, String> labelMap, String name,
+			boolean system, String type, ObjectField objectField)
+		throws PortalException;
 
 	public void addObjectRelationshipMappingTableValues(
 			long userId, long objectRelationshipId, long primaryKey1,
@@ -162,6 +165,8 @@ public interface ObjectRelationshipLocalService
 	public PersistedModel deletePersistedModel(PersistedModel persistedModel)
 		throws PortalException;
 
+	public void disableEdge(long objectDefinitionId2) throws PortalException;
+
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public <T> T dslQuery(DSLQuery dslQuery);
 
@@ -234,9 +239,21 @@ public interface ObjectRelationshipLocalService
 	public long dynamicQueryCount(
 		DynamicQuery dynamicQuery, Projection projection);
 
+	public ObjectRelationship enableEdge(
+			long objectRelationshipId, boolean edge)
+		throws PortalException;
+
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public ObjectRelationship fetchObjectRelationship(
 		long objectRelationshipId);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public ObjectRelationship fetchObjectRelationshipByExternalReferenceCode(
+		String externalReferenceCode, long objectDefinitionId1);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public ObjectRelationship fetchObjectRelationshipByExternalReferenceCode(
+		String externalReferenceCode, long companyId, long objectDefinitionId1);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public ObjectRelationship fetchObjectRelationshipByObjectDefinitionId(
@@ -296,9 +313,15 @@ public interface ObjectRelationshipLocalService
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public ObjectRelationship getObjectRelationshipByExternalReferenceCode(
+			String externalReferenceCode, long companyId,
+			long objectDefinitionId1)
+		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public ObjectRelationship getObjectRelationshipByObjectDefinitionId(
 			long objectDefinitionId, String name)
-		throws Exception;
+		throws PortalException;
 
 	/**
 	 * Returns the object relationship with the matching UUID and company.
@@ -330,6 +353,10 @@ public interface ObjectRelationshipLocalService
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<ObjectRelationship> getObjectRelationships(
 		long objectDefinitionId1);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<ObjectRelationship> getObjectRelationships(
+		long objectDefinitionId1, boolean edge);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<ObjectRelationship> getObjectRelationships(
@@ -378,12 +405,6 @@ public interface ObjectRelationshipLocalService
 		ObjectDefinition objectDefinition1,
 		ObjectDefinitionLocalService objectDefinitionLocalService);
 
-	@Indexable(type = IndexableType.REINDEX)
-	public ObjectRelationship updateObjectRelationship(
-			long objectRelationshipId, long parameterObjectFieldId,
-			String deletionType, Map<Locale, String> labelMap)
-		throws PortalException;
-
 	/**
 	 * Updates the object relationship in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
@@ -397,5 +418,12 @@ public interface ObjectRelationshipLocalService
 	@Indexable(type = IndexableType.REINDEX)
 	public ObjectRelationship updateObjectRelationship(
 		ObjectRelationship objectRelationship);
+
+	@Indexable(type = IndexableType.REINDEX)
+	public ObjectRelationship updateObjectRelationship(
+			String externalReferenceCode, long objectRelationshipId,
+			long parameterObjectFieldId, String deletionType, boolean edge,
+			Map<Locale, String> labelMap, ObjectField objectField)
+		throws PortalException;
 
 }

@@ -21,6 +21,7 @@ userTracker = userTracker.toEscapedModel();
 
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(redirect);
+portletDisplay.setURLBackTitle(portletDisplay.getPortletDisplayName());
 
 renderResponse.setTitle(LanguageUtil.format(request, "session-id-x", sessionId, false));
 %>
@@ -51,22 +52,15 @@ renderResponse.setTitle(LanguageUtil.format(request, "session-id-x", sessionId, 
 			boolean userSessionAlive = false;
 			%>
 
-			<div class="sheet">
-				<div class="panel-group panel-group-flush">
-					<liferay-ui:panel-container
-						extended="<%= true %>"
-						id="monitoringSessionHistoryPanelContainer"
-						markupView="lexicon"
-						persistState="<%= true %>"
+			<clay:sheet
+				size="full"
+			>
+				<clay:panel-group>
+					<clay:panel
+						displayTitle='<%= LanguageUtil.get(request, "session") %>'
+						expanded="<%= true %>"
 					>
-						<liferay-ui:panel
-							collapsible="<%= true %>"
-							extended="<%= true %>"
-							id="monitoringSessionPanel"
-							markupView="lexicon"
-							persistState="<%= false %>"
-							title="session"
-						>
+						<div class="panel-body">
 							<dl>
 								<dt class="h4">
 									<liferay-ui:message key="session-id" />
@@ -96,7 +90,7 @@ renderResponse.setTitle(LanguageUtil.format(request, "session-id-x", sessionId, 
 									<liferay-ui:message key="last-request" />
 								</dt>
 								<dd>
-									<%= dateFormatDateTime.format(userTracker.getModifiedDate()) %>
+									<%= dateTimeFormat.format(userTracker.getModifiedDate()) %>
 								</dd>
 								<dt class="h4">
 									<liferay-ui:message key="num-of-hits" />
@@ -117,16 +111,13 @@ renderResponse.setTitle(LanguageUtil.format(request, "session-id-x", sessionId, 
 									<%= userTracker.getRemoteAddr() %> / <%= userTracker.getRemoteHost() %>
 								</dd>
 							</dl>
-						</liferay-ui:panel>
+						</div>
+					</clay:panel>
 
-						<liferay-ui:panel
-							collapsible="<%= true %>"
-							extended="<%= false %>"
-							id="sessionAccessedURLsPanels"
-							markupView="lexicon"
-							persistState="<%= true %>"
-							title="accessed-urls"
-						>
+					<clay:panel
+						displayTitle='<%= LanguageUtil.get(request, "accessed-urls") %>'
+					>
+						<div class="panel-body">
 							<dl>
 
 								<%
@@ -138,7 +129,7 @@ renderResponse.setTitle(LanguageUtil.format(request, "session-id-x", sessionId, 
 										<%= StringUtil.replace(userTrackerPath.getPath(), '&', "& ") %>
 									</dt>
 									<dd>
-										<%= dateFormatDateTime.format(userTrackerPath.getPathDate()) %>
+										<%= dateTimeFormat.format(userTrackerPath.getPathDate()) %>
 									</dd>
 
 								<%
@@ -146,16 +137,13 @@ renderResponse.setTitle(LanguageUtil.format(request, "session-id-x", sessionId, 
 								%>
 
 							</dl>
-						</liferay-ui:panel>
+						</div>
+					</clay:panel>
 
-						<liferay-ui:panel
-							collapsible="<%= true %>"
-							extended="<%= false %>"
-							id="monitoringSessionAttributesPanel"
-							markupView="lexicon"
-							persistState="<%= true %>"
-							title="session-attributes"
-						>
+					<clay:panel
+						displayTitle='<%= LanguageUtil.get(request, "session-attributes") %>'
+					>
+						<div class="panel-body">
 							<dl>
 
 								<%
@@ -197,10 +185,10 @@ renderResponse.setTitle(LanguageUtil.format(request, "session-id-x", sessionId, 
 
 								</c:if>
 							</dl>
-						</liferay-ui:panel>
-					</liferay-ui:panel-container>
-				</div>
-			</div>
+						</div>
+					</clay:panel>
+				</clay:panel-group>
+			</clay:sheet>
 
 			<aui:button-row>
 				<c:if test="<%= userSessionAlive && !Objects.equals(session.getId(), sessionId) %>">

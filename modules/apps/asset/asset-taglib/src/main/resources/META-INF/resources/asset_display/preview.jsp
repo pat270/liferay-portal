@@ -33,9 +33,9 @@ AssetRenderer<?> assetRenderer = (AssetRenderer<?>)request.getAttribute(WebKeys.
 	String publishDateString = StringPool.BLANK;
 
 	if (assetEntry.getPublishDate() != null) {
-		Format displayFormatDate = FastDateFormatFactoryUtil.getSimpleDateFormat("MMMM d, yyyy", locale, timeZone);
+		Format displayDateFormat = FastDateFormatFactoryUtil.getSimpleDateFormat("MMMM d, yyyy", locale, timeZone);
 
-		publishDateString = CharPool.OPEN_PARENTHESIS + displayFormatDate.format(assetEntry.getPublishDate()) + CharPool.CLOSE_PARENTHESIS;
+		publishDateString = CharPool.OPEN_PARENTHESIS + displayDateFormat.format(assetEntry.getPublishDate()) + CharPool.CLOSE_PARENTHESIS;
 	}
 	%>
 
@@ -62,28 +62,4 @@ AssetRenderer<?> assetRenderer = (AssetRenderer<?>)request.getAttribute(WebKeys.
 			/>
 		</div>
 	</div>
-
-	<%
-	String portletId = PortletProviderUtil.getPortletId(assetEntry.getClassName(), PortletProvider.Action.ADD);
-	%>
-
-	<c:if test="<%= PortletPermissionUtil.contains(permissionChecker, layout, portletId, ActionKeys.ADD_TO_PAGE) %>">
-		<aui:button
-			cssClass="add-button-preview"
-			data='<%=
-				HashMapBuilder.<String, Object>put(
-					"class-name", assetEntry.getClassName()
-				).put(
-					"class-pk", assetEntry.getClassPK()
-				).put(
-					"instanceable", Boolean.TRUE
-				).put(
-					"portlet-id", portletId
-				).put(
-					"title", HtmlUtil.escape(assetRenderer.getTitle(themeDisplay.getLocale()))
-				).build()
-			%>'
-			value="add"
-		/>
-	</c:if>
 </div>

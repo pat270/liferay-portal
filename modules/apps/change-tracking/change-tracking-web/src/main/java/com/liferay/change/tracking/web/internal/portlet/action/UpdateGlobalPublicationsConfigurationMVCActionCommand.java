@@ -5,7 +5,6 @@
 
 package com.liferay.change.tracking.web.internal.portlet.action;
 
-import com.liferay.change.tracking.configuration.CTSettingsConfiguration;
 import com.liferay.change.tracking.constants.CTPortletKeys;
 import com.liferay.change.tracking.exception.CTStagingEnabledException;
 import com.liferay.change.tracking.web.internal.configuration.helper.CTSettingsConfigurationHelper;
@@ -15,12 +14,12 @@ import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.service.permission.PortletPermission;
+import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import javax.portlet.ActionRequest;
@@ -56,38 +55,36 @@ public class UpdateGlobalPublicationsConfigurationMVCActionCommand
 			actionRequest, CTPortletKeys.PUBLICATIONS,
 			PortletRequest.RENDER_PHASE);
 
-		long companyId = themeDisplay.getCompanyId();
-
-		CTSettingsConfiguration ctSettingsConfiguration =
-			_ctSettingsConfigurationHelper.getCTSettingsConfiguration(
-				companyId);
-
 		boolean enablePublications = ParamUtil.getBoolean(
-			actionRequest, "enablePublications",
-			ctSettingsConfiguration.enabled());
-
-		if (ctSettingsConfiguration.enabled() || !enablePublications) {
-			redirectURL.setParameter(
-				"mvcRenderCommandName", "/change_tracking/view_settings");
-		}
-
-		boolean enableSandboxOnly = ParamUtil.getBoolean(
-			actionRequest, "enableSandboxOnly",
-			ctSettingsConfiguration.sandboxEnabled());
+			actionRequest, "enablePublications");
+		boolean enableManageRemotely = ParamUtil.getBoolean(
+			actionRequest, "enableManageRemotely");
 		boolean enableUnapprovedChanges = ParamUtil.getBoolean(
-			actionRequest, "enableUnapprovedChanges",
-			ctSettingsConfiguration.unapprovedChangesAllowed());
+			actionRequest, "enableUnapprovedChanges");
 
 		try {
-			_portletPermission.check(
+			PortletPermissionUtil.check(
 				themeDisplay.getPermissionChecker(), CTPortletKeys.PUBLICATIONS,
 				ActionKeys.CONFIGURATION);
 
 			_ctSettingsConfigurationHelper.save(
-				companyId,
-				ctSettingsConfiguration.defaultCTCollectionTemplateId(),
-				ctSettingsConfiguration.defaultSandboxCTCollectionTemplateId(),
-				enablePublications, enableSandboxOnly, enableUnapprovedChanges);
+				themeDisplay.getCompanyId(),
+				HashMapBuilder.<String, Object>put(
+					"enabled", enablePublications
+				).put(
+					"remoteClientId",
+					ParamUtil.getString(actionRequest, "clientId")
+				).put(
+					"remoteClientSecret",
+					ParamUtil.getString(actionRequest, "clientSecret")
+				).put(
+					"remoteEnabled", enableManageRemotely
+				).put(
+					"sandboxEnabled",
+					ParamUtil.getBoolean(actionRequest, "enableSandboxOnly")
+				).put(
+					"unapprovedChangesAllowed", enableUnapprovedChanges
+				).build());
 		}
 		catch (ConfigurationException configurationException) {
 			Throwable throwable = configurationException.getCause();
@@ -107,6 +104,11 @@ public class UpdateGlobalPublicationsConfigurationMVCActionCommand
 			return;
 		}
 
+		if (!enablePublications || enableManageRemotely) {
+			redirectURL.setParameter(
+				"mvcRenderCommandName", "/change_tracking/view_settings");
+		}
+
 		hideDefaultSuccessMessage(actionRequest);
 
 		SessionMessages.add(
@@ -122,11 +124,5 @@ public class UpdateGlobalPublicationsConfigurationMVCActionCommand
 
 	@Reference
 	private Language _language;
-
-	@Reference
-	private Portal _portal;
-
-	@Reference
-	private PortletPermission _portletPermission;
 
 }

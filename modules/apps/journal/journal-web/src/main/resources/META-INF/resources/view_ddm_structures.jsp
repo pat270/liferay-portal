@@ -20,7 +20,7 @@ JournalDDMStructuresManagementToolbarDisplayContext journalDDMStructuresManageme
 
 <clay:management-toolbar
 	managementToolbarDisplayContext="<%= journalDDMStructuresManagementToolbarDisplayContext %>"
-	propsTransformer="js/DDMStructuresManagementToolbarPropsTransformer"
+	propsTransformer="{DDMStructuresManagementToolbarPropsTransformer} from journal-web"
 />
 
 <portlet:actionURL copyCurrentRenderParameters="<%= true %>" name="/journal/delete_data_definition" var="deleteDataDefinitionURL">
@@ -29,7 +29,7 @@ JournalDDMStructuresManagementToolbarDisplayContext journalDDMStructuresManageme
 
 <div>
 	<react:component
-		module="js/modals/ImportAndOverrideDataDefinitionModal"
+		module="{ImportAndOverrideDataDefinitionModal} from journal-web"
 	/>
 </div>
 
@@ -117,7 +117,7 @@ JournalDDMStructuresManagementToolbarDisplayContext journalDDMStructuresManageme
 
 	<liferay-ui:search-container
 		id="ddmStructures"
-		searchContainer="<%= journalDDMStructuresDisplayContext.getDDMStructureSearch() %>"
+		searchContainer="<%= journalDDMStructuresDisplayContext.getDDMStructureSearchContainer() %>"
 	>
 		<liferay-ui:search-container-row
 			className="com.liferay.dynamic.data.mapping.model.DDMStructure"
@@ -189,7 +189,7 @@ JournalDDMStructuresManagementToolbarDisplayContext journalDDMStructuresManageme
 				<clay:dropdown-actions
 					aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 					dropdownItems="<%= ddmStructureActionDropdownItemsProvider.getActionDropdownItems() %>"
-					propsTransformer="js/DDMStructrureElementsDefaultPropsTransformer"
+					propsTransformer="{DDMStructrureElementsDefaultPropsTransformer} from journal-web"
 				/>
 			</liferay-ui:search-container-column-text>
 		</liferay-ui:search-container-row>

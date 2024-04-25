@@ -59,7 +59,7 @@ if (referer.equals(themeDisplay.getPathMain() + "/portal/update_reminder_query")
 					%>
 
 					<c:if test="<%= PrefsPropsUtil.getBoolean(company.getCompanyId(), PropsKeys.USERS_REMINDER_QUERIES_CUSTOM_QUESTION_ENABLED, PropsValues.USERS_REMINDER_QUERIES_CUSTOM_QUESTION_ENABLED) %>">
-						<aui:option label="<%= UsersAdmin.CUSTOM_QUESTION %>" />
+						<aui:option label="<%= UsersAdminUtil.CUSTOM_QUESTION %>" />
 					</c:if>
 				</aui:select>
 
@@ -87,13 +87,13 @@ if (referer.equals(themeDisplay.getPathMain() + "/portal/update_reminder_query")
 	</div>
 </div>
 
-<script>
+<aui:script>
 	(function() {
 		var customQuestionContainer = document.getElementById('customQuestionContainer');
 		var reminderQueryQuestion = document.getElementById('reminderQueryQuestion');
 
 		if (customQuestionContainer && reminderQueryQuestion) {
-			if (reminderQueryQuestion.value === '<%= UsersAdmin.CUSTOM_QUESTION %>') {
+			if (reminderQueryQuestion.value === '<%= UsersAdminUtil.CUSTOM_QUESTION %>') {
 				customQuestionContainer.classList.remove('hide');
 			}
 			else {
@@ -103,7 +103,7 @@ if (referer.equals(themeDisplay.getPathMain() + "/portal/update_reminder_query")
 			reminderQueryQuestion.addEventListener(
 				'change',
 				function(event) {
-					if (reminderQueryQuestion.value === '<%= UsersAdmin.CUSTOM_QUESTION %>') {
+					if (reminderQueryQuestion.value === '<%= UsersAdminUtil.CUSTOM_QUESTION %>') {
 						<c:if test="<%= PrefsPropsUtil.getBoolean(company.getCompanyId(), PropsKeys.USERS_REMINDER_QUERIES_CUSTOM_QUESTION_ENABLED, PropsValues.USERS_REMINDER_QUERIES_CUSTOM_QUESTION_ENABLED) %>">
 							customQuestionContainer.classList.remove('hide');
 
@@ -119,4 +119,4 @@ if (referer.equals(themeDisplay.getPathMain() + "/portal/update_reminder_query")
 			);
 		}
 	})();
-</script>
+</aui:script>

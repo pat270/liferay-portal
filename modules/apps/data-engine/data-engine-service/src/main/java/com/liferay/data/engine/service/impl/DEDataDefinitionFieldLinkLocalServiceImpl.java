@@ -6,7 +6,9 @@
 package com.liferay.data.engine.service.impl;
 
 import com.liferay.data.engine.model.DEDataDefinitionFieldLink;
+import com.liferay.data.engine.model.DEDataDefinitionFieldLinkTable;
 import com.liferay.data.engine.service.base.DEDataDefinitionFieldLinkLocalServiceBaseImpl;
+import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
@@ -116,6 +118,23 @@ public class DEDataDefinitionFieldLinkLocalServiceImpl
 
 		return deDataDefinitionFieldLinkPersistence.fetchByC_C_DDMSI_F(
 			classNameId, classPK, ddmStructureId, fieldName);
+	}
+
+	@Override
+	public List<Long> getClassPKS(long classNameId, long ddmStructureId) {
+		return deDataDefinitionFieldLinkPersistence.dslQuery(
+			DSLQueryFactoryUtil.selectDistinct(
+				DEDataDefinitionFieldLinkTable.INSTANCE.classPK
+			).from(
+				DEDataDefinitionFieldLinkTable.INSTANCE
+			).where(
+				DEDataDefinitionFieldLinkTable.INSTANCE.classNameId.eq(
+					classNameId
+				).and(
+					DEDataDefinitionFieldLinkTable.INSTANCE.ddmStructureId.eq(
+						ddmStructureId)
+				)
+			));
 	}
 
 	@Override

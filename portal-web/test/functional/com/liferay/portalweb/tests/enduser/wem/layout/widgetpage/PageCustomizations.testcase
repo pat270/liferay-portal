@@ -1,11 +1,10 @@
 @component-name = "portal-wcm"
 definition {
 
+	property ci.retries.disabled = "true";
 	property custom.properties = "jsonws.web.service.paths.excludes=";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testcase.url = "http://localhost:8080";
-	property testray.component.names = "Personalization and Customization";
 	property testray.main.component.name = "Page Administration";
 
 	static var randomSiteName = StringUtil.randomString(8);
@@ -17,6 +16,10 @@ definition {
 	var userScreenName = StringUtil.randomString(8);
 
 	setUp {
+		task ("Set up virtual instance") {
+			TestCase.setUpPortalInstance();
+		}
+
 		task ("Sign in") {
 			User.firstLoginPG();
 		}
@@ -227,14 +230,12 @@ definition {
 	@priority = 4
 	test SiteMemberWithCustomizablePagePermissionsWillOnlySeeWidgetsInCustomizableView {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var roleKey = StringUtil.randomString(8);
 
 		task ("Clean up permissions in server administration") {
-			ApplicationsMenu.gotoPortlet(
-				category = "System",
-				panel = "Control Panel",
-				portlet = "Server Administration");
+			ServerAdministration.openServerAdmin();
 
 			ServerAdministration.executeServerResourcesActions(actionsDescription = "Clean up permissions");
 		}

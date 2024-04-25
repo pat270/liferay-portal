@@ -7,6 +7,7 @@ package com.liferay.gradle.plugins.js.module.config.generator;
 
 import com.liferay.gradle.plugins.node.NodePlugin;
 import com.liferay.gradle.plugins.node.task.DownloadNodeModuleTask;
+import com.liferay.gradle.plugins.workspace.LiferayWorkspaceNodePlugin;
 import com.liferay.gradle.util.GradleUtil;
 
 import java.io.File;
@@ -19,6 +20,7 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.plugins.BasePlugin;
+import org.gradle.api.plugins.JavaLibraryPlugin;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.PluginContainer;
 import org.gradle.api.tasks.SourceSet;
@@ -42,7 +44,7 @@ public class JSModuleConfigGeneratorPlugin implements Plugin<Project> {
 
 	@Override
 	public void apply(Project project) {
-		GradleUtil.applyPlugin(project, NodePlugin.class);
+		LiferayWorkspaceNodePlugin.INSTANCE.apply(project);
 
 		final Task npmInstallTask = GradleUtil.getTask(
 			project, NodePlugin.NPM_INSTALL_TASK_NAME);
@@ -96,12 +98,12 @@ public class JSModuleConfigGeneratorPlugin implements Plugin<Project> {
 		PluginContainer pluginContainer = project.getPlugins();
 
 		pluginContainer.withType(
-			JavaPlugin.class,
-			new Action<JavaPlugin>() {
+			JavaLibraryPlugin.class,
+			new Action<JavaLibraryPlugin>() {
 
 				@Override
-				public void execute(JavaPlugin javaPlugin) {
-					_configureTaskConfigJSModulesForJavaPlugin(
+				public void execute(JavaLibraryPlugin javaLibraryPlugin) {
+					_configureTaskConfigJSModulesForJavaLibraryPlugin(
 						configJSModulesTask);
 				}
 
@@ -168,7 +170,7 @@ public class JSModuleConfigGeneratorPlugin implements Plugin<Project> {
 			});
 	}
 
-	private void _configureTaskConfigJSModulesForJavaPlugin(
+	private void _configureTaskConfigJSModulesForJavaLibraryPlugin(
 		ConfigJSModulesTask configJSModulesTask) {
 
 		configJSModulesTask.mustRunAfter(

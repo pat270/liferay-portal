@@ -19,9 +19,12 @@ create table CTCollection (
 	userId LONG,
 	createDate DATE null,
 	modifiedDate DATE null,
+	ctRemoteId LONG,
 	schemaVersionId LONG,
 	name VARCHAR(75) null,
 	description VARCHAR(200) null,
+	onDemandUserId LONG,
+	shareable BOOLEAN,
 	status INTEGER,
 	statusByUserId LONG,
 	statusDate DATE null
@@ -35,7 +38,7 @@ create table CTCollectionTemplate (
 	createDate DATE null,
 	modifiedDate DATE null,
 	name VARCHAR(75) null,
-	description VARCHAR(75) null
+	description VARCHAR(200) null
 );
 
 create table CTComment (
@@ -52,6 +55,8 @@ create table CTComment (
 
 create table CTEntry (
 	mvccVersion LONG default 0 not null,
+	uuid_ VARCHAR(75) null,
+	externalReferenceCode VARCHAR(75) null,
 	ctEntryId LONG not null primary key,
 	companyId LONG,
 	userId LONG,
@@ -102,7 +107,9 @@ create table CTRemote (
 	modifiedDate DATE null,
 	name VARCHAR(75) null,
 	description VARCHAR(75) null,
-	url VARCHAR(75) null
+	url VARCHAR(75) null,
+	clientId VARCHAR(75) null,
+	clientSecret VARCHAR(75) null
 );
 
 create table CTSchemaVersion (

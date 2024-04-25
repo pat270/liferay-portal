@@ -6,10 +6,13 @@
 package com.liferay.portal.remote.jaxrs.whiteboard.debug.osgi.commands;
 
 import com.liferay.osgi.util.StringPlus;
+import com.liferay.osgi.util.osgi.commands.OSGiCommands;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.remote.jaxrs.whiteboard.lifecycle.JAXRSLifecycle;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -39,12 +42,17 @@ import org.osgi.service.jaxrs.whiteboard.JaxrsWhiteboardConstants;
  */
 @Component(
 	property = {"osgi.command.function=check", "osgi.command.scope=jaxrs"},
-	service = JaxRsServiceRuntimeOSGiCommands.class
+	service = OSGiCommands.class
 )
-public class JaxRsServiceRuntimeOSGiCommands {
+public class JaxRsServiceRuntimeOSGiCommands implements OSGiCommands {
 
 	public void check() {
-		RuntimeDTO runtimeDTO = _jaxrsServiceRuntime.getRuntimeDTO();
+		_jaxrsLifecycle.ensureReady();
+
+		JaxrsServiceRuntime jaxrsServiceRuntime =
+			_jaxrsServiceRuntimeSnapshot.get();
+
+		RuntimeDTO runtimeDTO = jaxrsServiceRuntime.getRuntimeDTO();
 
 		if (runtimeDTO.defaultApplication != null) {
 			System.out.println();
@@ -434,9 +442,13 @@ public class JaxRsServiceRuntimeOSGiCommands {
 				Arrays.toString(resourceMethodInfoDTO.producingMimeType)));
 	}
 
+	private static final Snapshot<JaxrsServiceRuntime>
+		_jaxrsServiceRuntimeSnapshot = new Snapshot<>(
+			JaxRsServiceRuntimeOSGiCommands.class, JaxrsServiceRuntime.class);
+
 	private BundleContext _bundleContext;
 
 	@Reference
-	private JaxrsServiceRuntime _jaxrsServiceRuntime;
+	private JAXRSLifecycle _jaxrsLifecycle;
 
 }

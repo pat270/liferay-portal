@@ -1,0 +1,225 @@
+@component-name = "portal-headless"
+definition {
+
+	property custom.properties = "feature.flag.LPS-178642=true";
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.component.names = "Object";
+	property testray.main.component.name = "Headless Builder";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		task ("Given site scoped custom object University with name text field is created and published") {
+			ObjectDefinitionAPI.createAndPublishObjectDefinition(
+				en_US_label = "University",
+				en_US_plural_label = "Universities",
+				name = "University",
+				objectDefinitionExternalReferenceCode = "University",
+				requiredStringFieldName = "name",
+				requiredStringFieldNameExternalReferenceCode = "univeristyName",
+				scope = "site");
+		}
+	}
+
+	tearDown {
+		ApplicationAPI.deleteAllAPIApplication();
+
+		JSONObject.deleteAllCustomObjects();
+
+		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
+
+		if (${testLiferayVirtualInstance} == "true") {
+			PortalInstances.tearDownCP();
+		}
+	}
+
+	@priority = 4
+	test CanExecuteGetSiteScopeEndpointInAPIExplorer {
+		property portal.acceptance = "true";
+
+		task ("Given with postAPIApplication to create a published api Application with site scope endpoint with related schema") {
+			var response = ApplicationAPI.createAPIApplication(
+				baseURL = "my-app",
+				endpointName = "testendpoint",
+				endpointPath = "/testendpoint",
+				mainObjectDefinitionErc = "University",
+				relatedEndpoint = "true",
+				relatedSchema = "true",
+				schemaName = "testSchema",
+				scopeKey = "site",
+				status = "published",
+				title = "My-app");
+
+			var endpointId = JSONUtil.getWithJSONPath(${response}, "$.apiApplicationToAPIEndpoints[*].id");
+			var schemaId = JSONUtil.getWithJSONPath(${response}, "$.apiApplicationToAPISchemas[*].id");
+
+			SchemaAPI.relateResponseSchemaToEndpointByIds(
+				endpointId = ${endpointId},
+				responseSchemaId = ${schemaId});
+		}
+
+		task ("When I execute getScopes{endpointPath}Page with {scopyKey} in /o/c/{apiApplication}") {
+			APIExplorer.navigateToOpenAPI(customObjectPlural = "my-app");
+
+			var siteId = JSONGroupAPI._getGroupIdByNameNoSelenium(
+				groupName = "Guest",
+				site = "true");
+
+			APIExplorer.executeAPIMethod(
+				method = "getScopeScopeKeyTestendpointPage",
+				parameter = "scopeKey",
+				service = "testSchema",
+				value = ${siteId});
+		}
+
+		task ("Then I can get correct 200 response code") {
+			AssertTextEquals(
+				locator1 = "OpenAPI#RESPONSE_CODE",
+				method = "getScopeScopeKeyTestendpointPage",
+				value1 = 200);
+		}
+	}
+
+	@priority = 4
+	test CannotSeeUnpublishedAPIApplicationWithSiteScopedEndpoint {
+		property portal.acceptance = "true";
+
+		task ("Given with postAPIApplication to create an unpublished api Application with site scope endpoint") {
+			ApplicationAPI.createAPIApplication(
+				baseURL = "my-app",
+				endpointName = "testendpoint",
+				endpointPath = "/testendpoint",
+				relatedEndpoint = "true",
+				scopeKey = "site",
+				title = "My-app");
+		}
+
+		task ("When I navigate to /o/api") {
+			APIExplorer.navigateToOpenAPI();
+		}
+
+		task ("Then c/{apiApplication} is not present under REST Applications") {
+			AssertElementNotPresent(
+				locator1 = "Button#BUTTON_WITH_VALUE",
+				value = "c/my-app");
+		}
+	}
+
+	@priority = 4
+	test CanSeePublishedAPIApplicationWithSiteAndCompanyScopedEndpointsWithoutSchemas {
+		property portal.acceptance = "true";
+
+		task ("Given with postAPIApplication to create a published api Application with site scope endpoint and company scope endpoint") {
+			var response = ApplicationAPI.createAPIApplication(
+				baseURL = "my-app",
+				endpointName = "testendpoint",
+				endpointPath = "/testendpoint",
+				relatedEndpoint = "true",
+				scopeKey = "site",
+				status = "published",
+				title = "My-app");
+
+			var apiApplicationId = JSONPathUtil.getIdValue(response = ${response});
+
+			EndpointAPI.createAPIEndpoint(
+				apiApplicationERC = "My-app",
+				name = "myendpoint",
+				path = "/myendpoint");
+		}
+
+		task ("When I navigate to /o/c/{apiApplication}") {
+			APIExplorer.navigateToOpenAPI(customObjectPlural = "my-app");
+		}
+
+		task ("Then getScopes{siteScopeEndpointPath}Page is present under default") {
+			AssertTextEquals.assertPartialText(
+				locator1 = "OpenAPI#API_METHOD",
+				method = "getScopeScopeKeyTestendpointPage",
+				service = "default",
+				value1 = "/testendpoint");
+		}
+
+		task ("And Then get{companyScopeEndpointPath}Page is present under default") {
+			AssertTextEquals.assertPartialText(
+				locator1 = "OpenAPI#API_METHOD",
+				method = "getMyendpointPage",
+				service = "default",
+				value1 = "/myendpoint");
+		}
+	}
+
+	@priority = 4
+	test CanSeePublishedAPIApplicationWithSiteAndCompanyScopedEndpointsWithSchemas {
+		property portal.acceptance = "true";
+
+		task ("Given created an published api application with site scope endpoint and company scope endpoint with related request and response schemas") {
+			var responseFromApplication = ApplicationAPI.createAPIApplication(
+				baseURL = "my-app",
+				endpointName = "testendpoint",
+				endpointPath = "/testendpoint",
+				mainObjectDefinitionErc = "University",
+				relatedEndpoint = "true",
+				relatedSchema = "true",
+				schemaName = "testSchemaSite",
+				scopeKey = "site",
+				status = "published",
+				title = "My-app");
+
+			var siteScopedEndpointId = JSONUtil.getWithJSONPath(${responseFromApplication}, "$.apiApplicationToAPIEndpoints[*].id");
+			var siteScopedSchemaId = JSONUtil.getWithJSONPath(${responseFromApplication}, "$.apiApplicationToAPISchemas[*].id");
+
+			SchemaAPI.relateRequestSchemaToEndpointByIds(
+				endpointId = ${siteScopedEndpointId},
+				requestSchemaId = ${siteScopedSchemaId});
+
+			SchemaAPI.relateResponseSchemaToEndpointByIds(
+				endpointId = ${siteScopedEndpointId},
+				responseSchemaId = ${siteScopedSchemaId});
+
+			var responseFromEndpoint = EndpointAPI.createAPIEndpoint(
+				apiApplicationERC = "My-app",
+				name = "myendpoint",
+				path = "/myendpoint");
+
+			var companyScopedEndpointId = JSONPathUtil.getIdValue(response = ${responseFromEndpoint});
+			var responseCompanyScopedSchema = SchemaAPI.createAPISchema(
+				apiApplicationERC = "My-app",
+				mainObjectDefinitionERC = "L_API_APPLICATION",
+				name = "testSchemaCompany");
+
+			var companyScopedSchemaId = JSONPathUtil.getIdValue(response = ${responseCompanyScopedSchema});
+
+			SchemaAPI.relateRequestSchemaToEndpointByIds(
+				endpointId = ${companyScopedEndpointId},
+				requestSchemaId = ${companyScopedSchemaId});
+
+			SchemaAPI.relateResponseSchemaToEndpointByIds(
+				endpointId = ${companyScopedEndpointId},
+				responseSchemaId = ${companyScopedSchemaId});
+		}
+
+		task ("When I navigate to /o/c/{apiApplication}") {
+			APIExplorer.navigateToOpenAPI(customObjectPlural = "my-app");
+		}
+
+		task ("Then getScopeScopeKey{siteScopeEndpointPath}Page is present under {schemaName}") {
+			AssertTextEquals.assertPartialText(
+				locator1 = "OpenAPI#API_METHOD",
+				method = "getScopeScopeKeyTestendpointPage",
+				service = "testSchemaSite",
+				value1 = "/testendpoint");
+		}
+
+		task ("And Then get{companyScopeEndpointPath}Page is present under {schemaName}") {
+			AssertTextEquals.assertPartialText(
+				locator1 = "OpenAPI#API_METHOD",
+				method = "getMyendpointPage",
+				service = "testSchemaCompany",
+				value1 = "/myendpoint");
+		}
+	}
+
+}

@@ -6,7 +6,7 @@
 import {AppFlowListItem} from './AppFlowListItem';
 
 import './AppFlowList.scss';
-import {AppFlowListItemProps} from '../../pages/AppCreationFlow/AppCreationFlowUtil';
+import {AppFlowListItemProps} from '../../pages/PublisherDashboard/pages/Apps/AppCreationFlow/AppCreationFlowUtil';
 
 interface AppFlowListProps {
 	appFlowListItems: AppFlowListItemProps[];
@@ -16,10 +16,10 @@ export function AppFlowList({appFlowListItems}: AppFlowListProps) {
 	return (
 		<div className="app-flow-list-container">
 			<ul className="app-flow-list-ul">
-				{appFlowListItems.map((appItem) => (
+				{appFlowListItems.map((appItem, index) => (
 					<AppFlowListItem
 						checked={appItem.checked}
-						key={appItem.name}
+						key={index}
 						selected={appItem.selected}
 						text={appItem.label}
 					/>

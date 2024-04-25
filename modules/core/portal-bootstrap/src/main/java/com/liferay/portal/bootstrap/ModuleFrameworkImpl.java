@@ -18,10 +18,13 @@ import com.liferay.portal.kernel.concurrent.DefaultNoticeableFuture;
 import com.liferay.portal.kernel.concurrent.SystemExecutorServiceUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedInputStream;
+import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.lpkg.StaticLPKGResolver;
 import com.liferay.portal.kernel.module.framework.ThrowableCollector;
+import com.liferay.portal.kernel.service.BaseLocalService;
+import com.liferay.portal.kernel.service.BaseService;
 import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -34,6 +37,7 @@ import com.liferay.portal.kernel.util.ReleaseInfo;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.SystemProperties;
 import com.liferay.portal.module.framework.ModuleFramework;
+import com.liferay.portal.spring.context.PortalContextLoaderListener;
 import com.liferay.portal.util.PropsValues;
 
 import java.io.File;
@@ -123,6 +127,43 @@ import org.springframework.context.ConfigurableApplicationContext;
  */
 public class ModuleFrameworkImpl implements ModuleFramework {
 
+	@Override
+	public Framework createFramework() throws Exception {
+		if (_log.isDebugEnabled()) {
+			_log.debug("Initializing the OSGi framework");
+		}
+
+		_validateModuleFrameworkBaseDirForEquinox();
+
+		_initRequiredStartupDirs();
+
+		Thread currentThread = Thread.currentThread();
+
+		ServiceLoader<FrameworkFactory> serviceLoader = ServiceLoader.load(
+			FrameworkFactory.class, currentThread.getContextClassLoader());
+
+		Iterator<FrameworkFactory> iterator = serviceLoader.iterator();
+
+		FrameworkFactory frameworkFactory = iterator.next();
+
+		if (_log.isDebugEnabled()) {
+			Class<?> clazz = frameworkFactory.getClass();
+
+			_log.debug("Using the OSGi framework factory " + clazz.getName());
+		}
+
+		Map<String, String> properties = _buildFrameworkProperties(
+			frameworkFactory.getClass());
+
+		if (_log.isDebugEnabled()) {
+			_log.debug("Creating a new OSGi framework instance");
+		}
+
+		_framework = frameworkFactory.newFramework(properties);
+
+		return _framework;
+	}
+
 	public Bundle getBundle(
 			BundleContext bundleContext, InputStream inputStream)
 		throws PortalException {
@@ -165,40 +206,10 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 	@Override
 	public void initFramework() throws Exception {
 		if (_log.isDebugEnabled()) {
-			_log.debug("Initializing the OSGi framework");
-		}
-
-		_validateModuleFrameworkBaseDirForEquinox();
-
-		_initRequiredStartupDirs();
-
-		Thread currentThread = Thread.currentThread();
-
-		ServiceLoader<FrameworkFactory> serviceLoader = ServiceLoader.load(
-			FrameworkFactory.class, currentThread.getContextClassLoader());
-
-		Iterator<FrameworkFactory> iterator = serviceLoader.iterator();
-
-		FrameworkFactory frameworkFactory = iterator.next();
-
-		if (_log.isDebugEnabled()) {
-			Class<?> clazz = frameworkFactory.getClass();
-
-			_log.debug("Using the OSGi framework factory " + clazz.getName());
-		}
-
-		Map<String, String> properties = _buildFrameworkProperties(
-			frameworkFactory.getClass());
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("Creating a new OSGi framework instance");
-		}
-
-		_framework = frameworkFactory.newFramework(properties);
-
-		if (_log.isDebugEnabled()) {
 			_log.debug("Initializing the new OSGi framework instance");
 		}
+
+		Thread currentThread = Thread.currentThread();
 
 		ClassLoader classLoader = currentThread.getContextClassLoader();
 
@@ -536,7 +547,7 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 		crc32.update(fileName.getBytes());
 
 		_calculateChecksum(file.canWrite() ? 1000L : -1000L, crc32);
-		_calculateChecksum(file.lastModified(), crc32);
+		_calculateChecksum(file.lastModified() / 1000, crc32);
 		_calculateChecksum(file.length(), crc32);
 
 		return crc32.getValue();
@@ -721,6 +732,31 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 		return string.substring(beginIndex, endIndex);
 	}
 
+	private OSGiBeanProperties _findOSGiBeanProperties(Object bean) {
+		Class<?> clazz = bean.getClass();
+
+		if (!(bean instanceof BaseLocalService)) {
+			return clazz.getAnnotation(OSGiBeanProperties.class);
+		}
+
+		for (Class<?> interfaceClass : clazz.getInterfaces()) {
+			if ((interfaceClass == BaseLocalService.class) ||
+				!BaseLocalService.class.isAssignableFrom(interfaceClass)) {
+
+				continue;
+			}
+
+			OSGiBeanProperties osgiBeanProperties =
+				interfaceClass.getAnnotation(OSGiBeanProperties.class);
+
+			if (osgiBeanProperties != null) {
+				return osgiBeanProperties;
+			}
+		}
+
+		return null;
+	}
+
 	private Attributes _getExtraManifestAttributes() {
 		try (InputStream inputStream =
 				ModuleFrameworkImpl.class.getResourceAsStream(
@@ -762,18 +798,7 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 	}
 
 	private Dictionary<String, Object> _getProperties(
-		Object bean, String beanName) {
-
-		Class<?> clazz = bean.getClass();
-
-		OSGiBeanProperties osgiBeanProperties = clazz.getAnnotation(
-			OSGiBeanProperties.class);
-
-		return _getProperties(osgiBeanProperties, beanName);
-	}
-
-	private Dictionary<String, Object> _getProperties(
-		OSGiBeanProperties osgiBeanProperties, String beanName) {
+		OSGiBeanProperties osgiBeanProperties, Object bean, String beanName) {
 
 		HashMapDictionary<String, Object> properties =
 			new HashMapDictionary<>();
@@ -786,6 +811,39 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 		properties.put(ServicePropsKeys.BEAN_ID, beanName);
 		properties.put(ServicePropsKeys.ORIGINAL_BEAN, Boolean.TRUE);
 		properties.put(ServicePropsKeys.VENDOR, ReleaseInfo.getVendor());
+
+		if (bean instanceof BaseService) {
+			Class<?> beanClass = bean.getClass();
+
+			JSONWebService jsonWebService = beanClass.getAnnotation(
+				JSONWebService.class);
+
+			if (jsonWebService == null) {
+				for (Class<?> interfaceClass : beanClass.getInterfaces()) {
+					if ((interfaceClass == BaseService.class) ||
+						!BaseService.class.isAssignableFrom(interfaceClass)) {
+
+						continue;
+					}
+
+					jsonWebService = interfaceClass.getAnnotation(
+						JSONWebService.class);
+
+					if (jsonWebService != null) {
+						break;
+					}
+				}
+			}
+
+			if (jsonWebService != null) {
+				properties.put(
+					"json.web.service.context.name",
+					PortalContextLoaderListener.getPortalServletContextName());
+				properties.put(
+					"json.web.service.context.path",
+					PortalContextLoaderListener.getPortalServletContextPath());
+			}
+		}
 
 		return properties;
 	}
@@ -1265,10 +1323,7 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 	private ServiceRegistration<?> _registerService(
 		BundleContext bundleContext, String beanName, Object bean) {
 
-		Class<?> clazz = bean.getClass();
-
-		OSGiBeanProperties osgiBeanProperties = clazz.getAnnotation(
-			OSGiBeanProperties.class);
+		OSGiBeanProperties osgiBeanProperties = _findOSGiBeanProperties(bean);
 
 		Set<String> names = OSGiBeanProperties.Service.interfaceNames(
 			bean, osgiBeanProperties,
@@ -1282,7 +1337,7 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 		ServiceRegistration<?> serviceRegistration =
 			bundleContext.registerService(
 				names.toArray(new String[0]), bean,
-				_getProperties(osgiBeanProperties, beanName));
+				_getProperties(osgiBeanProperties, bean, beanName));
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
@@ -1603,7 +1658,8 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 		Props props = PropsUtil.getProps();
 
 		bundleContext.registerService(
-			Props.class, props, _getProperties(props, Props.class.getName()));
+			Props.class, props,
+			_getProperties(null, props, Props.class.getName()));
 	}
 
 	private void _startConfigurationBundles(Collection<Bundle> bundles)

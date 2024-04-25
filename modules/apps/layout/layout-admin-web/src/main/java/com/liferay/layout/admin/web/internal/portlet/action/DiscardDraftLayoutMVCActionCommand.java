@@ -7,9 +7,12 @@ package com.liferay.layout.admin.web.internal.portlet.action;
 
 import com.liferay.fragment.service.FragmentEntryLinkLocalService;
 import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
+import com.liferay.layout.constants.LayoutTypeSettingsConstants;
+import com.liferay.layout.helper.LayoutCopyHelper;
+import com.liferay.layout.manager.LayoutLockManager;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
-import com.liferay.layout.util.LayoutCopyHelper;
+import com.liferay.portal.kernel.exception.LockedLayoutException;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseTransactionalMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
@@ -18,7 +21,9 @@ import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.service.permission.LayoutPermissionUtil;
+import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -64,6 +69,12 @@ public class DiscardDraftLayoutMVCActionCommand
 			return;
 		}
 
+		if (!draftLayout.isUnlocked(Constants.EDIT, themeDisplay.getUserId())) {
+			_redirectToLockedLayout(actionRequest, actionResponse);
+
+			return;
+		}
+
 		Layout layout = _layoutLocalService.getLayout(draftLayout.getClassPK());
 
 		int fragmentEntryLinksCount =
@@ -88,20 +99,47 @@ public class DiscardDraftLayoutMVCActionCommand
 			themeDisplay.getPermissionChecker(), layout.getPlid(),
 			ActionKeys.VIEW);
 
-		boolean published = layout.isPublished();
+		try {
+			boolean published = layout.isPublished();
 
-		draftLayout = _layoutCopyHelper.copyLayoutContent(layout, draftLayout);
+			draftLayout = _layoutCopyHelper.copyLayoutContent(
+				layout, draftLayout);
 
-		ServiceContext serviceContext = ServiceContextFactory.getInstance(
-			Layout.class.getName(), actionRequest);
+			ServiceContext serviceContext = ServiceContextFactory.getInstance(
+				Layout.class.getName(), actionRequest);
 
-		serviceContext.setAttribute("published", published);
+			serviceContext.setAttribute(
+				LayoutTypeSettingsConstants.KEY_PUBLISHED, published);
 
-		_layoutLocalService.updateStatus(
-			themeDisplay.getUserId(), draftLayout.getPlid(),
-			WorkflowConstants.STATUS_APPROVED, serviceContext);
+			_layoutLocalService.updateStatus(
+				themeDisplay.getUserId(), draftLayout.getPlid(),
+				WorkflowConstants.STATUS_APPROVED, serviceContext);
 
-		sendRedirect(actionRequest, actionResponse);
+			sendRedirect(actionRequest, actionResponse);
+		}
+		catch (Exception exception) {
+			if (!(exception instanceof LockedLayoutException) &&
+				!(exception.getCause() instanceof LockedLayoutException)) {
+
+				throw exception;
+			}
+
+			_redirectToLockedLayout(actionRequest, actionResponse);
+		}
+	}
+
+	private void _redirectToLockedLayout(
+			ActionRequest actionRequest, ActionResponse actionResponse)
+		throws Exception {
+
+		SessionErrors.add(actionRequest, LockedLayoutException.class);
+
+		hideDefaultSuccessMessage(actionRequest);
+
+		sendRedirect(
+			actionRequest, actionResponse,
+			_layoutLockManager.getLockedLayoutURL(
+				_portal.getHttpServletRequest(actionRequest)));
 	}
 
 	@Reference
@@ -112,6 +150,9 @@ public class DiscardDraftLayoutMVCActionCommand
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;
+
+	@Reference
+	private LayoutLockManager _layoutLockManager;
 
 	@Reference
 	private LayoutPageTemplateEntryLocalService

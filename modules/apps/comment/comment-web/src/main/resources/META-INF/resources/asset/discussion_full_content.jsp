@@ -29,10 +29,8 @@ if (comment instanceof WorkflowableComment) {
 	</tr>
 	<tr>
 		<td class="align-top text-center">
-			<liferay-ui:user-display
-				displayStyle="2"
+			<liferay-user:user-display
 				userId="<%= comment.getUserId() %>"
-				userName="<%= HtmlUtil.escape(comment.getUserName()) %>"
 			/>
 		</td>
 		<td class="align-top table-cell-expand">
@@ -52,7 +50,7 @@ if (comment instanceof WorkflowableComment) {
 
 			<div>
 				<c:if test="<%= (parentComment != null) && parentComment.isRoot() %>">
-					<liferay-ui:message arguments="<%= dateFormatDateTime.format(comment.getModifiedDate()) %>" key="posted-on-x" translateArguments="<%= false %>" />
+					<liferay-ui:message arguments="<%= dateTimeFormat.format(comment.getModifiedDate()) %>" key="posted-on-x" translateArguments="<%= false %>" />
 				</c:if>
 			</div>
 		</td>

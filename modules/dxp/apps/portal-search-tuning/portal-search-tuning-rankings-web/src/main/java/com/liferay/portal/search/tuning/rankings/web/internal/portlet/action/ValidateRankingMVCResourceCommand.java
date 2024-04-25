@@ -19,23 +19,29 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.search.engine.adapter.SearchEngineAdapter;
 import com.liferay.portal.search.index.IndexNameBuilder;
+import com.liferay.portal.search.query.Queries;
 import com.liferay.portal.search.searcher.SearchRequestBuilderFactory;
+import com.liferay.portal.search.tuning.rankings.constants.ResultRankingsConstants;
+import com.liferay.portal.search.tuning.rankings.helper.RankingHelper;
+import com.liferay.portal.search.tuning.rankings.index.name.RankingIndexName;
+import com.liferay.portal.search.tuning.rankings.index.name.RankingIndexNameBuilder;
 import com.liferay.portal.search.tuning.rankings.web.internal.constants.ResultRankingsPortletKeys;
+import com.liferay.portal.search.tuning.rankings.web.internal.index.Criteria;
 import com.liferay.portal.search.tuning.rankings.web.internal.index.DuplicateQueryStringsDetector;
-import com.liferay.portal.search.tuning.rankings.web.internal.index.name.RankingIndexName;
-import com.liferay.portal.search.tuning.rankings.web.internal.index.name.RankingIndexNameBuilder;
-import com.liferay.portal.search.tuning.rankings.web.internal.util.RankingUtil;
 
 import java.io.IOException;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -69,6 +75,12 @@ public class ValidateRankingMVCResourceCommand implements MVCResourceCommand {
 		}
 	}
 
+	@Activate
+	protected void activate() {
+		_duplicateQueryStringsDetector = new DuplicateQueryStringsDetector(
+			_queries, _searchEngineAdapter);
+	}
+
 	protected JSONObject getJSONObject(ResourceRequest resourceRequest) {
 		ValidateRankingMVCResourceRequest validateRankingMVCResourceRequest =
 			new ValidateRankingMVCResourceRequest(resourceRequest);
@@ -79,13 +91,14 @@ public class ValidateRankingMVCResourceCommand implements MVCResourceCommand {
 			resourceRequest, validateRankingMVCResourceRequest);
 
 		if (ListUtil.isNotEmpty(duplicateQueryStrings) &&
-			!validateRankingMVCResourceRequest.getInactive()) {
+			Objects.equals(
+				validateRankingMVCResourceRequest.getStatus(),
+				ResultRankingsConstants.STATUS_ACTIVE)) {
 
 			jsonArray.put(
 				_language.format(
 					portal.getHttpServletRequest(resourceRequest),
-					"active-search-queries-and-aliases-must-be-unique-across-" +
-						"all-rankings.-the-following-ones-already-exist-x",
+					"active-rankings-must-be-unique-x",
 					StringUtil.merge(
 						duplicateQueryStrings, StringPool.COMMA_AND_SPACE),
 					false));
@@ -110,9 +123,6 @@ public class ValidateRankingMVCResourceCommand implements MVCResourceCommand {
 			throw new RuntimeException(ioException);
 		}
 	}
-
-	@Reference
-	protected DuplicateQueryStringsDetector duplicateQueryStringsDetector;
 
 	@Reference
 	protected IndexNameBuilder indexNameBuilder;
@@ -142,16 +152,22 @@ public class ValidateRankingMVCResourceCommand implements MVCResourceCommand {
 		ResourceRequest resourceRequest,
 		ValidateRankingMVCResourceRequest validateRankingMVCResourceRequest) {
 
-		return duplicateQueryStringsDetector.detect(
-			duplicateQueryStringsDetector.builder(
+		return _duplicateQueryStringsDetector.detect(
+			new Criteria.Builder(
 			).index(
 				_getIndexName(resourceRequest)
+			).groupExternalReferenceCode(
+				validateRankingMVCResourceRequest.
+					getGroupExternalReferenceCode()
 			).queryStrings(
-				RankingUtil.getQueryStrings(
+				_rankingHelper.getQueryStrings(
 					validateRankingMVCResourceRequest.getQueryString(),
 					_getAliases(validateRankingMVCResourceRequest))
 			).rankingIndexName(
 				_getRankingIndexName(resourceRequest)
+			).sxpBlueprintExternalReferenceCode(
+				validateRankingMVCResourceRequest.
+					getSXPBlueprintExternalReferenceCode()
 			).unlessRankingDocumentId(
 				validateRankingMVCResourceRequest.getResultsRankingUid()
 			).build());
@@ -177,11 +193,22 @@ public class ValidateRankingMVCResourceCommand implements MVCResourceCommand {
 	private static final Log _log = LogFactoryUtil.getLog(
 		ValidateRankingMVCResourceCommand.class);
 
+	private DuplicateQueryStringsDetector _duplicateQueryStringsDetector;
+
 	@Reference
 	private JSONFactory _jsonFactory;
 
 	@Reference
 	private Language _language;
+
+	@Reference
+	private Queries _queries;
+
+	@Reference
+	private RankingHelper _rankingHelper;
+
+	@Reference
+	private SearchEngineAdapter _searchEngineAdapter;
 
 	private class ValidateRankingMVCResourceRequest {
 
@@ -190,18 +217,22 @@ public class ValidateRankingMVCResourceCommand implements MVCResourceCommand {
 
 			_aliases = Arrays.asList(
 				ParamUtil.getStringValues(resourceRequest, "aliases"));
-			_inactive = ParamUtil.getBoolean(resourceRequest, "inactive");
+			_groupExternalReferenceCode = ParamUtil.getString(
+				resourceRequest, "groupExternalReferenceCode");
 			_queryString = ParamUtil.getString(resourceRequest, "keywords");
 			_resultsRankingUid = ParamUtil.getString(
 				resourceRequest, "resultsRankingUid");
+			_status = ParamUtil.getString(resourceRequest, "status");
+			_sxpBlueprintExternalReferenceCode = ParamUtil.getString(
+				resourceRequest, "sxpBlueprintExternalReferenceCode");
 		}
 
 		public List<String> getAliases() {
 			return Collections.unmodifiableList(_aliases);
 		}
 
-		public boolean getInactive() {
-			return _inactive;
+		public String getGroupExternalReferenceCode() {
+			return _groupExternalReferenceCode;
 		}
 
 		public String getQueryString() {
@@ -212,10 +243,20 @@ public class ValidateRankingMVCResourceCommand implements MVCResourceCommand {
 			return _resultsRankingUid;
 		}
 
+		public String getStatus() {
+			return _status;
+		}
+
+		public String getSXPBlueprintExternalReferenceCode() {
+			return _sxpBlueprintExternalReferenceCode;
+		}
+
 		private final List<String> _aliases;
-		private final boolean _inactive;
+		private final String _groupExternalReferenceCode;
 		private final String _queryString;
 		private final String _resultsRankingUid;
+		private final String _status;
+		private final String _sxpBlueprintExternalReferenceCode;
 
 	}
 

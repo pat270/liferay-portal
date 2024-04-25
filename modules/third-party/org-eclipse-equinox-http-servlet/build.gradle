@@ -9,6 +9,7 @@ task patch(type: PatchTask)
 dependencies {
 	compileOnly group: "com.liferay", name: "org.eclipse.equinox.http.servlet", transitive: false, version: "1.2.2.v20211118-0920-LIFERAY-CACHED"
 	compileOnly group: "org.apache.felix", name: "org.apache.felix.http.servlet-api", transitive: false, version: "1.1.2"
+	compileOnly group: "org.osgi", name: "org.osgi.service.http", transitive: false, version: "1.2.1"
 	compileOnly group: "org.osgi", name: "org.osgi.service.http.whiteboard", transitive: false, version: "1.0.0"
 	compileOnly group: "org.osgi", name: "osgi.core", transitive: false, version: "6.0.0"
 }
@@ -27,8 +28,8 @@ jarManifest {
 }
 
 jarPatched {
-	archiveName = jar.archiveName
-	destinationDir = jar.destinationDir
+	archiveFileName = jar.archiveFileName
+	destinationDirectory = jar.destinationDirectory
 	duplicatesStrategy = "exclude"
 
 	from sourceSets.main.output
@@ -39,6 +40,14 @@ jarPatched {
 				it.name.startsWith "org.eclipse.equinox.http.servlet-"
 			})
 	}
+
+	mustRunAfter compileJava
+	mustRunAfter generatePomFileForMavenPublication
+	mustRunAfter processResources
+}
+
+jarSources {
+	mustRunAfter patch
 }
 
 patch {
@@ -46,7 +55,20 @@ patch {
 		autoClean = false
 	}
 
+	fileNames "org/eclipse/equinox/http/servlet/internal/HttpServiceRuntimeImpl.java"
 	fileNames "org/eclipse/equinox/http/servlet/internal/context/ContextController.java"
+	fileNames "org/eclipse/equinox/http/servlet/internal/context/ProxyContext.java"
+	fileNames "org/eclipse/equinox/http/servlet/internal/customizer/ContextFilterTrackerCustomizer.java"
+	fileNames "org/eclipse/equinox/http/servlet/internal/customizer/ContextListenerTrackerCustomizer.java"
+	fileNames "org/eclipse/equinox/http/servlet/internal/customizer/ContextResourceTrackerCustomizer.java"
+	fileNames "org/eclipse/equinox/http/servlet/internal/customizer/ContextServletTrackerCustomizer.java"
+	fileNames "org/eclipse/equinox/http/servlet/internal/customizer/RegistrationServiceTrackerCustomizer.java"
+	fileNames "org/eclipse/equinox/http/servlet/internal/registration/EndpointRegistration.java"
+	fileNames "org/eclipse/equinox/http/servlet/internal/registration/FilterRegistration.java"
+	fileNames "org/eclipse/equinox/http/servlet/internal/registration/ListenerRegistration.java"
+	fileNames "org/eclipse/equinox/http/servlet/internal/servlet/HttpServletRequestWrapperImpl.java"
+	fileNames "org/eclipse/equinox/http/servlet/internal/servlet/ResponseStateHandler.java"
+	fileNames "org/eclipse/equinox/http/servlet/internal/servlet/ServletContextAdaptor.java"
 
 	originalLibModuleName = "org.eclipse.equinox.http.servlet"
 	originalLibSrcBaseUrl = "https://repository-cdn.liferay.com/nexus/content/groups/public/com/liferay/"

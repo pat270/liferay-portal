@@ -158,6 +158,12 @@ public class TopLevelBuildTestrayCaseResult extends BuildTestrayCaseResult {
 
 		Map<String, String> propertiesMap = new HashMap<>();
 
+		TopLevelBuild testTopLevelBuild = getTopLevelBuild();
+
+		propertiesMap.put(
+			"testray.build.date",
+			testTopLevelBuild.getTestrayBuildDateString());
+
 		propertiesMap.put("testray.build.name", testrayBuild.getName());
 
 		TestrayRoutine testrayRoutine = testrayBuild.getTestrayRoutine();
@@ -186,87 +192,96 @@ public class TopLevelBuildTestrayCaseResult extends BuildTestrayCaseResult {
 		testrayCaseResults.add(this);
 
 		for (TestrayCaseResult testrayCaseResult : testrayCaseResults) {
-			Element testcaseElement = rootElement.addElement("testcase");
+			try {
+				Element testcaseElement = Dom4JUtil.getNewElement("testcase");
 
-			Map<String, String> testcasePropertiesMap = new HashMap<>();
+				Map<String, String> testcasePropertiesMap = new HashMap<>();
 
-			testcasePropertiesMap.put(
-				"testray.case.type.name", testrayCaseResult.getType());
-			testcasePropertiesMap.put(
-				"testray.component.names",
-				testrayCaseResult.getSubcomponentNames());
-			testcasePropertiesMap.put(
-				"testray.main.component.name",
-				testrayCaseResult.getComponentName());
-			testcasePropertiesMap.put(
-				"testray.team.name", testrayCaseResult.getTeamName());
+				testcasePropertiesMap.put(
+					"testray.case.type.name", testrayCaseResult.getType());
+				testcasePropertiesMap.put(
+					"testray.component.names",
+					testrayCaseResult.getSubcomponentNames());
+				testcasePropertiesMap.put(
+					"testray.main.component.name",
+					testrayCaseResult.getComponentName());
+				testcasePropertiesMap.put(
+					"testray.team.name", testrayCaseResult.getTeamName());
 
-			String testrayCaseName = testrayCaseResult.getName();
+				String testrayCaseName = testrayCaseResult.getName();
 
-			if (testrayCaseName.length() > 150) {
-				testrayCaseName = testrayCaseName.substring(0, 150);
-			}
-
-			testcasePropertiesMap.put("testray.testcase.name", testrayCaseName);
-
-			testcasePropertiesMap.put(
-				"testray.testcase.priority",
-				String.valueOf(testrayCaseResult.getPriority()));
-
-			TestrayCaseResult.Status testrayCaseStatus =
-				testrayCaseResult.getStatus();
-
-			testcasePropertiesMap.put(
-				"testray.testcase.status", testrayCaseStatus.getName());
-
-			Element propertiesElement = testcaseElement.addElement(
-				"properties");
-
-			_addPropertyElements(propertiesElement, testcasePropertiesMap);
-
-			String[] warnings = testrayCaseResult.getWarnings();
-
-			if ((warnings != null) && (warnings.length > 0)) {
-				Element warningsPropertyElement = propertiesElement.addElement(
-					"property");
-
-				warningsPropertyElement.addAttribute(
-					"name", "testray.testcase.warnings");
-				warningsPropertyElement.addAttribute(
-					"value", String.valueOf(warnings.length));
-
-				for (String warning : warnings) {
-					Element warningPropertyElement =
-						warningsPropertyElement.addElement("value");
-
-					warningPropertyElement.addText(
-						StringEscapeUtils.escapeHtml(warning));
+				if (testrayCaseName.length() > 150) {
+					testrayCaseName = testrayCaseName.substring(0, 150);
 				}
+
+				testcasePropertiesMap.put(
+					"testray.testcase.name", testrayCaseName);
+
+				testcasePropertiesMap.put(
+					"testray.testcase.priority",
+					String.valueOf(testrayCaseResult.getPriority()));
+
+				TestrayCaseResult.Status testrayCaseStatus =
+					testrayCaseResult.getStatus();
+
+				testcasePropertiesMap.put(
+					"testray.testcase.status", testrayCaseStatus.getName());
+
+				Element propertiesElement = testcaseElement.addElement(
+					"properties");
+
+				_addPropertyElements(propertiesElement, testcasePropertiesMap);
+
+				String[] warnings = testrayCaseResult.getWarnings();
+
+				if ((warnings != null) && (warnings.length > 0)) {
+					Element warningsPropertyElement =
+						propertiesElement.addElement("property");
+
+					warningsPropertyElement.addAttribute(
+						"name", "testray.testcase.warnings");
+					warningsPropertyElement.addAttribute(
+						"value", String.valueOf(warnings.length));
+
+					for (String warning : warnings) {
+						Element warningPropertyElement =
+							warningsPropertyElement.addElement("value");
+
+						warningPropertyElement.addText(
+							StringEscapeUtils.escapeHtml(warning));
+					}
+				}
+
+				Element attachmentsElement = testcaseElement.addElement(
+					"attachments");
+
+				for (TestrayAttachment testrayAttachment :
+						testrayCaseResult.getTestrayAttachments()) {
+
+					Element attachmentFileElement =
+						attachmentsElement.addElement("file");
+
+					attachmentFileElement.addAttribute(
+						"name", testrayAttachment.getName());
+					attachmentFileElement.addAttribute(
+						"url", testrayAttachment.getURL() + "?authuser=0");
+					attachmentFileElement.addAttribute(
+						"value", testrayAttachment.getKey() + "?authuser=0");
+				}
+
+				String errors = testrayCaseResult.getErrors();
+
+				if (!JenkinsResultsParserUtil.isNullOrEmpty(errors)) {
+					Element failureElement = testcaseElement.addElement(
+						"failure");
+
+					failureElement.addAttribute("message", errors);
+				}
+
+				rootElement.add(testcaseElement);
 			}
-
-			Element attachmentsElement = testcaseElement.addElement(
-				"attachments");
-
-			for (TestrayAttachment testrayAttachment :
-					testrayCaseResult.getTestrayAttachments()) {
-
-				Element attachmentFileElement = attachmentsElement.addElement(
-					"file");
-
-				attachmentFileElement.addAttribute(
-					"name", testrayAttachment.getName());
-				attachmentFileElement.addAttribute(
-					"url", testrayAttachment.getURL() + "?authuser=0");
-				attachmentFileElement.addAttribute(
-					"value", testrayAttachment.getKey() + "?authuser=0");
-			}
-
-			String errors = testrayCaseResult.getErrors();
-
-			if (!JenkinsResultsParserUtil.isNullOrEmpty(errors)) {
-				Element failureElement = testcaseElement.addElement("failure");
-
-				failureElement.addAttribute("message", errors);
+			catch (RuntimeException runtimeException) {
+				System.out.println(runtimeException);
 			}
 		}
 

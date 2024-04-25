@@ -22,7 +22,7 @@ import com.liferay.portal.dao.orm.custom.sql.CustomSQL;
 import com.liferay.portal.kernel.dao.orm.WildcardMode;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.service.permission.PortletPermission;
+import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
@@ -43,12 +43,13 @@ import org.osgi.service.component.annotations.Reference;
 )
 public class CTProcessServiceImpl extends CTProcessServiceBaseImpl {
 
+	@Override
 	public List<CTProcess> getCTProcesses(
 			long companyId, long userId, String keywords, int status, int type,
 			int start, int end, OrderByComparator<CTProcess> orderByComparator)
 		throws PortalException {
 
-		_portletPermission.check(
+		PortletPermissionUtil.check(
 			getPermissionChecker(), CTPortletKeys.PUBLICATIONS,
 			ActionKeys.VIEW);
 
@@ -201,8 +202,5 @@ public class CTProcessServiceImpl extends CTProcessServiceBaseImpl {
 
 	@Reference
 	private CustomSQL _customSQL;
-
-	@Reference
-	private PortletPermission _portletPermission;
 
 }

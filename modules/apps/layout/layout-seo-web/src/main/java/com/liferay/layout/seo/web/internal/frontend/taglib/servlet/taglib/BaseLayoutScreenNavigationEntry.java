@@ -7,7 +7,7 @@ package com.liferay.layout.seo.web.internal.frontend.taglib.servlet.taglib;
 
 import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.document.library.util.DLURLHelper;
-import com.liferay.dynamic.data.mapping.storage.StorageEngine;
+import com.liferay.dynamic.data.mapping.storage.DDMStorageEngineManager;
 import com.liferay.frontend.taglib.servlet.taglib.ScreenNavigationEntry;
 import com.liferay.frontend.taglib.servlet.taglib.util.JSPRenderer;
 import com.liferay.info.item.InfoItemServiceRegistry;
@@ -70,7 +70,10 @@ public abstract class BaseLayoutScreenNavigationEntry
 	public boolean isVisible(User user, Layout layout) {
 		Group group = layout.getGroup();
 
-		if (group.isLayoutPrototype() || group.isLayoutSetPrototype()) {
+		if (group.isLayoutPrototype() || group.isLayoutSetPrototype() ||
+			((layout.isTypeAssetDisplay() || layout.isTypeContent()) &&
+			 (layout.fetchDraftLayout() == null))) {
+
 			return false;
 		}
 
@@ -78,13 +81,7 @@ public abstract class BaseLayoutScreenNavigationEntry
 			layoutPageTemplateEntryLocalService.
 				fetchLayoutPageTemplateEntryByPlid(layout.getPlid());
 
-		if (layoutPageTemplateEntry != null) {
-			return false;
-		}
-
-		if ((layout.isTypeAssetDisplay() || layout.isTypeContent()) &&
-			(layout.fetchDraftLayout() == null)) {
-
+		if ((layoutPageTemplateEntry != null) || layout.isTypeUtility()) {
 			return false;
 		}
 
@@ -100,8 +97,8 @@ public abstract class BaseLayoutScreenNavigationEntry
 		httpServletRequest.setAttribute(
 			LayoutSEOWebKeys.LAYOUT_PAGE_LAYOUT_SEO_DISPLAY_CONTEXT,
 			new LayoutsSEODisplayContext(
-				dlAppService, dlurlHelper, infoItemServiceRegistry,
-				itemSelector, layoutLocalService,
+				ddmStorageEngineManager, dlAppService, dlurlHelper,
+				infoItemServiceRegistry, itemSelector, layoutLocalService,
 				layoutPageTemplateEntryLocalService,
 				layoutSEOCanonicalURLProvider, layoutSEOLinkManager,
 				layoutSEOSiteLocalService,
@@ -110,8 +107,7 @@ public abstract class BaseLayoutScreenNavigationEntry
 						JavaConstants.JAVAX_PORTLET_REQUEST)),
 				portal.getLiferayPortletResponse(
 					(RenderResponse)httpServletRequest.getAttribute(
-						JavaConstants.JAVAX_PORTLET_RESPONSE)),
-				storageEngine));
+						JavaConstants.JAVAX_PORTLET_RESPONSE))));
 
 		jspRenderer.renderJSP(
 			servletContext, httpServletRequest, httpServletResponse,
@@ -119,6 +115,9 @@ public abstract class BaseLayoutScreenNavigationEntry
 	}
 
 	protected abstract String getJspPath();
+
+	@Reference
+	protected DDMStorageEngineManager ddmStorageEngineManager;
 
 	@Reference
 	protected DLAppService dlAppService;
@@ -156,9 +155,6 @@ public abstract class BaseLayoutScreenNavigationEntry
 
 	@Reference(target = "(osgi.web.symbolicname=com.liferay.layout.seo.web)")
 	protected ServletContext servletContext;
-
-	@Reference
-	protected StorageEngine storageEngine;
 
 	private ResourceBundle _getResourceBundle(Locale locale) {
 		ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(

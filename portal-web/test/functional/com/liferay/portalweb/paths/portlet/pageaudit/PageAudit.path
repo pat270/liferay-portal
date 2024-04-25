@@ -27,7 +27,7 @@
 </tr>
 <tr>
 	<td>BUTTON_LAUNCH_ANY</td>
-	<td>//button[@title='Relaunch' or @title='Launch Page Audit']</td>
+	<td>//button[@title='Relaunch' or @title='Launch Page Audit' or contains(text(),'Launch')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -51,6 +51,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>WARNING_TEXT</td>
+	<td>//*[contains(@class,'text-warning')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ERROR_WARNING_MESSAGE</td>
 	<td>//dd[text()='${errorMessage}']</td>
 	<td></td>
@@ -67,7 +72,7 @@
 </tr>
 <tr>
 	<td>FAILING_CHECK_NAME</td>
-	<td>//span[contains(@class, 'text-secondary') and contains(@class, 'w-100') and contains(@class, 'c-inner') and contains (text(), '${failingCheckName}')]</td>
+	<td>//button[.//span[contains(@class,'text-secondary')][normalize-space(text())='${failingCheckName}']]</td>
 	<td></td>
 </tr>
 <tr>
@@ -112,7 +117,7 @@
 </tr>
 <tr>
 	<td>LOCALE_BUTTON</td>
-	<td>//div[contains(@class,'sidebar-body')] //button[*[name()='svg'][contains(@class,'lexicon-icon')]]</td>
+	<td>//button[*[name()='svg'][contains(@class,'lexicon-icon-en-us')]]</td>
 	<td></td>
 </tr>
 <tr>
@@ -121,8 +126,33 @@
 	<td></td>
 </tr>
 <tr>
+	<td>PAGE_AUDIT_ANY_ITEM</td>
+	<td>xpath=(//div[contains(@class,'tab-content')]//div[contains(@class,'form-group')])[${key_itemNumber}]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>PAGE_AUDIT_BUTTON</td>
-	<td>//*[contains(@class, 'lexicon-icon-info-circle')]</td>
+	<td>//button[.//*[contains(@class,'lexicon-icon-info-circle')]] | //button[.//*[contains(@class,'lexicon-icon-search-experiences')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_AUDIT_ELEMENT</td>
+	<td>//div[contains(@class,'page-audit')]//button[@aria-label='${ariaLabel}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_AUDIT_EXPERIENCE_SELECTOR</td>
+	<td>//div[contains(@class,'page-audit__experience-selector')]//button[@aria-label='Experience Selector']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_AUDIT_NAME</td>
+	<td>//div[contains(@class,'page-audit')]//div[contains(@class,'justify-content')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_AUDIT_TIME</td>
+	<td>//div[contains(@class,'page-audit')]//p</td>
 	<td></td>
 </tr>
 <tr>
@@ -137,7 +167,7 @@
 </tr>
 <tr>
 	<td>PANEL_TITLE</td>
-	<td>//div[contains(@class, 'panel-title')]</td>
+	<td>//div[contains(@class,'layout-reports-panel') and contains(@class,'open')]//div[contains(@class, 'sidebar-header')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -147,7 +177,7 @@
 </tr>
 <tr>
 	<td>SIDEBAR</td>
-	<td>//div[contains(@class,'sidenav-menu') and descendant::span[contains(.,'Page Audit')]]</td>
+	<td>//div[contains(@class,'layout-reports-panel') and contains(@class,'open')]</td>
 	<td></td>
 </tr>
 </tbody>

@@ -54,8 +54,8 @@ public class CommerceOrderItemLocalServiceUtil {
 
 	public static CommerceOrderItem addCommerceOrderItem(
 			long userId, long commerceOrderId, long cpInstanceId, String json,
-			int quantity, long replacedCPInstanceId, int shippedQuantity,
-			String unitOfMeasureKey,
+			java.math.BigDecimal quantity, long replacedCPInstanceId,
+			java.math.BigDecimal shippedQuantity, String unitOfMeasureKey,
 			com.liferay.commerce.context.CommerceContext commerceContext,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws PortalException {
@@ -67,23 +67,9 @@ public class CommerceOrderItemLocalServiceUtil {
 	}
 
 	public static CommerceOrderItem addOrUpdateCommerceOrderItem(
-			long userId, long commerceOrderId, long cpInstanceId, int quantity,
-			long replacedCPInstanceId, int shippedQuantity,
-			String unitOfMeasureKey,
-			com.liferay.commerce.context.CommerceContext commerceContext,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws PortalException {
-
-		return getService().addOrUpdateCommerceOrderItem(
-			userId, commerceOrderId, cpInstanceId, quantity,
-			replacedCPInstanceId, shippedQuantity, unitOfMeasureKey,
-			commerceContext, serviceContext);
-	}
-
-	public static CommerceOrderItem addOrUpdateCommerceOrderItem(
 			long userId, long commerceOrderId, long cpInstanceId, String json,
-			int quantity, long replacedCPInstanceId, int shippedQuantity,
-			String unitOfMeasureKey,
+			java.math.BigDecimal quantity, long replacedCPInstanceId,
+			java.math.BigDecimal shippedQuantity, String unitOfMeasureKey,
 			com.liferay.commerce.context.CommerceContext commerceContext,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws PortalException {
@@ -314,11 +300,13 @@ public class CommerceOrderItemLocalServiceUtil {
 		return getService().fetchCommerceOrderItem(commerceOrderItemId);
 	}
 
-	public static CommerceOrderItem fetchCommerceOrderItemByBookedQuantityId(
-		long bookedQuantityId) {
+	public static CommerceOrderItem
+		fetchCommerceOrderItemByCommerceInventoryBookedQuantityId(
+			long commerceInventoryBookedQuantityId) {
 
-		return getService().fetchCommerceOrderItemByBookedQuantityId(
-			bookedQuantityId);
+		return getService().
+			fetchCommerceOrderItemByCommerceInventoryBookedQuantityId(
+				commerceInventoryBookedQuantityId);
 	}
 
 	public static CommerceOrderItem
@@ -363,8 +351,9 @@ public class CommerceOrderItemLocalServiceUtil {
 			parentCommerceOrderItemId);
 	}
 
-	public static int getCommerceInventoryWarehouseItemQuantity(
-			long commerceOrderItemId, long commerceInventoryWarehouseId)
+	public static java.math.BigDecimal
+			getCommerceInventoryWarehouseItemQuantity(
+				long commerceOrderItemId, long commerceInventoryWarehouseId)
 		throws PortalException {
 
 		return getService().getCommerceInventoryWarehouseItemQuantity(
@@ -437,6 +426,14 @@ public class CommerceOrderItemLocalServiceUtil {
 
 		return getService().getCommerceOrderItems(
 			commerceOrderId, start, end, orderByComparator);
+	}
+
+	public static List<CommerceOrderItem> getCommerceOrderItems(
+		long cpInstanceId, int[] orderStatuses, String unitOfMeasureKey,
+		int start, int end) {
+
+		return getService().getCommerceOrderItems(
+			cpInstanceId, orderStatuses, unitOfMeasureKey, start, end);
 	}
 
 	public static List<CommerceOrderItem> getCommerceOrderItems(
@@ -522,7 +519,9 @@ public class CommerceOrderItemLocalServiceUtil {
 			groupId, commerceAccountId, orderStatuses);
 	}
 
-	public static int getCommerceOrderItemsQuantity(long commerceOrderId) {
+	public static java.math.BigDecimal getCommerceOrderItemsQuantity(
+		long commerceOrderId) {
+
 		return getService().getCommerceOrderItemsQuantity(commerceOrderId);
 	}
 
@@ -591,19 +590,22 @@ public class CommerceOrderItemLocalServiceUtil {
 	public static CommerceOrderItem importCommerceOrderItem(
 			long userId, String externalReferenceCode, long commerceOrderItemId,
 			long commerceOrderId, long cpInstanceId,
-			String cpMeasurementUnitKey, java.math.BigDecimal decimalQuantity,
-			int quantity, int shippedQuantity, String unitOfMeasureKey,
+			String cpMeasurementUnitKey, java.math.BigDecimal quantity,
+			java.math.BigDecimal shippedQuantity,
+			java.math.BigDecimal unitOfMeasureIncrementalOrderQuantity,
+			String unitOfMeasureKey,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws PortalException {
 
 		return getService().importCommerceOrderItem(
 			userId, externalReferenceCode, commerceOrderItemId, commerceOrderId,
-			cpInstanceId, cpMeasurementUnitKey, decimalQuantity, quantity,
-			shippedQuantity, unitOfMeasureKey, serviceContext);
+			cpInstanceId, cpMeasurementUnitKey, quantity, shippedQuantity,
+			unitOfMeasureIncrementalOrderQuantity, unitOfMeasureKey,
+			serviceContext);
 	}
 
 	public static CommerceOrderItem incrementShippedQuantity(
-			long commerceOrderItemId, int shippedQuantity)
+			long commerceOrderItemId, java.math.BigDecimal shippedQuantity)
 		throws PortalException {
 
 		return getService().incrementShippedQuantity(
@@ -660,15 +662,16 @@ public class CommerceOrderItemLocalServiceUtil {
 	}
 
 	public static CommerceOrderItem updateCommerceOrderItem(
-			long commerceOrderItemId, long bookedQuantityId)
+			long commerceOrderItemId, long commerceInventoryBookedQuantityId)
 		throws com.liferay.commerce.exception.NoSuchOrderItemException {
 
 		return getService().updateCommerceOrderItem(
-			commerceOrderItemId, bookedQuantityId);
+			commerceOrderItemId, commerceInventoryBookedQuantityId);
 	}
 
 	public static CommerceOrderItem updateCommerceOrderItem(
-			long userId, long commerceOrderItemId, int quantity,
+			long userId, long commerceOrderItemId,
+			java.math.BigDecimal quantity,
 			com.liferay.commerce.context.CommerceContext commerceContext,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws PortalException {
@@ -680,7 +683,7 @@ public class CommerceOrderItemLocalServiceUtil {
 
 	public static CommerceOrderItem updateCommerceOrderItem(
 			long userId, long commerceOrderItemId, long cpMeasurementUnitId,
-			int quantity,
+			java.math.BigDecimal quantity,
 			com.liferay.commerce.context.CommerceContext commerceContext,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws PortalException {
@@ -692,7 +695,7 @@ public class CommerceOrderItemLocalServiceUtil {
 
 	public static CommerceOrderItem updateCommerceOrderItem(
 			long userId, long commerceOrderItemId, long cpMeasurementUnitId,
-			int quantity,
+			java.math.BigDecimal quantity,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws PortalException {
 
@@ -702,7 +705,8 @@ public class CommerceOrderItemLocalServiceUtil {
 	}
 
 	public static CommerceOrderItem updateCommerceOrderItem(
-			long userId, long commerceOrderItemId, String json, int quantity,
+			long userId, long commerceOrderItemId, String json,
+			java.math.BigDecimal quantity,
 			com.liferay.commerce.context.CommerceContext commerceContext,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws PortalException {
@@ -713,7 +717,8 @@ public class CommerceOrderItemLocalServiceUtil {
 	}
 
 	public static CommerceOrderItem updateCommerceOrderItem(
-			long userId, long commerceOrderItemId, String json, int quantity,
+			long userId, long commerceOrderItemId, String json,
+			java.math.BigDecimal quantity,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws PortalException {
 
@@ -839,17 +844,7 @@ public class CommerceOrderItemLocalServiceUtil {
 
 	public static CommerceOrderItem updateCommerceOrderItemUnitPrice(
 			long userId, long commerceOrderItemId,
-			java.math.BigDecimal decimalQuantity,
-			java.math.BigDecimal unitPrice)
-		throws PortalException {
-
-		return getService().updateCommerceOrderItemUnitPrice(
-			userId, commerceOrderItemId, decimalQuantity, unitPrice);
-	}
-
-	public static CommerceOrderItem updateCommerceOrderItemUnitPrice(
-			long userId, long commerceOrderItemId, int quantity,
-			java.math.BigDecimal unitPrice)
+			java.math.BigDecimal quantity, java.math.BigDecimal unitPrice)
 		throws PortalException {
 
 		return getService().updateCommerceOrderItemUnitPrice(

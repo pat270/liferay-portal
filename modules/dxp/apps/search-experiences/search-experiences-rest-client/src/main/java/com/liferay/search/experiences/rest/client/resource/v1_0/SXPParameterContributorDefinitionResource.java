@@ -11,6 +11,8 @@ import com.liferay.search.experiences.rest.client.pagination.Page;
 import com.liferay.search.experiences.rest.client.problem.Problem;
 import com.liferay.search.experiences.rest.client.serdes.v1_0.SXPParameterContributorDefinitionSerDes;
 
+import java.net.URL;
+
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -99,6 +101,10 @@ public interface SXPParameterContributorDefinitionResource {
 			_scheme = scheme;
 
 			return this;
+		}
+
+		public Builder endpoint(URL url) {
+			return endpoint(url.getHost(), url.getPort(), url.getProtocol());
 		}
 
 		public Builder header(String key, String value) {
@@ -318,6 +324,8 @@ public interface SXPParameterContributorDefinitionResource {
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body("[]", "application/json");
 
 			if (_builder._locale != null) {
 				httpInvoker.header(

@@ -11,7 +11,7 @@ import ClayLayout from '@clayui/layout';
 import ClayModal, {useModal} from '@clayui/modal';
 import ClayPopover from '@clayui/popover';
 import ClayTable from '@clayui/table';
-import WorkflowInstanceTracker from '@liferay/portal-workflow-instance-tracker-web/js/components/WorkflowInstanceTracker';
+import {WorkflowInstanceTracker} from '@liferay/portal-workflow-instance-tracker-web';
 import {sub} from 'frontend-js-web';
 import React, {useContext, useState} from 'react';
 
@@ -168,9 +168,9 @@ function Item({isAdmin, totalCount, ...instance}) {
 			</ClayTable.Cell>
 
 			<ClayTable.Cell>
-				{moment
-					.utc(dateCreated)
-					.format(Liferay.Language.get('mmm-dd-yyyy-lt'))}
+				{moment(dateCreated).format(
+					Liferay.Language.get('mmm-dd-yyyy-lt')
+				)}
 			</ClayTable.Cell>
 
 			<ClayTable.Cell style={{paddingRight: '0rem'}}>
@@ -305,7 +305,7 @@ function DueDateSLAResults({slaResults, slaStatusIconInfo}) {
 				: Liferay.Language.get('mmm-dd-yyyy');
 		}
 
-		return moment.utc(dateOverdue).format(format);
+		return moment(dateOverdue).format(format);
 	};
 
 	const instanceSlaResults = slaResults.slice(0, 2).map((slaResult) => {

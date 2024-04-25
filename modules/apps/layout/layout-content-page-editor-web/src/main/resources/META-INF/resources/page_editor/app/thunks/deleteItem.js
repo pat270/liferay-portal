@@ -19,8 +19,10 @@ import {
 	getFormErrorDescription,
 } from '../utils/getFormErrorDescription';
 import getFragmentEntryLinkIdsFromItemId from '../utils/getFragmentEntryLinkIdsFromItemId';
+import getPortletId from '../utils/getPortletId';
 import {hasFormParent} from '../utils/hasFormParent';
 import {isRequiredFormInput} from '../utils/isRequiredFormInput';
+import {clearPageContents} from '../utils/usePageContents';
 
 export default function deleteItem({itemId, selectItem = () => {}}) {
 	return (dispatch, getState) => {
@@ -36,34 +38,33 @@ export default function deleteItem({itemId, selectItem = () => {}}) {
 			layoutData,
 			onNetworkStatus: dispatch,
 			segmentsExperienceId,
-		}).then(
-			({pageContents, portletIds = [], layoutData: nextLayoutData}) => {
-				const [firstChild] = nextLayoutData.items[
-					nextLayoutData.rootItems.main
-				].children;
+		}).then(({portletIds = [], layoutData: nextLayoutData}) => {
+			const [firstChild] = nextLayoutData.items[
+				nextLayoutData.rootItems.main
+			].children;
 
-				selectItem(firstChild, {
-					origin: ITEM_ACTIVATION_ORIGINS.itemActions,
-				});
+			selectItem(firstChild, {
+				origin: ITEM_ACTIVATION_ORIGINS.itemActions,
+			});
 
-				const fragmentEntryLinkIds = getFragmentEntryLinkIdsFromItemId({
+			const fragmentEntryLinkIds = getFragmentEntryLinkIdsFromItemId({
+				itemId,
+				layoutData: nextLayoutData,
+			});
+
+			dispatch(
+				deleteItemAction({
+					fragmentEntryLinkIds,
 					itemId,
 					layoutData: nextLayoutData,
-				});
+					portletIds,
+				})
+			);
 
-				dispatch(
-					deleteItemAction({
-						fragmentEntryLinkIds,
-						itemId,
-						layoutData: nextLayoutData,
-						pageContents,
-						portletIds,
-					})
-				);
+			clearPageContents();
 
-				maybeShowAlert(layoutData, itemId, fragmentEntryLinks);
-			}
-		);
+			maybeShowAlert(layoutData, itemId, fragmentEntryLinks);
+		});
 	};
 }
 
@@ -100,11 +101,7 @@ function findPortletIds(itemId, layoutData, fragmentEntryLinks) {
 		];
 
 		if (editableValues.portletId) {
-			return [
-				editableValues.instanceId
-					? `${editableValues.portletId}_INSTANCE_${editableValues.instanceId}`
-					: editableValues.portletId,
-			];
+			return [getPortletId(editableValues)];
 		}
 	}
 

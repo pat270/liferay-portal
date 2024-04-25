@@ -6,7 +6,7 @@
 package com.liferay.layout.page.template.admin.web.internal.portlet.action;
 
 import com.liferay.layout.page.template.admin.constants.LayoutPageTemplateAdminPortletKeys;
-import com.liferay.layout.page.template.admin.web.internal.handler.LayoutPageTemplateEntryExceptionRequestHandler;
+import com.liferay.layout.page.template.admin.web.internal.handler.LayoutPageTemplateEntryExceptionRequestHandlerUtil;
 import com.liferay.layout.page.template.exception.LayoutPageTemplateEntryNameException;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
@@ -32,7 +32,6 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
@@ -131,8 +130,9 @@ public class AddLayoutPrototypeMVCActionCommand extends BaseMVCActionCommand {
 			String backURL = ParamUtil.getString(actionRequest, "backURL");
 
 			if (Validator.isNotNull(backURL)) {
-				redirectURL = HttpComponentsUtil.setParameter(
-					redirectURL, "p_l_back_url", backURL);
+				redirectURL = HttpComponentsUtil.addParameters(
+					redirectURL, "p_l_back_url", backURL, "p_l_back_url_title",
+					_language.get(themeDisplay.getLocale(), "page-templates"));
 			}
 
 			JSONPortletResponseUtil.writeJSON(
@@ -160,7 +160,7 @@ public class AddLayoutPrototypeMVCActionCommand extends BaseMVCActionCommand {
 					layoutPageTemplateEntryNameException =
 						(LayoutPageTemplateEntryNameException)throwable;
 
-				_layoutPageTemplateEntryExceptionRequestHandler.
+				LayoutPageTemplateEntryExceptionRequestHandlerUtil.
 					handlePortalException(
 						actionRequest, actionResponse,
 						layoutPageTemplateEntryNameException);
@@ -188,18 +188,11 @@ public class AddLayoutPrototypeMVCActionCommand extends BaseMVCActionCommand {
 	private Language _language;
 
 	@Reference
-	private LayoutPageTemplateEntryExceptionRequestHandler
-		_layoutPageTemplateEntryExceptionRequestHandler;
-
-	@Reference
 	private LayoutPageTemplateEntryLocalService
 		_layoutPageTemplateEntryLocalService;
 
 	@Reference
 	private LayoutPrototypeService _layoutPrototypeService;
-
-	@Reference
-	private Portal _portal;
 
 	private class AddLayoutPrototypeCallable
 		implements Callable<LayoutPrototype> {

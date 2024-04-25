@@ -316,8 +316,9 @@ public class ContactsCSVHelper {
 				dlFileEntry.getFileEntryTypeId(),
 				dlFileEntry.getDDMFormValuesMap(
 					dlFileVersion.getFileVersionId()),
-				file, null, file.length(), dlFileEntry.getExpirationDate(),
-				dlFileEntry.getReviewDate(), serviceContext);
+				file, null, file.length(), dlFileEntry.getDisplayDate(),
+				dlFileEntry.getExpirationDate(), dlFileEntry.getReviewDate(),
+				serviceContext);
 		}
 		else {
 			Repository repository = _portletFileRepository.addPortletRepository(
@@ -328,7 +329,7 @@ public class ContactsCSVHelper {
 				repository.getDlFolderId(), fileName, ContentTypes.TEXT_CSV,
 				file.getName(), fileName, repository.getDescription(), null,
 				DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_ALL, null, file,
-				null, file.length(), null, null, serviceContext);
+				null, file.length(), null, null, null, serviceContext);
 		}
 
 		return dlFileEntry.getLatestFileVersion(true);

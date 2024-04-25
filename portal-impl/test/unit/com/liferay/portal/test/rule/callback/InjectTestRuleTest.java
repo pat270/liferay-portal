@@ -149,6 +149,69 @@ public class InjectTestRuleTest {
 	}
 
 	@Test
+	public void testInjectFieldWithSameNameInParentAndChildClass()
+		throws Exception {
+
+		BundleContext bundleContext = SystemBundleUtil.getBundleContext();
+
+		Service1 service1 = new Service1();
+
+		_serviceRegistrations.add(
+			bundleContext.registerService(Service1.class, service1, null));
+
+		Service2 service2 = new Service2();
+
+		_serviceRegistrations.add(
+			bundleContext.registerService(Service2.class, service2, null));
+
+		TestCase3 testCase3 = new TestCase3();
+
+		Assert.assertNull(TestCase3.getService1());
+		Assert.assertNull(testCase3._service1);
+
+		Assert.assertNull(testCase3.getService2());
+		Assert.assertNull(testCase3._service2);
+
+		Description description = Description.createTestDescription(
+			TestCase3.class, TestCase3.class.getName());
+
+		InjectTestBag classInjectTestBag = InjectTestRule.INSTANCE.beforeClass(
+			description);
+
+		Assert.assertSame(service1, TestCase3.getService1());
+		Assert.assertNull(testCase3._service1);
+
+		Assert.assertNull(testCase3.getService2());
+		Assert.assertNull(testCase3._service2);
+
+		InjectTestBag methodInjectTestBag =
+			InjectTestRule.INSTANCE.beforeMethod(description, testCase3);
+
+		Assert.assertSame(service1, TestCase3.getService1());
+		Assert.assertSame(service1, testCase3._service1);
+
+		Assert.assertSame(service2, testCase3.getService2());
+		Assert.assertSame(service2, testCase3._service2);
+
+		InjectTestRule.INSTANCE.afterMethod(
+			description, methodInjectTestBag, testCase3);
+
+		Assert.assertSame(service1, TestCase3.getService1());
+		Assert.assertNull(testCase3._service1);
+
+		Assert.assertNull(testCase3.getService2());
+		Assert.assertNull(testCase3._service2);
+
+		InjectTestRule.INSTANCE.afterClass(description, classInjectTestBag);
+
+		Assert.assertNull(TestCase3.getService1());
+		Assert.assertNull(testCase3._service1);
+
+		Assert.assertNull(testCase3.getService2());
+		Assert.assertNull(testCase3._service2);
+	}
+
+	@Test
 	public void testInjectNonblockingNonstaticWithFilter() throws Exception {
 		Description description = Description.createTestDescription(
 			TestCase2.class, TestCase2.class.getName());
@@ -235,6 +298,16 @@ public class InjectTestRuleTest {
 		private final Service2 _service2 = null;
 
 		private final Service3 _service3 = null;
+
+	}
+
+	private static class TestCase3 extends BaseTestCase {
+
+		@Inject
+		private Service1 _service1;
+
+		@Inject
+		private Service2 _service2;
 
 	}
 

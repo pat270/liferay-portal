@@ -72,7 +72,12 @@ public class DiscountOrderTypeResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _discountOrderTypeResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, DiscountOrderTypeResource>
+					discountOrderTypeResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_discountOrderTypeResourceProxyProviderFunction;
+
+				return discountOrderTypeResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -232,10 +237,6 @@ public class DiscountOrderTypeResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, DiscountOrderTypeResource>
-		_discountOrderTypeResourceProxyProviderFunction =
-			_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -271,6 +272,15 @@ public class DiscountOrderTypeResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function
+			<InvocationHandler, DiscountOrderTypeResource>
+				_discountOrderTypeResourceProxyProviderFunction =
+					_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

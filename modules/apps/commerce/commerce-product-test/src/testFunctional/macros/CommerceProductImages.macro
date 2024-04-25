@@ -1,6 +1,7 @@
 definition {
 
-	macro addAttachmentImages {
+	@summary = "Default summary"
+	macro addAttachmentImages(imageTitles = null, validationImage = null) {
 		for (var imageTitle : list ${imageTitles}) {
 			echo("imageTitle is equal to ${imageTitle}");
 
@@ -42,6 +43,18 @@ definition {
 
 			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
 
+			if (isSet(tags)) {
+				for (var tagsList : list ${tags}) {
+					Type(
+						locator1 = "ACSettings#INVITE_USERS_INPUT",
+						value1 = ${tagsList});
+
+					KeyPress(
+						locator1 = "ACSettings#INVITE_USERS_INPUT",
+						value1 = "\RETURN");
+				}
+			}
+
 			CommerceEntry.publishProductImage();
 
 			Click(locator1 = "Icon#CLOSE");
@@ -59,7 +72,8 @@ definition {
 		Refresh();
 	}
 
-	macro addAttachments {
+	@summary = "Default summary"
+	macro addAttachments(fileNames = null) {
 		Variables.assertDefined(parameterList = ${fileNames});
 
 		for (var fileName : list ${fileNames}) {
@@ -108,7 +122,8 @@ definition {
 		}
 	}
 
-	macro addDiagramImages {
+	@summary = "Default summary"
+	macro addDiagramImages(imageTitles = null, imageType = null, productType = null) {
 		for (var imageTitle : list ${imageTitles}) {
 			echo("imageTitle is equal to ${imageTitle}");
 
@@ -135,7 +150,8 @@ definition {
 		}
 	}
 
-	macro addProductImages {
+	@summary = "Default summary"
+	macro addProductImages(imageTitles = null, validationImage = null) {
 		for (var imageTitle : list ${imageTitles}) {
 			echo("imageTitle is equal to ${imageTitle}");
 
@@ -171,6 +187,31 @@ definition {
 				var optionValues = StringUtil.replaceFirst(${optionValues}, "${optionValue},", "");
 			}
 
+			if (isSet(shoppingExperienceImageGallery)) {
+				if (${shoppingExperienceImageGallery} == "true") {
+					Check.checkToggleSwitch(
+						key_toggleSwitchLabel = "Use in Shopping Experience Image Gallery",
+						locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+				}
+				else {
+					Uncheck.uncheckToggleSwitch(
+						key_toggleSwitchLabel = "Use in Shopping Experience Image Gallery",
+						locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+				}
+			}
+
+			if (isSet(tags)) {
+				for (var tagsList : list ${tags}) {
+					Type(
+						locator1 = "ACSettings#INVITE_USERS_INPUT",
+						value1 = ${tagsList});
+
+					KeyPress(
+						locator1 = "ACSettings#INVITE_USERS_INPUT",
+						value1 = "\RETURN");
+				}
+			}
+
 			CommerceEntry.publishProductImage();
 
 			Click(locator1 = "Icon#CLOSE");
@@ -188,7 +229,8 @@ definition {
 		Refresh();
 	}
 
-	macro getProductMediaId {
+	@summary = "Default summary"
+	macro getProductMediaId() {
 		SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
 
 		var productMediaId = selenium.getText("CommerceEntry#SIDE_PANEL_IFRAME_TITLE");
@@ -202,7 +244,8 @@ definition {
 		return ${productMediaId};
 	}
 
-	macro getProductMediaSrc {
+	@summary = "Default summary"
+	macro getProductMediaSrc(imagePath = null) {
 		var image = ${imagePath};
 
 		var image_src = selenium.getAttribute("${image}@src");

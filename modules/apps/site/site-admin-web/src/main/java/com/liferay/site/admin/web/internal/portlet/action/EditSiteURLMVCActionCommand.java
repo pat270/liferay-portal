@@ -13,8 +13,6 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.GroupService;
 import com.liferay.portal.kernel.service.LayoutSetService;
-import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -49,27 +47,25 @@ public class EditSiteURLMVCActionCommand
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
 
+		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
 		long liveGroupId = ParamUtil.getLong(actionRequest, "liveGroupId");
-
-		ServiceContext serviceContext = ActionUtil.getServiceContext(
-			actionRequest, liveGroupId);
-
-		ServiceContextThreadLocal.pushServiceContext(serviceContext);
 
 		Group liveGroup = _groupLocalService.getGroup(liveGroupId);
 
 		String friendlyURL = ParamUtil.getString(
 			actionRequest, "groupFriendlyURL", liveGroup.getFriendlyURL());
 
-		boolean redirect = !Objects.equals(
-			friendlyURL, liveGroup.getFriendlyURL());
+		boolean redirect = false;
 
-		liveGroup = _groupService.updateGroup(
-			liveGroupId, liveGroup.getParentGroupId(), liveGroup.getNameMap(),
-			liveGroup.getDescriptionMap(), liveGroup.getType(),
-			liveGroup.isManualMembership(),
-			liveGroup.getMembershipRestriction(), friendlyURL,
-			liveGroup.isInheritContent(), liveGroup.isActive(), serviceContext);
+		if ((themeDisplay.getScopeGroupId() == liveGroup.getGroupId()) &&
+			!Objects.equals(friendlyURL, liveGroup.getFriendlyURL())) {
+
+			redirect = true;
+		}
+
+		_groupService.updateFriendlyURL(liveGroup.getGroupId(), friendlyURL);
 
 		Set<Locale> availableLocales = _language.getAvailableLocales(
 			liveGroup.getGroupId());
@@ -90,6 +86,12 @@ public class EditSiteURLMVCActionCommand
 			friendlyURL = ParamUtil.getString(
 				actionRequest, "stagingFriendlyURL",
 				stagingGroup.getFriendlyURL());
+
+			if ((themeDisplay.getScopeGroupId() == stagingGroup.getGroupId()) &&
+				!Objects.equals(friendlyURL, stagingGroup.getFriendlyURL())) {
+
+				redirect = true;
+			}
 
 			_groupService.updateFriendlyURL(
 				stagingGroup.getGroupId(), friendlyURL);
@@ -113,15 +115,12 @@ public class EditSiteURLMVCActionCommand
 
 		actionRequest.setAttribute(
 			WebKeys.REDIRECT,
-			_getSiteAdministrationURL(actionRequest, liveGroup));
+			_getSiteAdministrationURL(liveGroup, themeDisplay));
 	}
 
 	private String _getSiteAdministrationURL(
-			ActionRequest actionRequest, Group group)
+			Group group, ThemeDisplay themeDisplay)
 		throws Exception {
-
-		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
 
 		Group scopeGroup = themeDisplay.getScopeGroup();
 

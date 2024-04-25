@@ -10,7 +10,6 @@ import com.liferay.dynamic.data.mapping.form.field.type.constants.DDMFormFieldTy
 import com.liferay.dynamic.data.mapping.form.field.type.internal.util.DDMFormFieldTypeUtil;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.render.DDMFormFieldRenderingContext;
-import com.liferay.frontend.js.loader.modules.extender.npm.NPMResolver;
 import com.liferay.map.util.MapProviderHelperUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.GroupLocalService;
@@ -18,7 +17,6 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.PrefsPropsUtil;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.Map;
@@ -65,8 +63,6 @@ public class GeolocationDDMFormFieldTemplateContextContributor
 		).put(
 			"mapProviderKey", mapProviderKey
 		).put(
-			"moduleName", getModuleName(mapProviderKey)
-		).put(
 			"predefinedValue",
 			DDMFormFieldTypeUtil.getPropertyValue(
 				ddmFormField, ddmFormFieldRenderingContext.getLocale(),
@@ -79,16 +75,6 @@ public class GeolocationDDMFormFieldTemplateContextContributor
 			"viewMode",
 			GetterUtil.getBoolean(ddmFormFieldRenderingContext.isViewMode())
 		).build();
-	}
-
-	protected String getModuleName(String mapProviderKey) {
-		if (StringUtil.equals(mapProviderKey, "GoogleMaps")) {
-			return _npmResolver.resolveModuleName(
-				"@liferay/map-google-maps/js/MapGoogleMaps");
-		}
-
-		return _npmResolver.resolveModuleName(
-			"@liferay/map-openstreetmap/js/MapOpenStreetMap");
 	}
 
 	private String _getGoogleMapsAPIKey(
@@ -126,8 +112,5 @@ public class GeolocationDDMFormFieldTemplateContextContributor
 
 	@Reference
 	private GroupLocalService _groupLocalService;
-
-	@Reference
-	private NPMResolver _npmResolver;
 
 }

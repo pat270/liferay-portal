@@ -23,10 +23,6 @@ definition {
 	tearDown {
 		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
 
-		// It is not possible to delete properties and data source after LRAC-13389. This functionality should return after LRAC-8040
-
-		//ACUtils.tearDownAC();
-
 		ACUtils.tearDownDXP();
 
 		if (${testLiferayVirtualInstance} == "true") {
@@ -35,12 +31,17 @@ definition {
 		else {
 			JSONGroup.deleteGroupByName(groupName = "Site Name");
 		}
+
+		ACUtils.tearDownAC();
 	}
 
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8588 | Test Summary: Assert segment overview shows criteria"
+	@ignore = "true"
 	@priority = 3
 	test AssertSegmentOverviewShowsCriteria {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
+
+		// AC Bug ticket: LRAC-15408
 
 		task ("Create Blog and Add to Page") {
 			ACUtils.createBlogsAndAddToPage();
@@ -107,17 +108,12 @@ definition {
 	@description = "Edit a dynamic segment and check the edits are saved"
 	@priority = 5
 	test CanEditDynamicSegmentCheckEditSaved {
-		property portal.upstream = "quarantine";
-		property test.liferay.virtual.instance = "false";
-
-		// AC Quarantine Reason: Segment membership takes long time to load
-		// AC refactor ticket: LRAC-10769
-
 		property portal.acceptance = "false";
+		property test.run.type = "single";
 
 		ACUtils.createBlogsAndAddToPage();
 
-		var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
+		ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
 
 		JSONUser.addUser(
 			userEmailAddress = "ac@liferay.com",
@@ -129,7 +125,7 @@ definition {
 
 		ACUtils.navigateToSitePageWithUser(
 			actionType = "View Blog",
-			documentTitleList = "Blogs AC Title",
+			documentTitleList = "Blogs AC Title,Blogs AC Title,Blogs AC Title,Blogs AC Title",
 			emailList = "ac@liferay.com",
 			pageName = "AC Page",
 			siteName = "Site Name");
@@ -138,13 +134,13 @@ definition {
 
 		ACUtils.launchAC();
 
-		ACProperties.switchProperty(propertyName = ${propertyName});
+		ACProperties.switchProperty(propertyName = ${assignedPropertyName});
 
 		ACNavigation.goToSegments();
 
 		ACSegments.createDynamicSegment();
 
-		ACUtils.setItemName(itemName = "Dynamic Segment Test");
+		ACUtils.setItemName(itemName = "Edit Segment Test");
 
 		ACSegments.addSegmentField(segmentField = "Viewed Blog");
 
@@ -155,26 +151,6 @@ definition {
 
 		ACSegments.saveSegment();
 
-		ACNavigation.switchTab(tabName = "Membership");
-
-		ACUtils.viewGenericText(textValueList = "There are no items found.");
-
-		ACUtils.launchDXP(userEmailAddress = "ac@liferay.com");
-
-		ACUtils.navigateToSitePage(
-			actionType = "View Blog",
-			documentTitleList = "Blogs AC Title,Blogs AC Title,Blogs AC Title",
-			pageName = "AC Page",
-			siteName = "Site Name");
-
-		ACUtils.closeAllSessionsAndWait();
-
-		ACUtils.launchAC();
-
-		ACNavigation.goToSegments();
-
-		ACSegments.accessSegment(segmentName = "Dynamic Segment Test");
-
 		ACSegments.viewSegmentCriteriaWebBehavior(
 			activitiesOption = "has",
 			atLeastMost = "at least",
@@ -183,13 +159,11 @@ definition {
 			timeOption = "since",
 			timePeriod = "Last 24 hours");
 
-		ACNavigation.switchTab(tabName = "Membership");
-
-		ACUtils.viewNameList(nameList = "ac ac");
-
 		ACNavigation.goToSegments();
 
-		ACSegments.editSegment(segmentName = "Dynamic Segment Test");
+		ACSegments.viewSegmentName(searchTerm = "Edit Segment Test");
+
+		ACSegments.editSegment(segmentName = "Edit Segment Test");
 
 		ACSegments.editWebBehaviorCriterion(
 			activitiesOption = "has not",
@@ -198,11 +172,9 @@ definition {
 			occurenceNumber = 5,
 			timeOption = "ever");
 
+		ACUtils.setItemName(itemName = "Rename Segment Test");
+
 		ACSegments.saveSegment();
-
-		ACNavigation.goToSegments();
-
-		ACSegments.accessSegment(segmentName = "Dynamic Segment Test");
 
 		ACSegments.viewSegmentCriteriaWebBehavior(
 			activitiesOption = "has not",
@@ -211,9 +183,9 @@ definition {
 			searchTerm = "'Blogs AC Title'",
 			timeOption = "ever");
 
-		ACNavigation.switchTab(tabName = "Membership");
+		ACNavigation.goToSegments();
 
-		ACUtils.viewGenericText(textValueList = "There are no members found on the selected time period.,Check back later to verify if data has been received from your data sources.,Learn more about individuals.");
+		ACSegments.viewSegmentName(searchTerm = "Rename Segment Test");
 	}
 
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8135 | Test Summary: Edit a static segment and check the edits are saved"
@@ -285,72 +257,10 @@ definition {
 		ACUtils.viewNameList(nameList = ${nameList});
 	}
 
-	@description = "Feature ID: Legacy | Automation ID: LRAC-8136 | Test Summary: Rename Individuals Segment"
-	@priority = 5
-	test CanRenameIndividualsSegment {
-		property test.liferay.virtual.instance = "false";
-
-		ACUtils.createBlogsAndAddToPage();
-
-		ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
-
-		JSONUser.addUser(
-			userEmailAddress = "ac@liferay.com",
-			userFirstName = "ac",
-			userLastName = "ac",
-			userScreenName = "ac");
-
-		ACDXPSettings.syncNewContactData();
-
-		User.logoutAndLoginPG(
-			userLoginEmailAddress = "ac@liferay.com",
-			userLoginFullName = "ac ac");
-
-		ACUtils.navigateToSitePage(
-			actionType = "View Blog",
-			documentTitleList = "Blogs AC Title",
-			pageName = "AC Page",
-			siteName = "Site Name");
-
-		ACUtils.closeAllSessionsAndWait();
-
-		ACUtils.launchAC();
-
-		ACProperties.switchProperty(propertyName = ${assignedPropertyName});
-
-		ACNavigation.goToSegments();
-
-		ACSegments.createDynamicSegment();
-
-		ACUtils.setItemName(itemName = "Dynamic Segment Test");
-
-		ACSegments.addSegmentField(segmentField = "Viewed Blog");
-
-		ACSegments.editWebBehaviorCriterion(
-			indexField = 1,
-			searchTerm = "Blogs AC Title");
-
-		ACSegments.saveSegment();
-
-		ACNavigation.goToSegments();
-
-		ACSegments.viewSegmentName(searchTerm = "Dynamic Segment Test");
-
-		ACSegments.editSegment(segmentName = "Dynamic Segment Test");
-
-		ACUtils.setItemName(itemName = "Rename Segment");
-
-		ACSegments.saveSegment();
-
-		ACNavigation.goToSegments();
-
-		ACSegments.viewSegmentName(searchTerm = "Rename Segment");
-	}
-
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8585 | Test Summary: It is not possible to add a duplicate user to a static segment"
 	@priority = 4
 	test CantDuplicateUserToStaticSegment {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var usernameList = "ac,liferay";
 		var emailList = "ac@liferay.com,liferay@liferay.com";
@@ -368,6 +278,8 @@ definition {
 		ACDXPSettings.syncNewContactData();
 
 		ACUtils.navigateToSitePageWithUser(
+			actionType = "View WC",
+			documentTitleList = "1,2,3,4",
 			emailList = ${emailList},
 			pageName = "AC Page",
 			siteName = "Site Name");
@@ -400,7 +312,7 @@ definition {
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8589 | Test Summary: Editor shows static segment label"
 	@priority = 3
 	test EditorShowsStaticSegmentLabel {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
 
@@ -417,6 +329,8 @@ definition {
 			userLoginFullName = "ac ac");
 
 		ACUtils.navigateToSitePage(
+			actionType = "View WC",
+			documentTitleList = "1,2,3,4",
 			pageName = "AC Page",
 			siteName = "Site Name");
 
@@ -448,34 +362,33 @@ definition {
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8587 | Test Summary: Paginate list of members to be added to the segment"
 	@priority = 3
 	test PaginateListOfMembersToBeAddedToTheSegment {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		var users = "ac1,ac2,ac3,ac4,ac5,ac6,ac7";
+		var emailList = "ac1@liferay.com,ac2@liferay.com,ac3@liferay.com,ac4@liferay.com,ac5@liferay.com,ac6@liferay.com,ac7@liferay.com";
+		var usersList = "ac1,ac2,ac3,ac4,ac5,ac6,ac7";
 		var nameList = "ac2 ac2,ac3 ac3,ac4 ac4,ac5 ac5,ac6 ac6,ac7 ac7";
 
-		task ("Conect DXP to AC") {
-			var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
-		}
-
 		task ("Add new users") {
-			for (var name : list ${users}) {
+			for (var name : list ${usersList}) {
 				JSONUser.addUser(
 					userEmailAddress = "${name}@liferay.com",
 					userFirstName = ${name},
 					userLastName = ${name},
 					userScreenName = ${name});
 			}
+		}
 
-			ACDXPSettings.syncNewContactData();
+		task ("Conect DXP to AC") {
+			ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
 		}
 
 		task ("Login with new users and go to site page") {
-			for (var name : list ${users}) {
-				ACUtils.navigateToSitePageWithUser(
-					emailList = "${name}@liferay.com",
-					pageName = "AC Page",
-					siteName = "Site Name");
-			}
+			ACUtils.navigateToSitePageWithUser(
+				actionType = "View WC",
+				documentTitleList = "1,2,3,4",
+				emailList = ${emailList},
+				pageName = "AC Page",
+				siteName = "Site Name");
 		}
 
 		task ("Close all sections and wait") {
@@ -485,7 +398,7 @@ definition {
 		task ("Go to AC and switch property") {
 			ACUtils.launchAC();
 
-			ACProperties.switchProperty(propertyName = ${propertyName});
+			ACProperties.switchProperty(propertyName = ${assignedPropertyName});
 		}
 
 		task ("Go to segments") {
@@ -568,7 +481,7 @@ definition {
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8598 | Test Summary: Segment List kebab menu contains Edit and Delete buttons"
 	@priority = 3
 	test SegmentListKebabMenuContainsEditAndDeleteButtons {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Create user and sincronize it") {
 			JSONUser.addUser(
@@ -590,23 +503,31 @@ definition {
 				siteName = "Site Name");
 		}
 
-		task ("Close session, go to AC and segments") {
+		task ("Close session and Go to AC") {
 			ACUtils.closeAllSessionsAndWait();
 
 			ACUtils.launchAC();
 
 			ACProperties.switchProperty(propertyName = ${propertyName});
-
-			ACNavigation.goToSegments();
 		}
 
-		task ("Create segment test and save") {
-			ACSegments.createStaticSegment();
+		task ("Add a new dynamic segment") {
+			ACNavigation.goToSegments();
 
-			ACUtils.setItemName(itemName = "Static Segment Test");
+			ACSegments.createDynamicSegment();
 
-			ACSegments.addStaticMember(tableMember = "ac ac");
+			ACUtils.setItemName(itemName = "New Segment Test");
+		}
 
+		task ("Add an email field") {
+			ACSegments.goToSidebarAttributes(criterion = "Individual Attributes");
+
+			ACSegments.addSegmentField(segmentField = "email");
+
+			ACSegments.editTextCriterion(textInput = "ac@liferay.com");
+		}
+
+		task ("Save the segment") {
 			ACSegments.saveSegment();
 		}
 
@@ -626,7 +547,7 @@ definition {
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8586 | Test Summary: Sort the Segment 'Add Members' Modal"
 	@priority = 3
 	test SortSegmentAddMembersModal {
-		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var users = "ac,liferay,dxp";
 		var emailList = "ac@liferay.com,liferay@liferay.com,dxp@liferay.com";
@@ -647,6 +568,8 @@ definition {
 
 		task ("Sign in with the new user to visit the site pages") {
 			ACUtils.navigateToSitePageWithUser(
+				actionType = "View WC",
+				documentTitleList = "1,2,3,4",
 				emailList = ${emailList},
 				pageName = "AC Page",
 				siteName = "Site Name");
@@ -707,10 +630,6 @@ definition {
 		var usernameList = "ac,liferay";
 		var emailList = "ac@liferay.com,liferay@liferay.com";
 
-		task ("Get site assigned property name") {
-			var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
-		}
-
 		task ("Add a new user in DXP") {
 			for (var name : list ${usernameList}) {
 				JSONUser.addUser(
@@ -721,12 +640,14 @@ definition {
 			}
 		}
 
-		task ("Sync the Contact Data") {
-			ACDXPSettings.syncNewContactData();
+		task ("Get site assigned property name") {
+			ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
 		}
 
 		task ("Sign in with the new user to visit the site pages") {
 			ACUtils.navigateToSitePageWithUser(
+				actionType = "View WC",
+				documentTitleList = "1,2,3,4",
 				emailList = ${emailList},
 				pageName = "AC Page",
 				siteName = "Site Name");
@@ -737,7 +658,7 @@ definition {
 
 			ACUtils.launchAC();
 
-			ACProperties.switchProperty(propertyName = ${propertyName});
+			ACProperties.switchProperty(propertyName = ${assignedPropertyName});
 		}
 
 		task ("Go to Segments and add a new segment") {
@@ -869,11 +790,13 @@ definition {
 		}
 
 		task ("Connect AC to DXP") {
-			var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
+			ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
 		}
 
 		task ("Login with the users and see page") {
 			ACUtils.navigateToSitePageWithUser(
+				actionType = "View WC",
+				documentTitleList = "1,2,3,4",
 				emailList = ${emailList},
 				pageName = "AC Page",
 				siteName = "Site Name");
@@ -884,7 +807,7 @@ definition {
 
 			ACUtils.launchAC();
 
-			ACProperties.switchProperty(propertyName = ${propertyName});
+			ACProperties.switchProperty(propertyName = ${assignedPropertyName});
 
 			ACNavigation.goToSegments();
 		}
@@ -955,6 +878,8 @@ definition {
 
 		task ("Login new user and view page") {
 			ACUtils.navigateToSitePageWithUser(
+				actionType = "View WC",
+				documentTitleList = "1,2,3,4",
 				emailList = ${emailList},
 				pageName = "AC Page",
 				siteName = "Site Name");

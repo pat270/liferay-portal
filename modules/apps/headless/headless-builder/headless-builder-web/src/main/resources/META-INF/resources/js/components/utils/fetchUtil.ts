@@ -11,6 +11,34 @@ export const headers = new Headers({
 	'Content-Type': 'application/json',
 });
 
+export async function deleteData({
+	onError,
+	onSuccess,
+	url,
+}: {
+	onError: (error: string) => void;
+	onSuccess: voidReturn;
+	url: string;
+}) {
+	fetch(url, {
+		headers,
+		method: 'DELETE',
+	})
+		.then((response) => {
+			if (response.ok) {
+				onSuccess();
+			}
+			else {
+				throw response.json();
+			}
+		})
+		.catch((error) => {
+			error.then((response: {message: string; title: string}) => {
+				onError(response.title ?? response.message);
+			});
+		});
+}
+
 export async function fetchJSON<T>({
 	init,
 	input,
@@ -23,42 +51,92 @@ export async function fetchJSON<T>({
 	return (await result.json()) as T;
 }
 
+export async function getAllItems<T>({
+	filter,
+	url,
+}: {
+	filter?: string;
+	url: string;
+}) {
+	const {items} = await fetchJSON<{items: T[]}>({
+		input: filter ? `${url}?filter=${filter}&page=-1` : `${url}?page=-1`,
+	});
+
+	return items;
+}
+
 export async function getItems<T>({url}: {url: string}) {
 	const {items} = await fetchJSON<{items: T[]}>({input: url});
 
 	return items;
 }
 
-export async function updateData({
-	dataToUpdate,
+export async function postData<T>({
+	data,
 	onError,
 	onSuccess,
 	url,
 }: {
-	dataToUpdate: Partial<APIApplicationItem>;
+	data: Partial<T>;
 	onError: (error: string) => void;
-	onSuccess: voidReturn;
+	onSuccess: (responseJSON: T) => void;
+	url: string;
+}) {
+	fetch(url, {
+		body: JSON.stringify(data),
+		headers,
+		method: 'POST',
+	})
+		.then((response) => {
+			if (response.ok) {
+				return response.json();
+			}
+			else {
+				throw response.json();
+			}
+		})
+		.then((responseJSON) => {
+			onSuccess(responseJSON);
+		})
+		.catch((error) => {
+			error.then((response: {message: string; title: string}) => {
+				onError(response.title ?? response.message);
+			});
+		});
+}
+
+export async function updateData<T>({
+	dataToUpdate,
+	method,
+	onError,
+	onSuccess,
+	url,
+}: {
+	dataToUpdate: Partial<T>;
+	method: 'PATCH' | 'PUT';
+	onError: (error: string) => void;
+	onSuccess: (responseJSON: T) => void;
 	url: string;
 }) {
 	fetch(url, {
 		body: JSON.stringify(dataToUpdate),
 		headers,
-		method: 'PATCH',
+		method,
 	})
 		.then((response) => {
 			if (response.ok) {
-				onSuccess();
-			}
-			else {
 				return response.json();
 			}
-		})
-		.then((errorResponse) => {
-			if (errorResponse) {
-				throw new Error(errorResponse.title);
+			else {
+				throw response.json();
 			}
 		})
+		.then((responseJSON) => {
+			onSuccess(responseJSON);
+		})
 		.catch((error) => {
-			onError(error);
+			error.then((response: {message: string; title: string}) => {
+				onError(response.title ?? response.message);
+			});
 		});
 }

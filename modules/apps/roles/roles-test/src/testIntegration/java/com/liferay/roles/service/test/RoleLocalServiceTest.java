@@ -99,11 +99,27 @@ public class RoleLocalServiceTest {
 			_resourcePermission);
 	}
 
-	@Test(expected = RoleNameException.class)
-	public void testAddRoleWithPlaceholderName() throws Exception {
-		RoleTestUtil.addRole(
-			RoleConstants.PLACEHOLDER_DEFAULT_GROUP_ROLE,
-			RoleConstants.TYPE_REGULAR);
+	@Test
+	public void testAddRole() throws Exception {
+		try {
+			RoleTestUtil.addRole(
+				RoleConstants.PLACEHOLDER_DEFAULT_GROUP_ROLE,
+				RoleConstants.TYPE_REGULAR);
+
+			Assert.fail();
+		}
+		catch (RoleNameException roleNameException) {
+			Assert.assertNotNull(roleNameException);
+		}
+
+		_role = _roleLocalService.addRole(
+			TestPropsValues.getUserId(), null, 0, RandomTestUtil.randomString(),
+			null,
+			Collections.singletonMap(
+				LocaleUtil.US, RandomTestUtil.randomString(4001)),
+			RoleConstants.TYPE_REGULAR, null, null);
+
+		Assert.assertNotNull(_role);
 	}
 
 	@Test
@@ -267,6 +283,7 @@ public class RoleLocalServiceTest {
 				if (excludedRoleNames.contains(role.getName()) ||
 					(role.getType() == RoleConstants.TYPE_ACCOUNT) ||
 					(role.getType() == RoleConstants.TYPE_DEPOT) ||
+					(role.getType() == RoleConstants.TYPE_PUBLICATIONS) ||
 					(role.getType() == RoleConstants.TYPE_SITE)) {
 
 					return false;

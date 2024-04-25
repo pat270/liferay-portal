@@ -29,6 +29,7 @@ import com.liferay.portal.kernel.service.PersistedModelLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.change.tracking.CTService;
 import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
+import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
@@ -55,6 +56,11 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @CTAware
+@OSGiBeanProperties(
+	property = {
+		"model.class.name=com.liferay.document.library.kernel.model.DLFileEntryType"
+	}
+)
 @ProviderType
 @Transactional(
 	isolation = Isolation.PORTAL,
@@ -85,15 +91,16 @@ public interface DLFileEntryTypeLocalService
 	@Indexable(type = IndexableType.REINDEX)
 	public DLFileEntryType addDLFileEntryType(DLFileEntryType dlFileEntryType);
 
-	public void addDLFolderDLFileEntryType(
+	public boolean addDLFolderDLFileEntryType(
 		long folderId, DLFileEntryType dlFileEntryType);
 
-	public void addDLFolderDLFileEntryType(long folderId, long fileEntryTypeId);
+	public boolean addDLFolderDLFileEntryType(
+		long folderId, long fileEntryTypeId);
 
-	public void addDLFolderDLFileEntryTypes(
+	public boolean addDLFolderDLFileEntryTypes(
 		long folderId, List<DLFileEntryType> dlFileEntryTypes);
 
-	public void addDLFolderDLFileEntryTypes(
+	public boolean addDLFolderDLFileEntryTypes(
 		long folderId, long[] fileEntryTypeIds);
 
 	public DLFileEntryType addFileEntryType(

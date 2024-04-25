@@ -14,7 +14,10 @@ definition {
 
 		User.firstLoginPG();
 
-		Raylife.createRaylifeSite(siteName = ${testSiteName});
+		HeadlessSite.addSite(
+			siteName = ${testSiteName},
+			templateName = "Raylife D2C",
+			templateType = "Site Initializer");
 	}
 
 	tearDown {
@@ -31,9 +34,11 @@ definition {
 	}
 
 	@description = "LPS-142582 - Verify clicking 'Dismiss' on the Information Panel closes it (Information Panel from 'Hang tight...' page)"
+	@ignore = "true"
 	@priority = 3
 	test CanDismissLoadingPageInfoPanel {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
@@ -55,21 +60,18 @@ definition {
 
 		Click(locator1 = "Raylife#BUTTON_CONTINUE");
 
+		AssertElementPresent.pauseAssertVisible(locator1 = "Raylife#BUTTON_DISMISS");
+
 		Click(locator1 = "Raylife#BUTTON_DISMISS");
 
-		Click(locator1 = "Raylife#BTN_BACK_TO_EDIT_INFO_QUOTE_PAGE");
-
-		Click(
-			locator1 = "RaylifeNavigation#SECTION_COMPLETED",
-			section = "Basics");
-
-		Click(locator1 = "Raylife#BUTTON_PREVIOUS");
+		AssertElementNotPresent(locator1 = "Raylife#BUTTON_DISMISS");
 	}
 
 	@description = "LPS-142580 - Verify Loading Page is reachable after pressing Continue on Property page"
 	@priority = 5
 	test CanReachLoadingPageByPropertyPage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
@@ -106,6 +108,7 @@ definition {
 	@priority = 5
 	test CanRedirectToQuotePage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 

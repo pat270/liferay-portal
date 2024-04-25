@@ -4,36 +4,39 @@
  */
 
 import {ClayToggle} from '@clayui/form';
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 
 interface IProps {
+	ariaLabel: string;
+	companyId: number;
 	disabled: boolean;
+	enabled: boolean;
 	featureFlagKey: string;
 	inputName: string;
-	labelOff: string;
-	labelOn: string;
-	toggled: boolean;
+	onItemsChange: (value: Array<any>) => void;
 }
 
 const FeatureFlagToggle = ({
-	disabled: initialDisabled,
+	ariaLabel,
+	companyId,
+	disabled,
+	enabled,
 	featureFlagKey,
 	inputName,
-	labelOff,
-	labelOn,
-	toggled: initialToggled,
+	onItemsChange,
 }: IProps) => {
-	const [disabled, setDisabled] = useState(initialDisabled);
-	const [toggled, setToggled] = useState(initialToggled);
+	const [isLoading, setIsLoading] = useState<boolean | undefined>();
+	const toggleRef = useRef<any>(null);
 
-	async function updateToggled(newToggled: boolean) {
-		setDisabled(true);
+	const updateToggled = async (newToggled: boolean) => {
+		setIsLoading(true);
 
 		try {
 			const response = await Liferay.Util.fetch(
 				'/o/com-liferay-feature-flag-web/set-enabled',
 				{
 					body: Liferay.Util.objectToFormData({
+						companyId,
 						enabled: newToggled,
 						key: featureFlagKey,
 					}),
@@ -42,7 +45,17 @@ const FeatureFlagToggle = ({
 			);
 
 			if (response.ok) {
-				setToggled(newToggled);
+				const data = await response.json();
+
+				onItemsChange([
+					{
+						enabled: newToggled,
+						key: featureFlagKey,
+					},
+					...(data.dependentFeatureFlags.length
+						? data.dependentFeatureFlags
+						: []),
+				]);
 			}
 			else {
 				Liferay.Util.openToast({
@@ -54,21 +67,31 @@ const FeatureFlagToggle = ({
 			}
 		}
 		finally {
-			setDisabled(false);
+			setIsLoading(false);
 		}
-	}
+	};
+
+	useEffect(() => {
+		if (isLoading !== undefined && !disabled && !isLoading) {
+			toggleRef.current.focus();
+		}
+	}, [disabled, isLoading]);
 
 	return (
-		<>
-			<ClayToggle
-				disabled={disabled}
-				id={inputName}
-				label={toggled ? labelOn : labelOff}
-				onToggle={updateToggled}
-				toggled={toggled}
-				type="checkbox"
-			/>
-		</>
+		<ClayToggle
+			aria-label={ariaLabel}
+			disabled={disabled || isLoading}
+			id={inputName}
+			label={
+				enabled
+					? Liferay.Language.get('enabled')
+					: Liferay.Language.get('disabled')
+			}
+			onToggle={updateToggled}
+			ref={toggleRef}
+			toggled={enabled}
+			type="checkbox"
+		/>
 	);
 };
 

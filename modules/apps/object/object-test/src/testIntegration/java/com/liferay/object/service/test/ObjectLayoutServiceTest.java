@@ -11,7 +11,7 @@ import com.liferay.object.model.ObjectLayout;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectLayoutLocalService;
 import com.liferay.object.service.ObjectLayoutService;
-import com.liferay.object.service.test.util.ObjectDefinitionTestUtil;
+import com.liferay.object.test.util.ObjectDefinitionTestUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
@@ -52,7 +52,7 @@ public class ObjectLayoutServiceTest {
 	public void setUp() throws Exception {
 		_guestUser = _userLocalService.getGuestUser(
 			TestPropsValues.getCompanyId());
-		_objectDefinition = ObjectDefinitionTestUtil.addObjectDefinition(
+		_objectDefinition = ObjectDefinitionTestUtil.addCustomObjectDefinition(
 			_objectDefinitionLocalService);
 		_originalName = PrincipalThreadLocal.getName();
 		_originalPermissionChecker =

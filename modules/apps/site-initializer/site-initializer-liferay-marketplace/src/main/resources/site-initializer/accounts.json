@@ -5,18 +5,8 @@
 		"type": "business"
 	},
 	{
-		"externalReferenceCode": "MKT-ACCOUNT-2",
-		"name": "Chameleon",
-		"type": "business"
-	},
-	{
 		"externalReferenceCode": "MKT-ACCOUNT-3",
-		"name": "Jane Acme",
-		"type": "person"
-	},
-	{
-		"externalReferenceCode": "MKT-ACCOUNT-4",
-		"name": "Ryan Administrator",
+		"name": "QA Acme",
 		"type": "person"
 	}
 ]

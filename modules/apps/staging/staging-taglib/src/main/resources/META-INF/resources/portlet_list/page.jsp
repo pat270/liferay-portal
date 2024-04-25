@@ -91,6 +91,42 @@
 				name="<%= PortletDataHandlerKeys.PORTLET_DATA + StringPool.UNDERLINE + portlet.getPortletId() %>"
 			/>
 
+			<%
+			String portletId = portlet.getPortletId();
+
+			if (!type.equals(Constants.EXPORT)) {
+				portletId = portlet.getRootPortletId();
+			}
+			%>
+
+			<ul class="hide" id="<portlet:namespace />showChangeContent_<%= portlet.getPortletId() %>">
+				<li>
+					<span class="selected-labels" id="<portlet:namespace />selectedContent_<%= portlet.getPortletId() %>"></span>
+
+					<span <%= !disableInputs ? StringPool.BLANK : "class=\"hide\"" %>>
+						<clay:button
+							cssClass="content-link modify-link pr-1"
+							id='<%= liferayPortletResponse.getNamespace() + "contentLink_" + portlet.getPortletId() %>'
+							data-portletid="<%= portletId %>"
+							data-portlettitle="<%= portletTitle %>"
+							displayType="link"
+							label="change"
+						/>
+
+						<span id="<portlet:namespace />rightContentArrow_<%= portlet.getPortletId() %>">
+							<clay:icon
+								symbol="angle-right-small"
+							/>
+						</span>
+						<span class="hide" id="<portlet:namespace />downContentArrow_<%= portlet.getPortletId() %>">
+							<clay:icon
+								symbol="angle-down-small"
+							/>
+						</span>
+					</span>
+				</li>
+			</ul>
+
 			<div class="<%= (disableInputs && showPortletDataInput) ? StringPool.BLANK : "hide " %>" id="<portlet:namespace />content_<%= portlet.getPortletId() %>">
 				<ul class="lfr-tree list-unstyled">
 					<li class="tree-item">
@@ -177,37 +213,6 @@
 				</ul>
 			</div>
 
-			<%
-			String portletId = portlet.getPortletId();
-
-			if (!type.equals(Constants.EXPORT)) {
-				portletId = portlet.getRootPortletId();
-			}
-			%>
-
-			<ul class="hide" id="<portlet:namespace />showChangeContent_<%= portlet.getPortletId() %>">
-				<li>
-					<span class="selected-labels" id="<portlet:namespace />selectedContent_<%= portlet.getPortletId() %>"></span>
-
-					<span <%= !disableInputs ? StringPool.BLANK : "class=\"hide\"" %>>
-						<aui:a
-							cssClass="content-link modify-link"
-							data='<%=
-								HashMapBuilder.<String, Object>put(
-									"portletid", portletId
-								).put(
-									"portlettitle", portletTitle
-								).build()
-							%>'
-							href="javascript:void(0);"
-							id='<%= "contentLink_" + portlet.getPortletId() %>'
-							label="change"
-							method="get"
-						/>
-					</span>
-				</li>
-			</ul>
-
 			<aui:script>
 				Liferay.Util.toggleBoxes(
 					'<portlet:namespace /><%= PortletDataHandlerKeys.PORTLET_DATA + StringPool.UNDERLINE + portlet.getPortletId() %>',
@@ -235,7 +240,23 @@ html = html.trim();
 		<span class="selected-labels" id="<portlet:namespace />selectedContentOptions"></span>
 
 		<span <%= !disableInputs ? StringPool.BLANK : "class=\"hide\"" %>>
-			<aui:a cssClass="modify-link" href="javascript:void(0);" id="contentOptionsLink" label="change" method="get" />
+			<clay:button
+				cssClass="pr-1"
+				displayType="link"
+				id='<%= liferayPortletResponse.getNamespace() + "contentOptionsLink" %>'
+				label="change"
+			/>
+
+			<span id="<portlet:namespace />rightContentOptionsArrow">
+				<clay:icon
+					symbol="angle-right-small"
+				/>
+			</span>
+			<span class="hide" id="<portlet:namespace />downContentOptionsArrow">
+				<clay:icon
+					symbol="angle-down-small"
+				/>
+			</span>
 		</span>
 
 		<div class="hide" id="<portlet:namespace />contentOptions">

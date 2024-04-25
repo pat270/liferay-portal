@@ -5,10 +5,20 @@
 
 package com.liferay.headless.commerce.delivery.catalog.internal.dto.v1_0.converter;
 
+import com.liferay.asset.kernel.model.AssetTag;
+import com.liferay.asset.kernel.service.AssetTagService;
 import com.liferay.commerce.media.CommerceMediaResolver;
+import com.liferay.commerce.product.constants.CPAttachmentFileEntryConstants;
 import com.liferay.commerce.product.model.CPAttachmentFileEntry;
 import com.liferay.commerce.product.service.CPAttachmentFileEntryLocalService;
+import com.liferay.document.library.kernel.model.DLFileEntry;
+import com.liferay.document.library.kernel.model.DLFileEntryType;
+import com.liferay.document.library.kernel.service.DLFileEntryLocalService;
+import com.liferay.document.library.kernel.service.DLFileEntryTypeLocalService;
 import com.liferay.headless.commerce.delivery.catalog.dto.v1_0.Attachment;
+import com.liferay.headless.commerce.delivery.catalog.internal.dto.v1_0.util.CustomFieldsUtil;
+import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -53,31 +63,88 @@ public class AttachmentDTOConverter
 			_cpAttachmentFileEntryLocalService.getCPAttachmentFileEntry(
 				(Long)attachmentDTOConverterContext.getId());
 
-		Company company = _companyLocalService.getCompany(
-			cpAttachmentFileEntry.getCompanyId());
-
-		String portalURL = _portal.getPortalURL(
-			company.getVirtualHostname(), _portal.getPortalServerPort(false),
-			true);
-
-		String downloadURL = _commerceMediaResolver.getDownloadURL(
-			attachmentDTOConverterContext.getCommerceAccountId(),
-			cpAttachmentFileEntry.getCPAttachmentFileEntryId());
-
 		return new Attachment() {
 			{
-				displayDate = cpAttachmentFileEntry.getDisplayDate();
-				expirationDate = cpAttachmentFileEntry.getExpirationDate();
-				id = cpAttachmentFileEntry.getCPAttachmentFileEntryId();
-				options = _getAttachmentOptions(cpAttachmentFileEntry);
-				priority = cpAttachmentFileEntry.getPriority();
-				src = portalURL + downloadURL;
-				title = cpAttachmentFileEntry.getTitle(
-					_language.getLanguageId(
-						attachmentDTOConverterContext.getLocale()));
-				type = cpAttachmentFileEntry.getType();
+				setCdnEnabled(cpAttachmentFileEntry::isCDNEnabled);
+				setCdnURL(cpAttachmentFileEntry::getCDNURL);
+				setCustomFields(
+					() -> CustomFieldsUtil.toCustomFields(
+						dtoConverterContext.isAcceptAllLanguages(),
+						CPAttachmentFileEntry.class.getName(),
+						cpAttachmentFileEntry.getCPAttachmentFileEntryId(),
+						cpAttachmentFileEntry.getCompanyId(),
+						dtoConverterContext.getLocale()));
+				setDisplayDate(cpAttachmentFileEntry::getDisplayDate);
+				setExpirationDate(cpAttachmentFileEntry::getExpirationDate);
+				setExternalReferenceCode(
+					cpAttachmentFileEntry::getExternalReferenceCode);
+				setFileEntryId(cpAttachmentFileEntry::getFileEntryId);
+				setGalleryEnabled(cpAttachmentFileEntry::isGalleryEnabled);
+				setId(cpAttachmentFileEntry::getCPAttachmentFileEntryId);
+				setOptions(() -> _getAttachmentOptions(cpAttachmentFileEntry));
+				setPriority(cpAttachmentFileEntry::getPriority);
+				setSrc(
+					() -> {
+						Company company = _companyLocalService.getCompany(
+							cpAttachmentFileEntry.getCompanyId());
+
+						String portalURL = _portal.getPortalURL(
+							company.getVirtualHostname(),
+							_portal.getPortalServerPort(false), true);
+
+						String downloadURL =
+							_commerceMediaResolver.getDownloadURL(
+								attachmentDTOConverterContext.
+									getCommerceAccountId(),
+								cpAttachmentFileEntry.
+									getCPAttachmentFileEntryId());
+
+						return _getAttachmentDownloadURL(
+							cpAttachmentFileEntry, portalURL + downloadURL);
+					});
+				setTags(
+					() -> TransformUtil.transformToArray(
+						_assetTagService.getTags(
+							cpAttachmentFileEntry.getModelClassName(),
+							cpAttachmentFileEntry.getCPAttachmentFileEntryId()),
+						AssetTag::getName, String.class));
+				setTitle(
+					() -> cpAttachmentFileEntry.getTitle(
+						_language.getLanguageId(
+							attachmentDTOConverterContext.getLocale())));
+				setType(cpAttachmentFileEntry::getType);
 			}
 		};
+	}
+
+	private String _getAttachmentDownloadURL(
+		CPAttachmentFileEntry cpAttachmentFileEntry, String downloadURL) {
+
+		DLFileEntry dlFileEntry = _dlFileEntryLocalService.fetchDLFileEntry(
+			cpAttachmentFileEntry.getFileEntryId());
+
+		if (dlFileEntry == null) {
+			return downloadURL;
+		}
+
+		DLFileEntryType dlFileEntryType =
+			_dlFileEntryTypeLocalService.fetchDLFileEntryType(
+				dlFileEntry.getFileEntryTypeId());
+
+		if (dlFileEntryType == null) {
+			return downloadURL;
+		}
+
+		String fileEntryTypeKey = dlFileEntryType.getFileEntryTypeKey();
+
+		if (fileEntryTypeKey.equals(
+				CPAttachmentFileEntryConstants.
+					DL_VIDEO_EXTERNAL_SHORTCUT_TYPE_KEY)) {
+
+			return StringPool.BLANK;
+		}
+
+		return downloadURL;
 	}
 
 	private Map<String, String> _getAttachmentOptions(
@@ -109,6 +176,9 @@ public class AttachmentDTOConverter
 	}
 
 	@Reference
+	private AssetTagService _assetTagService;
+
+	@Reference
 	private CommerceMediaResolver _commerceMediaResolver;
 
 	@Reference
@@ -117,6 +187,12 @@ public class AttachmentDTOConverter
 	@Reference
 	private CPAttachmentFileEntryLocalService
 		_cpAttachmentFileEntryLocalService;
+
+	@Reference
+	private DLFileEntryLocalService _dlFileEntryLocalService;
+
+	@Reference
+	private DLFileEntryTypeLocalService _dlFileEntryTypeLocalService;
 
 	@Reference
 	private JSONFactory _jsonFactory;

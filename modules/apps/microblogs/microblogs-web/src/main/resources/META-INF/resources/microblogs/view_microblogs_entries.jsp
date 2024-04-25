@@ -48,7 +48,7 @@ PortletURL microblogsEntriesURL = (PortletURL)request.getAttribute(WebKeys.MICRO
 
 		<div class="microblogs-entry" id="<portlet:namespace />microblogsEntry<%= microblogsEntry.getMicroblogsEntryId() %>">
 			<span class="thumbnail">
-				<liferay-ui:user-portrait
+				<liferay-user:user-portrait
 					userId="<%= microblogsEntry.getUserId() %>"
 				/>
 			</span>
@@ -81,7 +81,7 @@ PortletURL microblogsEntriesURL = (PortletURL)request.getAttribute(WebKeys.MICRO
 
 				<div class="footer">
 					<div class="modified-date">
-						<%= dateFormatDateTime.format(microblogsEntry.getModifiedDate()) %>
+						<%= dateTimeFormat.format(microblogsEntry.getModifiedDate()) %>
 					</div>
 
 					<div class="action-container">

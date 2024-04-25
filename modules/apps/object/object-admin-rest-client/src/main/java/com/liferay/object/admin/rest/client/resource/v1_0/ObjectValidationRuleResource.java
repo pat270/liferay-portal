@@ -12,6 +12,8 @@ import com.liferay.object.admin.rest.client.pagination.Pagination;
 import com.liferay.object.admin.rest.client.problem.Problem;
 import com.liferay.object.admin.rest.client.serdes.v1_0.ObjectValidationRuleSerDes;
 
+import java.net.URL;
+
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -35,13 +37,13 @@ public interface ObjectValidationRuleResource {
 	public Page<ObjectValidationRule>
 			getObjectDefinitionByExternalReferenceCodeObjectValidationRulesPage(
 				String externalReferenceCode, String search,
-				Pagination pagination)
+				Pagination pagination, String sortString)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse
 			getObjectDefinitionByExternalReferenceCodeObjectValidationRulesPageHttpResponse(
 				String externalReferenceCode, String search,
-				Pagination pagination)
+				Pagination pagination, String sortString)
 		throws Exception;
 
 	public ObjectValidationRule
@@ -58,23 +60,25 @@ public interface ObjectValidationRuleResource {
 
 	public Page<ObjectValidationRule>
 			getObjectDefinitionObjectValidationRulesPage(
-				Long objectDefinitionId, String search, Pagination pagination)
+				Long objectDefinitionId, String search, Pagination pagination,
+				String sortString)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse
 			getObjectDefinitionObjectValidationRulesPageHttpResponse(
-				Long objectDefinitionId, String search, Pagination pagination)
+				Long objectDefinitionId, String search, Pagination pagination,
+				String sortString)
 		throws Exception;
 
 	public void postObjectDefinitionObjectValidationRulesPageExportBatch(
-			Long objectDefinitionId, String search, String callbackURL,
-			String contentType, String fieldNames)
+			Long objectDefinitionId, String search, String sortString,
+			String callbackURL, String contentType, String fieldNames)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse
 			postObjectDefinitionObjectValidationRulesPageExportBatchHttpResponse(
-				Long objectDefinitionId, String search, String callbackURL,
-				String contentType, String fieldNames)
+				Long objectDefinitionId, String search, String sortString,
+				String callbackURL, String contentType, String fieldNames)
 		throws Exception;
 
 	public ObjectValidationRule postObjectDefinitionObjectValidationRule(
@@ -199,6 +203,10 @@ public interface ObjectValidationRuleResource {
 			return this;
 		}
 
+		public Builder endpoint(URL url) {
+			return endpoint(url.getHost(), url.getPort(), url.getProtocol());
+		}
+
 		public Builder header(String key, String value) {
 			_headers.put(key, value);
 
@@ -254,12 +262,12 @@ public interface ObjectValidationRuleResource {
 		public Page<ObjectValidationRule>
 				getObjectDefinitionByExternalReferenceCodeObjectValidationRulesPage(
 					String externalReferenceCode, String search,
-					Pagination pagination)
+					Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				getObjectDefinitionByExternalReferenceCodeObjectValidationRulesPageHttpResponse(
-					externalReferenceCode, search, pagination);
+					externalReferenceCode, search, pagination, sortString);
 
 			String content = httpResponse.getContent();
 
@@ -323,7 +331,7 @@ public interface ObjectValidationRuleResource {
 		public HttpInvoker.HttpResponse
 				getObjectDefinitionByExternalReferenceCodeObjectValidationRulesPageHttpResponse(
 					String externalReferenceCode, String search,
-					Pagination pagination)
+					Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -356,6 +364,10 @@ public interface ObjectValidationRuleResource {
 					"page", String.valueOf(pagination.getPage()));
 				httpInvoker.parameter(
 					"pageSize", String.valueOf(pagination.getPageSize()));
+			}
+
+			if (sortString != null) {
+				httpInvoker.parameter("sort", sortString);
 			}
 
 			httpInvoker.path(
@@ -486,12 +498,12 @@ public interface ObjectValidationRuleResource {
 		public Page<ObjectValidationRule>
 				getObjectDefinitionObjectValidationRulesPage(
 					Long objectDefinitionId, String search,
-					Pagination pagination)
+					Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				getObjectDefinitionObjectValidationRulesPageHttpResponse(
-					objectDefinitionId, search, pagination);
+					objectDefinitionId, search, pagination, sortString);
 
 			String content = httpResponse.getContent();
 
@@ -555,7 +567,7 @@ public interface ObjectValidationRuleResource {
 		public HttpInvoker.HttpResponse
 				getObjectDefinitionObjectValidationRulesPageHttpResponse(
 					Long objectDefinitionId, String search,
-					Pagination pagination)
+					Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -590,6 +602,10 @@ public interface ObjectValidationRuleResource {
 					"pageSize", String.valueOf(pagination.getPageSize()));
 			}
 
+			if (sortString != null) {
+				httpInvoker.parameter("sort", sortString);
+			}
+
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port + _builder._contextPath +
@@ -604,14 +620,14 @@ public interface ObjectValidationRuleResource {
 		}
 
 		public void postObjectDefinitionObjectValidationRulesPageExportBatch(
-				Long objectDefinitionId, String search, String callbackURL,
-				String contentType, String fieldNames)
+				Long objectDefinitionId, String search, String sortString,
+				String callbackURL, String contentType, String fieldNames)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				postObjectDefinitionObjectValidationRulesPageExportBatchHttpResponse(
-					objectDefinitionId, search, callbackURL, contentType,
-					fieldNames);
+					objectDefinitionId, search, sortString, callbackURL,
+					contentType, fieldNames);
 
 			String content = httpResponse.getContent();
 
@@ -663,11 +679,13 @@ public interface ObjectValidationRuleResource {
 
 		public HttpInvoker.HttpResponse
 				postObjectDefinitionObjectValidationRulesPageExportBatchHttpResponse(
-					Long objectDefinitionId, String search, String callbackURL,
-					String contentType, String fieldNames)
+					Long objectDefinitionId, String search, String sortString,
+					String callbackURL, String contentType, String fieldNames)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body("[]", "application/json");
 
 			if (_builder._locale != null) {
 				httpInvoker.header(
@@ -690,6 +708,10 @@ public interface ObjectValidationRuleResource {
 
 			if (search != null) {
 				httpInvoker.parameter("search", String.valueOf(search));
+			}
+
+			if (sortString != null) {
+				httpInvoker.parameter("sort", sortString);
 			}
 
 			if (callbackURL != null) {

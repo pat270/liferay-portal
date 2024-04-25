@@ -69,13 +69,32 @@ DigitalSignatureConfiguration digitalSignatureConfiguration = (DigitalSignatureC
 	</div>
 
 	<div class="form-group row">
+		<div class="col-md-6">
+			<aui:select label="environment" name="environment" required="<%= true %>" value="<%= digitalSignatureConfiguration.environment() %>">
+				<aui:option label="" value="" />
+
+				<%
+				for (String environment : DigitalSignatureConstants.ENVIRONMENTS) {
+				%>
+
+					<aui:option label="<%= environment %>" value="<%= environment %>" />
+
+				<%
+				}
+				%>
+
+			</aui:select>
+		</div>
+	</div>
+
+	<div class="form-group row">
 		<div class="col-md-12">
 			<aui:input label="rsa-private-key" name="rsaPrivateKey" type="textarea" value="<%= digitalSignatureConfiguration.rsaPrivateKey() %>" />
 		</div>
 	</div>
 </div>
 
-<script>
+<aui:script>
 	function <portlet:namespace />onChangeDigitalSignatureSiteSettingsStrategy(
 		event
 	) {
@@ -98,4 +117,4 @@ DigitalSignatureConfiguration digitalSignatureConfiguration = (DigitalSignatureC
 	}
 
 	<portlet:namespace />onChangeDigitalSignatureSiteSettingsStrategy();
-</script>
+</aui:script>

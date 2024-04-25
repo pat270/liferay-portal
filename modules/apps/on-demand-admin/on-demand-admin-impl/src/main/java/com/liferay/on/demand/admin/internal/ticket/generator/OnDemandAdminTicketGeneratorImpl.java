@@ -9,8 +9,10 @@ import com.liferay.on.demand.admin.constants.OnDemandAdminConstants;
 import com.liferay.on.demand.admin.internal.configuration.OnDemandAdminConfiguration;
 import com.liferay.on.demand.admin.internal.helper.OnDemandAdminHelper;
 import com.liferay.on.demand.admin.ticket.generator.OnDemandAdminTicketGenerator;
+import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.audit.AuditMessage;
 import com.liferay.portal.kernel.audit.AuditRouter;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -18,10 +20,11 @@ import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.Ticket;
+import com.liferay.portal.kernel.model.TicketConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserConstants;
 import com.liferay.portal.kernel.model.role.RoleConstants;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.TicketLocalService;
@@ -29,7 +32,9 @@ import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.PwdGenerator;
 import com.liferay.portal.security.audit.event.generators.util.AuditMessageBuilder;
 
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import org.osgi.service.component.annotations.Component;
@@ -47,15 +52,28 @@ public class OnDemandAdminTicketGeneratorImpl
 			Company company, String justification, long requestorUserId)
 		throws PortalException {
 
-		_onDemandAdminHelper.checkRequestAdministratorAccessPermission(
-			company.getCompanyId(), requestorUserId);
+		return generate(
+			company, justification, _userLocalService.getUser(requestorUserId));
+	}
 
-		User user = _addOnDemandAdminUser(company, requestorUserId);
+	@Override
+	public Ticket generate(
+			Company company, String justification, User requestorUser)
+		throws PortalException {
+
+		_onDemandAdminHelper.checkRequestAdministratorAccessPermission(
+			company.getCompanyId(), requestorUser.getUserId());
+
+		User user = _addOnDemandAdminUser(
+			requestorUser.getUserId(), company.getCompanyId(), company.getMx(),
+			requestorUser.getLocale(), requestorUser.getFirstName(),
+			requestorUser.getMiddleName(), requestorUser.getLastName(),
+			requestorUser.getMale());
 
 		AuditMessage auditMessage = AuditMessageBuilder.buildAuditMessage(
 			OnDemandAdminConstants.
 				AUDIT_EVENT_TYPE_ON_DEMAND_ADMIN_TICKET_GENERATED,
-			User.class.getName(), requestorUserId, null);
+			User.class.getName(), requestorUser.getUserId(), null);
 
 		auditMessage.setAdditionalInfo(
 			JSONUtil.put(
@@ -75,46 +93,56 @@ public class OnDemandAdminTicketGeneratorImpl
 		int expirationTime =
 			onDemandAdminConfiguration.authenticationTokenExpirationTime();
 
-		return _ticketLocalService.addDistinctTicket(
-			user.getCompanyId(), User.class.getName(), user.getUserId(),
-			OnDemandAdminConstants.TICKET_TYPE_ON_DEMAND_ADMIN_LOGIN,
-			justification,
-			new Date(
-				System.currentTimeMillis() +
-					TimeUnit.MINUTES.toMillis(expirationTime)),
-			null);
+		try (SafeCloseable safeCloseable =
+				CompanyThreadLocal.setWithSafeCloseable(
+					company.getCompanyId())) {
+
+			return _ticketLocalService.addDistinctTicket(
+				user.getCompanyId(), User.class.getName(), user.getUserId(),
+				TicketConstants.TYPE_ON_DEMAND_ADMIN_LOGIN, justification,
+				new Date(
+					System.currentTimeMillis() +
+						TimeUnit.MINUTES.toMillis(expirationTime)),
+				null);
+		}
 	}
 
-	private User _addOnDemandAdminUser(Company company, long userId)
+	private User _addOnDemandAdminUser(
+			long userId, long companyId, String mx, Locale locale,
+			String firstName, String middleName, String lastName, boolean male)
 		throws PortalException {
 
-		User requestorUser = _userLocalService.getUser(userId);
-		String password = PwdGenerator.getPassword(20);
+		try (SafeCloseable safeCloseable =
+				CompanyThreadLocal.setWithSafeCloseable(companyId)) {
 
-		String screenName = _getScreenName(requestorUser.getUserId(), 0);
+			String password = PwdGenerator.getPassword(20);
 
-		Date date = new Date();
-		Role role = _roleLocalService.getRole(
-			company.getCompanyId(), RoleConstants.ADMINISTRATOR);
+			String screenName = _getScreenName(userId, 0);
 
-		User user = _userLocalService.addUser(
-			requestorUser.getUserId(), company.getCompanyId(), false, password,
-			password, true, null, screenName + StringPool.AT + company.getMx(),
-			requestorUser.getLocale(), requestorUser.getFirstName(),
-			requestorUser.getMiddleName(), requestorUser.getLastName(), 0, 0,
-			requestorUser.getMale(), date.getMonth(), date.getDay(),
-			date.getYear(), null, UserConstants.TYPE_REGULAR, null, null,
-			new long[] {role.getRoleId()}, null, false, new ServiceContext());
+			String emailAddress = screenName + StringPool.AT + mx;
 
-		screenName = _getScreenName(
-			requestorUser.getUserId(), user.getUserId());
+			Calendar calendar = Calendar.getInstance();
+			Role role = _roleLocalService.getRole(
+				companyId, RoleConstants.ADMINISTRATOR);
 
-		user.setScreenName(screenName);
-		user.setEmailAddress(screenName + StringPool.AT + company.getMx());
+			User user = _userLocalService.addUser(
+				0, companyId, false, password, password, true, null,
+				emailAddress, locale, firstName, middleName, lastName, 0, 0,
+				male, calendar.get(Calendar.MONTH),
+				calendar.get(Calendar.DAY_OF_MONTH),
+				calendar.get(Calendar.YEAR), null, UserConstants.TYPE_REGULAR,
+				null, null, new long[] {role.getRoleId()}, null, false,
+				new ServiceContext());
 
-		user.setEmailAddressVerified(true);
+			screenName = _getScreenName(userId, user.getUserId());
 
-		return _userLocalService.updateUser(user);
+			user.setScreenName(screenName);
+			user.setEmailAddress(screenName + StringPool.AT + mx);
+
+			user.setEmailAddressVerified(true);
+
+			return _userLocalService.updateUser(user);
+		}
 	}
 
 	private String _getScreenName(long requestorUserId, long userId)

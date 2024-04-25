@@ -16,6 +16,7 @@ import com.liferay.layout.page.template.internal.upgrade.v2_1_0.LayoutUpgradePro
 import com.liferay.layout.page.template.internal.upgrade.v3_1_4.ResourcePermissionUpgradeProcess;
 import com.liferay.layout.page.template.internal.upgrade.v3_3_0.LayoutPageTemplateStructureRelUpgradeProcess;
 import com.liferay.layout.page.template.internal.upgrade.v3_4_1.FragmentEntryLinkEditableValuesUpgradeProcess;
+import com.liferay.layout.page.template.internal.upgrade.v5_3_0.LayoutPageTemplateCollectionUpgradeProcess;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.LayoutPrototypeLocalService;
@@ -24,6 +25,7 @@ import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.upgrade.BaseSQLServerDatetimeUpgradeProcess;
 import com.liferay.portal.kernel.upgrade.CTModelUpgradeProcess;
+import com.liferay.portal.kernel.upgrade.DummyUpgradeProcess;
 import com.liferay.portal.kernel.upgrade.DummyUpgradeStep;
 import com.liferay.portal.kernel.upgrade.MVCCVersionUpgradeProcess;
 import com.liferay.portal.kernel.upgrade.UpgradeProcessFactory;
@@ -172,7 +174,14 @@ public class LayoutPageTemplateServiceUpgradeStepRegistrator
 				LayoutPageTemplateStructureUpgradeProcess());
 
 		registry.register(
-			"5.0.0", "5.1.0",
+			"5.0.0", "5.0.1",
+			new com.liferay.layout.page.template.internal.upgrade.v5_0_1.
+				LayoutPageTemplateStructureUpgradeProcess(
+					_fragmentEntryLinkLocalService,
+					_segmentsExperienceLocalService));
+
+		registry.register(
+			"5.0.1", "5.1.0",
 			new com.liferay.layout.page.template.internal.upgrade.v5_1_0.
 				LayoutPageTemplateStructureUpgradeProcess(
 					_layoutLocalService, _segmentsExperienceLocalService,
@@ -189,6 +198,18 @@ public class LayoutPageTemplateServiceUpgradeStepRegistrator
 				"LayoutPageTemplateStructure", "classPK", "plid LONG"),
 			UpgradeProcessFactory.dropColumns(
 				"LayoutPageTemplateStructure", "classNameId"));
+
+		registry.register("5.2.0", "5.3.0", new DummyUpgradeProcess());
+
+		registry.register("5.3.0", "5.3.1", new DummyUpgradeProcess());
+
+		registry.register(
+			"5.3.1", "5.4.0",
+			new com.liferay.layout.page.template.internal.upgrade.v5_4_0.
+				LayoutPageTemplateStructureRelUpgradeProcess());
+
+		registry.register(
+			"5.4.0", "5.5.0", new LayoutPageTemplateCollectionUpgradeProcess());
 	}
 
 	@Reference

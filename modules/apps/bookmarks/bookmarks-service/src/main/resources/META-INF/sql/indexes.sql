@@ -1,12 +1,13 @@
-create index IX_276C8C13 on BookmarksEntry (companyId, status);
-create index IX_146382F2 on BookmarksEntry (groupId, folderId, status);
-create index IX_416AD7D5 on BookmarksEntry (groupId, status);
-create index IX_C78B61AC on BookmarksEntry (groupId, userId, folderId, status);
-create index IX_9D9CF70F on BookmarksEntry (groupId, userId, status);
-create index IX_89BEDC4F on BookmarksEntry (uuid_[$COLUMN_LENGTH:75$], companyId);
-create unique index IX_EAA02A91 on BookmarksEntry (uuid_[$COLUMN_LENGTH:75$], groupId);
+create index IX_1F90CA2D on BookmarksEntry (companyId);
+create index IX_5200100C on BookmarksEntry (groupId, folderId);
+create index IX_69D78EAC on BookmarksEntry (groupId, status, folderId, userId);
+create index IX_37518B0F on BookmarksEntry (groupId, status, userId);
+create unique index IX_788BA343 on BookmarksEntry (groupId, uuid_[$COLUMN_LENGTH:75$], ctCollectionId);
+create index IX_F16A8A87 on BookmarksEntry (status, companyId);
+create index IX_B670BA39 on BookmarksEntry (uuid_[$COLUMN_LENGTH:75$]);
 
-create index IX_C27C9DBD on BookmarksFolder (companyId, status);
-create index IX_D16018A6 on BookmarksFolder (groupId, parentFolderId, status);
-create index IX_54F0ED65 on BookmarksFolder (uuid_[$COLUMN_LENGTH:75$], companyId);
-create unique index IX_DC2F8927 on BookmarksFolder (uuid_[$COLUMN_LENGTH:75$], groupId);
+create index IX_2ABA25D7 on BookmarksFolder (companyId);
+create index IX_72A223A6 on BookmarksFolder (groupId, status, parentFolderId);
+create unique index IX_F2715D9 on BookmarksFolder (groupId, uuid_[$COLUMN_LENGTH:75$], ctCollectionId);
+create index IX_8C7A9C31 on BookmarksFolder (status, companyId);
+create index IX_451E7AE3 on BookmarksFolder (uuid_[$COLUMN_LENGTH:75$]);

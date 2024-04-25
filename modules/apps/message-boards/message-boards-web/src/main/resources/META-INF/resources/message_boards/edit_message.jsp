@@ -120,7 +120,7 @@ if (portletTitleBasedNavigation) {
 		<portlet:param name="mvcRenderCommandName" value="/message_boards/edit_message" />
 	</portlet:actionURL>
 
-	<aui:form action="<%= editMessageURL %>" enctype="multipart/form-data" method="post" name="fm" onSubmit="event.preventDefault();">
+	<aui:form action="<%= editMessageURL %>" data-senna-off="true" enctype="multipart/form-data" method="post" name="fm" onSubmit="event.preventDefault();">
 		<aui:input name="<%= Constants.CMD %>" type="hidden" />
 		<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
 		<aui:input name="portletResource" type="hidden" value="<%= portletDisplay.getPortletResource() %>" />
@@ -472,6 +472,6 @@ MBEditMessageDisplayContext mbEditMessageDisplayContext = new MBEditMessageDispl
 
 <liferay-frontend:component
 	context="<%= mbEditMessageDisplayContext.getMBPortletComponentContext() %>"
-	module="message_boards/js/MBPortlet.es"
+	module="{MBPortlet} from message-boards-web"
 	servletContext="<%= application %>"
 />

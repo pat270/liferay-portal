@@ -26,7 +26,6 @@ import java.util.Locale;
 
 import javax.portlet.PortletURL;
 
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -91,6 +90,7 @@ public class ParentSitesItemSelectorView
 		ParentSitesItemSelectorViewDisplayContext
 			parentSitesItemSelectorViewDisplayContext =
 				new ParentSitesItemSelectorViewDisplayContext(
+					groupItemSelectorCriterion,
 					(HttpServletRequest)servletRequest, _assetPublisherHelper,
 					portletURL);
 
@@ -115,10 +115,5 @@ public class ParentSitesItemSelectorView
 
 	@Reference
 	private Portal _portal;
-
-	@Reference(
-		target = "(osgi.web.symbolicname=com.liferay.asset.publisher.web)"
-	)
-	private ServletContext _servletContext;
 
 }

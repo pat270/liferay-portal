@@ -15,7 +15,8 @@ import com.liferay.object.model.ObjectValidationRule;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectValidationRuleLocalService;
 import com.liferay.object.service.ObjectValidationRuleService;
-import com.liferay.object.service.test.util.ObjectDefinitionTestUtil;
+import com.liferay.object.test.util.ObjectDefinitionTestUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
@@ -57,7 +58,7 @@ public class ObjectValidationRuleServiceTest {
 	public void setUp() throws Exception {
 		_guestUser = _userLocalService.getGuestUser(
 			TestPropsValues.getCompanyId());
-		_objectDefinition = ObjectDefinitionTestUtil.addObjectDefinition(
+		_objectDefinition = ObjectDefinitionTestUtil.addCustomObjectDefinition(
 			false, _objectDefinitionLocalService,
 			Arrays.asList(
 				ObjectFieldUtil.createObjectField(
@@ -170,12 +171,13 @@ public class ObjectValidationRuleServiceTest {
 		throws Exception {
 
 		return _objectValidationRuleLocalService.addObjectValidationRule(
-			user.getUserId(), _objectDefinition.getObjectDefinitionId(), true,
+			StringPool.BLANK, user.getUserId(),
+			_objectDefinition.getObjectDefinitionId(), true,
 			ObjectValidationRuleConstants.ENGINE_TYPE_DDM,
 			LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
 			LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
 			ObjectValidationRuleConstants.OUTPUT_TYPE_FULL_VALIDATION,
-			"isEmailAddress(textField)", Collections.emptyList());
+			"isEmailAddress(textField)", false, Collections.emptyList());
 	}
 
 	private void _setUser(User user) {
@@ -196,14 +198,15 @@ public class ObjectValidationRuleServiceTest {
 
 			objectValidationRule =
 				_objectValidationRuleService.addObjectValidationRule(
-					objectDefinitionId, true,
+					StringPool.BLANK, objectDefinitionId, true,
 					ObjectValidationRuleConstants.ENGINE_TYPE_DDM,
 					LocalizedMapUtil.getLocalizedMap(
 						RandomTestUtil.randomString()),
 					LocalizedMapUtil.getLocalizedMap(
 						RandomTestUtil.randomString()),
 					ObjectValidationRuleConstants.OUTPUT_TYPE_FULL_VALIDATION,
-					"isEmailAddress(textField)", Collections.emptyList());
+					"isEmailAddress(textField)", false,
+					Collections.emptyList());
 		}
 		finally {
 			if (objectValidationRule != null) {
@@ -263,6 +266,7 @@ public class ObjectValidationRuleServiceTest {
 
 			objectValidationRule =
 				_objectValidationRuleService.updateObjectValidationRule(
+					StringPool.BLANK,
 					objectValidationRule.getObjectValidationRuleId(), false,
 					ObjectValidationRuleConstants.ENGINE_TYPE_DDM,
 					LocalizedMapUtil.getLocalizedMap(

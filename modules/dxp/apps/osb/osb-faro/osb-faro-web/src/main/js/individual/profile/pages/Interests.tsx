@@ -1,5 +1,6 @@
 import * as API from 'shared/api';
 import Card from 'shared/components/Card';
+import ClayLink from '@clayui/link';
 import getCN from 'classnames';
 import NoResultsDisplay from 'shared/components/NoResultsDisplay';
 import React from 'react';
@@ -16,7 +17,7 @@ import {interestListColumns} from 'shared/util/table-columns';
 import {Routes, toRoute} from 'shared/util/router';
 import {Sizes} from 'shared/util/constants';
 import {sub} from 'shared/util/lang';
-import {useQueryPagination} from 'shared/hooks';
+import {useQueryPagination} from 'shared/hooks/useQueryPagination';
 
 export const TOTAL_DAYS = 90;
 
@@ -98,7 +99,7 @@ const Interests: React.FC<IInterestsProps> = ({channelId, groupId, id}) => {
 									)}
 								</span>
 
-								<a
+								<ClayLink
 									href={
 										URLConstants.IndividualsDashboardInterestsDocumentation
 									}
@@ -108,7 +109,7 @@ const Interests: React.FC<IInterestsProps> = ({channelId, groupId, id}) => {
 									{Liferay.Language.get(
 										'learn-more-about-interests'
 									)}
-								</a>
+								</ClayLink>
 							</>
 						}
 						icon={{

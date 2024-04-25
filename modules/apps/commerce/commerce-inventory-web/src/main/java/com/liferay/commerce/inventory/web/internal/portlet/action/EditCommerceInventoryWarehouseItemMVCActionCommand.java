@@ -8,6 +8,7 @@ package com.liferay.commerce.inventory.web.internal.portlet.action;
 import com.liferay.commerce.inventory.exception.MVCCException;
 import com.liferay.commerce.inventory.service.CommerceInventoryWarehouseItemService;
 import com.liferay.commerce.product.constants.CPPortletKeys;
+import com.liferay.commerce.util.CommerceOrderItemQuantityFormatter;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -80,20 +81,19 @@ public class EditCommerceInventoryWarehouseItemMVCActionCommand
 
 	private void _updateCommerceInventoryWarehouseItem(
 			ActionRequest actionRequest)
-		throws PortalException {
+		throws Exception {
 
-		long mvccVersion = ParamUtil.getLong(actionRequest, "mvccVersion");
 		long commerceInventoryWarehouseItemId = ParamUtil.getLong(
 			actionRequest, "commerceInventoryWarehouseItemId");
 
-		int quantity = ParamUtil.getInteger(actionRequest, "quantity");
-		int reservedQuantity = ParamUtil.getInteger(
-			actionRequest, "reservedQuantity");
-
 		_commerceInventoryWarehouseItemService.
 			updateCommerceInventoryWarehouseItem(
-				commerceInventoryWarehouseItemId, quantity, reservedQuantity,
-				mvccVersion);
+				commerceInventoryWarehouseItemId,
+				_commerceOrderItemQuantityFormatter.parse(
+					actionRequest, "quantity"),
+				_commerceOrderItemQuantityFormatter.parse(
+					actionRequest, "reservedQuantity"),
+				ParamUtil.getLong(actionRequest, "mvccVersion"));
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -102,5 +102,9 @@ public class EditCommerceInventoryWarehouseItemMVCActionCommand
 	@Reference
 	private CommerceInventoryWarehouseItemService
 		_commerceInventoryWarehouseItemService;
+
+	@Reference
+	private CommerceOrderItemQuantityFormatter
+		_commerceOrderItemQuantityFormatter;
 
 }

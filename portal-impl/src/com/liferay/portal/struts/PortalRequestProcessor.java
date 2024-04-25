@@ -23,7 +23,6 @@ import com.liferay.portal.kernel.model.UserTrackerPath;
 import com.liferay.portal.kernel.portlet.FriendlyURLMapper;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
-import com.liferay.portal.kernel.security.auth.InterruptedPortletRequestWhitelistUtil;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
@@ -43,6 +42,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.liveusers.LiveUsers;
+import com.liferay.portal.security.auth.InterruptedPortletRequestWhitelistUtil;
 import com.liferay.portal.struts.model.ActionForward;
 import com.liferay.portal.struts.model.ActionMapping;
 import com.liferay.portal.struts.model.ModuleConfig;
@@ -254,31 +254,18 @@ public class PortalRequestProcessor {
 	}
 
 	private String _getLastPath(HttpServletRequest httpServletRequest) {
-		HttpSession httpSession = httpServletRequest.getSession();
+		StringBundler sb = new StringBundler(5);
+
+		String portalURL = PortalUtil.getPortalURL(httpServletRequest);
+
+		sb.append(portalURL);
 
 		ThemeDisplay themeDisplay =
 			(ThemeDisplay)httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
-		Boolean httpsInitial = (Boolean)httpSession.getAttribute(
-			WebKeys.HTTPS_INITIAL);
-
-		String portalURL = null;
-
-		if (PropsValues.COMPANY_SECURITY_AUTH_REQUIRES_HTTPS &&
-			!PropsValues.SESSION_ENABLE_PHISHING_PROTECTION &&
-			(httpsInitial != null) && !httpsInitial.booleanValue()) {
-
-			portalURL = PortalUtil.getPortalURL(httpServletRequest, false);
-		}
-		else {
-			portalURL = PortalUtil.getPortalURL(httpServletRequest);
-		}
-
-		StringBundler sb = new StringBundler(5);
-
-		sb.append(portalURL);
 		sb.append(themeDisplay.getPathMain());
+
 		sb.append(_PATH_PORTAL_LAYOUT);
 
 		if (!PropsValues.AUTH_FORWARD_BY_LAST_PATH) {
@@ -294,6 +281,8 @@ public class PortalRequestProcessor {
 
 			return sb.toString();
 		}
+
+		HttpSession httpSession = httpServletRequest.getSession();
 
 		LastPath lastPath = (LastPath)httpSession.getAttribute(
 			WebKeys.LAST_PATH);

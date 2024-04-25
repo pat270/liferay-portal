@@ -4,9 +4,11 @@
  */
 
 import {useEffect, useState} from 'react';
-import {Navigate, useOutletContext} from 'react-router-dom';
+import {Navigate, useLocation, useOutletContext} from 'react-router-dom';
+import {useGetMyUserAccount} from '~/common/services/liferay/graphql/user-accounts';
 import {useCustomerPortal} from '../../context';
 import {hasAdminOrPartnerManager} from '../ActivationKeysTable/utils/hasAdminOrPartnerManager';
+import {hasAdminUserAccount} from '../ActivationKeysTable/utils/hasAdminUserAccount';
 import GenerateNewKeySkeleton from './Skeleton';
 import ComplimentaryDate from './pages/ComplimentaryDate';
 import RequiredInformation from './pages/RequiredInformation';
@@ -15,23 +17,41 @@ import {STEP_TYPES} from './utils/constants/stepType';
 
 const ACTIVATION_ROOT_ROUTER = 'activation';
 
-const GenerateNewKey = ({productGroupName}) => {
+const GenerateNewKey = ({
+	hasComplimentaryKey,
+	productGroupName,
+	setHasComplimentaryKey,
+}) => {
+	const {state} = useLocation();
+	const {data: myAccount} = useGetMyUserAccount();
 	const [{project, sessionId, userAccount}] = useCustomerPortal();
-	const [infoSelectedKey, setInfoSelectedKey] = useState();
+	const [selectedKeyData, setSelectedKeyData] = useState();
 	const [step, setStep] = useState(STEP_TYPES.selectDescriptions);
-	const {setHasQuickLinksPanel, setHasSideMenu} = useOutletContext();
+	const {setHasSideMenu} = useOutletContext();
+	const [status, setStatus] = useState({
+		deactivate: '',
+		downloadAggregated: '',
+		downloadMultiple: '',
+	});
+
+	const [purposeDescription, setPurposeDescription] = useState('');
+	const [submitKeyAction, setSubmitKeyAction] = useState({});
+	const [licenseEntryTypeName, setLicenseEntryTypeName] = useState('');
+	const [expirationRenewDate, setExpirationRenewDate] = useState('');
+	const [startRenewDate, setStartRenewDate] = useState('');
 
 	useEffect(() => {
-		setHasQuickLinksPanel(false);
 		setHasSideMenu(false);
-	}, [setHasSideMenu, setHasQuickLinksPanel]);
+	}, [setHasSideMenu]);
+
+	const isAdminUserAccount = hasAdminUserAccount(myAccount);
 
 	const isAdminOrPartnerManager = hasAdminOrPartnerManager(
 		project,
 		userAccount
 	);
 
-	if (!isAdminOrPartnerManager) {
+	if (!isAdminUserAccount && !isAdminOrPartnerManager) {
 		return <Navigate replace={true} to={`/${project?.accountKey}`} />;
 	}
 
@@ -43,30 +63,57 @@ const GenerateNewKey = ({productGroupName}) => {
 		[STEP_TYPES.generateKeys]: (
 			<RequiredInformation
 				accountKey={project?.accountKey}
-				infoSelectedKey={infoSelectedKey}
+				expirationRenewDate={expirationRenewDate}
+				hasComplimentaryKey={hasComplimentaryKey}
+				licenseEntryTypeName={licenseEntryTypeName}
+				purposeDescription={purposeDescription}
+				selectedKeyData={selectedKeyData}
 				sessionId={sessionId}
 				setStep={setStep}
+				startRenewDate={startRenewDate}
+				state={state}
+				submitKeyAction={submitKeyAction}
 				urlPreviousPage={urlPreviousPage}
 			/>
 		),
 		[STEP_TYPES.selectDescriptions]: (
 			<SelectSubscription
 				accountKey={project?.accountKey}
-				infoSelectedKey={infoSelectedKey}
+				activationKeysByStatusPaginatedChecked
+				filterCheckedActivationKeys
+				hasComplimentaryKey={hasComplimentaryKey}
+				identifier
 				productGroupName={productGroupName}
+				selectedKeyData={selectedKeyData}
 				sessionId={sessionId}
-				setInfoSelectedKey={setInfoSelectedKey}
+				setExpirationRenewDate={setExpirationRenewDate}
+				setHasComplimentaryKey={setHasComplimentaryKey}
+				setLicenseEntryTypeName={setLicenseEntryTypeName}
+				setSelectedKeyData={setSelectedKeyData}
+				setStartRenewDate={setStartRenewDate}
 				setStep={setStep}
+				setSubmitKeyAction={setSubmitKeyAction}
+				state={state}
 				urlPreviousPage={urlPreviousPage}
 			/>
 		),
-		[STEP_TYPES.selectInfoComplementaryKey]: (
+		[STEP_TYPES.selectInfoComplimentaryKey]: (
 			<ComplimentaryDate
 				accountKey={project?.accountKey}
-				infoSelectedKey={infoSelectedKey}
+				deactivateKeysStatus={status.deactivate}
+				filterCheckedActivationKeys
 				productGroupName={productGroupName}
+				purposeDescription={purposeDescription}
+				selectedKeyData={selectedKeyData}
 				sessionId={sessionId}
-				setInfoSelectedKey={setInfoSelectedKey}
+				setDeactivateKeysStatus={(value) =>
+					setStatus((previousStatus) => ({
+						...previousStatus,
+						deactivate: value,
+					}))
+				}
+				setPurposeDescription={setPurposeDescription}
+				setSelectedKeyData={setSelectedKeyData}
 				setStep={setStep}
 				urlPreviousPage={urlPreviousPage}
 			/>

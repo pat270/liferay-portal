@@ -120,6 +120,15 @@ public class SegmentsExperimentLocalServiceWrapper
 			segmentsExperimentId);
 	}
 
+	@Override
+	public SegmentsExperiment deleteSegmentsExperiment(
+			long groupId, long segmentsExperienceId, long plid)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _segmentsExperimentLocalService.deleteSegmentsExperiment(
+			groupId, segmentsExperienceId, plid);
+	}
+
 	/**
 	 * Deletes the segments experiment from the database. Also notifies the appropriate model listeners.
 	 *
@@ -147,14 +156,6 @@ public class SegmentsExperimentLocalServiceWrapper
 
 		return _segmentsExperimentLocalService.deleteSegmentsExperiment(
 			segmentsExperiment, force);
-	}
-
-	@Override
-	public void deleteSegmentsExperiments(long segmentsExperienceId, long plid)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		_segmentsExperimentLocalService.deleteSegmentsExperiments(
-			segmentsExperienceId, plid);
 	}
 
 	@Override
@@ -270,10 +271,10 @@ public class SegmentsExperimentLocalServiceWrapper
 
 	@Override
 	public SegmentsExperiment fetchSegmentsExperiment(
-		long segmentsExperienceId, long plid, int[] statuses) {
+		long groupId, long segmentsExperienceId, long plid) {
 
 		return _segmentsExperimentLocalService.fetchSegmentsExperiment(
-			segmentsExperienceId, plid, statuses);
+			groupId, segmentsExperienceId, plid);
 	}
 
 	@Override
@@ -353,27 +354,6 @@ public class SegmentsExperimentLocalServiceWrapper
 			getSegmentsEntrySegmentsExperiments(segmentsEntryId);
 	}
 
-	@Override
-	public java.util.List<SegmentsExperiment>
-		getSegmentsExperienceSegmentsExperiments(
-			long segmentsExperienceId, long plid) {
-
-		return _segmentsExperimentLocalService.
-			getSegmentsExperienceSegmentsExperiments(
-				segmentsExperienceId, plid);
-	}
-
-	@Override
-	public java.util.List<SegmentsExperiment>
-		getSegmentsExperienceSegmentsExperiments(
-			long[] segmentsExperienceIds, long plid, int[] statuses, int start,
-			int end) {
-
-		return _segmentsExperimentLocalService.
-			getSegmentsExperienceSegmentsExperiments(
-				segmentsExperienceIds, plid, statuses, start, end);
-	}
-
 	/**
 	 * Returns the segments experiment with the primary key.
 	 *
@@ -434,24 +414,6 @@ public class SegmentsExperimentLocalServiceWrapper
 			start, end);
 	}
 
-	@Override
-	public java.util.List<SegmentsExperiment> getSegmentsExperiments(
-		long groupId, long plid) {
-
-		return _segmentsExperimentLocalService.getSegmentsExperiments(
-			groupId, plid);
-	}
-
-	@Override
-	public java.util.List<SegmentsExperiment> getSegmentsExperiments(
-		long segmentsExperienceId, long plid, int[] statuses,
-		com.liferay.portal.kernel.util.OrderByComparator<SegmentsExperiment>
-			orderByComparator) {
-
-		return _segmentsExperimentLocalService.getSegmentsExperiments(
-			segmentsExperienceId, plid, statuses, orderByComparator);
-	}
-
 	/**
 	 * Returns all the segments experiments matching the UUID and company.
 	 *
@@ -500,22 +462,15 @@ public class SegmentsExperimentLocalServiceWrapper
 	}
 
 	@Override
-	public boolean hasSegmentsExperiment(
-		long segmentsExperienceId, long plid, int[] statuses) {
-
-		return _segmentsExperimentLocalService.hasSegmentsExperiment(
-			segmentsExperienceId, plid, statuses);
-	}
-
-	@Override
 	public SegmentsExperiment runSegmentsExperiment(
 			long segmentsExperimentId, double confidenceLevel,
-			java.util.Map<Long, Double> segmentsExperienceIdSplitMap)
+			java.util.Map<Long, Double> segmentsExperienceIdSplitMap,
+			String type)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _segmentsExperimentLocalService.runSegmentsExperiment(
-			segmentsExperimentId, confidenceLevel,
-			segmentsExperienceIdSplitMap);
+			segmentsExperimentId, confidenceLevel, segmentsExperienceIdSplitMap,
+			type);
 	}
 
 	@Override

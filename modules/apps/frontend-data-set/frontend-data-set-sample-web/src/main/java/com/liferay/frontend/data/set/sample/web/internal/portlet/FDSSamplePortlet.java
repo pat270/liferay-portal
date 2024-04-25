@@ -37,8 +37,6 @@ import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
-import javax.servlet.ServletContext;
-
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -108,7 +106,7 @@ public class FDSSamplePortlet extends MVCPortlet {
 
 		objectDefinition =
 			_objectDefinitionLocalService.addCustomObjectDefinition(
-				user.getUserId(), false, false,
+				user.getUserId(), 0, false, false, false,
 				LocalizedMapUtil.getLocalizedMap("Frontend Data Set Sample"),
 				"FDSSample", "100", null,
 				LocalizedMapUtil.getLocalizedMap("Frontend Data Set Samples"),
@@ -185,11 +183,6 @@ public class FDSSamplePortlet extends MVCPortlet {
 
 	@Reference
 	private Portal _portal;
-
-	@Reference(
-		target = "(&(original.bean=true)(bean.id=javax.servlet.ServletContext))"
-	)
-	private ServletContext _servletContext;
 
 	@Reference
 	private UserLocalService _userLocalService;

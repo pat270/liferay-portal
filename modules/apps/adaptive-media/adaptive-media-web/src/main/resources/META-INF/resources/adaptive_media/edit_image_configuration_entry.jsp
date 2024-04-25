@@ -8,7 +8,7 @@
 <%@ include file="/adaptive_media/init.jsp" %>
 
 <%
-String redirect = ParamUtil.getString(request, "redirect");
+String redirect = PortalUtil.escapeRedirect(ParamUtil.getString(request, "redirect"));
 
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(redirect);
@@ -39,7 +39,7 @@ renderResponse.setTitle((amImageConfigurationEntry != null) ? amImageConfigurati
 		</portlet:actionURL>
 
 		<react:component
-			module="adaptive_media/js/EditAdaptiveMedia"
+			module="{EditAdaptiveMedia} from adaptive-media-web"
 			props='<%=
 				HashMapBuilder.<String, Object>put(
 					"actionUrl", editImageConfigurationEntryURL

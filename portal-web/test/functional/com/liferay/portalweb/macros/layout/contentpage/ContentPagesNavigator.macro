@@ -1,6 +1,7 @@
 definition {
 
-	macro _convertNameToKey {
+	@summary = "Default summary"
+	macro _convertNameToKey(name = null) {
 		Variables.assertDefined(parameterList = ${name});
 
 		var key = StringUtil.replace(${name}, " ", "-");
@@ -10,34 +11,32 @@ definition {
 		return ${key};
 	}
 
-	macro goToTranslation {
+	@summary = "Default summary"
+	macro goToTranslation(pageName = null) {
 		PagesAdmin.openPageEllipsisMenu(pageName = ${pageName});
 
 		MenuItem.click(menuItem = "Translate");
 	}
 
-	macro openEditContentPage {
-		if (!(isSet(siteURLKey))) {
-			var siteURLKey = ContentPagesNavigator._convertNameToKey(name = ${siteName});
+	@summary = "Default summary"
+	macro openEditContentPage(pageFriendlyURL = null, siteURLKey = null, siteName = null, locale = null, privateLayout = null, pageName = null) {
+		if (contains(${siteName}, "Staging")) {
+			Navigator.openSiteURL(siteName = ${siteName});
 		}
 
-		if (!(isSet(pageFriendlyURL))) {
-			var pageFriendlyURL = ContentPagesNavigator._convertNameToKey(name = ${pageName});
-		}
+		ContentPagesNavigator.openViewContentPage(
+			locale = ${locale},
+			pageFriendlyURL = ${pageFriendlyURL},
+			pageName = ${pageName},
+			privateLayout = ${privateLayout},
+			siteName = ${siteName},
+			siteURLKey = ${siteURLKey});
 
-		if (${privateLayout} == "true") {
-			var type = "group";
-		}
-		else {
-			var type = "web";
-		}
-
-		Navigator.openWithAppendToBaseURL(urlAppend = "${type}/${siteURLKey}/${pageFriendlyURL}?p_l_mode=edit");
-
-		PageEditor.assertFragmentSidebarLoaded();
+		ContentPages.gotoPageEditor();
 	}
 
-	macro openViewContentPage {
+	@summary = "Default summary"
+	macro openViewContentPage(siteName = null, privateLayout = null, locale = null, pageName = null) {
 		if (!(isSet(siteURLKey))) {
 			var siteURLKey = ContentPagesNavigator._convertNameToKey(name = ${siteName});
 		}

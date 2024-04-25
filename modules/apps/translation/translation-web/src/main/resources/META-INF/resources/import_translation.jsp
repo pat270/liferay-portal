@@ -12,16 +12,17 @@ ImportTranslationDisplayContext importTranslationDisplayContext = (ImportTransla
 
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(importTranslationDisplayContext.getRedirect());
+portletDisplay.setURLBackTitle(ParamUtil.getString(request, "backURLTitle"));
 
 renderResponse.setTitle(LanguageUtil.get(resourceBundle, "import-translation"));
 %>
 
 <div class="translation">
-	<aui:form action="<%= importTranslationDisplayContext.getImportTranslationURL() %>" cssClass="translation-import" name="fm">
+	<aui:form action="<%= importTranslationDisplayContext.getImportTranslationURL() %>" cssClass="translation-import" enctype="multipart/form-data" name="fm">
 		<span aria-hidden="true" class="loading-animation"></span>
 
 		<react:component
-			module="js/import-translation/ImportTranslation"
+			module="{ImportTranslation} from translation-web"
 			props='<%=
 				HashMapBuilder.<String, Object>put(
 					"errorMessage", importTranslationDisplayContext.getErrorMessage()

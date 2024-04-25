@@ -52,8 +52,8 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.kernel.xml.StAXReaderUtil;
 import com.liferay.portal.util.PropsValues;
-import com.liferay.portal.xml.StAXReaderUtil;
 import com.liferay.portlet.portletconfiguration.util.ConfigurationPortletRequest;
 
 import java.util.ArrayList;
@@ -161,10 +161,10 @@ public class PortletPreferencesFactoryImpl
 			return;
 		}
 
-		PortletPreferences portletSetup = getStrictLayoutPortletSetup(
+		PortletPreferences portletPreferences = getStrictLayoutPortletSetup(
 			layout, portletId);
 
-		if (portletSetup instanceof StrictPortletPreferencesImpl) {
+		if (portletPreferences instanceof StrictPortletPreferencesImpl) {
 			getLayoutPortletSetup(layout, portletId);
 		}
 
@@ -648,12 +648,11 @@ public class PortletPreferencesFactoryImpl
 		for (com.liferay.portal.kernel.model.PortletPreferences
 				portletPreferences : portletPreferencesList) {
 
-			PortletPreferences portletSetup =
+			portletSetupMap.put(
+				portletPreferences.getPlid(),
 				PortletPreferencesLocalServiceUtil.getPreferences(
 					companyId, ownerId, ownerType, portletPreferences.getPlid(),
-					portletId);
-
-			portletSetupMap.put(portletPreferences.getPlid(), portletSetup);
+					portletId));
 		}
 
 		return portletSetupMap;

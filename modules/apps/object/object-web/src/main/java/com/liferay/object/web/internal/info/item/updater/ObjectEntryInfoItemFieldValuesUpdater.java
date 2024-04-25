@@ -5,21 +5,23 @@
 
 package com.liferay.object.web.internal.info.item.updater;
 
-import com.liferay.info.exception.InfoFormException;
 import com.liferay.info.item.InfoItemFieldValues;
 import com.liferay.info.item.provider.InfoItemFormProvider;
 import com.liferay.info.item.updater.InfoItemFieldValuesUpdater;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectEntry;
+import com.liferay.object.rest.dto.v1_0.Status;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManagerRegistry;
 import com.liferay.object.scope.ObjectScopeProviderRegistry;
 import com.liferay.object.web.internal.info.item.handler.ObjectEntryInfoItemExceptionRequestHandler;
 import com.liferay.object.web.internal.util.ObjectEntryUtil;
+import com.liferay.portal.kernel.exception.InfoFormException;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 
 /**
@@ -43,6 +45,17 @@ public class ObjectEntryInfoItemFieldValuesUpdater
 	@Override
 	public ObjectEntry updateFromInfoItemFieldValues(
 			ObjectEntry objectEntry, InfoItemFieldValues infoItemFieldValues)
+		throws Exception {
+
+		return updateFromInfoItemFieldValues(
+			objectEntry, infoItemFieldValues,
+			WorkflowConstants.STATUS_APPROVED);
+	}
+
+	@Override
+	public ObjectEntry updateFromInfoItemFieldValues(
+			ObjectEntry objectEntry, InfoItemFieldValues infoItemFieldValues,
+			int status)
 		throws InfoFormException {
 
 		ServiceContext serviceContext =
@@ -54,10 +67,12 @@ public class ObjectEntryInfoItemFieldValuesUpdater
 			_objectEntryManagerRegistry.getObjectEntryManager(
 				_objectDefinition.getStorageType());
 
+		int objectEntryStatus = status;
+
 		try {
 			return ObjectEntryUtil.toObjectEntry(
 				objectEntry.getObjectDefinitionId(),
-				objectEntryManager.updateObjectEntry(
+				objectEntryManager.partialUpdateObjectEntry(
 					objectEntry.getCompanyId(),
 					new DefaultDTOConverterContext(
 						false, null, null, null, null, themeDisplay.getLocale(),
@@ -65,11 +80,19 @@ public class ObjectEntryInfoItemFieldValuesUpdater
 					objectEntry.getExternalReferenceCode(), _objectDefinition,
 					new com.liferay.object.rest.dto.v1_0.ObjectEntry() {
 						{
-							keywords = serviceContext.getAssetTagNames();
-							properties = ObjectEntryUtil.toProperties(
-								infoItemFieldValues);
-							taxonomyCategoryIds = ArrayUtil.toLongArray(
-								serviceContext.getAssetCategoryIds());
+							setKeywords(serviceContext::getAssetTagNames);
+							setProperties(
+								() -> ObjectEntryUtil.toProperties(
+									infoItemFieldValues));
+							setStatus(
+								() -> new Status() {
+									{
+										setCode(() -> objectEntryStatus);
+									}
+								});
+							setTaxonomyCategoryIds(
+								() -> ArrayUtil.toLongArray(
+									serviceContext.getAssetCategoryIds()));
 						}
 					},
 					ObjectEntryUtil.getScopeKey(

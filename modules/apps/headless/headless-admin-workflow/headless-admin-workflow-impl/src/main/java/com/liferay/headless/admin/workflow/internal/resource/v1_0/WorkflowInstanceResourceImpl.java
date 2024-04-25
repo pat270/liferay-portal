@@ -163,21 +163,6 @@ public class WorkflowInstanceResourceImpl
 
 		return new WorkflowInstance() {
 			{
-				completed = workflowInstance.isComplete();
-				currentNodeNames = transformToArray(
-					workflowInstance.getCurrentWorkflowNodes(),
-					WorkflowNode::getName, String.class);
-				dateCompletion = workflowInstance.getEndDate();
-				dateCreated = workflowInstance.getStartDate();
-				id = workflowInstance.getWorkflowInstanceId();
-				objectReviewed = ObjectReviewedUtil.toObjectReviewed(
-					contextAcceptLanguage.getPreferredLocale(),
-					workflowInstance.getWorkflowContext());
-				workflowDefinitionName =
-					workflowInstance.getWorkflowDefinitionName();
-				workflowDefinitionVersion = String.valueOf(
-					workflowInstance.getWorkflowDefinitionVersion());
-
 				setActions(
 					() -> HashMapBuilder.put(
 						"changeTransition",
@@ -185,25 +170,42 @@ public class WorkflowInstanceResourceImpl
 							ActionKeys.UPDATE,
 							workflowInstance.getWorkflowInstanceId(),
 							"postWorkflowInstanceChangeTransition",
-							_workflowInstanceModelResourcePermission)
+							_kaleoInstanceModelResourcePermission)
 					).put(
 						"delete",
 						addAction(
 							ActionKeys.DELETE,
 							workflowInstance.getWorkflowInstanceId(),
 							"deleteWorkflowInstance",
-							_workflowInstanceModelResourcePermission)
+							_kaleoInstanceModelResourcePermission)
 					).build());
+				setCompleted(workflowInstance::isComplete);
+				setCurrentNodeNames(
+					() -> transformToArray(
+						workflowInstance.getCurrentWorkflowNodes(),
+						WorkflowNode::getName, String.class));
+				setDateCompletion(workflowInstance::getEndDate);
+				setDateCreated(workflowInstance::getStartDate);
+				setId(workflowInstance::getWorkflowInstanceId);
+				setObjectReviewed(
+					() -> ObjectReviewedUtil.toObjectReviewed(
+						contextAcceptLanguage.getPreferredLocale(),
+						workflowInstance.getWorkflowContext()));
+				setWorkflowDefinitionName(
+					workflowInstance::getWorkflowDefinitionName);
+				setWorkflowDefinitionVersion(
+					() -> String.valueOf(
+						workflowInstance.getWorkflowDefinitionVersion()));
 			}
 		};
 	}
 
+	@Reference(
+		target = "(model.class.name=com.liferay.portal.workflow.kaleo.model.KaleoInstance)"
+	)
+	private ModelResourcePermission<?> _kaleoInstanceModelResourcePermission;
+
 	@Reference
 	private WorkflowInstanceManager _workflowInstanceManager;
-
-	@Reference(
-		target = "(model.class.name=com.liferay.portal.kernel.workflow.WorkflowInstance)"
-	)
-	private ModelResourcePermission<?> _workflowInstanceModelResourcePermission;
 
 }

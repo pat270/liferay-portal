@@ -72,7 +72,12 @@ public class FormDocumentResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _formDocumentResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, FormDocumentResource>
+					formDocumentResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_formDocumentResourceProxyProviderFunction;
+
+				return formDocumentResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -229,10 +234,6 @@ public class FormDocumentResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, FormDocumentResource>
-		_formDocumentResourceProxyProviderFunction =
-			_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -268,6 +269,14 @@ public class FormDocumentResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, FormDocumentResource>
+			_formDocumentResourceProxyProviderFunction =
+				_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

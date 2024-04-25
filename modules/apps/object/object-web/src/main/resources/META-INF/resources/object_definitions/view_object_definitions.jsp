@@ -15,24 +15,39 @@ ViewObjectDefinitionsDisplayContext viewObjectDefinitionsDisplayContext = (ViewO
 
 <div>
 	<react:component
-		module="js/components/ViewObjectDefinitions/ViewObjectDefinitions"
+		module="{ViewObjectDefinitions} from object-web"
 		props='<%=
 			HashMapBuilder.<String, Object>put(
-				"apiURL", viewObjectDefinitionsDisplayContext.getAPIURL()
+				"baseResourceURL",
+				URLBuilder.create(
+					String.valueOf(baseResourceURL)
+				).setParameter(
+					"objectFolderName", "Default"
+				).build()
 			).put(
-				"baseResourceURL", String.valueOf(baseResourceURL)
+				"editObjectDefinitionURL", viewObjectDefinitionsDisplayContext.getEditObjectDefinitionURL()
 			).put(
-				"creationMenu", viewObjectDefinitionsDisplayContext.getCreationMenu()
+				"importObjectDefinitionURL", viewObjectDefinitionsDisplayContext.getImportObjectDefinitionURL()
 			).put(
-				"id", ObjectDefinitionsFDSNames.OBJECT_DEFINITIONS
+				"importObjectFolderURL", viewObjectDefinitionsDisplayContext.getImportObjectFolderURL()
 			).put(
-				"items", viewObjectDefinitionsDisplayContext.getFDSActionDropdownItems()
+				"learnResourceContext", LearnMessageUtil.getReactDataJSONObject("frontend-js-components-web")
 			).put(
-				"sorting", viewObjectDefinitionsDisplayContext.getFDSSortItemList()
+				"modelBuilderURL", viewObjectDefinitionsDisplayContext.getModelBuilderURL()
 			).put(
-				"storages", viewObjectDefinitionsDisplayContext.getStoragesJSONArray()
+				"nameMaxLength", ModelHintsConstants.TEXT_MAX_LENGTH
 			).put(
-				"url", viewObjectDefinitionsDisplayContext.getEditObjectDefinitionURL()
+				"objectDefinitionsCreationMenu", viewObjectDefinitionsDisplayContext.getCreationMenu()
+			).put(
+				"objectDefinitionsFDSActionDropdownItems", viewObjectDefinitionsDisplayContext.getFDSActionDropdownItems()
+			).put(
+				"objectDefinitionsFDSName", ObjectDefinitionsFDSNames.OBJECT_DEFINITIONS
+			).put(
+				"objectDefinitionsStorageTypes", viewObjectDefinitionsDisplayContext.getStorageTypesJSONArray()
+			).put(
+				"objectFolderPermissionsURL", viewObjectDefinitionsDisplayContext.getPermissionsURL(ObjectFolder.class.getName())
+			).put(
+				"portletNamespace", liferayPortletResponse.getNamespace()
 			).build()
 		%>'
 	/>

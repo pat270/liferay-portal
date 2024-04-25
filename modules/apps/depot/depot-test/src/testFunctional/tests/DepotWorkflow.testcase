@@ -120,11 +120,9 @@ definition {
 	test CanApproveWCArticle {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
+		Workflow.openWorkflowListView();
 
 		Navigator.gotoNavItem(navItem = "Configuration");
 
@@ -352,6 +350,7 @@ definition {
 	@refactordone
 	test CanApproveWCInFolder {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONWebcontent.addFolder(
 			folderName = "WC Folder Name",
@@ -457,6 +456,7 @@ definition {
 	@refactordone
 	test CanRejectAndResubmitImage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		JSONFolder.addFolder(
 			dmFolderDescription = "DM Folder Description",
@@ -583,13 +583,9 @@ definition {
 	@refactordone
 	test CanRejectAndResubmitWC {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Process Builder");
-
-		Navigator.gotoNavItem(navItem = "Configuration");
+		Workflow.openWorkflowProcessBuilderConfiguration();
 
 		Workflow.configureWorkflow(
 			workflowDefinition = "Single Approver",
@@ -745,7 +741,7 @@ definition {
 
 		WebContent.addCP(webContentTitle = "Depot WebContent Title Edit");
 
-		Button.clickSave();
+		Button.click(button = "Save");
 
 		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
 
@@ -810,13 +806,17 @@ definition {
 
 		WebContentNavigator.gotoAddCP();
 
-		WebContent.addWithWorkflowCP(
+		WebContent.addCP(
 			webContentContent = "Depot WebContent Content",
 			webContentTitle = "Depot WebContent Title");
 
-		WebContentNavigator.gotoViewStatus(
-			webContentStatus = "Pending",
-			webContentTitle = "Depot WebContent Title");
+		Button.click(button = "Submit for Workflow");
+
+		DepotNavigator.openDepotWebContentAdmin(depotName = "Test Depot Name");
+
+		LexiconList.viewListEntryLabel(
+			listEntry = "Depot WebContent Title",
+			listEntryLabel = "Pending");
 
 		WorkflowAsset.gotoViaNotification(
 			assetType = "Web Content Article",

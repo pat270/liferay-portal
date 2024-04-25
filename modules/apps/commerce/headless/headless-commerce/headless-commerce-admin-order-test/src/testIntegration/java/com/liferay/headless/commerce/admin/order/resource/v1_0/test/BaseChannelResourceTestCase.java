@@ -25,8 +25,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -215,6 +213,8 @@ public abstract class BaseChannelResourceTestCase {
 	public void testGraphQLGetOrderRuleChannelChannel() throws Exception {
 		Channel channel = testGraphQLGetOrderRuleChannelChannel_addChannel();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				channel,
@@ -232,6 +232,30 @@ public abstract class BaseChannelResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/orderRuleChannelChannel"))));
+
+		// Using the namespace headlessCommerceAdminOrder_v1_0
+
+		Assert.assertTrue(
+			equals(
+				channel,
+				ChannelSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminOrder_v1_0",
+								new GraphQLField(
+									"orderRuleChannelChannel",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"orderRuleChannelId",
+												testGraphQLGetOrderRuleChannelChannel_getOrderRuleChannelId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminOrder_v1_0",
+						"Object/orderRuleChannelChannel"))));
 	}
 
 	protected Long testGraphQLGetOrderRuleChannelChannel_getOrderRuleChannelId()
@@ -247,6 +271,8 @@ public abstract class BaseChannelResourceTestCase {
 
 		Long irrelevantOrderRuleChannelId = RandomTestUtil.randomLong();
 
+		// No namespace
+
 		Assert.assertEquals(
 			"Not Found",
 			JSONUtil.getValueAsString(
@@ -261,6 +287,27 @@ public abstract class BaseChannelResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminOrder_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminOrder_v1_0",
+						new GraphQLField(
+							"orderRuleChannelChannel",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"orderRuleChannelId",
+										irrelevantOrderRuleChannelId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -300,6 +347,8 @@ public abstract class BaseChannelResourceTestCase {
 	public void testGraphQLGetOrderTypeChannelChannel() throws Exception {
 		Channel channel = testGraphQLGetOrderTypeChannelChannel_addChannel();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				channel,
@@ -317,6 +366,30 @@ public abstract class BaseChannelResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/orderTypeChannelChannel"))));
+
+		// Using the namespace headlessCommerceAdminOrder_v1_0
+
+		Assert.assertTrue(
+			equals(
+				channel,
+				ChannelSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminOrder_v1_0",
+								new GraphQLField(
+									"orderTypeChannelChannel",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"orderTypeChannelId",
+												testGraphQLGetOrderTypeChannelChannel_getOrderTypeChannelId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminOrder_v1_0",
+						"Object/orderTypeChannelChannel"))));
 	}
 
 	protected Long testGraphQLGetOrderTypeChannelChannel_getOrderTypeChannelId()
@@ -332,6 +405,8 @@ public abstract class BaseChannelResourceTestCase {
 
 		Long irrelevantOrderTypeChannelId = RandomTestUtil.randomLong();
 
+		// No namespace
+
 		Assert.assertEquals(
 			"Not Found",
 			JSONUtil.getValueAsString(
@@ -346,6 +421,27 @@ public abstract class BaseChannelResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminOrder_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminOrder_v1_0",
+						new GraphQLField(
+							"orderTypeChannelChannel",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"orderTypeChannelId",
+										irrelevantOrderTypeChannelId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -392,6 +488,8 @@ public abstract class BaseChannelResourceTestCase {
 		Channel channel =
 			testGraphQLGetOrderByExternalReferenceCodeChannel_addChannel();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				channel,
@@ -412,6 +510,32 @@ public abstract class BaseChannelResourceTestCase {
 								getGraphQLFields())),
 						"JSONObject/data",
 						"Object/orderByExternalReferenceCodeChannel"))));
+
+		// Using the namespace headlessCommerceAdminOrder_v1_0
+
+		Assert.assertTrue(
+			equals(
+				channel,
+				ChannelSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminOrder_v1_0",
+								new GraphQLField(
+									"orderByExternalReferenceCodeChannel",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"externalReferenceCode",
+												"\"" +
+													testGraphQLGetOrderByExternalReferenceCodeChannel_getExternalReferenceCode(
+														channel) + "\"");
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminOrder_v1_0",
+						"Object/orderByExternalReferenceCodeChannel"))));
 	}
 
 	protected String
@@ -429,6 +553,8 @@ public abstract class BaseChannelResourceTestCase {
 		String irrelevantExternalReferenceCode =
 			"\"" + RandomTestUtil.randomString() + "\"";
 
+		// No namespace
+
 		Assert.assertEquals(
 			"Not Found",
 			JSONUtil.getValueAsString(
@@ -443,6 +569,27 @@ public abstract class BaseChannelResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminOrder_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminOrder_v1_0",
+						new GraphQLField(
+							"orderByExternalReferenceCodeChannel",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"externalReferenceCode",
+										irrelevantExternalReferenceCode);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -480,6 +627,8 @@ public abstract class BaseChannelResourceTestCase {
 	public void testGraphQLGetOrderIdChannel() throws Exception {
 		Channel channel = testGraphQLGetOrderIdChannel_addChannel();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				channel,
@@ -498,6 +647,31 @@ public abstract class BaseChannelResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/orderIdChannel"))));
+
+		// Using the namespace headlessCommerceAdminOrder_v1_0
+
+		Assert.assertTrue(
+			equals(
+				channel,
+				ChannelSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminOrder_v1_0",
+								new GraphQLField(
+									"orderIdChannel",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"id",
+												testGraphQLGetOrderIdChannel_getId(
+													channel));
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminOrder_v1_0",
+						"Object/orderIdChannel"))));
 	}
 
 	protected Long testGraphQLGetOrderIdChannel_getId(Channel channel)
@@ -509,6 +683,8 @@ public abstract class BaseChannelResourceTestCase {
 	@Test
 	public void testGraphQLGetOrderIdChannelNotFound() throws Exception {
 		Long irrelevantId = RandomTestUtil.randomLong();
+
+		// No namespace
 
 		Assert.assertEquals(
 			"Not Found",
@@ -522,6 +698,25 @@ public abstract class BaseChannelResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminOrder_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminOrder_v1_0",
+						new GraphQLField(
+							"orderIdChannel",
+							new HashMap<String, Object>() {
+								{
+									put("id", irrelevantId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -848,6 +1043,10 @@ public abstract class BaseChannelResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -1169,9 +1368,9 @@ public abstract class BaseChannelResourceTestCase {
 	}
 
 	protected ChannelResource channelResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

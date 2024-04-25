@@ -5,17 +5,31 @@
 
 package com.liferay.headless.admin.user.internal.dto.v1_0.converter;
 
+import com.liferay.account.constants.AccountActionKeys;
 import com.liferay.account.model.AccountEntry;
 import com.liferay.account.model.AccountEntryOrganizationRel;
 import com.liferay.account.service.AccountEntryLocalService;
 import com.liferay.account.service.AccountEntryOrganizationRelLocalService;
 import com.liferay.account.service.AccountEntryUserRelLocalService;
 import com.liferay.headless.admin.user.dto.v1_0.Account;
+import com.liferay.headless.admin.user.dto.v1_0.AccountContactInformation;
+import com.liferay.headless.admin.user.dto.v1_0.EmailAddress;
+import com.liferay.headless.admin.user.dto.v1_0.Phone;
+import com.liferay.headless.admin.user.dto.v1_0.PostalAddress;
+import com.liferay.headless.admin.user.dto.v1_0.WebUrl;
 import com.liferay.headless.admin.user.internal.dto.v1_0.util.CustomFieldsUtil;
+import com.liferay.headless.admin.user.internal.dto.v1_0.util.EmailAddressUtil;
+import com.liferay.headless.admin.user.internal.dto.v1_0.util.PhoneUtil;
+import com.liferay.headless.admin.user.internal.dto.v1_0.util.PostalAddressUtil;
+import com.liferay.headless.admin.user.internal.dto.v1_0.util.WebUrlUtil;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
+import com.liferay.portal.kernel.model.Contact;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
-import com.liferay.portal.kernel.service.AddressLocalService;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
+import com.liferay.portal.kernel.service.ListTypeLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.webserver.WebServerServletToken;
@@ -61,7 +75,8 @@ public class AccountResourceDTOConverter
 
 	@Override
 	public Account toDTO(
-		DTOConverterContext dtoConverterContext, AccountEntry accountEntry) {
+			DTOConverterContext dtoConverterContext, AccountEntry accountEntry)
+		throws Exception {
 
 		if (accountEntry == null) {
 			return null;
@@ -69,50 +84,154 @@ public class AccountResourceDTOConverter
 
 		return new Account() {
 			{
-				actions = dtoConverterContext.getActions();
-				customFields = CustomFieldsUtil.toCustomFields(
-					dtoConverterContext.isAcceptAllLanguages(),
-					AccountEntry.class.getName(),
-					accountEntry.getAccountEntryId(),
-					accountEntry.getCompanyId(),
-					dtoConverterContext.getLocale());
-				dateCreated = accountEntry.getCreateDate();
-				dateModified = accountEntry.getModifiedDate();
-				defaultBillingAddressId =
-					accountEntry.getDefaultBillingAddressId();
-				defaultShippingAddressId =
-					accountEntry.getDefaultShippingAddressId();
-				description = accountEntry.getDescription();
-				domains = StringUtil.split(accountEntry.getDomains());
-				externalReferenceCode = accountEntry.getExternalReferenceCode();
-				id = accountEntry.getAccountEntryId();
-				logoId = accountEntry.getLogoId();
-				logoURL = StringBundler.concat(
-					"/image/organization_logo?img_id=",
-					accountEntry.getLogoId(), "&t=",
-					_webServerServletToken.getToken(accountEntry.getLogoId()));
+				setAccountContactInformation(
+					() -> _toAccountContactInformation(
+						accountEntry, dtoConverterContext));
+				setActions(dtoConverterContext::getActions);
+				setCustomFields(
+					() -> CustomFieldsUtil.toCustomFields(
+						dtoConverterContext.isAcceptAllLanguages(),
+						AccountEntry.class.getName(),
+						accountEntry.getAccountEntryId(),
+						accountEntry.getCompanyId(),
+						dtoConverterContext.getLocale()));
+				setDateCreated(accountEntry::getCreateDate);
+				setDateModified(accountEntry::getModifiedDate);
+				setDefaultBillingAddressId(
+					accountEntry::getDefaultBillingAddressId);
+				setDefaultShippingAddressId(
+					accountEntry::getDefaultShippingAddressId);
+				setDescription(accountEntry::getDescription);
+				setDomains(() -> StringUtil.split(accountEntry.getDomains()));
+				setExternalReferenceCode(
+					accountEntry::getExternalReferenceCode);
+				setId(accountEntry::getAccountEntryId);
+				setLogoId(accountEntry::getLogoId);
+				setLogoURL(
+					() -> StringBundler.concat(
+						"/image/organization_logo?img_id=",
+						accountEntry.getLogoId(), "&t=",
+						_webServerServletToken.getToken(
+							accountEntry.getLogoId())));
+				setName(accountEntry::getName);
+				setNumberOfUsers(
+					() ->
+						(int)
+							_accountEntryUserRelLocalService.
+								getAccountEntryUserRelsCountByAccountEntryId(
+									accountEntry.getAccountEntryId()));
+				setOrganizationIds(
+					() -> TransformUtil.transformToArray(
+						_accountEntryOrganizationRelLocalService.
+							getAccountEntryOrganizationRels(
+								accountEntry.getAccountEntryId()),
+						AccountEntryOrganizationRel::getOrganizationId,
+						Long.class));
+				setParentAccountId(accountEntry::getParentAccountEntryId);
+				setStatus(accountEntry::getStatus);
+				setTaxId(accountEntry::getTaxIdNumber);
+				setType(() -> Account.Type.create(accountEntry.getType()));
+			}
+		};
+	}
 
-				name = accountEntry.getName();
-				numberOfUsers =
-					(int)
-						_accountEntryUserRelLocalService.
-							getAccountEntryUserRelsCountByAccountEntryId(
-								accountEntry.getAccountEntryId());
-				organizationIds = TransformUtil.transformToArray(
-					_accountEntryOrganizationRelLocalService.
-						getAccountEntryOrganizationRels(
-							accountEntry.getAccountEntryId()),
-					AccountEntryOrganizationRel::getOrganizationId, Long.class);
-				parentAccountId = accountEntry.getParentAccountEntryId();
-				status = accountEntry.getStatus();
-				taxId = accountEntry.getTaxIdNumber();
-				type = Account.Type.create(accountEntry.getType());
+	private AccountContactInformation _toAccountContactInformation(
+			AccountEntry accountEntry, DTOConverterContext dtoConverterContext)
+		throws Exception {
+
+		if (!FeatureFlagManagerUtil.isEnabled("LPD-10855") ||
+			(!_accountEntryModelResourcePermission.contains(
+				PermissionThreadLocal.getPermissionChecker(),
+				accountEntry.getAccountEntryId(),
+				AccountActionKeys.MANAGE_ADDRESSES) &&
+			 !_accountEntryModelResourcePermission.contains(
+				 PermissionThreadLocal.getPermissionChecker(),
+				 accountEntry.getAccountEntryId(),
+				 AccountActionKeys.VIEW_ADDRESSES))) {
+
+			return null;
+		}
+
+		Contact contact = accountEntry.fetchContact();
+
+		return new AccountContactInformation() {
+			{
+				setEmailAddresses(
+					() -> TransformUtil.transformToArray(
+						accountEntry.getEmailAddresses(),
+						EmailAddressUtil::toEmailAddress, EmailAddress.class));
+				setFacebook(
+					() -> {
+						if (contact == null) {
+							return null;
+						}
+
+						return contact.getFacebookSn();
+					});
+				setJabber(
+					() -> {
+						if (contact == null) {
+							return null;
+						}
+
+						return contact.getJabberSn();
+					});
+				setPostalAddresses(
+					() -> TransformUtil.transformToArray(
+						accountEntry.getListTypeAddresses(
+							PostalAddressUtil.
+								getAccountEntryContactAddressListTypeIds(
+									accountEntry.getCompanyId(),
+									_listTypeLocalService)),
+						address -> PostalAddressUtil.toPostalAddress(
+							dtoConverterContext.isAcceptAllLanguages(), address,
+							accountEntry.getCompanyId(),
+							dtoConverterContext.getLocale()),
+						PostalAddress.class));
+				setSkype(
+					() -> {
+						if (contact == null) {
+							return null;
+						}
+
+						return contact.getSkypeSn();
+					});
+				setSms(
+					() -> {
+						if (contact == null) {
+							return null;
+						}
+
+						return contact.getSmsSn();
+					});
+				setTelephones(
+					() -> TransformUtil.transformToArray(
+						accountEntry.getPhones(), PhoneUtil::toPhone,
+						Phone.class));
+				setTwitter(
+					() -> {
+						if (contact == null) {
+							return null;
+						}
+
+						return contact.getTwitterSn();
+					});
+				setWebUrls(
+					() -> TransformUtil.transformToArray(
+						accountEntry.getWebsites(), WebUrlUtil::toWebUrl,
+						WebUrl.class));
 			}
 		};
 	}
 
 	@Reference
 	private AccountEntryLocalService _accountEntryLocalService;
+
+	@Reference(
+		target = "(model.class.name=com.liferay.account.model.AccountEntry)"
+	)
+	private volatile ModelResourcePermission<AccountEntry>
+		_accountEntryModelResourcePermission;
 
 	@Reference
 	private AccountEntryOrganizationRelLocalService
@@ -122,7 +241,7 @@ public class AccountResourceDTOConverter
 	private AccountEntryUserRelLocalService _accountEntryUserRelLocalService;
 
 	@Reference
-	private AddressLocalService _addressLocalService;
+	private ListTypeLocalService _listTypeLocalService;
 
 	@Reference
 	private WebServerServletToken _webServerServletToken;

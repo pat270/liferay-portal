@@ -166,7 +166,8 @@ public class LiferayDynamicCapabilityTest {
 								long folderId, String sourceFileName,
 								String mimeType, String title, String urlTitle,
 								String description, String changeLog, File file,
-								Date expirationDate, Date reviewDate,
+								Date displayDate, Date expirationDate,
+								Date reviewDate,
 								ServiceContext serviceContext) {
 
 								return fileEntry1;
@@ -346,7 +347,8 @@ public class LiferayDynamicCapabilityTest {
 								long folderId, String sourceFileName,
 								String mimeType, String title, String urlTitle,
 								String description, String changeLog, File file,
-								Date expirationDate, Date reviewDate,
+								Date displayDate, Date expirationDate,
+								Date reviewDate,
 								ServiceContext serviceContext) {
 
 								return fileEntry1;
@@ -404,7 +406,8 @@ public class LiferayDynamicCapabilityTest {
 								long folderId, String sourceFileName,
 								String mimeType, String title, String urlTitle,
 								String description, String changeLog, File file,
-								Date expirationDate, Date reviewDate,
+								Date displayDate, Date expirationDate,
+								Date reviewDate,
 								ServiceContext serviceContext) {
 
 								return fileEntry1;
@@ -438,7 +441,8 @@ public class LiferayDynamicCapabilityTest {
 			null, TestPropsValues.getUserId(), _group.getGroupId(),
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			StringUtil.randomString(), ContentTypes.APPLICATION_OCTET_STREAM,
-			TestDataConstants.TEST_BYTE_ARRAY, null, null, serviceContext);
+			TestDataConstants.TEST_BYTE_ARRAY, null, null, null,
+			serviceContext);
 	}
 
 	private Dictionary<String, Object> _getCapabilityProperties(

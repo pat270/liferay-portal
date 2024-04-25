@@ -50,6 +50,12 @@ if (cur2 > 0) {
 
 portletURL.setParameter("mbCategoryId", String.valueOf(categoryId));
 
+String searchCategoryId = ParamUtil.getString(request, "searchCategoryId");
+
+if (Validator.isNotNull(searchCategoryId)) {
+	portletURL.setParameter("searchCategoryId", searchCategoryId);
+}
+
 String keywords = ParamUtil.getString(request, "keywords");
 
 if (Validator.isNotNull(keywords)) {
@@ -72,7 +78,7 @@ if (orderByCol.equals("modified-date")) {
 	threadOrderByComparator = new ThreadModifiedDateComparator(orderByAsc);
 }
 
-MBListDisplayContext mbListDisplayContext = mbDisplayContextProvider.getMbListDisplayContext(request, response, categoryId, mvcRenderCommandName);
+MBListDisplayContext mbListDisplayContext = MBDisplayContextUtil.getMBListDisplayContext(request, response, categoryId, mvcRenderCommandName);
 
 request.setAttribute("view.jsp-categorySubscriptionClassPKs", categorySubscriptionClassPKs);
 request.setAttribute("view.jsp-threadSubscriptionClassPKs", threadSubscriptionClassPKs);

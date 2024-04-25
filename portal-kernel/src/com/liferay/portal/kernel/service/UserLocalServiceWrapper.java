@@ -87,6 +87,13 @@ public class UserLocalServiceWrapper
 		return _userLocalService.addDefaultRoles(userId);
 	}
 
+	@Override
+	public User addDefaultServiceAccountUser(long companyId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _userLocalService.addDefaultServiceAccountUser(companyId);
+	}
+
 	/**
 	 * Adds the user to the default user groups, unless the user is already in
 	 * these user groups. The default user groups can be specified in
@@ -105,64 +112,64 @@ public class UserLocalServiceWrapper
 	}
 
 	@Override
-	public void addGroupUser(long groupId, long userId) {
-		_userLocalService.addGroupUser(groupId, userId);
+	public boolean addGroupUser(long groupId, long userId) {
+		return _userLocalService.addGroupUser(groupId, userId);
 	}
 
 	@Override
-	public void addGroupUser(long groupId, User user) {
-		_userLocalService.addGroupUser(groupId, user);
+	public boolean addGroupUser(long groupId, User user) {
+		return _userLocalService.addGroupUser(groupId, user);
 	}
 
 	/**
 	 * @throws PortalException
 	 */
 	@Override
-	public void addGroupUsers(long groupId, java.util.List<User> users)
+	public boolean addGroupUsers(long groupId, java.util.List<User> users)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		_userLocalService.addGroupUsers(groupId, users);
+		return _userLocalService.addGroupUsers(groupId, users);
 	}
 
 	/**
 	 * @throws PortalException
 	 */
 	@Override
-	public void addGroupUsers(long groupId, long[] userIds)
+	public boolean addGroupUsers(long groupId, long[] userIds)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		_userLocalService.addGroupUsers(groupId, userIds);
+		return _userLocalService.addGroupUsers(groupId, userIds);
 	}
 
 	@Override
-	public void addOrganizationUser(long organizationId, long userId) {
-		_userLocalService.addOrganizationUser(organizationId, userId);
+	public boolean addOrganizationUser(long organizationId, long userId) {
+		return _userLocalService.addOrganizationUser(organizationId, userId);
 	}
 
 	@Override
-	public void addOrganizationUser(long organizationId, User user) {
-		_userLocalService.addOrganizationUser(organizationId, user);
+	public boolean addOrganizationUser(long organizationId, User user) {
+		return _userLocalService.addOrganizationUser(organizationId, user);
 	}
 
 	/**
 	 * @throws PortalException
 	 */
 	@Override
-	public void addOrganizationUsers(
+	public boolean addOrganizationUsers(
 			long organizationId, java.util.List<User> users)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		_userLocalService.addOrganizationUsers(organizationId, users);
+		return _userLocalService.addOrganizationUsers(organizationId, users);
 	}
 
 	/**
 	 * @throws PortalException
 	 */
 	@Override
-	public void addOrganizationUsers(long organizationId, long[] userIds)
+	public boolean addOrganizationUsers(long organizationId, long[] userIds)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		_userLocalService.addOrganizationUsers(organizationId, userIds);
+		return _userLocalService.addOrganizationUsers(organizationId, userIds);
 	}
 
 	@Override
@@ -197,63 +204,63 @@ public class UserLocalServiceWrapper
 	}
 
 	@Override
-	public void addRoleUser(long roleId, long userId) {
-		_userLocalService.addRoleUser(roleId, userId);
+	public boolean addRoleUser(long roleId, long userId) {
+		return _userLocalService.addRoleUser(roleId, userId);
 	}
 
 	@Override
-	public void addRoleUser(long roleId, User user) {
-		_userLocalService.addRoleUser(roleId, user);
-	}
-
-	/**
-	 * @throws PortalException
-	 */
-	@Override
-	public void addRoleUsers(long roleId, java.util.List<User> users)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		_userLocalService.addRoleUsers(roleId, users);
+	public boolean addRoleUser(long roleId, User user) {
+		return _userLocalService.addRoleUser(roleId, user);
 	}
 
 	/**
 	 * @throws PortalException
 	 */
 	@Override
-	public void addRoleUsers(long roleId, long[] userIds)
+	public boolean addRoleUsers(long roleId, java.util.List<User> users)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		_userLocalService.addRoleUsers(roleId, userIds);
-	}
-
-	@Override
-	public void addTeamUser(long teamId, long userId) {
-		_userLocalService.addTeamUser(teamId, userId);
-	}
-
-	@Override
-	public void addTeamUser(long teamId, User user) {
-		_userLocalService.addTeamUser(teamId, user);
+		return _userLocalService.addRoleUsers(roleId, users);
 	}
 
 	/**
 	 * @throws PortalException
 	 */
 	@Override
-	public void addTeamUsers(long teamId, java.util.List<User> users)
+	public boolean addRoleUsers(long roleId, long[] userIds)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		_userLocalService.addTeamUsers(teamId, users);
+		return _userLocalService.addRoleUsers(roleId, userIds);
+	}
+
+	@Override
+	public boolean addTeamUser(long teamId, long userId) {
+		return _userLocalService.addTeamUser(teamId, userId);
+	}
+
+	@Override
+	public boolean addTeamUser(long teamId, User user) {
+		return _userLocalService.addTeamUser(teamId, user);
 	}
 
 	/**
 	 * @throws PortalException
 	 */
 	@Override
-	public void addTeamUsers(long teamId, long[] userIds)
+	public boolean addTeamUsers(long teamId, java.util.List<User> users)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		_userLocalService.addTeamUsers(teamId, userIds);
+		return _userLocalService.addTeamUsers(teamId, users);
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public boolean addTeamUsers(long teamId, long[] userIds)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _userLocalService.addTeamUsers(teamId, userIds);
 	}
 
 	/**
@@ -338,33 +345,34 @@ public class UserLocalServiceWrapper
 	}
 
 	@Override
-	public void addUserGroupUser(long userGroupId, long userId) {
-		_userLocalService.addUserGroupUser(userGroupId, userId);
+	public boolean addUserGroupUser(long userGroupId, long userId) {
+		return _userLocalService.addUserGroupUser(userGroupId, userId);
 	}
 
 	@Override
-	public void addUserGroupUser(long userGroupId, User user) {
-		_userLocalService.addUserGroupUser(userGroupId, user);
-	}
-
-	/**
-	 * @throws PortalException
-	 */
-	@Override
-	public void addUserGroupUsers(long userGroupId, java.util.List<User> users)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		_userLocalService.addUserGroupUsers(userGroupId, users);
+	public boolean addUserGroupUser(long userGroupId, User user) {
+		return _userLocalService.addUserGroupUser(userGroupId, user);
 	}
 
 	/**
 	 * @throws PortalException
 	 */
 	@Override
-	public void addUserGroupUsers(long userGroupId, long[] userIds)
+	public boolean addUserGroupUsers(
+			long userGroupId, java.util.List<User> users)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		_userLocalService.addUserGroupUsers(userGroupId, userIds);
+		return _userLocalService.addUserGroupUsers(userGroupId, users);
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public boolean addUserGroupUsers(long userGroupId, long[] userIds)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _userLocalService.addUserGroupUsers(userGroupId, userIds);
 	}
 
 	/**
@@ -2446,20 +2454,23 @@ public class UserLocalServiceWrapper
 
 	@Override
 	public java.util.List<User> searchBySocial(
-		long companyId, long[] groupIds, String keywords, int start, int end) {
+		long companyId, long[] groupIds, long[] userGroupIds, String keywords,
+		int start, int end) {
 
 		return _userLocalService.searchBySocial(
-			companyId, groupIds, keywords, start, end);
+			companyId, groupIds, userGroupIds, keywords, start, end);
 	}
 
 	@Override
 	public java.util.List<User> searchBySocial(
-		long companyId, long[] groupIds, String keywords, int start, int end,
+		long companyId, long[] groupIds, long[] userGroupIds, String keywords,
+		int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator<User>
 			orderByComparator) {
 
 		return _userLocalService.searchBySocial(
-			companyId, groupIds, keywords, start, end, orderByComparator);
+			companyId, groupIds, userGroupIds, keywords, start, end,
+			orderByComparator);
 	}
 
 	@Override
@@ -2605,22 +2616,18 @@ public class UserLocalServiceWrapper
 			user, emailAddress, serviceContext);
 	}
 
-	/**
-	 * Sends the password email to the user with the email address. The content
-	 * of this email can be specified in <code>portal.properties</code> with the
-	 * <code>admin.email.password</code> keys.
-	 *
-	 * @param companyId the primary key of the user's company
-	 * @param emailAddress the user's email address
-	 * @param fromName the name of the individual that the email should be from
-	 * @param fromAddress the address of the individual that the email should be
-	 from
-	 * @param subject the email subject. If <code>null</code>, the subject
-	 specified in <code>portal.properties</code> will be used.
-	 * @param body the email body. If <code>null</code>, the body specified in
-	 <code>portal.properties</code> will be used.
-	 * @param serviceContext the service context to be applied
-	 */
+	@Override
+	public boolean sendEmailUserCreationAttempt(
+			long companyId, String emailAddress, String fromName,
+			String fromAddress, String subject, String body,
+			ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _userLocalService.sendEmailUserCreationAttempt(
+			companyId, emailAddress, fromName, fromAddress, subject, body,
+			serviceContext);
+	}
+
 	@Override
 	public boolean sendPassword(
 			long companyId, String emailAddress, String fromName,
@@ -2712,6 +2719,18 @@ public class UserLocalServiceWrapper
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _userLocalService.sendPasswordByUserId(userId);
+	}
+
+	@Override
+	public boolean sendPasswordLockout(
+			long companyId, String emailAddress, String fromName,
+			String fromAddress, String subject, String body,
+			ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _userLocalService.sendPasswordLockout(
+			companyId, emailAddress, fromName, fromAddress, subject, body,
+			serviceContext);
 	}
 
 	@Override
@@ -2963,6 +2982,24 @@ public class UserLocalServiceWrapper
 			userId, emailAddressVerified);
 	}
 
+	@Override
+	public User updateExternalReferenceCode(
+			long userId, String externalReferenceCode)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _userLocalService.updateExternalReferenceCode(
+			userId, externalReferenceCode);
+	}
+
+	@Override
+	public User updateExternalReferenceCode(
+			User user, String externalReferenceCode)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _userLocalService.updateExternalReferenceCode(
+			user, externalReferenceCode);
+	}
+
 	/**
 	 * Updates the user's Facebook ID.
 	 *
@@ -3076,6 +3113,13 @@ public class UserLocalServiceWrapper
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _userLocalService.updateJobTitle(userId, jobTitle);
+	}
+
+	@Override
+	public User updateLanguageId(long userId, String languageId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _userLocalService.updateLanguageId(userId, languageId);
 	}
 
 	/**

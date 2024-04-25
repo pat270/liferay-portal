@@ -16,26 +16,26 @@ import {
 	PRODUCT_QUANTITY_NOT_VALID_ERROR,
 } from './constants';
 
-export function getCorrectedQuantity(product, sku, cartItems, parentProduct) {
+export function getCorrectedQuantity(
+	productConfiguration,
+	sku,
+	cartItems,
+	precision = 0
+) {
 	const {
 		allowedOrderQuantities,
 		maxOrderQuantity,
 		minOrderQuantity,
 		multipleOrderQuantity,
-	} = parentProduct
-		? parentProduct.productConfiguration
-		: product.productConfiguration;
+	} = productConfiguration;
 
 	let quantity;
 
-	if (parentProduct || !allowedOrderQuantities.length) {
+	if (!allowedOrderQuantities.length) {
 		quantity = minOrderQuantity;
 	}
 
-	const existingItem = cartItems.find(
-		(item) =>
-			item.productId === product.productId || item.sku === product.sku
-	);
+	const existingItem = cartItems.find((item) => item.sku === sku);
 
 	const lastAllowedQuantity =
 		allowedOrderQuantities[allowedOrderQuantities.length - 1];
@@ -157,6 +157,10 @@ export function getCorrectedQuantity(product, sku, cartItems, parentProduct) {
 		}
 	}
 
+	if (minOrderQuantity > maxOrderQuantity) {
+		quantity = 0;
+	}
+
 	if (multipleOrderQuantity > 1 && quantity % multipleOrderQuantity !== 0) {
 		openToast({
 			message: sub(
@@ -180,7 +184,7 @@ export function getCorrectedQuantity(product, sku, cartItems, parentProduct) {
 		});
 	}
 
-	return quantity;
+	return Number(quantity.toFixed(precision));
 }
 
 export function generateProductPageURL(
@@ -205,23 +209,44 @@ export function hasErrors(cartItems) {
 	return cartItems.some(({errorMessages}) => Boolean(errorMessages?.length));
 }
 
+export function hasOptions(jsonString) {
+	let options = [];
+
+	try {
+		options = JSON.parse(jsonString) || [];
+	}
+	catch (ignore) {}
+
+	return options.length;
+}
+
 export function hasPriceOnApplication(cartItems) {
 	return cartItems.some(({price}) => price.priceOnApplication);
 }
 
-export function parseOptions(jsonString) {
-	let options;
-
-	try {
-		options = JSON.parse(jsonString) || '';
-	}
-	catch (ignore) {
-		options = '';
-	}
-
+export function parseOptions(options) {
 	return Array.isArray(options)
 		? options.map(({value}) => `${value}`).join(', ')
 		: options;
+}
+
+export function filterOptions(jsonString) {
+	let options;
+
+	try {
+		options = JSON.parse(jsonString) || [];
+	}
+	catch (ignore) {
+		options = [];
+	}
+
+	return options.filter((option) => !!option.value.length);
+}
+
+export function parseValue(value) {
+	return Array.isArray(value)
+		? value.filter((item) => item === 0 || item).join(', ')
+		: value;
 }
 
 export function regenerateOrderDetailURL(orderUUID, siteDefaultURL) {

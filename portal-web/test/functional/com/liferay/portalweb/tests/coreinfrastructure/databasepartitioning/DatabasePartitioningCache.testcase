@@ -3,8 +3,9 @@ definition {
 
 	property app.server.types = "tomcat";
 	property ci.retries.disabled = "true";
-	property database.partition.enabled = "true";
-	property database.types = "mysql";
+	property custom.properties = "virtual.hosts.valid.hosts=localhost,127.0.0.1,www.able.com";
+	property database.types = "mysql, postgresql";
+	property liferay.online.properties = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property test.run.environment = "EE";
@@ -23,13 +24,12 @@ definition {
 	@priority = 5
 	test CacheIsClearedOnCompanyRemoval {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		PortalInstances.openVirtualInstancesAdmin();
-
-		PortalInstances.addCP(
-			mailDomain = "www.able.com",
-			virtualHost = "www.able.com",
-			webId = "www.able.com");
+		HeadlessPortalInstanceAPI.addPortalInstance(
+			domain = "www.able.com",
+			portalInstanceId = "www.able.com",
+			virtualHost = "www.able.com");
 
 		User.firstLoginUI(
 			password = "test",
@@ -38,10 +38,7 @@ definition {
 
 		User.firstLoginPG();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "System",
-			panel = "Control Panel",
-			portlet = "Server Administration");
+		ServerAdministration.openServerAdmin();
 
 		var secondCompanyId = JSONCompany.getCompanyId(portalInstanceName = "www.able.com");
 
@@ -49,17 +46,11 @@ definition {
 			cacheValue = "test.value",
 			companyId = ${secondCompanyId});
 
-		ApplicationsMenu.gotoPortlet(
-			category = "System",
-			panel = "Control Panel",
-			portlet = "Virtual Instances");
+		PortalInstances.openVirtualInstancesAdmin();
 
 		PortalInstances.deleteCP(virtualHost = "www.able.com");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "System",
-			panel = "Control Panel",
-			portlet = "Server Administration");
+		ServerAdministration.openServerAdmin();
 
 		PortalCache.getCache(
 			cacheValue = "null",
@@ -69,6 +60,7 @@ definition {
 	@priority = 5
 	test CacheIsOnlyPopulatedToSingleCompany {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		PortalInstances.openVirtualInstancesAdmin();
 
@@ -77,10 +69,7 @@ definition {
 			virtualHost = "www.able.com",
 			webId = "www.able.com");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "System",
-			panel = "Control Panel",
-			portlet = "Server Administration");
+		ServerAdministration.openServerAdmin();
 
 		PortalCache.putCache(
 			cacheValue = "test.value",
@@ -96,18 +85,14 @@ definition {
 		property minimum.slave.ram = "24";
 		property remote.elasticsearch.enabled = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		PortalInstances.openVirtualInstancesAdmin();
+		HeadlessPortalInstanceAPI.addPortalInstance(
+			domain = "www.able.com",
+			portalInstanceId = "www.able.com",
+			virtualHost = "www.able.com");
 
-		PortalInstances.addCP(
-			mailDomain = "www.able.com",
-			virtualHost = "www.able.com",
-			webId = "www.able.com");
-
-		ApplicationsMenu.gotoPortlet(
-			category = "System",
-			panel = "Control Panel",
-			portlet = "Server Administration");
+		ServerAdministration.openServerAdmin();
 
 		PortalCache.putCache(cacheValue = "test.value.node.1.company.1");
 
@@ -124,17 +109,9 @@ definition {
 
 		if (IsElementNotPresent(locator1 = "ApplicationsMenu#TOGGLE")) {
 			Refresh();
-
-			User.firstLoginUI(
-				password = "test",
-				specificURL = "http://localhost:9080",
-				userEmailAddress = "test@liferay.com");
 		}
 
-		ApplicationsMenu.gotoPortlet(
-			category = "System",
-			panel = "Control Panel",
-			portlet = "Server Administration");
+		ServerAdministration.openServerAdmin(baseURL = "http://localhost:9080");
 
 		PortalCache.getCache(cacheValue = "null");
 
@@ -156,10 +133,7 @@ definition {
 			User.firstLoginPG();
 		}
 
-		ApplicationsMenu.gotoPortlet(
-			category = "System",
-			panel = "Control Panel",
-			portlet = "Server Administration");
+		ServerAdministration.openServerAdmin();
 
 		PortalCache.getCache(cacheValue = "test.value.node.1.company.1");
 
@@ -171,6 +145,7 @@ definition {
 	@priority = 4
 	test NullCacheDoesNotBreakSiteFromAnotherPartition {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		HeadlessPortalInstanceAPI.addPortalInstance(
 			domain = "www.able.com",
@@ -182,10 +157,7 @@ definition {
 			userEmailAddress = "test@www.able.com",
 			virtualHostsURL = "http://www.able.com:8080");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Sites",
-			panel = "Control Panel",
-			portlet = "Sites");
+		Site.openSitesAdmin(baseURL = "http://www.able.com:8080");
 
 		Site.addBlankCP(siteName = "Site on Partition");
 
@@ -223,10 +195,7 @@ definition {
 
 		User.firstLoginPG();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "System",
-			panel = "Control Panel",
-			portlet = "Server Administration");
+		ServerAdministration.openServerAdmin();
 
 		ServerAdministration.executeScript(
 			language = "Groovy",

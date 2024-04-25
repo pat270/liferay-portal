@@ -79,7 +79,7 @@ if (portletTitleBasedNavigation) {
 							</aui:validator>
 						</aui:input>
 
-						<aui:field-wrapper label="body">
+						<div>
 							<c:choose>
 								<c:when test='<%= message.isFormatBBCode() || messageFormat.equals("bbcode") %>'>
 									<%@ include file="/message_boards/bbcode_editor.jspf" %>
@@ -90,7 +90,7 @@ if (portletTitleBasedNavigation) {
 							</c:choose>
 
 							<aui:input name="body" type="hidden" />
-						</aui:field-wrapper>
+						</div>
 					</div>
 				</aui:fieldset>
 			</div>
@@ -104,7 +104,7 @@ if (portletTitleBasedNavigation) {
 	</aui:form>
 </div>
 
-<script>
+<aui:script>
 	var form = document.<portlet:namespace />fm;
 
 	function <portlet:namespace />moveThread() {
@@ -143,7 +143,7 @@ if (portletTitleBasedNavigation) {
 				onSelect: function (event) {
 					Liferay.Util.setFormValues(form, {
 						categoryName: Liferay.Util.unescape(event.name),
-						mbCategoryId: event.categoryid,
+						mbCategoryId: event.resourceid,
 					});
 				},
 				selectEventName: '<portlet:namespace />selectCategory',
@@ -158,4 +158,4 @@ if (portletTitleBasedNavigation) {
 			});
 		});
 	}
-</script>
+</aui:script>

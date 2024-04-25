@@ -1,4 +1,6 @@
 Bundle-Name: Liferay Portal Security Permission API
 Bundle-SymbolicName: com.liferay.portal.security.permission.api
-Bundle-Version: 5.0.5
-Export-Package: com.liferay.portal.security.permission.contributor
+Bundle-Version: 5.1.1
+Export-Package:\
+	com.liferay.portal.security.permission.contributor,\
+	com.liferay.portal.security.permission.converter

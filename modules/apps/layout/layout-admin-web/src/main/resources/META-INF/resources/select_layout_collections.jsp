@@ -14,6 +14,7 @@ SelectCollectionManagementToolbarDisplayContext selectCollectionManagementToolba
 
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(layoutsAdminDisplayContext.getBackURL());
+portletDisplay.setURLBackTitle(portletDisplay.getPortletDisplayName());
 
 renderResponse.setTitle(LanguageUtil.get(request, "select-collection"));
 %>
@@ -27,7 +28,7 @@ renderResponse.setTitle(LanguageUtil.get(request, "select-collection"));
 <c:if test="<%= selectLayoutCollectionDisplayContext.isCollections() %>">
 	<clay:management-toolbar
 		managementToolbarDisplayContext="<%= selectCollectionManagementToolbarDisplayContext %>"
-		propsTransformer="js/SelectLayoutCollectionManagementToolbarPropsTransformer"
+		propsTransformer="{SelectLayoutCollectionManagementToolbarPropsTransformer} from layout-admin-web"
 	/>
 </c:if>
 

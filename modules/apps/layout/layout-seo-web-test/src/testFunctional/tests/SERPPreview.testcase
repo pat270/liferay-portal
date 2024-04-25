@@ -1,10 +1,10 @@
-@component-name = "portal-lima"
+@component-name = "portal-content-management"
 definition {
 
 	property portal.acceptance = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "SEO";
+	property testray.main.component.name = "Page SEO Links";
 
 	setUp {
 		TestCase.setUpPortalInstance();

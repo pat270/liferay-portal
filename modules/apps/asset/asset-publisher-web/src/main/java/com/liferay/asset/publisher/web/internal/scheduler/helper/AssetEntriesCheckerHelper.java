@@ -20,8 +20,10 @@ import com.liferay.asset.publisher.web.internal.configuration.AssetPublisherWebC
 import com.liferay.asset.publisher.web.internal.constants.AssetPublisherSelectionStyleConstants;
 import com.liferay.asset.publisher.web.internal.helper.AssetPublisherWebHelper;
 import com.liferay.asset.util.AssetHelper;
+import com.liferay.info.pagination.InfoPage;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Property;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
@@ -32,7 +34,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.notifications.UserNotificationDefinition;
 import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.search.BaseModelSearchResult;
@@ -47,6 +48,7 @@ import com.liferay.portal.kernel.service.PortletPreferenceValueLocalService;
 import com.liferay.portal.kernel.service.PortletPreferencesLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.EscapableLocalizableFunction;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
@@ -60,7 +62,6 @@ import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import com.liferay.portlet.asset.service.permission.AssetEntryPermission;
 import com.liferay.portlet.configuration.kernel.util.PortletConfigurationUtil;
-import com.liferay.segments.SegmentsEntryRetriever;
 import com.liferay.segments.configuration.provider.SegmentsConfigurationProvider;
 import com.liferay.segments.constants.SegmentsEntryConstants;
 import com.liferay.subscription.model.Subscription;
@@ -86,10 +87,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Eudaldo Alonso
  */
-@Component(
-	configurationPid = "com.liferay.asset.publisher.web.internal.configuration.AssetPublisherWebConfiguration",
-	service = AssetEntriesCheckerHelper.class
-)
+@Component(service = AssetEntriesCheckerHelper.class)
 public class AssetEntriesCheckerHelper {
 
 	public void checkAssetEntries() throws Exception {
@@ -163,6 +161,7 @@ public class AssetEntriesCheckerHelper {
 		}
 
 		_notifySubscribers(
+			layout,
 			_portal.getLayoutFullURL(
 				layout.getGroupId(), portletPreferencesModel.getPortletId()),
 			_subscriptionLocalService.getSubscriptions(
@@ -313,9 +312,13 @@ public class AssetEntriesCheckerHelper {
 				}
 			}
 
-			assetEntries = _assetListAssetEntryProvider.getAssetEntries(
-				assetListEntry, segmentsEntryIds, null, null, StringPool.BLANK,
-				StringPool.BLANK, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+			InfoPage<AssetEntry> infoPage =
+				_assetListAssetEntryProvider.getAssetEntriesInfoPage(
+					assetListEntry, segmentsEntryIds, null, null,
+					StringPool.BLANK, StringPool.BLANK, QueryUtil.ALL_POS,
+					QueryUtil.ALL_POS);
+
+			assetEntries = (List<AssetEntry>)infoPage.getPageItems();
 		}
 		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
@@ -371,6 +374,19 @@ public class AssetEntriesCheckerHelper {
 		}
 	}
 
+	private String _getGroupDescriptiveName(Layout layout, Locale locale) {
+		try {
+			Group group = _groupLocalService.fetchGroup(layout.getGroupId());
+
+			return group.getDescriptiveName(locale);
+		}
+		catch (PortalException portalException) {
+			_log.error(portalException);
+		}
+
+		return StringPool.BLANK;
+	}
+
 	private List<AssetEntry> _getManuallySelectedAssetEntries(
 		PortletPreferences portletPreferences, long groupId) {
 
@@ -414,7 +430,7 @@ public class AssetEntriesCheckerHelper {
 	}
 
 	private SubscriptionSender _getSubscriptionSender(
-		String layoutURL, PortletPreferences portletPreferences,
+		Layout layout, String layoutURL, PortletPreferences portletPreferences,
 		List<AssetEntry> assetEntries) {
 
 		if (assetEntries.isEmpty()) {
@@ -449,6 +465,16 @@ public class AssetEntriesCheckerHelper {
 		subscriptionSender.setGroupId(assetEntry.getGroupId());
 		subscriptionSender.setHtmlFormat(true);
 		subscriptionSender.setLocalizedBodyMap(localizedBodyMap);
+		subscriptionSender.setLocalizedContextAttribute(
+			"[$ASSET_ENTRIES$]",
+			new EscapableLocalizableFunction(
+				locale -> com.liferay.petra.string.StringUtil.merge(
+					assetEntries, entry -> entry.getTitle(locale),
+					StringPool.COMMA_AND_SPACE)));
+		subscriptionSender.setLocalizedContextAttribute(
+			"[$SITE_NAME$]",
+			new EscapableLocalizableFunction(
+				locale -> _getGroupDescriptiveName(layout, locale)));
 		subscriptionSender.setLocalizedPortletTitleMap(
 			PortletConfigurationUtil.getPortletTitleMap(portletPreferences));
 		subscriptionSender.setLocalizedSubjectMap(localizedSubjectMap);
@@ -463,7 +489,7 @@ public class AssetEntriesCheckerHelper {
 	}
 
 	private void _notifySubscribers(
-		String layoutURL, List<Subscription> subscriptions,
+		Layout layout, String layoutURL, List<Subscription> subscriptions,
 		PortletPreferences portletPreferences, List<AssetEntry> assetEntries) {
 
 		if (!_assetPublisherWebHelper.getEmailAssetEntryAddedEnabled(
@@ -506,7 +532,7 @@ public class AssetEntriesCheckerHelper {
 				assetEntriesToUsersMap.entrySet()) {
 
 			SubscriptionSender subscriptionSender = _getSubscriptionSender(
-				layoutURL, portletPreferences, entry.getKey());
+				layout, layoutURL, portletPreferences, entry.getKey());
 
 			if (subscriptionSender == null) {
 				continue;
@@ -567,9 +593,6 @@ public class AssetEntriesCheckerHelper {
 
 	@Reference
 	private SegmentsConfigurationProvider _segmentsConfigurationProvider;
-
-	@Reference
-	private SegmentsEntryRetriever _segmentsEntryRetriever;
 
 	@Reference
 	private SubscriptionLocalService _subscriptionLocalService;

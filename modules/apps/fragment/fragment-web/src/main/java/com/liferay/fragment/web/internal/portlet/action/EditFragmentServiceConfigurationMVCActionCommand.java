@@ -6,7 +6,7 @@
 package com.liferay.fragment.web.internal.portlet.action;
 
 import com.liferay.configuration.admin.constants.ConfigurationAdminPortletKeys;
-import com.liferay.fragment.web.internal.configuration.admin.service.FragmentServiceManagedServiceFactory;
+import com.liferay.fragment.web.internal.configuration.helper.FragmentServiceConfigurationHelper;
 import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClassDefinition;
 import com.liferay.portal.configuration.persistence.listener.ConfigurationModelListenerException;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -14,7 +14,6 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 
 import javax.portlet.ActionRequest;
@@ -64,7 +63,7 @@ public class EditFragmentServiceConfigurationMVCActionCommand
 			boolean propagateContributedFragmentChanges = ParamUtil.getBoolean(
 				actionRequest, "propagateContributedFragmentChanges");
 
-			_fragmentServiceManagedServiceFactory.updatePropagateChanges(
+			_fragmentServiceConfigurationHelper.updatePropagateChanges(
 				propagateChanges, propagateContributedFragmentChanges, scope,
 				scopePK);
 		}
@@ -81,10 +80,7 @@ public class EditFragmentServiceConfigurationMVCActionCommand
 	}
 
 	@Reference
-	private FragmentServiceManagedServiceFactory
-		_fragmentServiceManagedServiceFactory;
-
-	@Reference
-	private Portal _portal;
+	private FragmentServiceConfigurationHelper
+		_fragmentServiceConfigurationHelper;
 
 }

@@ -16,6 +16,7 @@ export type AppProps = {
 	attachments: Partial<ProductAttachment>[];
 	catalogId: number;
 	externalReferenceCode: string;
+	images: Partial<ProductAttachment>[];
 	lastUpdatedBy?: string;
 	name: string;
 	productId: number;
@@ -34,37 +35,26 @@ export type TableHeaders = {
 }[];
 
 interface DashboardTableProps<T> {
-	children: (item: T) => ReactNode;
+	children?: (item: T) => ReactNode;
 	emptyStateMessage: {
-		description1: string;
-		description2: string;
+		className?: string;
+		description1?: string;
+		description2?: string;
 		title: string;
 	};
 	icon: string;
-	items: T[];
-	tableHeaders: TableHeaders;
+	items?: T[];
+	tableHeaders?: TableHeaders;
 }
 
 export function DashboardTable<T>({
-	children,
+	children = () => null,
 	emptyStateMessage,
-	icon,
-	items,
-	tableHeaders,
+	icon = 'grid',
+	items = [],
+	tableHeaders = [],
 }: DashboardTableProps<T>) {
-	const {description1, description2, title} = emptyStateMessage;
-
-	if (!items.length) {
-		return (
-			<DashboardEmptyTable
-				description1={description1}
-				description2={description2}
-				icon={icon}
-				title={title}
-			/>
-		);
-	}
-	else {
+	if (items.length) {
 		return (
 			<ClayTable borderless className="dashboard-table-container">
 				<ClayTable.Head>
@@ -91,4 +81,16 @@ export function DashboardTable<T>({
 			</ClayTable>
 		);
 	}
+
+	const {description1, description2, title} = emptyStateMessage;
+
+	return (
+		<DashboardEmptyTable
+			className={emptyStateMessage?.className}
+			description1={description1 ?? ''}
+			description2={description2 ?? ''}
+			icon={icon}
+			title={title}
+		/>
+	);
 }

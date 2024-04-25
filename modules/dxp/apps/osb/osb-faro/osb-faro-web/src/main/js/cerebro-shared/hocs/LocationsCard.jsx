@@ -1,8 +1,9 @@
 import BaseCard from 'shared/components/base-card';
 import Card from 'shared/components/Card';
-import GeoMap from 'shared/components/geo-map/GeoMapCard';
+import ClayLink from '@clayui/link';
 import React from 'react';
 import {compose} from 'redux';
+import {GeomapCard} from 'shared/components/geo-map/GeomapCard';
 import {HOC_CARD_PROPTYPES} from 'shared/util/proptypes';
 import {PropTypes} from 'prop-types';
 import {withEmpty, withError, withLoading} from 'shared/hoc/util';
@@ -14,7 +15,7 @@ import {withEmpty, withError, withLoading} from 'shared/hoc/util';
 const withLocationsCard = (
 	withLocations,
 	withCountries,
-	{documentationTitle, documentationUrl, title}
+	{documentationTitle, documentationUrl, id, title}
 ) => {
 	const LocationsGeoMap = compose(
 		withLocations(),
@@ -30,18 +31,18 @@ const withLocationsCard = (
 						)}
 					</span>
 
-					<a
+					<ClayLink
 						href={documentationUrl}
 						key='DOCUMENTATION'
 						target='_blank'
 					>
 						{documentationTitle}
-					</a>
+					</ClayLink>
 				</>
 			),
 			title
 		})
-	)(GeoMap);
+	)(GeomapCard);
 
 	LocationsGeoMap.propTypes = HOC_CARD_PROPTYPES;
 
@@ -62,6 +63,7 @@ const withLocationsCard = (
 	}) => (
 		<BaseCard
 			className={className}
+			id={id}
 			label={label}
 			legacyDropdownRangeKey={legacyDropdownRangeKey}
 			minHeight={536}
@@ -70,12 +72,10 @@ const withLocationsCard = (
 				<Card.Body>
 					<LocationsGeoMap
 						filters={filters}
-						height={400}
 						interval={interval}
 						metricLabel={metricLabel}
 						rangeSelectors={rangeSelectors}
 						router={router}
-						width='calc(60% - 2rem)'
 					/>
 				</Card.Body>
 			)}

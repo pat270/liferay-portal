@@ -8,62 +8,49 @@ package com.liferay.change.tracking.internal.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.change.tracking.model.CTCollection;
 import com.liferay.change.tracking.service.CTCollectionLocalService;
-import com.liferay.document.library.kernel.model.DLFileEntry;
-import com.liferay.document.library.kernel.model.DLFolder;
-import com.liferay.document.library.test.util.DLTestUtil;
-import com.liferay.fragment.contributor.FragmentCollectionContributor;
-import com.liferay.fragment.contributor.FragmentCollectionContributorRegistry;
-import com.liferay.fragment.model.FragmentEntry;
-import com.liferay.fragment.service.FragmentCollectionService;
-import com.liferay.fragment.service.FragmentEntryLinkLocalServiceUtil;
-import com.liferay.journal.model.JournalArticle;
-import com.liferay.journal.test.util.JournalTestUtil;
-import com.liferay.layout.test.util.LayoutTestUtil;
-import com.liferay.layout.util.LayoutCopyHelper;
+import com.liferay.change.tracking.service.CTCollectionService;
+import com.liferay.change.tracking.service.CTEntryLocalService;
+import com.liferay.journal.model.JournalFolder;
+import com.liferay.journal.service.JournalFolderLocalService;
+import com.liferay.journal.test.util.JournalFolderFixture;
 import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringBundler;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.LayoutSet;
-import com.liferay.portal.kernel.model.LayoutType;
 import com.liferay.portal.kernel.model.LayoutTypeController;
+import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
-import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
+import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.LayoutSetLocalService;
-import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.OrganizationLocalService;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.permission.LayoutPermissionUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
+import com.liferay.portal.kernel.test.util.OrganizationTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.HtmlUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.util.LayoutTypeControllerTracker;
-import com.liferay.segments.service.SegmentsExperienceLocalServiceUtil;
 import com.liferay.site.initializer.SiteInitializer;
 import com.liferay.site.initializer.SiteInitializerRegistry;
-
-import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -82,6 +69,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 /**
  * @author Preston Crary
  */
+@Ignore
 @RunWith(Arquillian.class)
 public class LargeDatasetCTTest {
 
@@ -92,10 +80,6 @@ public class LargeDatasetCTTest {
 
 	@Before
 	public void setUp() throws Exception {
-		_ctCollection = _ctCollectionLocalService.addCTCollection(
-			TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
-			LargeDatasetCTTest.class.getName(), null);
-
 		_group = GroupTestUtil.addGroup();
 
 		ServiceContextThreadLocal.pushServiceContext(
@@ -105,42 +89,6 @@ public class LargeDatasetCTTest {
 
 		_themeDisplay = _getThemeDisplay(
 			_httpServletRequest, TestPropsValues.getUser());
-
-		_dlFolder = DLTestUtil.addDLFolder(_group.getGroupId());
-
-		try (SafeCloseable safeCloseable1 =
-				CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
-					_ctCollection.getCtCollectionId())) {
-
-			if (_SITE_INITIALIZER) {
-				SiteInitializer siteInitializer =
-					_siteInitializerRegistry.getSiteInitializer(
-						"com.liferay.site.initializer.masterclass");
-
-				siteInitializer.initialize(_group.getGroupId());
-			}
-
-			for (int i = 0; i < _COUNT_DL_FILE_ENTRY; i++) {
-				_dlFileEntry = DLTestUtil.addDLFileEntry(
-					_dlFolder.getFolderId());
-			}
-
-			for (int i = 0; i < _COUNT_JOURNAL_ARTICLE; i++) {
-				_journalArticle = JournalTestUtil.addArticle(
-					_group.getGroupId(), RandomTestUtil.randomString(),
-					RandomTestUtil.randomString());
-			}
-
-			for (int i = 0; i < _COUNT_LAYOUT_CONTENT; i++) {
-				_layoutContent = LayoutTestUtil.addTypeContentLayout(_group);
-
-				_addFragmentEntryLink(_layoutContent.getPlid());
-			}
-
-			for (int i = 0; i < _COUNT_LAYOUT_PORTLET; i++) {
-				_portletLayout = LayoutTestUtil.addTypePortletLayout(_group);
-			}
-		}
 	}
 
 	@After
@@ -148,60 +96,137 @@ public class LargeDatasetCTTest {
 		ServiceContextThreadLocal.popServiceContext();
 	}
 
-	@Ignore
 	@Test
-	public void testBuildSiteMap() throws Exception {
+	public void testAssignOrganizations() throws Exception {
+		for (int i = 0; i < _BATCH_SIZE; i++) {
+			OrganizationTestUtil.addOrganization();
+		}
+
+		CTCollection ctCollection = _ctCollectionService.addCTCollection(
+			null, TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
+			0, RandomTestUtil.randomString(), RandomTestUtil.randomString());
+
 		try (LoggingTimer loggingTimer = new LoggingTimer();
-			SafeCloseable safeCloseable1 =
+			SafeCloseable safeCloseable =
 				CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
-					_ctCollection.getCtCollectionId())) {
+					ctCollection.getCtCollectionId())) {
 
-			StringBundler sb = new StringBundler();
+			long[] organizationIds = ListUtil.toLongArray(
+				_organizationLocalService.getOrganizations(0, _BATCH_SIZE),
+				Organization.ORGANIZATION_ID_ACCESSOR);
 
-			Layout layout = _layoutLocalService.fetchDefaultLayout(
-				_group.getGroupId(), false);
-
-			_themeDisplay.setLayout(layout);
-
-			_httpServletRequest.setAttribute(
-				WebKeys.THEME_DISPLAY, _themeDisplay);
-
-			_buildSiteMap(
-				1, 10, layout,
-				_layoutLocalService.getLayouts(
-					layout.getGroupId(), layout.isPrivateLayout(),
-					LayoutConstants.DEFAULT_PARENT_LAYOUT_ID),
-				sb, true, _themeDisplay, true);
+			_organizationLocalService.addUserOrganizations(
+				TestPropsValues.getUserId(), organizationIds);
 		}
 	}
 
 	@Test
 	public void testDiscardCTEntry() throws Exception {
-		try (LoggingTimer loggingTimer = new LoggingTimer()) {
+		CTCollection ctCollection = _ctCollectionService.addCTCollection(
+			null, TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
+			0, RandomTestUtil.randomString(), RandomTestUtil.randomString());
+
+		try (LoggingTimer loggingTimer = new LoggingTimer();
+			SafeCloseable safeCloseable =
+				CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
+					ctCollection.getCtCollectionId())) {
+
+			SiteInitializer siteInitializer =
+				_siteInitializerRegistry.getSiteInitializer(
+					"com.liferay.site.initializer.welcome");
+
+			siteInitializer.initialize(_group.getGroupId());
+
+			Layout layout = _layoutLocalService.fetchDefaultLayout(
+				_group.getGroupId(), false);
+
 			_ctCollectionLocalService.discardCTEntry(
-				_ctCollection.getCtCollectionId(),
+				ctCollection.getCtCollectionId(),
 				_portal.getClassNameId(Layout.class.getName()),
-				_layoutContent.getPrimaryKey(), false);
+				layout.getPlid(), false);
 		}
 	}
 
 	@Test
-	public void testGetDiscardCTEntries() throws Exception {
+	public void testDiscardCTEntryWithOver1000Entries() throws Exception {
+		CTCollection ctCollection = _ctCollectionService.addCTCollection(
+			null, TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
+			0, RandomTestUtil.randomString(), RandomTestUtil.randomString());
+
+		JournalFolder journalFolder = null;
+
+		try (LoggingTimer loggingTimer = new LoggingTimer();
+			SafeCloseable safeCloseable =
+				CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
+					ctCollection.getCtCollectionId())) {
+
+			journalFolder = _journalFolderFixture.addFolder(
+				_group.getGroupId(), RandomTestUtil.randomString());
+
+			for (int i = 0; i < _BATCH_SIZE; i++) {
+				_journalFolderFixture.addFolder(
+					_group.getGroupId(), journalFolder.getFolderId(),
+					RandomTestUtil.randomString());
+			}
+		}
+
 		try (LoggingTimer loggingTimer = new LoggingTimer()) {
-			_ctCollectionLocalService.getDiscardCTEntries(
-				_ctCollection.getCtCollectionId(),
+			_ctCollectionService.discardCTEntry(
+				ctCollection.getCtCollectionId(),
+				_classNameLocalService.getClassNameId(JournalFolder.class),
+				journalFolder.getFolderId());
+		}
+
+		Assert.assertEquals(
+			0,
+			_ctEntryLocalService.getCTCollectionCTEntriesCount(
+				ctCollection.getCtCollectionId()));
+	}
+
+	@Test
+	public void testGetRelatedCTEntries() throws Exception {
+		CTCollection ctCollection = _ctCollectionService.addCTCollection(
+			null, TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
+			0, RandomTestUtil.randomString(), RandomTestUtil.randomString());
+
+		try (LoggingTimer loggingTimer = new LoggingTimer();
+			SafeCloseable safeCloseable =
+				CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
+					ctCollection.getCtCollectionId())) {
+
+			SiteInitializer siteInitializer =
+				_siteInitializerRegistry.getSiteInitializer(
+					"com.liferay.site.initializer.welcome");
+
+			siteInitializer.initialize(_group.getGroupId());
+
+			Layout layout = _layoutLocalService.fetchDefaultLayout(
+				_group.getGroupId(), false);
+
+			_ctCollectionLocalService.getRelatedCTEntriesMap(
+				ctCollection.getCtCollectionId(),
 				_portal.getClassNameId(Layout.class.getName()),
-				_layoutContent.getPrimaryKey());
+				layout.getPlid());
 		}
 	}
 
 	@Ignore
 	@Test
 	public void testIncludeLayoutContent() throws Exception {
+		CTCollection ctCollection = _ctCollectionService.addCTCollection(
+			null, TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
+			0, RandomTestUtil.randomString(), RandomTestUtil.randomString());
+
 		try (LoggingTimer loggingTimer = new LoggingTimer();
-			SafeCloseable safeCloseable1 =
+			SafeCloseable safeCloseable =
 				CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
-					_ctCollection.getCtCollectionId())) {
+					ctCollection.getCtCollectionId())) {
+
+			SiteInitializer siteInitializer =
+				_siteInitializerRegistry.getSiteInitializer(
+					"com.liferay.site.initializer.welcome");
+
+			siteInitializer.initialize(_group.getGroupId());
 
 			Layout layout = _layoutLocalService.fetchDefaultLayout(
 				_group.getGroupId(), false);
@@ -226,120 +251,131 @@ public class LargeDatasetCTTest {
 		}
 	}
 
-	private void _addFragmentEntryLink(long plid) throws Exception {
-		Layout layout = _layoutLocalService.fetchLayout(plid);
+	@Test
+	public void testMoveCTEntryWithOver1000Entries() throws Exception {
+		CTCollection fromCTCollection = _ctCollectionService.addCTCollection(
+			null, TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
+			0, RandomTestUtil.randomString(), RandomTestUtil.randomString());
 
-		Layout draftLayout = layout.fetchDraftLayout();
+		CTCollection toCTCollection = _ctCollectionService.addCTCollection(
+			null, TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
+			0, RandomTestUtil.randomString(), RandomTestUtil.randomString());
 
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(_group.getGroupId());
+		JournalFolder journalFolder = null;
 
-		FragmentCollectionContributor fragmentCollectionContributor =
-			_fragmentCollectionContributorRegistry.
-				getFragmentCollectionContributor("BASIC_COMPONENT");
+		try (LoggingTimer loggingTimer = new LoggingTimer();
+			SafeCloseable safeCloseable =
+				CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
+					fromCTCollection.getCtCollectionId())) {
 
-		List<FragmentEntry> fragmentEntries =
-			fragmentCollectionContributor.getFragmentEntries(
-				_themeDisplay.getLocale());
+			journalFolder = _journalFolderFixture.addFolder(
+				_group.getGroupId(), RandomTestUtil.randomString());
 
-		long defaultSegmentsExperienceId =
-			SegmentsExperienceLocalServiceUtil.fetchDefaultSegmentsExperienceId(
-				draftLayout.getPlid());
-
-		for (FragmentEntry fragmentEntry : fragmentEntries) {
-			FragmentEntryLinkLocalServiceUtil.addFragmentEntryLink(
-				TestPropsValues.getUserId(), serviceContext.getScopeGroupId(),
-				0, fragmentEntry.getFragmentEntryId(),
-				defaultSegmentsExperienceId, draftLayout.getPlid(),
-				fragmentEntry.getCss(), fragmentEntry.getHtml(),
-				fragmentEntry.getJs(), fragmentEntry.getConfiguration(),
-				StringPool.BLANK, StringPool.BLANK, 1, StringPool.BLANK,
-				fragmentEntry.getType(), serviceContext);
-		}
-	}
-
-	private void _buildLayoutView(
-			Layout layout, String cssClass, boolean useHtmlTitle,
-			ThemeDisplay themeDisplay, StringBundler sb)
-		throws Exception {
-
-		sb.append("<a");
-
-		LayoutType layoutType = layout.getLayoutType();
-
-		if (layoutType.isBrowsable()) {
-			sb.append(" href=\"");
-			sb.append(PortalUtil.getLayoutURL(layout, themeDisplay));
-			sb.append("\" ");
-			sb.append(PortalUtil.getLayoutTarget(layout));
-		}
-
-		if (Validator.isNotNull(cssClass)) {
-			sb.append(" class=\"");
-			sb.append(cssClass);
-			sb.append("\" ");
-		}
-
-		sb.append("> ");
-
-		String layoutName = HtmlUtil.escape(
-			layout.getName(themeDisplay.getLocale()));
-
-		if (useHtmlTitle) {
-			layoutName = HtmlUtil.escape(
-				layout.getHTMLTitle(themeDisplay.getLocale()));
-		}
-
-		sb.append(layoutName);
-		sb.append("</a>");
-	}
-
-	private void _buildSiteMap(
-			int curDepth, int displayDepth, Layout layout, List<Layout> layouts,
-			StringBundler sb, boolean showHiddenPages,
-			ThemeDisplay themeDisplay, boolean useHtmlTitle)
-		throws Exception {
-
-		sb.append("<ul>");
-
-		for (Layout curLayout : layouts) {
-			if ((showHiddenPages || !curLayout.isHidden()) &&
-				LayoutPermissionUtil.contains(
-					themeDisplay.getPermissionChecker(), curLayout,
-					ActionKeys.VIEW)) {
-
-				sb.append("<li>");
-
-				String cssClass = StringPool.BLANK;
-
-				if (curLayout.getPlid() == layout.getPlid()) {
-					cssClass = "current";
-				}
-
-				_buildLayoutView(
-					curLayout, cssClass, useHtmlTitle, themeDisplay, sb);
-
-				if ((displayDepth == 0) || (displayDepth > curDepth)) {
-					if (showHiddenPages) {
-						_buildSiteMap(
-							curDepth + 1, displayDepth, layout,
-							curLayout.getChildren(), sb, showHiddenPages,
-							themeDisplay, useHtmlTitle);
-					}
-					else {
-						_buildSiteMap(
-							curDepth + 1, displayDepth, layout,
-							curLayout.getChildren(
-								themeDisplay.getPermissionChecker()),
-							sb, showHiddenPages, themeDisplay, useHtmlTitle);
-					}
-				}
-
-				sb.append("</li>");
+			for (int i = 0; i < _BATCH_SIZE; i++) {
+				_journalFolderFixture.addFolder(
+					_group.getGroupId(), journalFolder.getFolderId(),
+					RandomTestUtil.randomString());
 			}
 		}
 
-		sb.append("</ul>");
+		try (LoggingTimer loggingTimer = new LoggingTimer()) {
+			_ctCollectionService.moveCTEntry(
+				fromCTCollection.getCtCollectionId(),
+				toCTCollection.getCtCollectionId(),
+				_classNameLocalService.getClassNameId(JournalFolder.class),
+				journalFolder.getFolderId());
+		}
+
+		Assert.assertEquals(
+			0,
+			_ctEntryLocalService.getCTCollectionCTEntriesCount(
+				fromCTCollection.getCtCollectionId()));
+
+		Assert.assertNotEquals(
+			0,
+			_ctEntryLocalService.getCTCollectionCTEntriesCount(
+				toCTCollection.getCtCollectionId()));
+	}
+
+	@Test
+	public void testPublishCTCollectionWithOver1000Entries() throws Exception {
+		CTCollection ctCollection = _ctCollectionService.addCTCollection(
+			null, TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
+			0, RandomTestUtil.randomString(), RandomTestUtil.randomString());
+
+		try (LoggingTimer loggingTimer = new LoggingTimer();
+			SafeCloseable safeCloseable =
+				CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
+					ctCollection.getCtCollectionId())) {
+
+			for (int i = 0; i < _BATCH_SIZE; i++) {
+				_journalFolderFixture.addFolder(
+					_group.getGroupId(), RandomTestUtil.randomString());
+			}
+
+			_ctCollectionService.publishCTCollection(
+				TestPropsValues.getUserId(), ctCollection.getCtCollectionId());
+		}
+
+		ctCollection = _ctCollectionLocalService.getCTCollection(
+			ctCollection.getCtCollectionId());
+
+		Assert.assertEquals(
+			WorkflowConstants.STATUS_APPROVED, ctCollection.getStatus());
+
+		ctCollection = _ctCollectionService.addCTCollection(
+			null, TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
+			0, RandomTestUtil.randomString(), RandomTestUtil.randomString());
+
+		try (LoggingTimer loggingTimer = new LoggingTimer();
+			SafeCloseable safeCloseable =
+				CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
+					ctCollection.getCtCollectionId())) {
+
+			for (JournalFolder journalFolder :
+					_journalFolderLocalService.getFolders(
+						_group.getGroupId())) {
+
+				journalFolder.setName(RandomTestUtil.randomString());
+
+				_journalFolderLocalService.updateJournalFolder(journalFolder);
+			}
+
+			_ctCollectionService.publishCTCollection(
+				TestPropsValues.getUserId(), ctCollection.getCtCollectionId());
+		}
+
+		ctCollection = _ctCollectionLocalService.getCTCollection(
+			ctCollection.getCtCollectionId());
+
+		Assert.assertEquals(
+			WorkflowConstants.STATUS_APPROVED, ctCollection.getStatus());
+
+		ctCollection = _ctCollectionService.addCTCollection(
+			null, TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
+			0, RandomTestUtil.randomString(), RandomTestUtil.randomString());
+
+		try (LoggingTimer loggingTimer = new LoggingTimer();
+			SafeCloseable safeCloseable =
+				CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
+					ctCollection.getCtCollectionId())) {
+
+			for (JournalFolder journalFolder :
+					_journalFolderLocalService.getFolders(
+						_group.getGroupId())) {
+
+				_journalFolderLocalService.deleteFolder(journalFolder);
+			}
+
+			_ctCollectionService.publishCTCollection(
+				TestPropsValues.getUserId(), ctCollection.getCtCollectionId());
+		}
+
+		ctCollection = _ctCollectionLocalService.getCTCollection(
+			ctCollection.getCtCollectionId());
+
+		Assert.assertEquals(
+			WorkflowConstants.STATUS_APPROVED, ctCollection.getStatus());
 	}
 
 	private HttpServletRequest _getHttpServletRequest(User user)
@@ -393,18 +429,19 @@ public class LargeDatasetCTTest {
 		return themeDisplay;
 	}
 
-	private static final int _COUNT_DL_FILE_ENTRY = 1;
+	private static final int _BATCH_SIZE = 1001;
 
-	private static final int _COUNT_JOURNAL_ARTICLE = 1;
-
-	private static final int _COUNT_LAYOUT_CONTENT = 1;
-
-	private static final int _COUNT_LAYOUT_PORTLET = 1;
-
-	private static final boolean _SITE_INITIALIZER = false;
+	@Inject
+	private static ClassNameLocalService _classNameLocalService;
 
 	@Inject
 	private static CTCollectionLocalService _ctCollectionLocalService;
+
+	@Inject
+	private static CTCollectionService _ctCollectionService;
+
+	@Inject
+	private static JournalFolderLocalService _journalFolderLocalService;
 
 	@Inject
 	private static LayoutLocalService _layoutLocalService;
@@ -415,46 +452,21 @@ public class LargeDatasetCTTest {
 	@Inject
 	private CompanyLocalService _companyLocalService;
 
-	@DeleteAfterTestRun
-	private CTCollection _ctCollection;
-
-	@DeleteAfterTestRun
-	private DLFileEntry _dlFileEntry;
-
-	@DeleteAfterTestRun
-	private DLFolder _dlFolder;
-
 	@Inject
-	private FragmentCollectionContributorRegistry
-		_fragmentCollectionContributorRegistry;
-
-	@Inject
-	private FragmentCollectionService _fragmentCollectionService;
+	private CTEntryLocalService _ctEntryLocalService;
 
 	@DeleteAfterTestRun
 	private Group _group;
 
 	private HttpServletRequest _httpServletRequest;
-
-	@DeleteAfterTestRun
-	private JournalArticle _journalArticle;
-
-	@DeleteAfterTestRun
-	private Layout _layoutContent;
+	private final JournalFolderFixture _journalFolderFixture =
+		new JournalFolderFixture(_journalFolderLocalService);
 
 	@Inject
-	private LayoutCopyHelper _layoutCopyHelper;
-
-	@Inject(
-		filter = "mvc.command.name=/fragment/propagate_group_fragment_entry_changes"
-	)
-	private MVCActionCommand _mvcActionCommand;
+	private OrganizationLocalService _organizationLocalService;
 
 	@Inject
 	private Portal _portal;
-
-	@DeleteAfterTestRun
-	private Layout _portletLayout;
 
 	@Inject
 	private SiteInitializerRegistry _siteInitializerRegistry;

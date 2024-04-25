@@ -43,6 +43,7 @@ import com.liferay.osb.faro.engine.client.model.provider.LiferayProvider;
 import com.liferay.osb.faro.engine.client.util.FilterBuilder;
 import com.liferay.osb.faro.engine.client.util.OrderByField;
 import com.liferay.osb.faro.model.FaroProject;
+import com.liferay.osb.faro.model.FaroUser;
 
 import java.io.OutputStream;
 
@@ -187,8 +188,10 @@ public abstract class BaseMockContactsEngineClientImpl
 	}
 
 	@Override
-	public void clearChannel(FaroProject faroProject, List<String> ids) {
-		contactsEngineClient.clearChannel(faroProject, ids);
+	public void clearChannel(
+		FaroProject faroProject, FaroUser faroUser, List<String> ids) {
+
+		contactsEngineClient.clearChannel(faroProject, faroUser, ids);
 	}
 
 	@Override
@@ -199,8 +202,10 @@ public abstract class BaseMockContactsEngineClientImpl
 	}
 
 	@Override
-	public void deleteChannels(FaroProject faroProject, List<String> ids) {
-		contactsEngineClient.deleteChannels(faroProject, ids);
+	public void deleteChannels(
+		FaroProject faroProject, FaroUser faroUser, List<String> ids) {
+
+		contactsEngineClient.deleteChannels(faroProject, faroUser, ids);
 	}
 
 	@Override
@@ -420,11 +425,11 @@ public abstract class BaseMockContactsEngineClientImpl
 
 	@Override
 	public Results<Channel> getChannels(
-		FaroProject faroProject, int cur, int delta,
+		FaroProject faroProject, int cur, int delta, List<String> ids,
 		List<OrderByField> orderByFields) {
 
 		return contactsEngineClient.getChannels(
-			faroProject, cur, delta, orderByFields);
+			faroProject, cur, delta, ids, orderByFields);
 	}
 
 	@Override
@@ -889,6 +894,11 @@ public abstract class BaseMockContactsEngineClientImpl
 		return contactsEngineClient.getSimilarIndividuals(
 			faroProject, individualId, query, fields, cur, delta,
 			orderByFields);
+	}
+
+	@Override
+	public long getSyncedIndividualsCount(FaroProject faroProject) {
+		return contactsEngineClient.getSyncedIndividualsCount(faroProject);
 	}
 
 	@Override

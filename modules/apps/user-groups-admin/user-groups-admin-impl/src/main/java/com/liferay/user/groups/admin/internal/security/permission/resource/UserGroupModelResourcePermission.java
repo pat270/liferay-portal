@@ -10,11 +10,9 @@ import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
-import com.liferay.portal.kernel.service.UserGroupLocalService;
-import com.liferay.portal.kernel.service.permission.UserGroupPermission;
+import com.liferay.portal.service.permission.UserGroupPermissionUtil;
 
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Igor Fabiano Nazar
@@ -32,7 +30,7 @@ public class UserGroupModelResourcePermission
 			String actionId)
 		throws PortalException {
 
-		_userGroupPermission.check(permissionChecker, primaryKey, actionId);
+		UserGroupPermissionUtil.check(permissionChecker, primaryKey, actionId);
 	}
 
 	@Override
@@ -41,7 +39,7 @@ public class UserGroupModelResourcePermission
 			String actionId)
 		throws PortalException {
 
-		_userGroupPermission.check(
+		UserGroupPermissionUtil.check(
 			permissionChecker, userGroup.getUserGroupId(), actionId);
 	}
 
@@ -51,7 +49,7 @@ public class UserGroupModelResourcePermission
 			String actionId)
 		throws PortalException {
 
-		return _userGroupPermission.contains(
+		return UserGroupPermissionUtil.contains(
 			permissionChecker, primaryKey, actionId);
 	}
 
@@ -61,7 +59,7 @@ public class UserGroupModelResourcePermission
 			String actionId)
 		throws PortalException {
 
-		return _userGroupPermission.contains(
+		return UserGroupPermissionUtil.contains(
 			permissionChecker, userGroup.getUserGroupId(), actionId);
 	}
 
@@ -74,11 +72,5 @@ public class UserGroupModelResourcePermission
 	public PortletResourcePermission getPortletResourcePermission() {
 		return null;
 	}
-
-	@Reference
-	private UserGroupLocalService _userGroupLocalService;
-
-	@Reference
-	private UserGroupPermission _userGroupPermission;
 
 }

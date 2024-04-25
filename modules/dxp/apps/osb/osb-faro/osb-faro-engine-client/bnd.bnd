@@ -42,6 +42,8 @@ Import-Package:\
 	\
 	!com.jcraft.jzlib.*,\
 	\
+	!com.mchange.*,\
+	\
 	!com.ning.compress.*,\
 	\
 	!com.oracle.svm.core.annotate.*,\
@@ -67,6 +69,8 @@ Import-Package:\
 	!groovy.*,\
 	\
 	!io.netty.*,\
+	\
+	!io.r2dbc.*,\
 	\
 	!io.reactivex.*,\
 	\
@@ -114,6 +118,8 @@ Import-Package:\
 	\
 	!okhttp3.*,\
 	\
+	!oracle.jdbc.*,\
+	\
 	!oracle.ucp.*,\
 	\
 	!org.HdrHistogram.*,\
@@ -123,7 +129,6 @@ Import-Package:\
 	!org.apache.catalina.*,\
 	!org.apache.commons.cli.*,\
 	!org.apache.commons.dbcp2.*,\
-	!org.apache.commons.io.*,\
 	!org.apache.commons.lang.*,\
 	!org.apache.coyote.*,\
 	!org.apache.hc.*,\
@@ -150,15 +155,23 @@ Import-Package:\
 	\
 	!org.eclipse.jetty.*,\
 	\
+	!org.flywaydb.*,\
+	\
+	!org.h2.*,\
+	\
 	!org.hibernate.*,\
 	\
 	!org.jboss.*,\
+	\
+	!org.jooq.*,\
 	\
 	!org.jruby.*,\
 	\
 	!org.json.simple.parser.*,\
 	\
 	!org.noggit.*,\
+	\
+	!org.postgresql.*,\
 	\
 	!org.reactivestreams.*,\
 	\
@@ -169,6 +182,10 @@ Import-Package:\
 	!org.springframework.messaging.rsocket.*,\
 	!org.springframework.oxm.*,\
 	!org.springframework.plugin.*,\
+	!org.springframework.r2dbc.connection.*,\
+	!org.springframework.security.authentication.*,\
+	!org.springframework.security.core.*,\
+	!org.springframework.security.web.access.*,\
 	!org.springframework.security.web.server.util.matcher.*,\
 	!org.springframework.security.web.util.matcher.*,\
 	!org.springframework.test.web.reactive.*,\
@@ -189,6 +206,8 @@ Import-Package:\
 	\
 	!sun.security.*,\
 	\
+	com.liferay.petra.function.transform;version="[1.2.0,9999.0.0)",\
+	com.liferay.portal.kernel.dao.search;version="[9.0.0,9999.0.0)",\
 	com.liferay.portal.kernel.json;version="[12.0.0,9999.0.0)",\
 	com.liferay.portal.kernel.log;version="[1.0.0,9999.0.0)",\
 	com.liferay.portal.kernel.model;version="[29.0.0,9999.0.0)",\

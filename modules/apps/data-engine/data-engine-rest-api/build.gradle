@@ -1,9 +1,11 @@
 dependencies {
-	compileOnly group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: "2.13.4"
+	compileOnly group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: "2.16.1"
 	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.kernel", version: "default"
 	compileOnly group: "io.swagger.core.v3", name: "swagger-annotations", version: "2.0.5"
+	compileOnly group: "javax.annotation", name: "javax.annotation-api", version: "1.3.2"
 	compileOnly group: "javax.validation", name: "validation-api", version: "2.0.1.Final"
 	compileOnly group: "javax.ws.rs", name: "javax.ws.rs-api", version: "2.1"
+	compileOnly group: "javax.xml.bind", name: "jaxb-api", version: "2.3.0"
 	compileOnly group: "org.apache.felix", name: "org.apache.felix.http.servlet-api", version: "1.1.2"
 	compileOnly group: "org.osgi", name: "org.osgi.annotation.versioning", version: "1.1.0"
 	compileOnly project(":apps:data-engine:data-engine-api")
@@ -13,6 +15,6 @@ dependencies {
 	compileOnly project(":core:petra:petra-function")
 	compileOnly project(":core:petra:petra-string")
 
-	testCompile group: "com.liferay.portal", name: "com.liferay.portal.impl", version: "default"
-	testCompile project(":apps:dynamic-data-mapping:dynamic-data-mapping-test-util")
+	testImplementation group: "com.liferay.portal", name: "com.liferay.portal.impl", version: "default"
+	testImplementation project(":apps:dynamic-data-mapping:dynamic-data-mapping-test-util")
 }

@@ -385,6 +385,12 @@ public class PortletPreferencesLocalServiceUtil {
 		return getService().getPortletPreferencesByPlid(plid);
 	}
 
+	public static List<PortletPreferences> getPortletPreferencesByPortletId(
+		String portletId) {
+
+		return getService().getPortletPreferencesByPortletId(portletId);
+	}
+
 	public static long getPortletPreferencesCount(
 		int ownerType, long plid, String portletId) {
 
@@ -413,6 +419,13 @@ public class PortletPreferencesLocalServiceUtil {
 
 		return getService().getPortletPreferencesCount(
 			ownerId, ownerType, portletId, excludeDefaultPreferences);
+	}
+
+	public static int getPortletPreferencesCount(
+		long companyId, long ownerId, int ownerType, String portletId) {
+
+		return getService().getPortletPreferencesCount(
+			companyId, ownerId, ownerType, portletId);
 	}
 
 	/**

@@ -1,5 +1,6 @@
 {
 	"pageElement": {
+		"id": "item1",
 		"pageElements": [
 			{
 				"definition": {
@@ -19,9 +20,9 @@
 					},
 					"indexed": true,
 					"layout": {
-						"widthType": "Fluid"
 					}
 				},
+				"id": "item2",
 				"type": "Form"
 			}
 		],

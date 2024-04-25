@@ -23,6 +23,7 @@ renderResponse.setTitle(blogsEditEntryDisplayContext.getPageTitle(resourceBundle
 >
 	<aui:form action="<%= blogsEditEntryDisplayContext.getEditEntryURL() %>" cssClass="edit-entry" enctype="multipart/form-data" method="post" name="fm" onSubmit="event.preventDefault();">
 		<aui:input name="<%= Constants.CMD %>" type="hidden" />
+		<aui:input name="portletResource" type="hidden" value='<%= ParamUtil.getString(request, "portletResource") %>' />
 		<aui:input name="referringPortletResource" type="hidden" value="<%= blogsEditEntryDisplayContext.getReferringPortletResource() %>" />
 		<aui:input name="entryId" type="hidden" value="<%= blogsEditEntryDisplayContext.getEntryId() %>" />
 		<aui:input name="workflowAction" type="hidden" value="<%= WorkflowConstants.ACTION_PUBLISH %>" />
@@ -39,6 +40,7 @@ renderResponse.setTitle(blogsEditEntryDisplayContext.getPageTitle(resourceBundle
 			<liferay-ui:error exception="<%= EntryDescriptionException.class %>" message="please-enter-a-valid-abstract" />
 			<liferay-ui:error exception="<%= EntryTitleException.class %>" message="please-enter-a-valid-title" />
 			<liferay-ui:error exception="<%= EntryUrlTitleException.class %>" message="please-enter-a-valid-url-title" />
+			<liferay-ui:error exception="<%= FriendlyURLCategoryException.class %>" message="the-url-title-cannot-contain-slashes-and-categories" />
 
 			<liferay-ui:error exception="<%= LiferayFileItemException.class %>">
 				<liferay-ui:message arguments="<%= LanguageUtil.formatStorageSize(FileItem.THRESHOLD_SIZE, locale) %>" key="please-enter-valid-content-with-valid-content-size-no-larger-than-x" translateArguments="<%= false %>" />
@@ -387,7 +389,7 @@ renderResponse.setTitle(blogsEditEntryDisplayContext.getPageTitle(resourceBundle
 
 <liferay-frontend:component
 	context="<%= blogsEditEntryDisplayContext.getTaglibContext() %>"
-	module="blogs/js/blogs"
+	module="{blogs} from blogs-web"
 	servletContext="<%= application %>"
 />
 

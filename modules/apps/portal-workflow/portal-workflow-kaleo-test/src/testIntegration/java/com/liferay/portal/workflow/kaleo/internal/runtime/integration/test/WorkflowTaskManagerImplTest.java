@@ -5,9 +5,25 @@
 
 package com.liferay.portal.workflow.kaleo.internal.runtime.integration.test;
 
+import com.liferay.account.constants.AccountConstants;
+import com.liferay.account.constants.AccountRoleConstants;
+import com.liferay.account.model.AccountEntry;
+import com.liferay.account.service.AccountEntryLocalService;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.blogs.service.BlogsEntryLocalService;
+import com.liferay.commerce.account.test.util.CommerceAccountTestUtil;
+import com.liferay.commerce.constants.CommerceOrderConstants;
+import com.liferay.commerce.currency.model.CommerceCurrency;
+import com.liferay.commerce.currency.test.util.CommerceCurrencyTestUtil;
+import com.liferay.commerce.model.CommerceOrder;
+import com.liferay.commerce.order.engine.CommerceOrderEngine;
+import com.liferay.commerce.product.constants.CommerceChannelConstants;
+import com.liferay.commerce.product.model.CommerceChannel;
+import com.liferay.commerce.product.service.CommerceChannelLocalService;
+import com.liferay.commerce.product.service.CommerceChannelLocalServiceUtil;
+import com.liferay.commerce.service.CommerceOrderLocalService;
+import com.liferay.commerce.test.util.CommerceTestUtil;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFileEntryConstants;
 import com.liferay.document.library.kernel.model.DLFileEntryMetadata;
@@ -70,8 +86,10 @@ import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.OrganizationLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserGroupRoleLocalService;
+import com.liferay.portal.kernel.service.UserGroupRoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.UserNotificationEventLocalService;
 import com.liferay.portal.kernel.settings.LocalizedValuesMap;
@@ -89,6 +107,7 @@ import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.MapUtil;
@@ -97,7 +116,6 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.portal.kernel.workflow.WorkflowDefinitionManager;
 import com.liferay.portal.kernel.workflow.WorkflowException;
 import com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil;
 import com.liferay.portal.kernel.workflow.WorkflowInstance;
@@ -109,9 +127,13 @@ import com.liferay.portal.security.permission.SimplePermissionChecker;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.util.PortalInstances;
 import com.liferay.portal.workflow.comparator.WorkflowComparatorFactory;
+import com.liferay.portal.workflow.kaleo.definition.util.WorkflowDefinitionContentUtil;
+import com.liferay.portal.workflow.manager.WorkflowDefinitionManager;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -155,6 +177,10 @@ public class WorkflowTaskManagerImplTest extends BaseWorkflowManagerTestCase {
 			HashMapDictionaryBuilder.<String, Object>put(
 				"company.administrator.can.publish", true
 			).build());
+
+		_originalName = PrincipalThreadLocal.getName();
+
+		PrincipalThreadLocal.setName(TestPropsValues.getUserId());
 	}
 
 	@AfterClass
@@ -162,6 +188,8 @@ public class WorkflowTaskManagerImplTest extends BaseWorkflowManagerTestCase {
 		_companyLocalService.deleteCompany(_company);
 
 		ConfigurationTestUtil.deleteConfiguration(_configuration);
+
+		PrincipalThreadLocal.setName(_originalName);
 	}
 
 	@Before
@@ -796,6 +824,149 @@ public class WorkflowTaskManagerImplTest extends BaseWorkflowManagerTestCase {
 	}
 
 	@Test
+	public void testGetNotifiableUsersRoleType() throws Exception {
+		String emailAddress =
+			StringUtil.toLowerCase(RandomTestUtil.randomString()) +
+				RandomTestUtil.nextLong() + "@liferay.com";
+
+		User user = UserTestUtil.addUser(
+			_company.getCompanyId(), _adminUser.getUserId(), StringPool.BLANK,
+			emailAddress,
+			RandomTestUtil.randomString(
+				NumericStringRandomizerBumper.INSTANCE,
+				UniqueStringRandomizerBumper.INSTANCE),
+			LocaleUtil.getDefault(), RandomTestUtil.randomString(),
+			RandomTestUtil.randomString(), null, _serviceContext);
+
+		AccountEntry accountEntry = _accountEntryLocalService.addAccountEntry(
+			_adminUser.getUserId(), 0L, RandomTestUtil.randomString(),
+			RandomTestUtil.randomString(), null, null, null,
+			RandomTestUtil.randomString(),
+			AccountConstants.ACCOUNT_ENTRY_TYPE_BUSINESS,
+			WorkflowConstants.STATUS_APPROVED, _serviceContext);
+
+		CommerceAccountTestUtil.addAccountEntryUserRels(
+			accountEntry.getAccountEntryId(), new long[] {user.getUserId()},
+			ServiceContextTestUtil.getServiceContext());
+
+		Role role = RoleLocalServiceUtil.getRole(
+			_company.getCompanyId(),
+			AccountRoleConstants.REQUIRED_ROLE_NAME_ACCOUNT_ADMINISTRATOR);
+
+		UserGroupRoleLocalServiceUtil.addUserGroupRoles(
+			user.getUserId(), accountEntry.getAccountEntryGroupId(),
+			new long[] {role.getRoleId()});
+
+		CommerceCurrency commerceCurrency =
+			CommerceCurrencyTestUtil.addCommerceCurrency(_group.getCompanyId());
+
+		CommerceChannel commerceChannel =
+			CommerceChannelLocalServiceUtil.addCommerceChannel(
+				null, AccountConstants.ACCOUNT_ENTRY_ID_DEFAULT,
+				_group.getGroupId(), RandomTestUtil.randomString(),
+				CommerceChannelConstants.CHANNEL_TYPE_SITE, null,
+				commerceCurrency.getCode(), _serviceContext);
+
+		workflowDefinitionLinkLocalService.updateWorkflowDefinitionLink(
+			_adminUser.getUserId(), commerceChannel.getCompanyId(),
+			commerceChannel.getGroupId(), CommerceOrder.class.getName(), 0, 0,
+			"Single Approver", 1);
+
+		CommerceOrder commerceOrder = CommerceTestUtil.addB2BCommerceOrder(
+			_group.getGroupId(), _adminUser.getUserId(),
+			accountEntry.getAccountEntryId(),
+			commerceCurrency.getCommerceCurrencyId());
+
+		commerceOrder = _commerceOrderEngine.transitionCommerceOrder(
+			commerceOrder, CommerceOrderConstants.ORDER_STATUS_IN_PROGRESS,
+			_adminUser.getUserId(), true);
+
+		WorkflowTask workflowTask = _getWorkflowTask(
+			_adminUser, null, false, null, 0);
+
+		List<User> notifiableUsers = ListUtil.filter(
+			_workflowTaskManager.getNotifiableUsers(
+				workflowTask.getWorkflowTaskId()),
+			notifiableUser -> StringUtil.equals(
+				emailAddress, notifiableUser.getEmailAddress()));
+
+		Assert.assertEquals(
+			notifiableUsers.toString(), 1, notifiableUsers.size());
+
+		_commerceOrderLocalService.deleteCommerceOrder(
+			commerceOrder.getCommerceOrderId());
+	}
+
+	@Test
+	public void testGetNotifiableUsersScriptedAssignment() throws Exception {
+
+		// User Scripted Assignment
+
+		_activateWorkflow(
+			0, BlogsEntry.class.getName(), 0, 0, _SCRIPTED_SINGLE_APPROVER_2,
+			1);
+
+		User user1 = UserTestUtil.addUser(
+			_company.getCompanyId(), _companyAdminUser.getUserId(),
+			StringPool.BLANK, "user1@liferay.com",
+			RandomTestUtil.randomString(
+				NumericStringRandomizerBumper.INSTANCE,
+				UniqueStringRandomizerBumper.INSTANCE),
+			LocaleUtil.getDefault(), RandomTestUtil.randomString(),
+			RandomTestUtil.randomString(), null,
+			ServiceContextTestUtil.getServiceContext());
+
+		_addBlogsEntry(user1);
+
+		WorkflowTask workflowTask = _getWorkflowTask(
+			user1, null, false, null, 0);
+
+		Assert.assertEquals(
+			Collections.singletonList(user1),
+			_workflowTaskManager.getNotifiableUsers(
+				workflowTask.getWorkflowTaskId()));
+
+		_completeWorkflowTask(user1, Constants.APPROVE);
+
+		_deactivateWorkflow(0, BlogsEntry.class.getName(), 0, 0);
+
+		// Users Scripted Assignment
+
+		User user2 = UserTestUtil.addUser(
+			_company.getCompanyId(), _companyAdminUser.getUserId(),
+			StringPool.BLANK, "user2@liferay.com",
+			RandomTestUtil.randomString(
+				NumericStringRandomizerBumper.INSTANCE,
+				UniqueStringRandomizerBumper.INSTANCE),
+			LocaleUtil.getDefault(), RandomTestUtil.randomString(),
+			RandomTestUtil.randomString(), null,
+			ServiceContextTestUtil.getServiceContext());
+
+		_activateWorkflow(
+			0, BlogsEntry.class.getName(), 0, 0, _SCRIPTED_SINGLE_APPROVER_3,
+			1);
+
+		_addBlogsEntry(user2);
+
+		workflowTask = _getWorkflowTask(user1, null, false, null, 0);
+
+		Assert.assertEquals(
+			Arrays.asList(user1, user2),
+			_sort(
+				_workflowTaskManager.getNotifiableUsers(
+					workflowTask.getWorkflowTaskId())));
+
+		_assignWorkflowTaskToUser(user1, user2);
+
+		_completeWorkflowTask(user2, Constants.APPROVE);
+
+		_deactivateWorkflow(0, BlogsEntry.class.getName(), 0, 0);
+
+		_userLocalService.deleteUser(user1);
+		_userLocalService.deleteUser(user2);
+	}
+
+	@Test
 	public void testMovetoTrashAndRestoreFromTrashPendingDLFileEntryInDLFolderWithWorkflow()
 		throws Exception {
 
@@ -1016,6 +1187,9 @@ public class WorkflowTaskManagerImplTest extends BaseWorkflowManagerTestCase {
 			WorkflowConstants.STATUS_APPROVED, blogsEntry.getStatus());
 
 		_deactivateWorkflow(0, BlogsEntry.class.getName(), 0, 0);
+
+		_userLocalService.deleteUser(user1);
+		_userLocalService.deleteUser(user2);
 	}
 
 	@Test
@@ -1373,7 +1547,7 @@ public class WorkflowTaskManagerImplTest extends BaseWorkflowManagerTestCase {
 			RandomTestUtil.randomString(), ContentTypes.TEXT_PLAIN,
 			RandomTestUtil.randomString(), StringPool.BLANK, StringPool.BLANK,
 			StringPool.BLANK, TestDataConstants.TEST_BYTE_ARRAY, null, null,
-			serviceContext);
+			null, serviceContext);
 
 		return fileEntry.getLatestFileVersion();
 	}
@@ -1575,7 +1749,8 @@ public class WorkflowTaskManagerImplTest extends BaseWorkflowManagerTestCase {
 				_log.debug(workflowException);
 			}
 
-			String content = _read("join-xor-workflow-definition.xml");
+			String content = _readFileToJSON(
+				"join-xor-workflow-definition.xml");
 
 			_workflowDefinitionManager.deployWorkflowDefinition(
 				_adminUser.getCompanyId(), _adminUser.getUserId(), _JOIN_XOR,
@@ -1609,7 +1784,7 @@ public class WorkflowTaskManagerImplTest extends BaseWorkflowManagerTestCase {
 				_log.debug(workflowException);
 			}
 
-			String content = _read(fileName);
+			String content = _readFileToJSON(fileName);
 
 			_workflowDefinitionManager.deployWorkflowDefinition(
 				_adminUser.getCompanyId(), _adminUser.getUserId(), name, name,
@@ -1627,7 +1802,7 @@ public class WorkflowTaskManagerImplTest extends BaseWorkflowManagerTestCase {
 				_log.debug(workflowException);
 			}
 
-			String content = _read(
+			String content = _readFileToJSON(
 				"single-approver-site-member-workflow-definition.xml");
 
 			_workflowDefinitionManager.deployWorkflowDefinition(
@@ -1804,11 +1979,11 @@ public class WorkflowTaskManagerImplTest extends BaseWorkflowManagerTestCase {
 			workflowTask.getWorkflowTaskId());
 	}
 
-	private String _read(String fileName) throws Exception {
+	private String _readFileToJSON(String fileName) throws Exception {
 		Class<?> clazz = getClass();
 
-		return StringUtil.read(
-			clazz.getClassLoader(), _getBasePath() + fileName);
+		return WorkflowDefinitionContentUtil.toJSON(
+			StringUtil.read(clazz.getClassLoader(), _getBasePath() + fileName));
 	}
 
 	private List<WorkflowTask> _searchByAssetTypesAndAssetPrimaryKeys(
@@ -1889,12 +2064,30 @@ public class WorkflowTaskManagerImplTest extends BaseWorkflowManagerTestCase {
 		_createSiteMemberWorkflow();
 	}
 
+	private List<User> _sort(List<User> users) {
+		Collections.sort(
+			users,
+			new Comparator<User>() {
+
+				@Override
+				public int compare(User user1, User user2) {
+					String emailAddress1 = user1.getEmailAddress();
+					String emailAddress2 = user2.getEmailAddress();
+
+					return emailAddress1.compareTo(emailAddress2);
+				}
+
+			});
+
+		return users;
+	}
+
 	private FileVersion _updateFileVersion(long fileEntryId) throws Exception {
 		FileEntry fileEntry = _dlAppService.updateFileEntry(
 			fileEntryId, StringPool.BLANK, ContentTypes.TEXT_PLAIN,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			StringPool.BLANK, null, DLVersionNumberIncrease.AUTOMATIC, null, 0,
-			null, null, _serviceContext);
+			null, null, null, _serviceContext);
 
 		return fileEntry.getLatestFileVersion();
 	}
@@ -1976,10 +2169,25 @@ public class WorkflowTaskManagerImplTest extends BaseWorkflowManagerTestCase {
 	@Inject
 	private static ConfigurationAdmin _configurationAdmin;
 
+	private static String _originalName;
+
+	@Inject
+	private AccountEntryLocalService _accountEntryLocalService;
+
+	@DeleteAfterTestRun
 	private User _adminUser;
 
 	@Inject
 	private BlogsEntryLocalService _blogsEntryLocalService;
+
+	@Inject
+	private CommerceChannelLocalService _commerceChannelLocalService;
+
+	@Inject
+	private CommerceOrderEngine _commerceOrderEngine;
+
+	@Inject
+	private CommerceOrderLocalService _commerceOrderLocalService;
 
 	@Inject
 	private DDLRecordLocalService _ddlRecordLocalService;
@@ -2021,14 +2229,21 @@ public class WorkflowTaskManagerImplTest extends BaseWorkflowManagerTestCase {
 	@Inject
 	private Portal _portal;
 
+	@DeleteAfterTestRun
 	private User _portalContentReviewerUser;
 
 	@Inject
 	private RoleLocalService _roleLocalService;
 
 	private ServiceContext _serviceContext;
+
+	@DeleteAfterTestRun
 	private User _siteAdminUser;
+
+	@DeleteAfterTestRun
 	private User _siteContentReviewerUser;
+
+	@DeleteAfterTestRun
 	private User _siteMemberUser;
 
 	@Inject

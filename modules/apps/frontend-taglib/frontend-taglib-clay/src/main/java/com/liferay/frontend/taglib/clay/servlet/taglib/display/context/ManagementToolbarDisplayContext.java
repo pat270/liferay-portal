@@ -98,11 +98,15 @@ public interface ManagementToolbarDisplayContext {
 	}
 
 	public default String getSearchFormName() {
-		return null;
+		return "fm";
 	}
 
 	public default String getSearchInputName() {
 		return ManagementToolbarDefaults.getSearchInputName();
+	}
+
+	public default String getSearchResultsTitle() {
+		return ManagementToolbarDefaults.getSearchResultsTitle();
 	}
 
 	public default String getSearchValue() {

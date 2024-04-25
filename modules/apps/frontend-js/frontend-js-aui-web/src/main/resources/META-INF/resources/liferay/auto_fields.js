@@ -150,7 +150,7 @@ AUI.add(
 
 					let clonedRow;
 
-					if (inputsLocalized && !paletteIsCloned) {
+					if (!!inputsLocalized._nodes.length && !paletteIsCloned) {
 						const palette = document.querySelector(
 							"[id$='PaletteBoundingBox']"
 						);
@@ -163,7 +163,7 @@ AUI.add(
 
 						trigger.placeAfter(list);
 
-						list.append(palette);
+						list.append(palette.cloneNode(true));
 					}
 
 					if (instance.url) {
@@ -215,7 +215,7 @@ AUI.add(
 								oldName = item.attr('id');
 
 								item.attr('checked', '');
-								item.attr('value', guid);
+								item.attr('name', newName);
 								item.attr('id', newName);
 							}
 							else if (
@@ -361,6 +361,10 @@ AUI.add(
 					const inputLocalizedNamespaceId = `${inputLocalizedNamespace}${inputLocalizedId}`;
 
 					Liferay.InputLocalized.register(inputLocalizedNamespaceId, {
+						adminMode: inputLocalized.get('adminMode'),
+						availableLocales: inputLocalized.get(
+							'availableLocales'
+						),
 						boundingBox: `#${inputLocalizedNamespaceId}PaletteBoundingBox`,
 						columns: inputLocalized.get('columns'),
 						contentBox: `#${inputLocalizedNamespaceId}PaletteContentBox`,
@@ -371,17 +375,36 @@ AUI.add(
 						fieldPrefixSeparator: inputLocalized.get(
 							'fieldPrefixSeparator'
 						),
+						frontendJsComponentsWebModule: inputLocalized.get(
+							'frontendJsComponentsWebModule'
+						),
+						frontendJsReactWebModule: inputLocalized.get(
+							'frontendJsReactWebModule'
+						),
+						frontendJsStateWebModule: inputLocalized.get(
+							'frontendJsStateWebModule'
+						),
 						helpMessage: inputLocalized.get('helpMessage'),
 						id: inputLocalizedId,
 						inputBox: `#${inputLocalizedNamespaceId}BoundingBox`,
 						inputPlaceholder: '#' + inputLocalizedNamespaceId,
 						items: inputLocalized.get('items'),
 						itemsError: inputLocalized.get('itemsError'),
+						languagesDropdownDirection: inputLocalized.get(
+							'languagesDropdownDirection'
+						),
+						languagesTranslationsAriaLabels: inputLocalized.get(
+							'languagesTranslationsAriaLabels'
+						),
+						lazy: inputLocalized.get('lazy'),
 						name: inputLocalizedId,
 						namespace: inputLocalized.get('namespace'),
 						selected: inputLocalized
 							.get('items')
 							.indexOf(inputLocalized.getSelectedLanguageId()),
+						selectedLanguageId: inputLocalized.get(
+							'selectedLanguageId'
+						),
 						toggleSelection: inputLocalized.get('toggleSelection'),
 						translatedLanguages: inputLocalized.get(
 							'translatedLanguages'

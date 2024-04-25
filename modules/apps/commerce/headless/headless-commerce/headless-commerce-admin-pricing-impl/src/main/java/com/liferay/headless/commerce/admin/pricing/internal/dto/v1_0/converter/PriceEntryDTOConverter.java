@@ -8,6 +8,7 @@ package com.liferay.headless.commerce.admin.pricing.internal.dto.v1_0.converter;
 import com.liferay.commerce.price.list.model.CommercePriceEntry;
 import com.liferay.commerce.price.list.service.CommercePriceEntryService;
 import com.liferay.commerce.product.model.CPInstance;
+import com.liferay.commerce.product.service.CPInstanceLocalService;
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.headless.commerce.admin.pricing.dto.v1_0.PriceEntry;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
@@ -39,29 +40,58 @@ public class PriceEntryDTOConverter
 			_commercePriceEntryService.getCommercePriceEntry(
 				(Long)dtoConverterContext.getId());
 
-		CPInstance cpInstance = commercePriceEntry.getCPInstance();
-
-		ExpandoBridge expandoBridge = commercePriceEntry.getExpandoBridge();
+		CPInstance cpInstance = _cpInstanceLocalService.fetchCProductInstance(
+			commercePriceEntry.getCProductId(),
+			commercePriceEntry.getCPInstanceUuid());
 
 		return new PriceEntry() {
 			{
-				customFields = expandoBridge.getAttributes();
-				externalReferenceCode =
-					commercePriceEntry.getExternalReferenceCode();
-				hasTierPrice = commercePriceEntry.isHasTierPrice();
-				id = commercePriceEntry.getCommercePriceEntryId();
-				price = commercePriceEntry.getPrice();
-				priceListId = commercePriceEntry.getCommercePriceListId();
-				promoPrice = commercePriceEntry.getPromoPrice();
-				sku = cpInstance.getSku();
-				skuExternalReferenceCode =
-					cpInstance.getExternalReferenceCode();
-				skuId = cpInstance.getCPInstanceId();
+				setCustomFields(
+					() -> {
+						ExpandoBridge expandoBridge =
+							commercePriceEntry.getExpandoBridge();
+
+						return expandoBridge.getAttributes();
+					});
+				setExternalReferenceCode(
+					commercePriceEntry::getExternalReferenceCode);
+				setHasTierPrice(commercePriceEntry::isHasTierPrice);
+				setId(commercePriceEntry::getCommercePriceEntryId);
+				setPrice(commercePriceEntry::getPrice);
+				setPriceListId(commercePriceEntry::getCommercePriceListId);
+				setPromoPrice(commercePriceEntry::getPromoPrice);
+				setSku(
+					() -> {
+						if (cpInstance == null) {
+							return null;
+						}
+
+						return cpInstance.getSku();
+					});
+				setSkuExternalReferenceCode(
+					() -> {
+						if (cpInstance == null) {
+							return null;
+						}
+
+						return cpInstance.getExternalReferenceCode();
+					});
+				setSkuId(
+					() -> {
+						if (cpInstance == null) {
+							return null;
+						}
+
+						return cpInstance.getCPInstanceId();
+					});
 			}
 		};
 	}
 
 	@Reference
 	private CommercePriceEntryService _commercePriceEntryService;
+
+	@Reference
+	private CPInstanceLocalService _cpInstanceLocalService;
 
 }

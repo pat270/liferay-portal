@@ -12,6 +12,8 @@ import com.liferay.change.tracking.rest.client.pagination.Pagination;
 import com.liferay.change.tracking.rest.client.problem.Problem;
 import com.liferay.change.tracking.rest.client.serdes.v1_0.CTProcessSerDes;
 
+import java.net.URL;
+
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -33,23 +35,23 @@ public interface CTProcessResource {
 	}
 
 	public Page<CTProcess> getCTProcessesPage(
-			Integer[] status, String search, String filterString,
+			String search, Integer[] status, String filterString,
 			Pagination pagination, String sortString)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse getCTProcessesPageHttpResponse(
-			Integer[] status, String search, String filterString,
+			String search, Integer[] status, String filterString,
 			Pagination pagination, String sortString)
 		throws Exception;
 
 	public void postCTProcessesPageExportBatch(
-			Integer[] status, String search, String filterString,
+			String search, Integer[] status, String filterString,
 			String sortString, String callbackURL, String contentType,
 			String fieldNames)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse postCTProcessesPageExportBatchHttpResponse(
-			Integer[] status, String search, String filterString,
+			String search, Integer[] status, String filterString,
 			String sortString, String callbackURL, String contentType,
 			String fieldNames)
 		throws Exception;
@@ -120,6 +122,10 @@ public interface CTProcessResource {
 			return this;
 		}
 
+		public Builder endpoint(URL url) {
+			return endpoint(url.getHost(), url.getPort(), url.getProtocol());
+		}
+
 		public Builder header(String key, String value) {
 			_headers.put(key, value);
 
@@ -172,13 +178,13 @@ public interface CTProcessResource {
 	public static class CTProcessResourceImpl implements CTProcessResource {
 
 		public Page<CTProcess> getCTProcessesPage(
-				Integer[] status, String search, String filterString,
+				String search, Integer[] status, String filterString,
 				Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				getCTProcessesPageHttpResponse(
-					status, search, filterString, pagination, sortString);
+					search, status, filterString, pagination, sortString);
 
 			String content = httpResponse.getContent();
 
@@ -240,7 +246,7 @@ public interface CTProcessResource {
 		}
 
 		public HttpInvoker.HttpResponse getCTProcessesPageHttpResponse(
-				Integer[] status, String search, String filterString,
+				String search, Integer[] status, String filterString,
 				Pagination pagination, String sortString)
 			throws Exception {
 
@@ -265,14 +271,14 @@ public interface CTProcessResource {
 
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
 
+			if (search != null) {
+				httpInvoker.parameter("search", String.valueOf(search));
+			}
+
 			if (status != null) {
 				for (int i = 0; i < status.length; i++) {
 					httpInvoker.parameter("status", String.valueOf(status[i]));
 				}
-			}
-
-			if (search != null) {
-				httpInvoker.parameter("search", String.valueOf(search));
 			}
 
 			if (filterString != null) {
@@ -302,14 +308,14 @@ public interface CTProcessResource {
 		}
 
 		public void postCTProcessesPageExportBatch(
-				Integer[] status, String search, String filterString,
+				String search, Integer[] status, String filterString,
 				String sortString, String callbackURL, String contentType,
 				String fieldNames)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				postCTProcessesPageExportBatchHttpResponse(
-					status, search, filterString, sortString, callbackURL,
+					search, status, filterString, sortString, callbackURL,
 					contentType, fieldNames);
 
 			String content = httpResponse.getContent();
@@ -362,12 +368,14 @@ public interface CTProcessResource {
 
 		public HttpInvoker.HttpResponse
 				postCTProcessesPageExportBatchHttpResponse(
-					Integer[] status, String search, String filterString,
+					String search, Integer[] status, String filterString,
 					String sortString, String callbackURL, String contentType,
 					String fieldNames)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body("[]", "application/json");
 
 			if (_builder._locale != null) {
 				httpInvoker.header(
@@ -388,14 +396,14 @@ public interface CTProcessResource {
 
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
 
+			if (search != null) {
+				httpInvoker.parameter("search", String.valueOf(search));
+			}
+
 			if (status != null) {
 				for (int i = 0; i < status.length; i++) {
 					httpInvoker.parameter("status", String.valueOf(status[i]));
 				}
-			}
-
-			if (search != null) {
-				httpInvoker.parameter("search", String.valueOf(search));
 			}
 
 			if (filterString != null) {
@@ -603,6 +611,8 @@ public interface CTProcessResource {
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body("[]", "application/json");
 
 			if (_builder._locale != null) {
 				httpInvoker.header(

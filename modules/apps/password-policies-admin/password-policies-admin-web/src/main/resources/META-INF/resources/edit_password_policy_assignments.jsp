@@ -70,9 +70,9 @@ SearchContainer<?> searchContainer = editPasswordPolicyAssignmentsManagementTool
 	%>'
 	clearResultsURL="<%= editPasswordPolicyAssignmentsManagementToolbarDisplayContext.getClearResultsURL() %>"
 	creationMenu="<%= editPasswordPolicyAssignmentsManagementToolbarDisplayContext.getCreationMenu() %>"
-	filterDropdownItems="<%= editPasswordPolicyAssignmentsManagementToolbarDisplayContext.getFilterDropdownItems() %>"
 	itemsTotal="<%= searchContainer.getTotal() %>"
-	propsTransformer="js/EditPasswordPolicyAssignmentsManagementToolbarPropsTransformer"
+	orderDropdownItems="<%= editPasswordPolicyAssignmentsManagementToolbarDisplayContext.getOrderByDropdownItems() %>"
+	propsTransformer="{EditPasswordPolicyAssignmentsManagementToolbarPropsTransformer} from password-policies-admin-web"
 	searchActionURL="<%= editPasswordPolicyAssignmentsManagementToolbarDisplayContext.getSearchActionURL() %>"
 	searchContainerId="passwordPolicyMembers"
 	searchFormName="searchFm"

@@ -31,6 +31,7 @@ if (size != null) {
 <style type="text/css">
 	.dropdown-menu-personal-menu {
 		max-height: none;
+		z-index: 1021;
 	}
 
 	.dropdown-menu-personal-menu .dropdown-item-indicator {
@@ -39,6 +40,10 @@ if (size != null) {
 
 	div.personal-menu-dropdown .btn {
 		border-radius: 5000px;
+	}
+
+	div.personal-menu-dropdown .btn > span.sticker-user-icon {
+		pointer-events: none;
 	}
 
 	div.personal-menu-dropdown .dropdown-item {
@@ -52,10 +57,13 @@ if (size != null) {
 			<div><%= label %></div>
 		</c:when>
 		<c:otherwise>
-			<button aria-expanded="true" aria-haspopup="true" class="btn btn-unstyled dropdown-toggle" id="<%= namespace %>personal_menu_dropdown_toggle" ref="triggerButton" type="button">
+			<clay:button
+				cssClass="dropdown-toggle"
+				displayType="unstyled"
+				id='<%= namespace + "personal_menu_dropdown_toggle" %>'
+			>
 				<span class="<%= userStickerCssClasses %>">
-					<liferay-ui:user-portrait
-						cssClass="bg-white sticker-user-icon"
+					<liferay-user:user-portrait
 						size="<%= size %>"
 						user="<%= user2 %>"
 					/>
@@ -71,7 +79,7 @@ if (size != null) {
 						</span>
 					</c:if>
 				</span>
-			</button>
+			</clay:button>
 		</c:otherwise>
 	</c:choose>
 
@@ -107,7 +115,7 @@ if (size != null) {
 	%>
 
 	<react:component
-		module="personal_menu/js/PersonalMenu.es"
+		module="{PersonalMenu} from product-navigation-taglib"
 		props="<%= props %>"
 	/>
 </div>

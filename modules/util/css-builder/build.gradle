@@ -5,8 +5,11 @@ apply plugin: "com.liferay.maven.plugin.builder"
 task copyPortalCommonCSSJar(type: Copy)
 task unzipPortalCommonCSS(type: Copy)
 
+sourceCompatibility = "1.8"
+targetCompatibility = "1.8"
+
 buildPluginDescriptor {
-	configurationScopeMapping "mavenCompile", Conf2ScopeMappingContainer.COMPILE
+	configurationScopeMapping "mavenCompile", "compile"
 
 	ext {
 		autoClean = false
@@ -19,10 +22,14 @@ buildPluginDescriptor {
 
 configurations {
 	mavenCompile {
-		extendsFrom compile
+		extendsFrom api
 	}
 
 	mavenDistribution
+}
+
+copyCSS {
+	mustRunAfter buildPluginDescriptor
 }
 
 copyPortalCommonCSSJar {
@@ -35,8 +42,8 @@ copyPortalCommonCSSJar {
 }
 
 dependencies {
-	compile group: "org.codehaus.plexus", name: "plexus-utils", transitive: false, version: "3.0.15"
-	compile group: "org.sonatype.plexus", name: "plexus-build-api", transitive: false, version: "0.0.7"
+	api group: "org.codehaus.plexus", name: "plexus-utils", transitive: false, version: "3.0.24"
+	api group: "org.sonatype.plexus", name: "plexus-build-api", transitive: false, version: "0.0.7"
 
 	compileInclude group: "com.beust", name: "jcommander", version: "1.72"
 	compileInclude group: "com.liferay", name: "com.liferay.petra.function", version: "default"
@@ -47,16 +54,16 @@ dependencies {
 	compileInclude group: "com.liferay", name: "com.liferay.sass.compiler.dart", version: "1.0.2"
 
 	compileOnly group: "org.apache.ant", name: "ant", transitive: false, version: "1.10.11"
-	compileOnly group: "org.apache.maven", name: "maven-artifact", version: "3.2.5"
-	compileOnly group: "org.apache.maven", name: "maven-core", version: "3.2.5"
-	compileOnly group: "org.apache.maven", name: "maven-plugin-api", version: "3.2.5"
+	compileOnly group: "org.apache.maven", name: "maven-artifact", version: "3.8.1"
+	compileOnly group: "org.apache.maven", name: "maven-core", version: "3.8.1"
+	compileOnly group: "org.apache.maven", name: "maven-plugin-api", version: "3.8.1"
 
 	mavenCompile group: "com.liferay", name: "com.liferay.frontend.css.common", version: "3.0.1"
 
 	mavenDistribution classifier: "bin", ext: "zip", group: "org.apache.maven", name: "apache-maven", version: "3.3.9"
 
-	testCompile group: "com.liferay", name: "com.liferay.maven.executor", version: "1.0.2"
-	testCompile group: "org.apache.ant", name: "ant-testutil", version: "1.9.7"
+	testImplementation group: "com.liferay", name: "com.liferay.maven.executor", version: "1.0.2"
+	testImplementation group: "org.apache.ant", name: "ant-testutil", version: "1.9.7"
 }
 
 javadoc {
@@ -73,7 +80,7 @@ liferayOSGi {
 
 test {
 	dependsOn copyPortalCommonCSSJar
-	dependsOn install
+	dependsOn publishToMavenLocal
 	dependsOn unzipPortalCommonCSS
 
 	doFirst {
@@ -82,7 +89,7 @@ test {
 
 	forkEvery = 1
 
-	systemProperty "css.builder.version", jar.version
+	systemProperty "css.builder.version", jar.archiveVersion
 	systemProperty "http.proxyHost", System.properties["http.proxyHost"]
 	systemProperty "http.proxyPort", System.properties["http.proxyPort"]
 	systemProperty "maven.debug", System.properties["maven.debug"]

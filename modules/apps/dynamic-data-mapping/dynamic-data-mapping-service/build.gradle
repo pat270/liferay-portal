@@ -4,10 +4,10 @@ buildService {
 }
 
 dependencies {
-	compileInclude group: "com.jayway.jsonpath", name: "json-path", version: "2.2.0"
+	compileInclude group: "com.jayway.jsonpath", name: "json-path", version: "2.9.0"
 	compileInclude group: "org.apache.xmlbeans", name: "xmlbeans", version: "3.1.0"
 
-	compileOnly group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: "2.13.4"
+	compileOnly group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: "2.16.1"
 	compileOnly group: "com.google.code.gson", name: "gson", version: "2.9.0"
 	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.impl", version: "default"
 	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.kernel", version: "default"
@@ -18,7 +18,7 @@ dependencies {
 	compileOnly group: "net.minidev", name: "accessors-smart", version: "2.4.9"
 	compileOnly group: "net.minidev", name: "json-smart", version: "2.4.10"
 	compileOnly group: "org.apache.commons", name: "commons-collections4", version: "4.4"
-	compileOnly group: "org.apache.commons", name: "commons-compress", version: "1.21"
+	compileOnly group: "org.apache.commons", name: "commons-compress", version: "1.26.0"
 	compileOnly group: "org.apache.commons", name: "commons-math3", version: "3.6.1"
 	compileOnly group: "org.apache.felix", name: "org.apache.felix.http.servlet-api", version: "1.1.2"
 	compileOnly group: "org.apache.poi", name: "poi", version: "5.2.2"
@@ -34,6 +34,7 @@ dependencies {
 	compileOnly project(":apps:dynamic-data-mapping:dynamic-data-mapping-api")
 	compileOnly project(":apps:dynamic-data-mapping:dynamic-data-mapping-data-provider-impl")
 	compileOnly project(":apps:dynamic-data-mapping:dynamic-data-mapping-form-field-type-api")
+	compileOnly project(":apps:dynamic-data-mapping:dynamic-data-mapping-spi")
 	compileOnly project(":apps:dynamic-data-mapping:dynamic-data-mapping-validator")
 	compileOnly project(":apps:export-import:export-import-api")
 	compileOnly project(":apps:info:info-api")
@@ -41,6 +42,7 @@ dependencies {
 	compileOnly project(":apps:journal:journal-article-dynamic-data-mapping-form-field-type-api")
 	compileOnly project(":apps:layout:layout-dynamic-data-mapping-form-field-type-api")
 	compileOnly project(":apps:object:object-api")
+	compileOnly project(":apps:portal-configuration:portal-configuration-module-configuration-api")
 	compileOnly project(":apps:portal-search:portal-search-api")
 	compileOnly project(":apps:portal-search:portal-search-spi")
 	compileOnly project(":apps:portal-template:portal-template-engine-api")
@@ -49,7 +51,6 @@ dependencies {
 	compileOnly project(":apps:portal:portal-dao-orm-custom-sql-api")
 	compileOnly project(":apps:portal:portal-instance-lifecycle-api")
 	compileOnly project(":apps:staging:staging-api")
-	compileOnly project(":apps:static:osgi:osgi-util")
 	compileOnly project(":apps:static:portal-configuration:portal-configuration-metatype-api")
 	compileOnly project(":apps:static:portal:portal-upgrade-api")
 	compileOnly project(":apps:view-count:view-count-api")
@@ -65,7 +66,7 @@ dependencies {
 	compileOnly project(":core:petra:petra-sql-dsl-spi")
 	compileOnly project(":core:petra:petra-string")
 
-	testCompile group: "org.json", name: "json", version: "20230227"
-	testCompile group: "org.skyscreamer", name: "jsonassert", version: "1.2.3"
-	testCompile project(":apps:dynamic-data-mapping:dynamic-data-mapping-test-util")
+	testImplementation group: "org.json", name: "json", version: "20231013"
+	testImplementation group: "org.skyscreamer", name: "jsonassert", version: "1.2.3"
+	testImplementation project(":apps:dynamic-data-mapping:dynamic-data-mapping-test-util")
 }

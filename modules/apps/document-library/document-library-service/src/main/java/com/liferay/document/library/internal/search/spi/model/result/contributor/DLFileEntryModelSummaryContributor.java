@@ -15,15 +15,9 @@ import com.liferay.portal.search.spi.model.result.contributor.ModelSummaryContri
 
 import java.util.Locale;
 
-import org.osgi.service.component.annotations.Component;
-
 /**
  * @author Michael C. Han
  */
-@Component(
-	property = "indexer.class.name=com.liferay.document.library.kernel.model.DLFileEntry",
-	service = ModelSummaryContributor.class
-)
 public class DLFileEntryModelSummaryContributor
 	implements ModelSummaryContributor {
 
@@ -45,8 +39,13 @@ public class DLFileEntryModelSummaryContributor
 
 			if (Validator.isNull(content) && !locale.equals(defaultLocale)) {
 				content = document.get(
-					defaultLocale, prefix + Field.DESCRIPTION,
-					Field.DESCRIPTION);
+					defaultLocale, prefix + Field.CONTENT, Field.CONTENT);
+
+				if (Validator.isNull(content)) {
+					content = document.get(
+						defaultLocale, prefix + Field.DESCRIPTION,
+						Field.DESCRIPTION);
+				}
 			}
 		}
 

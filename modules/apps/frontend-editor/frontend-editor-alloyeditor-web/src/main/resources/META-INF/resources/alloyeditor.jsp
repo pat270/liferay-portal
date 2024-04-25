@@ -56,7 +56,7 @@ if (editorOptions != null) {
 	/>
 </c:if>
 
-<script data-senna-track="temporary" type="text/javascript">
+<aui:script senna="temporary" type="text/javascript">
 	CKEDITOR.ADDITIONAL_RESOURCE_PARAMS = {
 		languageId: themeDisplay.getLanguageId(),
 	};
@@ -67,7 +67,7 @@ if (editorOptions != null) {
 	CKEDITOR.dtd.$removeEmpty.span = 0;
 
 	CKEDITOR.env.isCompatible = true;
-</script>
+</aui:script>
 
 <liferay-util:html-top>
 	<link href="<%= PortalUtil.getStaticResourceURL(request, PortalUtil.getPathProxy() + application.getContextPath() + "/css/main.css") %>" rel="stylesheet" type="text/css" />
@@ -179,11 +179,10 @@ name = HtmlUtil.escapeJS(name);
 	};
 
 	var createInstance = function () {
+		var editorContainer = A.one('#<%= name %>Container');
 		var editorNode = A.one('#<%= name %>');
 
 		if (!editorNode) {
-			var editorContainer = A.one('#<%= name %>Container');
-
 			editorContainer.setHTML('');
 
 			editorNode = A.Node.create('<%= HtmlUtil.escapeJS(editor) %>');
@@ -193,6 +192,63 @@ name = HtmlUtil.escapeJS(name);
 
 		if (editorNode) {
 			editorNode.attr('contenteditable', true);
+		}
+
+		function initInstance(editorConfig) {
+			var plugins = [];
+
+			<c:if test="<%= showSource %>">
+				plugins.push(A.Plugin.LiferayAlloyEditorSource);
+			</c:if>
+
+			alloyEditor = new A.LiferayAlloyEditor({
+				contents: '<%= HtmlUtil.escapeJS(contents) %>',
+				editorConfig: editorConfig,
+				editorPaths: [
+					'<%= PortalWebResourcesUtil.getContextPath(PortalWebResourceConstants.RESOURCE_TYPE_EDITOR_ALLOYEDITOR) %>',
+					'<%= PortalWebResourcesUtil.getContextPath(PortalWebResourceConstants.RESOURCE_TYPE_EDITOR_CKEDITOR) %>',
+				],
+				namespace: '<%= name %>',
+
+				<c:if test="<%= Validator.isNotNull(onBlurMethod) %>">
+					onBlurMethod: '<%= HtmlUtil.escapeJS(namespace + onBlurMethod) %>',
+				</c:if>
+
+				<c:if test="<%= Validator.isNotNull(onChangeMethod) %>">
+					onChangeMethod:
+						'<%= HtmlUtil.escapeJS(namespace + onChangeMethod) %>',
+				</c:if>
+
+				<c:if test="<%= Validator.isNotNull(onFocusMethod) %>">
+					onFocusMethod:
+						'<%= HtmlUtil.escapeJS(namespace + onFocusMethod) %>',
+				</c:if>
+
+				<c:if test="<%= Validator.isNotNull(onInitMethod) %>">
+					onInitMethod: '<%= HtmlUtil.escapeJS(namespace + onInitMethod) %>',
+				</c:if>
+
+				plugins: plugins,
+				portletId: '<%= portletId %>',
+				textMode: <%= (editorOptions != null) ? editorOptions.isTextMode() : Boolean.FALSE.toString() %>,
+
+				useCustomDataProcessor: <%= (editorOptionsDynamicAttributes != null) && GetterUtil.getBoolean(editorOptionsDynamicAttributes.get("useCustomDataProcessor")) %>,
+			}).render();
+
+			CKEDITOR.dom.selection.prototype.selectElement = function (element) {
+				this.isLocked = 0;
+
+				var range = new CKEDITOR.dom.range(this.root);
+
+				range.setEndAfter(element);
+				range.setStartBefore(element);
+
+				this.selectRanges([range]);
+			};
+
+			<liferay-util:dynamic-include key='<%= "com.liferay.frontend.editor.alloyeditor.web#" + editorName + "#onEditorCreate" %>' />
+
+			Liferay.namespace('EDITORS').alloyEditor.addInstance();
 		}
 
 		var editorConfig = <%= Validator.isNotNull(editorConfigJSONObject) %>
@@ -228,58 +284,30 @@ name = HtmlUtil.escapeJS(name);
 			editorConfig
 		);
 
-		var plugins = [];
+		var editorTransformerURLs = editorConfig.editorTransformerURLs;
 
-		<c:if test="<%= showSource %>">
-			plugins.push(A.Plugin.LiferayAlloyEditorSource);
-		</c:if>
+		if (Liferay.FeatureFlags['LPS-186870'] && editorTransformerURLs) {
+			var loadingIndicator = document.createElement('span');
 
-		alloyEditor = new A.LiferayAlloyEditor({
-			contents: '<%= HtmlUtil.escapeJS(contents) %>',
-			editorConfig: editorConfig,
-			editorPaths: [
-				'<%= PortalWebResourcesUtil.getContextPath(PortalWebResourceConstants.RESOURCE_TYPE_EDITOR_ALLOYEDITOR) %>',
-				'<%= PortalWebResourcesUtil.getContextPath(PortalWebResourceConstants.RESOURCE_TYPE_EDITOR_CKEDITOR) %>',
-			],
-			namespace: '<%= name %>',
+			loadingIndicator.classList.add('loading-animation');
+			loadingIndicator.setAttribute('aria-hidden', true);
 
-			<c:if test="<%= Validator.isNotNull(onBlurMethod) %>">
-				onBlurMethod: '<%= HtmlUtil.escapeJS(namespace + onBlurMethod) %>',
-			</c:if>
+			editorContainer.appendChild(loadingIndicator);
 
-			<c:if test="<%= Validator.isNotNull(onChangeMethod) %>">
-				onChangeMethod: '<%= HtmlUtil.escapeJS(namespace + onChangeMethod) %>',
-			</c:if>
+			Liferay.Util.loadEditorClientExtensions({
+				config: editorConfig,
+				onLoad: ({transformedConfig}) => {
+					if (loadingIndicator) {
+						loadingIndicator.remove();
+					}
 
-			<c:if test="<%= Validator.isNotNull(onFocusMethod) %>">
-				onFocusMethod: '<%= HtmlUtil.escapeJS(namespace + onFocusMethod) %>',
-			</c:if>
-
-			<c:if test="<%= Validator.isNotNull(onInitMethod) %>">
-				onInitMethod: '<%= HtmlUtil.escapeJS(namespace + onInitMethod) %>',
-			</c:if>
-
-			plugins: plugins,
-			portletId: '<%= portletId %>',
-			textMode: <%= (editorOptions != null) ? editorOptions.isTextMode() : Boolean.FALSE.toString() %>,
-
-			useCustomDataProcessor: <%= (editorOptionsDynamicAttributes != null) && GetterUtil.getBoolean(editorOptionsDynamicAttributes.get("useCustomDataProcessor")) %>,
-		}).render();
-
-		CKEDITOR.dom.selection.prototype.selectElement = function (element) {
-			this.isLocked = 0;
-
-			var range = new CKEDITOR.dom.range(this.root);
-
-			range.setEndAfter(element);
-			range.setStartBefore(element);
-
-			this.selectRanges([range]);
-		};
-
-		<liferay-util:dynamic-include key='<%= "com.liferay.frontend.editor.alloyeditor.web#" + editorName + "#onEditorCreate" %>' />
-
-		Liferay.namespace('EDITORS').alloyEditor.addInstance();
+					initInstance(transformedConfig);
+				},
+			});
+		}
+		else {
+			initInstance(editorConfig);
+		}
 	};
 
 	var ignoreClass = ['ddm-options-target'];

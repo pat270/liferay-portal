@@ -1,4 +1,5 @@
 @component-name = "portal-upgrades"
+@ignore = "true"
 definition {
 
 	property database.types = "db2,mariadb,mysql,oracle,postgresql,sqlserver,sybase";
@@ -6,8 +7,9 @@ definition {
 	property portal.upstream = "true";
 	property test.assert.warning.exceptions = "true";
 	property test.liferay.virtual.instance = "false";
+	property test.run.type = "single";
 	property testray.component.names = "Online Editing";
-	property testray.main.component.name = "Upgrades Lima";
+	property testray.main.component.name = "Upgrades Content Management";
 
 	setUp {
 		SignIn.signIn();

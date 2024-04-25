@@ -57,7 +57,8 @@ public class DLAppServiceWrapper
 	 * @throws PortalException if a portal exception occurred
 	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
 	 #addFileEntry(String, long, long, String, String, String,
-	 String, String, File, Date, Date, ServiceContext)}
+	 String, String, String, File, Date, Date, Date,
+	 ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -97,6 +98,8 @@ public class DLAppServiceWrapper
 	 * @param description the file's description
 	 * @param changeLog the file's version change log
 	 * @param bytes the file's data (optionally <code>null</code>)
+	 * @param displayDate the file's display date (optionally
+	 <code>null</code>)
 	 * @param expirationDate the file's expiration date (optionally <code>null
 	 </code>)
 	 * @param reviewDate the file's review Date (optionally <code>null</code>)
@@ -114,14 +117,15 @@ public class DLAppServiceWrapper
 			String externalReferenceCode, long repositoryId, long folderId,
 			String sourceFileName, String mimeType, String title,
 			String urlTitle, String description, String changeLog, byte[] bytes,
-			java.util.Date expirationDate, java.util.Date reviewDate,
+			java.util.Date displayDate, java.util.Date expirationDate,
+			java.util.Date reviewDate,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlAppService.addFileEntry(
 			externalReferenceCode, repositoryId, folderId, sourceFileName,
 			mimeType, title, urlTitle, description, changeLog, bytes,
-			expirationDate, reviewDate, serviceContext);
+			displayDate, expirationDate, reviewDate, serviceContext);
 	}
 
 	/**
@@ -147,6 +151,8 @@ public class DLAppServiceWrapper
 	 * @param description the file's description
 	 * @param changeLog the file's version change log
 	 * @param file the file's data (optionally <code>null</code>)
+	 * @param displayDate the file's display date (optionally
+	 <code>null</code>)
 	 * @param expirationDate the file's expiration date (optionally <code>null
 	 </code>)
 	 * @param reviewDate the file's review Date (optionally <code>null</code>)
@@ -164,15 +170,15 @@ public class DLAppServiceWrapper
 			String externalReferenceCode, long repositoryId, long folderId,
 			String sourceFileName, String mimeType, String title,
 			String urlTitle, String description, String changeLog,
-			java.io.File file, java.util.Date expirationDate,
-			java.util.Date reviewDate,
+			java.io.File file, java.util.Date displayDate,
+			java.util.Date expirationDate, java.util.Date reviewDate,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlAppService.addFileEntry(
 			externalReferenceCode, repositoryId, folderId, sourceFileName,
 			mimeType, title, urlTitle, description, changeLog, file,
-			expirationDate, reviewDate, serviceContext);
+			displayDate, expirationDate, reviewDate, serviceContext);
 	}
 
 	/**
@@ -199,7 +205,10 @@ public class DLAppServiceWrapper
 	 * @param changeLog the file's version change log
 	 * @param inputStream the file's data (optionally <code>null</code>)
 	 * @param size the file's size (optionally <code>0</code>)
-	 * @param expirationDate the file's expiration date (optionally <code>null</code>)
+	 * @param displayDate the file's display date (optionally
+	 <code>null</code>)
+	 * @param expirationDate the file's expiration date (optionally
+	 <code>null</code>)
 	 * @param reviewDate the file's review Date (optionally <code>null</code>)
 	 * @param serviceContext the service context to be applied. Can set the
 	 asset category IDs, asset tag names, and expando bridge
@@ -216,14 +225,15 @@ public class DLAppServiceWrapper
 			String sourceFileName, String mimeType, String title,
 			String urlTitle, String description, String changeLog,
 			java.io.InputStream inputStream, long size,
-			java.util.Date expirationDate, java.util.Date reviewDate,
+			java.util.Date displayDate, java.util.Date expirationDate,
+			java.util.Date reviewDate,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlAppService.addFileEntry(
 			externalReferenceCode, repositoryId, folderId, sourceFileName,
 			mimeType, title, urlTitle, description, changeLog, inputStream,
-			size, expirationDate, reviewDate, serviceContext);
+			size, displayDate, expirationDate, reviewDate, serviceContext);
 	}
 
 	/**
@@ -356,7 +366,7 @@ public class DLAppServiceWrapper
 	 * @param fileEntryId the primary key of the file entry to cancel the
 	 checkout
 	 * @throws PortalException if a portal exception occurred
-	 * @see #checkInFileEntry(long, boolean, String, ServiceContext)
+	 * @see #checkInFileEntry(long, String, ServiceContext)
 	 * @see #checkOutFileEntry(long, ServiceContext)
 	 */
 	@Override
@@ -453,7 +463,7 @@ public class DLAppServiceWrapper
 	 * @param serviceContext the service context to be applied
 	 * @throws PortalException if a portal exception occurred
 	 * @see #cancelCheckOut(long)
-	 * @see #checkInFileEntry(long, boolean, String, ServiceContext)
+	 * @see #checkInFileEntry(long, String, ServiceContext)
 	 */
 	@Override
 	public void checkOutFileEntry(
@@ -488,7 +498,7 @@ public class DLAppServiceWrapper
 	 * @return the file entry
 	 * @throws PortalException if a portal exception occurred
 	 * @see #cancelCheckOut(long)
-	 * @see #checkInFileEntry(long, String)
+	 * @see #checkInFileEntry(long, String, ServiceContext)
 	 */
 	@Override
 	public com.liferay.portal.kernel.repository.model.FileEntry
@@ -504,13 +514,13 @@ public class DLAppServiceWrapper
 	@Override
 	public com.liferay.portal.kernel.repository.model.FileEntry copyFileEntry(
 			long fileEntryId, long destinationFolderId,
-			long destinationRepositoryId,
+			long destinationRepositoryId, long fileEntryTypeId, long[] groupIds,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlAppService.copyFileEntry(
 			fileEntryId, destinationFolderId, destinationRepositoryId,
-			serviceContext);
+			fileEntryTypeId, groupIds, serviceContext);
 	}
 
 	@Override
@@ -530,12 +540,14 @@ public class DLAppServiceWrapper
 	public com.liferay.portal.kernel.repository.model.Folder copyFolder(
 			long sourceRepositoryId, long sourceFolderId,
 			long destinationRepositoryId, long destinationParentFolderId,
+			java.util.Map<Long, Long> fileEntryTypeIds, long[] groupIds,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlAppService.copyFolder(
 			sourceRepositoryId, sourceFolderId, destinationRepositoryId,
-			destinationParentFolderId, serviceContext);
+			destinationParentFolderId, fileEntryTypeIds, groupIds,
+			serviceContext);
 	}
 
 	/**
@@ -2261,6 +2273,8 @@ public class DLAppServiceWrapper
 	 * @param dlVersionNumberIncrease the kind of version number increase to
 	 apply for these changes.
 	 * @param bytes the file's data (optionally <code>null</code>)
+	 * @param displayDate the file's display date (optionally <code>null
+	 </code>)
 	 * @param expirationDate the file's expiration date (optionally <code>null
 	 </code>)
 	 * @param reviewDate the file's review date (optionally <code>null</code>)
@@ -2279,15 +2293,15 @@ public class DLAppServiceWrapper
 			String title, String urlTitle, String description, String changeLog,
 			com.liferay.document.library.kernel.model.DLVersionNumberIncrease
 				dlVersionNumberIncrease,
-			byte[] bytes, java.util.Date expirationDate,
-			java.util.Date reviewDate,
+			byte[] bytes, java.util.Date displayDate,
+			java.util.Date expirationDate, java.util.Date reviewDate,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlAppService.updateFileEntry(
 			fileEntryId, sourceFileName, mimeType, title, urlTitle, description,
-			changeLog, dlVersionNumberIncrease, bytes, expirationDate,
-			reviewDate, serviceContext);
+			changeLog, dlVersionNumberIncrease, bytes, displayDate,
+			expirationDate, reviewDate, serviceContext);
 	}
 
 	/**
@@ -2316,6 +2330,8 @@ public class DLAppServiceWrapper
 	 * @param dlVersionNumberIncrease the kind of version number increase to
 	 apply for these changes.
 	 * @param file the file's data (optionally <code>null</code>)
+	 * @param displayDate the file's display date (optionally <code>null
+	 </code>)
 	 * @param expirationDate the file's expiration date (optionally <code>null
 	 </code>)
 	 * @param reviewDate the file's review date (optionally <code>null</code>)
@@ -2334,15 +2350,15 @@ public class DLAppServiceWrapper
 			String title, String urlTitle, String description, String changeLog,
 			com.liferay.document.library.kernel.model.DLVersionNumberIncrease
 				dlVersionNumberIncrease,
-			java.io.File file, java.util.Date expirationDate,
-			java.util.Date reviewDate,
+			java.io.File file, java.util.Date displayDate,
+			java.util.Date expirationDate, java.util.Date reviewDate,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlAppService.updateFileEntry(
 			fileEntryId, sourceFileName, mimeType, title, urlTitle, description,
-			changeLog, dlVersionNumberIncrease, file, expirationDate,
-			reviewDate, serviceContext);
+			changeLog, dlVersionNumberIncrease, file, displayDate,
+			expirationDate, reviewDate, serviceContext);
 	}
 
 	/**
@@ -2372,6 +2388,8 @@ public class DLAppServiceWrapper
 	 apply for these changes.
 	 * @param inputStream the file's data (optionally <code>null</code>)
 	 * @param size the file's size (optionally <code>0</code>)
+	 * @param displayDate the file's display date (optionally <code>null
+	 </code>)
 	 * @param expirationDate the file's expiration date (optionally <code>null
 	 </code>)
 	 * @param reviewDate the file's review date (optionally <code>null</code>)
@@ -2391,13 +2409,14 @@ public class DLAppServiceWrapper
 			com.liferay.document.library.kernel.model.DLVersionNumberIncrease
 				dlVersionNumberIncrease,
 			java.io.InputStream inputStream, long size,
-			java.util.Date expirationDate, java.util.Date reviewDate,
+			java.util.Date displayDate, java.util.Date expirationDate,
+			java.util.Date reviewDate,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlAppService.updateFileEntry(
 			fileEntryId, sourceFileName, mimeType, title, urlTitle, description,
-			changeLog, dlVersionNumberIncrease, inputStream, size,
+			changeLog, dlVersionNumberIncrease, inputStream, size, displayDate,
 			expirationDate, reviewDate, serviceContext);
 	}
 
@@ -2409,15 +2428,15 @@ public class DLAppServiceWrapper
 				String changeLog,
 				com.liferay.document.library.kernel.model.
 					DLVersionNumberIncrease dlVersionNumberIncrease,
-				java.io.File file, java.util.Date expirationDate,
-				java.util.Date reviewDate,
+				java.io.File file, java.util.Date displayDate,
+				java.util.Date expirationDate, java.util.Date reviewDate,
 				com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlAppService.updateFileEntryAndCheckIn(
 			fileEntryId, sourceFileName, mimeType, title, urlTitle, description,
-			changeLog, dlVersionNumberIncrease, file, expirationDate,
-			reviewDate, serviceContext);
+			changeLog, dlVersionNumberIncrease, file, displayDate,
+			expirationDate, reviewDate, serviceContext);
 	}
 
 	@Override
@@ -2429,13 +2448,14 @@ public class DLAppServiceWrapper
 				com.liferay.document.library.kernel.model.
 					DLVersionNumberIncrease dlVersionNumberIncrease,
 				java.io.InputStream inputStream, long size,
-				java.util.Date expirationDate, java.util.Date reviewDate,
+				java.util.Date displayDate, java.util.Date expirationDate,
+				java.util.Date reviewDate,
 				com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlAppService.updateFileEntryAndCheckIn(
 			fileEntryId, sourceFileName, mimeType, title, urlTitle, description,
-			changeLog, dlVersionNumberIncrease, inputStream, size,
+			changeLog, dlVersionNumberIncrease, inputStream, size, displayDate,
 			expirationDate, reviewDate, serviceContext);
 	}
 

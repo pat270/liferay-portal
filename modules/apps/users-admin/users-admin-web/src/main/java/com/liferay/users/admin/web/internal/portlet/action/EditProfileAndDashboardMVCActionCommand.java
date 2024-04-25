@@ -12,8 +12,8 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
-import com.liferay.portal.kernel.service.permission.GroupPermission;
-import com.liferay.portal.kernel.service.permission.PortalPermission;
+import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
+import com.liferay.portal.kernel.service.permission.PortalPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
@@ -57,9 +57,9 @@ public class EditProfileAndDashboardMVCActionCommand
 		PermissionChecker permissionChecker =
 			themeDisplay.getPermissionChecker();
 
-		if (_groupPermission.contains(
+		if (GroupPermissionUtil.contains(
 				permissionChecker, group.getGroupId(), ActionKeys.UPDATE) &&
-			_portalPermission.contains(
+			PortalPermissionUtil.contains(
 				permissionChecker, ActionKeys.UNLINK_LAYOUT_SET_PROTOTYPE)) {
 
 			long publicLayoutSetPrototypeId = ParamUtil.getLong(
@@ -91,13 +91,7 @@ public class EditProfileAndDashboardMVCActionCommand
 	}
 
 	@Reference
-	private GroupPermission _groupPermission;
-
-	@Reference
 	private Portal _portal;
-
-	@Reference
-	private PortalPermission _portalPermission;
 
 	@Reference
 	private Sites _sites;

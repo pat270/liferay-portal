@@ -21,6 +21,7 @@ taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
 page import="com.liferay.batch.planner.exception.BatchPlannerPlanInternalClassNameException" %><%@
 page import="com.liferay.batch.planner.model.BatchPlannerPlan" %><%@
 page import="com.liferay.batch.planner.web.internal.display.BatchPlannerPlanDisplay" %><%@
+page import="com.liferay.batch.planner.web.internal.display.BatchPlannerPlanTemplateDisplay" %><%@
 page import="com.liferay.batch.planner.web.internal.display.context.BatchPlannerPlanDisplayContext" %><%@
 page import="com.liferay.batch.planner.web.internal.display.context.BatchPlannerPlanManagementToolbarDisplayContext" %><%@
 page import="com.liferay.batch.planner.web.internal.display.context.BatchPlannerPlanTemplateDisplayContext" %><%@
@@ -31,7 +32,6 @@ page import="com.liferay.petra.string.StringPool" %><%@
 page import="com.liferay.petra.string.StringUtil" %><%@
 page import="com.liferay.portal.kernel.dao.search.ResultRow" %><%@
 page import="com.liferay.portal.kernel.dao.search.SearchContainer" %><%@
-page import="com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil" %><%@
 page import="com.liferay.portal.kernel.language.LanguageUtil" %><%@
 page import="com.liferay.portal.kernel.portlet.LiferayWindowState" %><%@
 page import="com.liferay.portal.kernel.portlet.url.builder.ActionURLBuilder" %><%@
@@ -55,5 +55,5 @@ page import="com.liferay.portal.kernel.util.WebKeys" %>
 <portlet:defineObjects />
 
 <%
-Format dateFormatDateTime = FastDateFormatFactoryUtil.getDateTime(locale, timeZone);
+Format dateTimeFormat = FastDateFormatFactoryUtil.getDateTime(locale, timeZone);
 %>

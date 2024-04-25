@@ -72,7 +72,12 @@ public class KnowledgeBaseFolderResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _knowledgeBaseFolderResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, KnowledgeBaseFolderResource>
+					knowledgeBaseFolderResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_knowledgeBaseFolderResourceProxyProviderFunction;
+
+				return knowledgeBaseFolderResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -234,11 +239,6 @@ public class KnowledgeBaseFolderResourceFactoryImpl
 		}
 	}
 
-	private static final Function
-		<InvocationHandler, KnowledgeBaseFolderResource>
-			_knowledgeBaseFolderResourceProxyProviderFunction =
-				_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -274,6 +274,15 @@ public class KnowledgeBaseFolderResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function
+			<InvocationHandler, KnowledgeBaseFolderResource>
+				_knowledgeBaseFolderResourceProxyProviderFunction =
+					_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

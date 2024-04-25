@@ -28,6 +28,7 @@ import com.liferay.mail.kernel.template.MailTemplateFactoryUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.aop.AopService;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.exception.UserEmailAddressException;
@@ -39,7 +40,6 @@ import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.Ticket;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserConstants;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
@@ -52,7 +52,6 @@ import com.liferay.portal.kernel.settings.LocalizedValuesMap;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.EscapableObject;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -379,6 +378,7 @@ public class AccountEntryUserRelLocalServiceImpl
 		return false;
 	}
 
+	@Override
 	public void inviteUser(
 			long accountEntryId, long[] accountRoleIds, String emailAddress,
 			User inviter, ServiceContext serviceContext)
@@ -399,6 +399,7 @@ public class AccountEntryUserRelLocalServiceImpl
 		}
 	}
 
+	@Override
 	public boolean isAccountEntryUser(long userId) {
 		if (accountEntryUserRelPersistence.countByAccountUserId(userId) > 0) {
 			return true;
@@ -407,6 +408,7 @@ public class AccountEntryUserRelLocalServiceImpl
 		return false;
 	}
 
+	@Override
 	public void setAccountEntryUserRels(
 			long accountEntryId, long[] accountUserIds)
 		throws PortalException {
@@ -582,9 +584,17 @@ public class AccountEntryUserRelLocalServiceImpl
 				new EscapableObject<>(accountEntry.getName()));
 
 			mailTemplateContextBuilder.put("[$CREATE_ACCOUNT_URL$]", url);
+
+			String invitationEmailSenderName =
+				accountEntryEmailConfiguration.invitationEmailSenderName();
+
+			if (Validator.isNull(invitationEmailSenderName)) {
+				invitationEmailSenderName = inviter.getFullName();
+			}
+
 			mailTemplateContextBuilder.put(
 				"[$INVITE_SENDER_NAME$]",
-				new EscapableObject<>(inviter.getFullName()));
+				new EscapableObject<>(invitationEmailSenderName));
 
 			MailTemplateContext mailTemplateContext =
 				mailTemplateContextBuilder.build();
@@ -603,9 +613,18 @@ public class AccountEntryUserRelLocalServiceImpl
 				MailTemplateFactoryUtil.createMailTemplate(
 					bodyLocalizedValuesMap.get(inviter.getLocale()), true);
 
+			String invitationEmailSenderEmailAddress =
+				accountEntryEmailConfiguration.
+					invitationEmailSenderEmailAddress();
+
+			if (Validator.isNull(invitationEmailSenderEmailAddress)) {
+				invitationEmailSenderEmailAddress = inviter.getEmailAddress();
+			}
+
 			MailMessage mailMessage = new MailMessage(
 				new InternetAddress(
-					inviter.getEmailAddress(), inviter.getFullName()),
+					invitationEmailSenderEmailAddress,
+					invitationEmailSenderName),
 				new InternetAddress(emailAddress),
 				subjectMailTemplate.renderAsString(
 					inviter.getLocale(), mailTemplateContext),
@@ -677,9 +696,6 @@ public class AccountEntryUserRelLocalServiceImpl
 
 	@Reference
 	private MailService _mailService;
-
-	@Reference
-	private Portal _portal;
 
 	@Reference
 	private TicketLocalService _ticketLocalService;

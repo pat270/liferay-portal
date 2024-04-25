@@ -72,7 +72,12 @@ public class CTCollectionResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _ctCollectionResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, CTCollectionResource>
+					ctCollectionResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_ctCollectionResourceProxyProviderFunction;
+
+				return ctCollectionResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -229,10 +234,6 @@ public class CTCollectionResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, CTCollectionResource>
-		_ctCollectionResourceProxyProviderFunction =
-			_getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -268,6 +269,14 @@ public class CTCollectionResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, CTCollectionResource>
+			_ctCollectionResourceProxyProviderFunction =
+				_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

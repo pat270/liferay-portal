@@ -39,7 +39,6 @@ import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiServic
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
-import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 import com.liferay.portal.kernel.transaction.Transactional;
@@ -521,37 +520,41 @@ public abstract class DLFileEntryTypeLocalServiceBaseImpl
 	/**
 	 */
 	@Override
-	public void addDLFolderDLFileEntryType(
+	public boolean addDLFolderDLFileEntryType(
 		long folderId, long fileEntryTypeId) {
 
-		dlFolderPersistence.addDLFileEntryType(folderId, fileEntryTypeId);
+		return dlFolderPersistence.addDLFileEntryType(
+			folderId, fileEntryTypeId);
 	}
 
 	/**
 	 */
 	@Override
-	public void addDLFolderDLFileEntryType(
+	public boolean addDLFolderDLFileEntryType(
 		long folderId, DLFileEntryType dlFileEntryType) {
 
-		dlFolderPersistence.addDLFileEntryType(folderId, dlFileEntryType);
+		return dlFolderPersistence.addDLFileEntryType(
+			folderId, dlFileEntryType);
 	}
 
 	/**
 	 */
 	@Override
-	public void addDLFolderDLFileEntryTypes(
+	public boolean addDLFolderDLFileEntryTypes(
 		long folderId, long[] fileEntryTypeIds) {
 
-		dlFolderPersistence.addDLFileEntryTypes(folderId, fileEntryTypeIds);
+		return dlFolderPersistence.addDLFileEntryTypes(
+			folderId, fileEntryTypeIds);
 	}
 
 	/**
 	 */
 	@Override
-	public void addDLFolderDLFileEntryTypes(
+	public boolean addDLFolderDLFileEntryTypes(
 		long folderId, List<DLFileEntryType> dlFileEntryTypes) {
 
-		dlFolderPersistence.addDLFileEntryTypes(folderId, dlFileEntryTypes);
+		return dlFolderPersistence.addDLFileEntryTypes(
+			folderId, dlFileEntryTypes);
 	}
 
 	/**
@@ -753,17 +756,10 @@ public abstract class DLFileEntryTypeLocalServiceBaseImpl
 	}
 
 	public void afterPropertiesSet() {
-		persistedModelLocalServiceRegistry.register(
-			"com.liferay.document.library.kernel.model.DLFileEntryType",
-			dlFileEntryTypeLocalService);
-
 		DLFileEntryTypeLocalServiceUtil.setService(dlFileEntryTypeLocalService);
 	}
 
 	public void destroy() {
-		persistedModelLocalServiceRegistry.unregister(
-			"com.liferay.document.library.kernel.model.DLFileEntryType");
-
 		DLFileEntryTypeLocalServiceUtil.setService(null);
 	}
 
@@ -844,9 +840,5 @@ public abstract class DLFileEntryTypeLocalServiceBaseImpl
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		DLFileEntryTypeLocalServiceBaseImpl.class);
-
-	@BeanReference(type = PersistedModelLocalServiceRegistry.class)
-	protected PersistedModelLocalServiceRegistry
-		persistedModelLocalServiceRegistry;
 
 }

@@ -6,7 +6,11 @@
 /// <reference types="react" />
 
 export declare function WarningMessage({
+	fontWeight,
 	message,
+	title,
 }: {
+	fontWeight?: 'bold' | 'normal';
 	message: string;
+	title?: string;
 }): JSX.Element;

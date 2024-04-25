@@ -16,7 +16,6 @@ import com.liferay.calendar.service.CalendarResourceLocalService;
 import com.liferay.calendar.service.CalendarService;
 import com.liferay.calendar.util.JCalendarUtil;
 import com.liferay.calendar.util.RecurrenceUtil;
-import com.liferay.osgi.util.service.Snapshot;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -24,12 +23,14 @@ import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalService;
 import com.liferay.portal.kernel.service.WorkflowInstanceLinkLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.TimeZoneUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -165,7 +166,8 @@ public class CalendarUtil {
 					calendarResourceLocalService.getCalendarResource(
 						calendarBooking.getCalendarResourceId());
 
-				return calendarResource.getName(themeDisplay.getLocale());
+				return HtmlUtil.escape(
+					calendarResource.getName(themeDisplay.getLocale()));
 			}
 		).put(
 			"description",
@@ -318,7 +320,7 @@ public class CalendarUtil {
 			"calendarResourceId", calendarResource.getCalendarResourceId()
 		).put(
 			"calendarResourceName",
-			calendarResource.getName(themeDisplay.getLocale())
+			HtmlUtil.escape(calendarResource.getName(themeDisplay.getLocale()))
 		).put(
 			"classNameId", calendarResource.getClassNameId()
 		).put(
@@ -352,7 +354,7 @@ public class CalendarUtil {
 					calendar.getCalendarId(), themeDisplay.getScopeGroupId());
 			}
 		).put(
-			"name", calendar.getName(themeDisplay.getLocale())
+			"name", HtmlUtil.escape(calendar.getName(themeDisplay.getLocale()))
 		).put(
 			"permissions",
 			_getPermissionsJSONObject(

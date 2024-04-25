@@ -42,7 +42,8 @@ public class ProjectTemplatesPanelAppTest
 		return Arrays.asList(
 			new Object[][] {
 				{"dxp", "7.0.10.17"}, {"dxp", "7.1.10.7"}, {"dxp", "7.2.10.7"},
-				{"portal", "7.3.7"}, {"portal", "7.4.3.36"}
+				{"portal", "7.3.7"}, {"portal", "7.4.3.56"},
+				{"dxp", "2024.q1.1"}
 			});
 	}
 
@@ -135,6 +136,29 @@ public class ProjectTemplatesPanelAppTest
 			"foo.caption=Hello from Foo!");
 
 		testNotContains(gradleProjectDir, "build.gradle", "version: \"[0-9].*");
+
+		if (VersionUtil.isLiferayQuarterlyVersion(_liferayVersion) ||
+			_liferayVersion.startsWith("7.4")) {
+
+			testContains(
+				gradleProjectDir,
+				"src/main/java/gradle/test/application/list/FooPanelApp.java",
+				"public Portlet getPortlet(");
+			testNotContains(
+				gradleProjectDir,
+				"src/main/java/gradle/test/application/list/FooPanelApp.java",
+				"public void setPortlet(");
+		}
+		else {
+			testContains(
+				gradleProjectDir,
+				"src/main/java/gradle/test/application/list/FooPanelApp.java",
+				"public void setPortlet(");
+			testNotContains(
+				gradleProjectDir,
+				"src/main/java/gradle/test/application/list/FooPanelApp.java",
+				"public Portlet getPortlet(");
+		}
 
 		File mavenWorkspaceDir = buildWorkspace(
 			temporaryFolder, "maven", "mavenWS", _liferayVersion,

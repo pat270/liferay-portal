@@ -5,7 +5,9 @@
 
 package com.liferay.document.library.preview.pdf.internal.background.task;
 
-import com.liferay.document.library.kernel.util.PDFProcessor;
+import com.liferay.document.library.kernel.model.DLProcessorConstants;
+import com.liferay.document.library.kernel.processor.DLProcessor;
+import com.liferay.document.library.kernel.processor.PDFProcessor;
 import com.liferay.document.library.preview.background.task.BasePreviewBackgroundTaskExecutor;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskExecutor;
 import com.liferay.portal.kernel.repository.model.FileVersion;
@@ -18,7 +20,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Roberto Díaz
  */
 @Component(
-	configurationPid = "com.liferay.document.library.configuration.DLFileEntryConfiguration",
 	property = "background.task.executor.class.name=com.liferay.document.library.preview.pdf.internal.background.task.PDFPreviewBackgroundTaskExecutor",
 	service = BackgroundTaskExecutor.class
 )
@@ -27,7 +28,9 @@ public class PDFPreviewBackgroundTaskExecutor
 
 	@Override
 	protected void generatePreview(FileVersion fileVersion) throws Exception {
-		_pdfProcessor.generateImages(null, fileVersion);
+		PDFProcessor pdfProcessor = (PDFProcessor)_dlProcessor;
+
+		pdfProcessor.generateImages(null, fileVersion);
 	}
 
 	@Override
@@ -35,7 +38,7 @@ public class PDFPreviewBackgroundTaskExecutor
 		return new String[] {ContentTypes.APPLICATION_PDF};
 	}
 
-	@Reference
-	private PDFProcessor _pdfProcessor;
+	@Reference(target = "(type=" + DLProcessorConstants.PDF_PROCESSOR + ")")
+	private DLProcessor _dlProcessor;
 
 }

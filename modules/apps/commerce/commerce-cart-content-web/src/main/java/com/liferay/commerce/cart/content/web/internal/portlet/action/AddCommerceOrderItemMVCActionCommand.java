@@ -16,7 +16,7 @@ import com.liferay.commerce.order.CommerceOrderValidatorResult;
 import com.liferay.commerce.product.model.CPInstance;
 import com.liferay.commerce.product.util.CPInstanceHelper;
 import com.liferay.commerce.service.CommerceOrderItemService;
-import com.liferay.petra.string.StringPool;
+import com.liferay.commerce.util.CommerceOrderItemQuantityFormatter;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -25,12 +25,13 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
-import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.servlet.ServletResponseUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+
+import java.math.BigDecimal;
 
 import java.util.List;
 
@@ -65,22 +66,20 @@ public class AddCommerceOrderItemMVCActionCommand extends BaseMVCActionCommand {
 
 		HttpServletRequest httpServletRequest = _portal.getHttpServletRequest(
 			actionRequest);
-
 		HttpServletResponse httpServletResponse =
 			_portal.getHttpServletResponse(actionResponse);
 
-		int quantity = ParamUtil.getInteger(actionRequest, "quantity");
-		String ddmFormValues = ParamUtil.getString(
-			actionRequest, "ddmFormValues");
-
 		long cpInstanceId = ParamUtil.getLong(actionRequest, "cpInstanceId");
+
+		String formFieldValues = ParamUtil.getString(
+			actionRequest, "formFieldValues");
 
 		if (cpInstanceId == 0) {
 			long cpDefinitionId = ParamUtil.getLong(
 				actionRequest, "cpDefinitionId");
 
 			CPInstance cpInstance = _cpInstanceHelper.fetchCPInstance(
-				cpDefinitionId, ddmFormValues);
+				cpDefinitionId, formFieldValues);
 
 			if (cpInstance != null) {
 				cpInstanceId = cpInstance.getCPInstanceId();
@@ -97,18 +96,18 @@ public class AddCommerceOrderItemMVCActionCommand extends BaseMVCActionCommand {
 					httpServletRequest);
 			}
 
-			CommerceContext commerceContext =
-				(CommerceContext)httpServletRequest.getAttribute(
-					CommerceWebKeys.COMMERCE_CONTEXT);
-
-			ServiceContext serviceContext = ServiceContextFactory.getInstance(
-				CommerceOrderItem.class.getName(), httpServletRequest);
-
 			CommerceOrderItem commerceOrderItem =
 				_commerceOrderItemService.addOrUpdateCommerceOrderItem(
 					commerceOrder.getCommerceOrderId(), cpInstanceId,
-					ddmFormValues, quantity, 0, 0, StringPool.BLANK,
-					commerceContext, serviceContext);
+					formFieldValues,
+					_commerceOrderItemQuantityFormatter.parse(
+						actionRequest, "quantity"),
+					0, BigDecimal.ZERO,
+					ParamUtil.getString(actionRequest, "unitOfMeasureKey"),
+					(CommerceContext)httpServletRequest.getAttribute(
+						CommerceWebKeys.COMMERCE_CONTEXT),
+					ServiceContextFactory.getInstance(
+						CommerceOrderItem.class.getName(), httpServletRequest));
 
 			jsonObject.put(
 				"commerceOrderItemId",
@@ -188,6 +187,10 @@ public class AddCommerceOrderItemMVCActionCommand extends BaseMVCActionCommand {
 
 	@Reference
 	private CommerceOrderHttpHelper _commerceOrderHttpHelper;
+
+	@Reference
+	private CommerceOrderItemQuantityFormatter
+		_commerceOrderItemQuantityFormatter;
 
 	@Reference
 	private CommerceOrderItemService _commerceOrderItemService;

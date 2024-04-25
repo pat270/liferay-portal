@@ -129,6 +129,10 @@ public class SegmentTestClassGroup extends BaseTestClassGroup {
 	public String getTestCasePropertiesContent() {
 		StringBuilder sb = new StringBuilder();
 
+		if (testAnalyticsCloud()) {
+			sb.append("TEST_ANALYTICS_CLOUD=true\n");
+		}
+
 		File testBaseDir = getTestBaseDir();
 
 		if ((testBaseDir != null) && testBaseDir.exists()) {
@@ -159,6 +163,10 @@ public class SegmentTestClassGroup extends BaseTestClassGroup {
 		}
 
 		return testClasses;
+	}
+
+	public boolean testAnalyticsCloud() {
+		return false;
 	}
 
 	protected SegmentTestClassGroup(

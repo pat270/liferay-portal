@@ -34,10 +34,12 @@ renderResponse.setTitle(LanguageUtil.get(request, titleKey));
 %>
 
 <react:component
-	module="designer/js/definition-builder/DefinitionBuilder"
+	module="{DefinitionBuilder} from portal-workflow-kaleo-designer-web"
 	props='<%=
 		HashMapBuilder.<String, Object>put(
 			"accountEntryId", ParamUtil.getLong(liferayPortletRequest, "accountEntryId")
+		).put(
+			"allowScriptContentToBeExecutedOrIncluded", kaleoDesignerDisplayContext.isAllowScriptContentToBeExecutedOrIncluded()
 		).put(
 			"definitionName", (kaleoDefinitionVersion == null) ? null : kaleoDefinitionVersion.getName()
 		).put(
@@ -50,6 +52,8 @@ renderResponse.setTitle(LanguageUtil.get(request, titleKey));
 			"languageIds", LocaleUtil.toLanguageIds(LanguageUtil.getAvailableLocales())
 		).put(
 			"portletNamespace", PortalUtil.getPortletNamespace(KaleoDesignerPortletKeys.KALEO_DESIGNER)
+		).put(
+			"scriptManagementConfigurationPortletURL", kaleoDesignerDisplayContext.getScriptManagementConfigurationPortletURL()
 		).put(
 			"statuses", kaleoDesignerDisplayContext.getStatusesJSONArray()
 		).put(

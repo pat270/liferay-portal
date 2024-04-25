@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {getNumberOfWords} from '../utils/assets';
+import {getNumberOfWords, isTrackable} from '../utils/assets';
 import {WEB_CONTENT} from '../utils/constants';
 import {debounce} from '../utils/debounce';
 import {clickEvent, onEvents, onReady} from '../utils/events';
@@ -25,16 +25,13 @@ function getWebContentPayload({dataset}) {
 		Object.assign(payload, {title: dataset.analyticsAssetTitle.trim()});
 	}
 
-	return payload;
-}
+	if (dataset.analyticsWebContentResourcePk) {
+		Object.assign(payload, {
+			webContentResourcePk: dataset.analyticsWebContentResourcePk.trim(),
+		});
+	}
 
-/**
- * Wether a WebContent is trackable or not.
- * @param {Object} element The WebContent DOM element
- * @returns {boolean} True if the element is trackable.
- */
-function isTrackableWebContent(element) {
-	return element && 'analyticsAssetId' in element.dataset;
+	return payload;
 }
 
 /**
@@ -47,7 +44,7 @@ function trackWebContentClicked(analytics) {
 		applicationId,
 		eventType: 'webContentClicked',
 		getPayload: getWebContentPayload,
-		isTrackable: isTrackableWebContent,
+		isTrackable,
 		type: 'web-content',
 	});
 }
@@ -64,7 +61,7 @@ function trackWebContentViewed(analytics) {
 					'[data-analytics-asset-type="web-content"]:not([data-analytics-asset-viewed="true"]'
 				)
 			)
-			.filter((element) => isTrackableWebContent(element));
+			.filter((element) => isTrackable(element));
 
 		elements.forEach((element) => {
 			if (isPartiallyInViewport(element)) {

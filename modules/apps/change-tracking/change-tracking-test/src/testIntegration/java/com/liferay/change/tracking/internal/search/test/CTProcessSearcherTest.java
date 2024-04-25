@@ -86,7 +86,7 @@ public class CTProcessSearcherTest {
 	public void testSearchByStatus() throws Exception {
 		BackgroundTaskExecutor backgroundTaskExecutor =
 			(BackgroundTaskExecutor)ProxyUtil.newProxyInstance(
-				CTProcessSearcherTest.class.getClassLoader(),
+				BackgroundTaskExecutor.class.getClassLoader(),
 				new Class<?>[] {BackgroundTaskExecutor.class},
 				(proxy, method, argus) -> {
 					if (Objects.equals(method.getName(), "clone")) {
@@ -180,8 +180,8 @@ public class CTProcessSearcherTest {
 
 	private CTCollection _addCTCollection() throws Exception {
 		return _ctCollectionLocalService.addCTCollection(
-			TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
-			RandomTestUtil.randomString(), RandomTestUtil.randomString());
+			null, TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
+			0, RandomTestUtil.randomString(), RandomTestUtil.randomString());
 	}
 
 	private CTProcess _addCTProcess(

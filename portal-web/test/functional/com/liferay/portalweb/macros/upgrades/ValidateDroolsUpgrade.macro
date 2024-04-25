@@ -1,10 +1,8 @@
 definition {
 
-	macro viewDroolsAppManager {
-		ApplicationsMenu.gotoPortlet(
-			category = "System",
-			panel = "Control Panel",
-			portlet = "App Manager");
+	@summary = "Default summary"
+	macro viewDroolsAppManager() {
+		AppManager.openAppManagerAdmin();
 
 		AppManager.viewApp(
 			appName = "Liferay Drools",

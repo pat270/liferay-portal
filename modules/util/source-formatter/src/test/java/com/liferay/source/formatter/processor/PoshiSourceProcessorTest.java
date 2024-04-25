@@ -23,6 +23,14 @@ public class PoshiSourceProcessorTest extends BaseSourceProcessorTestCase {
 	}
 
 	@Test
+	public void testMissingCiRetirtiesDisabledSmoke() throws Exception {
+		test(
+			"MissingCiRetriesDisabledSmoke.testtestcase",
+			"Missing property ci.retries.disabled = \"true\" in definition " +
+				"for smoke test");
+	}
+
+	@Test
 	public void testMultipleSpacesInTaskDefinitions() throws Exception {
 		test("MultipleSpacesInTaskDefinitions.testmacro");
 	}
@@ -33,17 +41,22 @@ public class PoshiSourceProcessorTest extends BaseSourceProcessorTestCase {
 			SourceProcessorTestParameters.create(
 				"PoshiPauseUsage.testmacro"
 			).addExpectedMessage(
-				"Missing a comment before using 'Pause'", 6
+				"Missing a comment before using 'Pause'", 7
 			).addExpectedMessage(
 				"Missing a required JIRA project in comment before using " +
 					"'Pause'",
-				10
+				11
 			));
 	}
 
 	@Test
 	public void testSortAntCommandParameters() throws Exception {
 		test("SortAntCommandParameters.testtestcase");
+	}
+
+	@Test
+	public void testSortPropertiesValues() throws Exception {
+		test("SortPropertiesValues.testtestcase");
 	}
 
 }

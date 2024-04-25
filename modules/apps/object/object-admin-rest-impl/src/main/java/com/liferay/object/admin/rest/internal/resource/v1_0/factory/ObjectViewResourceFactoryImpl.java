@@ -72,7 +72,12 @@ public class ObjectViewResourceFactoryImpl
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _objectViewResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, ObjectViewResource>
+					objectViewResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_objectViewResourceProxyProviderFunction;
+
+				return objectViewResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -229,9 +234,6 @@ public class ObjectViewResourceFactoryImpl
 		}
 	}
 
-	private static final Function<InvocationHandler, ObjectViewResource>
-		_objectViewResourceProxyProviderFunction = _getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -267,6 +269,14 @@ public class ObjectViewResourceFactoryImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, ObjectViewResource>
+			_objectViewResourceProxyProviderFunction =
+				_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

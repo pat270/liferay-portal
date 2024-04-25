@@ -8,8 +8,8 @@ task jarPatched(type: Zip)
 task patch(type: PatchTask)
 
 dependencies {
-	compile group: "org.hibernate", name: "hibernate-core", version: "5.6.7.Final"
-	compile group: "org.springframework", name: "spring-orm", version: "5.2.24.RELEASE"
+	api group: "org.hibernate", name: "hibernate-core", version: "5.6.7.Final"
+	api group: "org.springframework", name: "spring-orm", version: "5.3.33"
 }
 
 deploy {
@@ -42,11 +42,19 @@ jarManifest {
 }
 
 jarPatched {
-	archiveName = jar.archiveName
-	destinationDir = jar.destinationDir
+	archiveFileName = jar.archiveFileName
+	destinationDirectory = jar.destinationDirectory
 	duplicatesStrategy = "exclude"
 
 	from copyPatchOriginalLibClasses
+
+	mustRunAfter compileJava
+	mustRunAfter generatePomFileForMavenPublication
+	mustRunAfter processResources
+}
+
+jarSources {
+	mustRunAfter patch
 }
 
 javadoc {
@@ -58,6 +66,7 @@ patch {
 		autoClean = false
 	}
 
+	fileNames "org/springframework/orm/hibernate5/SessionFactoryUtils.java"
 	fileNames "org/springframework/orm/hibernate5/SpringSessionSynchronization.java"
 
 	originalLibModuleName = "spring-orm"

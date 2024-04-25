@@ -27,10 +27,11 @@ import com.liferay.item.selector.criteria.InfoListItemSelectorReturnType;
 import com.liferay.layout.content.page.editor.sidebar.panel.ContentPageEditorSidebarPanel;
 import com.liferay.layout.content.page.editor.web.internal.configuration.PageEditorConfiguration;
 import com.liferay.layout.content.page.editor.web.internal.constants.ContentPageEditorActionKeys;
+import com.liferay.layout.content.page.editor.web.internal.manager.ContentManager;
+import com.liferay.layout.content.page.editor.web.internal.manager.FragmentCollectionManager;
+import com.liferay.layout.content.page.editor.web.internal.manager.FragmentEntryLinkManager;
 import com.liferay.layout.content.page.editor.web.internal.segments.SegmentsExperienceUtil;
-import com.liferay.layout.content.page.editor.web.internal.util.ContentManager;
-import com.liferay.layout.content.page.editor.web.internal.util.FragmentCollectionManager;
-import com.liferay.layout.content.page.editor.web.internal.util.FragmentEntryLinkManager;
+import com.liferay.layout.manager.LayoutLockManager;
 import com.liferay.layout.page.template.model.LayoutPageTemplateStructure;
 import com.liferay.layout.page.template.model.LayoutPageTemplateStructureRel;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
@@ -70,7 +71,6 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.segments.configuration.provider.SegmentsConfigurationProvider;
 import com.liferay.segments.constants.SegmentsEntryConstants;
-import com.liferay.segments.constants.SegmentsPortletKeys;
 import com.liferay.segments.manager.SegmentsExperienceManager;
 import com.liferay.segments.model.SegmentsEntry;
 import com.liferay.segments.model.SegmentsExperience;
@@ -83,7 +83,6 @@ import com.liferay.style.book.service.StyleBookEntryLocalService;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -115,6 +114,7 @@ public class ContentPageLayoutEditorDisplayContext
 		InfoSearchClassMapperRegistry infoSearchClassMapperRegistry,
 		ItemSelector itemSelector, JSONFactory jsonFactory, Language language,
 		LayoutLocalService layoutLocalService,
+		LayoutLockManager layoutLockManager,
 		LayoutSetLocalService layoutSetLocalService,
 		LayoutPageTemplateEntryLocalService layoutPageTemplateEntryLocalService,
 		LayoutPageTemplateEntryService layoutPageTemplateEntryService,
@@ -143,13 +143,15 @@ public class ContentPageLayoutEditorDisplayContext
 			frontendTokenDefinitionRegistry, httpServletRequest,
 			infoItemServiceRegistry, infoSearchClassMapperRegistry,
 			itemSelector, jsonFactory, language, layoutLocalService,
-			layoutPageTemplateEntryLocalService, layoutPageTemplateEntryService,
-			layoutPermission, layoutSetLocalService, pageEditorConfiguration,
-			portal, portletRequest, portletURLFactory, renderResponse,
+			layoutLockManager, layoutPageTemplateEntryLocalService,
+			layoutPageTemplateEntryService, layoutPermission,
+			layoutSetLocalService, pageEditorConfiguration, portal,
+			portletRequest, portletURLFactory, renderResponse,
 			segmentsConfigurationProvider, segmentsExperienceManager,
 			segmentsExperienceLocalService, segmentsExperimentRelLocalService,
-			staging, stagingGroupHelper, styleBookEntryLocalService,
-			userLocalService, workflowDefinitionLinkLocalService);
+			segmentsEntryService, staging, stagingGroupHelper,
+			styleBookEntryLocalService, userLocalService,
+			workflowDefinitionLinkLocalService);
 
 		_assetListEntryLocalService = assetListEntryLocalService;
 		_groupLocalService = groupLocalService;
@@ -158,15 +160,11 @@ public class ContentPageLayoutEditorDisplayContext
 		_layoutPageTemplateStructureRelLocalService =
 			layoutPageTemplateStructureRelLocalService;
 		_segmentsExperimentRelLocalService = segmentsExperimentRelLocalService;
-		_segmentsEntryService = segmentsEntryService;
 	}
 
 	@Override
-	public Map<String, Object> getEditorContext(String npmResolvedPackageName)
-		throws Exception {
-
-		Map<String, Object> editorContext = super.getEditorContext(
-			npmResolvedPackageName);
+	public Map<String, Object> getEditorContext() throws Exception {
+		Map<String, Object> editorContext = super.getEditorContext();
 
 		if (!_isShowSegmentsExperiences()) {
 			return editorContext;
@@ -184,8 +182,6 @@ public class ContentPageLayoutEditorDisplayContext
 					getPortletNamespace() + "plid", themeDisplay.getPlid()),
 				getPortletNamespace() + "groupId",
 				themeDisplay.getScopeGroupId()));
-		configContext.put(
-			"availableSegmentsEntries", _getAvailableSegmentsEntries());
 
 		LearnMessage learnMessage = LearnMessageUtil.getLearnMessage(
 			"content-page-personalization",
@@ -363,39 +359,6 @@ public class ContentPageLayoutEditorDisplayContext
 			));
 	}
 
-	private Map<String, Object> _getAvailableSegmentsEntries() {
-		Map<String, Object> availableSegmentsEntries = new HashMap<>();
-
-		List<SegmentsEntry> segmentsEntries =
-			_segmentsEntryService.getSegmentsEntries(
-				stagingGroupHelper.getStagedPortletGroupId(
-					getGroupId(), SegmentsPortletKeys.SEGMENTS),
-				true);
-
-		for (SegmentsEntry segmentsEntry : segmentsEntries) {
-			availableSegmentsEntries.put(
-				String.valueOf(segmentsEntry.getSegmentsEntryId()),
-				HashMapBuilder.<String, Object>put(
-					"name", segmentsEntry.getName(themeDisplay.getLocale())
-				).put(
-					"segmentsEntryId",
-					String.valueOf(segmentsEntry.getSegmentsEntryId())
-				).build());
-		}
-
-		availableSegmentsEntries.put(
-			String.valueOf(SegmentsEntryConstants.ID_DEFAULT),
-			HashMapBuilder.<String, Object>put(
-				"name",
-				SegmentsEntryConstants.getDefaultSegmentsEntryName(
-					themeDisplay.getLocale())
-			).put(
-				"segmentsEntryId", SegmentsEntryConstants.ID_DEFAULT
-			).build());
-
-		return availableSegmentsEntries;
-	}
-
 	private String _getEditSegmentsEntryURL() throws Exception {
 		if (_editSegmentsEntryURL != null) {
 			return _editSegmentsEntryURL;
@@ -409,9 +372,19 @@ public class ContentPageLayoutEditorDisplayContext
 			_editSegmentsEntryURL = StringPool.BLANK;
 		}
 		else {
-			portletURL.setParameter("redirect", themeDisplay.getURLCurrent());
+			_editSegmentsEntryURL = layoutLockManager.getUnlockDraftLayoutURL(
+				portal.getLiferayPortletResponse(renderResponse),
+				() -> {
+					Layout layout = themeDisplay.getLayout();
 
-			_editSegmentsEntryURL = portletURL.toString();
+					portletURL.setParameter(
+						"redirect", themeDisplay.getURLCurrent());
+					portletURL.setParameter(
+						"backURLTitle",
+						layout.getName(themeDisplay.getLocale()));
+
+					return portletURL.toString();
+				});
 		}
 
 		return _editSegmentsEntryURL;
@@ -724,7 +697,6 @@ public class ContentPageLayoutEditorDisplayContext
 		_layoutPageTemplateStructureRelLocalService;
 	private Boolean _lockedSegmentsExperience;
 	private Long _segmentsEntryId;
-	private final SegmentsEntryService _segmentsEntryService;
 	private Long _segmentsExperienceId;
 	private final SegmentsExperimentRelLocalService
 		_segmentsExperimentRelLocalService;

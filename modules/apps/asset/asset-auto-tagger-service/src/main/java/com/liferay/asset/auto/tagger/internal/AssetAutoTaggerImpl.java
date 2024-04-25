@@ -9,7 +9,7 @@ import com.liferay.asset.auto.tagger.AssetAutoTagProvider;
 import com.liferay.asset.auto.tagger.AssetAutoTagger;
 import com.liferay.asset.auto.tagger.configuration.AssetAutoTaggerConfiguration;
 import com.liferay.asset.auto.tagger.configuration.AssetAutoTaggerConfigurationFactory;
-import com.liferay.asset.auto.tagger.internal.helper.AssetAutoTaggerHelper;
+import com.liferay.asset.auto.tagger.internal.util.AssetAutoTaggerUtil;
 import com.liferay.asset.auto.tagger.model.AssetAutoTaggerEntry;
 import com.liferay.asset.auto.tagger.service.AssetAutoTaggerEntryLocalService;
 import com.liferay.asset.kernel.exception.AssetTagException;
@@ -17,6 +17,7 @@ import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.asset.kernel.service.AssetTagLocalService;
 import com.liferay.portal.aop.AopService;
+import com.liferay.portal.kernel.change.tracking.CTAware;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -41,17 +42,20 @@ import org.osgi.service.component.annotations.Reference;
 	configurationPid = "com.liferay.asset.auto.tagger.configuration.AssetAutoTaggerConfiguration",
 	service = AopService.class
 )
+@CTAware
 public class AssetAutoTaggerImpl implements AopService, AssetAutoTagger {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void tag(AssetEntry assetEntry) throws PortalException {
-		if (!_assetAutoTaggerHelper.isAutoTaggable(assetEntry)) {
-			return;
-		}
-
 		AssetAutoTaggerConfiguration assetAutoTaggerConfiguration =
 			_getAssetAutoTaggerConfiguration(assetEntry);
+
+		if (!AssetAutoTaggerUtil.isAutoTaggable(
+				assetAutoTaggerConfiguration, assetEntry)) {
+
+			return;
+		}
 
 		List<String> assetTagNames = _getAutoAssetTagNames(
 			assetEntry,
@@ -127,7 +131,7 @@ public class AssetAutoTaggerImpl implements AopService, AssetAutoTagger {
 		Set<String> assetTagNamesSet = new LinkedHashSet<>();
 
 		for (AssetAutoTagProvider<?> assetAutoTagProvider :
-				_assetAutoTaggerHelper.getAssetEntryAssetAutoTagProviders()) {
+				AssetAutoTaggerUtil.getAssetEntryAssetAutoTagProviders()) {
 
 			AssetAutoTagProvider<AssetEntry> assetEntryAssetAutoTagProvider =
 				(AssetAutoTagProvider<AssetEntry>)assetAutoTagProvider;
@@ -138,7 +142,7 @@ public class AssetAutoTaggerImpl implements AopService, AssetAutoTagger {
 
 		if (assetRenderer != null) {
 			List<AssetAutoTagProvider<?>> assetAutoTagProviders =
-				_assetAutoTaggerHelper.getAssetAutoTagProviders(
+				AssetAutoTaggerUtil.getAssetAutoTagProviders(
 					assetEntry.getClassName());
 
 			for (AssetAutoTagProvider<?> assetAutoTagProvider :
@@ -193,9 +197,6 @@ public class AssetAutoTaggerImpl implements AopService, AssetAutoTagger {
 
 	@Reference
 	private AssetAutoTaggerEntryLocalService _assetAutoTaggerEntryLocalService;
-
-	@Reference
-	private AssetAutoTaggerHelper _assetAutoTaggerHelper;
 
 	@Reference
 	private AssetTagLocalService _assetTagLocalService;

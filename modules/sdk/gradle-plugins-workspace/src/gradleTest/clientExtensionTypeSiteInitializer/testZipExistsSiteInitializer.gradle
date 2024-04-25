@@ -1,0 +1,20 @@
+task runGradleTest
+
+runGradleTest {
+	dependsOn ":site-initializer:createClientExtensionConfig"
+
+	doLast {
+		Project siteInitializerProject = project(":site-initializer")
+
+		File clientExtensionBuildDir = siteInitializerProject.file("${siteInitializerProject.buildDir}/liferay-client-extension-build")
+
+		File siteInitializerZipFile = siteInitializerProject.file("${clientExtensionBuildDir}/site-initializer/site-initializer.zip")
+
+		assert siteInitializerZipFile.exists()
+
+		assert zipTree(siteInitializerZipFile).matching {
+			include "site-initializer/foo.txt"
+			include "site-initializer/sub-dir/bar.txt"
+		}.files.size() == 2
+	}
+}

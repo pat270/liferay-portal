@@ -72,7 +72,12 @@ public class DocumentResourceFactoryImpl implements DocumentResource.Factory {
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _documentResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, DocumentResource>
+					documentResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_documentResourceProxyProviderFunction;
+
+				return documentResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -228,9 +233,6 @@ public class DocumentResourceFactoryImpl implements DocumentResource.Factory {
 		}
 	}
 
-	private static final Function<InvocationHandler, DocumentResource>
-		_documentResourceProxyProviderFunction = _getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -265,6 +267,14 @@ public class DocumentResourceFactoryImpl implements DocumentResource.Factory {
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, DocumentResource>
+			_documentResourceProxyProviderFunction =
+				_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

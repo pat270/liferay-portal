@@ -47,7 +47,7 @@ import com.liferay.commerce.product.service.CommerceCatalogLocalService;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.commerce.service.CommerceShippingMethodLocalService;
 import com.liferay.commerce.shipping.engine.fixed.service.CommerceShippingFixedOptionLocalService;
-import com.liferay.commerce.theme.speedwell.site.initializer.internal.dependencies.resolver.SpeedwellDependencyResolver;
+import com.liferay.commerce.theme.speedwell.site.initializer.internal.dependencies.resolver.SpeedwellDependencyResolverUtil;
 import com.liferay.commerce.util.AccountEntryAllowedTypesUtil;
 import com.liferay.commerce.util.CommerceAccountRoleHelper;
 import com.liferay.commerce.util.CommerceShippingEngineRegistry;
@@ -55,6 +55,7 @@ import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.service.DLFileEntryLocalService;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
@@ -71,7 +72,6 @@ import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.Theme;
 import com.liferay.portal.kernel.model.ThemeSetting;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -82,10 +82,10 @@ import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ThemeLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.settings.FallbackKeysSettingsUtil;
 import com.liferay.portal.kernel.settings.GroupServiceSettingsLocator;
 import com.liferay.portal.kernel.settings.ModifiableSettings;
 import com.liferay.portal.kernel.settings.Settings;
-import com.liferay.portal.kernel.settings.SettingsFactory;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -182,7 +182,7 @@ public class SpeedwellSiteInitializer implements SiteInitializer {
 
 			_configureB2CSite(commerceChannel.getGroup(), serviceContext);
 
-			_speedwellLayoutsInitializer.initialize(serviceContext);
+			_createLayouts(serviceContext);
 
 			_importAssetCategories(serviceContext);
 
@@ -303,7 +303,7 @@ public class SpeedwellSiteInitializer implements SiteInitializer {
 
 		_commerceAccountRoleHelper.checkCommerceAccountRoles(serviceContext);
 
-		Settings settings = _settingsFactory.getSettings(
+		Settings settings = FallbackKeysSettingsUtil.getSettings(
 			new GroupServiceSettingsLocator(
 				group.getGroupId(),
 				CommerceConstants.SERVICE_NAME_COMMERCE_ACCOUNT));
@@ -349,6 +349,20 @@ public class SpeedwellSiteInitializer implements SiteInitializer {
 			group.getName(serviceContext.getLanguageId()) + " Portal",
 			CommerceChannelConstants.CHANNEL_TYPE_SITE, null,
 			commerceCatalog.getCommerceCurrencyCode(), serviceContext);
+	}
+
+	private void _createLayouts(ServiceContext serviceContext)
+		throws Exception {
+
+		_cpFileImporter.cleanLayouts(serviceContext);
+
+		JSONArray jsonArray = _jsonFactory.createJSONArray(
+			SpeedwellDependencyResolverUtil.getJSON("layouts.json"));
+
+		_cpFileImporter.createLayouts(
+			jsonArray, SpeedwellDependencyResolverUtil.getImageClassLoader(),
+			SpeedwellDependencyResolverUtil.getImageDependencyPath(),
+			serviceContext);
 	}
 
 	private void _createRoles(ServiceContext serviceContext) throws Exception {
@@ -419,12 +433,12 @@ public class SpeedwellSiteInitializer implements SiteInitializer {
 
 	private JSONArray _getJSONArray(String name) throws Exception {
 		return _jsonFactory.createJSONArray(
-			_speedwellDependencyResolver.getJSON(name));
+			SpeedwellDependencyResolverUtil.getJSON(name));
 	}
 
 	private JSONObject _getJSONObject(String name) throws Exception {
 		return _jsonFactory.createJSONObject(
-			_speedwellDependencyResolver.getJSON(name));
+			SpeedwellDependencyResolverUtil.getJSON(name));
 	}
 
 	private ServiceContext _getServiceContext(long groupId)
@@ -463,8 +477,8 @@ public class SpeedwellSiteInitializer implements SiteInitializer {
 		_assetCategoriesImporter.importAssetCategories(
 			_getJSONArray("categories.json"),
 			group.getName(serviceContext.getLocale()),
-			_speedwellDependencyResolver.getImageClassLoader(),
-			_speedwellDependencyResolver.getImageDependencyPath(),
+			SpeedwellDependencyResolverUtil.getImageClassLoader(),
+			SpeedwellDependencyResolverUtil.getImageDependencyPath(),
 			company.getGroupId(), serviceContext.getUserId(), true);
 
 		if (_log.isInfoEnabled()) {
@@ -501,8 +515,8 @@ public class SpeedwellSiteInitializer implements SiteInitializer {
 
 		_blogsImporter.importBlogsEntries(
 			_getJSONArray("blogs.json"),
-			_speedwellDependencyResolver.getImageClassLoader(),
-			_speedwellDependencyResolver.getImageDependencyPath(),
+			SpeedwellDependencyResolverUtil.getImageClassLoader(),
+			SpeedwellDependencyResolverUtil.getImageDependencyPath(),
 			serviceContext.getScopeGroupId(), serviceContext.getUserId());
 
 		if (_log.isInfoEnabled()) {
@@ -519,8 +533,8 @@ public class SpeedwellSiteInitializer implements SiteInitializer {
 
 		_commerceAccountsImporter.importCommerceAccounts(
 			_getJSONArray("accounts.json"),
-			_speedwellDependencyResolver.getImageClassLoader(),
-			_speedwellDependencyResolver.getDependenciesPath(),
+			SpeedwellDependencyResolverUtil.getImageClassLoader(),
+			SpeedwellDependencyResolverUtil.getDependenciesPath(),
 			serviceContext.getScopeGroupId(), serviceContext.getUserId());
 
 		if (_log.isInfoEnabled()) {
@@ -613,8 +627,8 @@ public class SpeedwellSiteInitializer implements SiteInitializer {
 
 		_commerceUsersImporter.importCommerceUsers(
 			_getJSONArray("users.json"),
-			_speedwellDependencyResolver.getImageClassLoader(),
-			_speedwellDependencyResolver.getImageDependencyPath(),
+			SpeedwellDependencyResolverUtil.getImageClassLoader(),
+			SpeedwellDependencyResolverUtil.getImageDependencyPath(),
 			serviceContext.getScopeGroupId(), serviceContext.getUserId());
 
 		if (_log.isInfoEnabled()) {
@@ -640,8 +654,8 @@ public class SpeedwellSiteInitializer implements SiteInitializer {
 		return _cpDefinitionsImporter.importCPDefinitions(
 			jsonArray, group.getName(serviceContext.getLocale()),
 			catalogGroupId, commerceChannelId, commerceInventoryWarehouseIds,
-			_speedwellDependencyResolver.getImageClassLoader(),
-			_speedwellDependencyResolver.getImageDependencyPath(),
+			SpeedwellDependencyResolverUtil.getImageClassLoader(),
+			SpeedwellDependencyResolverUtil.getImageDependencyPath(),
 			serviceContext.getScopeGroupId(), serviceContext.getUserId());
 	}
 
@@ -715,8 +729,8 @@ public class SpeedwellSiteInitializer implements SiteInitializer {
 
 		_dlImporter.importDocuments(
 			_getJSONArray("dl-file-entries.json"),
-			_speedwellDependencyResolver.getDocumentsClassLoader(),
-			_speedwellDependencyResolver.getDocumentsDependencyPath(),
+			SpeedwellDependencyResolverUtil.getDocumentsClassLoader(),
+			SpeedwellDependencyResolverUtil.getDocumentsDependencyPath(),
 			serviceContext.getScopeGroupId(), serviceContext.getUserId());
 
 		if (_log.isInfoEnabled()) {
@@ -733,8 +747,8 @@ public class SpeedwellSiteInitializer implements SiteInitializer {
 
 		_journalArticleImporter.importJournalArticles(
 			_getJSONArray("journal-articles.json"),
-			_speedwellDependencyResolver.getDocumentsClassLoader(),
-			_speedwellDependencyResolver.getDependenciesPath() +
+			SpeedwellDependencyResolverUtil.getDocumentsClassLoader(),
+			SpeedwellDependencyResolverUtil.getDependenciesPath() +
 				"journal_articles/",
 			serviceContext.getScopeGroupId(), serviceContext.getUserId());
 
@@ -773,8 +787,8 @@ public class SpeedwellSiteInitializer implements SiteInitializer {
 
 		_portletSettingsImporter.importPortletSettings(
 			jsonArray,
-			_speedwellDependencyResolver.getDisplayTemplatesClassLoader(),
-			_speedwellDependencyResolver.getDisplayTemplatesDependencyPath(),
+			SpeedwellDependencyResolverUtil.getDisplayTemplatesClassLoader(),
+			SpeedwellDependencyResolverUtil.getDisplayTemplatesDependencyPath(),
 			serviceContext.getScopeGroupId(), company.getGroupId(),
 			serviceContext.getUserId());
 
@@ -839,8 +853,8 @@ public class SpeedwellSiteInitializer implements SiteInitializer {
 
 		_portletSettingsImporter.importPortletSettings(
 			jsonArray,
-			_speedwellDependencyResolver.getDisplayTemplatesClassLoader(),
-			_speedwellDependencyResolver.getDisplayTemplatesDependencyPath(),
+			SpeedwellDependencyResolverUtil.getDisplayTemplatesClassLoader(),
+			SpeedwellDependencyResolverUtil.getDisplayTemplatesDependencyPath(),
 			serviceContext.getScopeGroupId(), company.getGroupId(),
 			serviceContext.getUserId());
 	}
@@ -895,10 +909,10 @@ public class SpeedwellSiteInitializer implements SiteInitializer {
 		throws Exception {
 
 		ClassLoader classLoader =
-			_speedwellDependencyResolver.getImageClassLoader();
+			SpeedwellDependencyResolverUtil.getImageClassLoader();
 
 		InputStream inputStream = classLoader.getResourceAsStream(
-			_speedwellDependencyResolver.getImageDependencyPath() +
+			SpeedwellDependencyResolverUtil.getImageDependencyPath() +
 				"Speedwell_ProductImage_Default.png");
 
 		File file = null;
@@ -942,10 +956,10 @@ public class SpeedwellSiteInitializer implements SiteInitializer {
 
 	private void _updateLogo(ServiceContext serviceContext) throws Exception {
 		ClassLoader classLoader =
-			_speedwellDependencyResolver.getImageClassLoader();
+			SpeedwellDependencyResolverUtil.getImageClassLoader();
 
 		InputStream inputStream = classLoader.getResourceAsStream(
-			_speedwellDependencyResolver.getImageDependencyPath() +
+			SpeedwellDependencyResolverUtil.getImageDependencyPath() +
 				"Speedwell_Logo.png");
 
 		File file = _file.createTempFile(inputStream);
@@ -1123,15 +1137,6 @@ public class SpeedwellSiteInitializer implements SiteInitializer {
 		target = "(osgi.web.symbolicname=com.liferay.commerce.theme.speedwell.site.initializer)"
 	)
 	private ServletContext _servletContext;
-
-	@Reference
-	private SettingsFactory _settingsFactory;
-
-	@Reference
-	private SpeedwellDependencyResolver _speedwellDependencyResolver;
-
-	@Reference
-	private SpeedwellLayoutsInitializer _speedwellLayoutsInitializer;
 
 	@Reference
 	private ThemeLocalService _themeLocalService;

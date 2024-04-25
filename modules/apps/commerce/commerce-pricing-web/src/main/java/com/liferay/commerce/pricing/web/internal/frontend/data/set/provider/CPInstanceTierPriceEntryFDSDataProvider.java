@@ -12,17 +12,26 @@ import com.liferay.commerce.price.list.model.CommerceTierPriceEntry;
 import com.liferay.commerce.price.list.service.CommerceTierPriceEntryService;
 import com.liferay.commerce.pricing.web.internal.constants.CommercePricingFDSNames;
 import com.liferay.commerce.pricing.web.internal.model.InstanceTierPriceEntry;
+import com.liferay.commerce.product.model.CPInstance;
+import com.liferay.commerce.product.service.CPInstanceLocalService;
+import com.liferay.commerce.util.CommerceQuantityFormatter;
 import com.liferay.frontend.data.set.provider.FDSDataProvider;
 import com.liferay.frontend.data.set.provider.search.FDSKeywords;
 import com.liferay.frontend.data.set.provider.search.FDSPagination;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.search.Sort;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.WebKeys;
 
-import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.text.Format;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -48,6 +57,14 @@ public class CPInstanceTierPriceEntryFDSDataProvider
 			FDSKeywords fdsKeywords, FDSPagination fdsPagination,
 			HttpServletRequest httpServletRequest, Sort sort)
 		throws PortalException {
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		Format dateTimeFormat = FastDateFormatFactoryUtil.getDateTime(
+			DateFormat.MEDIUM, DateFormat.MEDIUM, themeDisplay.getLocale(),
+			themeDisplay.getTimeZone());
 
 		List<InstanceTierPriceEntry> instanceTierPriceEntries =
 			new ArrayList<>();
@@ -79,7 +96,10 @@ public class CPInstanceTierPriceEntryFDSDataProvider
 				httpServletRequest,
 				System.currentTimeMillis() - createDate.getTime(), true);
 
-			BigDecimal minQuantity = commerceTierPriceEntry.getMinQuantity();
+			CPInstance cpInstance =
+				_cpInstanceLocalService.fetchCProductInstance(
+					commercePriceEntry.getCProductId(),
+					commercePriceEntry.getCPInstanceUuid());
 
 			instanceTierPriceEntries.add(
 				new InstanceTierPriceEntry(
@@ -87,7 +107,12 @@ public class CPInstanceTierPriceEntryFDSDataProvider
 					_language.format(
 						httpServletRequest, "x-ago", createDateDescription,
 						false),
-					minQuantity.intValue(),
+					_getDiscountLevels(commerceTierPriceEntry),
+					_getEndDate(commerceTierPriceEntry, dateTimeFormat),
+					_getOverride(commerceTierPriceEntry, httpServletRequest),
+					_commerceQuantityFormatter.format(
+						cpInstance, commerceTierPriceEntry.getMinQuantity(),
+						commercePriceEntry.getUnitOfMeasureKey()),
 					HtmlUtil.escape(
 						priceCommerceMoney.format(
 							_portal.getLocale(httpServletRequest)))));
@@ -108,8 +133,50 @@ public class CPInstanceTierPriceEntryFDSDataProvider
 			commercePriceEntryId);
 	}
 
+	private String _getDiscountLevels(
+		CommerceTierPriceEntry commerceTierPriceEntry) {
+
+		if (commerceTierPriceEntry.isDiscountDiscovery()) {
+			return StringPool.BLANK;
+		}
+
+		return StringBundler.concat(
+			commerceTierPriceEntry.getDiscountLevel1(), " - ",
+			commerceTierPriceEntry.getDiscountLevel2(), " - ",
+			commerceTierPriceEntry.getDiscountLevel3(), " - ",
+			commerceTierPriceEntry.getDiscountLevel4());
+	}
+
+	private String _getEndDate(
+		CommerceTierPriceEntry commerceTierPriceEntry, Format dateTimeFormat) {
+
+		if (commerceTierPriceEntry.getExpirationDate() == null) {
+			return StringPool.BLANK;
+		}
+
+		return dateTimeFormat.format(
+			commerceTierPriceEntry.getExpirationDate());
+	}
+
+	private String _getOverride(
+		CommerceTierPriceEntry commerceTierPriceEntry,
+		HttpServletRequest httpServletRequest) {
+
+		if (commerceTierPriceEntry.isDiscountDiscovery()) {
+			return _language.get(httpServletRequest, "no");
+		}
+
+		return _language.get(httpServletRequest, "yes");
+	}
+
+	@Reference
+	private CommerceQuantityFormatter _commerceQuantityFormatter;
+
 	@Reference
 	private CommerceTierPriceEntryService _commerceTierPriceEntryService;
+
+	@Reference
+	private CPInstanceLocalService _cpInstanceLocalService;
 
 	@Reference
 	private Language _language;

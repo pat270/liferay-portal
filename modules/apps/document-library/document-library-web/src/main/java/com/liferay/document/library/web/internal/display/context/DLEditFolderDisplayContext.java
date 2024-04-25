@@ -30,11 +30,10 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowDefinition;
-import com.liferay.portal.kernel.workflow.WorkflowDefinitionManagerUtil;
-import com.liferay.portal.kernel.workflow.WorkflowEngineManagerUtil;
 import com.liferay.portal.kernel.workflow.WorkflowHandler;
 import com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil;
 import com.liferay.portal.util.RepositoryUtil;
+import com.liferay.portal.workflow.util.WorkflowDefinitionManagerUtil;
 
 import java.util.List;
 import java.util.Objects;
@@ -363,8 +362,7 @@ public class DLEditFolderDisplayContext {
 			WorkflowHandlerRegistryUtil.getWorkflowHandler(
 				DLFileEntry.class.getName());
 
-		if (WorkflowEngineManagerUtil.isDeployed() &&
-			(workflowHandler != null) &&
+		if ((workflowHandler != null) &&
 			DLFolderPermission.contains(
 				_themeDisplay.getPermissionChecker(),
 				_themeDisplay.getScopeGroupId(), getFolderId(),

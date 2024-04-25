@@ -5,7 +5,9 @@
 
 package com.liferay.document.library.preview.audio.internal.background.task;
 
-import com.liferay.document.library.kernel.util.AudioProcessor;
+import com.liferay.document.library.kernel.model.DLProcessorConstants;
+import com.liferay.document.library.kernel.processor.AudioProcessor;
+import com.liferay.document.library.kernel.processor.DLProcessor;
 import com.liferay.document.library.preview.background.task.BasePreviewBackgroundTaskExecutor;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskExecutor;
 import com.liferay.portal.kernel.repository.model.FileVersion;
@@ -18,7 +20,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Roberto Díaz
  */
 @Component(
-	configurationPid = "com.liferay.document.library.configuration.DLFileEntryConfiguration",
 	property = "background.task.executor.class.name=com.liferay.document.library.preview.audio.internal.background.task.AudioPreviewBackgroundTaskExecutor",
 	service = BackgroundTaskExecutor.class
 )
@@ -27,15 +28,19 @@ public class AudioPreviewBackgroundTaskExecutor
 
 	@Override
 	protected void generatePreview(FileVersion fileVersion) throws Exception {
+		AudioProcessor audioProcessor = (AudioProcessor)_dlProcessor;
+
 		audioProcessor.generateAudio(null, fileVersion);
 	}
 
 	@Override
 	protected String[] getMimeTypes() {
+		AudioProcessor audioProcessor = (AudioProcessor)_dlProcessor;
+
 		return ArrayUtil.toStringArray(audioProcessor.getAudioMimeTypes());
 	}
 
-	@Reference
-	protected AudioProcessor audioProcessor;
+	@Reference(target = "(type=" + DLProcessorConstants.AUDIO_PROCESSOR + ")")
+	private DLProcessor _dlProcessor;
 
 }

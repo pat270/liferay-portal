@@ -13,8 +13,10 @@ dependencies {
 	compileOnly group: "org.osgi", name: "osgi.core", version: "6.0.0"
 	compileOnly project(":apps:application-list:application-list-api")
 	compileOnly project(":apps:document-library:document-library-api")
+	compileOnly project(":apps:frontend-js:frontend-js-components-web")
 	compileOnly project(":apps:frontend-taglib:frontend-taglib")
 	compileOnly project(":apps:frontend-taglib:frontend-taglib-clay")
+	compileOnly project(":apps:frontend-taglib:frontend-taglib-react")
 	compileOnly project(":apps:item-selector:item-selector-api")
 	compileOnly project(":apps:item-selector:item-selector-criteria-api")
 	compileOnly project(":apps:oauth2-provider:oauth2-provider-api")
@@ -23,6 +25,7 @@ dependencies {
 	compileOnly project(":apps:oauth2-provider:oauth2-provider-scope-spi")
 	compileOnly project(":apps:product-navigation:product-navigation-personal-menu-api")
 	compileOnly project(":apps:static:portal-configuration:portal-configuration-metatype-api")
+	compileOnly project(":apps:user:user-taglib")
 	compileOnly project(":apps:users-admin:users-admin-item-selector-api")
 	compileOnly project(":core:osgi-service-tracker-collections")
 	compileOnly project(":core:petra:petra-function")
@@ -30,6 +33,6 @@ dependencies {
 	compileOnly project(":core:petra:petra-sql-dsl-api")
 	compileOnly project(":core:petra:petra-string")
 
-	testCompile group: "junit", name: "junit", version: "4.13.1"
-	testCompile project(":apps:oauth2-provider:oauth2-provider-scope-impl")
+	testImplementation group: "junit", name: "junit", version: "4.13.1"
+	testImplementation project(":apps:oauth2-provider:oauth2-provider-scope-impl")
 }

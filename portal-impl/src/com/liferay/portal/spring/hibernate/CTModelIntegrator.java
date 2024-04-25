@@ -97,23 +97,38 @@ public class CTModelIntegrator implements Integrator {
 				EventListenerRegistry.class);
 
 		eventListenerRegistry.setListeners(
-			EventType.PRE_UPDATE,
-			preUpdateEvent -> {
-				long ctCollectionId =
-					CTCollectionThreadLocal.getCTCollectionId();
+			EventType.PRE_DELETE,
+			preDeleteEvent -> {
+				Object entity = preDeleteEvent.getEntity();
 
-				if (ctCollectionId ==
-						CTCollectionThreadLocal.CT_COLLECTION_ID_PRODUCTION) {
+				if (entity instanceof CTModel) {
+					CTModel<?> ctModel = (CTModel<?>)entity;
 
-					return false;
+					long ctCollectionId =
+						CTCollectionThreadLocal.getCTCollectionId();
+
+					if ((ctCollectionId ==
+							CTCollectionThreadLocal.
+								CT_COLLECTION_ID_PRODUCTION) &&
+						(ctCollectionId != ctModel.getCtCollectionId())) {
+
+						return true;
+					}
 				}
 
+				return false;
+			});
+		eventListenerRegistry.setListeners(
+			EventType.PRE_UPDATE,
+			preUpdateEvent -> {
 				Object entity = preUpdateEvent.getEntity();
 
 				if (entity instanceof CTModel) {
 					CTModel<?> ctModel = (CTModel<?>)entity;
 
-					if (ctModel.getCtCollectionId() != ctCollectionId) {
+					if (ctModel.getCtCollectionId() !=
+							CTCollectionThreadLocal.getCTCollectionId()) {
+
 						return true;
 					}
 				}

@@ -55,7 +55,6 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PrefsPropsUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.RemotePreference;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.TimeZoneUtil;
@@ -65,13 +64,9 @@ import com.liferay.portal.security.auth.EmailAddressGeneratorFactory;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.users.admin.kernel.util.UserInitialsGeneratorUtil;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
@@ -85,11 +80,6 @@ import java.util.TreeSet;
  * @author Wesley Gong
  */
 public class UserImpl extends UserBaseImpl {
-
-	@Override
-	public void addRemotePreference(RemotePreference remotePreference) {
-		_remotePreferences.put(remotePreference.getName(), remotePreference);
-	}
 
 	@Override
 	public Contact fetchContact() {
@@ -175,24 +165,6 @@ public class UserImpl extends UserBaseImpl {
 	}
 
 	/**
-	 * Returns the user's digest.
-	 *
-	 * @return     the user's digest
-	 * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public String getDigest() {
-		String digest = super.getDigest();
-
-		if (Validator.isNull(digest) && !isPasswordEncrypted()) {
-			digest = getDigest(getPassword());
-		}
-
-		return digest;
-	}
-
-	/**
 	 * Returns a digest for the user, incorporating the password.
 	 *
 	 * @param      password a password to incorporate with the digest
@@ -202,44 +174,9 @@ public class UserImpl extends UserBaseImpl {
 	@Deprecated
 	@Override
 	public String getDigest(String password) {
-		if (Validator.isNull(getScreenName())) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Screen name is required to compute the digest");
-			}
-
-			return null;
-		}
-		else if (Validator.isNull(getEmailAddress())) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Email address is required to compute the digest");
-			}
-
-			return null;
-		}
-
-		StringBundler sb = new StringBundler(5);
-
-		String digest1 = DigesterUtil.digestHex(
-			Digester.MD5, getEmailAddress(), Portal.PORTAL_REALM, password);
-
-		sb.append(digest1);
-
-		sb.append(StringPool.COMMA);
-
-		String digest2 = DigesterUtil.digestHex(
-			Digester.MD5, getScreenName(), Portal.PORTAL_REALM, password);
-
-		sb.append(digest2);
-
-		sb.append(StringPool.COMMA);
-
-		String digest3 = DigesterUtil.digestHex(
+		return DigesterUtil.digestHex(
 			Digester.MD5, String.valueOf(getUserId()), Portal.PORTAL_REALM,
 			password);
-
-		sb.append(digest3);
-
-		return sb.toString();
 	}
 
 	/**
@@ -433,7 +370,11 @@ public class UserImpl extends UserBaseImpl {
 
 	@Override
 	public long[] getGroupIds() {
-		return UserLocalServiceUtil.getGroupPrimaryKeys(getUserId());
+		if (_groupIds == null) {
+			_groupIds = UserLocalServiceUtil.getGroupPrimaryKeys(getUserId());
+		}
+
+		return _groupIds;
 	}
 
 	@Override
@@ -513,15 +454,24 @@ public class UserImpl extends UserBaseImpl {
 
 	@Override
 	public long[] getOrganizationIds() throws PortalException {
-		return getOrganizationIds(false);
+		if (_organizationIds == null) {
+			_organizationIds = UserLocalServiceUtil.getOrganizationPrimaryKeys(
+				getUserId());
+		}
+
+		return _organizationIds;
 	}
 
 	@Override
 	public long[] getOrganizationIds(boolean includeAdministrative)
 		throws PortalException {
 
+		if (!includeAdministrative) {
+			return getOrganizationIds();
+		}
+
 		return OrganizationLocalServiceUtil.getUserOrganizationIds(
-			getUserId(), includeAdministrative);
+			getUserId(), true);
 	}
 
 	@Override
@@ -630,20 +580,12 @@ public class UserImpl extends UserBaseImpl {
 	}
 
 	@Override
-	public RemotePreference getRemotePreference(String name) {
-		return _remotePreferences.get(name);
-	}
-
-	@Override
-	public Iterable<RemotePreference> getRemotePreferences() {
-		Collection<RemotePreference> values = _remotePreferences.values();
-
-		return Collections.unmodifiableCollection(values);
-	}
-
-	@Override
 	public long[] getRoleIds() {
-		return UserLocalServiceUtil.getRolePrimaryKeys(getUserId());
+		if (_roleIds == null) {
+			_roleIds = UserLocalServiceUtil.getRolePrimaryKeys(getUserId());
+		}
+
+		return _roleIds;
 	}
 
 	@Override
@@ -666,7 +608,11 @@ public class UserImpl extends UserBaseImpl {
 
 	@Override
 	public long[] getTeamIds() {
-		return UserLocalServiceUtil.getTeamPrimaryKeys(getUserId());
+		if (_teamIds == null) {
+			_teamIds = UserLocalServiceUtil.getTeamPrimaryKeys(getUserId());
+		}
+
+		return _teamIds;
 	}
 
 	@Override
@@ -695,7 +641,12 @@ public class UserImpl extends UserBaseImpl {
 
 	@Override
 	public long[] getUserGroupIds() {
-		return UserLocalServiceUtil.getUserGroupPrimaryKeys(getUserId());
+		if (_userGroupIds == null) {
+			_userGroupIds = UserLocalServiceUtil.getUserGroupPrimaryKeys(
+				getUserId());
+		}
+
+		return _userGroupIds;
 	}
 
 	@Override
@@ -810,7 +761,9 @@ public class UserImpl extends UserBaseImpl {
 
 	@Override
 	public boolean isEmailAddressVerificationComplete() {
-		if (isGuestUser() || isEmailAddressVerified()) {
+		if (isGuestUser() || isEmailAddressVerified() ||
+			isServiceAccountUser()) {
+
 			return true;
 		}
 
@@ -826,11 +779,7 @@ public class UserImpl extends UserBaseImpl {
 			_log.error(portalException);
 		}
 
-		if (emailAddressVerificationRequired) {
-			return false;
-		}
-
-		return true;
+		return !emailAddressVerificationRequired;
 	}
 
 	@Override
@@ -853,13 +802,31 @@ public class UserImpl extends UserBaseImpl {
 	}
 
 	@Override
+	public boolean isOnDemandUser() {
+		if (getType() == UserConstants.TYPE_ON_DEMAND_USER) {
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
 	public boolean isPasswordModified() {
 		return _passwordModified;
 	}
 
 	@Override
+	public boolean isPasswordResetRequired() {
+		if (isGuestUser() || !isPasswordReset() || isServiceAccountUser()) {
+			return false;
+		}
+
+		return true;
+	}
+
+	@Override
 	public boolean isReminderQueryComplete() {
-		if (isGuestUser()) {
+		if (isGuestUser() || isOnDemandUser()) {
 			return true;
 		}
 
@@ -936,6 +903,11 @@ public class UserImpl extends UserBaseImpl {
 	}
 
 	@Override
+	public void setGroupIds(long[] groupIds) {
+		_groupIds = groupIds;
+	}
+
+	@Override
 	public void setLanguageId(String languageId) {
 		if (isGuestUser()) {
 			_locale = LocaleUtil.fromLanguageId(languageId, false);
@@ -945,6 +917,11 @@ public class UserImpl extends UserBaseImpl {
 		}
 
 		super.setLanguageId(LocaleUtil.toLanguageId(_locale));
+	}
+
+	@Override
+	public void setOrganizationIds(long[] organizationIds) {
+		_organizationIds = organizationIds;
 	}
 
 	@Override
@@ -958,6 +935,16 @@ public class UserImpl extends UserBaseImpl {
 	}
 
 	@Override
+	public void setRoleIds(long[] roleIds) {
+		_roleIds = roleIds;
+	}
+
+	@Override
+	public void setTeamIds(long[] teamIds) {
+		_teamIds = teamIds;
+	}
+
+	@Override
 	public void setTimeZoneId(String timeZoneId) {
 		if (Validator.isNull(timeZoneId)) {
 			TimeZone defaultTimeZone = TimeZoneUtil.getDefault();
@@ -968,6 +955,11 @@ public class UserImpl extends UserBaseImpl {
 		_timeZone = TimeZoneUtil.getTimeZone(timeZoneId);
 
 		super.setTimeZoneId(timeZoneId);
+	}
+
+	@Override
+	public void setUserGroupIds(long[] userGroupIds) {
+		_userGroupIds = userGroupIds;
 	}
 
 	protected String getProfileFriendlyURL() {
@@ -1005,12 +997,15 @@ public class UserImpl extends UserBaseImpl {
 	private static final Log _log = LogFactoryUtil.getLog(UserImpl.class);
 
 	private Contact _contact;
+	private long[] _groupIds;
 	private Locale _locale;
+	private long[] _organizationIds;
 	private boolean _passwordModified;
 	private PasswordPolicy _passwordPolicy;
 	private String _passwordUnencrypted;
-	private final transient Map<String, RemotePreference> _remotePreferences =
-		new HashMap<>();
+	private long[] _roleIds;
+	private long[] _teamIds;
 	private TimeZone _timeZone;
+	private long[] _userGroupIds;
 
 }

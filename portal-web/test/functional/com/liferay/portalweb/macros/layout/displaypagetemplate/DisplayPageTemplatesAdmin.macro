@@ -1,6 +1,7 @@
 definition {
 
-	macro _selectMappingTypes {
+	@summary = "Default summary"
+	macro _selectMappingTypes(subType = null, contentType = null) {
 		if (isSet(contentType)) {
 			Select(
 				locator1 = "//div[contains(.,'Content Type')]/select",
@@ -14,8 +15,13 @@ definition {
 		}
 	}
 
-	macro addDisplayPage {
+	@summary = "Default summary"
+	macro addDisplayPage(displayPageName = null, subType = null, contentType = null, masterLayoutName = null) {
 		LexiconEntry.gotoAdd();
+
+		if (IsElementPresent(key_menuItem = "Folder", locator1 = "MenuItem#ANY_MENU_ITEM")) {
+			MenuItem.click(menuItem = "Display Page Template");
+		}
 
 		if (isSet(masterLayoutName)) {
 			LexiconCard.clickCard(card = ${masterLayoutName});
@@ -35,7 +41,32 @@ definition {
 		PageEditor.assertFragmentSidebarLoaded();
 	}
 
-	macro deleteDisplayPage {
+	@summary = "Add a folder"
+	macro addFolder(folderName = null) {
+		LexiconEntry.gotoAdd();
+
+		MenuItem.click(menuItem = "Folder");
+
+		PortletEntry.inputName(name = ${folderName});
+
+		PortletEntry.create();
+	}
+
+	@summary = "Change content type"
+	macro changeContentType(displayPageName = null, subType = null, contentType = null) {
+		DisplayPageTemplatesAdmin.gotoDisplayPageEllipsisItem(
+			displayPageName = ${displayPageName},
+			item = "Change Content Type");
+
+		DisplayPageTemplatesAdmin._selectMappingTypes(
+			contentType = ${contentType},
+			subType = ${subType});
+
+		PortletEntry.save();
+	}
+
+	@summary = "Default summary"
+	macro deleteDisplayPage(displayPageName = null, defaultDisplayPageTemplate = null) {
 		LexiconCard.clickEllipsisItem(
 			card = ${displayPageName},
 			item = "Delete");
@@ -56,13 +87,17 @@ definition {
 			locator1 = "Modal#MODAL_FOOTER_BUTTON");
 	}
 
-	macro gotoDisplayPage {
+	@summary = "Default summary"
+	macro gotoDisplayPage(displayPageName = null) {
 		LexiconCard.clickCardTitleLink(card = ${displayPageName});
 
 		PageEditor.assertFragmentSidebarLoaded();
+
+		WaitForVisible(locator1 = "Sidebar#PANEL_OPEN");
 	}
 
-	macro gotoDisplayPageEllipsisItem {
+	@summary = "Default summary"
+	macro gotoDisplayPageEllipsisItem(item = null, displayPageName = null) {
 		WaitForPageLoad();
 
 		LexiconCard.clickEllipsisItem(
@@ -70,27 +105,46 @@ definition {
 			item = ${item});
 	}
 
-	macro importDisplayPageTemplateFromTempFolder {
+	@summary = "Go to a folder"
+	macro gotoFolder(folderName = null) {
+		LexiconCard.clickCardTitleLink(card = ${folderName});
+	}
+
+	@summary = "Default summary"
+	macro importDisplayPageTemplateFromTempFolder(importOption = null) {
 		Click.waitForMenuToggleJSClick(locator1 = "Icon#HEADER_VERTICAL_ELLIPSIS");
 
 		MenuItem.click(menuItem = "Import");
 
-		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+		WaitForPageLoad();
 
 		var displayPageTemplateZipFileName = TestCase.getDownloadedTempFileName(fileNamePattern = "display-page-template-*.zip");
 
-		UploadTempFile(
+		UploadTempFile.uploadTempFileHiddenNoMouseOver(
 			locator1 = "TextInput#FILE",
 			value1 = ${displayPageTemplateZipFileName});
 
 		Button.clickImport();
 
-		Alert.viewSuccessMessage();
+		if (isSet(importOption)) {
+			WaitForVisible(locator1 = "Modal#HEADER");
 
-		IFrame.closeFrame();
+			Check.checkNotVisible(
+				locator1 = "Radio#ANY",
+				radioLabel = ${importOption});
+
+			Click(
+				key_text = "Import",
+				locator1 = "Modal#MODAL_FOOTER_BUTTON");
+		}
+
+		AssertVisible(locator1 = "Message#SUCCESS_IMPORT");
+
+		Button.clickDone();
 	}
 
-	macro markDisplayPageAsDefault {
+	@summary = "Default summary"
+	macro markDisplayPageAsDefault(displayPageName = null) {
 		DisplayPageTemplatesAdmin.gotoDisplayPageEllipsisItem(
 			displayPageName = ${displayPageName},
 			item = "Mark as Default");
@@ -100,11 +154,13 @@ definition {
 			icon = "check-circle");
 	}
 
-	macro openDisplayPagesAdmin {
+	@summary = "Default summary"
+	macro openDisplayPagesAdmin(siteURLKey = null) {
 		Navigator.openWithAppendToBaseURL(urlAppend = "group/${siteURLKey}/~/control_panel/manage?p_p_id=com_liferay_layout_page_template_admin_web_portlet_LayoutPageTemplatesPortlet&_com_liferay_layout_page_template_admin_web_portlet_LayoutPageTemplatesPortlet_tabs1=display-page-templates");
 	}
 
-	macro renameDisplayPage {
+	@summary = "Default summary"
+	macro renameDisplayPage(newDisplayPageName = null, displayPageName = null) {
 		DisplayPageTemplatesAdmin.gotoDisplayPageEllipsisItem(
 			displayPageName = ${displayPageName},
 			item = "Rename");
@@ -114,15 +170,18 @@ definition {
 		Modal.save();
 	}
 
-	macro viewDisplayPageNotPresent {
+	@summary = "Default summary"
+	macro viewDisplayPageNotPresent(displayPageName = null) {
 		LexiconCard.viewCardNotPresent(card = ${displayPageName});
 	}
 
-	macro viewDisplayPagePresent {
+	@summary = "Default summary"
+	macro viewDisplayPagePresent(displayPageName = null) {
 		LexiconCard.viewCardPresent(card = ${displayPageName});
 	}
 
-	macro viewPGViaAP {
+	@summary = "Default summary"
+	macro viewPGViaAP(webContentTitle = null, webContentContent = null, contentList = null) {
 		var key_assetContent = ${webContentContent};
 		var key_assetTitle = ${webContentTitle};
 

@@ -1,0 +1,24 @@
+/**
+ * SPDX-FileCopyrightText: (c) 2023 Liferay, Inc. https://liferay.com
+ * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
+ */
+
+package com.liferay.source.formatter.dependencies;
+
+/**
+ * @author Qi Zhang
+ */
+public class MethodEquals {
+
+	public boolean method1(Boolean b) {
+		return b.toString(
+		).equals(
+			"true"
+		);
+	}
+
+	public boolean method2(Object object) {
+		return toString().equals(object.toString());
+	}
+
+}

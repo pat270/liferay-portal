@@ -42,6 +42,10 @@ public class LayoutURLFormNavigatorEntry extends BaseLayoutFormNavigatorEntry {
 
 	@Override
 	public boolean isVisible(User user, Layout layout) {
+		if (layout.isTypeAssetDisplay() || layout.isTypeUtility()) {
+			return true;
+		}
+
 		LayoutType layoutType = layout.getLayoutType();
 
 		if (layout.isDraftLayout() || layout.isSystem() ||

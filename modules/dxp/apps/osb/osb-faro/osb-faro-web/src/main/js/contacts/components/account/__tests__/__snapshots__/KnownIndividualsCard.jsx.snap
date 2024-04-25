@@ -139,7 +139,7 @@ exports[`KnownIndividualsCard should render 1`] = `
           role="presentation"
         >
           <use
-            xlink:href="#angle-right-small"
+            href="#angle-right-small"
           />
         </svg>
       </a>
@@ -182,10 +182,17 @@ exports[`KnownIndividualsCard should render w/ NoResultsDisplay 1`] = `
             Check back later to verify if data has been received from your data sources.
           </span>
           <a
+            class=""
             href="https://learn.liferay.com/analytics-cloud/latest/en/people/individuals/individuals-dashboard.html"
+            rel="noreferrer noopener"
             target="_blank"
           >
             Learn more about individuals.
+            <span
+              class="sr-only"
+            >
+              (Opens a new window)
+            </span>
           </a>
         </div>
       </div>
@@ -203,7 +210,7 @@ exports[`KnownIndividualsCard should render w/ NoResultsDisplay 1`] = `
           role="presentation"
         >
           <use
-            xlink:href="#angle-right-small"
+            href="#angle-right-small"
           />
         </svg>
       </a>

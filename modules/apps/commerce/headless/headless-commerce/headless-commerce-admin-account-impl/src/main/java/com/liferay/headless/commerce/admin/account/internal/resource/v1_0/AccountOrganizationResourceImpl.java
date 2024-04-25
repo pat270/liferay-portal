@@ -14,12 +14,10 @@ import com.liferay.headless.commerce.admin.account.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.account.dto.v1_0.AccountOrganization;
 import com.liferay.headless.commerce.admin.account.internal.util.v1_0.AccountOrganizationUtil;
 import com.liferay.headless.commerce.admin.account.resource.v1_0.AccountOrganizationResource;
-import com.liferay.headless.commerce.core.util.ServiceContextHelper;
 import com.liferay.portal.kernel.service.OrganizationLocalService;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.fields.NestedField;
-import com.liferay.portal.vulcan.fields.NestedFieldSupport;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 
@@ -37,11 +35,11 @@ import org.osgi.service.component.annotations.ServiceScope;
  */
 @Component(
 	properties = "OSGI-INF/liferay/rest/v1_0/account-organization.properties",
-	scope = ServiceScope.PROTOTYPE,
-	service = {AccountOrganizationResource.class, NestedFieldSupport.class}
+	property = "nested.field.support=true", scope = ServiceScope.PROTOTYPE,
+	service = AccountOrganizationResource.class
 )
 public class AccountOrganizationResourceImpl
-	extends BaseAccountOrganizationResourceImpl implements NestedFieldSupport {
+	extends BaseAccountOrganizationResourceImpl {
 
 	@Override
 	public Response deleteAccountByExternalReferenceCodeAccountOrganization(
@@ -252,8 +250,5 @@ public class AccountOrganizationResourceImpl
 
 	@Reference
 	private OrganizationLocalService _organizationLocalService;
-
-	@Reference
-	private ServiceContextHelper _serviceContextHelper;
 
 }

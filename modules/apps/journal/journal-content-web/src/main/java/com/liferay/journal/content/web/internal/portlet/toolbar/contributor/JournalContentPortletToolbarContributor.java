@@ -17,10 +17,11 @@ import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.content.web.internal.configuration.JournalContentPortletInstanceConfiguration;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
-import com.liferay.portal.kernel.language.UnicodeLanguage;
+import com.liferay.portal.kernel.language.UnicodeLanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
@@ -38,8 +39,9 @@ import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.kernel.util.Html;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
@@ -47,6 +49,7 @@ import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -115,8 +118,8 @@ public class JournalContentPortletToolbarContributor
 			_portal.getControlPanelPortletURL(
 				portletRequest, JournalPortletKeys.JOURNAL,
 				PortletRequest.RENDER_PHASE)
-		).setMVCPath(
-			"/edit_article.jsp"
+		).setMVCRenderCommandName(
+			"/journal/edit_article"
 		).setRedirect(
 			_portal.getLayoutFullURL(themeDisplay)
 		).setPortletResource(
@@ -129,29 +132,26 @@ public class JournalContentPortletToolbarContributor
 
 		JournalContentPortletInstanceConfiguration
 			journalContentPortletInstanceConfiguration =
-				portletDisplay.getPortletInstanceConfiguration(
-					JournalContentPortletInstanceConfiguration.class);
+				_configurationProvider.getPortletInstanceConfiguration(
+					JournalContentPortletInstanceConfiguration.class,
+					themeDisplay);
 
 		if (journalContentPortletInstanceConfiguration.
 				sortStructuresByByName()) {
 
-			ddmStructures = _ddmStructureService.getStructures(
-				themeDisplay.getCompanyId(), currentAndAncestorSiteGroupIds,
-				_portal.getClassNameId(JournalArticle.class), QueryUtil.ALL_POS,
-				QueryUtil.ALL_POS, new StructureCreateDateComparator());
-
 			Locale locale = themeDisplay.getLocale();
 
-			ddmStructures.sort(
-				(ddmStructure1, ddmStructure2) -> {
-					String name1 = ddmStructure1.getName(locale);
-					String name2 = ddmStructure2.getName(locale);
-
-					return name1.compareTo(name2);
-				});
+			ddmStructures = ListUtil.sort(
+				_ddmStructureService.getStructures(
+					themeDisplay.getCompanyId(), currentAndAncestorSiteGroupIds,
+					_portal.getClassNameId(JournalArticle.class),
+					QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+					new StructureCreateDateComparator()),
+				Comparator.comparing(
+					ddmStructure -> ddmStructure.getName(locale)));
 
 			ddmStructures = ddmStructures.subList(
-				0, _DEFAULT_MAX_DISPLAY_ITEMS);
+				0, Math.min(ddmStructures.size(), _DEFAULT_MAX_DISPLAY_ITEMS));
 		}
 		else {
 			ddmStructures = _ddmStructureService.getStructures(
@@ -171,10 +171,10 @@ public class JournalContentPortletToolbarContributor
 			urlMenuItem.setData(
 				HashMapBuilder.<String, Object>put(
 					"id",
-					_html.escape(portletDisplay.getNamespace()) + "editAsset"
+					HtmlUtil.escape(portletDisplay.getNamespace()) + "editAsset"
 				).put(
 					"title",
-					_html.escape(
+					HtmlUtil.escape(
 						_language.format(
 							themeDisplay.getLocale(), "new-x",
 							ddmStructure.getName(themeDisplay.getLocale())))
@@ -220,7 +220,7 @@ public class JournalContentPortletToolbarContributor
 					"'));}}, selectEventName: '",
 					portletResponse.getNamespace(),
 					"selectDDMStructure', title: '",
-					_unicodeLanguage.get(
+					UnicodeLanguageUtil.get(
 						_portal.getHttpServletRequest(portletRequest),
 						"select-structure"),
 					"', url: '",
@@ -240,8 +240,8 @@ public class JournalContentPortletToolbarContributor
 			_portal.getControlPanelPortletURL(
 				portletRequest, JournalPortletKeys.JOURNAL,
 				PortletRequest.RENDER_PHASE)
-		).setMVCPath(
-			"/edit_article.jsp"
+		).setMVCRenderCommandName(
+			"/journal/edit_article"
 		).setRedirect(
 			_portal.getLayoutFullURL(themeDisplay)
 		).setPortletResource(
@@ -311,10 +311,10 @@ public class JournalContentPortletToolbarContributor
 		JournalContentPortletToolbarContributor.class);
 
 	@Reference
-	private DDMStructureService _ddmStructureService;
+	private ConfigurationProvider _configurationProvider;
 
 	@Reference
-	private Html _html;
+	private DDMStructureService _ddmStructureService;
 
 	@Reference
 	private ItemSelector _itemSelector;
@@ -329,8 +329,5 @@ public class JournalContentPortletToolbarContributor
 		target = "(resource.name=" + JournalConstants.RESOURCE_NAME + ")"
 	)
 	private PortletResourcePermission _portletResourcePermission;
-
-	@Reference
-	private UnicodeLanguage _unicodeLanguage;
 
 }

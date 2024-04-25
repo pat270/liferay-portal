@@ -5,9 +5,9 @@
 
 import {ClayInput} from '@clayui/form';
 import {ClassicEditor} from 'frontend-editor-ckeditor-web';
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
-import {FieldBase} from '../FieldBase/ReactFieldBase.es';
+import FieldBase from '../FieldBase/ReactFieldBase.es';
 import LocalesDropdown from '../util/localizable/LocalesDropdown';
 import {
 	convertStringToObject,
@@ -25,6 +25,14 @@ const INITIAL_EDITING_LOCALE = {
 	icon: normalizeLocaleId(themeDisplay.getDefaultLanguageId()),
 	localeId: themeDisplay.getDefaultLanguageId(),
 };
+
+const ALERT_REGEX = /alert\((.*?)\)/;
+const INNER_HTML_REGEX = /innerHTML\s*=\s*.*?/;
+const PHP_CODE_REGEX = /<\?[\s\S]*?\?>/g;
+const ASP_CODE_REGEX = /<%[\s\S]*?%>/g;
+const ASP_NET_CODE_REGEX = /(<asp:[^]+>[\s|\S]*?<\/asp:[^]+>)|(<asp:[^]+\/>)/gi;
+const HTML_TAG_WITH_ON_ATTRIBUTE_REGEX = /<[^>]+?(\s+\bon\w+=(?:'[^']*'|"[^"]*"|[^'"\s>]+))*\s*\/?>/gi;
+const ON_ATTRIBUTE_REGEX = /(\s+\bon\w+=(?:'[^']*'|"[^"]*"|[^'"\s>]+))/gi;
 
 const RichText = ({
 	availableLocales,
@@ -129,9 +137,69 @@ const RichText = ({
 		);
 	};
 
+	const handleContentChange = (content) => {
+		if (currentValue[currentEditingLocale?.localeId] !== content) {
+			const newValue = {
+				...currentValue,
+				[currentEditingLocale.localeId]: content,
+			};
+
+			setCurrentValue(newValue);
+			setCurrentInternalValue(content);
+
+			const {availableLocales} = {
+				...transformAvailableLocalesAndValue({
+					availableLocales: currentAvailableLocales,
+					defaultLocale,
+					value: newValue,
+				}),
+			};
+
+			setCurrentAvailableLocales(availableLocales);
+
+			onChange({
+				target: {
+					value: localizedObjectField
+						? newValue
+						: newValue[currentEditingLocale?.localeId],
+				},
+			});
+		}
+	};
+
+	function sanitezeHTML(html) {
+		const sanitizedHtml = html
+			.replace(HTML_TAG_WITH_ON_ATTRIBUTE_REGEX, (match) => {
+				return match.replace(ON_ATTRIBUTE_REGEX, '');
+			})
+			.replace(ALERT_REGEX, '')
+			.replace(INNER_HTML_REGEX, '')
+			.replace(PHP_CODE_REGEX, '')
+			.replace(ASP_CODE_REGEX, '')
+			.replace(ASP_NET_CODE_REGEX, '');
+
+		return sanitizedHtml;
+	}
+
+	const resetTranslation = useCallback(() => {
+		editorRef.current.editor.setData(currentValue[defaultLocale.localeId]);
+	}, [editorRef, currentValue, defaultLocale]);
+
+	useEffect(() => {
+		Liferay.after('inputLocalized:resetTranslations', resetTranslation);
+
+		return () => {
+			Liferay.detach(
+				'inputLocalized:resetTranslations',
+				resetTranslation
+			);
+		};
+	}, [resetTranslation]);
+
 	return (
 		<FieldBase
 			{...otherProps}
+			fieldName={fieldName}
 			id={id}
 			name={name}
 			readOnly={readOnly}
@@ -141,6 +209,7 @@ const RichText = ({
 			<ClayInput.Group>
 				<ClayInput.GroupItem>
 					<ClassicEditor
+						ariaRequired={otherProps.required}
 						className="w-100"
 						contents={
 							currentValue
@@ -150,48 +219,19 @@ const RichText = ({
 						editorConfig={editorConfig}
 						name={name}
 						onBlur={onBlur}
-						onChange={(content) => {
-							if (
-								currentValue[currentEditingLocale?.localeId] !==
-								content
-							) {
-								const newValue = {
-									...currentValue,
-									[currentEditingLocale.localeId]: content,
-								};
-
-								setCurrentValue(newValue);
-								setCurrentInternalValue(content);
-
-								const {availableLocales} = {
-									...transformAvailableLocalesAndValue({
-										availableLocales: currentAvailableLocales,
-										defaultLocale,
-										value: newValue,
-									}),
-								};
-
-								setCurrentAvailableLocales(availableLocales);
-
-								onChange({
-									target: {
-										value: localizedObjectField
-											? newValue
-											: newValue[
-													currentEditingLocale
-														?.localeId
-											  ],
-									},
-								});
-							}
-						}}
+						onChange={(content) => handleContentChange(content)}
 						onFocus={onFocus}
-						onSetData={({
-							data: {dataValue: value},
-							editor: {mode},
-						}) => {
-							if (mode === 'source') {
-								onChange({target: {value}});
+						onSetData={(event) => {
+							const editor = event.editor;
+
+							if (editor.mode === 'source') {
+								const value = event.data.dataValue;
+
+								const sanitizedValue = sanitezeHTML(value);
+
+								handleContentChange(sanitizedValue);
+
+								event.data.dataValue = sanitizedValue;
 							}
 						}}
 						readOnly={readOnly}

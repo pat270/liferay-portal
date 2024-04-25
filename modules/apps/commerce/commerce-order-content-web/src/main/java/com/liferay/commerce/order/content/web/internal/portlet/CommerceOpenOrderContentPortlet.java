@@ -6,6 +6,7 @@
 package com.liferay.commerce.order.content.web.internal.portlet;
 
 import com.liferay.commerce.constants.CommerceOrderConstants;
+import com.liferay.commerce.constants.CommerceOrderWebKeys;
 import com.liferay.commerce.constants.CommercePortletKeys;
 import com.liferay.commerce.constants.CommerceWebKeys;
 import com.liferay.commerce.model.CommerceOrder;
@@ -16,6 +17,7 @@ import com.liferay.commerce.order.content.web.internal.display.context.CommerceO
 import com.liferay.commerce.order.engine.CommerceOrderEngine;
 import com.liferay.commerce.order.importer.type.CommerceOrderImporterTypeRegistry;
 import com.liferay.commerce.order.status.CommerceOrderStatusRegistry;
+import com.liferay.commerce.payment.integration.CommercePaymentIntegrationRegistry;
 import com.liferay.commerce.payment.method.CommercePaymentMethodRegistry;
 import com.liferay.commerce.payment.service.CommercePaymentMethodGroupRelLocalService;
 import com.liferay.commerce.percentage.PercentageFormatter;
@@ -25,14 +27,13 @@ import com.liferay.commerce.service.CommerceAddressService;
 import com.liferay.commerce.service.CommerceOrderNoteService;
 import com.liferay.commerce.service.CommerceOrderService;
 import com.liferay.commerce.service.CommerceOrderTypeService;
-import com.liferay.commerce.service.CommerceShipmentItemService;
 import com.liferay.commerce.term.service.CommerceTermEntryService;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.item.selector.ItemSelector;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
@@ -51,6 +52,8 @@ import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -97,6 +100,7 @@ public class CommerceOpenOrderContentPortlet extends MVCPortlet {
 						_commerceOrderNoteService,
 						_commerceOrderPriceCalculation, _commerceOrderService,
 						_commerceOrderStatusRegistry, _commerceOrderTypeService,
+						_commercePaymentIntegrationRegistry,
 						_commercePaymentMethodGroupRelLocalService,
 						_commercePaymentMethodRegistry,
 						_commerceTermEntryService, _configurationProvider,
@@ -153,8 +157,14 @@ public class CommerceOpenOrderContentPortlet extends MVCPortlet {
 					commerceOrderUuid, groupId);
 			}
 
+			HttpServletRequest httpServletRequest =
+				_portal.getHttpServletRequest(portletRequest);
+
+			httpServletRequest.setAttribute(
+				CommerceOrderWebKeys.MERGE_GUEST_ORDER, Boolean.FALSE);
+
 			return _commerceOrderHttpHelper.getCurrentCommerceOrder(
-				_portal.getHttpServletRequest(portletRequest));
+				httpServletRequest);
 		}
 		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
@@ -203,14 +213,15 @@ public class CommerceOpenOrderContentPortlet extends MVCPortlet {
 	private CommerceOrderValidatorRegistry _commerceOrderValidatorRegistry;
 
 	@Reference
+	private CommercePaymentIntegrationRegistry
+		_commercePaymentIntegrationRegistry;
+
+	@Reference
 	private CommercePaymentMethodGroupRelLocalService
 		_commercePaymentMethodGroupRelLocalService;
 
 	@Reference
 	private CommercePaymentMethodRegistry _commercePaymentMethodRegistry;
-
-	@Reference
-	private CommerceShipmentItemService _commerceShipmentItemService;
 
 	@Reference
 	private CommerceTermEntryService _commerceTermEntryService;

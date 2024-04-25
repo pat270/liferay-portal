@@ -4,16 +4,21 @@
  */
 
 import {ClayButtonWithIcon} from '@clayui/button';
+import {sub} from 'frontend-js-web';
 import React, {useContext} from 'react';
 
-import {SET_SELECTED_ISSUE} from '../constants/actionTypes';
+import {SET_SELECTED_ITEM} from '../constants/actionTypes';
 import {StoreDispatchContext, StoreStateContext} from '../context/StoreContext';
 import loadIssues from '../utils/loadIssues';
 
 export default function SidebarHeader() {
-	const {selectedIssue} = useContext(StoreStateContext);
+	const {selectedItem} = useContext(StoreStateContext);
 
-	return selectedIssue ? (
+	if (Liferay.FeatureFlags['LPS-187284']) {
+		return null;
+	}
+
+	return selectedItem ? (
 		<IssueDetailSidebarHeader />
 	) : (
 		<DefaultSidebarHeader />
@@ -27,7 +32,7 @@ const DefaultSidebarHeader = () => {
 	const showRefreshButton = data?.validConnection && !data?.privateLayout;
 
 	return (
-		<div className="d-flex justify-content-between p-3 sidebar-header">
+		<div className="d-flex justify-content-between sidebar-header">
 			<span className="font-weight-bold">
 				{Liferay.Language.get('page-audit')}
 			</span>
@@ -35,6 +40,10 @@ const DefaultSidebarHeader = () => {
 			<div>
 				{showRefreshButton && (
 					<ClayButtonWithIcon
+						aria-label={sub(
+							Liferay.Language.get('relaunch-x'),
+							Liferay.Language.get('page-audit')
+						)}
 						className="component-action mr-2 sidenav-relaunch text-secondary"
 						disabled={loading}
 						displayType="unstyled"
@@ -57,6 +66,10 @@ const DefaultSidebarHeader = () => {
 				)}
 
 				<ClayButtonWithIcon
+					aria-label={sub(
+						Liferay.Language.get('close-x'),
+						Liferay.Language.get('page-audit')
+					)}
 					className="component-action sidenav-close text-secondary"
 					displayType="unstyled"
 					symbol="times"
@@ -68,19 +81,20 @@ const DefaultSidebarHeader = () => {
 };
 
 const IssueDetailSidebarHeader = () => {
-	const {selectedIssue} = useContext(StoreStateContext);
+	const {selectedItem} = useContext(StoreStateContext);
 	const dispatch = useContext(StoreDispatchContext);
 
 	return (
 		<div className="d-flex justify-content-between p-3 sidebar-header">
 			<div className="d-flex">
 				<ClayButtonWithIcon
+					aria-label={Liferay.Language.get('go-back')}
 					className="align-items-start component-action flex-shrink-0 mr-2 sidenav-back text-secondary"
 					displayType="unstyled"
 					onClick={() => {
 						dispatch({
-							issue: null,
-							type: SET_SELECTED_ISSUE,
+							item: null,
+							type: SET_SELECTED_ITEM,
 						});
 					}}
 					symbol="angle-left"
@@ -88,11 +102,15 @@ const IssueDetailSidebarHeader = () => {
 				/>
 
 				<span className="align-self-center font-weight-bold issue-detail-title">
-					{selectedIssue.title}
+					{selectedItem.title}
 				</span>
 			</div>
 
 			<ClayButtonWithIcon
+				aria-label={sub(
+					Liferay.Language.get('close-x'),
+					Liferay.Language.get('sidebar')
+				)}
 				className="component-action flex-shrink-0 sidenav-close text-secondary"
 				displayType="unstyled"
 				symbol="times"

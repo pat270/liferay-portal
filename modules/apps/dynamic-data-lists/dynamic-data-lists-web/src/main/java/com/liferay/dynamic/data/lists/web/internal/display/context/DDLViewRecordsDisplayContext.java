@@ -66,8 +66,6 @@ import java.util.Map;
 import javax.portlet.PortletException;
 import javax.portlet.PortletURL;
 
-import javax.servlet.http.HttpServletRequest;
-
 /**
  * @author Rafael Praxedes
  */
@@ -217,26 +215,6 @@ public class DDLViewRecordsDisplayContext {
 		return "list";
 	}
 
-	public List<DropdownItem> getFilterItemsDropdownItems() {
-		HttpServletRequest httpServletRequest = _ddlRequestHelper.getRequest();
-
-		return DropdownItemListBuilder.addGroup(
-			dropdownGroupItem -> {
-				dropdownGroupItem.setDropdownItems(
-					getFilterNavigationDropdownItems());
-				dropdownGroupItem.setLabel(
-					LanguageUtil.get(
-						httpServletRequest, "filter-by-navigation"));
-			}
-		).addGroup(
-			dropdownGroupItem -> {
-				dropdownGroupItem.setDropdownItems(getOrderByDropdownItems());
-				dropdownGroupItem.setLabel(
-					LanguageUtil.get(httpServletRequest, "order-by"));
-			}
-		).build();
-	}
-
 	public List<NavigationItem> getNavigationItems() {
 		return NavigationItemListBuilder.add(
 			navigationItem -> {
@@ -270,6 +248,14 @@ public class DDLViewRecordsDisplayContext {
 			"view-records-order-by-type", "asc");
 
 		return _orderByType;
+	}
+
+	public List<DropdownItem> getOrderItemsDropdownItems() {
+		return DropdownItemListBuilder.add(
+			getOrderByDropdownItem("create-date")
+		).add(
+			getOrderByDropdownItem("modified-date")
+		).build();
 	}
 
 	public PortletURL getPortletURL() {
@@ -340,7 +326,19 @@ public class DDLViewRecordsDisplayContext {
 		).buildPortletURL();
 	}
 
-	public SearchContainer<?> getSearch() throws PortalException {
+	public String getSearchActionURL() {
+		return PortletURLBuilder.createRenderURL(
+			_liferayPortletResponse
+		).setMVCPath(
+			_getMVCPath()
+		).setRedirect(
+			PortalUtil.getCurrentURL(_liferayPortletRequest)
+		).setParameter(
+			"recordSetId", _ddlRecordSet.getRecordSetId()
+		).buildString();
+	}
+
+	public SearchContainer<?> getSearchContainer() throws PortalException {
 		PortletURL portletURL = PortletURLBuilder.create(
 			getPortletURL()
 		).setParameter(
@@ -365,25 +363,26 @@ public class DDLViewRecordsDisplayContext {
 
 		headerNames.add(StringPool.BLANK);
 
-		SearchContainer<DDLRecord> recordSearch = new RecordSearch(
+		SearchContainer<DDLRecord> recordSearchContainer = new RecordSearch(
 			_liferayPortletRequest, portletURL, headerNames);
 
-		if (recordSearch.isSearch()) {
-			recordSearch.setEmptyResultsMessage(
+		if (recordSearchContainer.isSearch()) {
+			recordSearchContainer.setEmptyResultsMessage(
 				LanguageUtil.format(
 					_ddlRequestHelper.getLocale(), "no-x-records-were-found",
 					_ddlRecordSet.getName(), false));
 		}
 		else {
-			recordSearch.setEmptyResultsMessage("there-are-no-records");
+			recordSearchContainer.setEmptyResultsMessage(
+				"there-are-no-records");
 		}
 
-		recordSearch.setOrderByCol(getOrderByCol());
-		recordSearch.setOrderByComparator(
+		recordSearchContainer.setOrderByCol(getOrderByCol());
+		recordSearchContainer.setOrderByComparator(
 			getDDLRecordOrderByComparator(getOrderByCol(), getOrderByType()));
-		recordSearch.setOrderByType(getOrderByType());
+		recordSearchContainer.setOrderByType(getOrderByType());
 
-		DisplayTerms displayTerms = recordSearch.getDisplayTerms();
+		DisplayTerms displayTerms = recordSearchContainer.getDisplayTerms();
 
 		int status = WorkflowConstants.STATUS_APPROVED;
 
@@ -394,40 +393,29 @@ public class DDLViewRecordsDisplayContext {
 		int ddlRecordStatus = status;
 
 		if (Validator.isNull(displayTerms.getKeywords())) {
-			recordSearch.setResultsAndTotal(
+			recordSearchContainer.setResultsAndTotal(
 				() -> DDLRecordLocalServiceUtil.getRecords(
 					_ddlRecordSet.getRecordSetId(), ddlRecordStatus,
-					recordSearch.getStart(), recordSearch.getEnd(),
-					recordSearch.getOrderByComparator()),
+					recordSearchContainer.getStart(),
+					recordSearchContainer.getEnd(),
+					recordSearchContainer.getOrderByComparator()),
 				DDLRecordLocalServiceUtil.getRecordsCount(
 					_ddlRecordSet.getRecordSetId(), ddlRecordStatus));
 		}
 		else {
 			SearchContext searchContext = _getSearchContext(
-				recordSearch, ddlRecordStatus);
+				recordSearchContainer, ddlRecordStatus);
 
-			recordSearch.setResultsAndTotal(
+			recordSearchContainer.setResultsAndTotal(
 				DDLRecordLocalServiceUtil.searchDDLRecords(searchContext));
 		}
 
 		if (!_user.isGuestUser()) {
-			recordSearch.setRowChecker(
+			recordSearchContainer.setRowChecker(
 				new EmptyOnClickRowChecker(_liferayPortletResponse));
 		}
 
-		return recordSearch;
-	}
-
-	public String getSearchActionURL() {
-		return PortletURLBuilder.createRenderURL(
-			_liferayPortletResponse
-		).setMVCPath(
-			_getMVCPath()
-		).setRedirect(
-			PortalUtil.getCurrentURL(_liferayPortletRequest)
-		).setParameter(
-			"recordSetId", _ddlRecordSet.getRecordSetId()
-		).buildString();
+		return recordSearchContainer;
 	}
 
 	public String getSearchContainerId() {
@@ -453,7 +441,7 @@ public class DDLViewRecordsDisplayContext {
 	}
 
 	public int getTotalItems() throws PortalException {
-		SearchContainer<?> searchContainer = getSearch();
+		SearchContainer<?> searchContainer = getSearchContainer();
 
 		return searchContainer.getTotal();
 	}
@@ -510,17 +498,6 @@ public class DDLViewRecordsDisplayContext {
 		return !_user.isGuestUser();
 	}
 
-	protected List<DropdownItem> getFilterNavigationDropdownItems() {
-		return DropdownItemListBuilder.add(
-			dropdownItem -> {
-				dropdownItem.setActive(true);
-				dropdownItem.setHref(getPortletURL(), "navigation", "all");
-				dropdownItem.setLabel(
-					LanguageUtil.get(_ddlRequestHelper.getRequest(), "all"));
-			}
-		).build();
-	}
-
 	protected String getKeywords() {
 		return ParamUtil.getString(_liferayPortletRequest, "keywords");
 	}
@@ -534,14 +511,6 @@ public class DDLViewRecordsDisplayContext {
 			dropdownItem.setLabel(
 				LanguageUtil.get(_ddlRequestHelper.getRequest(), orderByCol));
 		};
-	}
-
-	protected List<DropdownItem> getOrderByDropdownItems() {
-		return DropdownItemListBuilder.add(
-			getOrderByDropdownItem("create-date")
-		).add(
-			getOrderByDropdownItem("modified-date")
-		).build();
 	}
 
 	protected PermissionChecker getPermissionChecker() {
@@ -605,7 +574,7 @@ public class DDLViewRecordsDisplayContext {
 	}
 
 	private SearchContext _getSearchContext(
-		SearchContainer<DDLRecord> recordSearch, int status) {
+		SearchContainer<DDLRecord> recordSearchContainer, int status) {
 
 		SearchContext searchContext = SearchContextFactory.getInstance(
 			_ddlRequestHelper.getRequest());
@@ -614,9 +583,9 @@ public class DDLViewRecordsDisplayContext {
 		searchContext.setAttribute(
 			"recordSetId", _ddlRecordSet.getRecordSetId());
 		searchContext.setAttribute("recordSetScope", _ddlRecordSet.getScope());
-		searchContext.setEnd(recordSearch.getEnd());
+		searchContext.setEnd(recordSearchContainer.getEnd());
 		searchContext.setKeywords(getKeywords());
-		searchContext.setStart(recordSearch.getStart());
+		searchContext.setStart(recordSearchContainer.getStart());
 
 		return searchContext;
 	}

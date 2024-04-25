@@ -16,6 +16,11 @@ import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.asset.kernel.model.AssetTag;
 import com.liferay.asset.kernel.service.AssetTagLocalService;
 import com.liferay.asset.util.LinkedAssetEntryIdsUtil;
+import com.liferay.commerce.constants.CommerceWebKeys;
+import com.liferay.commerce.context.CommerceContext;
+import com.liferay.commerce.context.CommerceContextFactory;
+import com.liferay.commerce.context.CommerceContextThreadLocal;
+import com.liferay.commerce.context.CommerceGroupThreadLocal;
 import com.liferay.commerce.product.catalog.CPCatalogEntry;
 import com.liferay.commerce.product.configuration.CPDisplayLayoutConfiguration;
 import com.liferay.commerce.product.constants.CPConstants;
@@ -48,6 +53,7 @@ import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.petra.string.StringUtil;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
@@ -55,8 +61,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutFriendlyURLComposite;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.portlet.FriendlyURLResolver;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.GroupLocalService;
@@ -279,7 +283,7 @@ public class CPDefinitionAssetDisplayPageFriendlyURLResolver
 				className, classPK);
 
 			AssetDisplayPageConfiguration assetDisplayPageConfiguration =
-				ConfigurationProviderUtil.getSystemConfiguration(
+				_configurationProvider.getSystemConfiguration(
 					AssetDisplayPageConfiguration.class);
 
 			if ((assetEntry != null) &&
@@ -382,6 +386,25 @@ public class CPDefinitionAssetDisplayPageFriendlyURLResolver
 	private long _getCommerceAccountId(
 			long groupId, HttpServletRequest httpServletRequest)
 		throws PortalException {
+
+		CommerceContext commerceContext = _commerceContextFactory.create(
+			httpServletRequest);
+
+		httpServletRequest.setAttribute(
+			CommerceWebKeys.COMMERCE_CONTEXT, commerceContext);
+
+		try {
+			CommerceContextThreadLocal.set(commerceContext);
+
+			CommerceGroupThreadLocal.set(
+				_groupLocalService.fetchGroup(
+					commerceContext.getCommerceChannelGroupId()));
+		}
+		catch (PortalException portalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(portalException);
+			}
+		}
 
 		long commerceAccountId = AccountConstants.ACCOUNT_ENTRY_ID_GUEST;
 
@@ -551,6 +574,9 @@ public class CPDefinitionAssetDisplayPageFriendlyURLResolver
 
 	@Reference
 	private CommerceChannelLocalService _commerceChannelLocalService;
+
+	@Reference
+	private CommerceContextFactory _commerceContextFactory;
 
 	@Reference
 	private ConfigurationProvider _configurationProvider;

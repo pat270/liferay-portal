@@ -6,24 +6,35 @@
 package com.liferay.layout.service.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.fragment.constants.FragmentConstants;
+import com.liferay.fragment.model.FragmentCollection;
+import com.liferay.fragment.model.FragmentEntry;
+import com.liferay.fragment.service.FragmentCollectionLocalService;
+import com.liferay.fragment.service.FragmentEntryLocalService;
 import com.liferay.friendly.url.service.FriendlyURLEntryLocalServiceUtil;
+import com.liferay.layout.helper.LayoutCopyHelper;
+import com.liferay.layout.test.util.ContentLayoutTestUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
-import com.liferay.layout.util.LayoutCopyHelper;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.MasterLayoutException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
+import com.liferay.portal.kernel.model.LayoutPrototype;
+import com.liferay.portal.kernel.model.LayoutTypePortlet;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ClassNameLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
+import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.FriendlyURLNormalizer;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -32,9 +43,14 @@ import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
+import com.liferay.segments.service.SegmentsExperienceLocalService;
+import com.liferay.sites.kernel.util.Sites;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -52,12 +68,18 @@ public class LayoutLocalServiceTest {
 
 	@ClassRule
 	@Rule
-	public static final LiferayIntegrationTestRule liferayIntegrationTestRule =
-		new LiferayIntegrationTestRule();
+	public static final AggregateTestRule aggregateTestRule =
+		new AggregateTestRule(
+			new LiferayIntegrationTestRule(),
+			PermissionCheckerMethodTestRule.INSTANCE);
 
 	@Before
 	public void setUp() throws Exception {
 		_group = GroupTestUtil.addGroup();
+
+		_serviceContext = _getServiceContext(_group);
+
+		ServiceContextThreadLocal.pushServiceContext(_serviceContext);
 	}
 
 	@After
@@ -132,13 +154,13 @@ public class LayoutLocalServiceTest {
 			).build(),
 			false, null, layout1.getStyleBookEntryId(),
 			layout1.getFaviconFileEntryId(), layout1.getMasterLayoutPlid(),
-			new ServiceContext());
+			_serviceContext);
 
 		Layout layout2 = _layoutLocalService.addLayout(
 			TestPropsValues.getUserId(), _group.getGroupId(), false,
 			LayoutConstants.DEFAULT_PARENT_LAYOUT_ID, "friendly url 1", null,
 			RandomTestUtil.randomString(), LayoutConstants.TYPE_PORTLET, false,
-			false, null, new ServiceContext());
+			false, null, _serviceContext);
 
 		Assert.assertEquals(
 			layout1,
@@ -342,6 +364,49 @@ public class LayoutLocalServiceTest {
 	}
 
 	@Test
+	public void testSearch() throws Exception {
+		String name = RandomTestUtil.randomString();
+
+		Layout layout = LayoutTestUtil.addTypeContentLayout(_group, name);
+
+		FragmentCollection fragmentCollection =
+			_fragmentCollectionLocalService.addFragmentCollection(
+				TestPropsValues.getUserId(), _group.getGroupId(),
+				RandomTestUtil.randomString(), StringPool.BLANK,
+				_serviceContext);
+
+		String keyword = RandomTestUtil.randomString();
+
+		FragmentEntry fragmentEntry =
+			_fragmentEntryLocalService.addFragmentEntry(
+				TestPropsValues.getUserId(), _group.getGroupId(),
+				fragmentCollection.getFragmentCollectionId(),
+				"fragment-entry-key", RandomTestUtil.randomString(),
+				StringPool.BLANK, "<div>" + keyword + "</div>",
+				StringPool.BLANK, false, StringPool.BLANK, null, 0, false,
+				FragmentConstants.TYPE_COMPONENT, null,
+				WorkflowConstants.STATUS_APPROVED, _serviceContext);
+
+		Layout draftLayout = layout.fetchDraftLayout();
+
+		ContentLayoutTestUtil.addFragmentEntryLinkToLayout(
+			null, fragmentEntry.getCss(), fragmentEntry.getConfiguration(),
+			fragmentEntry.getFragmentEntryId(), fragmentEntry.getHtml(),
+			fragmentEntry.getJs(), draftLayout,
+			fragmentEntry.getFragmentEntryKey(),
+			_segmentsExperienceLocalService.fetchDefaultSegmentsExperienceId(
+				layout.getPlid()),
+			fragmentEntry.getType());
+
+		ContentLayoutTestUtil.publishLayout(draftLayout, layout);
+
+		_assertSearch(keyword, name, true, 0);
+		_assertSearch(keyword, name, false, 1);
+		_assertSearch(name, name, true, 1);
+		_assertSearch(name, name, false, 1);
+	}
+
+	@Test
 	public void testUpdateDraftLayoutAfterOriginalLayoutUpdatesWithNewFriendlyURL()
 		throws Exception {
 
@@ -358,7 +423,7 @@ public class LayoutLocalServiceTest {
 			).build(),
 			false, null, layout.getStyleBookEntryId(),
 			layout.getFaviconFileEntryId(), layout.getMasterLayoutPlid(),
-			new ServiceContext());
+			_serviceContext);
 
 		Layout draftLayout = layout.fetchDraftLayout();
 
@@ -371,7 +436,40 @@ public class LayoutLocalServiceTest {
 			draftLayout.isHidden(), draftLayout.getFriendlyURLMap(), false,
 			null, draftLayout.getStyleBookEntryId(),
 			draftLayout.getFaviconFileEntryId(),
-			draftLayout.getMasterLayoutPlid(), new ServiceContext());
+			draftLayout.getMasterLayoutPlid(), _serviceContext);
+	}
+
+	@Test
+	public void testUpdateFriendlyURLMap() throws Exception {
+		Layout layout = LayoutTestUtil.addTypePortletLayout(_group);
+
+		long userId = layout.getUserId();
+
+		layout.setUserId(-1);
+
+		layout = _layoutLocalService.updateLayout(layout);
+
+		Map<Locale, String> friendlyURLMap = layout.getFriendlyURLMap();
+
+		String friendlyURL = _friendlyURLNormalizer.normalizeWithEncoding(
+			StringPool.SLASH + RandomTestUtil.randomString());
+
+		friendlyURLMap.put(LocaleUtil.GERMANY, friendlyURL);
+
+		ServiceContext serviceContext = new ServiceContext();
+
+		serviceContext.setUserId(userId);
+
+		layout = _layoutLocalService.updateLayout(
+			_group.getGroupId(), layout.isPrivateLayout(), layout.getLayoutId(),
+			layout.getParentLayoutId(), layout.getNameMap(),
+			layout.getTitleMap(), layout.getDescriptionMap(),
+			layout.getKeywordsMap(), layout.getRobotsMap(), layout.getType(),
+			layout.isHidden(), friendlyURLMap, layout.getIconImage(), null, 0,
+			0, 0, serviceContext);
+
+		Assert.assertEquals(
+			friendlyURL, layout.getFriendlyURL(LocaleUtil.GERMANY));
 	}
 
 	@Test
@@ -402,6 +500,32 @@ public class LayoutLocalServiceTest {
 		Assert.assertEquals("/home", layout.getFriendlyURL(LocaleUtil.US));
 	}
 
+	@Test
+	public void testUpdateLookAndFeel() throws Exception {
+		Layout layout = LayoutTestUtil.addTypePortletLayout(_group);
+
+		layout = _layoutLocalService.updateLookAndFeel(
+			_group.getGroupId(), false, layout.getLayoutId(),
+			"test_WAR_testtheme", "01", StringPool.BLANK);
+
+		Assert.assertEquals(StringPool.BLANK, layout.getCss());
+		Assert.assertEquals("01", layout.getColorSchemeId());
+		Assert.assertEquals("test_WAR_testtheme", layout.getThemeId());
+
+		LayoutTypePortlet layoutTypePortlet =
+			(LayoutTypePortlet)layout.getLayoutType();
+
+		layoutTypePortlet.setLayoutTemplateId(
+			layout.getUserId(), "1_column", false);
+
+		layout = _layoutLocalService.updateLayout(layout);
+
+		layoutTypePortlet = (LayoutTypePortlet)layout.getLayoutType();
+
+		Assert.assertEquals(
+			"1_column", layoutTypePortlet.getLayoutTemplateId());
+	}
+
 	@Test(expected = MasterLayoutException.class)
 	public void testUpdateMasterLayoutWithInvalidPlid1() throws Exception {
 		Layout layout = LayoutTestUtil.addTypeContentLayout(_group);
@@ -422,8 +546,67 @@ public class LayoutLocalServiceTest {
 			layout.getKeywordsMap(), layout.getRobotsMap(), layout.getType(),
 			layout.isHidden(), layout.getFriendlyURLMap(),
 			layout.getIconImage(), null, layout.getStyleBookEntryId(),
-			layout.getFaviconFileEntryId(), layout.getPlid(),
-			new ServiceContext());
+			layout.getFaviconFileEntryId(), layout.getPlid(), _serviceContext);
+	}
+
+	@Test
+	public void testUpdateTypeSettings() throws Exception {
+		LayoutPrototype layoutPrototype = LayoutTestUtil.addLayoutPrototype(
+			RandomTestUtil.randomString());
+
+		Layout layout = layoutPrototype.getLayout();
+
+		layout = _layoutLocalService.updateLayout(layout);
+
+		ServiceContext serviceContext = new ServiceContext();
+
+		serviceContext.setUserId(layout.getUserId());
+
+		_layoutLocalService.updateLayout(
+			layout.getGroupId(), layout.isPrivateLayout(), layout.getLayoutId(),
+			layout.getParentLayoutId(), layout.getNameMap(),
+			layout.getTitleMap(), layout.getDescriptionMap(),
+			layout.getKeywordsMap(), layout.getRobotsMap(), layout.getType(),
+			layout.isHidden(), layout.getFriendlyURLMap(),
+			layout.getIconImage(), null, 0, 0, 0, serviceContext);
+
+		Layout updatedLayout = _layoutLocalService.getLayout(layout.getPlid());
+
+		UnicodeProperties typeSettingsUnicodeProperties =
+			updatedLayout.getTypeSettingsProperties();
+
+		Assert.assertFalse(
+			"Updating layout prototype should not add property \"" +
+				Sites.LAYOUT_UPDATEABLE + "\"",
+			typeSettingsUnicodeProperties.containsKey(Sites.LAYOUT_UPDATEABLE));
+	}
+
+	private void _assertSearch(
+			String keyword, String name, boolean searchOnlyByName, int count)
+		throws Exception {
+
+		Assert.assertEquals(
+			count,
+			_layoutLocalService.searchCount(
+				_group, false, keyword, searchOnlyByName,
+				new String[] {LayoutConstants.TYPE_CONTENT}));
+
+		List<Layout> layouts = _layoutLocalService.search(
+			_group.getGroupId(), false, keyword, searchOnlyByName,
+			new String[] {LayoutConstants.TYPE_CONTENT}, -1, -1, null);
+
+		Assert.assertEquals(layouts.toString(), count, layouts.size());
+
+		if (count == 1) {
+			Layout layout = layouts.get(0);
+
+			Assert.assertEquals(layout.getName(LocaleUtil.getDefault()), name);
+		}
+	}
+
+	private ServiceContext _getServiceContext(Group group) throws Exception {
+		return ServiceContextTestUtil.getServiceContext(
+			group, TestPropsValues.getUserId());
 	}
 
 	private void _testDeleteLayouts(boolean system) throws Exception {
@@ -431,13 +614,22 @@ public class LayoutLocalServiceTest {
 		LayoutTestUtil.addTypeContentLayout(_group, true, system);
 
 		_layoutLocalService.deleteLayouts(
-			_group.getGroupId(), true, new ServiceContext());
+			_group.getGroupId(), true, _serviceContext);
 		_layoutLocalService.deleteLayouts(
-			_group.getGroupId(), false, new ServiceContext());
+			_group.getGroupId(), false, _serviceContext);
 
 		Assert.assertEquals(
 			0, _layoutLocalService.getLayoutsCount(_group.getGroupId()));
 	}
+
+	@Inject
+	private FragmentCollectionLocalService _fragmentCollectionLocalService;
+
+	@Inject
+	private FragmentEntryLocalService _fragmentEntryLocalService;
+
+	@Inject
+	private FriendlyURLNormalizer _friendlyURLNormalizer;
 
 	@DeleteAfterTestRun
 	private Group _group;
@@ -450,5 +642,10 @@ public class LayoutLocalServiceTest {
 
 	@Inject
 	private Portal _portal;
+
+	@Inject
+	private SegmentsExperienceLocalService _segmentsExperienceLocalService;
+
+	private ServiceContext _serviceContext;
 
 }

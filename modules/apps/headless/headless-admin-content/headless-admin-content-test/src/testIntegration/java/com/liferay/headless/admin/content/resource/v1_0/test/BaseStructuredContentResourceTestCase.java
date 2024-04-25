@@ -27,15 +27,15 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.search.test.util.SearchTestRule;
@@ -61,8 +61,6 @@ import java.util.Set;
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-
-import org.apache.commons.lang.time.DateUtils;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -210,7 +208,7 @@ public abstract class BaseStructuredContentResourceTestCase {
 			structuredContentResource.getSiteStructuredContentsPage(
 				siteId, null, null, null, null, Pagination.of(1, 10), null);
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if (irrelevantSiteId != null) {
 			StructuredContent irrelevantStructuredContent =
@@ -218,13 +216,13 @@ public abstract class BaseStructuredContentResourceTestCase {
 					irrelevantSiteId, randomIrrelevantStructuredContent());
 
 			page = structuredContentResource.getSiteStructuredContentsPage(
-				irrelevantSiteId, null, null, null, null, Pagination.of(1, 2),
-				null);
+				irrelevantSiteId, null, null, null, null,
+				Pagination.of(1, (int)totalCount + 1), null);
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantStructuredContent),
+			assertContains(
+				irrelevantStructuredContent,
 				(List<StructuredContent>)page.getItems());
 			assertValid(
 				page,
@@ -243,11 +241,12 @@ public abstract class BaseStructuredContentResourceTestCase {
 		page = structuredContentResource.getSiteStructuredContentsPage(
 			siteId, null, null, null, null, Pagination.of(1, 10), null);
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(structuredContent1, structuredContent2),
-			(List<StructuredContent>)page.getItems());
+		assertContains(
+			structuredContent1, (List<StructuredContent>)page.getItems());
+		assertContains(
+			structuredContent2, (List<StructuredContent>)page.getItems());
 		assertValid(
 			page, testGetSiteStructuredContentsPage_getExpectedActions(siteId));
 	}
@@ -365,6 +364,13 @@ public abstract class BaseStructuredContentResourceTestCase {
 
 		Long siteId = testGetSiteStructuredContentsPage_getSiteId();
 
+		Page<StructuredContent> structuredContentPage =
+			structuredContentResource.getSiteStructuredContentsPage(
+				siteId, null, null, null, null, null, null);
+
+		int totalCount = GetterUtil.getInteger(
+			structuredContentPage.getTotalCount());
+
 		StructuredContent structuredContent1 =
 			testGetSiteStructuredContentsPage_addStructuredContent(
 				siteId, randomStructuredContent());
@@ -377,36 +383,84 @@ public abstract class BaseStructuredContentResourceTestCase {
 			testGetSiteStructuredContentsPage_addStructuredContent(
 				siteId, randomStructuredContent());
 
-		Page<StructuredContent> page1 =
-			structuredContentResource.getSiteStructuredContentsPage(
-				siteId, null, null, null, null, Pagination.of(1, 2), null);
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<StructuredContent> structuredContents1 =
-			(List<StructuredContent>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			structuredContents1.toString(), 2, structuredContents1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<StructuredContent> page1 =
+				structuredContentResource.getSiteStructuredContentsPage(
+					siteId, null, null, null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		Page<StructuredContent> page2 =
-			structuredContentResource.getSiteStructuredContentsPage(
-				siteId, null, null, null, null, Pagination.of(2, 2), null);
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(3, page2.getTotalCount());
+			assertContains(
+				structuredContent1, (List<StructuredContent>)page1.getItems());
 
-		List<StructuredContent> structuredContents2 =
-			(List<StructuredContent>)page2.getItems();
+			Page<StructuredContent> page2 =
+				structuredContentResource.getSiteStructuredContentsPage(
+					siteId, null, null, null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		Assert.assertEquals(
-			structuredContents2.toString(), 1, structuredContents2.size());
+			assertContains(
+				structuredContent2, (List<StructuredContent>)page2.getItems());
 
-		Page<StructuredContent> page3 =
-			structuredContentResource.getSiteStructuredContentsPage(
-				siteId, null, null, null, null, Pagination.of(1, 3), null);
+			Page<StructuredContent> page3 =
+				structuredContentResource.getSiteStructuredContentsPage(
+					siteId, null, null, null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(
-				structuredContent1, structuredContent2, structuredContent3),
-			(List<StructuredContent>)page3.getItems());
+			assertContains(
+				structuredContent3, (List<StructuredContent>)page3.getItems());
+		}
+		else {
+			Page<StructuredContent> page1 =
+				structuredContentResource.getSiteStructuredContentsPage(
+					siteId, null, null, null, null,
+					Pagination.of(1, totalCount + 2), null);
+
+			List<StructuredContent> structuredContents1 =
+				(List<StructuredContent>)page1.getItems();
+
+			Assert.assertEquals(
+				structuredContents1.toString(), totalCount + 2,
+				structuredContents1.size());
+
+			Page<StructuredContent> page2 =
+				structuredContentResource.getSiteStructuredContentsPage(
+					siteId, null, null, null, null,
+					Pagination.of(2, totalCount + 2), null);
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<StructuredContent> structuredContents2 =
+				(List<StructuredContent>)page2.getItems();
+
+			Assert.assertEquals(
+				structuredContents2.toString(), 1, structuredContents2.size());
+
+			Page<StructuredContent> page3 =
+				structuredContentResource.getSiteStructuredContentsPage(
+					siteId, null, null, null, null,
+					Pagination.of(1, (int)totalCount + 3), null);
+
+			assertContains(
+				structuredContent1, (List<StructuredContent>)page3.getItems());
+			assertContains(
+				structuredContent2, (List<StructuredContent>)page3.getItems());
+			assertContains(
+				structuredContent3, (List<StructuredContent>)page3.getItems());
+		}
 	}
 
 	@Test
@@ -418,7 +472,7 @@ public abstract class BaseStructuredContentResourceTestCase {
 			(entityField, structuredContent1, structuredContent2) -> {
 				BeanTestUtil.setProperty(
 					structuredContent1, entityField.getName(),
-					DateUtils.addMinutes(new Date(), -2));
+					new Date(System.currentTimeMillis() - (2 * Time.MINUTE)));
 			});
 	}
 
@@ -534,23 +588,35 @@ public abstract class BaseStructuredContentResourceTestCase {
 			testGetSiteStructuredContentsPage_addStructuredContent(
 				siteId, structuredContent2);
 
+		Page<StructuredContent> page =
+			structuredContentResource.getSiteStructuredContentsPage(
+				siteId, null, null, null, null, null, null);
+
 		for (EntityField entityField : entityFields) {
 			Page<StructuredContent> ascPage =
 				structuredContentResource.getSiteStructuredContentsPage(
-					siteId, null, null, null, null, Pagination.of(1, 2),
+					siteId, null, null, null, null,
+					Pagination.of(1, (int)page.getTotalCount() + 1),
 					entityField.getName() + ":asc");
 
-			assertEquals(
-				Arrays.asList(structuredContent1, structuredContent2),
+			assertContains(
+				structuredContent1,
+				(List<StructuredContent>)ascPage.getItems());
+			assertContains(
+				structuredContent2,
 				(List<StructuredContent>)ascPage.getItems());
 
 			Page<StructuredContent> descPage =
 				structuredContentResource.getSiteStructuredContentsPage(
-					siteId, null, null, null, null, Pagination.of(1, 2),
+					siteId, null, null, null, null,
+					Pagination.of(1, (int)page.getTotalCount() + 1),
 					entityField.getName() + ":desc");
 
-			assertEquals(
-				Arrays.asList(structuredContent2, structuredContent1),
+			assertContains(
+				structuredContent2,
+				(List<StructuredContent>)descPage.getItems());
+			assertContains(
+				structuredContent1,
 				(List<StructuredContent>)descPage.getItems());
 		}
 	}
@@ -593,11 +659,13 @@ public abstract class BaseStructuredContentResourceTestCase {
 			new GraphQLField("items", getGraphQLFields()),
 			new GraphQLField("page"), new GraphQLField("totalCount"));
 
+		// No namespace
+
 		JSONObject structuredContentsJSONObject = JSONUtil.getValueAsJSONObject(
 			invokeGraphQLQuery(graphQLField), "JSONObject/data",
 			"JSONObject/structuredContents");
 
-		Assert.assertEquals(0, structuredContentsJSONObject.get("totalCount"));
+		long totalCount = structuredContentsJSONObject.getLong("totalCount");
 
 		StructuredContent structuredContent1 =
 			testGraphQLGetSiteStructuredContentsPage_addStructuredContent();
@@ -609,10 +677,37 @@ public abstract class BaseStructuredContentResourceTestCase {
 			"JSONObject/structuredContents");
 
 		Assert.assertEquals(
-			2, structuredContentsJSONObject.getLong("totalCount"));
+			totalCount + 2, structuredContentsJSONObject.getLong("totalCount"));
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(structuredContent1, structuredContent2),
+		assertContains(
+			structuredContent1,
+			Arrays.asList(
+				StructuredContentSerDes.toDTOs(
+					structuredContentsJSONObject.getString("items"))));
+		assertContains(
+			structuredContent2,
+			Arrays.asList(
+				StructuredContentSerDes.toDTOs(
+					structuredContentsJSONObject.getString("items"))));
+
+		// Using the namespace headlessAdminContent_v1_0
+
+		structuredContentsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessAdminContent_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessAdminContent_v1_0",
+			"JSONObject/structuredContents");
+
+		Assert.assertEquals(
+			totalCount + 2, structuredContentsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			structuredContent1,
+			Arrays.asList(
+				StructuredContentSerDes.toDTOs(
+					structuredContentsJSONObject.getString("items"))));
+		assertContains(
+			structuredContent2,
 			Arrays.asList(
 				StructuredContentSerDes.toDTOs(
 					structuredContentsJSONObject.getString("items"))));
@@ -720,6 +815,8 @@ public abstract class BaseStructuredContentResourceTestCase {
 		StructuredContent structuredContent =
 			testGraphQLGetStructuredContentByVersion_addStructuredContent();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				structuredContent,
@@ -742,6 +839,34 @@ public abstract class BaseStructuredContentResourceTestCase {
 								getGraphQLFields())),
 						"JSONObject/data",
 						"Object/structuredContentByVersion"))));
+
+		// Using the namespace headlessAdminContent_v1_0
+
+		Assert.assertTrue(
+			equals(
+				structuredContent,
+				StructuredContentSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessAdminContent_v1_0",
+								new GraphQLField(
+									"structuredContentByVersion",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"structuredContentId",
+												structuredContent.getId());
+
+											put(
+												"version",
+												testGraphQLGetStructuredContentByVersion_getVersion());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessAdminContent_v1_0",
+						"Object/structuredContentByVersion"))));
 	}
 
 	protected Double testGraphQLGetStructuredContentByVersion_getVersion()
@@ -758,6 +883,8 @@ public abstract class BaseStructuredContentResourceTestCase {
 		Long irrelevantStructuredContentId = RandomTestUtil.randomLong();
 		Double irrelevantVersion = RandomTestUtil.randomDouble();
 
+		// No namespace
+
 		Assert.assertEquals(
 			"Not Found",
 			JSONUtil.getValueAsString(
@@ -773,6 +900,28 @@ public abstract class BaseStructuredContentResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessAdminContent_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessAdminContent_v1_0",
+						new GraphQLField(
+							"structuredContentByVersion",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"structuredContentId",
+										irrelevantStructuredContentId);
+									put("version", irrelevantVersion);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -795,7 +944,7 @@ public abstract class BaseStructuredContentResourceTestCase {
 			structuredContentResource.getStructuredContentsVersionsPage(
 				structuredContentId);
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if (irrelevantStructuredContentId != null) {
 			StructuredContent irrelevantStructuredContent =
@@ -806,10 +955,10 @@ public abstract class BaseStructuredContentResourceTestCase {
 			page = structuredContentResource.getStructuredContentsVersionsPage(
 				irrelevantStructuredContentId);
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantStructuredContent),
+			assertContains(
+				irrelevantStructuredContent,
 				(List<StructuredContent>)page.getItems());
 			assertValid(
 				page,
@@ -828,11 +977,12 @@ public abstract class BaseStructuredContentResourceTestCase {
 		page = structuredContentResource.getStructuredContentsVersionsPage(
 			structuredContentId);
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(structuredContent1, structuredContent2),
-			(List<StructuredContent>)page.getItems());
+		assertContains(
+			structuredContent1, (List<StructuredContent>)page.getItems());
+		assertContains(
+			structuredContent2, (List<StructuredContent>)page.getItems());
 		assertValid(
 			page,
 			testGetStructuredContentsVersionsPage_getExpectedActions(
@@ -1123,6 +1273,14 @@ public abstract class BaseStructuredContentResourceTestCase {
 
 			if (Objects.equals("numberOfComments", additionalAssertFieldName)) {
 				if (structuredContent.getNumberOfComments() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("permissions", additionalAssertFieldName)) {
+				if (structuredContent.getPermissions() == null) {
 					valid = false;
 				}
 
@@ -1563,6 +1721,17 @@ public abstract class BaseStructuredContentResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("permissions", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						structuredContent1.getPermissions(),
+						structuredContent2.getPermissions())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("priority", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						structuredContent1.getPriority(),
@@ -1727,6 +1896,10 @@ public abstract class BaseStructuredContentResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -1877,22 +2050,20 @@ public abstract class BaseStructuredContentResourceTestCase {
 
 		if (entityFieldName.equals("dateCreated")) {
 			if (operator.equals("between")) {
+				Date date = structuredContent.getDateCreated();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							structuredContent.getDateCreated(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							structuredContent.getDateCreated(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -1911,22 +2082,20 @@ public abstract class BaseStructuredContentResourceTestCase {
 
 		if (entityFieldName.equals("dateModified")) {
 			if (operator.equals("between")) {
+				Date date = structuredContent.getDateModified();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							structuredContent.getDateModified(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							structuredContent.getDateModified(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -1945,22 +2114,20 @@ public abstract class BaseStructuredContentResourceTestCase {
 
 		if (entityFieldName.equals("datePublished")) {
 			if (operator.equals("between")) {
+				Date date = structuredContent.getDatePublished();
+
 				sb = new StringBundler();
 
 				sb.append("(");
 				sb.append(entityFieldName);
 				sb.append(" gt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							structuredContent.getDatePublished(), -2)));
+					_dateFormat.format(date.getTime() - (2 * Time.SECOND)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(
-							structuredContent.getDatePublished(), 2)));
+					_dateFormat.format(date.getTime() + (2 * Time.SECOND)));
 				sb.append(")");
 			}
 			else {
@@ -2185,6 +2352,11 @@ public abstract class BaseStructuredContentResourceTestCase {
 			sb.append(String.valueOf(structuredContent.getNumberOfComments()));
 
 			return sb.toString();
+		}
+
+		if (entityFieldName.equals("permissions")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
 		}
 
 		if (entityFieldName.equals("priority")) {
@@ -2418,9 +2590,9 @@ public abstract class BaseStructuredContentResourceTestCase {
 	}
 
 	protected StructuredContentResource structuredContentResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

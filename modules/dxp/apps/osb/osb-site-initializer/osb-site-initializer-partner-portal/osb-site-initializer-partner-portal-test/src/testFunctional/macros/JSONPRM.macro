@@ -1,6 +1,7 @@
 definition {
 
-	macro addAccount {
+	@summary = "Default summary"
+	macro addAccount() {
 		if (!(isSet(accountName))) {
 			var accountName = "Company Name 1";
 		}
@@ -8,7 +9,8 @@ definition {
 		JSONPRMAPI.addAccountEntry(accountName = ${accountName});
 	}
 
-	macro changeClaimStatus {
+	@summary = "Default summary"
+	macro changeClaimStatus(userEmailAddress = null,claimId = null,claimStatus = null) {
 		var statusKey = StringUtil.lowerCaseFirstLetter(${claimStatus});
 
 		var statusKey = StringUtil.replace(${statusKey}, " ", "");
@@ -19,7 +21,8 @@ definition {
 			userEmailAddress = ${userEmailAddress});
 	}
 
-	macro changeMDFStatus {
+	@summary = "Default summary"
+	macro changeMDFStatus(mdfStatus = null,userEmailAddress = null,staticRequestId = null) {
 		var statusKey = StringUtil.replace(${mdfStatus}, " ", "");
 
 		var statusKey = StringUtil.lowerCaseFirstLetter(${statusKey});
@@ -28,9 +31,18 @@ definition {
 			requestId = ${staticRequestId},
 			statusKey = ${statusKey},
 			userEmailAddress = ${userEmailAddress});
+
+		if (${mdfStatus} == "Approved") {
+			var activityListId = JSONPRMAPI.getMDFRequestActivityId(requestId = ${staticRequestId});
+
+			for (var activityId : list ${activityListId}) {
+				JSONPRMAPI.approveActivity(activityId = ${activityId});
+			}
+		}
 	}
 
-	macro createMDFRequest {
+	@summary = "Default summary"
+	macro createMDFRequest(secondBudgetValueList = null,secondActivityName = null) {
 		var totalCostOfExpense = 0;
 
 		if (!(isSet(userEmailAddress))) {
@@ -50,7 +62,7 @@ definition {
 		}
 
 		if (!(isSet(campaignName))) {
-			var campaignName = "Campaign Name";
+			var campaignName = "Campaign Name 1";
 		}
 
 		if (!(isSet(campaignDescription))) {
@@ -101,10 +113,10 @@ definition {
 		var marketingDirectorReviewCondition = MathUtil.isGreaterThan(${totalMDFRequestAmount}, ${marketingDirectorReviewValue});
 
 		if (${marketingDirectorReviewCondition} == "true") {
-			var mdfRequestStatus = "Marketing Director Review";
+			var mdfRequestStatus = "MarketingDirectorReview";
 		}
 		else {
-			var mdfRequestStatus = "Pending Marketing Review";
+			var mdfRequestStatus = "PendingMarketingReview";
 		}
 
 		var mdfRequestStatusKey = StringUtil.lowerCaseFirstLetter(${mdfRequestStatus});
@@ -169,6 +181,7 @@ definition {
 
 		for (var budgetValue : list ${budgetValueList}) {
 			JSONPRMAPI.addBudget(
+				activityExternalReferenceCode = ${activityExternalReferenceCode},
 				activityId = ${activityId},
 				budgetValue = ${budgetValue},
 				expenseOption = ${expenseOption});
@@ -210,6 +223,7 @@ definition {
 
 			for (var secondBudgetValue : list ${secondBudgetValueList}) {
 				JSONPRMAPI.addBudget(
+					activityExternalReferenceCode = ${activityExternalReferenceCode},
 					activityId = ${secondActivityId},
 					budgetValue = ${secondBudgetValue},
 					expenseOption = ${expenseOption});
@@ -219,7 +233,8 @@ definition {
 		return ${requestId};
 	}
 
-	macro updateAccount {
+	@summary = "Default summary"
+	macro updateAccount() {
 		if (!(isSet(accountName))) {
 			var accountName = "Company Name 1";
 		}

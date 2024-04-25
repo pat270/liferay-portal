@@ -11,17 +11,16 @@ import com.deque.html.axecore.selenium.AxeBuilder;
 import com.deque.html.axecore.selenium.AxeReporter;
 
 import com.liferay.poshi.core.PoshiGetterUtil;
+import com.liferay.poshi.core.PoshiProperties;
 import com.liferay.poshi.core.selenium.LiferaySelenium;
 import com.liferay.poshi.core.util.CharPool;
 import com.liferay.poshi.core.util.FileUtil;
 import com.liferay.poshi.core.util.GetterUtil;
 import com.liferay.poshi.core.util.OSDetector;
-import com.liferay.poshi.core.util.PoshiProperties;
 import com.liferay.poshi.core.util.StringPool;
 import com.liferay.poshi.core.util.StringUtil;
 import com.liferay.poshi.core.util.Validator;
 import com.liferay.poshi.runner.exception.ElementNotFoundPoshiRunnerException;
-import com.liferay.poshi.runner.exception.JavaScriptException;
 import com.liferay.poshi.runner.exception.PoshiRunnerWarningException;
 import com.liferay.poshi.runner.util.AntCommands;
 import com.liferay.poshi.runner.util.ArchiveUtil;
@@ -76,8 +75,6 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 
 import junit.framework.TestCase;
-
-import net.jsourcerer.webdriver.jserrorcollector.JavaScriptError;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -145,9 +142,18 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 
 		options.deleteAllCookies();
 
-		WebDriver.Window window = options.window();
+		String browserResolution = poshiProperties.browserResolution;
 
-		window.setSize(new Dimension(1280, 1040));
+		if (Validator.isNotNull(browserResolution)) {
+			WebDriver.Window window = options.window();
+
+			if (browserResolution.equals("maximize")) {
+				window.maximize();
+			}
+			else {
+				window.setSize(_getDimension(browserResolution));
+			}
+		}
 
 		try {
 			webDriver.get(browserURL);
@@ -212,8 +218,10 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 	}
 
 	@Override
-	public void assertAccessible() throws Exception {
-		assertElementAccessible(null);
+	public void assertAccessible(List<String> ignorableImpacts)
+		throws Exception {
+
+		assertElementAccessible(null, ignorableImpacts);
 	}
 
 	@Override
@@ -244,20 +252,20 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 	}
 
 	@Override
-	public void assertAttributeNotPresent(String attribute, String locator)
+	public void assertAttributeNotPresent(String locator, String attribute)
 		throws Exception {
 
-		if (isAttributePresent(attribute, locator)) {
+		if (isAttributePresent(locator, attribute)) {
 			throw new Exception(
 				"Unexpected attribute \"" + attribute + "\" is present");
 		}
 	}
 
 	@Override
-	public void assertAttributePresent(String attribute, String locator)
+	public void assertAttributePresent(String locator, String attribute)
 		throws Exception {
 
-		if (!isAttributePresent(attribute, locator)) {
+		if (!isAttributePresent(locator, attribute)) {
 			throw new Exception(
 				"Expected attribute \"" + attribute + "\" is not present");
 		}
@@ -265,7 +273,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 
 	@Override
 	public void assertAttributeValue(
-			String attribute, String locator, String pattern)
+			String locator, String attribute, String pattern)
 		throws Exception {
 
 		WebElement webElement = getWebElement(locator);
@@ -341,7 +349,10 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 	}
 
 	@Override
-	public void assertElementAccessible(String locator) throws Exception {
+	public void assertElementAccessible(
+			String locator, List<String> ignorableImpacts)
+		throws Exception {
+
 		AxeBuilder axeBuilder = new AxeBuilder();
 
 		axeBuilder.withTags(
@@ -359,11 +370,36 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 
 		List<Rule> violations = results.getViolations();
 
-		if (!violations.isEmpty()) {
-			AxeReporter.getReadableAxeResults("analyze", this, violations);
+		if (violations.isEmpty()) {
+			System.out.println("No accessiblity violations were found");
 
-			throw new Exception(AxeReporter.getAxeResultString());
+			return;
 		}
+
+		List<Rule> rules = new ArrayList<>();
+
+		if (ignorableImpacts == null) {
+			rules.addAll(violations);
+		}
+		else {
+			for (Rule violation : violations) {
+				if (ignorableImpacts.contains(violation.getImpact())) {
+					continue;
+				}
+
+				rules.add(violation);
+			}
+		}
+
+		if (rules.isEmpty()) {
+			System.out.println("No accessiblity violations were found");
+
+			return;
+		}
+
+		AxeReporter.getReadableAxeResults("analyze", this, rules);
+
+		throw new Exception(AxeReporter.getAxeResultString());
 	}
 
 	@Override
@@ -412,7 +448,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 	public void assertHTMLSourceTextNotPresent(String value) throws Exception {
 		if (isHTMLSourceTextPresent(value)) {
 			throw new Exception(
-				"Pattern \"" + value + "\" does exists in the HTML source");
+				"Pattern \"" + value + "\" exists in the HTML source");
 		}
 	}
 
@@ -420,7 +456,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 	public void assertHTMLSourceTextPresent(String value) throws Exception {
 		if (!isHTMLSourceTextPresent(value)) {
 			throw new Exception(
-				"Pattern \"" + value + "\" does not exists in the HTML source");
+				"Pattern \"" + value + "\" does not exist in the HTML source");
 		}
 	}
 
@@ -438,66 +474,6 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 	@Override
 	public void assertJavaScriptErrors(String ignoreJavaScriptError)
 		throws Exception {
-
-		if (!poshiProperties.testAssertJavascriptErrors) {
-			return;
-		}
-
-		String pageSource = null;
-
-		try {
-			pageSource = getPageSource();
-		}
-		catch (Exception exception) {
-			WebDriver.TargetLocator targetLocator = switchTo();
-
-			targetLocator.window(_defaultWindowHandle);
-
-			pageSource = getPageSource();
-		}
-
-		if (pageSource == null) {
-			System.out.println("Unable to obtain HTML source");
-		}
-		else if (pageSource.contains(
-					"html id=\"feedHandler\" xmlns=" +
-						"\"http://www.w3.org/1999/xhtml\"")) {
-
-			return;
-		}
-
-		JavaScriptException javaScriptException = null;
-
-		List<JavaScriptError> javaScriptErrors = JavaScriptError.readErrors(
-			getWrappedWebDriver("//body"));
-
-		for (JavaScriptError javaScriptError : javaScriptErrors) {
-			String javaScriptErrorValue = javaScriptError.toString();
-
-			if ((Validator.isNotNull(ignoreJavaScriptError) &&
-				 javaScriptErrorValue.contains(ignoreJavaScriptError)) ||
-				LiferaySeleniumUtil.isInIgnoreErrorsFile(
-					javaScriptErrorValue, "javascript")) {
-
-				continue;
-			}
-
-			String message = "JAVA_SCRIPT_ERROR: " + javaScriptErrorValue;
-
-			System.out.println(message);
-
-			if (javaScriptException == null) {
-				javaScriptException = new JavaScriptException(message);
-			}
-			else {
-				PoshiRunnerWarningException.addException(
-					new JavaScriptException(message));
-			}
-		}
-
-		if (javaScriptException != null) {
-			throw javaScriptException;
-		}
 	}
 
 	@Override
@@ -806,6 +782,17 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 		Condition valueCondition = getValueCondition(locator, pattern);
 
 		valueCondition.assertTrue();
+	}
+
+	@Override
+	public void assertValueMatches(String locator, String regex)
+		throws Exception {
+
+		assertElementPresent(locator);
+
+		Condition valueMatchCondition = getValueMatchCondition(locator, regex);
+
+		valueMatchCondition.assertTrue();
 	}
 
 	@Override
@@ -1379,6 +1366,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 		return LiferaySeleniumUtil.getNumberIncrement(value);
 	}
 
+	@Override
 	public String getOcularBaselineImageDirName() {
 		return _OCULAR_BASELINE_IMAGE_DIR_NAME;
 	}
@@ -1551,12 +1539,12 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 	}
 
 	@Override
-	public boolean isAttributeNotPresent(String attribute, String locator) {
-		return !isAttributePresent(attribute, locator);
+	public boolean isAttributeNotPresent(String locator, String attribute) {
+		return !isAttributePresent(locator, attribute);
 	}
 
 	@Override
-	public boolean isAttributePresent(String attribute, String locator) {
+	public boolean isAttributePresent(String locator, String attribute) {
 		WebElement webElement = getWebElement(locator);
 
 		JavascriptExecutor javascriptExecutor =
@@ -2239,6 +2227,19 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 	}
 
 	@Override
+	public Map<String, Object> returnCDPCommand(
+		String commandName, Map<String, Object> commandParameters) {
+
+		Augmenter augmenter = new Augmenter();
+
+		WebDriver webDriver = augmenter.augment(getWebDriver());
+
+		HasCdp hasCdp = (HasCdp)webDriver;
+
+		return hasCdp.executeCdpCommand(commandName, commandParameters);
+	}
+
+	@Override
 	public void rightClick(String locator) {
 		WebElement webElement = getWebElement(locator);
 
@@ -2312,7 +2313,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 			saveScreenshot(fileName);
 		}
 		catch (UnhandledAlertException unhandledAlertException) {
-			LiferaySeleniumUtil.captureScreen(fileName);
+			System.out.println("Unable to save screenshot due to alert");
 		}
 	}
 
@@ -2547,6 +2548,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 		_primaryTestSuiteName = primaryTestSuiteName;
 	}
 
+	@Override
 	public void setTestName(String testName) {
 		_testName = testName;
 	}
@@ -2575,12 +2577,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 
 		WebDriver.Window window = options.window();
 
-		String[] sizeCoordinates = StringUtil.split(size, ",");
-
-		int x = GetterUtil.getInteger(sizeCoordinates[0]);
-		int y = GetterUtil.getInteger(sizeCoordinates[1]);
-
-		window.setSize(new Dimension(x, y));
+		window.setSize(_getDimension(size));
 	}
 
 	@Override
@@ -3366,7 +3363,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 	public void waitForPopUp(String windowID, String timeout) {
 		int wait = 0;
 
-		if (timeout.equals("")) {
+		if (timeout.equals("") || timeout.equals("null")) {
 			wait = 30;
 		}
 		else {
@@ -4312,6 +4309,30 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 		};
 	}
 
+	protected Condition getValueMatchCondition(String locator, String regex) {
+		return new Condition() {
+
+			@Override
+			public void assertTrue() throws Exception {
+				if (!evaluate()) {
+					String message = StringUtil.combine(
+						"Actual value \"", getElementValue(locator), "\" at \"",
+						locator, "\"", "\" does not match pattern\"", regex);
+
+					throw new Exception(message);
+				}
+			}
+
+			@Override
+			public boolean evaluate() throws Exception {
+				String value = getElementValue(locator);
+
+				return value.matches(regex);
+			}
+
+		};
+	}
+
 	protected int getViewportHeight() {
 		JavascriptExecutor javascriptExecutor =
 			(JavascriptExecutor)getWrappedWebDriver("//body");
@@ -4665,6 +4686,15 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 
 		private final String _message;
 
+	}
+
+	private Dimension _getDimension(String size) {
+		String[] sizeParts = StringUtil.split(size, "[\\D]+");
+
+		int x = GetterUtil.getInteger(sizeParts[0]);
+		int y = GetterUtil.getInteger(sizeParts[1]);
+
+		return new Dimension(x, y);
 	}
 
 	private static final String _OCULAR_BASELINE_IMAGE_DIR_NAME;

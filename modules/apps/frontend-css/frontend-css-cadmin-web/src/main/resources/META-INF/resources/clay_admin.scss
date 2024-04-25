@@ -33,6 +33,16 @@ html#{$cadmin-selector} {
 			position: static;
 		}
 
+		&.dialog-iframe-popup {
+			.portlet-body > .container-fluid {
+				padding-bottom: 65px;
+
+				@include media-breakpoint-down(sm) {
+					padding-bottom: 57px;
+				}
+			}
+		}
+
 		&.modal.show,
 		.modal.show {
 			display: block;
@@ -50,6 +60,10 @@ html#{$cadmin-selector} {
 
 			&.modal-dialog-sm {
 				max-width: $cadmin-modal-md;
+			}
+
+			.modal-content {
+				max-height: calc(100vh - 8px * 2);
 			}
 
 			.yui3-resize-handles-wrapper {
@@ -144,6 +158,35 @@ html#{$cadmin-selector} {
 
 		.user-icon-color-9 {
 			color: $user-icon-color-9;
+		}
+
+		// Autocomplete Input List
+
+		.yui3-aclist {
+			&-content {
+				background: $cadmin-white;
+				border: 1px solid #afafaf;
+				box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.58);
+			}
+
+			&-hidden {
+				visibility: hidden;
+			}
+
+			&-item {
+				padding: 2px 5px;
+
+				&-active {
+					background: #2647a0;
+					color: $cadmin-white;
+				}
+			}
+
+			&-list {
+				margin: 0;
+				overflow: hidden;
+				padding: 0;
+			}
 		}
 
 		// Taglib Move Boxes
@@ -383,6 +426,7 @@ html#{$cadmin-selector} {
 			pre.CodeMirror-line-like {
 				font-family: inherit;
 				margin: 0;
+				overflow: visible;
 				padding: 0 4px;
 				white-space: pre;
 			}
@@ -995,12 +1039,9 @@ html#{$cadmin-selector} {
 			left: 0;
 			margin: 0;
 			padding: 10px 24px;
+			position: fixed;
 			width: 100%;
 			z-index: $cadmin-zindex-sticky;
-
-			@include media-breakpoint-up(md) {
-				position: fixed;
-			}
 
 			.btn {
 				margin-left: 16px;
@@ -1063,4 +1104,14 @@ html#{$cadmin-selector} {
 		display: block;
 		position: static;
 	}
+}
+
+body {
+	/* stylelint-disable */
+	--control-menu-container-height: calc(
+		var(--change-tracking-indicator-height, 0px) +
+			var(--control-menu-height, 0px) +
+			var(--staging-indicator-height, 0px)
+	);
+	/* stylelint-enable */
 }

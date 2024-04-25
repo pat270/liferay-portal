@@ -1,0 +1,34 @@
+{
+	"actions": {
+		"delete": {
+		},
+		"get": {
+		},
+		"permissions": {
+		},
+		"update": {
+		}
+	},
+	"externalReferenceCode": "TESTOBJECTFOLDER1",
+	"label": {
+		"en_US": "Test Object Folder 1"
+	},
+	"name": "TestObjectFolder1",
+	"objectFolderItems": [
+		{
+			"linkedObjectDefinition": true,
+			"objectDefinition": {
+			},
+			"objectDefinitionExternalReferenceCode": "NONEXISTENTTESTOBJECTDEFINITION1",
+			"positionX": 50,
+			"positionY": 35
+		},
+		{
+			"linkedObjectDefinition": false,
+			"objectDefinition": null,
+			"objectDefinitionExternalReferenceCode": "NONEXISTENTTESTOBJECTDEFINITION2",
+			"positionX": 400,
+			"positionY": 92
+		}
+	]
+}

@@ -9,6 +9,7 @@ import com.liferay.commerce.model.CPDefinitionInventory;
 import com.liferay.commerce.product.exception.NoSuchCPDefinitionException;
 import com.liferay.commerce.product.model.CPDefinition;
 import com.liferay.commerce.product.service.CPDefinitionService;
+import com.liferay.commerce.service.CPDAvailabilityEstimateService;
 import com.liferay.commerce.service.CPDefinitionInventoryService;
 import com.liferay.headless.commerce.admin.catalog.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.dto.v1_0.ProductConfiguration;
@@ -20,7 +21,6 @@ import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.fields.NestedField;
 import com.liferay.portal.vulcan.fields.NestedFieldId;
-import com.liferay.portal.vulcan.fields.NestedFieldSupport;
 
 import javax.ws.rs.core.Response;
 
@@ -33,12 +33,12 @@ import org.osgi.service.component.annotations.ServiceScope;
  */
 @Component(
 	properties = "OSGI-INF/liferay/rest/v1_0/product-configuration.properties",
-	scope = ServiceScope.PROTOTYPE,
-	service = {NestedFieldSupport.class, ProductConfigurationResource.class}
+	property = "nested.field.support=true", scope = ServiceScope.PROTOTYPE,
+	service = ProductConfigurationResource.class
 )
 @CTAware
 public class ProductConfigurationResourceImpl
-	extends BaseProductConfigurationResourceImpl implements NestedFieldSupport {
+	extends BaseProductConfigurationResourceImpl {
 
 	@Override
 	public ProductConfiguration getProductByExternalReferenceCodeConfiguration(
@@ -70,7 +70,7 @@ public class ProductConfigurationResourceImpl
 
 		if (cpDefinition == null) {
 			throw new NoSuchCPDefinitionException(
-				"Unable to find Product with ID: " + id);
+				"Unable to find product with ID " + id);
 		}
 
 		return _toProductConfiguration(cpDefinition.getCPDefinitionId());
@@ -97,6 +97,10 @@ public class ProductConfigurationResourceImpl
 			_cpDefinitionInventoryService, productConfiguration,
 			cpDefinition.getCPDefinitionId());
 
+		ProductConfigurationUtil.updateCPDAvailabilityEstimate(
+			_cpdAvailabilityEstimateService, productConfiguration,
+			cpDefinition.getCPDefinitionId());
+
 		Response.ResponseBuilder responseBuilder = Response.ok();
 
 		return responseBuilder.build();
@@ -112,11 +116,15 @@ public class ProductConfigurationResourceImpl
 
 		if (cpDefinition == null) {
 			throw new NoSuchCPDefinitionException(
-				"Unable to find Product with ID: " + id);
+				"Unable to find product with ID " + id);
 		}
 
 		ProductConfigurationUtil.updateCPDefinitionInventory(
 			_cpDefinitionInventoryService, productConfiguration,
+			cpDefinition.getCPDefinitionId());
+
+		ProductConfigurationUtil.updateCPDAvailabilityEstimate(
+			_cpdAvailabilityEstimateService, productConfiguration,
 			cpDefinition.getCPDefinitionId());
 
 		Response.ResponseBuilder responseBuilder = Response.ok();
@@ -132,6 +140,9 @@ public class ProductConfigurationResourceImpl
 				_dtoConverterRegistry, cpDefinitionId,
 				contextAcceptLanguage.getPreferredLocale(), null, null));
 	}
+
+	@Reference
+	private CPDAvailabilityEstimateService _cpdAvailabilityEstimateService;
 
 	@Reference
 	private CPDefinitionInventoryService _cpDefinitionInventoryService;

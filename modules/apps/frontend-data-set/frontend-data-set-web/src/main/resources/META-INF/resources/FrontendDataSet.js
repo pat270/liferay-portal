@@ -6,7 +6,12 @@
 import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {ClayPaginationBarWithBasicItems} from '@clayui/pagination-bar';
 import {useIsMounted, useThunk} from '@liferay/frontend-js-react-web';
-import {fetch, openToast} from 'frontend-js-web';
+import {
+	fetch,
+	loadClientExtensions,
+	loadModule,
+	openToast,
+} from 'frontend-js-web';
 import React, {
 	useCallback,
 	useEffect,
@@ -21,22 +26,19 @@ import ClayEmptyState from '@clayui/empty-state';
 
 import FrontendDataSetContext from './FrontendDataSetContext';
 import ManagementBar from './management_bar/ManagementBar';
-import CreationMenu from './management_bar/components/CreationMenu';
-import {
-	getFilterSelectedItemsLabel,
-	getOdataFilterString,
-} from './management_bar/components/filters/Filter';
+import CreationMenu from './management_bar/controls/CreationMenu';
+import {FILTER_IMPLEMENTATIONS} from './management_bar/controls/filters/Filter';
 import Modal from './modal/Modal';
 import SidePanel from './side_panel/SidePanel';
+import filterCreationActions from './utils/actionItems/filterCreationActions';
 import EVENTS from './utils/eventsDefinitions';
+import getRandomId from './utils/getRandomId';
 import {
 	formatItemChanges,
 	getCurrentItemUpdates,
-	getRandomId,
 	loadData,
 } from './utils/index';
 import {logError} from './utils/logError';
-import getJsModule from './utils/modules';
 import ViewsContext from './views/ViewsContext';
 import getViewComponent from './views/getViewComponent';
 import {VIEWS_ACTION_TYPES, viewsReducer} from './views/viewsReducer';
@@ -50,15 +52,17 @@ const FrontendDataSet = ({
 	apiURL,
 	appURL,
 	bulkActions,
-	creationMenu,
+	creationMenu: initialCreationMenu,
 	currentURL,
 	customDataRenderers,
+	customRenderers,
 	customViews,
 	customViewsEnabled,
 	emptyState,
 	filters: initialFilters,
 	formId,
 	formName,
+	header,
 	id,
 	inlineAddingSettings,
 	inlineEditingSettings,
@@ -80,13 +84,14 @@ const FrontendDataSet = ({
 	showPagination,
 	showSearch,
 	sidePanelId,
-	sorting: sortingProp,
+	sorts: sortsProp,
 	style,
 	uniformActionsDisplay,
 	views,
 }) => {
 	const wrapperRef = useRef(null);
 	const [componentLoading, setComponentLoading] = useState(false);
+	const [creationMenu, setCreationMenu] = useState(initialCreationMenu);
 	const [dataLoading, setDataLoading] = useState(!!apiURL);
 	const [dataSetSupportModalId] = useState(`support-modal-${getRandomId()}`);
 	const [dataSetSupportSidePanelId] = useState(
@@ -146,8 +151,13 @@ const FrontendDataSet = ({
 						filter.active = true;
 						filter.selectedData = preloadedData;
 
-						filter.odataFilterString = getOdataFilterString(filter);
-						filter.selectedItemsLabel = getFilterSelectedItemsLabel(
+						const filterImplementation =
+							FILTER_IMPLEMENTATIONS[filter.type];
+
+						filter.odataFilterString = filterImplementation.getOdataString(
+							filter
+						);
+						filter.selectedItemsLabel = filterImplementation.getSelectedItemsLabel(
 							filter
 						);
 					}
@@ -168,13 +178,13 @@ const FrontendDataSet = ({
 				activeView,
 				filters,
 				paginationDelta,
-				sorting: sortingProp,
+				sorts: sortsProp,
 				visibleFieldNames: initialVisibleFieldNames,
 			},
 			filters,
 			modifiedFields: {},
 			paginationDelta,
-			sorting: sortingProp,
+			sorts: sortsProp,
 			views,
 			visibleFieldNames: initialVisibleFieldNames,
 		};
@@ -184,7 +194,7 @@ const FrontendDataSet = ({
 		useReducer(viewsReducer, getInitialViewsState())
 	);
 
-	const {activeView, filters, paginationDelta, sorting} = viewsState;
+	const {activeView, filters, paginationDelta, sorts} = viewsState;
 
 	const {
 		component: View,
@@ -209,7 +219,7 @@ const FrontendDataSet = ({
 			searchParam,
 			paginationDelta,
 			pageNumber,
-			sorting
+			sorts
 		);
 	}, [
 		apiURL,
@@ -218,15 +228,92 @@ const FrontendDataSet = ({
 		filters,
 		pageNumber,
 		searchParam,
-		sorting,
+		sorts,
 	]);
 
 	const isMounted = useIsMounted();
 
 	function updateDataSetItems(dataSetData) {
-		setTotal(dataSetData.totalCount);
 		setItems(dataSetData.items);
+		setTotal(dataSetData.totalCount);
 	}
+
+	useEffect(() => {
+		loadClientExtensions([
+			{
+				clientExtensionDefinitions: initialFilters
+					? initialFilters
+							.filter((filter) => filter.clientExtensionFilterURL)
+							.map((filter) => ({
+								context: filter,
+								importDeclaration: `default from ${filter.clientExtensionFilterURL}`,
+							}))
+					: [],
+				onLoad: (bindingContexts) => {
+					const newFilters = initialFilters.map((filter) => {
+						const bindingContext = bindingContexts.find(
+							(bindingContext) =>
+								bindingContext.context
+									.clientExtensionFilterURL ===
+								filter.clientExtensionFilterURL
+						);
+
+						if (bindingContext) {
+							return {
+								...filter,
+								clientExtensionFilterImplementation:
+									bindingContext.binding,
+							};
+						}
+
+						return filter;
+					});
+
+					viewsDispatch({
+						type: VIEWS_ACTION_TYPES.UPDATE_FILTERS,
+						value: newFilters,
+					});
+				},
+			},
+			{
+				clientExtensionDefinitions: views.reduce(
+					(clientExtensionDefinitions, view) => {
+						if (!view.schema?.fields?.length) {
+							return clientExtensionDefinitions;
+						}
+
+						const clientExtensionFields = view.schema.fields.filter(
+							(field) => !!field.contentRendererClientExtension
+						);
+
+						for (const field of clientExtensionFields) {
+							clientExtensionDefinitions.push({
+								context: field,
+								importDeclaration:
+									field.contentRendererModuleURL,
+							});
+						}
+
+						return clientExtensionDefinitions;
+					},
+					[]
+				),
+				onLoad: (bindingContexts) => {
+					bindingContexts.forEach(
+						({binding: htmlElementBuilder, context: field}) => {
+							viewsDispatch({
+								type: VIEWS_ACTION_TYPES.UPDATE_FIELD,
+								value: {
+									htmlElementBuilder,
+									name: field.fieldName,
+								},
+							});
+						}
+					);
+				},
+			},
+		]);
+	}, [initialFilters, views, viewsDispatch]);
 
 	useEffect(() => {
 		if (itemsProp) {
@@ -348,7 +435,7 @@ const FrontendDataSet = ({
 
 		setComponentLoading(true);
 
-		getJsModule(contentRendererModuleURL)
+		loadModule(contentRendererModuleURL)
 			.then((component) => {
 				if (isMounted()) {
 					viewsDispatch({
@@ -399,6 +486,24 @@ const FrontendDataSet = ({
 					handleApiError({data, statusCode});
 				}
 				else {
+					setCreationMenu((currentCreationMenu) => {
+						if (!currentCreationMenu) {
+							return;
+						}
+
+						const filteredCreationMenu = {};
+
+						filteredCreationMenu.primaryItems = filterCreationActions(
+							{
+								customActions:
+									currentCreationMenu?.primaryItems,
+								globalCollectionActions: data?.actions,
+							}
+						);
+
+						return filteredCreationMenu;
+					});
+
 					updateDataSetItems(data);
 				}
 				setDataLoading(false);
@@ -474,6 +579,7 @@ const FrontendDataSet = ({
 				inlineAddingSettings ? (
 					<View
 						frontendDataSetContext={FrontendDataSetContext}
+						header={header}
 						items={items}
 						itemsActions={itemsActions}
 						style={style}
@@ -747,6 +853,7 @@ const FrontendDataSet = ({
 				applyItemInlineUpdates,
 				createInlineItem,
 				customDataRenderers,
+				customRenderers,
 				executeAsyncItemAction,
 				formId,
 				formName,
@@ -778,7 +885,7 @@ const FrontendDataSet = ({
 				selectedItemsValue,
 				selectionType,
 				sidePanelId: dataSetSupportSidePanelId,
-				sorting,
+				sorts,
 				style,
 				toggleItemInlineEdit,
 				uniformActionsDisplay,
@@ -798,7 +905,11 @@ const FrontendDataSet = ({
 						/>
 					)}
 
-					<div className="data-set-wrapper" ref={wrapperRef}>
+					<div
+						className="data-set-wrapper"
+						data-testid={`visualization-mode-${activeView.name}`}
+						ref={wrapperRef}
+					>
 						{style === 'default' && (
 							<div className="data-set data-set-inline">
 								{managementBar}
@@ -848,7 +959,7 @@ FrontendDataSet.defaultProps = {
 	showManagementBar: true,
 	showPagination: true,
 	showSearch: true,
-	sorting: [],
+	sorts: [],
 	style: 'default',
 };
 

@@ -13,6 +13,8 @@ import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.GroupConstants;
@@ -44,14 +46,16 @@ import com.liferay.portal.kernel.service.ResourcePermissionService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.service.change.tracking.CTService;
-import com.liferay.portal.kernel.service.permission.PortletPermission;
+import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.settings.ArchivedSettings;
+import com.liferay.portal.kernel.settings.ArchivedSettingsFactory;
+import com.liferay.portal.kernel.settings.FallbackKeysSettingsUtil;
 import com.liferay.portal.kernel.settings.ModifiableSettings;
 import com.liferay.portal.kernel.settings.PortletInstanceSettingsLocator;
 import com.liferay.portal.kernel.settings.Settings;
-import com.liferay.portal.kernel.settings.SettingsFactoryUtil;
+import com.liferay.portal.kernel.settings.SettingsLocator;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.AggregateResourceBundle;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -109,6 +113,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 
 /**
@@ -157,7 +162,7 @@ public class PortletConfigurationPortlet extends MVCPortlet {
 
 		for (String curName : names) {
 			ArchivedSettings archivedSettings =
-				SettingsFactoryUtil.getPortletInstanceArchivedSettings(
+				_archivedSettingsFactory.getPortletInstanceArchivedSettings(
 					themeDisplay.getSiteGroupId(), portlet.getRootPortletId(),
 					curName);
 
@@ -435,7 +440,7 @@ public class PortletConfigurationPortlet extends MVCPortlet {
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		Settings portletInstanceSettings = SettingsFactoryUtil.getSettings(
+		Settings portletInstanceSettings = FallbackKeysSettingsUtil.getSettings(
 			new PortletInstanceSettingsLocator(
 				themeDisplay.getLayout(), portlet.getPortletId()));
 
@@ -445,7 +450,7 @@ public class PortletConfigurationPortlet extends MVCPortlet {
 		String name = ParamUtil.getString(actionRequest, "name");
 
 		ArchivedSettings archivedSettings =
-			SettingsFactoryUtil.getPortletInstanceArchivedSettings(
+			_archivedSettingsFactory.getPortletInstanceArchivedSettings(
 				themeDisplay.getSiteGroupId(), portlet.getRootPortletId(),
 				name);
 
@@ -501,13 +506,15 @@ public class PortletConfigurationPortlet extends MVCPortlet {
 		String name = ParamUtil.getString(actionRequest, "name");
 
 		ArchivedSettings archivedSettings =
-			SettingsFactoryUtil.getPortletInstanceArchivedSettings(
+			_archivedSettingsFactory.getPortletInstanceArchivedSettings(
 				themeDisplay.getSiteGroupId(), portlet.getRootPortletId(),
 				name);
 
-		Settings portletInstanceSettings = SettingsFactoryUtil.getSettings(
-			new PortletInstanceSettingsLocator(
-				themeDisplay.getLayout(), portlet.getPortletId()));
+		SettingsLocator settingsLocator = new PortletInstanceSettingsLocator(
+			themeDisplay.getLayout(), portlet.getPortletId());
+
+		Settings portletInstanceSettings = FallbackKeysSettingsUtil.getSettings(
+			settingsLocator);
 
 		ModifiableSettings portletInstanceModifiableSettings =
 			portletInstanceSettings.getModifiableSettings();
@@ -610,6 +617,17 @@ public class PortletConfigurationPortlet extends MVCPortlet {
 			themeDisplay.getLayout(),
 			ServiceContextFactory.getInstance(actionRequest),
 			themeDisplay.getUserId());
+
+		if (FeatureFlagManagerUtil.isEnabled("LPS-196847") &&
+			(resourcePrimKeys.length > 1)) {
+
+			SessionMessages.add(
+				actionRequest, "requestProcessed",
+				_language.format(
+					themeDisplay.getLocale(),
+					"x-permissions-were-updated-successfully",
+					resourcePrimKeys.length));
+		}
 	}
 
 	@Activate
@@ -624,6 +642,11 @@ public class PortletConfigurationPortlet extends MVCPortlet {
 
 				emitter.emit(modelClass.getName());
 			});
+	}
+
+	@Deactivate
+	protected void deactivate() {
+		_serviceTrackerMap.close();
 	}
 
 	@Override
@@ -679,6 +702,10 @@ public class PortletConfigurationPortlet extends MVCPortlet {
 
 					renderRequest.setAttribute(
 						PortletConfigurationWebKeys.MODULE_NAME, moduleName);
+
+					renderRequest.setAttribute(
+						PortletConfigurationWebKeys.SETTINGS_FACTORY,
+						_archivedSettingsFactory);
 				}
 			}
 
@@ -757,7 +784,7 @@ public class PortletConfigurationPortlet extends MVCPortlet {
 		String portletResource = ParamUtil.getString(
 			request, "portletResource");
 
-		_portletPermission.check(
+		PortletPermissionUtil.check(
 			themeDisplay.getPermissionChecker(), resourceGroupId,
 			PortletConfigurationLayoutUtil.getLayout(themeDisplay),
 			portletResource, ActionKeys.PERMISSIONS);
@@ -1102,7 +1129,13 @@ public class PortletConfigurationPortlet extends MVCPortlet {
 		PortletConfigurationPortlet.class);
 
 	@Reference
+	private ArchivedSettingsFactory _archivedSettingsFactory;
+
+	@Reference
 	private GroupLocalService _groupLocalService;
+
+	@Reference
+	private Language _language;
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;
@@ -1118,9 +1151,6 @@ public class PortletConfigurationPortlet extends MVCPortlet {
 
 	@Reference
 	private PortletLocalService _portletLocalService;
-
-	@Reference
-	private PortletPermission _portletPermission;
 
 	@Reference
 	private PortletPreferencesLocalService _portletPreferencesLocalService;

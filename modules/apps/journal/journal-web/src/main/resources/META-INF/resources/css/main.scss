@@ -6,7 +6,6 @@ $toolbarDesktopHeight: 4rem;
 $toolbarHeight: 6.875rem;
 $toolbarZIndex: 971;
 
-$controlMenuHeight: 56px;
 $sidebarHeaderHeight: 104px;
 $sidebarWidth: 398px;
 $sidebarWidthClosed: 40px;
@@ -53,11 +52,15 @@ $productMenuWidth: 320px;
 			height: auto;
 			left: 0;
 			min-height: 3.5rem;
-			position: fixed;
 			transition: left ease $productMenuTransitionDuration,
 				width ease $productMenuTransitionDuration;
 			width: 100%;
 			z-index: $toolbarZIndex;
+
+			@include media-breakpoint-up(sm) {
+				position: fixed;
+				top: var(--control-menu-container-height);
+			}
 
 			body.open & {
 				left: $productMenuWidth;
@@ -80,7 +83,7 @@ $productMenuWidth: 320px;
 					}
 
 					> .tbar-item {
-						padding: 0.5em;
+						padding: 0.75rem;
 					}
 
 					> .tbar-item:first-child {
@@ -125,6 +128,10 @@ $productMenuWidth: 320px;
 				border: 0;
 			}
 
+			.translation-manager {
+				width: 115px;
+			}
+
 			@include media-breakpoint-up(lg) {
 				min-height: $toolbarDesktopHeight;
 
@@ -150,10 +157,8 @@ $productMenuWidth: 320px;
 				margin-top: $toolbarDesktopHeight;
 			}
 
-			.ddm-form-builder-app {
-				@include media-breakpoint-down(md) {
-					margin-top: $toolbarHeight;
-				}
+			@include media-breakpoint-between(sm, md) {
+				margin-top: $toolbarHeight;
 			}
 		}
 
@@ -185,9 +190,10 @@ $productMenuWidth: 320px;
 			}
 
 			.sidebar-body {
-				@include media-breakpoint-down(lg) {
+				@include media-breakpoint-down(md) {
 					height: calc(
-						100vh - #{$controlMenuHeight +$sidebarHeaderHeight} - #{$toolbarHeight}
+						100vh - var(--control-menu-container-height) - #{$sidebarHeaderHeight} -
+							#{$toolbarHeight}
 					);
 				}
 			}
@@ -196,18 +202,35 @@ $productMenuWidth: 320px;
 		.edit-article-sidebar {
 			border-left: 1px #e7e7ed solid;
 			box-shadow: none;
-			margin-top: $toolbarHeight;
-			max-width: 90vw;
+			max-width: 320px;
 			outline: 0;
 			overflow-y: scroll;
 			padding-top: 0;
 			position: fixed;
-			top: auto;
 			width: $productMenuWidth;
-			z-index: 1;
+			z-index: 5;
 
-			@include media-breakpoint-up(lg) {
-				margin-top: $toolbarDesktopHeight;
+			@include media-breakpoint-down(xs) {
+				height: auto;
+				overflow: hidden;
+				top: 0;
+
+				&.contextual-sidebar {
+					position: absolute;
+				}
+			}
+
+			@include media-breakpoint-between(sm, md) {
+				$management-bar-height: 110px;
+
+				&.contextual-sidebar {
+					height: calc(
+						100vh - var(--control-menu-container-height) - #{$management-bar-height}
+					);
+					top: calc(
+						var(--control-menu-container-height) + #{$management-bar-height}
+					);
+				}
 			}
 
 			.schedule {
@@ -251,9 +274,5 @@ $productMenuWidth: 320px;
 				}
 			}
 		}
-	}
-
-	.nav-tabs + .tab-content .tab-pane {
-		padding: 1rem;
 	}
 }

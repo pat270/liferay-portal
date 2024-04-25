@@ -9,11 +9,12 @@ import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.search.hits.SearchHits;
+import com.liferay.portal.search.query.BooleanQuery;
 import com.liferay.portal.search.query.MatchAllQuery;
 import com.liferay.portal.search.query.MatchQuery;
 import com.liferay.portal.search.sort.Sorts;
+import com.liferay.portal.search.tuning.rankings.index.name.RankingIndexName;
 import com.liferay.portal.search.tuning.rankings.web.internal.BaseRankingsWebTestCase;
-import com.liferay.portal.search.tuning.rankings.web.internal.index.name.RankingIndexName;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 
 import javax.servlet.http.HttpServletRequest;
@@ -78,6 +79,12 @@ public class SearchRankingRequestTest extends BaseRankingsWebTestCase {
 	}
 
 	private void _setUpQuery() {
+		Mockito.doReturn(
+			Mockito.mock(BooleanQuery.class)
+		).when(
+			queries
+		).booleanQuery();
+
 		Mockito.doReturn(
 			Mockito.mock(MatchQuery.class)
 		).when(

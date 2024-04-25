@@ -33,6 +33,8 @@ import com.liferay.portal.test.rule.TransactionalTestRule;
 
 import java.io.Serializable;
 
+import java.math.BigDecimal;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -148,10 +150,11 @@ public class CommerceInventoryWarehouseItemPersistenceTest {
 		newCommerceInventoryWarehouseItem.setCommerceInventoryWarehouseId(
 			RandomTestUtil.nextLong());
 
-		newCommerceInventoryWarehouseItem.setQuantity(RandomTestUtil.nextInt());
+		newCommerceInventoryWarehouseItem.setQuantity(
+			new BigDecimal(RandomTestUtil.nextDouble()));
 
 		newCommerceInventoryWarehouseItem.setReservedQuantity(
-			RandomTestUtil.nextInt());
+			new BigDecimal(RandomTestUtil.nextDouble()));
 
 		newCommerceInventoryWarehouseItem.setSku(RandomTestUtil.randomString());
 
@@ -277,21 +280,21 @@ public class CommerceInventoryWarehouseItemPersistenceTest {
 	}
 
 	@Test
-	public void testCountByCompanyId_Sku() throws Exception {
-		_persistence.countByCompanyId_Sku(RandomTestUtil.nextLong(), "");
+	public void testCountByC_S_U() throws Exception {
+		_persistence.countByC_S_U(RandomTestUtil.nextLong(), "", "");
 
-		_persistence.countByCompanyId_Sku(0L, "null");
+		_persistence.countByC_S_U(0L, "null", "null");
 
-		_persistence.countByCompanyId_Sku(0L, (String)null);
+		_persistence.countByC_S_U(0L, (String)null, (String)null);
 	}
 
 	@Test
-	public void testCountByC_S() throws Exception {
-		_persistence.countByC_S(RandomTestUtil.nextLong(), "");
+	public void testCountByCIWI_S_U() throws Exception {
+		_persistence.countByCIWI_S_U(RandomTestUtil.nextLong(), "", "");
 
-		_persistence.countByC_S(0L, "null");
+		_persistence.countByCIWI_S_U(0L, "null", "null");
 
-		_persistence.countByC_S(0L, (String)null);
+		_persistence.countByCIWI_S_U(0L, (String)null, (String)null);
 	}
 
 	@Test
@@ -661,6 +664,11 @@ public class CommerceInventoryWarehouseItemPersistenceTest {
 			ReflectionTestUtil.invoke(
 				commerceInventoryWarehouseItem, "getColumnOriginalValue",
 				new Class<?>[] {String.class}, "sku"));
+		Assert.assertEquals(
+			commerceInventoryWarehouseItem.getUnitOfMeasureKey(),
+			ReflectionTestUtil.invoke(
+				commerceInventoryWarehouseItem, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "unitOfMeasureKey"));
 
 		Assert.assertEquals(
 			commerceInventoryWarehouseItem.getExternalReferenceCode(),
@@ -705,10 +713,11 @@ public class CommerceInventoryWarehouseItemPersistenceTest {
 		commerceInventoryWarehouseItem.setCommerceInventoryWarehouseId(
 			RandomTestUtil.nextLong());
 
-		commerceInventoryWarehouseItem.setQuantity(RandomTestUtil.nextInt());
+		commerceInventoryWarehouseItem.setQuantity(
+			new BigDecimal(RandomTestUtil.nextDouble()));
 
 		commerceInventoryWarehouseItem.setReservedQuantity(
-			RandomTestUtil.nextInt());
+			new BigDecimal(RandomTestUtil.nextDouble()));
 
 		commerceInventoryWarehouseItem.setSku(RandomTestUtil.randomString());
 

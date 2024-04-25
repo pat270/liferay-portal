@@ -1,4 +1,4 @@
-@component-name = "portal-lima"
+@component-name = "portal-content-management"
 definition {
 
 	property portal.release = "true";
@@ -56,6 +56,25 @@ definition {
 		Navigator.gotoPage(pageName = "Blogs Page");
 
 		Ratings.viewDefault();
+	}
+
+	@description = "This test covers LPS-181857. It ensures that the document folder rating type can be changed from site settings."
+	@priority = 4
+	test CanChangeDocumentFolderRatingTypeFromSiteSetting {
+		Ratings.configureRatingType(
+			applications = "document",
+			portlet = "Ratings",
+			ratingType = "Like",
+			siteName = "Guest");
+
+		DMNavigator.openToFolderInAdmin(
+			dmFolderName = "Provided by Liferay",
+			groupName = "Guest",
+			siteURLKey = "guest");
+
+		DMDocument.expandInfo();
+
+		AssertVisible(locator1 = "Ratings#LIKE");
 	}
 
 	@description = "This is a use case for LPS-74621."

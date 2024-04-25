@@ -81,7 +81,6 @@ const loadCollectionFields = (
 	CollectionService.getCollectionMappingFields({
 		itemSubtype: itemSubtype || '',
 		itemType,
-		onNetworkStatus: () => {},
 	})
 		.then((response) => {
 			dispatch(
@@ -303,7 +302,7 @@ function StructureTreeNodeContent({
 				inline: 'nearest',
 			});
 		}
-	}, [activationOrigin, isActive, keyboardMovementTargetId, item]);
+	}, [activationOrigin, isActive, item.itemId, keyboardMovementTargetId]);
 
 	useEffect(() => {
 		let timeoutId = null;
@@ -405,7 +404,6 @@ function StructureTreeNodeContent({
 					restrictedItemIds
 				)}
 				showUnavailableWarning={
-					Liferay.FeatureFlags['LPS-169923'] &&
 					node.type === LAYOUT_DATA_ITEM_TYPES.form &&
 					formIsUnavailable(item)
 				}
@@ -793,10 +791,6 @@ function getItemPosition(item, monitor, targetRefs) {
 }
 
 function isRestricted(item, node, restrictedItemIds) {
-	if (!Liferay.FeatureFlags['LPS-169923']) {
-		return false;
-	}
-
 	if (node.type === LAYOUT_DATA_ITEM_TYPES.form) {
 		return formIsRestricted(item);
 	}

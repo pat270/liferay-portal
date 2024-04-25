@@ -6,15 +6,20 @@
 package com.liferay.change.tracking.web.internal.portlet.action;
 
 import com.liferay.change.tracking.constants.CTPortletKeys;
+import com.liferay.change.tracking.model.CTCollection;
 import com.liferay.change.tracking.model.CTCollectionTemplate;
 import com.liferay.change.tracking.service.CTCollectionLocalService;
 import com.liferay.change.tracking.service.CTCollectionTemplateLocalService;
+import com.liferay.change.tracking.service.CTRemoteLocalService;
 import com.liferay.change.tracking.web.internal.configuration.helper.CTSettingsConfigurationHelper;
 import com.liferay.change.tracking.web.internal.constants.CTWebKeys;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONSerializer;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
+import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -47,17 +52,38 @@ public class EditCTCollectionMVCRenderCommand implements MVCRenderCommand {
 	public String render(
 		RenderRequest renderRequest, RenderResponse renderResponse) {
 
+		ThemeDisplay themeDisplay = (ThemeDisplay)renderRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
 		long ctCollectionId = ParamUtil.getLong(
 			renderRequest, "ctCollectionId");
+
+		try {
+			if (ctCollectionId != 0) {
+				_ctCollectionModelResourcePermission.check(
+					themeDisplay.getPermissionChecker(), ctCollectionId,
+					ActionKeys.UPDATE);
+			}
+		}
+		catch (Exception exception) {
+			SessionErrors.add(renderRequest, exception.getClass());
+
+			return "/publications/error.jsp";
+		}
 
 		renderRequest.setAttribute(
 			CTWebKeys.CT_COLLECTION,
 			_ctCollectionLocalService.fetchCTCollection(ctCollectionId));
 
-		JSONSerializer jsonSerializer = _jsonFactory.createJSONSerializer();
+		long ctRemoteId = ParamUtil.getLong(renderRequest, "ctRemoteId");
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)renderRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		if (ctRemoteId != 0) {
+			renderRequest.setAttribute(
+				CTWebKeys.CT_REMOTE,
+				_ctRemoteLocalService.fetchCTRemote(ctRemoteId));
+		}
+
+		JSONSerializer jsonSerializer = _jsonFactory.createJSONSerializer();
 
 		List<CTCollectionTemplate> ctCollectionTemplates =
 			_ctCollectionTemplateLocalService.getCTCollectionTemplates(
@@ -102,8 +128,17 @@ public class EditCTCollectionMVCRenderCommand implements MVCRenderCommand {
 	@Reference
 	private CTCollectionLocalService _ctCollectionLocalService;
 
+	@Reference(
+		target = "(model.class.name=com.liferay.change.tracking.model.CTCollection)"
+	)
+	private ModelResourcePermission<CTCollection>
+		_ctCollectionModelResourcePermission;
+
 	@Reference
 	private CTCollectionTemplateLocalService _ctCollectionTemplateLocalService;
+
+	@Reference
+	private CTRemoteLocalService _ctRemoteLocalService;
 
 	@Reference
 	private CTSettingsConfigurationHelper _ctSettingsConfigurationHelper;

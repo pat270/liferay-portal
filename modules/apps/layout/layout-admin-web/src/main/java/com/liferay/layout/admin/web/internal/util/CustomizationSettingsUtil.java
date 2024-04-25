@@ -5,7 +5,8 @@
 
 package com.liferay.layout.admin.web.internal.util;
 
-import com.liferay.portal.kernel.layoutconfiguration.util.RuntimePageUtil;
+import com.liferay.petra.lang.SafeCloseable;
+import com.liferay.petra.lang.ThreadContextClassLoaderUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.LayoutTemplate;
@@ -15,6 +16,7 @@ import com.liferay.portal.kernel.template.Template;
 import com.liferay.portal.kernel.template.TemplateManagerUtil;
 import com.liferay.portal.kernel.template.TemplateResource;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.layoutconfiguration.util.RuntimePageUtil;
 import com.liferay.taglib.util.DummyVelocityTaglib;
 import com.liferay.taglib.util.VelocityTaglib;
 
@@ -52,27 +54,12 @@ public class CustomizationSettingsUtil {
 			}
 		}
 
-		Thread currentThread = Thread.currentThread();
-
-		ClassLoader contextClassLoader = currentThread.getContextClassLoader();
-
-		try {
-			if ((pluginClassLoader != null) &&
-				(pluginClassLoader != contextClassLoader)) {
-
-				currentThread.setContextClassLoader(pluginClassLoader);
-			}
+		try (SafeCloseable safeCloseable = ThreadContextClassLoaderUtil.swap(
+				pluginClassLoader)) {
 
 			_processCustomizationSettings(
 				httpServletRequest, httpServletResponse, templateResource,
 				langType);
-		}
-		finally {
-			if ((pluginClassLoader != null) &&
-				(pluginClassLoader != contextClassLoader)) {
-
-				currentThread.setContextClassLoader(contextClassLoader);
-			}
 		}
 	}
 

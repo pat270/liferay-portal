@@ -5,6 +5,8 @@
 
 package com.liferay.fragment.entry.processor.editable.internal.parser;
 
+import com.liferay.document.library.kernel.service.DLAppLocalService;
+import com.liferay.document.library.util.DLURLHelper;
 import com.liferay.fragment.entry.processor.editable.parser.EditableElementParser;
 import com.liferay.fragment.entry.processor.helper.FragmentEntryProcessorHelper;
 import com.liferay.fragment.exception.FragmentEntryContentException;
@@ -20,8 +22,12 @@ import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.Html;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -45,7 +51,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Pavel Savinov
  */
 @Component(property = "type=image", service = EditableElementParser.class)
-public class ImageEditableElementParser implements EditableElementParser {
+public class ImageEditableElementParser extends BaseEditableElementParser {
 
 	@Override
 	public JSONObject getFieldTemplateConfigJSONObject(
@@ -136,7 +142,7 @@ public class ImageEditableElementParser implements EditableElementParser {
 		else if (fieldValue instanceof WebImage) {
 			WebImage webImage = (WebImage)fieldValue;
 
-			return GetterUtil.getString(webImage.getUrl());
+			return GetterUtil.getString(webImage.getURL());
 		}
 
 		return StringPool.BLANK;
@@ -182,6 +188,12 @@ public class ImageEditableElementParser implements EditableElementParser {
 		value = value.trim();
 
 		if (fileEntryId > 0) {
+			String imagePreviewURL = _getImagePreviewURL(fileEntryId);
+
+			if (Validator.isNotNull(imagePreviewURL)) {
+				value = imagePreviewURL;
+			}
+
 			replaceableElement.attr(
 				"data-fileentryid", String.valueOf(fileEntryId));
 
@@ -197,7 +209,7 @@ public class ImageEditableElementParser implements EditableElementParser {
 		Matcher matcher = _pattern.matcher(replaceableElement.attr("src"));
 
 		if (Validator.isNotNull(value) && !matcher.matches()) {
-			replaceableElement.attr("src", _html.unescape(value));
+			replaceableElement.attr("src", HtmlUtil.unescape(value));
 		}
 
 		if (configJSONObject == null) {
@@ -216,7 +228,7 @@ public class ImageEditableElementParser implements EditableElementParser {
 
 		if (Validator.isNotNull(alt)) {
 			replaceableElement.attr(
-				"alt", StringUtil.trim(_html.unescape(alt)));
+				"alt", StringUtil.trim(HtmlUtil.unescape(alt)));
 		}
 
 		if (configJSONObject.getBoolean("lazyLoading")) {
@@ -264,6 +276,38 @@ public class ImageEditableElementParser implements EditableElementParser {
 					"each-editable-image-element-must-contain-an-img-tag",
 					new Object[] {"<em>", "</em>"}, false));
 		}
+
+		super.validate(element);
+	}
+
+	private String _getImagePreviewURL(long fileEntryId) {
+		ServiceContext serviceContext =
+			ServiceContextThreadLocal.getServiceContext();
+
+		if (serviceContext == null) {
+			return StringPool.BLANK;
+		}
+
+		ThemeDisplay themeDisplay = serviceContext.getThemeDisplay();
+
+		if (themeDisplay == null) {
+			return StringPool.BLANK;
+		}
+
+		try {
+			FileEntry fileEntry = _dlAppLocalService.getFileEntry(fileEntryId);
+
+			return _dlURLHelper.getImagePreviewURL(
+				fileEntry, fileEntry.getFileVersion(), themeDisplay,
+				StringPool.BLANK, false, false);
+		}
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception);
+			}
+		}
+
+		return StringPool.BLANK;
 	}
 
 	private void _setImageConfiguration(
@@ -293,10 +337,13 @@ public class ImageEditableElementParser implements EditableElementParser {
 	private static final ViewportSize[] _viewportSizes = ViewportSize.values();
 
 	@Reference
-	private FragmentEntryProcessorHelper _fragmentEntryProcessorHelper;
+	private DLAppLocalService _dlAppLocalService;
 
 	@Reference
-	private Html _html;
+	private DLURLHelper _dlURLHelper;
+
+	@Reference
+	private FragmentEntryProcessorHelper _fragmentEntryProcessorHelper;
 
 	@Reference
 	private JSONFactory _jsonFactory;

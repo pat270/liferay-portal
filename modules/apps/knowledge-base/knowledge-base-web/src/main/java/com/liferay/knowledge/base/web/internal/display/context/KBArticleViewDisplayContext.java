@@ -11,14 +11,15 @@ import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.knowledge.base.service.KBArticleServiceUtil;
 import com.liferay.knowledge.base.service.KBFolderServiceUtil;
 import com.liferay.knowledge.base.web.internal.util.KBDropdownItemsProvider;
-import com.liferay.osgi.util.service.Snapshot;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
+import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.trash.TrashHelper;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -41,13 +42,13 @@ public class KBArticleViewDisplayContext {
 		HttpServletRequest httpServletRequest,
 		LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse,
-		RenderResponse renderResponse) {
+		RenderResponse renderResponse, TrashHelper trashHelper) {
 
 		_httpServletRequest = httpServletRequest;
 		_renderResponse = renderResponse;
 
 		_kbDropdownItemsProvider = new KBDropdownItemsProvider(
-			liferayPortletRequest, liferayPortletResponse);
+			liferayPortletRequest, liferayPortletResponse, trashHelper);
 	}
 
 	public int getChildKBArticlesCount(long groupId, KBArticle kbArticle) {
@@ -113,7 +114,8 @@ public class KBArticleViewDisplayContext {
 		Date expirationDate = kbArticle.getExpirationDate();
 
 		if (kbArticle.isDraft() || kbArticle.isExpired() ||
-			kbArticle.isPending() || (expirationDate == null)) {
+			kbArticle.isPending() || kbArticle.isScheduled() ||
+			(expirationDate == null)) {
 
 			return false;
 		}

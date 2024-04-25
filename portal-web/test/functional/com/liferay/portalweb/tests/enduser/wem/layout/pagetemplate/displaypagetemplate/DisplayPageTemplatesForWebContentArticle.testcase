@@ -26,19 +26,6 @@ definition {
 		}
 	}
 
-	tearDown {
-		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
-
-		if (${testLiferayVirtualInstance} == "true") {
-			PortalInstances.tearDownCP();
-		}
-		else {
-			JSONUser.tearDownNonAdminUsers();
-
-			JSONGroup.tearDownNonDefaultGroups();
-		}
-	}
-
 	@description = "This is a test for LPS-90999. A user can access to edit the display page template at view mode."
 	@priority = 5
 	test AccessToEditDisplayPageTemplateAtViewMode {
@@ -441,14 +428,12 @@ definition {
 		}
 
 		task ("Navigate to display page template via friendly URL") {
-			for (var type : list "w,-") {
-				Navigator.openWithAppendToBaseURL(urlAppend = "web/test-site-name/${type}/webcontent-title");
+			Navigator.openWithAppendToBaseURL(urlAppend = "web/test-site-name/w/webcontent-title");
 
-				ContentPages.viewFragmentText(
-					fragmentName = "heading",
-					id = "element-text",
-					text = "Webcontent Title");
-			}
+			ContentPages.viewFragmentText(
+				fragmentName = "heading",
+				id = "element-text",
+				text = "Webcontent Title");
 		}
 	}
 
@@ -887,10 +872,10 @@ definition {
 				locator1 = "TextInput#ANY");
 
 			AssertAttributeValue(
-				attribute1 = "disabled",
 				key_text = "Preview",
 				locator1 = "Button#ANY",
-				value1 = "true");
+				value1 = "disabled",
+				value2 = "true");
 		}
 
 		task ("When the site designer selects the default display page") {
@@ -1031,10 +1016,10 @@ definition {
 				locator1 = "TextInput#ANY");
 
 			AssertAttributeValue(
-				attribute1 = "disabled",
 				key_text = "Preview",
 				locator1 = "Button#ANY",
-				value1 = "true");
+				value1 = "disabled",
+				value2 = "true");
 		}
 
 		task ("When the site designer selects the default display page") {
@@ -1109,6 +1094,7 @@ definition {
 	@priority = 2
 	test ViewCanonicalURL {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given I select Use Localized URL as Canonical URL") {
 			SystemSettings.openSystemSettingsAdmin();
@@ -1547,6 +1533,80 @@ definition {
 		}
 	}
 
+	@description = "This is a test for LPS-91552. View content displayed in Asset Publisher with pagination on associated display page."
+	@priority = 5
+	test ViewPaginationContentViaAP {
+		property portal.acceptance = "true";
+
+		task ("Add 3 basic web content articles") {
+			for (var count : list "1,2,3") {
+				JSONWebcontent.addWebContent(
+					content = "WC Content ${count}",
+					groupName = "Test Site Name",
+					title = "WC Title ${count}");
+			}
+		}
+
+		task ("Add Display Page and mark it as default") {
+			DisplayPageTemplatesAdmin.openDisplayPagesAdmin(siteURLKey = "test-site-name");
+
+			DisplayPageTemplatesAdmin.gotoDisplayPage(displayPageName = "Display Page Name");
+
+			PageEditor.addWidget(portletName = "Asset Publisher");
+
+			AssetPublisherPortlet.configurePaginationPG(
+				paginationNumber = 2,
+				paginationType = "Regular");
+
+			Portlet.saveAndCloseConfig();
+
+			PageEditor.publish();
+
+			DisplayPageTemplatesAdmin.markDisplayPageAsDefault(displayPageName = "Display Page Name");
+		}
+
+		task ("Select Display Page Name as Specific Display Page Template") {
+			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+			for (var count : list "1,2,3") {
+				WebContentNavigator.gotoEditCP(webContentTitle = "WC Title ${count}");
+
+				WebContent.editDisplayPage(
+					pageName = "Display Page Name",
+					pageType = "Display Page Templates");
+
+				PortletEntry.publish();
+			}
+		}
+
+		task ("Add widget pages with Asset Publisher") {
+			JSONLayout.addPublicLayout(
+				groupName = "Test Site Name",
+				layoutName = "Test Page Name");
+
+			JSONLayout.addWidgetToPublicLayout(
+				groupName = "Test Site Name",
+				layoutName = "Test Page Name",
+				widgetName = "Asset Publisher");
+		}
+
+		task ("View paginated web content via Asset Publisher") {
+			Navigator.gotoSitePage(
+				pageName = "Test Page Name",
+				siteName = "Test Site Name");
+
+			AssetPublisherPortlet.clickAssetTitle(assetTitle = "WC Title 1");
+
+			AssetPublisherPortlet.changePagination(
+				currentPageNumber = "2 of 2",
+				paginationItem = 2);
+
+			AssetPublisherPortlet.viewAssetPG(
+				assetContent = "WC Content 1",
+				assetTitle = "WC Title 1");
+		}
+	}
+
 	@description = "This is a test for LPS-146373. New prefixes for email,phone and none options can be used on Display Page Templates."
 	@priority = 3
 	test ViewPrefixesForEmailAndPhoneAndNoneOptions {
@@ -1792,6 +1852,68 @@ definition {
 					key_url = "https://www.liferay.com",
 					locator1 = "Fragment#FRAGMENT_LINK");
 			}
+		}
+	}
+
+	@description = "This is a test for LPS-192722. Can close warning message when changing content type and view the warning reappears after closing it."
+	@priority = 3
+	test ViewWarningMessageOfChangeContentTypeModal {
+		task ("Given a site administrator has a display page template for Web Content Article and Basic Web Content") {
+			DisplayPageTemplatesAdmin.openDisplayPagesAdmin(siteURLKey = "test-site-name");
+
+			LexiconCard.viewCardSubtitle(
+				card = "Display Page Name",
+				cardSubtitle = "Web Content Article - Basic Web Content");
+		}
+
+		task ("When the site administrator changes content type") {
+			DisplayPageTemplatesAdmin.gotoDisplayPageEllipsisItem(
+				displayPageName = "Display Page Name",
+				item = "Change Content Type");
+		}
+
+		task ("Then the site administrator sees warning message of the change content type modal") {
+			AssertTextEquals.assertPartialText(
+				locator1 = "Modal#MODAL_WARNING",
+				value1 = "Changing the content type may cause some elements of the display page template to lose their previous mapping.");
+		}
+
+		task ("When the site administrator closes the modal") {
+			IFrame.closeFrame();
+
+			LexiconCard.viewCardSubtitle(
+				card = "Display Page Name",
+				cardSubtitle = "Web Content Article - Basic Web Content");
+		}
+
+		task ("Then the site administrator sees warning message shown again next time") {
+			DisplayPageTemplatesAdmin.gotoDisplayPageEllipsisItem(
+				displayPageName = "Display Page Name",
+				item = "Change Content Type");
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "Modal#MODAL_WARNING",
+				value1 = "Changing the content type may cause some elements of the display page template to lose their previous mapping.");
+		}
+
+		task ("When the site administrator cancels the changes") {
+			Click(
+				key_text = "Cancel",
+				locator1 = "Modal#MODAL_FOOTER_BUTTON");
+
+			LexiconCard.viewCardSubtitle(
+				card = "Display Page Name",
+				cardSubtitle = "Web Content Article - Basic Web Content");
+		}
+
+		task ("Then the site administrator sees warning message shown again next time") {
+			DisplayPageTemplatesAdmin.gotoDisplayPageEllipsisItem(
+				displayPageName = "Display Page Name",
+				item = "Change Content Type");
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "Modal#MODAL_WARNING",
+				value1 = "Changing the content type may cause some elements of the display page template to lose their previous mapping.");
 		}
 	}
 

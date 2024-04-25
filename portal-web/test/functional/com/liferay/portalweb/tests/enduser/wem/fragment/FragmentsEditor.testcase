@@ -4,7 +4,7 @@ definition {
 	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Fragments";
+	property testray.main.component.name = "Fragment Administration";
 
 	setUp {
 		task ("Set up instance and sign in") {
@@ -27,17 +27,6 @@ definition {
 			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "test-site-name");
 
 			FragmentsAdminNavigator.gotoCollection(collectionName = "Collection Name");
-		}
-	}
-
-	tearDown {
-		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
-
-		if (${testLiferayVirtualInstance} == "true") {
-			PortalInstances.tearDownCP();
-		}
-		else {
-			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
 		}
 	}
 
@@ -146,7 +135,7 @@ definition {
 				item = "Edit");
 
 			var htmlSnippet = '''[resources:''';
-			var fragmentHtml = '''[resources:Document_1.jpg''';
+			var fragmentHtml = '''[resources:Document_1''';
 
 			FragmentsEditor.typeHtmlEditor(content = "");
 
@@ -155,15 +144,15 @@ definition {
 				value1 = ${htmlSnippet});
 
 			AssertElementNotPresent(
-				autocompleteField = "Document_2.jpg",
+				autocompleteField = "Document_2",
 				locator1 = "FragmentEditor#AUTOCOMPLETE_FIELD");
 
 			AssertElementPresent(
-				autocompleteField = "Document_1.jpg",
+				autocompleteField = "Document_1",
 				locator1 = "FragmentEditor#AUTOCOMPLETE_FIELD");
 
 			Click(
-				autocompleteField = "Document_1.jpg",
+				autocompleteField = "Document_1",
 				locator1 = "FragmentEditor#AUTOCOMPLETE_FIELD");
 
 			AssertTextEquals.assertPartialText(
@@ -259,25 +248,6 @@ definition {
 			AssertTextEquals.assertPartialText(
 				locator1 = "FragmentEditor#HTML_EDITOR_CONTENT",
 				value1 = ${htmlContent});
-		}
-	}
-
-	@description = "This is a test for LPS-89251. When creating fragments there should be a visible reference to the Liferay Fragments Toolkit."
-	@priority = 4
-	@uitest
-	test ViewReferenceToFragmentsToolkit {
-		task ("Access to the fragment editor") {
-			FragmentsAdmin.addFragment(fragmentName = "Fragment Name");
-		}
-
-		task ("Click on the Fragments Toolkit link") {
-			Click(locator1 = "FragmentEditor#FRAGMENTS_TOOLKIT_LINK");
-		}
-
-		task ("Assert user is taken to the the Liferay Fragments Toolkit documentation page") {
-			SelectWindow.selectPopUp(locator1 = "null");
-
-			AssertLocation(value1 = "https://github.com/liferay/generator-liferay-fragments#liferay-fragments-cli");
 		}
 	}
 

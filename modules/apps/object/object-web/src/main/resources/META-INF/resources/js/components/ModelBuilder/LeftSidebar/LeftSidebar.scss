@@ -1,0 +1,105 @@
+@import 'atlas-variables';
+
+.lfr-objects__model-builder-left-sidebar {
+	display: flex;
+	flex-direction: column;
+	padding: 1rem;
+	position: inherit;
+
+	&-body-separator {
+		margin: 6px 0;
+	}
+
+	&-current-object-folder-container {
+		align-items: center;
+		display: flex;
+		justify-content: space-between;
+		padding-right: 0.5rem;
+
+		&:hover {
+			.lfr-objects__model-builder-left-sidebar-show-folders-button {
+				visibility: visible;
+			}
+		}
+	}
+
+	&-current-object-folder-content {
+		align-items: center;
+		display: flex;
+		gap: 1rem;
+		width: 100%;
+
+		&-title {
+			max-width: 10rem;
+		}
+
+		&:hover {
+			.lfr-objects__model-builder-left-sidebar-go-to-folder-button {
+				visibility: visible;
+
+				button {
+					padding-left: 0;
+					padding-right: 0;
+				}
+			}
+		}
+	}
+
+	&-current-object-folder-group {
+		.lfr-objects__model-builder-left-sidebar-show-folders-button {
+			display: flex;
+			visibility: hidden;
+
+			&-disabled {
+				visibility: visible;
+			}
+		}
+
+		&:hover {
+			.lfr-objects__model-builder-left-sidebar-show-folders-button {
+				visibility: visible;
+			}
+		}
+	}
+
+	&-go-to-folder-button {
+		margin-left: auto;
+		position: relative;
+		visibility: hidden;
+	}
+
+	&-item {
+		border: 2.5px solid #80acff;
+		border-radius: 8px;
+	}
+
+	&-item--danger.treeview-link {
+		background-color: transparent;
+		color: $danger !important;
+	}
+
+	&-item-linked.treeview-link {
+		background-color: transparent;
+		color: #6b6c7e80;
+	}
+
+	&-loading {
+		align-items: center;
+		display: flex;
+		height: 100%;
+		justify-content: center;
+	}
+
+	&-show-folders-button {
+		visibility: hidden;
+	}
+
+	.container-fluid,
+	.navbar-form {
+		padding: 0 !important;
+	}
+
+	.navbar-form-autofit {
+		flex-basis: 75px;
+	}
+}

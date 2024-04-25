@@ -1,7 +1,7 @@
 @component-name = "portal-commerce"
 definition {
 
-	property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+	property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property release.feature.flags.disable.DISABLE_PRIVATE_LAYOUTS = "true";
@@ -81,9 +81,7 @@ definition {
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceNavigator.searchEntry(entryName = "U-Joint");
 
@@ -132,9 +130,7 @@ definition {
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceNavigator.searchEntry(entryName = ${product});
 
@@ -208,9 +204,7 @@ definition {
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CPCommerceCatalog.newProductsEntry(
 			productCatalog = "Minium",
@@ -247,9 +241,7 @@ definition {
 			key_productName = "Simple T-Shirt",
 			locator1 = "CommerceAccelerators#ADD_TO_CART_BUTTON_PRODUCT_DETAILS_PAGE_DISABLED");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceNavigator.searchEntry(entryName = "Simple T-Shirt");
 
@@ -279,9 +271,7 @@ definition {
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceNavigator.searchEntry(entryName = "U-Joint");
 
@@ -328,9 +318,7 @@ definition {
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceProducts.searchProduct(search = ${product});
 
@@ -403,9 +391,7 @@ definition {
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceNavigator.searchEntry(entryName = ${product});
 
@@ -1383,7 +1369,9 @@ definition {
 		}
 
 		task ("And the administrator user is set as a buyer for the account") {
-			Refresh();
+			Account.openAccountsAdmin();
+
+			LexiconEntry.gotoEntry(rowEntry = "Commerce Account");
 
 			Account.assignUsers(
 				accountName = "Commerce Account",
@@ -1772,6 +1760,111 @@ definition {
 		}
 	}
 
+	@description = "COMMERCE-12676. As a buyer user, I cannot add the option to the cart when the option's stock quantity is zero and the allow back order is disabled"
+	@priority = 5
+	test CannotAddToCartOptionWhenStockIsZeroAndBackOrderIsDisabled {
+		property portal.acceptance = "true";
+
+		task ("Given a Minium site with a buyer user") {
+			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
+
+			CommerceEntry.addAccountEntryUser(
+				accountName = "Commerce Account",
+				accountType = "Business",
+				agreeToTermsAndAnswerReminderQuery = "true",
+				createNewAccount = "true",
+				requireReset = "false",
+				userEmailAddress = "buyer@liferay.com",
+				userFirstName = "Buyer",
+				userLastName = "User",
+				userRole = "Buyer",
+				userScreenName = "buyeruser",
+				userSiteMembership = "Minium");
+		}
+
+		task ("And the Package Quantity option is added to product ABS Sensor") {
+			CommerceProducts.openProductsAdmin();
+
+			CommerceNavigator.gotoEntry(entryName = "ABS Sensor");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Options");
+
+			CommerceRelations.assignSingleRelationToProductsEntry(
+				entryName = "Package Quantity",
+				title = "Add Option");
+		}
+
+		task ("And all SKUs are generated") {
+			CommerceEntry.gotoMenuTab(menuTab = "SKUs");
+
+			CommerceSKUs.generateAllSkuCombinations();
+		}
+
+		task ("And the inventory of other generated SKUs is configured besides SKU:6 and 24 which has 0 stock") {
+			for (var sku : list "112,48,12") {
+				CommerceJSONWarehousesAndInventoriesAPI._addWarehouseItem(
+					warehouseItemQuantity = 10,
+					warehouseItemSku = ${sku},
+					warehouseName = "Italy");
+			}
+		}
+
+		task ("And Allow Back Orders toggle is switched off for ABS Sensor") {
+			CommerceJSONProductsAPI._patchCommerceProductConfiguration(
+				allowBackOrder = "false",
+				productName = "ABS Sensor");
+		}
+
+		task ("When the buyer navigates to the ABS Sensor's details page") {
+			User.logoutPG();
+
+			CommerceLogin.miniumLogin(
+				password = "test",
+				urlAppend = "web/minium",
+				userEmailAddress = "buyer@liferay.com");
+
+			Navigator.openWithAppendToBaseURL(urlAppend = "web/minium/p/abs-sensor");
+		}
+
+		task ("Then can see the selected option is 6 and the add-to-cart button is disabled") {
+			AssertSelectedLabel(
+				key_optionName = "Package Quantity",
+				locator1 = "CommerceFrontStore#FS_PRODUCT_OPTIONS_SELECT",
+				value1 = 6);
+
+			AssertElementPresent(locator1 = "CommerceAccelerators#ADD_TO_CART_BUTTON_PRODUCT_DETAILS_PAGE_DISABLED");
+		}
+
+		task ("And other options can be added to cart with add-to-cart button enabled") {
+			var index = 1;
+
+			for (var optionValue : list "12,24,48,112") {
+				FrontStore.selectAssociatedFSOptionsValue(
+					fsOptionName = "Package Quantity",
+					fsOptionValue = ${optionValue});
+
+				WaitForElementPresent(
+					key_productSku = ${optionValue},
+					locator1 = "CommerceFrontStore#FS_PRODUCT_SKU");
+
+				if (${optionValue} == 24) {
+					AssertElementPresent(locator1 = "CommerceAccelerators#ADD_TO_CART_BUTTON_PRODUCT_DETAILS_PAGE_DISABLED");
+				}
+				else {
+					AssertElementPresent(locator1 = "CommerceAccelerators#ADD_TO_CART_BUTTON_PRODUCT_DETAILS_PAGE");
+
+					Click(locator1 = "CommerceAccelerators#ADD_TO_CART_BUTTON_PRODUCT_DETAILS_PAGE");
+
+					WaitForElementPresent(
+						key_itemCount = ${index},
+						locator1 = "CommerceAccelerators#MINI_CART_BUTTON_DATA_BADGE_COUNT");
+
+					var index = ${index} + 1;
+				}
+			}
+		}
+	}
+
 	@description = "This is a test for COMMERCE-10897. Users cannot view XSS with Availability Estimates in product details"
 	@priority = 3
 	test CannotExecuteXSSWithAvailabilityEstimatesInProductDetails {
@@ -1854,6 +1947,7 @@ definition {
 	test CannotSetSpecialCharacterAsProductURLSeparators {
 		property portal.acceptance = "false";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given a Minium site with a buyer user") {
 			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
@@ -2162,9 +2256,19 @@ definition {
 
 			CommerceNavigator.gotoEntry(entryName = "GROUPEDSKU");
 
-			CommerceSKUs.editSkuPricing(
-				basePrice = "55.00",
-				promoPrice = "50.00");
+			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Price");
+
+			CommerceNavigator.gotoEntry(entryName = "Minium Base Price List");
+
+			CommerceSKUs.editSkuPricing(basePrice = "55.00");
+
+			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+			CommerceNavigator.gotoEntry(entryName = "Minium Base Promotion");
+
+			CommerceSKUs.editSkuPricing(promoPrice = "50.00");
 
 			CommerceEntry.gotoMenuTab(menuTab = "Media");
 
@@ -2358,6 +2462,12 @@ definition {
 
 			CommerceEntry.gotoMenuTab(menuTab = "Virtual");
 
+			CommerceEntry.gotoMenuTab(menuTab = "Options");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Virtual");
+
+			Button.clickSave();
+
 			CommerceProducts.updateProductVirtualConfiguration(
 				enableSample = "true",
 				sampleFileName = ${sampleFileName},
@@ -2367,9 +2477,19 @@ definition {
 
 			CommerceNavigator.gotoEntry(entryName = "VIRTUALSKU");
 
-			CommerceSKUs.editSkuPricing(
-				basePrice = "55.00",
-				promoPrice = "50.00");
+			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Price");
+
+			CommerceNavigator.gotoEntry(entryName = "Minium Base Price List");
+
+			CommerceSKUs.editSkuPricing(basePrice = "55.00");
+
+			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+			CommerceNavigator.gotoEntry(entryName = "Minium Base Promotion");
+
+			CommerceSKUs.editSkuPricing(promoPrice = "50.00");
 
 			CommerceEntry.gotoMenuTab(menuTab = "Media");
 
@@ -2668,9 +2788,7 @@ definition {
 
 		Button.clickSave();
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CPCommerceCatalog.newProductsEntry(
 			productCatalog = "Minium",
@@ -2764,24 +2882,22 @@ definition {
 			locator1 = "TextInput#GENERIC_TEXT_INPUT",
 			value1 = "BLACKSKU");
 
-		Click(locator1 = "Dropdown#TRIGGER");
-
-		Click(
-			key_fieldName = "Black",
-			locator1 = "FormViewBuilder#OBJECT_FIELD_BUTTON_DROPDOWN");
+		Select(
+			key_optionName = "Color",
+			locator1 = "CommerceFrontStore#FS_PRODUCT_OPTIONS_SELECT",
+			value1 = "Black");
 
 		Check.checkToggleSwitch(
 			key_toggleSwitchLabel = "Purchasable",
 			locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
 
-		Type(
-			key_fieldLabel = "Base Price",
-			locator1 = "TextInput#GENERIC_TEXT_INPUT",
-			value1 = "10.0");
-
 		Button.click(button = "Publish");
 
-		CommerceUtilities.checkSuccessAlertAppearsAndDisappears();
+		CommerceEntry.gotoMenuTab(menuTab = "Price");
+
+		CommerceSKUs.addSKUPriceEntry(
+			priceList = "Minium Base Price List",
+			unitPrice = 10);
 
 		Refresh();
 
@@ -2798,24 +2914,22 @@ definition {
 			locator1 = "TextInput#GENERIC_TEXT_INPUT",
 			value1 = "BLUESKU");
 
-		Click(locator1 = "Dropdown#TRIGGER");
-
-		Click(
-			key_fieldName = "Blue",
-			locator1 = "FormViewBuilder#OBJECT_FIELD_BUTTON_DROPDOWN");
+		Select(
+			key_optionName = "Color",
+			locator1 = "CommerceFrontStore#FS_PRODUCT_OPTIONS_SELECT",
+			value1 = "Blue");
 
 		Check.checkToggleSwitch(
 			key_toggleSwitchLabel = "Purchasable",
 			locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
 
-		Type(
-			key_fieldLabel = "Base Price",
-			locator1 = "TextInput#GENERIC_TEXT_INPUT",
-			value1 = "20.0");
-
 		Button.click(button = "Publish");
 
-		CommerceUtilities.checkSuccessAlertAppearsAndDisappears();
+		CommerceEntry.gotoMenuTab(menuTab = "Price");
+
+		CommerceSKUs.addSKUPriceEntry(
+			priceList = "Minium Base Price List",
+			unitPrice = 20);
 
 		Refresh();
 
@@ -2829,8 +2943,9 @@ definition {
 
 		CommerceAcceleratorsInitializer.gotoMiniumProductDetailsPage(productName = "Bundled Product");
 
-		AssertTextEquals(
-			locator1 = "Dropdown#SELECTED_VALUE",
+		AssertSelectedLabel(
+			key_optionName = "Color",
+			locator1 = "CommerceFrontStore#FS_PRODUCT_OPTIONS_SELECT",
 			value1 = "Black");
 
 		AssertElementPresent(
@@ -2842,19 +2957,22 @@ definition {
 			value1 = "70.00");
 
 		Click(
-			key_localizationName = "caret-double",
-			locator1 = "AssetWorkflow#TRANSLATIONS_PREVIEW_LOCALIZATION");
+			key_optionName = "Color",
+			locator1 = "CommerceFrontStore#FS_PRODUCT_OPTIONS_SELECT");
 
 		AssertElementPresent(
-			key_fieldName = "Blue  + $ 20.00",
-			locator1 = "FormViewBuilder#OBJECT_FIELD_BUTTON_DROPDOWN");
+			key_fieldLabel = "Color",
+			key_value = "Blue + $ 20.00",
+			locator1 = "Select#GENERIC_SELECT_VALUE");
 
-		Click(
-			key_fieldName = "Blue  + $ 20.00",
-			locator1 = "FormViewBuilder#OBJECT_FIELD_BUTTON_DROPDOWN");
+		Select(
+			key_optionName = "Color",
+			locator1 = "CommerceFrontStore#FS_PRODUCT_OPTIONS_SELECT",
+			value1 = "Blue + $ 20.00");
 
-		AssertTextEquals(
-			locator1 = "Dropdown#SELECTED_VALUE",
+		AssertSelectedLabel(
+			key_optionName = "Color",
+			locator1 = "CommerceFrontStore#FS_PRODUCT_OPTIONS_SELECT",
 			value1 = "Blue");
 
 		AssertElementPresent(
@@ -2875,9 +2993,7 @@ definition {
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceProducts.searchProduct(search = "Hoses");
 
@@ -2889,12 +3005,11 @@ definition {
 
 		SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
 
-		Type(
-			key_fieldLabel = "Base Price",
-			locator1 = "TextInput#GENERIC_TEXT_INPUT",
-			value1 = "80.0");
+		CommerceEntry.gotoMenuTab(menuTab = "Price");
 
-		Button.clickPublish();
+		CommerceSKUs.addSKUPriceEntry(
+			priceList = "Minium Base Price List",
+			unitPrice = 80);
 
 		CommerceEntry.gotoMenuTab(menuTab = "Inventory");
 
@@ -2937,9 +3052,10 @@ definition {
 
 		CommerceAcceleratorsInitializer.gotoMiniumProductDetailsPage(productName = "Hoses");
 
-		AssertElementPresent(
-			key_selectValue = 6,
-			locator1 = "CommerceEntry#OPTIONS_SELECT_LIST");
+		AssertSelectedLabel(
+			key_optionName = "Package Quantity",
+			locator1 = "CommerceFrontStore#FS_PRODUCT_OPTIONS_SELECT",
+			value1 = 6);
 
 		AssertElementPresent(
 			key_filterOption = "MIN93022A",
@@ -2953,15 +3069,14 @@ definition {
 			key_availability = "Available",
 			locator1 = "CommerceFrontStore#FS_PRODUCT_AVAILABILITY");
 
-		Click(locator1 = "CommerceFrontStore#PRODUCT_DETAILS_PACKAGE_QUANTITY");
+		FrontStore.selectAssociatedFSOptionsValue(
+			fsOptionName = "Package Quantity",
+			fsOptionValue = 24);
 
-		Click(
-			key_selectValue = 24,
-			locator1 = "CommerceEntry#OPTIONS_SELECT_LIST");
-
-		AssertElementPresent(
-			key_selectValue = 24,
-			locator1 = "CommerceEntry#OPTIONS_SELECT_LIST");
+		AssertSelectedLabel(
+			key_optionName = "Package Quantity",
+			locator1 = "CommerceFrontStore#FS_PRODUCT_OPTIONS_SELECT",
+			value1 = 24);
 
 		AssertElementPresent(
 			key_filterOption = "MIN93022B",
@@ -3007,9 +3122,7 @@ definition {
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceNavigator.searchEntry(entryName = ${product});
 
@@ -3098,9 +3211,7 @@ definition {
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CommerceNavigator.searchEntry(entryName = ${product});
 

@@ -15,6 +15,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.version.Version;
 import com.liferay.portal.tools.DBUpgrader;
 import com.liferay.portal.util.PropsValues;
+import com.liferay.portal.verify.VerifyException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -30,11 +31,11 @@ import javax.sql.DataSource;
 
 import org.apache.logging.log4j.ThreadContext;
 
+import org.osgi.framework.BundleContext;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.service.component.annotations.ReferencePolicy;
-import org.osgi.service.component.annotations.ReferencePolicyOption;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * @author Luis Ortiz
@@ -93,6 +94,12 @@ public class UpgradeRecorder {
 		occurrences++;
 
 		messages.put(message, occurrences);
+
+		if (!_verifyProcessError &&
+			message.contains(VerifyException.class.getName())) {
+
+			_verifyProcessError = true;
+		}
 	}
 
 	public void recordUpgradeProcessMessage(String loggerName, String message) {
@@ -131,7 +138,8 @@ public class UpgradeRecorder {
 		_filter(_warningMessages);
 
 		_result = _calculateResult();
-		_type = _calculateType();
+
+		_type = _calculateType(_result);
 
 		if (PropsValues.UPGRADE_LOG_CONTEXT_ENABLED) {
 			ThreadContext.put("upgrade.type", _type);
@@ -139,22 +147,18 @@ public class UpgradeRecorder {
 		}
 
 		if (_log.isInfoEnabled()) {
-			if (_type.equals("no upgrade")) {
-				if (_result.equals("success")) {
-					_log.info("No pending upgrades to run");
-				}
-				else {
-					_log.info(
-						"Upgrade process failed or upgrade dependencies are " +
-							"not resolved");
-				}
+			if (_type.equals("no upgrade") && _result.equals("success")) {
+				_log.info("No pending upgrades to run");
 			}
 			else {
 				_log.info(
 					StringBundler.concat(
-						StringUtil.toUpperCase(_type.substring(0, 1)),
-						_type.substring(1), " upgrade finished with result ",
-						_result));
+						StringUtil.upperCaseFirstLetter(_type),
+						" upgrade finished with result ", _result));
+
+				if (!_result.equals("failure") && !_errorMessages.isEmpty()) {
+					_log.info("Unrelated errors occur during the upgrade");
+				}
 			}
 		}
 
@@ -163,15 +167,28 @@ public class UpgradeRecorder {
 		}
 	}
 
+	@Activate
+	protected void activate(BundleContext bundleContext) {
+		_serviceTracker = new ServiceTracker<>(
+			bundleContext, ReleaseManager.class, null);
+
+		_serviceTracker.open();
+	}
+
+	@Deactivate
+	protected void deactivate(BundleContext bundleContext) {
+		_serviceTracker.close();
+	}
+
 	private String _calculateResult() {
-		if (!_errorMessages.isEmpty()) {
+		if (_verifyProcessError) {
 			return "failure";
 		}
 
 		try {
-			if (!_releaseManager.isUpgraded()) {
-				return "unresolved";
-			}
+			ReleaseManager releaseManager = _serviceTracker.getService();
+
+			return releaseManager.getStatus();
 		}
 		catch (Exception exception) {
 			_log.error(
@@ -181,15 +198,9 @@ public class UpgradeRecorder {
 
 			return "failure";
 		}
-
-		if (!_warningMessages.isEmpty()) {
-			return "warning";
-		}
-
-		return "success";
 	}
 
-	private String _calculateType() {
+	private String _calculateType(String result) {
 		_processRelease(
 			(moduleSchemaVersions, schemaVersion) ->
 				moduleSchemaVersions._setFinal(schemaVersion));
@@ -202,7 +213,7 @@ public class UpgradeRecorder {
 			SchemaVersions schemaVersions = schemaVersionsEntry.getValue();
 
 			if (schemaVersions._getInitial() == null) {
-				continue;
+				return "major";
 			}
 
 			Version initialVersion = Version.parseVersion(
@@ -229,6 +240,10 @@ public class UpgradeRecorder {
 			}
 
 			type = "micro";
+		}
+
+		if (type.equals("no upgrade") && !result.equals("success")) {
+			return "major";
 		}
 
 		return type;
@@ -301,6 +316,7 @@ public class UpgradeRecorder {
 	private static String _type;
 	private static final Map<String, ArrayList<String>>
 		_upgradeProcessMessages = new ConcurrentHashMap<>();
+	private static boolean _verifyProcessError;
 	private static final Map<String, Map<String, Integer>> _warningMessages =
 		new ConcurrentHashMap<>();
 
@@ -317,12 +333,7 @@ public class UpgradeRecorder {
 		}
 	}
 
-	@Reference(
-		cardinality = ReferenceCardinality.OPTIONAL,
-		policy = ReferencePolicy.DYNAMIC,
-		policyOption = ReferencePolicyOption.GREEDY
-	)
-	private volatile ReleaseManager _releaseManager;
+	private ServiceTracker<ReleaseManager, ReleaseManager> _serviceTracker;
 
 	private class SchemaVersions {
 

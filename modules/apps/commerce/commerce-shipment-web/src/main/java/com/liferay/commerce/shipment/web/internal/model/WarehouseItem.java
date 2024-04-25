@@ -5,17 +5,21 @@
 
 package com.liferay.commerce.shipment.web.internal.model;
 
+import java.math.BigDecimal;
+
 /**
  * @author Alec Sloan
  */
 public class WarehouseItem {
 
 	public WarehouseItem(
-		String inputName, int maxQuantity, int minQuantity, int quantity) {
+		String inputName, BigDecimal maxQuantity, BigDecimal minQuantity,
+		BigDecimal multipleQuantity, BigDecimal quantity) {
 
 		_inputName = inputName;
 		_maxQuantity = maxQuantity;
 		_minQuantity = minQuantity;
+		_multipleQuantity = multipleQuantity;
 		_quantity = quantity;
 	}
 
@@ -23,21 +27,26 @@ public class WarehouseItem {
 		return _inputName;
 	}
 
-	public int getMaxQuantity() {
+	public BigDecimal getMaxQuantity() {
 		return _maxQuantity;
 	}
 
-	public int getMinQuantity() {
+	public BigDecimal getMinQuantity() {
 		return _minQuantity;
 	}
 
-	public int getQuantity() {
+	public BigDecimal getMultipleQuantity() {
+		return _multipleQuantity;
+	}
+
+	public BigDecimal getQuantity() {
 		return _quantity;
 	}
 
 	private final String _inputName;
-	private final int _maxQuantity;
-	private final int _minQuantity;
-	private final int _quantity;
+	private final BigDecimal _maxQuantity;
+	private final BigDecimal _minQuantity;
+	private final BigDecimal _multipleQuantity;
+	private final BigDecimal _quantity;
 
 }

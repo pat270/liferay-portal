@@ -38,6 +38,7 @@ definition {
 		property portal.acceptance = "true";
 		property portal.upstream = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		FormsAdmin.addForm();
 
@@ -70,6 +71,7 @@ definition {
 		property portal.acceptance = "true";
 		property portal.upstream = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		FormsAdmin.addForm();
 
@@ -109,6 +111,7 @@ definition {
 	test CanBeSubmittedWithAllFields {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 		property testray.component.names = "Training";
 
 		FormsAdmin.addForm();
@@ -155,6 +158,8 @@ definition {
 			optionName = "Select1",
 			optionValue = "Select 1");
 
+		FormFields.clickAddOptionButton();
+
 		FormFields.editOptionsRow(
 			optionName = "Select2",
 			optionValue = "Select 2",
@@ -174,6 +179,8 @@ definition {
 		FormFields.editOptionsRow(
 			optionName = "Option1",
 			optionValue = "Option 1");
+
+		FormFields.clickAddOptionButton();
 
 		FormFields.editOptionsRow(
 			optionName = "Option2",
@@ -207,6 +214,8 @@ definition {
 			optionValue = "Checkbox 1",
 			rowNumber = 1);
 
+		FormFields.clickAddOptionButton();
+
 		FormFields.editOptionsRow(
 			optionName = "Checkbox2",
 			optionValue = "Checkbox 2",
@@ -236,6 +245,10 @@ definition {
 				gridField = "Row",
 				optionValue = "Option ${optionNumber}",
 				rowNumber = ${optionNumber});
+
+			if (${optionNumber} != 3) {
+				FormFields.clickAddOptionButton(gridOptionType = "Rows");
+			}
 		}
 
 		for (var optionNumber : list "1,2,3") {
@@ -243,6 +256,10 @@ definition {
 				gridField = "Column",
 				optionValue = "Category ${optionNumber}",
 				rowNumber = ${optionNumber});
+
+			if (${optionNumber} != 3) {
+				FormFields.clickAddOptionButton(gridOptionType = "Columns");
+			}
 		}
 
 		Form.closeSidebar();
@@ -288,25 +305,16 @@ definition {
 
 		Form.publishForm();
 
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			portlet = "Pages");
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Form Page");
 
-		PagesAdmin.addPage(pageName = "Form Page");
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Guest",
+			layoutName = "Form Page",
+			widgetName = "Form");
 
-		Navigator.gotoPage(pageName = "Form Page");
-
-		Portlet.addPG(
-			pageName = "Form Page",
-			portletName = "Form");
-
-		FormPortletNavigator.gotoSelectForm();
-
-		FormPortletConfiguration.selectForm();
-
-		PortletEntry.save();
-
-		Navigator.gotoPage(pageName = "Form Page");
+		FormPortletConfiguration.selectFormOnAPage(pageName = "Form Page");
 
 		FormPortlet.waitFormRenderer(text = "Next");
 
@@ -368,6 +376,44 @@ definition {
 		FormPortlet.submitSuccessfully();
 	}
 
+	@description = "Verify that the dropdown options for Acceptance Date are shown after adding a translation "
+	@priority = 4
+	test CanViewAcceptedDateOptionsAfterActiveValidation {
+		task ("Given a form with a date field") {
+			FormsAdmin.addForm();
+
+			Form.editName(formName = "Birthday");
+
+			Form.gotoAddField(
+				fieldPositionNumber = 0,
+				fieldType = "Date");
+		}
+
+		task ("and Given a translation is added to the form") {
+			Form.addTranslation(localizedLanguage = "Portuguese (Brazil)");
+		}
+
+		task ("When the validation is activated") {
+			Click(
+				key_fieldName = "Date",
+				locator1 = "Form#FIELD_LABEL");
+
+			Form.gotoAdvancedTab();
+
+			FormFields.enableSwitch(fieldName = "Validation");
+
+			Click(locator1 = "FormFields#VALIDATION_ACCEPTED_DATE");
+		}
+
+		task ("Then the dropdown options for Acceptance Date are shown") {
+			for (var acceptedDateOptions : list "Future Dates,Past Dates,Range") {
+				AssertVisible(
+					key_menuItem = ${acceptedDateOptions},
+					locator1 = "MenuItem#DROPDOWN_MENU_ITEM");
+			}
+		}
+	}
+
 	@description = "LPS-167567 - Verify that the Field Reference property is not vulnerable to Cross Site Scripting"
 	@priority = 5
 	test CheckFieldReferenceCrossSiteScripting {
@@ -411,25 +457,18 @@ definition {
 
 		Form.publishForm();
 
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			portlet = "Pages");
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Form Page");
 
-		PagesAdmin.addPage(pageName = "Form Page");
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Guest",
+			layoutName = "Form Page",
+			widgetName = "Form");
 
-		Navigator.gotoPage(pageName = "Form Page");
-
-		Portlet.addPG(
-			pageName = "Form Page",
-			portletName = "Form");
-
-		FormPortletNavigator.gotoSelectForm();
-
-		FormPortletConfiguration.selectForm(formTitle = "Form");
-
-		PortletEntry.save();
-
-		Navigator.gotoPage(pageName = "Form Page");
+		FormPortletConfiguration.selectFormOnAPage(
+			formName = "Form",
+			pageName = "Form Page");
 
 		FormFields.viewFieldHelpText(
 			fieldHelpText = "<script>alert(123)</script>",
@@ -457,25 +496,18 @@ definition {
 
 		Form.publishForm();
 
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			portlet = "Pages");
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Form Page");
 
-		PagesAdmin.addPage(pageName = "Form Page");
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Guest",
+			layoutName = "Form Page",
+			widgetName = "Form");
 
-		Navigator.gotoPage(pageName = "Form Page");
-
-		Portlet.addPG(
-			pageName = "Form Page",
-			portletName = "Form");
-
-		FormPortletNavigator.gotoSelectForm();
-
-		FormPortletConfiguration.selectForm(formTitle = "Form");
-
-		PortletEntry.save();
-
-		Navigator.gotoPage(pageName = "Form Page");
+		FormPortletConfiguration.selectFormOnAPage(
+			formName = "Form",
+			pageName = "Form Page");
 
 		FormFields.viewTextField(
 			fieldLabel = "<script>alert(123)</script>",
@@ -501,25 +533,18 @@ definition {
 
 		Form.publishForm();
 
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			portlet = "Pages");
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Form Page");
 
-		PagesAdmin.addPage(pageName = "Form Page");
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Guest",
+			layoutName = "Form Page",
+			widgetName = "Form");
 
-		Navigator.gotoPage(pageName = "Form Page");
-
-		Portlet.addPG(
-			pageName = "Form Page",
-			portletName = "Form");
-
-		FormPortletNavigator.gotoSelectForm();
-
-		FormPortletConfiguration.selectForm(formTitle = "Form");
-
-		PortletEntry.save();
-
-		Navigator.gotoPage(pageName = "Form Page");
+		FormPortletConfiguration.selectFormOnAPage(
+			formName = "Form",
+			pageName = "Form Page");
 
 		FormFields.viewFieldPlaceholderText(
 			fieldName = ${textFieldName},
@@ -545,25 +570,18 @@ definition {
 
 		Form.publishForm();
 
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			portlet = "Pages");
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Form Page");
 
-		PagesAdmin.addPage(pageName = "Form Page");
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Guest",
+			layoutName = "Form Page",
+			widgetName = "Form");
 
-		Navigator.gotoPage(pageName = "Form Page");
-
-		Portlet.addPG(
-			pageName = "Form Page",
-			portletName = "Form");
-
-		FormPortletNavigator.gotoSelectForm();
-
-		FormPortletConfiguration.selectForm(formTitle = "Form");
-
-		PortletEntry.save();
-
-		Navigator.gotoPage(pageName = "Form Page");
+		FormPortletConfiguration.selectFormOnAPage(
+			formName = "Form",
+			pageName = "Form Page");
 
 		AssertTextEquals(
 			key_fieldName = "Text",
@@ -577,6 +595,7 @@ definition {
 		property portal.acceptance = "true";
 		property portal.upstream = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		FormsAdmin.addForm();
 
@@ -657,6 +676,53 @@ definition {
 		FormFields.viewFieldValidationErrorMessage(
 			fieldName = ${fieldTextField2},
 			fieldValidationErrorMessage = "This field is required.");
+	}
+
+	@description = "LPS-182981 - Verify if when adding a new option in a field this option is added only in the chosen field "
+	@priority = 4
+	test ViewOptionAddedOnlyInTheChosenField {
+		task ("Given an created Form with a text field, a single selection field and a multiple selection field") {
+			FormsAdmin.addForm();
+
+			Form.editName(formName = "Form Test");
+
+			FormViewBuilder.addFieldByDoubleClick(fieldType = "Text");
+
+			Form.closeSidebar();
+
+			FormViewBuilder.addFieldByDoubleClick(fieldType = "Single Selection");
+
+			Form.closeSidebar();
+
+			FormViewBuilder.addFieldByDoubleClick(fieldType = "Multiple Selection");
+
+			Form.closeSidebar();
+		}
+
+		task ("When the user add a new option on the single selection") {
+			Form.gotoFieldContainer(fieldName = "Single Selection");
+
+			FormFields.editOptionsRow(
+				optionName = "Option1",
+				optionValue = "Option 1",
+				rowNumber = 1);
+
+			FormFields.clickAddOptionButton();
+
+			FormFields.editOptionsRow(
+				optionName = "Option2",
+				optionValue = "Option 2",
+				rowNumber = 2);
+
+			Form.closeSidebar();
+		}
+
+		task ("Then the option is added only in the chosen field") {
+			FormFields.viewOptionRowNameNotPresent(
+				fieldName = "Multiple Selection",
+				optionName = "Option 2",
+				rowNumber = 1);
+		}
 	}
 
 }

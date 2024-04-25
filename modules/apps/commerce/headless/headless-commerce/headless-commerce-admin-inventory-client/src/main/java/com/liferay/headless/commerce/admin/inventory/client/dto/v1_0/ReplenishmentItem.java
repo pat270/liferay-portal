@@ -10,6 +10,8 @@ import com.liferay.headless.commerce.admin.inventory.client.serdes.v1_0.Replenis
 
 import java.io.Serializable;
 
+import java.math.BigDecimal;
+
 import java.util.Date;
 import java.util.Objects;
 
@@ -87,16 +89,16 @@ public class ReplenishmentItem implements Cloneable, Serializable {
 
 	protected Long id;
 
-	public Integer getQuantity() {
+	public BigDecimal getQuantity() {
 		return quantity;
 	}
 
-	public void setQuantity(Integer quantity) {
+	public void setQuantity(BigDecimal quantity) {
 		this.quantity = quantity;
 	}
 
 	public void setQuantity(
-		UnsafeSupplier<Integer, Exception> quantityUnsafeSupplier) {
+		UnsafeSupplier<BigDecimal, Exception> quantityUnsafeSupplier) {
 
 		try {
 			quantity = quantityUnsafeSupplier.get();
@@ -106,7 +108,7 @@ public class ReplenishmentItem implements Cloneable, Serializable {
 		}
 	}
 
-	protected Integer quantity;
+	protected BigDecimal quantity;
 
 	public String getSku() {
 		return sku;
@@ -126,6 +128,27 @@ public class ReplenishmentItem implements Cloneable, Serializable {
 	}
 
 	protected String sku;
+
+	public String getUnitOfMeasureKey() {
+		return unitOfMeasureKey;
+	}
+
+	public void setUnitOfMeasureKey(String unitOfMeasureKey) {
+		this.unitOfMeasureKey = unitOfMeasureKey;
+	}
+
+	public void setUnitOfMeasureKey(
+		UnsafeSupplier<String, Exception> unitOfMeasureKeyUnsafeSupplier) {
+
+		try {
+			unitOfMeasureKey = unitOfMeasureKeyUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String unitOfMeasureKey;
 
 	public Long getWarehouseId() {
 		return warehouseId;

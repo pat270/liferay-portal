@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.json.JSONObject;
@@ -42,6 +43,10 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 	@Override
 	public int getAxisCount() {
+		if (ignore()) {
+			return 0;
+		}
+
 		return axisTestClassGroups.size();
 	}
 
@@ -129,6 +134,16 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		return jobProperty.getValue();
 	}
 
+	public boolean isUpgradeFile(File file) {
+		Matcher matcher = _upgradeFileNamePattern.matcher(file.toString());
+
+		if (matcher.find()) {
+			return true;
+		}
+
+		return false;
+	}
+
 	protected FunctionalBatchTestClassGroup(
 		JSONObject jsonObject, PortalTestClassJob portalTestClassJob) {
 
@@ -152,6 +167,10 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		String batchName, PortalTestClassJob portalTestClassJob) {
 
 		super(batchName, portalTestClassJob);
+
+		if (ignore()) {
+			return;
+		}
 
 		_setTestBatchRunPropertyQueries();
 
@@ -281,6 +300,9 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 						"test.base.dir.name", testBaseDirPath);
 				}
 
+				properties.setProperty("poshi.file.read.thread.pool", "4");
+				properties.setProperty("poshi.file.read.timeout", "30");
+
 				PropsUtil.clear();
 
 				PropsUtil.setProperties(properties);
@@ -388,7 +410,9 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		}
 	}
 
-	private String _concatPQL(File file, String concatedPQL) {
+	private String _concatPQL(
+		File file, String testSuiteName, String concatedPQL) {
+
 		if (file == null) {
 			return null;
 		}
@@ -427,17 +451,26 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		}
 
 		if (!canonicalFile.isDirectory() || !testPropertiesFile.exists()) {
-			return _concatPQL(parentFile, concatedPQL);
+			return _concatPQL(parentFile, testSuiteName, concatedPQL);
 		}
 
-		if (_traversedPropertyFiles.contains(testPropertiesFile)) {
+		if ((_traversedPropertyFiles.contains(testPropertiesFile) &&
+			 testSuiteName.equals("relevant")) ||
+			_traversedUpgradeFiles.contains(testPropertiesFile)) {
+
 			return concatedPQL;
+		}
+
+		if (testSuiteName.equals("upgrades-relevant") &&
+			!_traversedUpgradeFiles.contains(testPropertiesFile)) {
+
+			_traversedUpgradeFiles.add(testPropertiesFile);
 		}
 
 		_traversedPropertyFiles.add(testPropertiesFile);
 
 		JobProperty jobProperty = getJobProperty(
-			"test.batch.run.property.query", getTestSuiteName(), batchName,
+			"test.batch.run.property.query", testSuiteName, batchName,
 			canonicalFile, JobProperty.Type.MODULE_TEST_DIR);
 
 		String testBatchPropertyQuery = jobProperty.getValue();
@@ -465,7 +498,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		boolean ignoreParents = Boolean.valueOf(
 			JenkinsResultsParserUtil.getProperty(
-				testProperties, "ignoreParents", false, getTestSuiteName()));
+				testProperties, "ignoreParents", false, testSuiteName));
 
 		if (ignoreParents ||
 			parentFile.equals(
@@ -475,7 +508,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		}
 
 		if (!parentFilePath.equals(modulesBaseDirPath)) {
-			return _concatPQL(parentFile, concatedPQL);
+			return _concatPQL(parentFile, testSuiteName, concatedPQL);
 		}
 
 		return concatedPQL;
@@ -521,8 +554,28 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 	private String _getTestBatchRunPropertyQuery(File testBaseDir) {
 		if (!testRelevantChanges && !testHotfixChanges) {
-			return getDefaultTestBatchRunPropertyQuery(
+			String defaultPQL = getDefaultTestBatchRunPropertyQuery(
 				testBaseDir, testSuiteName);
+
+			JobProperty globalJobProperty = getJobProperty(
+				"test.batch.run.property.global.query", testSuiteName,
+				batchName);
+
+			String globalJobPropertyValue = globalJobProperty.getValue();
+
+			if (!JenkinsResultsParserUtil.isNullOrEmpty(
+					globalJobPropertyValue)) {
+
+				JenkinsResultsParserUtil.validatePQL(
+					globalJobPropertyValue, testBaseDir);
+
+				recordJobProperty(globalJobProperty);
+
+				return JenkinsResultsParserUtil.combine(
+					"(", globalJobPropertyValue, ") AND (", defaultPQL, ")");
+			}
+
+			return defaultPQL;
 		}
 
 		File testPropertiesFile = new File(
@@ -531,7 +584,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		StringBuilder sb = new StringBuilder();
 
 		for (File modifiedFile : getModifiedFiles()) {
-			String testBatchPQL = _concatPQL(modifiedFile, "");
+			String testBatchPQL = _concatPQL(
+				modifiedFile, getTestSuiteName(), "");
 
 			if (JenkinsResultsParserUtil.isNullOrEmpty(testBatchPQL) ||
 				testBatchPQL.equals("false")) {
@@ -547,6 +601,21 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 				sb.append("(");
 				sb.append(testBatchPQL);
 				sb.append(")");
+			}
+
+			if (isUpgradeFile(modifiedFile)) {
+				String upgradePQL = _concatPQL(
+					modifiedFile, "upgrades-relevant", "");
+
+				if (!JenkinsResultsParserUtil.isNullOrEmpty(upgradePQL)) {
+					if (sb.length() > 0) {
+						sb.append(" OR ");
+					}
+
+					sb.append("(");
+					sb.append(upgradePQL);
+					sb.append(")");
+				}
 			}
 		}
 
@@ -602,7 +671,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		String testBatchRunPropertyQuery = sb.toString();
 
 		JobProperty jobProperty = getJobProperty(
-			"test.batch.run.property.global.query");
+			"test.batch.run.property.global.query", testSuiteName, batchName);
 
 		String jobPropertyValue = jobProperty.getValue();
 
@@ -668,9 +737,12 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		"(?<namespace>[^\\.]+)\\.(?<className>[^\\#]+)\\#(?<methodName>.*)");
 	private static final AtomicReference<File> _testBaseDirAtomicReference =
 		new AtomicReference<>();
+	private static final Pattern _upgradeFileNamePattern = Pattern.compile(
+		"(.*\\/verify\\/.*|.*\\/upgrade\\/.*|.*\\.sql)");
 
 	private final Map<File, String> _testBatchRunPropertyQueries =
 		new HashMap<>();
 	private final Set<File> _traversedPropertyFiles = new HashSet<>();
+	private final Set<File> _traversedUpgradeFiles = new HashSet<>();
 
 }

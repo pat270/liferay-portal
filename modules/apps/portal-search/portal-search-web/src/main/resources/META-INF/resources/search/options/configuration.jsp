@@ -35,15 +35,19 @@ SearchOptionsPortletPreferences searchOptionsPortletPreferences = new com.lifera
 
 	<liferay-frontend:edit-form-body>
 		<aui:fieldset>
-			<aui:input helpMessage="allow-empty-searches-help" label="allow-empty-searches" name="<%= PortletPreferencesJspUtil.getInputName(SearchOptionsPortletPreferences.PREFERENCE_KEY_ALLOW_EMPTY_SEARCHES) %>" type="checkbox" value="<%= searchOptionsPortletPreferences.isAllowEmptySearches() %>" />
+			<aui:input data-qa-id="allowEmptySearches" helpMessage="allow-empty-searches-help" label="allow-empty-searches" name="<%= PortletPreferencesJspUtil.getInputName(SearchOptionsPortletPreferences.PREFERENCE_KEY_ALLOW_EMPTY_SEARCHES) %>" type="checkbox" value="<%= searchOptionsPortletPreferences.isAllowEmptySearches() %>" />
 
 			<aui:input helpMessage="basic-facet-selection-help" label="basic-facet-selection" name="<%= PortletPreferencesJspUtil.getInputName(SearchOptionsPortletPreferences.PREFERENCE_KEY_BASIC_FACET_SELECTION) %>" type="checkbox" value="<%= searchOptionsPortletPreferences.isBasicFacetSelection() %>" />
+
+			<aui:input helpMessage="enable-to-retain-facet-selections-across-searches" label="retain-facet-selections-across-searches" name="<%= PortletPreferencesJspUtil.getInputName(SearchOptionsPortletPreferences.PREFERENCE_KEY_RETAIN_FACET_SELECTIONS) %>" type="checkbox" value="<%= searchOptionsPortletPreferences.isRetainFacetSelections() %>" />
 
 			<aui:input helpMessage="enter-the-key-of-an-alternate-search-this-widget-is-participating-on-if-not-set-widget-participates-on-default-search" label="federated-search-key" name="<%= PortletPreferencesJspUtil.getInputName(SearchOptionsPortletPreferences.PREFERENCE_KEY_FEDERATED_SEARCH_KEY) %>" type="text" value="<%= searchOptionsPortletPreferences.getFederatedSearchKey() %>" />
 		</aui:fieldset>
 	</liferay-frontend:edit-form-body>
 
 	<liferay-frontend:edit-form-footer>
-		<liferay-frontend:edit-form-buttons />
+		<div data-qa-id="searchOptionsFooter">
+			<liferay-frontend:edit-form-buttons />
+		</div>
 	</liferay-frontend:edit-form-footer>
 </liferay-frontend:edit-form>

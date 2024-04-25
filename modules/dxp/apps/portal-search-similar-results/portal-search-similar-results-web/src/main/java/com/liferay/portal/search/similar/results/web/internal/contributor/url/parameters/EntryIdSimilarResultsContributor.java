@@ -9,8 +9,8 @@ import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
-import com.liferay.portal.search.similar.results.web.internal.helper.HttpHelper;
-import com.liferay.portal.search.similar.results.web.spi.contributor.SimilarResultsContributor;
+import com.liferay.portal.search.similar.results.web.internal.contributor.SimilarResultsContributor;
+import com.liferay.portal.search.similar.results.web.internal.helper.HttpHelperUtil;
 import com.liferay.portal.search.similar.results.web.spi.contributor.helper.CriteriaBuilder;
 import com.liferay.portal.search.similar.results.web.spi.contributor.helper.CriteriaHelper;
 import com.liferay.portal.search.similar.results.web.spi.contributor.helper.DestinationBuilder;
@@ -18,18 +18,20 @@ import com.liferay.portal.search.similar.results.web.spi.contributor.helper.Dest
 import com.liferay.portal.search.similar.results.web.spi.contributor.helper.RouteBuilder;
 import com.liferay.portal.search.similar.results.web.spi.contributor.helper.RouteHelper;
 
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-
 /**
  * @author Wade Cao
  * @author André de Oliveira
  */
-@Component(service = SimilarResultsContributor.class)
 public class EntryIdSimilarResultsContributor
 	implements SimilarResultsContributor {
 
 	public static final String ENTRY_ID = "entryId";
+
+	public EntryIdSimilarResultsContributor(
+		AssetEntryLocalService assetEntryLocalService) {
+
+		_assetEntryLocalService = assetEntryLocalService;
+	}
 
 	@Override
 	public void detectRoute(
@@ -38,7 +40,7 @@ public class EntryIdSimilarResultsContributor
 		routeBuilder.addAttribute(
 			ENTRY_ID,
 			Long.valueOf(
-				_httpHelper.getPortletIdParameter(
+				HttpHelperUtil.getPortletIdParameter(
 					HttpComponentsUtil.decodePath(routeHelper.getURLString()),
 					ENTRY_ID)));
 	}
@@ -69,10 +71,6 @@ public class EntryIdSimilarResultsContributor
 			ENTRY_ID, String.valueOf(assetEntry.getEntryId()));
 	}
 
-	@Reference
-	private AssetEntryLocalService _assetEntryLocalService;
-
-	@Reference
-	private HttpHelper _httpHelper;
+	private final AssetEntryLocalService _assetEntryLocalService;
 
 }

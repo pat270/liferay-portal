@@ -82,22 +82,22 @@
 </tr>
 <tr>
 	<td>OPTION_INPUT</td>
-	<td>xpath=(//label[normalize-space(text())='${key_optionFieldLabel}']//following-sibling::div[contains(@class,'options-container')]//div[contains(@class,'ddm-option-entry')]//input[contains(@class,'ddm-field-text')])[${index}]</td>
+	<td>xpath=(//label[normalize-space(text())='${key_optionFieldLabel}']//following-sibling::div[contains(@class,'options-container')]//div[contains(@class,'ddm-option-entry')]//input[contains(@id,'keyValueDisplayName')])[${index}]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>OPTION_INPUT_WITHOUT_LABEL</td>
-	<td>xpath=(//div[contains(@class,'ddm-option-entry')]//input[contains(@class,'ddm-field-text')])[${index}]</td>
+	<td>xpath=(//div[contains(@class,'ddm-option-entry')]//input[contains(@id,'keyValueDisplayName')])[${index}]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>OPTION_FIELD_REFERENCE_INPUT</td>
-	<td>xpath=(//label[normalize-space(text())='${key_optionFieldLabel}']//following-sibling::div[contains(@class,'options-container')]//div[contains(@class,'ddm-option-entry')]//input[contains(@class,'key-value-reference')])[${index}]</td>
+	<td>xpath=(//label[normalize-space(text())='${key_optionFieldLabel}']//following-sibling::div[contains(@class,'options-container')]//div[contains(@class,'ddm-option-entry')]//input[contains(@id,'keyValueReference')])[${index}]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>OPTION_WITHOUT_LABEL_FIELD_REFERENCE_INPUT</td>
-	<td>xpath=(//div[contains(@class,'ddm-option-entry')]//input[contains(@class,'key-value-reference')])[${index}]</td>
+	<td>xpath=(//div[contains(@class,'ddm-option-entry')]//input[contains(@id,'keyValueReference')])[${index}]</td>
 	<td></td>
 </tr>
 <tr>
@@ -133,6 +133,64 @@
 <tr>
 	<td>TITLE_2</td>
 	<td>//div[contains(@class,'sidebar-header')] //span[contains(@class,'font-weight-bold')]</td>
+	<td></td>
+</tr>
+
+<!--INFO_PANEL-->
+
+<tr>
+	<td>COMPONENT_TITLE</td>
+	<td>//h1[contains(@class,'component-title')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>COMPONENT_SUBTITLE</td>
+	<td>//h2[contains(@class,'component-subtitle')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>HEADER_LABEL</td>
+	<td>//div[contains(@class,'sidebar-header')]//span[contains(@class,'label-item')][normalize-space()='${key_labelName}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>LIST_ENTRY</td>
+	<td>//div[contains(@class,'info-panel')]//li[contains(@class,'list-group-item')][.//div[contains(@class,'list-group-title')][normalize-space()='${key_listEntry}']]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>LIST_ENTRY_ELLIPSIS</td>
+	<td>//div[contains(@class,'info-panel')]//li[contains(@class,'list-group-item')][.//div[contains(@class,'list-group-title')][normalize-space()='${key_listEntry}']]//button[contains(@class,'dropdown-toggle')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>LIST_ENTRY_LABEL</td>
+	<td>//div[contains(@class,'info-panel')]//li[contains(@class,'list-group-item')][.//div[contains(@class,'list-group-title')][normalize-space()='${key_listEntry}']]//span[contains(@class,'label-item')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>LOCALTION</td>
+	<td>//div[contains(@class,'sidebar-body')]//p[normalize-space()='Location']//following-sibling::p</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CONTENT_TYPE</td>
+	<td>//div[contains(@class,'sidebar-body')]//p[normalize-space()='Content Type']//following-sibling::span</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SUBTYPE</td>
+	<td>//div[contains(@class,'sidebar-body')]//p[normalize-space()='Subtype']//following-sibling::span</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CREATED</td>
+	<td>//div[contains(@class,'sidebar-body')]//p[normalize-space()='Created']//following-sibling::p</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MODIFIED</td>
+	<td>//div[contains(@class,'sidebar-body')]//p[normalize-space()='Modified']//following-sibling::p</td>
 	<td></td>
 </tr>
 

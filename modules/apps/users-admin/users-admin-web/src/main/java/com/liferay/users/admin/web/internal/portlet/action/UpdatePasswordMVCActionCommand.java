@@ -15,20 +15,19 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
-import com.liferay.portal.kernel.security.auth.session.AuthenticatedSessionManager;
 import com.liferay.portal.kernel.security.ldap.LDAPSettingsUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.UserLocalService;
-import com.liferay.portal.kernel.service.UserService;
-import com.liferay.portal.kernel.service.permission.UserPermission;
+import com.liferay.portal.kernel.service.permission.UserPermissionUtil;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.security.auth.session.AuthenticatedSessionManagerUtil;
+import com.liferay.portlet.usersadmin.util.UsersAdminUtil;
 import com.liferay.users.admin.constants.UsersAdminPortletKeys;
-import com.liferay.users.admin.kernel.util.UsersAdmin;
 
 import java.util.Date;
 
@@ -65,7 +64,7 @@ public class UpdatePasswordMVCActionCommand extends BaseMVCActionCommand {
 
 			User user = _portal.getSelectedUser(actionRequest);
 
-			_userPermission.check(
+			UserPermissionUtil.check(
 				themeDisplay.getPermissionChecker(), user.getUserId(),
 				ActionKeys.UPDATE);
 
@@ -91,7 +90,7 @@ public class UpdatePasswordMVCActionCommand extends BaseMVCActionCommand {
 			String reminderQueryQuestion = BeanParamUtil.getString(
 				user, actionRequest, "reminderQueryQuestion");
 
-			if (reminderQueryQuestion.equals(UsersAdmin.CUSTOM_QUESTION)) {
+			if (reminderQueryQuestion.equals(UsersAdminUtil.CUSTOM_QUESTION)) {
 				reminderQueryQuestion = BeanParamUtil.getStringSilent(
 					user, actionRequest, "reminderQueryCustomQuestion");
 			}
@@ -156,7 +155,7 @@ public class UpdatePasswordMVCActionCommand extends BaseMVCActionCommand {
 						passwordModifiedDate.getTime());
 				}
 
-				_authenticatedSessionManager.login(
+				AuthenticatedSessionManagerUtil.login(
 					httpServletRequest,
 					_portal.getHttpServletResponse(actionResponse), login,
 					newPassword1, false, null);
@@ -188,18 +187,9 @@ public class UpdatePasswordMVCActionCommand extends BaseMVCActionCommand {
 	}
 
 	@Reference
-	private AuthenticatedSessionManager _authenticatedSessionManager;
-
-	@Reference
 	private Portal _portal;
 
 	@Reference
 	private UserLocalService _userLocalService;
-
-	@Reference
-	private UserPermission _userPermission;
-
-	@Reference
-	private UserService _userService;
 
 }

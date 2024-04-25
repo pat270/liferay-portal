@@ -1,5 +1,5 @@
 {
-	"main": "index.es.js",
+	"main": "js/index.js",
 	"name": "data-engine-rest-impl",
 	"private": true,
 	"scripts": {
@@ -7,5 +7,5 @@
 		"checkFormat": "liferay-npm-scripts check",
 		"format": "liferay-npm-scripts fix"
 	},
-	"version": "3.0.89"
+	"version": "3.0.108"
 }

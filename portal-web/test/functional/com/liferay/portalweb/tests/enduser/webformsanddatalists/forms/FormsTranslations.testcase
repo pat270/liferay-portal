@@ -117,7 +117,7 @@ definition {
 
 		FormViewBuilder.changeAppLanguageTo(changeAppLanguageTo = "ja-JP");
 
-		FormViewBuilder.changeAppLanguageTo(changeAppLanguageTo = "العربية-السعودية");
+		FormViewBuilder.changeAppLanguageTo(changeAppLanguageTo = "السعودية");
 
 		FormViewBuilder.validateFieldLabel(fieldLabel = "عربى");
 	}
@@ -164,6 +164,7 @@ definition {
 		property portal.acceptance = "true";
 		property portal.upstream = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Navigator.openURL();
 
@@ -438,13 +439,136 @@ definition {
 
 		Alert.viewSuccessMessage();
 
-		FormsAdmin.openFormsAdmin(siteURLKey = "guest");
+		FormsAdminNavigator.openFormsAdmin(siteURLKey = "guest");
 
 		FormsAdminNavigator.gotoViewEntries();
 
 		FormsAdmin.viewFormTableEntry(
 			fieldLabel = "Text ES",
 			fieldValue = "Text ES");
+	}
+
+	@description = "LPS-161964 Verify that the Date field is displayed in the same language selected by the user on the Entries page."
+	@priority = 4
+	test CheckDateFieldResponsesSameLanguageOnTheEntriesPage {
+		task ("Given a form with two date entries with two translations") {
+			FormsAdmin.addForm();
+
+			Form.editName(formName = "Form 1");
+
+			Form.gotoAddField(
+				fieldPositionNumber = 0,
+				fieldType = "Date");
+
+			Form.closeSidebar();
+
+			Form.gotoAddField(
+				fieldPositionNumber = 0,
+				fieldType = "Boolean");
+
+			Form.addTranslation(localizedLanguage = "Portuguese (Brazil)");
+
+			Form.save();
+
+			Form.publishForm();
+
+			FormsAdminNavigator.gotoPublishedForm();
+
+			FormViewBuilder.changeAppLanguageTo(changeAppLanguageTo = "en-US");
+
+			FormFields.editDate(
+				fieldName = ${fieldDateField},
+				fieldValue = "05/02/2016");
+
+			FormFields.enableCheckbox(fieldName = "Boolean");
+
+			FormPortlet.submit();
+
+			Alert.viewSuccessMessage();
+
+			Click(
+				key_text = "Submit Again",
+				locator1 = "Button#ANY");
+
+			FormPortlet.changeLocale(locale = "português-Brasil");
+
+			FormFields.editDate(
+				fieldName = ${fieldDateField},
+				fieldValue = "05/02/2017");
+
+			FormFields.enableCheckbox(fieldName = "Boolean");
+
+			FormPortlet.submit();
+
+			Alert.viewSuccessMessage();
+		}
+
+		task ("and the date entries are displayed in the user's default language") {
+			FormsAdminNavigator.openFormsAdmin(siteURLKey = "guest");
+
+			AssertElementPresent(locator1 = "Icon#VERTICAL_ELLIPSIS_BUTTON");
+
+			LexiconEntry.gotoVerticalEllipsisMenuItemNoError(menuItem = "View Entries");
+
+			FormsAdmin.viewFormTableEntry(
+				fieldLabel = "Date",
+				fieldValue = "05/02/2016");
+
+			FormsAdmin.viewFormTableEntry(
+				fieldLabel = "Date",
+				fieldValue = "02/05/2017");
+		}
+
+		task ("When the user changes the instance localization language") {
+			Navigator.openURL();
+
+			PortalSettings.gotoConfiguration(
+				configurationCategory = "Localization",
+				configurationName = "Language",
+				configurationScope = "Virtual Instance Scope");
+
+			PortalSettings.configureCurrentLanguagesCP(defaultPortalLanguage = "Portuguese (Brazil)");
+		}
+
+		task ("Then the form should display the date entries in the user default language") {
+			FormsAdminNavigator.openFormsAdmin(siteURLKey = "guest");
+
+			AssertElementPresent(locator1 = "Icon#VERTICAL_ELLIPSIS_BUTTON");
+
+			LexiconEntry.gotoVerticalEllipsisMenuItemNoError(menuItem = "View Entries");
+
+			FormsAdmin.viewFormTableEntry(
+				fieldLabel = "Date",
+				fieldValue = "05/02/2016");
+
+			FormsAdmin.viewFormTableEntry(
+				fieldLabel = "Date",
+				fieldValue = "02/05/2017");
+		}
+
+		task ("and When the user changes the user default language") {
+			User.openUsersAdmin();
+
+			User.editDisplaySettingsCP(
+				languageName = "português (Brasil)",
+				userScreenName = "Test Test");
+		}
+
+		task ("Then the form should display the date entries in the chosen user language") {
+			FormsAdminNavigator.openFormsAdmin(siteURLKey = "guest");
+
+			AssertElementPresent(locator1 = "Icon#VERTICAL_ELLIPSIS_BUTTON");
+
+			LexiconEntry.gotoVerticalEllipsisMenuItemNoError(menuItem = "Visualizar itens");
+
+			FormsAdmin.viewFormTableEntry(
+				fieldLabel = "Date",
+				fieldValue = "02/05/2016");
+
+			FormsAdmin.viewFormTableEntry(
+				fieldLabel = "Date",
+				fieldValue = "05/02/2017");
+		}
 	}
 
 	@description = "Verify that a Color field's Label and Help Text can be translated"
@@ -578,6 +702,10 @@ definition {
 				optionName = "Select${number}",
 				optionValue = "Select ${number}",
 				rowNumber = ${number});
+
+			if (${number} != 3) {
+				FormFields.clickAddOptionButton();
+			}
 		}
 
 		Form.gotoAdvancedTab();
@@ -858,7 +986,7 @@ definition {
 
 		Alert.viewSuccessMessage();
 
-		FormsAdmin.openFormsAdmin(siteURLKey = "guest");
+		FormsAdminNavigator.openFormsAdmin(siteURLKey = "guest");
 
 		FormsAdminNavigator.gotoViewEntries();
 
@@ -1112,6 +1240,8 @@ definition {
 			optionName = "Option1",
 			optionValue = "Option One",
 			rowNumber = 1);
+
+		FormFields.clickAddOptionButton();
 
 		FormFields.editOptionsRow(
 			optionName = "Option2",
@@ -1377,6 +1507,8 @@ definition {
 			optionName = "Option1",
 			optionValue = "Option One");
 
+		FormFields.clickAddOptionButton();
+
 		FormFields.editOptionsRow(
 			optionName = "Option2",
 			optionValue = "Option Two",
@@ -1506,6 +1638,8 @@ definition {
 		FormFields.editOptionsRow(
 			optionName = "Option1",
 			optionValue = "Option One");
+
+		FormFields.clickAddOptionButton();
 
 		FormFields.editOptionsRow(
 			optionName = "Option2",

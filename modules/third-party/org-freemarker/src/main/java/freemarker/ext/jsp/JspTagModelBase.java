@@ -118,11 +118,11 @@ class JspTagModelBase {
                                 " (declared type: ", new _DelayedShortClassName(setterType)
                                 + ", actual value's type: ",
                                 (argArray[0] != null
-                                        ? (Object) new _DelayedShortClassName(argArray[0].getClass()) : "Null"),
+                                        ? new _DelayedShortClassName(argArray[0].getClass()) : "Null"),
                                 "). See cause exception for the more specific cause...");
                         if (e instanceof IllegalArgumentException && !(setterType.isAssignableFrom(String.class))
                                 && argArray[0] != null && argArray[0] instanceof String) {
-                            desc.tip("This problem is often caused by unnecessary parameter quotation. Paramters "
+                            desc.tip("This problem is often caused by unnecessary parameter quotation. Parameters "
                                     + "aren't quoted in FTL, similarly as they aren't quoted in most languages. "
                                     + "For example, these parameter assignments are wrong: ",
                                     "<@my.tag p1=\"true\" p2=\"10\" p3=\"${someVariable}\" p4=\"${x+1}\" />",

@@ -31,8 +31,23 @@
 	<td></td>
 </tr>
 <tr>
+	<td>LABEL_GENERIC_SELECT</td>
+	<td>//label[contains(text(),'${key_fieldLabel}')]/..//select</td>
+	<td></td>
+</tr>
+<tr>
+	<td>NEWS_TITLE</td>
+	<td>//h6[contains(@class,'font-weight-semi') and contains(., '${key_title}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>MODAL</td>
 	<td>//div[contains(@class,'modal-content')]//p[contains(text(), '${value}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MODAL_DELETE_ENTRY</td>
+	<td>//div//*[normalize-space(text())='It may affect many records. Are you sure you want to delete this entry?']</td>
 	<td></td>
 </tr>
 <tr>
@@ -67,7 +82,7 @@
 </tr>
 <tr>
 	<td>SVG_DROPDOWN_LIST</td>
-	<td>//*[contains(@class, 'cp-project-breadcrumbs')]//*[contains(@class, 'dropdown-item') and contains(text(),'${key_project}')]</td>
+	<td>//div[contains(@class, 'cp-project-breadcrumbs')]/ul//a[contains(.,'${key_project}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -118,6 +133,21 @@
 <tr>
 	<td>ACTIVE_LIFERAY_SUBSCRIPTION_GUESTFORM</td>
 	<td>//div//input[contains(@name,'activeLiferaySubscription')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>USER_AVATAR_DROPDOWN_ITEM</td>
+	<td>//div[contains(@class,'dropdown-menu') and contains(@class,'show')]//a//*[normalize-space(text())='${dropdownItem}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>USER_AVATAR_DROPDOWN</td>
+	<td>//*[name()='svg'][@role='presentation']//following::span[@class='account-dropdown-icon opacity-30 pr-2']//*[name()='svg']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>USER_SIGN_IN</td>
+	<td>//span[contains(@class,'sign-in')]</td>
 	<td></td>
 </tr>
 </tbody>

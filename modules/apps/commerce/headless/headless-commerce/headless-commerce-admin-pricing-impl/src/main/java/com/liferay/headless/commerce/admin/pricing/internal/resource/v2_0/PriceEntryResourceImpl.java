@@ -18,7 +18,6 @@ import com.liferay.commerce.product.service.CPInstanceService;
 import com.liferay.headless.commerce.admin.pricing.dto.v2_0.PriceEntry;
 import com.liferay.headless.commerce.admin.pricing.dto.v2_0.TierPrice;
 import com.liferay.headless.commerce.admin.pricing.internal.odata.entity.v2_0.PriceEntryEntityModel;
-import com.liferay.headless.commerce.admin.pricing.internal.util.v2_0.BigDecimalUtil;
 import com.liferay.headless.commerce.admin.pricing.internal.util.v2_0.TierPriceUtil;
 import com.liferay.headless.commerce.admin.pricing.resource.v2_0.PriceEntryResource;
 import com.liferay.headless.commerce.core.util.DateConfig;
@@ -28,10 +27,10 @@ import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.util.BigDecimalUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
@@ -158,8 +157,6 @@ public class PriceEntryResourceImpl extends BasePriceEntryResourceImpl {
 				Field.ENTRY_CLASS_PK),
 			searchContext -> {
 				searchContext.setAttribute("commercePriceListId", id);
-				searchContext.setAttribute(
-					"status", WorkflowConstants.STATUS_ANY);
 				searchContext.setCompanyId(contextCompany.getCompanyId());
 			},
 			sorts,
@@ -282,7 +279,7 @@ public class PriceEntryResourceImpl extends BasePriceEntryResourceImpl {
 				BigDecimal.valueOf(priceEntry.getPrice()),
 				GetterUtil.getBoolean(priceEntry.getPriceOnApplication()),
 				priceEntry.getSkuExternalReferenceCode(),
-				priceEntry.getUnitOfMeasure(), serviceContext);
+				priceEntry.getUnitOfMeasureKey(), serviceContext);
 
 		// Update nested resources
 
@@ -397,10 +394,7 @@ public class PriceEntryResourceImpl extends BasePriceEntryResourceImpl {
 				GetterUtil.getBoolean(
 					priceEntry.getPriceOnApplication(),
 					commercePriceEntry.isPriceOnApplication()),
-				GetterUtil.get(
-					priceEntry.getUnitOfMeasure(),
-					commercePriceEntry.getUnitOfMeasureKey()),
-				serviceContext);
+				commercePriceEntry.getUnitOfMeasureKey(), serviceContext);
 
 		// Update nested resources
 

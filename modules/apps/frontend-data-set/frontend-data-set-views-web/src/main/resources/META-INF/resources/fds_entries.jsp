@@ -7,13 +7,19 @@
 
 <%@ include file="/init.jsp" %>
 
+<%
+portletDisplay.setBeta(true);
+%>
+
 <react:component
-	module="js/FDSEntries"
+	module="{FDSEntries} from frontend-data-set-views-web"
 	props='<%=
 		HashMapBuilder.<String, Object>put(
 			"fdsViewsURL", fdsViewsDisplayContext.getFDSViewsURL()
 		).put(
 			"namespace", liferayPortletResponse.getNamespace()
+		).put(
+			"permissionsURL", fdsViewsDisplayContext.getFDSEntryPermissionsURL()
 		).put(
 			"restApplications", fdsViewsDisplayContext.getRESTApplicationsJSONArray()
 		).build()

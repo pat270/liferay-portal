@@ -7,8 +7,6 @@ package com.liferay.adaptive.media.image.content.transformer.backwards.compatibi
 
 import com.liferay.adaptive.media.content.transformer.BaseRegexStringContentTransformer;
 import com.liferay.adaptive.media.content.transformer.ContentTransformer;
-import com.liferay.adaptive.media.content.transformer.ContentTransformerContentType;
-import com.liferay.adaptive.media.content.transformer.constants.ContentTransformerContentTypes;
 import com.liferay.adaptive.media.image.html.AMImageHTMLTagFactory;
 import com.liferay.adaptive.media.image.html.constants.AMImageHTMLConstants;
 import com.liferay.adaptive.media.image.mime.type.AMImageMimeTypeProvider;
@@ -26,7 +24,7 @@ import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
-import com.liferay.portal.kernel.util.ServiceProxyFactory;
+import com.liferay.portal.kernel.util.GetterUtil;
 
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -43,19 +41,9 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Adolfo Pérez
  */
-@Component(
-	property = "content.transformer.content.type=html",
-	service = ContentTransformer.class
-)
+@Component(service = ContentTransformer.class)
 public class AMBackwardsCompatibilityHtmlContentTransformer
 	extends BaseRegexStringContentTransformer {
-
-	@Override
-	public ContentTransformerContentType<String>
-		getContentTransformerContentType() {
-
-		return ContentTransformerContentTypes.HTML;
-	}
 
 	@Override
 	public String transform(String html) throws PortalException {
@@ -105,7 +93,7 @@ public class AMBackwardsCompatibilityHtmlContentTransformer
 		}
 
 		if (matcher.group(5) != null) {
-			long groupId = Long.valueOf(matcher.group(2));
+			long groupId = GetterUtil.getLong(matcher.group(2));
 
 			String uuid = matcher.group(5);
 
@@ -113,8 +101,8 @@ public class AMBackwardsCompatibilityHtmlContentTransformer
 				uuid, groupId);
 		}
 
-		long groupId = Long.valueOf(matcher.group(2));
-		long folderId = Long.valueOf(matcher.group(3));
+		long groupId = GetterUtil.getLong(matcher.group(2));
+		long folderId = GetterUtil.getLong(matcher.group(3));
 		String title = matcher.group(4);
 
 		try {
@@ -147,6 +135,12 @@ public class AMBackwardsCompatibilityHtmlContentTransformer
 		}
 
 		return _amImageHTMLTagFactory.create(originalImgTag, fileEntry);
+	}
+
+	@Override
+	protected boolean isSupported(FileEntry fileEntry) {
+		return _amImageMimeTypeProvider.isMimeTypeSupported(
+			fileEntry.getMimeType());
 	}
 
 	private Group _getGroup(long companyId, String name)
@@ -187,10 +181,6 @@ public class AMBackwardsCompatibilityHtmlContentTransformer
 
 	private FileEntry _resolveFileEntry(String friendlyURL, String groupName)
 		throws PortalException {
-
-		if (_fileEntryFriendlyURLResolver == null) {
-			return null;
-		}
 
 		Group group = _getGroup(CompanyThreadLocal.getCompanyId(), groupName);
 
@@ -259,12 +249,6 @@ public class AMBackwardsCompatibilityHtmlContentTransformer
 	private static final Log _log = LogFactoryUtil.getLog(
 		AMBackwardsCompatibilityHtmlContentTransformer.class);
 
-	private static volatile FileEntryFriendlyURLResolver
-		_fileEntryFriendlyURLResolver =
-			ServiceProxyFactory.newServiceTrackedInstance(
-				FileEntryFriendlyURLResolver.class,
-				AMBackwardsCompatibilityHtmlContentTransformer.class,
-				"_fileEntryFriendlyURLResolver", false, true);
 	private static final Pattern _pattern = Pattern.compile(
 		"((?:/?[^\\s]*)/documents/(\\d+)/(\\d+)/([^/?]+)(?:/([-0-9a-fA-F]+))?" +
 			"(?:\\?t=\\d+)?)|((?:/?[^\\s]*)/documents/(d)/(.*)/" +
@@ -278,6 +262,9 @@ public class AMBackwardsCompatibilityHtmlContentTransformer
 
 	@Reference
 	private DLAppLocalService _dlAppLocalService;
+
+	@Reference
+	private FileEntryFriendlyURLResolver _fileEntryFriendlyURLResolver;
 
 	@Reference
 	private GroupLocalService _groupLocalService;

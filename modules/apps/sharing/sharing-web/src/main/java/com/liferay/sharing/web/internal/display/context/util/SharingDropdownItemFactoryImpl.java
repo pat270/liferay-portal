@@ -5,9 +5,11 @@
 
 package com.liferay.sharing.web.internal.display.context.util;
 
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownContextItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemBuilder;
-import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
+import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.sharing.display.context.util.SharingDropdownItemFactory;
 import com.liferay.sharing.display.context.util.SharingJavaScriptFactory;
 
@@ -24,10 +26,27 @@ public class SharingDropdownItemFactoryImpl
 	implements SharingDropdownItemFactory {
 
 	@Override
+	public DropdownItem createCopyLinkDropdownItem(
+		String className, long classPK, HttpServletRequest httpServletRequest) {
+
+		return DropdownItemBuilder.setHref(
+			() -> {
+				String copyLinkOnClickMethod =
+					_sharingJavaScriptFactory.createCopyLinkClickMethod(
+						className, classPK, httpServletRequest);
+
+				return "javascript:" + copyLinkOnClickMethod;
+			}
+		).setIcon(
+			"link"
+		).setLabel(
+			SharingItemFactoryUtil.getCopyLinkLabel(httpServletRequest)
+		).build();
+	}
+
+	@Override
 	public DropdownItem createManageCollaboratorsDropdownItem(
-			String className, long classPK,
-			HttpServletRequest httpServletRequest)
-		throws PortalException {
+		String className, long classPK, HttpServletRequest httpServletRequest) {
 
 		return DropdownItemBuilder.setHref(
 			() -> {
@@ -45,10 +64,36 @@ public class SharingDropdownItemFactoryImpl
 	}
 
 	@Override
-	public DropdownItem createShareDropdownItem(
+	public UnsafeConsumer<DropdownContextItem, Exception>
+		createShareActionUnsafeConsumer(
 			String className, long classPK,
-			HttpServletRequest httpServletRequest)
-		throws PortalException {
+			HttpServletRequest httpServletRequest) {
+
+		DropdownItem shareDropdownItem = createShareDropdownItem(
+			className, classPK, httpServletRequest);
+
+		shareDropdownItem.setIcon("users");
+		shareDropdownItem.setLabel(
+			SharingItemFactoryUtil.getInviteToCollaborateLabel(
+				httpServletRequest));
+
+		return dropdownContextItem -> {
+			dropdownContextItem.setDropdownItems(
+				DropdownItemListBuilder.add(
+					shareDropdownItem
+				).add(
+					createCopyLinkDropdownItem(
+						className, classPK, httpServletRequest)
+				).build());
+			dropdownContextItem.setIcon("share");
+			dropdownContextItem.setLabel(
+				SharingItemFactoryUtil.getSharingLabel(httpServletRequest));
+		};
+	}
+
+	@Override
+	public DropdownItem createShareDropdownItem(
+		String className, long classPK, HttpServletRequest httpServletRequest) {
 
 		return DropdownItemBuilder.setHref(
 			() -> {

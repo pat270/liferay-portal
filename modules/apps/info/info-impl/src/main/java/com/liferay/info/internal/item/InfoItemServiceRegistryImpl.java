@@ -31,6 +31,7 @@ import com.liferay.info.item.provider.InfoItemObjectProvider;
 import com.liferay.info.item.provider.InfoItemObjectVariationProvider;
 import com.liferay.info.item.provider.InfoItemPermissionProvider;
 import com.liferay.info.item.provider.InfoItemScopeProvider;
+import com.liferay.info.item.provider.InfoItemStatusProvider;
 import com.liferay.info.item.provider.filter.InfoItemServiceFilter;
 import com.liferay.info.item.provider.filter.OptionalPropertyInfoItemServiceFilter;
 import com.liferay.info.item.renderer.InfoItemRenderer;
@@ -283,8 +284,8 @@ public class InfoItemServiceRegistryImpl implements InfoItemServiceRegistry {
 
 	@Deactivate
 	protected void deactivate() {
-		if (_infoItemCapabilityServiceTrackerMap != null) {
-			_infoItemCapabilityServiceTrackerMap.close();
+		if (_serviceTrackerMap != null) {
+			_serviceTrackerMap.close();
 		}
 
 		for (ServiceTrackerMap<?, ?> serviceTrackerMap :
@@ -323,16 +324,15 @@ public class InfoItemServiceRegistryImpl implements InfoItemServiceRegistry {
 	private ServiceTrackerMap<String, InfoItemCapability>
 		_getInfoItemCapabilityServiceTrackerMap() {
 
-		if (_infoItemCapabilityServiceTrackerMap == null) {
-			_infoItemCapabilityServiceTrackerMap =
-				ServiceTrackerMapFactory.openSingleValueMap(
-					_bundleContext, InfoItemCapability.class, null,
-					ServiceReferenceMapperFactory.create(
-						_bundleContext,
-						(service, emitter) -> emitter.emit(service.getKey())));
+		if (_serviceTrackerMap == null) {
+			_serviceTrackerMap = ServiceTrackerMapFactory.openSingleValueMap(
+				_bundleContext, InfoItemCapability.class, null,
+				ServiceReferenceMapperFactory.create(
+					_bundleContext,
+					(service, emitter) -> emitter.emit(service.getKey())));
 		}
 
-		return _infoItemCapabilityServiceTrackerMap;
+		return _serviceTrackerMap;
 	}
 
 	private InfoItemClassDetails _getInfoItemClassDetails(
@@ -406,13 +406,12 @@ public class InfoItemServiceRegistryImpl implements InfoItemServiceRegistry {
 			InfoItemIdentifierTranslator.class, InfoItemLanguagesProvider.class,
 			InfoItemObjectProvider.class, InfoItemObjectVariationProvider.class,
 			InfoItemPermissionProvider.class, InfoItemRenderer.class,
-			InfoItemScopeProvider.class, InfoListRenderer.class,
-			InfoPermissionProvider.class, InfoRequestItemProvider.class,
-			InfoTextFormatter.class, RelatedInfoItemCollectionProvider.class));
+			InfoItemScopeProvider.class, InfoItemStatusProvider.class,
+			InfoListRenderer.class, InfoPermissionProvider.class,
+			InfoRequestItemProvider.class, InfoTextFormatter.class,
+			RelatedInfoItemCollectionProvider.class));
 
 	private BundleContext _bundleContext;
-	private ServiceTrackerMap<String, InfoItemCapability>
-		_infoItemCapabilityServiceTrackerMap;
 	private final Map
 		<Class<?>,
 		 ServiceTrackerMap
@@ -421,5 +420,6 @@ public class InfoItemServiceRegistryImpl implements InfoItemServiceRegistry {
 					new ConcurrentHashMap<>();
 	private final Map<Class<?>, ServiceTrackerMap<String, ?>>
 		_keyedInfoItemServiceTrackerMap = new ConcurrentHashMap<>();
+	private ServiceTrackerMap<String, InfoItemCapability> _serviceTrackerMap;
 
 }

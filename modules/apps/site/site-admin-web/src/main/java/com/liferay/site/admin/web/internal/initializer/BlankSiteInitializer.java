@@ -5,6 +5,7 @@
 
 package com.liferay.site.admin.web.internal.initializer;
 
+import com.liferay.layout.constants.LayoutTypeSettingsConstants;
 import com.liferay.layout.importer.LayoutsImporter;
 import com.liferay.layout.page.template.model.LayoutPageTemplateStructure;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
@@ -94,7 +95,8 @@ public class BlankSiteInitializer implements SiteInitializer {
 			LayoutUtilityPageEntry layoutUtilityPageEntry =
 				_layoutUtilityPageEntryService.addLayoutUtilityPageEntry(
 					"LFR-" + errorCode + "-ERROR", groupId, 0, 0, true, name,
-					type, 0, ServiceContextThreadLocal.getServiceContext());
+					type, 0, null, true,
+					ServiceContextThreadLocal.getServiceContext());
 
 			Layout layout = _layoutLocalService.getLayout(
 				layoutUtilityPageEntry.getPlid());
@@ -126,7 +128,7 @@ public class BlankSiteInitializer implements SiteInitializer {
 
 		_layoutsImporter.importPageElement(
 			layout, layoutStructure, layoutStructure.getMainItemId(),
-			pageElementJSON, 0);
+			pageElementJSON, 0, true);
 	}
 
 	private void _updateLayoutUtilityPageEntryLayouts(
@@ -138,7 +140,8 @@ public class BlankSiteInitializer implements SiteInitializer {
 		UnicodeProperties typeSettingsUnicodeProperties =
 			draftLayout.getTypeSettingsProperties();
 
-		typeSettingsUnicodeProperties.put("published", Boolean.TRUE.toString());
+		typeSettingsUnicodeProperties.put(
+			LayoutTypeSettingsConstants.KEY_PUBLISHED, Boolean.TRUE.toString());
 
 		draftLayout.setTypeSettingsProperties(typeSettingsUnicodeProperties);
 
@@ -147,6 +150,10 @@ public class BlankSiteInitializer implements SiteInitializer {
 		_layoutLocalService.updateLayout(draftLayout);
 
 		Layout layout = _layoutLocalService.getLayout(layoutPlid);
+
+		layout.setStatus(WorkflowConstants.STATUS_APPROVED);
+
+		layout = _layoutLocalService.updateLayout(layout);
 
 		_layoutLocalService.updateLayout(
 			layout.getGroupId(), layout.isPrivateLayout(), layout.getLayoutId(),

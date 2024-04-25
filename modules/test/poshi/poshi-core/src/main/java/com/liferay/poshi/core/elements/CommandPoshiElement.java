@@ -139,11 +139,11 @@ public class CommandPoshiElement extends PoshiElement {
 							sb.append(" = null");
 						}
 
-						sb.append(",");
+						sb.append(", ");
 					}
 
 					if (sb.length() > 0) {
-						sb.setLength(sb.length() - 1);
+						sb.setLength(sb.length() - 2);
 					}
 
 					argumentsValue = sb.toString();

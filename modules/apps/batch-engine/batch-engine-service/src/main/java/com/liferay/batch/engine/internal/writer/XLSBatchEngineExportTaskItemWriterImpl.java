@@ -5,20 +5,21 @@
 
 package com.liferay.batch.engine.internal.writer;
 
+import com.liferay.batch.engine.csv.ColumnDescriptorProvider;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.util.ObjectValuePair;
+
 import java.io.IOException;
 import java.io.OutputStream;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.CreationHelper;
-import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -31,8 +32,12 @@ public class XLSBatchEngineExportTaskItemWriterImpl
 	implements BatchEngineExportTaskItemWriter {
 
 	public XLSBatchEngineExportTaskItemWriterImpl(
-		Map<String, Field> fieldsMap, List<String> fieldNames,
-		OutputStream outputStream) {
+			ColumnDescriptorProvider columnDescriptorProvider, long companyId,
+			Map<String, ObjectValuePair<Field, Method>>
+				fieldNameObjectValuePairs,
+			List<String> fieldNames, OutputStream outputStream,
+			String taskItemDelegateName)
+		throws PortalException {
 
 		if (fieldNames.isEmpty()) {
 			throw new IllegalArgumentException("Field names are not set");
@@ -41,7 +46,8 @@ public class XLSBatchEngineExportTaskItemWriterImpl
 		_outputStream = outputStream;
 
 		_columnValuesExtractor = new ColumnValuesExtractor(
-			fieldsMap, fieldNames);
+			columnDescriptorProvider, companyId, fieldNameObjectValuePairs,
+			fieldNames, taskItemDelegateName);
 
 		_sheet = _workbook.createSheet();
 
@@ -76,20 +82,6 @@ public class XLSBatchEngineExportTaskItemWriterImpl
 
 			if (value instanceof Boolean) {
 				cell.setCellValue((Boolean)value);
-			}
-			else if (value instanceof Date) {
-				CellStyle cellStyle = _workbook.createCellStyle();
-
-				CreationHelper creationHelper = _workbook.getCreationHelper();
-
-				DataFormat dataFormat = creationHelper.createDataFormat();
-
-				cellStyle.setDataFormat(
-					dataFormat.getFormat("yyyy-mm-dd hh:mm:ss"));
-
-				cell.setCellStyle(cellStyle);
-
-				cell.setCellValue((Date)value);
 			}
 			else if (value instanceof Number) {
 				Number number = (Number)value;

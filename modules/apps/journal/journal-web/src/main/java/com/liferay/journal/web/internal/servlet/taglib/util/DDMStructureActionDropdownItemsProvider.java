@@ -141,7 +141,7 @@ public class DDMStructureActionDropdownItemsProvider {
 				).buildString());
 			dropdownItem.setIcon("copy");
 			dropdownItem.setLabel(
-				LanguageUtil.get(_httpServletRequest, "copy"));
+				LanguageUtil.get(_httpServletRequest, "make-a-copy"));
 		};
 	}
 
@@ -196,8 +196,8 @@ public class DDMStructureActionDropdownItemsProvider {
 			dropdownItem.setHref(
 				PortletURLBuilder.createRenderURL(
 					_liferayPortletResponse
-				).setMVCPath(
-					"/edit_article.jsp"
+				).setMVCRenderCommandName(
+					"/journal/edit_article"
 				).setRedirect(
 					_themeDisplay.getURLCurrent()
 				).setParameter(

@@ -22,6 +22,7 @@ import com.liferay.portal.kernel.dao.orm.Property;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
@@ -82,6 +83,30 @@ public class DeletionSystemEventExporter {
 			exportedSystemEventIds = _exportDeletionSystemEvents(
 				portletDataContext, rootElement,
 				deletionSystemEventStagedModelTypes);
+		}
+
+		if (exportedSystemEventIds != null) {
+			for (Long systemEventId : exportedSystemEventIds) {
+				SystemEvent systemEvent =
+					SystemEventLocalServiceUtil.fetchSystemEvent(systemEventId);
+
+				JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
+					systemEvent.getExtraData());
+
+				Object assetTitle = jsonObject.get("assetTitle");
+
+				if ((assetTitle == null) ||
+					!FeatureFlagManagerUtil.isEnabled("LPS-165481")) {
+
+					continue;
+				}
+
+				ManifestSummary manifestSummary =
+					portletDataContext.getManifestSummary();
+
+				manifestSummary.addAssetTitle(
+					systemEvent.getClassName(), String.valueOf(assetTitle));
+			}
 		}
 
 		portletDataContext.addZipEntry(

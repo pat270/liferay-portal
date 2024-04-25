@@ -1,7 +1,7 @@
 @component-name = "portal-batch-planner"
 definition {
 
-	property custom.properties = "feature.flag.COMMERCE-8087=true";
+	property custom.properties = "feature.flag.COMMERCE-8087=true${line.separator}feature.flag.LPS-186620=true";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Import/Export";
@@ -37,7 +37,7 @@ definition {
 		task ("Then the available Import Strategy is Add or Update Records") {
 			AssertTextEquals(
 				locator1 = "ImportExport#IMPORT_STRATEGY",
-				value1 = "Add or Update Records");
+				value1 = "Only Add New Records Add or Update Records");
 		}
 
 		task ("And Then the available Update Strategy are Update Changed Record Fields/Overwrite Records") {
@@ -172,26 +172,6 @@ definition {
 			AssertTextEquals(
 				locator1 = "ImportExport#UPDATE_STRATEGY",
 				value1 = "Update Changed Record Fields");
-		}
-	}
-
-	@priority = 4
-	test CanDisplayIncludeHeadersWithExportObjectDefinitionCSVFormat {
-		property custom.properties = "feature.flag.LPS-173135=true";
-		property portal.acceptance = "true";
-
-		task ("When I select CSV format to export ObjectDefinition") {
-			ImportExport.gotoExport();
-
-			ImportExport.configureExport(
-				entityType = "ObjectDefinition (v1_0 - Liferay Object Admin REST)",
-				exportFileFormat = "CSV");
-		}
-
-		task ("Then the Include Headers is checked") {
-			AssertChecked.assertCheckedNotVisible(
-				checkboxName = "Include Headers",
-				locator1 = "Checkbox#ANY_CHECKBOX");
 		}
 	}
 

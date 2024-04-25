@@ -53,11 +53,14 @@ public class CommerceDiscountRelLocalServiceWrapper
 	public com.liferay.commerce.discount.model.CommerceDiscountRel
 			addCommerceDiscountRel(
 				long commerceDiscountId, String className, long classPK,
+				com.liferay.portal.kernel.util.UnicodeProperties
+					typeSettingsUnicodeProperties,
 				com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _commerceDiscountRelLocalService.addCommerceDiscountRel(
-			commerceDiscountId, className, classPK, serviceContext);
+			commerceDiscountId, className, classPK,
+			typeSettingsUnicodeProperties, serviceContext);
 	}
 
 	/**
@@ -354,6 +357,25 @@ public class CommerceDiscountRelLocalServiceWrapper
 
 		return _commerceDiscountRelLocalService.getCommerceDiscountRels(
 			start, end);
+	}
+
+	@Override
+	public java.util.List
+		<com.liferay.commerce.discount.model.CommerceDiscountRel>
+			getCommerceDiscountRels(long classNameId, long classPK) {
+
+		return _commerceDiscountRelLocalService.getCommerceDiscountRels(
+			classNameId, classPK);
+	}
+
+	@Override
+	public java.util.List
+		<com.liferay.commerce.discount.model.CommerceDiscountRel>
+			getCommerceDiscountRels(
+				long classNameId, long classPK, String unitOfMeasureKey) {
+
+		return _commerceDiscountRelLocalService.getCommerceDiscountRels(
+			classNameId, classPK, unitOfMeasureKey);
 	}
 
 	@Override

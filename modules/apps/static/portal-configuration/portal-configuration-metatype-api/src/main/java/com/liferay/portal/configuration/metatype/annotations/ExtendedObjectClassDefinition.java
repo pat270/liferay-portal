@@ -37,6 +37,8 @@ public @interface ExtendedObjectClassDefinition {
 
 	public String factoryInstanceLabelAttribute() default "";
 
+	public String featureFlagKey() default StringPool.BLANK;
+
 	public boolean generateUI() default true;
 
 	public String liferayLearnMessageKey() default "";
@@ -74,6 +76,16 @@ public @interface ExtendedObjectClassDefinition {
 		PORTLET_INSTANCE(
 			"portletInstanceKey", "portletInstanceId", "portlet-instance"),
 		SYSTEM(null, null, "system");
+
+		public static Scope getScope(String value) {
+			for (Scope scope : values()) {
+				if (scope._value.equals(value)) {
+					return scope;
+				}
+			}
+
+			throw new IllegalArgumentException("Invalid value " + value);
+		}
 
 		public boolean equals(Scope scope) {
 			return equals(scope.getValue());

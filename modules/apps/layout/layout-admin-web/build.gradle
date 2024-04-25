@@ -1,7 +1,7 @@
 dependencies {
-	compileOnly group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: "2.13.4"
-	compileOnly group: "com.fasterxml.jackson.core", name: "jackson-core", version: "2.13.4"
-	compileOnly group: "com.fasterxml.jackson.core", name: "jackson-databind", version: "2.13.4.2"
+	compileOnly group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: "2.16.1"
+	compileOnly group: "com.fasterxml.jackson.core", name: "jackson-core", version: "2.16.1"
+	compileOnly group: "com.fasterxml.jackson.core", name: "jackson-databind", version: "2.16.1"
 	compileOnly group: "com.liferay", name: "biz.aQute.bnd.annotation", version: "4.2.0.LIFERAY-PATCHED-2"
 	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.impl", version: "default"
 	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.kernel", version: "default"
@@ -41,6 +41,7 @@ dependencies {
 	compileOnly project(":apps:layout:layout-admin-api")
 	compileOnly project(":apps:layout:layout-api")
 	compileOnly project(":apps:layout:layout-content-page-editor-api")
+	compileOnly project(":apps:layout:layout-display-page-api")
 	compileOnly project(":apps:layout:layout-item-selector-api")
 	compileOnly project(":apps:layout:layout-page-template-admin-api")
 	compileOnly project(":apps:layout:layout-page-template-api")
@@ -51,6 +52,7 @@ dependencies {
 	compileOnly project(":apps:layout:layout-taglib")
 	compileOnly project(":apps:layout:layout-theme-item-selector-api")
 	compileOnly project(":apps:layout:layout-utility-page-api")
+	compileOnly project(":apps:portal-configuration:portal-configuration-module-configuration-api")
 	compileOnly project(":apps:portal-vulcan:portal-vulcan-api")
 	compileOnly project(":apps:portal:portal-aop-api")
 	compileOnly project(":apps:product-navigation:product-navigation-control-menu-api")
@@ -60,7 +62,6 @@ dependencies {
 	compileOnly project(":apps:site-navigation:site-navigation-taglib")
 	compileOnly project(":apps:site:site-api")
 	compileOnly project(":apps:staging:staging-api")
-	compileOnly project(":apps:static:osgi:osgi-util")
 	compileOnly project(":apps:static:portal-configuration:portal-configuration-metatype-api")
 	compileOnly project(":apps:static:portal:portal-upgrade-api")
 	compileOnly project(":apps:style-book:style-book-api")

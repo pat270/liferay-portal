@@ -14,7 +14,10 @@ definition {
 
 		User.firstLoginPG();
 
-		Raylife.createRaylifeSite(siteName = ${testSiteName});
+		HeadlessSite.addSite(
+			siteName = ${testSiteName},
+			templateName = "Raylife D2C",
+			templateType = "Site Initializer");
 	}
 
 	tearDown {
@@ -34,6 +37,7 @@ definition {
 	@priority = 4
 	test CanClickInContinueButton {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
@@ -56,6 +60,7 @@ definition {
 	@priority = 3
 	test CanPutNonAsciiInIndustrySearch {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
@@ -83,6 +88,7 @@ definition {
 	@priority = 4
 	test CanViewNoResultsMessage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
@@ -110,6 +116,7 @@ definition {
 	@priority = 4
 	test CanViewTipButtonInBusinessPage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
@@ -137,6 +144,7 @@ definition {
 	@priority = 4
 	test CanViewTipInfoPanelInBusinessPage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
@@ -166,6 +174,7 @@ definition {
 	@priority = 3
 	test IndustrySearchMaxNumber {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
@@ -186,6 +195,7 @@ definition {
 	@priority = 4
 	test InfoPanelIsDismissedInBusinessPage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
@@ -221,6 +231,7 @@ definition {
 	@priority = 4
 	test IsTipButtonHighlighted {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
@@ -254,6 +265,7 @@ definition {
 	@priority = 4
 	test NavigateToPreviousScreenDiscardChanges {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
@@ -301,6 +313,7 @@ definition {
 	@priority = 5
 	test SearchFieldIsRequiredInBusinessPage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 

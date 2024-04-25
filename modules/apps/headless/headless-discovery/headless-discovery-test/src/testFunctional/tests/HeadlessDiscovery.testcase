@@ -117,12 +117,43 @@ definition {
 		}
 	}
 
+	@priority = 4
+	test CanGetFieldsAnnotatedWithGraphQLTypeExtension {
+		property portal.acceptance = "true";
+
+		task ("Given a basic web content is created") {
+			HeadlessWebcontent.addBasicWebContent(
+				content = "Web Content Content",
+				groupName = "Guest",
+				title = "Web Content Title");
+		}
+
+		task ("And Given navigate to headless delivery endpoint") {
+			APIExplorer.navigateToOpenAPI(
+				api = "headless-delivery",
+				version = "v1.0");
+		}
+
+		task ("When executing query structured content info") {
+			var siteId = JSONGroupSetter.setGroupId(groupName = "Guest");
+
+			APIExplorer.executeGraphqlQuery(query = "query {admin {structuredContents(siteKey: \"${siteId}\"){items {title version {number status {code}}}}}}");
+		}
+
+		task ("Then the value in respone equals to the one we created") {
+			AssertTextEquals.assertPartialText(
+				locator1 = "OpenAPI#GRAPHQL_RESPONSE",
+				value1 = "{             \"title\": \"Web Content Title\",             \"version\": {               \"number\": 1,               \"status\": {                 \"code\": 0               }             }           }");
+		}
+	}
+
 	@priority = 5
 	test CanLoadAPIExplorerFromCustomContext {
 		property portal.acceptance = "true";
 		property portal.context = "world";
 		property skip.clean-app-server-deploy-dir = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("When I navigate to localhost:8080/world/o/api") {
 			var portalURL = PropsUtil.get("portal.url");
@@ -218,7 +249,7 @@ definition {
 		}
 
 		task ("When executing getSiteBlogPosingPage with siteID as the parameter") {
-			APIExplorer.executeAPIMethodWithParameters(
+			APIExplorer.executeAPIMethod(
 				method = "getSiteBlogPostingsPage",
 				parameter = "siteId",
 				service = "BlogPosting");
@@ -243,7 +274,7 @@ definition {
 		}
 
 		task ("When executing getSiteKeywordsPage with siteID as the parameter") {
-			APIExplorer.executeAPIMethodWithParameters(
+			APIExplorer.executeAPIMethod(
 				method = "getSiteKeywordsPage",
 				parameter = "siteId",
 				service = "Keyword");
@@ -268,7 +299,7 @@ definition {
 		}
 
 		task ("When executing getSiteStructuredContentsPage with siteID as the parameter") {
-			APIExplorer.executeAPIMethodWithParameters(
+			APIExplorer.executeAPIMethod(
 				method = "getSiteStructuredContentsPage",
 				parameter = "siteId",
 				service = "StructuredContent");
@@ -301,7 +332,7 @@ definition {
 		task ("When executing postSiteTaxonomyVocabulary with siteID as the parameter") {
 			var requestBody = '''{"name": "Vocubulary Name"}''';
 
-			APIExplorer.executeAPIMethodWithParameters(
+			APIExplorer.executeAPIMethod(
 				method = "postSiteTaxonomyVocabulary",
 				parameter = "siteId",
 				requestBody = ${requestBody},
@@ -373,7 +404,7 @@ definition {
 				}
 			''';
 
-			APIExplorer.executeAPIMethodWithParameters(
+			APIExplorer.executeAPIMethod(
 				method = "postSiteStructuredContentDraft",
 				parameter = "siteId",
 				requestBody = ${requestBody},
@@ -445,7 +476,7 @@ definition {
 				}
 			''';
 
-			APIExplorer.executeAPIMethodWithParameters(
+			APIExplorer.executeAPIMethod(
 				method = "postSiteStructuredContent",
 				parameter = "siteId",
 				requestBody = ${requestBody},
@@ -501,7 +532,7 @@ definition {
 		}
 
 		task ("When executing getSiteStructuredContentsPage with siteID as the parameter") {
-			APIExplorer.executeAPIMethodWithParameters(
+			APIExplorer.executeAPIMethod(
 				method = "getSiteStructuredContentsPage",
 				parameter = "siteId",
 				service = "StructuredContent");
@@ -546,7 +577,7 @@ definition {
 		}
 
 		task ("When executing getSiteTaxonomyVocabulariesPage with siteID as the parameter") {
-			APIExplorer.executeAPIMethodWithParameters(
+			APIExplorer.executeAPIMethod(
 				method = "getSiteTaxonomyVocabulariesPage",
 				parameter = "siteId",
 				service = "TaxonomyVocabulary");
@@ -592,7 +623,7 @@ definition {
 		}
 
 		task ("When executing getSiteStructuredContentsPage with siteID as the parameter") {
-			APIExplorer.executeAPIMethodWithParameters(
+			APIExplorer.executeAPIMethod(
 				method = "getSiteStructuredContentsPage",
 				parameter = "siteId",
 				service = "StructuredContent");

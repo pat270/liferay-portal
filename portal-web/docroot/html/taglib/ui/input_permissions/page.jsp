@@ -56,10 +56,12 @@ String modelName = (String)request.getAttribute("liferay-ui:input-permissions:mo
 		List groupPermissions = ListUtil.fromArray(request.getParameterValues(groupPermissionsName));
 		List guestPermissions = ListUtil.fromArray(request.getParameterValues(guestPermissionsName));
 
-		List supportedActions = (List)request.getAttribute("liferay-ui:input-permissions:supportedActions");
 		List groupDefaultActions = (List)request.getAttribute("liferay-ui:input-permissions:groupDefaultActions");
 		List guestDefaultActions = (List)request.getAttribute("liferay-ui:input-permissions:guestDefaultActions");
 		List guestUnsupportedActions = (List)request.getAttribute("liferay-ui:input-permissions:guestUnsupportedActions");
+		boolean showAllRoles = (boolean)request.getAttribute("liferay-ui:input-permissions:showAllRoles");
+		List supportedActions = (List)request.getAttribute("liferay-ui:input-permissions:supportedActions");
+		List<Role> supportedRoles = (List<Role>)request.getAttribute("liferay-ui:input-permissions:supportedRoles");
 
 		boolean submitted = request.getParameter(groupPermissionsName) != null;
 
@@ -110,7 +112,7 @@ String modelName = (String)request.getAttribute("liferay-ui:input-permissions:mo
 					<option <%= inputPermissionsViewRole.equals(RoleConstants.OWNER) ? "selected=\"selected\"" : "" %> value="<%= RoleConstants.OWNER %>"><liferay-ui:message key="owner" /></option>
 				</select>
 
-				<button aria-controls="<%= uniqueNamespace %>inputPermissionsTable" aria-expanded="<%= inputPermissionsShowOptions %>" class="btn btn-secondary btn-sm <%= inputPermissionsShowOptions ? "mb-1 mt-3" : "mb-5 mt-3" %>" id="<%= uniqueNamespace %>inputPermissionsOptionsButton" onclick="<%= uniqueNamespace %>inputPermissionsToggle();" type="button">
+				<button aria-controls="<%= uniqueNamespace %>inputPermissionsTable" aria-expanded="<%= inputPermissionsShowOptions %>" class="btn btn-secondary btn-sm mt-3" id="<%= uniqueNamespace %>inputPermissionsOptionsButton" onclick="<%= uniqueNamespace %>inputPermissionsToggle();" type="button">
 					<%= inputPermissionsShowOptions ? LanguageUtil.get(request, "hide-options") : LanguageUtil.get(request, "more-options") %>
 				</button>
 
@@ -129,7 +131,7 @@ String modelName = (String)request.getAttribute("liferay-ui:input-permissions:mo
 			</c:otherwise>
 		</c:choose>
 
-		<script>
+		<aui:script>
 
 			function <%= uniqueNamespace %>inputPermissionsToggle() {
 				var isInputPermissionsShowOptionsTrue = (document.getElementById('<%= uniqueNamespace %>inputPermissionsShowOptions').value === 'true');
@@ -210,6 +212,6 @@ String modelName = (String)request.getAttribute("liferay-ui:input-permissions:mo
 					displayElement.checked = checkPermission;
 				}
 			}
-		</script>
+		</aui:script>
 	</c:otherwise>
 </c:choose>

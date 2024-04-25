@@ -8,7 +8,7 @@
 <%@ include file="/bookmarks/init.jsp" %>
 
 <liferay-util:html-top
-	outputKey="social_bookmarks_css"
+	outputKey="com.liferay.social.bookmarks.taglib#/bookmarks/page.jsp"
 >
 	<link href="<%= PortalUtil.getStaticResourceURL(request, PortalUtil.getPathProxy() + application.getContextPath() + "/css/main.css") %>" rel="stylesheet" type="text/css" />
 </liferay-util:html-top>
@@ -22,7 +22,7 @@
 				dropdownItems="<%= SocialBookmarksTagUtil.getDropdownItems(request.getLocale(), types, className, classPK, title, url) %>"
 				icon="share"
 				label='<%= BrowserSnifferUtil.isMobile(request) ? null : "share" %>'
-				propsTransformer="js/SocialBookmarksDropdownPropsTransformer"
+				propsTransformer="{SocialBookmarksDropdownPropsTransformer} from social-bookmarks-taglib"
 				small="<%= true %>"
 			/>
 		</c:when>
@@ -75,7 +75,7 @@
 					dropdownItems="<%= SocialBookmarksTagUtil.getDropdownItems(request.getLocale(), remainingTypes, className, classPK, title, url) %>"
 					icon="share"
 					monospaced="<%= true %>"
-					propsTransformer="js/SocialBookmarksDropdownPropsTransformer"
+					propsTransformer="{SocialBookmarksDropdownPropsTransformer} from social-bookmarks-taglib"
 					small="<%= true %>"
 					title="share"
 				/>

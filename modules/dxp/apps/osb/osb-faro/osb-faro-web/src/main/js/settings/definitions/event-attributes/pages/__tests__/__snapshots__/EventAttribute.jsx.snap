@@ -79,13 +79,15 @@ exports[`EventAttributes should render 1`] = `
             >
               <span
                 class="navbar-text-truncate"
-              />
+              >
+                Global Attributes
+              </span>
               <svg
                 class="lexicon-icon lexicon-icon-caret-bottom"
                 role="presentation"
               >
                 <use
-                  xlink:href="#caret-bottom"
+                  href="#caret-bottom"
                 />
               </svg>
             </button>

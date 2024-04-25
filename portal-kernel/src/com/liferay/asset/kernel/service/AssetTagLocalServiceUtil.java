@@ -35,22 +35,24 @@ public class AssetTagLocalServiceUtil {
 	 *
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.portlet.asset.service.impl.AssetTagLocalServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
-	public static void addAssetEntryAssetTag(long entryId, AssetTag assetTag) {
-		getService().addAssetEntryAssetTag(entryId, assetTag);
+	public static boolean addAssetEntryAssetTag(
+		long entryId, AssetTag assetTag) {
+
+		return getService().addAssetEntryAssetTag(entryId, assetTag);
 	}
 
-	public static void addAssetEntryAssetTag(long entryId, long tagId) {
-		getService().addAssetEntryAssetTag(entryId, tagId);
+	public static boolean addAssetEntryAssetTag(long entryId, long tagId) {
+		return getService().addAssetEntryAssetTag(entryId, tagId);
 	}
 
-	public static void addAssetEntryAssetTags(
+	public static boolean addAssetEntryAssetTags(
 		long entryId, List<AssetTag> assetTags) {
 
-		getService().addAssetEntryAssetTags(entryId, assetTags);
+		return getService().addAssetEntryAssetTags(entryId, assetTags);
 	}
 
-	public static void addAssetEntryAssetTags(long entryId, long[] tagIds) {
-		getService().addAssetEntryAssetTags(entryId, tagIds);
+	public static boolean addAssetEntryAssetTags(long entryId, long[] tagIds) {
+		return getService().addAssetEntryAssetTags(entryId, tagIds);
 	}
 
 	/**
@@ -589,22 +591,6 @@ public class AssetTagLocalServiceUtil {
 		return getService().getPersistedModel(primaryKeyObj);
 	}
 
-	public static List<AssetTag> getSocialActivityCounterOffsetTags(
-		long groupId, String socialActivityCounterName, int startOffset,
-		int endOffset) {
-
-		return getService().getSocialActivityCounterOffsetTags(
-			groupId, socialActivityCounterName, startOffset, endOffset);
-	}
-
-	public static List<AssetTag> getSocialActivityCounterPeriodTags(
-		long groupId, String socialActivityCounterName, int startPeriod,
-		int endPeriod) {
-
-		return getService().getSocialActivityCounterPeriodTags(
-			groupId, socialActivityCounterName, startPeriod, endPeriod);
-	}
-
 	/**
 	 * Returns the asset tag with the primary key.
 	 *
@@ -747,10 +733,6 @@ public class AssetTagLocalServiceUtil {
 
 	public static int getTagsSize(long groupId, long classNameId, String name) {
 		return getService().getTagsSize(groupId, classNameId, name);
-	}
-
-	public static int getTagsSize(long groupId, String name) {
-		return getService().getTagsSize(groupId, name);
 	}
 
 	public static boolean hasAssetEntryAssetTag(long entryId, long tagId) {

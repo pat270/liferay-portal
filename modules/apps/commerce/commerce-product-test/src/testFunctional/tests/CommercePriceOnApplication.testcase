@@ -1,7 +1,7 @@
 @component-name = "portal-commerce"
 definition {
 
-	property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false${line.separator}feature.flag.COMMERCE-11028=true";
+	property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Shopping Experience";
@@ -45,6 +45,12 @@ definition {
 		}
 
 		task ("And the admin marks the sku as 'Price on Application'") {
+			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Price");
+
+			CommerceNavigator.gotoEntry(entryName = "Minium Base Price List");
+
 			CommerceSKUs.editSkuPricing(priceOnApplication = "true");
 		}
 
@@ -730,6 +736,12 @@ definition {
 		task ("When the admin marks the sku as 'Price on Application'") {
 			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
 
+			CommerceEntry.gotoMenuTab(menuTab = "Price");
+
+			CommerceNavigator.gotoEntry(entryName = "Minium Base Price List");
+
+			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
 			MouseOver(
 				key_label = "Price on Application",
 				locator1 = "CommerceEntry#LABEL_TOOLTIP_ICON");
@@ -741,22 +753,12 @@ definition {
 
 			CommerceSKUs.setSkuPricing(priceOnApplication = "true");
 
-			Button.clickPublish();
-		}
-
-		task ("Then the pricing fields are greyed out") {
-			for (var text : list "Base Price,Promotion Price,Cost") {
-				AssertElementPresent(
-					key_text = ${text},
-					locator1 = "CommerceEntry#ANY_TEXT_INPUT_DISABLED");
-			}
-
-			Click(locator1 = "Icon#CLOSE");
+			Button.clickSave();
 
 			SelectFrame.selectFrameTop();
 		}
 
-		task ("And 'Price on Application' is shown as the active price") {
+		task ("Then 'Price on Application' is shown as the active price") {
 			User.logoutPG();
 
 			CommerceLogin.miniumLogin(
@@ -784,24 +786,20 @@ definition {
 
 			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
 
+			CommerceEntry.gotoMenuTab(menuTab = "Price");
+
+			CommerceNavigator.gotoEntry(entryName = "Minium Base Price List");
+
+			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
 			CommerceSKUs.setSkuPricing(priceOnApplication = "false");
 
-			Button.clickPublish();
-		}
-
-		task ("Then the pricing fields are not greyed out") {
-			for (var text : list "Base Price,Promotion Price,Cost") {
-				AssertElementPresent(
-					key_text = ${text},
-					locator1 = "TextInput#ANY");
-			}
-
-			Click(locator1 = "Icon#CLOSE");
+			Button.clickSave();
 
 			SelectFrame.selectFrameTop();
 		}
 
-		task ("And the base price is shown as the active price") {
+		task ("Then the base price is shown as the active price") {
 			User.logoutPG();
 
 			CommerceLogin.miniumLogin(
@@ -836,6 +834,12 @@ definition {
 		}
 
 		task ("And the admin marks the sku as 'Price on Application'") {
+			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Price");
+
+			CommerceNavigator.gotoEntry(entryName = "Minium Base Price List");
+
 			CommerceSKUs.editSkuPricing(priceOnApplication = "true");
 		}
 
@@ -882,7 +886,7 @@ definition {
 				key_productName = "U-Joint",
 				locator1 = "CommerceAccelerators#PRODUCT_CARD_PRICE_ON_APPLICATION");
 
-			AssertTextNotEquals.assertNotPartialText(
+			AssertTextNotEquals.assertNotPartialMatch(
 				key_productName = "U-Joint",
 				locator1 = "CommerceEntry#PRODUCT_CARD_LIST_PRICE",
 				value1 = "$ 20.00");
@@ -905,6 +909,12 @@ definition {
 		}
 
 		task ("And the admin marks the sku as 'Price on Application'") {
+			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Price");
+
+			CommerceNavigator.gotoEntry(entryName = "Minium Base Price List");
+
 			CommerceSKUs.editSkuPricing(priceOnApplication = "true");
 		}
 
@@ -947,7 +957,7 @@ definition {
 				key_productName = "U-Joint",
 				locator1 = "CommerceAccelerators#PRODUCT_CARD_PRICE_ON_APPLICATION");
 
-			AssertTextNotEquals.assertNotPartialText(
+			AssertTextNotEquals.assertNotPartialMatch(
 				key_productName = "U-Joint",
 				locator1 = "CommerceEntry#PRODUCT_CARD_LIST_PRICE",
 				value1 = "$ 20.00");
@@ -1041,6 +1051,12 @@ definition {
 		}
 
 		task ("And the admin marks the sku as 'Price on Application'") {
+			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Price");
+
+			CommerceNavigator.gotoEntry(entryName = "Minium Base Price List");
+
 			CommerceSKUs.editSkuPricing(priceOnApplication = "true");
 		}
 
@@ -1519,6 +1535,12 @@ definition {
 		}
 
 		task ("And the admin marks the sku as 'Price on Application'") {
+			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Price");
+
+			CommerceNavigator.gotoEntry(entryName = "Minium Base Price List");
+
 			CommerceSKUs.editSkuPricing(priceOnApplication = "true");
 		}
 
@@ -1949,6 +1971,12 @@ definition {
 
 			CommerceNavigator.gotoTableListEntry(entryName = "MIN55861");
 
+			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Price");
+
+			CommerceNavigator.gotoEntry(entryName = "Minium Base Price List");
+
 			CommerceSKUs.editSkuPricing(priceOnApplication = "true");
 		}
 
@@ -2108,6 +2136,238 @@ definition {
 		}
 	}
 
+	@description = "COMMERCE-12211. The admin can view Price on Application column in the SKU's Price Lists tab via the Products admin page"
+	@priority = 5
+	test CanViewPriceOnApplicationColumnInSKUPriceListsTabViaProductsAdmin {
+		property portal.acceptance = "true";
+
+		task ("Given a new price list and promotion are created") {
+			CommerceJSONPriceListsAndPromotionsAPI._addPriceList(
+				catalogName = "Minium",
+				currencyCode = "USD",
+				priceListName = "Test Price List");
+
+			CommerceJSONPriceListsAndPromotionsAPI._addPromotion(
+				catalogName = "Minium",
+				currencyCode = "USD",
+				promotionName = "Test Promotion");
+		}
+
+		task ("And a price list and promotion entries are created for product U-Joint(sku MIN55861)") {
+			CommerceJSONPriceListsAndPromotionsAPI._addPriceListEntry(
+				entryPrice = 20,
+				priceListName = "Test Price List",
+				productSKU = "MIN55861");
+
+			CommerceJSONPriceListsAndPromotionsAPI._addPromotionEntry(
+				entryPrice = 0,
+				productSKU = "MIN55861",
+				promotionName = "Test Promotion");
+		}
+
+		task ("When the admin navigates to the U-Joint's sku details via the Products admin page") {
+			CommerceProducts.openProductsAdmin();
+
+			CommerceProducts.searchAndGoToProductEntry(entryProductName = "U-Joint");
+
+			CommerceEntry.gotoMenuTab(menuTab = "SKUs");
+
+			CommerceNavigator.gotoTableListEntry(entryName = "MIN55861");
+		}
+
+		task ("And goes to the Price Lists tab") {
+			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Price");
+		}
+
+		task ("Then the Price on Application column is shown") {
+			AssertElementPresent(
+				key_column = "Price on Application",
+				locator1 = "ObjectPortlet#ENTRY_COLUMN");
+		}
+
+		task ("And all the default values under the column are 'No'") {
+			for (var priceListName : list "Minium Base Price List,Minium Base Promotion,Test Price List,Test Promotion") {
+				AssertElementPresent(
+					key_entryTitle = ${priceListName},
+					key_index = 5,
+					key_value = "No",
+					locator1 = "CommerceEntry#TABLE_ENTRY_FIELD_VALUE");
+			}
+		}
+
+		task ("When enabling the Price on Application under the new price list entry") {
+			CommercePriceLists.openPriceListsAdmin();
+
+			CommerceNavigator.gotoEntry(entryName = "Test Price List");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Entries");
+
+			CommerceNavigator.gotoTableListEntry(entryName = "MIN55861");
+
+			CommerceSKUs.editSkuPricing(priceOnApplication = "true");
+		}
+
+		task ("And enabling the Price on Application under the new promotion entry") {
+			CommercePromotions.openPromotionsAdmin();
+
+			CommerceNavigator.gotoEntry(entryName = "Test Promotion");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Entries");
+
+			CommerceNavigator.gotoTableListEntry(entryName = "MIN55861");
+
+			CommerceSKUs.editSkuPricing(priceOnApplication = "true");
+		}
+
+		task ("And the admin goes back to the U-Joint SKU's Price Lists tab under the Products admin") {
+			CommerceProducts.openProductsAdmin();
+
+			CommerceProducts.searchAndGoToProductEntry(entryProductName = "U-Joint");
+
+			CommerceEntry.gotoMenuTab(menuTab = "SKUs");
+
+			CommerceNavigator.gotoTableListEntry(entryName = "MIN55861");
+
+			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Price");
+		}
+
+		task ("Then the Price on Application column values for the new price list and promotion entries are 'Yes'") {
+			for (var priceListName : list "Minium Base Price List,Minium Base Promotion") {
+				AssertElementPresent(
+					key_entryTitle = ${priceListName},
+					key_index = 5,
+					key_value = "No",
+					locator1 = "CommerceEntry#TABLE_ENTRY_FIELD_VALUE");
+			}
+
+			for (var priceListName : list "Test Price List,Test Promotion") {
+				AssertElementPresent(
+					key_entryTitle = ${priceListName},
+					key_index = 5,
+					key_value = "Yes",
+					locator1 = "CommerceEntry#TABLE_ENTRY_FIELD_VALUE");
+			}
+		}
+	}
+
+	@description = "COMMERCE-12210. The admin can view Price on Application column in the SKU's Price list tab via the SKU admin page"
+	@priority = 5
+	test CanViewPriceOnApplicationColumnInSKUPriceListsTabViaSKUsAdmin {
+		property portal.acceptance = "true";
+
+		task ("Given a new price list and promotion are created") {
+			CommerceJSONPriceListsAndPromotionsAPI._addPriceList(
+				catalogName = "Minium",
+				currencyCode = "USD",
+				priceListName = "Test Price List");
+
+			CommerceJSONPriceListsAndPromotionsAPI._addPromotion(
+				catalogName = "Minium",
+				currencyCode = "USD",
+				promotionName = "Test Promotion");
+		}
+
+		task ("And a price list and promotion entries are created for product U-Joint(sku MIN55861)") {
+			CommerceJSONPriceListsAndPromotionsAPI._addPriceListEntry(
+				entryPrice = 20,
+				priceListName = "Test Price List",
+				productSKU = "MIN55861");
+
+			CommerceJSONPriceListsAndPromotionsAPI._addPromotionEntry(
+				entryPrice = 0,
+				productSKU = "MIN55861",
+				promotionName = "Test Promotion");
+		}
+
+		task ("When the admin navigates to the U-Joint's sku details via the SKUs admin page") {
+			CommerceProducts.openProductsAdmin();
+
+			CommerceEntry.gotoMenuTab(menuTab = "SKUs");
+
+			CommerceProducts.searchAndGoToProductEntry(entryProductName = "MIN55861");
+		}
+
+		task ("And goes to the Price Lists tab") {
+			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Price");
+		}
+
+		task ("Then the Price on Application column is shown") {
+			AssertElementPresent(
+				key_column = "Price on Application",
+				locator1 = "ObjectPortlet#ENTRY_COLUMN");
+		}
+
+		task ("And all the default values under the column are 'No'") {
+			for (var priceListName : list "Minium Base Price List,Minium Base Promotion,Test Price List,Test Promotion") {
+				AssertElementPresent(
+					key_entryTitle = ${priceListName},
+					key_index = 5,
+					key_value = "No",
+					locator1 = "CommerceEntry#TABLE_ENTRY_FIELD_VALUE");
+			}
+		}
+
+		task ("When enabling the Price on Application under the new price list entry") {
+			CommercePriceLists.openPriceListsAdmin();
+
+			CommerceNavigator.gotoEntry(entryName = "Test Price List");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Entries");
+
+			CommerceNavigator.gotoTableListEntry(entryName = "MIN55861");
+
+			CommerceSKUs.editSkuPricing(priceOnApplication = "true");
+		}
+
+		task ("And enabling the Price on Application under the new promotion entry") {
+			CommercePromotions.openPromotionsAdmin();
+
+			CommerceNavigator.gotoEntry(entryName = "Test Promotion");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Entries");
+
+			CommerceNavigator.gotoTableListEntry(entryName = "MIN55861");
+
+			CommerceSKUs.editSkuPricing(priceOnApplication = "true");
+		}
+
+		task ("And the admin goes back to the U-Joint SKU's Price Lists tab under the SKUs admin") {
+			CommerceProducts.openProductsAdmin();
+
+			CommerceEntry.gotoMenuTab(menuTab = "SKUs");
+
+			CommerceProducts.searchAndGoToProductEntry(entryProductName = "MIN55861");
+
+			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Price");
+		}
+
+		task ("Then the Price on Application column values for the new price list and promotion entries are 'Yes'") {
+			for (var priceListName : list "Minium Base Price List,Minium Base Promotion") {
+				AssertElementPresent(
+					key_entryTitle = ${priceListName},
+					key_index = 5,
+					key_value = "No",
+					locator1 = "CommerceEntry#TABLE_ENTRY_FIELD_VALUE");
+			}
+
+			for (var priceListName : list "Test Price List,Test Promotion") {
+				AssertElementPresent(
+					key_entryTitle = ${priceListName},
+					key_index = 5,
+					key_value = "Yes",
+					locator1 = "CommerceEntry#TABLE_ENTRY_FIELD_VALUE");
+			}
+		}
+	}
+
 	@description = "COMMERCE-11619. As a buyer user, I can verify that the Price on Application label is visible on the storefront for a product SKU marked as Price on Application."
 	@priority = 5
 	test CanViewPriceOnApplicationLabelOnStoreFront {
@@ -2124,6 +2384,12 @@ definition {
 		}
 
 		task ("When the admin marks the sku as 'Price on Application'") {
+			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Price");
+
+			CommerceNavigator.gotoEntry(entryName = "Minium Base Price List");
+
 			CommerceSKUs.editSkuPricing(priceOnApplication = "true");
 		}
 
@@ -2184,6 +2450,114 @@ definition {
 				key_productName = "Transmission Cooler Line Assembly",
 				locator1 = "CommerceAccelerators#ORDER_DETAILS_UNIT_PRICE",
 				value1 = "$ 15.00");
+		}
+	}
+
+	@description = "COMMERCE-12939. As a buyer user, I want to be able to view a quote request order with email prepopulate and submit the quote request without notes"
+	@priority = 5
+	test CanViewQuoteRequestEmailPrepopulateForLoggedUser {
+		property portal.acceptance = "true";
+
+		task ("Given the admin marks the U-Joint's SKU as 'Price on Application'") {
+			CommerceProducts.openProductsAdmin();
+
+			CommerceProducts.searchAndGoToProductEntry(entryProductName = "U-Joint");
+
+			CommerceEntry.gotoMenuTab(menuTab = "SKUs");
+
+			CommerceNavigator.gotoTableListEntry(entryName = "MIN55861");
+
+			SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Price");
+
+			CommerceNavigator.gotoEntry(entryName = "Minium Base Price List");
+
+			CommerceSKUs.editSkuPricing(priceOnApplication = "true");
+		}
+
+		task ("And the buyer adds the 'Price on Application' product to Cart") {
+			User.logoutPG();
+
+			CommerceLogin.miniumLogin(
+				password = "test",
+				urlAppend = "web/minium",
+				userEmailAddress = "buyer@liferay.com");
+
+			FrontStore.addInitializerProductToCart(
+				productName = "U-Joint",
+				productQuantity = 1);
+		}
+
+		task ("When clicking the 'Request a Quote' button in the Mini Cart") {
+			CommerceNavigator.gotoMiniCart();
+
+			Button.click(button = "Request a Quote");
+		}
+
+		task ("And clicks again the 'Request a Quote' button in the Open Order Details Page") {
+			Click(
+				buttonId = "requestQuote",
+				locator1 = "Button#BUTTON_ID");
+		}
+
+		task ("Then can view the buyer's email prepopulated in the Request a Quote popup") {
+			AssertElementPresent(
+				key_title = "Request a Quote",
+				locator1 = "CommerceFrontStore#MODAL_TITLE");
+
+			AssertTextEquals(
+				key_placeHolder = "Enter an email address.",
+				locator1 = "TextInput#ANY_PLACEHOLDER",
+				value1 = "buyer@liferay.com");
+
+			AssertTextEquals(
+				key_value = "requestQuote",
+				locator1 = "CommerceFrontStore#TEXTAREA_FIELD",
+				value1 = "");
+		}
+
+		task ("And can submit the request without filling in note info") {
+			Button.click(button = "Submit");
+		}
+
+		task ("And admin can view the order with the status 'Quote Requested' in the Orders admin page") {
+			User.logoutAndLoginPG(
+				userLoginEmailAddress = "test@liferay.com",
+				userLoginFullName = "Test Test");
+
+			CommerceOrders.openOrdersAdmin();
+
+			AssertElementPresent(
+				key_orderStatus = "Quote Requested",
+				locator1 = "CommerceOrders#ORDER_ELLIPSIS_BY_STATUS");
+
+			CommerceJSONOrdersAPI._deleteAllCommerceOrders();
+		}
+
+		task ("But if the buyer submits the request by filling in non-email format for the email field") {
+			User.logoutAndLoginPG(
+				userLoginEmailAddress = "buyer@liferay.com",
+				userLoginFullName = "Buyer User");
+
+			Navigator.openWithAppendToBaseURL(urlAppend = "web/minium/catalog");
+
+			FrontStore.addInitializerProductToCart(
+				productName = "U-Joint",
+				productQuantity = 1);
+
+			CommerceNavigator.gotoMiniCart();
+
+			CommerceOrders.createQuoteRequest(
+				quoteRequestEmail = "guestuser",
+				requestAQuoteInMiniCart = "true",
+				requestAQuoteInOpenOrdersPage = "true");
+		}
+
+		task ("Then it's not allowed to submit a request with invalid email address") {
+			AssertElementPresent(
+				key_alertMessage = "Please enter a valid email address.",
+				locator1 = "Message#ERROR_ENTER_A_VALID_VALUE");
 		}
 	}
 

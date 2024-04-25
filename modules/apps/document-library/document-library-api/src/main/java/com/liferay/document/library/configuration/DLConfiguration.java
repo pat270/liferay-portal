@@ -25,7 +25,10 @@ public interface DLConfiguration {
 	@Meta.AD(deflt = "true", name = "add-default-structures", required = false)
 	public boolean addDefaultStructures();
 
-	@Meta.AD(deflt = "15", name = "check-interval", required = false)
+	@Meta.AD(
+		deflt = "15", description = "check-interval-in-minutes-description",
+		min = "1", name = "check-interval", required = false
+	)
 	public int checkInterval();
 
 	@Meta.AD(
@@ -49,6 +52,12 @@ public interface DLConfiguration {
 		name = "display-templates-config", required = false
 	)
 	public String displayTemplatesConfig();
+
+	@Meta.AD(
+		deflt = "false", description = "file-entry-expire-all-versions",
+		name = "expire-all-file-entry-versions-enabled", required = false
+	)
+	public boolean expireAllVersionsEnabled();
 
 	@Meta.AD(
 		deflt = "*", description = "file-extensions-help",
@@ -75,12 +84,14 @@ public interface DLConfiguration {
 	public String[] spreadSheetFileMimeTypes();
 
 	/**
-	 * Set the interval in hours on how often
-	 * TemporaryFileEntriesMessageListener will run to check for expired
+	 * Set the interval, greater than 0, in hours on how often
+	 * TempFileEntriesSchedulerJobConfiguration will run to check for expired
 	 * temporary file entries.
 	 */
 	@Meta.AD(
-		deflt = "1", name = "temporary-file-entries-check-interval",
+		deflt = "1",
+		description = "temporary-file-entries-check-interval-description",
+		min = "1", name = "temporary-file-entries-check-interval",
 		required = false
 	)
 	public int temporaryFileEntriesCheckInterval();

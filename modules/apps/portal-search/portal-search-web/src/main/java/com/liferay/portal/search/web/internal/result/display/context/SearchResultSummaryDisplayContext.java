@@ -20,6 +20,10 @@ public class SearchResultSummaryDisplayContext implements Serializable {
 		return _assetEntryUserId;
 	}
 
+	public long getAssetRendererDownloadSize() {
+		return _assetRendererDownloadSize;
+	}
+
 	public String getAssetRendererURLDownload() {
 		return _assetRendererURLDownload;
 	}
@@ -206,6 +210,10 @@ public class SearchResultSummaryDisplayContext implements Serializable {
 
 	public void setAssetEntryUserId(long assetEntryUserId) {
 		_assetEntryUserId = assetEntryUserId;
+	}
+
+	public void setAssetRendererDownloadSize(long assetRendererDownloadSize) {
+		_assetRendererDownloadSize = assetRendererDownloadSize;
 	}
 
 	public void setAssetRendererURLDownload(String assetRendererURLDownload) {
@@ -399,6 +407,7 @@ public class SearchResultSummaryDisplayContext implements Serializable {
 
 	private boolean _assetCategoriesOrTagsVisible;
 	private long _assetEntryUserId;
+	private long _assetRendererDownloadSize;
 	private String _assetRendererURLDownload;
 	private boolean _assetRendererURLDownloadVisible;
 	private String _className;

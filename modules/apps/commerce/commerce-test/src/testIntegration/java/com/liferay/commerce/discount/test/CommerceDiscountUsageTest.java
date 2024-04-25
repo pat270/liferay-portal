@@ -179,7 +179,8 @@ public class CommerceDiscountUsageTest {
 
 		CommerceProductPrice commerceProductPrice =
 			_commerceProductPriceCalculation.getCommerceProductPrice(
-				cpInstance.getCPInstanceId(), 1, commerceContext);
+				cpInstance.getCPInstanceId(), BigDecimal.ONE, StringPool.BLANK,
+				commerceContext);
 
 		CommerceMoney finalPriceCommerceMoney =
 			commerceProductPrice.getFinalPrice();
@@ -207,11 +208,9 @@ public class CommerceDiscountUsageTest {
 			commerceInventoryWarehouse.getCommerceInventoryWarehouseId(),
 			commerceChannel.getCommerceChannelId());
 
-		int quantity = 10;
-
 		CommerceInventoryTestUtil.addCommerceInventoryWarehouseItem(
-			_user.getUserId(), commerceInventoryWarehouse, cpInstance.getSku(),
-			quantity);
+			_user.getUserId(), commerceInventoryWarehouse, BigDecimal.TEN,
+			cpInstance.getSku(), StringPool.BLANK);
 
 		String couponCode = StringUtil.randomString();
 
@@ -223,8 +222,8 @@ public class CommerceDiscountUsageTest {
 				cpDefinition.getCPDefinitionId());
 
 		CommerceTestUtil.addCommerceOrderItem(
-			commerceOrder.getCommerceOrderId(), cpInstance.getCPInstanceId(), 1,
-			commerceContext);
+			commerceOrder.getCommerceOrderId(), cpInstance.getCPInstanceId(),
+			BigDecimal.ONE, commerceContext);
 
 		commerceContext = new TestCommerceContext(
 			_accountEntry, _commerceCurrency, commerceChannel, _user, _group,
@@ -232,7 +231,8 @@ public class CommerceDiscountUsageTest {
 
 		commerceProductPrice =
 			_commerceProductPriceCalculation.getCommerceProductPrice(
-				cpInstance.getCPInstanceId(), 1, commerceContext);
+				cpInstance.getCPInstanceId(), BigDecimal.ONE, StringPool.BLANK,
+				commerceContext);
 
 		finalPriceCommerceMoney = commerceProductPrice.getFinalPrice();
 
@@ -259,7 +259,8 @@ public class CommerceDiscountUsageTest {
 			commerceOrder);
 
 		_commerceProductPriceCalculation.getCommerceProductPrice(
-			cpInstance.getCPInstanceId(), 1, commerceContext);
+			cpInstance.getCPInstanceId(), BigDecimal.ONE, StringPool.BLANK,
+			commerceContext);
 
 		_commerceOrderEngine.checkoutCommerceOrder(
 			commerceOrder, _user.getUserId());
@@ -272,7 +273,8 @@ public class CommerceDiscountUsageTest {
 		Assert.assertEquals(1, commerceDiscountUsageCount);
 
 		_commerceProductPriceCalculation.getCommerceProductPrice(
-			cpInstance.getCPInstanceId(), 1, commerceContext);
+			cpInstance.getCPInstanceId(), BigDecimal.ONE, StringPool.BLANK,
+			commerceContext);
 
 		commerceDiscountUsageCount =
 			_commerceDiscountUsageEntryLocalService.
@@ -340,11 +342,9 @@ public class CommerceDiscountUsageTest {
 			commerceInventoryWarehouse.getCommerceInventoryWarehouseId(),
 			commerceChannel.getCommerceChannelId());
 
-		int quantity = 10;
-
 		CommerceInventoryTestUtil.addCommerceInventoryWarehouseItem(
-			_user.getUserId(), commerceInventoryWarehouse, cpInstance.getSku(),
-			quantity);
+			_user.getUserId(), commerceInventoryWarehouse, BigDecimal.TEN,
+			cpInstance.getSku(), StringPool.BLANK);
 
 		String couponCode = StringUtil.randomString();
 
@@ -359,8 +359,8 @@ public class CommerceDiscountUsageTest {
 			commerceOrder);
 
 		CommerceTestUtil.addCommerceOrderItem(
-			commerceOrder.getCommerceOrderId(), cpInstance.getCPInstanceId(), 1,
-			commerceContext);
+			commerceOrder.getCommerceOrderId(), cpInstance.getCPInstanceId(),
+			BigDecimal.ONE, commerceContext);
 
 		commerceOrder = _commerceOrderLocalService.applyCouponCode(
 			commerceOrder.getCommerceOrderId(), couponCode, commerceContext);
@@ -544,11 +544,9 @@ public class CommerceDiscountUsageTest {
 			commerceInventoryWarehouse.getCommerceInventoryWarehouseId(),
 			commerceChannel.getCommerceChannelId());
 
-		int quantity = 1000;
-
 		CommerceInventoryTestUtil.addCommerceInventoryWarehouseItem(
-			_user.getUserId(), commerceInventoryWarehouse, cpInstance.getSku(),
-			quantity);
+			_user.getUserId(), commerceInventoryWarehouse,
+			BigDecimal.valueOf(1000), cpInstance.getSku(), StringPool.BLANK);
 
 		String couponCode = StringUtil.randomString();
 
@@ -576,7 +574,7 @@ public class CommerceDiscountUsageTest {
 
 			CommerceTestUtil.addCommerceOrderItem(
 				commerceOrder.getCommerceOrderId(),
-				cpInstance.getCPInstanceId(), 1, commerceContext);
+				cpInstance.getCPInstanceId(), BigDecimal.ONE, commerceContext);
 
 			commerceOrder = _commerceOrderLocalService.applyCouponCode(
 				commerceOrder.getCommerceOrderId(), couponCode,
@@ -593,7 +591,8 @@ public class CommerceDiscountUsageTest {
 
 			CommerceProductPrice commerceProductPrice =
 				_commerceProductPriceCalculation.getCommerceProductPrice(
-					cpInstance.getCPInstanceId(), 1, commerceContext);
+					cpInstance.getCPInstanceId(), BigDecimal.ONE,
+					StringPool.BLANK, commerceContext);
 
 			if (commerceProductPrice != null) {
 				CommerceMoney finalPriceCommerceMoney =
@@ -644,8 +643,8 @@ public class CommerceDiscountUsageTest {
 		_commerceOrders.add(commerceOrder);
 
 		CommerceTestUtil.addCommerceOrderItem(
-			commerceOrder.getCommerceOrderId(), cpInstance.getCPInstanceId(), 1,
-			commerceContext);
+			commerceOrder.getCommerceOrderId(), cpInstance.getCPInstanceId(),
+			BigDecimal.ONE, commerceContext);
 
 		commerceOrder = _commerceOrderLocalService.applyCouponCode(
 			commerceOrder.getCommerceOrderId(), couponCode, commerceContext);
@@ -659,7 +658,8 @@ public class CommerceDiscountUsageTest {
 
 		CommerceProductPrice commerceProductPrice =
 			_commerceProductPriceCalculation.getCommerceProductPrice(
-				cpInstance.getCPInstanceId(), 1, commerceContext);
+				cpInstance.getCPInstanceId(), BigDecimal.ONE, StringPool.BLANK,
+				commerceContext);
 
 		if (commerceProductPrice != null) {
 			CommerceMoney finalPriceCommerceMoney =

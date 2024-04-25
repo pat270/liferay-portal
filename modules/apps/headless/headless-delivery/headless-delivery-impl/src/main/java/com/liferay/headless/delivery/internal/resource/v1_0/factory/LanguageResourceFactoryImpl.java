@@ -71,7 +71,12 @@ public class LanguageResourceFactoryImpl implements LanguageResource.Factory {
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _languageResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, LanguageResource>
+					languageResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_languageResourceProxyProviderFunction;
+
+				return languageResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -227,9 +232,6 @@ public class LanguageResourceFactoryImpl implements LanguageResource.Factory {
 		}
 	}
 
-	private static final Function<InvocationHandler, LanguageResource>
-		_languageResourceProxyProviderFunction = _getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -264,6 +266,14 @@ public class LanguageResourceFactoryImpl implements LanguageResource.Factory {
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, LanguageResource>
+			_languageResourceProxyProviderFunction =
+				_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

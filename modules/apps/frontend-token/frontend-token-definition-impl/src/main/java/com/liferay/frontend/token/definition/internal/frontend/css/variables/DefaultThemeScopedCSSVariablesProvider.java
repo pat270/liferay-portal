@@ -12,9 +12,9 @@ import com.liferay.frontend.token.definition.FrontendTokenDefinition;
 import com.liferay.frontend.token.definition.FrontendTokenDefinitionRegistry;
 import com.liferay.frontend.token.definition.FrontendTokenMapping;
 import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.service.LayoutSetLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.Collection;
@@ -47,12 +47,11 @@ public class DefaultThemeScopedCSSVariablesProvider
 
 		Group group = themeDisplay.getScopeGroup();
 
-		LayoutSet layoutSet = _layoutSetLocalService.fetchLayoutSet(
-			themeDisplay.getSiteGroupId(), group.isLayoutSetPrototype());
-
 		FrontendTokenDefinition frontendTokenDefinition =
 			_frontendTokenDefinitionRegistry.getFrontendTokenDefinition(
-				layoutSet.getThemeId());
+				_layoutSetLocalService.fetchLayoutSet(
+					themeDisplay.getSiteGroupId(),
+					group.isLayoutSetPrototype()));
 
 		if (frontendTokenDefinition == null) {
 			return Collections.emptyList();
@@ -71,9 +70,14 @@ public class DefaultThemeScopedCSSVariablesProvider
 			for (FrontendTokenMapping frontendTokenMapping :
 					frontendTokenMappings) {
 
-				cssVariables.put(
-					frontendTokenMapping.getValue(),
-					frontendToken.getDefaultValue());
+				if (Validator.isNotNull(
+						String.valueOf(
+							frontendToken.<Object>getDefaultValue()))) {
+
+					cssVariables.put(
+						frontendTokenMapping.getValue(),
+						frontendToken.getDefaultValue());
+				}
 			}
 		}
 

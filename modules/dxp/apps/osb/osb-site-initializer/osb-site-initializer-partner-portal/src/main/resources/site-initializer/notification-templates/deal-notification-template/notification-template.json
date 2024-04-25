@@ -1,8 +1,8 @@
 {
 	"description": "",
-	"editorType": "freeMarker",
-	"externalReferenceCode": "PRM-PARTNER-DEAL-REGISTRATION",
-	"name": "PRM Partner Deal Registration",
+	"editorType": "richText",
+	"externalReferenceCode": "PARTNER-DEAL-REGISTRATION",
+	"name": "Partner Deal Registration",
 	"recipientType": "email",
 	"recipients": [
 		{

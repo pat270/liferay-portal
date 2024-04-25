@@ -6,6 +6,7 @@
 interface IOAuth2ClientFromParametersOptions {
 	authorizeURL?: string;
 	clientId: string;
+	debug?: boolean;
 	homePageURL: string;
 	redirectURIs?: Array<string>;
 	tokenURL?: string;
@@ -13,7 +14,7 @@ interface IOAuth2ClientFromParametersOptions {
 interface IOAuth2ClientOptions {
 	authorizeURL: string;
 	clientId: string;
-	encodedRedirectURL: string;
+	debug?: boolean;
 	homePageURL: string;
 	redirectURIs: Array<string>;
 	tokenURL: string;
@@ -21,7 +22,7 @@ interface IOAuth2ClientOptions {
 declare class OAuth2Client {
 	private authorizeURL;
 	private clientId;
-	private encodedRedirectURL;
+	private debug;
 	private homePageURL;
 	private redirectURIs;
 	private tokenURL;
@@ -37,6 +38,7 @@ export declare function FromParameters(
 	options: IOAuth2ClientFromParametersOptions
 ): OAuth2Client;
 export declare function FromUserAgentApplication(
-	userAgentApplicationName: string
+	userAgentApplicationName: string,
+	debug?: boolean
 ): OAuth2Client;
 export {};

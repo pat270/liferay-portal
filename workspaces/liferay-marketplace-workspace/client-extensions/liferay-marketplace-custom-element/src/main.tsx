@@ -3,13 +3,12 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import React from 'react';
 import {Root, createRoot} from 'react-dom/client';
 
-import App from './App';
-import {AppContextProvider} from './manage-app-state/AppManageState';
+import AppRoutes, {RouteType} from './Routes';
 
-const GRAVATAR_API = `https://www.gravatar.com/avatar`;
+import './index.scss';
+import Providers from './providers';
 
 class WebComponent extends HTMLElement {
 	private root: Root | undefined;
@@ -19,11 +18,17 @@ class WebComponent extends HTMLElement {
 			this.root = createRoot(this);
 
 			this.root.render(
-				<React.StrictMode>
-					<AppContextProvider gravatarAPI={GRAVATAR_API}>
-						<App route={this.getAttribute('route') || '/'} />
-					</AppContextProvider>
-				</React.StrictMode>
+				<Providers
+					properties={{
+						cloudBaseURL: this.getAttribute('cloudBaseURL') || '',
+						contactSupportUrl:
+							this.getAttribute('contactSupportUrl') || '',
+						eulaBaseURL: this.getAttribute('eulaBaseURL') || '',
+						marketoFormId: this.getAttribute('marketoFormId') || '',
+					}}
+				>
+					<AppRoutes path={this.getAttribute('path') as RouteType} />
+				</Providers>
 			);
 		}
 	}

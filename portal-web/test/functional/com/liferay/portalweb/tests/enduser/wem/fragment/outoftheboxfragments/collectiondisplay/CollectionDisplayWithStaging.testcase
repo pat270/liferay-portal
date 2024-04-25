@@ -4,7 +4,7 @@ definition {
 	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Fragments";
+	property testray.main.component.name = "Fragment Administration";
 
 	setUp {
 		task ("Set up instance and sign in") {
@@ -18,9 +18,7 @@ definition {
 		}
 
 		task ("Activate local live staging") {
-			Staging.openStagingAdmin(siteURLKey = "test-site-name");
-
-			Staging.activateStagingCP(siteName = "Test Site Name");
+			JSONStaging.enableLocalStaging(groupName = "Test Site Name");
 		}
 	}
 
@@ -109,10 +107,10 @@ definition {
 		task ("View displayed contents in Content Flags, Content Ratings and Content Display in page editor") {
 			for (var i : list "1,2,3") {
 				AssertAttributeValue(
-					attribute1 = "aria-expanded",
 					index = ${i},
 					locator1 = "Fragment#CONTENT_RATINGS_YOUR_RATING_STAR",
-					value1 = "false");
+					value1 = "aria-expanded",
+					value2 = "false");
 
 				AssertVisible(
 					index = ${i},
@@ -147,10 +145,10 @@ definition {
 
 			for (var i : list "1,2,3") {
 				AssertAttributeValue(
-					attribute1 = "aria-expanded",
 					index = ${i},
 					locator1 = "Fragment#CONTENT_RATINGS_YOUR_RATING_STAR",
-					value1 = "false");
+					value1 = "aria-expanded",
+					value2 = "false");
 
 				AssertVisible(
 					index = ${i},
@@ -331,8 +329,6 @@ definition {
 	@description = "This is a use case for LPS-86193. Can export display page template and import to Staging site via UI."
 	@priority = 3
 	test ExportImportDisplayPageTemplateWithCollectionDisplay {
-		property testray.component.names = "Display Page Templates,Fragments";
-
 		task ("Add a display page template with Web Content Article type and Basic Web Content subtype") {
 			JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
 				contentType = "Web Content Article",
@@ -372,9 +368,7 @@ definition {
 		task ("Import display page template in a new staging site") {
 			HeadlessSite.addSite(siteName = "Site Name");
 
-			Staging.openStagingAdmin(siteURLKey = "site-name");
-
-			Staging.activateStagingCP(siteName = "Site Name");
+			JSONStaging.enableLocalStaging(groupName = "Site Name");
 
 			DisplayPageTemplatesAdmin.openDisplayPagesAdmin(siteURLKey = "site-name-staging");
 

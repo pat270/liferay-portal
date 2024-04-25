@@ -12,12 +12,14 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.NoSuchCompanyException;
 import com.liferay.portal.kernel.json.JSONArray;
+import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
+import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
@@ -47,7 +49,9 @@ import java.nio.channels.FileChannel;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletResponse;
@@ -81,6 +85,10 @@ public class CompanyLogServletTest {
 
 		_companyAdminUser = UserTestUtil.addCompanyAdminUser(_company);
 
+		_originalName = PrincipalThreadLocal.getName();
+
+		PrincipalThreadLocal.setName(_companyAdminUser.getUserId());
+
 		File companyLogDirectory = Log4JUtil.getCompanyLogDirectory(
 			_company.getCompanyId());
 
@@ -107,6 +115,8 @@ public class CompanyLogServletTest {
 
 			parentDirectory.delete();
 		}
+
+		PrincipalThreadLocal.setName(_originalName);
 	}
 
 	@Ignore
@@ -236,11 +246,12 @@ public class CompanyLogServletTest {
 
 		_servlet.service(mockHttpServletRequest, _mockHttpServletResponse);
 
-		JSONArray jsonArray = _jsonFactory.createJSONArray(
+		Map<Long, JSONObject> jsonObjects = _toCompanyJSONObjects(
 			_mockHttpServletResponse.getContentAsString());
 
 		_assertCompanyLogFiles(
-			_company, (JSONObject)jsonArray.get(0), mockHttpServletRequest);
+			_company, jsonObjects.get(_company.getCompanyId()),
+			mockHttpServletRequest);
 	}
 
 	@Ignore
@@ -258,25 +269,27 @@ public class CompanyLogServletTest {
 	}
 
 	@Test
-	public void testListWithOmniAdminUser() throws Exception {
+	public void testListWithOmniadminUser() throws Exception {
 		User omniAdminUser = null;
 
 		try {
-			omniAdminUser = UserTestUtil.addOmniAdminUser();
+			omniAdminUser = UserTestUtil.addOmniadminUser();
 
 			MockHttpServletRequest mockHttpServletRequest =
 				_createMockHttpServletRequest("/", omniAdminUser);
 
 			_servlet.service(mockHttpServletRequest, _mockHttpServletResponse);
 
-			JSONArray jsonArray = _jsonFactory.createJSONArray(
+			Map<Long, JSONObject> jsonObjects = _toCompanyJSONObjects(
 				_mockHttpServletResponse.getContentAsString());
 
 			_assertCompanyLogFiles(
 				_companyLocalService.getCompany(TestPropsValues.getCompanyId()),
-				(JSONObject)jsonArray.get(0), mockHttpServletRequest);
+				jsonObjects.get(TestPropsValues.getCompanyId()),
+				mockHttpServletRequest);
 			_assertCompanyLogFiles(
-				_company, (JSONObject)jsonArray.get(1), mockHttpServletRequest);
+				_company, jsonObjects.get(_company.getCompanyId()),
+				mockHttpServletRequest);
 		}
 		finally {
 			if (omniAdminUser != null) {
@@ -502,6 +515,22 @@ public class CompanyLogServletTest {
 		return mockHttpServletRequest;
 	}
 
+	private Map<Long, JSONObject> _toCompanyJSONObjects(String json)
+		throws JSONException {
+
+		Map<Long, JSONObject> jsonObjects = new HashMap<>();
+
+		JSONArray jsonArray = _jsonFactory.createJSONArray(json);
+
+		for (int i = 0; i < jsonArray.length(); i++) {
+			JSONObject jsonObject = jsonArray.getJSONObject(i);
+
+			jsonObjects.put(jsonObject.getLong("companyId"), jsonObject);
+		}
+
+		return jsonObjects;
+	}
+
 	private static Company _company;
 	private static User _companyAdminUser;
 
@@ -509,6 +538,7 @@ public class CompanyLogServletTest {
 	private static CompanyLocalService _companyLocalService;
 
 	private static File _file;
+	private static String _originalName;
 
 	@Inject
 	private JSONFactory _jsonFactory;

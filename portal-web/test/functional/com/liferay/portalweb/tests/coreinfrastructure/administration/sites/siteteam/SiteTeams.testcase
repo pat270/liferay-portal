@@ -1,6 +1,7 @@
-@component-name = "portal-security"
+@component-name = "portal-user-management"
 definition {
 
+	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Site Teams";
@@ -13,28 +14,11 @@ definition {
 		HeadlessSite.addSite(siteName = "Site Name");
 	}
 
-	tearDown {
-		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
-
-		if (${testLiferayVirtualInstance} == "true") {
-			PortalInstances.tearDownCP();
-		}
-		else {
-			Team.tearDownCP();
-
-			UserGroup.tearDownCP();
-
-			JSONUser.tearDownNonAdminUsers();
-
-			JSONGroup.deleteGroupByName(groupName = "Site Name");
-		}
-	}
-
 	@description = "Able to add site team."
 	@priority = 4
 	@uitest
 	test AddSiteTeam {
-		property testray.component.names = "Sites Administration";
+		property testray.component.names = "Site Teams";
 
 		task ("Add a site team in new site") {
 			Site.openSiteTeamsAdmin(siteURLKey = "site-name");
@@ -54,7 +38,7 @@ definition {
 	@description = "Able to assign user to site team."
 	@priority = 4
 	test AddSiteTeamAssignUser {
-		property testray.component.names = "Sites Administration,Users and Organizations";
+		property testray.component.names = "Site Teams,Users and Organizations";
 
 		task ("Add a user") {
 			JSONUser.addUser(
@@ -102,7 +86,7 @@ definition {
 	@priority = 4
 	@uitest
 	test AddSiteTeamAssignUserGroup {
-		property testray.component.names = "Sites Administration,User Groups";
+		property testray.component.names = "Site Teams,User Groups";
 
 		task ("Add a site team in site") {
 			Site.openSiteTeamsAdmin(siteURLKey = "site-name");
@@ -149,10 +133,10 @@ definition {
 	}
 
 	@description = "Able to add multiple site teams."
-	@priority = 5
+	@priority = 4
 	test AddSiteTeamMultiple {
 		property portal.acceptance = "true";
-		property testray.component.names = "Sites Administration";
+		property testray.component.names = "Site Teams";
 
 		task ("Add a site page") {
 			JSONLayout.addPublicLayout(
@@ -192,11 +176,14 @@ definition {
 	}
 
 	@description = "Able to remove user after assigning to site team."
-	@priority = 5
+	@priority = 4
 	@uitest
 	test AddSiteTeamRemoveUser {
+		property app.server.types = "jboss,tcserver,tomcat,weblogic,websphere,wildfly";
+		property database.types = "db2,hypersonic,mariadb,mysql,oracle,postgresql,sqlserver,sybase";
 		property portal.acceptance = "true";
-		property testray.component.names = "Sites Administration,Users and Organizations";
+		property test.liferay.virtual.instance = "false";
+		property testray.component.names = "Site Teams,Users and Organizations";
 
 		task ("Add a user and assign it to the created site") {
 			JSONUser.addUser(
@@ -255,7 +242,7 @@ definition {
 	@priority = 4
 	@uitest
 	test AddSiteTeamRemoveUserGroup {
-		property testray.component.names = "Sites Administration,User Groups";
+		property testray.component.names = "Site Teams,User Groups";
 
 		task ("Add a site team in site") {
 			Site.openSiteTeamsAdmin(siteURLKey = "site-name");
@@ -319,7 +306,7 @@ definition {
 	@description = "Able to find user group in site team."
 	@priority = 4
 	test AddSiteTeamSearchUserGroups {
-		property testray.component.names = "Sites Administration,User Groups";
+		property testray.component.names = "Site Teams,User Groups";
 
 		task ("Add 2 user groups andd assign them to the site") {
 			for (var n : list "1,2") {
@@ -366,10 +353,10 @@ definition {
 	}
 
 	@description = "Able to find user in site team."
-	@priority = 5
+	@priority = 4
 	test AddSiteTeamSearchUsers {
 		property portal.acceptance = "true";
-		property testray.component.names = "Sites Administration,Users and Organizations";
+		property testray.component.names = "Site Teams,Users and Organizations";
 
 		task ("Add 2 users and assign them to the created site") {
 			for (var n : list "1,2") {
@@ -421,11 +408,11 @@ definition {
 	}
 
 	@description = "Able to delete site team."
-	@priority = 5
+	@priority = 4
 	@uitest
 	test DeleteSiteTeam {
 		property portal.acceptance = "true";
-		property testray.component.names = "Sites Administration";
+		property testray.component.names = "Site Teams";
 
 		task ("Add a site team and delete it") {
 			Site.openSiteTeamsAdmin(siteURLKey = "site-name");
@@ -445,11 +432,11 @@ definition {
 	}
 
 	@description = "Able to edit site team."
-	@priority = 5
+	@priority = 4
 	@uitest
 	test EditSiteTeam {
 		property portal.acceptance = "true";
-		property testray.component.names = "Sites Administration";
+		property testray.component.names = "Site Teams";
 
 		task ("Add a site team and edit it") {
 			Site.openSiteTeamsAdmin(siteURLKey = "site-name");
@@ -475,7 +462,7 @@ definition {
 	@priority = 4
 	test SiteTeamsPermissions {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
-		property testray.component.names = "Permissions,Sites Administration";
+		property testray.component.names = "Permissions,Site Teams";
 
 		task ("Add a site team and a public page basing on Search page template") {
 			PagesAdmin.openPagesAdmin(siteURLKey = "Site Name");
@@ -499,6 +486,10 @@ definition {
 		}
 
 		task ("Assign user to the created site") {
+			Site.openSiteSettingsAdmin(siteURLKey = "site-name");
+
+			Site.manageMembershipOptions(allowManualMembershipManagement = "true");
+
 			User.openUsersAdmin();
 
 			User.editUserSiteCP(
@@ -520,10 +511,7 @@ definition {
 		}
 
 		task ("Assign the second user to the created site") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Users and Organizations");
+			User.openUsersAdmin();
 
 			User.editUserSiteCP(
 				siteName = "Site Name",
@@ -628,7 +616,8 @@ definition {
 	@priority = 4
 	test SiteTeamsXSS {
 		property test.liferay.virtual.instance = "false";
-		property testray.component.names = "Sites Administration,XSS";
+		property test.run.type = "single";
+		property testray.component.names = "Site Teams,XSS";
 
 		task ("Add a site team with alert") {
 			Site.openSiteTeamsAdmin(siteURLKey = "site-name");
@@ -655,6 +644,52 @@ definition {
 			AssertHTMLSourceTextNotPresent(value1 = ${actualScript});
 
 			AssertHTMLSourceTextPresent(value1 = ${escapedScript});
+		}
+	}
+
+	@description = "This is a test for LPS-177717. The tooltip of the back button of a Team view or Team edit mode is Go to Teams."
+	@priority = 3
+	test ViewBackButtonTooltipForTeamsAdmin {
+		task ("Given a site administrator adds a team") {
+			Site.openSiteTeamsAdmin(siteURLKey = "site-name");
+
+			LexiconEntry.gotoAdd();
+
+			WaitForElementPresent(locator1 = "TextInput#NAME");
+		}
+
+		task ("When the site administrator hovers over the back button") {
+			MouseOver(locator1 = "Icon#BACK");
+		}
+
+		task ("Then the site administrator could see the tooltip message") {
+			AssertVisible(
+				key_content = "Go to Teams",
+				locator1 = "Tooltip#FLOATING_TOOLTIP_CONTENT");
+		}
+
+		task ("Given a site administrator edits the team") {
+			JSONTeam.addTeam(
+				siteName = "Site Name",
+				teamName = "Test Team Name");
+
+			Navigator.gotoBack();
+
+			LexiconEntry.gotoEntryMenuItem(
+				menuItem = "Edit",
+				rowEntry = "Test Team Name");
+
+			WaitForElementPresent(locator1 = "TextInput#NAME");
+		}
+
+		task ("When the site administrator hovers over the back button") {
+			MouseOver(locator1 = "Icon#BACK");
+		}
+
+		task ("Then the site administrator could see the tooltip message") {
+			AssertVisible(
+				key_content = "Go to Teams",
+				locator1 = "Tooltip#FLOATING_TOOLTIP_CONTENT");
 		}
 	}
 

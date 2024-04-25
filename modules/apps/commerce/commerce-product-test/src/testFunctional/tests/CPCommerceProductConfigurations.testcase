@@ -729,17 +729,62 @@ definition {
 		}
 	}
 
+	@description = "This is a test for COMMERCE-12144. Decimal minimum quantity configuration can be saved and viewed on the quantity selector from the Minium catalog page"
+	@priority = 5
+	test CanDecimalMinimumOrderQuantityBetweenZeroAndOneBeAccepted {
+		property portal.acceptance = "true";
+
+		task ("Given the admin navigates to the product's configuration page") {
+			CommerceProducts.openProductsAdmin();
+
+			CommerceProducts.searchAndGoToProductEntry(entryProductName = "ABS Sensor");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Configuration");
+		}
+
+		task ("When the admin configures the minimum order quantity to be decimal and negative") {
+			CommerceProducts.updateProductInventoryConfiguration(minOrderQuantity = "-0.5");
+		}
+
+		task ("Then an error message is shown under the Minimum Order Quantity field") {
+			AssertTextEquals.assertPartialText(
+				key_alertMessage = "Please enter a value greater than 0.",
+				key_fieldLabel = "Minimum",
+				locator1 = "Message#ERROR_WITH_SPECIFIC_ENTRY",
+				value1 = "Please enter a value greater than 0.");
+		}
+
+		task ("When the admin configures the minimum order quantity to be a decimal between zero and one") {
+			CommerceProducts.updateProductInventoryConfiguration(minOrderQuantity = "0.5");
+		}
+
+		task ("Then the configuration is saved successfully") {
+			AssertElementPresent(locator1 = "Message#SUCCESS");
+		}
+
+		task ("When the admin navigates to the minium catalog page looking for the product card") {
+			Navigator.openWithAppendToBaseURL(urlAppend = "web/minium/catalog");
+
+			CommerceAcceleratorsInitializer.changeProductsSorting(sortingType = "Name Ascending");
+		}
+
+		task ("Then the quantity selector still shows the integer number because there is no UOM configured for that product") {
+			AssertTextEquals(
+				key_productName = "ABS Sensor",
+				locator1 = "CommerceAccelerators#PRODUCT_CARD_QUANTITY_SELECTOR_INPUT_FIELD",
+				value1 = 1);
+		}
+	}
+
 	@description = "This is a test for COMMERCE-11480. CanLocaleBePrependedForProductOnSiteMapPage. Verify the /en/ is added for the URLs inside the sitemap"
 	@priority = 5
 	test CanLocaleBePrependedForProductOnSiteMapPage {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given the localization for the Friendly URL is changed") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Configuration",
-				panel = "Control Panel",
-				portlet = "Instance Settings");
+			PortalSettings.openInstanceSettingsAdmin();
 
 			SystemSettings.gotoConfiguration(
 				configurationCategory = "Localization",
@@ -827,7 +872,7 @@ definition {
 				site = "true");
 			var basePortalURL = PropsUtil.get("portal.url");
 
-			Open.openNoError(locator1 = "${basePortalURL}/sitemap.xml?groupId=${groupId}");
+			Open.openNoError(value1 = "${basePortalURL}/sitemap.xml?groupId=${groupId}");
 
 			var responseToParse = CommerceJSONProductsAPI._getCommerceFieldValue(
 				field = "uuid",
@@ -840,7 +885,7 @@ definition {
 
 			var link = selenium.getHtmlNodeText("//*[contains(text(),'${uuid}')][1]");
 
-			Open.openNoErrorNoSPARefresh(locator1 = ${link});
+			Open.openNoErrorNoSPARefresh(value1 = ${link});
 		}
 
 		task ("Then the default and translated product's friendly URL are shown with the Locale language") {
@@ -911,7 +956,7 @@ definition {
 				}
 			}
 
-			Open.openNoErrorNoSPARefresh(locator1 = ${basePortalURL});
+			Open.openNoErrorNoSPARefresh(value1 = ${basePortalURL});
 		}
 
 		task ("When the Uuid of the widget is acquired") {
@@ -920,7 +965,7 @@ definition {
 				site = "true");
 			var basePortalURL = PropsUtil.get("portal.url");
 
-			Open.openNoError(locator1 = "${basePortalURL}/sitemap.xml?groupId=${groupId}");
+			Open.openNoError(value1 = "${basePortalURL}/sitemap.xml?groupId=${groupId}");
 
 			var responseToParse = CommerceJSONProductsAPI._getCommerceFieldValue(
 				field = "uuid",
@@ -933,7 +978,7 @@ definition {
 
 			var link = selenium.getHtmlNodeText("//*[contains(text(),'${uuid}')][1]");
 
-			Open.openNoErrorNoSPARefresh(locator1 = ${link});
+			Open.openNoErrorNoSPARefresh(value1 = ${link});
 		}
 
 		task ("Then the category friendly URL are shown with the Locale language") {
@@ -1004,7 +1049,7 @@ definition {
 				}
 			}
 
-			Open.openNoErrorNoSPARefresh(locator1 = ${basePortalURL});
+			Open.openNoErrorNoSPARefresh(value1 = ${basePortalURL});
 		}
 	}
 
@@ -1014,12 +1059,10 @@ definition {
 		property custom.properties = "virtual.hosts.valid.hosts=localhost,127.0.0.1,www.able.com";
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given the localization for the Friendly URL is changed") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Configuration",
-				panel = "Control Panel",
-				portlet = "Instance Settings");
+			PortalSettings.openInstanceSettingsAdmin();
 
 			SystemSettings.gotoConfiguration(
 				configurationCategory = "Localization",
@@ -1100,7 +1143,7 @@ definition {
 				groupName = "Minium",
 				site = "true");
 
-			Open.openNoError(locator1 = "http://www.able.com:8080/sitemap.xml?groupId=${groupId}");
+			Open.openNoError(value1 = "http://www.able.com:8080/sitemap.xml?groupId=${groupId}");
 
 			var responseToParse = CommerceJSONProductsAPI._getCommerceFieldValue(
 				field = "uuid",
@@ -1113,7 +1156,7 @@ definition {
 
 			var link = selenium.getHtmlNodeText("//*[contains(text(),'${uuid}')][1]");
 
-			Open.openNoErrorNoSPARefresh(locator1 = ${link});
+			Open.openNoErrorNoSPARefresh(value1 = ${link});
 		}
 
 		task ("Then the URLs are shown with only one /") {
@@ -1125,7 +1168,7 @@ definition {
 		task ("And the admin goes back to portal") {
 			var basePortalURL = PropsUtil.get("portal.url");
 
-			Open.openNoErrorNoSPARefresh(locator1 = ${basePortalURL});
+			Open.openNoErrorNoSPARefresh(value1 = ${basePortalURL});
 		}
 	}
 
@@ -1191,7 +1234,9 @@ definition {
 		}
 
 		task ("Then it's not possible to add the order item to the cart") {
-			Alert.viewErrorMessage(errorMessage = "Danger:The specified quantity is unavailable.");
+			AssertTextEquals.assertText(
+				locator1 = "Message#ERROR",
+				value1 = "Danger:The specified quantity is unavailable.");
 		}
 	}
 
@@ -1378,7 +1423,9 @@ definition {
 		}
 
 		task ("Then it's not possible to add the order item to the cart") {
-			Alert.viewErrorMessage(errorMessage = "Danger:The specified quantity is unavailable.");
+			AssertTextEquals.assertText(
+				locator1 = "Message#ERROR",
+				value1 = "Danger:The specified quantity is unavailable.");
 		}
 	}
 
@@ -1468,8 +1515,10 @@ definition {
 				locator1 = "CommerceAccelerators#ADD_TO_CART_BUTTON");
 		}
 
-		task ("And it's not possible to add the order item to the cart") {
-			Alert.viewErrorMessage(errorMessage = "Danger:The specified quantity is unavailable.");
+		task ("Then the order item will not be added to the cart") {
+			AssertTextEquals.assertText(
+				locator1 = "Message#ERROR",
+				value1 = "Danger:The specified quantity is unavailable.");
 		}
 	}
 
@@ -1535,7 +1584,9 @@ definition {
 		}
 
 		task ("Then it's not possible to add the order item to the cart") {
-			Alert.viewErrorMessage(errorMessage = "Danger:The specified quantity is unavailable.");
+			AssertTextEquals.assertText(
+				locator1 = "Message#ERROR",
+				value1 = "Danger:The specified quantity is unavailable.");
 		}
 	}
 
@@ -1625,8 +1676,10 @@ definition {
 				locator1 = "CommerceAccelerators#ADD_TO_CART_BUTTON");
 		}
 
-		task ("And it's not possible to add the order item to the cart") {
-			Alert.viewErrorMessage(errorMessage = "Danger:The specified quantity is unavailable.");
+		task ("Then the order item will not be added to the cart") {
+			AssertTextEquals.assertText(
+				locator1 = "Message#ERROR",
+				value1 = "Danger:The specified quantity is unavailable.");
 		}
 	}
 
@@ -1690,7 +1743,9 @@ definition {
 		}
 
 		task ("Then it's not possible to add the order item to the cart") {
-			Alert.viewErrorMessage(errorMessage = "Danger:The specified quantity is unavailable.");
+			AssertTextEquals.assertText(
+				locator1 = "Message#ERROR",
+				value1 = "Danger:The specified quantity is unavailable.");
 		}
 	}
 
@@ -1775,8 +1830,10 @@ definition {
 				locator1 = "CommerceAccelerators#ADD_TO_CART_BUTTON");
 		}
 
-		task ("And it's not possible to add the order item to the cart") {
-			Alert.viewErrorMessage(errorMessage = "Danger:The specified quantity is unavailable.");
+		task ("Then the order item will not be added to the cart") {
+			AssertTextEquals.assertText(
+				locator1 = "Message#ERROR",
+				value1 = "Danger:The specified quantity is unavailable.");
 		}
 	}
 
@@ -1921,6 +1978,7 @@ definition {
 	@priority = 4
 	test CanSiteCurrentLanguageAffectSiteMap {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given an account is created") {
 			JSONAccountEntry.addAccountEntry(
@@ -2004,7 +2062,7 @@ definition {
 				groupName = "Minium",
 				site = "true");
 
-			Open.openNoError(locator1 = "${basePortalURL}/sitemap.xml?groupId=${groupId}");
+			Open.openNoError(value1 = "${basePortalURL}/sitemap.xml?groupId=${groupId}");
 
 			var responseToParse = CommerceJSONProductsAPI._getCommerceFieldValue(
 				field = "uuid",
@@ -2017,7 +2075,7 @@ definition {
 
 			var link = selenium.getHtmlNodeText("//*[contains(text(),'${uuid}')][1]");
 
-			Open.openNoErrorNoSPARefresh(locator1 = ${link});
+			Open.openNoErrorNoSPARefresh(value1 = ${link});
 		}
 
 		task ("Then the product translated with the Catalan is not present") {
@@ -2037,13 +2095,14 @@ definition {
 				locator1 = "CommerceEntry#PRODUCT_LANGUAGE_DETAIL_SITEMAP_URL_HREF_HREFLANG");
 		}
 
-		Open.openNoErrorNoSPARefresh(locator1 = ${basePortalURL});
+		Open.openNoErrorNoSPARefresh(value1 = ${basePortalURL});
 	}
 
 	@description = "This is a test for COMMERCE-10639. Sitemaps display the language tags properly"
 	@priority = 3
 	test CanViewLanguageTagsOnSitemapPage {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given an account is created") {
 			JSONAccountEntry.addAccountEntry(
@@ -2084,7 +2143,7 @@ definition {
 				site = "true");
 			var basePortalURL = PropsUtil.get("portal.url");
 
-			Open.openNoError(locator1 = "${basePortalURL}/sitemap.xml?groupId=${groupId}");
+			Open.openNoError(value1 = "${basePortalURL}/sitemap.xml?groupId=${groupId}");
 
 			var responseToParse = CommerceJSONProductsAPI._getCommerceFieldValue(
 				field = "uuid",
@@ -2097,7 +2156,7 @@ definition {
 
 			var link = selenium.getHtmlNodeText("//*[contains(text(),'${uuid}')][1]");
 
-			Open.openNoErrorNoSPARefresh(locator1 = ${link});
+			Open.openNoErrorNoSPARefresh(value1 = ${link});
 		}
 
 		task ("Then the default and translated product's friendly URL are shown") {
@@ -2174,7 +2233,7 @@ definition {
 				}
 			}
 
-			Open.openNoErrorNoSPARefresh(locator1 = ${basePortalURL});
+			Open.openNoErrorNoSPARefresh(value1 = ${basePortalURL});
 		}
 	}
 
@@ -2185,9 +2244,7 @@ definition {
 
 		// TODO Review
 
-		CommerceNavigator.gotoPortlet(
-			category = "Product Management",
-			portlet = "Products");
+		CommerceProducts.openProductsAdmin();
 
 		CPCommerceCatalog.newProductsEntry(
 			productCatalog = "Minium",

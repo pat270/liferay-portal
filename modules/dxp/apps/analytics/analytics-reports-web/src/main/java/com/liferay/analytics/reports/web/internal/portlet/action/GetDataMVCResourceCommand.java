@@ -11,7 +11,7 @@ import com.liferay.analytics.reports.info.item.ClassNameClassPKInfoItemIdentifie
 import com.liferay.analytics.reports.info.item.provider.AnalyticsReportsInfoItemObjectProvider;
 import com.liferay.analytics.reports.web.internal.constants.AnalyticsReportsPortletKeys;
 import com.liferay.analytics.reports.web.internal.data.provider.AnalyticsReportsDataProvider;
-import com.liferay.analytics.reports.web.internal.info.item.provider.AnalyticsReportsInfoItemObjectProviderRegistry;
+import com.liferay.analytics.reports.web.internal.info.item.provider.util.AnalyticsReportsInfoItemObjectProviderRegistryUtil;
 import com.liferay.analytics.reports.web.internal.model.TimeRange;
 import com.liferay.analytics.reports.web.internal.model.TimeSpan;
 import com.liferay.analytics.reports.web.internal.util.AnalyticsReportsUtil;
@@ -104,7 +104,7 @@ public class GetDataMVCResourceCommand extends BaseMVCResourceCommand {
 
 			AnalyticsReportsInfoItemObjectProvider<?>
 				analyticsReportsInfoItemObjectProvider =
-					_analyticsReportsInfoItemObjectProviderRegistry.
+					AnalyticsReportsInfoItemObjectProviderRegistryUtil.
 						getAnalyticsReportsInfoItemObjectProvider(
 							infoItemReference.getClassName());
 
@@ -192,13 +192,13 @@ public class GetDataMVCResourceCommand extends BaseMVCResourceCommand {
 		WebImage webImage = analyticsReportsInfoItem.getAuthorWebImage(
 			object, locale);
 
-		if ((webImage == null) || Validator.isNull(webImage.getUrl())) {
+		if ((webImage == null) || Validator.isNull(webImage.getURL())) {
 			return null;
 		}
 
 		long portraitId = GetterUtil.getLong(
 			HttpComponentsUtil.getParameter(
-				HtmlUtil.escape(webImage.getUrl()), "img_id"));
+				HtmlUtil.escape(webImage.getURL()), "img_id"));
 
 		if (portraitId > 0) {
 			return JSONUtil.put(
@@ -206,7 +206,7 @@ public class GetDataMVCResourceCommand extends BaseMVCResourceCommand {
 			).put(
 				"name", analyticsReportsInfoItem.getAuthorName(object)
 			).put(
-				"url", webImage.getUrl()
+				"url", webImage.getURL()
 			);
 		}
 
@@ -607,14 +607,6 @@ public class GetDataMVCResourceCommand extends BaseMVCResourceCommand {
 							"analyticsReportsTrafficSourcesURL",
 							"/analytics_reports/get_traffic_sources")
 					).build();
-
-	@Reference
-	private AnalyticsReportsInfoItemObjectProvider
-		_analyticsReportsInfoItemObjectProvider;
-
-	@Reference
-	private AnalyticsReportsInfoItemObjectProviderRegistry
-		_analyticsReportsInfoItemObjectProviderRegistry;
 
 	@Reference
 	private AnalyticsReportsInfoItemRegistry _analyticsReportsInfoItemRegistry;

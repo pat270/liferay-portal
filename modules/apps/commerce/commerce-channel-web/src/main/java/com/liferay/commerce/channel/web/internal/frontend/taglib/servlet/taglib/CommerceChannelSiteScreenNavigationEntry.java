@@ -8,7 +8,6 @@ package com.liferay.commerce.channel.web.internal.frontend.taglib.servlet.taglib
 import com.liferay.account.service.AccountEntryService;
 import com.liferay.commerce.channel.web.internal.display.context.SiteCommerceChannelTypeDisplayContext;
 import com.liferay.commerce.currency.service.CommerceCurrencyLocalService;
-import com.liferay.commerce.inventory.method.CommerceInventoryMethodRegistry;
 import com.liferay.commerce.product.channel.CommerceChannelHealthStatusRegistry;
 import com.liferay.commerce.product.channel.CommerceChannelTypeRegistry;
 import com.liferay.commerce.product.constants.CommerceChannelConstants;
@@ -19,18 +18,16 @@ import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.frontend.taglib.servlet.taglib.ScreenNavigationEntry;
 import com.liferay.frontend.taglib.servlet.taglib.util.JSPRenderer;
 import com.liferay.item.selector.ItemSelector;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalService;
-import com.liferay.portal.kernel.service.permission.GroupPermission;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.workflow.WorkflowDefinitionManager;
+import com.liferay.portal.workflow.manager.WorkflowDefinitionManager;
 
 import java.io.IOException;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -78,8 +75,8 @@ public class CommerceChannelSiteScreenNavigationEntry
 					_commerceChannelService, _commerceChannelTypeRegistry,
 					_commerceCurrencyLocalService, _configurationProvider,
 					_cpTaxCategoryLocalService, _dlAppLocalService,
-					_groupLocalService, _groupPermission, httpServletRequest,
-					_itemSelector, _portal, _workflowDefinitionLinkLocalService,
+					_groupLocalService, httpServletRequest, _itemSelector,
+					_portal, _workflowDefinitionLinkLocalService,
 					_workflowDefinitionManager);
 
 		httpServletRequest.setAttribute(
@@ -114,9 +111,6 @@ public class CommerceChannelSiteScreenNavigationEntry
 	private CommerceCurrencyLocalService _commerceCurrencyLocalService;
 
 	@Reference
-	private CommerceInventoryMethodRegistry _commerceInventoryMethodRegistry;
-
-	@Reference
 	private ConfigurationProvider _configurationProvider;
 
 	@Reference
@@ -129,9 +123,6 @@ public class CommerceChannelSiteScreenNavigationEntry
 	private GroupLocalService _groupLocalService;
 
 	@Reference
-	private GroupPermission _groupPermission;
-
-	@Reference
 	private ItemSelector _itemSelector;
 
 	@Reference
@@ -139,11 +130,6 @@ public class CommerceChannelSiteScreenNavigationEntry
 
 	@Reference
 	private Portal _portal;
-
-	@Reference(
-		target = "(osgi.web.symbolicname=com.liferay.commerce.channel.web)"
-	)
-	private ServletContext _servletContext;
 
 	@Reference
 	private WorkflowDefinitionLinkLocalService

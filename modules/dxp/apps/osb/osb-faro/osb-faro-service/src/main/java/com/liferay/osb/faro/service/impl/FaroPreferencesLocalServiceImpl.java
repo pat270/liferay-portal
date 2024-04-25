@@ -12,6 +12,8 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.UserLocalService;
 
+import java.util.List;
+
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -25,6 +27,7 @@ import org.osgi.service.component.annotations.Reference;
 public class FaroPreferencesLocalServiceImpl
 	extends FaroPreferencesLocalServiceBaseImpl {
 
+	@Override
 	public FaroPreferences deleteFaroPreferences(long groupId, long ownerId) {
 		FaroPreferences faroPreferences = faroPreferencesPersistence.fetchByG_O(
 			groupId, ownerId);
@@ -36,14 +39,22 @@ public class FaroPreferencesLocalServiceImpl
 		return faroPreferences;
 	}
 
+	@Override
 	public void deleteFaroPreferencesByGroupId(long groupId) {
 		faroPreferencesPersistence.removeByGroupId(groupId);
 	}
 
+	@Override
 	public FaroPreferences fetchFaroPreferences(long groupId, long ownerId) {
 		return faroPreferencesPersistence.fetchByG_O(groupId, ownerId);
 	}
 
+	@Override
+	public List<FaroPreferences> getFaroPreferencesByGroupId(long groupId) {
+		return faroPreferencesPersistence.findByGroupId(groupId);
+	}
+
+	@Override
 	public FaroPreferences savePreferences(
 			long userId, long groupId, long ownerId, String preferences)
 		throws PortalException {

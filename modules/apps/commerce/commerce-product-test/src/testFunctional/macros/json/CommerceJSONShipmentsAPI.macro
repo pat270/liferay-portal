@@ -1,12 +1,13 @@
 definition {
 
-	macro _addCommerceShipment {
+	@summary = "Default summary"
+	macro _addCommerceShipment(orderId = null) {
 		Variables.assertDefined(parameterList = ${orderId});
 
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		if (!(isSet(carrier))) {
@@ -89,11 +90,12 @@ definition {
 		return ${shipmentId};
 	}
 
-	macro _deleteAllCommerceShipments {
+	@summary = "Default summary"
+	macro _deleteAllCommerceShipments() {
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var shipmentsCount = CommerceJSONShipmentsAPI._getCommerceShipmentsCount();
@@ -120,11 +122,12 @@ definition {
 		}
 	}
 
-	macro _getCommerceShipmentIds {
+	@summary = "Default summary"
+	macro _getCommerceShipmentIds(shipmentCount = null) {
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		if (isSet(shipmentCount)) {
@@ -147,11 +150,12 @@ definition {
 		return ${shipmentIds};
 	}
 
-	macro _getCommerceShipmentsCount {
+	@summary = "Default summary"
+	macro _getCommerceShipmentsCount() {
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var userLoginInfo = JSONUtil2.formatJSONUser();
@@ -169,13 +173,14 @@ definition {
 		return ${shipmentsCount};
 	}
 
-	macro _updateCommerceShipmentStatus {
+	@summary = "Default summary"
+	macro _updateCommerceShipmentStatus(shipmentId = null) {
 		Variables.assertDefined(parameterList = "${shipmentId},${shipmentStatus}");
 
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var userLoginInfo = JSONUtil2.formatJSONUser();

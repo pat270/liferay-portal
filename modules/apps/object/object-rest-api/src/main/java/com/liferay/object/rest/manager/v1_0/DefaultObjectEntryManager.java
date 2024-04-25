@@ -10,6 +10,7 @@ import com.liferay.object.model.ObjectRelationship;
 import com.liferay.object.rest.dto.v1_0.ObjectEntry;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
+import com.liferay.portal.odata.filter.expression.Expression;
 import com.liferay.portal.vulcan.aggregation.Aggregation;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
 import com.liferay.portal.vulcan.pagination.Page;
@@ -71,6 +72,13 @@ public interface DefaultObjectEntryManager extends ObjectEntryManager {
 	public Page<ObjectEntry> getObjectEntries(
 			long companyId, ObjectDefinition objectDefinition, String scopeKey,
 			Aggregation aggregation, DTOConverterContext dtoConverterContext,
+			Expression filterExpression, Pagination pagination, String search,
+			Sort[] sorts)
+		throws Exception;
+
+	public Page<ObjectEntry> getObjectEntries(
+			long companyId, ObjectDefinition objectDefinition, String scopeKey,
+			Aggregation aggregation, DTOConverterContext dtoConverterContext,
 			Filter filter, Pagination pagination, String search, Sort[] sorts)
 		throws Exception;
 
@@ -93,6 +101,12 @@ public interface DefaultObjectEntryManager extends ObjectEntryManager {
 	public Object getSystemObjectEntry(
 			DTOConverterContext dtoConverterContext,
 			ObjectDefinition objectDefinition, long primaryKey)
+		throws Exception;
+
+	public ObjectEntry partialUpdateObjectEntry(
+			DTOConverterContext dtoConverterContext,
+			ObjectDefinition objectDefinition, long objectEntryId,
+			ObjectEntry objectEntry)
 		throws Exception;
 
 	public ObjectEntry updateObjectEntry(

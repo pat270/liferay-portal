@@ -59,8 +59,8 @@ public class CommerceInventoryReplenishmentItemLocalServiceUtil {
 			addCommerceInventoryReplenishmentItem(
 				String externalReferenceCode, long userId,
 				long commerceInventoryWarehouseId,
-				java.util.Date availabilityDate, int quantity, String sku,
-				String unitOfMeasureKey)
+				java.util.Date availabilityDate, java.math.BigDecimal quantity,
+				String sku, String unitOfMeasureKey)
 		throws PortalException {
 
 		return getService().addCommerceInventoryReplenishmentItem(
@@ -139,9 +139,10 @@ public class CommerceInventoryReplenishmentItemLocalServiceUtil {
 	}
 
 	public static void deleteCommerceInventoryReplenishmentItems(
-		long companyId, String sku) {
+		long companyId, String sku, String unitOfMeasureKey) {
 
-		getService().deleteCommerceInventoryReplenishmentItems(companyId, sku);
+		getService().deleteCommerceInventoryReplenishmentItems(
+			companyId, sku, unitOfMeasureKey);
 	}
 
 	/**
@@ -249,12 +250,12 @@ public class CommerceInventoryReplenishmentItemLocalServiceUtil {
 
 	public static CommerceInventoryReplenishmentItem
 		fetchCommerceInventoryReplenishmentItem(
-			long companyId, String sku,
+			long companyId, String sku, String unitOfMeasureKey,
 			OrderByComparator<CommerceInventoryReplenishmentItem>
 				orderByComparator) {
 
 		return getService().fetchCommerceInventoryReplenishmentItem(
-			companyId, sku, orderByComparator);
+			companyId, sku, unitOfMeasureKey, orderByComparator);
 	}
 
 	public static CommerceInventoryReplenishmentItem
@@ -359,12 +360,14 @@ public class CommerceInventoryReplenishmentItemLocalServiceUtil {
 	}
 
 	public static List<CommerceInventoryReplenishmentItem>
-		getCommerceInventoryReplenishmentItemsByCompanyIdAndSku(
-			long companyId, String sku, int start, int end) {
+		getCommerceInventoryReplenishmentItemsByCompanyIdSkuAndUnitOfMeasureKey(
+			long companyId, String sku, String unitOfMeasureKey, int start,
+			int end, boolean replacePermissionCheck) {
 
 		return getService().
-			getCommerceInventoryReplenishmentItemsByCompanyIdAndSku(
-				companyId, sku, start, end);
+			getCommerceInventoryReplenishmentItemsByCompanyIdSkuAndUnitOfMeasureKey(
+				companyId, sku, unitOfMeasureKey, start, end,
+				replacePermissionCheck);
 	}
 
 	/**
@@ -376,11 +379,13 @@ public class CommerceInventoryReplenishmentItemLocalServiceUtil {
 		return getService().getCommerceInventoryReplenishmentItemsCount();
 	}
 
-	public static long getCommerceInventoryReplenishmentItemsCount(
-		long commerceInventoryWarehouseId, String sku) {
+	public static java.math.BigDecimal
+		getCommerceInventoryReplenishmentItemsCount(
+			long commerceInventoryWarehouseId, String sku,
+			String unitOfMeasureKey) {
 
 		return getService().getCommerceInventoryReplenishmentItemsCount(
-			commerceInventoryWarehouseId, sku);
+			commerceInventoryWarehouseId, sku, unitOfMeasureKey);
 	}
 
 	public static int
@@ -393,12 +398,12 @@ public class CommerceInventoryReplenishmentItemLocalServiceUtil {
 	}
 
 	public static int
-		getCommerceInventoryReplenishmentItemsCountByCompanyIdAndSku(
-			long companyId, String sku) {
+		getCommerceInventoryReplenishmentItemsCountByCompanyIdSkuAndUnitOfMeasureKey(
+			long companyId, String sku, String unitOfMeasureKey) {
 
 		return getService().
-			getCommerceInventoryReplenishmentItemsCountByCompanyIdAndSku(
-				companyId, sku);
+			getCommerceInventoryReplenishmentItemsCountByCompanyIdSkuAndUnitOfMeasureKey(
+				companyId, sku, unitOfMeasureKey);
 	}
 
 	public static com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery
@@ -457,7 +462,8 @@ public class CommerceInventoryReplenishmentItemLocalServiceUtil {
 			updateCommerceInventoryReplenishmentItem(
 				String externalReferenceCode,
 				long commerceInventoryReplenishmentItemId,
-				java.util.Date availabilityDate, int quantity, long mvccVersion)
+				java.util.Date availabilityDate, java.math.BigDecimal quantity,
+				long mvccVersion)
 		throws PortalException {
 
 		return getService().updateCommerceInventoryReplenishmentItem(

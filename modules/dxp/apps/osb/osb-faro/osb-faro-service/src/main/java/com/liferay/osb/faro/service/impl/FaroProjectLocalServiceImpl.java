@@ -25,6 +25,8 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.json.JSONFactory;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -44,6 +46,7 @@ import com.liferay.portal.kernel.util.comparator.GroupNameComparator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 import javax.mail.internet.InternetAddress;
@@ -62,6 +65,7 @@ public class FaroProjectLocalServiceImpl
 	extends FaroProjectLocalServiceBaseImpl {
 
 	@Indexable(type = IndexableType.REINDEX)
+	@Override
 	public FaroProject addFaroProject(
 			long userId, String name, String accountKey, String accountName,
 			String corpProjectName, String corpProjectUuid,
@@ -112,6 +116,7 @@ public class FaroProjectLocalServiceImpl
 		faroProject.setServices(services);
 		faroProject.setState(state);
 		faroProject.setSubscription(subscription);
+		faroProject.setSubscriptionModifiedTime(now);
 		faroProject.setTimeZoneId(timeZoneId);
 		faroProject.setWeDeployKey(weDeployKey);
 
@@ -122,6 +127,7 @@ public class FaroProjectLocalServiceImpl
 	}
 
 	@Indexable(type = IndexableType.DELETE)
+	@Override
 	public FaroProject deleteFaroProjectByGroupId(long groupId)
 		throws PortalException {
 
@@ -134,54 +140,65 @@ public class FaroProjectLocalServiceImpl
 		return faroProjectPersistence.removeByGroupId(groupId);
 	}
 
+	@Override
 	public <T> T dslQuery(DSLQuery dslQuery) {
 		return faroProjectPersistence.dslQuery(dslQuery);
 	}
 
+	@Override
 	public int dslQueryCount(DSLQuery dslQuery) {
 		return faroProjectPersistence.dslQueryCount(dslQuery);
 	}
 
+	@Override
 	public FaroProject fetchFaroProjectByCorpProjectUuid(
 		String corpProjectUuid) {
 
 		return faroProjectPersistence.fetchByCorpProjectUuid(corpProjectUuid);
 	}
 
+	@Override
 	public FaroProject fetchFaroProjectByGroupId(long groupId) {
 		return faroProjectPersistence.fetchByGroupId(groupId);
 	}
 
+	@Override
 	public FaroProject fetchFaroProjectByWeDeployKey(String weDeployKey) {
 		return faroProjectPersistence.fetchByWeDeployKey(weDeployKey);
 	}
 
+	@Override
 	public FaroProject getFaroProjectByGroupId(long groupId)
 		throws PortalException {
 
 		return faroProjectPersistence.findByGroupId(groupId);
 	}
 
+	@Override
 	public FaroProject getFaroProjectByWeDeployKey(String weDeployKey)
 		throws PortalException {
 
 		return faroProjectPersistence.findByWeDeployKey(weDeployKey);
 	}
 
+	@Override
 	public List<FaroProject> getFaroProjects(String serverLocation) {
 		return faroProjectPersistence.findByServerLocation(serverLocation);
 	}
 
+	@Override
 	public List<FaroProject> getFaroProjectsByEmailAddressDomain(
 		String emailAddressDomains) {
 
 		return faroProjectFinder.findByEmailAddressDomain(emailAddressDomains);
 	}
 
+	@Override
 	public List<FaroProject> getFaroProjectsByUserId(long userId) {
 		return faroProjectPersistence.findByUserId(userId);
 	}
 
+	@Override
 	public List<FaroProject> getJoinableFaroProjects(User user)
 		throws PortalException {
 
@@ -210,6 +227,7 @@ public class FaroProjectLocalServiceImpl
 		return faroProjectsFiltered;
 	}
 
+	@Override
 	public void sendCreatedWorkspaceEmail(String weDeployKey) throws Exception {
 		FaroProject faroProject = fetchFaroProjectByWeDeployKey(weDeployKey);
 
@@ -298,6 +316,7 @@ public class FaroProjectLocalServiceImpl
 	}
 
 	@Indexable(type = IndexableType.REINDEX)
+	@Override
 	public FaroProject updateState(long faroProjectId, String state) {
 		FaroProject faroProject = faroProjectPersistence.fetchByPrimaryKey(
 			faroProjectId);
@@ -312,6 +331,7 @@ public class FaroProjectLocalServiceImpl
 	}
 
 	@Indexable(type = IndexableType.REINDEX)
+	@Override
 	public FaroProject updateSubscription(
 		long faroProjectId, String subscription) {
 
@@ -322,8 +342,29 @@ public class FaroProjectLocalServiceImpl
 			return null;
 		}
 
-		faroProject.setModifiedTime(System.currentTimeMillis());
+		long currentTimeMillis = System.currentTimeMillis();
+
+		faroProject.setModifiedTime(currentTimeMillis);
+
 		faroProject.setSubscription(subscription);
+
+		try {
+			JSONObject oldSubscriptionJSONObject =
+				_jsonFactory.createJSONObject(faroProject.getSubscription());
+
+			JSONObject newSubscriptionJSONObject =
+				_jsonFactory.createJSONObject(subscription);
+
+			if (!Objects.equals(
+					oldSubscriptionJSONObject.get("name"),
+					newSubscriptionJSONObject.get("name"))) {
+
+				faroProject.setSubscriptionModifiedTime(currentTimeMillis);
+			}
+		}
+		catch (Exception exception) {
+			_log.error(exception);
+		}
 
 		return faroProjectPersistence.update(faroProject);
 	}
@@ -346,6 +387,9 @@ public class FaroProjectLocalServiceImpl
 
 	@Reference
 	private GroupLocalService _groupLocalService;
+
+	@Reference
+	private JSONFactory _jsonFactory;
 
 	@Reference
 	private Language _language;

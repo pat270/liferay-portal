@@ -4,7 +4,7 @@ definition {
 	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Fragments";
+	property testray.main.component.name = "Fragment Administration";
 
 	setUp {
 		task ("Set up instance and sign in") {
@@ -35,9 +35,7 @@ definition {
 		}
 
 		task ("Activate local live staging") {
-			Staging.openStagingAdmin(siteURLKey = "test-site-name");
-
-			Staging.activateStagingCP(siteName = "Test Site Name");
+			JSONStaging.enableLocalStaging(groupName = "Test Site Name");
 		}
 	}
 
@@ -81,7 +79,7 @@ definition {
 
 		task ("When the pages designer adds a custom name in Text Input fields") {
 			PageEditor.editInput(
-				fragmentName = "Text Input",
+				fragmentName = "Text",
 				helpText = "Custom Help Text",
 				hideHelpText = "false",
 				label = "Custom Content Field",
@@ -95,7 +93,7 @@ definition {
 				placeholder = "Custom Placeholder",
 				showHelpText = "true",
 				showLabel = "true",
-				type = "text-input");
+				type = "text");
 		}
 
 		task ("When the page designer navigates to published content page at view mode in staging site") {
@@ -113,7 +111,7 @@ definition {
 				placeholder = "Custom Placeholder",
 				showHelpText = "true",
 				showLabel = "true",
-				type = "text-input");
+				type = "text");
 		}
 
 		task ("When the page designer navigates to content page at view mode in live site") {
@@ -133,7 +131,7 @@ definition {
 				placeholder = "Custom Placeholder",
 				showHelpText = "true",
 				showLabel = "true",
-				type = "text-input");
+				type = "text");
 		}
 
 		task ("When the pages designer hides the label and help text fields in staging site") {
@@ -142,7 +140,7 @@ definition {
 				siteName = "Test Site Name Staging");
 
 			PageEditor.editInput(
-				fragmentName = "Text Input",
+				fragmentName = "Text",
 				hideHelpText = "true",
 				hideLabel = "true");
 		}
@@ -153,7 +151,7 @@ definition {
 				label = "Custom Content Field",
 				showHelpText = "false",
 				showLabel = "false",
-				type = "text-input");
+				type = "text");
 		}
 
 		task ("When the page designer navigates to published content page at view mode in staging site") {
@@ -170,7 +168,7 @@ definition {
 				label = "Custom Content Field",
 				showHelpText = "false",
 				showLabel = "false",
-				type = "text-input");
+				type = "text");
 		}
 
 		task ("When the page designer navigates to content page at view mode in live site") {
@@ -189,7 +187,7 @@ definition {
 				label = "Custom Content Field",
 				showHelpText = "false",
 				showLabel = "false",
-				type = "text-input");
+				type = "text");
 		}
 	}
 

@@ -6,6 +6,7 @@
 package com.liferay.fragment.web.internal.display.context;
 
 import com.liferay.fragment.constants.FragmentConstants;
+import com.liferay.fragment.constants.FragmentEntryLinkConstants;
 import com.liferay.fragment.contributor.FragmentCollectionContributorRegistry;
 import com.liferay.fragment.model.FragmentCollection;
 import com.liferay.fragment.model.FragmentEntry;
@@ -14,7 +15,6 @@ import com.liferay.fragment.renderer.DefaultFragmentRendererContext;
 import com.liferay.fragment.service.FragmentCollectionLocalServiceUtil;
 import com.liferay.fragment.service.FragmentEntryLinkLocalServiceUtil;
 import com.liferay.fragment.service.FragmentEntryLocalServiceUtil;
-import com.liferay.fragment.web.internal.constants.FragmentWebKeys;
 import com.liferay.portal.kernel.bean.BeanParamUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.upload.UploadRequest;
@@ -41,7 +41,7 @@ public class RenderFragmentEntryDisplayContext {
 		_fragmentCollectionContributorRegistry =
 			(FragmentCollectionContributorRegistry)
 				httpServletRequest.getAttribute(
-					FragmentWebKeys.FRAGMENT_COLLECTION_CONTRIBUTOR_TRACKER);
+					FragmentCollectionContributorRegistry.class.getName());
 	}
 
 	public DefaultFragmentRendererContext getDefaultFragmentRendererContext()
@@ -73,6 +73,7 @@ public class RenderFragmentEntryDisplayContext {
 		fragmentEntryLink.setHtml(html);
 		fragmentEntryLink.setJs(js);
 		fragmentEntryLink.setConfiguration(configuration);
+		fragmentEntryLink.setNamespace("namespace");
 
 		String rendererKey = null;
 
@@ -93,6 +94,8 @@ public class RenderFragmentEntryDisplayContext {
 		DefaultFragmentRendererContext defaultFragmentRendererContext =
 			new DefaultFragmentRendererContext(fragmentEntryLink);
 
+		defaultFragmentRendererContext.setMode(
+			FragmentEntryLinkConstants.PREVIEW);
 		defaultFragmentRendererContext.setUseCachedContent(false);
 
 		return defaultFragmentRendererContext;

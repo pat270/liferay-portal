@@ -5,8 +5,8 @@
 
 package com.liferay.gradle.plugins.task;
 
+import aQute.bnd.gradle.BeanProperties;
 import aQute.bnd.gradle.BndUtils;
-import aQute.bnd.gradle.PropertiesWrapper;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
@@ -38,6 +38,7 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.InputDirectory;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.PathSensitive;
@@ -65,13 +66,13 @@ public class ExecuteBndTask extends DefaultTask {
 
 		long clockStart = System.currentTimeMillis();
 
-		Properties gradleProperties = new PropertiesWrapper();
+		Properties beanProperties = new BeanProperties();
 
-		gradleProperties.put("project", project);
-		gradleProperties.put("task", this);
+		beanProperties.put("project", project);
+		beanProperties.put("task", this);
 
 		try (Builder builder = new Builder(
-				new Processor(gradleProperties, false))) {
+				new Processor(beanProperties, false))) {
 
 			Properties properties = getProperties();
 
@@ -85,9 +86,7 @@ public class ExecuteBndTask extends DefaultTask {
 			builder.setClasspath(_toArray(buildDirs));
 			builder.setProperty("project.buildpath", buildDirs.getAsPath());
 
-			if (logger.isDebugEnabled() ||
-				Boolean.getBoolean("build.bnd.print.builder.classpath")) {
-
+			if (logger.isDebugEnabled()) {
 				logger.lifecycle(
 					"BND Builder Classpath {}: {}", project.getName(),
 					buildDirs.getAsPath());
@@ -181,7 +180,7 @@ public class ExecuteBndTask extends DefaultTask {
 		}
 	}
 
-	@Input
+	@InputDirectory
 	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getBaseDir() {
 		return GradleUtil.toFile(getProject(), _baseDir);
@@ -222,6 +221,7 @@ public class ExecuteBndTask extends DefaultTask {
 		return _sourceDirs;
 	}
 
+	@Input
 	public boolean isFailOnError() {
 		return _failOnError;
 	}

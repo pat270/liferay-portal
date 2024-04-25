@@ -19,6 +19,7 @@ import com.liferay.document.library.kernel.exception.InvalidFileVersionException
 import com.liferay.document.library.kernel.exception.NoSuchFileEntryException;
 import com.liferay.document.library.kernel.exception.NoSuchFolderException;
 import com.liferay.document.library.kernel.exception.SourceFileNameException;
+import com.liferay.document.library.kernel.util.DLValidator;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -31,8 +32,8 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.TrashedModel;
 import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
-import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
+import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.servlet.ServletResponseConstants;
 import com.liferay.portal.kernel.servlet.SessionErrors;
@@ -48,8 +49,10 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.TempFileEntryUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.upload.UploadFileEntryHandler;
 import com.liferay.upload.UploadHandler;
 import com.liferay.upload.UploadResponseHandler;
 import com.liferay.wiki.constants.WikiConstants;
@@ -57,8 +60,9 @@ import com.liferay.wiki.constants.WikiPortletKeys;
 import com.liferay.wiki.exception.NoSuchNodeException;
 import com.liferay.wiki.exception.NoSuchPageException;
 import com.liferay.wiki.service.WikiPageService;
-import com.liferay.wiki.web.internal.helper.WikiAttachmentsHelper;
-import com.liferay.wiki.web.internal.upload.TempAttachmentWikiUploadFileEntryHandler;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 import java.util.Map;
 
@@ -134,13 +138,13 @@ public class EditPageAttachmentMVCActionCommand extends BaseMVCActionCommand {
 				_deleteTempAttachment(actionRequest, actionResponse);
 			}
 			else if (cmd.equals(Constants.EMPTY_TRASH)) {
-				_wikiAttachmentsHelper.emptyTrash(actionRequest);
+				emptyTrash(actionRequest);
 			}
 			else if (cmd.equals(Constants.MOVE_TO_TRASH)) {
 				_deleteAttachment(actionRequest, true);
 			}
 			else if (cmd.equals(Constants.RESTORE)) {
-				_wikiAttachmentsHelper.restoreEntries(actionRequest);
+				restoreEntries(actionRequest);
 
 				String redirect = ParamUtil.getString(
 					actionRequest, "redirect");
@@ -176,7 +180,7 @@ public class EditPageAttachmentMVCActionCommand extends BaseMVCActionCommand {
 			ActionRequest actionRequest, boolean moveToTrash)
 		throws Exception {
 
-		TrashedModel trashedModel = _wikiAttachmentsHelper.deleteAttachment(
+		TrashedModel trashedModel = deleteAttachment(
 			actionRequest, moveToTrash);
 
 		if (moveToTrash && (trashedModel != null)) {
@@ -194,13 +198,10 @@ public class EditPageAttachmentMVCActionCommand extends BaseMVCActionCommand {
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
 
-		UploadPortletRequest uploadPortletRequest =
-			_portal.getUploadPortletRequest(actionRequest);
-
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		long nodeId = ParamUtil.getLong(uploadPortletRequest, "nodeId");
+		long nodeId = ParamUtil.getLong(actionRequest, "nodeId");
 		String fileName = ParamUtil.getString(actionRequest, "fileName");
 
 		JSONObject jsonObject = _jsonFactory.createJSONObject();
@@ -399,6 +400,9 @@ public class EditPageAttachmentMVCActionCommand extends BaseMVCActionCommand {
 	private volatile DLConfiguration _dlConfiguration;
 
 	@Reference
+	private DLValidator _dlValidator;
+
+	@Reference
 	private JSONFactory _jsonFactory;
 
 	@Reference
@@ -407,9 +411,9 @@ public class EditPageAttachmentMVCActionCommand extends BaseMVCActionCommand {
 	@Reference
 	private Portal _portal;
 
-	@Reference
-	private TempAttachmentWikiUploadFileEntryHandler
-		_tempAttachmentWikiUploadFileEntryHandler;
+	private final TempAttachmentWikiUploadFileEntryHandler
+		_tempAttachmentWikiUploadFileEntryHandler =
+			new TempAttachmentWikiUploadFileEntryHandler();
 
 	@Reference
 	private UploadHandler _uploadHandler;
@@ -418,9 +422,42 @@ public class EditPageAttachmentMVCActionCommand extends BaseMVCActionCommand {
 	private UploadResponseHandler _uploadResponseHandler;
 
 	@Reference
-	private WikiAttachmentsHelper _wikiAttachmentsHelper;
-
-	@Reference
 	private WikiPageService _wikiPageService;
+
+	private class TempAttachmentWikiUploadFileEntryHandler
+		implements UploadFileEntryHandler {
+
+		@Override
+		public FileEntry upload(UploadPortletRequest uploadPortletRequest)
+			throws IOException, PortalException {
+
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)uploadPortletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
+
+			_dlValidator.validateFileSize(
+				themeDisplay.getScopeGroupId(),
+				uploadPortletRequest.getFileName(_PARAMETER_NAME),
+				uploadPortletRequest.getContentType(_PARAMETER_NAME),
+				uploadPortletRequest.getSize(_PARAMETER_NAME));
+
+			long nodeId = ParamUtil.getLong(
+				uploadPortletRequest.getPortletRequest(), "nodeId");
+
+			try (InputStream inputStream = uploadPortletRequest.getFileAsStream(
+					_PARAMETER_NAME)) {
+
+				return _wikiPageService.addTempFileEntry(
+					nodeId, WikiConstants.TEMP_FOLDER_NAME,
+					TempFileEntryUtil.getTempFileName(
+						uploadPortletRequest.getFileName(_PARAMETER_NAME)),
+					inputStream,
+					uploadPortletRequest.getContentType(_PARAMETER_NAME));
+			}
+		}
+
+		private static final String _PARAMETER_NAME = "file";
+
+	}
 
 }

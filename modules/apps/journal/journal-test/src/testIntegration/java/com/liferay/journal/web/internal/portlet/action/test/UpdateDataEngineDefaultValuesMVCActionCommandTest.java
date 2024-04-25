@@ -24,8 +24,7 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
-import com.liferay.portal.upload.UploadPortletRequestImpl;
-import com.liferay.portal.upload.UploadServletRequestImpl;
+import com.liferay.portal.upload.test.util.UploadTestUtil;
 import com.liferay.portletmvc4spring.test.mock.web.portlet.MockActionRequest;
 
 import java.util.Calendar;
@@ -42,6 +41,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockMultipartHttpServletRequest;
 
 /**
  * @author Jürgen Kappler
@@ -65,9 +65,6 @@ public class UpdateDataEngineDefaultValuesMVCActionCommandTest {
 	public void testAddArticleDefaultValuesWithoutDisplayDate()
 		throws Exception {
 
-		DDMStructure ddmStructure = DDMStructureTestUtil.addStructure(
-			_group.getGroupId(), JournalArticle.class.getName());
-
 		MockActionRequest mockActionRequest = new MockActionRequest();
 
 		mockActionRequest.setAttribute(
@@ -76,8 +73,18 @@ public class UpdateDataEngineDefaultValuesMVCActionCommandTest {
 		mockActionRequest.addParameter(
 			ActionRequest.ACTION_NAME,
 			"/journal/add_data_engine_default_values");
+
+		DDMStructure ddmStructure = DDMStructureTestUtil.addStructure(
+			_group.getGroupId(), JournalArticle.class.getName());
+
 		mockActionRequest.addParameter(
 			"groupId", String.valueOf(ddmStructure.getGroupId()));
+
+		MockMultipartHttpServletRequest mockMultipartHttpServletRequest =
+			new MockMultipartHttpServletRequest();
+
+		mockMultipartHttpServletRequest.setContentType(
+			"multipart/form-data;boundary=" + System.currentTimeMillis());
 
 		Calendar calendar = Calendar.getInstance();
 
@@ -94,9 +101,9 @@ public class UpdateDataEngineDefaultValuesMVCActionCommandTest {
 		Calendar expireCalendar = calendar;
 
 		UploadPortletRequest uploadPortletRequest =
-			new UploadPortletRequestImpl(
-				new UploadServletRequestImpl(
-					new MockHttpServletRequest(), new HashMap<>(),
+			UploadTestUtil.createUploadPortletRequest(
+				UploadTestUtil.createUploadServletRequest(
+					mockMultipartHttpServletRequest, new HashMap<>(),
 					HashMapBuilder.put(
 						ActionRequest.ACTION_NAME,
 						Collections.singletonList(

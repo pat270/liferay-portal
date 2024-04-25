@@ -25,7 +25,6 @@ import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.journal.web.internal.asset.model.JournalArticleAssetRenderer;
-import com.liferay.journal.web.internal.configuration.FFJournalAutoSaveDraftConfiguration;
 import com.liferay.journal.web.internal.configuration.JournalWebConfiguration;
 import com.liferay.journal.web.internal.item.selector.JournalArticleTranslationsItemSelectorCriterion;
 import com.liferay.journal.web.internal.portlet.JournalPortlet;
@@ -35,6 +34,7 @@ import com.liferay.journal.web.internal.util.JournalUtil;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -68,6 +68,7 @@ import com.liferay.translation.security.permission.TranslationPermission;
 import com.liferay.translation.url.provider.TranslationURLProvider;
 import com.liferay.trash.TrashHelper;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -94,10 +95,6 @@ public class JournalArticleActionDropdownItemsProvider {
 			assetDisplayPageFriendlyURLProvider;
 		_trashHelper = trashHelper;
 
-		_ffJournalAutoSaveDraftConfiguration =
-			(FFJournalAutoSaveDraftConfiguration)
-				liferayPortletRequest.getAttribute(
-					FFJournalAutoSaveDraftConfiguration.class.getName());
 		_journalWebConfiguration =
 			(JournalWebConfiguration)liferayPortletRequest.getAttribute(
 				JournalWebConfiguration.class.getName());
@@ -141,8 +138,7 @@ public class JournalArticleActionDropdownItemsProvider {
 						_getEditArticleActionUnsafeConsumer()
 					).add(
 						() ->
-							_ffJournalAutoSaveDraftConfiguration.
-								journalArticleAutoSaveDraftEnabled() &&
+							FeatureFlagManagerUtil.isEnabled("LPS-141392") &&
 							hasUpdatePermission && _article.isDraft() &&
 							_article.hasApprovedVersion(),
 						_getDiscardDraftActionUnsafeConsumer()
@@ -341,6 +337,49 @@ public class JournalArticleActionDropdownItemsProvider {
 		return dropdownItems;
 	}
 
+	public List<DropdownItem> getArticleVersionTabActionDropdownItems() {
+		return DropdownItemListBuilder.addGroup(
+			dropdownGroupItem -> {
+				UnsafeConsumer<DropdownItem, Exception>
+					previewContentArticleAction =
+						_getPreviewArticleActionUnsafeConsumer();
+
+				dropdownGroupItem.setDropdownItems(
+					DropdownItemListBuilder.add(
+						() ->
+							JournalArticlePermission.contains(
+								_themeDisplay.getPermissionChecker(), _article,
+								ActionKeys.VIEW) &&
+							(previewContentArticleAction != null),
+						previewContentArticleAction
+					).build());
+
+				dropdownGroupItem.setSeparator(true);
+			}
+		).addGroup(
+			dropdownGroupItem -> {
+				String articleId =
+					_article.getArticleId() + JournalPortlet.VERSION_SEPARATOR +
+						_article.getVersion();
+
+				dropdownGroupItem.setDropdownItems(
+					DropdownItemListBuilder.add(
+						() ->
+							JournalArticlePermission.contains(
+								_themeDisplay.getPermissionChecker(), _article,
+								ActionKeys.EXPIRE) &&
+							((_article.getStatus() ==
+								WorkflowConstants.STATUS_APPROVED) ||
+							 (_article.getStatus() ==
+								 WorkflowConstants.STATUS_SCHEDULED)),
+						_getExpireArticleActionConsumer(articleId)
+					).build());
+
+				dropdownGroupItem.setSeparator(true);
+			}
+		).build();
+	}
+
 	private UnsafeConsumer<DropdownItem, Exception>
 		_getAutoCopyArticleActionUnsafeConsumer() {
 
@@ -352,7 +391,7 @@ public class JournalArticleActionDropdownItemsProvider {
 				"version", _article.getVersion());
 			dropdownItem.setIcon("copy");
 			dropdownItem.setLabel(
-				LanguageUtil.get(_httpServletRequest, "copy"));
+				LanguageUtil.get(_httpServletRequest, "make-a-copy"));
 		};
 	}
 
@@ -420,7 +459,7 @@ public class JournalArticleActionDropdownItemsProvider {
 					).buildString());
 				dropdownItem.setIcon("copy");
 				dropdownItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "copy"));
+					LanguageUtil.get(_httpServletRequest, "make-a-copy"));
 			};
 		}
 
@@ -534,17 +573,41 @@ public class JournalArticleActionDropdownItemsProvider {
 	private UnsafeConsumer<DropdownItem, Exception>
 		_getEditArticleActionUnsafeConsumer() {
 
+		PortletDisplay portletDisplay = _themeDisplay.getPortletDisplay();
+
 		return dropdownItem -> {
 			dropdownItem.setHref(
-				_liferayPortletResponse.createRenderURL(), "mvcPath",
-				"/edit_article.jsp", "redirect", _getRedirect(),
-				"referringPortletResource", _getReferringPortletResource(),
-				"groupId", _article.getGroupId(), "folderId",
-				_article.getFolderId(), "articleId", _article.getArticleId(),
-				"version", _article.getVersion());
+				PortletURLBuilder.createRenderURL(
+					_liferayPortletResponse
+				).setMVCRenderCommandName(
+					"/journal/edit_article"
+				).setRedirect(
+					_getRedirect()
+				).setParameter(
+					"articleId", _article.getArticleId()
+				).setParameter(
+					"backURLTitle", portletDisplay.getPortletDisplayName()
+				).setParameter(
+					"folderId", _article.getFolderId()
+				).setParameter(
+					"groupId", _article.getGroupId()
+				).setParameter(
+					"referringPortletResource", _getReferringPortletResource()
+				).setParameter(
+					"version", _article.getVersion()
+				).buildString());
 			dropdownItem.setIcon("pencil");
-			dropdownItem.setLabel(
-				LanguageUtil.get(_httpServletRequest, "edit"));
+
+			String label = "edit";
+
+			if (!JournalArticleLocalServiceUtil.isLatestVersion(
+					_article.getGroupId(), _article.getArticleId(),
+					_article.getVersion())) {
+
+				label = "edit-latest-version";
+			}
+
+			dropdownItem.setLabel(LanguageUtil.get(_httpServletRequest, label));
 		};
 	}
 
@@ -599,6 +662,14 @@ public class JournalArticleActionDropdownItemsProvider {
 
 						return portletDisplay.getId();
 					}
+				).setParameter(
+					"backURLTitle",
+					() -> {
+						PortletDisplay portletDisplay =
+							_themeDisplay.getPortletDisplay();
+
+						return portletDisplay.getPortletDisplayName();
+					}
 				).build());
 			dropdownItem.setIcon("upload");
 			dropdownItem.setLabel(
@@ -627,6 +698,14 @@ public class JournalArticleActionDropdownItemsProvider {
 							_themeDisplay.getPortletDisplay();
 
 						return portletDisplay.getId();
+					}
+				).setParameter(
+					"backURLTitle",
+					() -> {
+						PortletDisplay portletDisplay =
+							_themeDisplay.getPortletDisplay();
+
+						return portletDisplay.getPortletDisplayName();
 					}
 				).buildPortletURL());
 			dropdownItem.setIcon("download");
@@ -779,7 +858,7 @@ public class JournalArticleActionDropdownItemsProvider {
 				PortletURLBuilder.createActionURL(
 					_liferayPortletResponse
 				).setActionName(
-					"/journal/publish_article"
+					"/journal/publish_articles"
 				).setBackURL(
 					_getRedirect()
 				).setParameter(
@@ -867,14 +946,32 @@ public class JournalArticleActionDropdownItemsProvider {
 			PortletDisplay portletDisplay = _themeDisplay.getPortletDisplay();
 
 			dropdownItem.setHref(
-				_translationURLProvider.getTranslateURL(
-					_themeDisplay.getScopeGroupId(),
-					PortalUtil.getClassNameId(JournalArticle.class.getName()),
-					_article.getResourcePrimKey(),
-					RequestBackedPortletURLFactoryUtil.create(
-						_httpServletRequest)),
-				"redirect", _getRedirect(), "portletResource",
-				portletDisplay.getId());
+				PortletURLBuilder.create(
+					_translationURLProvider.getTranslateURL(
+						_themeDisplay.getScopeGroupId(),
+						PortalUtil.getClassNameId(
+							JournalArticle.class.getName()),
+						_article.getResourcePrimKey(),
+						RequestBackedPortletURLFactoryUtil.create(
+							_httpServletRequest))
+				).setRedirect(
+					_getRedirect()
+				).setPortletResource(
+					portletDisplay.getId()
+				).setParameter(
+					"backURLTitle", portletDisplay.getPortletDisplayName()
+				).setParameter(
+					"modifiedDateTime",
+					() -> {
+						Date modifiedDate = _article.getModifiedDate();
+
+						if (modifiedDate == null) {
+							return null;
+						}
+
+						return modifiedDate.getTime();
+					}
+				).buildString());
 
 			dropdownItem.setIcon("automatic-translate");
 			dropdownItem.setLabel(
@@ -1076,8 +1173,6 @@ public class JournalArticleActionDropdownItemsProvider {
 	private final JournalArticle _article;
 	private final AssetDisplayPageFriendlyURLProvider
 		_assetDisplayPageFriendlyURLProvider;
-	private final FFJournalAutoSaveDraftConfiguration
-		_ffJournalAutoSaveDraftConfiguration;
 	private final HttpServletRequest _httpServletRequest;
 	private final ItemSelector _itemSelector;
 	private final JournalWebConfiguration _journalWebConfiguration;

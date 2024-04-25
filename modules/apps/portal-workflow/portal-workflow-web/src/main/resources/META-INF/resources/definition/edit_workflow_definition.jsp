@@ -16,7 +16,7 @@ WorkflowDefinition workflowDefinition = (WorkflowDefinition)request.getAttribute
 
 String name = BeanParamUtil.getString(workflowDefinition, request, "name");
 int version = BeanParamUtil.getInteger(workflowDefinition, request, "version");
-String content = BeanParamUtil.getString(workflowDefinition, request, "content");
+String content = BeanParamUtil.getString(workflowDefinition, request, "contentAsXML");
 boolean active = BeanParamUtil.getBoolean(workflowDefinition, request, "active");
 
 String duplicateTitle = workflowDefinitionDisplayContext.getDuplicateTitle(workflowDefinition);
@@ -76,10 +76,10 @@ renderResponse.setTitle((workflowDefinition == null) ? LanguageUtil.get(request,
 					<span>
 						<c:choose>
 							<c:when test="<%= userName == null %>">
-								<%= dateFormatTime.format(workflowDefinition.getModifiedDate()) %>
+								<%= displayDateFormat.format(workflowDefinition.getModifiedDate()) %>
 							</c:when>
 							<c:otherwise>
-								<liferay-ui:message arguments="<%= new String[] {dateFormatTime.format(workflowDefinition.getModifiedDate()), HtmlUtil.escape(userName)} %>" key="x,-by-x" translateArguments="<%= false %>" />
+								<liferay-ui:message arguments="<%= new String[] {displayDateFormat.format(workflowDefinition.getModifiedDate()), HtmlUtil.escape(userName)} %>" key="x,-by-x" translateArguments="<%= false %>" />
 							</c:otherwise>
 						</c:choose>
 					</span>
@@ -155,10 +155,10 @@ renderResponse.setTitle((workflowDefinition == null) ? LanguageUtil.get(request,
 										<p class="sidebar-dd">
 											<c:choose>
 												<c:when test="<%= creatorUserName == null %>">
-													<%= dateFormatTime.format(workflowDefinitionDisplayContext.getCreatedDate(workflowDefinition)) %>
+													<%= displayDateFormat.format(workflowDefinitionDisplayContext.getCreatedDate(workflowDefinition)) %>
 												</c:when>
 												<c:otherwise>
-													<liferay-ui:message arguments="<%= new String[] {dateFormatTime.format(workflowDefinitionDisplayContext.getCreatedDate(workflowDefinition)), HtmlUtil.escape(creatorUserName)} %>" key="x,-by-x" translateArguments="<%= false %>" />
+													<liferay-ui:message arguments="<%= new String[] {displayDateFormat.format(workflowDefinitionDisplayContext.getCreatedDate(workflowDefinition)), HtmlUtil.escape(creatorUserName)} %>" key="x,-by-x" translateArguments="<%= false %>" />
 												</c:otherwise>
 											</c:choose>
 										</p>
@@ -171,10 +171,10 @@ renderResponse.setTitle((workflowDefinition == null) ? LanguageUtil.get(request,
 										<p class="sidebar-dd">
 											<c:choose>
 												<c:when test="<%= userName == null %>">
-													<%= dateFormatTime.format(workflowDefinition.getModifiedDate()) %>
+													<%= displayDateFormat.format(workflowDefinition.getModifiedDate()) %>
 												</c:when>
 												<c:otherwise>
-													<liferay-ui:message arguments="<%= new String[] {dateFormatTime.format(workflowDefinition.getModifiedDate()), HtmlUtil.escape(userName)} %>" key="x,-by-x" translateArguments="<%= false %>" />
+													<liferay-ui:message arguments="<%= new String[] {displayDateFormat.format(workflowDefinition.getModifiedDate()), HtmlUtil.escape(userName)} %>" key="x,-by-x" translateArguments="<%= false %>" />
 												</c:otherwise>
 											</c:choose>
 										</p>

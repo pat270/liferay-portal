@@ -5,6 +5,7 @@
 
 package com.liferay.headless.commerce.delivery.cart.internal.resource.v1_0;
 
+import com.liferay.commerce.exception.NoSuchOrderException;
 import com.liferay.commerce.model.CommerceAddress;
 import com.liferay.commerce.model.CommerceOrder;
 import com.liferay.commerce.service.CommerceAddressService;
@@ -16,7 +17,6 @@ import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.fields.NestedField;
 import com.liferay.portal.vulcan.fields.NestedFieldId;
-import com.liferay.portal.vulcan.fields.NestedFieldSupport;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -27,11 +27,10 @@ import org.osgi.service.component.annotations.ServiceScope;
  */
 @Component(
 	properties = "OSGI-INF/liferay/rest/v1_0/address.properties",
-	scope = ServiceScope.PROTOTYPE,
-	service = {AddressResource.class, NestedFieldSupport.class}
+	property = "nested.field.support=true", scope = ServiceScope.PROTOTYPE,
+	service = AddressResource.class
 )
-public class AddressResourceImpl
-	extends BaseAddressResourceImpl implements NestedFieldSupport {
+public class AddressResourceImpl extends BaseAddressResourceImpl {
 
 	@NestedField(parentClass = Cart.class, value = "billingAddress")
 	@Override
@@ -44,6 +43,56 @@ public class AddressResourceImpl
 		CommerceAddress commerceAddress =
 			_commerceAddressService.getCommerceAddress(
 				commerceOrder.getBillingAddressId());
+
+		return _addressDTOConverter.toDTO(
+			new DefaultDTOConverterContext(
+				commerceAddress.getCommerceAddressId(),
+				contextAcceptLanguage.getPreferredLocale()));
+	}
+
+	@Override
+	public Address getCartByExternalReferenceCodeBillingAddres(
+			String externalReferenceCode)
+		throws Exception {
+
+		CommerceOrder commerceOrder =
+			_commerceOrderService.fetchByExternalReferenceCode(
+				externalReferenceCode, contextCompany.getCompanyId());
+
+		if (commerceOrder == null) {
+			throw new NoSuchOrderException(
+				"Unable to find order with external reference code " +
+					externalReferenceCode);
+		}
+
+		CommerceAddress commerceAddress =
+			_commerceAddressService.getCommerceAddress(
+				commerceOrder.getBillingAddressId());
+
+		return _addressDTOConverter.toDTO(
+			new DefaultDTOConverterContext(
+				commerceAddress.getCommerceAddressId(),
+				contextAcceptLanguage.getPreferredLocale()));
+	}
+
+	@Override
+	public Address getCartByExternalReferenceCodeShippingAddres(
+			String externalReferenceCode)
+		throws Exception {
+
+		CommerceOrder commerceOrder =
+			_commerceOrderService.fetchByExternalReferenceCode(
+				externalReferenceCode, contextCompany.getCompanyId());
+
+		if (commerceOrder == null) {
+			throw new NoSuchOrderException(
+				"Unable to find order with external reference code " +
+					externalReferenceCode);
+		}
+
+		CommerceAddress commerceAddress =
+			_commerceAddressService.getCommerceAddress(
+				commerceOrder.getShippingAddressId());
 
 		return _addressDTOConverter.toDTO(
 			new DefaultDTOConverterContext(

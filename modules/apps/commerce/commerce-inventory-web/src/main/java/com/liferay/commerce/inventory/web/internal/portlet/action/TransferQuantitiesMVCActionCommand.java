@@ -7,8 +7,13 @@ package com.liferay.commerce.inventory.web.internal.portlet.action;
 
 import com.liferay.commerce.inventory.service.CommerceInventoryWarehouseItemService;
 import com.liferay.commerce.product.constants.CPPortletKeys;
+import com.liferay.commerce.util.CommerceOrderItemQuantityFormatter;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
+import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ParamUtil;
 
@@ -36,10 +41,25 @@ public class TransferQuantitiesMVCActionCommand extends BaseMVCActionCommand {
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
 
-		String cmd = ParamUtil.getString(actionRequest, Constants.CMD);
+		try {
+			String cmd = ParamUtil.getString(actionRequest, Constants.CMD);
 
-		if (cmd.equals(Constants.MOVE)) {
-			_moveQuantities(actionRequest);
+			if (cmd.equals(Constants.MOVE)) {
+				_moveQuantities(actionRequest);
+			}
+		}
+		catch (Exception exception) {
+			if (exception instanceof PrincipalException.MustHavePermission) {
+				SessionErrors.add(actionRequest, exception.getClass());
+
+				hideDefaultErrorMessage(actionRequest);
+				hideDefaultSuccessMessage(actionRequest);
+
+				sendRedirect(actionRequest, actionResponse);
+			}
+			else {
+				_log.error(exception);
+			}
 		}
 	}
 
@@ -48,16 +68,24 @@ public class TransferQuantitiesMVCActionCommand extends BaseMVCActionCommand {
 			actionRequest, "fromCommerceInventoryWarehouseId");
 		long toCommerceInventoryWarehouseId = ParamUtil.getLong(
 			actionRequest, "toCommerceInventoryWarehouseId");
-		int quantity = ParamUtil.getInteger(actionRequest, "quantity");
-		String sku = ParamUtil.getString(actionRequest, "sku");
 
 		_commerceInventoryWarehouseItemService.moveQuantitiesBetweenWarehouses(
 			fromCommerceInventoryWarehouseId, toCommerceInventoryWarehouseId,
-			quantity, sku);
+			_commerceOrderItemQuantityFormatter.parse(
+				actionRequest, "quantity"),
+			ParamUtil.getString(actionRequest, "sku"),
+			ParamUtil.getString(actionRequest, "unitOfMeasureKey"));
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		TransferQuantitiesMVCActionCommand.class);
 
 	@Reference
 	private CommerceInventoryWarehouseItemService
 		_commerceInventoryWarehouseItemService;
+
+	@Reference
+	private CommerceOrderItemQuantityFormatter
+		_commerceOrderItemQuantityFormatter;
 
 }

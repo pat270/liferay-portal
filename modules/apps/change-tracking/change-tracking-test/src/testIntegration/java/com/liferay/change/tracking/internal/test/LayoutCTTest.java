@@ -10,6 +10,7 @@ import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetTag;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.asset.kernel.service.AssetTagLocalService;
+import com.liferay.change.tracking.conflict.ConflictInfo;
 import com.liferay.change.tracking.constants.CTConstants;
 import com.liferay.change.tracking.model.CTCollection;
 import com.liferay.change.tracking.model.CTEntry;
@@ -20,25 +21,36 @@ import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.expando.kernel.model.ExpandoColumnConstants;
 import com.liferay.expando.kernel.util.ExpandoBridgeFactoryUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
+import com.liferay.layout.util.BulkLayoutConverter;
 import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
+import com.liferay.portal.kernel.change.tracking.CTRequiredModelException;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
+import com.liferay.portal.kernel.exception.NoSuchResourcePermissionException;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.model.LayoutConstants;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
+import com.liferay.portal.kernel.service.permission.LayoutPermission;
+import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
+import com.liferay.portal.kernel.test.util.PropsValuesTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.test.log.LogCapture;
@@ -46,6 +58,7 @@ import com.liferay.portal.test.log.LogEntry;
 import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -53,6 +66,8 @@ import java.sql.ResultSet;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -70,13 +85,15 @@ public class LayoutCTTest {
 	@ClassRule
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
-		new LiferayIntegrationTestRule();
+		new AggregateTestRule(
+			new LiferayIntegrationTestRule(),
+			PermissionCheckerMethodTestRule.INSTANCE);
 
 	@Before
 	public void setUp() throws Exception {
 		_ctCollection = _ctCollectionLocalService.addCTCollection(
-			TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
-			LayoutCTTest.class.getName(), null);
+			null, TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
+			0, LayoutCTTest.class.getName(), null);
 		_group = GroupTestUtil.addGroup();
 		_layoutClassNameId = _classNameLocalService.getClassNameId(
 			Layout.class);
@@ -112,6 +129,26 @@ public class LayoutCTTest {
 
 		Assert.assertEquals(
 			CTConstants.CT_CHANGE_TYPE_ADDITION, ctEntry.getChangeType());
+	}
+
+	@Test
+	public void testConvertPortletLayoutToContentLayout() throws Exception {
+		Layout layout = LayoutTestUtil.addTypePortletLayout(_group);
+
+		try (SafeCloseable safeCloseable1 =
+				CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
+					_ctCollection.getCtCollectionId())) {
+
+			_bulkLayoutConverter.convertLayout(layout.getPlid());
+
+			layout = _layoutLocalService.fetchLayout(layout.getPlid());
+
+			Assert.assertTrue(layout.isTypeContent());
+		}
+
+		layout = _layoutLocalService.fetchLayout(layout.getPlid());
+
+		Assert.assertFalse(layout.isTypeContent());
 	}
 
 	@Test
@@ -223,6 +260,130 @@ public class LayoutCTTest {
 		}
 		finally {
 			_ctCollection = null;
+		}
+	}
+
+	@Test
+	public void testDeleteLayoutWithDeletionProtectionEnabled()
+		throws Exception {
+
+		Layout layout = LayoutTestUtil.addTypeContentLayout(_group);
+
+		try (SafeCloseable safeCloseable =
+				CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
+					_ctCollection.getCtCollectionId())) {
+
+			Assert.assertEquals(
+				layout, _layoutLocalService.fetchLayout(layout.getPlid()));
+
+			layout = _layoutLocalService.updateName(
+				layout, RandomTestUtil.randomString(),
+				LocaleUtil.toLanguageId(LocaleUtil.BRAZIL));
+		}
+
+		CTEntry ctEntry = _ctEntryLocalService.fetchCTEntry(
+			_ctCollection.getCtCollectionId(), _layoutClassNameId,
+			layout.getPlid());
+
+		Assert.assertNotNull(ctEntry);
+
+		try (SafeCloseable safeCloseable1 =
+				PropsValuesTestUtil.swapWithSafeCloseable(
+					"CHANGE_TRACKING_DELETION_PROTECTION_ENABLED", true, false);
+			LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+				BasePersistenceImpl.class.getName(), LoggerTestUtil.ERROR)) {
+
+			_layoutLocalService.deleteLayout(layout);
+
+			List<LogEntry> logEntries = logCapture.getLogEntries();
+
+			Assert.assertEquals(logEntries.toString(), 1, logEntries.size());
+
+			LogEntry logEntry = logEntries.get(0);
+
+			Assert.assertEquals(
+				"Caught unexpected exception " +
+					CTRequiredModelException.class.getName(),
+				logEntry.getMessage());
+		}
+		catch (Exception exception) {
+			Assert.assertTrue(
+				exception.getCause() instanceof CTRequiredModelException);
+		}
+
+		Assert.assertNotNull(_layoutLocalService.fetchLayout(layout.getPlid()));
+
+		_ctProcessLocalService.addCTProcess(
+			TestPropsValues.getUserId(), _ctCollection.getCtCollectionId());
+
+		try (SafeCloseable safeCloseable1 =
+				PropsValuesTestUtil.swapWithSafeCloseable(
+					"CHANGE_TRACKING_DELETION_PROTECTION_ENABLED", true,
+					false)) {
+
+			_layoutLocalService.deleteLayout(layout);
+		}
+
+		Assert.assertNull(_layoutLocalService.fetchLayout(layout.getPlid()));
+	}
+
+	@Test
+	public void testGetLayoutsWithDeletedLayoutInProduction() throws Exception {
+		Layout layout = LayoutTestUtil.addTypeContentLayout(_group);
+
+		try (SafeCloseable safeCloseable =
+				CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
+					_ctCollection.getCtCollectionId())) {
+
+			Assert.assertEquals(
+				layout, _layoutLocalService.fetchLayout(layout.getPlid()));
+
+			layout = _layoutLocalService.updateName(
+				layout, RandomTestUtil.randomString(),
+				LocaleUtil.toLanguageId(LocaleUtil.BRAZIL));
+		}
+
+		CTEntry ctEntry = _ctEntryLocalService.fetchCTEntry(
+			_ctCollection.getCtCollectionId(), _layoutClassNameId,
+			layout.getPlid());
+
+		Assert.assertNotNull(ctEntry);
+
+		try (SafeCloseable safeCloseable1 =
+				PropsValuesTestUtil.swapWithSafeCloseable(
+					"CHANGE_TRACKING_DELETION_PROTECTION_ENABLED", false,
+					false)) {
+
+			_layoutLocalService.deleteLayout(layout);
+
+			Assert.assertNull(
+				_layoutLocalService.fetchLayout(layout.getPlid()));
+
+			try (SafeCloseable safeCloseable2 =
+					CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
+						_ctCollection.getCtCollectionId())) {
+
+				List<Layout> layouts = _layoutLocalService.getLayouts(
+					_group.getGroupId(), layout.isPrivateLayout(),
+					LayoutConstants.DEFAULT_PARENT_LAYOUT_ID);
+
+				PermissionChecker permissionChecker =
+					PermissionCheckerFactoryUtil.create(
+						UserLocalServiceUtil.getUser(
+							TestPropsValues.getUserId()));
+
+				for (Layout curLayout : layouts) {
+					_layoutPermission.check(
+						permissionChecker, curLayout, ActionKeys.VIEW);
+				}
+			}
+			catch (Exception exception) {
+				Throwable throwable = exception.getCause();
+
+				Assert.assertSame(
+					NoSuchResourcePermissionException.class,
+					throwable.getClass());
+			}
 		}
 	}
 
@@ -875,6 +1036,78 @@ public class LayoutCTTest {
 	}
 
 	@Test
+	public void testPublishRemovedLayoutWithTargetModifiedInOtherPublication()
+		throws Exception {
+
+		Layout layout = LayoutTestUtil.addTypeContentLayout(_group);
+
+		try (SafeCloseable safeCloseable =
+				CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
+					_ctCollection.getCtCollectionId())) {
+
+			_layoutLocalService.deleteLayout(layout);
+		}
+
+		CTEntry ctEntry1 = _ctEntryLocalService.fetchCTEntry(
+			_ctCollection.getCtCollectionId(), _layoutClassNameId,
+			layout.getPlid());
+
+		Assert.assertNotNull(ctEntry1);
+		Assert.assertEquals(
+			CTConstants.CT_CHANGE_TYPE_DELETION, ctEntry1.getChangeType());
+		Assert.assertEquals(layout.getPlid(), ctEntry1.getModelClassPK());
+
+		CTCollection otherCTCollection =
+			_ctCollectionLocalService.addCTCollection(
+				null, TestPropsValues.getCompanyId(),
+				TestPropsValues.getUserId(), 0, RandomTestUtil.randomString(),
+				null);
+
+		try (SafeCloseable safeCloseable =
+				CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
+					otherCTCollection.getCtCollectionId())) {
+
+			_layoutLocalService.updateName(
+				layout.getPlid(), RandomTestUtil.randomString(),
+				LocaleUtil.toLanguageId(LocaleUtil.BRAZIL));
+		}
+
+		CTEntry ctEntry2 = _ctEntryLocalService.fetchCTEntry(
+			otherCTCollection.getCtCollectionId(), _layoutClassNameId,
+			layout.getPlid());
+
+		Assert.assertNotNull(ctEntry2);
+		Assert.assertEquals(
+			CTConstants.CT_CHANGE_TYPE_MODIFICATION, ctEntry2.getChangeType());
+
+		Map<Long, List<ConflictInfo>> conflictInfoMap =
+			_ctCollectionLocalService.checkConflicts(_ctCollection);
+
+		Assert.assertFalse(conflictInfoMap.isEmpty());
+
+		List<ConflictInfo> conflictInfos = conflictInfoMap.get(
+			_classNameLocalService.getClassNameId(Layout.class));
+
+		boolean hasConflict = false;
+
+		for (ConflictInfo conflictInfo : conflictInfos) {
+			if ((conflictInfo.getSourcePrimaryKey() == layout.getPlid()) &&
+				Objects.equals(
+					conflictInfo.getResolutionDescription(
+						conflictInfo.getResourceBundle(LocaleUtil.ENGLISH)),
+					_language.get(
+						LocaleUtil.ENGLISH,
+						"deletion-conflicts-with-modifications-in-another-" +
+							"publication"))) {
+
+				hasConflict = true;
+			}
+		}
+
+		Assert.assertTrue(hasConflict);
+	}
+
+	@Test
 	public void testRemoveLayout() throws Exception {
 		Layout layout = LayoutTestUtil.addTypePortletLayout(_group);
 
@@ -1083,10 +1316,19 @@ public class LayoutCTTest {
 	@Inject
 	private static CTProcessLocalService _ctProcessLocalService;
 
+	@Inject
+	private static Language _language;
+
 	private static long _layoutClassNameId;
 
 	@Inject
 	private static LayoutLocalService _layoutLocalService;
+
+	@Inject
+	private static LayoutPermission _layoutPermission;
+
+	@Inject
+	private BulkLayoutConverter _bulkLayoutConverter;
 
 	@DeleteAfterTestRun
 	private CTCollection _ctCollection;

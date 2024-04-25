@@ -60,16 +60,15 @@ public class CPDefinitionSpecificationOptionValueLocalServiceWrapper
 	public CPDefinitionSpecificationOptionValue
 			addCPDefinitionSpecificationOptionValue(
 				long cpDefinitionId, long cpSpecificationOptionId,
-				long cpOptionCategoryId,
+				long cpOptionCategoryId, double priority,
 				java.util.Map<java.util.Locale, String> valueMap,
-				double priority,
 				com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _cpDefinitionSpecificationOptionValueLocalService.
 			addCPDefinitionSpecificationOptionValue(
 				cpDefinitionId, cpSpecificationOptionId, cpOptionCategoryId,
-				valueMap, priority, serviceContext);
+				priority, valueMap, serviceContext);
 	}
 
 	/**
@@ -323,6 +322,15 @@ public class CPDefinitionSpecificationOptionValueLocalServiceWrapper
 		return _cpDefinitionSpecificationOptionValueLocalService.
 			fetchCPDefinitionSpecificationOptionValue(
 				cpDefinitionId, cpDefinitionSpecificationOptionValueId);
+	}
+
+	@Override
+	public CPDefinitionSpecificationOptionValue
+		fetchCPDefinitionSpecificationOptionValue(
+			long cpDefinitionId, String key) {
+
+		return _cpDefinitionSpecificationOptionValueLocalService.
+			fetchCPDefinitionSpecificationOptionValue(cpDefinitionId, key);
 	}
 
 	/**
@@ -589,16 +597,15 @@ public class CPDefinitionSpecificationOptionValueLocalServiceWrapper
 	public CPDefinitionSpecificationOptionValue
 			updateCPDefinitionSpecificationOptionValue(
 				long cpDefinitionSpecificationOptionValueId,
-				long cpOptionCategoryId,
+				long cpOptionCategoryId, String key, double priority,
 				java.util.Map<java.util.Locale, String> valueMap,
-				double priority,
 				com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _cpDefinitionSpecificationOptionValueLocalService.
 			updateCPDefinitionSpecificationOptionValue(
-				cpDefinitionSpecificationOptionValueId, cpOptionCategoryId,
-				valueMap, priority, serviceContext);
+				cpDefinitionSpecificationOptionValueId, cpOptionCategoryId, key,
+				priority, valueMap, serviceContext);
 	}
 
 	@Override

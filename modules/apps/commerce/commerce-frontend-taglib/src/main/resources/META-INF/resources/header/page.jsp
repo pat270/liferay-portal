@@ -34,7 +34,7 @@ String myWorkflowTasksPortletNamespace = PortalUtil.getPortletNamespace(PortletK
 				</c:if>
 
 				<div class="border-right c-ml-sm-2 c-mr-3 c-pr-3 header-details">
-					<h3 class="c-mb-0 commerce-header-title text-truncate">
+					<h3 class="c-mb-0 commerce-header-title text-truncate" data-qa-id="header-details-title">
 						<%= HtmlUtil.escape(title) %>
 					</h3>
 
@@ -64,8 +64,8 @@ String myWorkflowTasksPortletNamespace = PortalUtil.getPortletNamespace(PortletK
 								<liferay-ui:message key="<%= HtmlUtil.escape(beanIdLabel) %>" />:
 							</span>
 
-							<strong class="c-ml-1 header-info-value">
-								<%= beanId %>
+							<strong class="c-ml-1 header-info-value" data-qa-id="<%= beanId %>">
+								<%= (displayBeanId > 0) ? String.valueOf(displayBeanId) : "" %>
 							</strong>
 
 							<span class="c-ml-1 lfr-portal-tooltip text-secondary" title="<%= LanguageUtil.get(request, "identification-number") %>">
@@ -101,12 +101,12 @@ String myWorkflowTasksPortletNamespace = PortalUtil.getPortletNamespace(PortletK
 									small="<%= true %>"
 								/>
 
-								<aui:script require="commerce-frontend-js/utilities/eventsDefinitions as events">
+								<aui:script>
 									document
 										.querySelector('#erc-edit-modal-opener')
 										.addEventListener('click', (e) => {
 											e.preventDefault();
-											Liferay.fire(events.OPEN_MODAL, {id: 'erc-edit-modal'});
+											Liferay.fire('open-modal', {id: 'erc-edit-modal'});
 										});
 								</aui:script>
 
@@ -313,12 +313,16 @@ String myWorkflowTasksPortletNamespace = PortalUtil.getPortletNamespace(PortletK
 							/>
 						</div>
 
-						<aui:script require="commerce-frontend-js/components/dropdown/entry as dropdown">
-							dropdown.default('dropdown-header', 'dropdown-header-container', {
-								items: <%= jsonSerializer.serializeDeep(dropdownItems) %>,
-								spritemap: '<%= themeDisplay.getPathThemeSpritemap() %>',
-							});
-						</aui:script>
+						<liferay-frontend:component
+							context='<%=
+								HashMapBuilder.<String, Object>put(
+									"items", dropdownItems
+								).put(
+									"spritemap", themeDisplay.getPathThemeSpritemap()
+								).build()
+							%>'
+							module="{dropdownMain} from commerce-frontend-taglib"
+						/>
 					</c:if>
 
 					<c:if test="<%= Validator.isNotNull(previewUrl) %>">

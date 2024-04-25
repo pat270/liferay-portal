@@ -2,32 +2,24 @@
 definition {
 
 	property app.server.types = "tomcat";
+	property database.bare.enabled = "true";
 	property database.types = "db2,mariadb,mysql,oracle,postgresql,sqlserver";
 	property minimum.slave.ram = "24";
 	property portal.release = "true";
 	property portal.smoke.upgrades = "false";
 	property portal.upstream = "true";
+	property skip.start.app.server = "true";
+	property test.liferay.virtual.instance = "false";
+	property test.run.type = "single";
+	property testcase.url = "file:///opt/dev/projects/github/liferay-portal/";
 	property testray.main.component.name = "Database Upgrade Framework";
+
+	setUp {
+		Upgrade.startReleasedBundle();
+	}
 
 	@priority = 4
 	test AutoUpgradeFromLatest7413Update {
-		property database.bare.enabled = "true";
-		property skip.start.app.server = "true";
-		property test.assert.warning.exceptions = "true";
-		property test.liferay.virtual.instance = "false";
-		property testcase.url = "http://www.example.com";
-
-		var releaseBundleVersion = PropsUtil.get("test.released.release.bundle.version");
-		var releaseBundleZipURL = PropsUtil.get("test.released.test.portal.bundle.zip.url");
-
-		AntCommands.runCommand("build-test.xml", "prepare-upgrade-released-bundle-test-environment -Dtest.released.release.bundle.version=${releaseBundleVersion} -Dtest.released.test.portal.bundle.zip.url=${releaseBundleZipURL}");
-
-		Portlet.startServer(keepOsGiState = "true");
-
-		AntCommands.runCommand("build-test.xml", "wait-for-license-activation");
-
-		Navigator.openSpecificURL(url = "http://localhost:8080");
-
 		User.firstLoginUI(
 			password = "test",
 			specificURL = "http://localhost:8080",
@@ -49,25 +41,14 @@ definition {
 
 		WebContent.viewTitle(webContentTitle = "WC WebContent Title");
 
-		Portlet.shutdownServer();
-
-		AntCommands.runCommand("build-test.xml", "prepare-upgrade-original-bundle-test-environment");
-
-		Portlet.startServer(deleteLiferayHome = "false");
-
-		Navigator.openSpecificURL(url = "http://localhost:8080");
+		Upgrade.restoreOriginalBundleAndUpgrade();
 
 		TestUtils.hardRefresh();
 
 		ContentPages.viewFragmentImage(
 			fragmentName = "image",
 			id = "image-square",
-			image = "tree.png");
-
-		User.firstLoginUI(
-			password = "test",
-			specificURL = "http://localhost:8080",
-			userEmailAddress = "test@liferay.com");
+			image = "tree-png");
 
 		WebContentNavigator.openWebContentAdmin(
 			baseURL = "http://localhost:8080",
@@ -83,30 +64,16 @@ definition {
 	@priority = 4
 	test AutoUpgradeFromLatest7413UpdateWithDBPartitionEnabled {
 		property custom.properties = "virtual.hosts.valid.hosts=localhost,127.0.0.1,www.able.com";
-		property database.bare.enabled = "true";
-		property database.partition.enabled = "true";
 		property database.types = "mysql";
-		property skip.start.app.server = "true";
-		property test.assert.warning.exceptions = "true";
-		property test.liferay.virtual.instance = "false";
-
-		var releaseBundleVersion = PropsUtil.get("test.released.release.bundle.version");
-		var releaseBundleZipURL = PropsUtil.get("test.released.test.portal.bundle.zip.url");
-
-		AntCommands.runCommand("build-test.xml", "prepare-upgrade-released-bundle-test-environment -Dtest.released.release.bundle.version=${releaseBundleVersion} -Dtest.released.test.portal.bundle.zip.url=${releaseBundleZipURL}");
-
-		Portlet.startServer(keepOsGiState = "true");
-
-		AntCommands.runCommand("build-test.xml", "wait-for-license-activation");
-
-		Navigator.openSpecificURL(url = "http://localhost:8080");
+		property liferay.online.properties = "true";
+		property timeout.explicit.wait = "120";
 
 		User.firstLoginUI(
 			password = "test",
 			specificURL = "http://localhost:8080",
 			userEmailAddress = "test@liferay.com");
 
-		PortalInstances.openVirtualInstancesAdmin();
+		PortalInstances.openVirtualInstancesAdmin(baseURL = "http://localhost:8080");
 
 		PortalInstances.addCP(
 			mailDomain = "www.able.com",
@@ -130,11 +97,7 @@ definition {
 			dmDocumentFile = "Document_1.doc",
 			dmDocumentTitle = "DM Document Title");
 
-		Portlet.shutdownServer();
-
-		AntCommands.runCommand("build-test.xml", "prepare-upgrade-original-bundle-test-environment");
-
-		Portlet.startServer(deleteLiferayHome = "false");
+		Upgrade.restoreOriginalBundleAndUpgrade();
 
 		User.firstLoginUI(
 			password = "test",
@@ -146,7 +109,7 @@ definition {
 		ContentPages.viewFragmentImage(
 			fragmentName = "image",
 			id = "image-square",
-			image = "tree.png");
+			image = "tree-png");
 
 		Navigator.openSpecificURL(url = "http://www.able.com:8080");
 
@@ -167,23 +130,8 @@ definition {
 
 	@priority = 4
 	test AutoUpgradeFromLatest7413UpdateWithDBPartitionEnabledAndHeadlessAPI {
-		property database.bare.enabled = "true";
-		property database.partition.enabled = "true";
 		property database.types = "mysql";
-		property skip.start.app.server = "true";
-		property test.assert.warning.exceptions = "true";
-		property test.liferay.virtual.instance = "false";
-
-		var releaseBundleVersion = PropsUtil.get("test.released.release.bundle.version");
-		var releaseBundleZipURL = PropsUtil.get("test.released.test.portal.bundle.zip.url");
-
-		AntCommands.runCommand("build-test.xml", "prepare-upgrade-released-bundle-test-environment -Dtest.released.release.bundle.version=${releaseBundleVersion} -Dtest.released.test.portal.bundle.zip.url=${releaseBundleZipURL}");
-
-		Portlet.startServer(keepOsGiState = "true");
-
-		AntCommands.runCommand("build-test.xml", "wait-for-license-activation");
-
-		Navigator.openSpecificURL(url = "http://localhost:8080");
+		property liferay.online.properties = "true";
 
 		User.firstLoginPG(
 			password = "test",
@@ -210,11 +158,7 @@ definition {
 			dmDocumentFile = "Document_1.doc",
 			dmDocumentTitle = "DM Document Title");
 
-		Portlet.shutdownServer();
-
-		AntCommands.runCommand("build-test.xml", "prepare-upgrade-original-bundle-test-environment");
-
-		Portlet.startServer(deleteLiferayHome = "false");
+		Upgrade.restoreOriginalBundleAndUpgrade();
 
 		User.firstLoginPG(
 			password = "test",
@@ -226,7 +170,7 @@ definition {
 		ContentPages.viewFragmentImage(
 			fragmentName = "image",
 			id = "image-square",
-			image = "tree.png");
+			image = "tree-png");
 
 		ProductMenu.gotoPortlet(
 			category = "Content & Data",

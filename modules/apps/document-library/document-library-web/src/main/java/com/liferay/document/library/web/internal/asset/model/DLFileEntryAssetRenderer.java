@@ -244,8 +244,8 @@ public class DLFileEntryAssetRenderer
 		LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse) {
 
-		return PortletURLBuilder.create(
-			_getPortletURL(liferayPortletRequest)
+		return PortletURLBuilder.createActionURL(
+			liferayPortletResponse, DLPortletKeys.DOCUMENT_LIBRARY_ADMIN
 		).setActionName(
 			"/document_library/get_file"
 		).setParameter(
@@ -266,6 +266,20 @@ public class DLFileEntryAssetRenderer
 
 		return _dlURLHelper.getImagePreviewURL(
 			_fileEntry, _fileVersion, themeDisplay);
+	}
+
+	@Override
+	public String getURLShare(
+		LiferayPortletRequest liferayPortletRequest,
+		LiferayPortletResponse liferayPortletResponse) {
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)liferayPortletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		return _dlURLHelper.getPreviewURL(
+			_fileEntry, _fileVersion, themeDisplay, StringPool.BLANK, false,
+			true);
 	}
 
 	@Override

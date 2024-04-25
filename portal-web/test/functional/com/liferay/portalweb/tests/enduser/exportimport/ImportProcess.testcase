@@ -27,6 +27,7 @@ definition {
 	@priority = 5
 	test LARFileRemovedAfterImportProcess {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: Import two types of LAR files") {
 			HeadlessSite.addSite(siteName = "Site Name");
@@ -73,6 +74,7 @@ definition {
 	@priority = 5
 	test TriggerSchedulerJobManuallyCanRemoveExpiredImportEntry {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: Import two types of LAR files") {
 			HeadlessSite.addSite(siteName = "Site Name");
@@ -109,10 +111,7 @@ definition {
 
 			ExportImport.updatePortletBackgroundTaskModifiedDateToPast(type = "Import");
 
-			ApplicationsMenu.gotoPortlet(
-				category = "System",
-				panel = "Control Panel",
-				portlet = "Server Administration");
+			ServerAdministration.openServerAdmin();
 
 			ServerAdministration.executeServerResourcesActions(actionsDescription = "Clear the database cache.");
 
@@ -315,6 +314,7 @@ definition {
 	@priority = 5
 	test ViewDeletingApplicationDataPopUpOnVirtualInstance {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: Add a virtual instance and create a web content article and a document file in it") {
 			PortalInstances.openVirtualInstancesAdmin();
@@ -346,12 +346,7 @@ definition {
 				userEmailAddress = "test@liferay.com",
 				userPassword = "test");
 
-			Navigator.openSpecificURL(url = "http://www.able.com:8080");
-
-			ApplicationsMenu.gotoPortlet(
-				category = "Sites",
-				panel = "Control Panel",
-				portlet = "Sites");
+			Site.openSitesAdmin(baseURL = "http://www.able.com:8080");
 
 			Site.addBlankCP(siteName = "Site Name");
 

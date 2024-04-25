@@ -5,7 +5,7 @@
 
 import ClayAlert from '@clayui/alert';
 import {useModal} from '@clayui/modal';
-import {BuilderScreen} from '@liferay/object-js-components-web';
+import {BuilderScreen, Card} from '@liferay/object-js-components-web';
 import React, {useEffect, useState} from 'react';
 
 import {ModalAddDefaultSortColumn} from '../ModalAddDefaultSortColumn/ModalAddDefaultSortColumn';
@@ -21,10 +21,15 @@ export function DefaultSortScreen() {
 
 	const [visibleModal, setVisibleModal] = useState(false);
 	const [isEditingSort, setIsEditingSort] = useState(false);
-	const [editingObjectFieldName, setEditingObjectFieldName] = useState('');
+	const [editingObjectFieldName, setEditingObjectFieldName] = useState<
+		string
+	>();
 
 	const {observer, onClose} = useModal({
-		onClose: () => setVisibleModal(false),
+		onClose: () => {
+			setVisibleModal(false);
+			setEditingObjectFieldName(undefined);
+		},
 	});
 
 	useEffect(() => {
@@ -60,29 +65,30 @@ export function DefaultSortScreen() {
 				)}
 			</ClayAlert>
 
-			<BuilderScreen
-				defaultSort
-				emptyState={{
-					buttonText: Liferay.Language.get('new-default-sort'),
-					description: Liferay.Language.get(
-						'start-creating-a-sort-to-display-specific-data'
-					),
-					title: Liferay.Language.get(
-						'no-default-sort-was-created-yet'
-					),
-				}}
-				firstColumnHeader={Liferay.Language.get('name')}
-				hasDragAndDrop
-				objectColumns={objectViewSortColumns ?? []}
-				onChangeColumnOrder={handleChangeColumnOrder}
-				onDeleteColumn={handleDeleteColumn}
-				onEditing={setIsEditingSort}
-				onEditingObjectFieldName={setEditingObjectFieldName}
-				onVisibleEditModal={setVisibleModal}
-				openModal={() => setVisibleModal(true)}
-				secondColumnHeader={Liferay.Language.get('sorting')}
-				title={Liferay.Language.get('default-sort')}
-			/>
+			<Card title={Liferay.Language.get('default-sort')}>
+				<BuilderScreen
+					builderScreenItems={objectViewSortColumns ?? []}
+					defaultSort
+					emptyState={{
+						buttonText: Liferay.Language.get('new-default-sort'),
+						description: Liferay.Language.get(
+							'start-creating-a-sort-to-display-specific-data'
+						),
+						title: Liferay.Language.get(
+							'no-default-sort-was-created-yet'
+						),
+					}}
+					firstColumnHeader={Liferay.Language.get('name')}
+					hasDragAndDrop
+					onChangeColumnOrder={handleChangeColumnOrder}
+					onDeleteColumn={handleDeleteColumn}
+					onEditing={setIsEditingSort}
+					onEditingObjectFieldName={setEditingObjectFieldName}
+					onVisibleEditModal={setVisibleModal}
+					openModal={() => setVisibleModal(true)}
+					secondColumnHeader={Liferay.Language.get('sorting')}
+				/>
+			</Card>
 
 			{visibleModal && (
 				<ModalAddDefaultSortColumn

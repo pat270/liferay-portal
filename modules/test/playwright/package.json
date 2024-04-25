@@ -1,0 +1,37 @@
+{
+	"author": "",
+	"dependencies": {
+		"moment": "2.29.4",
+		"uuid": "9.0.0",
+		"yauzl": "^3.0.0"
+	},
+	"description": "",
+	"devDependencies": {
+		"@liferay/eslint-plugin": "1.5.0",
+		"@liferay/npm-scripts": "49.2.3",
+		"@playwright/test": "1.39.0",
+		"@types/node": "^20.9.0",
+		"@types/yauzl": "^2.10.3",
+		"ts-node": "^10.9.2",
+		"zip-a-folder": "^3.1.6"
+	},
+	"keywords": [
+	],
+	"license": "ISC",
+	"main": "index.js",
+	"name": "@liferay/playwright",
+	"private": true,
+	"resolutions": {
+		"prettier": "2.1.2"
+	},
+	"scripts": {
+		"checkFormat": "tsc && liferay-npm-scripts lint && liferay-npm-scripts format:check",
+		"format": "tsc && liferay-npm-scripts lint:fix && liferay-npm-scripts format",
+		"local:setup": "ts-node ./scripts/localSetup.ts",
+		"local:teardown": "ts-node ./scripts/localTeardown.ts",
+		"playwright": "playwright",
+		"test": "playwright test",
+		"test:ui": "playwright test --ui"
+	},
+	"version": "1.0.0"
+}

@@ -1,6 +1,6 @@
 Bundle-Name: Liferay Shared Dependencies Apache Commons
 Bundle-SymbolicName: com.liferay.shared.dependencies.apache.commons
-Bundle-Version: 1.0.10
+Bundle-Version: 4.0.11
 Import-Package:\
 	!com.github.luben.zstd,\
 	\
@@ -14,5 +14,15 @@ Import-Package:\
 	org.apache.commons.compress.*,\
 	org.apache.commons.csv,\
 	org.apache.commons.digester.*,\
+	org.apache.commons.fileupload,\
+	org.apache.commons.fileupload.disk,\
+	org.apache.commons.fileupload.servlet,\
+	org.apache.commons.fileupload.util,\
+	org.apache.commons.io,\
+	org.apache.commons.io.build,\
+	org.apache.commons.io.file.attribute,\
+	org.apache.commons.io.input,\
+	org.apache.commons.io.output,\
 	org.apache.commons.math3.*,\
 	org.apache.commons.validator.routines
+-fixupmessages: Classes found in the wrong directory: ...;is:=ignore

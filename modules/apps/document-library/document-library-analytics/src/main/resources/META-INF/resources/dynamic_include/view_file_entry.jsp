@@ -11,20 +11,31 @@
 FileEntry fileEntry = (FileEntry)request.getAttribute(WebKeys.DOCUMENT_LIBRARY_FILE_ENTRY);
 %>
 
-<script data-senna-track="temporary" type="text/javascript">
+<aui:script senna="temporary" type="text/javascript">
 	if (window.Analytics) {
 		window.<%= DocumentLibraryAnalyticsConstants.JS_PREFIX %>isViewFileEntry = true;
 	}
-</script>
+</aui:script>
 
 <aui:script>
-	if (window.Analytics) {
-		Analytics.send('documentPreviewed', 'Document', {
-			fileEntryId: '<%= fileEntry.getFileEntryId() %>',
-			groupId: '<%= fileEntry.getGroupId() %>',
-			fileEntryUUID: '<%= fileEntry.getUuid() %>',
-			title: '<%= HtmlUtil.escapeJS(fileEntry.getTitle()) %>',
-			version: '<%= fileEntry.getVersion() %>',
-		});
+	function <portlet:namespace />sendDocumentPreviewedAnalyticsEvent() {
+		if (window.Analytics) {
+			Analytics.send('documentPreviewed', 'Document', {
+				fileEntryId: '<%= fileEntry.getFileEntryId() %>',
+				groupId: '<%= fileEntry.getGroupId() %>',
+				fileEntryUUID: '<%= fileEntry.getUuid() %>',
+				title: '<%= HtmlUtil.escapeJS(fileEntry.getTitle()) %>',
+				version: '<%= fileEntry.getVersion() %>',
+			});
+		}
 	}
+
+	if (Liferay.SPA && document.readyState === 'complete') {
+		<portlet:namespace />sendDocumentPreviewedAnalyticsEvent();
+	}
+
+	window.addEventListener(
+		'load',
+		<portlet:namespace />sendDocumentPreviewedAnalyticsEvent
+	);
 </aui:script>

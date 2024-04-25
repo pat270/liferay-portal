@@ -24,6 +24,7 @@ definition {
 	test CustomizeFileFilter {
 		property custom.properties = "module.framework.file.install.filter=^(?!test-theme).*\\..*";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		GogoShell.openGogoShellAdmin();
 
@@ -40,8 +41,9 @@ definition {
 
 	@priority = 3
 	test CustomizeNewWatchedDirectory {
-		property custom.properties = "module.framework.auto.deploy.dirs=${liferay.home}/alt-deploy/osgi/portal,${liferay.home}/osgi/modules,${liferay.home}/osgi/war,${liferay.home}/osgi/configs,${liferay.home}/osgi/marketplace";
+		property custom.properties = "module.framework.auto.deploy.dirs=${liferay.home}/alt-deploy/osgi/portal,${liferay.home}/osgi/configs,${liferay.home}/osgi/marketplace,${liferay.home}/osgi/modules,${liferay.home}/osgi/portal-war,${liferay.home}/osgi/war";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var liferayHome = PropsUtil.get("liferay.home.dir.name");
 
@@ -64,6 +66,7 @@ definition {
 	test CustomizeRecursiveSubdirectoryMode {
 		property custom.properties = "module.framework.file.install.subdir.mode=recurse";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var liferayHome = PropsUtil.get("liferay.home.dir.name");
 
@@ -86,6 +89,7 @@ definition {
 	test CustomizeSkipSubdirectoryMode {
 		property custom.properties = "module.framework.file.install.subdir.mode=skip";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var liferayHome = PropsUtil.get("liferay.home.dir.name");
 
@@ -111,6 +115,7 @@ definition {
 		property create.osgi.hidden.file = "true";
 		property test.assert.warning.exceptions = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		SystemSettings.openSystemSettingsAdmin();
 
@@ -120,10 +125,42 @@ definition {
 			configurationScope = "System Scope");
 	}
 
+	@description = "This is a use case for LPS-102027. Verify JSP fragment module is still in Resolved status after removing osgi/state folder on LPKG bundle."
+	@priority = 3
+	test JSPFragmentModuleStillResolvedAfterRemovingStateFolderOnLPKGBundle {
+		property license.required = "true";
+		property osgi.modules.includes = "adaptive-media-blogs-web-fragment";
+		property portal.release = "false";
+		property portal.upstream = "false";
+		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
+
+		AssertConsoleTextPresent(value1 = "STOPPED com.liferay.blogs.web_");
+
+		GogoShell.openGogoShellAdmin();
+
+		var fragmentName = '''"Liferay Adaptive Media Blogs Web Fragment"''';
+
+		GogoShell.executeCommand(commandName = "lb | grep ${fragmentName}");
+
+		GogoShell.viewOutput(outputContent = "Resolved");
+
+		Portlet.shutdownServer();
+
+		Portlet.startServer();
+
+		GogoShell.openGogoShellAdmin();
+
+		GogoShell.executeCommand(commandName = "lb | grep ${fragmentName}");
+
+		GogoShell.viewOutput(outputContent = "Resolved");
+	}
+
 	@priority = 4
 	test RestartingPortalDuplicatesOSGiConfiguration {
 		property database.types = "mysql";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		var liferayHome = PropsUtil.get("liferay.home.dir.name");
 
@@ -142,13 +179,13 @@ definition {
 			WHERE configurationId LIKE 'com.liferay.portal.security.auth.verifier.internal.tunnel.configuration.TunnelAuthVerifierConfiguration%';
 		''';
 
-		var originalCount = SQL.executeMySQLStatement(mysqlStatement = ${mysqlStatement});
+		var originalCount = SQL.executeSQLStatement(sqlStatement = ${mysqlStatement});
 
 		Portlet.shutdownServer();
 
 		Portlet.startServer(keepOsGiState = "true");
 
-		var actualCount = SQL.executeMySQLStatement(mysqlStatement = ${mysqlStatement});
+		var actualCount = SQL.executeSQLStatement(sqlStatement = ${mysqlStatement});
 
 		if (${originalCount} != ${actualCount}) {
 			fail("Expected MYSQL entries='${originalCount}', after restarting portal MYSQL entries='${actualCount}'");
@@ -159,6 +196,7 @@ definition {
 	test UninstallJarOffline {
 		property test.assert.warning.exceptions = "false";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Clustering.deployClusteringModule(nodePort = 8080);
 
@@ -198,6 +236,7 @@ definition {
 	@priority = 4
 	test UninstallWarOffline {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		FileInstall.deployFileOnServer(jarFile = "test-theme.war");
 

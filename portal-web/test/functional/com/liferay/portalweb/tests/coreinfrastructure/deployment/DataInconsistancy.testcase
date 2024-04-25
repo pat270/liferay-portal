@@ -11,6 +11,7 @@ definition {
 	test RestartWithMissingChildPagePermission {
 		property database.types = "mysql";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given a widget page with a child page") {
 			User.firstLoginPG();
@@ -28,7 +29,7 @@ definition {
 		task ("When the resource permission for the child page is deleted from the database") {
 			var sQLStatement = "delete from lportal.ResourcePermission where primKeyId in (select plid from lportal.Layout where name like '%ChildPage%') and name = 'com.liferay.portal.kernel.model.Layout';";
 
-			SQL.executeMySQLStatement(mysqlStatement = ${sQLStatement});
+			SQL.executeSQLStatement(sqlStatement = ${sQLStatement});
 		}
 
 		task ("And the portal is restarted") {
@@ -52,6 +53,7 @@ definition {
 	test RestartWithMissingPagePermission {
 		property database.types = "mysql";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given a widget page") {
 			User.firstLoginPG();
@@ -64,7 +66,7 @@ definition {
 		task ("When the resource permission for the widget page is deleted from the database") {
 			var sQLStatement = "delete from lportal.ResourcePermission where primKeyId in (select plid from lportal.Layout where name like '%WidgetPage%') and name = 'com.liferay.portal.kernel.model.Layout';";
 
-			SQL.executeMySQLStatement(mysqlStatement = ${sQLStatement});
+			SQL.executeSQLStatement(sqlStatement = ${sQLStatement});
 		}
 
 		task ("And the portal is restarted") {

@@ -12,7 +12,10 @@ import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.ClassName;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.transaction.Propagation;
@@ -76,9 +79,11 @@ public class BasePersistenceRegistry {
 					BasePersistence<?> basePersistence =
 						tableReferenceDefinition.getBasePersistence();
 
-					emitter.emit(
-						_classNameLocalService.getClassNameId(
-							basePersistence.getModelClass()));
+					Class<?> modelClass = basePersistence.getModelClass();
+
+					emitter.emit(modelClass.getName());
+
+					bundleContext.ungetService(serviceReference);
 				});
 
 		_transactionExecutorServiceTrackerMap =
@@ -101,8 +106,19 @@ public class BasePersistenceRegistry {
 	private <T extends BaseModel<T>, R> R _applyBasePersistence(
 		long classNameId, Function<BasePersistence<T>, R> function) {
 
-		TableReferenceDefinition<?> tableReferenceDefinition =
-			_tableReferenceDefinitionServiceTrackerMap.getService(classNameId);
+		TableReferenceDefinition<?> tableReferenceDefinition = null;
+
+		try {
+			ClassName className = _classNameLocalService.getClassName(
+				classNameId);
+
+			tableReferenceDefinition =
+				_tableReferenceDefinitionServiceTrackerMap.getService(
+					className.getValue());
+		}
+		catch (PortalException portalException) {
+			throw new SystemException(portalException);
+		}
 
 		BasePersistence<T> basePersistence =
 			(BasePersistence<T>)tableReferenceDefinition.getBasePersistence();
@@ -146,7 +162,7 @@ public class BasePersistenceRegistry {
 	@Reference
 	private ClassNameLocalService _classNameLocalService;
 
-	private ServiceTrackerMap<Long, TableReferenceDefinition<?>>
+	private ServiceTrackerMap<String, TableReferenceDefinition<?>>
 		_tableReferenceDefinitionServiceTrackerMap;
 	private ServiceTrackerMap<Long, TransactionExecutor>
 		_transactionExecutorServiceTrackerMap;

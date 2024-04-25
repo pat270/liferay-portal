@@ -6,9 +6,9 @@
 package com.liferay.captcha.util;
 
 import com.liferay.captcha.provider.CaptchaProvider;
-import com.liferay.osgi.util.service.Snapshot;
 import com.liferay.portal.kernel.captcha.Captcha;
 import com.liferay.portal.kernel.captcha.CaptchaException;
+import com.liferay.portal.kernel.module.service.Snapshot;
 
 import java.io.IOException;
 
@@ -33,6 +33,14 @@ public class CaptchaUtil {
 		throws CaptchaException {
 
 		getCaptcha().check(portletRequest);
+	}
+
+	public static void enforceCaptcha(HttpServletRequest httpServletRequest) {
+		getCaptcha().enforceCaptcha(httpServletRequest);
+	}
+
+	public static void enforceCaptcha(PortletRequest portletRequest) {
+		getCaptcha().enforceCaptcha(portletRequest);
 	}
 
 	public static Captcha getCaptcha() {

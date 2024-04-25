@@ -7,14 +7,16 @@ import {usePrevious} from '@liferay/frontend-js-react-web';
 import {isNullOrUndefined} from '@liferay/layout-js-components-web';
 import React, {useCallback, useContext, useEffect} from 'react';
 
+import batchRenderFragmentEntryContentRequest from '../../common/batchRenderFragmentEntryContentRequest';
 import {updateFragmentEntryLinkContent} from '../actions/index';
-import FragmentService from '../services/FragmentService';
 import InfoItemService from '../services/InfoItemService';
 import LayoutService from '../services/LayoutService';
 import isMappedToInfoItem from '../utils/editable_value/isMappedToInfoItem';
 import isMappedToLayout from '../utils/editable_value/isMappedToLayout';
 import isMappedToStructure from '../utils/editable_value/isMappedToStructure';
+import getPortletId from '../utils/getPortletId';
 import {useDisplayPagePreviewItem} from './DisplayPagePreviewItemContext';
+import {useAddPendingItem} from './PortletContentContext';
 import {useDispatch} from './StoreContext';
 
 const defaultFromControlsId = (itemId) => itemId;
@@ -85,6 +87,8 @@ const useGetContent = (
 
 	const collectionContentId = toControlsId(fragmentEntryLinkId);
 
+	const addPendingItem = useAddPendingItem();
+
 	const {
 		className: collectionItemClassName,
 		classPK: collectionItemClassPK,
@@ -148,23 +152,27 @@ const useGetContent = (
 				withinCollection,
 			})
 		) {
-			FragmentService.renderFragmentEntryLinkContent({
-				fragmentEntryLinkId,
-				itemClassName,
-				itemClassPK,
-				itemExternalReferenceCode,
+			batchRenderFragmentEntryContentRequest(
 				languageId,
-				onNetworkStatus: dispatch,
 				segmentsExperienceId,
-			}).then(({content}) => {
-				dispatch(
-					updateFragmentEntryLinkContent({
-						collectionContentId,
-						content,
-						fragmentEntryLinkId,
-					})
-				);
-			});
+
+				{
+					fragmentEntryLinkId,
+					itemClassName,
+					itemClassPK,
+					itemExternalReferenceCode,
+				},
+
+				(content) => {
+					dispatch(
+						updateFragmentEntryLinkContent({
+							collectionContentId,
+							content,
+							fragmentEntryLinkId,
+						})
+					);
+				}
+			);
 		}
 	}, [
 		collectionContentId,
@@ -184,6 +192,20 @@ const useGetContent = (
 		segmentsExperienceId,
 		withinCollection,
 	]);
+
+	useEffect(() => {
+		const onRefreshPortlet = ({portletId}) => {
+			if (getPortletId(editableValues) !== portletId) {
+				return;
+			}
+
+			addPendingItem(fragmentEntryLinkId);
+		};
+
+		Liferay.on('refreshPortlet', onRefreshPortlet);
+
+		return () => Liferay.detach('refreshPortlet', onRefreshPortlet);
+	}, [addPendingItem, editableValues, fragmentEntryLinkId]);
 
 	return (
 		(!isNullOrUndefined(collectionItemIndex)
@@ -259,7 +281,6 @@ const useGetFieldValue = () => {
 			if (isMappedToInfoItem(editable)) {
 				return InfoItemService.getInfoItemFieldValue({
 					...editable,
-					onNetworkStatus: () => {},
 				}).then((response) => {
 					if (!response || !Object.keys(response).length) {
 						throw new Error('Field value does not exist');
@@ -283,7 +304,6 @@ const useGetFieldValue = () => {
 					...displayPagePreviewItem.data,
 					fieldId: editable.mappedField,
 					languageId: editable.languageId,
-					onNetworkStatus: () => {},
 				}).then((response) => {
 					if (!response || !Object.keys(response).length) {
 						throw new Error('Field value does not exist');

@@ -6,8 +6,12 @@
 package com.liferay.info.exception;
 
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.captcha.CaptchaException;
+import com.liferay.portal.kernel.exception.InfoFormException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -34,7 +38,9 @@ public class InfoFormValidationException extends InfoFormException {
 
 	public static class CustomValidation extends InfoFormValidationException {
 
-		public CustomValidation(String message) {
+		public CustomValidation(String infoFieldUniqueId, String message) {
+			super(infoFieldUniqueId);
+
 			_message = message;
 		}
 
@@ -48,6 +54,29 @@ public class InfoFormValidationException extends InfoFormException {
 		}
 
 		private final String _message;
+
+	}
+
+	public static class ExceedsMaxEntries extends InfoFormValidationException {
+
+		public ExceedsMaxEntries(String infoFormLabel, String messageKey) {
+			_infoFormLabel = infoFormLabel;
+			_messageKey = messageKey;
+		}
+
+		@Override
+		public String getLocalizedMessage(Locale locale) {
+			return LanguageUtil.format(
+				locale, _messageKey, new String[] {_infoFormLabel}, false);
+		}
+
+		@Override
+		public String getLocalizedMessage(String fieldLabel, Locale locale) {
+			return getLocalizedMessage(locale);
+		}
+
+		private final String _infoFormLabel;
+		private final String _messageKey;
 
 	}
 
@@ -160,6 +189,21 @@ public class InfoFormValidationException extends InfoFormException {
 
 	public static class InvalidCaptcha extends InfoFormValidationException {
 
+		public InvalidCaptcha(
+			CaptchaException captchaException, long fragmentEntryLinkId) {
+
+			_captchaException = captchaException;
+			_fragmentEntryLinkId = fragmentEntryLinkId;
+		}
+
+		public CaptchaException getCaptchaException() {
+			return _captchaException;
+		}
+
+		public long getFragmentEntryLinkId() {
+			return _fragmentEntryLinkId;
+		}
+
 		@Override
 		public String getLocalizedMessage(Locale locale) {
 			return LanguageUtil.get(locale, "captcha-verification-failed");
@@ -169,6 +213,9 @@ public class InfoFormValidationException extends InfoFormException {
 		public String getLocalizedMessage(String fieldLabel, Locale locale) {
 			return getLocalizedMessage(locale);
 		}
+
+		private final CaptchaException _captchaException;
+		private final long _fragmentEntryLinkId;
 
 	}
 
@@ -241,6 +288,61 @@ public class InfoFormValidationException extends InfoFormException {
 			return LanguageUtil.format(
 				locale, "the-x-is-required", fieldLabel, false);
 		}
+
+	}
+
+	public static class RuleValidation extends InfoFormValidationException {
+
+		public RuleValidation(String message) {
+			_message = message;
+		}
+
+		public void addCustomValidation(
+			String infoFieldUniqueId, String message) {
+
+			_customValidations.add(
+				new CustomValidation(infoFieldUniqueId, message));
+		}
+
+		public List<CustomValidation> getCustomValidations() {
+			return _customValidations;
+		}
+
+		@Override
+		public String getLocalizedMessage(Locale locale) {
+			if (_message != null) {
+				return _message;
+			}
+
+			return super.getLocalizedMessage(locale);
+		}
+
+		private final List<CustomValidation> _customValidations =
+			new ArrayList<>();
+		private final String _message;
+
+	}
+
+	public static class UniqueValueConstraintViolation
+		extends InfoFormValidationException {
+
+		public UniqueValueConstraintViolation(String infoFieldLabel) {
+			_infoFieldLabel = infoFieldLabel;
+		}
+
+		@Override
+		public String getLocalizedMessage(Locale locale) {
+			return LanguageUtil.format(
+				locale, "the-x-is-already-in-use",
+				new String[] {_infoFieldLabel, _infoFieldLabel}, false);
+		}
+
+		@Override
+		public String getLocalizedMessage(String fieldLabel, Locale locale) {
+			return super.getLocalizedMessage(locale);
+		}
+
+		private final String _infoFieldLabel;
 
 	}
 

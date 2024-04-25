@@ -32,6 +32,7 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 
 import java.io.File;
 
@@ -57,7 +58,9 @@ public class PreviewImageJournalArticleContentDashboardItemActionProviderTest {
 	@ClassRule
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
-		new LiferayIntegrationTestRule();
+		new AggregateTestRule(
+			new LiferayIntegrationTestRule(),
+			PermissionCheckerMethodTestRule.INSTANCE);
 
 	@Before
 	public void setUp() throws Exception {
@@ -105,8 +108,9 @@ public class PreviewImageJournalArticleContentDashboardItemActionProviderTest {
 					displayDateCalendar.get(Calendar.YEAR),
 					displayDateCalendar.get(Calendar.HOUR_OF_DAY),
 					displayDateCalendar.get(Calendar.MINUTE), 0, 0, 0, 0, 0,
-					true, 0, 0, 0, 0, 0, true, true, true, null,
-					_getSmallImage(), null, null,
+					true, 0, 0, 0, 0, 0, true, true, true,
+					JournalArticleConstants.SMALL_IMAGE_SOURCE_USER_COMPUTER, 0,
+					null, _getSmallImage(), null, null,
 					ServiceContextTestUtil.getServiceContext(
 						_group.getGroupId()));
 
@@ -176,8 +180,9 @@ public class PreviewImageJournalArticleContentDashboardItemActionProviderTest {
 					displayDateCalendar.get(Calendar.YEAR),
 					displayDateCalendar.get(Calendar.HOUR_OF_DAY),
 					displayDateCalendar.get(Calendar.MINUTE), 0, 0, 0, 0, 0,
-					true, 0, 0, 0, 0, 0, true, true, true, null,
-					_getSmallImage(), null, null,
+					true, 0, 0, 0, 0, 0, true, true, true, 0,
+					JournalArticleConstants.SMALL_IMAGE_SOURCE_USER_COMPUTER,
+					null, _getSmallImage(), null, null,
 					ServiceContextTestUtil.getServiceContext(
 						_group.getGroupId()));
 
@@ -220,7 +225,9 @@ public class PreviewImageJournalArticleContentDashboardItemActionProviderTest {
 			displayDateCalendar.get(Calendar.YEAR),
 			displayDateCalendar.get(Calendar.HOUR_OF_DAY),
 			displayDateCalendar.get(Calendar.MINUTE), 0, 0, 0, 0, 0, true, 0, 0,
-			0, 0, 0, true, true, true, null, _getSmallImage(), null, null,
+			0, 0, 0, true, true, true, 0,
+			JournalArticleConstants.SMALL_IMAGE_SOURCE_USER_COMPUTER, null,
+			_getSmallImage(), null, null,
 			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
 		Assert.assertFalse(
@@ -269,6 +276,8 @@ public class PreviewImageJournalArticleContentDashboardItemActionProviderTest {
 
 		themeDisplay.setRequest(mockHttpServletRequest);
 
+		themeDisplay.setScopeGroupId(_group.getGroupId());
+		themeDisplay.setSiteGroupId(_group.getGroupId());
 		themeDisplay.setURLCurrent("http://localhost:8080/currentURL");
 
 		return themeDisplay;

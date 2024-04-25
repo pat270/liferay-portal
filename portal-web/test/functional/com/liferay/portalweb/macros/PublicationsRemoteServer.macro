@@ -1,6 +1,7 @@
 definition {
 
-	macro addRemoteServer {
+	@summary = "Default summary"
+	macro addRemoteServer(remoteServerName = null, remoteServerClientId = null, remoteServerDescription = null, remoteServerClientSecret = null, remoteServerURL = null) {
 		Click(locator1 = "Button#PLUS");
 
 		Type(
@@ -17,6 +18,14 @@ definition {
 			locator1 = "PublicationsRemoteServer#REMOTE_SERVER_URL",
 			value1 = ${remoteServerURL});
 
+		Type(
+			locator1 = "PublicationsRemoteServer#REMOTE_SERVER_CLIENT_ID",
+			value1 = ${remoteServerClientId});
+
+		Type(
+			locator1 = "PublicationsRemoteServer#REMOTE_SERVER_CLIENT_SECRET",
+			value1 = ${remoteServerClientSecret});
+
 		AssertClick(
 			locator1 = "Button#SUBMIT",
 			value1 = "Submit");
@@ -24,7 +33,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro deleteRemoteServer {
+	@summary = "Default summary"
+	macro deleteRemoteServer(remoteServerName = null) {
 		Click(
 			key_remoteServerName = ${remoteServerName},
 			locator1 = "PublicationsRemoteServer#REMOTE_SERVER_DROPDOWN_MENU");
@@ -36,7 +46,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro editRemoteServer {
+	@summary = "Default summary"
+	macro editRemoteServer(remoteServerName = null, remoteServerURLEdit = null, remoteServerDescriptionEdit = null, remoteServerClientId = null, remoteServerClientSecret = null, remoteServerNameEdit = null) {
 		Click(
 			key_remoteServerName = ${remoteServerName},
 			locator1 = "PublicationsRemoteServer#REMOTE_SERVER_DROPDOWN_MENU");
@@ -61,6 +72,18 @@ definition {
 				value1 = ${remoteServerURLEdit});
 		}
 
+		if (isSet(remoteServerClientId)) {
+			Type(
+				locator1 = "PublicationsRemoteServer#REMOTE_SERVER_CLIENT_ID",
+				value1 = ${remoteServerClientId});
+		}
+
+		if (isSet(remoteServerClientSecret)) {
+			Type(
+				locator1 = "PublicationsRemoteServer#REMOTE_SERVER_CLIENT_SECRET",
+				value1 = ${remoteServerClientSecret});
+		}
+
 		AssertClick(
 			locator1 = "Button#SUBMIT",
 			value1 = "Submit");
@@ -68,7 +91,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro gotoRemoteServers {
+	@summary = "Default summary"
+	macro gotoRemoteServers() {
 		PublicationsNavigator.openPublicationsAdmin();
 
 		Click.waitForMenuToggleJSClick(locator1 = "Publications#PUBLICATIONS_ELLIPSIS");

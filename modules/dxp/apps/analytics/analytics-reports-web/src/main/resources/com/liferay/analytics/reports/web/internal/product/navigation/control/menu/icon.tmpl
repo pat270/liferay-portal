@@ -1,9 +1,9 @@
 <li class="control-menu-nav-item hidden-xs analytics-reports-icon ${cssClass}">
 	<button
 		aria-label="${title}"
-		class="btn-monospaced btn-sm lfr-portal-tooltip product-menu-toggle sidenav-toggler"
+		class="btn btn-monospaced btn-sm control-menu-nav-link lfr-portal-tooltip product-menu-toggle sidenav-toggler"
 		data-content="body"
-		data-open-class="lfr-has-analytics-reports-panel open-admin-panel"
+		data-open-class="lfr-has-analytics-reports-panel open-admin-panel open"
 		data-target="#${portletNamespace}analyticsReportsPanelId"
 		data-title="${title}"
 		data-toggle="liferay-sidenav"
@@ -14,6 +14,6 @@
 	</button>
 </li>
 
-<script>
+<script ${nonceAttribute}>
 	Liferay.SideNavigation.initialize(document.getElementById('${portletNamespace}analyticsReportsPanelToggleId'));
 </script>

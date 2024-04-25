@@ -98,19 +98,31 @@ const Timers = ({setContentName, setErrors}) => {
 						else if (
 							reassignments.assignmentType[0] === 'user' &&
 							Object.keys(filteredTimerActions[0]).includes(
-								'users'
+								'sectionData'
 							)
 						) {
-							reassignments.emailAddress = filteredTimerActions[0].users.map(
+							reassignments.emailAddress = filteredTimerActions[0].sectionData.map(
 								({emailAddress}) => emailAddress
 							);
 						}
 						else if (
-							reassignments.assignmentType[0] === 'roleType'
+							reassignments.assignmentType[0] === 'roleType' &&
+							Object.keys(filteredTimerActions[0]).includes(
+								'sectionData'
+							)
 						) {
-
-							// TO DO
-
+							reassignments.autoCreate = filteredTimerActions[0].sectionData.map(
+								({autoCreate}) => autoCreate
+							);
+							reassignments.roleKey = filteredTimerActions[0].sectionData.map(
+								({roleKey}) => roleKey
+							);
+							reassignments.roleName = filteredTimerActions[0].sectionData.map(
+								({roleName}) => roleName
+							);
+							reassignments.roleType = filteredTimerActions[0].sectionData.map(
+								({roleType}) => roleType
+							);
 						}
 
 						return reassignments;
@@ -147,7 +159,39 @@ const Timers = ({setContentName, setErrors}) => {
 					return {};
 				}),
 
-				timerNotifications: serializableSections.map(() => ({})),
+				timerNotifications: serializableSections.map(
+					({timerActions}) => {
+						const filteredTimerActions = timerActions.filter(
+							({actionType}) =>
+								actionType === 'timerNotifications'
+						);
+
+						if (filteredTimerActions.length) {
+							return {
+								description: filteredTimerActions.map(
+									({description}) => description
+								),
+								name: filteredTimerActions.map(
+									({name}) => name
+								),
+								notificationTypes: filteredTimerActions.map(
+									({notificationTypes}) => notificationTypes
+								),
+								recipients: filteredTimerActions.map(
+									({recipients}) => recipients
+								),
+								template: filteredTimerActions.map(
+									({template}) => template
+								),
+								templateLanguage: filteredTimerActions.map(
+									({templateLanguage}) => templateLanguage
+								),
+							};
+						}
+
+						return {};
+					}
+				),
 			};
 		}
 		else {
@@ -160,6 +204,12 @@ const Timers = ({setContentName, setErrors}) => {
 
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [timerSections]);
+
+	function filterSectionDataProperty(data, index, propertyName) {
+		return data.some((entry) => entry[0] === propertyName)
+			? data.filter((entry) => entry[0] === propertyName)[0][1][index]
+			: null;
+	}
 
 	const getAllTimerActions = (index) => {
 		const allTimerActions = {
@@ -207,11 +257,37 @@ const Timers = ({setContentName, setErrors}) => {
 					section.assignmentType === 'user' &&
 					data.some((entry) => entry[0] === 'emailAddress')
 				) {
-					section.users = data
+					section.sectionData = data
 						.find((entry) => entry[0] === 'emailAddress')[1]
 						.map((email, index) => ({
 							emailAddress: email,
 							identifier: `${Date.now()}-${index}`,
+						}));
+				}
+				else if (
+					section.assignmentType === 'roleType' &&
+					data.some((entry) => entry[0] === 'roleKey')
+				) {
+					section.sectionData = data
+						.find((entry) => entry[0] === 'roleKey')[1]
+						.map((roleKey, index) => ({
+							autoCreate: filterSectionDataProperty(
+								data,
+								index,
+								'autoCreate'
+							),
+							identifier: `${Date.now()}-${index}`,
+							roleKey,
+							roleName: filterSectionDataProperty(
+								data,
+								index,
+								'roleName'
+							),
+							roleType: filterSectionDataProperty(
+								data,
+								index,
+								'roleType'
+							),
 						}));
 				}
 				else {
@@ -249,6 +325,44 @@ const Timers = ({setContentName, setErrors}) => {
 				];
 				section.scriptLanguage = data.find(
 					(entry) => entry[0] === 'scriptLanguage'
+				)[1][index];
+				sections.push(section);
+			}
+		}
+
+		if (allTimerActions.timerNotifications.length) {
+			const data = allTimerActions.timerNotifications;
+			for (let index = 0; index < data[0][1].length; index++) {
+				const section = {};
+
+				section.actionType = 'timerNotifications';
+				section.description = data.find(
+					(entry) => entry[0] === 'description'
+				)[1][index];
+				section.identifier = `${Date.now()}-${
+					index + reassignmentsLength
+				}`;
+				section.name = data.find((entry) => entry[0] === 'name')[1][
+					index
+				];
+				section.notificationTypes = data.find(
+					(entry) => entry[0] === 'notificationTypes'
+				)[1][index];
+
+				let recipients = data.find(
+					(entry) => entry[0] === 'recipients'
+				)[1][index];
+
+				if (Array.isArray(recipients)) {
+					recipients = recipients[0];
+				}
+
+				section.recipients = recipients;
+				section.template = data.find(
+					(entry) => entry[0] === 'template'
+				)[1][index];
+				section.templateLanguage = data.find(
+					(entry) => entry[0] === 'templateLanguage'
 				)[1][index];
 				sections.push(section);
 			}

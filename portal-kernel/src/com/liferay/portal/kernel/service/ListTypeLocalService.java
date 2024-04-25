@@ -16,6 +16,7 @@ import com.liferay.portal.kernel.model.ListType;
 import com.liferay.portal.kernel.model.PersistedModel;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
+import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
@@ -37,6 +38,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see ListTypeLocalServiceUtil
  * @generated
  */
+@OSGiBeanProperties(
+	property = {"model.class.name=com.liferay.portal.kernel.model.ListType"}
+)
 @ProviderType
 @Transactional(
 	isolation = Isolation.PORTAL,
@@ -64,7 +68,7 @@ public interface ListTypeLocalService
 	@Indexable(type = IndexableType.REINDEX)
 	public ListType addListType(ListType listType);
 
-	public ListType addListType(String name, String type);
+	public ListType addListType(long companyId, String name, String type);
 
 	/**
 	 * Creates a new list type with the primary key. Does not add the list type to the database.
@@ -107,6 +111,8 @@ public interface ListTypeLocalService
 	 */
 	@Indexable(type = IndexableType.DELETE)
 	public ListType deleteListType(long listTypeId) throws PortalException;
+
+	public void deleteListTypes(long companyId);
 
 	/**
 	 * @throws PortalException
@@ -207,7 +213,10 @@ public interface ListTypeLocalService
 	public ListType getListType(long listTypeId) throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public ListType getListType(String name, String type);
+	public ListType getListType(long companyId, String name, String type);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public long getListTypeId(long companyId, String name, String type);
 
 	/**
 	 * Returns a range of all the list types.
@@ -224,7 +233,7 @@ public interface ListTypeLocalService
 	public List<ListType> getListTypes(int start, int end);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<ListType> getListTypes(String type);
+	public List<ListType> getListTypes(long companyId, String type);
 
 	/**
 	 * Returns the number of list types.

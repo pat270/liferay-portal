@@ -50,6 +50,7 @@ renderResponse.setTitle(selGroup.getLayoutRootNodeName(privateLayout, locale));
 	<aui:input name="selPlid" type="hidden" value="<%= layoutsAdminDisplayContext.getSelPlid() %>" />
 	<aui:input name="privateLayout" type="hidden" value="<%= privateLayout %>" />
 	<aui:input name="layoutSetId" type="hidden" value="<%= selLayoutSet.getLayoutSetId() %>" />
+	<aui:input name="screenNavigationEntryKey" type="hidden" value="<%= LayoutScreenNavigationEntryConstants.ENTRY_KEY_DESIGN %>" />
 
 	<h2 class="c-mb-4 text-7"><liferay-ui:message key="design" /></h2>
 
@@ -63,7 +64,7 @@ renderResponse.setTitle(selGroup.getLayoutRootNodeName(privateLayout, locale));
 	</liferay-frontend:edit-form-body>
 
 	<liferay-frontend:edit-form-footer>
-		<c:if test="<%= GroupPermissionUtil.contains(permissionChecker, selGroup, ActionKeys.MANAGE_LAYOUTS) && SitesUtil.isLayoutSetPrototypeUpdateable(selLayoutSet) %>">
+		<c:if test="<%= GroupPermissionUtil.contains(permissionChecker, selGroup, ActionKeys.MANAGE_LAYOUTS) && selLayoutSet.isLayoutSetPrototypeUpdateable() %>">
 			<liferay-frontend:edit-form-buttons
 				redirect="<%= backURL %>"
 				submitLabel="save"

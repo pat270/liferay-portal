@@ -22,7 +22,6 @@ import com.liferay.knowledge.base.util.comparator.KBObjectsViewCountComparator;
 import com.liferay.knowledge.base.web.internal.search.KBSearcher;
 import com.liferay.portal.kernel.bean.BeanParamUtil;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
@@ -50,6 +49,8 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.site.navigation.taglib.servlet.taglib.util.BreadcrumbEntryBuilder;
+import com.liferay.site.navigation.taglib.servlet.taglib.util.BreadcrumbEntryListBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -172,57 +173,74 @@ public class KBArticleItemSelectorViewDisplayContext {
 	public List<BreadcrumbEntry> getPortletBreadcrumbEntries()
 		throws Exception {
 
-		List<BreadcrumbEntry> breadcrumbEntries = new ArrayList<>();
-
-		breadcrumbEntries.add(_getSiteBreadcrumb());
-
-		breadcrumbEntries.add(_getHomeBreadcrumb());
-
-		if (_getParentResourcePrimKey() != 0) {
-			PortletURL portletURL = PortletURLBuilder.create(
-				getPortletURL()
-			).setParameter(
-				"kbFolderId", KBFolderConstants.DEFAULT_PARENT_FOLDER_ID
-			).buildPortletURL();
-
-			KBArticle kbArticle = KBArticleServiceUtil.getLatestKBArticle(
-				_getParentResourcePrimKey(), WorkflowConstants.STATUS_ANY);
-
-			breadcrumbEntries.addAll(
-				_getFolderBreadcrumbEntry(
-					kbArticle.getKbFolderId(), portletURL));
-
-			BreadcrumbEntry articleBreadcrumbEntry = new BreadcrumbEntry();
-
-			articleBreadcrumbEntry.setTitle(
-				LanguageUtil.get(_httpServletRequest, kbArticle.getTitle()));
-
-			portletURL.setParameter(
-				"kbFolderId", String.valueOf(kbArticle.getKbFolderId()));
-
-			articleBreadcrumbEntry.setURL(portletURL.toString());
-
-			breadcrumbEntries.add(articleBreadcrumbEntry);
-
-			return breadcrumbEntries;
-		}
-
 		KBFolder kbFolder = _getKBFolder();
 
-		if (kbFolder == null) {
-			return breadcrumbEntries;
-		}
+		return BreadcrumbEntryListBuilder.add(
+			BreadcrumbEntryBuilder.setTitle(
+				LanguageUtil.get(_httpServletRequest, "sites-and-libraries")
+			).setURL(
+				PortletURLBuilder.create(
+					getPortletURL()
+				).setParameter(
+					"groupType", "site"
+				).setParameter(
+					"showGroupSelector", true
+				).buildString()
+			).build()
+		).add(
+			breadcrumbEntry -> {
+				Group group = GroupLocalServiceUtil.getGroup(_getGroupId());
 
-		breadcrumbEntries.addAll(
-			_getFolderBreadcrumbEntry(
+				breadcrumbEntry.setTitle(
+					group.getDescriptiveName(_themeDisplay.getLocale()));
+
+				breadcrumbEntry.setURL(
+					PortletURLBuilder.create(
+						getPortletURL()
+					).setParameter(
+						"kbFolderId", KBFolderConstants.DEFAULT_PARENT_FOLDER_ID
+					).buildString());
+			}
+		).addAll(
+			() -> _getParentResourcePrimKey() != 0,
+			() -> {
+				KBArticle kbArticle = KBArticleServiceUtil.getLatestKBArticle(
+					_getParentResourcePrimKey(), WorkflowConstants.STATUS_ANY);
+
+				List<BreadcrumbEntry> breadcrumbEntries =
+					_getFolderBreadcrumbEntry(
+						kbArticle.getKbFolderId(),
+						PortletURLBuilder.create(
+							getPortletURL()
+						).setParameter(
+							"kbFolderId",
+							KBFolderConstants.DEFAULT_PARENT_FOLDER_ID
+						).buildPortletURL());
+
+				breadcrumbEntries.add(
+					BreadcrumbEntryBuilder.setTitle(
+						LanguageUtil.get(
+							_httpServletRequest, kbArticle.getTitle())
+					).setURL(
+						PortletURLBuilder.create(
+							getPortletURL()
+						).setParameter(
+							"kbFolderId", kbArticle.getKbFolderId()
+						).buildString()
+					).build());
+
+				return breadcrumbEntries;
+			}
+		).addAll(
+			() -> (_getParentResourcePrimKey() == 0) && (kbFolder != null),
+			() -> _getFolderBreadcrumbEntry(
 				kbFolder.getKbFolderId(),
 				PortletURLBuilder.create(
 					getPortletURL()
 				).setParameter(
 					"kbFolderId", KBFolderConstants.DEFAULT_PARENT_FOLDER_ID
-				).buildPortletURL()));
-
-		return breadcrumbEntries;
+				).buildPortletURL())
+		).build();
 	}
 
 	public PortletURL getPortletURL() throws PortletException {
@@ -367,8 +385,7 @@ public class KBArticleItemSelectorViewDisplayContext {
 	}
 
 	protected SearchContext buildSearchContext(
-			List<Long> kbFolderIds, int start, int end, Sort sort)
-		throws PortalException {
+		List<Long> kbFolderIds, int start, int end, Sort sort) {
 
 		SearchContext searchContext = new SearchContext();
 
@@ -455,27 +472,9 @@ public class KBArticleItemSelectorViewDisplayContext {
 			_portletRequest, "groupId", _themeDisplay.getScopeGroupId());
 	}
 
-	private long[] _getGroupIds() throws PortalException {
+	private long[] _getGroupIds() {
 		return PortalUtil.getCurrentAndAncestorSiteGroupIds(
 			_themeDisplay.getScopeGroupId());
-	}
-
-	private BreadcrumbEntry _getHomeBreadcrumb() throws Exception {
-		BreadcrumbEntry breadcrumbEntry = new BreadcrumbEntry();
-
-		Group group = GroupLocalServiceUtil.getGroup(_getGroupId());
-
-		breadcrumbEntry.setTitle(
-			group.getDescriptiveName(_themeDisplay.getLocale()));
-
-		breadcrumbEntry.setURL(
-			PortletURLBuilder.create(
-				getPortletURL()
-			).setParameter(
-				"kbFolderId", KBFolderConstants.DEFAULT_PARENT_FOLDER_ID
-			).buildString());
-
-		return breadcrumbEntry;
 	}
 
 	private KBFolder _getKBFolder() {
@@ -544,23 +543,6 @@ public class KBArticleItemSelectorViewDisplayContext {
 			_httpServletRequest, "parentResourcePrimKey");
 
 		return _parentResourcePrimKey;
-	}
-
-	private BreadcrumbEntry _getSiteBreadcrumb() throws Exception {
-		BreadcrumbEntry breadcrumbEntry = new BreadcrumbEntry();
-
-		breadcrumbEntry.setTitle(
-			LanguageUtil.get(_httpServletRequest, "sites-and-libraries"));
-		breadcrumbEntry.setURL(
-			PortletURLBuilder.create(
-				getPortletURL()
-			).setParameter(
-				"groupType", "site"
-			).setParameter(
-				"showGroupSelector", true
-			).buildString());
-
-		return breadcrumbEntry;
 	}
 
 	private SearchContainer<?> _articleSearchContainer;

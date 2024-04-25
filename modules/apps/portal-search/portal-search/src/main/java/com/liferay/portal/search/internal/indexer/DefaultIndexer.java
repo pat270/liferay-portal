@@ -103,6 +103,11 @@ public class DefaultIndexer<T extends BaseModel<?>> implements Indexer<T> {
 	}
 
 	@Override
+	public long getCompanyId() {
+		return _modelSearchSettings.getCompanyId();
+	}
+
+	@Override
 	public Document getDocument(T baseModel) throws SearchException {
 		return _indexerDocumentBuilder.getDocument(baseModel);
 	}
@@ -141,6 +146,13 @@ public class DefaultIndexer<T extends BaseModel<?>> implements Indexer<T> {
 	}
 
 	@Override
+	public Summary getSummary(Document document, Locale locale, String snippet)
+		throws SearchException {
+
+		return _indexerSummaryBuilder.getSummary(document, snippet, locale);
+	}
+
+	@Override
 	public Summary getSummary(
 			Document document, String snippet, PortletRequest portletRequest,
 			PortletResponse portletResponse)
@@ -175,7 +187,7 @@ public class DefaultIndexer<T extends BaseModel<?>> implements Indexer<T> {
 
 	@Override
 	public boolean isCommitImmediately() {
-		return _modelSearchSettings.isCommitImmediately();
+		return false;
 	}
 
 	@Override
@@ -190,7 +202,13 @@ public class DefaultIndexer<T extends BaseModel<?>> implements Indexer<T> {
 
 	@Override
 	public boolean isPermissionAware() {
-		return _indexerPermissionPostFilter.isPermissionAware();
+		if (_modelSearchSettings.isPermissionAware() &&
+			_indexerPermissionPostFilter.isPermissionAware()) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	@Override

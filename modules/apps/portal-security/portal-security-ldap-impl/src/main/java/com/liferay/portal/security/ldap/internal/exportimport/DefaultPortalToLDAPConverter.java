@@ -6,7 +6,7 @@
 package com.liferay.portal.security.ldap.internal.exportimport;
 
 import com.liferay.expando.kernel.model.ExpandoBridge;
-import com.liferay.expando.kernel.util.ExpandoConverterUtil;
+import com.liferay.expando.util.ExpandoConverterUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanProperties;
@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.security.auth.PasswordModificationThreadLocal;
 import com.liferay.portal.kernel.security.ldap.LDAPSettings;
 import com.liferay.portal.kernel.security.pwd.PasswordEncryptor;
+import com.liferay.portal.kernel.security.pwd.PasswordEncryptorUtil;
 import com.liferay.portal.kernel.service.ImageLocalService;
 import com.liferay.portal.kernel.service.ListTypeService;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -556,7 +557,7 @@ public class DefaultPortalToLDAPConverter implements PortalToLDAPConverter {
 			!algorithm.equals(PasswordEncryptor.TYPE_NONE)) {
 
 			try {
-				password = _passwordEncryptor.encrypt(
+				password = PasswordEncryptorUtil.encrypt(
 					algorithm, password, null);
 			}
 			catch (PwdEncryptorException pwdEncryptorException) {
@@ -719,9 +720,6 @@ public class DefaultPortalToLDAPConverter implements PortalToLDAPConverter {
 
 	@Reference
 	private ListTypeService _listTypeService;
-
-	@Reference
-	private PasswordEncryptor _passwordEncryptor;
 
 	private final Map<String, String> _reservedContactFieldNames =
 		new HashMap<>();

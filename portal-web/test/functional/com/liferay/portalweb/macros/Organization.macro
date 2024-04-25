@@ -2,7 +2,8 @@ definition {
 
 	var orgName = "Organization Name";
 
-	macro addComment {
+	@summary = "Default summary"
+	macro addComment(orgComment = null) {
 		Type(
 			locator1 = "TextArea#COMMENTS",
 			value1 = ${orgComment});
@@ -10,7 +11,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro addContactInformation {
+	@summary = "Default summary"
+	macro addContactInformation(country = null, extension = null, address = null, city = null, addressType = null, postalCode = null, mondayClose = null, contactType = null, mondayOpen = null, makePrimary = null, url = null, number = null, street1 = null, region = null) {
 		if (isSet(contactType)) {
 			var key_contactType = ${contactType};
 
@@ -105,12 +107,11 @@ definition {
 			}
 		}
 
-		Click(locator1 = "Button#SAVE");
-
-		Alert.viewSuccessMessage();
+		PortletEntry.save();
 	}
 
-	macro addCP {
+	@summary = "Default summary"
+	macro addCP(orgName = null) {
 		LexiconEntry.gotoAdd();
 
 		Type(
@@ -122,7 +123,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro addSecurityQuestionsCP {
+	@summary = "Default summary"
+	macro addSecurityQuestionsCP(securityQuestions = null, localizedLanguage = null, localizedSecurityQuestions = null) {
 		MenuBar.gotoSecurityQuestions();
 
 		Type(
@@ -158,7 +160,8 @@ definition {
 		}
 	}
 
-	macro addSiteCP {
+	@summary = "Default summary"
+	macro addSiteCP(checkEnablePropagationCheckbox = null, orgName = null, siteTemplateName = null) {
 		Organization.gotoEdit(orgName = ${orgName});
 
 		UsersAndOrganizationsNavigator.gotoMenuBarOrganizationSite();
@@ -183,7 +186,8 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro addSuborganizationCP {
+	@summary = "Default summary"
+	macro addSuborganizationCP(orgName = null, suborgName = null) {
 		LexiconEntry.gotoEntryMenuItem(
 			menuItem = "Add Organization",
 			rowEntry = ${orgName});
@@ -199,7 +203,8 @@ definition {
 			value1 = ${suborgName});
 	}
 
-	macro addUser {
+	@summary = "Default summary"
+	macro addUser(userJobTitle = null, userComment = null, organizationName = null, userTag = null, userLastName = null, userScreenName = null, userMiddleName = null, userEmailAddress = null, userGender = null, userFirstName = null, userBirthday = null) {
 		LexiconEntry.gotoEntryMenuItem(
 			menuItem = "Add User",
 			rowEntry = ${organizationName});
@@ -230,10 +235,11 @@ definition {
 		WaitForLiferayEvent.initializeLiferayEventLog();
 	}
 
-	macro addWithLocalizedCountryCP {
+	@summary = "Default summary"
+	macro addWithLocalizedCountryCP(navItem = null, localizedOption = null, orgName = null, countryName = null, saveButton = null) {
 		Navigator.gotoNavItem(navItem = ${navItem});
 
-		LexiconEntry.gotoAdd();
+		Button.click(button = ${newButton});
 
 		if (IsElementPresent(key_menuItem = ${localizedOption}, locator1 = "MenuItem#ANY_MENU_ITEM")) {
 			MenuItem.click(menuItem = ${localizedOption});
@@ -256,7 +262,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro assignOrgRole {
+	@summary = "Default summary"
+	macro assignOrgRole(orgName = null, roleTitle = null, userLastName = null, userScreenName = null, userFirstName = null) {
 		LexiconEntry.gotoEntryMenuItem(
 			menuItem = "Assign Organization Roles",
 			rowEntry = ${orgName});
@@ -288,7 +295,8 @@ definition {
 		Click(locator1 = "Icon#CLOSE");
 	}
 
-	macro assignUser {
+	@summary = "Default summary"
+	macro assignUser(orgName = null, userScreenName = null) {
 		Organization.gotoCP(orgName = ${orgName});
 
 		LexiconEntry.gotoAdd();
@@ -308,7 +316,7 @@ definition {
 			key_userScreenName = ${userScreenName},
 			locator1 = "UserGroupsAssignUsers#USER_TABLE_CHECKBOX");
 
-		Pause(locator1 = 3000);
+		Pause(value1 = 3000);
 
 		SelectFrameTop();
 
@@ -319,7 +327,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro delete {
+	@summary = "Default summary"
+	macro delete(orgName = null) {
 		LexiconEntry.gotoEntryMenuItemNoError(
 			menuItem = "Delete",
 			rowEntry = ${orgName});
@@ -329,7 +338,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro edit {
+	@summary = "Default summary"
+	macro edit(orgName = null, orgNameEdit = null) {
 		Organization.gotoEdit(orgName = ${orgName});
 
 		Type(
@@ -339,23 +349,27 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro gotoCP {
+	@summary = "Default summary"
+	macro gotoCP(orgName = null) {
 		LexiconEntry.gotoEntry(rowEntry = ${orgName});
 	}
 
-	macro gotoEdit {
+	@summary = "Default summary"
+	macro gotoEdit(orgName = null) {
 		LexiconEntry.gotoEntryMenuItem(
 			menuItem = "Edit",
 			rowEntry = ${orgName});
 	}
 
-	macro openOrganizationsAdmin {
+	@summary = "Default summary"
+	macro openOrganizationsAdmin(baseURL = null) {
 		Navigator.openWithAppendToBaseURL(
 			baseURL = ${baseURL},
-			urlAppend = "group/control_panel/manage?p_p_id=com_liferay_users_admin_web_portlet_UsersAdminPortlet&p_p_lifecycle=0&p_p_state=maximized&p_p_mode=view&_com_liferay_users_admin_web_portlet_UsersAdminPortlet_toolbarItem=view-all-organizations&_com_liferay_users_admin_web_portlet_UsersAdminPortlet_usersListView=flat-organizations");
+			urlAppend = "group/control_panel/manage?p_p_id=com_liferay_users_admin_web_portlet_UsersAdminPortlet&p_p_lifecycle=0&p_p_state=maximized&p_p_mode=view&_com_liferay_users_admin_web_portlet_UsersAdminPortlet_screenNavigationCategoryKey=organizations&_com_liferay_users_admin_web_portlet_UsersAdminPortlet_usersListView=flat-organizations");
 	}
 
-	macro removeAssignee {
+	@summary = "Default summary"
+	macro removeAssignee(userFullName = null) {
 		LexiconEntry.gotoEntryMenuItemNoError(
 			menuItem = "Remove",
 			rowEntry = ${userFullName});
@@ -363,7 +377,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro removeSuborganizationCP {
+	@summary = "Default summary"
+	macro removeSuborganizationCP(orgName = null, subOrgName = null) {
 		var key_orgName = ${orgName};
 
 		AssertClick(
@@ -375,7 +390,8 @@ definition {
 		MenuItem.click(menuItem = "Remove");
 	}
 
-	macro searchCP {
+	@summary = "Default summary"
+	macro searchCP(searchTerm = null, orgName = null) {
 		Search.searchCP(searchTerm = ${searchTerm});
 
 		var key_orgName = ${orgName};
@@ -385,11 +401,9 @@ definition {
 			value1 = ${orgName});
 	}
 
-	macro tearDownCP {
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+	@summary = "Default summary"
+	macro tearDownCP(orgName = null) {
+		User.openUsersAdmin();
 
 		AssertClick(
 			locator1 = "NavBar#ORGANIZATIONS",
@@ -401,7 +415,9 @@ definition {
 
 				PortletEntry.selectAll();
 
-				ClickNoError(locator1 = "Icon#DELETE");
+				ClickNoError(
+					key_text = "times-circle",
+					locator1 = "ManagementBar#ANY_ICON");
 
 				AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
 
@@ -443,7 +459,8 @@ definition {
 		}
 	}
 
-	macro viewCP {
+	@summary = "Default summary"
+	macro viewCP(orgType = null, orgName = null) {
 		AssertTextEquals(
 			key_columnName = "name",
 			key_tableEntry = ${orgName},
@@ -457,7 +474,8 @@ definition {
 			value1 = ${orgType});
 	}
 
-	macro viewLocalizedCountryCP {
+	@summary = "Default summary"
+	macro viewLocalizedCountryCP(editLocalized = null, navItem = null, orgName = null, countryName = null) {
 		AssertClick(
 			key_navItem = ${navItem},
 			locator1 = "NavBar#NAV_ITEM_LINK",
@@ -473,7 +491,8 @@ definition {
 			value1 = ${countryName});
 	}
 
-	macro viewParentOrganizationCP {
+	@summary = "Default summary"
+	macro viewParentOrganizationCP(orgName = null, subOrgName = null, parentOrgName = null) {
 		Organization.gotoEdit(orgName = ${orgName});
 
 		var key_orgName = ${subOrgName};
@@ -499,7 +518,8 @@ definition {
 		IFrame.closeFrame();
 	}
 
-	macro viewSuborganizationCP {
+	@summary = "Default summary"
+	macro viewSuborganizationCP(orgType = null, orgName = null, suborgType = null, suborgName = null) {
 		LexiconEntry.openEntryMenu(rowEntry = ${suborgName});
 
 		MenuItem.click(menuItem = "Edit");
@@ -523,7 +543,8 @@ definition {
 			value1 = ${orgName});
 	}
 
-	macro viewUser {
+	@summary = "Default summary"
+	macro viewUser(userName = null) {
 		LexiconEntry.viewEntryName(rowEntry = ${userName});
 	}
 

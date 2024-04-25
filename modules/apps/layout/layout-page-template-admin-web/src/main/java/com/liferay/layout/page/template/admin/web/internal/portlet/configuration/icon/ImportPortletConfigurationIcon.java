@@ -12,15 +12,15 @@ import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.portlet.configuration.icon.BaseJSPPortletConfigurationIcon;
 import com.liferay.portal.kernel.portlet.configuration.icon.PortletConfigurationIcon;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 
-import java.util.Map;
-
 import javax.portlet.PortletRequest;
+import javax.portlet.PortletResponse;
 
 import javax.servlet.ServletContext;
 
@@ -38,17 +38,8 @@ public class ImportPortletConfigurationIcon
 	extends BaseJSPPortletConfigurationIcon {
 
 	@Override
-	public Map<String, Object> getContext(PortletRequest portletRequest) {
-		return HashMapBuilder.<String, Object>put(
-			"action", getNamespace(portletRequest) + "import"
-		).put(
-			"globalAction", true
-		).build();
-	}
-
-	@Override
 	public String getIconCssClass() {
-		return "download";
+		return "import";
 	}
 
 	@Override
@@ -62,6 +53,37 @@ public class ImportPortletConfigurationIcon
 	}
 
 	@Override
+	public String getURL(
+		PortletRequest portletRequest, PortletResponse portletResponse) {
+
+		return PortletURLBuilder.create(
+			_portal.getControlPanelPortletURL(
+				portletRequest,
+				LayoutPageTemplateAdminPortletKeys.LAYOUT_PAGE_TEMPLATES,
+				PortletRequest.RENDER_PHASE)
+		).setMVCRenderCommandName(
+			"/layout_page_template_admin/view_import"
+		).setBackURL(
+			PortletURLBuilder.create(
+				_portal.getControlPanelPortletURL(
+					portletRequest,
+					LayoutPageTemplateAdminPortletKeys.LAYOUT_PAGE_TEMPLATES,
+					PortletRequest.RENDER_PHASE)
+			).setTabs1(
+				ParamUtil.getString(portletRequest, "tabs1", "master-layouts")
+			).setParameter(
+				"layoutPageTemplateCollectionId",
+				ParamUtil.getString(
+					portletRequest, "layoutPageTemplateCollectionId")
+			).buildString()
+		).setParameter(
+			"layoutPageTemplateCollectionId",
+			ParamUtil.getString(
+				portletRequest, "layoutPageTemplateCollectionId")
+		).buildString();
+	}
+
+	@Override
 	public double getWeight() {
 		return 100;
 	}
@@ -72,6 +94,10 @@ public class ImportPortletConfigurationIcon
 			WebKeys.THEME_DISPLAY);
 
 		Group scopeGroup = themeDisplay.getScopeGroup();
+
+		if (scopeGroup.isCompany()) {
+			return false;
+		}
 
 		if (_portletResourcePermission.contains(
 				themeDisplay.getPermissionChecker(), scopeGroup.getGroupId(),

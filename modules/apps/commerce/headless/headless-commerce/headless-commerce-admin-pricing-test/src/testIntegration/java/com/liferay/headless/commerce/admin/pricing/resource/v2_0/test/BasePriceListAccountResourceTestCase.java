@@ -27,15 +27,15 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.search.test.util.SearchTestRule;
@@ -61,8 +61,6 @@ import java.util.Set;
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-
-import org.apache.commons.lang.time.DateUtils;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -214,7 +212,7 @@ public abstract class BasePriceListAccountResourceTestCase {
 				getPriceListByExternalReferenceCodePriceListAccountsPage(
 					externalReferenceCode, Pagination.of(1, 10));
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if (irrelevantExternalReferenceCode != null) {
 			PriceListAccount irrelevantPriceListAccount =
@@ -225,12 +223,13 @@ public abstract class BasePriceListAccountResourceTestCase {
 			page =
 				priceListAccountResource.
 					getPriceListByExternalReferenceCodePriceListAccountsPage(
-						irrelevantExternalReferenceCode, Pagination.of(1, 2));
+						irrelevantExternalReferenceCode,
+						Pagination.of(1, (int)totalCount + 1));
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantPriceListAccount),
+			assertContains(
+				irrelevantPriceListAccount,
 				(List<PriceListAccount>)page.getItems());
 			assertValid(
 				page,
@@ -251,11 +250,12 @@ public abstract class BasePriceListAccountResourceTestCase {
 				getPriceListByExternalReferenceCodePriceListAccountsPage(
 					externalReferenceCode, Pagination.of(1, 10));
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(priceListAccount1, priceListAccount2),
-			(List<PriceListAccount>)page.getItems());
+		assertContains(
+			priceListAccount1, (List<PriceListAccount>)page.getItems());
+		assertContains(
+			priceListAccount2, (List<PriceListAccount>)page.getItems());
 		assertValid(
 			page,
 			testGetPriceListByExternalReferenceCodePriceListAccountsPage_getExpectedActions(
@@ -279,6 +279,14 @@ public abstract class BasePriceListAccountResourceTestCase {
 		String externalReferenceCode =
 			testGetPriceListByExternalReferenceCodePriceListAccountsPage_getExternalReferenceCode();
 
+		Page<PriceListAccount> priceListAccountPage =
+			priceListAccountResource.
+				getPriceListByExternalReferenceCodePriceListAccountsPage(
+					externalReferenceCode, null);
+
+		int totalCount = GetterUtil.getInteger(
+			priceListAccountPage.getTotalCount());
+
 		PriceListAccount priceListAccount1 =
 			testGetPriceListByExternalReferenceCodePriceListAccountsPage_addPriceListAccount(
 				externalReferenceCode, randomPriceListAccount());
@@ -291,39 +299,87 @@ public abstract class BasePriceListAccountResourceTestCase {
 			testGetPriceListByExternalReferenceCodePriceListAccountsPage_addPriceListAccount(
 				externalReferenceCode, randomPriceListAccount());
 
-		Page<PriceListAccount> page1 =
-			priceListAccountResource.
-				getPriceListByExternalReferenceCodePriceListAccountsPage(
-					externalReferenceCode, Pagination.of(1, 2));
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<PriceListAccount> priceListAccounts1 =
-			(List<PriceListAccount>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			priceListAccounts1.toString(), 2, priceListAccounts1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<PriceListAccount> page1 =
+				priceListAccountResource.
+					getPriceListByExternalReferenceCodePriceListAccountsPage(
+						externalReferenceCode,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+							pageSizeLimit));
 
-		Page<PriceListAccount> page2 =
-			priceListAccountResource.
-				getPriceListByExternalReferenceCodePriceListAccountsPage(
-					externalReferenceCode, Pagination.of(2, 2));
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(3, page2.getTotalCount());
+			assertContains(
+				priceListAccount1, (List<PriceListAccount>)page1.getItems());
 
-		List<PriceListAccount> priceListAccounts2 =
-			(List<PriceListAccount>)page2.getItems();
+			Page<PriceListAccount> page2 =
+				priceListAccountResource.
+					getPriceListByExternalReferenceCodePriceListAccountsPage(
+						externalReferenceCode,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+							pageSizeLimit));
 
-		Assert.assertEquals(
-			priceListAccounts2.toString(), 1, priceListAccounts2.size());
+			assertContains(
+				priceListAccount2, (List<PriceListAccount>)page2.getItems());
 
-		Page<PriceListAccount> page3 =
-			priceListAccountResource.
-				getPriceListByExternalReferenceCodePriceListAccountsPage(
-					externalReferenceCode, Pagination.of(1, 3));
+			Page<PriceListAccount> page3 =
+				priceListAccountResource.
+					getPriceListByExternalReferenceCodePriceListAccountsPage(
+						externalReferenceCode,
+						Pagination.of(
+							(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+							pageSizeLimit));
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(
-				priceListAccount1, priceListAccount2, priceListAccount3),
-			(List<PriceListAccount>)page3.getItems());
+			assertContains(
+				priceListAccount3, (List<PriceListAccount>)page3.getItems());
+		}
+		else {
+			Page<PriceListAccount> page1 =
+				priceListAccountResource.
+					getPriceListByExternalReferenceCodePriceListAccountsPage(
+						externalReferenceCode,
+						Pagination.of(1, totalCount + 2));
+
+			List<PriceListAccount> priceListAccounts1 =
+				(List<PriceListAccount>)page1.getItems();
+
+			Assert.assertEquals(
+				priceListAccounts1.toString(), totalCount + 2,
+				priceListAccounts1.size());
+
+			Page<PriceListAccount> page2 =
+				priceListAccountResource.
+					getPriceListByExternalReferenceCodePriceListAccountsPage(
+						externalReferenceCode,
+						Pagination.of(2, totalCount + 2));
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<PriceListAccount> priceListAccounts2 =
+				(List<PriceListAccount>)page2.getItems();
+
+			Assert.assertEquals(
+				priceListAccounts2.toString(), 1, priceListAccounts2.size());
+
+			Page<PriceListAccount> page3 =
+				priceListAccountResource.
+					getPriceListByExternalReferenceCodePriceListAccountsPage(
+						externalReferenceCode,
+						Pagination.of(1, (int)totalCount + 3));
+
+			assertContains(
+				priceListAccount1, (List<PriceListAccount>)page3.getItems());
+			assertContains(
+				priceListAccount2, (List<PriceListAccount>)page3.getItems());
+			assertContains(
+				priceListAccount3, (List<PriceListAccount>)page3.getItems());
+		}
 	}
 
 	protected PriceListAccount
@@ -383,7 +439,7 @@ public abstract class BasePriceListAccountResourceTestCase {
 			priceListAccountResource.getPriceListIdPriceListAccountsPage(
 				id, null, null, Pagination.of(1, 10), null);
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
 		if (irrelevantId != null) {
 			PriceListAccount irrelevantPriceListAccount =
@@ -391,12 +447,13 @@ public abstract class BasePriceListAccountResourceTestCase {
 					irrelevantId, randomIrrelevantPriceListAccount());
 
 			page = priceListAccountResource.getPriceListIdPriceListAccountsPage(
-				irrelevantId, null, null, Pagination.of(1, 2), null);
+				irrelevantId, null, null, Pagination.of(1, (int)totalCount + 1),
+				null);
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantPriceListAccount),
+			assertContains(
+				irrelevantPriceListAccount,
 				(List<PriceListAccount>)page.getItems());
 			assertValid(
 				page,
@@ -415,11 +472,12 @@ public abstract class BasePriceListAccountResourceTestCase {
 		page = priceListAccountResource.getPriceListIdPriceListAccountsPage(
 			id, null, null, Pagination.of(1, 10), null);
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(priceListAccount1, priceListAccount2),
-			(List<PriceListAccount>)page.getItems());
+		assertContains(
+			priceListAccount1, (List<PriceListAccount>)page.getItems());
+		assertContains(
+			priceListAccount2, (List<PriceListAccount>)page.getItems());
 		assertValid(
 			page,
 			testGetPriceListIdPriceListAccountsPage_getExpectedActions(id));
@@ -538,6 +596,13 @@ public abstract class BasePriceListAccountResourceTestCase {
 
 		Long id = testGetPriceListIdPriceListAccountsPage_getId();
 
+		Page<PriceListAccount> priceListAccountPage =
+			priceListAccountResource.getPriceListIdPriceListAccountsPage(
+				id, null, null, null, null);
+
+		int totalCount = GetterUtil.getInteger(
+			priceListAccountPage.getTotalCount());
+
 		PriceListAccount priceListAccount1 =
 			testGetPriceListIdPriceListAccountsPage_addPriceListAccount(
 				id, randomPriceListAccount());
@@ -550,36 +615,82 @@ public abstract class BasePriceListAccountResourceTestCase {
 			testGetPriceListIdPriceListAccountsPage_addPriceListAccount(
 				id, randomPriceListAccount());
 
-		Page<PriceListAccount> page1 =
-			priceListAccountResource.getPriceListIdPriceListAccountsPage(
-				id, null, null, Pagination.of(1, 2), null);
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<PriceListAccount> priceListAccounts1 =
-			(List<PriceListAccount>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			priceListAccounts1.toString(), 2, priceListAccounts1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<PriceListAccount> page1 =
+				priceListAccountResource.getPriceListIdPriceListAccountsPage(
+					id, null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		Page<PriceListAccount> page2 =
-			priceListAccountResource.getPriceListIdPriceListAccountsPage(
-				id, null, null, Pagination.of(2, 2), null);
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(3, page2.getTotalCount());
+			assertContains(
+				priceListAccount1, (List<PriceListAccount>)page1.getItems());
 
-		List<PriceListAccount> priceListAccounts2 =
-			(List<PriceListAccount>)page2.getItems();
+			Page<PriceListAccount> page2 =
+				priceListAccountResource.getPriceListIdPriceListAccountsPage(
+					id, null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		Assert.assertEquals(
-			priceListAccounts2.toString(), 1, priceListAccounts2.size());
+			assertContains(
+				priceListAccount2, (List<PriceListAccount>)page2.getItems());
 
-		Page<PriceListAccount> page3 =
-			priceListAccountResource.getPriceListIdPriceListAccountsPage(
-				id, null, null, Pagination.of(1, 3), null);
+			Page<PriceListAccount> page3 =
+				priceListAccountResource.getPriceListIdPriceListAccountsPage(
+					id, null, null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(
-				priceListAccount1, priceListAccount2, priceListAccount3),
-			(List<PriceListAccount>)page3.getItems());
+			assertContains(
+				priceListAccount3, (List<PriceListAccount>)page3.getItems());
+		}
+		else {
+			Page<PriceListAccount> page1 =
+				priceListAccountResource.getPriceListIdPriceListAccountsPage(
+					id, null, null, Pagination.of(1, totalCount + 2), null);
+
+			List<PriceListAccount> priceListAccounts1 =
+				(List<PriceListAccount>)page1.getItems();
+
+			Assert.assertEquals(
+				priceListAccounts1.toString(), totalCount + 2,
+				priceListAccounts1.size());
+
+			Page<PriceListAccount> page2 =
+				priceListAccountResource.getPriceListIdPriceListAccountsPage(
+					id, null, null, Pagination.of(2, totalCount + 2), null);
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<PriceListAccount> priceListAccounts2 =
+				(List<PriceListAccount>)page2.getItems();
+
+			Assert.assertEquals(
+				priceListAccounts2.toString(), 1, priceListAccounts2.size());
+
+			Page<PriceListAccount> page3 =
+				priceListAccountResource.getPriceListIdPriceListAccountsPage(
+					id, null, null, Pagination.of(1, (int)totalCount + 3),
+					null);
+
+			assertContains(
+				priceListAccount1, (List<PriceListAccount>)page3.getItems());
+			assertContains(
+				priceListAccount2, (List<PriceListAccount>)page3.getItems());
+			assertContains(
+				priceListAccount3, (List<PriceListAccount>)page3.getItems());
+		}
 	}
 
 	@Test
@@ -591,7 +702,7 @@ public abstract class BasePriceListAccountResourceTestCase {
 			(entityField, priceListAccount1, priceListAccount2) -> {
 				BeanTestUtil.setProperty(
 					priceListAccount1, entityField.getName(),
-					DateUtils.addMinutes(new Date(), -2));
+					new Date(System.currentTimeMillis() - (2 * Time.MINUTE)));
 			});
 	}
 
@@ -707,24 +818,32 @@ public abstract class BasePriceListAccountResourceTestCase {
 			testGetPriceListIdPriceListAccountsPage_addPriceListAccount(
 				id, priceListAccount2);
 
+		Page<PriceListAccount> page =
+			priceListAccountResource.getPriceListIdPriceListAccountsPage(
+				id, null, null, null, null);
+
 		for (EntityField entityField : entityFields) {
 			Page<PriceListAccount> ascPage =
 				priceListAccountResource.getPriceListIdPriceListAccountsPage(
-					id, null, null, Pagination.of(1, 2),
+					id, null, null,
+					Pagination.of(1, (int)page.getTotalCount() + 1),
 					entityField.getName() + ":asc");
 
-			assertEquals(
-				Arrays.asList(priceListAccount1, priceListAccount2),
-				(List<PriceListAccount>)ascPage.getItems());
+			assertContains(
+				priceListAccount1, (List<PriceListAccount>)ascPage.getItems());
+			assertContains(
+				priceListAccount2, (List<PriceListAccount>)ascPage.getItems());
 
 			Page<PriceListAccount> descPage =
 				priceListAccountResource.getPriceListIdPriceListAccountsPage(
-					id, null, null, Pagination.of(1, 2),
+					id, null, null,
+					Pagination.of(1, (int)page.getTotalCount() + 1),
 					entityField.getName() + ":desc");
 
-			assertEquals(
-				Arrays.asList(priceListAccount2, priceListAccount1),
-				(List<PriceListAccount>)descPage.getItems());
+			assertContains(
+				priceListAccount2, (List<PriceListAccount>)descPage.getItems());
+			assertContains(
+				priceListAccount1, (List<PriceListAccount>)descPage.getItems());
 		}
 	}
 
@@ -1188,6 +1307,10 @@ public abstract class BasePriceListAccountResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -1449,9 +1572,9 @@ public abstract class BasePriceListAccountResourceTestCase {
 	}
 
 	protected PriceListAccountResource priceListAccountResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

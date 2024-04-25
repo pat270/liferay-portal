@@ -34,6 +34,14 @@ For `liferay-sample-etc-cron` and `liferay-sample-etc-spring-boot` the third typ
 
 	...
 
+- *liferay-sample-commerce-payment-integration*
+
+	TODO
+
+- *liferay-sample-commerce-shipping-engine*
+
+	Use Spring Boot to provide a new commerce shipping engine.
+
 - *liferay-sample-custom-element-1*
 
 	A custom element can be self contained (i.e. does not depend on any external packages).
@@ -54,6 +62,10 @@ For `liferay-sample-etc-cron` and `liferay-sample-etc-spring-boot` the third typ
 
 	Build a custom element that uses `@clayui/badge`, `react`, and `react-dom` packages that Liferay makes publicly available through import maps.
 
+- *liferay-sample-editor-config-contributor*
+
+	Build a JavaScript function to configure WYSIWYG editors.
+
 - *liferay-sample-etc-cron*
 
 	Use Spring Boot and OAuth (server to server) to read from and write to Liferay in timed intervals.
@@ -70,17 +82,13 @@ For `liferay-sample-etc-cron` and `liferay-sample-etc-spring-boot` the third typ
 
 	1. Go to `liferay-sample-workspace/client-extensions/liferay-sample-etc-cron` and type `./gradlew bootRun` to start Spring Boot.
 
-- *liferay-sample-etc-frontend-1*
+- *liferay-sample-etc-frontend*
 
-	Combine multiple frontend client extensions.
+	Share code via JavaScript import maps to a custom element.
 
-- *liferay-sample-etc-frontend-2*
+- *liferay-sample-etc-node*
 
-	Combine multiple frontend client extensions that use `shared-utils.js` without duplicating or rerequesting it.
-
-- *liferay-sample-etc-frontend-3*
-
-	Share code through an import map client extension.
+	TODO
 
 - *liferay-sample-etc-spring-boot*
 
@@ -88,11 +96,11 @@ For `liferay-sample-etc-cron` and `liferay-sample-etc-spring-boot` the third typ
 
 - *liferay-sample-fds-cell-renderer*
 
-	Build a custom cell display in a frontend data set table.
+	Build a custom cell display in a frontend data set configured for table mode.
 
 - *liferay-sample-fds-filter*
 
-	Build a custom filter in a frontend data set table.
+	Build a custom filter in a frontend data set.
 
 - *liferay-sample-global-css*
 
@@ -114,6 +122,14 @@ For `liferay-sample-etc-cron` and `liferay-sample-etc-spring-boot` the third typ
 
 	Customize instance settings with YAML by overridding OSGi configurations.
 
+- *liferay-sample-js-import-maps-entry*
+
+	Share jQuery via JavaScript import maps.
+
+- *liferay-sample-site-initializer*
+
+	TODO
+
 - *liferay-sample-static-content*
 
 	Deploy static content that is only accessible if you know the URL.
@@ -125,6 +141,10 @@ For `liferay-sample-etc-cron` and `liferay-sample-etc-spring-boot` the third typ
 - *liferay-sample-theme-css-2*
 
 	Extend a theme's CSS with a CSS that uses `unstyled` as its base theme.
+
+- *liferay-sample-theme-css-3*
+
+	Extend a theme's CSS with CSS that uses a frontend-token-definition.json file.
 
 - *liferay-sample-theme-favicon*
 

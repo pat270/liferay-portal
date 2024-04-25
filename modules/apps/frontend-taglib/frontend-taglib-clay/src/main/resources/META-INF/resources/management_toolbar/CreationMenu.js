@@ -3,15 +3,12 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayButton, {ClayButtonWithIcon} from '@clayui/button';
 import ClayDropDown from '@clayui/drop-down';
-import ClayIcon from '@clayui/icon';
 import classNames from 'classnames';
 import {sub, unescapeHTML} from 'frontend-js-web';
-import React, {useContext, useRef, useState} from 'react';
+import React, {useRef, useState} from 'react';
 
 import getDataAttributes from '../get_data_attributes';
-import FeatureFlagContext from './FeatureFlagContext';
 import LinkOrButton from './LinkOrButton';
 
 import './CreationMenu.scss';
@@ -46,6 +43,7 @@ const ItemList = ({
 					(item) => item.icon
 				),
 			})}
+			data-qa-id="dropdownMenu"
 		>
 			{primaryItems?.map((item, index) => {
 				currentItemCount++;
@@ -97,7 +95,6 @@ const CreationMenu = ({
 	viewMoreURL,
 }) => {
 	const [active, setActive] = useState(false);
-	const {showDesignImprovements} = useContext(FeatureFlagContext);
 
 	const secondaryItemsCountRef = useRef(
 		secondaryItems?.reduce((acc, cur) => {
@@ -173,29 +170,18 @@ const CreationMenu = ({
 					className="creation-menu"
 					onActiveChange={setActive}
 					trigger={
-						showDesignImprovements ? (
-							<ClayButton
-								aria-label={getPlusIconLabel()}
-								className="nav-btn"
-								title={getPlusIconLabel()}
-							>
-								<ClayIcon
-									className="d-md-none dropdown-icon"
-									symbol="plus"
-								/>
-
-								<span className="d-md-block d-none pl-3 pr-3">
-									{getPlusIconLabel()}
-								</span>
-							</ClayButton>
-						) : (
-							<ClayButtonWithIcon
-								aria-label={getPlusIconLabel()}
-								className="nav-btn nav-btn-monospaced"
-								symbol="plus"
-								title={getPlusIconLabel()}
-							/>
-						)
+						<LinkOrButton
+							aria-label={getPlusIconLabel()}
+							className="nav-btn"
+							data-qa-id="creationMenuNewButton"
+							symbol="plus"
+							title={getPlusIconLabel()}
+							wideViewportTitleVisible={false}
+						>
+							<span className="d-md-block d-none pl-3 pr-3">
+								{getPlusIconLabel()}
+							</span>
+						</LinkOrButton>
 					}
 				>
 					{visibleItemsCount < totalItemsCountRef.current ? (
@@ -249,12 +235,13 @@ const CreationMenu = ({
 						/>
 					)}
 				</ClayDropDown>
-			) : showDesignImprovements ? (
+			) : (
 				<>
 					<LinkOrButton
 						aria-label={getPlusIconLabel()}
 						button={true}
 						className="nav-btn"
+						data-qa-id="creationMenuNewButton"
 						displayType="primary"
 						href={firstItemRef.current.href}
 						onClick={(event) => {
@@ -265,25 +252,11 @@ const CreationMenu = ({
 						symbol="plus"
 						title={getPlusIconLabel()}
 						wide
+						wideViewportTitleVisible={false}
 					>
 						{Liferay.Language.get('new')}
 					</LinkOrButton>
 				</>
-			) : (
-				<LinkOrButton
-					aria-label={getPlusIconLabel()}
-					button={true}
-					className="nav-btn nav-btn-monospaced"
-					displayType="primary"
-					href={firstItemRef.current.href}
-					onClick={(event) => {
-						onCreateButtonClick(event, {
-							item: firstItemRef.current,
-						});
-					}}
-					symbol="plus"
-					title={getPlusIconLabel()}
-				/>
 			)}
 		</>
 	);

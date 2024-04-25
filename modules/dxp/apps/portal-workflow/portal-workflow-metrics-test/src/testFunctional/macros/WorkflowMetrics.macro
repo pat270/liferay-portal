@@ -1,6 +1,7 @@
 definition {
 
-	macro _deleteAllSLAs {
+	@summary = "Default summary"
+	macro _deleteAllSLAs() {
 		while (IsElementPresent(locator1 = "WorkflowMetricsSLA#SLA_ELLIPSIS_BUTTON")) {
 			Click(locator1 = "WorkflowMetricsSLA#SLA_ELLIPSIS_BUTTON");
 
@@ -10,7 +11,8 @@ definition {
 		}
 	}
 
-	macro allItemPageFilterCheck {
+	@summary = "Default summary"
+	macro allItemPageFilterCheck(allItemsFilterName = null) {
 		var key_allItemsFilterName = ${allItemsFilterName};
 
 		Click(locator1 = "WorkflowAllItems#WORKFLOW_ALL_ITEMS_FILTER_BY");
@@ -34,14 +36,8 @@ definition {
 		Click(locator1 = "WorkflowAllItems#WORKFLOW_ALL_ITEMS_FILTER_TITLE");
 	}
 
-	macro assertAllItemsCurrentAssignee {
-		AssertElementPresent(
-			key_workflowInstanceAssignee = ${workflowInstanceAssignee},
-			key_workflowInstanceName = ${workflowInstanceName},
-			locator1 = "WorkflowAllItems#WORKFLOW_ALL_ITEMS_TABLE_CURRENT_ASSIGNEE_VALUE");
-	}
-
-	macro assertAllItemsValues {
+	@summary = "Default summary"
+	macro assertAllItemsValues(assigneeName = null,isPresent = null,taskName = null,isNotPresent = null) {
 		var key_assigneeName = ${assigneeName};
 		var key_taskName = ${taskName};
 
@@ -57,6 +53,8 @@ definition {
 			if (IsElementNotPresent(locator1 = "WorkflowMetrics#METRICS_ALL_ITEMS_TABLE_NAME")) {
 				echo("timeout exceeded");
 			}
+
+			WaitForElementPresent(locator1 = "WorkflowMetrics#METRICS_ALL_ITEMS_TABLE_NAME");
 
 			AssertElementPresent(locator1 = "WorkflowMetrics#METRICS_ALL_ITEMS_TABLE_NAME");
 
@@ -74,33 +72,8 @@ definition {
 		}
 	}
 
-	macro assertAssignees {
-		Click(locator1 = "WorkflowReassignModal#SEARCH_NEW_ASSIGNEE");
-
-		AssertElementPresent(
-			key_nameOfAssignee = "Test Test",
-			locator1 = "WorkflowReassignModal#REASSIGN_TASK_NEW_ASSIGNEE_DROPDOWN");
-
-		AssertElementNotPresent(
-			key_nameOfAssignee = "userfn userls",
-			locator1 = "WorkflowReassignModal#REASSIGN_TASK_NEW_ASSIGNEE_DROPDOWN");
-	}
-
-	macro assertBulkCount {
-		Check.checkNotVisible(
-			key_rowNumber = 1,
-			locator1 = "WorkflowAllItems#WORKFLOW_ALL_ITEMS_SELECT_ROW");
-
-		AssertTextEquals(
-			locator1 = "WorkflowAllItems#WORKFLOW_ALL_ITEMS_SELECTED_TEXT",
-			value1 = "1 of 5 Selected");
-
-		Uncheck.uncheckToggleSwitch(
-			key_rowNumber = 1,
-			locator1 = "WorkflowAllItems#WORKFLOW_ALL_ITEMS_SELECT_ROW");
-	}
-
-	macro assertChartIsPresent {
+	@summary = "Default summary"
+	macro assertChartIsPresent(chartVelocityUnit = null) {
 		MouseOver(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_CHART");
 
 		AssertTextPresent(
@@ -108,7 +81,8 @@ definition {
 			value1 = ${chartVelocityUnit});
 	}
 
-	macro assertChartTotalValue {
+	@summary = "Default summary"
+	macro assertChartTotalValue(velocityUnitTotal = null,velocityValueTotal = null) {
 		var key_completionVelocityUnitTotal = ${velocityUnitTotal};
 		var key_completionVelocityValueTotal = ${velocityValueTotal};
 
@@ -121,15 +95,8 @@ definition {
 			value1 = ${velocityValueTotal});
 	}
 
-	macro assertChartTotalValueNotEquals {
-		var key_completionVelocityValueTotal = ${velocityValueTotal};
-
-		AssertTextNotEquals(
-			locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_ITEMS_VALUE",
-			value1 = ${velocityValueTotal});
-	}
-
-	macro assertChartTotalValuePerformanceByStep {
+	@summary = "Default summary"
+	macro assertChartTotalValuePerformanceByStep(rowName = null,avgCompletionTime = null,slaBreachedValue = null) {
 		var key_avgCompletionTime = ${avgCompletionTime};
 		var key_slaBreachedValue = ${slaBreachedValue};
 		var key_rowName = ${rowName};
@@ -150,7 +117,8 @@ definition {
 		}
 	}
 
-	macro assertCheckboxChecked {
+	@summary = "Default summary"
+	macro assertCheckboxChecked(taskList = null) {
 		for (var itemName : list ${taskList}) {
 			var key_itemName = ${itemName};
 
@@ -158,7 +126,8 @@ definition {
 		}
 	}
 
-	macro assertCheckboxUnchecked {
+	@summary = "Default summary"
+	macro assertCheckboxUnchecked(taskListUnchecked = null) {
 		for (var itemName : list ${taskListUnchecked}) {
 			var key_itemName = ${itemName};
 
@@ -166,25 +135,8 @@ definition {
 		}
 	}
 
-	macro assertDefaultChartRangesAndUnits {
-		AssertTextEquals(
-			locator1 = "WorkflowMetrics#METRICS_COMPLETED_ITEMS_DATE_RANGE_DROPDOWN",
-			value1 = "Last 30 Days");
-
-		AssertTextEquals(
-			locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_DATE_RANGE_DROPDOWN",
-			value1 = "Last 30 Days");
-
-		AssertTextEquals(
-			locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_UNIT_DROPDOWN",
-			value1 = "Inst / Day");
-
-		AssertTextEquals(
-			locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_CHART_UNIT_LABEL",
-			value1 = "inst / day");
-	}
-
-	macro assertDueDatePopoverInfo {
+	@summary = "Default summary"
+	macro assertDueDatePopoverInfo(slaName = null,slaPosition = null,itemPosition = null,rowNumber = null) {
 		MouseOver(
 			key_itemPosition = ${itemPosition},
 			key_rowNumber = ${rowNumber},
@@ -197,16 +149,8 @@ definition {
 			value1 = ${slaName});
 	}
 
-	macro assertErrorSlaPresent {
-		AssertElementPresent(locator1 = "Message#ERROR");
-
-		AssertTextEquals.assertPartialText(
-			key_errorMessage = ${errorMessage},
-			locator1 = "Message#ERROR",
-			value1 = ${errorMessage});
-	}
-
-	macro assertFilterOrder {
+	@summary = "Default summary"
+	macro assertFilterOrder(start = null,taskList = null) {
 		var taskPosition = ${start};
 
 		for (var taskName : list ${taskList}) {
@@ -227,37 +171,8 @@ definition {
 		}
 	}
 
-	macro assertMetricsIndexes {
-		AssertElementPresent(
-			key_index = "liferay-${companyId}-workflow-metrics-instances",
-			locator1 = "WorkflowMetrics#SEARCH_FIELD_MAPPINGS_METRICS_INDEXES");
-
-		AssertElementPresent(
-			key_index = "liferay-${companyId}-workflow-metrics-nodes",
-			locator1 = "WorkflowMetrics#SEARCH_FIELD_MAPPINGS_METRICS_INDEXES");
-
-		AssertElementPresent(
-			key_index = "liferay-${companyId}-workflow-metrics-processes",
-			locator1 = "WorkflowMetrics#SEARCH_FIELD_MAPPINGS_METRICS_INDEXES");
-
-		AssertElementPresent(
-			key_index = "liferay-${companyId}-workflow-metrics-sla-instance-results",
-			locator1 = "WorkflowMetrics#SEARCH_FIELD_MAPPINGS_METRICS_INDEXES");
-
-		AssertElementPresent(
-			key_index = "liferay-${companyId}-workflow-metrics-sla-task-results",
-			locator1 = "WorkflowMetrics#SEARCH_FIELD_MAPPINGS_METRICS_INDEXES");
-
-		AssertElementPresent(
-			key_index = "liferay-${companyId}-workflow-metrics-tasks",
-			locator1 = "WorkflowMetrics#SEARCH_FIELD_MAPPINGS_METRICS_INDEXES");
-
-		AssertElementPresent(
-			key_index = "liferay-${companyId}-workflow-metrics-transitions",
-			locator1 = "WorkflowMetrics#SEARCH_FIELD_MAPPINGS_METRICS_INDEXES");
-	}
-
-	macro assertNewAssigneeModalTable {
+	@summary = "Default summary"
+	macro assertNewAssigneeModalTable() {
 		AssertTextEquals(
 			key_columnName = "ID",
 			locator1 = "WorkflowReassignModal#COLUMN_CHECK",
@@ -284,37 +199,8 @@ definition {
 			value1 = "New Assignee");
 	}
 
-	macro assertNoAssignees {
-		Click(locator1 = "WorkflowReassignModal#SEARCH_NEW_ASSIGNEE");
-
-		AssertElementPresent(
-			key_nameOfAssignee = "No results were found.",
-			locator1 = "WorkflowReassignModal#REASSIGN_TASK_NEW_ASSIGNEE_DROPDOWN");
-	}
-
-	macro assertSelectTasksModalTable {
-		AssertTextEquals(
-			key_columnName = "ID",
-			locator1 = "WorkflowReassignModal#COLUMN_CHECK",
-			value1 = "ID");
-
-		AssertTextEquals(
-			key_columnName = "Item Subject",
-			locator1 = "WorkflowReassignModal#COLUMN_CHECK",
-			value1 = "Item Subject");
-
-		AssertTextEquals(
-			key_columnName = "Process Step",
-			locator1 = "WorkflowReassignModal#COLUMN_CHECK",
-			value1 = "Process Step");
-
-		AssertTextEquals(
-			key_columnName = "Current Assignee",
-			locator1 = "WorkflowReassignModal#COLUMN_CHECK",
-			value1 = "Current Assignee");
-	}
-
-	macro assertSLAMetricsCalculated {
+	@summary = "Default summary"
+	macro assertSLAMetricsCalculated() {
 		while ((IsElementNotPresent(locator1 = "WorkflowMetricsSLA#SLA_PROCESS_DATE_MESSAGE")) && (maxIterations = "25")) {
 			Refresh();
 		}
@@ -322,14 +208,8 @@ definition {
 		AssertElementPresent(locator1 = "WorkflowMetricsSLA#SLA_PROCESS_DATE_MESSAGE");
 	}
 
-	macro assertSlaPosition {
-		AssertElementPresent(
-			key_slaPosition = ${slaPosition},
-			key_slaTitle = ${slaTitle},
-			locator1 = "WorkflowMetricsSLA#SLA_POSITION_BY_TITLE");
-	}
-
-	macro assertSLAProcessingDate {
+	@summary = "Default summary"
+	macro assertSLAProcessingDate(warningMessage = null) {
 		while ((IsElementNotPresent(key_warningMessage = ${warningMessage}, locator1 = "Message#WARNING_SPECIFIC")) && (maxIterations = "30")) {
 			Refresh();
 		}
@@ -346,7 +226,8 @@ definition {
 		AssertElementPresent(locator1 = "WorkflowMetricsSLA#SLA_PROCESS_DATE_MESSAGE");
 	}
 
-	macro assertTableOrder {
+	@summary = "Default summary"
+	macro assertTableOrder(itemTitle = null,keyCompare = null,rowNumber = null) {
 		AssertTextEquals(
 			key_rowNumber = ${rowNumber},
 			locator1 = "WorkflowAllItems#METRICS_ALL_ITEMS_TABLE_ROW",
@@ -358,37 +239,24 @@ definition {
 			value1 = ${keyCompare});
 	}
 
-	macro assertTransitionTaskOptionNotPresent {
+	@summary = "Default summary"
+	macro assertTransitionTaskOptionNotPresent(taskName = null,transitionOption = null) {
 		var key_taskName = ${taskName};
 		var key_transitionOption = ${transitionOption};
 
 		AssertElementNotPresent(locator1 = "WorkflowTransitionModal#TRANSITION_TO_OPTION");
 	}
 
-	macro assertTransitionTaskOptionPresent {
+	@summary = "Default summary"
+	macro assertTransitionTaskOptionPresent(taskName = null,transitionOption = null) {
 		var key_taskName = ${taskName};
 		var key_transitionOption = ${transitionOption};
 
 		AssertElementPresent(locator1 = "WorkflowTransitionModal#TRANSITION_TO_OPTION");
 	}
 
-	macro assertTransitionTaskPresent {
-		var key_taskName = ${taskName};
-
-		AssertElementPresent(locator1 = "WorkflowTransitionModal#TASK_PANEL");
-	}
-
-	macro assertWarningBlockedSlaNotPresent {
-		var key_warningMessage = ${warningMessage};
-
-		while ((IsElementPresent(locator1 = "Message#WARNING_SPECIFIC")) && (maxIterations = "30")) {
-			Refresh();
-		}
-
-		AssertElementNotPresent(locator1 = "Message#WARNING_SPECIFIC");
-	}
-
-	macro assertWarningBlockedSlaPresent {
+	@summary = "Default summary"
+	macro assertWarningBlockedSlaPresent(warningMessage = null) {
 		var key_warningMessage = ${warningMessage};
 
 		while ((IsElementNotPresent(locator1 = "Message#WARNING_SPECIFIC")) && (maxIterations = "30")) {
@@ -400,26 +268,8 @@ definition {
 			value1 = ${warningMessage});
 	}
 
-	macro assertWorkflowProcessPresent {
-		AssertElementPresent(
-			key_workflowProcessName = ${workflowProcessName},
-			locator1 = "WorkflowMetrics#METRICS_WORKFLOW_PROCESS_NAME");
-	}
-
-	macro assertWorkloadByAssigneeCardEmptyMessage {
-		var key_tabName = ${tabName};
-		var key_emptyMessage = ${emptyMessage};
-
-		Click(
-			locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_CARD_TAB",
-			value1 = ${tabName});
-
-		AssertTextEquals(
-			locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_CARD_EMPTY_MESSAGE",
-			value1 = ${emptyMessage});
-	}
-
-	macro bulkReassignExceptionsSetup {
+	@summary = "Default summary"
+	macro bulkReassignExceptionsSetup(site = null) {
 		Workflow.duplicateSingleApproverWorkflow(workflowName = "Single Approver Alternative");
 
 		ProductMenu.gotoPortlet(
@@ -453,7 +303,8 @@ definition {
 			workflowTask = "Review");
 	}
 
-	macro bulkReassignSetup {
+	@summary = "Default summary"
+	macro bulkReassignSetup() {
 		var siteName = TestCase.getSiteName(siteName = ${siteName});
 
 		WorkflowMetrics.createUsersAndInstancesWithGroovy(
@@ -462,7 +313,8 @@ definition {
 			site = ${siteName});
 	}
 
-	macro changePaginationAllItems {
+	@summary = "Default summary"
+	macro changePaginationAllItems(itemsPerPage = null) {
 		Click(locator1 = "WorkflowMetrics#METRICS_ITEMS_PER_PAGE_SELECT");
 
 		var key_itemsPerPage = ${itemsPerPage};
@@ -474,7 +326,8 @@ definition {
 			value1 = ${itemsPerPage});
 	}
 
-	macro checkCompletedWorkflowValues {
+	@summary = "Default summary"
+	macro checkCompletedWorkflowValues(key_ontime = null,key_overdue = null,key_untracked = null,key_completed = null) {
 		AssertTextEquals(
 			locator1 = "WorkflowMetrics#PERFORMANCE_TOTAL_COMPLETED_ITEMS_VALUE",
 			value1 = ${key_completed});
@@ -492,7 +345,8 @@ definition {
 			value1 = ${key_untracked});
 	}
 
-	macro checkPendingWorkflowValues {
+	@summary = "Default summary"
+	macro checkPendingWorkflowValues(key_ontime = null,key_overdue = null,key_untracked = null,key_pending = null) {
 		AssertTextEquals(
 			locator1 = "WorkflowMetrics#DASHBOARD_TOTAL_OVERDUE_ITEMS_VALUE",
 			value1 = ${key_overdue});
@@ -510,11 +364,9 @@ definition {
 			value1 = ${key_untracked});
 	}
 
-	macro checkWorkflowReports {
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+	@summary = "Default summary"
+	macro checkWorkflowReports(key_overdueValue = null,key_onTimeValue = null,key_totalPendingValue = null) {
+		Workflow.openWorkflowMetrics();
 
 		AssertTextEquals(
 			locator1 = "WorkflowMetrics#METRICS_WORKFLOW_PROCESS_VALUE_OVERDUE",
@@ -529,13 +381,8 @@ definition {
 			value1 = ${key_totalPendingValue});
 	}
 
-	macro checkWorkflowTaskCrossover {
-		AssertElementNotPresent(
-			key_itemName = "Blogs Alternative",
-			locator1 = "WorkflowReassignModal#ITEM_SUBJECT_CHECK");
-	}
-
-	macro chooseTransitionPerStep {
+	@summary = "Default summary"
+	macro chooseTransitionPerStep(taskName = null,comment = null,transitionOption = null) {
 		var key_taskName = ${taskName};
 
 		Select(
@@ -555,11 +402,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro clearAllFilter {
-		Click(locator1 = "WorkflowMetrics#FILTER_CLEAR_ALL");
-	}
-
-	macro createAlternativeBlogInstances {
+	@summary = "Default summary"
+	macro createAlternativeBlogInstances() {
 		var iterator = 1;
 		var numberOfBlogInstances = ${numberOfBlogInstances} + 1;
 
@@ -572,7 +416,8 @@ definition {
 		}
 	}
 
-	macro createBlogInstances {
+	@summary = "Default summary"
+	macro createBlogInstances() {
 		var iterator = 1;
 		var numberOfBlogInstances = ${numberOfBlogInstances} + 1;
 
@@ -585,7 +430,8 @@ definition {
 		}
 	}
 
-	macro createUsersAndAssignInstances {
+	@summary = "Default summary"
+	macro createUsersAndAssignInstances(site = null,numberOfUsers = null) {
 		var iterator = 1;
 		var numberOfBlogInstances = ${numberOfBlogInstances} + 1;
 
@@ -613,7 +459,8 @@ definition {
 			numberOfUsers = ${numberOfUsers});
 	}
 
-	macro createUsersAndAssignInstancesWithGroovy {
+	@summary = "Default summary"
+	macro createUsersAndAssignInstancesWithGroovy(site = null,numberOfUsers = null) {
 		var iterator = 1;
 		var numberOfBlogInstances = ${numberOfBlogInstances} + 1;
 
@@ -639,7 +486,8 @@ definition {
 		WorkflowMetrics.executeWorkflowScript(scriptName = "assignOpenTasksToUsers.groovy");
 	}
 
-	macro createUsersAndInstancesWithGroovy {
+	@summary = "Default summary"
+	macro createUsersAndInstancesWithGroovy(site = null,numberOfUsers = null) {
 		var iterator = 1;
 		var numberOfBlogInstances = ${numberOfBlogInstances} + 1;
 
@@ -663,7 +511,8 @@ definition {
 		}
 	}
 
-	macro createUsersGroovy {
+	@summary = "Default summary"
+	macro createUsersGroovy(numberOfUsers = null) {
 		ApplicationsMenu.gotoPortlet(
 			category = "System",
 			panel = "Control Panel",
@@ -678,7 +527,23 @@ definition {
 			script = ${scriptContent});
 	}
 
-	macro executeIndexActions {
+	@summary = "Default summary"
+	macro deleteSLA(slaName = null) {
+		Click(
+			key_tableEntry = ${slaName},
+			locator1 = "LexiconTable#TABLE_ENTRY_ELLIPSIS");
+
+		MenuItem.clickNoError(menuItem = "Delete");
+
+		AssertTextEquals(
+			locator1 = "Modal#BODY",
+			value1 = "Deleting SLAs will reflect on report data. This action cannot be undone. Are you sure you want to permanently delete it?");
+
+		Click(locator1 = "Modal#OK_BUTTON");
+	}
+
+	@summary = "Default summary"
+	macro executeIndexActions(actionDescription = null) {
 		var key_actionDescription = ${actionDescription};
 
 		Workflow.openWorkflowMetrics();
@@ -712,7 +577,8 @@ definition {
 		}
 	}
 
-	macro executeWorkflowScript {
+	@summary = "Default summary"
+	macro executeWorkflowScript(scriptName = null) {
 		var key_scriptName = ${scriptName};
 
 		ApplicationsMenu.gotoPortlet(
@@ -728,7 +594,8 @@ definition {
 			script = ${scriptContent});
 	}
 
-	macro fillSLAForm {
+	@summary = "Default summary"
+	macro fillSLAForm(slaDefinitionStart = null,slaDefinitionCalendar = null,slaDefinitionDays = null,slaDefinitionPause = null,slaDefinitionHours = null,slaDefinitionEnd = null,slaDefinitionDescription = null,slaDefinitionName = null) {
 		var key_slaDefinitionCalendar = ${slaDefinitionCalendar};
 		var key_slaDefinitionDays = ${slaDefinitionDays};
 		var key_slaDefinitionHours = ${slaDefinitionHours};
@@ -793,33 +660,15 @@ definition {
 		}
 	}
 
-	macro goToBulkReassignSelectNewAssignee {
+	@summary = "Default summary"
+	macro goToBulkReassignSelectNewAssignee() {
 		Check.checkNotVisible(locator1 = "WorkflowReassignModal#SELECT_ALL");
 
 		Click(locator1 = "WorkflowReassignModal#NEXT_BUTTON");
 	}
 
-	macro goToBulkReassignSelectTasks {
-		PortletEntry.selectAll();
-
-		Click(
-			locator1 = "WorkflowAllItems#KEBAB_DROPDOWN",
-			task = 1);
-
-		Click(locator1 = "WorkflowAllItems#REASSIGN_TASK_DROPDOWN");
-	}
-
-	macro goToBulkTransitionSelectTasks {
-		PortletEntry.selectAll();
-
-		Click(
-			locator1 = "WorkflowAllItems#KEBAB_DROPDOWN",
-			task = 1);
-
-		Click(locator1 = "WorkflowAllItems#TRANSITION_DROPDOWN");
-	}
-
-	macro goToCreatedSLAForm {
+	@summary = "Default summary"
+	macro goToCreatedSLAForm(workflowSlaName = null) {
 		var key_workflowSlaName = ${workflowSlaName};
 
 		Click(
@@ -827,7 +676,8 @@ definition {
 			value1 = ${workflowSlaName});
 	}
 
-	macro goToCurrentNode {
+	@summary = "Default summary"
+	macro goToCurrentNode(currentNode = null) {
 		Click(
 			locator1 = "WorkflowAllItems#TRACK_APPROVAL_CURRENT_NODE_LINK",
 			value1 = ${currentNode});
@@ -837,7 +687,8 @@ definition {
 			locator1 = "WorkflowAllItems#CURRENT_NODE_CIRCLE_ICON");
 	}
 
-	macro goToDashboardAllItemsWithFilter {
+	@summary = "Default summary"
+	macro goToDashboardAllItemsWithFilter(workflowFilterOption = null,workflowMetricsTab = null,workflowProcess = null) {
 		var key_workflowProcess = ${workflowProcess};
 		var key_workflowMetricsTab = ${workflowMetricsTab};
 		var key_workflowFilterOption = ${workflowFilterOption};
@@ -855,17 +706,8 @@ definition {
 		Click(locator1 = "WorkflowMetrics#DASHBOARD_TOTAL_${key_workflowFilterOption}_ITEMS_TITLE");
 	}
 
-	macro goToDeleteSLA {
-		var key_slaName = ${slaName};
-
-		Click(locator1 = "WorkflowMetricsSLA#SLA_RECORD_ELLIPSIS");
-
-		Click(locator1 = "WorkflowMetricsSLA#DELETE_SLA_BUTTON");
-
-		Click(locator1 = "WorkflowMetricsSLA#SLA_REMOVE_CONFIRMATION_BUTTON");
-	}
-
-	macro goToEditSLA {
+	@summary = "Default summary"
+	macro goToEditSLA(slaName = null) {
 		var key_slaName = ${slaName};
 
 		Click(locator1 = "WorkflowMetricsSLA#SLA_RECORD_ELLIPSIS");
@@ -873,69 +715,47 @@ definition {
 		MenuItem.click(menuItem = "Edit");
 	}
 
-	macro goToFieldMappingsTab {
-		Click(locator1 = "WorkflowMetrics#SEARCH_FIELD_MAPPINGS_HEADER");
-	}
-
-	macro goToKebabMenuOptions {
-		Click(locator1 = "Icon#SVG_ELLIPSIS");
-
-		var dropdownItem = ${dropdownItem};
-
-		if (${dropdownItem} == "Reassign Task") {
-			Click(locator1 = "WorkflowAllItems#KEBAB_MENU_OPTIONS");
-		}
-
-		if (${dropdownItem} == "Transition") {
-			Click(locator1 = "WorkflowAllItems#KEBAB_MENU_OPTIONS");
-		}
-
-		if (${dropdownItem} == "Update Due Date") {
-			Click(locator1 = "WorkflowAllItems#KEBAB_MENU_OPTIONS");
-		}
-
-		if (${dropdownItem} == "Track Workflow") {
+	@summary = "Default summary"
+	macro goToReassignTask(itemSubject = null) {
+		if (isSet(itemSubject)) {
 			Click(
-				key_menuOption = ${dropdownItem},
-				locator1 = "WorkflowAllItems#KEBAB_MENU_OPTIONS");
+				key_tableEntry = ${itemSubject},
+				locator1 = "LexiconTable#TABLE_ENTRY_ELLIPSIS");
 		}
+		else {
+			PortletEntry.selectAll();
+
+			Click(locator1 = "ManagementBar#ELLIPSIS");
+		}
+
+		MenuItem.click(menuItem = "Reassign Task");
 	}
 
-	macro goToReassignSelectTask {
-		Click(
-			locator1 = "WorkflowAllItems#KEBAB_DROPDOWN",
-			task = 1);
-
-		Click(locator1 = "WorkflowAllItems#REASSIGN_TASK_DROPDOWN");
-	}
-
-	macro goToTransitionTasks {
+	@summary = "Default summary"
+	macro goToTransitionSteps() {
 		PortletEntry.selectAll();
 
-		Click(
-			locator1 = "WorkflowAllItems#KEBAB_DROPDOWN",
-			task = 1);
+		Click(locator1 = "ManagementBar#ELLIPSIS");
 
 		MenuItem.clickNoError(menuItem = "Transition");
 	}
 
-	macro goToUpdateDueDateTasks {
-		PortletEntry.selectAll();
-
-		Click(
-			locator1 = "WorkflowAllItems#KEBAB_DROPDOWN",
-			task = 1);
+	@summary = "Default summary"
+	macro goToUpdateTasksDueDates() {
+		Click(locator1 = "ManagementBar#ELLIPSIS");
 
 		MenuItem.clickNoError(menuItem = "Update Tasks Due Dates");
 	}
 
-	macro goToWorkflowAllItems {
+	@summary = "Default summary"
+	macro goToWorkflowAllItems(workflowProcessName = null) {
 		WorkflowMetrics.goToWorkflowProcessMetrics(workflowProcessName = ${workflowProcessName});
 
 		Click(locator1 = "WorkflowMetrics#DASHBOARD_TOTAL_PENDING_ITEMS_VALUE");
 	}
 
-	macro goToWorkflowAllItemsByStatus {
+	@summary = "Default summary"
+	macro goToWorkflowAllItemsByStatus(workflowProcessName = null,completedItemStatus = null) {
 		var key_status = ${completedItemStatus};
 
 		WorkflowMetrics.goToWorkflowProcessMetrics(workflowProcessName = ${workflowProcessName});
@@ -945,7 +765,8 @@ definition {
 		Click(locator1 = "WorkflowMetrics#PERFORMANCE_COMPLETED_ITEMS_BY_STATUS");
 	}
 
-	macro goToWorkflowProcessMetrics {
+	@summary = "Default summary"
+	macro goToWorkflowProcessMetrics(workflowProcessName = null) {
 		var key_workflowProcessName = ${workflowProcessName};
 
 		Workflow.openWorkflowMetrics();
@@ -961,7 +782,8 @@ definition {
 		Click(locator1 = "WorkflowMetrics#METRICS_WORKFLOW_PROCESS_NAME");
 	}
 
-	macro goToWorkflowProcessMetricsAndTotalCompleted {
+	@summary = "Default summary"
+	macro goToWorkflowProcessMetricsAndTotalCompleted(workflowProcessName = null) {
 		var key_workflowProcessName = ${workflowProcessName};
 
 		WorkflowMetrics.goToWorkflowProcessMetrics(workflowProcessName = ${workflowProcessName});
@@ -971,23 +793,19 @@ definition {
 		Click(locator1 = "WorkflowMetrics#DASHBOARD_TOTAL_COMPLETED_ITEMS_TITLE");
 	}
 
-	macro goToWorkflowSLASettings {
+	@summary = "Default summary"
+	macro goToWorkflowSLASettings(workflowProcessName = null) {
 		var key_workflowProcessName = ${workflowProcessName};
 
 		WorkflowMetrics.goToWorkflowProcessMetrics(workflowProcessName = ${workflowProcessName});
-
-		// Workaround for LPS-186021
-
-		while ((IsElementNotPresent(locator1 = "WorkflowMetricsSLA#METRICS_MENU_SLA")) && (maxIterations = "5")) {
-			Refresh();
-		}
 
 		Click(locator1 = "WorkflowMetricsSLA#METRICS_MENU_SLA");
 
 		Click(locator1 = "WorkflowMetricsSLA#METRICS_SLA_SETTINGS");
 	}
 
-	macro searchForAssigneeName {
+	@summary = "Default summary"
+	macro searchForAssigneeName(assigneeName = null) {
 		var key_assigneeName = ${assigneeName};
 
 		Click(locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_SEARCH_ASSIGNEE_NAME");
@@ -1001,17 +819,22 @@ definition {
 			value1 = "\RETURN");
 	}
 
-	macro selectAllReassignTasks {
+	@summary = "Default summary"
+	macro selectAllReassignTasks(taskList = null,taskListUnchecked = null) {
 		var key_taskList = ${taskList};
 		var key_taskListUnchecked = ${taskListUnchecked};
 
 		Check.checkNotVisible(locator1 = "WorkflowAllItems#WORKFLOW_ALL_ITEMS_SELECT_ALL_MODAL");
 
-		Click(locator1 = "Pagination#NEXT_LINK");
+		Click(
+			key_pageNumber = 2,
+			locator1 = "Pagination#ANY_PAGE_MODAL");
 
 		WorkflowMetrics.assertCheckboxUnchecked(taskListUnchecked = ${taskListUnchecked});
 
-		Click(locator1 = "Pagination#PREVIOUS_LINK");
+		Click(
+			key_pageNumber = 1,
+			locator1 = "Pagination#ANY_PAGE_MODAL");
 
 		WorkflowMetrics.assertCheckboxChecked(taskList = ${taskList});
 
@@ -1022,13 +845,15 @@ definition {
 		Click(locator1 = "WorkflowReassignModal#NEXT_BUTTON");
 	}
 
-	macro selectAllTransitionTasks {
+	@summary = "Default summary"
+	macro selectAllTransitionTasks() {
 		Check.checkNotVisible(locator1 = "WorkflowAllItems#WORKFLOW_ALL_ITEMS_SELECT_ALL_MODAL");
 
 		Click(locator1 = "WorkflowReassignModal#NEXT_BUTTON");
 	}
 
-	macro selectDateRange {
+	@summary = "Default summary"
+	macro selectDateRange(startDateRange = null,dateRange = null,selectVelocityDateRange = null,endDateRange = null,title = null) {
 		var key_completionVelocityDateRange = ${selectVelocityDateRange};
 		var key_endDateRange = ${endDateRange};
 		var key_startDateRange = ${startDateRange};
@@ -1051,7 +876,8 @@ definition {
 		Click(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_CUSTOM_RANGE_APPLY");
 	}
 
-	macro selectDateRangePerformanceByAssignee {
+	@summary = "Default summary"
+	macro selectDateRangePerformanceByAssignee(startDateRange = null,selectVelocityDateRange = null,endDateRange = null) {
 		var key_completionVelocityDateRange = ${selectVelocityDateRange};
 		var key_endDateRange = ${endDateRange};
 		var key_startDateRange = ${startDateRange};
@@ -1071,7 +897,8 @@ definition {
 		Click(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_CUSTOM_RANGE_APPLY");
 	}
 
-	macro selectDateRangePerformanceByStep {
+	@summary = "Default summary"
+	macro selectDateRangePerformanceByStep(startDateRange = null,selectVelocityDateRange = null,endDateRange = null) {
 		var key_completionVelocityDateRange = ${selectVelocityDateRange};
 		var key_endDateRange = ${endDateRange};
 		var key_startDateRange = ${startDateRange};
@@ -1091,7 +918,8 @@ definition {
 		Click(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_CUSTOM_RANGE_APPLY");
 	}
 
-	macro selectNewAssignee {
+	@summary = "Default summary"
+	macro selectNewAssignee(taskList = null,nameOfAssignee = null) {
 		for (var itemName : list ${taskList}) {
 			var key_itemName = ${itemName};
 
@@ -1118,7 +946,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro selectNewAssigneeBulkTask {
+	@summary = "Default summary"
+	macro selectNewAssigneeBulkTask(nameOfAssignee = null) {
 		Check.checkNotVisible(locator1 = "WorkflowReassignModal#SELECT_ALL");
 
 		Click(locator1 = "WorkflowReassignModal#BULK_NEW_ASSIGNEE");
@@ -1130,7 +959,8 @@ definition {
 		Click(locator1 = "WorkflowReassignModal#NEXT_BUTTON");
 	}
 
-	macro selectNewAssigneePagination {
+	@summary = "Default summary"
+	macro selectNewAssigneePagination(taskList = null) {
 		for (var itemName : list ${taskList}) {
 			var key_itemName = ${itemName};
 
@@ -1161,7 +991,8 @@ definition {
 		Button.click(button = "Reassign");
 	}
 
-	macro selectReassignTasks {
+	@summary = "Default summary"
+	macro selectReassignTasks(taskList = null) {
 		for (var itemName : list ${taskList}) {
 			var key_itemName = ${itemName};
 
@@ -1175,7 +1006,8 @@ definition {
 		Click(locator1 = "WorkflowReassignModal#NEXT_BUTTON");
 	}
 
-	macro selectStepFilterPerformaceByAssignee {
+	@summary = "Default summary"
+	macro selectStepFilterPerformaceByAssignee(velocityUnit = null) {
 		var key_velocityUnit = ${velocityUnit};
 
 		ScrollWebElementIntoView(locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_ASSIGNEE_VIEW_STEPS_DROPDOWN");
@@ -1197,7 +1029,8 @@ definition {
 		Click(locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_ASSIGNEE_DROPDOWN_STEP_${velocityUnit}");
 	}
 
-	macro selectTransition {
+	@summary = "Default summary"
+	macro selectTransition(taskName = null,transitionOption = null) {
 		var key_taskName = ${taskName};
 
 		Select(
@@ -1205,15 +1038,8 @@ definition {
 			value1 = ${transitionOption});
 	}
 
-	macro selectTransitionTask {
-		Click(
-			locator1 = "WorkflowAllItems#KEBAB_DROPDOWN",
-			task = ${task});
-
-		Click(locator1 = "WorkflowAllItems#REASSIGN_TASK_DROPDOWN");
-	}
-
-	macro selectVelocityUnit {
+	@summary = "Default summary"
+	macro selectVelocityUnit(velocityUnit = null) {
 		var key_velocityUnit = ${velocityUnit};
 
 		Click(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_UNIT_DROPDOWN");
@@ -1221,7 +1047,8 @@ definition {
 		Click(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_UNIT_DROPDOWN_OPTION_${velocityUnit}");
 	}
 
-	macro selectWorkloadByAssigneeCardFilterValue {
+	@summary = "Default summary"
+	macro selectWorkloadByAssigneeCardFilterValue(workflowStep = null) {
 		for (var key_workflowStep : list ${workflowStep}) {
 			Click(locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_CARD_FILTER");
 
@@ -1243,7 +1070,8 @@ definition {
 		}
 	}
 
-	macro selectWorkloadByAssigneeCardFilterValueProcessStep {
+	@summary = "Default summary"
+	macro selectWorkloadByAssigneeCardFilterValueProcessStep(workflowStep = null) {
 		var key_workflowStep = ${workflowStep};
 
 		Click(locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_CARD_FILTER_PROCESS_STEP");
@@ -1265,7 +1093,8 @@ definition {
 		}
 	}
 
-	macro setSLADefinitionsJobInterval {
+	@summary = "Default summary"
+	macro setSLADefinitionsJobInterval(slaJobInterval = null,definitionsJobInterval = null) {
 		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
@@ -1289,7 +1118,8 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro singleReassignSetup {
+	@summary = "Default summary"
+	macro singleReassignSetup(site = null) {
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
 			portlet = "Workflow",
@@ -1310,7 +1140,8 @@ definition {
 			entryTitle = "Blogs Entry Title 1");
 	}
 
-	macro tearDown {
+	@summary = "Default summary"
+	macro tearDown() {
 		WorkflowMetrics.goToWorkflowSLASettings(workflowProcessName = "Single Approver");
 
 		if (IsElementPresent(locator1 = "WorkflowMetricsSLA#SLA_TABLE")) {
@@ -1318,7 +1149,8 @@ definition {
 		}
 	}
 
-	macro validateDueDateBySLA {
+	@summary = "Default summary"
+	macro validateDueDateBySLA(minutesLeft = null,daysLeft = null,hoursLeft = null) {
 		var key_days = ${daysLeft};
 		var key_hours = ${hoursLeft};
 		var key_mins = ${minutesLeft};
@@ -1326,7 +1158,8 @@ definition {
 		AssertElementPresent(locator1 = "WorkflowAllItems#DETAIL_PAGE_ASSET_TIME_LEFT");
 	}
 
-	macro validateDueDateBySLADetails {
+	@summary = "Default summary"
+	macro validateDueDateBySLADetails(slaName = null,itemName = null,statusResult = null,resolutionStatus = null) {
 		Click(
 			key_itemName = ${itemName},
 			locator1 = "WorkflowAllItems#WORKFLOW_DIFFERENTS_INSTANCE_ID");
@@ -1346,7 +1179,8 @@ definition {
 			value1 = ${resolutionStatus});
 	}
 
-	macro validateInstanceDetails {
+	@summary = "Default summary"
+	macro validateInstanceDetails(processStatus = null,slaMessage = null,currentAssignee = null,assetType = null,currentStep = null,instanceId = null,createdBy = null,assetTitle = null) {
 		var key_instanceId = ${instanceId};
 		var key_slaMessage = ${slaMessage};
 		var key_processStatus = ${processStatus};
@@ -1451,7 +1285,8 @@ definition {
 		}
 	}
 
-	macro validateInstanceDetailsSLA {
+	@summary = "Default summary"
+	macro validateInstanceDetailsSLA(openNumber = null,notStartedNumber = null) {
 		if (isSet(openNumber)) {
 			var key_slaNumber = ${openNumber};
 
@@ -1484,7 +1319,8 @@ definition {
 		}
 	}
 
-	macro verifyCustomCalendarExistOrNot {
+	@summary = "Default summary"
+	macro verifyCustomCalendarExistOrNot(calendar = null,durationMessage = null) {
 		var key_calendar = ${calendar};
 		var key_durationMessage = ${durationMessage};
 
@@ -1508,7 +1344,8 @@ definition {
 		}
 	}
 
-	macro verifyDefaultUnitsForEachDateRange {
+	@summary = "Default summary"
+	macro verifyDefaultUnitsForEachDateRange(isPresent = null,isNotPresent = null,completionVelocityDateRange = null) {
 		var key_completionVelocityDateRange = ${completionVelocityDateRange};
 
 		for (var isUnitPresent : list ${isPresent}) {
@@ -1582,69 +1419,81 @@ definition {
 		}
 	}
 
-	macro verifyFiltersFromDashboard {
+	@summary = "Default summary"
+	macro verifyFiltersFromDashboard(isFilterOptionPresent = null) {
 		for (var key_workflowFilterValue : list ${isFilterOptionPresent}) {
 			AssertElementPresent(locator1 = "WorkflowAllItems#WORKFLOW_ALL_ITEMS_FILTER_VALUE");
 		}
 	}
 
-	macro verifyFiltersFromDashboardNotPresent {
+	@summary = "Default summary"
+	macro verifyFiltersFromDashboardNotPresent(isNotPresent = null) {
 		for (var key_workflowFilterValue : list ${isNotPresent}) {
 			AssertElementNotPresent(locator1 = "WorkflowAllItems#WORKFLOW_ALL_ITEMS_FILTER_VALUE");
 		}
 	}
 
-	macro viewAllItemsItemSubject {
+	@summary = "Default summary"
+	macro viewAllItemsItemSubject(workflowItemSubject = null) {
 		AssertElementPresent(
 			key_workflowItemSubject = ${workflowItemSubject},
 			locator1 = "WorkflowMetrics#METRICS_WORKFLOW_ALL_ITEMS_ITEM_SUBJECT");
 	}
 
-	macro viewButtonUpdateDueDateIsAvailable {
+	@summary = "Default summary"
+	macro viewButtonUpdateDueDateIsAvailable() {
 		AssertElementPresent(locator1 = "WorkflowAllItems#DUE_DATE_ICON");
 	}
 
-	macro viewButtonUpdateDueDateIsNotAvailable {
+	@summary = "Default summary"
+	macro viewButtonUpdateDueDateIsNotAvailable() {
 		AssertElementNotPresent(locator1 = "WorkflowAllItems#DUE_DATE_ICON");
 	}
 
-	macro viewCreatedBySort {
+	@summary = "Default summary"
+	macro viewCreatedBySort(position = null) {
 		AssertElementPresent(
 			key_value = ${position},
 			locator1 = "WorkflowMetricsProcessListView#ANY_ARROW_ORDER");
 	}
 
-	macro viewCurrentNode {
+	@summary = "Default summary"
+	macro viewCurrentNode(currentNode = null) {
 		AssertElementPresent(
 			locator1 = "WorkflowAllItems#TRACK_APPROVAL_CURRENT_NODE",
 			value1 = ${currentNode});
 	}
 
-	macro viewCurrentNodeCircleIcon {
+	@summary = "Default summary"
+	macro viewCurrentNodeCircleIcon(currentNode = null) {
 		AssertElementPresent(
 			key_currentNode = ${currentNode},
 			locator1 = "WorkflowAllItems#CURRENT_NODE_CIRCLE_ICON");
 	}
 
-	macro viewCurrentNodeCircleNotPresent {
+	@summary = "Default summary"
+	macro viewCurrentNodeCircleNotPresent(currentNode = null) {
 		AssertElementNotPresent(
 			key_currentNode = ${currentNode},
 			locator1 = "WorkflowAllItems#CURRENT_NODE_CIRCLE_ICON");
 	}
 
-	macro viewCurrentNodeDoneIcon {
+	@summary = "Default summary"
+	macro viewCurrentNodeDoneIcon(currentNode = null) {
 		AssertElementPresent(
 			key_currentNode = ${currentNode},
 			locator1 = "WorkflowAllItems#CURRENT_NODE_DONE_ICON");
 	}
 
-	macro viewDateRangeErrorMessage {
+	@summary = "Default summary"
+	macro viewDateRangeErrorMessage(errorMessage = null) {
 		var key_errorMessage = ${errorMessage};
 
 		AssertElementPresent(locator1 = "WorkflowMetrics#ERROR_MESSAGE_CUSTOM_RANGE");
 	}
 
-	macro viewItemFilterByOnAllItemsPage {
+	@summary = "Default summary"
+	macro viewItemFilterByOnAllItemsPage(filterValueName = null,assigneeName = null,isPresent = null,allItemsFilterName = null,taskName = null,isNotPresent = null) {
 		var key_allItemsFilterName = ${allItemsFilterName};
 		var key_assigneeName = ${assigneeName};
 		var key_taskName = ${taskName};
@@ -1678,35 +1527,8 @@ definition {
 		}
 	}
 
-	macro viewKebabMenuOptionsIsAvailable {
-		Click(locator1 = "Icon#SVG_ELLIPSIS");
-
-		var dropdownItem = ${dropdownItem};
-
-		if (${dropdownItem} == "Reassign Task") {
-			AssertElementPresent(locator1 = "WorkflowAllItems#KEBAB_MENU_OPTIONS");
-		}
-
-		if (${dropdownItem} == "Transition") {
-			AssertElementPresent(locator1 = "WorkflowAllItems#KEBAB_MENU_OPTIONS");
-		}
-
-		if (${dropdownItem} == "Update Due Date") {
-			AssertElementPresent(locator1 = "WorkflowAllItems#KEBAB_MENU_OPTIONS");
-		}
-
-		if (${dropdownItem} == "Track Workflow") {
-			AssertElementPresent(
-				key_menuOption = ${dropdownItem},
-				locator1 = "WorkflowAllItems#KEBAB_MENU_OPTIONS");
-		}
-	}
-
-	macro viewKebabMenuOptionsIsNotAvailable {
-		AssertElementNotPresent(locator1 = "WorkflowAllItems#UPDATE_DUE_DATE_DROPDOWN");
-	}
-
-	macro viewNameHoverTransition {
+	@summary = "Default summary"
+	macro viewNameHoverTransition(nodesTrackWorkflow = null) {
 		SelectFrame(locator1 = "WorkflowAllItems#TRACK_APPROVAL_BODY");
 
 		MouseOver(
@@ -1716,7 +1538,8 @@ definition {
 		AssertElementPresent(locator1 = "WorkflowAllItems#TRANSITION_NAME_HOVER");
 	}
 
-	macro viewPerformanceByAssignee {
+	@summary = "Default summary"
+	macro viewPerformanceByAssignee(taskCount = null,assignee = null,avgCompletionTime = null,isNotPresent = null) {
 		var key_assignee = ${assignee};
 		var key_avgCompletionTime = ${avgCompletionTime};
 		var key_taskCount = ${taskCount};
@@ -1740,7 +1563,8 @@ definition {
 		}
 	}
 
-	macro viewPerformanceByStepFromAndToAreRequiredFields {
+	@summary = "Default summary"
+	macro viewPerformanceByStepFromAndToAreRequiredFields(startDateRange = null,selectVelocityDateRange = null,endDateRange = null) {
 		var key_completionVelocityDateRange = ${selectVelocityDateRange};
 		var key_endDateRange = ${endDateRange};
 		var key_startDateRange = ${startDateRange};
@@ -1768,7 +1592,8 @@ definition {
 		WorkflowMetrics.viewDateRangeErrorMessage(errorMessage = "Please enter a valid date.");
 	}
 
-	macro viewProcessStepDisplaysUpdateStatus {
+	@summary = "Default summary"
+	macro viewProcessStepDisplaysUpdateStatus(workflowAssetTitle = null) {
 		var key_workflowAssetTitle = ${workflowAssetTitle};
 
 		while ((IsElementNotPresent(locator1 = "WorkflowMetrics#METRICS_WORKFLOW_ALL_ITEMS_PROCESS_STEP_DISPLAYS_UPDATE_STATUS")) && (maxIterations = "5")) {
@@ -1778,17 +1603,8 @@ definition {
 		AssertElementPresent(locator1 = "WorkflowMetrics#METRICS_WORKFLOW_ALL_ITEMS_PROCESS_STEP_DISPLAYS_UPDATE_STATUS");
 	}
 
-	macro viewSLAErrorMessage {
-		var key_errorMessage = ${errorMessage};
-
-		AssertElementPresent(locator1 = "WorkflowMetricsSLA#SLA_ERROR_MESSAGE");
-	}
-
-	macro viewSLASuccessMessage {
-		WaitForElementPresent(locator1 = "WorkflowMetricsSLA#SLA_SUCCESS_MESSAGE");
-	}
-
-	macro viewTableSizeInTheAllItems {
+	@summary = "Default summary"
+	macro viewTableSizeInTheAllItems() {
 		var itemTable = ${itemTable};
 		var itemTableSize = ${itemTableSize};
 
@@ -1799,7 +1615,8 @@ definition {
 			value1 = ${itemTableSize});
 	}
 
-	macro viewTaskFilterOnReassignTasks {
+	@summary = "Default summary"
+	macro viewTaskFilterOnReassignTasks() {
 		var key_processStep = ${processStep};
 		var key_assigneeName = ${assigneeName};
 
@@ -1840,7 +1657,8 @@ definition {
 		}
 	}
 
-	macro viewTooltipCompletionVelocity {
+	@summary = "Default summary"
+	macro viewTooltipCompletionVelocity() {
 		MouseOver(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_TOOLTIP");
 
 		AssertTextEquals.assertPartialText(
@@ -1848,13 +1666,15 @@ definition {
 			value1 = "Completion velocity tracks the number of completed workflow instances over the selected time period.");
 	}
 
-	macro viewTrackWorkflowModal {
+	@summary = "Default summary"
+	macro viewTrackWorkflowModal() {
 		SelectFrame(locator1 = "WorkflowAllItems#TRACK_APPROVAL_BODY");
 
 		AssertElementPresent(locator1 = "WorkflowAllItems#TRACK_APPROVAL_BODY");
 	}
 
-	macro viewUserWorkloadByStepOnAllItems {
+	@summary = "Default summary"
+	macro viewUserWorkloadByStepOnAllItems(assigneeName = null,isPresent = null,taskName = null,isNotPresent = null,callingFrom = null) {
 		var key_assigneeName = ${assigneeName};
 		var key_taskName = ${taskName};
 
@@ -1873,7 +1693,8 @@ definition {
 			taskName = ${key_taskName});
 	}
 
-	macro viewWorkloadByAssignee {
+	@summary = "Default summary"
+	macro viewWorkloadByAssignee(assigneeName = null,overdueTaskCount = null,totalPendingTaskCount = null,onTimeTaskCount = null,isNotPresent = null) {
 		var key_assigneeName = ${assigneeName};
 		var key_overdueTaskCount = ${overdueTaskCount};
 		var key_onTimeTaskCount = ${onTimeTaskCount};
@@ -1902,7 +1723,8 @@ definition {
 		}
 	}
 
-	macro viewWorkloadByAssigneeCard {
+	@summary = "Default summary"
+	macro viewWorkloadByAssigneeCard(taskCount = null,tabName = null,assigneeName = null) {
 		var key_tabName = ${tabName};
 		var key_taskCount = ${taskCount};
 		var key_assigneeName = ${assigneeName};
@@ -1920,7 +1742,8 @@ definition {
 			value1 = ${taskCount});
 	}
 
-	macro viewWorkloadByAssigneePage {
+	@summary = "Default summary"
+	macro viewWorkloadByAssigneePage(taskCount = null,assigneeName = null) {
 		var key_taskCount = ${taskCount};
 		var key_assigneeName = ${assigneeName};
 
@@ -1929,13 +1752,14 @@ definition {
 		AssertElementPresent(locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_PAGE_TASKCOUNT");
 	}
 
-	macro waitForCompletedSLA {
+	@summary = "Default summary"
+	macro waitForCompletedSLA(key_expectedValue = null,key_status = null) {
 		while ((IsTextEqual(locator1 = "WorkflowMetrics#DASHBOARD_TOTAL_${key_status}_ITEMS_VALUE", value1 = ${key_expectedValue})) && (maxIterations = "24")) {
 			echo("Waiting 5 seconds, until the Completed SLA shows up");
 
 			// Pausing 5 seconds due to LRQA-53650
 
-			Pause(locator1 = 5000);
+			Pause(value1 = 5000);
 
 			WorkflowMetrics.goToWorkflowProcessMetrics(workflowProcessName = "Single Approver");
 
@@ -1947,13 +1771,14 @@ definition {
 		}
 	}
 
-	macro waitForSLA {
+	@summary = "Default summary"
+	macro waitForSLA(key_expectedValue = null,key_status = null) {
 		while ((IsTextEqual(locator1 = "WorkflowMetrics#DASHBOARD_TOTAL_${key_status}_ITEMS_VALUE", value1 = ${key_expectedValue})) && (maxIterations = "24")) {
 			echo("Waiting 5 seconds to recheck");
 
 			// Pausing 5 seconds due to LRQA-53650
 
-			Pause(locator1 = 5000);
+			Pause(value1 = 5000);
 
 			WorkflowMetrics.goToWorkflowProcessMetrics(workflowProcessName = "Single Approver");
 		}
@@ -1963,7 +1788,8 @@ definition {
 		}
 	}
 
-	macro waitForSLAPendingNotChange {
+	@summary = "Default summary"
+	macro waitForSLAPendingNotChange(key_pauseTime = null,key_expectedValue = null,key_status = null) {
 		var count = 1;
 
 		while (((IsTextEqual(locator1 = "WorkflowMetrics#DASHBOARD_TOTAL_${key_status}_ITEMS_VALUE", value1 = ${key_expectedValue})) && (${count} != ${key_pauseTime})) && (maxIterations = "48")) {
@@ -1973,7 +1799,7 @@ definition {
 
 			// Pausing 5 seconds due to LRQA-53650
 
-			Pause(locator1 = 5000);
+			Pause(value1 = 5000);
 
 			WorkflowMetrics.goToWorkflowProcessMetrics(workflowProcessName = "Single Approver");
 		}

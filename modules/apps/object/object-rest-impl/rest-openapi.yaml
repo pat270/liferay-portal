@@ -8,8 +8,7 @@ components:
                     readOnly: true
                     type: array
                 creator:
-                    allOf:
-                        - $ref: "../../headless/headless-delivery/headless-delivery-impl/rest-openapi.yaml#Creator"
+                    $ref: "../../headless/headless-delivery/headless-delivery-impl/rest-openapi.yaml#Creator"
                     readOnly: true
                 dateCreated:
                     format: date
@@ -28,6 +27,14 @@ components:
                     type: object
         FileEntry:
             properties:
+                fileBase64:
+                    # @review
+                    description:
+                        optional field with the content of the document in Base64, can be embedded with nestedFields
+                        (the format of the nested field must be `<attachment field name>.fileBase64`)
+                    type: string
+                folder:
+                    $ref: "#/components/schemas/Folder"
                 id:
                     format: int64
                     type: integer
@@ -37,6 +44,13 @@ components:
                 name:
                     type: string
             type: object
+        Folder:
+            properties:
+                externalReferenceCode:
+                    type: string
+                siteId:
+                    format: int64
+                    type: integer
         Link:
             properties:
                 href:
@@ -73,8 +87,7 @@ components:
                     readOnly: true
                     type: array
                 creator:
-                    allOf:
-                        - $ref: "../../headless/headless-delivery/headless-delivery-impl/rest-openapi.yaml#Creator"
+                    $ref: "../../headless/headless-delivery/headless-delivery-impl/rest-openapi.yaml#Creator"
                     readOnly: true
                 dateCreated:
                     format: date
@@ -83,7 +96,6 @@ components:
                     format: date
                     type: string
                 externalReferenceCode:
-                    readOnly: true
                     type: string
                 id:
                     format: int64
@@ -104,7 +116,6 @@ components:
                     type: string
                 status:
                     $ref: "#/components/schemas/Status"
-                    readOnly: true
                 taxonomyCategoryBriefs:
                     description:
                         The categories associated with this object entry.
@@ -126,7 +137,6 @@ components:
             properties:
                 code:
                     format: int32
-                    readOnly: true
                     type: integer
                 label:
                     type: string
@@ -184,19 +194,15 @@ paths:
                   schema:
                       type: string
                 - in: query
+                  name: filter
+                  schema:
+                      type: string
+                - in: query
                   name: flatten
                   schema:
                       type: boolean
                 - in: query
                   name: nestedFields
-                  schema:
-                      type: string
-                - in: query
-                  name: restrictFields
-                  schema:
-                      type: string
-                - in: query
-                  name: filter
                   schema:
                       type: string
                 - in: query
@@ -207,6 +213,10 @@ paths:
                   name: pageSize
                   schema:
                       type: integer
+                - in: query
+                  name: restrictFields
+                  schema:
+                      type: string
                 - in: query
                   name: search
                   schema:
@@ -691,12 +701,8 @@ paths:
             responses:
                 200:
                     content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/ObjectEntry"
-                        application/xml:
-                            schema:
-                                $ref: "#/components/schemas/ObjectEntry"
+                        application/json: {}
+                        application/xml: {}
             tags: ["ObjectEntry"]
         put:
             operationId: putObjectEntryPermissionsPage
@@ -707,6 +713,10 @@ paths:
                   schema:
                       format: int64
                       type: integer
+            requestBody:
+                content:
+                    application/json: {}
+                    application/xml: {}
             responses:
                 204:
                     content:
@@ -732,19 +742,15 @@ paths:
                   schema:
                       type: string
                 - in: query
+                  name: filter
+                  schema:
+                      type: string
+                - in: query
                   name: flatten
                   schema:
                       type: boolean
                 - in: query
                   name: nestedFields
-                  schema:
-                      type: string
-                - in: query
-                  name: restrictFields
-                  schema:
-                      type: string
-                - in: query
-                  name: filter
                   schema:
                       type: string
                 - in: query
@@ -755,6 +761,10 @@ paths:
                   name: pageSize
                   schema:
                       type: integer
+                - in: query
+                  name: restrictFields
+                  schema:
+                      type: string
                 - in: query
                   name: search
                   schema:

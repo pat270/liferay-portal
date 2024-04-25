@@ -1,6 +1,6 @@
 <%--
 /**
- * SPDX-FileCopyrightText: (c) 2000 Liferay, Inc. https://liferay.com
+ * SPDX-FileCopyrightText: (c) 2023 Liferay, Inc. https://liferay.com
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 --%>
@@ -32,23 +32,28 @@ page import="com.liferay.configuration.admin.web.internal.display.ConfigurationM
 page import="com.liferay.configuration.admin.web.internal.display.ConfigurationScopeDisplay" %><%@
 page import="com.liferay.configuration.admin.web.internal.display.context.ConfigurationScopeDisplayContext" %><%@
 page import="com.liferay.configuration.admin.web.internal.display.context.ConfigurationScopeDisplayContextFactory" %><%@
+page import="com.liferay.configuration.admin.web.internal.display.context.ConfigurationScopeManagementToolbarDisplayContext" %><%@
 page import="com.liferay.configuration.admin.web.internal.model.ConfigurationModel" %><%@
 page import="com.liferay.configuration.admin.web.internal.util.ConfigurationCategoryUtil" %><%@
 page import="com.liferay.configuration.admin.web.internal.util.ConfigurationEntryIterator" %><%@
 page import="com.liferay.configuration.admin.web.internal.util.ConfigurationEntryRetriever" %><%@
 page import="com.liferay.configuration.admin.web.internal.util.ConfigurationModelIterator" %><%@
-page import="com.liferay.configuration.admin.web.internal.util.ResourceBundleLoaderProvider" %><%@
+page import="com.liferay.configuration.admin.web.internal.util.ResourceBundleLoaderProviderUtil" %><%@
 page import="com.liferay.frontend.taglib.servlet.taglib.util.EmptyResultMessageKeys" %><%@
 page import="com.liferay.petra.string.StringPool" %><%@
 page import="com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClassDefinition" %><%@
 page import="com.liferay.portal.configuration.persistence.listener.ConfigurationModelListenerException" %><%@
+page import="com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil" %><%@
 page import="com.liferay.portal.kernel.language.LanguageUtil" %><%@
+page import="com.liferay.portal.kernel.patcher.PatcherValues" %><%@
 page import="com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder" %><%@
 page import="com.liferay.portal.kernel.resource.bundle.ResourceBundleLoader" %><%@
 page import="com.liferay.portal.kernel.util.HtmlUtil" %><%@
 page import="com.liferay.portal.kernel.util.ListUtil" %><%@
 page import="com.liferay.portal.kernel.util.ParamUtil" %><%@
 page import="com.liferay.portal.kernel.util.PortalUtil" %><%@
+page import="com.liferay.portal.kernel.util.ReleaseInfo" %><%@
+page import="com.liferay.portal.kernel.util.StringUtil" %><%@
 page import="com.liferay.portal.kernel.util.Validator" %><%@
 page import="com.liferay.site.navigation.taglib.servlet.taglib.util.BreadcrumbEntriesUtil" %><%@
 page import="com.liferay.taglib.servlet.PipingServletResponseFactory" %>

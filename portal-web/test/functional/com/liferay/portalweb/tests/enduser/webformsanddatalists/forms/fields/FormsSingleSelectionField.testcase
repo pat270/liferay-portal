@@ -106,10 +106,14 @@ definition {
 			fieldType = "Single Selection",
 			formPageNumber = 0);
 
+		var singleSelectionFieldName = FormFields.getFieldName();
+
 		Type(
 			key_rowNumber = 1,
 			locator1 = "FormFields#OPTIONS_OPTION_VALUE_FIELD",
 			value1 = "Option 1");
+
+		FormFields.clickAddOptionButton();
 
 		Type(
 			key_rowNumber = 2,
@@ -124,20 +128,22 @@ definition {
 			key_selectOption = "Duplicate",
 			locator1 = "FormViewBuilder#SELECT_FIELD_OPTIONS_LIST");
 
+		var duplicatedSingleSelectionFieldName = FormFields.getFieldName();
+
 		FormFields.viewOptionSingleSelection(
-			fieldName = "Single Selection",
+			fieldName = ${singleSelectionFieldName},
 			optionName = "Option 1");
 
 		FormFields.viewOptionSingleSelection(
-			fieldName = "Single Selection",
+			fieldName = ${singleSelectionFieldName},
 			optionName = "Option 2");
 
 		FormFields.viewOptionSingleSelection(
-			fieldName = "Copy of Single Selection",
+			fieldName = ${duplicatedSingleSelectionFieldName},
 			optionName = "Option 1");
 
 		FormFields.viewOptionSingleSelection(
-			fieldName = "Copy of Single Selection",
+			fieldName = ${duplicatedSingleSelectionFieldName},
 			optionName = "Option 2");
 
 		FormViewBuilder.assertHelpTextPresent(
@@ -245,6 +251,8 @@ definition {
 			optionValue = "Option A",
 			rowNumber = 1);
 
+		FormFields.clickAddOptionButton();
+
 		FormFields.editOptionsRow(
 			optionValue = "Option B",
 			rowNumber = 2);
@@ -296,6 +304,8 @@ definition {
 		FormFields.editOptionsRow(
 			optionValue = "Option 1",
 			rowNumber = 1);
+
+		FormFields.clickAddOptionButton();
 
 		FormFields.editOptionsRow(
 			optionValue = "Option 2",
@@ -361,6 +371,8 @@ definition {
 			optionValue = "Option 1",
 			rowNumber = 1);
 
+		FormFields.clickAddOptionButton();
+
 		FormFields.editOptionsRowValueOrFieldReference(
 			optionValue = "Option 2",
 			rowNumber = 2);
@@ -396,6 +408,8 @@ definition {
 		FormFields.editOptionsRow(
 			optionName = "Option1",
 			optionValue = "Option 1");
+
+		FormFields.clickAddOptionButton();
 
 		FormFields.editOptionsRow(
 			optionName = "Option2",
@@ -508,6 +522,8 @@ definition {
 			optionName = "Option 1",
 			optionValue = 1);
 
+		FormFields.clickAddOptionButton();
+
 		FormFields.addSingleSelectionOption(
 			optionName = "Option 2",
 			optionValue = 2);
@@ -544,6 +560,8 @@ definition {
 			key_rowNumber = 1,
 			locator1 = "FormFields#OPTIONS_OPTION_VALUE_FIELD",
 			value1 = "Option 1");
+
+		FormFields.clickAddOptionButton();
 
 		Type(
 			key_rowNumber = 2,
@@ -586,10 +604,14 @@ definition {
 			optionName = "Option1",
 			optionValue = "Option 1");
 
+		FormFields.clickAddOptionButton();
+
 		FormFields.editOptionsRow(
 			optionName = "Option2",
 			optionValue = "Option 2",
 			rowNumber = 2);
+
+		FormFields.clickAddOptionButton();
 
 		FormFields.editOptionsRow(
 			optionName = "Option3",
@@ -645,6 +667,8 @@ definition {
 			optionValue = "Option 1",
 			rowNumber = 1);
 
+		FormFields.clickAddOptionButton();
+
 		FormFields.editOptionsRow(
 			optionName = "Option2",
 			optionValue = "Option 2",
@@ -670,6 +694,8 @@ definition {
 	@description = "Verify that an option can be selected as a Predefined Value"
 	@priority = 5
 	test PredefinedValueCanBeAdded {
+		property portal.upstream = "quarantine";
+
 		FormsAdmin.addForm();
 
 		Form.editName(formName = "Form 1");
@@ -682,6 +708,8 @@ definition {
 		FormFields.addSingleSelectionOption(
 			optionName = "Option 1",
 			optionValue = 1);
+
+		FormFields.clickAddOptionButton();
 
 		FormFields.addSingleSelectionOption(
 			optionName = "Option 2",
@@ -722,6 +750,8 @@ definition {
 		FormFields.editOptionsRow(
 			optionName = "Option1",
 			optionValue = "Option 1");
+
+		FormFields.clickAddOptionButton();
 
 		FormFields.editOptionsRow(
 			optionName = "Option2",
@@ -778,6 +808,7 @@ definition {
 	@priority = 4
 	test SingleSelectionFormFieldAddedBeforeDefaultSiteLanguageToggleCanBeLoaded {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		HeadlessSite.addSite(siteName = "Site Name");
 
@@ -797,6 +828,8 @@ definition {
 			optionName = "Option 1",
 			optionValue = 1);
 
+		FormFields.clickAddOptionButton();
+
 		FormFields.addSingleSelectionOption(
 			optionName = "Option 2",
 			optionValue = 2);
@@ -815,8 +848,10 @@ definition {
 	}
 
 	@description = "LPS-90435 This is a test verify that the Single Selection Form field name and options can be added to non-English default site language site"
+	@priority = 3
 	test SingleSelectionFormFieldNameAndOptionsCanBeAddedToNonEnglishDefaultSiteLanguageSite {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		HeadlessSite.addSite(siteName = "Site Name");
 
@@ -833,6 +868,8 @@ definition {
 		FormFields.addSingleSelectionOption(
 			optionName = "Option 1",
 			optionValue = 1);
+
+		FormFields.clickAddOptionButton();
 
 		FormFields.addSingleSelectionOption(
 			optionName = "Option 2",

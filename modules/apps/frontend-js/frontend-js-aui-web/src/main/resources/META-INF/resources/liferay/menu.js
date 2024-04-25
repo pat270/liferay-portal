@@ -114,13 +114,15 @@ AUI.add(
 
 					handles.length = 0;
 
-					const overlay = instance._overlay;
+					const trigger = instance._activeTrigger;
+
+					const overlay = instance._overlayMap.get(
+						trigger.generateID()
+					);
 
 					if (overlay) {
 						overlay.hide();
 					}
-
-					const trigger = instance._activeTrigger;
 
 					instance._activeMenu = null;
 					instance._activeTrigger = null;
@@ -204,7 +206,13 @@ AUI.add(
 			_getMenu(trigger) {
 				const instance = this;
 
-				let overlay = instance._overlay;
+				if (!instance._overlayMap) {
+					instance._overlayMap = new Map();
+				}
+
+				instance._trigger = trigger;
+
+				let overlay = instance._overlayMap.get(trigger.generateID());
 
 				if (!overlay) {
 					const MenuOverlay = A.Component.create({
@@ -240,10 +248,10 @@ AUI.add(
 					Liferay.once('beforeScreenFlip', () => {
 						overlay.destroy();
 
-						instance._overlay = null;
+						instance._overlayMap.clear();
 					});
 
-					instance._overlay = overlay;
+					instance._overlayMap.set(trigger.generateID(), overlay);
 				}
 				else {
 					overlay.set('align.node', trigger);
@@ -384,7 +392,9 @@ AUI.add(
 				if (menu) {
 					const cssClass = trigger.attr(ATTR_CLASS_NAME);
 
-					const overlay = instance._overlay;
+					const overlay = instance._overlayMap.get(
+						trigger.generateID()
+					);
 
 					const align = overlay.get('align');
 
@@ -522,10 +532,20 @@ AUI.add(
 			() => {
 				const menuInstance = Menu._INSTANCE;
 
-				let focusManager = menuInstance._focusManager;
+				const trigger = menuInstance._trigger;
+
+				if (!menuInstance._focusManagerMap) {
+					menuInstance._focusManagerMap = new Map();
+				}
+
+				let focusManager = menuInstance._focusManagerMap.get(
+					trigger.generateID()
+				);
 
 				if (!focusManager) {
-					const bodyNode = menuInstance._overlay.bodyNode;
+					const bodyNode = menuInstance._overlayMap.get(
+						trigger.generateID()
+					).bodyNode;
 
 					bodyNode.plug(A.Plugin.NodeFocusManager, {
 						circular: true,
@@ -582,10 +602,15 @@ AUI.add(
 						}
 					});
 
-					menuInstance._focusManager = focusManager;
+					menuInstance._focusManagerMap.set(
+						trigger.generateID(),
+						focusManager
+					);
 
 					Liferay.once('beforeScreenFlip', () => {
-						menuInstance._focusManager = null;
+						menuInstance._focusManagerMap = null;
+
+						menuInstance._trigger = null;
 					});
 				}
 
@@ -761,6 +786,6 @@ AUI.add(
 	},
 	'',
 	{
-		requires: ['array-invoke', 'aui-debounce', 'aui-node'],
+		requires: ['aui-component', 'array-invoke', 'aui-debounce', 'aui-node'],
 	}
 );

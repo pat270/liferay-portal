@@ -45,6 +45,7 @@ export default function APIApplicationsTable({
 				dataToUpdate: {
 					applicationStatus: {key: 'published'},
 				},
+				method: 'PATCH',
 				onError,
 				onSuccess: () => {
 					loadData();
@@ -69,6 +70,7 @@ export default function APIApplicationsTable({
 								dataToUpdate: {
 									applicationStatus: {key: 'unpublished'},
 								},
+								method: 'PATCH',
 								onError,
 								onSuccess: () => {
 									closeModal();
@@ -101,7 +103,9 @@ export default function APIApplicationsTable({
 						apiApplicationsURLPath: apiURLPaths.applications,
 						basePath,
 						closeModal,
+						editURL,
 						loadData,
+						portletId,
 					}),
 				id: 'createAPIApplicationModal',
 				size: 'md',

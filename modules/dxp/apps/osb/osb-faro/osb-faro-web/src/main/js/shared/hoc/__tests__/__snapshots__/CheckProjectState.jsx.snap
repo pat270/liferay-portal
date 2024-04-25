@@ -9,7 +9,9 @@ exports[`SuccessDisplayIf should render a scheduled maintenance error page if th
       class="header-container"
     >
       <a
+        class=""
         href="https://liferay.com"
+        rel="noreferrer noopener"
         target="_blank"
       >
         <svg
@@ -17,9 +19,14 @@ exports[`SuccessDisplayIf should render a scheduled maintenance error page if th
           role="presentation"
         >
           <use
-            xlink:href="#liferay-logo"
+            href="#liferay-logo"
           />
         </svg>
+        <span
+          class="sr-only"
+        >
+          (Opens a new window)
+        </span>
       </a>
       <div>
         <button
@@ -44,7 +51,7 @@ exports[`SuccessDisplayIf should render a scheduled maintenance error page if th
               role="presentation"
             >
               <use
-                xlink:href="#caret-bottom"
+                href="#caret-bottom"
               />
             </svg>
           </div>
@@ -68,7 +75,7 @@ exports[`SuccessDisplayIf should render a scheduled maintenance error page if th
               role="presentation"
             >
               <use
-                xlink:href="#ac-logo"
+                href="#ac-logo"
               />
             </svg>
             <span
@@ -103,7 +110,9 @@ exports[`SuccessDisplayIf should render activating display if project state is "
       class="header-container"
     >
       <a
+        class=""
         href="https://liferay.com"
+        rel="noreferrer noopener"
         target="_blank"
       >
         <svg
@@ -111,9 +120,14 @@ exports[`SuccessDisplayIf should render activating display if project state is "
           role="presentation"
         >
           <use
-            xlink:href="#liferay-logo"
+            href="#liferay-logo"
           />
         </svg>
+        <span
+          class="sr-only"
+        >
+          (Opens a new window)
+        </span>
       </a>
       <div>
         <button
@@ -138,7 +152,7 @@ exports[`SuccessDisplayIf should render activating display if project state is "
               role="presentation"
             >
               <use
-                xlink:href="#caret-bottom"
+                href="#caret-bottom"
               />
             </svg>
           </div>
@@ -162,7 +176,7 @@ exports[`SuccessDisplayIf should render activating display if project state is "
               role="presentation"
             >
               <use
-                xlink:href="#ac-logo"
+                href="#ac-logo"
               />
             </svg>
             <span
@@ -239,7 +253,9 @@ exports[`SuccessDisplayIf should render activating display if project state is "
       class="header-container"
     >
       <a
+        class=""
         href="https://liferay.com"
+        rel="noreferrer noopener"
         target="_blank"
       >
         <svg
@@ -247,9 +263,14 @@ exports[`SuccessDisplayIf should render activating display if project state is "
           role="presentation"
         >
           <use
-            xlink:href="#liferay-logo"
+            href="#liferay-logo"
           />
         </svg>
+        <span
+          class="sr-only"
+        >
+          (Opens a new window)
+        </span>
       </a>
       <div>
         <button
@@ -274,7 +295,7 @@ exports[`SuccessDisplayIf should render activating display if project state is "
               role="presentation"
             >
               <use
-                xlink:href="#caret-bottom"
+                href="#caret-bottom"
               />
             </svg>
           </div>
@@ -298,7 +319,7 @@ exports[`SuccessDisplayIf should render activating display if project state is "
               role="presentation"
             >
               <use
-                xlink:href="#ac-logo"
+                href="#ac-logo"
               />
             </svg>
             <span
@@ -341,7 +362,9 @@ exports[`SuccessDisplayIf should render an error page if there was an error fetc
       class="header-container"
     >
       <a
+        class=""
         href="https://liferay.com"
+        rel="noreferrer noopener"
         target="_blank"
       >
         <svg
@@ -349,9 +372,14 @@ exports[`SuccessDisplayIf should render an error page if there was an error fetc
           role="presentation"
         >
           <use
-            xlink:href="#liferay-logo"
+            href="#liferay-logo"
           />
         </svg>
+        <span
+          class="sr-only"
+        >
+          (Opens a new window)
+        </span>
       </a>
       <div>
         <button
@@ -376,7 +404,7 @@ exports[`SuccessDisplayIf should render an error page if there was an error fetc
               role="presentation"
             >
               <use
-                xlink:href="#caret-bottom"
+                href="#caret-bottom"
               />
             </svg>
           </div>
@@ -400,7 +428,7 @@ exports[`SuccessDisplayIf should render an error page if there was an error fetc
               role="presentation"
             >
               <use
-                xlink:href="#ac-logo"
+                href="#ac-logo"
               />
             </svg>
             <span
@@ -430,7 +458,7 @@ exports[`SuccessDisplayIf should render an error page if there was an error fetc
                 role="presentation"
               >
                 <use
-                  xlink:href="#exclamation-circle"
+                  href="#exclamation-circle"
                 />
               </svg>
                
@@ -476,7 +504,9 @@ exports[`SuccessDisplayIf should render an unavailable error page if the project
       class="header-container"
     >
       <a
+        class=""
         href="https://liferay.com"
+        rel="noreferrer noopener"
         target="_blank"
       >
         <svg
@@ -484,9 +514,14 @@ exports[`SuccessDisplayIf should render an unavailable error page if the project
           role="presentation"
         >
           <use
-            xlink:href="#liferay-logo"
+            href="#liferay-logo"
           />
         </svg>
+        <span
+          class="sr-only"
+        >
+          (Opens a new window)
+        </span>
       </a>
       <div>
         <button
@@ -511,7 +546,7 @@ exports[`SuccessDisplayIf should render an unavailable error page if the project
               role="presentation"
             >
               <use
-                xlink:href="#caret-bottom"
+                href="#caret-bottom"
               />
             </svg>
           </div>
@@ -535,7 +570,7 @@ exports[`SuccessDisplayIf should render an unavailable error page if the project
               role="presentation"
             >
               <use
-                xlink:href="#ac-logo"
+                href="#ac-logo"
               />
             </svg>
             <span

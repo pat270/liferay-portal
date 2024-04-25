@@ -26,6 +26,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ADD_PANEL_OPEN</td>
+	<td>//div[contains(@class,'lfr-add-panel')][contains(@class,'open')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -61,7 +66,7 @@
 
 <tr>
 	<td>WIDGET_CATEGORY</td>
-	<td>//div[contains(@class,'panel-group')]//*[contains(@class,'subtitle') and *[normalize-space(text())='${key_category}']]</td>
+	<td>//button[contains(@class,'panel-header') and contains(.,'${key_category}')]</td>
 	<td></td>
 </tr>
 </tbody>

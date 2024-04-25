@@ -20,3 +20,16 @@ GlobalJSCET globalJSCET = editClientExtensionEntryDisplayContext.getCET();
 		<liferay-ui:message key="this-javascript-is-appended-to-main-js" />
 	</div>
 </aui:field-wrapper>
+
+<c:if test='<%= FeatureFlagManagerUtil.isEnabled("LPD-10981") %>'>
+	<aui:field-wrapper cssClass="form-group">
+		<react:component
+			module="{ScriptElementAttributesFormField} from client-extension-web"
+			props='<%=
+				HashMapBuilder.<String, Object>put(
+					"scriptElementAttributesJSON", globalJSCET.getScriptElementAttributesJSON()
+				).build()
+			%>'
+		/>
+	</aui:field-wrapper>
+</c:if>

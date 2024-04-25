@@ -15,13 +15,16 @@ import com.liferay.object.constants.ObjectActionConstants;
 import com.liferay.object.constants.ObjectActionExecutorConstants;
 import com.liferay.object.constants.ObjectActionTriggerConstants;
 import com.liferay.object.constants.ObjectFieldConstants;
+import com.liferay.object.definition.util.ObjectDefinitionUtil;
 import com.liferay.object.exception.DuplicateObjectActionExternalReferenceCodeException;
+import com.liferay.object.exception.LockedObjectActionException;
 import com.liferay.object.exception.ObjectActionConditionExpressionException;
 import com.liferay.object.exception.ObjectActionErrorMessageException;
 import com.liferay.object.exception.ObjectActionExecutorKeyException;
 import com.liferay.object.exception.ObjectActionLabelException;
 import com.liferay.object.exception.ObjectActionNameException;
 import com.liferay.object.exception.ObjectActionParametersException;
+import com.liferay.object.exception.ObjectActionSystemException;
 import com.liferay.object.exception.ObjectActionTriggerKeyException;
 import com.liferay.object.internal.action.trigger.util.ObjectActionTriggerUtil;
 import com.liferay.object.internal.security.permission.resource.util.ObjectDefinitionResourcePermissionUtil;
@@ -35,13 +38,16 @@ import com.liferay.object.scripting.validator.ObjectScriptingValidator;
 import com.liferay.object.service.ObjectFieldLocalService;
 import com.liferay.object.service.base.ObjectActionLocalServiceBaseImpl;
 import com.liferay.object.service.persistence.ObjectDefinitionPersistence;
+import com.liferay.object.tree.TreeFactory;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.lock.LockManagerUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.DestinationNames;
@@ -61,6 +67,8 @@ import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
+import com.liferay.portal.security.script.management.configuration.helper.ScriptManagementConfigurationHelper;
 
 import java.util.HashMap;
 import java.util.List;
@@ -89,8 +97,11 @@ public class ObjectActionLocalServiceImpl
 			Map<Locale, String> errorMessageMap, Map<Locale, String> labelMap,
 			String name, String objectActionExecutorKey,
 			String objectActionTriggerKey,
-			UnicodeProperties parametersUnicodeProperties)
+			UnicodeProperties parametersUnicodeProperties, boolean system)
 		throws PortalException {
+
+		_validateInvokerBundle(
+			"Only allowed bundles can add system object actions", system);
 
 		ObjectDefinition objectDefinition =
 			_objectDefinitionPersistence.findByPrimaryKey(objectDefinitionId);
@@ -136,6 +147,7 @@ public class ObjectActionLocalServiceImpl
 		objectAction.setObjectActionExecutorKey(objectActionExecutorKey);
 		objectAction.setObjectActionTriggerKey(objectActionTriggerKey);
 		objectAction.setParameters(parametersUnicodeProperties.toString());
+		objectAction.setSystem(system);
 		objectAction.setStatus(ObjectActionConstants.STATUS_NEVER_RAN);
 
 		objectAction = objectActionPersistence.update(objectAction);
@@ -146,9 +158,16 @@ public class ObjectActionLocalServiceImpl
 				ObjectActionTriggerConstants.KEY_STANDALONE)) {
 
 			try {
+				if (objectDefinition.isRootDescendantNode()) {
+					objectDefinition =
+						_objectDefinitionPersistence.findByPrimaryKey(
+							objectDefinition.getRootObjectDefinitionId());
+				}
+
 				ObjectDefinitionResourcePermissionUtil.populateResourceActions(
 					objectActionLocalService, objectDefinition,
-					_portletLocalService, _resourceActions);
+					_objectDefinitionPersistence, _portletLocalService,
+					_resourceActions, _treeFactory);
 			}
 			catch (Exception exception) {
 				ReflectionUtil.throwException(exception);
@@ -166,7 +185,7 @@ public class ObjectActionLocalServiceImpl
 			String description, Map<Locale, String> errorMessageMap,
 			Map<Locale, String> labelMap, String name,
 			String objectActionExecutorKey, String objectActionTriggerKey,
-			UnicodeProperties parametersUnicodeProperties)
+			UnicodeProperties parametersUnicodeProperties, boolean system)
 		throws PortalException {
 
 		ObjectAction existingObjectAction = null;
@@ -200,7 +219,7 @@ public class ObjectActionLocalServiceImpl
 			externalReferenceCode, userId, objectDefinitionId, active,
 			conditionExpression, description, errorMessageMap, labelMap, name,
 			objectActionExecutorKey, objectActionTriggerKey,
-			parametersUnicodeProperties);
+			parametersUnicodeProperties, system);
 	}
 
 	@Indexable(type = IndexableType.DELETE)
@@ -217,7 +236,13 @@ public class ObjectActionLocalServiceImpl
 	@Indexable(type = IndexableType.DELETE)
 	@Override
 	@SystemEvent(type = SystemEventConstants.TYPE_DELETE)
-	public ObjectAction deleteObjectAction(ObjectAction objectAction) {
+	public ObjectAction deleteObjectAction(ObjectAction objectAction)
+		throws PortalException {
+
+		_validateInvokerBundle(
+			"Only allowed bundles can delete system object actions",
+			objectAction.isSystem());
+
 		objectAction = objectActionPersistence.remove(objectAction);
 
 		ObjectDefinition objectDefinition =
@@ -249,12 +274,36 @@ public class ObjectActionLocalServiceImpl
 	}
 
 	@Override
+	public ObjectAction fetchObjectAction(
+		String externalReferenceCode, long objectDefinitionId) {
+
+		ObjectDefinition objectDefinition =
+			_objectDefinitionPersistence.fetchByPrimaryKey(objectDefinitionId);
+
+		if (objectDefinition == null) {
+			return null;
+		}
+
+		return objectActionPersistence.fetchByERC_C_ODI(
+			externalReferenceCode, objectDefinition.getCompanyId(),
+			objectDefinitionId);
+	}
+
+	@Override
 	public ObjectAction getObjectAction(
 			long objectDefinitionId, String name, String objectActionTriggerKey)
 		throws PortalException {
 
 		return objectActionPersistence.findByODI_A_N_OATK(
 			objectDefinitionId, true, name, objectActionTriggerKey);
+	}
+
+	@Override
+	public List<ObjectAction> getObjectActions(
+		boolean active, String objectActionExecutorKey) {
+
+		return objectActionPersistence.findByA_OAEK(
+			active, objectActionExecutorKey);
 	}
 
 	@Override
@@ -284,6 +333,16 @@ public class ObjectActionLocalServiceImpl
 
 		ObjectAction objectAction = objectActionPersistence.findByPrimaryKey(
 			objectActionId);
+
+		if (objectAction.isSystem() &&
+			!ObjectDefinitionUtil.isInvokerBundleAllowed()) {
+
+			_validateLabel(labelMap);
+
+			objectAction.setLabelMap(labelMap, LocaleUtil.getSiteDefault());
+
+			return objectActionPersistence.update(objectAction);
+		}
 
 		_validateExternalReferenceCode(
 			externalReferenceCode, objectAction.getObjectActionId(),
@@ -335,15 +394,37 @@ public class ObjectActionLocalServiceImpl
 
 	@Indexable(type = IndexableType.REINDEX)
 	@Override
-	public ObjectAction updateStatus(long objectActionId, int status)
+	public synchronized ObjectAction updateStatus(
+			long objectActionId, int status)
 		throws PortalException {
 
-		ObjectAction objectAction = objectActionPersistence.findByPrimaryKey(
-			objectActionId);
+		boolean locked = LockManagerUtil.isLocked(
+			ObjectAction.class.getName(), objectActionId);
 
-		objectAction.setStatus(status);
+		if (locked) {
+			throw new LockedObjectActionException(
+				String.format(
+					"Unable to update the status of object action %d because " +
+						"it is being updated by another thread",
+					objectActionId));
+		}
 
-		return objectActionPersistence.update(objectAction);
+		try {
+			LockManagerUtil.lock(
+				ObjectAction.class.getName(), String.valueOf(objectActionId),
+				PortalUUIDUtil.generate());
+
+			ObjectAction objectAction =
+				objectActionPersistence.findByPrimaryKey(objectActionId);
+
+			objectAction.setStatus(status);
+
+			return objectActionPersistence.update(objectAction);
+		}
+		finally {
+			LockManagerUtil.unlock(
+				ObjectAction.class.getName(), objectActionId);
+		}
 	}
 
 	private void _validateErrorMessage(
@@ -380,6 +461,16 @@ public class ObjectActionLocalServiceImpl
 
 			throw new DuplicateObjectActionExternalReferenceCodeException();
 		}
+	}
+
+	private void _validateInvokerBundle(String message, boolean system)
+		throws PortalException {
+
+		if (!system || ObjectDefinitionUtil.isInvokerBundleAllowed()) {
+			return;
+		}
+
+		throw new ObjectActionSystemException(message);
 	}
 
 	private void _validateLabel(Map<Locale, String> labelMap)
@@ -440,6 +531,16 @@ public class ObjectActionLocalServiceImpl
 			return;
 		}
 
+		if (Objects.equals(
+				ObjectActionExecutorConstants.KEY_GROOVY,
+				objectActionExecutorKey) &&
+			!_scriptManagementConfigurationHelper.
+				isAllowScriptContentToBeExecutedOrIncluded()) {
+
+			throw new ObjectActionExecutorKeyException(
+				"Groovy script based object actions are not allowed");
+		}
+
 		ObjectActionExecutor objectActionExecutor =
 			_objectActionExecutorRegistry.getObjectActionExecutor(
 				objectDefinition.getCompanyId(), objectActionExecutorKey);
@@ -482,7 +583,20 @@ public class ObjectActionLocalServiceImpl
 			ObjectDefinition objectDefinition)
 		throws PortalException {
 
-		if (Objects.equals(
+		if (FeatureFlagManagerUtil.isEnabled("LPS-187142") &&
+			StringUtil.equals(
+				objectActionTriggerKey,
+				ObjectActionTriggerConstants.KEY_ON_AFTER_ROOT_UPDATE) &&
+			!objectDefinition.isRootNode()) {
+
+			throw new ObjectActionTriggerKeyException(
+				StringBundler.concat(
+					"The object action trigger key ",
+					ObjectActionTriggerConstants.KEY_ON_AFTER_ROOT_UPDATE,
+					" can only be used by a root object definition"));
+		}
+
+		if (StringUtil.equals(
 				objectActionTriggerKey,
 				ObjectActionTriggerConstants.KEY_STANDALONE)) {
 
@@ -607,7 +721,9 @@ public class ObjectActionLocalServiceImpl
 					objectActionExecutorKey,
 					ObjectActionExecutorConstants.KEY_ADD_OBJECT_ENTRY) &&
 				 (!objectDefinition.isActive() ||
-				  !objectDefinition.isApproved()))) {
+				  !objectDefinition.isApproved()) &&
+				 !(objectDefinition.isModifiable() &&
+				   objectDefinition.isSystem()))) {
 
 				errorMessageKeys.put("objectDefinitionId", "invalid");
 			}
@@ -704,7 +820,10 @@ public class ObjectActionLocalServiceImpl
 			ObjectField objectField = _objectFieldLocalService.fetchObjectField(
 				objectDefinitionId, name);
 
-			if (objectField == null) {
+			if ((objectField == null) ||
+				objectField.compareBusinessType(
+					ObjectFieldConstants.BUSINESS_TYPE_AUTO_INCREMENT)) {
+
 				predefinedValuesErrorMessageKeys.put(name, "invalid");
 
 				continue;
@@ -813,6 +932,13 @@ public class ObjectActionLocalServiceImpl
 
 	@Reference
 	private ResourceActions _resourceActions;
+
+	@Reference
+	private ScriptManagementConfigurationHelper
+		_scriptManagementConfigurationHelper;
+
+	@Reference
+	private TreeFactory _treeFactory;
 
 	@Reference
 	private UserLocalService _userLocalService;

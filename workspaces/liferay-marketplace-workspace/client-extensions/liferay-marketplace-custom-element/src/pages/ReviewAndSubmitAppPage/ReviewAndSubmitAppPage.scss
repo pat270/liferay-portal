@@ -35,6 +35,16 @@
 				transition: color 0.3s;
 			}
 
+			&-icon {
+				background-position: 50% 50%;
+				background-repeat: 'no-repeat';
+				background-size: cover;
+				border-radius: 10px;
+				max-height: 6.5rem;
+				object-fit: scale-down;
+				width: 6.5rem;
+			}
+
 			&-title {
 				display: flex;
 				flex-direction: column;
@@ -44,6 +54,8 @@
 					font-size: 24px;
 					font-weight: 700;
 					line-height: 28px;
+					word-break: break-word;
+					word-wrap: break-word;
 				}
 
 				&-version {

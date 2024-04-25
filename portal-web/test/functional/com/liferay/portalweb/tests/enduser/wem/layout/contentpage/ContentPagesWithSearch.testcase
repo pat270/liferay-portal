@@ -4,7 +4,6 @@ definition {
 	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testcase.url = "http://localhost:8080";
 	property testray.main.component.name = "Content Pages";
 
 	static var randomSiteName = StringUtil.randomString(8);
@@ -12,6 +11,10 @@ definition {
 	var siteURLKey = StringUtil.toLowerCase(${randomSiteName});
 
 	setUp {
+		task ("Set up virtual instance") {
+			TestCase.setUpPortalInstance();
+		}
+
 		task ("Sign in") {
 			User.firstLoginPG();
 		}
@@ -50,6 +53,7 @@ definition {
 	test CannotSearchContentPageWithoutPublishedVersion {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given a page creator has a content page with Heading fragment and keeps it as draft") {
 			ContentPagesNavigator.openEditContentPage(
@@ -66,19 +70,19 @@ definition {
 				pageName = "Search",
 				siteName = ${randomSiteName});
 
-			SearchPortlets.searchEmbedded(searchTerm = "Content Page");
+			SearchPage.searchEmbedded(searchTerm = "Content Page");
 		}
 
 		task ("Then the page creator should view empty search results") {
-			SearchResultPortlet.viewNoSearchResults(searchTerm = "Content Page");
+			SearchResults.viewNoSearchResults(searchTerm = "Content Page");
 		}
 
 		task ("When the page creator search the content on content page in Search Bar") {
-			SearchPortlets.searchEmbedded(searchTerm = "Heading Example");
+			SearchPage.searchEmbedded(searchTerm = "Heading Example");
 		}
 
 		task ("Then the page creator should view empty search results") {
-			SearchResultPortlet.viewNoSearchResults(searchTerm = "Heading Example");
+			SearchResults.viewNoSearchResults(searchTerm = "Heading Example");
 		}
 	}
 
@@ -87,6 +91,7 @@ definition {
 	test FilterByTypeFacet {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Add a Type Facet to Search page") {
 			JSONLayout.addWidgetToPublicLayout(
@@ -127,19 +132,21 @@ definition {
 		}
 
 		task ("View both the content page and web content shown in the search results") {
-			Search.viewResultAssetTitle(searchAssetTitle = "Test Content Page Name");
+			SearchResults.viewSearchResults(searchAssetTitle = "Test Content Page Name");
 
-			Search.viewResultAssetTitle(searchAssetTitle = "Web Content Title");
+			SearchResults.viewSearchResults(searchAssetTitle = "Web Content Title");
 		}
 
 		task ("Check the Page type in Type Facet") {
-			SearchFacetPortlet.checkFacet(facetValueName = "Page");
+			SearchFacets.checkFacetTerm(
+				facetName = "Type Facet",
+				facetTerm = "Page");
 		}
 
 		task ("View only the content page shown in the search results") {
-			Search.viewResultAssetTitle(searchAssetTitle = "Test Content Page Name");
+			SearchResults.viewSearchResults(searchAssetTitle = "Test Content Page Name");
 
-			Search.viewNoResultAssetTitle(searchAssetTitle = "Web Content Title");
+			SearchResults.viewSearchResultNotPresent(searchAssetTitle = "Web Content Title");
 		}
 	}
 
@@ -148,6 +155,7 @@ definition {
 	test SearchByInlineText {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Add a Heading fragment to page") {
 			ContentPagesNavigator.openEditContentPage(
@@ -174,7 +182,7 @@ definition {
 		}
 
 		task ("View the content page shown in the search results") {
-			Search.viewResultAssetTitle(searchAssetTitle = "Test Content Page Name");
+			SearchResults.viewSearchResults(searchAssetTitle = "Test Content Page Name");
 		}
 
 		task ("Edit the inline text") {
@@ -203,7 +211,7 @@ definition {
 		}
 
 		task ("View the content page shown in the search results") {
-			Search.viewResultAssetTitle(searchAssetTitle = "Test Content Page Name");
+			SearchResults.viewSearchResults(searchAssetTitle = "Test Content Page Name");
 		}
 
 		task ("Search by default inline text") {
@@ -211,7 +219,7 @@ definition {
 		}
 
 		task ("View the content page not shown in the search results") {
-			Search.viewNoResultAssetTitle(searchAssetTitle = "Test Content Page Name");
+			SearchResults.viewSearchResultNotPresent(searchAssetTitle = "Test Content Page Name");
 		}
 	}
 
@@ -220,6 +228,7 @@ definition {
 	test SearchByNotEditableText {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Add a fragment collection") {
 			JSONFragment.addFragmentCollection(
@@ -271,7 +280,7 @@ definition {
 		}
 
 		task ("View the content page shown in the search results") {
-			Search.viewResultAssetTitle(searchAssetTitle = "Test Content Page Name");
+			SearchResults.viewSearchResults(searchAssetTitle = "Test Content Page Name");
 		}
 	}
 
@@ -279,6 +288,7 @@ definition {
 	@priority = 4
 	test SearchPageInSelectModalWhenMapPageToEditableField {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Add a parent widget page") {
 			JSONLayout.addPublicLayout(
@@ -289,13 +299,15 @@ definition {
 		task ("Add a child widget page") {
 			JSONLayout.addPublicLayout(
 				groupName = ${randomSiteName},
-				layoutName = "Test Child Page Name");
+				layoutName = "Test Child Page Name",
+				parentLayoutName = "Test Parent Page Name");
 		}
 
 		task ("Add a grandchild widget page") {
 			JSONLayout.addPublicLayout(
 				groupName = ${randomSiteName},
-				layoutName = "Test Grand Child Page Name");
+				layoutName = "Test Grand Child Page Name",
+				parentLayoutName = "Test Child Page Name");
 		}
 
 		task ("Add a Banner Center fragment to page") {
@@ -356,8 +368,8 @@ definition {
 	@description = "This is a use case for LPS-164924. Able to search page with workflow by inline text or map content."
 	@priority = 4
 	test SearchPageWithWorkflowByInlineTextAndMapContent {
-		property ci.retries.disabled = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given enable workflow for Content Pages") {
 			Workflow.openWorkflowAdmin(siteURLKey = ${siteURLKey});
@@ -412,7 +424,7 @@ definition {
 			}
 
 			task ("View the content page is shown in the search results") {
-				Search.viewResultAssetTitle(searchAssetTitle = "Test Content Page Name");
+				SearchResults.viewSearchResults(searchAssetTitle = "Test Content Page Name");
 			}
 		}
 
@@ -491,7 +503,7 @@ definition {
 			}
 
 			task ("View the content page is shown in the search results") {
-				Search.viewResultAssetTitle(searchAssetTitle = "Test Content Page Name 2");
+				SearchResults.viewSearchResults(searchAssetTitle = "Test Content Page Name 2");
 			}
 		}
 	}
@@ -500,6 +512,7 @@ definition {
 	@priority = 3
 	test ViewContentPageNotShownInSearchResultsAfterDeleteCategory {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Publish the content page") {
 			JSONLayout.publishLayout(
@@ -545,7 +558,7 @@ definition {
 		}
 
 		task ("View the content page is shown in the search results") {
-			Search.viewResultAssetTitle(searchAssetTitle = "Test Content Page Name");
+			SearchResults.viewSearchResults(searchAssetTitle = "Test Content Page Name");
 		}
 
 		task ("Delete the category") {
@@ -566,7 +579,7 @@ definition {
 		}
 
 		task ("View the content page is not shown in the search results") {
-			Search.viewNoResultAssetTitle(searchAssetTitle = "Test Content Page Name");
+			SearchResults.viewSearchResultNotPresent(searchAssetTitle = "Test Content Page Name");
 		}
 	}
 
@@ -575,6 +588,7 @@ definition {
 	test ViewContentPageShownInSearchResultsAfterExecuteReindexAll {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Add a Paragraph fragment to content page") {
 			ContentPagesNavigator.openEditContentPage(
@@ -616,7 +630,7 @@ definition {
 
 		task ("View both content page and web content shown in the search results") {
 			for (var title : list "Test Content Page Name,Searchable Web Content Title") {
-				Search.viewResultAssetTitle(searchAssetTitle = ${title});
+				SearchResults.viewSearchResults(searchAssetTitle = ${title});
 			}
 		}
 
@@ -636,7 +650,7 @@ definition {
 
 		task ("View both content page and web content are still shown in the search results") {
 			for (var title : list "Test Content Page Name,Searchable Web Content Title") {
-				Search.viewResultAssetTitle(searchAssetTitle = ${title});
+				SearchResults.viewSearchResults(searchAssetTitle = ${title});
 			}
 		}
 	}
@@ -644,6 +658,9 @@ definition {
 	@description = "This is a test for LPS-163785. View content page shown in search results after remove View permissions for guest."
 	@priority = 4
 	test ViewContentPageShownInSearchResultsAfterRemoveViewPermissionForGuest {
+		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
+
 		task ("Given a user has a content page with a Paragraph fragment") {
 			ContentPagesNavigator.openEditContentPage(
 				pageName = "Test Content Page Name",
@@ -680,7 +697,7 @@ definition {
 
 			Search.searchCP(searchTerm = "lorem");
 
-			Search.viewResultAssetTitle(searchAssetTitle = "Test Content Page Name");
+			SearchResults.viewSearchResults(searchAssetTitle = "Test Content Page Name");
 		}
 	}
 

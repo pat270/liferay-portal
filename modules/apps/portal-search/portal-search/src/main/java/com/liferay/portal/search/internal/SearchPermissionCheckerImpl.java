@@ -211,7 +211,7 @@ public class SearchPermissionCheckerImpl implements SearchPermissionChecker {
 		throws Exception {
 
 		for (SearchPermissionFieldContributor searchPermissionFieldContributor :
-				_searchPermissionFieldContributorRegistry.
+				SearchPermissionFieldContributorRegistryUtil.
 					getSearchPermissionFieldContributors()) {
 
 			searchPermissionFieldContributor.contribute(
@@ -264,7 +264,9 @@ public class SearchPermissionCheckerImpl implements SearchPermissionChecker {
 						_roleLocalService.getRoles(
 							permissionChecker.getRoleIds(userId, groupId))) {
 
-					if (role.getType() == RoleConstants.TYPE_REGULAR) {
+					if ((role.getType() == RoleConstants.TYPE_DEPOT) ||
+						(role.getType() == RoleConstants.TYPE_REGULAR)) {
+
 						roles.add(role);
 					}
 				}
@@ -581,11 +583,6 @@ public class SearchPermissionCheckerImpl implements SearchPermissionChecker {
 
 	private volatile SearchPermissionCheckerConfiguration
 		_searchPermissionCheckerConfiguration;
-
-	@Reference
-	private SearchPermissionFieldContributorRegistry
-		_searchPermissionFieldContributorRegistry;
-
 	private ServiceTrackerList<SearchPermissionFilterContributor>
 		_serviceTrackerList;
 

@@ -16,10 +16,8 @@ import com.liferay.dynamic.data.mapping.test.util.DDMFormValuesTestUtil;
 import com.liferay.portal.json.JSONFactoryImpl;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONUtil;
-import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
-import com.liferay.portal.util.HtmlImpl;
 
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -100,9 +98,6 @@ public class SelectDDMFormFieldValueRendererAccessorTest {
 
 		selectDDMFormFieldValueRenderer.selectDDMFormFieldValueAccessor =
 			_createSelectDDMFormFieldValueAccessor();
-
-		ReflectionTestUtil.setFieldValue(
-			selectDDMFormFieldValueRenderer, "_html", new HtmlImpl());
 
 		return selectDDMFormFieldValueRenderer;
 	}

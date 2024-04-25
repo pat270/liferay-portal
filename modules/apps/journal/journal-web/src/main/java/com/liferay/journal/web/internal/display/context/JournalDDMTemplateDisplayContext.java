@@ -98,11 +98,11 @@ public class JournalDDMTemplateDisplayContext {
 		return ddmTemplateActionDropdownItems.getActionDropdownItems();
 	}
 
-	public SearchContainer<DDMTemplate> getDDMTemplateSearch()
+	public SearchContainer<DDMTemplate> getDDMTemplateSearchContainer()
 		throws Exception {
 
-		if (_ddmTemplateSearch != null) {
-			return _ddmTemplateSearch;
+		if (_ddmTemplateSearchContainer != null) {
+			return _ddmTemplateSearchContainer;
 		}
 
 		String emptyResultsMessage = "there-are-no-templates";
@@ -111,12 +111,14 @@ public class JournalDDMTemplateDisplayContext {
 			emptyResultsMessage = "no-templates-were-found";
 		}
 
-		SearchContainer<DDMTemplate> ddmTemplateSearch = new SearchContainer(
-			_renderRequest, _getPortletURL(), null, emptyResultsMessage);
+		SearchContainer<DDMTemplate> ddmTemplateSearchContainer =
+			new SearchContainer(
+				_renderRequest, _getPortletURL(), null, emptyResultsMessage);
 
-		ddmTemplateSearch.setOrderByCol(getOrderByCol());
-		ddmTemplateSearch.setOrderByComparator(_getOrderByComparator());
-		ddmTemplateSearch.setOrderByType(getOrderByType());
+		ddmTemplateSearchContainer.setOrderByCol(getOrderByCol());
+		ddmTemplateSearchContainer.setOrderByComparator(
+			_getOrderByComparator());
+		ddmTemplateSearchContainer.setOrderByType(getOrderByType());
 
 		long[] groupIds = {_themeDisplay.getScopeGroupId()};
 
@@ -130,7 +132,7 @@ public class JournalDDMTemplateDisplayContext {
 		long[] templateGroupIds = groupIds;
 
 		if (Validator.isNotNull(_getKeywords())) {
-			ddmTemplateSearch.setResultsAndTotal(
+			ddmTemplateSearchContainer.setResultsAndTotal(
 				() -> {
 					List<DDMTemplate> ddmTemplates =
 						DDMTemplateServiceUtil.search(
@@ -142,16 +144,16 @@ public class JournalDDMTemplateDisplayContext {
 							PortalUtil.getClassNameId(JournalArticle.class),
 							_getKeywords(), StringPool.BLANK, StringPool.BLANK,
 							WorkflowConstants.STATUS_ANY,
-							ddmTemplateSearch.getStart(),
-							ddmTemplateSearch.getEnd(),
-							ddmTemplateSearch.getOrderByComparator());
+							ddmTemplateSearchContainer.getStart(),
+							ddmTemplateSearchContainer.getEnd(),
+							ddmTemplateSearchContainer.getOrderByComparator());
 
 					List<DDMTemplate> sortedDDMTemplates = new ArrayList<>(
 						ddmTemplates);
 
 					Collections.sort(
 						sortedDDMTemplates,
-						ddmTemplateSearch.getOrderByComparator());
+						ddmTemplateSearchContainer.getOrderByComparator());
 
 					return sortedDDMTemplates;
 				},
@@ -164,7 +166,7 @@ public class JournalDDMTemplateDisplayContext {
 					WorkflowConstants.STATUS_ANY));
 		}
 		else {
-			ddmTemplateSearch.setResultsAndTotal(
+			ddmTemplateSearchContainer.setResultsAndTotal(
 				() -> {
 					List<DDMTemplate> ddmTemplates =
 						DDMTemplateServiceUtil.getTemplates(
@@ -174,16 +176,16 @@ public class JournalDDMTemplateDisplayContext {
 							},
 							_getDDMTemplateClassPKs(),
 							PortalUtil.getClassNameId(JournalArticle.class),
-							ddmTemplateSearch.getStart(),
-							ddmTemplateSearch.getEnd(),
-							ddmTemplateSearch.getOrderByComparator());
+							ddmTemplateSearchContainer.getStart(),
+							ddmTemplateSearchContainer.getEnd(),
+							ddmTemplateSearchContainer.getOrderByComparator());
 
 					List<DDMTemplate> sortedDDMTemplates = new ArrayList<>(
 						ddmTemplates);
 
 					Collections.sort(
 						sortedDDMTemplates,
-						ddmTemplateSearch.getOrderByComparator());
+						ddmTemplateSearchContainer.getOrderByComparator());
 
 					return sortedDDMTemplates;
 				},
@@ -194,12 +196,12 @@ public class JournalDDMTemplateDisplayContext {
 					PortalUtil.getClassNameId(JournalArticle.class)));
 		}
 
-		ddmTemplateSearch.setRowChecker(
+		ddmTemplateSearchContainer.setRowChecker(
 			new EmptyOnClickRowChecker(_renderResponse));
 
-		_ddmTemplateSearch = ddmTemplateSearch;
+		_ddmTemplateSearchContainer = ddmTemplateSearchContainer;
 
-		return ddmTemplateSearch;
+		return ddmTemplateSearchContainer;
 	}
 
 	public String getDisplayStyle() {
@@ -324,6 +326,17 @@ public class JournalDDMTemplateDisplayContext {
 				return null;
 			}
 		).setParameter(
+			"classPK",
+			() -> {
+				long classPK = ParamUtil.getLong(_renderRequest, "classPK");
+
+				if (classPK > 0) {
+					return classPK;
+				}
+
+				return null;
+			}
+		).setParameter(
 			"orderByCol",
 			() -> {
 				String orderByCol = getOrderByCol();
@@ -352,7 +365,7 @@ public class JournalDDMTemplateDisplayContext {
 
 	private Long _classPK;
 	private DDMStructure _ddmStructure;
-	private SearchContainer<DDMTemplate> _ddmTemplateSearch;
+	private SearchContainer<DDMTemplate> _ddmTemplateSearchContainer;
 	private String _displayStyle;
 	private final HttpServletRequest _httpServletRequest;
 	private final JournalWebConfiguration _journalWebConfiguration;

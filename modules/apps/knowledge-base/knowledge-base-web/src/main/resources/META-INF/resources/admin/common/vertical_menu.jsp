@@ -8,7 +8,7 @@
 <%@ include file="/admin/common/init.jsp" %>
 
 <%
-KBAdminNavigationDisplayContext kbAdminNavigationDisplayContext = new KBAdminNavigationDisplayContext(request, renderRequest, renderResponse);
+KBAdminNavigationDisplayContext kbAdminNavigationDisplayContext = new KBAdminNavigationDisplayContext(request, renderRequest, renderResponse, trashHelper);
 %>
 
 <div class="knowledge-base-vertical-bar <%= kbAdminNavigationDisplayContext.isProductMenuOpen() ? StringPool.BLANK : "expanded" %>" id="<portlet:namespace />verticalBarId">
@@ -16,7 +16,7 @@ KBAdminNavigationDisplayContext kbAdminNavigationDisplayContext = new KBAdminNav
 
 	<react:component
 		componentId="verticalBarId"
-		module="admin/js/components/VerticalBar"
+		module="{VerticalBar} from knowledge-base-web"
 		props='<%=
 			HashMapBuilder.<String, Object>put(
 				"items", kbAdminNavigationDisplayContext.getVerticalNavigationJSONObjects()

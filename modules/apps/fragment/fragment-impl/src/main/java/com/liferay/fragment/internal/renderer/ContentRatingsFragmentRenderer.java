@@ -51,7 +51,13 @@ public class ContentRatingsFragmentRenderer
 							"name", "itemSelector"
 						).put(
 							"type", "itemSelector"
-						))))
+						))
+				).put(
+					"label",
+					_language.format(
+						fragmentRendererContext.getLocale(), "x-options",
+						"content-ratings", true)
+				))
 		).toString();
 	}
 
@@ -73,12 +79,13 @@ public class ContentRatingsFragmentRenderer
 
 		RatingsTag ratingsTag = new RatingsTag();
 
-		Tuple displayObject = getDisplayObject(
+		Tuple displayObjectTuple = getDisplayObjectTuple(
 			fragmentRendererContext, httpServletRequest);
 
 		ratingsTag.setClassName(
-			GetterUtil.getString(displayObject.getObject(0)));
-		ratingsTag.setClassPK(GetterUtil.getLong(displayObject.getObject(1)));
+			GetterUtil.getString(displayObjectTuple.getObject(0)));
+		ratingsTag.setClassPK(
+			GetterUtil.getLong(displayObjectTuple.getObject(1)));
 
 		ratingsTag.setInTrash(false);
 

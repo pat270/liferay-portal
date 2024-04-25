@@ -14,7 +14,9 @@ import com.liferay.commerce.product.model.impl.CPAttachmentFileEntryModelImpl;
 import com.liferay.commerce.product.service.persistence.CPAttachmentFileEntryPersistence;
 import com.liferay.commerce.product.service.persistence.CPAttachmentFileEntryUtil;
 import com.liferay.commerce.product.service.persistence.impl.constants.CommercePersistenceConstants;
+import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
@@ -25,13 +27,19 @@ import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
+import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.sanitizer.Sanitizer;
+import com.liferay.portal.kernel.sanitizer.SanitizerException;
+import com.liferay.portal.kernel.sanitizer.SanitizerUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
+import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PropsKeys;
@@ -39,7 +47,7 @@ import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.kernel.uuid.PortalUUID;
+import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 
 import java.io.Serializable;
 
@@ -173,109 +181,111 @@ public class CPAttachmentFileEntryPersistenceImpl
 		OrderByComparator<CPAttachmentFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		uuid = Objects.toString(uuid, "");
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
 
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			CPAttachmentFileEntry.class);
+			uuid = Objects.toString(uuid, "");
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = null;
+			Object[] finderArgs = null;
 
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			(orderByComparator == null)) {
+			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
+				(orderByComparator == null)) {
 
-			if (useFinderCache && productionMode) {
-				finderPath = _finderPathWithoutPaginationFindByUuid;
-				finderArgs = new Object[] {uuid};
+				if (useFinderCache) {
+					finderPath = _finderPathWithoutPaginationFindByUuid;
+					finderArgs = new Object[] {uuid};
+				}
 			}
-		}
-		else if (useFinderCache && productionMode) {
-			finderPath = _finderPathWithPaginationFindByUuid;
-			finderArgs = new Object[] {uuid, start, end, orderByComparator};
-		}
+			else if (useFinderCache) {
+				finderPath = _finderPathWithPaginationFindByUuid;
+				finderArgs = new Object[] {uuid, start, end, orderByComparator};
+			}
 
-		List<CPAttachmentFileEntry> list = null;
+			List<CPAttachmentFileEntry> list = null;
 
-		if (useFinderCache && productionMode) {
-			list = (List<CPAttachmentFileEntry>)finderCache.getResult(
-				finderPath, finderArgs, this);
+			if (useFinderCache) {
+				list = (List<CPAttachmentFileEntry>)finderCache.getResult(
+					finderPath, finderArgs, this);
 
-			if ((list != null) && !list.isEmpty()) {
-				for (CPAttachmentFileEntry cpAttachmentFileEntry : list) {
-					if (!uuid.equals(cpAttachmentFileEntry.getUuid())) {
-						list = null;
+				if ((list != null) && !list.isEmpty()) {
+					for (CPAttachmentFileEntry cpAttachmentFileEntry : list) {
+						if (!uuid.equals(cpAttachmentFileEntry.getUuid())) {
+							list = null;
 
-						break;
+							break;
+						}
 					}
 				}
 			}
-		}
 
-		if (list == null) {
-			StringBundler sb = null;
+			if (list == null) {
+				StringBundler sb = null;
 
-			if (orderByComparator != null) {
-				sb = new StringBundler(
-					3 + (orderByComparator.getOrderByFields().length * 2));
-			}
-			else {
-				sb = new StringBundler(3);
-			}
-
-			sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
-
-			boolean bindUuid = false;
-
-			if (uuid.isEmpty()) {
-				sb.append(_FINDER_COLUMN_UUID_UUID_3);
-			}
-			else {
-				bindUuid = true;
-
-				sb.append(_FINDER_COLUMN_UUID_UUID_2);
-			}
-
-			if (orderByComparator != null) {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
-			}
-			else {
-				sb.append(CPAttachmentFileEntryModelImpl.ORDER_BY_JPQL);
-			}
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				if (bindUuid) {
-					queryPos.add(uuid);
+				if (orderByComparator != null) {
+					sb = new StringBundler(
+						3 + (orderByComparator.getOrderByFields().length * 2));
+				}
+				else {
+					sb = new StringBundler(3);
 				}
 
-				list = (List<CPAttachmentFileEntry>)QueryUtil.list(
-					query, getDialect(), start, end);
+				sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
 
-				cacheResult(list);
+				boolean bindUuid = false;
 
-				if (useFinderCache && productionMode) {
-					finderCache.putResult(finderPath, finderArgs, list);
+				if (uuid.isEmpty()) {
+					sb.append(_FINDER_COLUMN_UUID_UUID_3);
+				}
+				else {
+					bindUuid = true;
+
+					sb.append(_FINDER_COLUMN_UUID_UUID_2);
+				}
+
+				if (orderByComparator != null) {
+					appendOrderByComparator(
+						sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+				}
+				else {
+					sb.append(CPAttachmentFileEntryModelImpl.ORDER_BY_JPQL);
+				}
+
+				String sql = sb.toString();
+
+				Session session = null;
+
+				try {
+					session = openSession();
+
+					Query query = session.createQuery(sql);
+
+					QueryPos queryPos = QueryPos.getInstance(query);
+
+					if (bindUuid) {
+						queryPos.add(uuid);
+					}
+
+					list = (List<CPAttachmentFileEntry>)QueryUtil.list(
+						query, getDialect(), start, end);
+
+					cacheResult(list);
+
+					if (useFinderCache) {
+						finderCache.putResult(finderPath, finderArgs, list);
+					}
+				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
 				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return list;
+			return list;
+		}
 	}
 
 	/**
@@ -582,70 +592,64 @@ public class CPAttachmentFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countByUuid(String uuid) {
-		uuid = Objects.toString(uuid, "");
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
 
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			CPAttachmentFileEntry.class);
+			uuid = Objects.toString(uuid, "");
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = _finderPathCountByUuid;
 
-		Long count = null;
+			Object[] finderArgs = new Object[] {uuid};
 
-		if (productionMode) {
-			finderPath = _finderPathCountByUuid;
+			Long count = (Long)finderCache.getResult(
+				finderPath, finderArgs, this);
 
-			finderArgs = new Object[] {uuid};
+			if (count == null) {
+				StringBundler sb = new StringBundler(2);
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
-		}
+				sb.append(_SQL_COUNT_CPATTACHMENTFILEENTRY_WHERE);
 
-		if (count == null) {
-			StringBundler sb = new StringBundler(2);
+				boolean bindUuid = false;
 
-			sb.append(_SQL_COUNT_CPATTACHMENTFILEENTRY_WHERE);
+				if (uuid.isEmpty()) {
+					sb.append(_FINDER_COLUMN_UUID_UUID_3);
+				}
+				else {
+					bindUuid = true;
 
-			boolean bindUuid = false;
-
-			if (uuid.isEmpty()) {
-				sb.append(_FINDER_COLUMN_UUID_UUID_3);
-			}
-			else {
-				bindUuid = true;
-
-				sb.append(_FINDER_COLUMN_UUID_UUID_2);
-			}
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				if (bindUuid) {
-					queryPos.add(uuid);
+					sb.append(_FINDER_COLUMN_UUID_UUID_2);
 				}
 
-				count = (Long)query.uniqueResult();
+				String sql = sb.toString();
 
-				if (productionMode) {
+				Session session = null;
+
+				try {
+					session = openSession();
+
+					Query query = session.createQuery(sql);
+
+					QueryPos queryPos = QueryPos.getInstance(query);
+
+					if (bindUuid) {
+						queryPos.add(uuid);
+					}
+
+					count = (Long)query.uniqueResult();
+
 					finderCache.putResult(finderPath, finderArgs, count);
 				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
+				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return count.intValue();
+			return count.intValue();
+		}
 	}
 
 	private static final String _FINDER_COLUMN_UUID_UUID_2 =
@@ -719,108 +723,102 @@ public class CPAttachmentFileEntryPersistenceImpl
 	public CPAttachmentFileEntry fetchByUUID_G(
 		String uuid, long groupId, boolean useFinderCache) {
 
-		uuid = Objects.toString(uuid, "");
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
 
-		Object[] finderArgs = null;
+			uuid = Objects.toString(uuid, "");
 
-		if (useFinderCache) {
-			finderArgs = new Object[] {uuid, groupId};
-		}
+			Object[] finderArgs = null;
 
-		Object result = null;
-
-		if (useFinderCache) {
-			result = finderCache.getResult(
-				_finderPathFetchByUUID_G, finderArgs, this);
-		}
-
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			CPAttachmentFileEntry.class);
-
-		if (result instanceof CPAttachmentFileEntry) {
-			CPAttachmentFileEntry cpAttachmentFileEntry =
-				(CPAttachmentFileEntry)result;
-
-			if (!Objects.equals(uuid, cpAttachmentFileEntry.getUuid()) ||
-				(groupId != cpAttachmentFileEntry.getGroupId())) {
-
-				result = null;
-			}
-			else if (!ctPersistenceHelper.isProductionMode(
-						CPAttachmentFileEntry.class,
-						cpAttachmentFileEntry.getPrimaryKey())) {
-
-				result = null;
-			}
-		}
-		else if (!productionMode && (result instanceof List<?>)) {
-			result = null;
-		}
-
-		if (result == null) {
-			StringBundler sb = new StringBundler(4);
-
-			sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
-
-			boolean bindUuid = false;
-
-			if (uuid.isEmpty()) {
-				sb.append(_FINDER_COLUMN_UUID_G_UUID_3);
-			}
-			else {
-				bindUuid = true;
-
-				sb.append(_FINDER_COLUMN_UUID_G_UUID_2);
+			if (useFinderCache) {
+				finderArgs = new Object[] {uuid, groupId};
 			}
 
-			sb.append(_FINDER_COLUMN_UUID_G_GROUPID_2);
+			Object result = null;
 
-			String sql = sb.toString();
+			if (useFinderCache) {
+				result = finderCache.getResult(
+					_finderPathFetchByUUID_G, finderArgs, this);
+			}
 
-			Session session = null;
+			if (result instanceof CPAttachmentFileEntry) {
+				CPAttachmentFileEntry cpAttachmentFileEntry =
+					(CPAttachmentFileEntry)result;
 
-			try {
-				session = openSession();
+				if (!Objects.equals(uuid, cpAttachmentFileEntry.getUuid()) ||
+					(groupId != cpAttachmentFileEntry.getGroupId())) {
 
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				if (bindUuid) {
-					queryPos.add(uuid);
+					result = null;
 				}
+			}
 
-				queryPos.add(groupId);
+			if (result == null) {
+				StringBundler sb = new StringBundler(4);
 
-				List<CPAttachmentFileEntry> list = query.list();
+				sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
 
-				if (list.isEmpty()) {
-					if (useFinderCache && productionMode) {
-						finderCache.putResult(
-							_finderPathFetchByUUID_G, finderArgs, list);
-					}
+				boolean bindUuid = false;
+
+				if (uuid.isEmpty()) {
+					sb.append(_FINDER_COLUMN_UUID_G_UUID_3);
 				}
 				else {
-					CPAttachmentFileEntry cpAttachmentFileEntry = list.get(0);
+					bindUuid = true;
 
-					result = cpAttachmentFileEntry;
+					sb.append(_FINDER_COLUMN_UUID_G_UUID_2);
+				}
 
-					cacheResult(cpAttachmentFileEntry);
+				sb.append(_FINDER_COLUMN_UUID_G_GROUPID_2);
+
+				String sql = sb.toString();
+
+				Session session = null;
+
+				try {
+					session = openSession();
+
+					Query query = session.createQuery(sql);
+
+					QueryPos queryPos = QueryPos.getInstance(query);
+
+					if (bindUuid) {
+						queryPos.add(uuid);
+					}
+
+					queryPos.add(groupId);
+
+					List<CPAttachmentFileEntry> list = query.list();
+
+					if (list.isEmpty()) {
+						if (useFinderCache) {
+							finderCache.putResult(
+								_finderPathFetchByUUID_G, finderArgs, list);
+						}
+					}
+					else {
+						CPAttachmentFileEntry cpAttachmentFileEntry = list.get(
+							0);
+
+						result = cpAttachmentFileEntry;
+
+						cacheResult(cpAttachmentFileEntry);
+					}
+				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
 				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		if (result instanceof List<?>) {
-			return null;
-		}
-		else {
-			return (CPAttachmentFileEntry)result;
+			if (result instanceof List<?>) {
+				return null;
+			}
+			else {
+				return (CPAttachmentFileEntry)result;
+			}
 		}
 	}
 
@@ -850,74 +848,68 @@ public class CPAttachmentFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countByUUID_G(String uuid, long groupId) {
-		uuid = Objects.toString(uuid, "");
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
 
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			CPAttachmentFileEntry.class);
+			uuid = Objects.toString(uuid, "");
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = _finderPathCountByUUID_G;
 
-		Long count = null;
+			Object[] finderArgs = new Object[] {uuid, groupId};
 
-		if (productionMode) {
-			finderPath = _finderPathCountByUUID_G;
+			Long count = (Long)finderCache.getResult(
+				finderPath, finderArgs, this);
 
-			finderArgs = new Object[] {uuid, groupId};
+			if (count == null) {
+				StringBundler sb = new StringBundler(3);
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
-		}
+				sb.append(_SQL_COUNT_CPATTACHMENTFILEENTRY_WHERE);
 
-		if (count == null) {
-			StringBundler sb = new StringBundler(3);
+				boolean bindUuid = false;
 
-			sb.append(_SQL_COUNT_CPATTACHMENTFILEENTRY_WHERE);
+				if (uuid.isEmpty()) {
+					sb.append(_FINDER_COLUMN_UUID_G_UUID_3);
+				}
+				else {
+					bindUuid = true;
 
-			boolean bindUuid = false;
-
-			if (uuid.isEmpty()) {
-				sb.append(_FINDER_COLUMN_UUID_G_UUID_3);
-			}
-			else {
-				bindUuid = true;
-
-				sb.append(_FINDER_COLUMN_UUID_G_UUID_2);
-			}
-
-			sb.append(_FINDER_COLUMN_UUID_G_GROUPID_2);
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				if (bindUuid) {
-					queryPos.add(uuid);
+					sb.append(_FINDER_COLUMN_UUID_G_UUID_2);
 				}
 
-				queryPos.add(groupId);
+				sb.append(_FINDER_COLUMN_UUID_G_GROUPID_2);
 
-				count = (Long)query.uniqueResult();
+				String sql = sb.toString();
 
-				if (productionMode) {
+				Session session = null;
+
+				try {
+					session = openSession();
+
+					Query query = session.createQuery(sql);
+
+					QueryPos queryPos = QueryPos.getInstance(query);
+
+					if (bindUuid) {
+						queryPos.add(uuid);
+					}
+
+					queryPos.add(groupId);
+
+					count = (Long)query.uniqueResult();
+
 					finderCache.putResult(finderPath, finderArgs, count);
 				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
+				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return count.intValue();
+			return count.intValue();
+		}
 	}
 
 	private static final String _FINDER_COLUMN_UUID_G_UUID_2 =
@@ -1012,117 +1004,120 @@ public class CPAttachmentFileEntryPersistenceImpl
 		OrderByComparator<CPAttachmentFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		uuid = Objects.toString(uuid, "");
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
 
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			CPAttachmentFileEntry.class);
+			uuid = Objects.toString(uuid, "");
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = null;
+			Object[] finderArgs = null;
 
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			(orderByComparator == null)) {
+			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
+				(orderByComparator == null)) {
 
-			if (useFinderCache && productionMode) {
-				finderPath = _finderPathWithoutPaginationFindByUuid_C;
-				finderArgs = new Object[] {uuid, companyId};
+				if (useFinderCache) {
+					finderPath = _finderPathWithoutPaginationFindByUuid_C;
+					finderArgs = new Object[] {uuid, companyId};
+				}
 			}
-		}
-		else if (useFinderCache && productionMode) {
-			finderPath = _finderPathWithPaginationFindByUuid_C;
-			finderArgs = new Object[] {
-				uuid, companyId, start, end, orderByComparator
-			};
-		}
+			else if (useFinderCache) {
+				finderPath = _finderPathWithPaginationFindByUuid_C;
+				finderArgs = new Object[] {
+					uuid, companyId, start, end, orderByComparator
+				};
+			}
 
-		List<CPAttachmentFileEntry> list = null;
+			List<CPAttachmentFileEntry> list = null;
 
-		if (useFinderCache && productionMode) {
-			list = (List<CPAttachmentFileEntry>)finderCache.getResult(
-				finderPath, finderArgs, this);
+			if (useFinderCache) {
+				list = (List<CPAttachmentFileEntry>)finderCache.getResult(
+					finderPath, finderArgs, this);
 
-			if ((list != null) && !list.isEmpty()) {
-				for (CPAttachmentFileEntry cpAttachmentFileEntry : list) {
-					if (!uuid.equals(cpAttachmentFileEntry.getUuid()) ||
-						(companyId != cpAttachmentFileEntry.getCompanyId())) {
+				if ((list != null) && !list.isEmpty()) {
+					for (CPAttachmentFileEntry cpAttachmentFileEntry : list) {
+						if (!uuid.equals(cpAttachmentFileEntry.getUuid()) ||
+							(companyId !=
+								cpAttachmentFileEntry.getCompanyId())) {
 
-						list = null;
+							list = null;
 
-						break;
+							break;
+						}
 					}
 				}
 			}
-		}
 
-		if (list == null) {
-			StringBundler sb = null;
+			if (list == null) {
+				StringBundler sb = null;
 
-			if (orderByComparator != null) {
-				sb = new StringBundler(
-					4 + (orderByComparator.getOrderByFields().length * 2));
-			}
-			else {
-				sb = new StringBundler(4);
-			}
-
-			sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
-
-			boolean bindUuid = false;
-
-			if (uuid.isEmpty()) {
-				sb.append(_FINDER_COLUMN_UUID_C_UUID_3);
-			}
-			else {
-				bindUuid = true;
-
-				sb.append(_FINDER_COLUMN_UUID_C_UUID_2);
-			}
-
-			sb.append(_FINDER_COLUMN_UUID_C_COMPANYID_2);
-
-			if (orderByComparator != null) {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
-			}
-			else {
-				sb.append(CPAttachmentFileEntryModelImpl.ORDER_BY_JPQL);
-			}
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				if (bindUuid) {
-					queryPos.add(uuid);
+				if (orderByComparator != null) {
+					sb = new StringBundler(
+						4 + (orderByComparator.getOrderByFields().length * 2));
+				}
+				else {
+					sb = new StringBundler(4);
 				}
 
-				queryPos.add(companyId);
+				sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
 
-				list = (List<CPAttachmentFileEntry>)QueryUtil.list(
-					query, getDialect(), start, end);
+				boolean bindUuid = false;
 
-				cacheResult(list);
+				if (uuid.isEmpty()) {
+					sb.append(_FINDER_COLUMN_UUID_C_UUID_3);
+				}
+				else {
+					bindUuid = true;
 
-				if (useFinderCache && productionMode) {
-					finderCache.putResult(finderPath, finderArgs, list);
+					sb.append(_FINDER_COLUMN_UUID_C_UUID_2);
+				}
+
+				sb.append(_FINDER_COLUMN_UUID_C_COMPANYID_2);
+
+				if (orderByComparator != null) {
+					appendOrderByComparator(
+						sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+				}
+				else {
+					sb.append(CPAttachmentFileEntryModelImpl.ORDER_BY_JPQL);
+				}
+
+				String sql = sb.toString();
+
+				Session session = null;
+
+				try {
+					session = openSession();
+
+					Query query = session.createQuery(sql);
+
+					QueryPos queryPos = QueryPos.getInstance(query);
+
+					if (bindUuid) {
+						queryPos.add(uuid);
+					}
+
+					queryPos.add(companyId);
+
+					list = (List<CPAttachmentFileEntry>)QueryUtil.list(
+						query, getDialect(), start, end);
+
+					cacheResult(list);
+
+					if (useFinderCache) {
+						finderCache.putResult(finderPath, finderArgs, list);
+					}
+				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
 				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return list;
+			return list;
+		}
 	}
 
 	/**
@@ -1451,74 +1446,68 @@ public class CPAttachmentFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countByUuid_C(String uuid, long companyId) {
-		uuid = Objects.toString(uuid, "");
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
 
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			CPAttachmentFileEntry.class);
+			uuid = Objects.toString(uuid, "");
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = _finderPathCountByUuid_C;
 
-		Long count = null;
+			Object[] finderArgs = new Object[] {uuid, companyId};
 
-		if (productionMode) {
-			finderPath = _finderPathCountByUuid_C;
+			Long count = (Long)finderCache.getResult(
+				finderPath, finderArgs, this);
 
-			finderArgs = new Object[] {uuid, companyId};
+			if (count == null) {
+				StringBundler sb = new StringBundler(3);
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
-		}
+				sb.append(_SQL_COUNT_CPATTACHMENTFILEENTRY_WHERE);
 
-		if (count == null) {
-			StringBundler sb = new StringBundler(3);
+				boolean bindUuid = false;
 
-			sb.append(_SQL_COUNT_CPATTACHMENTFILEENTRY_WHERE);
+				if (uuid.isEmpty()) {
+					sb.append(_FINDER_COLUMN_UUID_C_UUID_3);
+				}
+				else {
+					bindUuid = true;
 
-			boolean bindUuid = false;
-
-			if (uuid.isEmpty()) {
-				sb.append(_FINDER_COLUMN_UUID_C_UUID_3);
-			}
-			else {
-				bindUuid = true;
-
-				sb.append(_FINDER_COLUMN_UUID_C_UUID_2);
-			}
-
-			sb.append(_FINDER_COLUMN_UUID_C_COMPANYID_2);
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				if (bindUuid) {
-					queryPos.add(uuid);
+					sb.append(_FINDER_COLUMN_UUID_C_UUID_2);
 				}
 
-				queryPos.add(companyId);
+				sb.append(_FINDER_COLUMN_UUID_C_COMPANYID_2);
 
-				count = (Long)query.uniqueResult();
+				String sql = sb.toString();
 
-				if (productionMode) {
+				Session session = null;
+
+				try {
+					session = openSession();
+
+					Query query = session.createQuery(sql);
+
+					QueryPos queryPos = QueryPos.getInstance(query);
+
+					if (bindUuid) {
+						queryPos.add(uuid);
+					}
+
+					queryPos.add(companyId);
+
+					count = (Long)query.uniqueResult();
+
 					finderCache.putResult(finderPath, finderArgs, count);
 				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
+				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return count.intValue();
+			return count.intValue();
+		}
 	}
 
 	private static final String _FINDER_COLUMN_UUID_C_UUID_2 =
@@ -1529,6 +1518,526 @@ public class CPAttachmentFileEntryPersistenceImpl
 
 	private static final String _FINDER_COLUMN_UUID_C_COMPANYID_2 =
 		"cpAttachmentFileEntry.companyId = ?";
+
+	private FinderPath _finderPathWithPaginationFindByFileEntryId;
+	private FinderPath _finderPathWithoutPaginationFindByFileEntryId;
+	private FinderPath _finderPathCountByFileEntryId;
+
+	/**
+	 * Returns all the cp attachment file entries where fileEntryId = &#63;.
+	 *
+	 * @param fileEntryId the file entry ID
+	 * @return the matching cp attachment file entries
+	 */
+	@Override
+	public List<CPAttachmentFileEntry> findByFileEntryId(long fileEntryId) {
+		return findByFileEntryId(
+			fileEntryId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+	}
+
+	/**
+	 * Returns a range of all the cp attachment file entries where fileEntryId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPAttachmentFileEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param fileEntryId the file entry ID
+	 * @param start the lower bound of the range of cp attachment file entries
+	 * @param end the upper bound of the range of cp attachment file entries (not inclusive)
+	 * @return the range of matching cp attachment file entries
+	 */
+	@Override
+	public List<CPAttachmentFileEntry> findByFileEntryId(
+		long fileEntryId, int start, int end) {
+
+		return findByFileEntryId(fileEntryId, start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the cp attachment file entries where fileEntryId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPAttachmentFileEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param fileEntryId the file entry ID
+	 * @param start the lower bound of the range of cp attachment file entries
+	 * @param end the upper bound of the range of cp attachment file entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching cp attachment file entries
+	 */
+	@Override
+	public List<CPAttachmentFileEntry> findByFileEntryId(
+		long fileEntryId, int start, int end,
+		OrderByComparator<CPAttachmentFileEntry> orderByComparator) {
+
+		return findByFileEntryId(
+			fileEntryId, start, end, orderByComparator, true);
+	}
+
+	/**
+	 * Returns an ordered range of all the cp attachment file entries where fileEntryId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPAttachmentFileEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param fileEntryId the file entry ID
+	 * @param start the lower bound of the range of cp attachment file entries
+	 * @param end the upper bound of the range of cp attachment file entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the ordered range of matching cp attachment file entries
+	 */
+	@Override
+	public List<CPAttachmentFileEntry> findByFileEntryId(
+		long fileEntryId, int start, int end,
+		OrderByComparator<CPAttachmentFileEntry> orderByComparator,
+		boolean useFinderCache) {
+
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
+
+			FinderPath finderPath = null;
+			Object[] finderArgs = null;
+
+			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
+				(orderByComparator == null)) {
+
+				if (useFinderCache) {
+					finderPath = _finderPathWithoutPaginationFindByFileEntryId;
+					finderArgs = new Object[] {fileEntryId};
+				}
+			}
+			else if (useFinderCache) {
+				finderPath = _finderPathWithPaginationFindByFileEntryId;
+				finderArgs = new Object[] {
+					fileEntryId, start, end, orderByComparator
+				};
+			}
+
+			List<CPAttachmentFileEntry> list = null;
+
+			if (useFinderCache) {
+				list = (List<CPAttachmentFileEntry>)finderCache.getResult(
+					finderPath, finderArgs, this);
+
+				if ((list != null) && !list.isEmpty()) {
+					for (CPAttachmentFileEntry cpAttachmentFileEntry : list) {
+						if (fileEntryId !=
+								cpAttachmentFileEntry.getFileEntryId()) {
+
+							list = null;
+
+							break;
+						}
+					}
+				}
+			}
+
+			if (list == null) {
+				StringBundler sb = null;
+
+				if (orderByComparator != null) {
+					sb = new StringBundler(
+						3 + (orderByComparator.getOrderByFields().length * 2));
+				}
+				else {
+					sb = new StringBundler(3);
+				}
+
+				sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
+
+				sb.append(_FINDER_COLUMN_FILEENTRYID_FILEENTRYID_2);
+
+				if (orderByComparator != null) {
+					appendOrderByComparator(
+						sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+				}
+				else {
+					sb.append(CPAttachmentFileEntryModelImpl.ORDER_BY_JPQL);
+				}
+
+				String sql = sb.toString();
+
+				Session session = null;
+
+				try {
+					session = openSession();
+
+					Query query = session.createQuery(sql);
+
+					QueryPos queryPos = QueryPos.getInstance(query);
+
+					queryPos.add(fileEntryId);
+
+					list = (List<CPAttachmentFileEntry>)QueryUtil.list(
+						query, getDialect(), start, end);
+
+					cacheResult(list);
+
+					if (useFinderCache) {
+						finderCache.putResult(finderPath, finderArgs, list);
+					}
+				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
+				}
+			}
+
+			return list;
+		}
+	}
+
+	/**
+	 * Returns the first cp attachment file entry in the ordered set where fileEntryId = &#63;.
+	 *
+	 * @param fileEntryId the file entry ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching cp attachment file entry
+	 * @throws NoSuchCPAttachmentFileEntryException if a matching cp attachment file entry could not be found
+	 */
+	@Override
+	public CPAttachmentFileEntry findByFileEntryId_First(
+			long fileEntryId,
+			OrderByComparator<CPAttachmentFileEntry> orderByComparator)
+		throws NoSuchCPAttachmentFileEntryException {
+
+		CPAttachmentFileEntry cpAttachmentFileEntry = fetchByFileEntryId_First(
+			fileEntryId, orderByComparator);
+
+		if (cpAttachmentFileEntry != null) {
+			return cpAttachmentFileEntry;
+		}
+
+		StringBundler sb = new StringBundler(4);
+
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
+
+		sb.append("fileEntryId=");
+		sb.append(fileEntryId);
+
+		sb.append("}");
+
+		throw new NoSuchCPAttachmentFileEntryException(sb.toString());
+	}
+
+	/**
+	 * Returns the first cp attachment file entry in the ordered set where fileEntryId = &#63;.
+	 *
+	 * @param fileEntryId the file entry ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching cp attachment file entry, or <code>null</code> if a matching cp attachment file entry could not be found
+	 */
+	@Override
+	public CPAttachmentFileEntry fetchByFileEntryId_First(
+		long fileEntryId,
+		OrderByComparator<CPAttachmentFileEntry> orderByComparator) {
+
+		List<CPAttachmentFileEntry> list = findByFileEntryId(
+			fileEntryId, 0, 1, orderByComparator);
+
+		if (!list.isEmpty()) {
+			return list.get(0);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the last cp attachment file entry in the ordered set where fileEntryId = &#63;.
+	 *
+	 * @param fileEntryId the file entry ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching cp attachment file entry
+	 * @throws NoSuchCPAttachmentFileEntryException if a matching cp attachment file entry could not be found
+	 */
+	@Override
+	public CPAttachmentFileEntry findByFileEntryId_Last(
+			long fileEntryId,
+			OrderByComparator<CPAttachmentFileEntry> orderByComparator)
+		throws NoSuchCPAttachmentFileEntryException {
+
+		CPAttachmentFileEntry cpAttachmentFileEntry = fetchByFileEntryId_Last(
+			fileEntryId, orderByComparator);
+
+		if (cpAttachmentFileEntry != null) {
+			return cpAttachmentFileEntry;
+		}
+
+		StringBundler sb = new StringBundler(4);
+
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
+
+		sb.append("fileEntryId=");
+		sb.append(fileEntryId);
+
+		sb.append("}");
+
+		throw new NoSuchCPAttachmentFileEntryException(sb.toString());
+	}
+
+	/**
+	 * Returns the last cp attachment file entry in the ordered set where fileEntryId = &#63;.
+	 *
+	 * @param fileEntryId the file entry ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching cp attachment file entry, or <code>null</code> if a matching cp attachment file entry could not be found
+	 */
+	@Override
+	public CPAttachmentFileEntry fetchByFileEntryId_Last(
+		long fileEntryId,
+		OrderByComparator<CPAttachmentFileEntry> orderByComparator) {
+
+		int count = countByFileEntryId(fileEntryId);
+
+		if (count == 0) {
+			return null;
+		}
+
+		List<CPAttachmentFileEntry> list = findByFileEntryId(
+			fileEntryId, count - 1, count, orderByComparator);
+
+		if (!list.isEmpty()) {
+			return list.get(0);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the cp attachment file entries before and after the current cp attachment file entry in the ordered set where fileEntryId = &#63;.
+	 *
+	 * @param CPAttachmentFileEntryId the primary key of the current cp attachment file entry
+	 * @param fileEntryId the file entry ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next cp attachment file entry
+	 * @throws NoSuchCPAttachmentFileEntryException if a cp attachment file entry with the primary key could not be found
+	 */
+	@Override
+	public CPAttachmentFileEntry[] findByFileEntryId_PrevAndNext(
+			long CPAttachmentFileEntryId, long fileEntryId,
+			OrderByComparator<CPAttachmentFileEntry> orderByComparator)
+		throws NoSuchCPAttachmentFileEntryException {
+
+		CPAttachmentFileEntry cpAttachmentFileEntry = findByPrimaryKey(
+			CPAttachmentFileEntryId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			CPAttachmentFileEntry[] array = new CPAttachmentFileEntryImpl[3];
+
+			array[0] = getByFileEntryId_PrevAndNext(
+				session, cpAttachmentFileEntry, fileEntryId, orderByComparator,
+				true);
+
+			array[1] = cpAttachmentFileEntry;
+
+			array[2] = getByFileEntryId_PrevAndNext(
+				session, cpAttachmentFileEntry, fileEntryId, orderByComparator,
+				false);
+
+			return array;
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected CPAttachmentFileEntry getByFileEntryId_PrevAndNext(
+		Session session, CPAttachmentFileEntry cpAttachmentFileEntry,
+		long fileEntryId,
+		OrderByComparator<CPAttachmentFileEntry> orderByComparator,
+		boolean previous) {
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			sb = new StringBundler(3);
+		}
+
+		sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
+
+		sb.append(_FINDER_COLUMN_FILEENTRYID_FILEENTRYID_2);
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				sb.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			sb.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC);
+					}
+					else {
+						sb.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			sb.append(CPAttachmentFileEntryModelImpl.ORDER_BY_JPQL);
+		}
+
+		String sql = sb.toString();
+
+		Query query = session.createQuery(sql);
+
+		query.setFirstResult(0);
+		query.setMaxResults(2);
+
+		QueryPos queryPos = QueryPos.getInstance(query);
+
+		queryPos.add(fileEntryId);
+
+		if (orderByComparator != null) {
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(
+						cpAttachmentFileEntry)) {
+
+				queryPos.add(orderByConditionValue);
+			}
+		}
+
+		List<CPAttachmentFileEntry> list = query.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
+	 * Removes all the cp attachment file entries where fileEntryId = &#63; from the database.
+	 *
+	 * @param fileEntryId the file entry ID
+	 */
+	@Override
+	public void removeByFileEntryId(long fileEntryId) {
+		for (CPAttachmentFileEntry cpAttachmentFileEntry :
+				findByFileEntryId(
+					fileEntryId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null)) {
+
+			remove(cpAttachmentFileEntry);
+		}
+	}
+
+	/**
+	 * Returns the number of cp attachment file entries where fileEntryId = &#63;.
+	 *
+	 * @param fileEntryId the file entry ID
+	 * @return the number of matching cp attachment file entries
+	 */
+	@Override
+	public int countByFileEntryId(long fileEntryId) {
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
+
+			FinderPath finderPath = _finderPathCountByFileEntryId;
+
+			Object[] finderArgs = new Object[] {fileEntryId};
+
+			Long count = (Long)finderCache.getResult(
+				finderPath, finderArgs, this);
+
+			if (count == null) {
+				StringBundler sb = new StringBundler(2);
+
+				sb.append(_SQL_COUNT_CPATTACHMENTFILEENTRY_WHERE);
+
+				sb.append(_FINDER_COLUMN_FILEENTRYID_FILEENTRYID_2);
+
+				String sql = sb.toString();
+
+				Session session = null;
+
+				try {
+					session = openSession();
+
+					Query query = session.createQuery(sql);
+
+					QueryPos queryPos = QueryPos.getInstance(query);
+
+					queryPos.add(fileEntryId);
+
+					count = (Long)query.uniqueResult();
+
+					finderCache.putResult(finderPath, finderArgs, count);
+				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
+				}
+			}
+
+			return count.intValue();
+		}
+	}
+
+	private static final String _FINDER_COLUMN_FILEENTRYID_FILEENTRYID_2 =
+		"cpAttachmentFileEntry.fileEntryId = ?";
 
 	private FinderPath _finderPathWithPaginationFindByC_C;
 	private FinderPath _finderPathWithoutPaginationFindByC_C;
@@ -1613,105 +2122,107 @@ public class CPAttachmentFileEntryPersistenceImpl
 		OrderByComparator<CPAttachmentFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			CPAttachmentFileEntry.class);
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = null;
+			Object[] finderArgs = null;
 
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			(orderByComparator == null)) {
+			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
+				(orderByComparator == null)) {
 
-			if (useFinderCache && productionMode) {
-				finderPath = _finderPathWithoutPaginationFindByC_C;
-				finderArgs = new Object[] {classNameId, classPK};
+				if (useFinderCache) {
+					finderPath = _finderPathWithoutPaginationFindByC_C;
+					finderArgs = new Object[] {classNameId, classPK};
+				}
 			}
-		}
-		else if (useFinderCache && productionMode) {
-			finderPath = _finderPathWithPaginationFindByC_C;
-			finderArgs = new Object[] {
-				classNameId, classPK, start, end, orderByComparator
-			};
-		}
+			else if (useFinderCache) {
+				finderPath = _finderPathWithPaginationFindByC_C;
+				finderArgs = new Object[] {
+					classNameId, classPK, start, end, orderByComparator
+				};
+			}
 
-		List<CPAttachmentFileEntry> list = null;
+			List<CPAttachmentFileEntry> list = null;
 
-		if (useFinderCache && productionMode) {
-			list = (List<CPAttachmentFileEntry>)finderCache.getResult(
-				finderPath, finderArgs, this);
+			if (useFinderCache) {
+				list = (List<CPAttachmentFileEntry>)finderCache.getResult(
+					finderPath, finderArgs, this);
 
-			if ((list != null) && !list.isEmpty()) {
-				for (CPAttachmentFileEntry cpAttachmentFileEntry : list) {
-					if ((classNameId !=
-							cpAttachmentFileEntry.getClassNameId()) ||
-						(classPK != cpAttachmentFileEntry.getClassPK())) {
+				if ((list != null) && !list.isEmpty()) {
+					for (CPAttachmentFileEntry cpAttachmentFileEntry : list) {
+						if ((classNameId !=
+								cpAttachmentFileEntry.getClassNameId()) ||
+							(classPK != cpAttachmentFileEntry.getClassPK())) {
 
-						list = null;
+							list = null;
 
-						break;
+							break;
+						}
 					}
 				}
 			}
-		}
 
-		if (list == null) {
-			StringBundler sb = null;
+			if (list == null) {
+				StringBundler sb = null;
 
-			if (orderByComparator != null) {
-				sb = new StringBundler(
-					4 + (orderByComparator.getOrderByFields().length * 2));
-			}
-			else {
-				sb = new StringBundler(4);
-			}
+				if (orderByComparator != null) {
+					sb = new StringBundler(
+						4 + (orderByComparator.getOrderByFields().length * 2));
+				}
+				else {
+					sb = new StringBundler(4);
+				}
 
-			sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
+				sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
 
-			sb.append(_FINDER_COLUMN_C_C_CLASSNAMEID_2);
+				sb.append(_FINDER_COLUMN_C_C_CLASSNAMEID_2);
 
-			sb.append(_FINDER_COLUMN_C_C_CLASSPK_2);
+				sb.append(_FINDER_COLUMN_C_C_CLASSPK_2);
 
-			if (orderByComparator != null) {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
-			}
-			else {
-				sb.append(CPAttachmentFileEntryModelImpl.ORDER_BY_JPQL);
-			}
+				if (orderByComparator != null) {
+					appendOrderByComparator(
+						sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+				}
+				else {
+					sb.append(CPAttachmentFileEntryModelImpl.ORDER_BY_JPQL);
+				}
 
-			String sql = sb.toString();
+				String sql = sb.toString();
 
-			Session session = null;
+				Session session = null;
 
-			try {
-				session = openSession();
+				try {
+					session = openSession();
 
-				Query query = session.createQuery(sql);
+					Query query = session.createQuery(sql);
 
-				QueryPos queryPos = QueryPos.getInstance(query);
+					QueryPos queryPos = QueryPos.getInstance(query);
 
-				queryPos.add(classNameId);
+					queryPos.add(classNameId);
 
-				queryPos.add(classPK);
+					queryPos.add(classPK);
 
-				list = (List<CPAttachmentFileEntry>)QueryUtil.list(
-					query, getDialect(), start, end);
+					list = (List<CPAttachmentFileEntry>)QueryUtil.list(
+						query, getDialect(), start, end);
 
-				cacheResult(list);
+					cacheResult(list);
 
-				if (useFinderCache && productionMode) {
-					finderCache.putResult(finderPath, finderArgs, list);
+					if (useFinderCache) {
+						finderCache.putResult(finderPath, finderArgs, list);
+					}
+				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
 				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return list;
+			return list;
+		}
 	}
 
 	/**
@@ -2027,61 +2538,55 @@ public class CPAttachmentFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countByC_C(long classNameId, long classPK) {
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			CPAttachmentFileEntry.class);
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = _finderPathCountByC_C;
 
-		Long count = null;
+			Object[] finderArgs = new Object[] {classNameId, classPK};
 
-		if (productionMode) {
-			finderPath = _finderPathCountByC_C;
+			Long count = (Long)finderCache.getResult(
+				finderPath, finderArgs, this);
 
-			finderArgs = new Object[] {classNameId, classPK};
+			if (count == null) {
+				StringBundler sb = new StringBundler(3);
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
-		}
+				sb.append(_SQL_COUNT_CPATTACHMENTFILEENTRY_WHERE);
 
-		if (count == null) {
-			StringBundler sb = new StringBundler(3);
+				sb.append(_FINDER_COLUMN_C_C_CLASSNAMEID_2);
 
-			sb.append(_SQL_COUNT_CPATTACHMENTFILEENTRY_WHERE);
+				sb.append(_FINDER_COLUMN_C_C_CLASSPK_2);
 
-			sb.append(_FINDER_COLUMN_C_C_CLASSNAMEID_2);
+				String sql = sb.toString();
 
-			sb.append(_FINDER_COLUMN_C_C_CLASSPK_2);
+				Session session = null;
 
-			String sql = sb.toString();
+				try {
+					session = openSession();
 
-			Session session = null;
+					Query query = session.createQuery(sql);
 
-			try {
-				session = openSession();
+					QueryPos queryPos = QueryPos.getInstance(query);
 
-				Query query = session.createQuery(sql);
+					queryPos.add(classNameId);
 
-				QueryPos queryPos = QueryPos.getInstance(query);
+					queryPos.add(classPK);
 
-				queryPos.add(classNameId);
+					count = (Long)query.uniqueResult();
 
-				queryPos.add(classPK);
-
-				count = (Long)query.uniqueResult();
-
-				if (productionMode) {
 					finderCache.putResult(finderPath, finderArgs, count);
 				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
+				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return count.intValue();
+			return count.intValue();
+		}
 	}
 
 	private static final String _FINDER_COLUMN_C_C_CLASSNAMEID_2 =
@@ -2172,107 +2677,109 @@ public class CPAttachmentFileEntryPersistenceImpl
 		OrderByComparator<CPAttachmentFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			CPAttachmentFileEntry.class);
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = null;
+			Object[] finderArgs = null;
 
-		finderPath = _finderPathWithPaginationFindByLtD_S;
-		finderArgs = new Object[] {
-			_getTime(displayDate), status, start, end, orderByComparator
-		};
+			finderPath = _finderPathWithPaginationFindByLtD_S;
+			finderArgs = new Object[] {
+				_getTime(displayDate), status, start, end, orderByComparator
+			};
 
-		List<CPAttachmentFileEntry> list = null;
+			List<CPAttachmentFileEntry> list = null;
 
-		if (useFinderCache && productionMode) {
-			list = (List<CPAttachmentFileEntry>)finderCache.getResult(
-				finderPath, finderArgs, this);
+			if (useFinderCache) {
+				list = (List<CPAttachmentFileEntry>)finderCache.getResult(
+					finderPath, finderArgs, this);
 
-			if ((list != null) && !list.isEmpty()) {
-				for (CPAttachmentFileEntry cpAttachmentFileEntry : list) {
-					if ((displayDate.getTime() <=
-							cpAttachmentFileEntry.getDisplayDate(
-							).getTime()) ||
-						(status != cpAttachmentFileEntry.getStatus())) {
+				if ((list != null) && !list.isEmpty()) {
+					for (CPAttachmentFileEntry cpAttachmentFileEntry : list) {
+						if ((displayDate.getTime() <=
+								cpAttachmentFileEntry.getDisplayDate(
+								).getTime()) ||
+							(status != cpAttachmentFileEntry.getStatus())) {
 
-						list = null;
+							list = null;
 
-						break;
+							break;
+						}
 					}
 				}
 			}
-		}
 
-		if (list == null) {
-			StringBundler sb = null;
+			if (list == null) {
+				StringBundler sb = null;
 
-			if (orderByComparator != null) {
-				sb = new StringBundler(
-					4 + (orderByComparator.getOrderByFields().length * 2));
-			}
-			else {
-				sb = new StringBundler(4);
-			}
-
-			sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
-
-			boolean bindDisplayDate = false;
-
-			if (displayDate == null) {
-				sb.append(_FINDER_COLUMN_LTD_S_DISPLAYDATE_1);
-			}
-			else {
-				bindDisplayDate = true;
-
-				sb.append(_FINDER_COLUMN_LTD_S_DISPLAYDATE_2);
-			}
-
-			sb.append(_FINDER_COLUMN_LTD_S_STATUS_2);
-
-			if (orderByComparator != null) {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
-			}
-			else {
-				sb.append(CPAttachmentFileEntryModelImpl.ORDER_BY_JPQL);
-			}
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				if (bindDisplayDate) {
-					queryPos.add(new Timestamp(displayDate.getTime()));
+				if (orderByComparator != null) {
+					sb = new StringBundler(
+						4 + (orderByComparator.getOrderByFields().length * 2));
+				}
+				else {
+					sb = new StringBundler(4);
 				}
 
-				queryPos.add(status);
+				sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
 
-				list = (List<CPAttachmentFileEntry>)QueryUtil.list(
-					query, getDialect(), start, end);
+				boolean bindDisplayDate = false;
 
-				cacheResult(list);
+				if (displayDate == null) {
+					sb.append(_FINDER_COLUMN_LTD_S_DISPLAYDATE_1);
+				}
+				else {
+					bindDisplayDate = true;
 
-				if (useFinderCache && productionMode) {
-					finderCache.putResult(finderPath, finderArgs, list);
+					sb.append(_FINDER_COLUMN_LTD_S_DISPLAYDATE_2);
+				}
+
+				sb.append(_FINDER_COLUMN_LTD_S_STATUS_2);
+
+				if (orderByComparator != null) {
+					appendOrderByComparator(
+						sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+				}
+				else {
+					sb.append(CPAttachmentFileEntryModelImpl.ORDER_BY_JPQL);
+				}
+
+				String sql = sb.toString();
+
+				Session session = null;
+
+				try {
+					session = openSession();
+
+					Query query = session.createQuery(sql);
+
+					QueryPos queryPos = QueryPos.getInstance(query);
+
+					if (bindDisplayDate) {
+						queryPos.add(new Timestamp(displayDate.getTime()));
+					}
+
+					queryPos.add(status);
+
+					list = (List<CPAttachmentFileEntry>)QueryUtil.list(
+						query, getDialect(), start, end);
+
+					cacheResult(list);
+
+					if (useFinderCache) {
+						finderCache.putResult(finderPath, finderArgs, list);
+					}
+				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
 				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return list;
+			return list;
+		}
 	}
 
 	/**
@@ -2599,72 +3106,66 @@ public class CPAttachmentFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countByLtD_S(Date displayDate, int status) {
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			CPAttachmentFileEntry.class);
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = _finderPathWithPaginationCountByLtD_S;
 
-		Long count = null;
+			Object[] finderArgs = new Object[] {_getTime(displayDate), status};
 
-		if (productionMode) {
-			finderPath = _finderPathWithPaginationCountByLtD_S;
+			Long count = (Long)finderCache.getResult(
+				finderPath, finderArgs, this);
 
-			finderArgs = new Object[] {_getTime(displayDate), status};
+			if (count == null) {
+				StringBundler sb = new StringBundler(3);
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
-		}
+				sb.append(_SQL_COUNT_CPATTACHMENTFILEENTRY_WHERE);
 
-		if (count == null) {
-			StringBundler sb = new StringBundler(3);
+				boolean bindDisplayDate = false;
 
-			sb.append(_SQL_COUNT_CPATTACHMENTFILEENTRY_WHERE);
+				if (displayDate == null) {
+					sb.append(_FINDER_COLUMN_LTD_S_DISPLAYDATE_1);
+				}
+				else {
+					bindDisplayDate = true;
 
-			boolean bindDisplayDate = false;
-
-			if (displayDate == null) {
-				sb.append(_FINDER_COLUMN_LTD_S_DISPLAYDATE_1);
-			}
-			else {
-				bindDisplayDate = true;
-
-				sb.append(_FINDER_COLUMN_LTD_S_DISPLAYDATE_2);
-			}
-
-			sb.append(_FINDER_COLUMN_LTD_S_STATUS_2);
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				if (bindDisplayDate) {
-					queryPos.add(new Timestamp(displayDate.getTime()));
+					sb.append(_FINDER_COLUMN_LTD_S_DISPLAYDATE_2);
 				}
 
-				queryPos.add(status);
+				sb.append(_FINDER_COLUMN_LTD_S_STATUS_2);
 
-				count = (Long)query.uniqueResult();
+				String sql = sb.toString();
 
-				if (productionMode) {
+				Session session = null;
+
+				try {
+					session = openSession();
+
+					Query query = session.createQuery(sql);
+
+					QueryPos queryPos = QueryPos.getInstance(query);
+
+					if (bindDisplayDate) {
+						queryPos.add(new Timestamp(displayDate.getTime()));
+					}
+
+					queryPos.add(status);
+
+					count = (Long)query.uniqueResult();
+
 					finderCache.putResult(finderPath, finderArgs, count);
 				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
+				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return count.intValue();
+			return count.intValue();
+		}
 	}
 
 	private static final String _FINDER_COLUMN_LTD_S_DISPLAYDATE_1 =
@@ -2765,111 +3266,116 @@ public class CPAttachmentFileEntryPersistenceImpl
 		OrderByComparator<CPAttachmentFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			CPAttachmentFileEntry.class);
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = null;
+			Object[] finderArgs = null;
 
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			(orderByComparator == null)) {
+			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
+				(orderByComparator == null)) {
 
-			if (useFinderCache && productionMode) {
-				finderPath = _finderPathWithoutPaginationFindByG_C_F;
-				finderArgs = new Object[] {groupId, classNameId, fileEntryId};
+				if (useFinderCache) {
+					finderPath = _finderPathWithoutPaginationFindByG_C_F;
+					finderArgs = new Object[] {
+						groupId, classNameId, fileEntryId
+					};
+				}
 			}
-		}
-		else if (useFinderCache && productionMode) {
-			finderPath = _finderPathWithPaginationFindByG_C_F;
-			finderArgs = new Object[] {
-				groupId, classNameId, fileEntryId, start, end, orderByComparator
-			};
-		}
+			else if (useFinderCache) {
+				finderPath = _finderPathWithPaginationFindByG_C_F;
+				finderArgs = new Object[] {
+					groupId, classNameId, fileEntryId, start, end,
+					orderByComparator
+				};
+			}
 
-		List<CPAttachmentFileEntry> list = null;
+			List<CPAttachmentFileEntry> list = null;
 
-		if (useFinderCache && productionMode) {
-			list = (List<CPAttachmentFileEntry>)finderCache.getResult(
-				finderPath, finderArgs, this);
+			if (useFinderCache) {
+				list = (List<CPAttachmentFileEntry>)finderCache.getResult(
+					finderPath, finderArgs, this);
 
-			if ((list != null) && !list.isEmpty()) {
-				for (CPAttachmentFileEntry cpAttachmentFileEntry : list) {
-					if ((groupId != cpAttachmentFileEntry.getGroupId()) ||
-						(classNameId !=
-							cpAttachmentFileEntry.getClassNameId()) ||
-						(fileEntryId !=
-							cpAttachmentFileEntry.getFileEntryId())) {
+				if ((list != null) && !list.isEmpty()) {
+					for (CPAttachmentFileEntry cpAttachmentFileEntry : list) {
+						if ((groupId != cpAttachmentFileEntry.getGroupId()) ||
+							(classNameId !=
+								cpAttachmentFileEntry.getClassNameId()) ||
+							(fileEntryId !=
+								cpAttachmentFileEntry.getFileEntryId())) {
 
-						list = null;
+							list = null;
 
-						break;
+							break;
+						}
 					}
 				}
 			}
-		}
 
-		if (list == null) {
-			StringBundler sb = null;
+			if (list == null) {
+				StringBundler sb = null;
 
-			if (orderByComparator != null) {
-				sb = new StringBundler(
-					5 + (orderByComparator.getOrderByFields().length * 2));
-			}
-			else {
-				sb = new StringBundler(5);
-			}
+				if (orderByComparator != null) {
+					sb = new StringBundler(
+						5 + (orderByComparator.getOrderByFields().length * 2));
+				}
+				else {
+					sb = new StringBundler(5);
+				}
 
-			sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
+				sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
 
-			sb.append(_FINDER_COLUMN_G_C_F_GROUPID_2);
+				sb.append(_FINDER_COLUMN_G_C_F_GROUPID_2);
 
-			sb.append(_FINDER_COLUMN_G_C_F_CLASSNAMEID_2);
+				sb.append(_FINDER_COLUMN_G_C_F_CLASSNAMEID_2);
 
-			sb.append(_FINDER_COLUMN_G_C_F_FILEENTRYID_2);
+				sb.append(_FINDER_COLUMN_G_C_F_FILEENTRYID_2);
 
-			if (orderByComparator != null) {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
-			}
-			else {
-				sb.append(CPAttachmentFileEntryModelImpl.ORDER_BY_JPQL);
-			}
+				if (orderByComparator != null) {
+					appendOrderByComparator(
+						sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+				}
+				else {
+					sb.append(CPAttachmentFileEntryModelImpl.ORDER_BY_JPQL);
+				}
 
-			String sql = sb.toString();
+				String sql = sb.toString();
 
-			Session session = null;
+				Session session = null;
 
-			try {
-				session = openSession();
+				try {
+					session = openSession();
 
-				Query query = session.createQuery(sql);
+					Query query = session.createQuery(sql);
 
-				QueryPos queryPos = QueryPos.getInstance(query);
+					QueryPos queryPos = QueryPos.getInstance(query);
 
-				queryPos.add(groupId);
+					queryPos.add(groupId);
 
-				queryPos.add(classNameId);
+					queryPos.add(classNameId);
 
-				queryPos.add(fileEntryId);
+					queryPos.add(fileEntryId);
 
-				list = (List<CPAttachmentFileEntry>)QueryUtil.list(
-					query, getDialect(), start, end);
+					list = (List<CPAttachmentFileEntry>)QueryUtil.list(
+						query, getDialect(), start, end);
 
-				cacheResult(list);
+					cacheResult(list);
 
-				if (useFinderCache && productionMode) {
-					finderCache.putResult(finderPath, finderArgs, list);
+					if (useFinderCache) {
+						finderCache.putResult(finderPath, finderArgs, list);
+					}
+				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
 				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return list;
+			return list;
+		}
 	}
 
 	/**
@@ -3206,65 +3712,61 @@ public class CPAttachmentFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countByG_C_F(long groupId, long classNameId, long fileEntryId) {
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			CPAttachmentFileEntry.class);
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = _finderPathCountByG_C_F;
 
-		Long count = null;
+			Object[] finderArgs = new Object[] {
+				groupId, classNameId, fileEntryId
+			};
 
-		if (productionMode) {
-			finderPath = _finderPathCountByG_C_F;
+			Long count = (Long)finderCache.getResult(
+				finderPath, finderArgs, this);
 
-			finderArgs = new Object[] {groupId, classNameId, fileEntryId};
+			if (count == null) {
+				StringBundler sb = new StringBundler(4);
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
-		}
+				sb.append(_SQL_COUNT_CPATTACHMENTFILEENTRY_WHERE);
 
-		if (count == null) {
-			StringBundler sb = new StringBundler(4);
+				sb.append(_FINDER_COLUMN_G_C_F_GROUPID_2);
 
-			sb.append(_SQL_COUNT_CPATTACHMENTFILEENTRY_WHERE);
+				sb.append(_FINDER_COLUMN_G_C_F_CLASSNAMEID_2);
 
-			sb.append(_FINDER_COLUMN_G_C_F_GROUPID_2);
+				sb.append(_FINDER_COLUMN_G_C_F_FILEENTRYID_2);
 
-			sb.append(_FINDER_COLUMN_G_C_F_CLASSNAMEID_2);
+				String sql = sb.toString();
 
-			sb.append(_FINDER_COLUMN_G_C_F_FILEENTRYID_2);
+				Session session = null;
 
-			String sql = sb.toString();
+				try {
+					session = openSession();
 
-			Session session = null;
+					Query query = session.createQuery(sql);
 
-			try {
-				session = openSession();
+					QueryPos queryPos = QueryPos.getInstance(query);
 
-				Query query = session.createQuery(sql);
+					queryPos.add(groupId);
 
-				QueryPos queryPos = QueryPos.getInstance(query);
+					queryPos.add(classNameId);
 
-				queryPos.add(groupId);
+					queryPos.add(fileEntryId);
 
-				queryPos.add(classNameId);
+					count = (Long)query.uniqueResult();
 
-				queryPos.add(fileEntryId);
-
-				count = (Long)query.uniqueResult();
-
-				if (productionMode) {
 					finderCache.putResult(finderPath, finderArgs, count);
 				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
+				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return count.intValue();
+			return count.intValue();
+		}
 	}
 
 	private static final String _FINDER_COLUMN_G_C_F_GROUPID_2 =
@@ -3365,111 +3867,116 @@ public class CPAttachmentFileEntryPersistenceImpl
 		OrderByComparator<CPAttachmentFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			CPAttachmentFileEntry.class);
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = null;
+			Object[] finderArgs = null;
 
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			(orderByComparator == null)) {
+			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
+				(orderByComparator == null)) {
 
-			if (useFinderCache && productionMode) {
-				finderPath = _finderPathWithoutPaginationFindByC_C_F;
-				finderArgs = new Object[] {classNameId, classPK, fileEntryId};
+				if (useFinderCache) {
+					finderPath = _finderPathWithoutPaginationFindByC_C_F;
+					finderArgs = new Object[] {
+						classNameId, classPK, fileEntryId
+					};
+				}
 			}
-		}
-		else if (useFinderCache && productionMode) {
-			finderPath = _finderPathWithPaginationFindByC_C_F;
-			finderArgs = new Object[] {
-				classNameId, classPK, fileEntryId, start, end, orderByComparator
-			};
-		}
+			else if (useFinderCache) {
+				finderPath = _finderPathWithPaginationFindByC_C_F;
+				finderArgs = new Object[] {
+					classNameId, classPK, fileEntryId, start, end,
+					orderByComparator
+				};
+			}
 
-		List<CPAttachmentFileEntry> list = null;
+			List<CPAttachmentFileEntry> list = null;
 
-		if (useFinderCache && productionMode) {
-			list = (List<CPAttachmentFileEntry>)finderCache.getResult(
-				finderPath, finderArgs, this);
+			if (useFinderCache) {
+				list = (List<CPAttachmentFileEntry>)finderCache.getResult(
+					finderPath, finderArgs, this);
 
-			if ((list != null) && !list.isEmpty()) {
-				for (CPAttachmentFileEntry cpAttachmentFileEntry : list) {
-					if ((classNameId !=
-							cpAttachmentFileEntry.getClassNameId()) ||
-						(classPK != cpAttachmentFileEntry.getClassPK()) ||
-						(fileEntryId !=
-							cpAttachmentFileEntry.getFileEntryId())) {
+				if ((list != null) && !list.isEmpty()) {
+					for (CPAttachmentFileEntry cpAttachmentFileEntry : list) {
+						if ((classNameId !=
+								cpAttachmentFileEntry.getClassNameId()) ||
+							(classPK != cpAttachmentFileEntry.getClassPK()) ||
+							(fileEntryId !=
+								cpAttachmentFileEntry.getFileEntryId())) {
 
-						list = null;
+							list = null;
 
-						break;
+							break;
+						}
 					}
 				}
 			}
-		}
 
-		if (list == null) {
-			StringBundler sb = null;
+			if (list == null) {
+				StringBundler sb = null;
 
-			if (orderByComparator != null) {
-				sb = new StringBundler(
-					5 + (orderByComparator.getOrderByFields().length * 2));
-			}
-			else {
-				sb = new StringBundler(5);
-			}
+				if (orderByComparator != null) {
+					sb = new StringBundler(
+						5 + (orderByComparator.getOrderByFields().length * 2));
+				}
+				else {
+					sb = new StringBundler(5);
+				}
 
-			sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
+				sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
 
-			sb.append(_FINDER_COLUMN_C_C_F_CLASSNAMEID_2);
+				sb.append(_FINDER_COLUMN_C_C_F_CLASSNAMEID_2);
 
-			sb.append(_FINDER_COLUMN_C_C_F_CLASSPK_2);
+				sb.append(_FINDER_COLUMN_C_C_F_CLASSPK_2);
 
-			sb.append(_FINDER_COLUMN_C_C_F_FILEENTRYID_2);
+				sb.append(_FINDER_COLUMN_C_C_F_FILEENTRYID_2);
 
-			if (orderByComparator != null) {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
-			}
-			else {
-				sb.append(CPAttachmentFileEntryModelImpl.ORDER_BY_JPQL);
-			}
+				if (orderByComparator != null) {
+					appendOrderByComparator(
+						sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+				}
+				else {
+					sb.append(CPAttachmentFileEntryModelImpl.ORDER_BY_JPQL);
+				}
 
-			String sql = sb.toString();
+				String sql = sb.toString();
 
-			Session session = null;
+				Session session = null;
 
-			try {
-				session = openSession();
+				try {
+					session = openSession();
 
-				Query query = session.createQuery(sql);
+					Query query = session.createQuery(sql);
 
-				QueryPos queryPos = QueryPos.getInstance(query);
+					QueryPos queryPos = QueryPos.getInstance(query);
 
-				queryPos.add(classNameId);
+					queryPos.add(classNameId);
 
-				queryPos.add(classPK);
+					queryPos.add(classPK);
 
-				queryPos.add(fileEntryId);
+					queryPos.add(fileEntryId);
 
-				list = (List<CPAttachmentFileEntry>)QueryUtil.list(
-					query, getDialect(), start, end);
+					list = (List<CPAttachmentFileEntry>)QueryUtil.list(
+						query, getDialect(), start, end);
 
-				cacheResult(list);
+					cacheResult(list);
 
-				if (useFinderCache && productionMode) {
-					finderCache.putResult(finderPath, finderArgs, list);
+					if (useFinderCache) {
+						finderCache.putResult(finderPath, finderArgs, list);
+					}
+				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
 				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return list;
+			return list;
+		}
 	}
 
 	/**
@@ -3806,65 +4313,61 @@ public class CPAttachmentFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countByC_C_F(long classNameId, long classPK, long fileEntryId) {
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			CPAttachmentFileEntry.class);
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = _finderPathCountByC_C_F;
 
-		Long count = null;
+			Object[] finderArgs = new Object[] {
+				classNameId, classPK, fileEntryId
+			};
 
-		if (productionMode) {
-			finderPath = _finderPathCountByC_C_F;
+			Long count = (Long)finderCache.getResult(
+				finderPath, finderArgs, this);
 
-			finderArgs = new Object[] {classNameId, classPK, fileEntryId};
+			if (count == null) {
+				StringBundler sb = new StringBundler(4);
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
-		}
+				sb.append(_SQL_COUNT_CPATTACHMENTFILEENTRY_WHERE);
 
-		if (count == null) {
-			StringBundler sb = new StringBundler(4);
+				sb.append(_FINDER_COLUMN_C_C_F_CLASSNAMEID_2);
 
-			sb.append(_SQL_COUNT_CPATTACHMENTFILEENTRY_WHERE);
+				sb.append(_FINDER_COLUMN_C_C_F_CLASSPK_2);
 
-			sb.append(_FINDER_COLUMN_C_C_F_CLASSNAMEID_2);
+				sb.append(_FINDER_COLUMN_C_C_F_FILEENTRYID_2);
 
-			sb.append(_FINDER_COLUMN_C_C_F_CLASSPK_2);
+				String sql = sb.toString();
 
-			sb.append(_FINDER_COLUMN_C_C_F_FILEENTRYID_2);
+				Session session = null;
 
-			String sql = sb.toString();
+				try {
+					session = openSession();
 
-			Session session = null;
+					Query query = session.createQuery(sql);
 
-			try {
-				session = openSession();
+					QueryPos queryPos = QueryPos.getInstance(query);
 
-				Query query = session.createQuery(sql);
+					queryPos.add(classNameId);
 
-				QueryPos queryPos = QueryPos.getInstance(query);
+					queryPos.add(classPK);
 
-				queryPos.add(classNameId);
+					queryPos.add(fileEntryId);
 
-				queryPos.add(classPK);
+					count = (Long)query.uniqueResult();
 
-				queryPos.add(fileEntryId);
-
-				count = (Long)query.uniqueResult();
-
-				if (productionMode) {
 					finderCache.putResult(finderPath, finderArgs, count);
 				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
+				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return count.intValue();
+			return count.intValue();
+		}
 	}
 
 	private static final String _FINDER_COLUMN_C_C_F_CLASSNAMEID_2 =
@@ -3964,123 +4467,125 @@ public class CPAttachmentFileEntryPersistenceImpl
 		OrderByComparator<CPAttachmentFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		cdnURL = Objects.toString(cdnURL, "");
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
 
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			CPAttachmentFileEntry.class);
+			cdnURL = Objects.toString(cdnURL, "");
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = null;
+			Object[] finderArgs = null;
 
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			(orderByComparator == null)) {
+			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
+				(orderByComparator == null)) {
 
-			if (useFinderCache && productionMode) {
-				finderPath = _finderPathWithoutPaginationFindByC_C_C;
-				finderArgs = new Object[] {classNameId, classPK, cdnURL};
+				if (useFinderCache) {
+					finderPath = _finderPathWithoutPaginationFindByC_C_C;
+					finderArgs = new Object[] {classNameId, classPK, cdnURL};
+				}
 			}
-		}
-		else if (useFinderCache && productionMode) {
-			finderPath = _finderPathWithPaginationFindByC_C_C;
-			finderArgs = new Object[] {
-				classNameId, classPK, cdnURL, start, end, orderByComparator
-			};
-		}
+			else if (useFinderCache) {
+				finderPath = _finderPathWithPaginationFindByC_C_C;
+				finderArgs = new Object[] {
+					classNameId, classPK, cdnURL, start, end, orderByComparator
+				};
+			}
 
-		List<CPAttachmentFileEntry> list = null;
+			List<CPAttachmentFileEntry> list = null;
 
-		if (useFinderCache && productionMode) {
-			list = (List<CPAttachmentFileEntry>)finderCache.getResult(
-				finderPath, finderArgs, this);
+			if (useFinderCache) {
+				list = (List<CPAttachmentFileEntry>)finderCache.getResult(
+					finderPath, finderArgs, this);
 
-			if ((list != null) && !list.isEmpty()) {
-				for (CPAttachmentFileEntry cpAttachmentFileEntry : list) {
-					if ((classNameId !=
-							cpAttachmentFileEntry.getClassNameId()) ||
-						(classPK != cpAttachmentFileEntry.getClassPK()) ||
-						!cdnURL.equals(cpAttachmentFileEntry.getCDNURL())) {
+				if ((list != null) && !list.isEmpty()) {
+					for (CPAttachmentFileEntry cpAttachmentFileEntry : list) {
+						if ((classNameId !=
+								cpAttachmentFileEntry.getClassNameId()) ||
+							(classPK != cpAttachmentFileEntry.getClassPK()) ||
+							!cdnURL.equals(cpAttachmentFileEntry.getCDNURL())) {
 
-						list = null;
+							list = null;
 
-						break;
+							break;
+						}
 					}
 				}
 			}
-		}
 
-		if (list == null) {
-			StringBundler sb = null;
+			if (list == null) {
+				StringBundler sb = null;
 
-			if (orderByComparator != null) {
-				sb = new StringBundler(
-					5 + (orderByComparator.getOrderByFields().length * 2));
-			}
-			else {
-				sb = new StringBundler(5);
-			}
-
-			sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
-
-			sb.append(_FINDER_COLUMN_C_C_C_CLASSNAMEID_2);
-
-			sb.append(_FINDER_COLUMN_C_C_C_CLASSPK_2);
-
-			boolean bindCDNURL = false;
-
-			if (cdnURL.isEmpty()) {
-				sb.append(_FINDER_COLUMN_C_C_C_CDNURL_3);
-			}
-			else {
-				bindCDNURL = true;
-
-				sb.append(_FINDER_COLUMN_C_C_C_CDNURL_2);
-			}
-
-			if (orderByComparator != null) {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
-			}
-			else {
-				sb.append(CPAttachmentFileEntryModelImpl.ORDER_BY_JPQL);
-			}
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				queryPos.add(classNameId);
-
-				queryPos.add(classPK);
-
-				if (bindCDNURL) {
-					queryPos.add(cdnURL);
+				if (orderByComparator != null) {
+					sb = new StringBundler(
+						5 + (orderByComparator.getOrderByFields().length * 2));
+				}
+				else {
+					sb = new StringBundler(5);
 				}
 
-				list = (List<CPAttachmentFileEntry>)QueryUtil.list(
-					query, getDialect(), start, end);
+				sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
 
-				cacheResult(list);
+				sb.append(_FINDER_COLUMN_C_C_C_CLASSNAMEID_2);
 
-				if (useFinderCache && productionMode) {
-					finderCache.putResult(finderPath, finderArgs, list);
+				sb.append(_FINDER_COLUMN_C_C_C_CLASSPK_2);
+
+				boolean bindCDNURL = false;
+
+				if (cdnURL.isEmpty()) {
+					sb.append(_FINDER_COLUMN_C_C_C_CDNURL_3);
+				}
+				else {
+					bindCDNURL = true;
+
+					sb.append(_FINDER_COLUMN_C_C_C_CDNURL_2);
+				}
+
+				if (orderByComparator != null) {
+					appendOrderByComparator(
+						sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+				}
+				else {
+					sb.append(CPAttachmentFileEntryModelImpl.ORDER_BY_JPQL);
+				}
+
+				String sql = sb.toString();
+
+				Session session = null;
+
+				try {
+					session = openSession();
+
+					Query query = session.createQuery(sql);
+
+					QueryPos queryPos = QueryPos.getInstance(query);
+
+					queryPos.add(classNameId);
+
+					queryPos.add(classPK);
+
+					if (bindCDNURL) {
+						queryPos.add(cdnURL);
+					}
+
+					list = (List<CPAttachmentFileEntry>)QueryUtil.list(
+						query, getDialect(), start, end);
+
+					cacheResult(list);
+
+					if (useFinderCache) {
+						finderCache.putResult(finderPath, finderArgs, list);
+					}
+				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
 				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return list;
+			return list;
+		}
 	}
 
 	/**
@@ -4427,78 +4932,72 @@ public class CPAttachmentFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countByC_C_C(long classNameId, long classPK, String cdnURL) {
-		cdnURL = Objects.toString(cdnURL, "");
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
 
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			CPAttachmentFileEntry.class);
+			cdnURL = Objects.toString(cdnURL, "");
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = _finderPathCountByC_C_C;
 
-		Long count = null;
+			Object[] finderArgs = new Object[] {classNameId, classPK, cdnURL};
 
-		if (productionMode) {
-			finderPath = _finderPathCountByC_C_C;
+			Long count = (Long)finderCache.getResult(
+				finderPath, finderArgs, this);
 
-			finderArgs = new Object[] {classNameId, classPK, cdnURL};
+			if (count == null) {
+				StringBundler sb = new StringBundler(4);
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
-		}
+				sb.append(_SQL_COUNT_CPATTACHMENTFILEENTRY_WHERE);
 
-		if (count == null) {
-			StringBundler sb = new StringBundler(4);
+				sb.append(_FINDER_COLUMN_C_C_C_CLASSNAMEID_2);
 
-			sb.append(_SQL_COUNT_CPATTACHMENTFILEENTRY_WHERE);
+				sb.append(_FINDER_COLUMN_C_C_C_CLASSPK_2);
 
-			sb.append(_FINDER_COLUMN_C_C_C_CLASSNAMEID_2);
+				boolean bindCDNURL = false;
 
-			sb.append(_FINDER_COLUMN_C_C_C_CLASSPK_2);
+				if (cdnURL.isEmpty()) {
+					sb.append(_FINDER_COLUMN_C_C_C_CDNURL_3);
+				}
+				else {
+					bindCDNURL = true;
 
-			boolean bindCDNURL = false;
-
-			if (cdnURL.isEmpty()) {
-				sb.append(_FINDER_COLUMN_C_C_C_CDNURL_3);
-			}
-			else {
-				bindCDNURL = true;
-
-				sb.append(_FINDER_COLUMN_C_C_C_CDNURL_2);
-			}
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				queryPos.add(classNameId);
-
-				queryPos.add(classPK);
-
-				if (bindCDNURL) {
-					queryPos.add(cdnURL);
+					sb.append(_FINDER_COLUMN_C_C_C_CDNURL_2);
 				}
 
-				count = (Long)query.uniqueResult();
+				String sql = sb.toString();
 
-				if (productionMode) {
+				Session session = null;
+
+				try {
+					session = openSession();
+
+					Query query = session.createQuery(sql);
+
+					QueryPos queryPos = QueryPos.getInstance(query);
+
+					queryPos.add(classNameId);
+
+					queryPos.add(classPK);
+
+					if (bindCDNURL) {
+						queryPos.add(cdnURL);
+					}
+
+					count = (Long)query.uniqueResult();
+
 					finderCache.putResult(finderPath, finderArgs, count);
 				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
+				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return count.intValue();
+			return count.intValue();
+		}
 	}
 
 	private static final String _FINDER_COLUMN_C_C_C_CLASSNAMEID_2 =
@@ -4607,119 +5106,121 @@ public class CPAttachmentFileEntryPersistenceImpl
 		int end, OrderByComparator<CPAttachmentFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			CPAttachmentFileEntry.class);
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = null;
+			Object[] finderArgs = null;
 
-		finderPath = _finderPathWithPaginationFindByC_C_LtD_S;
-		finderArgs = new Object[] {
-			classNameId, classPK, _getTime(displayDate), status, start, end,
-			orderByComparator
-		};
+			finderPath = _finderPathWithPaginationFindByC_C_LtD_S;
+			finderArgs = new Object[] {
+				classNameId, classPK, _getTime(displayDate), status, start, end,
+				orderByComparator
+			};
 
-		List<CPAttachmentFileEntry> list = null;
+			List<CPAttachmentFileEntry> list = null;
 
-		if (useFinderCache && productionMode) {
-			list = (List<CPAttachmentFileEntry>)finderCache.getResult(
-				finderPath, finderArgs, this);
+			if (useFinderCache) {
+				list = (List<CPAttachmentFileEntry>)finderCache.getResult(
+					finderPath, finderArgs, this);
 
-			if ((list != null) && !list.isEmpty()) {
-				for (CPAttachmentFileEntry cpAttachmentFileEntry : list) {
-					if ((classNameId !=
-							cpAttachmentFileEntry.getClassNameId()) ||
-						(classPK != cpAttachmentFileEntry.getClassPK()) ||
-						(displayDate.getTime() <=
-							cpAttachmentFileEntry.getDisplayDate(
-							).getTime()) ||
-						(status != cpAttachmentFileEntry.getStatus())) {
+				if ((list != null) && !list.isEmpty()) {
+					for (CPAttachmentFileEntry cpAttachmentFileEntry : list) {
+						if ((classNameId !=
+								cpAttachmentFileEntry.getClassNameId()) ||
+							(classPK != cpAttachmentFileEntry.getClassPK()) ||
+							(displayDate.getTime() <=
+								cpAttachmentFileEntry.getDisplayDate(
+								).getTime()) ||
+							(status != cpAttachmentFileEntry.getStatus())) {
 
-						list = null;
+							list = null;
 
-						break;
+							break;
+						}
 					}
 				}
 			}
-		}
 
-		if (list == null) {
-			StringBundler sb = null;
+			if (list == null) {
+				StringBundler sb = null;
 
-			if (orderByComparator != null) {
-				sb = new StringBundler(
-					6 + (orderByComparator.getOrderByFields().length * 2));
-			}
-			else {
-				sb = new StringBundler(6);
-			}
-
-			sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
-
-			sb.append(_FINDER_COLUMN_C_C_LTD_S_CLASSNAMEID_2);
-
-			sb.append(_FINDER_COLUMN_C_C_LTD_S_CLASSPK_2);
-
-			boolean bindDisplayDate = false;
-
-			if (displayDate == null) {
-				sb.append(_FINDER_COLUMN_C_C_LTD_S_DISPLAYDATE_1);
-			}
-			else {
-				bindDisplayDate = true;
-
-				sb.append(_FINDER_COLUMN_C_C_LTD_S_DISPLAYDATE_2);
-			}
-
-			sb.append(_FINDER_COLUMN_C_C_LTD_S_STATUS_2);
-
-			if (orderByComparator != null) {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
-			}
-			else {
-				sb.append(CPAttachmentFileEntryModelImpl.ORDER_BY_JPQL);
-			}
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				queryPos.add(classNameId);
-
-				queryPos.add(classPK);
-
-				if (bindDisplayDate) {
-					queryPos.add(new Timestamp(displayDate.getTime()));
+				if (orderByComparator != null) {
+					sb = new StringBundler(
+						6 + (orderByComparator.getOrderByFields().length * 2));
+				}
+				else {
+					sb = new StringBundler(6);
 				}
 
-				queryPos.add(status);
+				sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
 
-				list = (List<CPAttachmentFileEntry>)QueryUtil.list(
-					query, getDialect(), start, end);
+				sb.append(_FINDER_COLUMN_C_C_LTD_S_CLASSNAMEID_2);
 
-				cacheResult(list);
+				sb.append(_FINDER_COLUMN_C_C_LTD_S_CLASSPK_2);
 
-				if (useFinderCache && productionMode) {
-					finderCache.putResult(finderPath, finderArgs, list);
+				boolean bindDisplayDate = false;
+
+				if (displayDate == null) {
+					sb.append(_FINDER_COLUMN_C_C_LTD_S_DISPLAYDATE_1);
+				}
+				else {
+					bindDisplayDate = true;
+
+					sb.append(_FINDER_COLUMN_C_C_LTD_S_DISPLAYDATE_2);
+				}
+
+				sb.append(_FINDER_COLUMN_C_C_LTD_S_STATUS_2);
+
+				if (orderByComparator != null) {
+					appendOrderByComparator(
+						sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+				}
+				else {
+					sb.append(CPAttachmentFileEntryModelImpl.ORDER_BY_JPQL);
+				}
+
+				String sql = sb.toString();
+
+				Session session = null;
+
+				try {
+					session = openSession();
+
+					Query query = session.createQuery(sql);
+
+					QueryPos queryPos = QueryPos.getInstance(query);
+
+					queryPos.add(classNameId);
+
+					queryPos.add(classPK);
+
+					if (bindDisplayDate) {
+						queryPos.add(new Timestamp(displayDate.getTime()));
+					}
+
+					queryPos.add(status);
+
+					list = (List<CPAttachmentFileEntry>)QueryUtil.list(
+						query, getDialect(), start, end);
+
+					cacheResult(list);
+
+					if (useFinderCache) {
+						finderCache.putResult(finderPath, finderArgs, list);
+					}
+				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
 				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return list;
+			return list;
+		}
 	}
 
 	/**
@@ -5086,82 +5587,76 @@ public class CPAttachmentFileEntryPersistenceImpl
 	public int countByC_C_LtD_S(
 		long classNameId, long classPK, Date displayDate, int status) {
 
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			CPAttachmentFileEntry.class);
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = _finderPathWithPaginationCountByC_C_LtD_S;
 
-		Long count = null;
-
-		if (productionMode) {
-			finderPath = _finderPathWithPaginationCountByC_C_LtD_S;
-
-			finderArgs = new Object[] {
+			Object[] finderArgs = new Object[] {
 				classNameId, classPK, _getTime(displayDate), status
 			};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
-		}
+			Long count = (Long)finderCache.getResult(
+				finderPath, finderArgs, this);
 
-		if (count == null) {
-			StringBundler sb = new StringBundler(5);
+			if (count == null) {
+				StringBundler sb = new StringBundler(5);
 
-			sb.append(_SQL_COUNT_CPATTACHMENTFILEENTRY_WHERE);
+				sb.append(_SQL_COUNT_CPATTACHMENTFILEENTRY_WHERE);
 
-			sb.append(_FINDER_COLUMN_C_C_LTD_S_CLASSNAMEID_2);
+				sb.append(_FINDER_COLUMN_C_C_LTD_S_CLASSNAMEID_2);
 
-			sb.append(_FINDER_COLUMN_C_C_LTD_S_CLASSPK_2);
+				sb.append(_FINDER_COLUMN_C_C_LTD_S_CLASSPK_2);
 
-			boolean bindDisplayDate = false;
+				boolean bindDisplayDate = false;
 
-			if (displayDate == null) {
-				sb.append(_FINDER_COLUMN_C_C_LTD_S_DISPLAYDATE_1);
-			}
-			else {
-				bindDisplayDate = true;
+				if (displayDate == null) {
+					sb.append(_FINDER_COLUMN_C_C_LTD_S_DISPLAYDATE_1);
+				}
+				else {
+					bindDisplayDate = true;
 
-				sb.append(_FINDER_COLUMN_C_C_LTD_S_DISPLAYDATE_2);
-			}
-
-			sb.append(_FINDER_COLUMN_C_C_LTD_S_STATUS_2);
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				queryPos.add(classNameId);
-
-				queryPos.add(classPK);
-
-				if (bindDisplayDate) {
-					queryPos.add(new Timestamp(displayDate.getTime()));
+					sb.append(_FINDER_COLUMN_C_C_LTD_S_DISPLAYDATE_2);
 				}
 
-				queryPos.add(status);
+				sb.append(_FINDER_COLUMN_C_C_LTD_S_STATUS_2);
 
-				count = (Long)query.uniqueResult();
+				String sql = sb.toString();
 
-				if (productionMode) {
+				Session session = null;
+
+				try {
+					session = openSession();
+
+					Query query = session.createQuery(sql);
+
+					QueryPos queryPos = QueryPos.getInstance(query);
+
+					queryPos.add(classNameId);
+
+					queryPos.add(classPK);
+
+					if (bindDisplayDate) {
+						queryPos.add(new Timestamp(displayDate.getTime()));
+					}
+
+					queryPos.add(status);
+
+					count = (Long)query.uniqueResult();
+
 					finderCache.putResult(finderPath, finderArgs, count);
 				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
+				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return count.intValue();
+			return count.intValue();
+		}
 	}
 
 	private static final String _FINDER_COLUMN_C_C_LTD_S_CLASSNAMEID_2 =
@@ -5274,116 +5769,120 @@ public class CPAttachmentFileEntryPersistenceImpl
 		int end, OrderByComparator<CPAttachmentFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			CPAttachmentFileEntry.class);
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = null;
+			Object[] finderArgs = null;
 
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			(orderByComparator == null)) {
+			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
+				(orderByComparator == null)) {
 
-			if (useFinderCache && productionMode) {
-				finderPath = _finderPathWithoutPaginationFindByC_C_T_ST;
-				finderArgs = new Object[] {classNameId, classPK, type, status};
+				if (useFinderCache) {
+					finderPath = _finderPathWithoutPaginationFindByC_C_T_ST;
+					finderArgs = new Object[] {
+						classNameId, classPK, type, status
+					};
+				}
 			}
-		}
-		else if (useFinderCache && productionMode) {
-			finderPath = _finderPathWithPaginationFindByC_C_T_ST;
-			finderArgs = new Object[] {
-				classNameId, classPK, type, status, start, end,
-				orderByComparator
-			};
-		}
+			else if (useFinderCache) {
+				finderPath = _finderPathWithPaginationFindByC_C_T_ST;
+				finderArgs = new Object[] {
+					classNameId, classPK, type, status, start, end,
+					orderByComparator
+				};
+			}
 
-		List<CPAttachmentFileEntry> list = null;
+			List<CPAttachmentFileEntry> list = null;
 
-		if (useFinderCache && productionMode) {
-			list = (List<CPAttachmentFileEntry>)finderCache.getResult(
-				finderPath, finderArgs, this);
+			if (useFinderCache) {
+				list = (List<CPAttachmentFileEntry>)finderCache.getResult(
+					finderPath, finderArgs, this);
 
-			if ((list != null) && !list.isEmpty()) {
-				for (CPAttachmentFileEntry cpAttachmentFileEntry : list) {
-					if ((classNameId !=
-							cpAttachmentFileEntry.getClassNameId()) ||
-						(classPK != cpAttachmentFileEntry.getClassPK()) ||
-						(type != cpAttachmentFileEntry.getType()) ||
-						(status != cpAttachmentFileEntry.getStatus())) {
+				if ((list != null) && !list.isEmpty()) {
+					for (CPAttachmentFileEntry cpAttachmentFileEntry : list) {
+						if ((classNameId !=
+								cpAttachmentFileEntry.getClassNameId()) ||
+							(classPK != cpAttachmentFileEntry.getClassPK()) ||
+							(type != cpAttachmentFileEntry.getType()) ||
+							(status != cpAttachmentFileEntry.getStatus())) {
 
-						list = null;
+							list = null;
 
-						break;
+							break;
+						}
 					}
 				}
 			}
-		}
 
-		if (list == null) {
-			StringBundler sb = null;
+			if (list == null) {
+				StringBundler sb = null;
 
-			if (orderByComparator != null) {
-				sb = new StringBundler(
-					6 + (orderByComparator.getOrderByFields().length * 2));
-			}
-			else {
-				sb = new StringBundler(6);
-			}
+				if (orderByComparator != null) {
+					sb = new StringBundler(
+						6 + (orderByComparator.getOrderByFields().length * 2));
+				}
+				else {
+					sb = new StringBundler(6);
+				}
 
-			sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
+				sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
 
-			sb.append(_FINDER_COLUMN_C_C_T_ST_CLASSNAMEID_2);
+				sb.append(_FINDER_COLUMN_C_C_T_ST_CLASSNAMEID_2);
 
-			sb.append(_FINDER_COLUMN_C_C_T_ST_CLASSPK_2);
+				sb.append(_FINDER_COLUMN_C_C_T_ST_CLASSPK_2);
 
-			sb.append(_FINDER_COLUMN_C_C_T_ST_TYPE_2);
+				sb.append(_FINDER_COLUMN_C_C_T_ST_TYPE_2);
 
-			sb.append(_FINDER_COLUMN_C_C_T_ST_STATUS_2);
+				sb.append(_FINDER_COLUMN_C_C_T_ST_STATUS_2);
 
-			if (orderByComparator != null) {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
-			}
-			else {
-				sb.append(CPAttachmentFileEntryModelImpl.ORDER_BY_JPQL);
-			}
+				if (orderByComparator != null) {
+					appendOrderByComparator(
+						sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+				}
+				else {
+					sb.append(CPAttachmentFileEntryModelImpl.ORDER_BY_JPQL);
+				}
 
-			String sql = sb.toString();
+				String sql = sb.toString();
 
-			Session session = null;
+				Session session = null;
 
-			try {
-				session = openSession();
+				try {
+					session = openSession();
 
-				Query query = session.createQuery(sql);
+					Query query = session.createQuery(sql);
 
-				QueryPos queryPos = QueryPos.getInstance(query);
+					QueryPos queryPos = QueryPos.getInstance(query);
 
-				queryPos.add(classNameId);
+					queryPos.add(classNameId);
 
-				queryPos.add(classPK);
+					queryPos.add(classPK);
 
-				queryPos.add(type);
+					queryPos.add(type);
 
-				queryPos.add(status);
+					queryPos.add(status);
 
-				list = (List<CPAttachmentFileEntry>)QueryUtil.list(
-					query, getDialect(), start, end);
+					list = (List<CPAttachmentFileEntry>)QueryUtil.list(
+						query, getDialect(), start, end);
 
-				cacheResult(list);
+					cacheResult(list);
 
-				if (useFinderCache && productionMode) {
-					finderCache.putResult(finderPath, finderArgs, list);
+					if (useFinderCache) {
+						finderCache.putResult(finderPath, finderArgs, list);
+					}
+				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
 				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return list;
+			return list;
+		}
 	}
 
 	/**
@@ -5739,69 +6238,65 @@ public class CPAttachmentFileEntryPersistenceImpl
 	public int countByC_C_T_ST(
 		long classNameId, long classPK, int type, int status) {
 
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			CPAttachmentFileEntry.class);
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = _finderPathCountByC_C_T_ST;
 
-		Long count = null;
+			Object[] finderArgs = new Object[] {
+				classNameId, classPK, type, status
+			};
 
-		if (productionMode) {
-			finderPath = _finderPathCountByC_C_T_ST;
+			Long count = (Long)finderCache.getResult(
+				finderPath, finderArgs, this);
 
-			finderArgs = new Object[] {classNameId, classPK, type, status};
+			if (count == null) {
+				StringBundler sb = new StringBundler(5);
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
-		}
+				sb.append(_SQL_COUNT_CPATTACHMENTFILEENTRY_WHERE);
 
-		if (count == null) {
-			StringBundler sb = new StringBundler(5);
+				sb.append(_FINDER_COLUMN_C_C_T_ST_CLASSNAMEID_2);
 
-			sb.append(_SQL_COUNT_CPATTACHMENTFILEENTRY_WHERE);
+				sb.append(_FINDER_COLUMN_C_C_T_ST_CLASSPK_2);
 
-			sb.append(_FINDER_COLUMN_C_C_T_ST_CLASSNAMEID_2);
+				sb.append(_FINDER_COLUMN_C_C_T_ST_TYPE_2);
 
-			sb.append(_FINDER_COLUMN_C_C_T_ST_CLASSPK_2);
+				sb.append(_FINDER_COLUMN_C_C_T_ST_STATUS_2);
 
-			sb.append(_FINDER_COLUMN_C_C_T_ST_TYPE_2);
+				String sql = sb.toString();
 
-			sb.append(_FINDER_COLUMN_C_C_T_ST_STATUS_2);
+				Session session = null;
 
-			String sql = sb.toString();
+				try {
+					session = openSession();
 
-			Session session = null;
+					Query query = session.createQuery(sql);
 
-			try {
-				session = openSession();
+					QueryPos queryPos = QueryPos.getInstance(query);
 
-				Query query = session.createQuery(sql);
+					queryPos.add(classNameId);
 
-				QueryPos queryPos = QueryPos.getInstance(query);
+					queryPos.add(classPK);
 
-				queryPos.add(classNameId);
+					queryPos.add(type);
 
-				queryPos.add(classPK);
+					queryPos.add(status);
 
-				queryPos.add(type);
+					count = (Long)query.uniqueResult();
 
-				queryPos.add(status);
-
-				count = (Long)query.uniqueResult();
-
-				if (productionMode) {
 					finderCache.putResult(finderPath, finderArgs, count);
 				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
+				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return count.intValue();
+			return count.intValue();
+		}
 	}
 
 	private static final String _FINDER_COLUMN_C_C_T_ST_CLASSNAMEID_2 =
@@ -5910,105 +6405,108 @@ public class CPAttachmentFileEntryPersistenceImpl
 		int end, OrderByComparator<CPAttachmentFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			CPAttachmentFileEntry.class);
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = null;
+			Object[] finderArgs = null;
 
-		finderPath = _finderPathWithPaginationFindByC_C_T_NotST;
-		finderArgs = new Object[] {
-			classNameId, classPK, type, status, start, end, orderByComparator
-		};
+			finderPath = _finderPathWithPaginationFindByC_C_T_NotST;
+			finderArgs = new Object[] {
+				classNameId, classPK, type, status, start, end,
+				orderByComparator
+			};
 
-		List<CPAttachmentFileEntry> list = null;
+			List<CPAttachmentFileEntry> list = null;
 
-		if (useFinderCache && productionMode) {
-			list = (List<CPAttachmentFileEntry>)finderCache.getResult(
-				finderPath, finderArgs, this);
+			if (useFinderCache) {
+				list = (List<CPAttachmentFileEntry>)finderCache.getResult(
+					finderPath, finderArgs, this);
 
-			if ((list != null) && !list.isEmpty()) {
-				for (CPAttachmentFileEntry cpAttachmentFileEntry : list) {
-					if ((classNameId !=
-							cpAttachmentFileEntry.getClassNameId()) ||
-						(classPK != cpAttachmentFileEntry.getClassPK()) ||
-						(type != cpAttachmentFileEntry.getType()) ||
-						(status == cpAttachmentFileEntry.getStatus())) {
+				if ((list != null) && !list.isEmpty()) {
+					for (CPAttachmentFileEntry cpAttachmentFileEntry : list) {
+						if ((classNameId !=
+								cpAttachmentFileEntry.getClassNameId()) ||
+							(classPK != cpAttachmentFileEntry.getClassPK()) ||
+							(type != cpAttachmentFileEntry.getType()) ||
+							(status == cpAttachmentFileEntry.getStatus())) {
 
-						list = null;
+							list = null;
 
-						break;
+							break;
+						}
 					}
 				}
 			}
-		}
 
-		if (list == null) {
-			StringBundler sb = null;
+			if (list == null) {
+				StringBundler sb = null;
 
-			if (orderByComparator != null) {
-				sb = new StringBundler(
-					6 + (orderByComparator.getOrderByFields().length * 2));
-			}
-			else {
-				sb = new StringBundler(6);
-			}
+				if (orderByComparator != null) {
+					sb = new StringBundler(
+						6 + (orderByComparator.getOrderByFields().length * 2));
+				}
+				else {
+					sb = new StringBundler(6);
+				}
 
-			sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
+				sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
 
-			sb.append(_FINDER_COLUMN_C_C_T_NOTST_CLASSNAMEID_2);
+				sb.append(_FINDER_COLUMN_C_C_T_NOTST_CLASSNAMEID_2);
 
-			sb.append(_FINDER_COLUMN_C_C_T_NOTST_CLASSPK_2);
+				sb.append(_FINDER_COLUMN_C_C_T_NOTST_CLASSPK_2);
 
-			sb.append(_FINDER_COLUMN_C_C_T_NOTST_TYPE_2);
+				sb.append(_FINDER_COLUMN_C_C_T_NOTST_TYPE_2);
 
-			sb.append(_FINDER_COLUMN_C_C_T_NOTST_STATUS_2);
+				sb.append(_FINDER_COLUMN_C_C_T_NOTST_STATUS_2);
 
-			if (orderByComparator != null) {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
-			}
-			else {
-				sb.append(CPAttachmentFileEntryModelImpl.ORDER_BY_JPQL);
-			}
+				if (orderByComparator != null) {
+					appendOrderByComparator(
+						sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+				}
+				else {
+					sb.append(CPAttachmentFileEntryModelImpl.ORDER_BY_JPQL);
+				}
 
-			String sql = sb.toString();
+				String sql = sb.toString();
 
-			Session session = null;
+				Session session = null;
 
-			try {
-				session = openSession();
+				try {
+					session = openSession();
 
-				Query query = session.createQuery(sql);
+					Query query = session.createQuery(sql);
 
-				QueryPos queryPos = QueryPos.getInstance(query);
+					QueryPos queryPos = QueryPos.getInstance(query);
 
-				queryPos.add(classNameId);
+					queryPos.add(classNameId);
 
-				queryPos.add(classPK);
+					queryPos.add(classPK);
 
-				queryPos.add(type);
+					queryPos.add(type);
 
-				queryPos.add(status);
+					queryPos.add(status);
 
-				list = (List<CPAttachmentFileEntry>)QueryUtil.list(
-					query, getDialect(), start, end);
+					list = (List<CPAttachmentFileEntry>)QueryUtil.list(
+						query, getDialect(), start, end);
 
-				cacheResult(list);
+					cacheResult(list);
 
-				if (useFinderCache && productionMode) {
-					finderCache.putResult(finderPath, finderArgs, list);
+					if (useFinderCache) {
+						finderCache.putResult(finderPath, finderArgs, list);
+					}
+				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
 				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return list;
+			return list;
+		}
 	}
 
 	/**
@@ -6364,69 +6862,65 @@ public class CPAttachmentFileEntryPersistenceImpl
 	public int countByC_C_T_NotST(
 		long classNameId, long classPK, int type, int status) {
 
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			CPAttachmentFileEntry.class);
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = _finderPathWithPaginationCountByC_C_T_NotST;
 
-		Long count = null;
+			Object[] finderArgs = new Object[] {
+				classNameId, classPK, type, status
+			};
 
-		if (productionMode) {
-			finderPath = _finderPathWithPaginationCountByC_C_T_NotST;
+			Long count = (Long)finderCache.getResult(
+				finderPath, finderArgs, this);
 
-			finderArgs = new Object[] {classNameId, classPK, type, status};
+			if (count == null) {
+				StringBundler sb = new StringBundler(5);
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
-		}
+				sb.append(_SQL_COUNT_CPATTACHMENTFILEENTRY_WHERE);
 
-		if (count == null) {
-			StringBundler sb = new StringBundler(5);
+				sb.append(_FINDER_COLUMN_C_C_T_NOTST_CLASSNAMEID_2);
 
-			sb.append(_SQL_COUNT_CPATTACHMENTFILEENTRY_WHERE);
+				sb.append(_FINDER_COLUMN_C_C_T_NOTST_CLASSPK_2);
 
-			sb.append(_FINDER_COLUMN_C_C_T_NOTST_CLASSNAMEID_2);
+				sb.append(_FINDER_COLUMN_C_C_T_NOTST_TYPE_2);
 
-			sb.append(_FINDER_COLUMN_C_C_T_NOTST_CLASSPK_2);
+				sb.append(_FINDER_COLUMN_C_C_T_NOTST_STATUS_2);
 
-			sb.append(_FINDER_COLUMN_C_C_T_NOTST_TYPE_2);
+				String sql = sb.toString();
 
-			sb.append(_FINDER_COLUMN_C_C_T_NOTST_STATUS_2);
+				Session session = null;
 
-			String sql = sb.toString();
+				try {
+					session = openSession();
 
-			Session session = null;
+					Query query = session.createQuery(sql);
 
-			try {
-				session = openSession();
+					QueryPos queryPos = QueryPos.getInstance(query);
 
-				Query query = session.createQuery(sql);
+					queryPos.add(classNameId);
 
-				QueryPos queryPos = QueryPos.getInstance(query);
+					queryPos.add(classPK);
 
-				queryPos.add(classNameId);
+					queryPos.add(type);
 
-				queryPos.add(classPK);
+					queryPos.add(status);
 
-				queryPos.add(type);
+					count = (Long)query.uniqueResult();
 
-				queryPos.add(status);
-
-				count = (Long)query.uniqueResult();
-
-				if (productionMode) {
 					finderCache.putResult(finderPath, finderArgs, count);
 				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
+				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return count.intValue();
+			return count.intValue();
+		}
 	}
 
 	private static final String _FINDER_COLUMN_C_C_T_NOTST_CLASSNAMEID_2 =
@@ -6439,6 +6933,1365 @@ public class CPAttachmentFileEntryPersistenceImpl
 		"cpAttachmentFileEntry.type = ? AND ";
 
 	private static final String _FINDER_COLUMN_C_C_T_NOTST_STATUS_2 =
+		"cpAttachmentFileEntry.status != ?";
+
+	private FinderPath _finderPathWithPaginationFindByC_C_G_T_ST;
+	private FinderPath _finderPathWithoutPaginationFindByC_C_G_T_ST;
+	private FinderPath _finderPathCountByC_C_G_T_ST;
+
+	/**
+	 * Returns all the cp attachment file entries where classNameId = &#63; and classPK = &#63; and galleryEnabled = &#63; and type = &#63; and status = &#63;.
+	 *
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param galleryEnabled the gallery enabled
+	 * @param type the type
+	 * @param status the status
+	 * @return the matching cp attachment file entries
+	 */
+	@Override
+	public List<CPAttachmentFileEntry> findByC_C_G_T_ST(
+		long classNameId, long classPK, boolean galleryEnabled, int type,
+		int status) {
+
+		return findByC_C_G_T_ST(
+			classNameId, classPK, galleryEnabled, type, status,
+			QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+	}
+
+	/**
+	 * Returns a range of all the cp attachment file entries where classNameId = &#63; and classPK = &#63; and galleryEnabled = &#63; and type = &#63; and status = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPAttachmentFileEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param galleryEnabled the gallery enabled
+	 * @param type the type
+	 * @param status the status
+	 * @param start the lower bound of the range of cp attachment file entries
+	 * @param end the upper bound of the range of cp attachment file entries (not inclusive)
+	 * @return the range of matching cp attachment file entries
+	 */
+	@Override
+	public List<CPAttachmentFileEntry> findByC_C_G_T_ST(
+		long classNameId, long classPK, boolean galleryEnabled, int type,
+		int status, int start, int end) {
+
+		return findByC_C_G_T_ST(
+			classNameId, classPK, galleryEnabled, type, status, start, end,
+			null);
+	}
+
+	/**
+	 * Returns an ordered range of all the cp attachment file entries where classNameId = &#63; and classPK = &#63; and galleryEnabled = &#63; and type = &#63; and status = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPAttachmentFileEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param galleryEnabled the gallery enabled
+	 * @param type the type
+	 * @param status the status
+	 * @param start the lower bound of the range of cp attachment file entries
+	 * @param end the upper bound of the range of cp attachment file entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching cp attachment file entries
+	 */
+	@Override
+	public List<CPAttachmentFileEntry> findByC_C_G_T_ST(
+		long classNameId, long classPK, boolean galleryEnabled, int type,
+		int status, int start, int end,
+		OrderByComparator<CPAttachmentFileEntry> orderByComparator) {
+
+		return findByC_C_G_T_ST(
+			classNameId, classPK, galleryEnabled, type, status, start, end,
+			orderByComparator, true);
+	}
+
+	/**
+	 * Returns an ordered range of all the cp attachment file entries where classNameId = &#63; and classPK = &#63; and galleryEnabled = &#63; and type = &#63; and status = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPAttachmentFileEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param galleryEnabled the gallery enabled
+	 * @param type the type
+	 * @param status the status
+	 * @param start the lower bound of the range of cp attachment file entries
+	 * @param end the upper bound of the range of cp attachment file entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the ordered range of matching cp attachment file entries
+	 */
+	@Override
+	public List<CPAttachmentFileEntry> findByC_C_G_T_ST(
+		long classNameId, long classPK, boolean galleryEnabled, int type,
+		int status, int start, int end,
+		OrderByComparator<CPAttachmentFileEntry> orderByComparator,
+		boolean useFinderCache) {
+
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
+
+			FinderPath finderPath = null;
+			Object[] finderArgs = null;
+
+			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
+				(orderByComparator == null)) {
+
+				if (useFinderCache) {
+					finderPath = _finderPathWithoutPaginationFindByC_C_G_T_ST;
+					finderArgs = new Object[] {
+						classNameId, classPK, galleryEnabled, type, status
+					};
+				}
+			}
+			else if (useFinderCache) {
+				finderPath = _finderPathWithPaginationFindByC_C_G_T_ST;
+				finderArgs = new Object[] {
+					classNameId, classPK, galleryEnabled, type, status, start,
+					end, orderByComparator
+				};
+			}
+
+			List<CPAttachmentFileEntry> list = null;
+
+			if (useFinderCache) {
+				list = (List<CPAttachmentFileEntry>)finderCache.getResult(
+					finderPath, finderArgs, this);
+
+				if ((list != null) && !list.isEmpty()) {
+					for (CPAttachmentFileEntry cpAttachmentFileEntry : list) {
+						if ((classNameId !=
+								cpAttachmentFileEntry.getClassNameId()) ||
+							(classPK != cpAttachmentFileEntry.getClassPK()) ||
+							(galleryEnabled !=
+								cpAttachmentFileEntry.isGalleryEnabled()) ||
+							(type != cpAttachmentFileEntry.getType()) ||
+							(status != cpAttachmentFileEntry.getStatus())) {
+
+							list = null;
+
+							break;
+						}
+					}
+				}
+			}
+
+			if (list == null) {
+				StringBundler sb = null;
+
+				if (orderByComparator != null) {
+					sb = new StringBundler(
+						7 + (orderByComparator.getOrderByFields().length * 2));
+				}
+				else {
+					sb = new StringBundler(7);
+				}
+
+				sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
+
+				sb.append(_FINDER_COLUMN_C_C_G_T_ST_CLASSNAMEID_2);
+
+				sb.append(_FINDER_COLUMN_C_C_G_T_ST_CLASSPK_2);
+
+				sb.append(_FINDER_COLUMN_C_C_G_T_ST_GALLERYENABLED_2);
+
+				sb.append(_FINDER_COLUMN_C_C_G_T_ST_TYPE_2);
+
+				sb.append(_FINDER_COLUMN_C_C_G_T_ST_STATUS_2);
+
+				if (orderByComparator != null) {
+					appendOrderByComparator(
+						sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+				}
+				else {
+					sb.append(CPAttachmentFileEntryModelImpl.ORDER_BY_JPQL);
+				}
+
+				String sql = sb.toString();
+
+				Session session = null;
+
+				try {
+					session = openSession();
+
+					Query query = session.createQuery(sql);
+
+					QueryPos queryPos = QueryPos.getInstance(query);
+
+					queryPos.add(classNameId);
+
+					queryPos.add(classPK);
+
+					queryPos.add(galleryEnabled);
+
+					queryPos.add(type);
+
+					queryPos.add(status);
+
+					list = (List<CPAttachmentFileEntry>)QueryUtil.list(
+						query, getDialect(), start, end);
+
+					cacheResult(list);
+
+					if (useFinderCache) {
+						finderCache.putResult(finderPath, finderArgs, list);
+					}
+				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
+				}
+			}
+
+			return list;
+		}
+	}
+
+	/**
+	 * Returns the first cp attachment file entry in the ordered set where classNameId = &#63; and classPK = &#63; and galleryEnabled = &#63; and type = &#63; and status = &#63;.
+	 *
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param galleryEnabled the gallery enabled
+	 * @param type the type
+	 * @param status the status
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching cp attachment file entry
+	 * @throws NoSuchCPAttachmentFileEntryException if a matching cp attachment file entry could not be found
+	 */
+	@Override
+	public CPAttachmentFileEntry findByC_C_G_T_ST_First(
+			long classNameId, long classPK, boolean galleryEnabled, int type,
+			int status,
+			OrderByComparator<CPAttachmentFileEntry> orderByComparator)
+		throws NoSuchCPAttachmentFileEntryException {
+
+		CPAttachmentFileEntry cpAttachmentFileEntry = fetchByC_C_G_T_ST_First(
+			classNameId, classPK, galleryEnabled, type, status,
+			orderByComparator);
+
+		if (cpAttachmentFileEntry != null) {
+			return cpAttachmentFileEntry;
+		}
+
+		StringBundler sb = new StringBundler(12);
+
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
+
+		sb.append("classNameId=");
+		sb.append(classNameId);
+
+		sb.append(", classPK=");
+		sb.append(classPK);
+
+		sb.append(", galleryEnabled=");
+		sb.append(galleryEnabled);
+
+		sb.append(", type=");
+		sb.append(type);
+
+		sb.append(", status=");
+		sb.append(status);
+
+		sb.append("}");
+
+		throw new NoSuchCPAttachmentFileEntryException(sb.toString());
+	}
+
+	/**
+	 * Returns the first cp attachment file entry in the ordered set where classNameId = &#63; and classPK = &#63; and galleryEnabled = &#63; and type = &#63; and status = &#63;.
+	 *
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param galleryEnabled the gallery enabled
+	 * @param type the type
+	 * @param status the status
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching cp attachment file entry, or <code>null</code> if a matching cp attachment file entry could not be found
+	 */
+	@Override
+	public CPAttachmentFileEntry fetchByC_C_G_T_ST_First(
+		long classNameId, long classPK, boolean galleryEnabled, int type,
+		int status,
+		OrderByComparator<CPAttachmentFileEntry> orderByComparator) {
+
+		List<CPAttachmentFileEntry> list = findByC_C_G_T_ST(
+			classNameId, classPK, galleryEnabled, type, status, 0, 1,
+			orderByComparator);
+
+		if (!list.isEmpty()) {
+			return list.get(0);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the last cp attachment file entry in the ordered set where classNameId = &#63; and classPK = &#63; and galleryEnabled = &#63; and type = &#63; and status = &#63;.
+	 *
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param galleryEnabled the gallery enabled
+	 * @param type the type
+	 * @param status the status
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching cp attachment file entry
+	 * @throws NoSuchCPAttachmentFileEntryException if a matching cp attachment file entry could not be found
+	 */
+	@Override
+	public CPAttachmentFileEntry findByC_C_G_T_ST_Last(
+			long classNameId, long classPK, boolean galleryEnabled, int type,
+			int status,
+			OrderByComparator<CPAttachmentFileEntry> orderByComparator)
+		throws NoSuchCPAttachmentFileEntryException {
+
+		CPAttachmentFileEntry cpAttachmentFileEntry = fetchByC_C_G_T_ST_Last(
+			classNameId, classPK, galleryEnabled, type, status,
+			orderByComparator);
+
+		if (cpAttachmentFileEntry != null) {
+			return cpAttachmentFileEntry;
+		}
+
+		StringBundler sb = new StringBundler(12);
+
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
+
+		sb.append("classNameId=");
+		sb.append(classNameId);
+
+		sb.append(", classPK=");
+		sb.append(classPK);
+
+		sb.append(", galleryEnabled=");
+		sb.append(galleryEnabled);
+
+		sb.append(", type=");
+		sb.append(type);
+
+		sb.append(", status=");
+		sb.append(status);
+
+		sb.append("}");
+
+		throw new NoSuchCPAttachmentFileEntryException(sb.toString());
+	}
+
+	/**
+	 * Returns the last cp attachment file entry in the ordered set where classNameId = &#63; and classPK = &#63; and galleryEnabled = &#63; and type = &#63; and status = &#63;.
+	 *
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param galleryEnabled the gallery enabled
+	 * @param type the type
+	 * @param status the status
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching cp attachment file entry, or <code>null</code> if a matching cp attachment file entry could not be found
+	 */
+	@Override
+	public CPAttachmentFileEntry fetchByC_C_G_T_ST_Last(
+		long classNameId, long classPK, boolean galleryEnabled, int type,
+		int status,
+		OrderByComparator<CPAttachmentFileEntry> orderByComparator) {
+
+		int count = countByC_C_G_T_ST(
+			classNameId, classPK, galleryEnabled, type, status);
+
+		if (count == 0) {
+			return null;
+		}
+
+		List<CPAttachmentFileEntry> list = findByC_C_G_T_ST(
+			classNameId, classPK, galleryEnabled, type, status, count - 1,
+			count, orderByComparator);
+
+		if (!list.isEmpty()) {
+			return list.get(0);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the cp attachment file entries before and after the current cp attachment file entry in the ordered set where classNameId = &#63; and classPK = &#63; and galleryEnabled = &#63; and type = &#63; and status = &#63;.
+	 *
+	 * @param CPAttachmentFileEntryId the primary key of the current cp attachment file entry
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param galleryEnabled the gallery enabled
+	 * @param type the type
+	 * @param status the status
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next cp attachment file entry
+	 * @throws NoSuchCPAttachmentFileEntryException if a cp attachment file entry with the primary key could not be found
+	 */
+	@Override
+	public CPAttachmentFileEntry[] findByC_C_G_T_ST_PrevAndNext(
+			long CPAttachmentFileEntryId, long classNameId, long classPK,
+			boolean galleryEnabled, int type, int status,
+			OrderByComparator<CPAttachmentFileEntry> orderByComparator)
+		throws NoSuchCPAttachmentFileEntryException {
+
+		CPAttachmentFileEntry cpAttachmentFileEntry = findByPrimaryKey(
+			CPAttachmentFileEntryId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			CPAttachmentFileEntry[] array = new CPAttachmentFileEntryImpl[3];
+
+			array[0] = getByC_C_G_T_ST_PrevAndNext(
+				session, cpAttachmentFileEntry, classNameId, classPK,
+				galleryEnabled, type, status, orderByComparator, true);
+
+			array[1] = cpAttachmentFileEntry;
+
+			array[2] = getByC_C_G_T_ST_PrevAndNext(
+				session, cpAttachmentFileEntry, classNameId, classPK,
+				galleryEnabled, type, status, orderByComparator, false);
+
+			return array;
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected CPAttachmentFileEntry getByC_C_G_T_ST_PrevAndNext(
+		Session session, CPAttachmentFileEntry cpAttachmentFileEntry,
+		long classNameId, long classPK, boolean galleryEnabled, int type,
+		int status, OrderByComparator<CPAttachmentFileEntry> orderByComparator,
+		boolean previous) {
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				8 + (orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			sb = new StringBundler(7);
+		}
+
+		sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
+
+		sb.append(_FINDER_COLUMN_C_C_G_T_ST_CLASSNAMEID_2);
+
+		sb.append(_FINDER_COLUMN_C_C_G_T_ST_CLASSPK_2);
+
+		sb.append(_FINDER_COLUMN_C_C_G_T_ST_GALLERYENABLED_2);
+
+		sb.append(_FINDER_COLUMN_C_C_G_T_ST_TYPE_2);
+
+		sb.append(_FINDER_COLUMN_C_C_G_T_ST_STATUS_2);
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				sb.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			sb.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC);
+					}
+					else {
+						sb.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			sb.append(CPAttachmentFileEntryModelImpl.ORDER_BY_JPQL);
+		}
+
+		String sql = sb.toString();
+
+		Query query = session.createQuery(sql);
+
+		query.setFirstResult(0);
+		query.setMaxResults(2);
+
+		QueryPos queryPos = QueryPos.getInstance(query);
+
+		queryPos.add(classNameId);
+
+		queryPos.add(classPK);
+
+		queryPos.add(galleryEnabled);
+
+		queryPos.add(type);
+
+		queryPos.add(status);
+
+		if (orderByComparator != null) {
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(
+						cpAttachmentFileEntry)) {
+
+				queryPos.add(orderByConditionValue);
+			}
+		}
+
+		List<CPAttachmentFileEntry> list = query.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
+	 * Removes all the cp attachment file entries where classNameId = &#63; and classPK = &#63; and galleryEnabled = &#63; and type = &#63; and status = &#63; from the database.
+	 *
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param galleryEnabled the gallery enabled
+	 * @param type the type
+	 * @param status the status
+	 */
+	@Override
+	public void removeByC_C_G_T_ST(
+		long classNameId, long classPK, boolean galleryEnabled, int type,
+		int status) {
+
+		for (CPAttachmentFileEntry cpAttachmentFileEntry :
+				findByC_C_G_T_ST(
+					classNameId, classPK, galleryEnabled, type, status,
+					QueryUtil.ALL_POS, QueryUtil.ALL_POS, null)) {
+
+			remove(cpAttachmentFileEntry);
+		}
+	}
+
+	/**
+	 * Returns the number of cp attachment file entries where classNameId = &#63; and classPK = &#63; and galleryEnabled = &#63; and type = &#63; and status = &#63;.
+	 *
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param galleryEnabled the gallery enabled
+	 * @param type the type
+	 * @param status the status
+	 * @return the number of matching cp attachment file entries
+	 */
+	@Override
+	public int countByC_C_G_T_ST(
+		long classNameId, long classPK, boolean galleryEnabled, int type,
+		int status) {
+
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
+
+			FinderPath finderPath = _finderPathCountByC_C_G_T_ST;
+
+			Object[] finderArgs = new Object[] {
+				classNameId, classPK, galleryEnabled, type, status
+			};
+
+			Long count = (Long)finderCache.getResult(
+				finderPath, finderArgs, this);
+
+			if (count == null) {
+				StringBundler sb = new StringBundler(6);
+
+				sb.append(_SQL_COUNT_CPATTACHMENTFILEENTRY_WHERE);
+
+				sb.append(_FINDER_COLUMN_C_C_G_T_ST_CLASSNAMEID_2);
+
+				sb.append(_FINDER_COLUMN_C_C_G_T_ST_CLASSPK_2);
+
+				sb.append(_FINDER_COLUMN_C_C_G_T_ST_GALLERYENABLED_2);
+
+				sb.append(_FINDER_COLUMN_C_C_G_T_ST_TYPE_2);
+
+				sb.append(_FINDER_COLUMN_C_C_G_T_ST_STATUS_2);
+
+				String sql = sb.toString();
+
+				Session session = null;
+
+				try {
+					session = openSession();
+
+					Query query = session.createQuery(sql);
+
+					QueryPos queryPos = QueryPos.getInstance(query);
+
+					queryPos.add(classNameId);
+
+					queryPos.add(classPK);
+
+					queryPos.add(galleryEnabled);
+
+					queryPos.add(type);
+
+					queryPos.add(status);
+
+					count = (Long)query.uniqueResult();
+
+					finderCache.putResult(finderPath, finderArgs, count);
+				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
+				}
+			}
+
+			return count.intValue();
+		}
+	}
+
+	private static final String _FINDER_COLUMN_C_C_G_T_ST_CLASSNAMEID_2 =
+		"cpAttachmentFileEntry.classNameId = ? AND ";
+
+	private static final String _FINDER_COLUMN_C_C_G_T_ST_CLASSPK_2 =
+		"cpAttachmentFileEntry.classPK = ? AND ";
+
+	private static final String _FINDER_COLUMN_C_C_G_T_ST_GALLERYENABLED_2 =
+		"cpAttachmentFileEntry.galleryEnabled = ? AND ";
+
+	private static final String _FINDER_COLUMN_C_C_G_T_ST_TYPE_2 =
+		"cpAttachmentFileEntry.type = ? AND ";
+
+	private static final String _FINDER_COLUMN_C_C_G_T_ST_STATUS_2 =
+		"cpAttachmentFileEntry.status = ?";
+
+	private FinderPath _finderPathWithPaginationFindByC_C_G_T_NotST;
+	private FinderPath _finderPathWithPaginationCountByC_C_G_T_NotST;
+
+	/**
+	 * Returns all the cp attachment file entries where classNameId = &#63; and classPK = &#63; and galleryEnabled = &#63; and type = &#63; and status &ne; &#63;.
+	 *
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param galleryEnabled the gallery enabled
+	 * @param type the type
+	 * @param status the status
+	 * @return the matching cp attachment file entries
+	 */
+	@Override
+	public List<CPAttachmentFileEntry> findByC_C_G_T_NotST(
+		long classNameId, long classPK, boolean galleryEnabled, int type,
+		int status) {
+
+		return findByC_C_G_T_NotST(
+			classNameId, classPK, galleryEnabled, type, status,
+			QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+	}
+
+	/**
+	 * Returns a range of all the cp attachment file entries where classNameId = &#63; and classPK = &#63; and galleryEnabled = &#63; and type = &#63; and status &ne; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPAttachmentFileEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param galleryEnabled the gallery enabled
+	 * @param type the type
+	 * @param status the status
+	 * @param start the lower bound of the range of cp attachment file entries
+	 * @param end the upper bound of the range of cp attachment file entries (not inclusive)
+	 * @return the range of matching cp attachment file entries
+	 */
+	@Override
+	public List<CPAttachmentFileEntry> findByC_C_G_T_NotST(
+		long classNameId, long classPK, boolean galleryEnabled, int type,
+		int status, int start, int end) {
+
+		return findByC_C_G_T_NotST(
+			classNameId, classPK, galleryEnabled, type, status, start, end,
+			null);
+	}
+
+	/**
+	 * Returns an ordered range of all the cp attachment file entries where classNameId = &#63; and classPK = &#63; and galleryEnabled = &#63; and type = &#63; and status &ne; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPAttachmentFileEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param galleryEnabled the gallery enabled
+	 * @param type the type
+	 * @param status the status
+	 * @param start the lower bound of the range of cp attachment file entries
+	 * @param end the upper bound of the range of cp attachment file entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching cp attachment file entries
+	 */
+	@Override
+	public List<CPAttachmentFileEntry> findByC_C_G_T_NotST(
+		long classNameId, long classPK, boolean galleryEnabled, int type,
+		int status, int start, int end,
+		OrderByComparator<CPAttachmentFileEntry> orderByComparator) {
+
+		return findByC_C_G_T_NotST(
+			classNameId, classPK, galleryEnabled, type, status, start, end,
+			orderByComparator, true);
+	}
+
+	/**
+	 * Returns an ordered range of all the cp attachment file entries where classNameId = &#63; and classPK = &#63; and galleryEnabled = &#63; and type = &#63; and status &ne; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPAttachmentFileEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param galleryEnabled the gallery enabled
+	 * @param type the type
+	 * @param status the status
+	 * @param start the lower bound of the range of cp attachment file entries
+	 * @param end the upper bound of the range of cp attachment file entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the ordered range of matching cp attachment file entries
+	 */
+	@Override
+	public List<CPAttachmentFileEntry> findByC_C_G_T_NotST(
+		long classNameId, long classPK, boolean galleryEnabled, int type,
+		int status, int start, int end,
+		OrderByComparator<CPAttachmentFileEntry> orderByComparator,
+		boolean useFinderCache) {
+
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
+
+			FinderPath finderPath = null;
+			Object[] finderArgs = null;
+
+			finderPath = _finderPathWithPaginationFindByC_C_G_T_NotST;
+			finderArgs = new Object[] {
+				classNameId, classPK, galleryEnabled, type, status, start, end,
+				orderByComparator
+			};
+
+			List<CPAttachmentFileEntry> list = null;
+
+			if (useFinderCache) {
+				list = (List<CPAttachmentFileEntry>)finderCache.getResult(
+					finderPath, finderArgs, this);
+
+				if ((list != null) && !list.isEmpty()) {
+					for (CPAttachmentFileEntry cpAttachmentFileEntry : list) {
+						if ((classNameId !=
+								cpAttachmentFileEntry.getClassNameId()) ||
+							(classPK != cpAttachmentFileEntry.getClassPK()) ||
+							(galleryEnabled !=
+								cpAttachmentFileEntry.isGalleryEnabled()) ||
+							(type != cpAttachmentFileEntry.getType()) ||
+							(status == cpAttachmentFileEntry.getStatus())) {
+
+							list = null;
+
+							break;
+						}
+					}
+				}
+			}
+
+			if (list == null) {
+				StringBundler sb = null;
+
+				if (orderByComparator != null) {
+					sb = new StringBundler(
+						7 + (orderByComparator.getOrderByFields().length * 2));
+				}
+				else {
+					sb = new StringBundler(7);
+				}
+
+				sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
+
+				sb.append(_FINDER_COLUMN_C_C_G_T_NOTST_CLASSNAMEID_2);
+
+				sb.append(_FINDER_COLUMN_C_C_G_T_NOTST_CLASSPK_2);
+
+				sb.append(_FINDER_COLUMN_C_C_G_T_NOTST_GALLERYENABLED_2);
+
+				sb.append(_FINDER_COLUMN_C_C_G_T_NOTST_TYPE_2);
+
+				sb.append(_FINDER_COLUMN_C_C_G_T_NOTST_STATUS_2);
+
+				if (orderByComparator != null) {
+					appendOrderByComparator(
+						sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+				}
+				else {
+					sb.append(CPAttachmentFileEntryModelImpl.ORDER_BY_JPQL);
+				}
+
+				String sql = sb.toString();
+
+				Session session = null;
+
+				try {
+					session = openSession();
+
+					Query query = session.createQuery(sql);
+
+					QueryPos queryPos = QueryPos.getInstance(query);
+
+					queryPos.add(classNameId);
+
+					queryPos.add(classPK);
+
+					queryPos.add(galleryEnabled);
+
+					queryPos.add(type);
+
+					queryPos.add(status);
+
+					list = (List<CPAttachmentFileEntry>)QueryUtil.list(
+						query, getDialect(), start, end);
+
+					cacheResult(list);
+
+					if (useFinderCache) {
+						finderCache.putResult(finderPath, finderArgs, list);
+					}
+				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
+				}
+			}
+
+			return list;
+		}
+	}
+
+	/**
+	 * Returns the first cp attachment file entry in the ordered set where classNameId = &#63; and classPK = &#63; and galleryEnabled = &#63; and type = &#63; and status &ne; &#63;.
+	 *
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param galleryEnabled the gallery enabled
+	 * @param type the type
+	 * @param status the status
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching cp attachment file entry
+	 * @throws NoSuchCPAttachmentFileEntryException if a matching cp attachment file entry could not be found
+	 */
+	@Override
+	public CPAttachmentFileEntry findByC_C_G_T_NotST_First(
+			long classNameId, long classPK, boolean galleryEnabled, int type,
+			int status,
+			OrderByComparator<CPAttachmentFileEntry> orderByComparator)
+		throws NoSuchCPAttachmentFileEntryException {
+
+		CPAttachmentFileEntry cpAttachmentFileEntry =
+			fetchByC_C_G_T_NotST_First(
+				classNameId, classPK, galleryEnabled, type, status,
+				orderByComparator);
+
+		if (cpAttachmentFileEntry != null) {
+			return cpAttachmentFileEntry;
+		}
+
+		StringBundler sb = new StringBundler(12);
+
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
+
+		sb.append("classNameId=");
+		sb.append(classNameId);
+
+		sb.append(", classPK=");
+		sb.append(classPK);
+
+		sb.append(", galleryEnabled=");
+		sb.append(galleryEnabled);
+
+		sb.append(", type=");
+		sb.append(type);
+
+		sb.append(", status!=");
+		sb.append(status);
+
+		sb.append("}");
+
+		throw new NoSuchCPAttachmentFileEntryException(sb.toString());
+	}
+
+	/**
+	 * Returns the first cp attachment file entry in the ordered set where classNameId = &#63; and classPK = &#63; and galleryEnabled = &#63; and type = &#63; and status &ne; &#63;.
+	 *
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param galleryEnabled the gallery enabled
+	 * @param type the type
+	 * @param status the status
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching cp attachment file entry, or <code>null</code> if a matching cp attachment file entry could not be found
+	 */
+	@Override
+	public CPAttachmentFileEntry fetchByC_C_G_T_NotST_First(
+		long classNameId, long classPK, boolean galleryEnabled, int type,
+		int status,
+		OrderByComparator<CPAttachmentFileEntry> orderByComparator) {
+
+		List<CPAttachmentFileEntry> list = findByC_C_G_T_NotST(
+			classNameId, classPK, galleryEnabled, type, status, 0, 1,
+			orderByComparator);
+
+		if (!list.isEmpty()) {
+			return list.get(0);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the last cp attachment file entry in the ordered set where classNameId = &#63; and classPK = &#63; and galleryEnabled = &#63; and type = &#63; and status &ne; &#63;.
+	 *
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param galleryEnabled the gallery enabled
+	 * @param type the type
+	 * @param status the status
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching cp attachment file entry
+	 * @throws NoSuchCPAttachmentFileEntryException if a matching cp attachment file entry could not be found
+	 */
+	@Override
+	public CPAttachmentFileEntry findByC_C_G_T_NotST_Last(
+			long classNameId, long classPK, boolean galleryEnabled, int type,
+			int status,
+			OrderByComparator<CPAttachmentFileEntry> orderByComparator)
+		throws NoSuchCPAttachmentFileEntryException {
+
+		CPAttachmentFileEntry cpAttachmentFileEntry = fetchByC_C_G_T_NotST_Last(
+			classNameId, classPK, galleryEnabled, type, status,
+			orderByComparator);
+
+		if (cpAttachmentFileEntry != null) {
+			return cpAttachmentFileEntry;
+		}
+
+		StringBundler sb = new StringBundler(12);
+
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
+
+		sb.append("classNameId=");
+		sb.append(classNameId);
+
+		sb.append(", classPK=");
+		sb.append(classPK);
+
+		sb.append(", galleryEnabled=");
+		sb.append(galleryEnabled);
+
+		sb.append(", type=");
+		sb.append(type);
+
+		sb.append(", status!=");
+		sb.append(status);
+
+		sb.append("}");
+
+		throw new NoSuchCPAttachmentFileEntryException(sb.toString());
+	}
+
+	/**
+	 * Returns the last cp attachment file entry in the ordered set where classNameId = &#63; and classPK = &#63; and galleryEnabled = &#63; and type = &#63; and status &ne; &#63;.
+	 *
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param galleryEnabled the gallery enabled
+	 * @param type the type
+	 * @param status the status
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching cp attachment file entry, or <code>null</code> if a matching cp attachment file entry could not be found
+	 */
+	@Override
+	public CPAttachmentFileEntry fetchByC_C_G_T_NotST_Last(
+		long classNameId, long classPK, boolean galleryEnabled, int type,
+		int status,
+		OrderByComparator<CPAttachmentFileEntry> orderByComparator) {
+
+		int count = countByC_C_G_T_NotST(
+			classNameId, classPK, galleryEnabled, type, status);
+
+		if (count == 0) {
+			return null;
+		}
+
+		List<CPAttachmentFileEntry> list = findByC_C_G_T_NotST(
+			classNameId, classPK, galleryEnabled, type, status, count - 1,
+			count, orderByComparator);
+
+		if (!list.isEmpty()) {
+			return list.get(0);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the cp attachment file entries before and after the current cp attachment file entry in the ordered set where classNameId = &#63; and classPK = &#63; and galleryEnabled = &#63; and type = &#63; and status &ne; &#63;.
+	 *
+	 * @param CPAttachmentFileEntryId the primary key of the current cp attachment file entry
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param galleryEnabled the gallery enabled
+	 * @param type the type
+	 * @param status the status
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next cp attachment file entry
+	 * @throws NoSuchCPAttachmentFileEntryException if a cp attachment file entry with the primary key could not be found
+	 */
+	@Override
+	public CPAttachmentFileEntry[] findByC_C_G_T_NotST_PrevAndNext(
+			long CPAttachmentFileEntryId, long classNameId, long classPK,
+			boolean galleryEnabled, int type, int status,
+			OrderByComparator<CPAttachmentFileEntry> orderByComparator)
+		throws NoSuchCPAttachmentFileEntryException {
+
+		CPAttachmentFileEntry cpAttachmentFileEntry = findByPrimaryKey(
+			CPAttachmentFileEntryId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			CPAttachmentFileEntry[] array = new CPAttachmentFileEntryImpl[3];
+
+			array[0] = getByC_C_G_T_NotST_PrevAndNext(
+				session, cpAttachmentFileEntry, classNameId, classPK,
+				galleryEnabled, type, status, orderByComparator, true);
+
+			array[1] = cpAttachmentFileEntry;
+
+			array[2] = getByC_C_G_T_NotST_PrevAndNext(
+				session, cpAttachmentFileEntry, classNameId, classPK,
+				galleryEnabled, type, status, orderByComparator, false);
+
+			return array;
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected CPAttachmentFileEntry getByC_C_G_T_NotST_PrevAndNext(
+		Session session, CPAttachmentFileEntry cpAttachmentFileEntry,
+		long classNameId, long classPK, boolean galleryEnabled, int type,
+		int status, OrderByComparator<CPAttachmentFileEntry> orderByComparator,
+		boolean previous) {
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				8 + (orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			sb = new StringBundler(7);
+		}
+
+		sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
+
+		sb.append(_FINDER_COLUMN_C_C_G_T_NOTST_CLASSNAMEID_2);
+
+		sb.append(_FINDER_COLUMN_C_C_G_T_NOTST_CLASSPK_2);
+
+		sb.append(_FINDER_COLUMN_C_C_G_T_NOTST_GALLERYENABLED_2);
+
+		sb.append(_FINDER_COLUMN_C_C_G_T_NOTST_TYPE_2);
+
+		sb.append(_FINDER_COLUMN_C_C_G_T_NOTST_STATUS_2);
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				sb.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			sb.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC);
+					}
+					else {
+						sb.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			sb.append(CPAttachmentFileEntryModelImpl.ORDER_BY_JPQL);
+		}
+
+		String sql = sb.toString();
+
+		Query query = session.createQuery(sql);
+
+		query.setFirstResult(0);
+		query.setMaxResults(2);
+
+		QueryPos queryPos = QueryPos.getInstance(query);
+
+		queryPos.add(classNameId);
+
+		queryPos.add(classPK);
+
+		queryPos.add(galleryEnabled);
+
+		queryPos.add(type);
+
+		queryPos.add(status);
+
+		if (orderByComparator != null) {
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(
+						cpAttachmentFileEntry)) {
+
+				queryPos.add(orderByConditionValue);
+			}
+		}
+
+		List<CPAttachmentFileEntry> list = query.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
+	 * Removes all the cp attachment file entries where classNameId = &#63; and classPK = &#63; and galleryEnabled = &#63; and type = &#63; and status &ne; &#63; from the database.
+	 *
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param galleryEnabled the gallery enabled
+	 * @param type the type
+	 * @param status the status
+	 */
+	@Override
+	public void removeByC_C_G_T_NotST(
+		long classNameId, long classPK, boolean galleryEnabled, int type,
+		int status) {
+
+		for (CPAttachmentFileEntry cpAttachmentFileEntry :
+				findByC_C_G_T_NotST(
+					classNameId, classPK, galleryEnabled, type, status,
+					QueryUtil.ALL_POS, QueryUtil.ALL_POS, null)) {
+
+			remove(cpAttachmentFileEntry);
+		}
+	}
+
+	/**
+	 * Returns the number of cp attachment file entries where classNameId = &#63; and classPK = &#63; and galleryEnabled = &#63; and type = &#63; and status &ne; &#63;.
+	 *
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param galleryEnabled the gallery enabled
+	 * @param type the type
+	 * @param status the status
+	 * @return the number of matching cp attachment file entries
+	 */
+	@Override
+	public int countByC_C_G_T_NotST(
+		long classNameId, long classPK, boolean galleryEnabled, int type,
+		int status) {
+
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
+
+			FinderPath finderPath =
+				_finderPathWithPaginationCountByC_C_G_T_NotST;
+
+			Object[] finderArgs = new Object[] {
+				classNameId, classPK, galleryEnabled, type, status
+			};
+
+			Long count = (Long)finderCache.getResult(
+				finderPath, finderArgs, this);
+
+			if (count == null) {
+				StringBundler sb = new StringBundler(6);
+
+				sb.append(_SQL_COUNT_CPATTACHMENTFILEENTRY_WHERE);
+
+				sb.append(_FINDER_COLUMN_C_C_G_T_NOTST_CLASSNAMEID_2);
+
+				sb.append(_FINDER_COLUMN_C_C_G_T_NOTST_CLASSPK_2);
+
+				sb.append(_FINDER_COLUMN_C_C_G_T_NOTST_GALLERYENABLED_2);
+
+				sb.append(_FINDER_COLUMN_C_C_G_T_NOTST_TYPE_2);
+
+				sb.append(_FINDER_COLUMN_C_C_G_T_NOTST_STATUS_2);
+
+				String sql = sb.toString();
+
+				Session session = null;
+
+				try {
+					session = openSession();
+
+					Query query = session.createQuery(sql);
+
+					QueryPos queryPos = QueryPos.getInstance(query);
+
+					queryPos.add(classNameId);
+
+					queryPos.add(classPK);
+
+					queryPos.add(galleryEnabled);
+
+					queryPos.add(type);
+
+					queryPos.add(status);
+
+					count = (Long)query.uniqueResult();
+
+					finderCache.putResult(finderPath, finderArgs, count);
+				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
+				}
+			}
+
+			return count.intValue();
+		}
+	}
+
+	private static final String _FINDER_COLUMN_C_C_G_T_NOTST_CLASSNAMEID_2 =
+		"cpAttachmentFileEntry.classNameId = ? AND ";
+
+	private static final String _FINDER_COLUMN_C_C_G_T_NOTST_CLASSPK_2 =
+		"cpAttachmentFileEntry.classPK = ? AND ";
+
+	private static final String _FINDER_COLUMN_C_C_G_T_NOTST_GALLERYENABLED_2 =
+		"cpAttachmentFileEntry.galleryEnabled = ? AND ";
+
+	private static final String _FINDER_COLUMN_C_C_G_T_NOTST_TYPE_2 =
+		"cpAttachmentFileEntry.type = ? AND ";
+
+	private static final String _FINDER_COLUMN_C_C_G_T_NOTST_STATUS_2 =
 		"cpAttachmentFileEntry.status != ?";
 
 	private FinderPath _finderPathFetchByERC_C;
@@ -6509,110 +8362,104 @@ public class CPAttachmentFileEntryPersistenceImpl
 	public CPAttachmentFileEntry fetchByERC_C(
 		String externalReferenceCode, long companyId, boolean useFinderCache) {
 
-		externalReferenceCode = Objects.toString(externalReferenceCode, "");
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
 
-		Object[] finderArgs = null;
+			externalReferenceCode = Objects.toString(externalReferenceCode, "");
 
-		if (useFinderCache) {
-			finderArgs = new Object[] {externalReferenceCode, companyId};
-		}
+			Object[] finderArgs = null;
 
-		Object result = null;
-
-		if (useFinderCache) {
-			result = finderCache.getResult(
-				_finderPathFetchByERC_C, finderArgs, this);
-		}
-
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			CPAttachmentFileEntry.class);
-
-		if (result instanceof CPAttachmentFileEntry) {
-			CPAttachmentFileEntry cpAttachmentFileEntry =
-				(CPAttachmentFileEntry)result;
-
-			if (!Objects.equals(
-					externalReferenceCode,
-					cpAttachmentFileEntry.getExternalReferenceCode()) ||
-				(companyId != cpAttachmentFileEntry.getCompanyId())) {
-
-				result = null;
-			}
-			else if (!ctPersistenceHelper.isProductionMode(
-						CPAttachmentFileEntry.class,
-						cpAttachmentFileEntry.getPrimaryKey())) {
-
-				result = null;
-			}
-		}
-		else if (!productionMode && (result instanceof List<?>)) {
-			result = null;
-		}
-
-		if (result == null) {
-			StringBundler sb = new StringBundler(4);
-
-			sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
-
-			boolean bindExternalReferenceCode = false;
-
-			if (externalReferenceCode.isEmpty()) {
-				sb.append(_FINDER_COLUMN_ERC_C_EXTERNALREFERENCECODE_3);
-			}
-			else {
-				bindExternalReferenceCode = true;
-
-				sb.append(_FINDER_COLUMN_ERC_C_EXTERNALREFERENCECODE_2);
+			if (useFinderCache) {
+				finderArgs = new Object[] {externalReferenceCode, companyId};
 			}
 
-			sb.append(_FINDER_COLUMN_ERC_C_COMPANYID_2);
+			Object result = null;
 
-			String sql = sb.toString();
+			if (useFinderCache) {
+				result = finderCache.getResult(
+					_finderPathFetchByERC_C, finderArgs, this);
+			}
 
-			Session session = null;
+			if (result instanceof CPAttachmentFileEntry) {
+				CPAttachmentFileEntry cpAttachmentFileEntry =
+					(CPAttachmentFileEntry)result;
 
-			try {
-				session = openSession();
+				if (!Objects.equals(
+						externalReferenceCode,
+						cpAttachmentFileEntry.getExternalReferenceCode()) ||
+					(companyId != cpAttachmentFileEntry.getCompanyId())) {
 
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				if (bindExternalReferenceCode) {
-					queryPos.add(externalReferenceCode);
+					result = null;
 				}
+			}
 
-				queryPos.add(companyId);
+			if (result == null) {
+				StringBundler sb = new StringBundler(4);
 
-				List<CPAttachmentFileEntry> list = query.list();
+				sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY_WHERE);
 
-				if (list.isEmpty()) {
-					if (useFinderCache && productionMode) {
-						finderCache.putResult(
-							_finderPathFetchByERC_C, finderArgs, list);
-					}
+				boolean bindExternalReferenceCode = false;
+
+				if (externalReferenceCode.isEmpty()) {
+					sb.append(_FINDER_COLUMN_ERC_C_EXTERNALREFERENCECODE_3);
 				}
 				else {
-					CPAttachmentFileEntry cpAttachmentFileEntry = list.get(0);
+					bindExternalReferenceCode = true;
 
-					result = cpAttachmentFileEntry;
+					sb.append(_FINDER_COLUMN_ERC_C_EXTERNALREFERENCECODE_2);
+				}
 
-					cacheResult(cpAttachmentFileEntry);
+				sb.append(_FINDER_COLUMN_ERC_C_COMPANYID_2);
+
+				String sql = sb.toString();
+
+				Session session = null;
+
+				try {
+					session = openSession();
+
+					Query query = session.createQuery(sql);
+
+					QueryPos queryPos = QueryPos.getInstance(query);
+
+					if (bindExternalReferenceCode) {
+						queryPos.add(externalReferenceCode);
+					}
+
+					queryPos.add(companyId);
+
+					List<CPAttachmentFileEntry> list = query.list();
+
+					if (list.isEmpty()) {
+						if (useFinderCache) {
+							finderCache.putResult(
+								_finderPathFetchByERC_C, finderArgs, list);
+						}
+					}
+					else {
+						CPAttachmentFileEntry cpAttachmentFileEntry = list.get(
+							0);
+
+						result = cpAttachmentFileEntry;
+
+						cacheResult(cpAttachmentFileEntry);
+					}
+				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
 				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		if (result instanceof List<?>) {
-			return null;
-		}
-		else {
-			return (CPAttachmentFileEntry)result;
+			if (result instanceof List<?>) {
+				return null;
+			}
+			else {
+				return (CPAttachmentFileEntry)result;
+			}
 		}
 	}
 
@@ -6643,74 +8490,70 @@ public class CPAttachmentFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countByERC_C(String externalReferenceCode, long companyId) {
-		externalReferenceCode = Objects.toString(externalReferenceCode, "");
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
 
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			CPAttachmentFileEntry.class);
+			externalReferenceCode = Objects.toString(externalReferenceCode, "");
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = _finderPathCountByERC_C;
 
-		Long count = null;
+			Object[] finderArgs = new Object[] {
+				externalReferenceCode, companyId
+			};
 
-		if (productionMode) {
-			finderPath = _finderPathCountByERC_C;
+			Long count = (Long)finderCache.getResult(
+				finderPath, finderArgs, this);
 
-			finderArgs = new Object[] {externalReferenceCode, companyId};
+			if (count == null) {
+				StringBundler sb = new StringBundler(3);
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
-		}
+				sb.append(_SQL_COUNT_CPATTACHMENTFILEENTRY_WHERE);
 
-		if (count == null) {
-			StringBundler sb = new StringBundler(3);
+				boolean bindExternalReferenceCode = false;
 
-			sb.append(_SQL_COUNT_CPATTACHMENTFILEENTRY_WHERE);
+				if (externalReferenceCode.isEmpty()) {
+					sb.append(_FINDER_COLUMN_ERC_C_EXTERNALREFERENCECODE_3);
+				}
+				else {
+					bindExternalReferenceCode = true;
 
-			boolean bindExternalReferenceCode = false;
-
-			if (externalReferenceCode.isEmpty()) {
-				sb.append(_FINDER_COLUMN_ERC_C_EXTERNALREFERENCECODE_3);
-			}
-			else {
-				bindExternalReferenceCode = true;
-
-				sb.append(_FINDER_COLUMN_ERC_C_EXTERNALREFERENCECODE_2);
-			}
-
-			sb.append(_FINDER_COLUMN_ERC_C_COMPANYID_2);
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				if (bindExternalReferenceCode) {
-					queryPos.add(externalReferenceCode);
+					sb.append(_FINDER_COLUMN_ERC_C_EXTERNALREFERENCECODE_2);
 				}
 
-				queryPos.add(companyId);
+				sb.append(_FINDER_COLUMN_ERC_C_COMPANYID_2);
 
-				count = (Long)query.uniqueResult();
+				String sql = sb.toString();
 
-				if (productionMode) {
+				Session session = null;
+
+				try {
+					session = openSession();
+
+					Query query = session.createQuery(sql);
+
+					QueryPos queryPos = QueryPos.getInstance(query);
+
+					if (bindExternalReferenceCode) {
+						queryPos.add(externalReferenceCode);
+					}
+
+					queryPos.add(companyId);
+
+					count = (Long)query.uniqueResult();
+
 					finderCache.putResult(finderPath, finderArgs, count);
 				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
+				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return count.intValue();
+			return count.intValue();
+		}
 	}
 
 	private static final String _FINDER_COLUMN_ERC_C_EXTERNALREFERENCECODE_2 =
@@ -6745,29 +8588,30 @@ public class CPAttachmentFileEntryPersistenceImpl
 	 */
 	@Override
 	public void cacheResult(CPAttachmentFileEntry cpAttachmentFileEntry) {
-		if (cpAttachmentFileEntry.getCtCollectionId() != 0) {
-			return;
+		try (SafeCloseable safeCloseable =
+				CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
+					cpAttachmentFileEntry.getCtCollectionId())) {
+
+			entityCache.putResult(
+				CPAttachmentFileEntryImpl.class,
+				cpAttachmentFileEntry.getPrimaryKey(), cpAttachmentFileEntry);
+
+			finderCache.putResult(
+				_finderPathFetchByUUID_G,
+				new Object[] {
+					cpAttachmentFileEntry.getUuid(),
+					cpAttachmentFileEntry.getGroupId()
+				},
+				cpAttachmentFileEntry);
+
+			finderCache.putResult(
+				_finderPathFetchByERC_C,
+				new Object[] {
+					cpAttachmentFileEntry.getExternalReferenceCode(),
+					cpAttachmentFileEntry.getCompanyId()
+				},
+				cpAttachmentFileEntry);
 		}
-
-		entityCache.putResult(
-			CPAttachmentFileEntryImpl.class,
-			cpAttachmentFileEntry.getPrimaryKey(), cpAttachmentFileEntry);
-
-		finderCache.putResult(
-			_finderPathFetchByUUID_G,
-			new Object[] {
-				cpAttachmentFileEntry.getUuid(),
-				cpAttachmentFileEntry.getGroupId()
-			},
-			cpAttachmentFileEntry);
-
-		finderCache.putResult(
-			_finderPathFetchByERC_C,
-			new Object[] {
-				cpAttachmentFileEntry.getExternalReferenceCode(),
-				cpAttachmentFileEntry.getCompanyId()
-			},
-			cpAttachmentFileEntry);
 	}
 
 	private int _valueObjectFinderCacheListThreshold;
@@ -6792,15 +8636,16 @@ public class CPAttachmentFileEntryPersistenceImpl
 		for (CPAttachmentFileEntry cpAttachmentFileEntry :
 				cpAttachmentFileEntries) {
 
-			if (cpAttachmentFileEntry.getCtCollectionId() != 0) {
-				continue;
-			}
+			try (SafeCloseable safeCloseable =
+					CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
+						cpAttachmentFileEntry.getCtCollectionId())) {
 
-			if (entityCache.getResult(
-					CPAttachmentFileEntryImpl.class,
-					cpAttachmentFileEntry.getPrimaryKey()) == null) {
+				if (entityCache.getResult(
+						CPAttachmentFileEntryImpl.class,
+						cpAttachmentFileEntry.getPrimaryKey()) == null) {
 
-				cacheResult(cpAttachmentFileEntry);
+					cacheResult(cpAttachmentFileEntry);
+				}
 			}
 		}
 	}
@@ -6857,23 +8702,30 @@ public class CPAttachmentFileEntryPersistenceImpl
 	protected void cacheUniqueFindersCache(
 		CPAttachmentFileEntryModelImpl cpAttachmentFileEntryModelImpl) {
 
-		Object[] args = new Object[] {
-			cpAttachmentFileEntryModelImpl.getUuid(),
-			cpAttachmentFileEntryModelImpl.getGroupId()
-		};
+		try (SafeCloseable safeCloseable =
+				CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
+					cpAttachmentFileEntryModelImpl.getCtCollectionId())) {
 
-		finderCache.putResult(_finderPathCountByUUID_G, args, Long.valueOf(1));
-		finderCache.putResult(
-			_finderPathFetchByUUID_G, args, cpAttachmentFileEntryModelImpl);
+			Object[] args = new Object[] {
+				cpAttachmentFileEntryModelImpl.getUuid(),
+				cpAttachmentFileEntryModelImpl.getGroupId()
+			};
 
-		args = new Object[] {
-			cpAttachmentFileEntryModelImpl.getExternalReferenceCode(),
-			cpAttachmentFileEntryModelImpl.getCompanyId()
-		};
+			finderCache.putResult(
+				_finderPathCountByUUID_G, args, Long.valueOf(1));
+			finderCache.putResult(
+				_finderPathFetchByUUID_G, args, cpAttachmentFileEntryModelImpl);
 
-		finderCache.putResult(_finderPathCountByERC_C, args, Long.valueOf(1));
-		finderCache.putResult(
-			_finderPathFetchByERC_C, args, cpAttachmentFileEntryModelImpl);
+			args = new Object[] {
+				cpAttachmentFileEntryModelImpl.getExternalReferenceCode(),
+				cpAttachmentFileEntryModelImpl.getCompanyId()
+			};
+
+			finderCache.putResult(
+				_finderPathCountByERC_C, args, Long.valueOf(1));
+			finderCache.putResult(
+				_finderPathFetchByERC_C, args, cpAttachmentFileEntryModelImpl);
+		}
 	}
 
 	/**
@@ -6890,7 +8742,7 @@ public class CPAttachmentFileEntryPersistenceImpl
 		cpAttachmentFileEntry.setNew(true);
 		cpAttachmentFileEntry.setPrimaryKey(CPAttachmentFileEntryId);
 
-		String uuid = _portalUUID.generate();
+		String uuid = PortalUUIDUtil.generate();
 
 		cpAttachmentFileEntry.setUuid(uuid);
 
@@ -7019,7 +8871,7 @@ public class CPAttachmentFileEntryPersistenceImpl
 			(CPAttachmentFileEntryModelImpl)cpAttachmentFileEntry;
 
 		if (Validator.isNull(cpAttachmentFileEntry.getUuid())) {
-			String uuid = _portalUUID.generate();
+			String uuid = PortalUUIDUtil.generate();
 
 			cpAttachmentFileEntry.setUuid(uuid);
 		}
@@ -7031,6 +8883,41 @@ public class CPAttachmentFileEntryPersistenceImpl
 				cpAttachmentFileEntry.getUuid());
 		}
 		else {
+			if (!Objects.equals(
+					cpAttachmentFileEntryModelImpl.getColumnOriginalValue(
+						"externalReferenceCode"),
+					cpAttachmentFileEntry.getExternalReferenceCode())) {
+
+				long userId = GetterUtil.getLong(
+					PrincipalThreadLocal.getName());
+
+				if (userId > 0) {
+					long companyId = cpAttachmentFileEntry.getCompanyId();
+
+					long groupId = cpAttachmentFileEntry.getGroupId();
+
+					long classPK = 0;
+
+					if (!isNew) {
+						classPK = cpAttachmentFileEntry.getPrimaryKey();
+					}
+
+					try {
+						cpAttachmentFileEntry.setExternalReferenceCode(
+							SanitizerUtil.sanitize(
+								companyId, groupId, userId,
+								CPAttachmentFileEntry.class.getName(), classPK,
+								ContentTypes.TEXT_HTML, Sanitizer.MODE_ALL,
+								cpAttachmentFileEntry.
+									getExternalReferenceCode(),
+								null));
+					}
+					catch (SanitizerException sanitizerException) {
+						throw new SystemException(sanitizerException);
+					}
+				}
+			}
+
 			CPAttachmentFileEntry ercCPAttachmentFileEntry = fetchByERC_C(
 				cpAttachmentFileEntry.getExternalReferenceCode(),
 				cpAttachmentFileEntry.getCompanyId());
@@ -7110,16 +8997,6 @@ public class CPAttachmentFileEntryPersistenceImpl
 			closeSession(session);
 		}
 
-		if (cpAttachmentFileEntry.getCtCollectionId() != 0) {
-			if (isNew) {
-				cpAttachmentFileEntry.setNew(false);
-			}
-
-			cpAttachmentFileEntry.resetOriginalValues();
-
-			return cpAttachmentFileEntry;
-		}
-
 		entityCache.putResult(
 			CPAttachmentFileEntryImpl.class, cpAttachmentFileEntryModelImpl,
 			false, true);
@@ -7186,10 +9063,21 @@ public class CPAttachmentFileEntryPersistenceImpl
 		if (ctPersistenceHelper.isProductionMode(
 				CPAttachmentFileEntry.class, primaryKey)) {
 
-			return super.fetchByPrimaryKey(primaryKey);
+			try (SafeCloseable safeCloseable =
+					CTCollectionThreadLocal.
+						setProductionModeWithSafeCloseable()) {
+
+				return super.fetchByPrimaryKey(primaryKey);
+			}
 		}
 
-		CPAttachmentFileEntry cpAttachmentFileEntry = null;
+		CPAttachmentFileEntry cpAttachmentFileEntry =
+			(CPAttachmentFileEntry)entityCache.getResult(
+				CPAttachmentFileEntryImpl.class, primaryKey);
+
+		if (cpAttachmentFileEntry != null) {
+			return cpAttachmentFileEntry;
+		}
 
 		Session session = null;
 
@@ -7231,7 +9119,12 @@ public class CPAttachmentFileEntryPersistenceImpl
 		Set<Serializable> primaryKeys) {
 
 		if (ctPersistenceHelper.isProductionMode(CPAttachmentFileEntry.class)) {
-			return super.fetchByPrimaryKeys(primaryKeys);
+			try (SafeCloseable safeCloseable =
+					CTCollectionThreadLocal.
+						setProductionModeWithSafeCloseable()) {
+
+				return super.fetchByPrimaryKeys(primaryKeys);
+			}
 		}
 
 		if (primaryKeys.isEmpty()) {
@@ -7253,6 +9146,34 @@ public class CPAttachmentFileEntryPersistenceImpl
 				map.put(primaryKey, cpAttachmentFileEntry);
 			}
 
+			return map;
+		}
+
+		Set<Serializable> uncachedPrimaryKeys = null;
+
+		for (Serializable primaryKey : primaryKeys) {
+			try (SafeCloseable safeCloseable =
+					ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+						CPAttachmentFileEntry.class, primaryKey)) {
+
+				CPAttachmentFileEntry cpAttachmentFileEntry =
+					(CPAttachmentFileEntry)entityCache.getResult(
+						CPAttachmentFileEntryImpl.class, primaryKey);
+
+				if (cpAttachmentFileEntry == null) {
+					if (uncachedPrimaryKeys == null) {
+						uncachedPrimaryKeys = new HashSet<>();
+					}
+
+					uncachedPrimaryKeys.add(primaryKey);
+				}
+				else {
+					map.put(primaryKey, cpAttachmentFileEntry);
+				}
+			}
+		}
+
+		if (uncachedPrimaryKeys == null) {
 			return map;
 		}
 
@@ -7387,78 +9308,81 @@ public class CPAttachmentFileEntryPersistenceImpl
 		OrderByComparator<CPAttachmentFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			CPAttachmentFileEntry.class);
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
+			FinderPath finderPath = null;
+			Object[] finderArgs = null;
 
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			(orderByComparator == null)) {
+			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
+				(orderByComparator == null)) {
 
-			if (useFinderCache && productionMode) {
-				finderPath = _finderPathWithoutPaginationFindAll;
-				finderArgs = FINDER_ARGS_EMPTY;
-			}
-		}
-		else if (useFinderCache && productionMode) {
-			finderPath = _finderPathWithPaginationFindAll;
-			finderArgs = new Object[] {start, end, orderByComparator};
-		}
-
-		List<CPAttachmentFileEntry> list = null;
-
-		if (useFinderCache && productionMode) {
-			list = (List<CPAttachmentFileEntry>)finderCache.getResult(
-				finderPath, finderArgs, this);
-		}
-
-		if (list == null) {
-			StringBundler sb = null;
-			String sql = null;
-
-			if (orderByComparator != null) {
-				sb = new StringBundler(
-					2 + (orderByComparator.getOrderByFields().length * 2));
-
-				sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY);
-
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
-
-				sql = sb.toString();
-			}
-			else {
-				sql = _SQL_SELECT_CPATTACHMENTFILEENTRY;
-
-				sql = sql.concat(CPAttachmentFileEntryModelImpl.ORDER_BY_JPQL);
-			}
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				list = (List<CPAttachmentFileEntry>)QueryUtil.list(
-					query, getDialect(), start, end);
-
-				cacheResult(list);
-
-				if (useFinderCache && productionMode) {
-					finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderPath = _finderPathWithoutPaginationFindAll;
+					finderArgs = FINDER_ARGS_EMPTY;
 				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
+			else if (useFinderCache) {
+				finderPath = _finderPathWithPaginationFindAll;
+				finderArgs = new Object[] {start, end, orderByComparator};
 			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return list;
+			List<CPAttachmentFileEntry> list = null;
+
+			if (useFinderCache) {
+				list = (List<CPAttachmentFileEntry>)finderCache.getResult(
+					finderPath, finderArgs, this);
+			}
+
+			if (list == null) {
+				StringBundler sb = null;
+				String sql = null;
+
+				if (orderByComparator != null) {
+					sb = new StringBundler(
+						2 + (orderByComparator.getOrderByFields().length * 2));
+
+					sb.append(_SQL_SELECT_CPATTACHMENTFILEENTRY);
+
+					appendOrderByComparator(
+						sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+
+					sql = sb.toString();
+				}
+				else {
+					sql = _SQL_SELECT_CPATTACHMENTFILEENTRY;
+
+					sql = sql.concat(
+						CPAttachmentFileEntryModelImpl.ORDER_BY_JPQL);
+				}
+
+				Session session = null;
+
+				try {
+					session = openSession();
+
+					Query query = session.createQuery(sql);
+
+					list = (List<CPAttachmentFileEntry>)QueryUtil.list(
+						query, getDialect(), start, end);
+
+					cacheResult(list);
+
+					if (useFinderCache) {
+						finderCache.putResult(finderPath, finderArgs, list);
+					}
+				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
+				}
+			}
+
+			return list;
+		}
 	}
 
 	/**
@@ -7479,41 +9403,37 @@ public class CPAttachmentFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countAll() {
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			CPAttachmentFileEntry.class);
+		try (SafeCloseable safeCloseable =
+				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
+					CPAttachmentFileEntry.class)) {
 
-		Long count = null;
-
-		if (productionMode) {
-			count = (Long)finderCache.getResult(
+			Long count = (Long)finderCache.getResult(
 				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
-		}
 
-		if (count == null) {
-			Session session = null;
+			if (count == null) {
+				Session session = null;
 
-			try {
-				session = openSession();
+				try {
+					session = openSession();
 
-				Query query = session.createQuery(
-					_SQL_COUNT_CPATTACHMENTFILEENTRY);
+					Query query = session.createQuery(
+						_SQL_COUNT_CPATTACHMENTFILEENTRY);
 
-				count = (Long)query.uniqueResult();
+					count = (Long)query.uniqueResult();
 
-				if (productionMode) {
 					finderCache.putResult(
 						_finderPathCountAll, FINDER_ARGS_EMPTY, count);
 				}
+				catch (Exception exception) {
+					throw processException(exception);
+				}
+				finally {
+					closeSession(session);
+				}
 			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
 
-		return count.intValue();
+			return count.intValue();
+		}
 	}
 
 	@Override
@@ -7594,6 +9514,7 @@ public class CPAttachmentFileEntryPersistenceImpl
 		ctStrictColumnNames.add("cdnURL");
 		ctStrictColumnNames.add("displayDate");
 		ctStrictColumnNames.add("expirationDate");
+		ctStrictColumnNames.add("galleryEnabled");
 		ctStrictColumnNames.add("title");
 		ctStrictColumnNames.add("json");
 		ctStrictColumnNames.add("priority");
@@ -7686,6 +9607,24 @@ public class CPAttachmentFileEntryPersistenceImpl
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
 			new String[] {String.class.getName(), Long.class.getName()},
 			new String[] {"uuid_", "companyId"}, false);
+
+		_finderPathWithPaginationFindByFileEntryId = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByFileEntryId",
+			new String[] {
+				Long.class.getName(), Integer.class.getName(),
+				Integer.class.getName(), OrderByComparator.class.getName()
+			},
+			new String[] {"fileEntryId"}, true);
+
+		_finderPathWithoutPaginationFindByFileEntryId = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByFileEntryId",
+			new String[] {Long.class.getName()}, new String[] {"fileEntryId"},
+			true);
+
+		_finderPathCountByFileEntryId = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByFileEntryId",
+			new String[] {Long.class.getName()}, new String[] {"fileEntryId"},
+			false);
 
 		_finderPathWithPaginationFindByC_C = new FinderPath(
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C",
@@ -7855,6 +9794,68 @@ public class CPAttachmentFileEntryPersistenceImpl
 			},
 			new String[] {"classNameId", "classPK", "type_", "status"}, false);
 
+		_finderPathWithPaginationFindByC_C_G_T_ST = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C_G_T_ST",
+			new String[] {
+				Long.class.getName(), Long.class.getName(),
+				Boolean.class.getName(), Integer.class.getName(),
+				Integer.class.getName(), Integer.class.getName(),
+				Integer.class.getName(), OrderByComparator.class.getName()
+			},
+			new String[] {
+				"classNameId", "classPK", "galleryEnabled", "type_", "status"
+			},
+			true);
+
+		_finderPathWithoutPaginationFindByC_C_G_T_ST = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C_G_T_ST",
+			new String[] {
+				Long.class.getName(), Long.class.getName(),
+				Boolean.class.getName(), Integer.class.getName(),
+				Integer.class.getName()
+			},
+			new String[] {
+				"classNameId", "classPK", "galleryEnabled", "type_", "status"
+			},
+			true);
+
+		_finderPathCountByC_C_G_T_ST = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C_G_T_ST",
+			new String[] {
+				Long.class.getName(), Long.class.getName(),
+				Boolean.class.getName(), Integer.class.getName(),
+				Integer.class.getName()
+			},
+			new String[] {
+				"classNameId", "classPK", "galleryEnabled", "type_", "status"
+			},
+			false);
+
+		_finderPathWithPaginationFindByC_C_G_T_NotST = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C_G_T_NotST",
+			new String[] {
+				Long.class.getName(), Long.class.getName(),
+				Boolean.class.getName(), Integer.class.getName(),
+				Integer.class.getName(), Integer.class.getName(),
+				Integer.class.getName(), OrderByComparator.class.getName()
+			},
+			new String[] {
+				"classNameId", "classPK", "galleryEnabled", "type_", "status"
+			},
+			true);
+
+		_finderPathWithPaginationCountByC_C_G_T_NotST = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByC_C_G_T_NotST",
+			new String[] {
+				Long.class.getName(), Long.class.getName(),
+				Boolean.class.getName(), Integer.class.getName(),
+				Integer.class.getName()
+			},
+			new String[] {
+				"classNameId", "classPK", "galleryEnabled", "type_", "status"
+			},
+			false);
+
 		_finderPathFetchByERC_C = new FinderPath(
 			FINDER_CLASS_NAME_ENTITY, "fetchByERC_C",
 			new String[] {String.class.getName(), Long.class.getName()},
@@ -7949,8 +9950,5 @@ public class CPAttachmentFileEntryPersistenceImpl
 	protected FinderCache getFinderCache() {
 		return finderCache;
 	}
-
-	@Reference
-	private PortalUUID _portalUUID;
 
 }

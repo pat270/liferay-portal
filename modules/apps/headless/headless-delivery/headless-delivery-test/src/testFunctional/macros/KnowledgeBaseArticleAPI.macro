@@ -1,6 +1,7 @@
 definition {
 
-	macro _curlKnowledgeBaseArticle {
+	@summary = "Default summary"
+	macro _curlKnowledgeBaseArticle(articleBody = null, knowledgeBaseArticleId = null, parentKnowledgeBaseArticleId = null, title = null, knowledgeBaseFolderId = null) {
 		var portalURL = JSONCompany.getPortalURL();
 
 		if (isSet(knowledgeBaseFolderId)) {
@@ -24,12 +25,16 @@ definition {
 			var externalReferenceCode = "";
 		}
 
+		if (!(isSet(datePublished))) {
+			var datePublished = "2020-01-01T01:01:00Z";
+		}
+
 		var curl = '''
 			${portalURL}/o/headless-delivery/v1.0/${api} \
 				-u test@liferay.com:test \
 				-H Content-Type: application/json \
 		''';
-		var body = '''"articleBody": "${articleBody}","externalReferenceCode": "${externalReferenceCode}","title": "${title}"''';
+		var body = '''"articleBody": "${articleBody}","externalReferenceCode": "${externalReferenceCode}","title": "${title}","datePublished": "${datePublished}"''';
 
 		if (isSet(title)) {
 			var curl = StringUtil.add(${curl}, "-d {${body}}", " ");
@@ -38,11 +43,13 @@ definition {
 		return ${curl};
 	}
 
-	macro createKnowledgeBaseArticle {
+	@summary = "Default summary"
+	macro createKnowledgeBaseArticle(datePublished = null, articleBody = null, parentKnowledgeBaseArticleId = null, title = null, knowledgeBaseFolderId = null, externalReferenceCode = null) {
 		Variables.assertDefined(parameterList = "${articleBody},${title}");
 
 		var curl = KnowledgeBaseArticleAPI._curlKnowledgeBaseArticle(
 			articleBody = ${articleBody},
+			datePublished = ${datePublished},
 			externalReferenceCode = ${externalReferenceCode},
 			knowledgeBaseFolderId = ${knowledgeBaseFolderId},
 			parentKnowledgeBaseArticleId = ${parentKnowledgeBaseArticleId},
@@ -53,7 +60,8 @@ definition {
 		return ${response};
 	}
 
-	macro deleteKnowledgeBaseArticleById {
+	@summary = "Default summary"
+	macro deleteKnowledgeBaseArticleById(knowledgeBaseArticleId = null) {
 		Variables.assertDefined(parameterList = ${knowledgeBaseArticleId});
 
 		var curl = KnowledgeBaseArticleAPI._curlKnowledgeBaseArticle(knowledgeBaseArticleId = ${knowledgeBaseArticleId});
@@ -61,9 +69,11 @@ definition {
 		JSONCurlUtil.delete(${curl});
 	}
 
-	macro setUpGlobalKnowledgeBaseArticleIdAndErc {
+	@summary = "Default summary"
+	macro setUpGlobalKnowledgeBaseArticleIdAndErc(articleBody = null, title = null, knowledgeBaseFolderId = null, externalReferenceCode = null, datePublished = null, parentKnowledgeBaseArticleId = null) {
 		var response = KnowledgeBaseArticleAPI.createKnowledgeBaseArticle(
 			articleBody = ${articleBody},
+			datePublished = ${datePublished},
 			externalReferenceCode = ${externalReferenceCode},
 			knowledgeBaseFolderId = ${knowledgeBaseFolderId},
 			parentKnowledgeBaseArticleId = ${parentKnowledgeBaseArticleId},

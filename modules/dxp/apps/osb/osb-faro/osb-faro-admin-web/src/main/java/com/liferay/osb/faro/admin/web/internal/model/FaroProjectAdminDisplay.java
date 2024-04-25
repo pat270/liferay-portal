@@ -8,6 +8,8 @@ package com.liferay.osb.faro.admin.web.internal.model;
 import com.liferay.osb.faro.model.FaroProject;
 import com.liferay.osb.faro.model.FaroUser;
 import com.liferay.osb.faro.service.FaroUserLocalServiceUtil;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.User;
@@ -41,8 +43,8 @@ public class FaroProjectAdminDisplay {
 
 		_faroProjectId = GetterUtil.getLong(document.get(Field.ENTRY_CLASS_PK));
 		_groupId = GetterUtil.getLong(document.get(Field.GROUP_ID));
-		_individualsUsage = _decimalFormat.format(
-			GetterUtil.getDouble(document.get("individualsUsage")));
+		_individualsLimit = GetterUtil.getLong(
+			document.get("individualsLimit"));
 
 		try {
 			_lastAccessDate = document.getDate("lastAccessDate");
@@ -54,21 +56,32 @@ public class FaroProjectAdminDisplay {
 		_name = document.get(Field.NAME);
 		_offline = GetterUtil.getBoolean(document.get("offline"));
 		_owner = _getOwner();
-		_pageViewsUsage = _decimalFormat.format(
-			GetterUtil.getDouble(document.get("pageViewsUsage")));
+		_pageViewsLimit = GetterUtil.getLong(document.get("pageViewsLimit"));
 		_serverLocation = document.get("serverLocation");
 		_subscriptionName = document.get("subscriptionName");
+
+		try {
+			JSONObject subscriptionJSONObject =
+				JSONFactoryUtil.createJSONObject(document.get("subscription"));
+
+			_individualsCount = subscriptionJSONObject.getLong(
+				"individualsCountSinceLastAnniversary");
+
+			_individualsUsage = _getUsage(_individualsCount, _individualsLimit);
+
+			_pageViewsCount = subscriptionJSONObject.getLong(
+				"pageViewsCountSinceLastAnniversary");
+
+			_pageViewsUsage = _getUsage(_pageViewsCount, _pageViewsLimit);
+		}
+		catch (Exception exception) {
+			_log.error(exception);
+		}
 	}
 
 	public FaroProjectAdminDisplay(FaroProject faroProject, Document document) {
 		this(document);
 
-		_individualsCount = GetterUtil.getLong(
-			document.get("individualsCount"));
-		_individualsLimit = GetterUtil.getLong(
-			document.get("individualsLimit"));
-		_pageViewsCount = GetterUtil.getLong(document.get("pageViewsCount"));
-		_pageViewsLimit = GetterUtil.getLong(document.get("pageViewsLimit"));
 		_serverLocation = faroProject.getServerLocation();
 		_subscription = faroProject.getSubscription();
 		_weDeployKey = faroProject.getWeDeployKey();
@@ -253,6 +266,14 @@ public class FaroProjectAdminDisplay {
 		}
 
 		return null;
+	}
+
+	private String _getUsage(long count, long limit) {
+		if ((count == 0) || (limit == 0)) {
+			return "0";
+		}
+
+		return _decimalFormat.format(100D * count / limit);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

@@ -45,7 +45,6 @@ page import="com.liferay.portal.kernel.workflow.RequiredWorkflowDefinitionExcept
 page import="com.liferay.portal.kernel.workflow.WorkflowConstants" %><%@
 page import="com.liferay.portal.kernel.workflow.WorkflowDefinitionFileException" %><%@
 page import="com.liferay.portal.kernel.workflow.WorkflowDefinitionTitleException" %><%@
-page import="com.liferay.portal.kernel.workflow.WorkflowEngineManagerUtil" %><%@
 page import="com.liferay.portal.kernel.workflow.WorkflowException" %><%@
 page import="com.liferay.portal.workflow.constants.WorkflowWebKeys" %><%@
 page import="com.liferay.portal.workflow.exception.IncompleteWorkflowInstancesException" %><%@
@@ -55,7 +54,7 @@ page import="com.liferay.portal.workflow.kaleo.designer.web.internal.constants.K
 page import="com.liferay.portal.workflow.kaleo.designer.web.internal.dao.search.KaleoDefinitionVersionResultRowSplitter" %><%@
 page import="com.liferay.portal.workflow.kaleo.designer.web.internal.permission.KaleoDefinitionVersionPermission" %><%@
 page import="com.liferay.portal.workflow.kaleo.designer.web.internal.portlet.display.context.KaleoDesignerDisplayContext" %><%@
-page import="com.liferay.portal.workflow.kaleo.designer.web.internal.search.KaleoDefinitionVersionSearch" %><%@
+page import="com.liferay.portal.workflow.kaleo.designer.web.internal.portlet.display.context.KaleoDesignerManagementToolbarDisplayContext" %><%@
 page import="com.liferay.portal.workflow.kaleo.model.KaleoDefinition" %><%@
 page import="com.liferay.portal.workflow.kaleo.model.KaleoDefinitionVersion" %><%@
 page import="com.liferay.portal.workflow.kaleo.service.KaleoDefinitionVersionLocalServiceUtil" %><%@
@@ -92,13 +91,13 @@ else if (StringUtil.equals(navigation, "not-published")) {
 	displayedStatus = WorkflowConstants.STATUS_DRAFT;
 }
 
-Format dateFormatTime = null;
+Format displayDateFormat = null;
 
 if (DateUtil.isFormatAmPm(locale)) {
-	dateFormatTime = FastDateFormatFactoryUtil.getSimpleDateFormat(LanguageUtil.get(request, "mmm-d-yyyy-hh-mm-a"), locale, timeZone);
+	displayDateFormat = FastDateFormatFactoryUtil.getSimpleDateFormat(LanguageUtil.get(request, "mmm-d-yyyy-hh-mm-a"), locale, timeZone);
 }
 else {
-	dateFormatTime = FastDateFormatFactoryUtil.getSimpleDateFormat(LanguageUtil.get(request, "mmm-d-yyyy-hh-mm"), locale, timeZone);
+	displayDateFormat = FastDateFormatFactoryUtil.getSimpleDateFormat(LanguageUtil.get(request, "mmm-d-yyyy-hh-mm"), locale, timeZone);
 }
 %>
 

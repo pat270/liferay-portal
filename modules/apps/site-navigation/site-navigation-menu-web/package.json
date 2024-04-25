@@ -1,4 +1,8 @@
 {
+	"dependencies": {
+		"frontend-js-web": "*"
+	},
+	"main": "js/index.js",
 	"name": "site-navigation-menu-web",
 	"optionalDependencies": {
 		"fsevents": "^1.2.7"
@@ -8,5 +12,5 @@
 		"checkFormat": "liferay-npm-scripts check",
 		"format": "liferay-npm-scripts fix"
 	},
-	"version": "6.0.48"
+	"version": "6.0.58"
 }

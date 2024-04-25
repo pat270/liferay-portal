@@ -6,8 +6,10 @@
 package com.liferay.fragment.web.internal.portlet.action;
 
 import com.liferay.fragment.constants.FragmentPortletKeys;
+import com.liferay.fragment.importer.FragmentsImportStrategy;
 import com.liferay.fragment.importer.FragmentsImporter;
 import com.liferay.fragment.importer.FragmentsImporterResultEntry;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -22,11 +24,14 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.upload.UploadPortletRequest;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.io.File;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
@@ -64,13 +69,66 @@ public class ImportMVCResourceCommand extends BaseMVCResourceCommand {
 
 		File file = uploadPortletRequest.getFile("file");
 
-		boolean overwrite = ParamUtil.getBoolean(resourceRequest, "overwrite");
+		String importType = ParamUtil.getString(resourceRequest, "importType");
+
+		boolean validFragmentEntries = true;
+
+		if (Validator.isNull(importType)) {
+			validFragmentEntries = _fragmentsImporter.validateFragmentEntries(
+				themeDisplay.getUserId(), themeDisplay.getScopeGroupId(),
+				fragmentCollectionId, file);
+		}
+
+		if (validFragmentEntries) {
+			FragmentsImportStrategy fragmentsImportStrategy =
+				FragmentsImportStrategy.create(importType);
+
+			if (fragmentsImportStrategy == null) {
+				fragmentsImportStrategy =
+					FragmentsImportStrategy.DO_NOT_OVERWRITE;
+			}
+
+			jsonObject = _importFragmentEntries(
+				file, fragmentCollectionId, themeDisplay.getScopeGroupId(),
+				fragmentsImportStrategy, themeDisplay.getLocale(),
+				themeDisplay.getUserId());
+		}
+		else {
+			jsonObject.put("valid", false);
+		}
+
+		JSONPortletResponseUtil.writeJSON(
+			resourceRequest, resourceResponse, jsonObject);
+	}
+
+	private String _getKey(FragmentsImporterResultEntry.Status status) {
+		if (status == FragmentsImporterResultEntry.Status.IMPORTED) {
+			return "success";
+		}
+
+		if (status == FragmentsImporterResultEntry.Status.IMPORTED_DRAFT) {
+			return "warning";
+		}
+
+		if (status == FragmentsImporterResultEntry.Status.INVALID) {
+			return "error";
+		}
+
+		return StringPool.BLANK;
+	}
+
+	private JSONObject _importFragmentEntries(
+		File file, long fragmentCollectionId, long groupId,
+		FragmentsImportStrategy fragmentsImportStrategy, Locale locale,
+		long userId) {
+
+		JSONObject jsonObject = _jsonFactory.createJSONObject();
 
 		try {
 			List<FragmentsImporterResultEntry> fragmentsImporterResultEntries =
 				_fragmentsImporter.importFragmentEntries(
-					themeDisplay.getUserId(), themeDisplay.getScopeGroupId(),
-					fragmentCollectionId, file, overwrite);
+					userId, groupId, fragmentCollectionId, file,
+					fragmentsImportStrategy);
 
 			JSONObject importResultsJSONObject =
 				_jsonFactory.createJSONObject();
@@ -78,11 +136,9 @@ public class ImportMVCResourceCommand extends BaseMVCResourceCommand {
 			for (FragmentsImporterResultEntry fragmentsImporterResultEntry :
 					fragmentsImporterResultEntries) {
 
-				FragmentsImporterResultEntry.Status status =
-					fragmentsImporterResultEntry.getStatus();
+				String key = _getKey(fragmentsImporterResultEntry.getStatus());
 
-				JSONArray jsonArray = importResultsJSONObject.getJSONArray(
-					status.getLabel());
+				JSONArray jsonArray = importResultsJSONObject.getJSONArray(key);
 
 				if (jsonArray == null) {
 					jsonArray = _jsonFactory.createJSONArray();
@@ -90,21 +146,24 @@ public class ImportMVCResourceCommand extends BaseMVCResourceCommand {
 
 				jsonArray.put(
 					JSONUtil.put(
-						"message",
-						fragmentsImporterResultEntry.getErrorMessage()
+						"messages",
+						() -> {
+							if (Validator.isNotNull(
+									fragmentsImporterResultEntry.
+										getErrorMessage())) {
+
+								return Collections.singletonList(
+									fragmentsImporterResultEntry.
+										getErrorMessage());
+							}
+
+							return Collections.emptyList();
+						}
 					).put(
 						"name", fragmentsImporterResultEntry.getName()
-					).put(
-						"type",
-						() -> {
-							FragmentsImporterResultEntry.Type type =
-								fragmentsImporterResultEntry.getType();
-
-							return type.getLabel();
-						}
 					));
 
-				importResultsJSONObject.put(status.getLabel(), jsonArray);
+				importResultsJSONObject.put(key, jsonArray);
 			}
 
 			jsonObject.put("importResults", importResultsJSONObject);
@@ -113,13 +172,10 @@ public class ImportMVCResourceCommand extends BaseMVCResourceCommand {
 			_log.error(exception);
 
 			jsonObject.put(
-				"error",
-				_language.get(
-					themeDisplay.getRequest(), "an-unexpected-error-occurred"));
+				"error", _language.get(locale, "an-unexpected-error-occurred"));
 		}
 
-		JSONPortletResponseUtil.writeJSON(
-			resourceRequest, resourceResponse, jsonObject);
+		return jsonObject;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

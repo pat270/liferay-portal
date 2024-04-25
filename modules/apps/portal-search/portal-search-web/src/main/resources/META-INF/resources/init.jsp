@@ -16,6 +16,7 @@ taglib uri="http://liferay.com/tld/frontend" prefix="liferay-frontend" %><%@
 taglib uri="http://liferay.com/tld/portlet" prefix="liferay-portlet" %><%@
 taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %><%@
 taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %><%@
+taglib uri="http://liferay.com/tld/user" prefix="liferay-user" %><%@
 taglib uri="http://liferay.com/tld/util" prefix="liferay-util" %>
 
 <%@ page import="com.liferay.asset.kernel.model.AssetRendererFactory" %><%@
@@ -42,7 +43,6 @@ page import="com.liferay.portal.kernel.search.facet.config.FacetConfiguration" %
 page import="com.liferay.portal.kernel.search.highlight.HighlightUtil" %><%@
 page import="com.liferay.portal.kernel.security.permission.ResourceActionsUtil" %><%@
 page import="com.liferay.portal.kernel.service.GroupLocalServiceUtil" %><%@
-page import="com.liferay.portal.kernel.servlet.BrowserSnifferUtil" %><%@
 page import="com.liferay.portal.kernel.util.ArrayUtil" %><%@
 page import="com.liferay.portal.kernel.util.CalendarFactoryUtil" %><%@
 page import="com.liferay.portal.kernel.util.Constants" %><%@
@@ -69,6 +69,7 @@ page import="com.liferay.portal.search.web.internal.display.context.SearchDispla
 page import="com.liferay.portal.search.web.internal.facet.AssetEntriesSearchFacet" %><%@
 page import="com.liferay.portal.search.web.internal.result.display.context.SearchResultFieldDisplayContext" %><%@
 page import="com.liferay.portal.search.web.internal.search.suggest.KeywordsSuggestionHolder" %><%@
+page import="com.liferay.portal.servlet.BrowserSnifferUtil" %><%@
 page import="com.liferay.taglib.aui.AUIUtil" %><%@
 page import="com.liferay.taglib.servlet.PipingServletResponseFactory" %>
 

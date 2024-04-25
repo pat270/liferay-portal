@@ -8,6 +8,7 @@ package com.liferay.document.library.app.service.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;
+import com.liferay.document.library.app.service.test.util.DLAppServiceTestUtil;
 import com.liferay.document.library.kernel.exception.DuplicateFileEntryException;
 import com.liferay.document.library.kernel.exception.FileExtensionException;
 import com.liferay.document.library.kernel.exception.FileNameException;
@@ -15,8 +16,6 @@ import com.liferay.document.library.kernel.exception.FileSizeException;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFileEntryConstants;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
-import com.liferay.document.library.kernel.service.DLAppServiceUtil;
-import com.liferay.document.library.sync.constants.DLSyncConstants;
 import com.liferay.document.library.test.util.BaseDLAppTestCase;
 import com.liferay.document.library.workflow.WorkflowHandlerInvocationCounter;
 import com.liferay.petra.lang.SafeCloseable;
@@ -38,6 +37,7 @@ import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.security.permission.DoAsUserThread;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.util.PropsValues;
@@ -47,7 +47,6 @@ import java.io.InputStream;
 
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -90,12 +89,13 @@ public class DLAppServiceWhenAddingAFileEntryTest extends BaseDLAppTestCase {
 
 		FileEntry fileEntry = DLAppServiceTestUtil.addFileEntry(
 			externalReferenceCode, group.getGroupId(),
-			parentFolder.getFolderId(), fileName, fileName, null, null, null);
+			parentFolder.getFolderId(), fileName, fileName, null, null, null,
+			null);
 
 		Assert.assertEquals(
 			externalReferenceCode, fileEntry.getExternalReferenceCode());
 
-		fileEntry = DLAppServiceUtil.getFileEntryByExternalReferenceCode(
+		fileEntry = dlAppService.getFileEntryByExternalReferenceCode(
 			group.getGroupId(), externalReferenceCode);
 
 		Assert.assertEquals(
@@ -110,14 +110,14 @@ public class DLAppServiceWhenAddingAFileEntryTest extends BaseDLAppTestCase {
 
 		FileEntry fileEntry = DLAppServiceTestUtil.addFileEntry(
 			null, group.getGroupId(), parentFolder.getFolderId(), fileName,
-			fileName, null, null, null);
+			fileName, null, null, null, null);
 
 		String externalReferenceCode = fileEntry.getExternalReferenceCode();
 
 		Assert.assertEquals(
 			externalReferenceCode, fileEntry.getExternalReferenceCode());
 
-		fileEntry = DLAppServiceUtil.getFileEntryByExternalReferenceCode(
+		fileEntry = dlAppService.getFileEntryByExternalReferenceCode(
 			group.getGroupId(), externalReferenceCode);
 
 		Assert.assertEquals(
@@ -132,7 +132,7 @@ public class DLAppServiceWhenAddingAFileEntryTest extends BaseDLAppTestCase {
 
 		FileEntry fileEntry = DLAppServiceTestUtil.addFileEntry(
 			RandomTestUtil.randomString(), group.getGroupId(),
-			parentFolder.getFolderId(), fileName, fileName, null, null,
+			parentFolder.getFolderId(), fileName, fileName, null, null, null,
 			assetTagNames);
 
 		AssetEntry assetEntry = AssetEntryLocalServiceUtil.fetchEntry(
@@ -142,16 +142,31 @@ public class DLAppServiceWhenAddingAFileEntryTest extends BaseDLAppTestCase {
 	}
 
 	@Test
-	public void testFileEntryShouldSaveExpirationDate() throws Exception {
-		Date expirationDate = new Date();
+	public void testFileEntryShouldSaveDisplayDate() throws Exception {
+		Date displayDate = new Date();
 
 		FileEntry fileEntry = DLAppServiceTestUtil.addFileEntry(
 			null, group.getGroupId(), parentFolder.getFolderId(),
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
+			displayDate, null, null, null);
+
+		Assert.assertEquals(displayDate, fileEntry.getDisplayDate());
+		Assert.assertNull(fileEntry.getExpirationDate());
+		Assert.assertNull(fileEntry.getReviewDate());
+	}
+
+	@Test
+	public void testFileEntryShouldSaveExpirationDate() throws Exception {
+		Date expirationDate = new Date(
+			System.currentTimeMillis() + Time.MINUTE);
+
+		FileEntry fileEntry = DLAppServiceTestUtil.addFileEntry(
+			null, group.getGroupId(), parentFolder.getFolderId(),
+			RandomTestUtil.randomString(), RandomTestUtil.randomString(), null,
 			expirationDate, null, null);
 
+		Assert.assertNull(fileEntry.getDisplayDate());
 		Assert.assertEquals(expirationDate, fileEntry.getExpirationDate());
-
 		Assert.assertNull(fileEntry.getReviewDate());
 	}
 
@@ -162,8 +177,9 @@ public class DLAppServiceWhenAddingAFileEntryTest extends BaseDLAppTestCase {
 		FileEntry fileEntry = DLAppServiceTestUtil.addFileEntry(
 			null, group.getGroupId(), parentFolder.getFolderId(),
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(), null,
-			reviewDate, null);
+			null, reviewDate, null);
 
+		Assert.assertNull(fileEntry.getDisplayDate());
 		Assert.assertNull(fileEntry.getExpirationDate());
 		Assert.assertEquals(reviewDate, fileEntry.getReviewDate());
 	}
@@ -194,11 +210,11 @@ public class DLAppServiceWhenAddingAFileEntryTest extends BaseDLAppTestCase {
 		DLAppServiceTestUtil.addFileEntry(
 			externalReferenceCode, group.getGroupId(),
 			parentFolder.getFolderId(), DLAppServiceTestUtil.FILE_NAME,
-			DLAppServiceTestUtil.STRIPPED_FILE_NAME, null, null, null);
+			DLAppServiceTestUtil.STRIPPED_FILE_NAME, null, null, null, null);
 		DLAppServiceTestUtil.addFileEntry(
 			externalReferenceCode, group.getGroupId(),
 			parentFolder.getFolderId(), DLAppServiceTestUtil.FILE_NAME,
-			DLAppServiceTestUtil.FILE_NAME, null, null, null);
+			DLAppServiceTestUtil.FILE_NAME, null, null, null, null);
 	}
 
 	@Test(expected = DuplicateFileEntryException.class)
@@ -208,11 +224,11 @@ public class DLAppServiceWhenAddingAFileEntryTest extends BaseDLAppTestCase {
 		DLAppServiceTestUtil.addFileEntry(
 			RandomTestUtil.randomString(), group.getGroupId(),
 			parentFolder.getFolderId(), DLAppServiceTestUtil.FILE_NAME,
-			DLAppServiceTestUtil.STRIPPED_FILE_NAME, null, null, null);
+			DLAppServiceTestUtil.STRIPPED_FILE_NAME, null, null, null, null);
 		DLAppServiceTestUtil.addFileEntry(
 			RandomTestUtil.randomString(), group.getGroupId(),
 			parentFolder.getFolderId(), DLAppServiceTestUtil.FILE_NAME,
-			DLAppServiceTestUtil.FILE_NAME, null, null, null);
+			DLAppServiceTestUtil.FILE_NAME, null, null, null, null);
 	}
 
 	@Test(expected = DuplicateFileEntryException.class)
@@ -222,11 +238,11 @@ public class DLAppServiceWhenAddingAFileEntryTest extends BaseDLAppTestCase {
 		DLAppServiceTestUtil.addFileEntry(
 			RandomTestUtil.randomString(), group.getGroupId(),
 			parentFolder.getFolderId(), DLAppServiceTestUtil.FILE_NAME,
-			DLAppServiceTestUtil.FILE_NAME, null, null, null);
+			DLAppServiceTestUtil.FILE_NAME, null, null, null, null);
 		DLAppServiceTestUtil.addFileEntry(
 			RandomTestUtil.randomString(), group.getGroupId(),
 			parentFolder.getFolderId(), DLAppServiceTestUtil.FILE_NAME,
-			DLAppServiceTestUtil.STRIPPED_FILE_NAME, null, null, null);
+			DLAppServiceTestUtil.STRIPPED_FILE_NAME, null, null, null, null);
 	}
 
 	@Test(expected = DuplicateFileEntryException.class)
@@ -314,18 +330,6 @@ public class DLAppServiceWhenAddingAFileEntryTest extends BaseDLAppTestCase {
 	}
 
 	@Test
-	public void testShouldFireSyncEvent() throws Exception {
-		AtomicInteger counter =
-			DLAppServiceTestUtil.registerDLSyncEventProcessorMessageListener(
-				DLSyncConstants.EVENT_ADD);
-
-		DLAppServiceTestUtil.addFileEntry(
-			group.getGroupId(), parentFolder.getFolderId());
-
-		Assert.assertEquals(1, counter.get());
-	}
-
-	@Test
 	public void testShouldHaveDefaultVersion() throws Exception {
 		String fileName = RandomTestUtil.randomString();
 
@@ -340,11 +344,11 @@ public class DLAppServiceWhenAddingAFileEntryTest extends BaseDLAppTestCase {
 	public void testShouldInferValidMimeType() throws Exception {
 		String fileName = RandomTestUtil.randomString();
 
-		FileEntry fileEntry = DLAppServiceUtil.addFileEntry(
+		FileEntry fileEntry = dlAppService.addFileEntry(
 			null, group.getGroupId(), parentFolder.getFolderId(), fileName,
 			ContentTypes.APPLICATION_OCTET_STREAM, fileName, StringPool.BLANK,
 			StringPool.BLANK, StringPool.BLANK, CONTENT.getBytes(), null, null,
-			ServiceContextTestUtil.getServiceContext(group.getGroupId()));
+			null, ServiceContextTestUtil.getServiceContext(group.getGroupId()));
 
 		Assert.assertEquals(ContentTypes.TEXT_PLAIN, fileEntry.getMimeType());
 	}
@@ -406,10 +410,10 @@ public class DLAppServiceWhenAddingAFileEntryTest extends BaseDLAppTestCase {
 	public void testShouldSucceedWithNullBytes() throws Exception {
 		String fileName = RandomTestUtil.randomString();
 
-		DLAppServiceUtil.addFileEntry(
+		dlAppService.addFileEntry(
 			null, group.getGroupId(), parentFolder.getFolderId(), fileName,
 			ContentTypes.TEXT_PLAIN, fileName, StringPool.BLANK,
-			StringPool.BLANK, StringPool.BLANK, (byte[])null, null, null,
+			StringPool.BLANK, StringPool.BLANK, (byte[])null, null, null, null,
 			ServiceContextTestUtil.getServiceContext(group.getGroupId()));
 	}
 
@@ -417,10 +421,10 @@ public class DLAppServiceWhenAddingAFileEntryTest extends BaseDLAppTestCase {
 	public void testShouldSucceedWithNullFile() throws Exception {
 		String fileName = RandomTestUtil.randomString();
 
-		DLAppServiceUtil.addFileEntry(
+		dlAppService.addFileEntry(
 			null, group.getGroupId(), parentFolder.getFolderId(), fileName,
 			ContentTypes.TEXT_PLAIN, fileName, StringPool.BLANK,
-			StringPool.BLANK, StringPool.BLANK, (File)null, null, null,
+			StringPool.BLANK, StringPool.BLANK, (File)null, null, null, null,
 			ServiceContextTestUtil.getServiceContext(group.getGroupId()));
 	}
 
@@ -428,10 +432,10 @@ public class DLAppServiceWhenAddingAFileEntryTest extends BaseDLAppTestCase {
 	public void testShouldSucceedWithNullInputStream() throws Exception {
 		String fileName = RandomTestUtil.randomString();
 
-		DLAppServiceUtil.addFileEntry(
+		dlAppService.addFileEntry(
 			null, group.getGroupId(), parentFolder.getFolderId(), fileName,
 			ContentTypes.TEXT_PLAIN, fileName, StringPool.BLANK,
-			StringPool.BLANK, StringPool.BLANK, null, 0, null, null,
+			StringPool.BLANK, StringPool.BLANK, null, 0, null, null, null,
 			ServiceContextTestUtil.getServiceContext(group.getGroupId()));
 	}
 
@@ -499,7 +503,7 @@ public class DLAppServiceWhenAddingAFileEntryTest extends BaseDLAppTestCase {
 		@Override
 		protected void doRun() throws Exception {
 			try {
-				FileEntry fileEntry = DLAppServiceUtil.getFileEntry(
+				FileEntry fileEntry = dlAppService.getFileEntry(
 					_fileEntryIds[_index]);
 
 				InputStream inputStream = fileEntry.getContentStream();

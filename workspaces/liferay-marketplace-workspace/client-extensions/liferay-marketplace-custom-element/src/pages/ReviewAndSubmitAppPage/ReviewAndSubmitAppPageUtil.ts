@@ -5,28 +5,36 @@
 
 import documentationIcon from '../../assets/icons/documentation_icon.svg';
 import globeIcon from '../../assets/icons/globe_icon.svg';
-import guideIcon from '../../assets/icons/guide_icon.svg';
 import phoneIcon from '../../assets/icons/phone_icon.svg';
+import sitesIcon from '../../assets/icons/sites_icon.svg';
 import usageTermsIcon from '../../assets/icons/usage_terms_icon.svg';
+import {TierPrices} from '../../components/LicensePriceCard/LicensePriceChildren';
 
 export type App = {
-	attachmentTitle: string;
-	categories: string[];
-	description: string;
-	licenseType: string;
-	name: string;
-	price: number;
-	priceModel: string;
-	storefront: ProductImages[];
-	supportAndHelp: {
+	'attachmentTitle': string;
+	'categories': string[];
+	'description': string;
+	'license-type': string;
+	'name': string;
+	'price': number;
+	'price-model': string;
+	'resourceRequirements': {
+		cpu: string;
+		ram: string;
+	};
+	'skus': SKU[];
+	'storefront': ProductImages[];
+	'supportAndHelp': {
 		icon: string;
 		link: string;
 		title: string;
 	}[];
-	tags: string[];
-	thumbnail: string;
-	version: string;
-	versionDescription: string;
+	'tags': string[];
+	'thumbnail': string;
+	'tierPrice': TierPrices[];
+	'type': string;
+	'version': string;
+	'versionDescription': string;
 };
 
 export const supportAndHelpMap = new Map<string, {icon: string; title: string}>(
@@ -62,7 +70,7 @@ export const supportAndHelpMap = new Map<string, {icon: string; title: string}>(
 		[
 			'appinstallationguideurl',
 			{
-				icon: guideIcon,
+				icon: sitesIcon,
 				title: 'App installation guide URL',
 			},
 		],

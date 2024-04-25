@@ -11,12 +11,21 @@
 String portletNamespace = PortalUtil.getPortletNamespace(LayoutAdminPortletKeys.GROUP_PAGES);
 %>
 
-<div class="active control-menu-link customization-link d-block d-md-none lfr-portal-tooltip">
-	<clay:icon
+<div class="control-menu-nav-item customization-link d-block d-md-none">
+	<clay:button
+		additionalProps='<%=
+			HashMapBuilder.<String, Object>put(
+				"portletNamespace", portletNamespace
+			).build()
+		%>'
 		aria-label='<%= LanguageUtil.get(request, "this-page-can-be-customized") %>'
+		cssClass="control-menu-nav-link"
 		data-qa-id="customizations"
+		displayType="unstyled"
+		icon="pencil"
 		id='<%= portletNamespace + "customizationButton" %>'
-		symbol="pencil"
+		propsTransformer="{CustomizationButtonPropsTransformer} from layout-admin-web"
+		small="<%= true %>"
 		title='<%= LanguageUtil.get(request, "this-page-can-be-customized") %>'
 	/>
 </div>

@@ -5,9 +5,12 @@
 
 package com.liferay.segments.content.targeting.upgrade.internal.upgrade.registry;
 
+import com.liferay.expando.kernel.service.ExpandoColumnLocalService;
+import com.liferay.expando.kernel.service.ExpandoTableLocalService;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
 import com.liferay.segments.content.targeting.upgrade.internal.upgrade.v1_0_0.ContentTargetingUpgradeProcess;
-import com.liferay.segments.content.targeting.upgrade.internal.upgrade.v1_0_0.util.RuleConverterRegistry;
+import com.liferay.segments.criteria.contributor.SegmentsCriteriaContributor;
 import com.liferay.segments.service.SegmentsEntryLocalService;
 
 import org.osgi.service.component.annotations.Component;
@@ -27,13 +30,29 @@ public class SegmentsContentTargetingUpgradeStepRegistrator
 		registry.register(
 			"0.0.1", "1.0.0",
 			new ContentTargetingUpgradeProcess(
-				_ruleConverterRegistry, _segmentsEntryLocalService));
+				_expandoColumnLocalService, _expandoTableLocalService,
+				_jsonFactory, _segmentsEntryLocalService,
+				_userOrganizationSegmentsCriteriaContributor,
+				_userSegmentsCriteriaContributor));
 	}
 
 	@Reference
-	private RuleConverterRegistry _ruleConverterRegistry;
+	private ExpandoColumnLocalService _expandoColumnLocalService;
+
+	@Reference
+	private ExpandoTableLocalService _expandoTableLocalService;
+
+	@Reference
+	private JSONFactory _jsonFactory;
 
 	@Reference
 	private SegmentsEntryLocalService _segmentsEntryLocalService;
+
+	@Reference(target = "(segments.criteria.contributor.key=user-organization)")
+	private SegmentsCriteriaContributor
+		_userOrganizationSegmentsCriteriaContributor;
+
+	@Reference(target = "(segments.criteria.contributor.key=user)")
+	private SegmentsCriteriaContributor _userSegmentsCriteriaContributor;
 
 }

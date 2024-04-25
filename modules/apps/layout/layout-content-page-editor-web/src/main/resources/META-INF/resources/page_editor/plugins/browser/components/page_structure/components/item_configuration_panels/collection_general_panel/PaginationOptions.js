@@ -6,6 +6,7 @@
 import ClayForm, {ClayCheckbox, ClayInput} from '@clayui/form';
 import {useControlledState} from '@liferay/layout-js-components-web';
 import classNames from 'classnames';
+import {useId} from 'frontend-js-components-web';
 import {sub} from 'frontend-js-web';
 import PropTypes from 'prop-types';
 import React, {useEffect, useState} from 'react';
@@ -13,13 +14,13 @@ import React, {useEffect, useState} from 'react';
 import {PAGINATION_ERROR_MESSAGES} from '../../../../../../../app/config/constants/paginationErrorMessages';
 import {config} from '../../../../../../../app/config/index';
 import {WarningMessage} from '../../../../../../../common/components/WarningMessage';
-import {useId} from '../../../../../../../common/hooks/useId';
 
 export function PaginationOptions({
 	displayAllPages,
 	handleConfigurationChanged,
 	initialNumberOfItemsPerPage,
 	initialNumberOfPages,
+	warningMessage,
 }) {
 	const collectionNumberOfItemsPerPageId = useId();
 	const collectionNumberOfPagesId = useId();
@@ -117,7 +118,9 @@ export function PaginationOptions({
 
 			<ClayForm.Group
 				className={classNames({
-					'has-warning': numberOfItemsPerPageError,
+					'has-warning':
+						numberOfItemsPerPageError ||
+						warningMessage?.description,
 				})}
 				small
 			>
@@ -139,6 +142,13 @@ export function PaginationOptions({
 				{numberOfItemsPerPageError && (
 					<WarningMessage message={numberOfItemsPerPageError} />
 				)}
+
+				{warningMessage && warningMessage.description && (
+					<WarningMessage
+						message={warningMessage.description}
+						title={warningMessage.title}
+					/>
+				)}
 			</ClayForm.Group>
 		</>
 	);
@@ -149,4 +159,5 @@ PaginationOptions.propTypes = {
 	handleConfigurationChanged: PropTypes.func.isRequired,
 	initialNumberOfItemsPerPage: PropTypes.number.isRequired,
 	initialNumberOfPages: PropTypes.number.isRequired,
+	warningMessage: PropTypes.object,
 };

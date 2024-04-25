@@ -22,7 +22,7 @@ renderResponse.setTitle(accountEntryDisplay.getName());
 
 <clay:management-toolbar
 	managementToolbarDisplayContext="<%= viewAccountOrganizationsManagementToolbarDisplayContext %>"
-	propsTransformer="account_entries_admin/js/AccountOrganizationsManagementToolbarPropsTransformer"
+	propsTransformer="{AccountOrganizationsManagementToolbarPropsTransformer} from account-admin-web"
 />
 
 <clay:container-fluid>
@@ -41,13 +41,13 @@ renderResponse.setTitle(accountEntryDisplay.getName());
 				<liferay-ui:search-container-column-text
 					cssClass="table-cell-expand-small table-cell-minw-150"
 					name="name"
-					property="name"
+					value="<%= HtmlUtil.escape(accountOrganization.getName()) %>"
 				/>
 
 				<liferay-ui:search-container-column-text
 					cssClass="table-cell-expand-small table-cell-minw-150"
 					name="parent-organization"
-					property="parentOrganizationName"
+					value="<%= HtmlUtil.escape(accountOrganization.getParentOrganizationName()) %>"
 				/>
 
 				<c:if test="<%= AccountEntryPermission.contains(permissionChecker, accountEntryDisplay.getAccountEntryId(), AccountActionKeys.MANAGE_ORGANIZATIONS) %>">

@@ -13,7 +13,6 @@ import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermi
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.permission.LayoutPermissionUtil;
-import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.segments.model.SegmentsExperience;
 import com.liferay.segments.model.SegmentsExperiment;
@@ -21,7 +20,6 @@ import com.liferay.segments.service.SegmentsExperienceLocalService;
 import com.liferay.segments.service.base.SegmentsExperimentServiceBaseImpl;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
@@ -47,8 +45,8 @@ public class SegmentsExperimentServiceImpl
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		LayoutPermissionUtil.check(
-			getPermissionChecker(), plid, ActionKeys.UPDATE);
+		LayoutPermissionUtil.checkLayoutRestrictedUpdatePermission(
+			getPermissionChecker(), plid);
 
 		return segmentsExperimentLocalService.addSegmentsExperiment(
 			segmentsExperienceId, plid, name, description, goal, goalTarget,
@@ -72,6 +70,18 @@ public class SegmentsExperimentServiceImpl
 
 	@Override
 	public SegmentsExperiment deleteSegmentsExperiment(
+			SegmentsExperiment segmentsExperiment, boolean force)
+		throws PortalException {
+
+		_segmentsExperimentResourcePermission.check(
+			getPermissionChecker(), segmentsExperiment, ActionKeys.DELETE);
+
+		return segmentsExperimentLocalService.deleteSegmentsExperiment(
+			segmentsExperiment, force);
+	}
+
+	@Override
+	public SegmentsExperiment deleteSegmentsExperiment(
 			String segmentsExperimentKey)
 		throws PortalException {
 
@@ -87,14 +97,21 @@ public class SegmentsExperimentServiceImpl
 
 	@Override
 	public SegmentsExperiment fetchSegmentsExperiment(
-			long segmentsExperienceId, long plid, int[] statuses)
+			long groupId, long segmentsExperienceId, long plid)
 		throws PortalException {
 
-		LayoutPermissionUtil.checkLayoutRestrictedUpdatePermission(
-			getPermissionChecker(), plid);
+		SegmentsExperiment segmentsExperiment =
+			segmentsExperimentLocalService.fetchSegmentsExperiment(
+				groupId, segmentsExperienceId, plid);
 
-		return segmentsExperimentLocalService.fetchSegmentsExperiment(
-			segmentsExperienceId, plid, statuses);
+		if ((segmentsExperiment != null) &&
+			_segmentsExperimentResourcePermission.contains(
+				getPermissionChecker(), segmentsExperiment, ActionKeys.VIEW)) {
+
+			return segmentsExperiment;
+		}
+
+		return null;
 	}
 
 	@Override
@@ -114,20 +131,6 @@ public class SegmentsExperimentServiceImpl
 		}
 
 		return null;
-	}
-
-	@Override
-	public List<SegmentsExperiment> getSegmentsExperienceSegmentsExperiments(
-			long[] segmentsExperienceIds, long plid, int[] statuses, int start,
-			int end)
-		throws PortalException {
-
-		LayoutPermissionUtil.checkLayoutRestrictedUpdatePermission(
-			getPermissionChecker(), plid);
-
-		return segmentsExperimentLocalService.
-			getSegmentsExperienceSegmentsExperiments(
-				segmentsExperienceIds, plid, statuses, start, end);
 	}
 
 	@Override
@@ -160,25 +163,9 @@ public class SegmentsExperimentServiceImpl
 	}
 
 	@Override
-	public List<SegmentsExperiment> getSegmentsExperiments(
-		long groupId, long plid) {
-
-		return segmentsExperimentPersistence.filterFindByG_P(groupId, plid);
-	}
-
-	@Override
-	public List<SegmentsExperiment> getSegmentsExperiments(
-		long segmentsExperienceId, long plid, int[] statuses,
-		OrderByComparator<SegmentsExperiment> orderByComparator) {
-
-		return segmentsExperimentLocalService.getSegmentsExperiments(
-			segmentsExperienceId, plid, statuses, orderByComparator);
-	}
-
-	@Override
 	public SegmentsExperiment runSegmentsExperiment(
 			long segmentsExperimentId, double confidenceLevel,
-			Map<Long, Double> segmentsExperienceIdSplitMap)
+			Map<Long, Double> segmentsExperienceIdSplitMap, String type)
 		throws PortalException {
 
 		_segmentsExperimentResourcePermission.check(
@@ -188,14 +175,14 @@ public class SegmentsExperimentServiceImpl
 			ActionKeys.UPDATE);
 
 		return segmentsExperimentLocalService.runSegmentsExperiment(
-			segmentsExperimentId, confidenceLevel,
-			segmentsExperienceIdSplitMap);
+			segmentsExperimentId, confidenceLevel, segmentsExperienceIdSplitMap,
+			type);
 	}
 
 	@Override
 	public SegmentsExperiment runSegmentsExperiment(
 			String segmentsExperimentKey, double confidenceLevel,
-			Map<String, Double> segmentsExperienceKeySplitMap)
+			Map<String, Double> segmentsExperienceKeySplitMap, String type)
 		throws PortalException {
 
 		SegmentsExperiment segmentsExperiment =
@@ -218,7 +205,7 @@ public class SegmentsExperimentServiceImpl
 
 		return segmentsExperimentLocalService.runSegmentsExperiment(
 			segmentsExperiment.getSegmentsExperimentId(), confidenceLevel,
-			segmentsExperienceIdSplitMap);
+			segmentsExperienceIdSplitMap, type);
 	}
 
 	@Override

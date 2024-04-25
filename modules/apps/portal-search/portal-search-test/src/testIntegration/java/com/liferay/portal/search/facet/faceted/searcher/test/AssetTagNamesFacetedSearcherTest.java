@@ -18,7 +18,6 @@ import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.search.facet.Facet;
 import com.liferay.portal.search.facet.tag.AssetTagNamesFacetFactory;
 import com.liferay.portal.search.test.util.DocumentsAssert;
@@ -54,13 +53,10 @@ public class AssetTagNamesFacetedSearcherTest
 		String keyword = RandomTestUtil.randomString();
 
 		Group group = userSearchFixture.addGroup();
-		String title = keyword;
 
-		addJournalArticle(group, title);
+		addJournalArticle(group, keyword);
 
-		String tag = keyword;
-
-		addUser(group, tag);
+		addUser(group, keyword);
 
 		SearchContext searchContext = getSearchContext(keyword);
 
@@ -74,8 +70,7 @@ public class AssetTagNamesFacetedSearcherTest
 			Arrays.asList(JournalArticle.class.getName(), User.class.getName()),
 			hits, searchContext);
 
-		Map<String, Integer> frequencies = Collections.singletonMap(
-			StringUtil.toLowerCase(tag), 1);
+		Map<String, Integer> frequencies = Collections.singletonMap(keyword, 1);
 
 		FacetsAssert.assertFrequencies(
 			facet.getFieldName(), searchContext, hits, frequencies);
@@ -122,31 +117,26 @@ public class AssetTagNamesFacetedSearcherTest
 		String keyword = RandomTestUtil.randomString();
 
 		Group group = userSearchFixture.addGroup();
-		String title = keyword;
 
-		addJournalArticle(group, title);
+		addJournalArticle(group, keyword);
 
-		String tag = keyword;
-
-		addUser(group, tag);
+		addUser(group, keyword);
 
 		SearchContext searchContext = getSearchContext(keyword);
 
 		Facet facet = _assetTagNamesFacetFactory.newInstance(searchContext);
 
-		String tagToLowerCase = StringUtil.toLowerCase(tag);
-
-		facet.select(tagToLowerCase);
+		facet.select(keyword);
 
 		searchContext.addFacet(facet);
 
 		Hits hits = search(searchContext);
 
 		assertEntryClassNames(
-			Arrays.asList(User.class.getName()), hits, searchContext);
+			Collections.singletonList(User.class.getName()), hits,
+			searchContext);
 
-		Map<String, Integer> frequencies = Collections.singletonMap(
-			tagToLowerCase, 1);
+		Map<String, Integer> frequencies = Collections.singletonMap(keyword, 1);
 
 		FacetsAssert.assertFrequencies(
 			facet.getFieldName(), searchContext, hits, frequencies);

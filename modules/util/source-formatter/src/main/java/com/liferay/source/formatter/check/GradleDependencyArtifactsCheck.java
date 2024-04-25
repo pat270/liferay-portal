@@ -37,7 +37,7 @@ public class GradleDependencyArtifactsCheck extends BaseFileCheck {
 			String fileName, String absolutePath, String content)
 		throws IOException {
 
-		content = _renameDependencyNames(absolutePath, content);
+		content = _renameDependencyNames(fileName, absolutePath, content);
 
 		List<String> enforceVersionArtifacts = getAttributeValues(
 			_ENFORCE_VERSION_ARTIFACTS_KEY, absolutePath);
@@ -243,6 +243,28 @@ public class GradleDependencyArtifactsCheck extends BaseFileCheck {
 		return _projectNamesMap;
 	}
 
+	private boolean _isAllowedArtifactFile(
+		String fileName, String oldArtifact,
+		List<String> allowedArtifactsFileNames) {
+
+		for (String allowedArtifactsFileName : allowedArtifactsFileNames) {
+			String[] allowedArtifactArray = StringUtil.split(
+				allowedArtifactsFileName, "->");
+
+			if ((allowedArtifactArray.length != 2) ||
+				!StringUtil.equals(oldArtifact, allowedArtifactArray[0])) {
+
+				continue;
+			}
+
+			if (fileName.endsWith(allowedArtifactArray[1])) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	private boolean _isMasterOnlyFile(String absolutePath) {
 		int x = absolutePath.length();
 
@@ -276,7 +298,11 @@ public class GradleDependencyArtifactsCheck extends BaseFileCheck {
 		return true;
 	}
 
-	private String _renameDependencyNames(String absolutePath, String content) {
+	private String _renameDependencyNames(
+		String fileName, String absolutePath, String content) {
+
+		List<String> allowedArtifactsFileNames = getAttributeValues(
+			_ALLOWED_ARTIFACTS_FILE_NAMES_KEY, absolutePath);
 		List<String> renameArtifacts = getAttributeValues(
 			_RENAME_ARTIFACTS_KEY, absolutePath);
 
@@ -293,7 +319,11 @@ public class GradleDependencyArtifactsCheck extends BaseFileCheck {
 			String oldArtifactString = _getArtifactString(
 				renameArtifactArray[0]);
 
-			if ((newArtifactString != null) && (oldArtifactString != null)) {
+			if ((newArtifactString != null) && (oldArtifactString != null) &&
+				!_isAllowedArtifactFile(
+					fileName, renameArtifactArray[0],
+					allowedArtifactsFileNames)) {
+
 				content = StringUtil.replace(
 					content, oldArtifactString, newArtifactString);
 			}
@@ -301,6 +331,9 @@ public class GradleDependencyArtifactsCheck extends BaseFileCheck {
 
 		return content;
 	}
+
+	private static final String _ALLOWED_ARTIFACTS_FILE_NAMES_KEY =
+		"allowedArtifactsFileNames";
 
 	private static final String _ENFORCE_VERSION_ARTIFACTS_KEY =
 		"enforceVersionArtifacts";

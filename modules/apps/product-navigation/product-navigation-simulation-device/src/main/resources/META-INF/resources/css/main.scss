@@ -3,11 +3,6 @@
 html#{$cadmin-selector} {
 	.cadmin {
 		&.simulation-panel {
-			&.open-admin-panel.sidenav-menu-slider {
-				visibility: visible;
-				width: 320px;
-			}
-
 			.sidebar {
 				border-left: 1px solid $cadmin-gray-300;
 			}
@@ -78,7 +73,7 @@ html#{$cadmin-selector} {
 			overflow: auto;
 			position: fixed;
 			right: 320px;
-			top: 56px;
+			top: var(--control-menu-container-height);
 
 			.device {
 				box-sizing: content-box;

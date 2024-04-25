@@ -6,6 +6,7 @@
 package com.liferay.portal.kernel.captcha;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 import javax.portlet.PortletRequest;
 import javax.portlet.ResourceRequest;
@@ -14,15 +15,22 @@ import javax.portlet.ResourceResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Brian Wing Shun Chan
  */
+@ProviderType
 public interface Captcha {
 
 	public void check(HttpServletRequest httpServletRequest)
 		throws CaptchaException;
 
 	public void check(PortletRequest portletRequest) throws CaptchaException;
+
+	public void enforceCaptcha(HttpServletRequest httpServletRequest);
+
+	public void enforceCaptcha(PortletRequest portletRequest);
 
 	public String getTaglibPath();
 
@@ -34,6 +42,8 @@ public interface Captcha {
 			HttpServletRequest httpServletRequest,
 			HttpServletResponse httpServletResponse)
 		throws IOException;
+
+	public String serveImage(OutputStream outputStream) throws IOException;
 
 	public void serveImage(
 			ResourceRequest resourceRequest, ResourceResponse resourceResponse)

@@ -1,10 +1,11 @@
 definition {
 
-	macro _addCommerceSpecificationGroup {
+	@summary = "Default summary"
+	macro _addCommerceSpecificationGroup() {
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		if (!(isSet(specificationGroupDescription))) {
@@ -45,11 +46,12 @@ definition {
 		JSONCurlUtil.post(${curl});
 	}
 
-	macro _deleteAllCommerceSpecificationGroups {
+	@summary = "Default summary"
+	macro _deleteAllCommerceSpecificationGroups() {
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var specificationGroupsCount = CommerceJSONSpecificationGroupsAPI._getCommerceSpecificationGroupsCount();
@@ -76,11 +78,12 @@ definition {
 		}
 	}
 
-	macro _getCommerceSpecificationGroupIds {
+	@summary = "Default summary"
+	macro _getCommerceSpecificationGroupIds(specificationGroupCount = null) {
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		if (isSet(specificationGroupsCount)) {
@@ -103,11 +106,12 @@ definition {
 		return ${specificationGroupIds};
 	}
 
-	macro _getCommerceSpecificationGroupsCount {
+	@summary = "Default summary"
+	macro _getCommerceSpecificationGroupsCount() {
 		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
-			var baseURL = PropsUtil.get("portal.url");
+			var baseURL = JSONCompany.getPortalURL();
 		}
 
 		var userLoginInfo = JSONUtil2.formatJSONUser();

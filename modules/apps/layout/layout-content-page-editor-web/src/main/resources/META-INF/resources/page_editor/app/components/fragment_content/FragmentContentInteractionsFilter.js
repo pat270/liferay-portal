@@ -132,8 +132,17 @@ function FragmentContentInteractionsFilter({
 			const isBeingEdited =
 				editable.itemId === fromControlsId(editableProcessorUniqueId);
 
+			if (siblingIds.some(isActive)) {
+				editable.element.setAttribute('tabindex', 0);
+			}
+			else {
+				editable.element.setAttribute('tabindex', -1);
+			}
+
 			if (isActive(editable.itemId)) {
 				editable.element.classList.add(EDITABLE_CLASS_NAMES.active);
+
+				editable.element.focus();
 
 				if (isBeingEdited) {
 					editable.element.removeAttribute('title');
@@ -150,7 +159,7 @@ function FragmentContentInteractionsFilter({
 				editable.element.removeAttribute('title');
 			}
 		});
-	}, [editables, isActive, editableProcessorUniqueId]);
+	}, [editables, isActive, editableProcessorUniqueId, siblingIds]);
 
 	useEffect(() => {
 		editables.forEach((editable) => {
@@ -237,6 +246,12 @@ function FragmentContentInteractionsFilter({
 			}
 		};
 
+		const onKeyDown = (event) => {
+			if (event.key === 'Enter') {
+				enableProcessor(event);
+			}
+		};
+
 		if (activeItemType === ITEM_TYPES.editable) {
 			activeEditable = editables.find((editable) =>
 				isActive(editable.itemId)
@@ -251,6 +266,11 @@ function FragmentContentInteractionsFilter({
 						activeEditable.element.addEventListener(
 							'click',
 							enableProcessor
+						);
+
+						activeEditable.element.addEventListener(
+							'keydown',
+							onKeyDown
 						);
 					});
 				}
@@ -270,6 +290,11 @@ function FragmentContentInteractionsFilter({
 				activeEditable.element.removeEventListener(
 					'click',
 					enableProcessor
+				);
+
+				activeEditable.element.removeEventListener(
+					'keydown',
+					onKeyDown
 				);
 			}
 		};
@@ -294,7 +319,10 @@ function FragmentContentInteractionsFilter({
 			(editable) => editable.element === editableElement
 		);
 
-		if (editable) {
+		const isBeingEdited =
+			editable?.itemId === fromControlsId(editableProcessorUniqueId);
+
+		if (editable && !isBeingEdited) {
 			event.stopPropagation();
 
 			hoverItem(editable.itemId, {itemType: ITEM_TYPES.editable});
@@ -330,6 +358,7 @@ function FragmentContentInteractionsFilter({
 
 	if (siblingIds.some(isActive) || !canUpdatePageStructure) {
 		props.onClickCapture = selectEditable;
+		props.onFocus = hoverEditable;
 		props.onMouseLeave = () => hoverItem(null);
 		props.onMouseOverCapture = hoverEditable;
 	}

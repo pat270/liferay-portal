@@ -6,8 +6,8 @@
 package com.liferay.jenkins.results.parser.test.clazz;
 
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
-import com.liferay.jenkins.results.parser.PortalGitWorkingDirectory;
 import com.liferay.jenkins.results.parser.test.clazz.group.BatchTestClassGroup;
+import com.liferay.jenkins.results.parser.test.clazz.group.JUnitBatchTestClassGroup;
 
 import java.io.File;
 import java.io.IOException;
@@ -59,7 +59,7 @@ public class JUnitTestClass extends BaseTestClass {
 
 		super(batchTestClassGroup, testClassFile);
 
-		File testPropertiesBaseDir = _getTestPropertiesBaseDir(
+		File testPropertiesBaseDir = getTestPropertiesBaseDir(
 			getTestClassFile());
 
 		if ((testPropertiesBaseDir != null) && testPropertiesBaseDir.exists()) {
@@ -109,6 +109,7 @@ public class JUnitTestClass extends BaseTestClass {
 			"testray_main_component_name");
 	}
 
+	@Override
 	protected String getTestName() {
 		return _getPackageName() + "." + _getClassName();
 	}
@@ -217,32 +218,6 @@ public class JUnitTestClass extends BaseTestClass {
 		return _getPackageName();
 	}
 
-	private File _getTestPropertiesBaseDir(File file) {
-		if (file == null) {
-			return null;
-		}
-
-		File canonicalFile = JenkinsResultsParserUtil.getCanonicalFile(file);
-
-		File parentFile = canonicalFile.getParentFile();
-
-		if ((parentFile == null) || !parentFile.exists()) {
-			return file;
-		}
-
-		if (!canonicalFile.isDirectory()) {
-			return _getTestPropertiesBaseDir(parentFile);
-		}
-
-		File testPropertiesFile = new File(canonicalFile, "test.properties");
-
-		if (!testPropertiesFile.exists()) {
-			return _getTestPropertiesBaseDir(parentFile);
-		}
-
-		return canonicalFile;
-	}
-
 	private void _initTestClassMethods(String fileContent) {
 		Matcher classHeaderMatcher = _classHeaderPattern.matcher(fileContent);
 
@@ -280,11 +255,11 @@ public class JUnitTestClass extends BaseTestClass {
 			return;
 		}
 
-		PortalGitWorkingDirectory portalGitWorkingDirectory =
-			getPortalGitWorkingDirectory();
+		JUnitBatchTestClassGroup jUnitBatchTestClassGroup =
+			(JUnitBatchTestClassGroup)getBatchTestClassGroup();
 
 		File parentJavaFile =
-			portalGitWorkingDirectory.getJavaFileFromFullClassName(
+			jUnitBatchTestClassGroup.getJavaFileFromFullClassName(
 				parentFullClassName);
 
 		if (parentJavaFile == null) {

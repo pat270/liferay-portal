@@ -20,7 +20,6 @@ import com.liferay.dynamic.data.mapping.model.DDMTemplate;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateLocalServiceUtil;
 import com.liferay.item.selector.ItemSelector;
 import com.liferay.item.selector.criteria.JournalArticleItemSelectorReturnType;
-import com.liferay.item.selector.criteria.constants.ItemSelectorCriteriaConstants;
 import com.liferay.item.selector.criteria.info.item.criterion.InfoItemItemSelectorCriterion;
 import com.liferay.journal.configuration.JournalServiceConfiguration;
 import com.liferay.journal.constants.JournalContentPortletKeys;
@@ -36,12 +35,12 @@ import com.liferay.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.journal.service.JournalArticleResourceLocalServiceUtil;
 import com.liferay.journal.util.JournalContent;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.portlet.LiferayRenderRequest;
 import com.liferay.portal.kernel.portlet.LiferayRenderResponse;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
@@ -111,8 +110,9 @@ public class JournalContentDisplayContext {
 		if (journalContentDisplayContext == null) {
 			JournalContentPortletInstanceConfiguration
 				journalContentPortletInstanceConfiguration =
-					portletDisplay.getPortletInstanceConfiguration(
-						JournalContentPortletInstanceConfiguration.class);
+					ConfigurationProviderUtil.getPortletInstanceConfiguration(
+						JournalContentPortletInstanceConfiguration.class,
+						themeDisplay);
 
 			journalContentDisplayContext = new JournalContentDisplayContext(
 				portletRequest, portletResponse, themeDisplay,
@@ -417,11 +417,35 @@ public class JournalContentDisplayContext {
 			new JournalArticleItemSelectorReturnType());
 		itemSelectorCriterion.setStatus(WorkflowConstants.STATUS_ANY);
 
-		return _itemSelector.getItemSelectorURL(
-			requestBackedPortletURLFactory, _getGroup(),
-			_themeDisplay.getScopeGroupId(),
-			liferayRenderResponse.getNamespace() + "selectedItem",
-			itemSelectorCriterion);
+		return PortletURLBuilder.create(
+			_itemSelector.getItemSelectorURL(
+				requestBackedPortletURLFactory, _getGroup(),
+				_themeDisplay.getScopeGroupId(),
+				liferayRenderResponse.getNamespace() + "selectedItem",
+				itemSelectorCriterion)
+		).setParameter(
+			"groupType",
+			() -> {
+				Group group = _themeDisplay.getScopeGroup();
+
+				if (group.isLayoutPrototype()) {
+					return null;
+				}
+
+				return "site";
+			}
+		).setParameter(
+			"scopeGroupType",
+			() -> {
+				Group group = _themeDisplay.getScopeGroup();
+
+				if (group.isLayoutPrototype()) {
+					return null;
+				}
+
+				return true;
+			}
+		).buildPortletURL();
 	}
 
 	public Map<String, Object> getJournalTemplateContext() {
@@ -512,24 +536,6 @@ public class JournalContentDisplayContext {
 			_portletRequest, "portletResource");
 
 		return _portletResource;
-	}
-
-	public String getScopeGroupType() {
-		Group scopeGroup = _themeDisplay.getScopeGroup();
-
-		if (scopeGroup.isDepot()) {
-			return ItemSelectorCriteriaConstants.SCOPE_GROUP_TYPE_ASSET_LIBRARY;
-		}
-
-		if (scopeGroup.getGroupId() == _themeDisplay.getCompanyGroupId()) {
-			return ItemSelectorCriteriaConstants.SCOPE_GROUP_TYPE_GLOBAL;
-		}
-
-		if (scopeGroup.isLayout()) {
-			return ItemSelectorCriteriaConstants.SCOPE_GROUP_TYPE_PAGE;
-		}
-
-		return ItemSelectorCriteriaConstants.SCOPE_GROUP_TYPE_SITE;
 	}
 
 	public JournalArticle getSelectedArticle() {

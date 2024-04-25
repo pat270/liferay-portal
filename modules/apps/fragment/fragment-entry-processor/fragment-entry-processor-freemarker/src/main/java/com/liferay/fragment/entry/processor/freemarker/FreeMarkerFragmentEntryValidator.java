@@ -12,14 +12,15 @@ import com.liferay.fragment.processor.FragmentEntryValidator;
 import com.liferay.fragment.util.configuration.FragmentEntryConfigurationParser;
 import com.liferay.petra.io.DummyWriter;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.Language;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.servlet.DummyHttpServletResponse;
+import com.liferay.portal.kernel.servlet.taglib.aui.ScriptData;
 import com.liferay.portal.kernel.template.StringTemplateResource;
 import com.liferay.portal.kernel.template.Template;
 import com.liferay.portal.kernel.template.TemplateConstants;
@@ -65,28 +66,33 @@ public class FreeMarkerFragmentEntryValidator
 			return;
 		}
 
+		HttpServletRequest httpServletRequest = null;
+		HttpServletResponse httpServletResponse = null;
+
+		ServiceContext serviceContext =
+			ServiceContextThreadLocal.getServiceContext();
+
+		if (serviceContext != null) {
+			httpServletRequest = serviceContext.getRequest();
+			httpServletResponse = serviceContext.getResponse();
+		}
+
+		if ((httpServletRequest == null) ||
+			(httpServletRequest.getAttribute(WebKeys.THEME_DISPLAY) == null)) {
+
+			return;
+		}
+
+		if (httpServletResponse == null) {
+			httpServletResponse = new DummyHttpServletResponse();
+		}
+
+		ScriptData scriptData = (ScriptData)httpServletRequest.getAttribute(
+			WebKeys.AUI_SCRIPT_DATA);
+
 		try {
-			HttpServletRequest httpServletRequest = null;
-			HttpServletResponse httpServletResponse = null;
-
-			ServiceContext serviceContext =
-				ServiceContextThreadLocal.getServiceContext();
-
-			if (serviceContext != null) {
-				httpServletRequest = serviceContext.getRequest();
-				httpServletResponse = serviceContext.getResponse();
-			}
-
-			if ((httpServletRequest == null) ||
-				(httpServletRequest.getAttribute(WebKeys.THEME_DISPLAY) ==
-					null)) {
-
-				return;
-			}
-
-			if (httpServletResponse == null) {
-				httpServletResponse = new DummyHttpServletResponse();
-			}
+			httpServletRequest.setAttribute(
+				WebKeys.AUI_SCRIPT_DATA, new ScriptData());
 
 			JSONObject configurationDefaultValuesJSONObject =
 				_fragmentEntryConfigurationParser.
@@ -108,7 +114,7 @@ public class FreeMarkerFragmentEntryValidator
 					"input",
 					new InputTemplateNode(
 						StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
-						"name", false, false, false, "type", "value")
+						"name", false, false, false, false, "type", "value")
 				).put(
 					"layoutMode", Constants.VIEW
 				).putAll(
@@ -126,6 +132,10 @@ public class FreeMarkerFragmentEntryValidator
 		catch (TemplateException templateException) {
 			throw new FragmentEntryContentException(
 				_getMessage(templateException, locale), templateException);
+		}
+		finally {
+			httpServletRequest.setAttribute(
+				WebKeys.AUI_SCRIPT_DATA, scriptData);
 		}
 	}
 

@@ -33,11 +33,11 @@ import com.liferay.oauth2.provider.util.OAuth2SecureRandomGenerator;
 import com.liferay.oauth2.provider.util.builder.OAuth2ScopeBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.aop.AopService;
+import com.liferay.portal.image.ImageToolUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.ImageTypeException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.image.ImageBag;
-import com.liferay.portal.kernel.image.ImageTool;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.model.Group;
@@ -45,7 +45,6 @@ import com.liferay.portal.kernel.model.Repository;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portletfilerepository.PortletFileRepository;
-import com.liferay.portal.kernel.repository.RepositoryFactory;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.search.Indexable;
@@ -113,7 +112,7 @@ public class OAuth2ApplicationLocalServiceImpl
 
 		if (Validator.isBlank(clientAuthenticationMethod)) {
 			clientAuthenticationMethod =
-				OAuthConstants.TOKEN_ENDPOINT_AUTH_BASIC;
+				OAuthConstants.TOKEN_ENDPOINT_AUTH_POST;
 		}
 
 		if (Validator.isBlank(clientId)) {
@@ -207,7 +206,7 @@ public class OAuth2ApplicationLocalServiceImpl
 
 		if (Validator.isBlank(clientAuthenticationMethod)) {
 			clientAuthenticationMethod =
-				OAuthConstants.TOKEN_ENDPOINT_AUTH_BASIC;
+				OAuthConstants.TOKEN_ENDPOINT_AUTH_POST;
 		}
 
 		if (Validator.isBlank(clientId)) {
@@ -286,6 +285,7 @@ public class OAuth2ApplicationLocalServiceImpl
 		return oAuth2ApplicationPersistence.update(oAuth2Application);
 	}
 
+	@Override
 	public OAuth2Application addOrUpdateOAuth2Application(
 			String externalReferenceCode, long userId, String userName,
 			List<GrantType> allowedGrantTypesList,
@@ -344,6 +344,7 @@ public class OAuth2ApplicationLocalServiceImpl
 		return oAuth2ApplicationPersistence.update(oAuth2Application);
 	}
 
+	@Override
 	public OAuth2Application addOrUpdateOAuth2Application(
 			String externalReferenceCode, long userId, String userName,
 			List<GrantType> allowedGrantTypesList,
@@ -556,7 +557,7 @@ public class OAuth2ApplicationLocalServiceImpl
 			new UnsyncByteArrayOutputStream();
 
 		try {
-			ImageBag imageBag = _imageTool.read(inputStream);
+			ImageBag imageBag = ImageToolUtil.read(inputStream);
 
 			RenderedImage renderedImage = imageBag.getRenderedImage();
 
@@ -564,9 +565,9 @@ public class OAuth2ApplicationLocalServiceImpl
 				throw new ImageTypeException("Unable to read icon");
 			}
 
-			renderedImage = _imageTool.scale(renderedImage, 160, 160);
+			renderedImage = ImageToolUtil.scale(renderedImage, 160, 160);
 
-			_imageTool.write(
+			ImageToolUtil.write(
 				renderedImage, imageBag.getType(), unsyncByteArrayOutputStream);
 		}
 		catch (IOException ioException) {
@@ -614,7 +615,7 @@ public class OAuth2ApplicationLocalServiceImpl
 
 		if (Validator.isBlank(clientAuthenticationMethod)) {
 			clientAuthenticationMethod =
-				OAuthConstants.TOKEN_ENDPOINT_AUTH_BASIC;
+				OAuthConstants.TOKEN_ENDPOINT_AUTH_POST;
 		}
 
 		clientId = StringUtil.trim(clientId);
@@ -766,9 +767,7 @@ public class OAuth2ApplicationLocalServiceImpl
 			}
 		}
 		else if (clientAuthenticationMethod.equals(
-					OAuthConstants.TOKEN_ENDPOINT_AUTH_BASIC) ||
-				 clientAuthenticationMethod.equals(
-					 OAuthConstants.TOKEN_ENDPOINT_AUTH_POST) ||
+					OAuthConstants.TOKEN_ENDPOINT_AUTH_POST) ||
 				 clientAuthenticationMethod.equals("client_secret_jwt")) {
 
 			// Confidential client with client secret
@@ -956,9 +955,6 @@ public class OAuth2ApplicationLocalServiceImpl
 	@Reference
 	private GroupLocalService _groupLocalService;
 
-	@Reference
-	private ImageTool _imageTool;
-
 	@Reference(
 		target = "(indexer.class.name=com.liferay.document.library.kernel.model.DLFileEntry)"
 	)
@@ -973,11 +969,6 @@ public class OAuth2ApplicationLocalServiceImpl
 
 	@Reference
 	private PortletFileRepository _portletFileRepository;
-
-	@Reference(
-		target = "(class.name=com.liferay.portal.repository.portletrepository.PortletRepository)"
-	)
-	private RepositoryFactory _repositoryFactory;
 
 	@Reference
 	private ResourceLocalService _resourceLocalService;

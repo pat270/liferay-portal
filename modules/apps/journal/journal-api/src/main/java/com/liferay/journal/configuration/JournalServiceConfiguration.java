@@ -42,7 +42,10 @@ public interface JournalServiceConfiguration {
 	)
 	public String errorTemplateFTL();
 
-	@Meta.AD(deflt = "15", name = "check-interval", required = false)
+	@Meta.AD(
+		deflt = "15", description = "check-interval-in-minutes-description",
+		min = "1", name = "check-interval", required = false
+	)
 	public int checkInterval();
 
 	@Meta.AD(
@@ -62,13 +65,6 @@ public interface JournalServiceConfiguration {
 		name = "article-comments-enabled", required = false
 	)
 	public boolean articleCommentsEnabled();
-
-	@Meta.AD(
-		deflt = "true",
-		description = "journal-article-database-search-content-keywords",
-		name = "database-content-keyword-search-enabled", required = false
-	)
-	public boolean databaseContentKeywordSearchEnabled();
 
 	@Meta.AD(
 		deflt = "true", description = "journal-article-expire-all-versions",
@@ -110,12 +106,6 @@ public interface JournalServiceConfiguration {
 	public String journalArticlePageBreakToken();
 
 	@Meta.AD(
-		deflt = "json", description = "journal-article-storage-type-help",
-		name = "journal-article-storage-type", required = false
-	)
-	public String journalArticleStorageType();
-
-	@Meta.AD(
 		deflt = "0", name = "journal-article-max-version-count",
 		required = false
 	)
@@ -145,5 +135,12 @@ public interface JournalServiceConfiguration {
 		deflt = "", name = "terms-of-use-journal-article-id", required = false
 	)
 	public String termsOfUseJournalArticleId();
+
+	@Meta.AD(
+		deflt = "false",
+		name = "display-field-name-in-structures-ui-and-allow-users-to-edit-it",
+		required = false
+	)
+	public boolean displayFieldName();
 
 }

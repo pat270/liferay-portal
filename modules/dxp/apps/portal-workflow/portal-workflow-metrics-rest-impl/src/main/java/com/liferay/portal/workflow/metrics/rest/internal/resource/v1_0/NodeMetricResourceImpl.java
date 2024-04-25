@@ -186,16 +186,20 @@ public class NodeMetricResourceImpl extends BaseNodeMetricResourceImpl {
 	private NodeMetric _createNodeMetric(String nodeName) {
 		return new NodeMetric() {
 			{
-				node = new Node() {
-					{
-						label = _language.get(
-							ResourceBundleUtil.getModuleAndPortalResourceBundle(
-								contextAcceptLanguage.getPreferredLocale(),
-								NodeMetricResourceImpl.class),
-							nodeName);
-						name = nodeName;
-					}
-				};
+				setNode(
+					() -> new Node() {
+						{
+							setLabel(
+								() -> _language.get(
+									ResourceBundleUtil.
+										getModuleAndPortalResourceBundle(
+											contextAcceptLanguage.
+												getPreferredLocale(),
+											NodeMetricResourceImpl.class),
+									nodeName));
+							setName(() -> nodeName);
+						}
+					});
 			}
 		};
 	}
@@ -339,6 +343,16 @@ public class NodeMetricResourceImpl extends BaseNodeMetricResourceImpl {
 			_queries.term("active", Boolean.TRUE),
 			_queries.term("companyId", contextCompany.getCompanyId()),
 			_queries.term("deleted", Boolean.FALSE));
+	}
+
+	private double _getAvgAggregationResultValue(
+		AvgAggregationResult avgAggregationResult) {
+
+		if (Double.isInfinite(avgAggregationResult.getValue())) {
+			return 0D;
+		}
+
+		return avgAggregationResult.getValue();
 	}
 
 	private Collection<NodeMetric> _getNodeMetrics(
@@ -498,6 +512,16 @@ public class NodeMetricResourceImpl extends BaseNodeMetricResourceImpl {
 		return nodeMetricsMap;
 	}
 
+	private Sort _getSort(String fieldName, boolean reverse, Sort[] sorts) {
+		Sort sort = new Sort(fieldName, reverse);
+
+		if (sorts != null) {
+			sort = sorts[0];
+		}
+
+		return sort;
+	}
+
 	private Map<String, Bucket> _getTaskBuckets(
 		boolean completed, String key, String latestProcessVersion,
 		long processId, String processVersion) {
@@ -598,7 +622,7 @@ public class NodeMetricResourceImpl extends BaseNodeMetricResourceImpl {
 		}
 
 		nodeMetric.setBreachedInstanceCount(
-			_resourceHelper.getBreachedInstanceCount(bucket));
+			() -> _resourceHelper.getBreachedInstanceCount(bucket));
 	}
 
 	private void _setBreachedInstancePercentage(
@@ -609,7 +633,7 @@ public class NodeMetricResourceImpl extends BaseNodeMetricResourceImpl {
 		}
 
 		nodeMetric.setBreachedInstancePercentage(
-			_resourceHelper.getBreachedInstancePercentage(bucket));
+			() -> _resourceHelper.getBreachedInstancePercentage(bucket));
 	}
 
 	private void _setDurationAvg(Bucket bucket, NodeMetric nodeMetric) {
@@ -626,13 +650,9 @@ public class NodeMetricResourceImpl extends BaseNodeMetricResourceImpl {
 				filterAggregationResult.getChildAggregationResult(
 					"durationAvg");
 
-		double value = avgAggregationResult.getValue();
-
-		if (Double.isInfinite(value)) {
-			value = 0D;
-		}
-
-		nodeMetric.setDurationAvg(GetterUtil.getLong(value));
+		nodeMetric.setDurationAvg(
+			() -> GetterUtil.getLong(
+				_getAvgAggregationResultValue(avgAggregationResult)));
 	}
 
 	private void _setInstanceCount(Bucket bucket, NodeMetric nodeMetric) {
@@ -650,7 +670,7 @@ public class NodeMetricResourceImpl extends BaseNodeMetricResourceImpl {
 					"instanceCount");
 
 		nodeMetric.setInstanceCount(
-			GetterUtil.getLong(valueCountAggregationResult.getValue()));
+			() -> GetterUtil.getLong(valueCountAggregationResult.getValue()));
 	}
 
 	private void _setOnTimeInstanceCount(Bucket bucket, NodeMetric nodeMetric) {
@@ -659,7 +679,7 @@ public class NodeMetricResourceImpl extends BaseNodeMetricResourceImpl {
 		}
 
 		nodeMetric.setOnTimeInstanceCount(
-			_resourceHelper.getOnTimeInstanceCount(bucket));
+			() -> _resourceHelper.getOnTimeInstanceCount(bucket));
 	}
 
 	private void _setOverdueInstanceCount(
@@ -670,15 +690,11 @@ public class NodeMetricResourceImpl extends BaseNodeMetricResourceImpl {
 		}
 
 		nodeMetric.setOverdueInstanceCount(
-			_resourceHelper.getOverdueInstanceCount(bucket));
+			() -> _resourceHelper.getOverdueInstanceCount(bucket));
 	}
 
 	private FieldSort _toFieldSort(Sort[] sorts) {
-		Sort sort = new Sort("instanceCount", false);
-
-		if (sorts != null) {
-			sort = sorts[0];
-		}
+		Sort sort = _getSort("instanceCount", false, sorts);
 
 		String fieldName = sort.getFieldName();
 

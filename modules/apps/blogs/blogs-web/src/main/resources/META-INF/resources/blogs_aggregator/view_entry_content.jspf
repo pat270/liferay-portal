@@ -34,7 +34,7 @@
 			<div class="entry-body">
 				<c:choose>
 					<c:when test='<%= displayStyle.endsWith("image") %>'>
-						<liferay-ui:user-portrait
+						<liferay-user:user-portrait
 							userId="<%= entry.getUserId() %>"
 						/>
 
@@ -44,7 +44,7 @@
 
 								<span> - </span>
 								<span class="hide-accessible sr-only"><liferay-ui:message key="published-date" /></span>
-								<%= dateFormatDate.format(entry.getDisplayDate()) %>
+								<%= dateFormat.format(entry.getDisplayDate()) %>
 							</small>
 						</div>
 					</c:when>
@@ -55,7 +55,7 @@
 
 								<span> - </span>
 								<span class="hide-accessible sr-only"><liferay-ui:message key="published-date" /></span>
-								<%= dateFormatDate.format(entry.getDisplayDate()) %>
+								<%= dateFormat.format(entry.getDisplayDate()) %>
 							</small>
 						</div>
 					</c:otherwise>

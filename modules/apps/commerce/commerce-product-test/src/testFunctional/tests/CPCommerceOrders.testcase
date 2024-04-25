@@ -30,9 +30,7 @@ definition {
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Store Management",
-			portlet = "Channels");
+		CommerceChannels.openChannelsAdmin();
 
 		CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -56,10 +54,7 @@ definition {
 			userLastName = "User",
 			userScreenName = "buyeruser");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
 		CommerceLogin.editPasswordCP(
 			newPassword = "ttest",
@@ -80,15 +75,15 @@ definition {
 
 		CommerceAcceleratorsInitializer.createNewOrderFromAccountSelectorDropdown();
 
-		Alert.viewErrorMessage(errorMessage = "Unable to create a new order as the open order limit has been reached.");
+		AssertTextEquals.assertText(
+			locator1 = "Message#ERROR",
+			value1 = "Close Error:Unable to create a new order as the open order limit has been reached.");
 	}
 
 	@description = "Verify users can add a minimum order amount rule that applies to order subtotals. Orders that have a subtotal less than the minimum cannot be checked out"
 	@priority = 5
 	test AddAnOrderRuleOfTypeMinimumOrderSubtotalAmount {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
-		property osgi.module.configuration.file.names = "com.liferay.commerce.order.rule.configuration.COREntryConfiguration.config";
-		property osgi.module.configurations = "enabled=\"true\"";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "true";
 
 		task ("Given a Minium site with a buyer user") {
@@ -187,7 +182,7 @@ definition {
 	@description = "Verify buyers with the View Billing Address permission can set a new billing address during the checkout process."
 	@priority = 5
 	test ANewBillingAddressCanBeWrittenDuringCheckout {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "true";
 
 		task ("Given a Minium site with a buyer user") {
@@ -305,7 +300,7 @@ definition {
 	@description = "Verify buyers without the View Billing Address permission cannot view the billing address of pending and placed orders."
 	@priority = 5
 	test AssertBillingAddressIsNotVisibleToBuyerUserWithoutPermission {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "true";
 
 		task ("Given a Minium site with a buyer user") {
@@ -406,7 +401,7 @@ definition {
 	@description = "Verify buyers with the View Billing Address permission can view the billing address of an order at the order summary."
 	@priority = 5
 	test AssertBillingAddressIsVisibleToBuyerUserWithPermission {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "true";
 
 		task ("Given a Minium site with a buyer user") {
@@ -466,7 +461,7 @@ definition {
 	@description = "Verify buyers without the View Billing Address permission cannot set a new billing address during the checkout process or view the billing address at the order summary."
 	@priority = 5
 	test AssertDefaultBillingAddressIsNotVisibleToBuyerUserWithoutPermission {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "true";
 
 		task ("Given a Minium site with a buyer user") {
@@ -553,7 +548,7 @@ definition {
 	@description = "Verify an error message appears when a buyer tries placing an order without the View Billing Address permission if a default billing address is not set."
 	@priority = 5
 	test AssertErrorMessageWhenAnOrderIsPlacedByBuyerWithoutPermissionToViewBillingAddress {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "true";
 
 		task ("Given a Minium site with a buyer user") {
@@ -612,7 +607,9 @@ definition {
 		}
 
 		task ("Then an error message is shown which states a default billing address has not been set") {
-			Alert.viewErrorMessage(errorMessage = "No default billing address has been created for this account. Please contact the system administrator to create an order.");
+			AssertTextEquals.assertText(
+				locator1 = "Message#ERROR",
+				value1 = "Close Error:No default billing address has been created for this account. Please contact the system administrator to create an order.");
 		}
 	}
 
@@ -667,7 +664,7 @@ definition {
 	@description = "Verify a Sales Manager can limit who can see the billing address associated with an account"
 	@priority = 3
 	test AssertPermissionToViewBillingAddressIsPresent {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "false";
 
 		task ("Given a Minium site with a buyer user") {
@@ -704,7 +701,7 @@ definition {
 		task ("Then the View Billing Address permission is present") {
 			Role.viewPermissionCP(
 				permissionDefinitionValue = "View Billing Address",
-				permissionNavigationValue = "Open Carts > Commerce Orders:");
+				permissionNavigationValue = "Open Carts > Orders:");
 		}
 	}
 
@@ -764,10 +761,81 @@ definition {
 		}
 	}
 
+	@description = "This is a test for COMMERCE-12716. As an admin, I can assert a placed order can be converted from processing to completed status via API"
+	@priority = 3
+	test CanAssertOrdersAreConvertedFromProcessingToCompletedViaAPI {
+		property portal.acceptance = "false";
+
+		task ("Given a Minium site with a business account") {
+			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
+
+			JSONAccountEntry.addAccountEntry(
+				accountEntryName = "Commerce Account",
+				accountEntryType = "Business");
+		}
+
+		task ("And a virtual product is created") {
+			CommerceJSONProductsAPI._addCommerceProduct(
+				catalogName = "Minium",
+				productDescription = "Full Description",
+				productName = "Virtual Product",
+				productType = "Virtual",
+				shortDescription = "Short Description",
+				sku = "VIRTUALSKU");
+		}
+
+		task ("And the Money Order payment is activated") {
+			CommerceChannels.openChannelsAdmin();
+
+			CommerceNavigator.gotoTableListEntry(entryName = "Minium Portal");
+
+			CommerceChannels.activatePaymentMethod(paymentMethod = "Money Order");
+		}
+
+		task ("And an order is placed") {
+			CommerceJSONOrdersAPI._addCommerceOrder(
+				accountEntryName = "Commerce Account",
+				orderItems = "VIRTUALSKU:1",
+				orderStatus = 1,
+				paymentMethod = "money-order",
+				paymentStatus = 2);
+		}
+
+		task ("And the admin accepts the order") {
+			CommerceOrders.openOrdersAdmin();
+
+			CommerceNavigator.gotoOrderEntryViaAdmin(status = "Pending");
+
+			Click(
+				key_text = "Accept Order",
+				locator1 = "Link#ANY");
+
+			Alert.viewSuccessMessage();
+
+			CommerceOrders.openOrdersAdmin();
+
+			AssertElementPresent(
+				key_orderStatus = "Processing",
+				locator1 = "CommerceOrders#ORDER_ELLIPSIS_BY_STATUS");
+		}
+
+		task ("When the order status is updated from Processing to Completed via API") {
+			CommerceJSONOrdersAPI._patchCommerceOrder(orderStatus = 0);
+		}
+
+		task ("Then can also verify the status of the order is Completed via UI") {
+			CommerceOrders.openOrdersAdmin();
+
+			AssertElementPresent(
+				key_orderStatus = "Completed",
+				locator1 = "CommerceOrders#ORDER_ELLIPSIS_BY_STATUS");
+		}
+	}
+
 	@description = "This is a test for the story COMMERCE-9217, with the testplan COMMERCE-9336 and test ticket COMMERCE-9358"
 	@priority = 5
 	test CanButtonRetryPaymentDisappearIfThePaymentMethodIsDisabled {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "true";
 
 		task ("Given the Admin already created a Minium Site and a buyer account") {
@@ -788,10 +856,7 @@ definition {
 		}
 
 		task ("Given the Admin has already configured Paypal as an active payment method and is configured into Sandbox with the Client ID and Client Secret") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Store Management",
-				panel = "Commerce",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -808,14 +873,12 @@ definition {
 			CommerceJSONOrdersAPI._addCommerceOrder(
 				accountEntryName = "Commerce Account",
 				orderStatus = 2,
-				paymentMethod = "paypal",
+				paymentMethod = "paypal-integration",
 				paymentStatus = 2);
 
 			CommerceJSONOrdersAPI._addCommerceOrderItem(productSKU = "MIN55861");
 
-			CommerceNavigator.gotoPortlet(
-				category = "Order Management",
-				portlet = "Orders");
+			CommerceOrders.openOrdersAdmin();
 
 			var orderId = CommerceJSONOrdersAPI._getCommerceOrder();
 
@@ -870,10 +933,7 @@ definition {
 
 			User.firstLoginPG();
 
-			ApplicationsMenu.gotoPortlet(
-				category = "Store Management",
-				panel = "Commerce",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -973,9 +1033,10 @@ definition {
 	@description = "This is a test for COMMERCE-11716. Can create orders using GoGo Shell command"
 	@priority = 3
 	test CanCreateOrdersUsingOrderGenerator {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "false";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given a Minium site with an Account is created") {
 			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
@@ -1038,7 +1099,7 @@ definition {
 	@description = "This is a test for COMMERCE-8970. As admin, when I try to delete orders one by one, a pop-up confirmation message will appear before removing the order."
 	@priority = 3
 	test CanDeleteSingleOrderUponConfirmation {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "false";
 
 		var orderIds = ListUtil.newList();
@@ -1131,7 +1192,7 @@ definition {
 	@description = "This is a test for bug COMMERCE-9467"
 	@priority = 5
 	test CanEditAddressOfAnOpenOrderWithAddressAlreadySet {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "true";
 
 		task ("Given the Admin already created a Minium Site and a buyer account") {
@@ -1186,9 +1247,7 @@ definition {
 				password = "test",
 				userEmailAddress = "test@liferay.com");
 
-			CommerceNavigator.gotoPortlet(
-				category = "Order Management",
-				portlet = "Orders");
+			CommerceOrders.openOrdersAdmin();
 		}
 
 		task ("Then the admin edits Billing and Shipping Address and can see the changes on the address") {
@@ -1245,10 +1304,7 @@ definition {
 				userLastName = "User",
 				userScreenName = "buyeruser");
 
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Users and Organizations");
+			User.openUsersAdmin();
 
 			CommerceLogin.editPasswordCP(
 				newPassword = "ttest",
@@ -1319,7 +1375,7 @@ definition {
 				addressZipCode = "Test Zip Code",
 				productListPrice = "24.00",
 				productName = "U-Joint",
-				productQuantity = "1.00 grams",
+				productQuantity = "1 grams",
 				productSku = "MIN55861",
 				productTotalPrice = "24.00");
 		}
@@ -1337,16 +1393,92 @@ definition {
 				addressZipCode = "Test Zip Code",
 				productListPrice = "24.00",
 				productName = "U-Joint",
-				productQuantity = "1.00 meters",
+				productQuantity = "1 meters",
 				productSku = "MIN55861",
 				productTotalPrice = "24.00");
+		}
+	}
+
+	@description = "This is a test for COMMERCE-12564. As an admin, I can filter order by date range"
+	@priority = 5
+	test CanFilterOrderByDateRange {
+		property portal.acceptance = "true";
+
+		task ("Given a Minium site with a business account is created") {
+			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
+
+			CommerceJSONAccountsAPI._addCommerceAccount(
+				accountName = "Commerce Account",
+				accountType = "Business");
+		}
+
+		task ("And an order is placed") {
+			CommerceJSONOrdersAPI._addCommerceOrder(
+				accountEntryName = "Commerce Account",
+				orderDate = "2023-10-13T16:04:00Z",
+				orderItems = "MIN55861:1",
+				orderStatus = 1,
+				paymentMethod = "money-order",
+				paymentStatus = 2);
+		}
+
+		task ("When the admin goes to the Orders Admin") {
+			CommerceNavigator.gotoPortlet(
+				category = "Order Management",
+				portlet = "Orders");
+		}
+
+		task ("Then the admin can filter the order by Date Range") {
+			var orderId = CommerceJSONOrdersAPI._getCommerceOrder();
+
+			FrontendDataSetFilters.openFilters();
+
+			Click(
+				key_filter = "Order Date Range",
+				locator1 = "FrontendDataSet#FILTER_OPTION");
+
+			Type.sendKeys(
+				key_dateId = "from-orderDate",
+				locator1 = "FrontendDataSet#FILTER_DATE_RANGE",
+				value1 = "10/10/2023");
+
+			Type.sendKeys(
+				key_dateId = "to-orderDate",
+				locator1 = "FrontendDataSet#FILTER_DATE_RANGE",
+				value1 = "14/10/2023");
+
+			Click(locator1 = "FrontendDataSet#ADD_FILTER_BUTTON");
+
+			AssertElementPresent(
+				key_entryName = ${orderId},
+				locator1 = "CommerceNavigation#ENTRY_NAME");
+
+			FrontendDataSetFilters.resetFilter();
+
+			FrontendDataSetFilters.openFilters();
+
+			Type.sendKeys(
+				key_dateId = "from-orderDate",
+				locator1 = "FrontendDataSet#FILTER_DATE_RANGE",
+				value1 = "15/10/2023");
+
+			Type.sendKeys(
+				key_dateId = "to-orderDate",
+				locator1 = "FrontendDataSet#FILTER_DATE_RANGE",
+				value1 = "17/10/2023");
+
+			Click(locator1 = "FrontendDataSet#ADD_FILTER_BUTTON");
+
+			AssertElementNotPresent(
+				key_entryName = ${orderId},
+				locator1 = "CommerceNavigation#ENTRY_NAME");
 		}
 	}
 
 	@description = "This is a test for the story COMMERCE-9217, with the testplan COMMERCE-9336 and test ticket COMMERCE-9345"
 	@priority = 5
 	test CanReorderAFailedPayment {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "true";
 
 		task ("Given the Admin already created a Minium Site and a buyer account") {
@@ -1367,10 +1499,7 @@ definition {
 		}
 
 		task ("Given the Admin has already configured Paypal as an active payment method and is configured into Sandbox with the Client ID and Client Secret") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Store Management",
-				panel = "Commerce",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -1387,14 +1516,12 @@ definition {
 			CommerceJSONOrdersAPI._addCommerceOrder(
 				accountEntryName = "Commerce Account",
 				orderStatus = 2,
-				paymentMethod = "paypal",
+				paymentMethod = "paypal-integration",
 				paymentStatus = 4);
 
 			CommerceJSONOrdersAPI._addCommerceOrderItem(productSKU = "MIN55861");
 
-			CommerceNavigator.gotoPortlet(
-				category = "Order Management",
-				portlet = "Orders");
+			CommerceOrders.openOrdersAdmin();
 
 			var orderId = CommerceJSONOrdersAPI._getCommerceOrder();
 
@@ -1481,7 +1608,7 @@ definition {
 	@description = "This is a test for the story COMMERCE-9217, with the testplan COMMERCE-9336 and test ticket COMMERCE-9338"
 	@priority = 5
 	test CanRetryAnIncompletePayment {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "true";
 
 		task ("Given the Admin already created a Minium Site and a buyer account") {
@@ -1502,10 +1629,7 @@ definition {
 		}
 
 		task ("Given the Admin has already configured Paypal as an active payment method and is configured into Sandbox with the Client ID and Client Secret") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Store Management",
-				panel = "Commerce",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -1522,14 +1646,12 @@ definition {
 			CommerceJSONOrdersAPI._addCommerceOrder(
 				accountEntryName = "Commerce Account",
 				orderStatus = 2,
-				paymentMethod = "paypal",
+				paymentMethod = "paypal-integration",
 				paymentStatus = 2);
 
 			CommerceJSONOrdersAPI._addCommerceOrderItem(productSKU = "MIN55861");
 
-			CommerceNavigator.gotoPortlet(
-				category = "Order Management",
-				portlet = "Orders");
+			CommerceOrders.openOrdersAdmin();
 
 			var orderId = CommerceJSONOrdersAPI._getCommerceOrder();
 
@@ -1579,7 +1701,7 @@ definition {
 	@description = "This is a test for the story COMMERCE-9217, with the testplan COMMERCE-9336 and test ticket COMMERCE-9408"
 	@priority = 5
 	test CanRetryAnIncompletePaymentWithAnOpenOrder {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "true";
 
 		task ("Given the Admin already created a Minium Site and a buyer account") {
@@ -1600,10 +1722,7 @@ definition {
 		}
 
 		task ("Given the Admin has already configured Paypal as an active payment method and is configured into Sandbox with the Client ID and Client Secret") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Store Management",
-				panel = "Commerce",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -1620,14 +1739,12 @@ definition {
 			CommerceJSONOrdersAPI._addCommerceOrder(
 				accountEntryName = "Commerce Account",
 				orderStatus = 2,
-				paymentMethod = "paypal",
+				paymentMethod = "paypal-integration",
 				paymentStatus = 2);
 
 			CommerceJSONOrdersAPI._addCommerceOrderItem(productSKU = "MIN55861");
 
-			CommerceNavigator.gotoPortlet(
-				category = "Order Management",
-				portlet = "Orders");
+			CommerceOrders.openOrdersAdmin();
 
 			var orderId = CommerceJSONOrdersAPI._getCommerceOrder();
 
@@ -1671,7 +1788,7 @@ definition {
 	@description = "COMMERCE-10078. As a buyer user I can search an order using product name"
 	@priority = 3
 	test CanSearchAnOrderUsingProductName {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "false";
 
 		var orderIds = ListUtil.newList();
@@ -1694,10 +1811,7 @@ definition {
 		}
 
 		task ("And a payment method is activated") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Store Management",
-				panel = "Commerce",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -1795,7 +1909,7 @@ definition {
 	@description = "COMMERCE-10078. As a buyer user I can search an order using SKU"
 	@priority = 3
 	test CanSearchAnOrderUsingSKU {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "false";
 
 		var orderIds = ListUtil.newList();
@@ -1818,10 +1932,7 @@ definition {
 		}
 
 		task ("And a payment method is activated") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Store Management",
-				panel = "Commerce",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -1919,7 +2030,7 @@ definition {
 	@description = "COMMERCE-10078. As a buyer user I can search an order using translated product name"
 	@priority = 3
 	test CanSearchAnOrderUsingTranslatedProductName {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "false";
 
 		var orderIds = ListUtil.newList();
@@ -1942,10 +2053,7 @@ definition {
 		}
 
 		task ("And a payment method is activated") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Store Management",
-				panel = "Commerce",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -1953,9 +2061,7 @@ definition {
 		}
 
 		task ("And some product names are translated") {
-			CommerceNavigator.gotoPortlet(
-				category = "Product Management",
-				portlet = "Products");
+			CommerceProducts.openProductsAdmin();
 
 			for (var productName : list "U-Joint:Primero,Wheel Seal - Front:Segundo,Drive Shafts:Tercero,Bushings:Cuarto") {
 				var originalName = StringUtil.extractFirst(${productName}, ":");
@@ -2093,10 +2199,7 @@ definition {
 				userLastName = "User",
 				userScreenName = "buyeruser");
 
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Users and Organizations");
+			User.openUsersAdmin();
 
 			CommerceLogin.editPasswordCP(
 				newPassword = "ttest",
@@ -2131,6 +2234,12 @@ definition {
 				shippingMethod = "Standard");
 		}
 
+		task ("And the multiple order quantity is set to '0.1' for U-Joint") {
+			CommerceJSONProductsAPI._patchCommerceProductConfiguration(
+				multipleOrderQuantity = "0.1",
+				productName = "U-Joint");
+		}
+
 		task ("When the admin Orders page is reached by the admin") {
 			User.logoutAndLoginPG(
 				userLoginEmailAddress = "test@liferay.com",
@@ -2156,7 +2265,7 @@ definition {
 				addressZipCode = "Test Zip Code",
 				productListPrice = "24.00",
 				productName = "U-Joint",
-				productQuantity = "1.20",
+				productQuantity = "1.2",
 				productSku = "MIN55861",
 				productTotalPrice = "24.00");
 		}
@@ -2165,7 +2274,7 @@ definition {
 	@description = "This is a test for COMMERCE-10147 The orders can be sorted by Create/Order Date in Pending and Placed Orders Pages"
 	@priority = 3
 	test CanSortOrdersByCreationDateInPendingAndPlacedOrdersPages {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "false";
 
 		task ("Given a Minium site with a buyer user") {
@@ -2186,10 +2295,7 @@ definition {
 		}
 
 		task ("And a payment method is activated") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Store Management",
-				panel = "Commerce",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -2369,10 +2475,7 @@ definition {
 		}
 
 		task ("And a payment method is activated") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Store Management",
-				panel = "Commerce",
-				portlet = "Channels");
+			CommerceChannels.openChannelsAdmin();
 
 			CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -2380,16 +2483,13 @@ definition {
 		}
 
 		task ("And a Commerce Order Item Custom field is created") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Configuration",
-				panel = "Control Panel",
-				portlet = "Custom Fields");
+			CustomFields.openCustomFieldAdmin();
 
 			CustomFields.addCP(
 				customFieldName = "test custom field",
 				customFieldType = "Input Field",
 				customInputDataType = "Text",
-				resourceName = "Commerce Order Item",
+				resourceName = "Order Item",
 				startingValue = "TEST");
 		}
 
@@ -2473,7 +2573,7 @@ definition {
 		}
 
 		task ("Then the status of the order is Partially Shipped") {
-			Click(locator1 = "Icon#BACK");
+			CommerceOrders.openOrdersAdmin();
 
 			AssertElementPresent(
 				key_orderStatus = "Partially Shipped",
@@ -2491,7 +2591,7 @@ definition {
 		}
 
 		task ("Then the status of the order is updated as Shipped") {
-			Click(locator1 = "Icon#BACK");
+			CommerceOrders.openOrdersAdmin();
 
 			AssertElementPresent(
 				key_orderStatus = "Shipped",
@@ -2622,124 +2722,10 @@ definition {
 		}
 	}
 
-	@description = "This is a test for COMMERCE-10829. As a user with permissions, I can add/edit Commerce Order Notes via API and verify the result in order notes section of the placed order's details page."
-	@priority = 5
-	test CanUserWithPermissionsAddCommerceOrderNotesViaAPI {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
-		property portal.acceptance = "true";
-
-		task ("Given a Minium site with a buyer user") {
-			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
-
-			CommerceEntry.addAccountEntryUser(
-				accountName = "Commerce Account",
-				accountType = "Business",
-				agreeToTermsAndAnswerReminderQuery = "true",
-				createNewAccount = "true",
-				requireReset = "false",
-				userEmailAddress = "buyer@liferay.com",
-				userFirstName = "Buyer",
-				userLastName = "User",
-				userRole = "Buyer",
-				userScreenName = "buyeruser",
-				userSiteMembership = "Minium");
-
-			JSONRole.assignRoleToUser(
-				roleTitle = "Operations Manager",
-				userEmailAddress = "buyer@liferay.com");
-		}
-
-		task ("And a payment method is activated") {
-			CommerceChannels.openChannelsAdmin();
-
-			CommerceNavigator.gotoEntry(entryName = "Minium Portal");
-
-			CommerceChannels.activatePaymentMethod(paymentMethod = "Money Order");
-		}
-
-		task ("And an order is placed") {
-			var orderId = CommerceJSONOrdersAPI._addCommerceOrder(
-				accountEntryName = "Commerce Account",
-				orderItems = "MIN93015:1",
-				orderStatus = 1,
-				paymentMethod = "money-order",
-				paymentStatus = 0);
-		}
-
-		task ("When a new note added via API call to the order by buyer user without permissions") {
-			var requestStatus = CommerceJSONOrdersAPI.getOrderNotePostRequestField(
-				content = "This is a Commerce Order Test Note.",
-				field = "status",
-				orderId = ${orderId},
-				restricted = "true",
-				userEmail = "buyer");
-		}
-
-		task ("Then a FORBIDDEN error is thrown") {
-			TestUtils.assertEquals(
-				actual = ${requestStatus},
-				expected = "FORBIDDEN");
-		}
-
-		task ("When Manage Order Note and Manage Order Restricted Notes permissions are given to Buyer User") {
-			for (var notePermission : list "MANAGE_COMMERCE_ORDER_RESTRICTED_NOTES,MANAGE_COMMERCE_ORDER_NOTES") {
-				Permissions.definePermissionViaJSONAPI(
-					resourceAction = ${notePermission},
-					resourceName = "com.liferay.commerce.order",
-					roleTitle = "Operations Manager");
-			}
-		}
-
-		task ("And a new note added via API call to the order by buyer user") {
-			var orderNoteId = CommerceJSONOrdersAPI.getOrderNotePostRequestField(
-				content = "This is a Commerce Order Test Note.",
-				field = "id",
-				orderId = ${orderId},
-				restricted = "true",
-				userEmail = "buyer");
-		}
-
-		task ("And buyer user logs in and goes to the Notes section of the placed orders details page") {
-			User.logoutPG();
-
-			CommerceLogin.miniumLogin(
-				password = "test",
-				urlAppend = "web/minium",
-				userEmailAddress = "buyer@liferay.com");
-
-			CommerceNavigator.gotoMiniumSidebarItem(menuItem = "Placed Orders");
-
-			Button.click(button = "View");
-
-			Click.javaScriptClick(locator1 = "CommerceFrontStore#ORDER_PAGES_NOTES_BUTTON");
-		}
-
-		task ("Then the note is shown correctly") {
-			CommerceOrders.viewCommerceOrderNote(
-				commerceOrderNoteAuthor = "Buyer User",
-				commerceOrderNoteBody = "This is a Commerce Order Test Note.");
-		}
-
-		task ("When the note is updated via API call by buyer user") {
-			CommerceJSONOrdersAPI._patchCommerceOrderNote(
-				content = "This is a Patched Commerce Order Test Note.",
-				orderNoteId = ${orderNoteId},
-				userEmail = "buyer");
-		}
-
-		task ("Then the note is shown correctly") {
-			Refresh();
-
-			CommerceOrders.viewCommerceOrderNote(
-				commerceOrderNoteAuthor = "Buyer User",
-				commerceOrderNoteBody = "This is a Patched Commerce Order Test Note.");
-		}
-	}
-
 	@description = "This is a test for the COMMERCE-10895. As a buyer user, I can only view the order created by myself when I log in via headless API"
 	@priority = 3
 	test CanViewOrderOnlyCreatedByCurrentUsersViaAPI {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "false";
 
 		task ("Given a Minium site is created") {
@@ -2848,7 +2834,7 @@ definition {
 	@description = "This is a test for COMMERCE-11815. Admin can view an order's quote label border is grey"
 	@priority = 3
 	test CanViewOrderQuoteLabelBorderIsGrey {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false${line.separator}feature.flag.COMMERCE-11028=true";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "false";
 
 		task ("Given a Minium site with a buyer user") {
@@ -3046,6 +3032,228 @@ definition {
 		}
 	}
 
+	@description = "This is a test for COMMERCE-12025. If given a user with permissions that only view orders, then the user can just view the order, cannot add or edit order fields"
+	@priority = 5
+	test CanViewOrdersOnlyWhenGivenViewPermissions {
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
+		property portal.acceptance = "true";
+
+		task ("Given a Minium site with a business account and Money Order enabled is created") {
+			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
+
+			CommerceChannels.openChannelsAdmin();
+
+			CommerceNavigator.gotoEntry(entryName = "Minium Portal");
+
+			CommerceChannels.editPaymentMethod(
+				active = "true",
+				paymentMethod = "Money Order");
+
+			CommerceJSONAccountsAPI._addCommerceAccount(
+				accountName = "Commerce Account",
+				accountType = "Business");
+
+			CommerceJSONAccountsAPI._addCommerceAccountAddress(
+				accountEntryName = "Commerce Account",
+				city = "Test City",
+				countryISOCode = "US",
+				name = "Test Address",
+				street1 = "Test Street",
+				zip = "Test Zip Code");
+		}
+
+		task ("And a user with permissions that can view order and channel is created") {
+			JSONRole.addRegularRole(
+				roleKey = "View Order Role",
+				roleTitle = "View Order Role");
+
+			JSONUser.addUserWithRole(
+				roleTitle = "View Order Role",
+				userEmailAddress = "userea@liferay.com",
+				userFirstName = "userfn",
+				userLastName = "userln",
+				userScreenName = "usersn");
+
+			for (var resourceLists : list "com.liferay.commerce.order:VIEW_COMMERCE_ORDERS,com.liferay.commerce.payment.model.CommercePaymentMethodGroupRel:VIEW,com.liferay.commerce.model.CommerceOrder:VIEW,com.liferay.commerce.model.CommerceOrderType:VIEW,com.liferay.commerce.product.model.CommerceChannel:VIEW,com.liferay.commerce.notification.model.CommerceNotificationTemplate:VIEW,90:VIEW_CONTROL_PANEL,com_liferay_commerce_order_web_internal_portlet_CommerceOrderPortlet:ACCESS_IN_CONTROL_PANEL,com_liferay_commerce_order_web_internal_portlet_CommerceOrderPortlet:VIEW,com.liferay.commerce.channel:VIEW_COMMERCE_CHANNELS") {
+				var resourceName = StringUtil.extractFirst(${resourceLists}, ":");
+				var resourceAction = StringUtil.extractLast(${resourceLists}, ":");
+
+				Permissions.definePermissionViaJSONAPI(
+					resourceAction = ${resourceAction},
+					resourceName = ${resourceName},
+					roleTitle = "View Order Role");
+			}
+		}
+
+		task ("When an order is placed") {
+			CommerceJSONOrdersAPI._addCommerceOrder(
+				accountEntryName = "Commerce Account",
+				billingAddressName = "Test Address",
+				orderItems = "MIN55861:1",
+				orderStatus = 1,
+				paymentMethod = "money-order",
+				paymentStatus = 2,
+				shippingAddressName = "Test Address",
+				shippingOption = "Standard Delivery");
+		}
+
+		task ("Then the admin can view the order fields with 'Add' or 'Edit' button") {
+			CommerceOrders.openOrdersAdmin();
+
+			CommerceNavigator.gotoOrderEntryViaAdmin(status = "Pending");
+
+			for (var titleName : list "Purchase Order Number,Payment Terms,Delivery Terms,Requested Delivery Date,Printed Note") {
+				AssertElementPresent(
+					key_buttonName = "Add",
+					key_titleName = ${titleName},
+					locator1 = "CommerceOrders#ORDER_GENERAL_DETAILS_ADD_EDIT_BUTTON");
+			}
+
+			for (var titleName : list "Billing Address,Shipping Address") {
+				AssertElementPresent(
+					key_buttonName = "Edit",
+					key_titleName = ${titleName},
+					locator1 = "CommerceOrders#ORDER_GENERAL_DETAILS_ADD_EDIT_BUTTON");
+			}
+
+			AssertElementPresent(locator1 = "CommerceOrders#ORDER_EDIT_SUMMARY_BUTTON");
+
+			AssertElementPresent(
+				key_value = "MIN55861",
+				locator1 = "CommerceEntry#BODY_VERTICAL_ELLIPSIS");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Payments");
+
+			for (var titleName : list "Payment Method,Payment Status") {
+				AssertElementPresent(
+					key_buttonName = "Edit",
+					key_titleName = ${titleName},
+					locator1 = "CommerceOrders#ORDER_DETAILS_EDIT_BUTTON");
+			}
+		}
+
+		task ("But the user that with only view order role cannot view the order fields with 'Add' or 'Edit' button") {
+			User.logoutAndLoginPG(
+				userLoginEmailAddress = "userea@liferay.com",
+				userLoginFullName = "userfn userln");
+
+			CommerceOrders.openOrdersAdmin();
+
+			CommerceNavigator.gotoOrderEntryViaAdmin(status = "Pending");
+
+			for (var titleName : list "Purchase Order Number,Payment Terms,Delivery Terms,Requested Delivery Date,Printed Note") {
+				AssertElementNotPresent(
+					key_buttonName = "Add",
+					key_titleName = ${titleName},
+					locator1 = "CommerceOrders#ORDER_GENERAL_DETAILS_ADD_EDIT_BUTTON");
+			}
+
+			for (var titleName : list "Billing Address,Shipping Address") {
+				AssertElementNotPresent(
+					key_buttonName = "Edit",
+					key_titleName = ${titleName},
+					locator1 = "CommerceOrders#ORDER_GENERAL_DETAILS_ADD_EDIT_BUTTON");
+			}
+
+			AssertElementNotPresent(locator1 = "CommerceOrders#ORDER_EDIT_SUMMARY_BUTTON");
+
+			AssertElementNotPresent(
+				key_value = "MIN55861",
+				locator1 = "CommerceEntry#BODY_VERTICAL_ELLIPSIS");
+
+			CommerceEntry.gotoMenuTab(menuTab = "Payments");
+
+			for (var titleName : list "Payment Method,Payment Status") {
+				AssertElementNotPresent(
+					key_buttonName = "Edit",
+					key_titleName = ${titleName},
+					locator1 = "CommerceOrders#ORDER_DETAILS_EDIT_BUTTON");
+			}
+		}
+	}
+
+	@description = "This is a test for COMMERCE-11737. If admin adds a product to the cart with a printed note, then the printed note still can be viewed after the cart checkout via headless API"
+	@priority = 5
+	test CanViewPrintedNoteAfterCartCheckoutViaHeadlessAPI {
+		property portal.acceptance = "true";
+
+		task ("Given a Minium site with a business account is created") {
+			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
+
+			CommerceJSONAccountsAPI._addCommerceAccount(
+				accountName = "Commerce Account",
+				accountType = "Business");
+
+			CommerceJSONAccountsAPI._addCommerceAccountAddress(
+				accountEntryName = "Commerce Account",
+				city = "Test City",
+				countryISOCode = "US",
+				name = "Test Address",
+				street1 = "Test Street",
+				zip = "Test Zip Code");
+		}
+
+		task ("When the product 'ABS Sensor' with a printed note is added to the cart via API") {
+			CommerceJSONDeliveryCart._addCommerceCart(
+				accountEntryName = "Commerce Account",
+				billingAddressName = "Test Address",
+				cartItems = "MIN93015:10",
+				printedNote = "Test Print Note Content",
+				shippingAddressName = "Test Address",
+				shippingOption = "Standard Delivery");
+
+			var orderId = CommerceJSONOrdersAPI._getCommerceOrder();
+		}
+
+		task ("Then the admin can view the printed note is added in the open order via API") {
+			var printedNote = CommerceJSONOrdersAPI.getOrderField(
+				email = "test@liferay.com",
+				jsonPath = "$.printedNote",
+				orderId = ${orderId},
+				parameter = "fields",
+				parameterValue = "printedNote",
+				password = "test");
+
+			TestUtils.assertEquals(
+				actual = ${printedNote},
+				expected = "Test Print Note Content");
+		}
+
+		task ("And the admin can view the printed note is added in the open order via UI") {
+			CommerceOrders.openOrdersAdmin();
+
+			CommerceNavigator.gotoOrderEntryViaAdmin(status = "Open");
+
+			CommerceOrders.viewOrdersEntry(printedNote = "Test Print Note Content");
+		}
+
+		task ("When the cart checkout is patched") {
+			CommerceJSONDeliveryCart._postCommerceCartCheckout(cartId = ${orderId});
+		}
+
+		task ("Then the admin can view the printed note is added in the placed order via API") {
+			var printedNote = CommerceJSONOrdersAPI.getOrderField(
+				email = "test@liferay.com",
+				jsonPath = "$.printedNote",
+				orderId = ${orderId},
+				parameter = "fields",
+				parameterValue = "printedNote",
+				password = "test");
+
+			TestUtils.assertEquals(
+				actual = ${printedNote},
+				expected = "Test Print Note Content");
+		}
+
+		task ("And the admin can view the printed note is added in the placed order via UI") {
+			CommerceOrders.openOrdersAdmin();
+
+			CommerceNavigator.gotoOrderEntryViaAdmin(status = "Pending");
+
+			CommerceOrders.viewOrdersEntry(printedNote = "Test Print Note Content");
+		}
+	}
+
 	@description = "This is a test for COMMERCE-11392. Can see timestamps from payment transaction history"
 	@priority = 3
 	test CanViewTimestampsInOrderTransactionHistory {
@@ -3142,9 +3350,7 @@ definition {
 
 		Button.clickSave();
 
-		CommerceNavigator.gotoPortlet(
-			category = "Pricing",
-			portlet = "Price Lists");
+		CommerceNavigator.goToPriceListAdmin();
 
 		CommerceNavigator.gotoEntry(entryName = "Minium Base Price List");
 
@@ -3158,9 +3364,7 @@ definition {
 
 		Button.clickPublish();
 
-		CommerceNavigator.gotoPortlet(
-			category = "Store Management",
-			portlet = "Channels");
+		CommerceChannels.openChannelsAdmin();
 
 		CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -3181,9 +3385,7 @@ definition {
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Store Management",
-			portlet = "Channels");
+		CommerceChannels.openChannelsAdmin();
 
 		CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -3217,9 +3419,7 @@ definition {
 			productUnitPrice = 50,
 			shippingMethod = "Standard");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Order Management",
-			portlet = "Orders");
+		CommerceOrders.openOrdersAdmin();
 
 		CommerceNavigator.gotoOrderEntryViaAdmin(status = "Pending");
 
@@ -3227,9 +3427,7 @@ definition {
 			orderItemQuantity = 4,
 			orderItemSku = "MIN93015");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Order Management",
-			portlet = "Orders");
+		CommerceOrders.openOrdersAdmin();
 
 		CommerceNavigator.gotoOrderEntryViaAdmin(status = "Pending");
 
@@ -3240,7 +3438,7 @@ definition {
 			paymentMethod = "Money Order",
 			productListPrice = "50.00",
 			productName = "ABS Sensor",
-			productQuantity = "4.00",
+			productQuantity = 4,
 			productSku = "MIN93015",
 			productTotalPrice = "100.00");
 	}
@@ -3252,9 +3450,7 @@ definition {
 
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Store Management",
-			portlet = "Channels");
+		CommerceChannels.openChannelsAdmin();
 
 		CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -3288,9 +3484,7 @@ definition {
 			productUnitPrice = 50,
 			shippingMethod = "Standard");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Order Management",
-			portlet = "Orders");
+		CommerceOrders.openOrdersAdmin();
 
 		CommerceNavigator.gotoOrderEntryViaAdmin(status = "Pending");
 
@@ -3298,9 +3492,7 @@ definition {
 			orderItemQuantity = 4,
 			orderItemSku = "MIN93015");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Order Management",
-			portlet = "Orders");
+		CommerceOrders.openOrdersAdmin();
 
 		CommerceNavigator.gotoOrderEntryViaAdmin(status = "Pending");
 
@@ -3311,7 +3503,7 @@ definition {
 			paymentMethod = "Money Order",
 			productListPrice = "50.00",
 			productName = "ABS Sensor",
-			productQuantity = "4.00",
+			productQuantity = 4,
 			productSku = "MIN93015",
 			productTotalPrice = "100.00");
 	}
@@ -3349,9 +3541,7 @@ definition {
 			siteName = "Minium2",
 			siteTemplateName = "Minium");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Store Management",
-			portlet = "Channels");
+		CommerceChannels.openChannelsAdmin();
 
 		AssertElementPresent(
 			key_entryName = "Minium Portal",
@@ -3412,9 +3602,7 @@ definition {
 			locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME",
 			value1 = "Commerce Account 2");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Order Management",
-			portlet = "Orders");
+		CommerceOrders.openOrdersAdmin();
 
 		Click(locator1 = "CommerceEntry#FILTER_DROPDOWN_MENU");
 
@@ -3604,23 +3792,16 @@ definition {
 			userLastName = "User",
 			userScreenName = "buyeruser");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
-		Click(locator1 = "Dropdown#FILTER_AND_ORDER");
-
-		MenuItem.click(menuItem = "Account Users");
+		ManagementBar.setFilterAndOrder(filterBy = "Account Users");
 
 		CommerceLogin.editPasswordCP(
 			newPassword = "ttest",
 			requirePasswordReset = "true",
 			userScreenName = "buyeruser");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Store Management",
-			portlet = "Channels");
+		CommerceChannels.openChannelsAdmin();
 
 		CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -3736,23 +3917,16 @@ definition {
 			userLastName = "User",
 			userScreenName = "buyeruser");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		User.openUsersAdmin();
 
-		Click(locator1 = "Dropdown#FILTER_AND_ORDER");
-
-		MenuItem.click(menuItem = "Account Users");
+		ManagementBar.setFilterAndOrder(filterBy = "Account Users");
 
 		CommerceLogin.editPasswordCP(
 			newPassword = "ttest",
 			requirePasswordReset = "true",
 			userScreenName = "buyeruser");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Store Management",
-			portlet = "Channels");
+		CommerceChannels.openChannelsAdmin();
 
 		CommerceNavigator.gotoEntry(entryName = "Minium Portal");
 
@@ -3797,9 +3971,7 @@ definition {
 			urlAppend = "web/minium",
 			userEmailAddress = "test@liferay.com");
 
-		CommerceNavigator.gotoPortlet(
-			category = "Order Management",
-			portlet = "Orders");
+		CommerceOrders.openOrdersAdmin();
 
 		ClickNoError(
 			key_orderStatus = "Pending",
@@ -3825,9 +3997,7 @@ definition {
 	@description = ""
 	@priority = 5
 	test MakeAnOrderWithThreeActiveMinimumOrderAmountsWithDifferentPriority {
-		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=false";
-		property osgi.module.configuration.file.names = "com.liferay.commerce.order.rule.configuration.COREntryConfiguration.config";
-		property osgi.module.configurations = "enabled=\"true\"";
+		property custom.properties = "company.security.strangers.verify=false${line.separator}jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "true";
 
 		task ("Given a Minium site with a buyer user") {
@@ -3965,9 +4135,7 @@ definition {
 			productName = "Mount",
 			productQuantity = 1);
 
-		CommerceNavigator.gotoPortlet(
-			category = "Order Management",
-			portlet = "Orders");
+		CommerceOrders.openOrdersAdmin();
 
 		CommerceNavigator.searchEntry(entryName = ${orderId});
 
@@ -4015,9 +4183,7 @@ definition {
 			productName = "Transmission Cooler Line Assembly",
 			productQuantity = 3);
 
-		CommerceNavigator.gotoPortlet(
-			category = "Order Management",
-			portlet = "Orders");
+		CommerceOrders.openOrdersAdmin();
 
 		Button.click(button = "Order Date");
 

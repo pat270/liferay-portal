@@ -14,9 +14,12 @@ import com.liferay.osb.faro.provisioning.client.model.OSBAccountEntry;
 import com.liferay.osb.faro.provisioning.client.model.OSBOfferingEntry;
 import com.liferay.osb.faro.web.internal.constants.FaroSubscriptionConstants;
 import com.liferay.osb.faro.web.internal.subscription.FaroSubscriptionPlan;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -34,11 +37,12 @@ public class FaroSubscriptionDisplay {
 		Date lastAnniversaryDate = DateUtils.setYears(
 			createDate, DateUtil.getYear(new Date()));
 
-		if (DateUtil.compareTo(new Date(), lastAnniversaryDate) > 0) {
-			return lastAnniversaryDate;
+		if (DateUtil.compareTo(new Date(), lastAnniversaryDate) <= 0) {
+			lastAnniversaryDate = DateUtils.setYears(
+				createDate, DateUtil.getYear(new Date()) - 1);
 		}
 
-		return DateUtils.setYears(createDate, DateUtil.getYear(new Date()) - 1);
+		return new Date(lastAnniversaryDate.getTime() / Time.DAY * Time.DAY);
 	}
 
 	public FaroSubscriptionDisplay() {
@@ -98,18 +102,6 @@ public class FaroSubscriptionDisplay {
 		}
 	}
 
-	public Date geLastAnniversaryDate() {
-		if (_lastAnniversaryDate == null) {
-			return null;
-		}
-
-		return new Date(_lastAnniversaryDate.getTime());
-	}
-
-	public long getIndividualsCount() {
-		return _individualsCount;
-	}
-
 	public long getIndividualsCountSinceLastAnniversary() {
 		return _individualsCountSinceLastAnniversary;
 	}
@@ -118,12 +110,16 @@ public class FaroSubscriptionDisplay {
 		return _individualsLimit;
 	}
 
-	public String getName() {
-		return _name;
+	public Date getLastAnniversaryDate() {
+		if (_lastAnniversaryDate == null) {
+			return null;
+		}
+
+		return new Date(_lastAnniversaryDate.getTime());
 	}
 
-	public long getPageViewsCount() {
-		return _pageViewsCount;
+	public String getName() {
+		return _name;
 	}
 
 	public long getPageViewsCountSinceLastAnniversary() {
@@ -142,6 +138,10 @@ public class FaroSubscriptionDisplay {
 		return new Date(_startDate.getTime());
 	}
 
+	public long getSyncedIndividualsCount() {
+		return _syncedIndividualsCount;
+	}
+
 	public boolean isActive() {
 		return _active;
 	}
@@ -158,26 +158,34 @@ public class FaroSubscriptionDisplay {
 			return;
 		}
 
-		_individualsCount = contactsEngineClient.getIndividualsCount(
-			faroProject, false);
+		_syncedIndividualsCount =
+			contactsEngineClient.getSyncedIndividualsCount(faroProject);
 
-		_lastAnniversaryDate = getLastAnniversaryDate(_startDate);
+		if (_isBasicSubscription(faroProject.getSubscription())) {
+			if (_startDate == null) {
+				_startDate = new Date(faroProject.getCreateTime());
+			}
+
+			_lastAnniversaryDate = new Date(
+				_startDate.getTime() / Time.DAY * Time.DAY);
+		}
+		else {
+			_startDate = new Date(faroProject.getSubscriptionModifiedTime());
+
+			_lastAnniversaryDate = getLastAnniversaryDate(_startDate);
+		}
 
 		_individualsCountSinceLastAnniversary =
 			contactsEngineClient.getIndividualsCreatedSinceCount(
 				faroProject, _lastAnniversaryDate);
-
-		_individualsStatus = getStatus(_individualsCount, _individualsLimit);
-
-		_pageViewsCount = GetterUtil.getInteger(
-			cerebroEngineClient.getPageViews(
-				faroProject, _startDate, new Date()));
-
 		_pageViewsCountSinceLastAnniversary = GetterUtil.getInteger(
 			cerebroEngineClient.getPageViews(
 				faroProject, _lastAnniversaryDate, new Date()));
 
-		_pageViewsStatus = getStatus(_pageViewsCount, _pageViewsLimit);
+		_individualsStatus = getStatus(
+			_individualsCountSinceLastAnniversary, _individualsLimit);
+		_pageViewsStatus = getStatus(
+			_pageViewsCountSinceLastAnniversary, _pageViewsLimit);
 	}
 
 	public static class AddOn {
@@ -285,19 +293,35 @@ public class FaroSubscriptionDisplay {
 		return false;
 	}
 
+	private boolean _isBasicSubscription(String subscription) throws Exception {
+		JSONObject oldSubscriptionJSONObject = JSONFactoryUtil.createJSONObject(
+			subscription);
+
+		if (StringUtil.equals(
+				oldSubscriptionJSONObject.getString("name"),
+				ProductConstants.BASIC_PRODUCT_NAME) ||
+			StringUtil.equals(
+				oldSubscriptionJSONObject.getString("name"),
+				ProductConstants.LXC_PRO_PRODUCT_NAME)) {
+
+			return true;
+		}
+
+		return false;
+	}
+
 	private boolean _active;
 	private final List<AddOn> _addOns = new ArrayList<>();
 	private Date _endDate;
-	private long _individualsCount;
 	private long _individualsCountSinceLastAnniversary;
 	private long _individualsLimit;
 	private int _individualsStatus;
 	private Date _lastAnniversaryDate;
 	private String _name;
-	private long _pageViewsCount;
 	private long _pageViewsCountSinceLastAnniversary;
 	private long _pageViewsLimit;
 	private int _pageViewsStatus;
 	private Date _startDate;
+	private long _syncedIndividualsCount;
 
 }

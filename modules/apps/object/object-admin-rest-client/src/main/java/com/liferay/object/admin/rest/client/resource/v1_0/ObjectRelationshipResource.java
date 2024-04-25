@@ -12,6 +12,8 @@ import com.liferay.object.admin.rest.client.pagination.Pagination;
 import com.liferay.object.admin.rest.client.problem.Problem;
 import com.liferay.object.admin.rest.client.serdes.v1_0.ObjectRelationshipSerDes;
 
+import java.net.URL;
+
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -35,13 +37,13 @@ public interface ObjectRelationshipResource {
 	public Page<ObjectRelationship>
 			getObjectDefinitionByExternalReferenceCodeObjectRelationshipsPage(
 				String externalReferenceCode, String search,
-				String filterString, Pagination pagination)
+				String filterString, Pagination pagination, String sortString)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse
 			getObjectDefinitionByExternalReferenceCodeObjectRelationshipsPageHttpResponse(
 				String externalReferenceCode, String search,
-				String filterString, Pagination pagination)
+				String filterString, Pagination pagination, String sortString)
 		throws Exception;
 
 	public ObjectRelationship
@@ -58,24 +60,26 @@ public interface ObjectRelationshipResource {
 
 	public Page<ObjectRelationship> getObjectDefinitionObjectRelationshipsPage(
 			Long objectDefinitionId, String search, String filterString,
-			Pagination pagination)
+			Pagination pagination, String sortString)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse
 			getObjectDefinitionObjectRelationshipsPageHttpResponse(
 				Long objectDefinitionId, String search, String filterString,
-				Pagination pagination)
+				Pagination pagination, String sortString)
 		throws Exception;
 
 	public void postObjectDefinitionObjectRelationshipsPageExportBatch(
 			Long objectDefinitionId, String search, String filterString,
-			String callbackURL, String contentType, String fieldNames)
+			String sortString, String callbackURL, String contentType,
+			String fieldNames)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse
 			postObjectDefinitionObjectRelationshipsPageExportBatchHttpResponse(
 				Long objectDefinitionId, String search, String filterString,
-				String callbackURL, String contentType, String fieldNames)
+				String sortString, String callbackURL, String contentType,
+				String fieldNames)
 		throws Exception;
 
 	public ObjectRelationship postObjectDefinitionObjectRelationship(
@@ -94,6 +98,16 @@ public interface ObjectRelationshipResource {
 	public HttpInvoker.HttpResponse
 			postObjectDefinitionObjectRelationshipBatchHttpResponse(
 				Long objectDefinitionId, String callbackURL, Object object)
+		throws Exception;
+
+	public ObjectRelationship putObjectRelationshipByExternalReferenceCode(
+			String externalReferenceCode, ObjectRelationship objectRelationship)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse
+			putObjectRelationshipByExternalReferenceCodeHttpResponse(
+				String externalReferenceCode,
+				ObjectRelationship objectRelationship)
 		throws Exception;
 
 	public void deleteObjectRelationship(Long objectRelationshipId)
@@ -185,6 +199,10 @@ public interface ObjectRelationshipResource {
 			return this;
 		}
 
+		public Builder endpoint(URL url) {
+			return endpoint(url.getHost(), url.getPort(), url.getProtocol());
+		}
+
 		public Builder header(String key, String value) {
 			_headers.put(key, value);
 
@@ -240,12 +258,14 @@ public interface ObjectRelationshipResource {
 		public Page<ObjectRelationship>
 				getObjectDefinitionByExternalReferenceCodeObjectRelationshipsPage(
 					String externalReferenceCode, String search,
-					String filterString, Pagination pagination)
+					String filterString, Pagination pagination,
+					String sortString)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				getObjectDefinitionByExternalReferenceCodeObjectRelationshipsPageHttpResponse(
-					externalReferenceCode, search, filterString, pagination);
+					externalReferenceCode, search, filterString, pagination,
+					sortString);
 
 			String content = httpResponse.getContent();
 
@@ -309,7 +329,8 @@ public interface ObjectRelationshipResource {
 		public HttpInvoker.HttpResponse
 				getObjectDefinitionByExternalReferenceCodeObjectRelationshipsPageHttpResponse(
 					String externalReferenceCode, String search,
-					String filterString, Pagination pagination)
+					String filterString, Pagination pagination,
+					String sortString)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -346,6 +367,10 @@ public interface ObjectRelationshipResource {
 					"page", String.valueOf(pagination.getPage()));
 				httpInvoker.parameter(
 					"pageSize", String.valueOf(pagination.getPageSize()));
+			}
+
+			if (sortString != null) {
+				httpInvoker.parameter("sort", sortString);
 			}
 
 			httpInvoker.path(
@@ -475,12 +500,13 @@ public interface ObjectRelationshipResource {
 		public Page<ObjectRelationship>
 				getObjectDefinitionObjectRelationshipsPage(
 					Long objectDefinitionId, String search, String filterString,
-					Pagination pagination)
+					Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				getObjectDefinitionObjectRelationshipsPageHttpResponse(
-					objectDefinitionId, search, filterString, pagination);
+					objectDefinitionId, search, filterString, pagination,
+					sortString);
 
 			String content = httpResponse.getContent();
 
@@ -544,7 +570,7 @@ public interface ObjectRelationshipResource {
 		public HttpInvoker.HttpResponse
 				getObjectDefinitionObjectRelationshipsPageHttpResponse(
 					Long objectDefinitionId, String search, String filterString,
-					Pagination pagination)
+					Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -583,6 +609,10 @@ public interface ObjectRelationshipResource {
 					"pageSize", String.valueOf(pagination.getPageSize()));
 			}
 
+			if (sortString != null) {
+				httpInvoker.parameter("sort", sortString);
+			}
+
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port + _builder._contextPath +
@@ -598,13 +628,14 @@ public interface ObjectRelationshipResource {
 
 		public void postObjectDefinitionObjectRelationshipsPageExportBatch(
 				Long objectDefinitionId, String search, String filterString,
-				String callbackURL, String contentType, String fieldNames)
+				String sortString, String callbackURL, String contentType,
+				String fieldNames)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				postObjectDefinitionObjectRelationshipsPageExportBatchHttpResponse(
-					objectDefinitionId, search, filterString, callbackURL,
-					contentType, fieldNames);
+					objectDefinitionId, search, filterString, sortString,
+					callbackURL, contentType, fieldNames);
 
 			String content = httpResponse.getContent();
 
@@ -657,10 +688,13 @@ public interface ObjectRelationshipResource {
 		public HttpInvoker.HttpResponse
 				postObjectDefinitionObjectRelationshipsPageExportBatchHttpResponse(
 					Long objectDefinitionId, String search, String filterString,
-					String callbackURL, String contentType, String fieldNames)
+					String sortString, String callbackURL, String contentType,
+					String fieldNames)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body("[]", "application/json");
 
 			if (_builder._locale != null) {
 				httpInvoker.header(
@@ -687,6 +721,10 @@ public interface ObjectRelationshipResource {
 
 			if (filterString != null) {
 				httpInvoker.parameter("filter", filterString);
+			}
+
+			if (sortString != null) {
+				httpInvoker.parameter("sort", sortString);
 			}
 
 			if (callbackURL != null) {
@@ -920,6 +958,116 @@ public interface ObjectRelationshipResource {
 						"/o/object-admin/v1.0/object-definitions/{objectDefinitionId}/object-relationships/batch");
 
 			httpInvoker.path("objectDefinitionId", objectDefinitionId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public ObjectRelationship putObjectRelationshipByExternalReferenceCode(
+				String externalReferenceCode,
+				ObjectRelationship objectRelationship)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				putObjectRelationshipByExternalReferenceCodeHttpResponse(
+					externalReferenceCode, objectRelationship);
+
+			String content = httpResponse.getContent();
+
+			if ((httpResponse.getStatusCode() / 100) != 2) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response content: " + content);
+				_logger.log(
+					Level.WARNING,
+					"HTTP response message: " + httpResponse.getMessage());
+				_logger.log(
+					Level.WARNING,
+					"HTTP response status code: " +
+						httpResponse.getStatusCode());
+
+				Problem.ProblemException problemException = null;
+
+				if (Objects.equals(
+						httpResponse.getContentType(), "application/json")) {
+
+					problemException = new Problem.ProblemException(
+						Problem.toDTO(content));
+				}
+				else {
+					_logger.log(
+						Level.WARNING,
+						"Unable to process content type: " +
+							httpResponse.getContentType());
+
+					Problem problem = new Problem();
+
+					problem.setStatus(
+						String.valueOf(httpResponse.getStatusCode()));
+
+					problemException = new Problem.ProblemException(problem);
+				}
+
+				throw problemException;
+			}
+			else {
+				_logger.fine("HTTP response content: " + content);
+				_logger.fine(
+					"HTTP response message: " + httpResponse.getMessage());
+				_logger.fine(
+					"HTTP response status code: " +
+						httpResponse.getStatusCode());
+			}
+
+			try {
+				return ObjectRelationshipSerDes.toDTO(content);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
+		}
+
+		public HttpInvoker.HttpResponse
+				putObjectRelationshipByExternalReferenceCodeHttpResponse(
+					String externalReferenceCode,
+					ObjectRelationship objectRelationship)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body(objectRelationship.toString(), "application/json");
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.PUT);
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port + _builder._contextPath +
+						"/o/object-admin/v1.0/object-relationships/by-external-reference-code/{externalReferenceCode}");
+
+			httpInvoker.path("externalReferenceCode", externalReferenceCode);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);

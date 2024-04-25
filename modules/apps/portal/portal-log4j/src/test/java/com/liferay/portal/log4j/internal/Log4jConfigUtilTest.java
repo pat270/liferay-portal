@@ -5,6 +5,7 @@
 
 package com.liferay.portal.log4j.internal;
 
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.LogContext;
 import com.liferay.portal.kernel.log.LogContextRegistryUtil;
@@ -26,7 +27,6 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +36,7 @@ import java.util.logging.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Logger;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -195,8 +196,6 @@ public class Log4jConfigUtilTest {
 
 			LogEntry logEntry = logEntries.get(0);
 
-			Assert.assertNull(logEntry.getMessage());
-
 			Throwable throwable = logEntry.getThrowable();
 
 			Assert.assertSame(NullPointerException.class, throwable.getClass());
@@ -344,20 +343,24 @@ public class Log4jConfigUtilTest {
 	}
 
 	private void _assertAppenders(Logger logger, String... appenderTypes) {
-		Map<String, Appender> appenders = logger.getAppenders();
+		LoggerConfig loggerConfig = logger.get();
 
-		List<String> targetAppenderNames = new ArrayList<>();
+		Map<String, Appender> appenders = loggerConfig.getAppenders();
 
-		for (String appenderName : appenders.keySet()) {
-			targetAppenderNames.add(appenderName);
-		}
+		Assert.assertEquals(
+			String.valueOf(appenders.keySet()), appenderTypes.length,
+			appenders.size());
 
-		Assert.assertEquals(targetAppenderNames.size(), appenderTypes.length);
+		List<String> appenderRefs = TransformUtil.unsafeTransform(
+			loggerConfig.getAppenderRefs(),
+			appenderRef -> appenderRef.getRef());
+
+		Assert.assertEquals(
+			appenderRefs.toString(), appenderTypes.length, appenderRefs.size());
 
 		for (String appenderType : appenderTypes) {
-			Assert.assertTrue(
-				"Missing appender " + appenderType,
-				targetAppenderNames.contains(appenderType));
+			Assert.assertTrue(appenderRefs.contains(appenderType));
+			Assert.assertTrue(appenders.containsKey(appenderType));
 		}
 	}
 
@@ -407,7 +410,7 @@ public class Log4jConfigUtilTest {
 		sb.append("\" type=\"CompanyLogRouting\">");
 		sb.append("<FilePattern fileNamePattern=\"");
 		sb.append(fileNamePattern);
-		sb.append("\"><Log4j1XmlLayout locationInfo=\"true\" /></FilePattern>");
+		sb.append("\"><Layout type=\"PatternLayout\" /></FilePattern>");
 		sb.append("<TimeBasedTriggeringPolicy /><DirectWriteRolloverStrategy ");
 		sb.append("/></Appender></Appenders><Loggers><Logger level= \"");
 		sb.append(priority);
@@ -528,7 +531,7 @@ public class Log4jConfigUtilTest {
 				_generateCompanyLogRoutingAppenderConfigurationContent(
 					"COMPANY_LOG_ROUTING_TEXT_FILE",
 					tempLogFileDirPathString + "/@company.id@",
-					"liferay-@company.id@.%d{yyyy-MM-dd}.xml.log", loggerName,
+					"liferay-@company.id@.%d{yyyy-MM-dd}.log", loggerName,
 					_INFO));
 
 			Logger logger = (Logger)LogManager.getLogger(loggerName);

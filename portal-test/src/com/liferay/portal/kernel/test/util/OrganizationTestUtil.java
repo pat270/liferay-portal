@@ -7,6 +7,7 @@ package com.liferay.portal.kernel.test.util;
 
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Address;
+import com.liferay.portal.kernel.model.Country;
 import com.liferay.portal.kernel.model.EmailAddress;
 import com.liferay.portal.kernel.model.ListType;
 import com.liferay.portal.kernel.model.ListTypeConstants;
@@ -17,6 +18,7 @@ import com.liferay.portal.kernel.model.PasswordPolicy;
 import com.liferay.portal.kernel.model.Phone;
 import com.liferay.portal.kernel.model.Website;
 import com.liferay.portal.kernel.service.AddressLocalServiceUtil;
+import com.liferay.portal.kernel.service.CountryLocalServiceUtil;
 import com.liferay.portal.kernel.service.EmailAddressLocalServiceUtil;
 import com.liferay.portal.kernel.service.ListTypeServiceUtil;
 import com.liferay.portal.kernel.service.OrgLaborLocalServiceUtil;
@@ -44,8 +46,35 @@ public class OrganizationTestUtil {
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(), RandomTestUtil.nextLong(),
 			RandomTestUtil.randomLong(),
-			_getListTypeId(ListTypeConstants.ORGANIZATION_ADDRESS), false,
-			false, null, new ServiceContext());
+			_getListTypeId(
+				organization.getCompanyId(),
+				ListTypeConstants.ORGANIZATION_ADDRESS),
+			false, false, null, new ServiceContext());
+	}
+
+	public static Country addCountry(
+			Organization organization, ServiceContext serviceContext)
+		throws Exception {
+
+		Country country = CountryLocalServiceUtil.fetchCountryByA2(
+			organization.getCompanyId(), "ZZ");
+
+		if (country == null) {
+			country = CountryLocalServiceUtil.addCountry(
+				"ZZ", "ZZZ", true, true, null, RandomTestUtil.randomString(),
+				RandomTestUtil.randomString(), RandomTestUtil.randomDouble(),
+				true, false, false, serviceContext);
+		}
+
+		OrganizationLocalServiceUtil.updateOrganization(
+			organization.getExternalReferenceCode(),
+			organization.getCompanyId(), organization.getOrganizationId(),
+			organization.getParentOrganizationId(), organization.getName(),
+			organization.getType(), organization.getRegionId(),
+			country.getCountryId(), organization.getStatusListTypeId(),
+			organization.getComments(), false, null, false, null);
+
+		return country;
 	}
 
 	public static EmailAddress addEmailAddress(Organization organization)
@@ -54,8 +83,10 @@ public class OrganizationTestUtil {
 		return EmailAddressLocalServiceUtil.addEmailAddress(
 			organization.getUserId(), organization.getModelClassName(),
 			organization.getOrganizationId(), "test@liferay.com",
-			_getListTypeId(ListTypeConstants.ORGANIZATION_EMAIL_ADDRESS), false,
-			new ServiceContext());
+			_getListTypeId(
+				organization.getCompanyId(),
+				ListTypeConstants.ORGANIZATION_EMAIL_ADDRESS),
+			false, new ServiceContext());
 	}
 
 	public static Organization addOrganization() throws Exception {
@@ -79,12 +110,16 @@ public class OrganizationTestUtil {
 	}
 
 	public static Organization addOrganization(String type) throws Exception {
+		ListType listType = ListTypeServiceUtil.getListType(
+			TestPropsValues.getCompanyId(),
+			ListTypeConstants.ORGANIZATION_STATUS_DEFAULT,
+			ListTypeConstants.ORGANIZATION_STATUS);
+
 		return OrganizationLocalServiceUtil.addOrganization(
-			TestPropsValues.getUserId(),
+			null, TestPropsValues.getUserId(),
 			OrganizationConstants.DEFAULT_PARENT_ORGANIZATION_ID,
-			RandomTestUtil.randomString(), type, 0, 0,
-			ListTypeConstants.ORGANIZATION_STATUS_DEFAULT, StringPool.BLANK,
-			false, null);
+			RandomTestUtil.randomString(), type, 0, 0, listType.getListTypeId(),
+			StringPool.BLANK, false, null);
 	}
 
 	public static OrgLabor addOrgLabor(Organization organization)
@@ -92,7 +127,9 @@ public class OrganizationTestUtil {
 
 		return OrgLaborLocalServiceUtil.addOrgLabor(
 			organization.getOrganizationId(),
-			_getListTypeId(ListTypeConstants.ORGANIZATION_SERVICE),
+			_getListTypeId(
+				organization.getCompanyId(),
+				ListTypeConstants.ORGANIZATION_SERVICE),
 			RandomTestUtil.nextInt(), RandomTestUtil.nextInt(),
 			RandomTestUtil.nextInt(), RandomTestUtil.nextInt(),
 			RandomTestUtil.nextInt(), RandomTestUtil.nextInt(),
@@ -120,14 +157,17 @@ public class OrganizationTestUtil {
 		return PhoneLocalServiceUtil.addPhone(
 			organization.getUserId(), organization.getModelClassName(),
 			organization.getOrganizationId(), "0000000000", "000",
-			_getListTypeId(ListTypeConstants.ORGANIZATION_PHONE), false,
-			new ServiceContext());
+			_getListTypeId(
+				organization.getCompanyId(),
+				ListTypeConstants.ORGANIZATION_PHONE),
+			false, new ServiceContext());
 	}
 
 	public static Organization addSite(Organization organization)
 		throws Exception {
 
 		return OrganizationLocalServiceUtil.updateOrganization(
+			organization.getExternalReferenceCode(),
 			organization.getCompanyId(), organization.getOrganizationId(),
 			organization.getParentOrganizationId(), organization.getName(),
 			organization.getType(), organization.getRegionId(),
@@ -141,8 +181,10 @@ public class OrganizationTestUtil {
 		return WebsiteLocalServiceUtil.addWebsite(
 			organization.getUserId(), organization.getModelClassName(),
 			organization.getOrganizationId(), "http://www.test.com",
-			_getListTypeId(ListTypeConstants.ORGANIZATION_WEBSITE), false,
-			new ServiceContext());
+			_getListTypeId(
+				organization.getCompanyId(),
+				ListTypeConstants.ORGANIZATION_WEBSITE),
+			false, new ServiceContext());
 	}
 
 	public static void updateAsset(
@@ -155,8 +197,11 @@ public class OrganizationTestUtil {
 			assetTagNames);
 	}
 
-	private static long _getListTypeId(String type) throws Exception {
-		List<ListType> listTypes = ListTypeServiceUtil.getListTypes(type);
+	private static long _getListTypeId(long companyId, String type)
+		throws Exception {
+
+		List<ListType> listTypes = ListTypeServiceUtil.getListTypes(
+			companyId, type);
 
 		ListType listType = listTypes.get(0);
 

@@ -8,11 +8,13 @@
 <%@ include file="/init.jsp" %>
 
 <%
+portletDisplay.setBeta(true);
+
 HeadlessBuilderWebDisplayContext headlessBuilderWebDisplayContext = (HeadlessBuilderWebDisplayContext)request.getAttribute(WebKeys.PORTLET_DISPLAY_CONTEXT);
 %>
 
 <react:component
-	module="js/components/ViewAPIApplications"
+	module="{ViewAPIApplications} from headless-builder-web"
 	props='<%=
 		HashMapBuilder.<String, Object>put(
 			"apiURLPaths", headlessBuilderWebDisplayContext.getAPIURLPaths()

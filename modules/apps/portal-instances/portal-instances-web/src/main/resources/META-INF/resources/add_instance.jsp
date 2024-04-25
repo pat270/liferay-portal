@@ -56,13 +56,11 @@
 				</c:if>
 
 				<c:if test="<%= Validator.isNull(PropsUtil.get(PropsKeys.DEFAULT_ADMIN_PASSWORD)) %>">
-					<liferay-ui:panel
-						collapsible="<%= false %>"
-						extended="<%= true %>"
-						id="administatorUserPanel"
-						markupView="lexicon"
-						title="administrator-user"
-					>
+					<clay:sheet-section>
+						<h3 class="sheet-subtitle">
+							<liferay-ui:message key="administrator-user" />
+						</h3>
+
 						<aui:input label="field.screen-name" name="defaultAdminScreenName" required="<%= true %>" type="text" />
 
 						<aui:input label="email-address" name="defaultAdminEmailAddress" required="<%= true %>" type="text" />
@@ -84,7 +82,7 @@
 						<c:if test='<%= fullNameDefinition.isFieldRequired("last-name") %>'>
 							<aui:input label="last-name" name="defaultAdminLastName" required="<%= true %>" type="text" value="<%= PropsUtil.get(PropsKeys.DEFAULT_ADMIN_LAST_NAME) %>" />
 						</c:if>
-					</liferay-ui:panel>
+					</clay:sheet-section>
 				</c:if>
 			</div>
 		</div>
@@ -95,10 +93,10 @@
 			<p class="text-3 text-center text-secondary"><liferay-ui:message key="the-creation-of-the-site-may-take-some-time-.closing-the-window-will-not-cancel-the-process" /></p>
 		</div>
 
-		<input type="submit" hidden />
+		<input hidden type="submit" />
 	</liferay-frontend:edit-form>
 </clay:container-fluid>
 
 <liferay-frontend:component
-	module="js/AddInstance"
+	module="{AddInstance} from portal-instances-web"
 />

@@ -7,9 +7,9 @@ package com.liferay.layout.type.controller.content.internal.product.navigation.c
 
 import com.liferay.exportimport.kernel.staging.LayoutStaging;
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorWebKeys;
+import com.liferay.layout.helper.LayoutCopyHelper;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.security.permission.resource.LayoutContentModelResourcePermission;
-import com.liferay.layout.util.LayoutCopyHelper;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutRevision;
 import com.liferay.portal.kernel.model.LayoutTypeController;
 import com.liferay.portal.kernel.model.LayoutTypePortlet;
+import com.liferay.portal.kernel.model.impl.VirtualLayout;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -37,7 +38,6 @@ import com.liferay.product.navigation.control.menu.ProductNavigationControlMenuE
 import com.liferay.product.navigation.control.menu.constants.ProductNavigationControlMenuCategoryKeys;
 import com.liferay.segments.model.SegmentsExperience;
 import com.liferay.segments.service.SegmentsExperienceLocalService;
-import com.liferay.sites.kernel.util.Sites;
 import com.liferay.staging.StagingGroupHelper;
 
 import java.util.Collections;
@@ -185,7 +185,8 @@ public class EditLayoutModeProductNavigationControlMenuEntry
 
 		if (Objects.equals(
 				className, LayoutPageTemplateEntry.class.getName()) ||
-			!layout.isTypeContent() || !_sites.isLayoutUpdateable(layout)) {
+			(layout instanceof VirtualLayout) || !layout.isLayoutUpdateable() ||
+			!layout.isTypeContent()) {
 
 			return false;
 		}
@@ -206,17 +207,8 @@ public class EditLayoutModeProductNavigationControlMenuEntry
 		return false;
 	}
 
-	private String _getRedirect(
-			HttpServletRequest httpServletRequest, String fullLayoutURL,
-			Layout layout, ThemeDisplay themeDisplay)
-		throws PortalException {
-
-		String redirect = HttpComponentsUtil.setParameter(
-			fullLayoutURL, "p_l_back_url",
-			_portal.getLayoutFullURL(layout, themeDisplay));
-
-		redirect = HttpComponentsUtil.setParameter(
-			redirect, "p_l_mode", Constants.EDIT);
+	private String _addSegmentsExperienceId(
+		HttpServletRequest httpServletRequest, Layout layout, String url) {
 
 		long segmentsExperienceId = ParamUtil.getLong(
 			httpServletRequest, "segmentsExperienceId", -1);
@@ -230,12 +222,28 @@ public class EditLayoutModeProductNavigationControlMenuEntry
 				((layout.getPlid() == segmentsExperience.getPlid()) ||
 				 (layout.getClassPK() == segmentsExperience.getPlid()))) {
 
-				redirect = HttpComponentsUtil.setParameter(
-					redirect, "segmentsExperienceId", segmentsExperienceId);
+				return HttpComponentsUtil.setParameter(
+					url, "segmentsExperienceId", segmentsExperienceId);
 			}
 		}
 
-		return redirect;
+		return url;
+	}
+
+	private String _getRedirect(
+			HttpServletRequest httpServletRequest, String fullLayoutURL,
+			Layout layout, ThemeDisplay themeDisplay)
+		throws PortalException {
+
+		String redirect = HttpComponentsUtil.addParameters(
+			fullLayoutURL, "p_l_back_url",
+			_addSegmentsExperienceId(
+				httpServletRequest, layout,
+				_portal.getLayoutFullURL(layout, themeDisplay)),
+			"p_l_back_url_title", layout.getName(themeDisplay.getLocale()),
+			"p_l_mode", Constants.EDIT);
+
+		return _addSegmentsExperienceId(httpServletRequest, layout, redirect);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -264,9 +272,6 @@ public class EditLayoutModeProductNavigationControlMenuEntry
 
 	@Reference
 	private SegmentsExperienceLocalService _segmentsExperienceLocalService;
-
-	@Reference
-	private Sites _sites;
 
 	@Reference
 	private StagingGroupHelper _stagingGroupHelper;

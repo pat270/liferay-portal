@@ -41,8 +41,8 @@ import com.liferay.portal.kernel.service.PhoneService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.WebsiteLocalService;
 import com.liferay.portal.kernel.service.WebsiteService;
-import com.liferay.portal.kernel.service.permission.OrganizationPermission;
-import com.liferay.portal.kernel.service.permission.UserPermission;
+import com.liferay.portal.kernel.service.permission.OrganizationPermissionUtil;
+import com.liferay.portal.kernel.service.permission.UserPermissionUtil;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
@@ -51,7 +51,6 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.users.admin.constants.UsersAdminPortletKeys;
-import com.liferay.users.admin.kernel.util.UsersAdmin;
 import com.liferay.users.admin.web.internal.manager.AddressContactInfoManager;
 import com.liferay.users.admin.web.internal.manager.ContactInfoManager;
 import com.liferay.users.admin.web.internal.manager.EmailAddressContactInfoManager;
@@ -154,13 +153,13 @@ public class UpdateContactInformationMVCActionCommand
 		throws PortalException {
 
 		if (Objects.equals(className, Organization.class.getName())) {
-			_organizationPermission.check(
+			OrganizationPermissionUtil.check(
 				permissionChecker, classPK, ActionKeys.UPDATE);
 		}
 		else {
 			User user = _userLocalService.getUserByContactId(classPK);
 
-			_userPermission.check(
+			UserPermissionUtil.check(
 				permissionChecker, user.getUserId(), ActionKeys.UPDATE);
 		}
 	}
@@ -170,17 +169,16 @@ public class UpdateContactInformationMVCActionCommand
 
 		if (listType.equals(ListTypeConstants.ADDRESS)) {
 			return new AddressContactInfoManager(
-				className, classPK, _addressLocalService, _addressService);
+				_addressLocalService, _addressService, className, classPK);
 		}
 		else if (listType.equals(ListTypeConstants.EMAIL_ADDRESS)) {
 			return new EmailAddressContactInfoManager(
 				className, classPK, _emailAddressLocalService,
-				_emailAddressService, _usersAdmin);
+				_emailAddressService);
 		}
 		else if (listType.equals(ListTypeConstants.PHONE)) {
 			return new PhoneContactInfoManager(
-				className, classPK, _phoneLocalService, _phoneService,
-				_usersAdmin);
+				className, classPK, _phoneLocalService, _phoneService);
 		}
 		else if (listType.equals(ListTypeConstants.ORGANIZATION_SERVICE)) {
 			return new OrgLaborContactInfoManager(
@@ -188,8 +186,7 @@ public class UpdateContactInformationMVCActionCommand
 		}
 		else if (listType.equals(ListTypeConstants.WEBSITE)) {
 			return new WebsiteContactInfoManager(
-				className, classPK, _websiteLocalService, _websiteService,
-				_usersAdmin);
+				className, classPK, _websiteLocalService, _websiteService);
 		}
 
 		return null;
@@ -244,9 +241,6 @@ public class UpdateContactInformationMVCActionCommand
 	private EmailAddressService _emailAddressService;
 
 	@Reference
-	private OrganizationPermission _organizationPermission;
-
-	@Reference
 	private OrgLaborLocalService _orgLaborLocalService;
 
 	@Reference
@@ -263,12 +257,6 @@ public class UpdateContactInformationMVCActionCommand
 
 	@Reference
 	private UserLocalService _userLocalService;
-
-	@Reference
-	private UserPermission _userPermission;
-
-	@Reference
-	private UsersAdmin _usersAdmin;
 
 	@Reference
 	private WebsiteLocalService _websiteLocalService;

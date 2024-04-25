@@ -72,6 +72,7 @@
 														id="rangeLast"
 														label='<%= LanguageUtil.get(request, "last") + StringPool.TRIPLE_PERIOD %>'
 														name="range"
+														popover="export-last-range-help"
 														value="<%= ExportImportDateUtil.RANGE_LAST %>"
 													/>
 												</div>
@@ -104,7 +105,21 @@
 											}
 											%>
 
+											<ul class="hide list-unstyled" id="<portlet:namespace />warningSection">
+												<clay:alert
+													displayType="warning"
+													message="publishing-all-content-or-using-wide-date-range-will-take-some-time"
+													symbol="page"
+												/>
+											</ul>
+
 											<ul class="date-range-options hide list-unstyled" id="<portlet:namespace />startEndDate">
+												<clay:alert
+													displayType="warning"
+													message="publishing-all-content-or-using-wide-date-range-will-take-some-time"
+													symbol="page"
+												/>
+
 												<li class="d-flex flex-wrap">
 													<liferay-ui:input-date
 														cssClass="form-group form-group-inline"

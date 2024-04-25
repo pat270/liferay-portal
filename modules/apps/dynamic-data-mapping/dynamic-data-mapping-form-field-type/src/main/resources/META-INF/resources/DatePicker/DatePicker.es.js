@@ -7,20 +7,23 @@ import ClayDatePicker from '@clayui/date-picker';
 import {ClayTooltipProvider} from '@clayui/tooltip';
 import {
 	createAutoCorrectedDatePipe,
-	generateDate,
-	generateDateConfigurations,
-	generateInputMask,
+	datetimeUtils,
 } from '@liferay/object-js-components-web';
 import moment from 'moment/min/moment-with-locales';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {createTextMaskInputElement} from 'text-mask-core';
 
-import {FieldBase} from '../FieldBase/ReactFieldBase.es';
+import FieldBase from '../FieldBase/ReactFieldBase.es';
 import {getTooltipTitle} from '../util/tooltip';
+
+const DIGIT_REGEX = /\d/;
 
 export default function DatePicker({
 	defaultLanguageId = themeDisplay.getDefaultLanguageId(),
 	dir,
+	displayErrors,
+	errorMessage,
+	htmlAutocompleteAttribute,
 	locale,
 	localizable,
 	localizedValue,
@@ -32,12 +35,18 @@ export default function DatePicker({
 	predefinedValue,
 	readOnly,
 	type,
+	valid,
 	value,
 	weekdaysShort,
 	...otherProps
 }) {
 	const inputRef = useRef(null);
 	const maskRef = useRef();
+	const [validField, setValidField] = useState({
+		displayErrors,
+		errorMessage,
+		valid,
+	});
 	const {
 		clayFormat,
 		firstDayOfWeek,
@@ -47,7 +56,7 @@ export default function DatePicker({
 		serverFormat,
 		use12Hours,
 	} = useMemo(() => {
-		return generateDateConfigurations({
+		return datetimeUtils.generateDateConfigurations({
 			defaultLanguageId,
 			locale,
 			type,
@@ -99,23 +108,23 @@ export default function DatePicker({
 	 * Updates the rawDate state whenever the prop value or localizedValue changes,
 	 * but it keep user's input case theres no language change.
 	 */
-	useEffect(
-		() =>
-			setDate(({formattedDate, name, predefinedValue, rawDate}) =>
-				name === date.name &&
-				predefinedValue === date.predefinedValue &&
-				rawDate === ''
-					? {...date, formattedDate}
-					: date
-			),
-		[date]
-	);
+	useEffect(() => {
+		setDate(({formattedDate, name, predefinedValue, rawDate}) =>
+			name === date.name &&
+			predefinedValue === date.predefinedValue &&
+			rawDate === ''
+				? {...date, formattedDate}
+				: date
+		);
+	}, [date]);
 
 	/**
 	 * Creates the input mask and update it whenever the format changes
 	 */
 	useEffect(() => {
-		const {mask, pipeFormat} = generateInputMask(momentFormat);
+		const {mask, pipeFormat} = datetimeUtils.generateInputMask(
+			momentFormat
+		);
 
 		maskRef.current = createTextMaskInputElement({
 			guide: true,
@@ -128,7 +137,7 @@ export default function DatePicker({
 	}, [momentFormat]);
 
 	const handleValueChange = (value) => {
-		const nextState = generateDate({
+		const nextState = datetimeUtils.generateDate({
 			isDateTime,
 			momentFormat,
 			serverFormat,
@@ -144,15 +153,58 @@ export default function DatePicker({
 
 	const [expanded, setExpanded] = useState(false);
 
+	const handleBlur = () => {
+		if (!otherProps.required) {
+			const isInputFilled = DIGIT_REGEX.test(formattedDate);
+
+			const isValidMomentFormat = moment(
+				formattedDate,
+				momentFormat,
+				true
+			).isValid();
+
+			if (!isInputFilled || isValidMomentFormat) {
+				setValidField({
+					displayErrors,
+					errorMessage,
+					valid,
+				});
+
+				return;
+			}
+
+			setValidField({
+				displayErrors: true,
+				errorMessage: Liferay.Language.get('please-enter-a-valid-date'),
+				valid: false,
+			});
+
+			return;
+		}
+
+		setValidField({
+			displayErrors: errorMessage && !valid,
+			errorMessage,
+			valid,
+		});
+
+		onBlur?.();
+	};
+
 	const handleExpandedChange = (value) => {
 		if (value !== expanded) {
 			setExpanded(value);
 
 			if (value) {
 				onFocus?.();
+				setValidField({
+					displayErrors,
+					errorMessage,
+					valid,
+				});
 			}
 			else {
-				onBlur?.();
+				handleBlur();
 			}
 		}
 	};
@@ -165,11 +217,35 @@ export default function DatePicker({
 		}
 	};
 
+	useEffect(() => {
+		if (otherProps.required) {
+			setValidField({
+				displayErrors,
+				errorMessage,
+				valid,
+			});
+		}
+
+		if (predefinedValue && !valid) {
+			setValidField({
+				displayErrors: errorMessage && !valid,
+				errorMessage,
+				valid,
+			});
+		}
+
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [displayErrors, errorMessage, valid]);
+
 	return (
 		<FieldBase
+			displayErrors={validField.displayErrors}
+			errorMessage={validField.errorMessage}
 			localizedValue={localizedValue}
 			name={name}
 			readOnly={readOnly}
+			type="date"
+			valid={validField.valid}
 			{...otherProps}
 		>
 			<ClayTooltipProvider autoAlign>
@@ -178,13 +254,33 @@ export default function DatePicker({
 					{...getTooltipTitle({placeholder, value: formattedDate})}
 				>
 					<ClayDatePicker
+						{...(htmlAutocompleteAttribute && {
+							autoComplete: htmlAutocompleteAttribute,
+						})}
+						aria-required={otherProps.required}
+						ariaLabels={{
+							buttonChooseDate: `${Liferay.Language.get(
+								'select-date'
+							)}`,
+							buttonDot: `${Liferay.Language.get(
+								'select-current-date'
+							)}`,
+							buttonNextMonth: `${Liferay.Language.get(
+								'select-next-month'
+							)}`,
+							buttonPreviousMonth: `${Liferay.Language.get(
+								'select-previous-month'
+							)}`,
+							dialog: `${Liferay.Language.get('select-date')}`,
+						}}
 						dateFormat={clayFormat}
 						dir={dir}
 						disabled={readOnly}
 						expanded={expanded}
 						firstDayOfWeek={firstDayOfWeek}
+						id={name}
 						months={months}
-						onBlur={onBlur}
+						onBlur={handleBlur}
 						onChange={handleValueChange}
 						onExpandedChange={handleExpandedChange}
 						onFocus={onFocus}

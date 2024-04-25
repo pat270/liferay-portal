@@ -6,10 +6,9 @@
 import {ClayInput, ClaySelect} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import {ClayTooltipProvider} from '@clayui/tooltip';
-import React, {useContext} from 'react';
+import {LearnMessage} from 'frontend-js-components-web';
+import React from 'react';
 
-import LearnMessage from '../../../shared/LearnMessage';
-import SearchContext from '../../../shared/SearchContext';
 import InputSetItemHeader from './InputSetItemHeader';
 import CharacterThresholdInput from './inputs/CharacterThresholdInput';
 import DisplayGroupNameInput from './inputs/DisplayGroupNameInput';
@@ -18,8 +17,6 @@ import SXPBlueprintSelectorInput from './inputs/SXPBlueprintSelectorInput';
 import SizeInput from './inputs/SizeInput';
 
 function SXPBlueprint({index, onBlur, onInputSetItemChange, touched, value}) {
-	const {learnMessages} = useContext(SearchContext);
-
 	const _handleChangeAttribute = (property) => (event) => {
 		onInputSetItemChange(index, {
 			attributes: {
@@ -35,11 +32,11 @@ function SXPBlueprint({index, onBlur, onInputSetItemChange, touched, value}) {
 		});
 	};
 
-	const _handleChangeSXPBlueprint = (id) => {
+	const _handleChangeSXPBlueprint = (externalReferenceCode) => {
 		onInputSetItemChange(index, {
 			attributes: {
 				...value.attributes,
-				sxpBlueprintId: id,
+				sxpBlueprintExternalReferenceCode: externalReferenceCode,
 			},
 		});
 	};
@@ -58,7 +55,7 @@ function SXPBlueprint({index, onBlur, onInputSetItemChange, touched, value}) {
 
 					<LearnMessage
 						className="c-ml-1"
-						learnMessages={learnMessages}
+						resource="portal-search-web"
 						resourceKey="search-bar-suggestions-blueprints"
 					/>
 				</InputSetItemHeader.Description>
@@ -82,10 +79,16 @@ function SXPBlueprint({index, onBlur, onInputSetItemChange, touched, value}) {
 
 			<div className="c-mb-3 form-group-autofit">
 				<SXPBlueprintSelectorInput
-					onBlur={onBlur('attributes.sxpBlueprintId')}
+					onBlur={onBlur(
+						'attributes.sxpBlueprintExternalReferenceCode'
+					)}
 					onSubmit={_handleChangeSXPBlueprint}
-					sxpBlueprintId={value.attributes?.sxpBlueprintId}
-					touched={touched['attributes.sxpBlueprintId']}
+					sxpBlueprintExternalReferenceCode={
+						value.attributes?.sxpBlueprintExternalReferenceCode
+					}
+					touched={
+						touched['attributes.sxpBlueprintExternalReferenceCode']
+					}
 				/>
 			</div>
 

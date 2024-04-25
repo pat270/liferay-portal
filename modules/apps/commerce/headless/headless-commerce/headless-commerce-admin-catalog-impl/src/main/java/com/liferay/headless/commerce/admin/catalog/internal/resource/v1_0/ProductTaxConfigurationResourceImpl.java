@@ -17,7 +17,6 @@ import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.fields.NestedField;
 import com.liferay.portal.vulcan.fields.NestedFieldId;
-import com.liferay.portal.vulcan.fields.NestedFieldSupport;
 
 import javax.ws.rs.core.Response;
 
@@ -30,13 +29,12 @@ import org.osgi.service.component.annotations.ServiceScope;
  */
 @Component(
 	properties = "OSGI-INF/liferay/rest/v1_0/product-tax-configuration.properties",
-	scope = ServiceScope.PROTOTYPE,
-	service = {NestedFieldSupport.class, ProductTaxConfigurationResource.class}
+	property = "nested.field.support=true", scope = ServiceScope.PROTOTYPE,
+	service = ProductTaxConfigurationResource.class
 )
 @CTAware
 public class ProductTaxConfigurationResourceImpl
-	extends BaseProductTaxConfigurationResourceImpl
-	implements NestedFieldSupport {
+	extends BaseProductTaxConfigurationResourceImpl {
 
 	@Override
 	public ProductTaxConfiguration
@@ -63,7 +61,7 @@ public class ProductTaxConfigurationResourceImpl
 
 		if (cpDefinition == null) {
 			throw new NoSuchCPDefinitionException(
-				"Unable to find Product with ID: " + id);
+				"Unable to find product with ID " + id);
 		}
 
 		return _toProductTaxConfiguration(cpDefinition.getCPDefinitionId());
@@ -103,7 +101,7 @@ public class ProductTaxConfigurationResourceImpl
 
 		if (cpDefinition == null) {
 			throw new NoSuchCPDefinitionException(
-				"Unable to find Product with ID: " + id);
+				"Unable to find product with ID " + id);
 		}
 
 		_updateProductTaxConfiguration(cpDefinition, productTaxConfiguration);

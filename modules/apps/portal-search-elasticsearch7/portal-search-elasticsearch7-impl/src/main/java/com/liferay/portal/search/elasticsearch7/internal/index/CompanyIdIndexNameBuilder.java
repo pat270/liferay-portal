@@ -37,6 +37,11 @@ public class CompanyIdIndexNameBuilder
 	}
 
 	@Override
+	public String getIndexNamePrefix() {
+		return _indexNamePrefix;
+	}
+
+	@Override
 	public int getPriority() {
 		return 0;
 	}
@@ -69,7 +74,7 @@ public class CompanyIdIndexNameBuilder
 	}
 
 	@Reference
-	protected volatile ElasticsearchConfigurationWrapper
+	protected ElasticsearchConfigurationWrapper
 		elasticsearchConfigurationWrapper;
 
 	private volatile String _indexNamePrefix;

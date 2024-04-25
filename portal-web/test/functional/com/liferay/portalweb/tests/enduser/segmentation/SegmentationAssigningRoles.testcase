@@ -52,6 +52,7 @@ definition {
 	test AssigningBySegmentNotWorkingDisabledInstanceSettings {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Add user and set password") {
 			JSONUser.addUser(
@@ -90,10 +91,7 @@ definition {
 		}
 
 		task ("Disable segmentation by roles from instance settings") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Configuration",
-				panel = "Control Panel",
-				portlet = "Instance Settings");
+			PortalSettings.openInstanceSettingsAdmin();
 
 			SystemSettings.gotoConfiguration(
 				configurationCategory = "Segments",
@@ -104,10 +102,7 @@ definition {
 		}
 
 		task ("Assign the segment to the role created") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Roles");
+			Role.openRolesAdmin();
 
 			Role.addAssignee(
 				assigneeName = "Segment global usersn",
@@ -144,6 +139,7 @@ definition {
 	test AssignSiteRolesOptionInSegmentsEditor {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Add segment in Test Site Name") {
 			JSONSegmentsentry.addSegment(
@@ -197,6 +193,7 @@ definition {
 	@priority = 3
 	test CanAssignBySegmentEnabledInstanceSettings {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Add user and set password") {
 			JSONUser.addUser(
@@ -235,10 +232,7 @@ definition {
 		}
 
 		task ("Enable segmentation by roles from instance settings") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Configuration",
-				panel = "Control Panel",
-				portlet = "Instance Settings");
+			PortalSettings.openInstanceSettingsAdmin();
 
 			SystemSettings.gotoConfiguration(
 				configurationCategory = "Segments",
@@ -249,10 +243,7 @@ definition {
 		}
 
 		task ("Assign the segment to the role created") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Roles");
+			Role.openRolesAdmin();
 
 			Role.addAssignee(
 				assigneeName = "Segment global usersn",
@@ -295,6 +286,7 @@ definition {
 	test CanAssignSiteRolesToSegment {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Add segment in Test Site Name") {
 			JSONSegmentsentry.addSegment(
@@ -320,10 +312,7 @@ definition {
 		}
 
 		task ("Disable segmentation by roles from instance settings") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Configuration",
-				panel = "Control Panel",
-				portlet = "Instance Settings");
+			PortalSettings.openInstanceSettingsAdmin();
 
 			SystemSettings.gotoConfiguration(
 				configurationCategory = "Segments",
@@ -348,12 +337,10 @@ definition {
 	@priority = 3
 	test CheckMessageSegmentationByRolesDisabledInstanceSettings {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Disable segmentation by roles from instance settings") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Configuration",
-				panel = "Control Panel",
-				portlet = "Instance Settings");
+			PortalSettings.openInstanceSettingsAdmin();
 
 			SystemSettings.gotoConfiguration(
 				configurationCategory = "Segments",
@@ -364,10 +351,7 @@ definition {
 		}
 
 		task ("Go to the role segments assignee's section") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Roles");
+			Role.openRolesAdmin();
 
 			Role._goToRoleAssigneeType(
 				assigneeType = "Segments",
@@ -388,6 +372,7 @@ definition {
 	test DisableAssignRolesBySegment {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Add user and set password") {
 			JSONUser.addUser(
@@ -413,10 +398,7 @@ definition {
 		}
 
 		task ("Assign the segment to the role created") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Roles");
+			Role.openRolesAdmin();
 
 			Role.addAssignee(
 				assigneeName = "Segment global usersn",
@@ -467,6 +449,7 @@ definition {
 	test DisableAssignRolesWarningMessage {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Assert the Enable Assign roles by segments checkbox is disabled") {
 			ApplicationsMenu.gotoPortlet(
@@ -483,10 +466,7 @@ definition {
 		}
 
 		task ("Go to the role segments assignee's section") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Roles");
+			Role.openRolesAdmin();
 
 			Role._goToRoleAssigneeType(
 				assigneeType = "Segments",
@@ -506,6 +486,7 @@ definition {
 	test DisabledAssignSiteRolesOptionInSegmentsEditor {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Add segment in Test Site Name") {
 			JSONSegmentsentry.addSegment(
@@ -531,10 +512,7 @@ definition {
 		}
 
 		task ("Disable segmentation by roles from instance settings") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Configuration",
-				panel = "Control Panel",
-				portlet = "Instance Settings");
+			PortalSettings.openInstanceSettingsAdmin();
 
 			SystemSettings.gotoConfiguration(
 				configurationCategory = "Segments",
@@ -562,6 +540,7 @@ definition {
 	test EditPageAfterEnableAssignRole {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Create a Content Page") {
 			JSONLayout.addPublicLayout(
@@ -601,6 +580,7 @@ definition {
 	test EnableAssignRolesBySegment {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Add user and set password") {
 			JSONUser.addUser(
@@ -625,10 +605,7 @@ definition {
 		}
 
 		task ("Assign the segment to the role created") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Roles");
+			Role.openRolesAdmin();
 
 			Role.addAssignee(
 				assigneeName = "Segment global usersn",
@@ -686,6 +663,7 @@ definition {
 	test EnableAssignRolesNoWarningMessage {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Enable Assign roles by segment") {
 			ApplicationsMenu.gotoPortlet(
@@ -702,10 +680,7 @@ definition {
 		}
 
 		task ("Go to the role segments assignee's section") {
-			ApplicationsMenu.gotoPortlet(
-				category = "Users",
-				panel = "Control Panel",
-				portlet = "Roles");
+			Role.openRolesAdmin();
 
 			Role._goToRoleAssigneeType(
 				assigneeType = "Segments",

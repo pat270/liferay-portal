@@ -9,6 +9,9 @@ import com.liferay.account.model.AccountGroupRel;
 import com.liferay.account.service.AccountGroupRelLocalService;
 import com.liferay.asset.kernel.exception.AssetCategoryException;
 import com.liferay.asset.kernel.exception.AssetTagException;
+import com.liferay.commerce.exception.CPDefinitionInventoryMaxOrderQuantityException;
+import com.liferay.commerce.exception.CPDefinitionInventoryMinOrderQuantityException;
+import com.liferay.commerce.exception.CPDefinitionInventoryMultipleOrderQuantityException;
 import com.liferay.commerce.exception.NoSuchCPDefinitionInventoryException;
 import com.liferay.commerce.model.CPDefinitionInventory;
 import com.liferay.commerce.product.configuration.CProductVersionConfiguration;
@@ -30,13 +33,14 @@ import com.liferay.commerce.product.service.CommerceChannelRelService;
 import com.liferay.commerce.product.servlet.taglib.ui.constants.CPDefinitionScreenNavigationConstants;
 import com.liferay.commerce.service.CPDAvailabilityEstimateService;
 import com.liferay.commerce.service.CPDefinitionInventoryService;
+import com.liferay.commerce.util.CommerceOrderItemQuantityFormatter;
 import com.liferay.friendly.url.exception.FriendlyURLLengthException;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
@@ -63,6 +67,8 @@ import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+
+import java.math.BigDecimal;
 
 import java.net.URL;
 
@@ -204,6 +210,12 @@ public class EditCPDefinitionMVCActionCommand extends BaseMVCActionCommand {
 			else if (throwable instanceof AssetCategoryException ||
 					 throwable instanceof AssetTagException ||
 					 throwable instanceof CPDefinitionExpirationDateException ||
+					 throwable instanceof
+						 CPDefinitionInventoryMaxOrderQuantityException ||
+					 throwable instanceof
+						 CPDefinitionInventoryMinOrderQuantityException ||
+					 throwable instanceof
+						 CPDefinitionInventoryMultipleOrderQuantityException ||
 					 throwable instanceof
 						 CPDefinitionMetaDescriptionException ||
 					 throwable instanceof CPDefinitionMetaKeywordsException ||
@@ -594,19 +606,18 @@ public class EditCPDefinitionMVCActionCommand extends BaseMVCActionCommand {
 		boolean displayStockQuantity = ParamUtil.getBoolean(
 			actionRequest, "displayStockQuantity");
 		boolean backOrders = ParamUtil.getBoolean(actionRequest, "backOrders");
-		int minStockQuantity = ParamUtil.getInteger(
+		BigDecimal minStockQuantity = _commerceOrderItemQuantityFormatter.parse(
 			actionRequest, "minStockQuantity");
-		int minOrderQuantity = ParamUtil.getInteger(
+		BigDecimal minOrderQuantity = _commerceOrderItemQuantityFormatter.parse(
 			actionRequest, "minOrderQuantity");
-		int maxOrderQuantity = ParamUtil.getInteger(
+		BigDecimal maxOrderQuantity = _commerceOrderItemQuantityFormatter.parse(
 			actionRequest, "maxOrderQuantity");
-		int multipleOrderQuantity = ParamUtil.getInteger(
-			actionRequest, "multipleOrderQuantity");
+		BigDecimal multipleOrderQuantity =
+			_commerceOrderItemQuantityFormatter.parse(
+				actionRequest, "multipleOrderQuantity");
+
 		String allowedOrderQuantities = ParamUtil.getString(
 			actionRequest, "allowedOrderQuantities");
-
-		ServiceContext serviceContext = ServiceContextFactory.getInstance(
-			CPDefinitionInventory.class.getName(), actionRequest);
 
 		CPDefinitionInventory cpDefinitionInventory =
 			_cpDefinitionInventoryService.
@@ -630,7 +641,7 @@ public class EditCPDefinitionMVCActionCommand extends BaseMVCActionCommand {
 
 		_cpdAvailabilityEstimateService.updateCPDAvailabilityEstimate(
 			cpdAvailabilityEstimateEntryId, cpDefinitionId,
-			commerceAvailabilityEstimateId, serviceContext);
+			commerceAvailabilityEstimateId);
 	}
 
 	private void _updateTaxCategoryInfo(
@@ -711,6 +722,10 @@ public class EditCPDefinitionMVCActionCommand extends BaseMVCActionCommand {
 
 	@Reference
 	private CommerceChannelRelService _commerceChannelRelService;
+
+	@Reference
+	private CommerceOrderItemQuantityFormatter
+		_commerceOrderItemQuantityFormatter;
 
 	@Reference
 	private ConfigurationProvider _configurationProvider;

@@ -4,7 +4,7 @@ definition {
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.component.names = "Document Management";
-	property testray.main.component.name = "Lima Headless";
+	property testray.main.component.name = "Content Management Headless";
 
 	setUp {
 		TestCase.setUpPortalInstance();
@@ -70,7 +70,7 @@ definition {
 			var response = DocumentAPI.getDocumentsByDifferentParameters(
 				documentId = ${documentId},
 				parameter = "restrictFields",
-				parameterValue = "actions,adaptedImages,assetLibraryKey,contentUrl,creator,customFields,dateCreated,dateModified,description,documentFolderId,documentType,encodingFormat,externalReferenceCode,fileExtension,fileName,id,keywords,numberOfComments,relatedContents,renderedContents,siteId,sizeInBytes,taxonomyCategoryBriefs");
+				parameterValue = "actions,adaptedImages,assetLibraryKey,contentUrl,creator,customFields,dateCreated,dateModified,description,documentFolderId,documentType,encodingFormat,externalReferenceCode,fileExtension,fileName,friendlyUrlPath,id,keywords,numberOfComments,relatedContents,renderedContents,siteId,sizeInBytes,taxonomyCategoryBriefs");
 		}
 
 		task ("Then in a response I receive a body with title field values only") {

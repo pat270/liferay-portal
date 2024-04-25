@@ -7,10 +7,10 @@ package com.liferay.headless.delivery.internal.resource.v1_0;
 
 import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.asset.kernel.model.AssetEntry;
-import com.liferay.asset.kernel.model.AssetLink;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
-import com.liferay.asset.kernel.service.AssetLinkLocalService;
+import com.liferay.asset.link.model.AssetLink;
+import com.liferay.asset.link.service.AssetLinkLocalService;
 import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializer;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
@@ -32,7 +32,7 @@ import com.liferay.expando.kernel.service.ExpandoColumnLocalService;
 import com.liferay.expando.kernel.service.ExpandoTableLocalService;
 import com.liferay.headless.common.spi.odata.entity.EntityFieldsUtil;
 import com.liferay.headless.common.spi.resource.SPIRatingResource;
-import com.liferay.headless.common.spi.service.context.ServiceContextRequestUtil;
+import com.liferay.headless.common.spi.service.context.ServiceContextBuilder;
 import com.liferay.headless.delivery.dto.v1_0.ContentField;
 import com.liferay.headless.delivery.dto.v1_0.Rating;
 import com.liferay.headless.delivery.dto.v1_0.RelatedContent;
@@ -112,15 +112,15 @@ import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
+import com.liferay.portal.vulcan.permission.ModelPermissionsUtil;
 import com.liferay.portal.vulcan.util.ContentLanguageUtil;
 import com.liferay.portal.vulcan.util.LocalDateTimeUtil;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
 import com.liferay.portal.vulcan.util.SearchUtil;
 import com.liferay.ratings.kernel.service.RatingsEntryLocalService;
 
-import java.io.Serializable;
-
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -512,7 +512,8 @@ public class StructuredContentResourceImpl
 
 		LocalDateTime localDateTime = LocalDateTimeUtil.toLocalDateTime(
 			structuredContent.getDatePublished(),
-			journalArticle.getDisplayDate());
+			journalArticle.getDisplayDate(),
+			ZoneId.of(contextUser.getTimeZoneId()));
 
 		return _toStructuredContent(
 			_journalArticleService.updateArticle(
@@ -543,8 +544,8 @@ public class StructuredContentResourceImpl
 				localDateTime.getMonthValue() - 1,
 				localDateTime.getDayOfMonth(), localDateTime.getYear(),
 				localDateTime.getHour(), localDateTime.getMinute(), 0, 0, 0, 0,
-				0, true, 0, 0, 0, 0, 0, true, true, false, null, null, null,
-				null,
+				0, true, 0, 0, 0, 0, 0, true, true, false, 0, 0, null, null,
+				null, null,
 				_createServiceContext(
 					_getAssetCategoryIds(journalArticle, structuredContent),
 					_getAssetLinkEntryIds(journalArticle, structuredContent),
@@ -717,7 +718,8 @@ public class StructuredContentResourceImpl
 			structuredContent.getContentStructureId());
 
 		LocalDateTime localDateTime = LocalDateTimeUtil.toLocalDateTime(
-			structuredContent.getDatePublished());
+			structuredContent.getDatePublished(), null,
+			ZoneId.of(contextUser.getTimeZoneId()));
 
 		Map<Locale, String> titleMap = LocalizedMapUtil.getLocalizedMap(
 			contextAcceptLanguage.getPreferredLocale(),
@@ -771,8 +773,8 @@ public class StructuredContentResourceImpl
 				null, localDateTime.getMonthValue() - 1,
 				localDateTime.getDayOfMonth(), localDateTime.getYear(),
 				localDateTime.getHour(), localDateTime.getMinute(), 0, 0, 0, 0,
-				0, true, 0, 0, 0, 0, 0, true, true, false, null, null, null,
-				null,
+				0, true, 0, 0, 0, 0, 0, true, true, false, 0, 0, null, null,
+				null, null,
 				_createServiceContext(
 					structuredContent.getTaxonomyCategoryIds(),
 					assetLinkEntryIds, priority,
@@ -781,16 +783,32 @@ public class StructuredContentResourceImpl
 	}
 
 	private ServiceContext _createServiceContext(
-		Long[] assetCategoryIds, long[] assetLinkEntryIds, double assetPriority,
-		String[] assetTagNames, long groupId,
-		StructuredContent structuredContent) {
+			Long[] assetCategoryIds, long[] assetLinkEntryIds,
+			double assetPriority, String[] assetTagNames, long groupId,
+			StructuredContent structuredContent)
+		throws Exception {
 
-		ServiceContext serviceContext =
-			ServiceContextRequestUtil.createServiceContext(
-				assetCategoryIds, assetTagNames,
-				_getExpandoBridgeAttributes(structuredContent), groupId,
-				contextHttpServletRequest,
-				structuredContent.getViewableByAsString());
+		ServiceContext serviceContext = ServiceContextBuilder.create(
+			groupId, contextHttpServletRequest,
+			structuredContent.getViewableByAsString()
+		).assetCategoryIds(
+			assetCategoryIds
+		).assetTagNames(
+			assetTagNames
+		).expandoBridgeAttributes(
+			CustomFieldsUtil.toMap(
+				JournalArticle.class.getName(), contextCompany.getCompanyId(),
+				structuredContent.getCustomFields(),
+				contextAcceptLanguage.getPreferredLocale())
+		).permissions(
+			ModelPermissionsUtil.toModelPermissions(
+				contextCompany.getCompanyId(),
+				structuredContent.getPermissions(),
+				getPermissionCheckerResourceId(structuredContent.getId()),
+				getPermissionCheckerResourceName(structuredContent.getId()),
+				resourceActionLocalService, resourcePermissionLocalService,
+				roleLocalService)
+		).build();
 
 		serviceContext.setAssetLinkEntryIds(assetLinkEntryIds);
 		serviceContext.setAssetPriority(assetPriority);
@@ -935,15 +953,6 @@ public class StructuredContentResourceImpl
 		DDMTemplate ddmTemplate = ddmTemplates.get(0);
 
 		return ddmTemplate.getTemplateKey();
-	}
-
-	private Map<String, Serializable> _getExpandoBridgeAttributes(
-		StructuredContent structuredContent) {
-
-		return CustomFieldsUtil.toMap(
-			JournalArticle.class.getName(), contextCompany.getCompanyId(),
-			structuredContent.getCustomFields(),
-			contextAcceptLanguage.getPreferredLocale());
 	}
 
 	private List<DDMFormField> _getRootDDMFormFields(
@@ -1300,7 +1309,8 @@ public class StructuredContentResourceImpl
 
 		LocalDateTime localDateTime = LocalDateTimeUtil.toLocalDateTime(
 			structuredContent.getDatePublished(),
-			journalArticle.getDisplayDate());
+			journalArticle.getDisplayDate(),
+			ZoneId.of(contextUser.getTimeZoneId()));
 
 		return _toStructuredContent(
 			_journalArticleService.updateArticle(
@@ -1318,8 +1328,8 @@ public class StructuredContentResourceImpl
 				localDateTime.getMonthValue() - 1,
 				localDateTime.getDayOfMonth(), localDateTime.getYear(),
 				localDateTime.getHour(), localDateTime.getMinute(), 0, 0, 0, 0,
-				0, true, 0, 0, 0, 0, 0, true, true, false, null, null, null,
-				null,
+				0, true, 0, 0, 0, 0, 0, true, true, false, 0, 0, null, null,
+				null, null,
 				_createServiceContext(
 					_getAssetCategoryIds(journalArticle, structuredContent),
 					_getAssetLinkEntryIds(journalArticle, structuredContent),

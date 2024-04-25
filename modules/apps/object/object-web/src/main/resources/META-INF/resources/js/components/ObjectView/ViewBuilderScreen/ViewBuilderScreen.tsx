@@ -6,7 +6,8 @@
 import {useModal} from '@clayui/modal';
 import {
 	BuilderScreen,
-	getLocalizableLabel,
+	Card,
+	stringUtils,
 } from '@liferay/object-js-components-web';
 import React, {useState} from 'react';
 
@@ -41,11 +42,20 @@ const ViewBuilderScreen: React.FC<{}> = () => {
 	const handleAddColumns = () => {
 		const parentWindow = Liferay.Util.getOpener();
 
-		parentWindow.Liferay.fire('openModalAddColumns', {
+		parentWindow.Liferay.fire('openModalSelectObjectFields', {
 			getName: ({label, name}: ObjectField) =>
-				getLocalizableLabel(creationLanguageId, label, name),
+				stringUtils.getLocalizableLabel(
+					creationLanguageId,
+					label,
+					name
+				),
 			header: Liferay.Language.get('add-columns'),
-			items: objectFields,
+			items: objectFields.map((objectField) => {
+				return {
+					...objectField,
+					disableCheckbox: false,
+				};
+			}),
 			onSave: (selectedObjectFields: ObjectField[]) =>
 				dispatch({
 					payload: {
@@ -55,6 +65,7 @@ const ViewBuilderScreen: React.FC<{}> = () => {
 					type: TYPES.ADD_OBJECT_VIEW_COLUMN,
 				}),
 			selected,
+			showModal: true,
 			title: Liferay.Language.get('select-the-columns'),
 		});
 	};
@@ -83,25 +94,26 @@ const ViewBuilderScreen: React.FC<{}> = () => {
 
 	return (
 		<>
-			<BuilderScreen
-				emptyState={{
-					buttonText: Liferay.Language.get('add-column'),
-					description: Liferay.Language.get(
-						'add-columns-to-start-creating-a-view'
-					),
-					title: Liferay.Language.get('no-columns-added-yet'),
-				}}
-				firstColumnHeader={Liferay.Language.get('name')}
-				hasDragAndDrop
-				objectColumns={objectViewColumns ?? []}
-				onChangeColumnOrder={handleChangeColumnOrder}
-				onDeleteColumn={handleDeleteColumn}
-				onEditingObjectFieldName={setEditingObjectFieldName}
-				onVisibleEditModal={setVisibleEditModal}
-				openModal={handleAddColumns}
-				secondColumnHeader={Liferay.Language.get('column-label')}
-				title={Liferay.Language.get('columns')}
-			/>
+			<Card title={Liferay.Language.get('columns')}>
+				<BuilderScreen
+					builderScreenItems={objectViewColumns ?? []}
+					emptyState={{
+						buttonText: Liferay.Language.get('add-column'),
+						description: Liferay.Language.get(
+							'add-columns-to-start-creating-a-view'
+						),
+						title: Liferay.Language.get('no-columns-added-yet'),
+					}}
+					firstColumnHeader={Liferay.Language.get('name')}
+					hasDragAndDrop
+					onChangeColumnOrder={handleChangeColumnOrder}
+					onDeleteColumn={handleDeleteColumn}
+					onEditingObjectFieldName={setEditingObjectFieldName}
+					onVisibleEditModal={setVisibleEditModal}
+					openModal={handleAddColumns}
+					secondColumnHeader={Liferay.Language.get('column-label')}
+				/>
+			</Card>
 
 			{visibleEditModal && (
 				<ModalEditViewColumn

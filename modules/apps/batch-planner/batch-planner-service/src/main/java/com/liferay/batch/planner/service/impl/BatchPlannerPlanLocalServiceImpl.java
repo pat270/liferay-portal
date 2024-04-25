@@ -5,6 +5,7 @@
 
 package com.liferay.batch.planner.service.impl;
 
+import com.liferay.batch.planner.batch.engine.task.TaskItemUtil;
 import com.liferay.batch.planner.constants.BatchPlannerPlanConstants;
 import com.liferay.batch.planner.exception.BatchPlannerPlanExternalTypeException;
 import com.liferay.batch.planner.exception.BatchPlannerPlanInternalClassNameException;
@@ -19,6 +20,7 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.petra.string.StringUtil;
 import com.liferay.portal.aop.AopService;
+import com.liferay.portal.kernel.change.tracking.CTAware;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -45,6 +47,7 @@ import org.osgi.service.component.annotations.Reference;
 	property = "model.class.name=com.liferay.batch.planner.model.BatchPlannerPlan",
 	service = AopService.class
 )
+@CTAware
 public class BatchPlannerPlanLocalServiceImpl
 	extends BatchPlannerPlanLocalServiceBaseImpl {
 
@@ -59,7 +62,7 @@ public class BatchPlannerPlanLocalServiceImpl
 		_validateInternalClassName(internalClassName);
 
 		if (Validator.isNull(name) && !template) {
-			name = _generateName(internalClassName);
+			name = _generateName(internalClassName, taskItemDelegateName);
 		}
 
 		User user = _userLocalService.getUser(userId);
@@ -177,9 +180,15 @@ public class BatchPlannerPlanLocalServiceImpl
 		return batchPlannerPlanPersistence.update(batchPlannerPlan);
 	}
 
-	private String _generateName(String value) {
-		return value.substring(value.lastIndexOf(StringPool.PERIOD) + 1) +
-			" Plan Execution " + System.currentTimeMillis();
+	private String _generateName(
+		String internalClassName, String taskItemDelegateName) {
+
+		String simpleClassName = TaskItemUtil.getSimpleClassName(
+			TaskItemUtil.getInternalClassNameKey(
+				internalClassName, taskItemDelegateName));
+
+		return simpleClassName + " Plan Execution " +
+			System.currentTimeMillis();
 	}
 
 	private void _validateExternalType(String externalType)

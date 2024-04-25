@@ -18,17 +18,6 @@ definition {
 		}
 	}
 
-	tearDown {
-		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
-
-		if (${testLiferayVirtualInstance} == "true") {
-			PortalInstances.tearDownCP();
-		}
-		else {
-			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
-		}
-	}
-
 	@description = "This is a test for LPS-133319. Change master of display page template when preview item selected."
 	@priority = 3
 	test ChangeMasterOfDisplayPageTemplateWhenPreviewItemSelected {
@@ -225,13 +214,15 @@ definition {
 	@description = "This is a test for LPS-128904. Look for the item via scroll bar when there are lots of items shown in Preview With dropdown list."
 	@priority = 4
 	test ViewItemInDropdownListViaScrollBar {
+		var groupId = JSONGroupSetter.setGroupId(groupName = "Test Site Name");
+
 		task ("Add 21 web contents based on Basic Web Content") {
 			var n = 1;
 
 			while ((${n} != 22) && (maxIterations = "30")) {
 				JSONWebcontent.addWebContent(
 					content = "Web Content Content ${n}",
-					groupName = "Test Site Name",
+					groupId = ${groupId},
 					title = "Web Content Title ${n}");
 
 				var n = ${n} + 1;
@@ -242,7 +233,7 @@ definition {
 			JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
 				contentType = "Web Content Article",
 				displayPageTemplateEntryName = "Display Page Name",
-				groupName = "Test Site Name",
+				groupId = ${groupId},
 				subType = "Basic Web Content");
 		}
 
@@ -609,16 +600,8 @@ definition {
 		}
 
 		task ("View the title of collection items are shown as Bulleted List") {
-			var n = 1;
-
 			for (var title : list "Document Title,Blogs Entry Title,Web Content Title") {
-				AssertVisible(
-					key_entryContent = "[normalize-space(text())='${title}']",
-					key_fragmentName = "Collection Display",
-					key_position = ${n},
-					locator1 = "PageEditor#COLLECTION_ITEM_CONTENT_IN_BULLETED_LIST");
-
-				var n = ${n} + 1;
+				AssertVisible(locator1 = "//div[@data-name='Collection Display']//li[normalize-space()='${title}']");
 			}
 		}
 
@@ -645,16 +628,8 @@ definition {
 		}
 
 		task ("View the title of collection items are shown as Bulleted List") {
-			var n = 1;
-
 			for (var title : list "Document Title,Blogs Entry Title,Web Content Title") {
-				AssertVisible(
-					key_entryContent = "[normalize-space(text())='${title}']",
-					key_fragmentName = "Collection Display",
-					key_position = ${n},
-					locator1 = "PageEditor#COLLECTION_ITEM_CONTENT_IN_BULLETED_LIST_AT_VIEW_MODE");
-
-				var n = ${n} + 1;
+				AssertVisible(locator1 = "//div[contains(@class,'lfr-layout-structure-item-collection')]//li[normalize-space()='${title}']");
 			}
 		}
 
@@ -947,7 +922,7 @@ definition {
 			PageEditor.viewFragmentEditableImage(
 				id = "image-square",
 				imageDescription = "",
-				imageFileName = "Document_1.jpg");
+				imageFileName = "document-title");
 
 			Close.closeWindow();
 		}

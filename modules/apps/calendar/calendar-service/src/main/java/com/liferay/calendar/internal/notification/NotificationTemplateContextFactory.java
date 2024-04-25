@@ -14,7 +14,6 @@ import com.liferay.calendar.notification.NotificationTemplateType;
 import com.liferay.calendar.notification.NotificationType;
 import com.liferay.calendar.service.CalendarBookingLocalService;
 import com.liferay.calendar.service.CalendarNotificationTemplateLocalServiceUtil;
-import com.liferay.osgi.util.service.Snapshot;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -24,6 +23,7 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
@@ -52,9 +52,10 @@ import javax.portlet.WindowState;
 public class NotificationTemplateContextFactory {
 
 	public static NotificationTemplateContext getInstance(
-			NotificationType notificationType,
+			CalendarBooking calendarBooking,
 			NotificationTemplateType notificationTemplateType,
-			CalendarBooking calendarBooking, User user)
+			NotificationType notificationType, String layoutURL,
+			String portalURL, User user)
 		throws Exception {
 
 		CalendarBooking parentCalendarBooking =
@@ -124,16 +125,9 @@ public class NotificationTemplateContextFactory {
 				"location", calendarBooking.getLocation()
 			).put(
 				"portalURL",
-				() -> {
-					GroupLocalService groupLocalService =
-						_groupLocalServiceSnapshot.get();
-
-					Group group = groupLocalService.getGroup(
-						user.getCompanyId(), GroupConstants.GUEST);
-
-					return _getPortalURL(
-						group.getCompanyId(), group.getGroupId());
-				}
+				() -> _getPortalURLOrCompanyPortalURL(
+					portalURL, user.getCompanyId(),
+					calendarBooking.getGroupId())
 			).put(
 				"portletName",
 				LanguageUtil.get(
@@ -164,7 +158,7 @@ public class NotificationTemplateContextFactory {
 			).put(
 				"url",
 				_getCalendarBookingURL(
-					user, calendarBooking.getCalendarBookingId())
+					calendarBooking, layoutURL, portalURL, user)
 			).build();
 
 		notificationTemplateContext.setAttributes(attributes);
@@ -179,8 +173,17 @@ public class NotificationTemplateContextFactory {
 			ServiceContext serviceContext)
 		throws Exception {
 
+		String layoutURL = null;
+		String portalURL = null;
+
+		if (serviceContext != null) {
+			layoutURL = serviceContext.getLayoutURL();
+			portalURL = serviceContext.getPortalURL();
+		}
+
 		NotificationTemplateContext notificationTemplateContext = getInstance(
-			notificationType, notificationTemplateType, calendarBooking, user);
+			calendarBooking, notificationTemplateType, notificationType,
+			layoutURL, portalURL, user);
 
 		if ((serviceContext != null) &&
 			Validator.isNotNull(
@@ -205,27 +208,46 @@ public class NotificationTemplateContextFactory {
 		return notificationTemplateContext;
 	}
 
+	/**
+	 * See {@link
+	 * com.liferay.calendar.web.internal.info.item.provider.CalendarBookingInfoItemFieldValuesProvider#_getCalendarBookingURL(
+	 * CalendarBooking)}
+	 */
 	private static String _getCalendarBookingURL(
-			User user, long calendarBookingId)
+			CalendarBooking calendarBooking, String layoutURL, String portalURL,
+			User user)
 		throws Exception {
 
-		GroupLocalService groupLocalService = _groupLocalServiceSnapshot.get();
+		String url = layoutURL;
 
-		Group group = groupLocalService.getGroup(
-			user.getCompanyId(), GroupConstants.GUEST);
+		if (layoutURL == null) {
+			GroupLocalService groupLocalService =
+				_groupLocalServiceSnapshot.get();
 
-		LayoutLocalService layoutLocalService =
-			_layoutLocalServiceSnapshot.get();
+			Group group = groupLocalService.getGroup(
+				calendarBooking.getGroupId());
 
-		Layout layout = layoutLocalService.fetchLayout(
-			group.getDefaultPublicPlid());
+			LayoutLocalService layoutLocalService =
+				_layoutLocalServiceSnapshot.get();
 
-		String portalURL = _getPortalURL(
-			group.getCompanyId(), group.getGroupId());
+			Layout layout = layoutLocalService.fetchLayout(
+				group.getDefaultPublicPlid());
 
-		String layoutActualURL = PortalUtil.getLayoutActualURL(layout);
+			if (layout == null) {
+				Group guestGroup = groupLocalService.getGroup(
+					user.getCompanyId(), GroupConstants.GUEST);
 
-		String url = portalURL + layoutActualURL;
+				layout = layoutLocalService.fetchLayout(
+					guestGroup.getDefaultPublicPlid());
+			}
+
+			layoutURL = PortalUtil.getLayoutActualURL(layout);
+
+			portalURL = _getPortalURLOrCompanyPortalURL(
+				portalURL, user.getCompanyId(), group.getGroupId());
+
+			url = portalURL + layoutURL;
+		}
 
 		String namespace = PortalUtil.getPortletNamespace(
 			CalendarPortletKeys.CALENDAR);
@@ -239,13 +261,19 @@ public class NotificationTemplateContextFactory {
 		url = HttpComponentsUtil.addParameter(
 			url, "p_p_state", WindowState.MAXIMIZED.toString());
 		url = HttpComponentsUtil.addParameter(
-			url, namespace + "calendarBookingId", calendarBookingId);
+			url, namespace + "calendarBookingId",
+			calendarBooking.getCalendarBookingId());
 
 		return url;
 	}
 
-	private static String _getPortalURL(long companyId, long groupId)
+	private static String _getPortalURLOrCompanyPortalURL(
+			String portalURL, long companyId, long groupId)
 		throws PortalException {
+
+		if (portalURL != null) {
+			return portalURL;
+		}
 
 		CompanyLocalService companyLocalService =
 			_companyLocalServiceSnapshot.get();

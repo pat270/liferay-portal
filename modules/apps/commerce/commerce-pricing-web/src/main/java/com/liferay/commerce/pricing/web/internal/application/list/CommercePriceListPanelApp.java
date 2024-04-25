@@ -11,13 +11,13 @@ import com.liferay.commerce.application.list.constants.CommercePanelCategoryKeys
 import com.liferay.commerce.pricing.constants.CommercePricingConstants;
 import com.liferay.commerce.pricing.constants.CommercePricingPortletKeys;
 import com.liferay.commerce.pricing.web.internal.util.CommercePricingUtil;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Portlet;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
-import com.liferay.portal.kernel.service.permission.PortletPermission;
+import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
 
 import java.util.Objects;
 
@@ -53,7 +53,7 @@ public class CommercePriceListPanelApp extends BasePanelApp {
 		boolean show = super.isShow(permissionChecker, group);
 
 		if (show) {
-			boolean viewCommercePriceLists = _portletPermission.contains(
+			boolean viewCommercePriceLists = PortletPermissionUtil.contains(
 				permissionChecker,
 				CommercePricingPortletKeys.COMMERCE_PRICE_LIST,
 				ActionKeys.VIEW);
@@ -78,8 +78,5 @@ public class CommercePriceListPanelApp extends BasePanelApp {
 		target = "(javax.portlet.name=" + CommercePricingPortletKeys.COMMERCE_PRICE_LIST + ")"
 	)
 	private Portlet _portlet;
-
-	@Reference
-	private PortletPermission _portletPermission;
 
 }

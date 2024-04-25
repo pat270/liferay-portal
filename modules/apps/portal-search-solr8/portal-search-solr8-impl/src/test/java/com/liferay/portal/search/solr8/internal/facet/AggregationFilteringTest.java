@@ -9,7 +9,7 @@ import com.liferay.portal.json.JSONFactoryImpl;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.module.util.SystemBundleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
-import com.liferay.portal.search.solr8.internal.SolrIndexingFixture;
+import com.liferay.portal.search.solr8.internal.indexing.SolrIndexingFixture;
 import com.liferay.portal.search.test.util.facet.BaseAggregationFilteringTestCase;
 import com.liferay.portal.search.test.util.indexing.IndexingFixture;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
@@ -35,6 +35,7 @@ public class AggregationFilteringTest extends BaseAggregationFilteringTestCase {
 		LiferayUnitTestRule.INSTANCE;
 
 	@Before
+	@Override
 	public void setUp() throws Exception {
 		super.setUp();
 
@@ -51,6 +52,7 @@ public class AggregationFilteringTest extends BaseAggregationFilteringTestCase {
 	}
 
 	@After
+	@Override
 	public void tearDown() throws Exception {
 		super.tearDown();
 

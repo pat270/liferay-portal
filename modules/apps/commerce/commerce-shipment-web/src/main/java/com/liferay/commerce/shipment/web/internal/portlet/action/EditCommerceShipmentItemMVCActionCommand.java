@@ -17,6 +17,7 @@ import com.liferay.commerce.product.model.CommerceChannel;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.commerce.service.CommerceOrderItemService;
 import com.liferay.commerce.service.CommerceShipmentItemService;
+import com.liferay.commerce.util.CommerceOrderItemQuantityFormatter;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -33,10 +34,13 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.BigDecimalUtil;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
+
+import java.math.BigDecimal;
 
 import java.util.List;
 
@@ -203,7 +207,7 @@ public class EditCommerceShipmentItemMVCActionCommand
 
 	private CommerceShipmentItem _updateCommerceShipmentItem(
 			ActionRequest actionRequest)
-		throws PortalException {
+		throws Exception {
 
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(
 			CommerceShipmentItem.class.getName(), actionRequest);
@@ -248,10 +252,12 @@ public class EditCommerceShipmentItemMVCActionCommand
 					commerceShipmentId, commerceOrderItemId,
 					commerceInventoryWarehouseId);
 
-			int quantity = ParamUtil.getInteger(
+			BigDecimal quantity = _commerceOrderItemQuantityFormatter.parse(
 				actionRequest, commerceInventoryWarehouseId + "_quantity");
 
-			if ((initialCommerceShipmentItem != null) && (quantity > 0)) {
+			if ((initialCommerceShipmentItem != null) &&
+				BigDecimalUtil.gt(quantity, BigDecimal.ZERO)) {
+
 				commerceShipmentItem =
 					_commerceShipmentItemService.updateCommerceShipmentItem(
 						initialCommerceShipmentItem.getCommerceShipmentItemId(),
@@ -259,11 +265,13 @@ public class EditCommerceShipmentItemMVCActionCommand
 
 				initialCommerceShipmentItem = null;
 			}
-			else if ((commerceShipmentItem == null) && (quantity > 0)) {
+			else if ((commerceShipmentItem == null) &&
+					 BigDecimalUtil.gt(quantity, BigDecimal.ZERO)) {
+
 				commerceShipmentItem =
 					_commerceShipmentItemService.addCommerceShipmentItem(
 						null, commerceShipmentId, commerceOrderItemId,
-						commerceInventoryWarehouseId, quantity, true,
+						commerceInventoryWarehouseId, quantity, null, true,
 						serviceContext);
 			}
 			else if ((commerceShipmentItem != null) &&
@@ -274,7 +282,7 @@ public class EditCommerceShipmentItemMVCActionCommand
 						commerceShipmentItem.getCommerceShipmentItemId(),
 						commerceInventoryWarehouseId, quantity, true);
 
-				if (quantity == 0) {
+				if (BigDecimalUtil.eq(quantity, BigDecimal.ZERO)) {
 					commerceShipmentItem =
 						_commerceShipmentItemService.updateCommerceShipmentItem(
 							commerceShipmentItem.getCommerceShipmentItemId(), 0,
@@ -308,6 +316,10 @@ public class EditCommerceShipmentItemMVCActionCommand
 	@Reference
 	private CommerceInventoryWarehouseLocalService
 		_commerceInventoryWarehouseLocalService;
+
+	@Reference
+	private CommerceOrderItemQuantityFormatter
+		_commerceOrderItemQuantityFormatter;
 
 	@Reference
 	private CommerceOrderItemService _commerceOrderItemService;

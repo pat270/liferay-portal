@@ -5,16 +5,13 @@
 @import 'AllowedFragments';
 @import 'DisabledArea';
 @import 'DisplayPagePreviewItemSelector';
-@import 'DragPreview';
 @import 'DropZone';
-@import 'EditModeSelector';
 @import 'FormValidationModal';
 @import 'HTMLEditorModal';
 @import 'Layout';
 @import 'LayoutBreadcrumbs';
 @import 'LayoutViewport';
 @import 'NetworkstatusBar';
-@import 'ReorderSetModal';
 @import 'SaveFragmentCompositionModal';
 @import 'ShortcutModal';
 @import 'Sidebar';
@@ -29,6 +26,8 @@
 @import 'fragment_configuration_fields/TargetCollectionsField';
 
 @import 'fragment_content/FragmentContent';
+
+@import 'keyboard_movement/KeyboardMovementPreview';
 
 @import 'layout_data_items/CollectionPagination';
 @import 'layout_data_items/FormWithControls';
@@ -59,3 +58,10 @@
 @import '../../plugins/fragments_and_widgets/components/Plugin';
 @import '../../plugins/page_content/components/Plugin';
 @import '../../plugins/page_design_options/components/Plugin';
+@import '../../plugins/page_rules/components/Plugin';
+
+html#{$cadmin-selector}
+	.page-editor__small-resolution
+	.cadmin.control-menu-container {
+	position: static;
+}

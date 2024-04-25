@@ -20,18 +20,19 @@ const getYearlyTerms = ({endDate, startDate}) => {
 
 				const daysEndDate = new Date(startDate).getDate();
 				const monthsEndDate = new Date(startDate).getMonth();
+				const hasLastElement = index + 1 === array.length;
 
-				if (index + 2 >= array.length) {
-					const yearNumEndDate = new Date(endDate).setFullYear(
-						currentYear + 1
-					);
+				if (hasLastElement) {
+					const lastTermStartDate = new Date(yearNumStartDate);
 
-					return index + 2 === array.length
-						? {
-								endDate: new Date(yearNumEndDate),
-								startDate: new Date(yearNumStartDate),
-						  }
-						: null;
+					if (lastTermStartDate > new Date(endDate)) {
+						return null;
+					}
+
+					return {
+						endDate: new Date(endDate),
+						startDate: lastTermStartDate,
+					};
 				}
 
 				return {

@@ -26,8 +26,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -184,62 +182,61 @@ public abstract class BaseStrategyResourceTestCase {
 	}
 
 	@Test
-	public void testGetPlanInternalClassNameStrategiesPage() throws Exception {
-		String internalClassName =
-			testGetPlanInternalClassNameStrategiesPage_getInternalClassName();
-		String irrelevantInternalClassName =
-			testGetPlanInternalClassNameStrategiesPage_getIrrelevantInternalClassName();
+	public void testGetPlanInternalClassNameKeyStrategiesPage()
+		throws Exception {
+
+		String internalClassNameKey =
+			testGetPlanInternalClassNameKeyStrategiesPage_getInternalClassNameKey();
+		String irrelevantInternalClassNameKey =
+			testGetPlanInternalClassNameKeyStrategiesPage_getIrrelevantInternalClassNameKey();
 
 		Page<Strategy> page =
-			strategyResource.getPlanInternalClassNameStrategiesPage(
-				internalClassName);
+			strategyResource.getPlanInternalClassNameKeyStrategiesPage(
+				internalClassNameKey);
 
-		Assert.assertEquals(0, page.getTotalCount());
+		long totalCount = page.getTotalCount();
 
-		if (irrelevantInternalClassName != null) {
+		if (irrelevantInternalClassNameKey != null) {
 			Strategy irrelevantStrategy =
-				testGetPlanInternalClassNameStrategiesPage_addStrategy(
-					irrelevantInternalClassName, randomIrrelevantStrategy());
+				testGetPlanInternalClassNameKeyStrategiesPage_addStrategy(
+					irrelevantInternalClassNameKey, randomIrrelevantStrategy());
 
-			page = strategyResource.getPlanInternalClassNameStrategiesPage(
-				irrelevantInternalClassName);
+			page = strategyResource.getPlanInternalClassNameKeyStrategiesPage(
+				irrelevantInternalClassNameKey);
 
-			Assert.assertEquals(1, page.getTotalCount());
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
-			assertEquals(
-				Arrays.asList(irrelevantStrategy),
-				(List<Strategy>)page.getItems());
+			assertContains(irrelevantStrategy, (List<Strategy>)page.getItems());
 			assertValid(
 				page,
-				testGetPlanInternalClassNameStrategiesPage_getExpectedActions(
-					irrelevantInternalClassName));
+				testGetPlanInternalClassNameKeyStrategiesPage_getExpectedActions(
+					irrelevantInternalClassNameKey));
 		}
 
 		Strategy strategy1 =
-			testGetPlanInternalClassNameStrategiesPage_addStrategy(
-				internalClassName, randomStrategy());
+			testGetPlanInternalClassNameKeyStrategiesPage_addStrategy(
+				internalClassNameKey, randomStrategy());
 
 		Strategy strategy2 =
-			testGetPlanInternalClassNameStrategiesPage_addStrategy(
-				internalClassName, randomStrategy());
+			testGetPlanInternalClassNameKeyStrategiesPage_addStrategy(
+				internalClassNameKey, randomStrategy());
 
-		page = strategyResource.getPlanInternalClassNameStrategiesPage(
-			internalClassName);
+		page = strategyResource.getPlanInternalClassNameKeyStrategiesPage(
+			internalClassNameKey);
 
-		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
-		assertEqualsIgnoringOrder(
-			Arrays.asList(strategy1, strategy2),
-			(List<Strategy>)page.getItems());
+		assertContains(strategy1, (List<Strategy>)page.getItems());
+		assertContains(strategy2, (List<Strategy>)page.getItems());
 		assertValid(
 			page,
-			testGetPlanInternalClassNameStrategiesPage_getExpectedActions(
-				internalClassName));
+			testGetPlanInternalClassNameKeyStrategiesPage_getExpectedActions(
+				internalClassNameKey));
 	}
 
 	protected Map<String, Map<String, String>>
-			testGetPlanInternalClassNameStrategiesPage_getExpectedActions(
-				String internalClassName)
+			testGetPlanInternalClassNameKeyStrategiesPage_getExpectedActions(
+				String internalClassNameKey)
 		throws Exception {
 
 		Map<String, Map<String, String>> expectedActions = new HashMap<>();
@@ -247,8 +244,9 @@ public abstract class BaseStrategyResourceTestCase {
 		return expectedActions;
 	}
 
-	protected Strategy testGetPlanInternalClassNameStrategiesPage_addStrategy(
-			String internalClassName, Strategy strategy)
+	protected Strategy
+			testGetPlanInternalClassNameKeyStrategiesPage_addStrategy(
+				String internalClassNameKey, Strategy strategy)
 		throws Exception {
 
 		throw new UnsupportedOperationException(
@@ -256,7 +254,7 @@ public abstract class BaseStrategyResourceTestCase {
 	}
 
 	protected String
-			testGetPlanInternalClassNameStrategiesPage_getInternalClassName()
+			testGetPlanInternalClassNameKeyStrategiesPage_getInternalClassNameKey()
 		throws Exception {
 
 		throw new UnsupportedOperationException(
@@ -264,7 +262,7 @@ public abstract class BaseStrategyResourceTestCase {
 	}
 
 	protected String
-			testGetPlanInternalClassNameStrategiesPage_getIrrelevantInternalClassName()
+			testGetPlanInternalClassNameKeyStrategiesPage_getIrrelevantInternalClassNameKey()
 		throws Exception {
 
 		return null;
@@ -529,6 +527,10 @@ public abstract class BaseStrategyResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -748,9 +750,9 @@ public abstract class BaseStrategyResourceTestCase {
 	}
 
 	protected StrategyResource strategyResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

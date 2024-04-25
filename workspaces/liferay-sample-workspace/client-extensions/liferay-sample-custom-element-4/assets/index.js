@@ -6,23 +6,53 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+import './style.css';
+
+const api = async (url, options = {}) => {
+	return fetch(window.location.origin + '/' + url, {
+		headers: {
+			'Content-Type': 'application/json',
+			'x-csrf-token': Liferay.authToken,
+		},
+		...options,
+	});
+};
+
+function Greeting() {
+	return React.createElement(
+		'h1',
+		{className: 'greeting'},
+		'Hello ',
+		React.createElement('i', null, name),
+		'. Welcome!'
+	);
+}
+
 class CustomElement extends HTMLElement {
-	constructor() {
-		super();
+	connectedCallback() {
+		ReactDOM.render(React.createElement(Greeting), this);
 
-		const root = document.createElement('div');
+		if (Liferay.ThemeDisplay.isSignedIn()) {
+			api('o/headless-admin-user/v1.0/my-user-account')
+				.then((response) => response.json())
+				.then((response) => {
+					if (response.givenName) {
+						const nameElements = document.getElementsByTagName('i');
 
-		const Greeting = React.createElement(
-			'h1',
-			{className: 'greeting'},
-			'Hello ',
-			React.createElement('i', null, name),
-			'. Welcome!'
-		);
+						if (nameElements.length) {
+							nameElements[0].innerHTML = response.givenName;
+						}
+					}
+				})
+				.catch((error) => {
+					// eslint-disable-next-line no-console
+					console.log(error);
+				});
+		}
+	}
 
-		ReactDOM.render(Greeting, root);
-
-		this.appendChild(root);
+	disconnectedCallback() {
+		ReactDOM.unmountComponentAtNode(this);
 	}
 }
 

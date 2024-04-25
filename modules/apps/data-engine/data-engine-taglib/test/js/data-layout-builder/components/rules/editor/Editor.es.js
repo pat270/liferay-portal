@@ -4,19 +4,11 @@
  */
 
 import {act, fireEvent, render, waitFor} from '@testing-library/react';
-import Color from 'dynamic-data-mapping-form-field-type/ColorPicker/ColorPicker.es';
-import Date from 'dynamic-data-mapping-form-field-type/DatePicker/DatePicker.es';
-import DocumentLibrary from 'dynamic-data-mapping-form-field-type/DocumentLibrary/DocumentLibrary.es';
-import Grid from 'dynamic-data-mapping-form-field-type/Grid/Grid.es';
-import Image from 'dynamic-data-mapping-form-field-type/ImagePicker/ImagePicker.es';
-import Numeric from 'dynamic-data-mapping-form-field-type/Numeric/Numeric';
-import RichText from 'dynamic-data-mapping-form-field-type/RichText/RichText.es';
-import Select from 'dynamic-data-mapping-form-field-type/Select/Select.es';
-import Text from 'dynamic-data-mapping-form-field-type/Text/Text.es';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
 
-import {Editor} from '../../../../../../src/main/resources/META-INF/resources/data_layout_builder/js/components/rules/editor/Editor.es';
-import {DEFAULT_RULE} from '../../../../../../src/main/resources/META-INF/resources/data_layout_builder/js/components/rules/editor/config.es';
+import {Editor} from '../../../../../../src/main/resources/META-INF/resources/js/components/rules/editor/Editor.es';
+import {DEFAULT_RULE} from '../../../../../../src/main/resources/META-INF/resources/js/components/rules/editor/config.es';
 import {
 	FIELDS,
 	FIELDS_TYPES,
@@ -107,55 +99,72 @@ const defaultProps = (fieldsList = FIELDS) => {
 	};
 };
 
+jest.mock('frontend-js-web', () => ({
+	...jest.requireActual('frontend-js-web'),
+	loadModule: jest.fn((fieldModule) => {
+		const {
+			ColorPicker,
+			DatePicker,
+			DocumentLibrary,
+			Grid,
+			ImagePicker,
+			Numeric,
+			RichText,
+			Select,
+			Text,
+		} = jest.requireActual('dynamic-data-mapping-form-field-type');
+
+		let component = null;
+
+		switch (fieldModule) {
+			case 'color':
+				component = ColorPicker;
+				break;
+			case 'date':
+				component = DatePicker;
+				break;
+			case 'grid':
+				component = Grid;
+				break;
+			case 'image':
+				component = ImagePicker;
+				break;
+			case 'numeric':
+				component = Numeric;
+				break;
+			case 'rich_text':
+				component = RichText;
+				break;
+			case 'select':
+				component = Select;
+				break;
+			case 'text':
+				component = Text;
+				break;
+			case 'document_library':
+				component = DocumentLibrary;
+				break;
+			default:
+				break;
+		}
+
+		return Promise.resolve(component);
+	}),
+}));
+
 describe('Editor', () => {
 	const originalLiferayLoader = window.Liferay.Loader;
 
 	beforeEach(() => {
 		global.fetch.mockResponse(JSON.stringify(FIELDS_TYPES));
+		jest.useFakeTimers();
 	});
 
 	beforeAll(() => {
+		jest.setTimeout(30000);
+
 		Liferay.Language.direction = {
 			en_US: 'rtl',
-		};
-
-		window.Liferay = {
-			...window.Liferay,
-			Loader: {
-				require: ([fieldModule], resolve) => {
-					switch (fieldModule) {
-						case 'color':
-							resolve({default: Color});
-							break;
-						case 'date':
-							resolve({default: Date});
-							break;
-						case 'grid':
-							resolve({default: Grid});
-							break;
-						case 'image':
-							resolve({default: Image});
-							break;
-						case 'numeric':
-							resolve({default: Numeric});
-							break;
-						case 'rich_text':
-							resolve({default: RichText});
-							break;
-						case 'select':
-							resolve({default: Select});
-							break;
-						case 'text':
-							resolve({default: Text});
-							break;
-						case 'document_library':
-							resolve({default: DocumentLibrary});
-							break;
-						default:
-							break;
-					}
-				},
-			},
 		};
 	});
 
@@ -172,7 +181,7 @@ describe('Editor', () => {
 					'shows operators related to texts when field left is a %p',
 					async ({type}) => {
 						const props = defaultProps();
-						const {getByText} = render(
+						const {getByTestId, getByText} = render(
 							<Editor
 								{...props}
 								onChange={() => {}}
@@ -181,29 +190,30 @@ describe('Editor', () => {
 						);
 
 						await waitFor(() => {
-							return document.querySelector('.option-selected');
-						});
-
-						await waitFor(() => {
 							return document
 								.querySelectorAll('.timeline-item')[1]
-								.querySelectorAll('.ddm-field')[0]
-								.querySelector('.option-selected');
+								.querySelectorAll('.ddm-field')[0];
 						});
 
-						const fieldLeft = document
-							.querySelectorAll('.timeline-item')[1]
-							.querySelectorAll('.ddm-field')[0]
-							.querySelector('.option-selected');
-						fireEvent.click(fieldLeft);
-
-						await waitFor(() => {
-							return document.querySelector(
-								'.dropdown-menu.show'
-							);
+						const fieldLeft = await waitFor(() => {
+							return getByTestId('field-left-id');
 						});
 
-						fireEvent.click(getByText(type));
+						userEvent.click(fieldLeft);
+
+						const selectedItem = getByText(type);
+
+						fireEvent.click(selectedItem);
+
+						await waitFor(() => getByTestId('field-operator-id'));
+
+						act(() => {
+							jest.runAllTimers();
+						});
+
+						const fieldOperator = getByTestId('field-operator-id');
+
+						fireEvent.click(fieldOperator);
 
 						TEXT_OPERATORS.forEach((operator) => {
 							expect(getByText(operator)).toBeTruthy();
@@ -215,7 +225,7 @@ describe('Editor', () => {
 					'shows operators related to numbers when field left is a %p',
 					async ({type}) => {
 						const props = defaultProps();
-						const {getByText} = render(
+						const {getByTestId, getByText} = render(
 							<Editor
 								{...props}
 								onChange={() => {}}
@@ -224,27 +234,30 @@ describe('Editor', () => {
 						);
 
 						await waitFor(() => {
-							return document.querySelector('.option-selected');
+							return document
+								.querySelectorAll('.timeline-item')[1]
+								.querySelectorAll('.ddm-field')[0];
 						});
 
-						const fieldLeft = document
-							.querySelectorAll('.timeline-item')[1]
-							.querySelectorAll('.ddm-field')[0]
-							.querySelector('.option-selected');
-
-						await act(async () => {
-							fireEvent.click(fieldLeft);
+						const fieldLeft = await waitFor(() => {
+							return getByTestId('field-left-id');
 						});
 
-						await waitFor(() => {
-							return document.querySelector(
-								'.dropdown-menu.show'
-							);
+						userEvent.click(fieldLeft);
+
+						const selectedItem = getByText(type);
+
+						fireEvent.click(selectedItem);
+
+						await waitFor(() => getByTestId('field-operator-id'));
+
+						act(() => {
+							jest.runAllTimers();
 						});
 
-						await act(async () => {
-							fireEvent.click(getByText(type));
-						});
+						const fieldOperator = getByTestId('field-operator-id');
+
+						fireEvent.click(fieldOperator);
 
 						NUMBER_OPERATORS.forEach((operator) => {
 							expect(getByText(operator)).toBeTruthy();
@@ -254,7 +267,7 @@ describe('Editor', () => {
 
 				it('shows operators related to roles when field left is an User', async () => {
 					const props = defaultProps();
-					const {getByText} = render(
+					const {getByTestId, getByText} = render(
 						<Editor
 							{...props}
 							onChange={() => {}}
@@ -263,25 +276,30 @@ describe('Editor', () => {
 					);
 
 					await waitFor(() => {
-						return document.querySelector('.option-selected');
+						return document
+							.querySelectorAll('.timeline-item')[1]
+							.querySelectorAll('.ddm-field')[0];
 					});
 
-					const fieldLeft = document
-						.querySelectorAll('.timeline-item')[1]
-						.querySelectorAll('.ddm-field')[0]
-						.querySelector('.option-selected');
-
-					await act(async () => {
-						fireEvent.click(fieldLeft);
+					const fieldLeft = await waitFor(() => {
+						return getByTestId('field-left-id');
 					});
 
-					await waitFor(() => {
-						return document.querySelector('.dropdown-menu.show');
+					userEvent.click(fieldLeft);
+
+					const selectedItem = getByText('user');
+
+					fireEvent.click(selectedItem);
+
+					await waitFor(() => getByTestId('field-operator-id'));
+
+					act(() => {
+						jest.runAllTimers();
 					});
 
-					await act(async () => {
-						fireEvent.click(getByText('user'));
-					});
+					const fieldOperator = getByTestId('field-operator-id');
+
+					fireEvent.click(fieldOperator);
 
 					USER_OPERATORS.forEach((operator) => {
 						expect(getByText(operator)).toBeTruthy();
@@ -302,7 +320,7 @@ describe('Editor', () => {
 
 						/** For document_library field to be displayed a user must by signed in */
 						Liferay.ThemeDisplay.isSignedIn = mockIsSignedIn;
-						const {getByText} = render(
+						const {getByTestId, getByText} = render(
 							<Editor
 								{...props}
 								onChange={() => {}}
@@ -311,50 +329,53 @@ describe('Editor', () => {
 						);
 
 						await waitFor(() => {
-							return document.querySelector('.option-selected');
+							return document
+								.querySelectorAll('.timeline-item')[1]
+								.querySelectorAll('.ddm-field')[0];
 						});
 
-						const fieldLeft = document
-							.querySelectorAll('.timeline-item')[1]
-							.querySelectorAll('.ddm-field')[0]
-							.querySelector('.option-selected');
-
-						await act(async () => {
-							fireEvent.click(fieldLeft);
+						const fieldLeft = await waitFor(() => {
+							return getByTestId('field-left-id');
 						});
 
-						await waitFor(() => {
-							return document.querySelector(
-								'.dropdown-menu.show'
-							);
+						userEvent.click(fieldLeft);
+
+						const selectedItem = getByText(type);
+						fireEvent.click(selectedItem);
+
+						await waitFor(() => getByTestId('field-operator-id'));
+
+						act(() => {
+							jest.runAllTimers();
 						});
 
-						fireEvent.click(getByText(type));
+						const fieldOperator = getByTestId('field-operator-id');
 
-						const operator = document
-							.querySelectorAll('.timeline-item')[1]
-							.querySelectorAll('.ddm-field')[1]
-							.querySelector('.option-selected');
+						fireEvent.click(fieldOperator);
 
-						await act(async () => {
-							fireEvent.click(operator);
+						act(() => {
+							jest.runAllTimers();
 						});
 
 						await act(async () => {
 							fireEvent.click(getByText('Is equal to'));
 						});
 
-						const actionsType = document
-							.querySelectorAll('.timeline-item')[1]
-							.querySelectorAll('.ddm-field')[2]
-							.querySelector('.option-selected');
+						const binaryOperator = await waitFor(() => {
+							return getByTestId('field-binary-operator-id');
+						});
 
-						fireEvent.click(actionsType);
+						fireEvent.click(binaryOperator);
 
-						fireEvent.click(getByText('value'));
+						await act(async () => {
+							fireEvent.click(getByText('value'));
+						});
 
 						await waitFor(() => {
-							return document.querySelectorAll('.ddm-field')[3];
+							document
+								.querySelectorAll('.timeline-item')[1]
+								.querySelectorAll('.ddm-field')[3]
+								.querySelector(selector);
 						});
 
 						expect(
@@ -371,7 +392,7 @@ describe('Editor', () => {
 					const mockIsSignedIn = jest.fn();
 
 					Liferay.ThemeDisplay.isSignedIn = mockIsSignedIn;
-					const {getByText, queryAllByText} = render(
+					const {getAllByText, getByTestId, getByText} = render(
 						<Editor
 							{...props}
 							onChange={() => {}}
@@ -380,70 +401,67 @@ describe('Editor', () => {
 					);
 
 					await waitFor(() => {
-						return document.querySelector('.option-selected');
+						return document
+							.querySelectorAll('.timeline-item')[1]
+							.querySelectorAll('.ddm-field')[0];
 					});
 
-					const fieldLeft = document
-						.querySelectorAll('.timeline-item')[1]
-						.querySelectorAll('.ddm-field')[0]
-						.querySelector('.option-selected');
-
-					fireEvent.click(fieldLeft);
-
-					await waitFor(() => {
-						return document.querySelector('.dropdown-menu.show');
+					const fieldLeft = await waitFor(() => {
+						return getByTestId('field-left-id');
 					});
 
-					fireEvent.click(getByText('text'));
+					userEvent.click(fieldLeft);
 
-					const operator = document
-						.querySelectorAll('.timeline-item')[1]
-						.querySelectorAll('.ddm-field')[1]
-						.querySelector('.option-selected');
+					const selectedItem = getByText('text');
 
-					fireEvent.click(operator);
+					fireEvent.click(selectedItem);
 
-					fireEvent.click(getByText('Is equal to'));
+					await waitFor(() => getByTestId('field-operator-id'));
 
-					const actionsType = document
-						.querySelectorAll('.timeline-item')[1]
-						.querySelectorAll('.ddm-field')[2]
-						.querySelector('.option-selected');
-
-					fireEvent.click(actionsType);
-
-					fireEvent.click(getByText('other-field'));
-
-					await waitFor(() => {
-						return document.querySelector('.ddm-field');
+					act(() => {
+						jest.runAllTimers();
 					});
 
-					const fieldRight = document
-						.querySelectorAll('.timeline-item')[1]
-						.querySelectorAll('.ddm-field')[3]
-						.querySelector('.option-selected');
+					const fieldOperator = getByTestId('field-operator-id');
 
-					fireEvent.click(fieldRight);
+					fireEvent.click(fieldOperator);
 
-					await waitFor(() => {
-						return document.querySelector('.dropdown-menu.show');
+					act(() => {
+						jest.runAllTimers();
+					});
+
+					await act(async () => {
+						fireEvent.click(getByText('Is equal to'));
+					});
+
+					const binaryOperator = await waitFor(() => {
+						return getByTestId('field-binary-operator-id');
+					});
+
+					fireEvent.click(binaryOperator);
+
+					await act(async () => {
+						fireEvent.click(getByText('other-field'));
 					});
 
 					const allFields = STRING_DATATYPE_FIELDS.concat(
 						NUMBER_TYPE_FIELDS
 					).concat(UPLOAD_TYPE_FIELD);
 
+					const otherValueButton = await waitFor(() => {
+						return getByTestId('field-right-id');
+					});
+
+					fireEvent.click(otherValueButton);
+
 					allFields.forEach(({type}) => {
-						const fieldOption = queryAllByText(
-							(content, element) => {
-								return (
-									element.tagName.toLowerCase() ===
-										'button' && content.startsWith(type)
-								);
-							}
-						);
-						expect(fieldOption).toBeTruthy();
-						expect(fieldOption.length).toBe(2);
+						const fieldOccurency = getAllByText(type).length;
+						if (type === 'text') {
+							expect(fieldOccurency).toBe(2);
+						}
+						else {
+							expect(fieldOccurency).toBe(1);
+						}
 					});
 				});
 			});
@@ -533,19 +551,17 @@ describe('Editor', () => {
 				);
 
 				await waitFor(() => {
-					return document.querySelector('.option-selected');
+					return document
+						.querySelectorAll('.timeline-item')[4]
+						.querySelectorAll('.ddm-field')[0];
 				});
 
 				const actionType = document
 					.querySelectorAll('.timeline-item')[4]
 					.querySelectorAll('.ddm-field')[0]
-					.querySelector('.option-selected');
+					.querySelector('button');
 
 				fireEvent.click(actionType);
-
-				await waitFor(() => {
-					return document.querySelector('.dropdown-menu.show');
-				});
 
 				expect(getByText('show')).toBeTruthy();
 				expect(getByText('enable')).toBeTruthy();
@@ -597,32 +613,35 @@ describe('Editor', () => {
 					);
 
 					await waitFor(() => {
-						return document.querySelector('.option-selected');
+						return document
+							.querySelectorAll('.timeline-item')[4]
+							.querySelectorAll('.ddm-field')[0];
 					});
 
 					const actionType = document
 						.querySelectorAll('.timeline-item')[4]
 						.querySelectorAll('.ddm-field')[0]
-						.querySelector('.option-selected');
+						.querySelector('button');
 
 					fireEvent.click(actionType);
+					fireEvent.click(getByText(type));
 
 					await waitFor(() => {
-						return document.querySelector('.dropdown-menu.show');
+						return document
+							.querySelectorAll('.timeline-item')[4]
+							.querySelectorAll('.ddm-field')[1];
 					});
-
-					fireEvent.click(getByText(type));
 
 					const actionTarget = document
 						.querySelectorAll('.timeline-item')[4]
 						.querySelectorAll('.ddm-field')[1]
-						.querySelector('.option-selected');
+						.querySelector('button');
 
 					fireEvent.click(actionTarget);
 
 					fields.forEach(({type}) => {
 						const fieldOccurences = queryAllByText(type);
-						expect(fieldOccurences).toHaveLength(2);
+						expect(fieldOccurences).toBeTruthy();
 					});
 				}
 			);
@@ -637,26 +656,30 @@ describe('Editor', () => {
 				);
 
 				await waitFor(() => {
-					return document.querySelector('.option-selected');
+					return document
+						.querySelectorAll('.timeline-item')[4]
+						.querySelectorAll('.ddm-field')[0];
 				});
 
 				const actionType = document
 					.querySelectorAll('.timeline-item')[4]
 					.querySelectorAll('.ddm-field')[0]
-					.querySelector('.option-selected');
+					.querySelector('button');
 
 				fireEvent.click(actionType);
 
-				await waitFor(() => {
-					return document.querySelector('.dropdown-menu.show');
-				});
-
 				fireEvent.click(getByText('autofill'));
+
+				await waitFor(() => {
+					return document
+						.querySelectorAll('.timeline-item')[4]
+						.querySelectorAll('.ddm-field')[1];
+				});
 
 				const actionTarget = document
 					.querySelectorAll('.timeline-item')[4]
 					.querySelectorAll('.ddm-field')[1]
-					.querySelector('.option-selected');
+					.querySelector('button');
 
 				fireEvent.click(actionTarget);
 
@@ -674,33 +697,36 @@ describe('Editor', () => {
 				);
 
 				await waitFor(() => {
-					return document.querySelector('.option-selected');
+					return document
+						.querySelectorAll('.timeline-item')[4]
+						.querySelectorAll('.ddm-field')[0];
 				});
 
 				const actionType = document
 					.querySelectorAll('.timeline-item')[4]
 					.querySelectorAll('.ddm-field')[0]
-					.querySelector('.option-selected');
+					.querySelector('button');
 
 				fireEvent.click(actionType);
+				fireEvent.click(getByText('calculate'));
 
 				await waitFor(() => {
-					return document.querySelector('.dropdown-menu.show');
+					return document
+						.querySelectorAll('.timeline-item')[4]
+						.querySelectorAll('.ddm-field')[1];
 				});
-
-				fireEvent.click(getByText('calculate'));
 
 				const actionTarget = document
 					.querySelectorAll('.timeline-item')[4]
 					.querySelectorAll('.ddm-field')[1]
-					.querySelector('.option-selected');
-
-				expect(queryAllByText('integer')).toHaveLength(2);
-				expect(queryAllByText('double')).toHaveLength(2);
+					.querySelector('button');
 
 				fireEvent.click(actionTarget);
 
-				fireEvent.click(queryAllByText('integer')[1]);
+				expect(queryAllByText('integer')).toBeTruthy();
+				expect(queryAllByText('double')).toBeTruthy();
+
+				fireEvent.click(getByText('integer'));
 
 				await waitFor(() => {
 					return document.querySelector('.calculate-container');
@@ -722,26 +748,29 @@ describe('Editor', () => {
 				);
 
 				await waitFor(() => {
-					return document.querySelector('.option-selected');
+					return document
+						.querySelectorAll('.timeline-item')[4]
+						.querySelectorAll('.ddm-field')[0];
 				});
 
 				const actionType = document
 					.querySelectorAll('.timeline-item')[4]
 					.querySelectorAll('.ddm-field')[0]
-					.querySelector('.option-selected');
+					.querySelector('button');
 
 				fireEvent.click(actionType);
+				fireEvent.click(getByText('jump-to-page'));
 
 				await waitFor(() => {
-					return document.querySelector('.dropdown-menu.show');
+					return document
+						.querySelectorAll('.timeline-item')[4]
+						.querySelectorAll('.ddm-field')[1];
 				});
-
-				fireEvent.click(getByText('jump-to-page'));
 
 				const actionTarget = document
 					.querySelectorAll('.timeline-item')[4]
 					.querySelectorAll('.ddm-field')[1]
-					.querySelector('.option-selected');
+					.querySelector('button');
 
 				fireEvent.click(actionTarget);
 

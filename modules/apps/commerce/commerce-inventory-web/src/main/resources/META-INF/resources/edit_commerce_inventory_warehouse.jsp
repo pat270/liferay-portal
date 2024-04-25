@@ -24,12 +24,16 @@ CommerceInventoryWarehouseItem commerceInventoryWarehouseItem = commerceInventor
 		<aui:input name="<%= Constants.CMD %>" type="hidden" value="<%= Constants.UPDATE %>" />
 		<aui:input name="redirect" type="hidden" value="<%= currentURL %>" />
 		<aui:input name="sku" type="hidden" value="<%= commerceInventoryDisplayContext.getSku() %>" />
+		<aui:input name="unitOfMeasureKey" type="hidden" value="<%= commerceInventoryDisplayContext.getUnitOfMeasureKey() %>" />
 		<aui:input name="mvccVersion" type="hidden" value="<%= (commerceInventoryWarehouseItem == null) ? 0 : commerceInventoryWarehouseItem.getMvccVersion() %>" />
+
+		<liferay-ui:error exception="<%= PrincipalException.MustHavePermission.class %>" message="you-do-not-have-the-required-permissions" />
 
 		<aui:model-context bean="<%= commerceInventoryWarehouseItem %>" model="<%= CommerceInventoryWarehouseItem.class %>" />
 
-		<aui:input name="quantity" required="<%= true %>">
+		<aui:input name="quantity" required="<%= true %>" type="text">
 			<aui:validator name="min">1</aui:validator>
+			<aui:validator name="number" />
 		</aui:input>
 
 		<aui:select label="warehouse" name="commerceInventoryWarehouseId" required="<%= true %>">

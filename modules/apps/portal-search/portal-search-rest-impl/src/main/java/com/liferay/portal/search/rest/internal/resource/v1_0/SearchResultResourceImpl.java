@@ -8,22 +8,33 @@ package com.liferay.portal.search.rest.internal.resource.v1_0;
 import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
+import com.liferay.object.model.ObjectDefinition;
+import com.liferay.object.model.ObjectEntry;
+import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.search.BooleanClause;
 import com.liferay.portal.kernel.search.BooleanClauseFactoryUtil;
 import com.liferay.portal.kernel.search.BooleanClauseOccur;
 import com.liferay.portal.kernel.search.BooleanQuery;
+import com.liferay.portal.kernel.search.Indexer;
+import com.liferay.portal.kernel.search.IndexerRegistry;
+import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.search.SearchContext;
+import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.search.Sort;
+import com.liferay.portal.kernel.search.Summary;
 import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.search.generic.BooleanQueryImpl;
 import com.liferay.portal.kernel.search.generic.MatchAllQuery;
+import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -40,7 +51,7 @@ import com.liferay.portal.search.rest.dto.v1_0.SearchResult;
 import com.liferay.portal.search.rest.internal.facet.FacetRequestContributor;
 import com.liferay.portal.search.rest.internal.facet.FacetResponseProcessor;
 import com.liferay.portal.search.rest.internal.odata.entity.v1_0.SearchResultEntityModel;
-import com.liferay.portal.search.rest.internal.pagination.SearchPage;
+import com.liferay.portal.search.rest.pagination.SearchPage;
 import com.liferay.portal.search.rest.resource.v1_0.SearchResultResource;
 import com.liferay.portal.search.searcher.SearchRequestBuilder;
 import com.liferay.portal.search.searcher.SearchRequestBuilderFactory;
@@ -63,6 +74,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.MultivaluedMap;
@@ -100,6 +112,16 @@ public class SearchResultResourceImpl extends BaseSearchResultResourceImpl {
 			_searchRequestBuilderFactory.builder(
 			).companyId(
 				contextCompany.getCompanyId()
+			).fetchSourceIncludes(
+				new String[] {
+					_localization.getLocalizedName(
+						com.liferay.portal.kernel.search.Field.CONTENT,
+						contextAcceptLanguage.getPreferredLanguageId()),
+					_localization.getLocalizedName(
+						com.liferay.portal.kernel.search.Field.DESCRIPTION,
+						contextAcceptLanguage.getPreferredLanguageId()),
+					com.liferay.portal.kernel.search.Field.MODIFIED_DATE
+				}
 			).from(
 				pagination.getStartPosition()
 			).size(
@@ -117,11 +139,6 @@ public class SearchResultResourceImpl extends BaseSearchResultResourceImpl {
 			searchRequestBuilder.modelIndexerClassNames(entryClassNamesArray);
 		}
 
-		List<String> fields = Arrays.asList(
-			ParamUtil.getStringValues(contextHttpServletRequest, "fields"));
-
-		_setFetchSourceIncludes(fields, searchRequestBuilder);
-
 		if (!Validator.isBlank(search)) {
 			searchRequestBuilder.queryString(search);
 		}
@@ -133,8 +150,10 @@ public class SearchResultResourceImpl extends BaseSearchResultResourceImpl {
 		}
 
 		return _toSearchPage(
-			searchRequestBody.getFacetConfigurations(), fields, pagination,
-			_searcher.search(searchRequestBuilder.build()));
+			searchRequestBody.getFacetConfigurations(),
+			Arrays.asList(
+				ParamUtil.getStringValues(contextHttpServletRequest, "fields")),
+			pagination, _searcher.search(searchRequestBuilder.build()));
 	}
 
 	private void _addSearchContextAttributes(
@@ -178,6 +197,17 @@ public class SearchResultResourceImpl extends BaseSearchResultResourceImpl {
 
 		searchContext.setTimeZone(contextUser.getTimeZone());
 		searchContext.setUserId(contextUser.getUserId());
+	}
+
+	private Object _fetchObject(String entryClassName, Long entryClassPK) {
+		if (entryClassName.equals(Layout.class.getName())) {
+			return _layoutLocalService.fetchLayout(entryClassPK);
+		}
+		else if (entryClassName.startsWith(ObjectDefinition.class.getName())) {
+			return _objectEntryLocalService.fetchObjectEntry(entryClassPK);
+		}
+
+		return null;
 	}
 
 	private AssetRenderer<?> _getAssetRenderer(
@@ -234,6 +264,14 @@ public class SearchResultResourceImpl extends BaseSearchResultResourceImpl {
 		}
 	}
 
+	private String _getDTOClassName(String entryClassName) {
+		if (entryClassName.startsWith(ObjectDefinition.class.getName())) {
+			return ObjectEntry.class.getName();
+		}
+
+		return entryClassName;
+	}
+
 	private String _getEntryClassName(Document document) {
 		Map<String, Field> fields = document.getFields();
 
@@ -262,6 +300,41 @@ public class SearchResultResourceImpl extends BaseSearchResultResourceImpl {
 			com.liferay.portal.kernel.search.Field.ENTRY_CLASS_PK);
 	}
 
+	private Indexer<Object> _getIndexer(String entryClassName) {
+		if (_indexerRegistry != null) {
+			return _indexerRegistry.getIndexer(entryClassName);
+		}
+
+		return IndexerRegistryUtil.getIndexer(entryClassName);
+	}
+
+	private Summary _getSummary(
+		String entryClassName,
+		com.liferay.portal.kernel.search.Document legacyDocument) {
+
+		if (legacyDocument == null) {
+			return null;
+		}
+
+		Indexer<?> indexer = _getIndexer(entryClassName);
+
+		if (indexer == null) {
+			return null;
+		}
+
+		try {
+			return indexer.getSummary(
+				legacyDocument, contextAcceptLanguage.getPreferredLocale(),
+				legacyDocument.get(
+					com.liferay.portal.kernel.search.Field.SNIPPET));
+		}
+		catch (SearchException searchException) {
+			_log.error(searchException);
+		}
+
+		return null;
+	}
+
 	private boolean _isAllowedSearchContextAttribute(String key) {
 		if (key.startsWith("search.experiences.") ||
 			key.equals("search.empty.search")) {
@@ -283,6 +356,30 @@ public class SearchResultResourceImpl extends BaseSearchResultResourceImpl {
 		return false;
 	}
 
+	private boolean _isEmptyOrContains(List<String> list, String... strings) {
+		if (list.isEmpty()) {
+			return true;
+		}
+
+		for (String s : strings) {
+			if (list.contains(s)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private boolean _isObjectToDTOEntryClassName(String entryClassName) {
+		if (entryClassName.equals(Layout.class.getName()) ||
+			entryClassName.startsWith(ObjectDefinition.class.getName())) {
+
+			return true;
+		}
+
+		return false;
+	}
+
 	private Date _parseDateStringFieldValue(String dateStringFieldValue) {
 		DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 
@@ -296,14 +393,150 @@ public class SearchResultResourceImpl extends BaseSearchResultResourceImpl {
 		}
 	}
 
-	private void _setFetchSourceIncludes(
-		List<String> fields, SearchRequestBuilder searchRequestBuilder) {
+	private void _setDateModified(
+		Document document, List<String> fields, SearchResult searchResult) {
 
-		if (fields.isEmpty() || fields.contains("dateModified")) {
-			searchRequestBuilder.fetchSourceIncludes(
-				new String[] {
-					"com.liferay.portal.kernel.search.Field.MODIFIED_DATE"
-				});
+		if (!_isEmptyOrContains(fields, "dateModified")) {
+			return;
+		}
+
+		String modifiedDate = document.getString(
+			com.liferay.portal.kernel.search.Field.MODIFIED_DATE);
+
+		if (modifiedDate != null) {
+			searchResult.setDateModified(
+				() -> _parseDateStringFieldValue(
+					document.getString(
+						com.liferay.portal.kernel.search.Field.MODIFIED_DATE)));
+		}
+	}
+
+	private void _setDescription(
+		AssetRenderer<?> assetRenderer, List<String> fields,
+		SearchResult searchResult, Summary summary) {
+
+		if (!_isEmptyOrContains(fields, "description")) {
+			return;
+		}
+
+		if (summary != null) {
+			searchResult.setDescription(summary::getContent);
+		}
+		else {
+			searchResult.setDescription(
+				() -> assetRenderer.getSearchSummary(
+					contextAcceptLanguage.getPreferredLocale()));
+		}
+	}
+
+	@SuppressWarnings("rawtypes")
+	private void _setDTOFields(
+		boolean embedded, String entryClassName, Long entryClassPK,
+		List<String> fields, SearchResult searchResult) {
+
+		DTOConverter dtoConverter = null;
+
+		if (embedded || _isEmptyOrContains(fields, "itemURL")) {
+			dtoConverter = _dtoConverterRegistry.getDTOConverter(
+				_getDTOClassName(entryClassName));
+		}
+
+		if (dtoConverter == null) {
+			return;
+		}
+
+		if (embedded) {
+			_setEmbedded(
+				dtoConverter, entryClassPK, entryClassName, searchResult);
+		}
+
+		_setItemURL(dtoConverter, entryClassPK, fields, searchResult);
+	}
+
+	@SuppressWarnings("rawtypes")
+	private void _setEmbedded(
+		DTOConverter dtoConverter, Long entryClassPK, String entryClassName,
+		SearchResult searchResult) {
+
+		try {
+			if (_isObjectToDTOEntryClassName(entryClassName)) {
+				Object object = _fetchObject(entryClassName, entryClassPK);
+
+				if (object == null) {
+					if (_log.isDebugEnabled()) {
+						_log.debug(
+							"No DTO converter found for " + entryClassName);
+					}
+				}
+
+				searchResult.setEmbedded(
+					() -> dtoConverter.toDTO(
+						new DefaultDTOConverterContext(
+							contextAcceptLanguage.isAcceptAllLanguages(),
+							new HashMap<>(), _dtoConverterRegistry,
+							contextHttpServletRequest, entryClassPK,
+							contextAcceptLanguage.getPreferredLocale(),
+							contextUriInfo, contextUser),
+						object));
+			}
+			else {
+				searchResult.setEmbedded(
+					() -> dtoConverter.toDTO(
+						new DefaultDTOConverterContext(
+							contextAcceptLanguage.isAcceptAllLanguages(),
+							new HashMap<>(), _dtoConverterRegistry,
+							contextHttpServletRequest, entryClassPK,
+							contextAcceptLanguage.getPreferredLocale(),
+							contextUriInfo, contextUser)));
+			}
+		}
+		catch (Exception exception) {
+			_log.error(exception);
+		}
+	}
+
+	@SuppressWarnings("rawtypes")
+	private void _setItemURL(
+		DTOConverter dtoConverter, Long entryClassPK, List<String> fields,
+		SearchResult searchResult) {
+
+		if (!_isEmptyOrContains(fields, "itemURL")) {
+			return;
+		}
+
+		String jaxRsLink = dtoConverter.getJaxRsLink(
+			entryClassPK, contextUriInfo);
+
+		if (!Validator.isBlank(jaxRsLink)) {
+			searchResult.setItemURL(() -> jaxRsLink);
+		}
+	}
+
+	private void _setScore(
+		List<String> fields, SearchHit searchHit, SearchResult searchResult) {
+
+		if (!_isEmptyOrContains(fields, "score")) {
+			return;
+		}
+
+		searchResult.setScore(searchHit::getScore);
+	}
+
+	private void _setTitle(
+		AssetRenderer<?> assetRenderer, List<String> fields,
+		SearchResult searchResult, Summary summary) {
+
+		if (!_isEmptyOrContains(fields, "title")) {
+			return;
+		}
+
+		if (summary != null) {
+			searchResult.setTitle(summary::getTitle);
+		}
+		else {
+			searchResult.setTitle(
+				() -> assetRenderer.getTitle(
+					contextAcceptLanguage.getPreferredLocale()));
 		}
 	}
 
@@ -336,93 +569,58 @@ public class SearchResultResourceImpl extends BaseSearchResultResourceImpl {
 	}
 
 	private SearchPage<SearchResult> _toSearchPage(
-			FacetConfiguration[] facetConfigurations, List<String> fields,
-			Pagination pagination, SearchResponse searchResponse)
-		throws Exception {
+		FacetConfiguration[] facetConfigurations, List<String> fields,
+		Pagination pagination, SearchResponse searchResponse) {
 
 		List<SearchResult> searchResults = new ArrayList<>();
 
+		List<com.liferay.portal.kernel.search.Document> legacyDocuments =
+			searchResponse.getDocuments71();
+
 		SearchHits searchHits = searchResponse.getSearchHits();
 
-		for (SearchHit searchHit : searchHits.getSearchHits()) {
+		List<SearchHit> searchHitsList = searchHits.getSearchHits();
+
+		for (int i = 0; i < searchHitsList.size(); i++) {
+			SearchHit searchHit = searchHitsList.get(i);
+
 			SearchResult searchResult = new SearchResult();
 
-			boolean embedded = _isEmbedded();
-
 			Document document = searchHit.getDocument();
-
+			boolean embedded = _isEmbedded();
 			String entryClassName = _getEntryClassName(document);
 			Long entryClassPK = _getEntryClassPK(document);
 
 			AssetRenderer<?> assetRenderer = null;
 
-			if (embedded || fields.isEmpty() ||
-				fields.contains("description") || fields.contains("title")) {
+			if (embedded ||
+				_isEmptyOrContains(fields, "description", "title")) {
 
 				assetRenderer = _getAssetRenderer(entryClassName, entryClassPK);
 			}
 
-			if ((fields.isEmpty() || fields.contains("description")) &&
-				(assetRenderer != null)) {
+			if (assetRenderer != null) {
+				com.liferay.portal.kernel.search.Document legacyDocument =
+					legacyDocuments.get(i);
 
-				searchResult.setDescription(
-					assetRenderer.getSearchSummary(
-						contextAcceptLanguage.getPreferredLocale()));
-			}
+				if (!Objects.equals(
+						legacyDocument.getUID(), searchHit.getId())) {
 
-			if ((fields.isEmpty() || fields.contains("title")) &&
-				(assetRenderer != null)) {
-
-				searchResult.setTitle(
-					assetRenderer.getTitle(
-						contextAcceptLanguage.getPreferredLocale()));
-			}
-
-			String modifiedDate = document.getString(
-				com.liferay.portal.kernel.search.Field.MODIFIED_DATE);
-
-			if ((fields.isEmpty() || fields.contains("dateModified")) &&
-				(modifiedDate != null)) {
-
-				searchResult.setDateModified(
-					_parseDateStringFieldValue(
-						document.getString(
-							com.liferay.portal.kernel.search.Field.
-								MODIFIED_DATE)));
-			}
-
-			DTOConverter<?, ?> dtoConverter = null;
-
-			if (embedded || fields.isEmpty()) {
-				dtoConverter = _dtoConverterRegistry.getDTOConverter(
-					entryClassName);
-			}
-
-			if (fields.isEmpty() && (dtoConverter != null) &&
-				(entryClassPK != null)) {
-
-				String jaxRsLink = dtoConverter.getJaxRsLink(
-					entryClassPK, contextUriInfo);
-
-				if (!Validator.isBlank(jaxRsLink)) {
-					searchResult.setItemURL(jaxRsLink);
+					legacyDocument = null;
 				}
+
+				Summary summary = _getSummary(entryClassName, legacyDocument);
+
+				_setDescription(assetRenderer, fields, searchResult, summary);
+
+				_setDTOFields(
+					embedded, entryClassName, entryClassPK, fields,
+					searchResult);
+				_setTitle(assetRenderer, fields, searchResult, summary);
 			}
 
-			if (embedded && (dtoConverter != null) && (assetRenderer != null)) {
-				searchResult.setEmbedded(
-					dtoConverter.toDTO(
-						new DefaultDTOConverterContext(
-							contextAcceptLanguage.isAcceptAllLanguages(),
-							new HashMap<>(), _dtoConverterRegistry,
-							contextHttpServletRequest, entryClassPK,
-							contextAcceptLanguage.getPreferredLocale(),
-							contextUriInfo, contextUser)));
-			}
-
-			if (fields.isEmpty() || fields.contains("score")) {
-				searchResult.setScore(searchHit.getScore());
-			}
+			_setDateModified(document, fields, searchResult);
+			_setScore(fields, searchHit, searchResult);
 
 			searchResults.add(searchResult);
 		}
@@ -447,6 +645,18 @@ public class SearchResultResourceImpl extends BaseSearchResultResourceImpl {
 
 	@Reference
 	private FacetResponseProcessor _facetResponseProcessor;
+
+	@Reference
+	private IndexerRegistry _indexerRegistry;
+
+	@Reference
+	private LayoutLocalService _layoutLocalService;
+
+	@Reference
+	private Localization _localization;
+
+	@Reference
+	private ObjectEntryLocalService _objectEntryLocalService;
 
 	@Reference
 	private Searcher _searcher;

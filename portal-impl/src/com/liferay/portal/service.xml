@@ -249,7 +249,7 @@
 			<finder-column name="classPK" />
 		</finder>
 	</entity>
-	<entity local-service="true" name="Country" remote-service="true" uuid="true">
+	<entity change-tracking-enabled="true" local-service="true" name="Country" remote-service="true" uuid="true">
 
 		<!-- PK fields -->
 
@@ -265,24 +265,24 @@
 
 		<!-- Other fields -->
 
-		<column name="a2" type="String" />
-		<column name="a3" type="String" />
-		<column name="active" type="boolean" />
-		<column name="billingAllowed" type="boolean" />
+		<column change-tracking-resolution-type="merge" name="a2" type="String" />
+		<column change-tracking-resolution-type="merge" name="a3" type="String" />
+		<column change-tracking-resolution-type="merge" name="active" type="boolean" />
+		<column change-tracking-resolution-type="merge" name="billingAllowed" type="boolean" />
 		<column name="groupFilterEnabled" type="boolean" />
-		<column name="idd" type="String" />
-		<column name="name" type="String" />
-		<column name="number" type="String" />
-		<column name="position" type="double" />
-		<column name="shippingAllowed" type="boolean" />
-		<column name="subjectToVAT" type="boolean" />
+		<column change-tracking-resolution-type="merge" name="idd" type="String" />
+		<column change-tracking-resolution-type="merge" name="name" type="String" />
+		<column change-tracking-resolution-type="merge" name="number" type="String" />
+		<column change-tracking-resolution-type="merge" name="position" type="double" />
+		<column change-tracking-resolution-type="merge" name="shippingAllowed" type="boolean" />
+		<column change-tracking-resolution-type="merge" name="subjectToVAT" type="boolean" />
 		<column name="zipRequired" type="boolean" />
-		<column name="lastPublishDate" type="Date" />
+		<column change-tracking-resolution-type="merge" name="lastPublishDate" type="Date" />
 
 		<!-- Localized entity -->
 
 		<localized-entity>
-			<localized-column name="title" />
+			<localized-column change-tracking-resolution-type="merge" name="title" />
 		</localized-entity>
 
 		<!-- Order -->
@@ -811,6 +811,10 @@
 		<finder name="Plid" return-type="Collection">
 			<finder-column name="plid" />
 		</finder>
+		<finder name="C_F" return-type="Collection">
+			<finder-column name="companyId" />
+			<finder-column name="friendlyURL" />
+		</finder>
 		<finder name="P_F" return-type="Collection">
 			<finder-column name="plid" />
 			<finder-column name="friendlyURL" />
@@ -1124,6 +1128,10 @@
 
 		<column name="listTypeId" primary="true" type="long" />
 
+		<!-- Audit fields -->
+
+		<column name="companyId" type="long" />
+
 		<!-- Other fields -->
 
 		<column name="name" type="String" />
@@ -1137,10 +1145,15 @@
 
 		<!-- Finder methods -->
 
-		<finder name="Type" return-type="Collection">
+		<finder name="CompanyId" return-type="Collection">
+			<finder-column name="companyId" />
+		</finder>
+		<finder name="C_T" return-type="Collection">
+			<finder-column name="companyId" />
 			<finder-column name="type" />
 		</finder>
-		<finder name="N_T" return-type="ListType" unique="true">
+		<finder name="C_N_T" return-type="ListType" unique="true">
+			<finder-column name="companyId" />
 			<finder-column name="name" />
 			<finder-column name="type" />
 		</finder>
@@ -1523,6 +1536,9 @@
 
 		<!-- Finder methods -->
 
+		<finder name="OwnerType" return-type="Collection">
+			<finder-column name="ownerType" />
+		</finder>
 		<finder name="O_O" return-type="PortalPreferences">
 			<finder-column name="ownerId" />
 			<finder-column name="ownerType" />
@@ -1874,7 +1890,7 @@
 			<finder-column name="layoutSetId" />
 		</finder>
 	</entity>
-	<entity local-service="true" name="Region" remote-service="true" uuid="true">
+	<entity change-tracking-enabled="true" local-service="true" name="Region" remote-service="true" uuid="true">
 
 		<!-- PK fields -->
 
@@ -1891,16 +1907,16 @@
 		<!-- Other fields -->
 
 		<column name="countryId" type="long" />
-		<column name="active" type="boolean" />
-		<column name="name" type="String" />
-		<column name="position" type="double" />
-		<column name="regionCode" type="String" />
-		<column name="lastPublishDate" type="Date" />
+		<column change-tracking-resolution-type="merge" name="active" type="boolean" />
+		<column change-tracking-resolution-type="merge" name="name" type="String" />
+		<column change-tracking-resolution-type="merge" name="position" type="double" />
+		<column change-tracking-resolution-type="merge" name="regionCode" type="String" />
+		<column change-tracking-resolution-type="merge" name="lastPublishDate" type="Date" />
 
 		<!-- Localized entity -->
 
 		<localized-entity>
-			<localized-column name="title" />
+			<localized-column change-tracking-resolution-type="merge" name="title" />
 		</localized-entity>
 
 		<!-- Order -->
@@ -2104,7 +2120,7 @@
 			<finder-column name="companyId" />
 			<finder-column name="name" />
 			<finder-column name="scope" />
-			<finder-column name="primKey" />
+			<finder-column arrayable-operator="OR" name="primKey" />
 		</finder>
 		<finder name="C_N_S_R" return-type="Collection">
 			<finder-column name="companyId" />
@@ -2831,6 +2847,12 @@
 			<finder-column name="userId" />
 			<finder-column name="actionRequired" />
 			<finder-column name="archived" />
+		</finder>
+		<finder name="U_T_GteT_D" return-type="Collection">
+			<finder-column name="userId" />
+			<finder-column name="type" />
+			<finder-column comparator="&gt;=" name="timestamp" />
+			<finder-column name="delivered" />
 		</finder>
 		<finder name="U_T_DT_D" return-type="Collection">
 			<finder-column name="userId" />

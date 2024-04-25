@@ -71,7 +71,12 @@ public class StatusResourceFactoryImpl implements StatusResource.Factory {
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _statusResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, StatusResource>
+					statusResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_statusResourceProxyProviderFunction;
+
+				return statusResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -226,9 +231,6 @@ public class StatusResourceFactoryImpl implements StatusResource.Factory {
 		}
 	}
 
-	private static final Function<InvocationHandler, StatusResource>
-		_statusResourceProxyProviderFunction = _getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -263,6 +265,13 @@ public class StatusResourceFactoryImpl implements StatusResource.Factory {
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, StatusResource>
+			_statusResourceProxyProviderFunction = _getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

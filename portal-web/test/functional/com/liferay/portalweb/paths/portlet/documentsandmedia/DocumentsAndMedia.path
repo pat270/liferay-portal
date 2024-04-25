@@ -61,8 +61,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>SELECT_FOLDER_BUTTON</td>
-	<td>//button[@data-foldername='${key_dmFolderName}']/span[contains(.,'Select')]</td>
+	<td>SELECT_RESOURCE_BUTTON</td>
+	<td>//button[@data-resourcename='${key_dmFolderName}']/span[contains(.,'Select')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -113,7 +113,7 @@
 </tr>
 <tr>
 	<td>ICON_DOCUMENT_ICON_LOCKED</td>
-	<td>//div[contains(@id,'entriesContainer')]//*[contains(@data-title,'${key_dmDocumentTitle}')]//span/*[name()='svg'][@message='locked']</td>
+	<td>//div[contains(@id,'entriesContainer')]//*[contains(@data-title,'${key_dmDocumentTitle}')]//*[name()='svg'][contains(@class,'icon-lock')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -148,7 +148,7 @@
 </tr>
 <tr>
 	<td>ICON_DOCUMENT_WORKFLOW_STATUS</td>
-	<td>//dd[contains(.,'${key_dmDocumentTitle}')]//span[@class='workflow-status']</td>
+	<td>//dd[contains(.,'${key_dmDocumentTitle}')]//span[@class='label-item label-item-expand']</td>
 	<td></td>
 </tr>
 <tr>
@@ -219,7 +219,7 @@
 </tr>
 <tr>
 	<td>DESCRIPTIVE_LIST_DOCUMENT_STATUS</td>
-	<td>//*[contains(@data-title,'${key_dmDocumentTitle}')]//span[contains(@class,'status') and contains(@class,'${key_workflowStatus}')]</td>
+	<td>//*[contains(@data-title,'${key_dmDocumentTitle}')]//span[contains(@class,'status') and contains(.,'${key_workflowStatus}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -401,6 +401,14 @@
 <tr>
 	<td>REPOSITORY_FOLDER_NAME_DESCRIPTIVE_VIEW</td>
 	<td>//a[contains(.,'${key_dmRepositoryName}')]</td>
+	<td></td>
+</tr>
+
+<!--SETTINGS-->
+
+<tr>
+	<td>PORTLET_TITLE</td>
+	<td>//div[contains(@class,'sheet-lg')]//div[contains(@class,'sheet-header')]//h2[contains(text(),'${key_portletTitle}')]</td>
 	<td></td>
 </tr>
 </tbody>

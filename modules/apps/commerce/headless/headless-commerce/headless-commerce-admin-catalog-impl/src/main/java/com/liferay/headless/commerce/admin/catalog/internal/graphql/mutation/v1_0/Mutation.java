@@ -10,6 +10,7 @@ import com.liferay.headless.commerce.admin.catalog.dto.v1_0.AttachmentBase64;
 import com.liferay.headless.commerce.admin.catalog.dto.v1_0.AttachmentUrl;
 import com.liferay.headless.commerce.admin.catalog.dto.v1_0.Catalog;
 import com.liferay.headless.commerce.admin.catalog.dto.v1_0.Category;
+import com.liferay.headless.commerce.admin.catalog.dto.v1_0.Currency;
 import com.liferay.headless.commerce.admin.catalog.dto.v1_0.Diagram;
 import com.liferay.headless.commerce.admin.catalog.dto.v1_0.GroupedProduct;
 import com.liferay.headless.commerce.admin.catalog.dto.v1_0.MappedProduct;
@@ -29,10 +30,12 @@ import com.liferay.headless.commerce.admin.catalog.dto.v1_0.ProductSubscriptionC
 import com.liferay.headless.commerce.admin.catalog.dto.v1_0.ProductTaxConfiguration;
 import com.liferay.headless.commerce.admin.catalog.dto.v1_0.RelatedProduct;
 import com.liferay.headless.commerce.admin.catalog.dto.v1_0.Sku;
+import com.liferay.headless.commerce.admin.catalog.dto.v1_0.SkuUnitOfMeasure;
 import com.liferay.headless.commerce.admin.catalog.dto.v1_0.Specification;
 import com.liferay.headless.commerce.admin.catalog.resource.v1_0.AttachmentResource;
 import com.liferay.headless.commerce.admin.catalog.resource.v1_0.CatalogResource;
 import com.liferay.headless.commerce.admin.catalog.resource.v1_0.CategoryResource;
+import com.liferay.headless.commerce.admin.catalog.resource.v1_0.CurrencyResource;
 import com.liferay.headless.commerce.admin.catalog.resource.v1_0.DiagramResource;
 import com.liferay.headless.commerce.admin.catalog.resource.v1_0.GroupedProductResource;
 import com.liferay.headless.commerce.admin.catalog.resource.v1_0.LowStockActionResource;
@@ -55,6 +58,7 @@ import com.liferay.headless.commerce.admin.catalog.resource.v1_0.ProductSubscrip
 import com.liferay.headless.commerce.admin.catalog.resource.v1_0.ProductTaxConfigurationResource;
 import com.liferay.headless.commerce.admin.catalog.resource.v1_0.RelatedProductResource;
 import com.liferay.headless.commerce.admin.catalog.resource.v1_0.SkuResource;
+import com.liferay.headless.commerce.admin.catalog.resource.v1_0.SkuUnitOfMeasureResource;
 import com.liferay.headless.commerce.admin.catalog.resource.v1_0.SpecificationResource;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeFunction;
@@ -110,6 +114,14 @@ public class Mutation {
 
 		_categoryResourceComponentServiceObjects =
 			categoryResourceComponentServiceObjects;
+	}
+
+	public static void setCurrencyResourceComponentServiceObjects(
+		ComponentServiceObjects<CurrencyResource>
+			currencyResourceComponentServiceObjects) {
+
+		_currencyResourceComponentServiceObjects =
+			currencyResourceComponentServiceObjects;
 	}
 
 	public static void setDiagramResourceComponentServiceObjects(
@@ -291,12 +303,60 @@ public class Mutation {
 			skuResourceComponentServiceObjects;
 	}
 
+	public static void setSkuUnitOfMeasureResourceComponentServiceObjects(
+		ComponentServiceObjects<SkuUnitOfMeasureResource>
+			skuUnitOfMeasureResourceComponentServiceObjects) {
+
+		_skuUnitOfMeasureResourceComponentServiceObjects =
+			skuUnitOfMeasureResourceComponentServiceObjects;
+	}
+
 	public static void setSpecificationResourceComponentServiceObjects(
 		ComponentServiceObjects<SpecificationResource>
 			specificationResourceComponentServiceObjects) {
 
 		_specificationResourceComponentServiceObjects =
 			specificationResourceComponentServiceObjects;
+	}
+
+	@GraphQLField
+	public boolean deleteAttachmentByExternalReferenceCode(
+			@GraphQLName("externalReferenceCode") String externalReferenceCode)
+		throws Exception {
+
+		_applyVoidComponentServiceObjects(
+			_attachmentResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			attachmentResource ->
+				attachmentResource.deleteAttachmentByExternalReferenceCode(
+					externalReferenceCode));
+
+		return true;
+	}
+
+	@GraphQLField
+	public boolean deleteAttachment(@GraphQLName("id") Long id)
+		throws Exception {
+
+		_applyVoidComponentServiceObjects(
+			_attachmentResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			attachmentResource -> attachmentResource.deleteAttachment(id));
+
+		return true;
+	}
+
+	@GraphQLField
+	public Response deleteAttachmentBatch(
+			@GraphQLName("callbackURL") String callbackURL,
+			@GraphQLName("object") Object object)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_attachmentResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			attachmentResource -> attachmentResource.deleteAttachmentBatch(
+				callbackURL, object));
 	}
 
 	@GraphQLField
@@ -606,6 +666,83 @@ public class Mutation {
 			this::_populateResourceContext,
 			categoryResource -> categoryResource.patchProductIdCategory(
 				id, categories));
+	}
+
+	@GraphQLField
+	public Response createCurrenciesPageExportBatch(
+			@GraphQLName("search") String search,
+			@GraphQLName("filter") String filterString,
+			@GraphQLName("sort") String sortsString,
+			@GraphQLName("callbackURL") String callbackURL,
+			@GraphQLName("contentType") String contentType,
+			@GraphQLName("fieldNames") String fieldNames)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_currencyResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			currencyResource -> currencyResource.postCurrenciesPageExportBatch(
+				search, _filterBiFunction.apply(currencyResource, filterString),
+				_sortsBiFunction.apply(currencyResource, sortsString),
+				callbackURL, contentType, fieldNames));
+	}
+
+	@GraphQLField
+	public Currency createCurrency(@GraphQLName("currency") Currency currency)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_currencyResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			currencyResource -> currencyResource.postCurrency(currency));
+	}
+
+	@GraphQLField
+	public Response createCurrencyBatch(
+			@GraphQLName("callbackURL") String callbackURL,
+			@GraphQLName("object") Object object)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_currencyResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			currencyResource -> currencyResource.postCurrencyBatch(
+				callbackURL, object));
+	}
+
+	@GraphQLField
+	public boolean deleteCurrency(@GraphQLName("id") Long id) throws Exception {
+		_applyVoidComponentServiceObjects(
+			_currencyResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			currencyResource -> currencyResource.deleteCurrency(id));
+
+		return true;
+	}
+
+	@GraphQLField
+	public Response deleteCurrencyBatch(
+			@GraphQLName("callbackURL") String callbackURL,
+			@GraphQLName("object") Object object)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_currencyResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			currencyResource -> currencyResource.deleteCurrencyBatch(
+				callbackURL, object));
+	}
+
+	@GraphQLField
+	public Currency patchCurrency(
+			@GraphQLName("id") Long id,
+			@GraphQLName("currency") Currency currency)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_currencyResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			currencyResource -> currencyResource.patchCurrency(id, currency));
 	}
 
 	@GraphQLField
@@ -1716,6 +1853,48 @@ public class Mutation {
 	}
 
 	@GraphQLField
+	public boolean deleteProductOptionValue(@GraphQLName("id") Long id)
+		throws Exception {
+
+		_applyVoidComponentServiceObjects(
+			_productOptionValueResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			productOptionValueResource ->
+				productOptionValueResource.deleteProductOptionValue(id));
+
+		return true;
+	}
+
+	@GraphQLField
+	public Response deleteProductOptionValueBatch(
+			@GraphQLName("callbackURL") String callbackURL,
+			@GraphQLName("object") Object object)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_productOptionValueResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			productOptionValueResource ->
+				productOptionValueResource.deleteProductOptionValueBatch(
+					callbackURL, object));
+	}
+
+	@GraphQLField
+	public ProductOptionValue patchProductOptionValue(
+			@GraphQLName("id") Long id,
+			@GraphQLName("productOptionValue") ProductOptionValue
+				productOptionValue)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_productOptionValueResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			productOptionValueResource ->
+				productOptionValueResource.patchProductOptionValue(
+					id, productOptionValue));
+	}
+
+	@GraphQLField
 	public ProductOptionValue createProductOptionIdProductOptionValue(
 			@GraphQLName("id") Long id,
 			@GraphQLName("productOptionValue") ProductOptionValue
@@ -2089,6 +2268,90 @@ public class Mutation {
 	}
 
 	@GraphQLField
+	public boolean deleteSkuUnitOfMeasure(@GraphQLName("id") Long id)
+		throws Exception {
+
+		_applyVoidComponentServiceObjects(
+			_skuUnitOfMeasureResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			skuUnitOfMeasureResource ->
+				skuUnitOfMeasureResource.deleteSkuUnitOfMeasure(id));
+
+		return true;
+	}
+
+	@GraphQLField
+	public Response deleteSkuUnitOfMeasureBatch(
+			@GraphQLName("callbackURL") String callbackURL,
+			@GraphQLName("object") Object object)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_skuUnitOfMeasureResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			skuUnitOfMeasureResource ->
+				skuUnitOfMeasureResource.deleteSkuUnitOfMeasureBatch(
+					callbackURL, object));
+	}
+
+	@GraphQLField
+	public SkuUnitOfMeasure patchSkuUnitOfMeasure(
+			@GraphQLName("id") Long id,
+			@GraphQLName("skuUnitOfMeasure") SkuUnitOfMeasure skuUnitOfMeasure)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_skuUnitOfMeasureResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			skuUnitOfMeasureResource ->
+				skuUnitOfMeasureResource.patchSkuUnitOfMeasure(
+					id, skuUnitOfMeasure));
+	}
+
+	@GraphQLField
+	public SkuUnitOfMeasure createSkuByExternalReferenceCodeSkuUnitOfMeasure(
+			@GraphQLName("externalReferenceCode") String externalReferenceCode,
+			@GraphQLName("skuUnitOfMeasure") SkuUnitOfMeasure skuUnitOfMeasure)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_skuUnitOfMeasureResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			skuUnitOfMeasureResource ->
+				skuUnitOfMeasureResource.
+					postSkuByExternalReferenceCodeSkuUnitOfMeasure(
+						externalReferenceCode, skuUnitOfMeasure));
+	}
+
+	@GraphQLField
+	public SkuUnitOfMeasure createSkuIdSkuUnitOfMeasure(
+			@GraphQLName("id") Long id,
+			@GraphQLName("skuUnitOfMeasure") SkuUnitOfMeasure skuUnitOfMeasure)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_skuUnitOfMeasureResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			skuUnitOfMeasureResource ->
+				skuUnitOfMeasureResource.postSkuIdSkuUnitOfMeasure(
+					id, skuUnitOfMeasure));
+	}
+
+	@GraphQLField
+	public Response createSkuIdSkuUnitOfMeasureBatch(
+			@GraphQLName("callbackURL") String callbackURL,
+			@GraphQLName("object") Object object)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_skuUnitOfMeasureResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			skuUnitOfMeasureResource ->
+				skuUnitOfMeasureResource.postSkuIdSkuUnitOfMeasureBatch(
+					callbackURL, object));
+	}
+
+	@GraphQLField
 	public Response createSpecificationsPageExportBatch(
 			@GraphQLName("search") String search,
 			@GraphQLName("filter") String filterString,
@@ -2266,6 +2529,25 @@ public class Mutation {
 			_vulcanBatchEngineExportTaskResource);
 
 		categoryResource.setVulcanBatchEngineImportTaskResource(
+			_vulcanBatchEngineImportTaskResource);
+	}
+
+	private void _populateResourceContext(CurrencyResource currencyResource)
+		throws Exception {
+
+		currencyResource.setContextAcceptLanguage(_acceptLanguage);
+		currencyResource.setContextCompany(_company);
+		currencyResource.setContextHttpServletRequest(_httpServletRequest);
+		currencyResource.setContextHttpServletResponse(_httpServletResponse);
+		currencyResource.setContextUriInfo(_uriInfo);
+		currencyResource.setContextUser(_user);
+		currencyResource.setGroupLocalService(_groupLocalService);
+		currencyResource.setRoleLocalService(_roleLocalService);
+
+		currencyResource.setVulcanBatchEngineExportTaskResource(
+			_vulcanBatchEngineExportTaskResource);
+
+		currencyResource.setVulcanBatchEngineImportTaskResource(
 			_vulcanBatchEngineImportTaskResource);
 	}
 
@@ -2720,6 +3002,28 @@ public class Mutation {
 	}
 
 	private void _populateResourceContext(
+			SkuUnitOfMeasureResource skuUnitOfMeasureResource)
+		throws Exception {
+
+		skuUnitOfMeasureResource.setContextAcceptLanguage(_acceptLanguage);
+		skuUnitOfMeasureResource.setContextCompany(_company);
+		skuUnitOfMeasureResource.setContextHttpServletRequest(
+			_httpServletRequest);
+		skuUnitOfMeasureResource.setContextHttpServletResponse(
+			_httpServletResponse);
+		skuUnitOfMeasureResource.setContextUriInfo(_uriInfo);
+		skuUnitOfMeasureResource.setContextUser(_user);
+		skuUnitOfMeasureResource.setGroupLocalService(_groupLocalService);
+		skuUnitOfMeasureResource.setRoleLocalService(_roleLocalService);
+
+		skuUnitOfMeasureResource.setVulcanBatchEngineExportTaskResource(
+			_vulcanBatchEngineExportTaskResource);
+
+		skuUnitOfMeasureResource.setVulcanBatchEngineImportTaskResource(
+			_vulcanBatchEngineImportTaskResource);
+	}
+
+	private void _populateResourceContext(
 			SpecificationResource specificationResource)
 		throws Exception {
 
@@ -2746,6 +3050,8 @@ public class Mutation {
 		_catalogResourceComponentServiceObjects;
 	private static ComponentServiceObjects<CategoryResource>
 		_categoryResourceComponentServiceObjects;
+	private static ComponentServiceObjects<CurrencyResource>
+		_currencyResourceComponentServiceObjects;
 	private static ComponentServiceObjects<DiagramResource>
 		_diagramResourceComponentServiceObjects;
 	private static ComponentServiceObjects<GroupedProductResource>
@@ -2791,6 +3097,8 @@ public class Mutation {
 		_relatedProductResourceComponentServiceObjects;
 	private static ComponentServiceObjects<SkuResource>
 		_skuResourceComponentServiceObjects;
+	private static ComponentServiceObjects<SkuUnitOfMeasureResource>
+		_skuUnitOfMeasureResourceComponentServiceObjects;
 	private static ComponentServiceObjects<SpecificationResource>
 		_specificationResourceComponentServiceObjects;
 

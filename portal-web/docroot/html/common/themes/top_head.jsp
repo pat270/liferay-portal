@@ -155,13 +155,13 @@ for (Portlet portlet : portletTreeSet) {
 %>
 
 <c:if test="<%= portletHubRequired %>">
-	<script type="text/javascript">
+	<aui:script type="text/javascript">
 		var portlet = portlet || {};
 
 		portlet.data = portlet.data || {};
 
 		portlet.data.pageRenderState = <%= RenderStateUtil.generateJSON(request, themeDisplay) %>;
-	</script>
+	</aui:script>
 </c:if>
 
 <%-- Theme CSS --%>
@@ -183,9 +183,9 @@ for (Portlet portlet : portletTreeSet) {
 
 		<%
 		for (Portlet portlet : portletTreeSet) {
-			PortletPreferences portletSetup = themeDisplay.getStrictLayoutPortletSetup(layout, portlet.getPortletId());
+			PortletPreferences portletPreferences = themeDisplay.getStrictLayoutPortletSetup(layout, portlet.getPortletId());
 
-			String portletSetupCss = portletSetup.getValue("portletSetupCss", StringPool.BLANK);
+			String portletSetupCss = portletPreferences.getValue("portletSetupCss", StringPool.BLANK);
 		%>
 
 			<c:if test="<%= Validator.isNotNull(portletSetupCss) %>">

@@ -1,7 +1,7 @@
-@component-name = "portal-lima"
+@component-name = "portal-content-management"
 definition {
 
-	property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}dl.actions.visible=true";
+	property custom.properties = "dl.actions.visible=true${line.separator}jsonws.web.service.paths.excludes=";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Asset Sharing";
@@ -51,7 +51,7 @@ definition {
 	}
 
 	@description = "This test asserts that a user can change the view permission to the comment permission via the manage collaborators."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanChangePermissionToCommentViaManageCollaborators {
 		JSONDocument.addFileWithUploadedFile(
@@ -100,11 +100,9 @@ definition {
 	}
 
 	@description = "This test asserts that a user can change the view permission to the update permission via the manage collaborators"
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanChangePermissionToUpdateViaManageCollaborators {
-		property portal.acceptance = "true";
-
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
 			dmDocumentTitle = "DM Document Title",
@@ -151,7 +149,7 @@ definition {
 	}
 
 	@description = "This test covers LPS-94284 and LPS-105038. It ensures that the invalid email cannot be added if it has space, also covers the input field that still contains the invalid email after pressing enter."
-	@priority = 4
+	@priority = 3
 	@refactordone
 	test CannotShareWithInvalidAddress {
 		JSONDocument.addFileWithUploadedFile(
@@ -227,14 +225,14 @@ definition {
 		DMNavigator.gotoShare(dmDocumentTitle = "DM Document Title");
 
 		DMDocument.sharePG(
-			userEmailAddress = "userea@liferay.com",
-			userName = "userfn userln");
+			userEmailAddress = "userea1@liferay.com",
+			userName = "userfn1 userln1");
 
 		User.logoutPG();
 
 		User.loginUserPG(
 			password = "test",
-			userEmailAddress = "userea@liferay.com");
+			userEmailAddress = "userea1@liferay.com");
 
 		Asset.openTosharedContent(
 			navTab = "Shared with Me",
@@ -252,20 +250,9 @@ definition {
 	}
 
 	@description = "This test covers LPS-101927. It ensures that a user can reply to a comment on an image via shared content"
-	@priority = 4
+	@priority = 3
 	@refactordone
 	test CanReplyToCommentViaSharedContent {
-		JSONUser.addUser(
-			userEmailAddress = "userea2@liferay.com",
-			userFirstName = "userfn2",
-			userLastName = "userln2",
-			userScreenName = "usersn2");
-
-		JSONUser.setFirstPassword(
-			agreeToTermsAndAnswerReminderQuery = "true",
-			requireReset = "false",
-			userEmailAddress = "userea2@liferay.com");
-
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
 			dmDocumentTitle = "DM Document Title",
@@ -282,6 +269,17 @@ definition {
 			sharingPermissions = "Comment",
 			userEmailAddress = "userea@liferay.com",
 			userName = "userfn userln");
+
+		JSONUser.addUser(
+			userEmailAddress = "userea2@liferay.com",
+			userFirstName = "userfn2",
+			userLastName = "userln2",
+			userScreenName = "usersn2");
+
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea2@liferay.com");
 
 		Navigator.gotoPage(pageName = "Documents and Media Page");
 
@@ -340,20 +338,9 @@ definition {
 	}
 
 	@description = "This test covers LPS-94585. It ensures that users can share via Shared Content app."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanShareViaSharedContent {
-		JSONUser.addUser(
-			userEmailAddress = "userea2@liferay.com",
-			userFirstName = "userfn2",
-			userLastName = "userln2",
-			userScreenName = "usersn2");
-
-		JSONUser.setFirstPassword(
-			agreeToTermsAndAnswerReminderQuery = "true",
-			requireReset = "false",
-			userEmailAddress = "userea2@liferay.com");
-
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
 			dmDocumentTitle = "DM Document Title",
@@ -370,6 +357,17 @@ definition {
 			shareable = "true",
 			userEmailAddress = "userea@liferay.com",
 			userName = "userfn userln");
+
+		JSONUser.addUser(
+			userEmailAddress = "userea2@liferay.com",
+			userFirstName = "userfn2",
+			userLastName = "userln2",
+			userScreenName = "usersn2");
+
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea2@liferay.com");
 
 		User.logoutPG();
 
@@ -635,20 +633,9 @@ definition {
 	}
 
 	@description = "This test makes sure all collaborators will view all collaborators of the document that was shared to him. This usecase also tests that a user can successfully remove collaborators through Manage Collaborators and asserts that empty message displays when all collaborators are removed."
-	@priority = 5
+	@priority = 4
 	@refactordone
 	test CanViewAndRemoveCollaborators {
-		JSONUser.addUser(
-			userEmailAddress = "userea2@liferay.com",
-			userFirstName = "userfn2",
-			userLastName = "userln2",
-			userScreenName = "usersn2");
-
-		JSONUser.setFirstPassword(
-			agreeToTermsAndAnswerReminderQuery = "true",
-			requireReset = "false",
-			userEmailAddress = "userea2@liferay.com");
-
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
 			dmDocumentTitle = "DM Document Title",
@@ -665,6 +652,17 @@ definition {
 			noAutocomplete = "true",
 			userEmailAddress = "userea@liferay.com",
 			userName = "userfn userln");
+
+		JSONUser.addUser(
+			userEmailAddress = "userea2@liferay.com",
+			userFirstName = "userfn2",
+			userLastName = "userln2",
+			userScreenName = "usersn2");
+
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea2@liferay.com");
 
 		Navigator.gotoPage(pageName = "Documents and Media Page");
 
@@ -720,7 +718,7 @@ definition {
 	}
 
 	@description = "This test covers LPS-94858. It asserts deleted entry displays in a user's Shared Content using share button from info panel."
-	@priority = 4
+	@priority = 3
 	@refactordone
 	test CanViewDeletedEntryInSharedContent {
 		JSONDocument.addFileWithUploadedFile(
@@ -836,7 +834,7 @@ definition {
 	}
 
 	@description = "This test asserts only one entry displays in a user's Shared Content app when multiple users share the same document to him."
-	@priority = 4
+	@priority = 3
 	@refactordone
 	test CanViewSingleEntryAfterMultipleSharing {
 		JSONRole.assignRoleToUser(

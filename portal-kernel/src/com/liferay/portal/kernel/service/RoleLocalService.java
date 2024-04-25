@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.change.tracking.CTService;
 import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
+import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
@@ -52,6 +53,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @CTAware
+@OSGiBeanProperties(
+	property = {"model.class.name=com.liferay.portal.kernel.model.Role"}
+)
 @ProviderType
 @Transactional(
 	isolation = Isolation.PORTAL,
@@ -65,13 +69,13 @@ public interface RoleLocalService
 	 *
 	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.portal.service.impl.RoleLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the role local service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link RoleLocalServiceUtil} if injection and service tracking are not available.
 	 */
-	public void addGroupRole(long groupId, long roleId);
+	public boolean addGroupRole(long groupId, long roleId);
 
-	public void addGroupRole(long groupId, Role role);
+	public boolean addGroupRole(long groupId, Role role);
 
-	public void addGroupRoles(long groupId, List<Role> roles);
+	public boolean addGroupRoles(long groupId, List<Role> roles);
 
-	public void addGroupRoles(long groupId, long[] roleIds);
+	public boolean addGroupRoles(long groupId, long[] roleIds);
 
 	/**
 	 * Adds a role with additional parameters. The user is reindexed after role
@@ -116,23 +120,23 @@ public interface RoleLocalService
 	/**
 	 * @throws PortalException
 	 */
-	public void addUserRole(long userId, long roleId) throws PortalException;
+	public boolean addUserRole(long userId, long roleId) throws PortalException;
 
 	/**
 	 * @throws PortalException
 	 */
-	public void addUserRole(long userId, Role role) throws PortalException;
+	public boolean addUserRole(long userId, Role role) throws PortalException;
 
 	/**
 	 * @throws PortalException
 	 */
-	public void addUserRoles(long userId, List<Role> roles)
+	public boolean addUserRoles(long userId, List<Role> roles)
 		throws PortalException;
 
 	/**
 	 * @throws PortalException
 	 */
-	public void addUserRoles(long userId, long[] roleIds)
+	public boolean addUserRoles(long userId, long[] roleIds)
 		throws PortalException;
 
 	/**

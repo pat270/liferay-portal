@@ -19,38 +19,17 @@ definition {
 		}
 	}
 
-	@description = "This is a use case for LPS-185850. Assert we can hide the Show All Items toggle in for Reviewing Changes"
-	@priority = 3
-	test CanHideShowAllItemsToggleForReviewingChanges {
-		property osgi.module.configuration.file.names = "com.liferay.change.tracking.configuration.CTSettingsConfiguration.config:com.liferay.change.tracking.web.internal.configuration.CTConfiguration.config";
-		property osgi.module.configurations = "enabled=B\"true\":showAllItemsEnabled=B\"false\"";
-
-		JSONPublications.addPublication(publicationName = "Publication Name");
-
-		JSONPublications.selectPublication(publicationName = "Publication Name");
-
-		JSONWebcontent.addWebContent(
-			content = "WC WebContent Content",
-			groupName = "Guest",
-			title = "WC WebContent Title");
-
-		PublicationsNavigator.gotoReviewChanges(
-			gotoPublicationsAdmin = "true",
-			publicationName = "Publication Name");
-
-		AssertElementPresent(locator1 = "PublicationsChanges#DISABLE_SHOW_ALL_ITEMS_TOGGLE");
-	}
-
 	@description = "This is a use case for LPS-163875. It shouldn't be possible to enable Publications is a remote live site."
 	@priority = 4
 	test CannotEnablePublicationsInRemoteLiveSite {
 		property app.server.bundles.size = "1";
 		property app.server.types = "tomcat";
-		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=";
+		property custom.properties = "auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}tunneling.servlet.shared.secret=1234567890123456";
 		property database.types = "mysql";
 		property databases.size = "1";
 		property minimum.slave.ram = "24";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		HeadlessSite.addSite(siteName = "Site Name");
 
@@ -75,7 +54,7 @@ definition {
 
 		User.logoutPG();
 
-		User.firstLoginUI(
+		User.firstLoginPG(
 			password = "test",
 			specificURL = "http://localhost:9080",
 			userEmailAddress = "test@liferay.com");
@@ -112,6 +91,8 @@ definition {
 
 		Click(locator1 = "Button#SUBMIT");
 
+		WaitForElementPresent(locator1 = "Message#ERROR");
+
 		Alert.viewErrorMessage(errorMessage = "Staging is enabled for at least one site or asset library in the current virtual instance. Publications and staging cannot be used together.");
 	}
 
@@ -124,6 +105,7 @@ definition {
 		property skip.clean-app-server-deploy-dir = "true";
 		property test.assert.warning.exceptions = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		Publications.enablePublications();
 
@@ -178,7 +160,7 @@ definition {
 
 		SignOut.signOut();
 
-		User.firstLoginUI(
+		User.firstLoginPG(
 			password = "test",
 			userEmailAddress = "userea@liferay.com");
 

@@ -1,6 +1,7 @@
 @component-name = "portal-tags"
 definition {
 
+	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.component.names = "Tags";
@@ -24,23 +25,17 @@ definition {
 		}
 	}
 
-	tearDown {
-		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
-
-		if (${testLiferayVirtualInstance} == "true") {
-			PortalInstances.tearDownCP();
-		}
-		else {
-			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
-		}
-	}
-
 	@description = "Add a Front Page with tag."
 	@priority = 4
 	test AddFrontPageTag {
 		property testray.component.names = "Wiki";
 
 		task ("Add a Wiki widget to page") {
+			JSONLayout.updateLayoutTemplateOfPublicLayout(
+				groupName = "Test Site Name",
+				layoutName = "Test Page Name",
+				layoutTemplate = "1 Column");
+
 			JSONLayout.addWidgetToPublicLayout(
 				groupName = "Test Site Name",
 				layoutName = "Test Page Name",
@@ -410,9 +405,9 @@ definition {
 			var i = 1;
 
 			for (var searchTerm : list "blue,green,yellow") {
-				SearchPortlets.searchEmbedded(searchTerm = ${searchTerm});
+				SearchPage.searchEmbedded(searchTerm = ${searchTerm});
 
-				SearchResultPortlet.viewSearchResults(
+				SearchResults.viewSearchResults(
 					searchAssetTitle = "Blogs Entry Title ${i}",
 					searchAssetType = "Blogs Entry");
 

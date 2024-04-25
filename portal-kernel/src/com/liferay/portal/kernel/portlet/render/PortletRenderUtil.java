@@ -7,6 +7,7 @@ package com.liferay.portal.kernel.portlet.render;
 
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.content.security.policy.ContentSecurityPolicyNonceProviderUtil;
 import com.liferay.portal.kernel.frontend.esm.FrontendESMUtil;
 import com.liferay.portal.kernel.model.LayoutTypePortlet;
 import com.liferay.portal.kernel.model.Portlet;
@@ -18,7 +19,9 @@ import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.io.IOException;
@@ -186,7 +189,7 @@ public class PortletRenderUtil {
 		return allPortlets;
 	}
 
-	private static Collection<String> _getComboServletURLs(
+	private static List<String> _getComboServletURLs(
 		Collection<PortletResourceAccessor> portletResourceAccessors,
 		Collection<Portlet> portlets, Predicate<String> predicate,
 		long timestamp, String urlPrefix, Set<String> visitedURLs) {
@@ -221,12 +224,17 @@ public class PortletRenderUtil {
 						continue;
 					}
 
-					boolean module = false;
+					String prefix = null;
 
-					if (portletResource.startsWith("module:")) {
-						module = true;
+					for (String specialPrefix : _specialPrefixes) {
+						if (portletResource.startsWith(specialPrefix)) {
+							portletResource = portletResource.substring(
+								specialPrefix.length());
 
-						portletResource = portletResource.substring(7);
+							prefix = specialPrefix;
+
+							break;
+						}
 					}
 
 					boolean absolute = HttpComponentsUtil.hasProtocol(
@@ -236,8 +244,8 @@ public class PortletRenderUtil {
 						portletResource = contextPath + portletResource;
 					}
 
-					if (module) {
-						portletResource = "module:" + portletResource;
+					if (Validator.isNotNull(prefix)) {
+						portletResource = prefix + portletResource;
 					}
 
 					if (visitedURLs.contains(portletResource)) {
@@ -246,7 +254,7 @@ public class PortletRenderUtil {
 
 					visitedURLs.add(portletResource);
 
-					if (absolute || module) {
+					if (absolute || Validator.isNotNull(prefix)) {
 						urls.add(portletResource);
 					}
 					else {
@@ -328,7 +336,7 @@ public class PortletRenderUtil {
 		return rootPortlet.getPortletId();
 	}
 
-	private static Collection<String> _getStaticURLs(
+	private static List<String> _getStaticURLs(
 		HttpServletRequest httpServletRequest,
 		Collection<PortletResourceAccessor> portletResourceAccessors,
 		Collection<Portlet> portlets, Set<String> visitedURLs) {
@@ -359,12 +367,17 @@ public class PortletRenderUtil {
 					portletResourceAccessor.get(portlet);
 
 				for (String portletResource : portletResources) {
-					boolean module = false;
+					String prefix = null;
 
-					if (portletResource.startsWith("module:")) {
-						module = true;
+					for (String specialProtocol : _specialPrefixes) {
+						if (portletResource.startsWith(specialProtocol)) {
+							portletResource = portletResource.substring(
+								specialProtocol.length());
 
-						portletResource = portletResource.substring(7);
+							prefix = specialProtocol;
+
+							break;
+						}
 					}
 
 					if (!HttpComponentsUtil.hasProtocol(portletResource)) {
@@ -379,8 +392,8 @@ public class PortletRenderUtil {
 						portletResource = cdnBaseURL.concat(portletResource);
 					}
 
-					if (module) {
-						portletResource = "module:" + portletResource;
+					if (Validator.isNotNull(prefix)) {
+						portletResource = prefix + portletResource;
 					}
 
 					if (visitedURLs.contains(portletResource)) {
@@ -432,10 +445,12 @@ public class PortletRenderUtil {
 				WebKeys.PORTLET_RESOURCE_STATIC_URLS, visitedURLs);
 		}
 
+		List<String> urls = null;
+
 		if (fastLoad) {
 			Theme theme = themeDisplay.getTheme();
 
-			return _getComboServletURLs(
+			urls = _getComboServletURLs(
 				portletResourceAccessors, portlets, predicate,
 				theme.getTimestamp(),
 				PortalUtil.getStaticResourceURL(
@@ -448,10 +463,21 @@ public class PortletRenderUtil {
 					-1),
 				visitedURLs);
 		}
+		else {
+			urls = _getStaticURLs(
+				httpServletRequest, portletResourceAccessors, portlets,
+				visitedURLs);
+		}
 
-		return _getStaticURLs(
-			httpServletRequest, portletResourceAccessors, portlets,
-			visitedURLs);
+		for (int i = 0; i < urls.size(); i++) {
+			String url = urls.get(i);
+
+			if (url.startsWith("nocombo:")) {
+				urls.set(i, url.substring(8));
+			}
+		}
+
+		return urls;
 	}
 
 	private static void _writeCSSPath(
@@ -483,11 +509,13 @@ public class PortletRenderUtil {
 
 		if (javaScriptPath.startsWith("module:")) {
 			javaScriptPath = javaScriptPath.substring(7);
-
 			type = FrontendESMUtil.getScriptType();
 		}
 
-		printWriter.print("<script src=\"");
+		printWriter.print("<script");
+		printWriter.print(
+			ContentSecurityPolicyNonceProviderUtil.getNonceAttribute(null));
+		printWriter.print(" src=\"");
 		printWriter.print(HtmlUtil.escapeAttribute(javaScriptPath));
 		printWriter.print("\" type=\"");
 		printWriter.print(type);
@@ -607,6 +635,9 @@ public class PortletRenderUtil {
 			}
 
 		};
+
+	private static final Set<String> _specialPrefixes = SetUtil.fromArray(
+		"module:", "nocombo:");
 
 	private enum URLType {
 

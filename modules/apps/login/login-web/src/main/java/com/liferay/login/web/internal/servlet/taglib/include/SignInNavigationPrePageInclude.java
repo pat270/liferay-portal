@@ -5,11 +5,18 @@
 
 package com.liferay.login.web.internal.servlet.taglib.include;
 
+import com.liferay.layout.utility.page.kernel.constants.LayoutUtilityPageEntryConstants;
+import com.liferay.layout.utility.page.kernel.provider.LayoutUtilityPageEntryLayoutProvider;
+import com.liferay.login.web.constants.LoginPortletKeys;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManager;
+import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
+import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.JavaConstants;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -23,12 +30,14 @@ import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
+import javax.portlet.WindowState;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.PageContext;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Shuyang Zhou
@@ -49,9 +58,26 @@ public class SignInNavigationPrePageInclude implements PageInclude {
 		String mvcRenderCommandName = httpServletRequest.getParameter(
 			"mvcRenderCommandName");
 
-		if (Validator.isNull(mvcRenderCommandName) ||
-			Objects.equals(mvcRenderCommandName, "/login/login")) {
+		PortletConfig portletConfig =
+			(PortletConfig)httpServletRequest.getAttribute(
+				JavaConstants.JAVAX_PORTLET_CONFIG);
 
+		String portletName = portletConfig.getPortletName();
+
+		if (_featureFlagManager.isEnabled("LPD-6378")) {
+			if (portletName.equals(LoginPortletKeys.LOGIN) &&
+				Validator.isNull(mvcRenderCommandName)) {
+
+				return;
+			}
+		}
+		else {
+			if (Validator.isNull(mvcRenderCommandName)) {
+				return;
+			}
+		}
+
+		if (Objects.equals(mvcRenderCommandName, "/login/login")) {
 			return;
 		}
 
@@ -59,13 +85,30 @@ public class SignInNavigationPrePageInclude implements PageInclude {
 			(ThemeDisplay)httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
-		String signInURL = themeDisplay.getURLSignIn();
+		String signInURL = null;
 
-		PortletConfig portletConfig =
-			(PortletConfig)httpServletRequest.getAttribute(
-				JavaConstants.JAVAX_PORTLET_CONFIG);
+		try {
+			if (_featureFlagManager.isEnabled("LPD-6378")) {
+				Layout layout =
+					_layoutUtilityPageEntryLayoutProvider.
+						getDefaultLayoutUtilityPageEntryLayout(
+							themeDisplay.getScopeGroupId(),
+							LayoutUtilityPageEntryConstants.TYPE_LOGIN);
 
-		String portletName = portletConfig.getPortletName();
+				if (layout != null) {
+					signInURL = _portal.getLayoutURL(layout, themeDisplay);
+				}
+				else {
+					signInURL = _getSignInURL(httpServletRequest, themeDisplay);
+				}
+			}
+			else {
+				signInURL = themeDisplay.getURLSignIn();
+			}
+		}
+		catch (Exception exception) {
+			throw new JspException(exception);
+		}
 
 		if (portletName.equals(PortletKeys.FAST_LOGIN)) {
 			PortletURL fastLoginURL = PortletURLBuilder.create(
@@ -97,5 +140,50 @@ public class SignInNavigationPrePageInclude implements PageInclude {
 
 		iconTag.doTag(pageContext);
 	}
+
+	private String _getSignInURL(
+			HttpServletRequest httpServletRequest, ThemeDisplay themeDisplay)
+		throws Exception {
+
+		long plid = themeDisplay.getPlid();
+
+		Layout layout = themeDisplay.getLayout();
+
+		if (layout.isPrivateLayout()) {
+			plid = _layoutLocalService.getDefaultPlid(
+				layout.getGroupId(), false);
+		}
+
+		PortletConfig portletConfig =
+			(PortletConfig)httpServletRequest.getAttribute(
+				JavaConstants.JAVAX_PORTLET_CONFIG);
+
+		return PortletURLBuilder.create(
+			PortletURLFactoryUtil.create(
+				httpServletRequest, portletConfig.getPortletName(), plid,
+				PortletRequest.RENDER_PHASE)
+		).setMVCRenderCommandName(
+			"/login/login"
+		).setParameter(
+			"saveLastPath", false
+		).setPortletMode(
+			PortletMode.VIEW
+		).setWindowState(
+			WindowState.MAXIMIZED
+		).buildString();
+	}
+
+	@Reference
+	private FeatureFlagManager _featureFlagManager;
+
+	@Reference
+	private LayoutLocalService _layoutLocalService;
+
+	@Reference
+	private LayoutUtilityPageEntryLayoutProvider
+		_layoutUtilityPageEntryLayoutProvider;
+
+	@Reference
+	private Portal _portal;
 
 }

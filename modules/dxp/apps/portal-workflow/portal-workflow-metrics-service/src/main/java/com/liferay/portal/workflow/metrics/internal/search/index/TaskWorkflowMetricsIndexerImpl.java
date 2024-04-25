@@ -16,9 +16,11 @@ import com.liferay.portal.search.document.Document;
 import com.liferay.portal.search.document.DocumentBuilder;
 import com.liferay.portal.search.engine.adapter.document.UpdateByQueryDocumentRequest;
 import com.liferay.portal.search.engine.adapter.document.UpdateDocumentRequest;
+import com.liferay.portal.search.index.IndexNameBuilder;
 import com.liferay.portal.search.query.BooleanQuery;
 import com.liferay.portal.search.script.ScriptBuilder;
 import com.liferay.portal.search.script.ScriptType;
+import com.liferay.portal.workflow.metrics.internal.search.constants.WorkflowMetricsIndexTypeConstants;
 import com.liferay.portal.workflow.metrics.internal.search.index.util.WorkflowMetricsIndexerUtil;
 import com.liferay.portal.workflow.metrics.model.AddTaskRequest;
 import com.liferay.portal.workflow.metrics.model.Assignment;
@@ -28,6 +30,7 @@ import com.liferay.portal.workflow.metrics.model.RoleAssignment;
 import com.liferay.portal.workflow.metrics.model.UpdateTaskRequest;
 import com.liferay.portal.workflow.metrics.model.UserAssignment;
 import com.liferay.portal.workflow.metrics.search.index.TaskWorkflowMetricsIndexer;
+import com.liferay.portal.workflow.metrics.search.index.constants.WorkflowMetricsIndexNameConstants;
 
 import java.time.Duration;
 
@@ -154,10 +157,12 @@ public class TaskWorkflowMetricsIndexerImpl
 
 				UpdateDocumentRequest updateDocumentRequest =
 					new UpdateDocumentRequest(
-						_instanceWorkflowMetricsIndex.getIndexName(
+						WorkflowMetricsIndex.getIndexName(
+							_indexNameBuilder,
+							WorkflowMetricsIndexNameConstants.SUFFIX_INSTANCE,
 							addTaskRequest.getCompanyId()),
 						WorkflowMetricsIndexerUtil.digest(
-							_instanceWorkflowMetricsIndex.getIndexType(),
+							WorkflowMetricsIndexTypeConstants.INSTANCE_TYPE,
 							addTaskRequest.getCompanyId(),
 							addTaskRequest.getInstanceId()),
 						scriptBuilder.idOrCode(
@@ -283,12 +288,14 @@ public class TaskWorkflowMetricsIndexerImpl
 
 	@Override
 	public String getIndexName(long companyId) {
-		return _taskWorkflowMetricsIndex.getIndexName(companyId);
+		return WorkflowMetricsIndex.getIndexName(
+			_indexNameBuilder, WorkflowMetricsIndexNameConstants.SUFFIX_TASK,
+			companyId);
 	}
 
 	@Override
 	public String getIndexType() {
-		return _taskWorkflowMetricsIndex.getIndexType();
+		return WorkflowMetricsIndexTypeConstants.TASK_TYPE;
 	}
 
 	@Override
@@ -394,7 +401,9 @@ public class TaskWorkflowMetricsIndexerImpl
 							queries.term(
 								"tasks.taskId", updateTaskRequest.getTaskId())),
 						scriptBuilder.build(),
-						_instanceWorkflowMetricsIndex.getIndexName(
+						WorkflowMetricsIndex.getIndexName(
+							_indexNameBuilder,
+							WorkflowMetricsIndexNameConstants.SUFFIX_INSTANCE,
 							updateTaskRequest.getCompanyId()));
 
 				updateByQueryDocumentRequest.setRefresh(true);
@@ -427,7 +436,10 @@ public class TaskWorkflowMetricsIndexerImpl
 				).scriptType(
 					ScriptType.INLINE
 				).build(),
-				_instanceWorkflowMetricsIndex.getIndexName(companyId)));
+				WorkflowMetricsIndex.getIndexName(
+					_indexNameBuilder,
+					WorkflowMetricsIndexNameConstants.SUFFIX_INSTANCE,
+					companyId)));
 	}
 
 	private String _getAssigneeName(List<Assignment> assignments) {
@@ -487,14 +499,11 @@ public class TaskWorkflowMetricsIndexerImpl
 		}
 	}
 
-	@Reference(target = "(workflow.metrics.index.entity.name=instance)")
-	private WorkflowMetricsIndex _instanceWorkflowMetricsIndex;
+	@Reference
+	private IndexNameBuilder _indexNameBuilder;
 
 	@Reference
 	private SLATaskResultWorkflowMetricsIndexer
 		_slaTaskResultWorkflowMetricsIndexer;
-
-	@Reference(target = "(workflow.metrics.index.entity.name=task)")
-	private WorkflowMetricsIndex _taskWorkflowMetricsIndex;
 
 }

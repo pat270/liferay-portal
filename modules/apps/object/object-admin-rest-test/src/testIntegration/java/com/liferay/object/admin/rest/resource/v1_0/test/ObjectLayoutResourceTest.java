@@ -11,7 +11,7 @@ import com.liferay.object.admin.rest.client.dto.v1_0.ObjectLayoutBox;
 import com.liferay.object.admin.rest.client.dto.v1_0.ObjectLayoutColumn;
 import com.liferay.object.admin.rest.client.dto.v1_0.ObjectLayoutRow;
 import com.liferay.object.admin.rest.client.dto.v1_0.ObjectLayoutTab;
-import com.liferay.object.constants.ObjectDefinitionConstants;
+import com.liferay.object.admin.rest.resource.v1_0.test.util.ObjectDefinitionTestUtil;
 import com.liferay.object.field.builder.TextObjectFieldBuilder;
 import com.liferay.object.field.util.ObjectFieldUtil;
 import com.liferay.object.model.ObjectDefinition;
@@ -42,16 +42,8 @@ public class ObjectLayoutResourceTest extends BaseObjectLayoutResourceTestCase {
 	public void setUp() throws Exception {
 		super.setUp();
 
-		String value = "A" + RandomTestUtil.randomString();
-
 		_objectDefinition =
-			_objectDefinitionLocalService.addCustomObjectDefinition(
-				TestPropsValues.getUserId(), false, false,
-				LocalizedMapUtil.getLocalizedMap(value), value, null, null,
-				LocalizedMapUtil.getLocalizedMap(value), true,
-				ObjectDefinitionConstants.SCOPE_COMPANY,
-				ObjectDefinitionConstants.STORAGE_TYPE_DEFAULT,
-				Collections.emptyList());
+			ObjectDefinitionTestUtil.addCustomObjectDefinition();
 
 		_objectField = ObjectFieldUtil.addCustomObjectField(
 			new TextObjectFieldBuilder(
@@ -89,6 +81,11 @@ public class ObjectLayoutResourceTest extends BaseObjectLayoutResourceTestCase {
 	@Override
 	@Test
 	public void testGraphQLGetObjectLayoutNotFound() {
+	}
+
+	@Override
+	protected String[] getIgnoredEntityFieldNames() {
+		return new String[] {"label"};
 	}
 
 	@Override

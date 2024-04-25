@@ -1,32 +1,60 @@
 @import 'atlas-variables';
+@import 'cadmin-variables';
 
-.orderable-table-sheet {
-	.c-empty-state {
-		text-align: center;
-	}
+html#{$cadmin-selector} .cadmin {
+	.orderable-table-sheet {
+		margin-top: 1rem;
 
-	.orderable-table.table-autofit {
-		td,
-		th {
-			width: inherit;
+		.c-empty-state {
+			text-align: center;
+		}
 
-			&.actions-cell {
-				padding-right: 18px;
-				width: 0;
+		.orderable-table.table-autofit {
+			td,
+			th {
+				width: inherit;
+
+				&.actions-cell {
+					padding-right: 18px;
+					width: 0;
+				}
+
+				&.drag-handle-cell {
+					width: 0;
+				}
+			}
+		}
+
+		.orderable-table-row.dragging {
+			opacity: 0.5;
+		}
+
+		.sheet-header {
+			border-bottom: 1px solid $gray-200;
+			margin-bottom: 0;
+		}
+
+		.management-bar {
+			margin-bottom: 12px;
+			min-height: initial;
+
+			> .container-fluid {
+				padding: 0;
+
+				> .navbar-nav {
+					gap: 16px;
+				}
 			}
 
-			&.drag-handle-cell {
-				width: 0;
+			.nav-btn {
+				margin: 0;
 			}
 		}
 	}
 
-	.orderable-table-row.dragging {
-		opacity: 0.5;
-	}
-
-	.sheet-header {
-		border-bottom: 1px solid $gray-200;
-		margin-bottom: 0;
+	.tab-pane .orderable-table-sheet {
+		border-width: 0;
+		margin-top: 0;
+		padding: 0;
 	}
 }

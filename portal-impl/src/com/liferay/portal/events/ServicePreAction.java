@@ -13,6 +13,7 @@ import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalSer
 import com.liferay.exportimport.kernel.service.ExportImportLocalServiceUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.image.ImageToolUtil;
 import com.liferay.portal.kernel.cookies.CookiesManagerUtil;
 import com.liferay.portal.kernel.events.Action;
 import com.liferay.portal.kernel.events.ActionException;
@@ -20,7 +21,6 @@ import com.liferay.portal.kernel.exception.LayoutPermissionException;
 import com.liferay.portal.kernel.exception.NoSuchGroupException;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
 import com.liferay.portal.kernel.exception.NoSuchUserException;
-import com.liferay.portal.kernel.image.ImageToolUtil;
 import com.liferay.portal.kernel.interval.IntervalActionProcessor;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -105,6 +105,7 @@ import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -274,11 +275,15 @@ public class ServicePreAction extends Action {
 			long userId, long groupId)
 		throws Exception {
 
-		Map<Locale, String> nameMap = Collections.singletonMap(
-			LocaleUtil.getSiteDefault(),
-			LanguageUtil.get(
-				LocaleUtil.getSiteDefault(),
-				PropsValues.DEFAULT_USER_PRIVATE_LAYOUT_NAME));
+		Map<Locale, String> nameMap = new HashMap<>();
+
+		for (Locale locale : LanguageUtil.getAvailableLocales(groupId)) {
+			nameMap.put(
+				locale,
+				LanguageUtil.get(
+					locale, PropsValues.DEFAULT_USER_PRIVATE_LAYOUT_NAME));
+		}
+
 		Map<Locale, String> friendlyURLMap = Collections.singletonMap(
 			LocaleUtil.getSiteDefault(),
 			_getFriendlyURL(
@@ -356,11 +361,15 @@ public class ServicePreAction extends Action {
 			long userId, long groupId)
 		throws Exception {
 
-		Map<Locale, String> nameMap = Collections.singletonMap(
-			LocaleUtil.getSiteDefault(),
-			LanguageUtil.get(
-				LocaleUtil.getSiteDefault(),
-				PropsValues.DEFAULT_USER_PUBLIC_LAYOUT_NAME));
+		Map<Locale, String> nameMap = new HashMap<>();
+
+		for (Locale locale : LanguageUtil.getAvailableLocales(groupId)) {
+			nameMap.put(
+				locale,
+				LanguageUtil.get(
+					locale, PropsValues.DEFAULT_USER_PUBLIC_LAYOUT_NAME));
+		}
+
 		Map<Locale, String> friendlyURLMap = Collections.singletonMap(
 			LocaleUtil.getSiteDefault(),
 			_getFriendlyURL(
@@ -895,6 +904,22 @@ public class ServicePreAction extends Action {
 			return null;
 		}
 
+		HttpSession httpSession = httpServletRequest.getSession();
+
+		User realUser = user;
+
+		Long realUserId = (Long)httpSession.getAttribute(WebKeys.USER_ID);
+
+		if ((realUserId != null) &&
+			(user.getUserId() != realUserId.longValue())) {
+
+			realUser = UserLocalServiceUtil.getUserById(realUserId.longValue());
+		}
+
+		if (!user.isActive() && (realUserId == user.getUserId())) {
+			httpSession.invalidate();
+		}
+
 		boolean signedIn = !user.isGuestUser();
 
 		if (PropsValues.BROWSER_CACHE_DISABLED ||
@@ -906,18 +931,6 @@ public class ServicePreAction extends Action {
 				HttpHeaders.CACHE_CONTROL_NO_CACHE_VALUE);
 			httpServletResponse.setHeader(
 				HttpHeaders.PRAGMA, HttpHeaders.PRAGMA_NO_CACHE_VALUE);
-		}
-
-		HttpSession httpSession = httpServletRequest.getSession();
-
-		User realUser = user;
-
-		Long realUserId = (Long)httpSession.getAttribute(WebKeys.USER_ID);
-
-		if ((realUserId != null) &&
-			(user.getUserId() != realUserId.longValue())) {
-
-			realUser = UserLocalServiceUtil.getUserById(realUserId.longValue());
 		}
 
 		long refererPlid = ParamUtil.getLong(httpServletRequest, "refererPlid");
@@ -995,8 +1008,11 @@ public class ServicePreAction extends Action {
 		if (layout != null) {
 			Group layoutGroup = layout.getGroup();
 
-			if (layoutGroup.isUser()) {
-				if (!GetterUtil.getBoolean(
+			if (layoutGroup.isUser() &&
+				(layoutGroup.getClassPK() != user.getUserId())) {
+
+				if ((plid > 0) &&
+					!GetterUtil.getBoolean(
 						PropsUtil.get(
 							PropsKeys.LAYOUT_USER_ACCESS_VIA_PLID_ENABLED))) {
 
@@ -1046,16 +1062,19 @@ public class ServicePreAction extends Action {
 		boolean viewableSourceGroup = true;
 
 		if (layout != null) {
+			Group sourceGroup = null;
+
 			long sourceGroupId = ParamUtil.getLong(
 				httpServletRequest, "p_v_l_s_g_id");
 
 			if ((sourceGroupId > 0) && (sourceGroupId != layout.getGroupId())) {
+				sourceGroup = GroupLocalServiceUtil.fetchGroup(sourceGroupId);
+			}
+
+			if (sourceGroup != null) {
 				if (layout.isTypeControlPanel() || layout.isPublicLayout() ||
 					SitesUtil.isUserGroupLayoutSetViewable(
 						permissionChecker, layout.getGroup())) {
-
-					Group sourceGroup = GroupLocalServiceUtil.getGroup(
-						sourceGroupId);
 
 					if (layout.isTypeControlPanel() && sourceGroup.isUser() &&
 						(sourceGroup.getClassPK() != user.getUserId()) &&
@@ -1770,10 +1789,6 @@ public class ServicePreAction extends Action {
 
 		themeDisplay.setURLPortal(portalURL.concat(contextPath));
 
-		if (!secure && PropsValues.COMPANY_SECURITY_AUTH_REQUIRES_HTTPS) {
-			secure = true;
-		}
-
 		String securePortalURL = PortalUtil.getPortalURL(
 			httpServletRequest, secure);
 
@@ -1985,9 +2000,68 @@ public class ServicePreAction extends Action {
 		httpServletResponse.setHeader(
 			"X-Liferay-Request-Company",
 			String.valueOf(themeDisplay.getCompanyId()));
+
+		List<String> liferayRequestGroupHeaderValues = new ArrayList<>();
+
+		liferayRequestGroupHeaderValues.add(
+			String.valueOf(themeDisplay.getScopeGroupId()));
+
+		Group group = themeDisplay.getScopeGroup();
+
+		liferayRequestGroupHeaderValues.add(group.getType() + "t");
+
+		Layout layout = themeDisplay.getLayout();
+
+		if (group.getGroupId() == themeDisplay.getCompanyGroupId()) {
+			liferayRequestGroupHeaderValues.add("1x");
+		}
+
+		if (group.getParentGroupId() != 0) {
+			liferayRequestGroupHeaderValues.add("2x");
+		}
+
+		if (group.isStaged()) {
+			liferayRequestGroupHeaderValues.add("3x");
+		}
+
+		if (group.isControlPanel() || layout.isTypeControlPanel()) {
+			liferayRequestGroupHeaderValues.add("4x");
+		}
+
+		if (group.isUser()) {
+			if (layout.isPrivateLayout()) {
+				liferayRequestGroupHeaderValues.add("5x");
+			}
+			else {
+				liferayRequestGroupHeaderValues.add("10x");
+			}
+
+			if (layout instanceof VirtualLayout) {
+				liferayRequestGroupHeaderValues.add("6x");
+			}
+		}
+
+		if (group.isLayoutSetPrototype()) {
+			liferayRequestGroupHeaderValues.add("7x");
+		}
+
+		if (group.isLayoutPrototype() || (layout.getMasterLayoutPlid() > 0)) {
+			liferayRequestGroupHeaderValues.add("8x");
+		}
+
+		if (group.isOrganization()) {
+			liferayRequestGroupHeaderValues.add("9x");
+		}
+
+		if (group.isSite()) {
+			liferayRequestGroupHeaderValues.add("s");
+		}
+
 		httpServletResponse.setHeader(
 			"X-Liferay-Request-Group",
-			String.valueOf(themeDisplay.getScopeGroupId()));
+			ListUtil.toString(
+				liferayRequestGroupHeaderValues, (String)null,
+				StringPool.SPACE));
 
 		User user = themeDisplay.getUser();
 

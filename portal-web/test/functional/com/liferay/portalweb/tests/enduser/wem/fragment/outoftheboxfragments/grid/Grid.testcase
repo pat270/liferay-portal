@@ -4,7 +4,7 @@ definition {
 	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Fragments";
+	property testray.main.component.name = "Fragment Administration";
 
 	setUp {
 		TestCase.setUpPortalInstance();
@@ -67,7 +67,7 @@ definition {
 
 			AssertElementPresent(
 				key_columnNumber = 1,
-				key_elementHeader = "//div[@aria-label='Grid'][2]",
+				key_elementHeader = "//div[@data-name='Grid'][2]",
 				key_position = 1,
 				locator1 = "PageEditor#GRID_COLUMN_NESTED_ELEMENT");
 		}
@@ -103,7 +103,7 @@ definition {
 				targetElementName = "Grid");
 
 			AssertElementPresent(
-				key_elementHeader = "//div[@aria-label='Grid'][2]",
+				key_elementHeader = "//div[@data-name='Grid'][2]",
 				key_position = 1,
 				locator1 = "PageEditor#CONTAINER_CONTAINER_NESTED_ELEMENT");
 		}
@@ -152,13 +152,13 @@ definition {
 
 			AssertElementPresent(
 				key_columnNumber = 3,
-				key_elementHeader = "//div[@aria-label='Grid']",
+				key_elementHeader = "//div[@data-name='Grid']",
 				key_position = 1,
 				locator1 = "PageEditor#GRID_COLUMN_NESTED_ELEMENT");
 		}
 
 		task ("Assert the height of the first module is greater than 20px") {
-			var moduleHeight = selenium.getElementHeight("//div[@aria-label='Grid']//div[contains(@class,'page-editor__topper__content')]//div[contains(@class,'col-4')]");
+			var moduleHeight = selenium.getElementHeight("//div[@data-name='Grid']//div[contains(@class,'page-editor__topper__content')]//div[contains(@class,'col-4')]");
 
 			var moduleHeight = StringUtil.replace(${moduleHeight}, "px", "");
 
@@ -171,8 +171,6 @@ definition {
 	@description = "This is a test for LPS-108463. Assert no Container is outside when add a Grid element to content page template."
 	@priority = 4
 	test AddGridWithoutContainerInContentPageTemplate {
-		property testray.component.names = "Content Page Templates,Fragments";
-
 		task ("Add a page template collection") {
 			JSONLayoutpagetemplate.addLayoutPageTemplateCollection(
 				groupName = "Test Site Name",
@@ -210,8 +208,6 @@ definition {
 	@description = "This is a test for LPS-108463. Assert no Container is outside when add a Grid element to display page template."
 	@priority = 4
 	test AddGridWithoutContainerInDisplayPageTemplate {
-		property testray.component.names = "Display Page Templates,Fragments";
-
 		task ("Add a display page") {
 			JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
 				contentType = "Web Content Article",
@@ -316,7 +312,7 @@ definition {
 			PageEditor.viewDuplicateFragment(fragmentName = "Grid");
 
 			AssertElementPresent(
-				key_elementHeader = "//div[@aria-label='Grid'][2]",
+				key_elementHeader = "//div[@data-name='Grid'][2]",
 				key_position = 1,
 				locator1 = "PageEditor#CONTAINER_CONTAINER_NESTED_ELEMENT");
 		}
@@ -355,7 +351,7 @@ definition {
 
 			AssertElementPresent(
 				key_columnNumber = 1,
-				key_elementHeader = "//div[@aria-label='Web Content Display']",
+				key_elementHeader = "//div[@data-name='Web Content Display']",
 				key_position = 1,
 				locator1 = "PageEditor#GRID_COLUMN_NESTED_ELEMENT");
 
@@ -378,7 +374,7 @@ definition {
 
 			AssertElementPresent(
 				key_columnNumber = 2,
-				key_elementHeader = "//div[@aria-label='Heading']",
+				key_elementHeader = "//div[@data-name='Heading']",
 				key_position = 1,
 				locator1 = "PageEditor#GRID_COLUMN_NESTED_ELEMENT");
 		}
@@ -399,7 +395,7 @@ definition {
 
 			AssertElementPresent(
 				key_columnNumber = 3,
-				key_elementHeader = "//div[@aria-label='Button']",
+				key_elementHeader = "//div[@data-name='Button']",
 				key_position = 1,
 				locator1 = "PageEditor#GRID_COLUMN_NESTED_ELEMENT");
 		}
@@ -411,19 +407,19 @@ definition {
 
 			AssertElementPresent(
 				key_columnNumber = 1,
-				key_elementHeader = "//div[@aria-label='Web Content Display']",
+				key_elementHeader = "//div[@data-name='Web Content Display']",
 				key_position = 2,
 				locator1 = "PageEditor#GRID_COLUMN_NESTED_ELEMENT");
 
 			AssertElementPresent(
 				key_columnNumber = 2,
-				key_elementHeader = "//div[@aria-label='Heading']",
+				key_elementHeader = "//div[@data-name='Heading']",
 				key_position = 2,
 				locator1 = "PageEditor#GRID_COLUMN_NESTED_ELEMENT");
 
 			AssertElementPresent(
 				key_columnNumber = 3,
-				key_elementHeader = "//div[@aria-label='Button']",
+				key_elementHeader = "//div[@data-name='Button']",
 				key_position = 2,
 				locator1 = "PageEditor#GRID_COLUMN_NESTED_ELEMENT");
 		}
@@ -522,11 +518,11 @@ definition {
 				columnCount = 3,
 				position = 1);
 
-			AssertElementPresent(locator1 = "//div[@aria-label='Grid']//div[contains(@class,'page-editor__topper__content')]//div[contains(@class,'col-4')][1]");
+			AssertElementPresent(locator1 = "//div[@data-name='Grid']//div[contains(@class,'page-editor__topper__content')]//div[contains(@class,'col-4')][1]");
 
-			AssertElementNotPresent(locator1 = "//div[@aria-label='Grid']//div[contains(@class,'page-editor__topper__content')]//div[contains(@class,'col-4')][2]");
+			AssertElementNotPresent(locator1 = "//div[@data-name='Grid']//div[contains(@class,'page-editor__topper__content')]//div[contains(@class,'col-4')][2]");
 
-			AssertElementNotPresent(locator1 = "//div[@aria-label='Grid']//div[contains(@class,'page-editor__topper__content')]//div[contains(@class,'col-4')][3]");
+			AssertElementNotPresent(locator1 = "//div[@data-name='Grid']//div[contains(@class,'page-editor__topper__content')]//div[contains(@class,'col-4')][3]");
 
 			var thirdModuleWidth = selenium.getElementWidth("xpath=(//div[contains(@class,'page-editor__col__border')])[3]");
 
@@ -607,8 +603,6 @@ definition {
 	@description = "This is a use case for LPS-146029. View the defined layout style of Grid in the non-desktop viewport."
 	@priority = 4
 	test ViewDefinedGridLayoutStyleInNonDesktopViewport {
-		property test.liferay.virtual.instance = "false";
-
 		task ("Add a Grid to page") {
 			ContentPagesNavigator.openEditContentPage(
 				pageName = "Content Page Name",

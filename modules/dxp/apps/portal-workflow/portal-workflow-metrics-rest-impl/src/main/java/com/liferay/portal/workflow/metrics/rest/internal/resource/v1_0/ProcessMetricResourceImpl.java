@@ -258,11 +258,12 @@ public class ProcessMetricResourceImpl extends BaseProcessMetricResourceImpl {
 	private ProcessMetric _createProcessMetric(Document document) {
 		return new ProcessMetric() {
 			{
-				instanceCount = 0L;
-				onTimeInstanceCount = 0L;
-				overdueInstanceCount = 0L;
-				process = ProcessUtil.toProcess(
-					document, contextAcceptLanguage.getPreferredLocale());
+				setInstanceCount(() -> 0L);
+				setOnTimeInstanceCount(() -> 0L);
+				setOverdueInstanceCount(() -> 0L);
+				setProcess(
+					() -> ProcessUtil.toProcess(
+						document, contextAcceptLanguage.getPreferredLocale()));
 			}
 		};
 	}
@@ -600,7 +601,7 @@ public class ProcessMetricResourceImpl extends BaseProcessMetricResourceImpl {
 						"instanceCount");
 
 			processMetric.setInstanceCount(
-				valueCountAggregationResult.getValue());
+				valueCountAggregationResult::getValue);
 		}
 		else {
 			ScriptedMetricAggregationResult scriptedMetricAggregationResult =
@@ -608,7 +609,8 @@ public class ProcessMetricResourceImpl extends BaseProcessMetricResourceImpl {
 					bucket.getChildAggregationResult("instanceCount");
 
 			processMetric.setInstanceCount(
-				GetterUtil.getLong(scriptedMetricAggregationResult.getValue()));
+				() -> GetterUtil.getLong(
+					scriptedMetricAggregationResult.getValue()));
 		}
 	}
 
@@ -620,7 +622,7 @@ public class ProcessMetricResourceImpl extends BaseProcessMetricResourceImpl {
 		}
 
 		processMetric.setOnTimeInstanceCount(
-			_resourceHelper.getOnTimeInstanceCount(bucket));
+			() -> _resourceHelper.getOnTimeInstanceCount(bucket));
 	}
 
 	private void _setOverdueInstanceCount(
@@ -631,7 +633,7 @@ public class ProcessMetricResourceImpl extends BaseProcessMetricResourceImpl {
 		}
 
 		processMetric.setOverdueInstanceCount(
-			_resourceHelper.getOverdueInstanceCount(bucket));
+			() -> _resourceHelper.getOverdueInstanceCount(bucket));
 	}
 
 	private void _setUntrackedInstanceCount(ProcessMetric processMetric) {
@@ -641,8 +643,9 @@ public class ProcessMetricResourceImpl extends BaseProcessMetricResourceImpl {
 			processMetric.getOverdueInstanceCount());
 
 		processMetric.setUntrackedInstanceCount(
-			processMetric.getInstanceCount() - onTimeInstanceCount -
-				overdueInstanceCount);
+			() ->
+				processMetric.getInstanceCount() - onTimeInstanceCount -
+					overdueInstanceCount);
 	}
 
 	private FieldSort _toFieldSort(Sort[] sorts) {

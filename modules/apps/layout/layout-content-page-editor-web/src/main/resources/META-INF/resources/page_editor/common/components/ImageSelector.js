@@ -5,14 +5,14 @@
 
 import {ClayButtonWithIcon} from '@clayui/button';
 import ClayForm, {ClayInput} from '@clayui/form';
+import {useId} from 'frontend-js-components-web';
 import {sub} from 'frontend-js-web';
 import PropTypes from 'prop-types';
 import React from 'react';
 
 import {VIEWPORT_SIZES} from '../../app/config/constants/viewportSizes';
 import {useSelector} from '../../app/contexts/StoreContext';
-import {selectPageContents} from '../../app/selectors/selectPageContents';
-import {useId} from '../hooks/useId';
+import usePageContents from '../../app/utils/usePageContents';
 import {openImageSelector} from '../openImageSelector';
 
 export function ImageSelector({
@@ -28,7 +28,7 @@ export function ImageSelector({
 		(state) => state.selectedViewportSize
 	);
 
-	const pageContents = useSelector(selectPageContents);
+	const pageContents = usePageContents();
 
 	const selectedImageTitle =
 		pageContents.find((pageContent) => pageContent.classPK === fileEntryId)
@@ -53,12 +53,10 @@ export function ImageSelector({
 						<ClayInput
 							className="page-editor__item-selector__content-input"
 							id={imageTitleId}
-							onClick={() =>
-								openImageSelector((image) => {
-									onImageSelected(image);
-								})
-							}
-							placeholder={Liferay.Language.get('select-image')}
+							placeholder={sub(
+								Liferay.Language.get('no-x-selected'),
+								Liferay.Language.get('image')
+							)}
 							readOnly
 							sizing="sm"
 							value={selectedImageTitle}

@@ -54,14 +54,15 @@ public class FragmentEntryLocalServiceUtil {
 			long userId, long groupId, long fragmentCollectionId,
 			String fragmentEntryKey, String name, String css, String html,
 			String js, boolean cacheable, String configuration, String icon,
-			long previewFileEntryId, int type, String typeOptions, int status,
+			long previewFileEntryId, boolean readOnly, int type,
+			String typeOptions, int status,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws PortalException {
 
 		return getService().addFragmentEntry(
 			userId, groupId, fragmentCollectionId, fragmentEntryKey, name, css,
-			html, js, cacheable, configuration, icon, previewFileEntryId, type,
-			typeOptions, status, serviceContext);
+			html, js, cacheable, configuration, icon, previewFileEntryId,
+			readOnly, type, typeOptions, status, serviceContext);
 	}
 
 	public static FragmentEntry checkout(
@@ -472,6 +473,13 @@ public class FragmentEntryLocalServiceUtil {
 		return getService().getTempFileNames(userId, groupId, folderName);
 	}
 
+	public static String getUniqueFragmentEntryName(
+		long groupId, long fragmentCollectionId, String name) {
+
+		return getService().getUniqueFragmentEntryName(
+			groupId, fragmentCollectionId, name);
+	}
+
 	public static com.liferay.fragment.model.FragmentEntryVersion getVersion(
 			FragmentEntry fragmentEntry, int version)
 		throws PortalException {
@@ -558,25 +566,13 @@ public class FragmentEntryLocalServiceUtil {
 			long userId, long fragmentEntryId, long fragmentCollectionId,
 			String name, String css, String html, String js, boolean cacheable,
 			String configuration, String icon, long previewFileEntryId,
-			int status)
+			boolean readOnly, String typeOptions, int status)
 		throws PortalException {
 
 		return getService().updateFragmentEntry(
 			userId, fragmentEntryId, fragmentCollectionId, name, css, html, js,
-			cacheable, configuration, icon, previewFileEntryId, status);
-	}
-
-	public static FragmentEntry updateFragmentEntry(
-			long userId, long fragmentEntryId, long fragmentCollectionId,
-			String name, String css, String html, String js, boolean cacheable,
-			String configuration, String icon, long previewFileEntryId,
-			String typeOptions, int status)
-		throws PortalException {
-
-		return getService().updateFragmentEntry(
-			userId, fragmentEntryId, fragmentCollectionId, name, css, html, js,
-			cacheable, configuration, icon, previewFileEntryId, typeOptions,
-			status);
+			cacheable, configuration, icon, previewFileEntryId, readOnly,
+			typeOptions, status);
 	}
 
 	public static FragmentEntry updateFragmentEntry(

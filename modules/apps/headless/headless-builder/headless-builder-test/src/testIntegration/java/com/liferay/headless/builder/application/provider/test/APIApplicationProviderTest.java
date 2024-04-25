@@ -25,7 +25,7 @@ import org.junit.Test;
 /**
  * @author Alejandro Tardín
  */
-@FeatureFlags({"LPS-167253", "LPS-184413", "LPS-186757"})
+@FeatureFlags("LPS-178642")
 public class APIApplicationProviderTest extends BaseTestCase {
 
 	@Test
@@ -45,7 +45,12 @@ public class APIApplicationProviderTest extends BaseTestCase {
 					).put(
 						"path", "/path"
 					).put(
-						"scope", "company"
+						"retrieveType",
+						APIApplication.Endpoint.RetrieveType.COLLECTION.
+							getValue()
+					).put(
+						"scope",
+						APIApplication.Endpoint.Scope.COMPANY.getValue()
 					))
 			).put(
 				"apiApplicationToAPISchemas",
@@ -79,6 +84,7 @@ public class APIApplicationProviderTest extends BaseTestCase {
 				"title", "title"
 			).toString(),
 			"headless-builder/applications", Http.Method.POST);
+
 		HTTPTestUtil.invokeToJSONObject(
 			null,
 			StringBundler.concat(
@@ -122,6 +128,9 @@ public class APIApplicationProviderTest extends BaseTestCase {
 		Assert.assertEquals(schema, endpoint.getRequestSchema());
 		Assert.assertEquals(schema, endpoint.getResponseSchema());
 		Assert.assertEquals(
+			APIApplication.Endpoint.RetrieveType.COLLECTION,
+			endpoint.getRetrieveType());
+		Assert.assertEquals(
 			APIApplication.Endpoint.Scope.COMPANY, endpoint.getScope());
 
 		List<APIApplication.Property> properties = schema.getProperties();
@@ -162,6 +171,33 @@ public class APIApplicationProviderTest extends BaseTestCase {
 
 		Assert.assertEquals(
 			"name ne 'testName'", filter.getODataFilterString());
+
+		HTTPTestUtil.invokeToJSONObject(
+			JSONUtil.put(
+				"apiEndpointToAPISorts",
+				JSONUtil.put(
+					JSONUtil.put(
+						"externalReferenceCode", _API_ENDPOINT_SORT_ERC
+					).put(
+						"oDataSort", "name:asc"
+					))
+			).put(
+				"externalReferenceCode", _API_ENDPOINT_ERC
+			).toString(),
+			"headless-builder/endpoints/by-external-reference-code/" +
+				_API_ENDPOINT_ERC,
+			Http.Method.PATCH);
+
+		apiApplication = _apiApplicationProvider.fetchAPIApplication(
+			"test", TestPropsValues.getCompanyId());
+
+		endpoints = apiApplication.getEndpoints();
+
+		endpoint = endpoints.get(0);
+
+		APIApplication.Sort sort = endpoint.getSort();
+
+		Assert.assertEquals("name:asc", sort.getODataSortString());
 	}
 
 	private static final String _API_APPLICATION_ERC =
@@ -171,6 +207,9 @@ public class APIApplicationProviderTest extends BaseTestCase {
 		RandomTestUtil.randomString();
 
 	private static final String _API_ENDPOINT_FILTER_ERC =
+		RandomTestUtil.randomString();
+
+	private static final String _API_ENDPOINT_SORT_ERC =
 		RandomTestUtil.randomString();
 
 	private static final String _API_SCHEMA_ERC = RandomTestUtil.randomString();

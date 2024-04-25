@@ -21,6 +21,7 @@ definition {
 	test CookiesConsentPanelAcceptsOnlySelectedCookies {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: User opens the Cookie Consent portlet from the Cookie Banner via Configuration link") {
 			CookieBanner.openCookieConsentPanel();
@@ -46,6 +47,7 @@ definition {
 	test CookiesConsentPanelCouldBeAddedToASitePage {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: User creates a site page and adds Cookie Consent Configuration widget to it.") {
 			CookieHelper.createSitePageWithCookieBannerConfigurationPortlet();
@@ -61,6 +63,7 @@ definition {
 	test CookiesConsentPanelCouldBeEnabledAndCustomized {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("When: the End User opens the 'Cookie Consent' panel") {
 			CookieNavigator.gotoInstanceSettings(portlet = "Consent Panel");
@@ -80,6 +83,7 @@ definition {
 	test CookiesConsentPanelCouldBeEnabledAndCustomizedOnASitePage {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: a site configured to show the Banner") {
 			JSONLayout.addPublicLayout(
@@ -107,13 +111,13 @@ definition {
 		}
 	}
 
-	@description = "This is a use case for LPS-148320. Combined AC-1, AC-2, AC-3. Verify that Cookie Consent Panel could be enabled and customized via OSGI file. Blocked by LPS-153615."
-	@ignore = "true"
+	@description = "This is a use case for LPS-148320. Combined AC-1, AC-2, AC-3. Verify that Cookie Consent Panel could be enabled and customized via OSGI file."
 	@priority = 5
 	test CookiesConsentPanelCouldBeEnabledAndCustomizedViaOSGIFile {
 		property osgi.module.configuration.file.names = "com.liferay.cookies.configuration.CookiesBannerConfiguration.config";
 		property osgi.module.configurations = "enabled=\"true\"";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: a site configured to show the Consent Panel via OSGI file") {
 			OSGiConfig.copyOSGiConfigFile(
@@ -137,22 +141,18 @@ definition {
 			CookieConsentAdmin.verifyAllConfigurationElementsAreConfigured(text = "INSTANCE_LEVEL");
 		}
 
-		task ("When: remove all the title and description values and click save button") {
+		task ("When: remove all the title values and click save button") {
 			Type(
 				locator1 = "CookieConsentAdmin#TITLE",
-				value1 = "");
-
-			Type(
-				locator1 = "CookieConsentAdmin#DESCRIPTION",
 				value1 = "");
 
 			CookieBannerAdmin.saveConfiguration();
 		}
 
-		task ("Then: the configuration value changes cannot be saved because all the Title and Description must have a value.") {
-			AssertTextEquals(
-				locator1 = "Message#ERROR",
-				value1 = "Please enter a valid title.");
+		task ("Then: the configuration value changes cannot be saved because Title must have a value.") {
+			AssertElementPresent(
+				key_alertMessage = "This field is required.",
+				locator1 = "Message#ERROR_ENTER_A_VALID_VALUE");
 		}
 	}
 
@@ -161,6 +161,7 @@ definition {
 	test CookiesConsentPanelCouldSaveCookieSettingsViaPortletAtSiteLevel {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: Create a site page with a Cookies Banner Configuration widget and add a new virtual host as SiteURL") {
 			CookieBanner.cookiesBannerDeclineAll();
@@ -231,6 +232,7 @@ definition {
 	test CookiesConsentPanelCouldSaveCookieSettingsWhenItsOnASitePage {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: User creates a site page and adds Cookie Consent Configuration widget to it.") {
 			CookieHelper.createSitePageWithCookieBannerConfigurationPortlet();
@@ -250,6 +252,7 @@ definition {
 	test CookiesConsentPanelDeclineAllSelected {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
 		task ("Given: Use opens the Cookie consent portlet in a popup") {
 			CookieBanner.openCookieConsentPanel();

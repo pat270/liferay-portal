@@ -41,6 +41,7 @@ boolean portletTitleBasedNavigation = GetterUtil.getBoolean(portletConfig.getIni
 if (portletTitleBasedNavigation) {
 	portletDisplay.setShowBackIcon(true);
 	portletDisplay.setURLBack(redirect);
+	portletDisplay.setURLBackTitle(portletDisplay.getTitle());
 
 	renderResponse.setTitle(kbArticle.getTitle());
 }
@@ -49,7 +50,7 @@ if (portletTitleBasedNavigation) {
 <c:if test="<%= portletTitleBasedNavigation %>">
 
 	<%
-	KBDropdownItemsProvider kbDropdownItemsProvider = new KBDropdownItemsProvider(liferayPortletRequest, liferayPortletResponse);
+	KBDropdownItemsProvider kbDropdownItemsProvider = new KBDropdownItemsProvider(liferayPortletRequest, liferayPortletResponse, trashHelper);
 	%>
 
 	<div class="management-bar management-bar-light navbar navbar-expand-md">
@@ -86,7 +87,7 @@ if (portletTitleBasedNavigation) {
 					<clay:dropdown-actions
 						aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 						dropdownItems="<%= kbDropdownItemsProvider.getKBArticleDropdownItems(kbArticle) %>"
-						propsTransformer="admin/js/KBDropdownPropsTransformer"
+						propsTransformer="{KBDropdownPropsTransformer} from knowledge-base-web"
 					/>
 				</li>
 			</ul>
@@ -117,13 +118,13 @@ if (portletTitleBasedNavigation) {
 					<div class="autofit-col">
 
 						<%
-						KBDropdownItemsProvider kbDropdownItemsProvider = new KBDropdownItemsProvider(kbGroupServiceConfiguration, liferayPortletRequest, liferayPortletResponse);
+						KBDropdownItemsProvider kbDropdownItemsProvider = new KBDropdownItemsProvider(kbGroupServiceConfiguration, liferayPortletRequest, liferayPortletResponse, trashHelper);
 						%>
 
 						<clay:dropdown-actions
 							aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 							dropdownItems="<%= kbDropdownItemsProvider.getKBArticleDropdownItems(kbArticle) %>"
-							propsTransformer="admin/js/KBDropdownPropsTransformer"
+							propsTransformer="{KBDropdownPropsTransformer} from knowledge-base-web"
 						/>
 					</div>
 				</c:if>
@@ -147,22 +148,13 @@ if (portletTitleBasedNavigation) {
 				</div>
 
 				<c:if test="<%= viewKBArticleDisplayContext.isKBArticleDescriptionEnabled() && Validator.isNotNull(kbArticle.getDescription()) %>">
-					<liferay-ui:panel-container
-						cssClass="mt-5 panel-group-flush panel-group-sm"
-						extended="<%= true %>"
-						markupView="lexicon"
-						persistState="<%= true %>"
-					>
-						<liferay-frontend:fieldset
-							collapsible="<%= false %>"
-							cssClass="panel-unstyled"
-							label="description"
-						>
-							<div class="lfr-asset-description">
-								<%= HtmlUtil.escape(kbArticle.getDescription()) %>
-							</div>
-						</liferay-frontend:fieldset>
-					</liferay-ui:panel-container>
+					<div class="sheet-subtitle">
+						<liferay-ui:message key="description" />
+					</div>
+
+					<div class="lfr-asset-description">
+						<%= HtmlUtil.escape(kbArticle.getDescription()) %>
+					</div>
 				</c:if>
 
 				<clay:content-row>
@@ -237,38 +229,25 @@ if (portletTitleBasedNavigation) {
 			<c:if test="<%= enableKBArticleSuggestions || !childKBArticles.isEmpty() %>">
 				<c:choose>
 					<c:when test="<%= portletTitleBasedNavigation %>">
-						<liferay-ui:panel-container
-							cssClass="panel-group-flush panel-group-sm"
-							extended="<%= true %>"
-							markupView="lexicon"
-							persistState="<%= true %>"
-						>
+						<clay:panel-group>
 							<c:if test="<%= enableKBArticleSuggestions %>">
-								<liferay-ui:panel
-									collapsible="<%= true %>"
-									cssClass="panel-unstyled"
-									extended="<%= true %>"
-									markupView="lexicon"
-									persistState="<%= true %>"
-									title="suggestions"
+								<clay:panel
+									displayTitle='<%= LanguageUtil.get(request, "suggestions") %>'
+									expanded="<%= true %>"
 								>
 									<liferay-util:include page="/admin/common/kb_article_suggestions.jsp" servletContext="<%= application %>" />
-								</liferay-ui:panel>
+								</clay:panel>
 							</c:if>
 
 							<c:if test="<%= !childKBArticles.isEmpty() %>">
-								<liferay-ui:panel
-									collapsible="<%= true %>"
-									cssClass="knowledge-base-child-article-title panel-unstyled"
-									extended="<%= true %>"
-									markupView="lexicon"
-									persistState="<%= true %>"
-									title='<%= LanguageUtil.format(request, "child-articles-x", childKBArticles.size(), false) %>'
+								<clay:panel
+									displayTitle='<%= LanguageUtil.format(request, "child-articles-x", childKBArticles.size(), false) %>'
+									expanded="<%= true %>"
 								>
 									<liferay-util:include page="/admin/common/kb_article_child.jsp" servletContext="<%= application %>" />
-								</liferay-ui:panel>
+								</clay:panel>
 							</c:if>
-						</liferay-ui:panel-container>
+						</clay:panel-group>
 					</c:when>
 					<c:otherwise>
 						<c:if test="<%= enableKBArticleSuggestions %>">
@@ -283,6 +262,47 @@ if (portletTitleBasedNavigation) {
 			</c:if>
 		</div>
 	</div>
+</div>
+
+<%
+String kbArticleSuccessMessage = GetterUtil.getString(MultiSessionMessages.get(renderRequest, "kbArticleSuccessMessage"));
+%>
+
+<c:if test="<%= Validator.isNotNull(kbArticleSuccessMessage) %>">
+	<liferay-frontend:component
+		context='<%=
+			HashMapBuilder.<String, Object>put(
+				"autoClose", 20000
+			).put(
+				"message", kbArticleSuccessMessage
+			).build()
+		%>'
+		module="{openToast} from knowledge-base-web"
+	/>
+</c:if>
+
+<div>
+
+	<%
+	LockedKBArticleException lockedKBArticleException = (LockedKBArticleException)MultiSessionErrors.get(liferayPortletRequest, LockedKBArticleException.class.getName());
+	%>
+
+	<react:component
+		module="{LockedKBArticleModal} from knowledge-base-web"
+		props='<%=
+			HashMapBuilder.<String, Object>put(
+				"actionLabel", (lockedKBArticleException != null) ? LanguageUtil.get(request, lockedKBArticleException.getCmd()) : null
+			).put(
+				"actionURL", (lockedKBArticleException != null) ? lockedKBArticleException.getActionURL() : null
+			).put(
+				"groupAdmin", permissionChecker.isGroupAdmin(scopeGroupId)
+			).put(
+				"open", lockedKBArticleException != null
+			).put(
+				"userName", (lockedKBArticleException != null) ? lockedKBArticleException.getUserName() : null
+			).build()
+		%>'
+	/>
 </div>
 
 <%

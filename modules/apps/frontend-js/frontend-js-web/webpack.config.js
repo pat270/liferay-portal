@@ -16,7 +16,7 @@ module.exports = {
 		rules: [
 			{
 				exclude: /node_modules/,
-				test: /\.js$/,
+				test: /\.(js|ts|tsx)$/,
 				use: {
 					loader: 'babel-loader',
 				},
@@ -25,8 +25,10 @@ module.exports = {
 	},
 	output: {
 		filename: 'global.bundle.js',
-		libraryTarget: 'window',
 		path: path.resolve('./build/node/packageRunBuild/resources/liferay/'),
 		publicPath: PUBLIC_PATH,
+	},
+	resolve: {
+		extensions: ['.js', '.ts', '.tsx'],
 	},
 };

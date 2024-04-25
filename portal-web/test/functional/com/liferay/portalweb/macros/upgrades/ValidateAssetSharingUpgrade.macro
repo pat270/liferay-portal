@@ -1,6 +1,7 @@
 definition {
 
-	macro revokeAndUpdateSharedEntry {
+	@summary = "Default summary"
+	macro revokeAndUpdateSharedEntry(blogsEntryTitleUpdate = null, blogsEntryTitleView = null, dmDocumentTitleUpdate = null, dmDocumentTitleView = null) {
 		Asset.openTosharedContent(
 			navTab = "Shared by Me",
 			siteURLKey = "guest");
@@ -50,11 +51,12 @@ definition {
 			userEmailAddress = "test@liferay.com");
 	}
 
-	macro viewNoShareOptionAfterDisabled {
-		User.firstLoginPG(
+	@summary = "Default summary"
+	macro viewNoShareOptionAfterDisabled() {
+		User.firstLoginUI(
 			password = "test",
-			userEmailAddress = "test@www.able.com",
-			virtualHostsURL = "http://www.able.com:8080");
+			specificURL = "http://www.able.com:8080",
+			userEmailAddress = "test@www.able.com");
 
 		DMNavigator.openDocumentsAndMediaAdmin(
 			baseURL = "http://www.able.com:8080",
@@ -73,7 +75,8 @@ definition {
 			rowEntry = "Blogs Entry with sharing disabled");
 	}
 
-	macro viewSharedBlog {
+	@summary = "Default summary"
+	macro viewSharedBlog() {
 		User.logoutPG();
 
 		User.loginUserPG(
@@ -102,7 +105,8 @@ definition {
 			userEmailAddress = "test@liferay.com");
 	}
 
-	macro viewSharedDocument {
+	@summary = "Default summary"
+	macro viewSharedDocument(dmDocumentTitle = null) {
 		User.logoutPG();
 
 		User.loginUserPG(

@@ -25,6 +25,7 @@ taglib uri="http://liferay.com/tld/site-navigation" prefix="liferay-site-navigat
 taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %><%@
 taglib uri="http://liferay.com/tld/trash" prefix="liferay-trash" %><%@
 taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %><%@
+taglib uri="http://liferay.com/tld/user" prefix="liferay-user" %><%@
 taglib uri="http://liferay.com/tld/util" prefix="liferay-util" %>
 
 <%@ page import="com.liferay.asset.auto.tagger.configuration.AssetAutoTaggerConfiguration" %><%@
@@ -58,6 +59,7 @@ page import="com.liferay.dynamic.data.mapping.service.DDMStorageLinkLocalService
 page import="com.liferay.dynamic.data.mapping.service.DDMStructureLocalServiceUtil" %><%@
 page import="com.liferay.dynamic.data.mapping.service.DDMTemplateLocalServiceUtil" %><%@
 page import="com.liferay.exportimport.kernel.exception.ExportImportContentValidationException" %><%@
+page import="com.liferay.frontend.taglib.clay.servlet.taglib.util.VerticalNavItemList" %><%@
 page import="com.liferay.frontend.taglib.form.navigator.constants.FormNavigatorConstants" %><%@
 page import="com.liferay.journal.configuration.JournalFileUploadsConfiguration" %><%@
 page import="com.liferay.journal.configuration.JournalGroupServiceConfiguration" %><%@
@@ -96,16 +98,17 @@ page import="com.liferay.journal.model.JournalArticleLocalization" %><%@
 page import="com.liferay.journal.model.JournalFeed" %><%@
 page import="com.liferay.journal.model.JournalFolder" %><%@
 page import="com.liferay.journal.service.JournalArticleLocalServiceUtil" %><%@
+page import="com.liferay.journal.service.JournalArticleServiceUtil" %><%@
 page import="com.liferay.journal.service.JournalFolderLocalServiceUtil" %><%@
 page import="com.liferay.journal.service.JournalFolderServiceUtil" %><%@
 page import="com.liferay.journal.util.comparator.ArticleVersionComparator" %><%@
 page import="com.liferay.journal.web.internal.asset.model.JournalArticleAssetRenderer" %><%@
 page import="com.liferay.journal.web.internal.configuration.JournalWebConfiguration" %><%@
 page import="com.liferay.journal.web.internal.constants.JournalWebConstants" %><%@
-page import="com.liferay.journal.web.internal.dao.search.JournalResultRowSplitter" %><%@
 page import="com.liferay.journal.web.internal.display.context.EditJournalFeedDisplayContext" %><%@
 page import="com.liferay.journal.web.internal.display.context.JournalArticleCommentsManagementToolbarDisplayContext" %><%@
 page import="com.liferay.journal.web.internal.display.context.JournalArticleVersionsManagementToolbarDisplayContext" %><%@
+page import="com.liferay.journal.web.internal.display.context.JournalConfigurationDisplayContext" %><%@
 page import="com.liferay.journal.web.internal.display.context.JournalDDMStructuresDisplayContext" %><%@
 page import="com.liferay.journal.web.internal.display.context.JournalDDMStructuresManagementToolbarDisplayContext" %><%@
 page import="com.liferay.journal.web.internal.display.context.JournalDDMTemplateDisplayContext" %><%@
@@ -121,6 +124,7 @@ page import="com.liferay.journal.web.internal.display.context.JournalHistoryMana
 page import="com.liferay.journal.web.internal.display.context.JournalManagementToolbarDisplayContext" %><%@
 page import="com.liferay.journal.web.internal.display.context.JournalMoveEntriesDisplayContext" %><%@
 page import="com.liferay.journal.web.internal.display.context.JournalPreviewArticleContentTemplateDisplayContext" %><%@
+page import="com.liferay.journal.web.internal.display.context.JournalVersionTabDisplayContext" %><%@
 page import="com.liferay.journal.web.internal.display.context.JournalViewMoreMenuItemsDisplayContext" %><%@
 page import="com.liferay.journal.web.internal.display.context.JournalViewMoreMenuItemsManagementToolbarDisplayContext" %><%@
 page import="com.liferay.journal.web.internal.display.context.helper.JournalWebRequestHelper" %><%@
@@ -142,12 +146,14 @@ page import="com.liferay.journal.web.internal.servlet.taglib.util.DDMStructureAc
 page import="com.liferay.journal.web.internal.servlet.taglib.util.JournalFeedActionDropdownItemsProvider" %><%@
 page import="com.liferay.journal.web.internal.util.JournalPortletUtil" %><%@
 page import="com.liferay.journal.web.internal.util.JournalUtil" %><%@
+page import="com.liferay.petra.string.StringBundler" %><%@
 page import="com.liferay.petra.string.StringPool" %><%@
 page import="com.liferay.portal.kernel.bean.BeanParamUtil" %><%@
 page import="com.liferay.portal.kernel.dao.orm.QueryUtil" %><%@
 page import="com.liferay.portal.kernel.exception.LocaleException" %><%@
 page import="com.liferay.portal.kernel.exception.NoSuchImageException" %><%@
 page import="com.liferay.portal.kernel.exception.NoSuchLayoutException" %><%@
+page import="com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil" %><%@
 page import="com.liferay.portal.kernel.language.LanguageUtil" %><%@
 page import="com.liferay.portal.kernel.language.UnicodeLanguageUtil" %><%@
 page import="com.liferay.portal.kernel.model.*" %><%@
@@ -158,7 +164,7 @@ page import="com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder" %>
 page import="com.liferay.portal.kernel.security.auth.PrincipalException" %><%@
 page import="com.liferay.portal.kernel.security.permission.ActionKeys" %><%@
 page import="com.liferay.portal.kernel.service.*" %><%@
-page import="com.liferay.portal.kernel.servlet.BrowserSnifferUtil" %><%@
+page import="com.liferay.portal.kernel.servlet.MultiSessionMessages" %><%@
 page import="com.liferay.portal.kernel.servlet.SessionMessages" %><%@
 page import="com.liferay.portal.kernel.theme.ThemeDisplay" %><%@
 page import="com.liferay.portal.kernel.upload.FileItem" %><%@
@@ -179,16 +185,15 @@ page import="com.liferay.portal.kernel.util.PortalUtil" %><%@
 page import="com.liferay.portal.kernel.util.SetUtil" %><%@
 page import="com.liferay.portal.kernel.util.StringUtil" %><%@
 page import="com.liferay.portal.kernel.util.TextFormatter" %><%@
-page import="com.liferay.portal.kernel.util.UnicodeFormatter" %><%@
 page import="com.liferay.portal.kernel.util.Validator" %><%@
 page import="com.liferay.portal.kernel.util.WebKeys" %><%@
 page import="com.liferay.portal.kernel.webdav.WebDAVUtil" %><%@
 page import="com.liferay.portal.kernel.workflow.WorkflowConstants" %><%@
 page import="com.liferay.portal.kernel.workflow.WorkflowDefinition" %><%@
-page import="com.liferay.portal.kernel.workflow.WorkflowDefinitionManagerUtil" %><%@
-page import="com.liferay.portal.kernel.workflow.WorkflowEngineManagerUtil" %><%@
 page import="com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil" %><%@
 page import="com.liferay.portal.model.impl.*" %><%@
+page import="com.liferay.portal.servlet.BrowserSnifferUtil" %><%@
+page import="com.liferay.portal.workflow.util.WorkflowDefinitionManagerUtil" %><%@
 page import="com.liferay.rss.util.RSSUtil" %><%@
 page import="com.liferay.taglib.search.ResultRow" %><%@
 page import="com.liferay.taglib.util.CustomAttributesUtil" %>
@@ -221,13 +226,13 @@ AssetDisplayPageFriendlyURLProvider assetDisplayPageFriendlyURLProvider = (Asset
 
 JournalWebConfiguration journalWebConfiguration = (JournalWebConfiguration)request.getAttribute(JournalWebConfiguration.class.getName());
 
-JournalDisplayContext journalDisplayContext = JournalDisplayContext.create(request, liferayPortletRequest, liferayPortletResponse, assetDisplayPageFriendlyURLProvider, trashHelper);
+JournalDisplayContext journalDisplayContext = (JournalDisplayContext)request.getAttribute(JournalDisplayContext.class.getName());
 
 JournalWebRequestHelper journalWebRequestHelper = new JournalWebRequestHelper(request);
 
 JournalGroupServiceConfiguration journalGroupServiceConfiguration = journalWebRequestHelper.getJournalGroupServiceConfiguration();
 
-Format dateFormatDateTime = FastDateFormatFactoryUtil.getDateTime(locale, timeZone);
+Format dateTimeFormat = FastDateFormatFactoryUtil.getDateTime(locale, timeZone);
 %>
 
 <%@ include file="/init-ext.jsp" %>

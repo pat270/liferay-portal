@@ -9,7 +9,6 @@ import com.liferay.object.constants.ObjectFieldConstants;
 import com.liferay.object.constants.ObjectFieldSettingConstants;
 import com.liferay.object.constants.ObjectRelationshipConstants;
 import com.liferay.object.field.setting.util.ObjectFieldSettingUtil;
-import com.liferay.object.field.util.ObjectFieldUtil;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectField;
 import com.liferay.object.model.ObjectRelationship;
@@ -22,23 +21,23 @@ import com.liferay.object.rest.internal.vulcan.openapi.contributor.ObjectEntryOp
 import com.liferay.object.rest.openapi.v1_0.ObjectEntryOpenAPIResource;
 import com.liferay.object.rest.openapi.v1_0.ObjectEntryOpenAPIResourceProvider;
 import com.liferay.object.service.ObjectActionLocalService;
-import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectFieldLocalService;
 import com.liferay.object.service.ObjectRelationshipLocalService;
 import com.liferay.object.system.SystemObjectDefinitionManagerRegistry;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.TreeMapBuilder;
 import com.liferay.portal.vulcan.batch.engine.Field;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.openapi.DTOProperty;
 import com.liferay.portal.vulcan.openapi.OpenAPISchemaFilter;
 import com.liferay.portal.vulcan.resource.OpenAPIResource;
+import com.liferay.portal.vulcan.util.OpenAPIUtil;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 
 import java.util.ArrayList;
@@ -49,7 +48,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -68,7 +66,6 @@ public class ObjectEntryOpenAPIResourceImpl
 		BundleContext bundleContext, DTOConverterRegistry dtoConverterRegistry,
 		ObjectActionLocalService objectActionLocalService,
 		ObjectDefinition objectDefinition,
-		ObjectDefinitionLocalService objectDefinitionLocalService,
 		ObjectEntryOpenAPIResourceProvider objectEntryOpenAPIResourceProvider,
 		ObjectFieldLocalService objectFieldLocalService,
 		ObjectRelationshipLocalService objectRelationshipLocalService,
@@ -80,7 +77,6 @@ public class ObjectEntryOpenAPIResourceImpl
 		_dtoConverterRegistry = dtoConverterRegistry;
 		_objectActionLocalService = objectActionLocalService;
 		_objectDefinition = objectDefinition;
-		_objectDefinitionLocalService = objectDefinitionLocalService;
 		_objectEntryOpenAPIResourceProvider =
 			objectEntryOpenAPIResourceProvider;
 		_objectFieldLocalService = objectFieldLocalService;
@@ -117,8 +113,11 @@ public class ObjectEntryOpenAPIResourceImpl
 				Field.of(
 					propertySchema.getDescription(), propertyName,
 					GetterUtil.getBoolean(propertySchema.getReadOnly()),
+					_getRef(propertySchema),
 					requiredPropertySchemaNames.contains(propertyName),
 					propertySchema.getType(),
+					OpenAPIUtil.getBatchUnsupportedFormats(
+						propertySchema.getExtensions()),
 					GetterUtil.getBoolean(propertySchema.getWriteOnly())));
 		}
 
@@ -150,7 +149,18 @@ public class ObjectEntryOpenAPIResourceImpl
 				ObjectFieldConstants.BUSINESS_TYPE_ATTACHMENT)) {
 
 			DTOProperty dtoProperty = new DTOProperty(
-				Collections.singletonMap("x-parent-map", "properties"),
+				HashMapBuilder.<String, Object>put(
+					"x-batch-unsupported-formats",
+					() -> {
+						if (!FeatureFlagManagerUtil.isEnabled("LPS-200135")) {
+							return "CSV";
+						}
+
+						return null;
+					}
+				).put(
+					"x-parent-map", "properties"
+				).build(),
 				objectField.getName(), FileEntry.class.getSimpleName());
 
 			dtoProperty.setDTOProperties(
@@ -164,6 +174,20 @@ public class ObjectEntryOpenAPIResourceImpl
 			dtoProperty.setRequired(objectField.isRequired());
 
 			return dtoProperty;
+		}
+		else if (Objects.equals(
+					objectField.getBusinessType(),
+					ObjectFieldConstants.BUSINESS_TYPE_DATE) &&
+				 _fieldNameMappings.containsKey(objectField.getName())) {
+
+			return new DTOProperty(
+				null, _fieldNameMappings.get(objectField.getName()),
+				ObjectFieldConstants.BUSINESS_TYPE_DATE_TIME) {
+
+				{
+					setRequired(objectField.isRequired());
+				}
+			};
 		}
 		else if (Objects.equals(
 					objectField.getBusinessType(),
@@ -185,10 +209,65 @@ public class ObjectEntryOpenAPIResourceImpl
 				}
 			};
 		}
+		else if (Objects.equals(
+					objectField.getBusinessType(),
+					ObjectFieldConstants.BUSINESS_TYPE_ENCRYPTED) ||
+				 Objects.equals(
+					 objectField.getBusinessType(),
+					 ObjectFieldConstants.BUSINESS_TYPE_LONG_TEXT) ||
+				 Objects.equals(
+					 objectField.getBusinessType(),
+					 ObjectFieldConstants.BUSINESS_TYPE_RICH_TEXT)) {
 
-		if (objectField.getListTypeDefinitionId() != 0) {
+			return new DTOProperty(
+				HashMapBuilder.<String, Object>put(
+					"x-batch-unsupported-formats",
+					() -> {
+						if (Objects.equals(
+								objectField.getBusinessType(),
+								ObjectFieldConstants.BUSINESS_TYPE_ENCRYPTED) &&
+							!FeatureFlagManagerUtil.isEnabled("LPD-6683")) {
+
+							return "CSV";
+						}
+
+						return null;
+					}
+				).put(
+					"x-parent-map", "properties"
+				).build(),
+				objectField.getName(), "String") {
+
+				{
+					setRequired(objectField.isRequired());
+				}
+			};
+		}
+		else if (Objects.equals(
+					objectField.getBusinessType(),
+					ObjectFieldConstants.BUSINESS_TYPE_MULTISELECT_PICKLIST) ||
+				 Objects.equals(
+					 objectField.getBusinessType(),
+					 ObjectFieldConstants.BUSINESS_TYPE_PICKLIST)) {
+
 			DTOProperty dtoProperty = new DTOProperty(
-				Collections.singletonMap("x-parent-map", "properties"),
+				HashMapBuilder.<String, Object>put(
+					"x-batch-unsupported-formats",
+					() -> {
+						if (Objects.equals(
+								objectField.getBusinessType(),
+								ObjectFieldConstants.
+									BUSINESS_TYPE_MULTISELECT_PICKLIST) &&
+							!FeatureFlagManagerUtil.isEnabled("LPS-200135")) {
+
+							return "CSV";
+						}
+
+						return null;
+					}
+				).put(
+					"x-parent-map", "properties"
+				).build(),
 				objectField.getName(), ListEntry.class.getSimpleName());
 
 			dtoProperty.setDTOProperties(
@@ -203,9 +282,47 @@ public class ObjectEntryOpenAPIResourceImpl
 
 			return dtoProperty;
 		}
+		else if (Objects.equals(
+					objectField.getBusinessType(),
+					ObjectFieldConstants.BUSINESS_TYPE_PRECISION_DECIMAL)) {
+
+			return new DTOProperty(
+				Collections.singletonMap("x-parent-map", "properties"),
+				objectField.getName(), Double.class.getSimpleName()) {
+
+				{
+					setRequired(objectField.isRequired());
+				}
+			};
+		}
 
 		return new DTOProperty(
-			Collections.singletonMap("x-parent-map", "properties"),
+			HashMapBuilder.<String, Object>put(
+				"x-batch-unsupported-formats",
+				() -> {
+					if ((Objects.equals(
+							objectField.getBusinessType(),
+							ObjectFieldConstants.BUSINESS_TYPE_AGGREGATION) ||
+						 Objects.equals(
+							 objectField.getBusinessType(),
+							 ObjectFieldConstants.
+								 BUSINESS_TYPE_AUTO_INCREMENT) ||
+						 Objects.equals(
+							 objectField.getBusinessType(),
+							 ObjectFieldConstants.BUSINESS_TYPE_BOOLEAN) ||
+						 Objects.equals(
+							 objectField.getBusinessType(),
+							 ObjectFieldConstants.BUSINESS_TYPE_FORMULA)) &&
+						!FeatureFlagManagerUtil.isEnabled("LPD-6683")) {
+
+						return "CSV";
+					}
+
+					return null;
+				}
+			).put(
+				"x-parent-map", "properties"
+			).build(),
 			objectField.getName(), objectField.getDBType()) {
 
 			{
@@ -226,24 +343,22 @@ public class ObjectEntryOpenAPIResourceImpl
 			boolean addRelatedSchemas, String type, UriInfo uriInfo)
 		throws Exception {
 
-		return _setReadOnly(
-			_openAPIResource.getOpenAPI(
-				new ObjectEntryOpenAPIContributor(
-					addRelatedSchemas, _bundleContext, _dtoConverterRegistry,
-					_objectActionLocalService, _objectDefinition,
-					_objectDefinitionLocalService, this,
-					_objectEntryOpenAPIResourceProvider,
-					_objectRelationshipLocalService, _openAPIResource,
-					_systemObjectDefinitionManagerRegistry),
-				_getOpenAPISchemaFilter(_objectDefinition),
-				new HashSet<Class<?>>() {
-					{
-						add(ObjectEntryRelatedObjectsResourceImpl.class);
-						add(ObjectEntryResourceImpl.class);
-						add(OpenAPIResourceImpl.class);
-					}
-				},
-				type, uriInfo));
+		return _openAPIResource.getOpenAPI(
+			new ObjectEntryOpenAPIContributor(
+				addRelatedSchemas, _bundleContext, _dtoConverterRegistry,
+				_objectActionLocalService, _objectDefinition,
+				_objectEntryOpenAPIResourceProvider, _objectFieldLocalService,
+				_objectRelationshipLocalService, _openAPIResource,
+				_systemObjectDefinitionManagerRegistry),
+			_getOpenAPISchemaFilter(_objectDefinition),
+			new HashSet<Class<?>>() {
+				{
+					add(ObjectEntryRelatedObjectsResourceImpl.class);
+					add(ObjectEntryResourceImpl.class);
+					add(OpenAPIResourceImpl.class);
+				}
+			},
+			type, uriInfo);
 	}
 
 	private OpenAPISchemaFilter _getOpenAPISchemaFilter(
@@ -265,9 +380,7 @@ public class ObjectEntryOpenAPIResourceImpl
 
 			dtoProperties.add(_getDTOProperty(objectField));
 
-			if (objectField.isLocalized() &&
-				FeatureFlagManagerUtil.isEnabled("LPS-172017")) {
-
+			if (objectField.isLocalized()) {
 				dtoProperties.add(
 					new DTOProperty(
 						Collections.singletonMap("x-parent-map", "properties"),
@@ -349,6 +462,18 @@ public class ObjectEntryOpenAPIResourceImpl
 		return openAPISchemaFilter;
 	}
 
+	private String _getRef(Schema schema) {
+		if (schema instanceof ArraySchema) {
+			ArraySchema arraySchema = (ArraySchema)schema;
+
+			Schema itemsSchema = arraySchema.getItems();
+
+			return itemsSchema.get$ref();
+		}
+
+		return schema.get$ref();
+	}
+
 	private List<String> _getRequiredPropertySchemaNames(Schema schema) {
 		List<String> requiredPropertySchemaNames = schema.getRequired();
 
@@ -359,65 +484,21 @@ public class ObjectEntryOpenAPIResourceImpl
 		return requiredPropertySchemaNames;
 	}
 
-	private Response _setReadOnly(Response response) {
-		Map<String, ObjectField> objectFields =
-			ObjectFieldUtil.toObjectFieldsMap(
-				_objectFieldLocalService.getObjectFields(
-					_objectDefinition.getObjectDefinitionId()));
-
-		Schema schema = _getObjectDefinitionSchema(
-			(OpenAPI)response.getEntity());
-
-		Map<String, Schema> properties = schema.getProperties();
-
-		for (Map.Entry<String, Schema> entry : properties.entrySet()) {
-			String key = entry.getKey();
-
-			schema = entry.getValue();
-
-			if (_readOnlyFieldNames.contains(key)) {
-				schema.readOnly(true);
-
-				continue;
-			}
-
-			ObjectField objectField = objectFields.get(key);
-
-			if (objectField == null) {
-				continue;
-			}
-
-			if (Objects.equals(
-					objectField.getReadOnly(),
-					ObjectFieldConstants.READ_ONLY_CONDITIONAL) ||
-				Objects.equals(
-					objectField.getReadOnly(),
-					ObjectFieldConstants.READ_ONLY_FALSE)) {
-
-				schema.readOnly(false);
-
-				continue;
-			}
-
-			schema.readOnly(true);
-		}
-
-		return response;
-	}
-
 	private final BundleContext _bundleContext;
 	private final DTOConverterRegistry _dtoConverterRegistry;
+	private final Map<String, String> _fieldNameMappings = HashMapBuilder.put(
+		"createDate", "dateCreated"
+	).put(
+		"modifiedDate", "dateModified"
+	).build();
 	private final ObjectActionLocalService _objectActionLocalService;
 	private final ObjectDefinition _objectDefinition;
-	private final ObjectDefinitionLocalService _objectDefinitionLocalService;
 	private final ObjectEntryOpenAPIResourceProvider
 		_objectEntryOpenAPIResourceProvider;
 	private final ObjectFieldLocalService _objectFieldLocalService;
 	private final ObjectRelationshipLocalService
 		_objectRelationshipLocalService;
 	private final OpenAPIResource _openAPIResource;
-	private final Set<String> _readOnlyFieldNames = SetUtil.fromArray(
-		"dateCreated", "dateModified", "id");
 	private final SystemObjectDefinitionManagerRegistry
 		_systemObjectDefinitionManagerRegistry;
 

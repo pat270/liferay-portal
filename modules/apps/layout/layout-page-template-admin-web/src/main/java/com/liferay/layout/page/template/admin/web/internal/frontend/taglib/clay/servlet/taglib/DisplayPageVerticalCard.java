@@ -15,6 +15,7 @@ import com.liferay.info.item.InfoItemFormVariation;
 import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.info.item.provider.InfoItemDetailsProvider;
 import com.liferay.info.item.provider.InfoItemFormVariationsProvider;
+import com.liferay.layout.constants.LayoutTypeSettingsConstants;
 import com.liferay.layout.page.template.admin.web.internal.servlet.taglib.util.DisplayPageActionDropdownItemsProvider;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.petra.string.StringPool;
@@ -24,6 +25,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
+import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -46,11 +48,14 @@ public class DisplayPageVerticalCard
 	extends BaseBaseClayCard implements VerticalCard {
 
 	public DisplayPageVerticalCard(
-		BaseModel<?> baseModel, RenderRequest renderRequest,
+		boolean allowedMappedContentType, BaseModel<?> baseModel,
+		boolean existsMappedContentType, RenderRequest renderRequest,
 		RenderResponse renderResponse, RowChecker rowChecker) {
 
 		super(baseModel, rowChecker);
 
+		_allowedMappedContentType = allowedMappedContentType;
+		_existsMappedContentType = existsMappedContentType;
 		_renderRequest = renderRequest;
 		_renderResponse = renderResponse;
 
@@ -71,6 +76,7 @@ public class DisplayPageVerticalCard
 			DisplayPageActionDropdownItemsProvider
 				displayPageActionDropdownItemsProvider =
 					new DisplayPageActionDropdownItemsProvider(
+						_allowedMappedContentType, _existsMappedContentType,
 						_layoutPageTemplateEntry, _renderRequest,
 						_renderResponse);
 
@@ -88,15 +94,18 @@ public class DisplayPageVerticalCard
 
 	@Override
 	public String getHref() {
+		if (!_existsMappedContentType) {
+			return null;
+		}
+
 		try {
-			String layoutFullURL = PortalUtil.getLayoutFullURL(
-				_draftLayout, _themeDisplay);
+			PortletDisplay portletDisplay = _themeDisplay.getPortletDisplay();
 
-			layoutFullURL = HttpComponentsUtil.setParameter(
-				layoutFullURL, "p_l_mode", Constants.EDIT);
-
-			return HttpComponentsUtil.setParameter(
-				layoutFullURL, "p_l_back_url", _themeDisplay.getURLCurrent());
+			return HttpComponentsUtil.addParameters(
+				PortalUtil.getLayoutFullURL(_draftLayout, _themeDisplay),
+				"p_l_back_url", _themeDisplay.getURLCurrent(),
+				"p_l_back_url_title", portletDisplay.getPortletDisplayName(),
+				"p_l_mode", Constants.EDIT);
 		}
 		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
@@ -124,7 +133,8 @@ public class DisplayPageVerticalCard
 		}
 
 		if (!GetterUtil.getBoolean(
-				_draftLayout.getTypeSettingsProperty("published"))) {
+				_draftLayout.getTypeSettingsProperty(
+					LayoutTypeSettingsConstants.KEY_PUBLISHED))) {
 
 			return LabelItemListBuilder.add(
 				labelItem -> labelItem.setStatus(WorkflowConstants.STATUS_DRAFT)
@@ -222,7 +232,9 @@ public class DisplayPageVerticalCard
 	private static final Log _log = LogFactoryUtil.getLog(
 		DisplayPageVerticalCard.class);
 
+	private final boolean _allowedMappedContentType;
 	private final Layout _draftLayout;
+	private final boolean _existsMappedContentType;
 	private final InfoItemServiceRegistry _infoItemServiceRegistry;
 	private final LayoutPageTemplateEntry _layoutPageTemplateEntry;
 	private final RenderRequest _renderRequest;

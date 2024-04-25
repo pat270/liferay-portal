@@ -27,12 +27,12 @@ import com.liferay.info.item.InfoItemReference;
 import com.liferay.layout.display.page.LayoutDisplayPageObjectProvider;
 import com.liferay.layout.display.page.LayoutDisplayPageProvider;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutFriendlyURLComposite;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.portlet.FriendlyURLResolver;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.GroupLocalService;
@@ -40,7 +40,7 @@ import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.settings.GroupServiceSettingsLocator;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.FriendlyURLNormalizer;
-import com.liferay.portal.kernel.util.Html;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.InheritableMap;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -216,7 +216,7 @@ public class AssetCategoryAssetDisplayPageFriendlyURLResolver
 					groupId);
 
 			CPDisplayLayoutConfiguration cpDisplayLayoutConfiguration =
-				ConfigurationProviderUtil.getConfiguration(
+				_configurationProvider.getConfiguration(
 					CPDisplayLayoutConfiguration.class,
 					new GroupServiceSettingsLocator(
 						commerceChannel.getGroupId(),
@@ -301,7 +301,7 @@ public class AssetCategoryAssetDisplayPageFriendlyURLResolver
 		_portal.addPageSubtitle(
 			assetCategory.getTitle(languageId), httpServletRequest);
 		_portal.addPageDescription(
-			_html.stripHtml(assetCategory.getDescription(languageId)),
+			HtmlUtil.stripHtml(assetCategory.getDescription(languageId)),
 			httpServletRequest);
 
 		List<AssetTag> assetTags = _assetTagLocalService.getTags(
@@ -345,6 +345,9 @@ public class AssetCategoryAssetDisplayPageFriendlyURLResolver
 	private CommerceChannelLocalService _commerceChannelLocalService;
 
 	@Reference
+	private ConfigurationProvider _configurationProvider;
+
+	@Reference
 	private CPDisplayLayoutLocalService _cpDisplayLayoutLocalService;
 
 	@Reference
@@ -358,9 +361,6 @@ public class AssetCategoryAssetDisplayPageFriendlyURLResolver
 
 	@Reference
 	private GroupLocalService _groupLocalService;
-
-	@Reference
-	private Html _html;
 
 	@Reference
 	private Language _language;

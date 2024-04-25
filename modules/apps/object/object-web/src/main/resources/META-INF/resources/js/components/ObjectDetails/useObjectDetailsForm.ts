@@ -5,10 +5,12 @@
 
 import {
 	FormError,
+	constantsUtils,
 	invalidateLocalizableLabelRequired,
 	invalidateRequired,
 	useForm,
 } from '@liferay/object-js-components-web';
+import {sub} from 'frontend-js-web';
 
 import {
 	checkIfFirstLetterIsUppercase,
@@ -43,7 +45,12 @@ const getNameErrors = (
 	}
 
 	if (name.length > 41) {
-		errors.name = Liferay.Language.get('only-41-characters-are-allowed');
+		errors.name = sub(
+			Liferay.Language.get(
+				'only-x-characters-are-allowed-in-the-x-field'
+			),
+			['41', 'name']
+		);
 
 		return;
 	}
@@ -66,13 +73,13 @@ export function useObjectDetailsForm({
 
 		if (!objectDefinition.system) {
 			if (invalidateLocalizableLabelRequired(objectDefinition.label)) {
-				errors.label = REQUIRED_MSG;
+				errors.label = constantsUtils.REQUIRED_MSG;
 			}
 
 			if (
 				invalidateLocalizableLabelRequired(objectDefinition.pluralLabel)
 			) {
-				errors.pluralLabel = REQUIRED_MSG;
+				errors.pluralLabel = constantsUtils.REQUIRED_MSG;
 			}
 		}
 

@@ -3,6 +3,8 @@ definition {
 
 	property portal.release = "true";
 	property portal.upstream = "true";
+	property test.liferay.virtual.instance = "false";
+	property test.run.type = "single";
 	property testray.component.names = "Object";
 	property testray.main.component.name = "Upgrades Object";
 
@@ -25,7 +27,7 @@ definition {
 		task ("View an email notification template after Upgrade") {
 			Notifications.goToNotificationTemplateAdmin();
 
-			ObjectNotifications.viewNotificationTemplateDetails(
+			ObjectNotifications.viewEmailNotificationTemplateDetails(
 				bcc = "test@liferay.com",
 				cc = "test@liferay.com",
 				description = "Description",
@@ -36,9 +38,10 @@ definition {
 				name = "Notification Template",
 				subject = "Subject");
 
-			AssertElementPresent(
-				key_dataSource = "Custom Object2",
-				locator1 = "ObjectNotifications#DATA_SOURCE_ATTACHMENTS");
+			AssertTextEquals(
+				key_labelName = "Data Source",
+				locator1 = "ObjectAdmin#CLAY_GENERIC_BUTTON",
+				value1 = "Custom Object2");
 
 			AssertTextPresent(
 				locator1 = "ObjectNotifications#FIELD_ATTACHMENTS_OBJECT",
@@ -65,7 +68,9 @@ definition {
 		}
 
 		task ("Add a new email notification template after Upgrade") {
-			ObjectNotifications.addNewNotificationTemplate(
+			ObjectNotifications.addNewNotificationTemplate(notificationType = "Email");
+
+			ObjectNotifications.configureEmailNotificationTemplate(
 				bcc = "test@liferay.com",
 				cc = "test@liferay.com",
 				description = "Description for Template Add After Upgrade",
@@ -74,7 +79,6 @@ definition {
 				fromAddress = "Liferay",
 				fromName = "Test Test",
 				name = "Notification Template Add After Upgrade",
-				notificationType = "Email",
 				objectLabelAttachment = "Custom Object2",
 				subject = "Subject After Upgrade");
 

@@ -27,6 +27,7 @@ import java.io.File;
 
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -134,12 +135,27 @@ public class EditCommercePaymentMethodGroupRelMVCActionCommand
 			String commercePaymentMethodEngineKey = ParamUtil.getString(
 				actionRequest, "commercePaymentMethodEngineKey");
 
-			commercePaymentMethodGroupRel =
-				_commercePaymentMethodGroupRelService.
-					addCommercePaymentMethodGroupRel(
-						commerceChannel.getGroupId(), nameMap, descriptionMap,
-						active, imageFile, commercePaymentMethodEngineKey,
-						priority, null);
+			if (Objects.equals(
+					commercePaymentMethodEngineKey,
+					"function.commerce.payment.integration.configuration")) {
+
+				commercePaymentMethodGroupRel =
+					_commercePaymentMethodGroupRelService.
+						addCommercePaymentMethodGroupRel(
+							commerceChannel.getGroupId(), nameMap,
+							descriptionMap, active, imageFile,
+							ParamUtil.getString(
+								actionRequest, "commercePaymentIntegrationKey"),
+							priority, null);
+			}
+			else {
+				commercePaymentMethodGroupRel =
+					_commercePaymentMethodGroupRelService.
+						addCommercePaymentMethodGroupRel(
+							commerceChannel.getGroupId(), nameMap,
+							descriptionMap, active, imageFile,
+							commercePaymentMethodEngineKey, priority, null);
+			}
 		}
 		else {
 			commercePaymentMethodGroupRel =

@@ -1,9 +1,11 @@
 Bundle-Name: Liferay Portal Security LDAP Implementation
 Bundle-SymbolicName: com.liferay.portal.security.ldap.impl
-Bundle-Version: 4.0.49
+Bundle-Version: 4.0.59
 Import-Package:\
 	!junit.*,\
 	\
 	!org.junit.*,\
+	\
+	javax.net.ssl,\
 	\
 	*

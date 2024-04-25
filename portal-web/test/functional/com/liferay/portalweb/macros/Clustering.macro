@@ -1,20 +1,22 @@
 definition {
 
-	macro _viewLiveSession {
+	@summary = "Assert a a live session in row ${count}"
+	macro _viewLiveSession(navItem = null, count = null) {
 		var key_navItem = ${navItem};
 		var key_index = ${count};
 
 		AssertElementPresent(locator1 = "LexiconTable#TABLE_SESSION_ID");
 	}
 
-	macro _viewNoLiveSession {
+	@summary = "Assert there are no live sessions"
+	macro _viewNoLiveSession(count = null) {
 		var key_index = ${count};
 
 		AssertElementNotPresent(locator1 = "LexiconTable#TABLE_SESSION_ID");
 	}
 
-	@description = "Deploy the following jar into Liferay Portal server at port ${nodePort}"
-	macro deployClusteringModule {
+	@summary = "Deploy a clustering module into Liferay Portal server at port ${nodePort}"
+	macro deployClusteringModule(deployDir = null, nodePort = null) {
 		if (isSet(deployDir)) {
 			var liferayHome = ${deployDir};
 		}
@@ -32,7 +34,8 @@ definition {
 		AntCommands.runCommand("build-test.xml", "deploy-osgi-module-to-specific-bundle -DliferayHome=${liferayHome} -Dmodule.base.dir=modules/apps/portal/portal-cluster-multiple-sample-web");
 	}
 
-	macro enableDebugging {
+	@summary = "Enable clustering debugging in the log of port ${nodePort}"
+	macro enableDebugging(nodePort = null, categoryName = null) {
 		Navigator.openSpecificURL(url = "http://localhost:${nodePort}");
 
 		if (IsElementPresent(locator1 = "UserBar#USER_SIGN_IN")) {
@@ -42,18 +45,15 @@ definition {
 				userEmailAddress = "test@liferay.com");
 		}
 
-		ApplicationsMenu.gotoPortlet(
-			category = "System",
-			panel = "Control Panel",
-			portlet = "Server Administration");
+		ServerAdministration.openServerAdmin(baseURL = "http://localhost:${nodePort}");
 
 		ServerAdministration.addCategoryLogLevels(
 			categoryLevel = "DEBUG",
 			categoryName = ${categoryName});
 	}
 
-	@description = "Get cluster node control address in console"
-	macro getClusterNodeControlAddress {
+	@summary = "Get the cluster node control address from the log of node ${nodePort}"
+	macro getClusterNodeControlAddress(nodePort = null) {
 		var leadingPortNumber = StringUtil.replace(${nodePort}, 080, "");
 
 		var bundleIndex = ${leadingPortNumber} - 8;
@@ -74,8 +74,8 @@ definition {
 		echo("control Address of ${nodePort} is ${controlAddress}");
 	}
 
-	@description = "Get cluster node outgoing ip address in console"
-	macro getClusterNodeOutgoingIPAddress {
+	@summary = "Get the cluster node outgoing ip address from the log of node ${nodePort}"
+	macro getClusterNodeOutgoingIPAddress(nodePort = null) {
 		var leadingPortNumber = StringUtil.replace(${nodePort}, 080, "");
 
 		var bundleIndex = ${leadingPortNumber} - 8;
@@ -97,8 +97,8 @@ definition {
 		echo("outgoing IP Address of ${nodePort} is ${ipAddress}");
 	}
 
-	@description = "Get cluster node transport address in console"
-	macro getClusterNodeTransportAddress {
+	@summary = "Get the cluster node transport address from the log of node ${nodePort}"
+	macro getClusterNodeTransportAddress(nodePort = null) {
 		var leadingPortNumber = StringUtil.replace(${nodePort}, 080, "");
 
 		var bundleIndex = ${leadingPortNumber} - 8;
@@ -119,8 +119,8 @@ definition {
 		echo("transport Address of ${nodePort} is ${transportAddress}");
 	}
 
-	@description = "This will get the log content for a specific clustered server bundle"
-	macro getLogFileSpecificServer {
+	@summary = "Get the log content for a specific clustered server bundle"
+	macro getLogFileSpecificServer(nodePort = null) {
 		var leadingPortNumber = StringUtil.replace(${nodePort}, 080, "");
 
 		if (${leadingPortNumber} != 0) {
@@ -139,8 +139,8 @@ definition {
 		return ${fileContent};
 	}
 
-	@description = "This will get the log content for session replication on specific clustered server bundle"
-	macro getLogFileSpecificServerSessionReplication {
+	@summary = "Get the log content for session replication on a specific clustered server bundle"
+	macro getLogFileSpecificServerSessionReplication(nodePort = null) {
 		var leadingPortNumber = StringUtil.replace(${nodePort}, 080, "");
 
 		if (${leadingPortNumber} != 0) {
@@ -152,7 +152,7 @@ definition {
 
 		AntCommands.runCommand("build-test.xml", "cluster-session-replication-log -Dapp.server.bundle.index=${bundleIndex}");
 
-		Pause(locator1 = 10000);
+		Pause(value1 = 10000);
 
 		var liferayHome = PropsUtil.get("liferay.home.dir.name");
 
@@ -165,8 +165,8 @@ definition {
 		echo(${fileContent});
 	}
 
-	@description = "This will shutdown the server at a specific bundle at ${base_branch}-bundles-${bundle_index}\tomcat."
-	macro shutdownSpecificServer {
+	@summary = "Shutdown the server at a specific bundle at ${base_branch}-bundles-${bundle_index}\tomcat"
+	macro shutdownSpecificServer(nodePort = null) {
 		var leadingPortNumber = StringUtil.replace(${nodePort}, 080, "");
 
 		var bundleIndex = ${leadingPortNumber} - 8;
@@ -174,8 +174,8 @@ definition {
 		AntCommands.runCommand("build-test.xml", "stop-app-server -Dapp.server.bundle.index=${bundleIndex}");
 	}
 
-	@description = "This will start the server at a specific bundle at ${base_branch}-bundles-${bundle_index}\tomcat."
-	macro startSpecificServer {
+	@summary = "Start the server at a specific bundle at ${base_branch}-bundles-${bundle_index}\tomcat"
+	macro startSpecificServer(deleteLiferayHome = null, nodePort = null, keepCachedAppServerData = null) {
 		var leadingPortNumber = StringUtil.replace(${nodePort}, 080, "");
 
 		var bundleIndex = ${leadingPortNumber} - 8;
@@ -191,7 +191,8 @@ definition {
 		}
 	}
 
-	macro updatePortalPropertiesOnSpecificServer {
+	@summary = "Update portal properties on ${nodePort}"
+	macro updatePortalPropertiesOnSpecificServer(propertiesOriginal = null, nodePort = null, propertiesUpdate = null) {
 		var leadingPortNumber = StringUtil.replace(${nodePort}, 080, "");
 
 		var bundleIndex = ${leadingPortNumber} - 8;
@@ -199,7 +200,8 @@ definition {
 		AntCommands.runCommand("build-test.xml", "portal-ext-properties-update -Dapp.server.bundle.index=${bundleIndex} -Dupdate.properties=${propertiesUpdate} -Dupdate.properties.original=${propertiesOriginal}");
 	}
 
-	macro viewClusterStatusInConsole {
+	@summary = "Assert the cluster status in console log"
+	macro viewClusterStatusInConsole() {
 		var nodeLog2 = Clustering.getLogFileSpecificServer(nodePort = 9080);
 
 		for (var consoleText : list "Accepted view,channelName: liferay-channel-control") {
@@ -211,7 +213,8 @@ definition {
 		}
 	}
 
-	macro viewLiveSessionCount {
+	@summary = "Assert the count of live sessions"
+	macro viewLiveSessionCount(count = null) {
 		Clustering._viewLiveSession(
 			count = ${count},
 			navItem = "Live Sessions");
@@ -221,8 +224,8 @@ definition {
 		Clustering._viewNoLiveSession(count = ${countNotPresent});
 	}
 
-	@description = "This will view the text not shows at a specific bundle at ${base_branch}-bundles-${bundle_index}/logs."
-	macro viewNoSessionReplicateLogErrorOnSpecificNode {
+	@summary = "Assert ${exceptionText} is no present in the log of node ${nodePort}"
+	macro viewNoSessionReplicateLogErrorOnSpecificNode(exceptionText = null, nodePort = null) {
 		if (${nodePort} == 8080) {
 			AssertConsoleTextNotPresent(value1 = ${exceptionText});
 		}
@@ -235,8 +238,8 @@ definition {
 		}
 	}
 
-	@description = "This will view the text not shows at a specific bundle at ${base_branch}-bundles-${bundle_index}/logs."
-	macro viewTextNotPresentOnSpecificNode {
+	@summary = "Assert ${exceptionText} is not present in the log of node ${nodePort}"
+	macro viewTextNotPresentOnSpecificNode(exceptionText = null, nodePort = null) {
 		if (${nodePort} == 8080) {
 			AssertConsoleTextNotPresent(value1 = ${exceptionText});
 		}
@@ -249,8 +252,8 @@ definition {
 		}
 	}
 
-	@description = "This will view the text shows at a specific bundle at ${base_branch}-bundles-${bundle_index}/logs."
-	macro viewTextPresentOnSpecificNode {
+	@summary = "Assert ${expectedText} is present in the log of node ${nodePort}"
+	macro viewTextPresentOnSpecificNode(expectedText = null, nodePort = null) {
 		if (${nodePort} == 8080) {
 			WaitForConsoleTextPresent(value1 = ${expectedText});
 		}
@@ -272,8 +275,23 @@ definition {
 		}
 	}
 
-	@description = "This will wait 5 minutes for node at port ${nodePort} to shutdown"
-	macro waitForNodeShutdown {
+	@summary = "Wait for node ${nodePort} deactivation"
+	macro waitForNodeDeactivation(nodePort = null) {
+		var nodeLog = Clustering.getLogFileSpecificServer(nodePort = ${nodePort});
+
+		var minutestoExpire = RegexUtil.replace(${nodeLog}, "temporarily permitted during the grace period which expires in (.*[0-9]) minutes", 1);
+
+		var minutestoExpire = ${minutestoExpire} + 1;
+
+		// Convert minutes to milliseconds for Pause function
+
+		var mstoExpire = ${minutestoExpire} * 60000;
+
+		Pause(value1 = "${mstoExpire} ");
+	}
+
+	@summary = "Wait 5 minutes for node at port ${nodePort} to shutdown"
+	macro waitForNodeShutdown(nodePort = null) {
 		AntCommands.runCommand("build-test.xml", "wait-for-server-shutdown -Dapp.server.port.number=${nodePort}");
 	}
 

@@ -8,6 +8,7 @@ package com.liferay.document.library.webserver.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.document.library.test.util.BaseWebServerTestCase;
+import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.repository.model.FileEntry;
@@ -77,7 +78,9 @@ public class WebServerRangeTest extends BaseWebServerTestCase {
 
 		Assert.assertTrue(contentType.startsWith(_BOUNDARY_PREFACE));
 
-		String boundary = contentType.substring(_BOUNDARY_PREFACE.length());
+		String boundary = contentType.substring(
+			_BOUNDARY_PREFACE.length(),
+			contentType.lastIndexOf(CharPool.SEMICOLON));
 
 		String responseBody = mockHttpServletResponse.getContentAsString();
 
@@ -181,12 +184,12 @@ public class WebServerRangeTest extends BaseWebServerTestCase {
 		FileEntry fileEntry = _dlAppLocalService.addFileEntry(
 			null, TestPropsValues.getUserId(), group.getGroupId(),
 			parentFolder.getFolderId(), fileName, ContentTypes.TEXT_PLAIN,
-			_SAMPLE_DATA.getBytes(), null, null,
+			_SAMPLE_DATA.getBytes(), null, null, null,
 			ServiceContextTestUtil.getServiceContext(
 				group.getGroupId(), TestPropsValues.getUserId()));
 
 		String path = StringBundler.concat(
-			fileEntry.getGroupId(), "/", fileEntry.getFolderId(), "/",
+			"/", fileEntry.getGroupId(), "/", fileEntry.getFolderId(), "/",
 			fileEntry.getTitle());
 
 		Map<String, String> headers = new HashMap<>();
@@ -218,7 +221,7 @@ public class WebServerRangeTest extends BaseWebServerTestCase {
 			Assert.assertTrue(contentType.startsWith("multipart/byteranges"));
 		}
 		else {
-			Assert.assertEquals(ContentTypes.TEXT_PLAIN, contentType);
+			Assert.assertTrue(contentType.startsWith(ContentTypes.TEXT_PLAIN));
 		}
 
 		return mockHttpServletResponse;

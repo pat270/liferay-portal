@@ -4,7 +4,7 @@ definition {
 	property ci.retries.disabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Fragments";
+	property testray.main.component.name = "Fragment Administration";
 
 	setUp {
 		task ("Set up instance and sign in") {
@@ -56,18 +56,16 @@ definition {
 				entry = "Fragment Name",
 				item = "Edit");
 
-			var htmlSnippet = '''
-<div class="test">
-CSS
+			var htmlSnippet = '''<div class="test">
+	CSS
 </div>
 <div>
-NO CSS
-</div>
-		''';
-			var cssSnippet = '''
-.test
-{ font-size: 40px; }
-		''';
+	NO CSS
+</div>''';
+			var cssSnippet = '''.test
+{
+	font-size: 40px;
+}''';
 
 			FragmentsEditor.typeHtmlEditor(content = ${htmlSnippet});
 
@@ -119,7 +117,9 @@ NO CSS
 	@priority = 4
 	test MarkFragmentWithoutReadOnlyImportedToPortalAsCacheable {
 		task ("Import a fragment collection without Read-Only") {
-			FragmentsAdmin.importCollectionFromDependenciesFolder(collectionZipFile = "fragment-collection.zip");
+			FragmentsAdmin.importCollectionFromDependenciesFolder(
+				collectionZipFile = "fragment-collection.zip",
+				importOption = "Do Not Import Existing Items");
 		}
 
 		task ("Mark the imported fragment as cacheable") {
@@ -195,7 +195,7 @@ NO CSS
 				targetElementName = "Image");
 
 			AssertElementPresent(
-				key_elementHeader = "//div[@aria-label='Asset Publisher']",
+				key_elementHeader = "//div[@data-name='Asset Publisher']",
 				key_position = 1,
 				locator1 = "PageEditor#CONTAINER_CONTAINER_NESTED_ELEMENT");
 
@@ -221,7 +221,7 @@ NO CSS
 
 			for (var elementName : list "Image,Asset Publisher") {
 				AssertElementPresent(
-					key_elementHeader = "//div[@aria-label='${elementName}']",
+					key_elementHeader = "//div[@data-name='${elementName}']",
 					key_position = 2,
 					locator1 = "PageEditor#CONTAINER_CONTAINER_NESTED_ELEMENT");
 			}

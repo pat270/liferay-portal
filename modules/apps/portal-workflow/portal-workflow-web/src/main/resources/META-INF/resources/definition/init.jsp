@@ -32,8 +32,7 @@ page import="com.liferay.portal.kernel.workflow.WorkflowException" %><%@
 page import="com.liferay.portal.workflow.exception.IncompleteWorkflowInstancesException" %><%@
 page import="com.liferay.portal.workflow.web.internal.dao.search.WorkflowDefinitionResultRowSplitter" %><%@
 page import="com.liferay.portal.workflow.web.internal.display.context.WorkflowDefinitionDisplayContext" %><%@
-page import="com.liferay.portal.workflow.web.internal.search.WorkflowDefinitionDisplayTerms" %><%@
-page import="com.liferay.portal.workflow.web.internal.search.WorkflowDefinitionSearch" %>
+page import="com.liferay.portal.workflow.web.internal.display.context.WorkflowDefinitionManagementToolbarDisplayContext" %>
 
 <%@ page import="java.text.Format" %>
 
@@ -42,13 +41,13 @@ page import="com.liferay.portal.workflow.web.internal.search.WorkflowDefinitionS
 <%
 WorkflowDefinitionDisplayContext workflowDefinitionDisplayContext = (WorkflowDefinitionDisplayContext)renderRequest.getAttribute(WorkflowWebKeys.WORKFLOW_DEFINITION_DISPLAY_CONTEXT);
 
-Format dateFormatTime = null;
+Format displayDateFormat = null;
 
 if (DateUtil.isFormatAmPm(locale)) {
-	dateFormatTime = FastDateFormatFactoryUtil.getSimpleDateFormat(LanguageUtil.get(request, "mmm-d-yyyy-hh-mm-a"), locale, timeZone);
+	displayDateFormat = FastDateFormatFactoryUtil.getSimpleDateFormat(LanguageUtil.get(request, "mmm-d-yyyy-hh-mm-a"), locale, timeZone);
 }
 else {
-	dateFormatTime = FastDateFormatFactoryUtil.getSimpleDateFormat(LanguageUtil.get(request, "mmm-d-yyyy-hh-mm"), locale, timeZone);
+	displayDateFormat = FastDateFormatFactoryUtil.getSimpleDateFormat(LanguageUtil.get(request, "mmm-d-yyyy-hh-mm"), locale, timeZone);
 }
 %>
 

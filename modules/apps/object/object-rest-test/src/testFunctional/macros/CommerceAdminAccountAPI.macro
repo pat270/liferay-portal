@@ -1,0 +1,82 @@
+definition {
+
+	@summary = "Default summary"
+	macro _curlAccount() {
+		var portalURL = JSONCompany.getPortalURL();
+		var api = "accounts";
+
+		if (isSet(batch)) {
+			var api = "accounts/batch";
+		}
+
+		var curl = '''
+			${portalURL}/o/headless-commerce-admin-account/v1.0/${api} \
+				-H 'accept: application/json' \
+				-H 'Content-Type: application/json' \
+				-u 'test@liferay.com:test'
+		''';
+
+		return ${curl};
+	}
+
+	@summary = "Default summary"
+	macro createAccounts(objectField = null, accountName = null, numberOfAccounts = null, nestedField = null, fieldValue = null, name = null) {
+		Variables.assertDefined(parameterList = "${accountName},${numberOfAccounts},");
+
+		var curl = CommerceAdminAccountAPI._curlAccount(batch = "true");
+		var size = ${numberOfAccounts};
+		var i = 0;
+		var body = '''
+			[
+		''';
+
+		while ((${i} != ${size}) && (maxIterations = "100")) {
+			var i = ${i} + 1;
+
+			var account = '''
+				{
+					"root": "true",
+					"type":2,
+					"name":"${accountName}${i}"    
+			''';
+
+			if (isSet(nestedField)) {
+				var nestedFields = '''
+					"${nestedField}": [{ 
+						"name": "${name}${i}",
+						"${objectField}": "${fieldValue}${i}"
+					}]
+				''';
+
+				var account = StringUtil.add(${account}, ", ${nestedFields}", "");
+			}
+
+			if (${i} == ${size}) {
+				var body = StringUtil.replace(${body}, ${body}, "${body}${account}}");
+			}
+			else {
+				var account = StringUtil.replace(${account}, ${account}, "${account}},");
+
+				var body = StringUtil.replace(${body}, ${body}, "${body}${account}");
+			}
+		}
+
+		var curl = StringUtil.add(${curl}, "-d ${body}]", "");
+
+		var response = JSONCurlUtil.post(${curl});
+
+		var taskId = JSONPathUtil.getIdValue(response = ${response});
+
+		return ${taskId};
+	}
+
+	@summary = "Default summary"
+	macro getAccounts() {
+		var curl = CommerceAdminAccountAPI._curlAccount();
+
+		var response = JSONCurlUtil.get(${curl});
+
+		return ${response};
+	}
+
+}

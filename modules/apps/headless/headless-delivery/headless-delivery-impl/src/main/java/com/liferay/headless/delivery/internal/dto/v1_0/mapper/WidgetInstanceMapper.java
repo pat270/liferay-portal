@@ -25,7 +25,7 @@ import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.TeamLocalService;
-import com.liferay.portal.kernel.service.permission.PortletPermission;
+import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
@@ -36,15 +36,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-
 /**
  * @author Jürgen Kappler
  * @author Javier de Arcos
  */
-@Component(service = WidgetInstanceMapper.class)
 public class WidgetInstanceMapper {
+
+	public WidgetInstanceMapper(
+		LayoutLocalService layoutLocalService, Portal portal,
+		PortletLocalService portletLocalService,
+		PortletPreferencesPortletConfigurationExporter
+			portletPreferencesPortletConfigurationExporter,
+		ResourceActionLocalService resourceActionLocalService,
+		ResourcePermissionLocalService resourcePermissionLocalService,
+		RoleLocalService roleLocalService, TeamLocalService teamLocalService) {
+
+		_layoutLocalService = layoutLocalService;
+		_portal = portal;
+		_portletLocalService = portletLocalService;
+		_portletPreferencesPortletConfigurationExporter =
+			portletPreferencesPortletConfigurationExporter;
+		_resourceActionLocalService = resourceActionLocalService;
+		_resourcePermissionLocalService = resourcePermissionLocalService;
+		_roleLocalService = roleLocalService;
+		_teamLocalService = teamLocalService;
+	}
 
 	public WidgetInstance getWidgetInstance(
 		FragmentEntryLink fragmentEntryLink, String portletId) {
@@ -55,13 +71,16 @@ public class WidgetInstanceMapper {
 
 		return new WidgetInstance() {
 			{
-				widgetConfig = _getWidgetConfig(
-					fragmentEntryLink.getPlid(), portletId);
-				widgetInstanceId = _getWidgetInstanceId(
-					fragmentEntryLink, portletId);
-				widgetName = PortletIdCodec.decodePortletName(portletId);
-				widgetPermissions = _getWidgetPermissions(
-					fragmentEntryLink.getPlid(), portletId);
+				setWidgetConfig(
+					() -> _getWidgetConfig(
+						fragmentEntryLink.getPlid(), portletId));
+				setWidgetInstanceId(
+					() -> _getWidgetInstanceId(fragmentEntryLink, portletId));
+				setWidgetName(
+					() -> PortletIdCodec.decodePortletName(portletId));
+				setWidgetPermissions(
+					() -> _getWidgetPermissions(
+						fragmentEntryLink.getPlid(), portletId));
 			}
 		};
 	}
@@ -124,7 +143,7 @@ public class WidgetInstanceMapper {
 			return null;
 		}
 
-		String resourcePrimKey = _portletPermission.getPrimaryKey(
+		String resourcePrimKey = PortletPermissionUtil.getPrimaryKey(
 			plid, portletId);
 
 		List<ResourcePermission> resourcePermissions =
@@ -189,8 +208,9 @@ public class WidgetInstanceMapper {
 			widgetPermissions.add(
 				new WidgetPermission() {
 					{
-						actionKeys = actionIdsSet.toArray(new String[0]);
-						roleKey = finalRoleKey;
+						setActionKeys(
+							() -> actionIdsSet.toArray(new String[0]));
+						setRoleKey(() -> finalRoleKey);
 					}
 				});
 		}
@@ -201,32 +221,15 @@ public class WidgetInstanceMapper {
 	private static final Log _log = LogFactoryUtil.getLog(
 		WidgetInstanceMapper.class);
 
-	@Reference
-	private LayoutLocalService _layoutLocalService;
-
-	@Reference
-	private Portal _portal;
-
-	@Reference
-	private PortletLocalService _portletLocalService;
-
-	@Reference
-	private PortletPermission _portletPermission;
-
-	@Reference
-	private PortletPreferencesPortletConfigurationExporter
+	private final LayoutLocalService _layoutLocalService;
+	private final Portal _portal;
+	private final PortletLocalService _portletLocalService;
+	private final PortletPreferencesPortletConfigurationExporter
 		_portletPreferencesPortletConfigurationExporter;
-
-	@Reference
-	private ResourceActionLocalService _resourceActionLocalService;
-
-	@Reference
-	private ResourcePermissionLocalService _resourcePermissionLocalService;
-
-	@Reference
-	private RoleLocalService _roleLocalService;
-
-	@Reference
-	private TeamLocalService _teamLocalService;
+	private final ResourceActionLocalService _resourceActionLocalService;
+	private final ResourcePermissionLocalService
+		_resourcePermissionLocalService;
+	private final RoleLocalService _roleLocalService;
+	private final TeamLocalService _teamLocalService;
 
 }

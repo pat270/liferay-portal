@@ -6,56 +6,37 @@
 package com.liferay.client.extension.type.internal;
 
 import com.liferay.client.extension.constants.ClientExtensionEntryConstants;
-import com.liferay.client.extension.model.ClientExtensionEntry;
 import com.liferay.client.extension.type.GlobalJSCET;
-import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
-import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
 
+import java.util.Date;
 import java.util.Properties;
-import java.util.Set;
-
-import javax.portlet.PortletRequest;
 
 /**
  * @author Eudaldo Alonso
  */
 public class GlobalJSCETImpl extends BaseCETImpl implements GlobalJSCET {
 
-	public GlobalJSCETImpl(ClientExtensionEntry clientExtensionEntry) {
-		super(clientExtensionEntry);
-	}
-
-	public GlobalJSCETImpl(PortletRequest portletRequest) {
-		this(
-			StringPool.BLANK,
-			UnicodePropertiesBuilder.create(
-				true
-			).put(
-				"url", ParamUtil.getString(portletRequest, "url")
-			).build());
-	}
-
 	public GlobalJSCETImpl(
-		String baseURL, long companyId, String description,
-		String externalReferenceCode, String name, Properties properties,
-		String sourceCodeURL, UnicodeProperties typeSettingsUnicodeProperties) {
+		String baseURL, long companyId, Date createDate, String description,
+		String externalReferenceCode, Date modifiedDate, String name,
+		Properties properties, boolean readOnly, String sourceCodeURL,
+		int status, UnicodeProperties typeSettingsUnicodeProperties) {
 
 		super(
-			baseURL, companyId, description, externalReferenceCode, name,
-			properties, sourceCodeURL, typeSettingsUnicodeProperties);
-	}
-
-	public GlobalJSCETImpl(
-		String baseURL, UnicodeProperties typeSettingsUnicodeProperties) {
-
-		super(baseURL, typeSettingsUnicodeProperties);
+			baseURL, companyId, createDate, description, externalReferenceCode,
+			modifiedDate, name, properties, readOnly, sourceCodeURL, status,
+			typeSettingsUnicodeProperties);
 	}
 
 	@Override
 	public String getEditJSP() {
 		return "/admin/edit_global_js.jsp";
+	}
+
+	@Override
+	public String getScriptElementAttributesJSON() {
+		return getString("scriptElementAttributesJSON");
 	}
 
 	@Override
@@ -69,16 +50,13 @@ public class GlobalJSCETImpl extends BaseCETImpl implements GlobalJSCET {
 	}
 
 	@Override
-	public boolean hasProperties() {
-		return false;
+	public String getViewJSP() {
+		return "/admin/view_global_js.jsp";
 	}
 
 	@Override
-	protected boolean isURLCETPropertyName(String name) {
-		return _urlCETPropertyNames.contains(name);
+	public boolean hasProperties() {
+		return false;
 	}
-
-	private static final Set<String> _urlCETPropertyNames =
-		getURLCETPropertyNames(GlobalJSCET.class);
 
 }

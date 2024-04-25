@@ -51,6 +51,7 @@ import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.rss.util.RSSUtil;
 import com.liferay.subscription.service.SubscriptionLocalServiceUtil;
 import com.liferay.taglib.security.PermissionsURLTag;
+import com.liferay.trash.TrashHelper;
 
 import java.util.List;
 import java.util.Objects;
@@ -65,11 +66,13 @@ public class KBDropdownItemsProvider {
 	public KBDropdownItemsProvider(
 		KBGroupServiceConfiguration kbGroupServiceConfiguration,
 		LiferayPortletRequest liferayPortletRequest,
-		LiferayPortletResponse liferayPortletResponse) {
+		LiferayPortletResponse liferayPortletResponse,
+		TrashHelper trashHelper) {
 
 		_kbGroupServiceConfiguration = kbGroupServiceConfiguration;
 		_liferayPortletRequest = liferayPortletRequest;
 		_liferayPortletResponse = liferayPortletResponse;
+		_trashHelper = trashHelper;
 
 		_currentURL = String.valueOf(
 			PortletURLUtil.getCurrent(
@@ -82,7 +85,15 @@ public class KBDropdownItemsProvider {
 		LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse) {
 
-		this(null, liferayPortletRequest, liferayPortletResponse);
+		this(null, liferayPortletRequest, liferayPortletResponse, null);
+	}
+
+	public KBDropdownItemsProvider(
+		LiferayPortletRequest liferayPortletRequest,
+		LiferayPortletResponse liferayPortletResponse,
+		TrashHelper trashHelper) {
+
+		this(null, liferayPortletRequest, liferayPortletResponse, trashHelper);
 	}
 
 	public List<DropdownItem> getKBArticleDropdownItems(KBArticle kbArticle) {
@@ -406,39 +417,22 @@ public class KBDropdownItemsProvider {
 			KBArticle kbArticle, List<Long> selectedItemAncestorIds) {
 
 		return dropdownItem -> {
-			dropdownItem.putData("action", "delete");
-			dropdownItem.putData(
-				"deleteURL",
-				PortletURLBuilder.createActionURL(
-					_liferayPortletResponse
-				).setActionName(
-					"/knowledge_base/delete_kb_article"
-				).setRedirect(
-					() -> {
-						PortletDisplay portletDisplay =
-							_themeDisplay.getPortletDisplay();
+			if (FeatureFlagManagerUtil.isEnabled("LPS-188058") &&
+				_trashHelper.isTrashEnabled(kbArticle.getGroupId())) {
 
-						if (!Objects.equals(
-								portletDisplay.getRootPortletId(),
-								KBPortletKeys.KNOWLEDGE_BASE_ADMIN)) {
+				dropdownItem.setHref(
+					_getDeleteActionURL(
+						Constants.MOVE_TO_TRASH, kbArticle,
+						selectedItemAncestorIds));
+			}
+			else {
+				dropdownItem.putData("action", "delete");
+				dropdownItem.putData(
+					"deleteURL",
+					_getDeleteActionURL(
+						Constants.DELETE, kbArticle, selectedItemAncestorIds));
+			}
 
-							return _createKbHomeRenderURL();
-						}
-
-						if (((selectedItemAncestorIds == null) &&
-							 _isKBArticleSelected(kbArticle)) ||
-							((selectedItemAncestorIds != null) &&
-							 selectedItemAncestorIds.contains(
-								 kbArticle.getResourcePrimKey()))) {
-
-							return _getParentNodeURL(kbArticle);
-						}
-
-						return _currentURL;
-					}
-				).setParameter(
-					"resourcePrimKey", kbArticle.getResourcePrimKey()
-				).buildString());
 			dropdownItem.setIcon("trash");
 			dropdownItem.setLabel(
 				LanguageUtil.get(
@@ -473,30 +467,22 @@ public class KBDropdownItemsProvider {
 			KBFolder kbFolder, List<Long> selectedItemAncestorIds) {
 
 		return dropdownItem -> {
-			dropdownItem.putData("action", "delete");
-			dropdownItem.putData(
-				"deleteURL",
-				PortletURLBuilder.createActionURL(
-					_liferayPortletResponse
-				).setActionName(
-					"/knowledge_base/delete_kb_folder"
-				).setRedirect(
-					() -> {
-						if (((selectedItemAncestorIds == null) &&
-							 _isKBFolderSelected(kbFolder)) ||
-							((selectedItemAncestorIds != null) &&
-							 selectedItemAncestorIds.contains(
-								 kbFolder.getKbFolderId()))) {
+			if (FeatureFlagManagerUtil.isEnabled("LPS-188058") &&
+				_trashHelper.isTrashEnabled(kbFolder.getGroupId())) {
 
-							return _createKBFolderRenderURL(
-								kbFolder.getParentKBFolderId());
-						}
+				dropdownItem.setHref(
+					_getDeleteActionURL(
+						Constants.MOVE_TO_TRASH, kbFolder,
+						selectedItemAncestorIds));
+			}
+			else {
+				dropdownItem.putData("action", "delete");
+				dropdownItem.putData(
+					"deleteURL",
+					_getDeleteActionURL(
+						Constants.DELETE, kbFolder, selectedItemAncestorIds));
+			}
 
-						return _currentURL;
-					}
-				).setParameter(
-					"kbFolderId", kbFolder.getKbFolderId()
-				).buildString());
 			dropdownItem.setIcon("trash");
 			dropdownItem.setLabel(
 				LanguageUtil.get(
@@ -533,6 +519,71 @@ public class KBDropdownItemsProvider {
 		};
 	}
 
+	private String _getDeleteActionURL(
+		String cmd, KBArticle kbArticle, List<Long> selectedItemAncestorIds) {
+
+		return PortletURLBuilder.createActionURL(
+			_liferayPortletResponse
+		).setActionName(
+			"/knowledge_base/delete_kb_article"
+		).setCMD(
+			cmd
+		).setRedirect(
+			() -> {
+				PortletDisplay portletDisplay =
+					_themeDisplay.getPortletDisplay();
+
+				if (!Objects.equals(
+						portletDisplay.getRootPortletId(),
+						KBPortletKeys.KNOWLEDGE_BASE_ADMIN)) {
+
+					return _createKbHomeRenderURL();
+				}
+
+				if (((selectedItemAncestorIds == null) &&
+					 _isKBArticleSelected(kbArticle)) ||
+					((selectedItemAncestorIds != null) &&
+					 selectedItemAncestorIds.contains(
+						 kbArticle.getResourcePrimKey()))) {
+
+					return _getParentNodeURL(kbArticle);
+				}
+
+				return _currentURL;
+			}
+		).setParameter(
+			"resourcePrimKey", kbArticle.getResourcePrimKey()
+		).buildString();
+	}
+
+	private String _getDeleteActionURL(
+		String cmd, KBFolder kbFolder, List<Long> selectedItemAncestorIds) {
+
+		return PortletURLBuilder.createActionURL(
+			_liferayPortletResponse
+		).setActionName(
+			"/knowledge_base/delete_kb_folder"
+		).setCMD(
+			cmd
+		).setRedirect(
+			() -> {
+				if (((selectedItemAncestorIds == null) &&
+					 _isKBFolderSelected(kbFolder)) ||
+					((selectedItemAncestorIds != null) &&
+					 selectedItemAncestorIds.contains(
+						 kbFolder.getKbFolderId()))) {
+
+					return _createKBFolderRenderURL(
+						kbFolder.getParentKBFolderId());
+				}
+
+				return _currentURL;
+			}
+		).setParameter(
+			"kbFolderId", kbFolder.getKbFolderId()
+		).buildString();
+	}
+
 	private UnsafeConsumer<DropdownItem, Exception>
 		_getEditActionUnsafeConsumer(KBArticle kbArticle) {
 
@@ -543,8 +594,8 @@ public class KBDropdownItemsProvider {
 						_liferayPortletRequest,
 						KBPortletKeys.KNOWLEDGE_BASE_ADMIN,
 						PortletRequest.RENDER_PHASE)
-				).setMVCPath(
-					"/admin/common/edit_kb_article.jsp"
+				).setMVCRenderCommandName(
+					"/knowledge_base/edit_kb_article"
 				).setRedirect(
 					_currentURL
 				).setParameter(
@@ -722,62 +773,33 @@ public class KBDropdownItemsProvider {
 	private UnsafeConsumer<DropdownItem, Exception>
 		_getMoveActionUnsafeConsumer(KBArticle kbArticle) {
 
-		if (FeatureFlagManagerUtil.isEnabled("LPS-180292")) {
-			return dropdownItem -> {
-				dropdownItem.putData("action", "move");
-				dropdownItem.putData(
-					"itemClassNameId",
-					String.valueOf(kbArticle.getClassNameId()));
-				dropdownItem.putData(
-					"itemId", String.valueOf(kbArticle.getResourcePrimKey()));
-				dropdownItem.putData("itemType", "article");
-				dropdownItem.putData(
-					"moveKBItemActionURL",
-					PortletURLBuilder.createActionURL(
-						_liferayPortletResponse
-					).setActionName(
-						"/knowledge_base/move_kb_object"
-					).buildString());
-				dropdownItem.putData(
-					"moveKBItemModalURL",
-					PortletURLBuilder.createRenderURL(
-						_liferayPortletResponse
-					).setMVCPath(
-						"/admin/common/move_kb_object_modal.jsp"
-					).setParameter(
-						"itemToMoveId", kbArticle.getResourcePrimKey()
-					).setWindowState(
-						LiferayWindowState.POP_UP
-					).buildString());
-				dropdownItem.setIcon("move-folder");
-				dropdownItem.setLabel(
-					LanguageUtil.get(
-						_liferayPortletRequest.getHttpServletRequest(),
-						"move"));
-			};
-		}
-
 		return dropdownItem -> {
-			dropdownItem.setHref(
-				PortletURLBuilder.create(
-					PortalUtil.getControlPanelPortletURL(
-						_liferayPortletRequest,
-						KBPortletKeys.KNOWLEDGE_BASE_ADMIN,
-						PortletRequest.RENDER_PHASE)
+			dropdownItem.putData("action", "move");
+			dropdownItem.putData(
+				"kbObjectClassNameId",
+				String.valueOf(kbArticle.getClassNameId()));
+			dropdownItem.putData(
+				"kbObjectId", String.valueOf(kbArticle.getResourcePrimKey()));
+			dropdownItem.putData("kbObjectTitle", kbArticle.getTitle());
+			dropdownItem.putData(
+				"kbObjectType", KBArticle.class.getSimpleName());
+			dropdownItem.putData(
+				"moveKBObjectActionURL",
+				PortletURLBuilder.createActionURL(
+					_liferayPortletResponse
+				).setActionName(
+					"/knowledge_base/move_kb_object"
+				).buildString());
+			dropdownItem.putData(
+				"moveKBObjectModalURL",
+				PortletURLBuilder.createRenderURL(
+					_liferayPortletResponse
 				).setMVCPath(
-					"/admin/common/move_object.jsp"
-				).setRedirect(
-					_currentURL
+					"/admin/common/move_kb_object_modal.jsp"
 				).setParameter(
-					"parentResourceClassNameId",
-					kbArticle.getParentResourceClassNameId()
-				).setParameter(
-					"parentResourcePrimKey",
-					kbArticle.getParentResourcePrimKey()
-				).setParameter(
-					"resourceClassNameId", kbArticle.getClassNameId()
-				).setParameter(
-					"resourcePrimKey", kbArticle.getResourcePrimKey()
+					"kbObjectVersion", kbArticle.getVersion()
+				).setWindowState(
+					LiferayWindowState.POP_UP
 				).buildString());
 			dropdownItem.setIcon("move-folder");
 			dropdownItem.setLabel(
@@ -789,58 +811,32 @@ public class KBDropdownItemsProvider {
 	private UnsafeConsumer<DropdownItem, Exception>
 		_getMoveActionUnsafeConsumer(KBFolder kbFolder) {
 
-		if (FeatureFlagManagerUtil.isEnabled("LPS-180292")) {
-			return dropdownItem -> {
-				dropdownItem.putData("action", "move");
-				dropdownItem.putData(
-					"itemClassNameId",
-					String.valueOf(kbFolder.getClassNameId()));
-				dropdownItem.putData(
-					"itemId", String.valueOf(kbFolder.getKbFolderId()));
-				dropdownItem.putData("itemType", "folder");
-				dropdownItem.putData(
-					"moveKBItemActionURL",
-					PortletURLBuilder.createActionURL(
-						_liferayPortletResponse
-					).setActionName(
-						"/knowledge_base/move_kb_object"
-					).buildString());
-				dropdownItem.putData(
-					"moveKBItemModalURL",
-					PortletURLBuilder.createRenderURL(
-						_liferayPortletResponse
-					).setMVCPath(
-						"/admin/common/move_kb_object_modal.jsp"
-					).setParameter(
-						"itemToMoveId", kbFolder.getKbFolderId()
-					).setWindowState(
-						LiferayWindowState.POP_UP
-					).buildString());
-				dropdownItem.setIcon("move-folder");
-				dropdownItem.setLabel(
-					LanguageUtil.get(
-						_liferayPortletRequest.getHttpServletRequest(),
-						"move"));
-			};
-		}
-
 		return dropdownItem -> {
-			dropdownItem.setHref(
+			dropdownItem.putData("action", "move");
+			dropdownItem.putData(
+				"kbObjectClassNameId",
+				String.valueOf(kbFolder.getClassNameId()));
+			dropdownItem.putData(
+				"kbObjectId", String.valueOf(kbFolder.getKbFolderId()));
+			dropdownItem.putData("kbObjectTitle", kbFolder.getName());
+			dropdownItem.putData(
+				"kbObjectType", KBFolder.class.getSimpleName());
+			dropdownItem.putData(
+				"moveKBObjectActionURL",
+				PortletURLBuilder.createActionURL(
+					_liferayPortletResponse
+				).setActionName(
+					"/knowledge_base/move_kb_object"
+				).buildString());
+			dropdownItem.putData(
+				"moveKBObjectModalURL",
 				PortletURLBuilder.createRenderURL(
 					_liferayPortletResponse
 				).setMVCPath(
-					"/admin/common/move_object.jsp"
-				).setRedirect(
-					_currentURL
-				).setParameter(
-					"parentResourceClassNameId", kbFolder.getClassNameId()
-				).setParameter(
-					"parentResourcePrimKey", kbFolder.getParentKBFolderId()
-				).setParameter(
-					"resourceClassNameId", kbFolder.getClassNameId()
-				).setParameter(
-					"resourcePrimKey", kbFolder.getKbFolderId()
-				).buildRenderURL());
+					"/admin/common/move_kb_object_modal.jsp"
+				).setWindowState(
+					LiferayWindowState.POP_UP
+				).buildString());
 			dropdownItem.setIcon("move-folder");
 			dropdownItem.setLabel(
 				LanguageUtil.get(
@@ -1511,5 +1507,6 @@ public class KBDropdownItemsProvider {
 	private final LiferayPortletRequest _liferayPortletRequest;
 	private final LiferayPortletResponse _liferayPortletResponse;
 	private final ThemeDisplay _themeDisplay;
+	private final TrashHelper _trashHelper;
 
 }

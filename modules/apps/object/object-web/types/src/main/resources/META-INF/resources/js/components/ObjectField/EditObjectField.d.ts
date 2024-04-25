@@ -5,43 +5,36 @@
 
 /// <reference types="react" />
 
-import {SidebarCategory} from '@liferay/object-js-components-web';
+import {ILearnResourceContext} from 'frontend-js-components-web';
 import './EditObjectField.scss';
-interface EditObjectFieldProps {
+export interface EditObjectFieldProps {
+	baseResourceURL: string;
 	creationLanguageId: Liferay.Language.Locale;
 	filterOperators: TFilterOperators;
 	forbiddenChars: string[];
 	forbiddenLastChars: string[];
 	forbiddenNames: string[];
-	isApproved: boolean;
 	isDefaultStorageType: boolean;
+	isRootDescendantNode: boolean;
+	learnResources: ILearnResourceContext;
 	objectDefinitionExternalReferenceCode: string;
-	objectField: ObjectField;
 	objectFieldId: number;
-	objectFieldTypes: ObjectFieldType[];
-	objectName: string;
-	objectRelationshipId: number;
 	readOnly: boolean;
-	readOnlySidebarElements: SidebarCategory[];
-	sidebarElements: SidebarCategory[];
-	workflowStatusJSONArray: LabelValueObject[];
+	workflowStatuses: LabelValueObject[];
 }
+export declare const objectFieldInitialValues: Partial<ObjectField>;
 export default function EditObjectField({
+	baseResourceURL,
 	creationLanguageId,
 	filterOperators,
 	forbiddenChars,
 	forbiddenLastChars,
 	forbiddenNames,
-	isApproved,
 	isDefaultStorageType,
+	isRootDescendantNode,
+	learnResources,
 	objectDefinitionExternalReferenceCode,
 	objectFieldId,
-	objectFieldTypes,
-	objectName,
-	objectRelationshipId,
 	readOnly,
-	readOnlySidebarElements,
-	sidebarElements,
-	workflowStatusJSONArray,
+	workflowStatuses,
 }: EditObjectFieldProps): JSX.Element;
-export {};

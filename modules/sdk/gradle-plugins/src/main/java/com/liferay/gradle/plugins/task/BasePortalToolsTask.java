@@ -17,14 +17,13 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.file.FileCollection;
-import org.gradle.api.tasks.CacheableTask;
+import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.process.JavaExecSpec;
 
 /**
  * @author Andrea Di Giorgi
  */
-@CacheableTask
 public abstract class BasePortalToolsTask extends JavaExec {
 
 	public BasePortalToolsTask() {
@@ -60,9 +59,6 @@ public abstract class BasePortalToolsTask extends JavaExec {
 	public FileCollection getClasspath() {
 		return GradleUtil.getConfiguration(project, getConfigurationName());
 	}
-
-	@Override
-	public abstract String getMain();
 
 	@Override
 	public JavaExec setArgs(Iterable<?> args) {
@@ -112,10 +108,12 @@ public abstract class BasePortalToolsTask extends JavaExec {
 		super.exec();
 	}
 
+	@Input
 	protected String getConfigurationName() {
 		return "portalTools" + getToolName();
 	}
 
+	@Input
 	protected abstract String getToolName();
 
 	protected final Project project;

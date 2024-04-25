@@ -1,0 +1,52 @@
+import com.liferay.gradle.plugins.patcher.PatchTask
+
+apply plugin: "com.liferay.patcher"
+
+task jarManifest
+task jarPatched(type: Zip)
+task patch(type: PatchTask)
+
+dependencies {
+	compileOnly group: "org.apache.aries.jax.rs", name: "org.apache.aries.jax.rs.whiteboard", version: "2.0.0"
+	compileOnly group: "org.osgi", name: "org.osgi.service.http.whiteboard", transitive: false, version: "1.0.0"
+	compileOnly group: "org.osgi", name: "osgi.core", transitive: false, version: "6.0.0"
+}
+
+jar {
+	setActions([])
+
+	dependsOn jarPatched
+	finalizedBy jarManifest
+}
+
+jarManifest {
+	doLast {
+		ant.jar(destfile: jar.archivePath, update: true)
+	}
+}
+
+jarPatched {
+	archiveFileName = jar.archiveFileName
+	destinationDirectory = jar.destinationDirectory
+	duplicatesStrategy = "exclude"
+
+	from copyPatchOriginalLibClasses
+
+	mustRunAfter compileJava
+	mustRunAfter generatePomFileForMavenPublication
+	mustRunAfter processResources
+}
+
+jarSources {
+	mustRunAfter patch
+}
+
+patch {
+	ext {
+		autoClean = false
+	}
+
+	fileNames "org/apache/aries/jax/rs/whiteboard/activator/CxfJaxrsBundleActivator.java"
+
+	originalLibModuleName = "org.apache.aries.jax.rs.whiteboard"
+}

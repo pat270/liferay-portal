@@ -40,6 +40,14 @@ InfoCollectionProviderDisplayContext infoCollectionProviderDisplayContext = (Inf
 			>
 				<div class="list-group-title">
 					<%= HtmlUtil.escape(infoCollectionProviderDisplayContext.getTitle(infoCollectionProvider)) %>
+
+					<c:if test="<%= infoCollectionProvider instanceof BetaInfoCollectionProvider %>">
+						<span>
+							<liferay-frontend:feature-indicator
+								type="beta"
+							/>
+						</span>
+					</c:if>
 				</div>
 
 				<div class="list-group-subtext">
@@ -55,7 +63,7 @@ InfoCollectionProviderDisplayContext infoCollectionProviderDisplayContext = (Inf
 				<clay:dropdown-actions
 					aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 					dropdownItems="<%= infoCollectionProviderActionDropdownItems.getActionDropdownItems() %>"
-					propsTransformer="js/InfoCollectionProviderDropdownDefaultPropsTransformer"
+					propsTransformer="{InfoCollectionProviderDropdownDefaultPropsTransformer} from asset-list-web"
 				/>
 			</liferay-ui:search-container-column-text>
 		</liferay-ui:search-container-row>

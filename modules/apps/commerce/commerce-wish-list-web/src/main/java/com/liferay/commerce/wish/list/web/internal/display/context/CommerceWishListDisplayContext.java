@@ -10,6 +10,7 @@ import com.liferay.commerce.currency.model.CommerceCurrency;
 import com.liferay.commerce.currency.model.CommerceMoney;
 import com.liferay.commerce.model.CommerceOrder;
 import com.liferay.commerce.price.CommerceProductPriceCalculation;
+import com.liferay.commerce.product.catalog.CPCatalogEntry;
 import com.liferay.commerce.product.model.CPDefinition;
 import com.liferay.commerce.product.model.CPInstance;
 import com.liferay.commerce.product.util.CPDefinitionHelper;
@@ -42,6 +43,8 @@ import com.liferay.portal.kernel.util.KeyValuePair;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.TextFormatter;
 import com.liferay.portal.kernel.util.Validator;
+
+import java.math.BigDecimal;
 
 import java.util.Iterator;
 import java.util.List;
@@ -197,7 +200,7 @@ public class CommerceWishListDisplayContext {
 
 		CommerceMoney commerceMoney =
 			_commerceProductPriceCalculation.getFinalPrice(
-				cpInstance.getCPInstanceId(), 1,
+				cpInstance.getCPInstanceId(), BigDecimal.ONE, StringPool.BLANK,
 				_commerceWishListRequestHelper.getCommerceContext());
 
 		if (commerceMoney.isEmpty()) {
@@ -245,6 +248,18 @@ public class CommerceWishListDisplayContext {
 				commerceWishList.getCommerceWishListId()));
 
 		return _commerceWishListItemsSearchContainer;
+	}
+
+	public CPCatalogEntry getCPCatalogEntry(long cpDefinitionId)
+		throws PortalException {
+
+		CommerceContext commerceContext =
+			_commerceWishListRequestHelper.getCommerceContext();
+
+		return _cpDefinitionHelper.getCPCatalogEntry(
+			CommerceUtil.getCommerceAccountId(commerceContext),
+			commerceContext.getCommerceChannelGroupId(), cpDefinitionId,
+			_commerceWishListRequestHelper.getLocale());
 	}
 
 	public String getCPDefinitionURL(

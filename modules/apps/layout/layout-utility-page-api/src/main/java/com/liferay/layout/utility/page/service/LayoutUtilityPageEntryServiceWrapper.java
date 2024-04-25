@@ -33,14 +33,15 @@ public class LayoutUtilityPageEntryServiceWrapper
 	public LayoutUtilityPageEntry addLayoutUtilityPageEntry(
 			String externalReferenceCode, long groupId, long plid,
 			long previewFileEntryId, boolean defaultLayoutUtilityPageEntry,
-			String name, String type, long masterLayoutPlid,
+			String name, String type, long masterLayoutPlid, String friendlyURL,
+			boolean privateLayout,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _layoutUtilityPageEntryService.addLayoutUtilityPageEntry(
 			externalReferenceCode, groupId, plid, previewFileEntryId,
 			defaultLayoutUtilityPageEntry, name, type, masterLayoutPlid,
-			serviceContext);
+			friendlyURL, privateLayout, serviceContext);
 	}
 
 	@Override
@@ -108,9 +109,25 @@ public class LayoutUtilityPageEntryServiceWrapper
 	}
 
 	@Override
+	public java.util.List<LayoutUtilityPageEntry> getLayoutUtilityPageEntries(
+		long groupId, String[] types, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<LayoutUtilityPageEntry>
+			orderByComparator) {
+
+		return _layoutUtilityPageEntryService.getLayoutUtilityPageEntries(
+			groupId, types, start, end, orderByComparator);
+	}
+
+	@Override
 	public int getLayoutUtilityPageEntriesCount(long groupId) {
 		return _layoutUtilityPageEntryService.getLayoutUtilityPageEntriesCount(
 			groupId);
+	}
+
+	@Override
+	public int getLayoutUtilityPageEntriesCount(long groupId, String[] types) {
+		return _layoutUtilityPageEntryService.getLayoutUtilityPageEntriesCount(
+			groupId, types);
 	}
 
 	/**

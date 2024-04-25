@@ -57,6 +57,7 @@ import com.liferay.osb.faro.engine.client.util.FilterBuilder;
 import com.liferay.osb.faro.engine.client.util.FilterUtil;
 import com.liferay.osb.faro.engine.client.util.OrderByField;
 import com.liferay.osb.faro.model.FaroProject;
+import com.liferay.osb.faro.model.FaroUser;
 import com.liferay.osb.faro.util.FaroPropsValues;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.CharPool;
@@ -64,12 +65,10 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.SearchPaginationUtil;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -411,12 +410,20 @@ public class ContactsEngineClientImpl
 	}
 
 	@Override
-	public void clearChannel(FaroProject faroProject, List<String> ids)
+	public void clearChannel(
+			FaroProject faroProject, FaroUser faroUser, List<String> ids)
 		throws FaroEngineClientException {
 
 		post(
-			faroProject, Rels.CHANNEL_CLEAR, ids, Void.class,
-			getUriVariables(faroProject));
+			faroProject, Rels.CHANNEL_CLEAR,
+			HashMapBuilder.<String, Object>put(
+				"channelIds", ids
+			).put(
+				"userId", faroUser.getUserId()
+			).put(
+				"userName", faroUser.getUserName()
+			).build(),
+			Void.class, getUriVariables(faroProject));
 	}
 
 	@Override
@@ -427,8 +434,19 @@ public class ContactsEngineClientImpl
 	}
 
 	@Override
-	public void deleteChannels(FaroProject faroProject, List<String> ids) {
-		delete(faroProject, Rels.CHANNELS, ids);
+	public void deleteChannels(
+		FaroProject faroProject, FaroUser faroUser, List<String> ids) {
+
+		delete(
+			faroProject, Rels.CHANNELS,
+			HashMapBuilder.<String, Object>put(
+				"channelIds", ids
+			).put(
+				"userId", faroUser.getUserId()
+			).put(
+				"userName", faroUser.getUserName()
+			).build(),
+			getUriVariables(faroProject));
 	}
 
 	@Override
@@ -951,14 +969,14 @@ public class ContactsEngineClientImpl
 
 	@Override
 	public Results<Channel> getChannels(
-		FaroProject faroProject, int cur, int delta,
+		FaroProject faroProject, int cur, int delta, List<String> ids,
 		List<OrderByField> orderByFields) {
 
 		PagedModel<?, Channel> pagedModel = get(
 			faroProject, Rels.CHANNELS,
 			new ParameterizedTypeReference<EntityModelPagedModel<Channel>>() {
 			},
-			getUriVariables(faroProject, cur, delta, orderByFields));
+			getUriVariables(faroProject, cur, delta, ids, orderByFields));
 
 		return pagedModel.getResults();
 	}
@@ -1644,6 +1662,21 @@ public class ContactsEngineClientImpl
 	}
 
 	@Override
+	public long getIdentitiesCount(FaroProject faroProject) {
+		RestTemplate restTemplate = getRestTemplate(faroProject);
+
+		ResponseEntity<Long> responseEntity = restTemplate.exchange(
+			getTemplatedURL(faroProject, Rels.IDENTITIES_COUNT), HttpMethod.GET,
+			HttpEntity.EMPTY, Long.class, getUriVariables(faroProject));
+
+		if (Validator.isNotNull(responseEntity.getBody())) {
+			return responseEntity.getBody();
+		}
+
+		return 0L;
+	}
+
+	@Override
 	public Individual getIndividual(
 			FaroProject faroProject, String id, String channelId)
 		throws FaroEngineClientException {
@@ -1884,27 +1917,6 @@ public class ContactsEngineClientImpl
 			uriVariables);
 
 		return pagedModel.getResults();
-	}
-
-	@Override
-	public long getIndividualsCount(
-		FaroProject faroProject, boolean includeAnonymousUsers) {
-
-		Map<String, Object> uriVariables = getUriVariables(faroProject);
-
-		uriVariables.put("includeAnonymousUsers", includeAnonymousUsers);
-
-		RestTemplate restTemplate = getRestTemplate(faroProject);
-
-		ResponseEntity<Long> responseEntity = restTemplate.exchange(
-			getTemplatedURL(faroProject, Rels.INDIVIDUALS_COUNT),
-			HttpMethod.GET, HttpEntity.EMPTY, Long.class, uriVariables);
-
-		if (Validator.isNotNull(responseEntity.getBody())) {
-			return responseEntity.getBody();
-		}
-
-		return 0L;
 	}
 
 	@Override
@@ -2218,6 +2230,13 @@ public class ContactsEngineClientImpl
 	}
 
 	@Override
+	public Date getLastSeenDate(FaroProject faroProject) {
+		return get(
+			faroProject, Rels.PROJECTS_LAST_SEEN_DATE,
+			faroProject.getProjectId(), Date.class);
+	}
+
+	@Override
 	public Results<PageVisited> getPagesVisited(
 		FaroProject faroProject, String channelId, String ownerId,
 		String ownerType, String query, String interestName, Date startDate,
@@ -2294,6 +2313,25 @@ public class ContactsEngineClientImpl
 		List<OrderByField> orderByFields) {
 
 		return new Results<>();
+	}
+
+	@Override
+	public long getSyncedIndividualsCount(FaroProject faroProject) {
+		RestTemplate restTemplate = getRestTemplate(faroProject);
+
+		Map<String, Object> uriVariables = getUriVariables(faroProject);
+
+		uriVariables.put("includeSuppressed", true);
+
+		ResponseEntity<Long> responseEntity = restTemplate.exchange(
+			getTemplatedURL(faroProject, Rels.INDIVIDUALS_COUNT),
+			HttpMethod.GET, HttpEntity.EMPTY, Long.class, uriVariables);
+
+		if (responseEntity.getBody() == null) {
+			return 0L;
+		}
+
+		return responseEntity.getBody();
 	}
 
 	@Override
@@ -2704,12 +2742,6 @@ public class ContactsEngineClientImpl
 	private static final String _FARO_TEMP_FIELD = "faro_temp_field";
 
 	private static final int _PAYLOAD_MAX_BYTE_SIZE = 200000;
-
-	@Reference
-	private CompanyLocalService _companyLocalService;
-
-	@Reference
-	private Portal _portal;
 
 	@Reference
 	private UserLocalService _userLocalService;

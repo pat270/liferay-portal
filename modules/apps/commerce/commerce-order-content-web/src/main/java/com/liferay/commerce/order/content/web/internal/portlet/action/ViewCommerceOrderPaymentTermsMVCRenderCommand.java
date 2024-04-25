@@ -14,6 +14,7 @@ import com.liferay.commerce.order.content.web.internal.display.context.CommerceO
 import com.liferay.commerce.order.engine.CommerceOrderEngine;
 import com.liferay.commerce.order.importer.type.CommerceOrderImporterTypeRegistry;
 import com.liferay.commerce.order.status.CommerceOrderStatusRegistry;
+import com.liferay.commerce.payment.integration.CommercePaymentIntegrationRegistry;
 import com.liferay.commerce.payment.method.CommercePaymentMethodRegistry;
 import com.liferay.commerce.payment.service.CommercePaymentMethodGroupRelLocalService;
 import com.liferay.commerce.percentage.PercentageFormatter;
@@ -26,7 +27,7 @@ import com.liferay.commerce.service.CommerceOrderTypeService;
 import com.liferay.commerce.term.service.CommerceTermEntryService;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.item.selector.ItemSelector;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
@@ -71,6 +72,7 @@ public class ViewCommerceOrderPaymentTermsMVCRenderCommand
 						_commerceOrderNoteService,
 						_commerceOrderPriceCalculation, _commerceOrderService,
 						_commerceOrderStatusRegistry, _commerceOrderTypeService,
+						_commercePaymentIntegrationRegistry,
 						_commercePaymentMethodGroupRelLocalService,
 						_commercePaymentMethodRegistry,
 						_commerceTermEntryService, _configurationProvider,
@@ -128,6 +130,10 @@ public class ViewCommerceOrderPaymentTermsMVCRenderCommand
 
 	@Reference
 	private CommerceOrderTypeService _commerceOrderTypeService;
+
+	@Reference
+	private CommercePaymentIntegrationRegistry
+		_commercePaymentIntegrationRegistry;
 
 	@Reference
 	private CommercePaymentMethodGroupRelLocalService

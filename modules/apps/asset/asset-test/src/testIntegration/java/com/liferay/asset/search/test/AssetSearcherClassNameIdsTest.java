@@ -8,14 +8,11 @@ package com.liferay.asset.search.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.asset.kernel.search.AssetSearcherFactory;
 import com.liferay.asset.kernel.service.persistence.AssetEntryQuery;
-import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.blogs.service.BlogsEntryLocalService;
 import com.liferay.bookmarks.constants.BookmarksFolderConstants;
-import com.liferay.bookmarks.model.BookmarksEntry;
 import com.liferay.bookmarks.service.BookmarksEntryLocalService;
-import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
-import com.liferay.journal.model.JournalArticle;
-import com.liferay.journal.service.JournalArticleLocalService;
+import com.liferay.journal.constants.JournalFolderConstants;
+import com.liferay.journal.test.util.JournalTestUtil;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
@@ -58,23 +55,26 @@ public class AssetSearcherClassNameIdsTest {
 
 	@Before
 	public void setUp() throws Exception {
-		_journalArticleFixture.setDDMStructureLocalService(
-			_ddmStructureLocalService);
 		_group = GroupTestUtil.addGroup();
 
-		_journalArticleFixture.setGroup(_group);
+		_blogsEntryLocalService.addEntry(
+			TestPropsValues.getUserId(), RandomTestUtil.randomString(),
+			RandomTestUtil.randomString(), getServiceContext());
 
-		_journalArticleFixture.setJournalArticleLocalService(
-			_journalArticleLocalService);
+		_bookmarksEntryLocalService.addEntry(
+			TestPropsValues.getUserId(), _group.getGroupId(),
+			BookmarksFolderConstants.DEFAULT_PARENT_FOLDER_ID,
+			RandomTestUtil.randomString(), "http://www.liferay.com",
+			RandomTestUtil.randomString(), getServiceContext());
+
+		JournalTestUtil.addArticle(
+			_group.getGroupId(),
+			JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID);
 	}
 
 	@Test
 	public void testAll() throws Exception {
 		UserTestUtil.setUser(addUser());
-
-		addBlogsEntry();
-		addBookmarksEntry();
-		addJournalArticle();
 
 		Hits hits = search(getAssetEntryQuery(), getSearchContext());
 
@@ -84,10 +84,6 @@ public class AssetSearcherClassNameIdsTest {
 	@Test
 	public void testMultiple() throws Exception {
 		UserTestUtil.setUser(addUser());
-
-		addBlogsEntry();
-		addBookmarksEntry();
-		addJournalArticle();
 
 		Hits hits = search(
 			getAssetEntryQuery(
@@ -102,10 +98,6 @@ public class AssetSearcherClassNameIdsTest {
 	public void testSingle() throws Exception {
 		UserTestUtil.setUser(addUser());
 
-		addBlogsEntry();
-		addBookmarksEntry();
-		addJournalArticle();
-
 		Hits hits = search(
 			getAssetEntryQuery("com.liferay.journal.model.JournalArticle"),
 			getSearchContext());
@@ -115,24 +107,6 @@ public class AssetSearcherClassNameIdsTest {
 
 	@Rule
 	public SearchTestRule searchTestRule = new SearchTestRule();
-
-	protected BlogsEntry addBlogsEntry() throws Exception {
-		return _blogsEntryLocalService.addEntry(
-			TestPropsValues.getUserId(), RandomTestUtil.randomString(),
-			RandomTestUtil.randomString(), getServiceContext());
-	}
-
-	protected BookmarksEntry addBookmarksEntry() throws Exception {
-		return _bookmarksEntryLocalService.addEntry(
-			TestPropsValues.getUserId(), _group.getGroupId(),
-			BookmarksFolderConstants.DEFAULT_PARENT_FOLDER_ID,
-			RandomTestUtil.randomString(), "http://www.liferay.com",
-			RandomTestUtil.randomString(), getServiceContext());
-	}
-
-	protected JournalArticle addJournalArticle() throws Exception {
-		return _journalArticleFixture.addJournalArticle(getServiceContext());
-	}
 
 	protected User addUser() throws Exception {
 		User user = UserTestUtil.addUser(_group.getGroupId());
@@ -189,17 +163,9 @@ public class AssetSearcherClassNameIdsTest {
 	@Inject
 	private static BookmarksEntryLocalService _bookmarksEntryLocalService;
 
-	@Inject
-	private static DDMStructureLocalService _ddmStructureLocalService;
-
-	@Inject
-	private static JournalArticleLocalService _journalArticleLocalService;
-
 	@DeleteAfterTestRun
 	private Group _group;
 
-	private final JournalArticleFixture _journalArticleFixture =
-		new JournalArticleFixture();
 	private final List<User> _users = new ArrayList<>();
 
 }

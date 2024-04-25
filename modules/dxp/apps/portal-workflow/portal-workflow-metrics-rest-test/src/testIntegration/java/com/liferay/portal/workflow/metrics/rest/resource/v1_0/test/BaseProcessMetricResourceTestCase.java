@@ -21,8 +21,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -31,6 +29,7 @@ import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.test.rule.Inject;
@@ -61,8 +60,6 @@ import java.util.Set;
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-
-import org.apache.commons.lang.time.DateUtils;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -215,10 +212,11 @@ public abstract class BaseProcessMetricResourceTestCase {
 
 	@Test
 	public void testGetProcessMetricsPageWithPagination() throws Exception {
-		Page<ProcessMetric> totalPage =
+		Page<ProcessMetric> processMetricPage =
 			processMetricResource.getProcessMetricsPage(null, null, null);
 
-		int totalCount = GetterUtil.getInteger(totalPage.getTotalCount());
+		int totalCount = GetterUtil.getInteger(
+			processMetricPage.getTotalCount());
 
 		ProcessMetric processMetric1 =
 			testGetProcessMetricsPage_addProcessMetric(randomProcessMetric());
@@ -229,32 +227,81 @@ public abstract class BaseProcessMetricResourceTestCase {
 		ProcessMetric processMetric3 =
 			testGetProcessMetricsPage_addProcessMetric(randomProcessMetric());
 
-		Page<ProcessMetric> page1 = processMetricResource.getProcessMetricsPage(
-			null, Pagination.of(1, totalCount + 2), null);
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
 
-		List<ProcessMetric> processMetrics1 =
-			(List<ProcessMetric>)page1.getItems();
+		int pageSizeLimit = 500;
 
-		Assert.assertEquals(
-			processMetrics1.toString(), totalCount + 2, processMetrics1.size());
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<ProcessMetric> page1 =
+				processMetricResource.getProcessMetricsPage(
+					null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		Page<ProcessMetric> page2 = processMetricResource.getProcessMetricsPage(
-			null, Pagination.of(2, totalCount + 2), null);
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
 
-		Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+			assertContains(
+				processMetric1, (List<ProcessMetric>)page1.getItems());
 
-		List<ProcessMetric> processMetrics2 =
-			(List<ProcessMetric>)page2.getItems();
+			Page<ProcessMetric> page2 =
+				processMetricResource.getProcessMetricsPage(
+					null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		Assert.assertEquals(
-			processMetrics2.toString(), 1, processMetrics2.size());
+			assertContains(
+				processMetric2, (List<ProcessMetric>)page2.getItems());
 
-		Page<ProcessMetric> page3 = processMetricResource.getProcessMetricsPage(
-			null, Pagination.of(1, totalCount + 3), null);
+			Page<ProcessMetric> page3 =
+				processMetricResource.getProcessMetricsPage(
+					null,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+						pageSizeLimit),
+					null);
 
-		assertContains(processMetric1, (List<ProcessMetric>)page3.getItems());
-		assertContains(processMetric2, (List<ProcessMetric>)page3.getItems());
-		assertContains(processMetric3, (List<ProcessMetric>)page3.getItems());
+			assertContains(
+				processMetric3, (List<ProcessMetric>)page3.getItems());
+		}
+		else {
+			Page<ProcessMetric> page1 =
+				processMetricResource.getProcessMetricsPage(
+					null, Pagination.of(1, totalCount + 2), null);
+
+			List<ProcessMetric> processMetrics1 =
+				(List<ProcessMetric>)page1.getItems();
+
+			Assert.assertEquals(
+				processMetrics1.toString(), totalCount + 2,
+				processMetrics1.size());
+
+			Page<ProcessMetric> page2 =
+				processMetricResource.getProcessMetricsPage(
+					null, Pagination.of(2, totalCount + 2), null);
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<ProcessMetric> processMetrics2 =
+				(List<ProcessMetric>)page2.getItems();
+
+			Assert.assertEquals(
+				processMetrics2.toString(), 1, processMetrics2.size());
+
+			Page<ProcessMetric> page3 =
+				processMetricResource.getProcessMetricsPage(
+					null, Pagination.of(1, (int)totalCount + 3), null);
+
+			assertContains(
+				processMetric1, (List<ProcessMetric>)page3.getItems());
+			assertContains(
+				processMetric2, (List<ProcessMetric>)page3.getItems());
+			assertContains(
+				processMetric3, (List<ProcessMetric>)page3.getItems());
+		}
 	}
 
 	@Test
@@ -264,7 +311,7 @@ public abstract class BaseProcessMetricResourceTestCase {
 			(entityField, processMetric1, processMetric2) -> {
 				BeanTestUtil.setProperty(
 					processMetric1, entityField.getName(),
-					DateUtils.addMinutes(new Date(), -2));
+					new Date(System.currentTimeMillis() - (2 * Time.MINUTE)));
 			});
 	}
 
@@ -370,22 +417,29 @@ public abstract class BaseProcessMetricResourceTestCase {
 		processMetric2 = testGetProcessMetricsPage_addProcessMetric(
 			processMetric2);
 
+		Page<ProcessMetric> page = processMetricResource.getProcessMetricsPage(
+			null, null, null);
+
 		for (EntityField entityField : entityFields) {
 			Page<ProcessMetric> ascPage =
 				processMetricResource.getProcessMetricsPage(
-					null, Pagination.of(1, 2), entityField.getName() + ":asc");
+					null, Pagination.of(1, (int)page.getTotalCount() + 1),
+					entityField.getName() + ":asc");
 
-			assertEquals(
-				Arrays.asList(processMetric1, processMetric2),
-				(List<ProcessMetric>)ascPage.getItems());
+			assertContains(
+				processMetric1, (List<ProcessMetric>)ascPage.getItems());
+			assertContains(
+				processMetric2, (List<ProcessMetric>)ascPage.getItems());
 
 			Page<ProcessMetric> descPage =
 				processMetricResource.getProcessMetricsPage(
-					null, Pagination.of(1, 2), entityField.getName() + ":desc");
+					null, Pagination.of(1, (int)page.getTotalCount() + 1),
+					entityField.getName() + ":desc");
 
-			assertEquals(
-				Arrays.asList(processMetric2, processMetric1),
-				(List<ProcessMetric>)descPage.getItems());
+			assertContains(
+				processMetric2, (List<ProcessMetric>)descPage.getItems());
+			assertContains(
+				processMetric1, (List<ProcessMetric>)descPage.getItems());
 		}
 	}
 
@@ -756,6 +810,10 @@ public abstract class BaseProcessMetricResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -910,9 +968,9 @@ public abstract class BaseProcessMetricResourceTestCase {
 	}
 
 	protected ProcessMetricResource processMetricResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

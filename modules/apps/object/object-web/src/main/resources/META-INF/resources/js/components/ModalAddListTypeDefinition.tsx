@@ -12,7 +12,7 @@ import {
 	API,
 	FormError,
 	Input,
-	REQUIRED_MSG,
+	constantsUtils,
 	useForm,
 } from '@liferay/object-js-components-web';
 import React, {useEffect, useState} from 'react';
@@ -31,7 +31,7 @@ const ModalAddListTypeDefinition: React.FC<IProps> = ({
 
 	const onSubmit = async (values: TInitialValues) => {
 		try {
-			await API.save(apiURL, values, 'POST');
+			await API.save({item: values, method: 'POST', url: apiURL});
 
 			onClose();
 			window.location.reload();
@@ -45,7 +45,7 @@ const ModalAddListTypeDefinition: React.FC<IProps> = ({
 		const errors: FormError<TInitialValues> = {};
 
 		if (!values.name_i18n[defaultLanguageId]) {
-			errors.name_i18n = REQUIRED_MSG;
+			errors.name_i18n = constantsUtils.REQUIRED_MSG;
 		}
 
 		return errors;

@@ -75,7 +75,7 @@ public class LayoutActionsHelper {
 	}
 
 	public boolean isShowConfigureAction(Layout layout) throws PortalException {
-		return LayoutPermissionUtil.containsLayoutUpdatePermission(
+		return LayoutPermissionUtil.containsLayoutRestrictedUpdatePermission(
 			_themeDisplay.getPermissionChecker(), layout);
 	}
 
@@ -226,10 +226,8 @@ public class LayoutActionsHelper {
 	public boolean isShowPreviewDraftActions(Layout layout)
 		throws PortalException {
 
-		if (!layout.isTypeContent() ||
-			!LayoutPermissionUtil.contains(
-				_themeDisplay.getPermissionChecker(), layout,
-				ActionKeys.UPDATE)) {
+		if (!LayoutPermissionUtil.containsLayoutPreviewDraftPermission(
+				_themeDisplay.getPermissionChecker(), layout)) {
 
 			return false;
 		}
@@ -306,13 +304,13 @@ public class LayoutActionsHelper {
 				explicitlyAddedPortlet.getPortletId());
 		}
 
-		List<PortletPreferences> portletPreferences =
+		List<PortletPreferences> portletPreferencesList =
 			PortletPreferencesLocalServiceUtil.getPortletPreferences(
 				PortletKeys.PREFS_OWNER_ID_DEFAULT,
 				PortletKeys.PREFS_OWNER_TYPE_LAYOUT, layout.getPlid());
 
-		for (PortletPreferences portletPreference : portletPreferences) {
-			String portletId = portletPreference.getPortletId();
+		for (PortletPreferences portletPreferences : portletPreferencesList) {
+			String portletId = portletPreferences.getPortletId();
 
 			Portlet portlet = PortletLocalServiceUtil.getPortletById(
 				layout.getCompanyId(), portletId);

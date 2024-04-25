@@ -10,9 +10,10 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
+
+import com.liferay.portal.vulcan.jackson.databind.ser.VulcanPropertyFilter;
 
 import java.util.HashSet;
 import java.util.List;
@@ -31,8 +32,8 @@ public class ObjectWriterFactory {
 		else {
 			simpleFilterProvider.addFilter(
 				"Liferay.Vulcan",
-				SimpleBeanPropertyFilter.filterOutAllExcept(
-					new HashSet<>(includeFieldNames)));
+				VulcanPropertyFilter.of(
+					new HashSet<>(includeFieldNames), null));
 		}
 
 		return _objectMapper.writer(simpleFilterProvider);
@@ -42,7 +43,6 @@ public class ObjectWriterFactory {
 		{
 			disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 			enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
-			enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
 			setDateFormat(new ISO8601DateFormat());
 			setSerializationInclusion(JsonInclude.Include.NON_NULL);
 		}

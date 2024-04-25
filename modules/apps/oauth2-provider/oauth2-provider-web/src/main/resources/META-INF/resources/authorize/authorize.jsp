@@ -30,7 +30,7 @@ if (Validator.isNotNull(replyTo) && !replyTo.startsWith(PortalUtil.getPortalURL(
 				<div class="panel-body">
 					<div class="app-icon aspect-ratio-bg-cover" style="background-image: url('<%= HtmlUtil.escapeAttribute(oAuth2AuthorizePortletDisplayContext.getThumbnailURL()) %>');"></div>
 
-					<liferay-ui:user-portrait
+					<liferay-user:user-portrait
 						user="<%= user %>"
 					/>
 
@@ -134,7 +134,7 @@ if (Validator.isNotNull(replyTo) && !replyTo.startsWith(PortalUtil.getPortalURL(
 
 								<aui:button id="cancel" type="submit" value="cancel" />
 
-								<script>
+								<aui:script>
 									var allowButton = document.getElementById('<portlet:namespace />allow');
 
 									if (allowButton) {
@@ -152,7 +152,7 @@ if (Validator.isNotNull(replyTo) && !replyTo.startsWith(PortalUtil.getPortalURL(
 											Liferay.Util.postForm(document.<portlet:namespace />fm);
 										});
 									}
-								</script>
+								</aui:script>
 							</div>
 						</c:otherwise>
 					</c:choose>

@@ -14,6 +14,7 @@ FragmentEntry fragmentEntry = fragmentEntryLinkDisplayContext.getFragmentEntry()
 
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(fragmentEntryLinkDisplayContext.getRedirect());
+portletDisplay.setURLBackTitle(portletDisplay.getPortletDisplayName());
 
 renderResponse.setTitle(LanguageUtil.format(request, "usages-and-propagation-x", fragmentEntry.getName()));
 %>
@@ -68,7 +69,7 @@ renderResponse.setTitle(LanguageUtil.format(request, "usages-and-propagation-x",
 
 				<clay:management-toolbar
 					managementToolbarDisplayContext="<%= new FragmentEntryUsageManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, fragmentEntryLinkDisplayContext.getSearchContainer()) %>"
-					propsTransformer="js/FragmentEntryUsagesManagementToolbarPropsTransformer"
+					propsTransformer="{FragmentEntryUsagesManagementToolbarPropsTransformer} from fragment-web"
 				/>
 
 				<portlet:actionURL name="/fragment/propagate_fragment_entry_changes" var="propagateFragmentEntryChangesURL">
@@ -105,7 +106,7 @@ renderResponse.setTitle(LanguageUtil.format(request, "usages-and-propagation-x",
 
 							<liferay-ui:search-container-column-date
 								name="last-propagation"
-								value="<%= fragmentEntryLink.getModifiedDate() %>"
+								value="<%= fragmentEntryLink.getLastPropagationDate() %>"
 							/>
 						</liferay-ui:search-container-row>
 

@@ -11,6 +11,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.search.aggregation.Aggregation;
 import com.liferay.portal.search.aggregation.pipeline.PipelineAggregation;
+import com.liferay.portal.search.collapse.Collapse;
 import com.liferay.portal.search.constants.SearchContextAttributes;
 import com.liferay.portal.search.filter.ComplexQueryPart;
 import com.liferay.portal.search.groupby.GroupByRequest;
@@ -49,6 +50,7 @@ public class SearchRequestImpl implements SearchRequest, Serializable {
 	public SearchRequestImpl(SearchRequestImpl searchRequestImpl) {
 		_aggregationsMap.putAll(searchRequestImpl._aggregationsMap);
 		_basicFacetSelection = searchRequestImpl._basicFacetSelection;
+		_collapse = searchRequestImpl._collapse;
 		_complexQueryParts.addAll(searchRequestImpl._complexQueryParts);
 		_connectionId = searchRequestImpl._connectionId;
 		_emptySearchEnabled = searchRequestImpl._emptySearchEnabled;
@@ -72,6 +74,7 @@ public class SearchRequestImpl implements SearchRequest, Serializable {
 		_query = searchRequestImpl._query;
 		_rescoreQuery = searchRequestImpl._rescoreQuery;
 		_rescores.addAll(searchRequestImpl._rescores);
+		_retainFacetSelections = searchRequestImpl._retainFacetSelections;
 		_searchContext = searchRequestImpl._searchContext;
 		_size = searchRequestImpl._size;
 		_sorts.addAll(searchRequestImpl._sorts);
@@ -138,6 +141,11 @@ public class SearchRequestImpl implements SearchRequest, Serializable {
 	@Override
 	public Map<String, Aggregation> getAggregationsMap() {
 		return Collections.unmodifiableMap(_aggregationsMap);
+	}
+
+	@Override
+	public Collapse getCollapse() {
+		return _collapse;
 	}
 
 	@Override
@@ -312,12 +320,21 @@ public class SearchRequestImpl implements SearchRequest, Serializable {
 		return _includeResponseString;
 	}
 
+	@Override
+	public boolean isRetainFacetSelections() {
+		return _retainFacetSelections;
+	}
+
 	public void setBasicFacetSelection(boolean basicFacetSelection) {
 		_basicFacetSelection = basicFacetSelection;
 
 		_searchContext.setAttribute(
 			SearchContextAttributes.ATTRIBUTE_KEY_BASIC_FACET_SELECTION,
 			Boolean.valueOf(basicFacetSelection));
+	}
+
+	public void setCollapse(Collapse collapse) {
+		_collapse = collapse;
 	}
 
 	public void setCompanyId(Long companyId) {
@@ -432,6 +449,14 @@ public class SearchRequestImpl implements SearchRequest, Serializable {
 		_rescores = rescores;
 	}
 
+	public void setRetainFacetSelections(boolean retainFacetSelections) {
+		_retainFacetSelections = retainFacetSelections;
+
+		_searchContext.setAttribute(
+			SearchContextAttributes.ATTRIBUTE_KEY_RETAIN_FACET_SELECTIONS,
+			Boolean.valueOf(retainFacetSelections));
+	}
+
 	public void setSelectedFieldNames(String... selectedFieldNames) {
 		QueryConfig queryConfig = _searchContext.getQueryConfig();
 
@@ -457,6 +482,7 @@ public class SearchRequestImpl implements SearchRequest, Serializable {
 	private final Map<String, Aggregation> _aggregationsMap =
 		new LinkedHashMap<>();
 	private boolean _basicFacetSelection;
+	private Collapse _collapse;
 	private final List<ComplexQueryPart> _complexQueryParts = new ArrayList<>();
 	private String _connectionId;
 	private boolean _emptySearchEnabled;
@@ -483,6 +509,7 @@ public class SearchRequestImpl implements SearchRequest, Serializable {
 	private Query _query;
 	private Query _rescoreQuery;
 	private List<Rescore> _rescores = new ArrayList<>();
+	private boolean _retainFacetSelections;
 	private final SearchContext _searchContext;
 	private Integer _size;
 	private final List<Sort> _sorts = new ArrayList<>();

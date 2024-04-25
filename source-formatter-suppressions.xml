@@ -11,10 +11,11 @@
 		<suppress checks="CamelCaseNameCheck" files="portal-kernel/src/com/liferay/portal/kernel/util/PackagingUtil\.java" />
 		<suppress checks="CamelCaseNameCheck" files="portal-kernel/src/com/liferay/portal/kernel/util/PropsKeys\.java" />
 		<suppress checks="CamelCaseNameCheck" files="portal-kernel/test/unit/com/liferay/portal/kernel/util/ListUtilTest\.java" />
-		<suppress checks="CompanyIterationCheck" files="portal-impl/src/com/liferay/portal/db/partition/DBPartitionUtil\.java" />
+		<suppress checks="ChainingCheck" files="portal-impl/src/com/liferay/portal/tools/ConfigurationEnvBuilder\.java" />
+		<suppress checks="CompanyIterationCheck" files="portal-impl/src/com/liferay/portal/db/partition/util/DBPartitionUtil\.java" />
 		<suppress checks="CompanyIterationCheck" files="portal-impl/src/com/liferay/portal/service/impl/CompanyLocalServiceImpl\.java" />
-		<suppress checks="CompanyIterationCheck" files="portal-impl/src/com/liferay/portal/util/PortalInstances\.java" />
 		<suppress checks="CompanyIterationCheck" files="portal-kernel/src/com/liferay/portal/kernel/dao/db/DBInspector\.java" />
+		<suppress checks="CompanyIterationCheck" files="portal-kernel/src/com/liferay/portal/kernel/instance/PortalInstancePool\.java" />
 		<suppress checks="CompanyIterationCheck" files="portal-kernel/src/com/liferay/portal/kernel/upgrade/BaseCompanyIdUpgradeProcess\.java" />
 		<suppress checks="ConcatCheck" files="portal-kernel/test/unit/com/liferay/portal/kernel/util/StringBundlerTest\.java" />
 		<suppress checks="ConstantNameCheck" files="portal-test/src/com/liferay/portal/kernel/test/rule/CodeCoverageAssertor\.java" />
@@ -46,18 +47,24 @@
 		<suppress checks="MissingDeprecatedCheck" files="portal-kernel/src/com/liferay/portal/kernel/util/StringUtil\.java" />
 		<suppress checks="MissingModifierCheck" files="portal-impl/src/com/liferay/portal/spring/transaction/TransactionStatusAdapter\.java" />
 		<suppress checks="MissingModifierCheck" files="portal-impl/test/unit/com/liferay/portal/kernel/spring/osgi/OSGiBeanPropertiesTest\.java" />
-		<suppress checks="ServiceProxyFactoryCheck" files="portal-impl/src/com/liferay/portlet/internal/PortletBagImpl\.java" />
 		<suppress checks="StaticVariableNameCheck" files="portal-impl/src/com/liferay/portal/language/LanguageResources\.java" />
 		<suppress checks="StaticVariableNameCheck" files="portal-impl/src/com/liferay/portal/security/auth/AuthVerifierPipeline\.java" />
 		<suppress checks="StaticVariableNameCheck" files="portal-impl/src/com/liferay/portal/util/PropsValues\.java" />
 		<suppress checks="StaticVariableNameCheck" files="portal-kernel/src/com/liferay/portal/kernel/backgroundtask/BackgroundTaskResult\.java" />
 		<suppress checks="StaticVariableNameCheck" files="util-slf4j/src/org/slf4j/impl/StaticLoggerBinder\.java" />
+		<suppress checks="TryWithResourcesCheck" files="portal-impl/src/com/liferay/portal/db/index/IndexUpdaterUtil\.java" />
 		<suppress checks="UnprocessedExceptionCheck" files="portal-impl/src/com/liferay/portal/log/Log4jLogFactoryImpl\.java" />
+		<suppress checks="UnprocessedExceptionCheck" files="portal-kernel/src/com/liferay/portal/kernel/module/service/Snapshot\.java" />
+		<suppress checks="URLInputStreamCheck" files="portal-impl/src/com/liferay/portal/db/DBResourceUtil\.java" />
+		<suppress checks="URLInputStreamCheck" files="portal-kernel/src/com/liferay/portal/kernel/util/PropertiesUtil.java" />
+		<suppress checks="URLInputStreamCheck" files="portal-kernel/src/com/liferay/portal/kernel/util/URLUtil.java" />
 		<suppress checks="VariableNameCheck" files="portal-kernel/src/com/liferay/portal/kernel/display/context/BaseDisplayContext\.java" />
 	</checkstyle>
 	<source-check>
 		<suppress checks="CDNCheck" files="test\.properties" />
 		<suppress checks="GetterUtilCheck" files="portal-kernel/test/unit/com/liferay/portal/kernel/util/GetterUtilTest\.java" />
+		<suppress checks="GradleDependencyConfigurationCheck" files="workspaces/.*" />
+		<suppress checks="GradleMissingDependenciesForUpgradeJava21Check" files="workspaces/.*" />
 		<suppress checks="IllegalImportsCheck" files="util-slf4j/src/com/liferay/util/slf4j/LiferayLoggerFactory\.java" />
 		<suppress checks="JavaCleanUpMethodVariablesCheck" files="util-taglib/src/com/liferay/taglib/util/IncludeTag\.java" />
 		<suppress checks="JavaDeserializationSecurityCheck" files="portal-impl/src/com/liferay/portal/bean/BeanPropertiesImpl\.java" />
@@ -68,7 +75,6 @@
 		<suppress checks="JavaDiamondOperatorCheck" files="portal-kernel/src/com/liferay/portal/kernel/util/ListUtil\.java" />
 		<suppress checks="JavaGetFeatureFlagCheck" files="portal-kernel/src/com/liferay/portal/kernel/feature/flag/FeatureFlagManagerUtil\.java" />
 		<suppress checks="JavaHelperUtilCheck" files="portal-impl/src/com/liferay/portal/deploy/hot/CustomJspBagRegistryUtil\.java" />
-		<suppress checks="JavaHelperUtilCheck" files="portal-kernel/src/com/liferay/portal/kernel/audit/AuditMessageFactoryUtil\.java" />
 		<suppress checks="JavaHelperUtilCheck" files="portal-kernel/src/com/liferay/portal/kernel/security/pwd/PasswordEncryptorUtil\.java" />
 		<suppress checks="JavaHelperUtilCheck" files="portal-kernel/src/com/liferay/portal/kernel/settings/SettingsLocatorHelperUtil\.java" />
 		<suppress checks="JavaMetaAnnotationsCheck" files="modules/apps/portal-configuration/portal-configuration-metatype-definitions-test/src/testIntegration/java/com/liferay/portal/configuration/metatype/definitions/test/MetatypeAttributeDefinitionTest\.java" />
@@ -181,7 +187,6 @@
 		<suppress checks="PoshiPauseUsageCheck" files="portal-web/test/functional/com/liferay/portalweb/tests/enduser/contentdashboard/ContentDashboard\.testcase" />
 		<suppress checks="PoshiPauseUsageCheck" files="portal-web/test/functional/com/liferay/portalweb/tests/enduser/pageaudit/PageAudit\.testcase" />
 		<suppress checks="PoshiPauseUsageCheck" files="portal-web/test/functional/com/liferay/portalweb/tests/enduser/staging/usecase/StagingUsecaseWithRoles\.testcase" />
-		<suppress checks="PoshiPauseUsageCheck" files="portal-web/test/functional/com/liferay/portalweb/tests/enduser/webformsanddatalists/dynamicdatalists/usecase/DynamicdatalistsUsecase\.testcase" />
 		<suppress checks="PoshiPauseUsageCheck" files="portal-web/test/functional/com/liferay/portalweb/tests/enduser/webformsanddatalists/forms/fields/FormsSelectFromListField\.testcase" />
 		<suppress checks="PoshiPauseUsageCheck" files="portal-web/test/functional/com/liferay/portalweb/tests/enduser/webformsanddatalists/forms/fields/FormsTextField\.testcase" />
 		<suppress checks="PoshiPauseUsageCheck" files="portal-web/test/functional/com/liferay/portalweb/tests/enduser/webformsanddatalists/forms/Forms\.testcase" />
@@ -209,7 +214,6 @@
 		<suppress checks="PoshiPauseUsageCheck" files="portal-web/test/functional/com/liferay/portalweb/tests/enduser/wem/layout/contentpage/ContentPagesWithMapping\.testcase" />
 		<suppress checks="PoshiPauseUsageCheck" files="portal-web/test/functional/com/liferay/portalweb/tests/enduser/wem/layout/contentpage/ContentPagesWithPermissions\.testcase" />
 		<suppress checks="PoshiPauseUsageCheck" files="portal-web/test/functional/com/liferay/portalweb/tests/enduser/wem/layout/contentpage/ContentPagesWithSelectionPanel\.testcase" />
-		<suppress checks="PoshiPauseUsageCheck" files="portal-web/test/functional/com/liferay/portalweb/tests/enduser/wem/layout/contentpage/ContentPagesWithViewport\.testcase" />
 		<suppress checks="PoshiPauseUsageCheck" files="portal-web/test/functional/com/liferay/portalweb/tests/enduser/wem/layout/pagetemplate/contentpagetemplate/ContentPageTemplatesExportImport\.testcase" />
 		<suppress checks="PoshiPauseUsageCheck" files="portal-web/test/functional/com/liferay/portalweb/tests/enduser/wem/layout/pagetemplate/displaypagetemplate/DisplayPageTemplatesWithMapping\.testcase" />
 		<suppress checks="PoshiPauseUsageCheck" files="portal-web/test/functional/com/liferay/portalweb/tests/enduser/wem/layout/pagetemplate/displaypagetemplate/DisplayPageTemplatesWithSelectionPanel\.testcase" />
@@ -218,6 +222,8 @@
 		<suppress checks="PoshiPauseUsageCheck" files="portal-web/test/functional/com/liferay/portalweb/tests/enduser/wem/stylebooks/staging/StyleBooksWithStaging\.testcase" />
 		<suppress checks="PoshiPauseUsageCheck" files="portal-web/test/functional/com/liferay/portalweb/tests/enduser/wem/stylebooks/StyleBooks\.testcase" />
 		<suppress checks="PoshiPauseUsageCheck" files="portal-web/test/functional/com/liferay/portalweb/tests/enduser/wem/trash/RecycleBin\.testcase" />
+		<suppress checks="PoshiPropertiesOrderCheck" files="portal-web/test/functional/com/liferay/portalweb/tests/coreinfrastructure/search/searchportlet/Search\.testcase" />
+		<suppress checks="PoshiPropertiesOrderCheck" files="portal-web/test/functional/com/liferay/portalweb/tests/coreinfrastructure/search/searchportlet/SolrSearch\.testcase" />
 		<suppress checks="PoshiVariableNameCheck" files="portal-web/test/functional/com/liferay/portalweb/macros/json/journal/JSONWebcontentUtil\.macro" />
 		<suppress checks="PrimitiveWrapperInstantiationCheck" files="portal-impl/src/com/liferay/portal/json/jabsorb/serializer/LiferaySerializer\.java" />
 		<suppress checks="PropertiesEmptyLinesCheck" files="build\.properties" />

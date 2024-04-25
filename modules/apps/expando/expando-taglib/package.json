@@ -2,11 +2,12 @@
 	"dependencies": {
 		"@liferay/map-common": "*"
 	},
+	"main": "js/GeoLocationField.js",
 	"name": "@liferay/expando-taglib",
 	"scripts": {
 		"build": "liferay-npm-scripts build",
 		"checkFormat": "liferay-npm-scripts check",
 		"format": "liferay-npm-scripts fix"
 	},
-	"version": "5.0.27"
+	"version": "5.0.31"
 }

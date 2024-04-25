@@ -7,9 +7,12 @@ package com.liferay.change.tracking.internal.background.task;
 
 import com.liferay.change.tracking.conflict.ConflictInfo;
 import com.liferay.change.tracking.constants.CTConstants;
+import com.liferay.change.tracking.constants.PublicationRoleConstants;
+import com.liferay.change.tracking.exception.CTPublishConflictException;
 import com.liferay.change.tracking.internal.CTServiceRegistry;
 import com.liferay.change.tracking.internal.background.task.display.CTPublishBackgroundTaskDisplay;
 import com.liferay.change.tracking.internal.helper.CTTableMapperHelper;
+import com.liferay.change.tracking.internal.helper.CTUserNotificationHelper;
 import com.liferay.change.tracking.model.CTCollection;
 import com.liferay.change.tracking.model.CTEntry;
 import com.liferay.change.tracking.service.CTCollectionLocalService;
@@ -26,11 +29,25 @@ import com.liferay.portal.kernel.backgroundtask.constants.BackgroundTaskConstant
 import com.liferay.portal.kernel.backgroundtask.display.BackgroundTaskDisplay;
 import com.liferay.portal.kernel.cache.MultiVMPool;
 import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
+import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Role;
+import com.liferay.portal.kernel.model.role.RoleConstants;
+import com.liferay.portal.kernel.notifications.UserNotificationDefinition;
+import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.change.tracking.CTService;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HtmlUtil;
+import com.liferay.portal.kernel.util.MapUtil;
+import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.io.Serializable;
@@ -40,6 +57,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -148,9 +166,9 @@ public class CTPublishBackgroundTaskExecutor
 			}
 
 			if (!unresolvedConflictInfos.isEmpty()) {
-				throw new SystemException(
+				throw new CTPublishConflictException(
 					StringBundler.concat(
-						"Unable to publish ", fromCTCollectionName, " to ",
+						"Unable to publish from ", fromCTCollectionName, " to ",
 						toCTCollectionName,
 						" because of unresolved conflicts: ",
 						unresolvedConflictInfos));
@@ -236,9 +254,82 @@ public class CTPublishBackgroundTaskExecutor
 	}
 
 	@Override
+	public String handleException(
+		BackgroundTask backgroundTask, Exception exception) {
+
+		if (!FeatureFlagManagerUtil.isEnabled("LPD-11018")) {
+			return super.handleException(backgroundTask, exception);
+		}
+
+		boolean showConflicts = false;
+
+		if (exception instanceof CTPublishConflictException) {
+			showConflicts = true;
+		}
+
+		long fromCTCollectionId = MapUtil.getLong(
+			backgroundTask.getTaskContextMap(), "fromCTCollectionId");
+
+		try {
+			CTCollection fromCTCollection =
+				_ctCollectionLocalService.getCTCollection(fromCTCollectionId);
+
+			_ctUserNotificationHelper.sendUserNotificationEvents(
+				fromCTCollection,
+				JSONUtil.put(
+					"backgroundTaskId", backgroundTask.getBackgroundTaskId()
+				).put(
+					"ctCollectionId", fromCTCollectionId
+				).put(
+					"ctCollectionName",
+					HtmlUtil.escape(fromCTCollection.getName())
+				).put(
+					"notificationType",
+					UserNotificationDefinition.NOTIFICATION_TYPE_REVIEW_ENTRY
+				).put(
+					"showConflicts", showConflicts
+				),
+				_getPublicationRolesUserIds(fromCTCollection, showConflicts));
+		}
+		catch (PortalException portalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(portalException);
+			}
+		}
+
+		return super.handleException(backgroundTask, exception);
+	}
+
+	@Override
 	public void setAopProxy(Object aopProxy) {
 		_backgroundTaskExecutor = (BackgroundTaskExecutor)aopProxy;
 	}
+
+	private long[] _getPublicationRolesUserIds(
+		CTCollection ctCollection, boolean showConflicts) {
+
+		Set<Long> userIds = SetUtil.fromArray(
+			_ctUserNotificationHelper.getPublicationRoleUserIds(
+				ctCollection, true, PublicationRoleConstants.NAME_ADMIN,
+				PublicationRoleConstants.NAME_EDITOR,
+				PublicationRoleConstants.NAME_PUBLISHER));
+
+		if (!showConflicts) {
+			Role role = _roleLocalService.fetchRole(
+				ctCollection.getCompanyId(), RoleConstants.ADMINISTRATOR);
+
+			for (long userId :
+					_userLocalService.getRoleUserIds(role.getRoleId())) {
+
+				userIds.add(userId);
+			}
+		}
+
+		return ArrayUtil.toLongArray(userIds);
+	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		CTPublishBackgroundTaskExecutor.class);
 
 	private BackgroundTaskExecutor _backgroundTaskExecutor;
 
@@ -255,6 +346,15 @@ public class CTPublishBackgroundTaskExecutor
 	private CTServiceRegistry _ctServiceRegistry;
 
 	@Reference
+	private CTUserNotificationHelper _ctUserNotificationHelper;
+
+	@Reference
 	private MultiVMPool _multiVMPool;
+
+	@Reference
+	private RoleLocalService _roleLocalService;
+
+	@Reference
+	private UserLocalService _userLocalService;
 
 }

@@ -39,7 +39,6 @@ import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiServic
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
-import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 import com.liferay.portal.kernel.transaction.Transactional;
@@ -507,29 +506,31 @@ public abstract class AssetTagLocalServiceBaseImpl
 	/**
 	 */
 	@Override
-	public void addAssetEntryAssetTag(long entryId, long tagId) {
-		assetEntryPersistence.addAssetTag(entryId, tagId);
+	public boolean addAssetEntryAssetTag(long entryId, long tagId) {
+		return assetEntryPersistence.addAssetTag(entryId, tagId);
 	}
 
 	/**
 	 */
 	@Override
-	public void addAssetEntryAssetTag(long entryId, AssetTag assetTag) {
-		assetEntryPersistence.addAssetTag(entryId, assetTag);
+	public boolean addAssetEntryAssetTag(long entryId, AssetTag assetTag) {
+		return assetEntryPersistence.addAssetTag(entryId, assetTag);
 	}
 
 	/**
 	 */
 	@Override
-	public void addAssetEntryAssetTags(long entryId, long[] tagIds) {
-		assetEntryPersistence.addAssetTags(entryId, tagIds);
+	public boolean addAssetEntryAssetTags(long entryId, long[] tagIds) {
+		return assetEntryPersistence.addAssetTags(entryId, tagIds);
 	}
 
 	/**
 	 */
 	@Override
-	public void addAssetEntryAssetTags(long entryId, List<AssetTag> assetTags) {
-		assetEntryPersistence.addAssetTags(entryId, assetTags);
+	public boolean addAssetEntryAssetTags(
+		long entryId, List<AssetTag> assetTags) {
+
+		return assetEntryPersistence.addAssetTags(entryId, assetTags);
 	}
 
 	/**
@@ -717,16 +718,10 @@ public abstract class AssetTagLocalServiceBaseImpl
 	}
 
 	public void afterPropertiesSet() {
-		persistedModelLocalServiceRegistry.register(
-			"com.liferay.asset.kernel.model.AssetTag", assetTagLocalService);
-
 		AssetTagLocalServiceUtil.setService(assetTagLocalService);
 	}
 
 	public void destroy() {
-		persistedModelLocalServiceRegistry.unregister(
-			"com.liferay.asset.kernel.model.AssetTag");
-
 		AssetTagLocalServiceUtil.setService(null);
 	}
 
@@ -806,9 +801,5 @@ public abstract class AssetTagLocalServiceBaseImpl
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		AssetTagLocalServiceBaseImpl.class);
-
-	@BeanReference(type = PersistedModelLocalServiceRegistry.class)
-	protected PersistedModelLocalServiceRegistry
-		persistedModelLocalServiceRegistry;
 
 }

@@ -71,7 +71,12 @@ public class CalendarResourceFactoryImpl implements CalendarResource.Factory {
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				return _calendarResourceProxyProviderFunction.apply(
+				Function<InvocationHandler, CalendarResource>
+					calendarResourceProxyProviderFunction =
+						ResourceProxyProviderFunctionHolder.
+							_calendarResourceProxyProviderFunction;
+
+				return calendarResourceProxyProviderFunction.apply(
 					(proxy, method, arguments) -> _invoke(
 						method, arguments, _checkPermissions,
 						_httpServletRequest, _httpServletResponse,
@@ -227,9 +232,6 @@ public class CalendarResourceFactoryImpl implements CalendarResource.Factory {
 		}
 	}
 
-	private static final Function<InvocationHandler, CalendarResource>
-		_calendarResourceProxyProviderFunction = _getProxyProviderFunction();
-
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
@@ -264,6 +266,14 @@ public class CalendarResourceFactoryImpl implements CalendarResource.Factory {
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	private static class ResourceProxyProviderFunctionHolder {
+
+		private static final Function<InvocationHandler, CalendarResource>
+			_calendarResourceProxyProviderFunction =
+				_getProxyProviderFunction();
+
+	}
 
 	private class AcceptLanguageImpl implements AcceptLanguage {
 

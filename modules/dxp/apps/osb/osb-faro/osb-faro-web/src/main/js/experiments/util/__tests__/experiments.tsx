@@ -1,8 +1,4 @@
-import React from 'react';
 import {
-	dateFormatter,
-	formatHistogramKeyValue,
-	formatProcessedDate,
 	formatYAxis,
 	getFormattedMedian,
 	getFormattedMedianLabel,
@@ -11,76 +7,10 @@ import {
 	getMetricUnit,
 	getStatusColor,
 	getStatusName,
-	getStep,
 	getTicks,
-	getVariantLabel,
-	normalizeHistogram,
+	getVariantLabels,
 	toThousandsABTesting
 } from '../experiments';
-
-const DATA_MOCK = {
-	dxpVariants: [
-		{
-			changes: 1,
-			control: true,
-			dxpVariantId: 'DEFAULT',
-			dxpVariantName: 'Control',
-			trafficSplit: 50,
-			uniqueVisitors: 10
-		},
-		{
-			changes: 1,
-			control: false,
-			dxpVariantId: '37414',
-			dxpVariantName: 'Variant 1',
-			trafficSplit: 50,
-			uniqueVisitors: 1000
-		}
-	],
-	goal: {
-		metric: 'BOUNCE_RATE' as const
-	},
-	metricsHistogram: [
-		{
-			processedDate: '2019-08-21T12:55:29.861',
-			variantMetrics: [
-				{
-					confidenceInterval: [0.5, 2.5],
-					dxpVariantId: 'DEFAULT',
-					improvement: 0.3,
-					median: 0.4,
-					probabilityToWin: 50
-				},
-				{
-					confidenceInterval: [0.6, 3.2],
-					dxpVariantId: '37414',
-					improvement: 0.4,
-					median: 0.5,
-					probabilityToWin: 50
-				}
-			]
-		},
-		{
-			processedDate: '2019-08-22T12:55:29.861',
-			variantMetrics: [
-				{
-					confidenceInterval: [0.6, 2.6],
-					dxpVariantId: 'DEFAULT',
-					improvement: 0.4,
-					median: 0.5,
-					probabilityToWin: 50
-				},
-				{
-					confidenceInterval: [0.7, 3.5],
-					dxpVariantId: '37414',
-					improvement: 0.6,
-					median: 0.6,
-					probabilityToWin: 50
-				}
-			]
-		}
-	]
-};
 
 const mockBestVariant = {
 	changes: 1,
@@ -130,40 +60,6 @@ describe('getMetricUnit', () => {
 		expect(getMetricUnit('CLICK_RATE')).toEqual('%');
 		expect(getMetricUnit('MAX_SCROLL_DEPTH')).toEqual('%');
 		expect(getMetricUnit('TIME_ON_PAGE')).toEqual('s');
-	});
-});
-
-describe('dateFormatter', () => {
-	it('should formatter a date as YYYY-MM-DD', () => {
-		expect(dateFormatter(new Date('2019-08-21T12:55:29.861'))).toEqual(
-			'2019-08-21'
-		);
-	});
-});
-
-describe('normalizeHistogram', () => {
-	it('should return a new histogram in default format', () => {
-		const normalizedHistogram = normalizeHistogram(DATA_MOCK);
-
-		expect(
-			Array.isArray(normalizedHistogram[0].variantsHistogram)
-		).toBeTruthy();
-		expect(normalizedHistogram[0].variantsHistogram[0].median).toEqual(0.4);
-	});
-});
-
-describe('formatHistogramKeyValue', () => {
-	it('should return a histogram as key value object', () => {
-		const normalizedHistogram = normalizeHistogram(DATA_MOCK);
-		const histogramKeyValue = formatHistogramKeyValue(
-			normalizedHistogram,
-			'%'
-		);
-
-		expect(typeof histogramKeyValue).toBe('object');
-		expect(typeof histogramKeyValue['data1']).toBe('object');
-		expect(typeof histogramKeyValue['data1']['2019-08-21']).toBe('object');
-		expect(histogramKeyValue['data1']['2019-08-21']['median']).toEqual(0.4);
 	});
 });
 
@@ -247,76 +143,74 @@ describe('getFormattedProbabilityToWin', () => {
 	});
 });
 
-describe('getStep', () => {
-	it('should get formatted step', () => {
-		const stepUnFormatted = {
-			Description: () => <div>{'Step description'}</div>,
-			label: 'Step label',
-			showIcon: false,
-			title: 'Step title'
-		};
-
-		expect(getStep(stepUnFormatted)).toMatchSnapshot();
-	});
-});
-
-describe('formatProcessedDate', () => {
-	it('should format processed date', () => {
-		expect(formatProcessedDate('2019-08-21T00:00:00.000')).toEqual(
-			new Date('2019-08-21T00:00:00.000Z')
-		);
-
-		expect(formatProcessedDate('2019-08-21T03:00:00.000')).toEqual(
-			new Date('2019-08-21T00:00:00.000Z')
-		);
-
-		expect(formatProcessedDate('2019-08-21T12:00:00.000')).toEqual(
-			new Date('2019-08-21T00:00:00.000Z')
-		);
-
-		expect(formatProcessedDate('2019-08-21T21:00:00.000')).toEqual(
-			new Date('2019-08-21T00:00:00.000Z')
-		);
-	});
-});
-
-describe('getVariantLabel', () => {
+describe('getVariantLabels', () => {
 	it('should return a label in especific cases', () => {
 		expect(
-			getVariantLabel('RUNNING', mockBestVariant, undefined, 'DEFAULT')
-		).toBe('Current Best');
+			getVariantLabels({
+				bestVariant: mockBestVariant,
+				dxpVariantId: 'DEFAULT',
+				status: 'RUNNING'
+			})
+		).toEqual([{status: 'success', value: 'Current Best'}]);
 
 		expect(
-			getVariantLabel(
-				'FINISHED_WINNER',
-				mockBestVariant,
-				'DEFAULT',
-				'DEFAULT'
-			)
-		).toBe('Winner');
+			getVariantLabels({
+				bestVariant: mockBestVariant,
+				dxpVariantId: 'DEFAULT',
+				status: 'FINISHED_WINNER',
+				winnerDXPVariantId: 'DEFAULT'
+			})
+		).toEqual([{status: 'success', value: 'Winner'}]);
+
+		expect(
+			getVariantLabels({
+				bestVariant: mockBestVariant,
+				dxpVariantId: 'DEFAULT',
+				publishedDXPVariantId: 'DEFAULT',
+				status: 'TERMINATED'
+			})
+		).toEqual([{status: 'info', value: 'Published'}]);
+
+		expect(
+			getVariantLabels({
+				bestVariant: mockBestVariant,
+				dxpVariantId: 'DEFAULT',
+				publishedDXPVariantId: 'DEFAULT',
+				status: 'FINISHED_WINNER',
+				winnerDXPVariantId: 'DEFAULT'
+			})
+		).toEqual([
+			{status: 'success', value: 'Winner'},
+			{status: 'info', value: 'Published'}
+		]);
 	});
-	it('should return undefined', () => {
+	it('should return an empty array', () => {
 		expect(
-			getVariantLabel('RUNNING', undefined, undefined, 'DEFAULT')
-		).toBe(undefined);
+			getVariantLabels({
+				dxpVariantId: 'DEFAULT',
+				status: 'RUNNING'
+			})
+		).toEqual([]);
 
 		expect(
-			getVariantLabel(
-				'FINISHED_WINNER',
-				mockBestVariant,
-				'1000',
-				'DEFAULT'
-			)
-		).toBe(undefined);
+			getVariantLabels({
+				bestVariant: mockBestVariant,
+				dxpVariantId: 'DEFAULT',
+				publishedDXPVariantId: null,
+				status: 'FINISHED_NO_WINNER',
+				winnerDXPVariantId: null
+			})
+		).toEqual([]);
 
 		expect(
-			getVariantLabel(
-				'FINISHED_NO_WINNER',
-				mockBestVariant,
-				'DEFAULT',
-				'DEFAULT'
-			)
-		).toBe(undefined);
+			getVariantLabels({
+				bestVariant: mockBestVariant,
+				dxpVariantId: 'DEFAULT',
+				publishedDXPVariantId: null,
+				status: 'TERMINATED',
+				winnerDXPVariantId: null
+			})
+		).toEqual([]);
 	});
 });
 

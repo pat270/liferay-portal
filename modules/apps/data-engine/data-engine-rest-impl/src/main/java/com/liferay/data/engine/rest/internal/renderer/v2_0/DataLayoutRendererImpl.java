@@ -16,12 +16,8 @@ import com.liferay.dynamic.data.mapping.model.DDMStructureLayout;
 import com.liferay.dynamic.data.mapping.model.DDMStructureVersion;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLayoutLocalService;
 import com.liferay.dynamic.data.mapping.service.DDMStructureVersionLocalService;
-import com.liferay.portal.kernel.security.auth.GuestOrUserUtil;
-import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Locale;
@@ -49,10 +45,6 @@ public class DataLayoutRendererImpl implements DataLayoutRenderer {
 				ddmStructureLayout.getStructureVersionId());
 
 		DDMStructure ddmStructure = ddmStructureVersion.getStructure();
-
-		_ddmStructureModelResourcePermission.check(
-			GuestOrUserUtil.getPermissionChecker(),
-			ddmStructure.getPrimaryKey(), ActionKeys.VIEW);
 
 		DDMForm ddmForm = ddmStructure.getDDMForm();
 
@@ -139,16 +131,7 @@ public class DataLayoutRendererImpl implements DataLayoutRenderer {
 	@Reference
 	private DDMStructureLayoutLocalService _ddmStructureLayoutLocalService;
 
-	@Reference(
-		target = "(model.class.name=com.liferay.dynamic.data.mapping.model.DDMStructure)"
-	)
-	private ModelResourcePermission<DDMStructure>
-		_ddmStructureModelResourcePermission;
-
 	@Reference
 	private DDMStructureVersionLocalService _ddmStructureVersionLocalService;
-
-	@Reference
-	private Portal _portal;
 
 }

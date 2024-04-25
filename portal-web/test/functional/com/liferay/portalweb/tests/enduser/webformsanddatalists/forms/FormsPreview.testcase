@@ -40,14 +40,11 @@ definition {
 	@priority = 5
 	test AutofillRuleCanBePreviewed {
 		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
 
-		FormsAdminNavigator.enableLocalNetworkDataProvider();
+		FormsAdmin.enableLocalNetworkDataProvider();
 
-		FormsAdmin.openFormsAdmin(siteURLKey = "guest");
-
-		Navigator.gotoNavItem(navItem = "Data Providers");
-
-		FormsAdminNavigator.gotoAddDataProvider();
+		FormsAdminNavigator.gotoRESTDataProvider();
 
 		var portalURL = PropsUtil.get("portal.url");
 
@@ -116,6 +113,10 @@ definition {
 			fieldValue = "Asia");
 
 		Form.gotoFieldContainer(fieldName = "Region");
+
+		Click(
+			key_fieldName = "Country",
+			locator1 = "FormFields#SELECT_FIELD");
 
 		FormFields.viewFieldDropdownItem(itemName = "Afghanistan");
 	}
@@ -601,6 +602,8 @@ definition {
 			optionValue = "Option 1",
 			rowNumber = 1);
 
+		FormFields.clickAddOptionButton(gridOptionType = "Rows");
+
 		FormFields.editGridOptions(
 			gridField = "Rows",
 			optionValue = "Option 2",
@@ -610,6 +613,8 @@ definition {
 			gridField = "Columns",
 			optionValue = "Option A",
 			rowNumber = 1);
+
+		FormFields.clickAddOptionButton(gridOptionType = "Columns");
 
 		FormFields.editGridOptions(
 			gridField = "Columns",
@@ -987,6 +992,8 @@ definition {
 			optionValue = "Option 1",
 			rowNumber = 1);
 
+		FormFields.clickAddOptionButton();
+
 		FormFields.editOptionsRow(
 			optionValue = "Option 2",
 			rowNumber = 2);
@@ -1172,6 +1179,8 @@ definition {
 			optionValue = "Option 1",
 			rowNumber = 1);
 
+		FormFields.clickAddOptionButton();
+
 		FormFields.editOptionsRow(
 			optionValue = "Option 2",
 			rowNumber = 2);
@@ -1201,6 +1210,10 @@ definition {
 		FormFields.selectSelectOption(
 			fieldName = "Select from List",
 			selectOption = "Option 1");
+
+		Click(
+			key_fieldName = "Select from List",
+			locator1 = "FormFields#SELECT_FIELD");
 
 		FormFields.viewSelectFromListOption(optionValue = "Option 1");
 	}
@@ -1291,6 +1304,8 @@ definition {
 		FormFields.addSingleSelectionOption(
 			optionName = "Option 1",
 			optionValue = 1);
+
+		FormFields.clickAddOptionButton();
 
 		FormFields.addSingleSelectionOption(
 			optionName = "Option 2",

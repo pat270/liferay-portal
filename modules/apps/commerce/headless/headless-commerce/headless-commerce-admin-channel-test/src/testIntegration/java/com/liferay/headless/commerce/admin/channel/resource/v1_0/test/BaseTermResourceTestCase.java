@@ -25,8 +25,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -210,6 +208,8 @@ public abstract class BaseTermResourceTestCase {
 	public void testGraphQLGetPaymentMethodGroupRelTermTerm() throws Exception {
 		Term term = testGraphQLGetPaymentMethodGroupRelTermTerm_addTerm();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				term,
@@ -228,6 +228,30 @@ public abstract class BaseTermResourceTestCase {
 								getGraphQLFields())),
 						"JSONObject/data",
 						"Object/paymentMethodGroupRelTermTerm"))));
+
+		// Using the namespace headlessCommerceAdminChannel_v1_0
+
+		Assert.assertTrue(
+			equals(
+				term,
+				TermSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminChannel_v1_0",
+								new GraphQLField(
+									"paymentMethodGroupRelTermTerm",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"paymentMethodGroupRelTermId",
+												testGraphQLGetPaymentMethodGroupRelTermTerm_getPaymentMethodGroupRelTermId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminChannel_v1_0",
+						"Object/paymentMethodGroupRelTermTerm"))));
 	}
 
 	protected Long
@@ -245,6 +269,8 @@ public abstract class BaseTermResourceTestCase {
 		Long irrelevantPaymentMethodGroupRelTermId =
 			RandomTestUtil.randomLong();
 
+		// No namespace
+
 		Assert.assertEquals(
 			"Not Found",
 			JSONUtil.getValueAsString(
@@ -259,6 +285,27 @@ public abstract class BaseTermResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminChannel_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminChannel_v1_0",
+						new GraphQLField(
+							"paymentMethodGroupRelTermTerm",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"paymentMethodGroupRelTermId",
+										irrelevantPaymentMethodGroupRelTermId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -299,6 +346,8 @@ public abstract class BaseTermResourceTestCase {
 	public void testGraphQLGetShippingFixedOptionTermTerm() throws Exception {
 		Term term = testGraphQLGetShippingFixedOptionTermTerm_addTerm();
 
+		// No namespace
+
 		Assert.assertTrue(
 			equals(
 				term,
@@ -317,6 +366,30 @@ public abstract class BaseTermResourceTestCase {
 								getGraphQLFields())),
 						"JSONObject/data",
 						"Object/shippingFixedOptionTermTerm"))));
+
+		// Using the namespace headlessCommerceAdminChannel_v1_0
+
+		Assert.assertTrue(
+			equals(
+				term,
+				TermSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessCommerceAdminChannel_v1_0",
+								new GraphQLField(
+									"shippingFixedOptionTermTerm",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"shippingFixedOptionTermId",
+												testGraphQLGetShippingFixedOptionTermTerm_getShippingFixedOptionTermId());
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessCommerceAdminChannel_v1_0",
+						"Object/shippingFixedOptionTermTerm"))));
 	}
 
 	protected Long
@@ -333,6 +406,8 @@ public abstract class BaseTermResourceTestCase {
 
 		Long irrelevantShippingFixedOptionTermId = RandomTestUtil.randomLong();
 
+		// No namespace
+
 		Assert.assertEquals(
 			"Not Found",
 			JSONUtil.getValueAsString(
@@ -347,6 +422,27 @@ public abstract class BaseTermResourceTestCase {
 							}
 						},
 						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessCommerceAdminChannel_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminChannel_v1_0",
+						new GraphQLField(
+							"shippingFixedOptionTermTerm",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"shippingFixedOptionTermId",
+										irrelevantShippingFixedOptionTermId);
+								}
+							},
+							getGraphQLFields()))),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 	}
@@ -607,6 +703,10 @@ public abstract class BaseTermResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
+		if (clazz.getClassLoader() == null) {
+			return new java.lang.reflect.Field[0];
+		}
+
 		return TransformUtil.transform(
 			ReflectionUtil.getDeclaredFields(clazz),
 			field -> {
@@ -785,9 +885,9 @@ public abstract class BaseTermResourceTestCase {
 	}
 
 	protected TermResource termResource;
-	protected Group irrelevantGroup;
-	protected Company testCompany;
-	protected Group testGroup;
+	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
+	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
 

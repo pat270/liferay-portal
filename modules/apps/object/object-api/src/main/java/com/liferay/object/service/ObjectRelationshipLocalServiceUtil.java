@@ -36,16 +36,6 @@ public class ObjectRelationshipLocalServiceUtil {
 	 *
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.object.service.impl.ObjectRelationshipLocalServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
-	public static ObjectRelationship addObjectRelationship(
-			long userId, long objectDefinitionId1, long objectDefinitionId2,
-			long parameterObjectFieldId, String deletionType,
-			Map<java.util.Locale, String> labelMap, String name, String type)
-		throws PortalException {
-
-		return getService().addObjectRelationship(
-			userId, objectDefinitionId1, objectDefinitionId2,
-			parameterObjectFieldId, deletionType, labelMap, name, type);
-	}
 
 	/**
 	 * Adds the object relationship to the database. Also notifies the appropriate model listeners.
@@ -61,6 +51,20 @@ public class ObjectRelationshipLocalServiceUtil {
 		ObjectRelationship objectRelationship) {
 
 		return getService().addObjectRelationship(objectRelationship);
+	}
+
+	public static ObjectRelationship addObjectRelationship(
+			String externalReferenceCode, long userId, long objectDefinitionId1,
+			long objectDefinitionId2, long parameterObjectFieldId,
+			String deletionType, Map<java.util.Locale, String> labelMap,
+			String name, boolean system, String type,
+			com.liferay.object.model.ObjectField objectField)
+		throws PortalException {
+
+		return getService().addObjectRelationship(
+			externalReferenceCode, userId, objectDefinitionId1,
+			objectDefinitionId2, parameterObjectFieldId, deletionType, labelMap,
+			name, system, type, objectField);
 	}
 
 	public static void addObjectRelationshipMappingTableValues(
@@ -179,6 +183,12 @@ public class ObjectRelationshipLocalServiceUtil {
 		return getService().deletePersistedModel(persistedModel);
 	}
 
+	public static void disableEdge(long objectDefinitionId2)
+		throws PortalException {
+
+		getService().disableEdge(objectDefinitionId2);
+	}
+
 	public static <T> T dslQuery(DSLQuery dslQuery) {
 		return getService().dslQuery(dslQuery);
 	}
@@ -264,10 +274,34 @@ public class ObjectRelationshipLocalServiceUtil {
 		return getService().dynamicQueryCount(dynamicQuery, projection);
 	}
 
+	public static ObjectRelationship enableEdge(
+			long objectRelationshipId, boolean edge)
+		throws PortalException {
+
+		return getService().enableEdge(objectRelationshipId, edge);
+	}
+
 	public static ObjectRelationship fetchObjectRelationship(
 		long objectRelationshipId) {
 
 		return getService().fetchObjectRelationship(objectRelationshipId);
+	}
+
+	public static ObjectRelationship
+		fetchObjectRelationshipByExternalReferenceCode(
+			String externalReferenceCode, long objectDefinitionId1) {
+
+		return getService().fetchObjectRelationshipByExternalReferenceCode(
+			externalReferenceCode, objectDefinitionId1);
+	}
+
+	public static ObjectRelationship
+		fetchObjectRelationshipByExternalReferenceCode(
+			String externalReferenceCode, long companyId,
+			long objectDefinitionId1) {
+
+		return getService().fetchObjectRelationshipByExternalReferenceCode(
+			externalReferenceCode, companyId, objectDefinitionId1);
 	}
 
 	public static ObjectRelationship
@@ -362,9 +396,19 @@ public class ObjectRelationshipLocalServiceUtil {
 		return getService().getObjectRelationship(objectDefinitionId1, name);
 	}
 
+	public static ObjectRelationship
+			getObjectRelationshipByExternalReferenceCode(
+				String externalReferenceCode, long companyId,
+				long objectDefinitionId1)
+		throws PortalException {
+
+		return getService().getObjectRelationshipByExternalReferenceCode(
+			externalReferenceCode, companyId, objectDefinitionId1);
+	}
+
 	public static ObjectRelationship getObjectRelationshipByObjectDefinitionId(
 			long objectDefinitionId, String name)
-		throws Exception {
+		throws PortalException {
 
 		return getService().getObjectRelationshipByObjectDefinitionId(
 			objectDefinitionId, name);
@@ -407,6 +451,12 @@ public class ObjectRelationshipLocalServiceUtil {
 		long objectDefinitionId1) {
 
 		return getService().getObjectRelationships(objectDefinitionId1);
+	}
+
+	public static List<ObjectRelationship> getObjectRelationships(
+		long objectDefinitionId1, boolean edge) {
+
+		return getService().getObjectRelationships(objectDefinitionId1, edge);
 	}
 
 	public static List<ObjectRelationship> getObjectRelationships(
@@ -479,16 +529,6 @@ public class ObjectRelationshipLocalServiceUtil {
 			objectDefinition1, objectDefinitionLocalService);
 	}
 
-	public static ObjectRelationship updateObjectRelationship(
-			long objectRelationshipId, long parameterObjectFieldId,
-			String deletionType, Map<java.util.Locale, String> labelMap)
-		throws PortalException {
-
-		return getService().updateObjectRelationship(
-			objectRelationshipId, parameterObjectFieldId, deletionType,
-			labelMap);
-	}
-
 	/**
 	 * Updates the object relationship in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
@@ -503,6 +543,18 @@ public class ObjectRelationshipLocalServiceUtil {
 		ObjectRelationship objectRelationship) {
 
 		return getService().updateObjectRelationship(objectRelationship);
+	}
+
+	public static ObjectRelationship updateObjectRelationship(
+			String externalReferenceCode, long objectRelationshipId,
+			long parameterObjectFieldId, String deletionType, boolean edge,
+			Map<java.util.Locale, String> labelMap,
+			com.liferay.object.model.ObjectField objectField)
+		throws PortalException {
+
+		return getService().updateObjectRelationship(
+			externalReferenceCode, objectRelationshipId, parameterObjectFieldId,
+			deletionType, edge, labelMap, objectField);
 	}
 
 	public static ObjectRelationshipLocalService getService() {

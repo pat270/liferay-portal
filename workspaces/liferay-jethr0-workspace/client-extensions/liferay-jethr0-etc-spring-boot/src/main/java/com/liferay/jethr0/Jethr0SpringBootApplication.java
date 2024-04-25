@@ -6,12 +6,13 @@
 package com.liferay.jethr0;
 
 import com.liferay.client.extension.util.spring.boot.ClientExtensionUtilSpringBootComponentScan;
-import com.liferay.jethr0.build.queue.BuildQueue;
-import com.liferay.jethr0.entity.repository.EntityRepository;
-import com.liferay.jethr0.event.handler.EventHandlerContext;
+import com.liferay.jethr0.bui1d.queue.BuildQueue;
+import com.liferay.jethr0.entity.EntityInitializer;
+import com.liferay.jethr0.event.EventHandlerContext;
+import com.liferay.jethr0.event.jenkins.JenkinsEventProcessor;
+import com.liferay.jethr0.event.jrp.JRPEventProcessor;
 import com.liferay.jethr0.jenkins.JenkinsQueue;
-import com.liferay.jethr0.jms.JMSEventHandler;
-import com.liferay.jethr0.project.queue.ProjectQueue;
+import com.liferay.jethr0.job.queue.JobQueue;
 
 import javax.jms.ConnectionFactory;
 
@@ -42,45 +43,41 @@ public class Jethr0SpringBootApplication {
 		EventHandlerContext eventHandlerContext =
 			configurableApplicationContext.getBean(EventHandlerContext.class);
 
-		eventHandlerContext.setJMSEventHandler(
-			configurableApplicationContext.getBean(JMSEventHandler.class));
+		eventHandlerContext.setJenkinsEventProcessor(
+			configurableApplicationContext.getBean(
+				JenkinsEventProcessor.class));
+		eventHandlerContext.setJRPEventProcessor(
+			configurableApplicationContext.getBean(JRPEventProcessor.class));
 
-		for (String beanDefinitionName :
-				configurableApplicationContext.getBeanDefinitionNames()) {
+		EntityInitializer entityInitializer =
+			configurableApplicationContext.getBean(EntityInitializer.class);
 
-			Object bean = configurableApplicationContext.getBean(
-				beanDefinitionName);
+		entityInitializer.initialize();
 
-			if (bean instanceof EntityRepository) {
-				EntityRepository entityRepository = (EntityRepository)bean;
+		JobQueue jobQueue = configurableApplicationContext.getBean(
+			JobQueue.class);
 
-				entityRepository.initialize();
-			}
-		}
-
-		ProjectQueue projectQueue = configurableApplicationContext.getBean(
-			ProjectQueue.class);
-
-		projectQueue.initialize();
+		jobQueue.initialize();
 
 		BuildQueue buildQueue = configurableApplicationContext.getBean(
 			BuildQueue.class);
 
 		buildQueue.initialize();
 
-		JenkinsQueue jenkinsQueue = configurableApplicationContext.getBean(
-			JenkinsQueue.class);
-
-		jenkinsQueue.setJmsEventHandler(
-			configurableApplicationContext.getBean(JMSEventHandler.class));
-
-		jenkinsQueue.initialize();
-
 		JmsListenerEndpointRegistry jmsListenerEndpointRegistry =
 			configurableApplicationContext.getBean(
 				JmsListenerEndpointRegistry.class);
 
 		jmsListenerEndpointRegistry.start();
+
+		JenkinsQueue jenkinsQueue = configurableApplicationContext.getBean(
+			JenkinsQueue.class);
+
+		jenkinsQueue.setJenkinsEventProcessor(
+			configurableApplicationContext.getBean(
+				JenkinsEventProcessor.class));
+
+		jenkinsQueue.initialize();
 	}
 
 	@Bean
@@ -118,13 +115,13 @@ public class Jethr0SpringBootApplication {
 		return jmsTemplate;
 	}
 
-	@Value("${jms.broker.url}")
+	@Value("${JETHR0_JMS_BROKER_URL:tcp://localhost:61616}")
 	private String _jmsBrokerURL;
 
-	@Value("${jms.user.name}")
+	@Value("${JETHR0_JMS_USER_NAME:admin}")
 	private String _jmsUserName;
 
-	@Value("${jms.user.password}")
+	@Value("${JETHR0_JMS_USER_PASSWORD:admin}")
 	private String _jmsUserPassword;
 
 }

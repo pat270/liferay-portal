@@ -17,9 +17,18 @@ import com.liferay.portal.reports.engine.ReportGenerationException;
 import com.liferay.portal.reports.engine.ReportRequest;
 import com.liferay.portal.reports.engine.ReportRequestContext;
 import com.liferay.portal.reports.engine.ReportResultContainer;
+import com.liferay.portal.reports.engine.console.jasper.internal.compiler.CachedReportCompiler;
+import com.liferay.portal.reports.engine.console.jasper.internal.compiler.DefaultReportCompiler;
 import com.liferay.portal.reports.engine.console.jasper.internal.compiler.ReportCompiler;
+import com.liferay.portal.reports.engine.console.jasper.internal.fill.manager.CsvReportFillManager;
+import com.liferay.portal.reports.engine.console.jasper.internal.fill.manager.EmptyReportFillManager;
+import com.liferay.portal.reports.engine.console.jasper.internal.fill.manager.JdbcReportFillManager;
+import com.liferay.portal.reports.engine.console.jasper.internal.fill.manager.PortalReportFillManager;
 import com.liferay.portal.reports.engine.console.jasper.internal.fill.manager.ReportFillManager;
+import com.liferay.portal.reports.engine.console.jasper.internal.fill.manager.XlsReportFillManager;
+import com.liferay.portal.reports.engine.console.jasper.internal.fill.manager.XmlReportFillManager;
 
+import java.util.EnumMap;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
@@ -31,10 +40,6 @@ import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
-import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.service.component.annotations.ReferencePolicy;
-import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 /**
  * @author Michael C. Han
@@ -72,9 +77,8 @@ public class ReportEngineImpl implements ReportEngine {
 			ReportRequestContext reportRequestContext =
 				reportRequest.getReportRequestContext();
 
-			ReportFillManager reportFillManager =
-				_reportFillManagerServiceTrackerMap.getService(
-					reportRequestContext.getReportDataSourceType());
+			ReportFillManager reportFillManager = _reportFillManagers.get(
+				reportRequestContext.getReportDataSourceType());
 
 			if (reportFillManager == null) {
 				throw new IllegalArgumentException(
@@ -89,8 +93,7 @@ public class ReportEngineImpl implements ReportEngine {
 				jasperReport, reportRequest);
 
 			ReportFormatExporter reportFormatExporter =
-				_reportFormatExporterServiceTrackerMap.getService(
-					reportRequest.getReportFormat());
+				_serviceTrackerMap.getService(reportRequest.getReportFormat());
 
 			if (reportFormatExporter == null) {
 				throw new IllegalArgumentException(
@@ -124,46 +127,40 @@ public class ReportEngineImpl implements ReportEngine {
 
 	@Activate
 	protected void activate(BundleContext bundleContext) {
-		_reportFillManagerServiceTrackerMap =
-			ServiceTrackerMapFactory.openSingleValueMap(
-				bundleContext, ReportFillManager.class, null,
-				(serviceReference, emitter) -> {
-					String reportDataSourceTypeString = GetterUtil.getString(
-						serviceReference.getProperty("reportDataSourceType"));
+		_reportFillManagers.put(
+			ReportDataSourceType.CSV, new CsvReportFillManager());
+		_reportFillManagers.put(
+			ReportDataSourceType.EMPTY, new EmptyReportFillManager());
+		_reportFillManagers.put(
+			ReportDataSourceType.JDBC, new JdbcReportFillManager());
+		_reportFillManagers.put(
+			ReportDataSourceType.PORTAL, new PortalReportFillManager());
+		_reportFillManagers.put(
+			ReportDataSourceType.XLS, new XlsReportFillManager());
+		_reportFillManagers.put(
+			ReportDataSourceType.XML, new XmlReportFillManager());
 
-					emitter.emit(
-						ReportDataSourceType.parse(reportDataSourceTypeString));
-				});
-		_reportFormatExporterServiceTrackerMap =
-			ServiceTrackerMapFactory.openSingleValueMap(
-				bundleContext, ReportFormatExporter.class, null,
-				(serviceReference, emitter) -> {
-					String reportFormatString = GetterUtil.getString(
-						serviceReference.getProperty("reportFormat"));
+		_serviceTrackerMap = ServiceTrackerMapFactory.openSingleValueMap(
+			bundleContext, ReportFormatExporter.class, null,
+			(serviceReference, emitter) -> {
+				String reportFormatString = GetterUtil.getString(
+					serviceReference.getProperty("reportFormat"));
 
-					emitter.emit(ReportFormat.parse(reportFormatString));
-				});
+				emitter.emit(ReportFormat.parse(reportFormatString));
+			});
 	}
 
 	@Deactivate
 	protected void deactivate() {
-		_reportFillManagerServiceTrackerMap.close();
-
-		_reportFormatExporterServiceTrackerMap.close();
+		_serviceTrackerMap.close();
 	}
 
 	private Map<String, String> _engineParameters;
-
-	@Reference(
-		cardinality = ReferenceCardinality.MANDATORY,
-		policy = ReferencePolicy.DYNAMIC,
-		policyOption = ReferencePolicyOption.GREEDY
-	)
-	private volatile ReportCompiler _reportCompiler;
-
-	private ServiceTrackerMap<ReportDataSourceType, ReportFillManager>
-		_reportFillManagerServiceTrackerMap;
+	private final ReportCompiler _reportCompiler = new CachedReportCompiler(
+		new DefaultReportCompiler());
+	private final EnumMap<ReportDataSourceType, ReportFillManager>
+		_reportFillManagers = new EnumMap<>(ReportDataSourceType.class);
 	private ServiceTrackerMap<ReportFormat, ReportFormatExporter>
-		_reportFormatExporterServiceTrackerMap;
+		_serviceTrackerMap;
 
 }

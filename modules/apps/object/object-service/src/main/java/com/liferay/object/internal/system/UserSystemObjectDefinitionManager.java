@@ -24,10 +24,10 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserTable;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
@@ -64,6 +64,7 @@ public class UserSystemObjectDefinitionManager
 		return _userLocalService.deleteUser((User)baseModel);
 	}
 
+	@Override
 	public BaseModel<?> fetchBaseModelByExternalReferenceCode(
 		String externalReferenceCode, long companyId) {
 
@@ -102,8 +103,12 @@ public class UserSystemObjectDefinitionManager
 	}
 
 	@Override
-	public Map<Locale, String> getLabelMap() {
-		return createLabelMap("user");
+	public Map<String, String> getLabelKeys() {
+		return HashMapBuilder.put(
+			"label", "user"
+		).put(
+			"pluralLabel", "users"
+		).build();
 	}
 
 	@Override
@@ -193,11 +198,6 @@ public class UserSystemObjectDefinitionManager
 	}
 
 	@Override
-	public Map<Locale, String> getPluralLabelMap() {
-		return createLabelMap("users");
-	}
-
-	@Override
 	public Column<?, Long> getPrimaryKeyColumn() {
 		return UserTable.INSTANCE.userId;
 	}
@@ -246,7 +246,7 @@ public class UserSystemObjectDefinitionManager
 
 	@Override
 	public int getVersion() {
-		return 3;
+		return 4;
 	}
 
 	@Override
@@ -280,15 +280,19 @@ public class UserSystemObjectDefinitionManager
 	private UserAccount _toUserAccount(Map<String, Object> values) {
 		return new UserAccount() {
 			{
-				additionalName = GetterUtil.getString(
-					values.get("additionalName"));
-				alternateName = GetterUtil.getString(
-					values.get("alternateName"));
-				emailAddress = GetterUtil.getString(values.get("emailAddress"));
-				externalReferenceCode = GetterUtil.getString(
-					values.get("externalReferenceCode"));
-				familyName = GetterUtil.getString(values.get("familyName"));
-				givenName = GetterUtil.getString(values.get("givenName"));
+				setAdditionalName(
+					() -> GetterUtil.getString(values.get("additionalName")));
+				setAlternateName(
+					() -> GetterUtil.getString(values.get("alternateName")));
+				setEmailAddress(
+					() -> GetterUtil.getString(values.get("emailAddress")));
+				setExternalReferenceCode(
+					() -> GetterUtil.getString(
+						values.get("externalReferenceCode")));
+				setFamilyName(
+					() -> GetterUtil.getString(values.get("familyName")));
+				setGivenName(
+					() -> GetterUtil.getString(values.get("givenName")));
 			}
 		};
 	}

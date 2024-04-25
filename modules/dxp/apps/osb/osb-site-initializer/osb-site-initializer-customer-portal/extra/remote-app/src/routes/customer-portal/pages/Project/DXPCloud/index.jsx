@@ -17,14 +17,13 @@ const DXPCloud = () => {
 	const [
 		{project, sessionId, subscriptionGroups, userAccount},
 	] = useCustomerPortal();
-	const {setHasQuickLinksPanel, setHasSideMenu} = useOutletContext();
+	const {setHasSideMenu} = useOutletContext();
 	const [dxpCloudEnvironment, setDxpCloudEnvironment] = useState();
 	const {client} = useAppPropertiesContext();
 
 	useEffect(() => {
-		setHasQuickLinksPanel(true);
 		setHasSideMenu(true);
-	}, [setHasSideMenu, setHasQuickLinksPanel]);
+	}, [setHasSideMenu]);
 
 	useEffect(() => {
 		const getDxpCloudEnvironmentData = async () => {
@@ -66,7 +65,7 @@ const DXPCloud = () => {
 				<DeveloperKeysLayouts.Inputs
 					accountKey={project.accountKey}
 					downloadTextHelper={i18n.translate(
-						'to-activate-a-local-instance-of-liferay-dxp-download-a-developer-key-for-your-liferay-dxp-version'
+						'to-activate-a-local-instance-of-liferay-self-hosted-download-a-developer-key-for-your-liferay-self-hosted-version'
 					)}
 					dxpVersion={project.dxpVersion}
 					listType={LIST_TYPES.dxpVersion}

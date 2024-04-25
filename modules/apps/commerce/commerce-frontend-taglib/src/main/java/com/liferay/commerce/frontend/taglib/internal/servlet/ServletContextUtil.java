@@ -9,7 +9,9 @@ import com.liferay.commerce.constants.CommerceOrderConstants;
 import com.liferay.commerce.frontend.util.ProductHelper;
 import com.liferay.commerce.inventory.engine.CommerceInventoryEngine;
 import com.liferay.commerce.order.CommerceOrderHttpHelper;
-import com.liferay.commerce.product.content.util.CPContentHelper;
+import com.liferay.commerce.product.content.helper.CPContentHelper;
+import com.liferay.commerce.product.service.CPDefinitionOptionRelLocalService;
+import com.liferay.commerce.product.service.CPInstanceUnitOfMeasureLocalService;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.commerce.product.url.CPFriendlyURL;
 import com.liferay.commerce.product.util.CPCompareHelper;
@@ -18,10 +20,9 @@ import com.liferay.commerce.product.util.CPInstanceHelper;
 import com.liferay.commerce.product.util.CPSubscriptionTypeRegistry;
 import com.liferay.commerce.service.CommerceOrderItemLocalService;
 import com.liferay.commerce.service.CommerceOrderTypeLocalService;
-import com.liferay.frontend.js.loader.modules.extender.npm.NPMResolver;
 import com.liferay.info.item.renderer.InfoItemRendererRegistry;
-import com.liferay.osgi.util.service.Snapshot;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
+import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
 
 import javax.servlet.ServletContext;
@@ -78,6 +79,12 @@ public class ServletContextUtil {
 		return _cpDefinitionHelperSnapshot.get();
 	}
 
+	public static CPDefinitionOptionRelLocalService
+		getCPDefinitionOptionRelLocalService() {
+
+		return _cpDefinitionOptionRelLocalServiceSnapshot.get();
+	}
+
 	public static CPFriendlyURL getCPFriendlyURL() {
 		return _cpFriendlyURLSnapshot.get();
 	}
@@ -86,16 +93,18 @@ public class ServletContextUtil {
 		return _cpInstanceHelperSnapshot.get();
 	}
 
+	public static CPInstanceUnitOfMeasureLocalService
+		getCPInstanceUnitOfMeasureLocalService() {
+
+		return _cpInstanceUnitOfMeasureLocalServiceSnapshot.get();
+	}
+
 	public static CPSubscriptionTypeRegistry getCPSubscriptionTypeRegistry() {
 		return _cpSubscriptionTypeRegistrySnapshot.get();
 	}
 
 	public static InfoItemRendererRegistry getInfoItemRendererRegistry() {
 		return _infoItemRendererRegistrySnapshot.get();
-	}
-
-	public static NPMResolver getNPMResolver() {
-		return _npmResolverSnapshot.get();
 	}
 
 	public static ProductHelper getProductHelper() {
@@ -135,18 +144,23 @@ public class ServletContextUtil {
 	private static final Snapshot<CPDefinitionHelper>
 		_cpDefinitionHelperSnapshot = new Snapshot<>(
 			ServletContextUtil.class, CPDefinitionHelper.class);
+	private static final Snapshot<CPDefinitionOptionRelLocalService>
+		_cpDefinitionOptionRelLocalServiceSnapshot = new Snapshot<>(
+			ServletContextUtil.class, CPDefinitionOptionRelLocalService.class);
 	private static final Snapshot<CPFriendlyURL> _cpFriendlyURLSnapshot =
 		new Snapshot<>(ServletContextUtil.class, CPFriendlyURL.class);
 	private static final Snapshot<CPInstanceHelper> _cpInstanceHelperSnapshot =
 		new Snapshot<>(ServletContextUtil.class, CPInstanceHelper.class);
+	private static final Snapshot<CPInstanceUnitOfMeasureLocalService>
+		_cpInstanceUnitOfMeasureLocalServiceSnapshot = new Snapshot<>(
+			ServletContextUtil.class,
+			CPInstanceUnitOfMeasureLocalService.class);
 	private static final Snapshot<CPSubscriptionTypeRegistry>
 		_cpSubscriptionTypeRegistrySnapshot = new Snapshot<>(
 			ServletContextUtil.class, CPSubscriptionTypeRegistry.class);
 	private static final Snapshot<InfoItemRendererRegistry>
 		_infoItemRendererRegistrySnapshot = new Snapshot<>(
 			ServletContextUtil.class, InfoItemRendererRegistry.class);
-	private static final Snapshot<NPMResolver> _npmResolverSnapshot =
-		new Snapshot<>(ServletContextUtil.class, NPMResolver.class);
 	private static final Snapshot<ProductHelper> _productHelperSnapshot =
 		new Snapshot<>(ServletContextUtil.class, ProductHelper.class);
 	private static final Snapshot<ServletContext> _servletContextSnapshot =

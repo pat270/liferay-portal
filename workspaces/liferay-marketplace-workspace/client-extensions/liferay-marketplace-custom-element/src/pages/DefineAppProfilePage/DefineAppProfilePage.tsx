@@ -6,7 +6,6 @@
 /* eslint-disable react/no-unescaped-entities */
 
 import {filesize} from 'filesize';
-import {uniqueId} from 'lodash';
 import {useEffect, useState} from 'react';
 import ReactDOMServer from 'react-dom/server';
 
@@ -20,27 +19,26 @@ import {UploadLogo} from '../../components/UploadLogo/UploadLogo';
 import {useAppContext} from '../../manage-app-state/AppManageState';
 import {TYPES} from '../../manage-app-state/actionTypes';
 import {
-	addExpandoValue,
 	createApp,
-	createAttachment,
+	createImage,
 	getCategories,
-	getChannels,
 	getVocabularies,
 	updateApp,
 } from '../../utils/api';
 import {submitBase64EncodedFile} from '../../utils/util';
 
 import './DefineAppProfilePage.scss';
-import {getCompanyId} from '../../liferay/constants';
+import {useMarketplaceContext} from '../../context/MarketplaceContext';
+import HeadlessCommerceAdminCatalogImpl from '../../services/rest/HeadlessCommerceAdminCatalog';
 
-interface DefineAppProfilePageProps {
+type DefineAppProfilePageProps = {
 	onClickBack: () => void;
 	onClickContinue: () => void;
-}
+};
 
-interface VocabDropdownItem extends Categories {
+type VocabDropdownItem = {
 	checked: boolean;
-}
+} & Categories;
 
 export function DefineAppProfilePage({
 	onClickBack,
@@ -58,18 +56,21 @@ export function DefineAppProfilePage({
 		},
 		dispatch,
 	] = useAppContext();
+	const {channel} = useMarketplaceContext();
 	const [categories, setCategories] = useState<VocabDropdownItem[]>([]);
 	const [productType, setProductType] = useState<Categories>();
 	const [tags, setTags] = useState<VocabDropdownItem[]>([]);
+	const [isLoading, setLoading] = useState<boolean>(false);
 
 	const handleLogoUpload = (files: FileList) => {
 		const file = files[0];
 
 		const newUploadedFile: UploadedFile = {
+			changed: false,
 			error: false,
 			file,
 			fileName: file.name,
-			id: uniqueId(),
+			id: crypto.randomUUID(),
 			preview: URL.createObjectURL(file),
 			progress: 0,
 			readableSize: filesize(file.size),
@@ -97,15 +98,15 @@ export function DefineAppProfilePage({
 		let product;
 		let response;
 
-		const channels = await getChannels();
+		setLoading(true);
 
-		const marketplaceChannel = channels.find(
-			(channel) => channel.name === 'Marketplace Channel'
+		const catalog = await HeadlessCommerceAdminCatalogImpl.getCatalog(
+			catalogId
 		);
 
 		if (appERC) {
 			response = await updateApp({
-				appDescription,
+				appDescription: appDescription?.replace(/\n/g, '<br>'),
 				appERC,
 				appName,
 			});
@@ -117,19 +118,23 @@ export function DefineAppProfilePage({
 					...appTags,
 					productType as Categories,
 				],
-				appDescription,
+				appDescription: appDescription?.replace(/\n/g, '<br>'),
 				appName,
 				catalogId,
 				productChannels: [
 					{
-						channelId: marketplaceChannel?.id as number,
-						currencyCode:
-							marketplaceChannel?.currencyCode as string,
-						externalReferenceCode:
-							marketplaceChannel?.externalReferenceCode as string,
-						id: marketplaceChannel?.id as number,
-						name: marketplaceChannel?.name as string,
-						type: marketplaceChannel?.type as string,
+						channelId: channel?.id as number,
+						currencyCode: channel?.currencyCode as string,
+						externalReferenceCode: channel?.externalReferenceCode as string,
+						id: channel?.id as number,
+						name: channel?.name as string,
+						type: channel?.type as string,
+					},
+				],
+				productSpecifications: [
+					{
+						specificationKey: 'developer-name',
+						value: {en_US: catalog?.name},
 					},
 				],
 			});
@@ -150,24 +155,16 @@ export function DefineAppProfilePage({
 		}
 
 		if (appLogo) {
-			const attachmentId = await submitBase64EncodedFile({
+			await submitBase64EncodedFile({
 				appERC: appERC ?? product.externalReferenceCode,
 				file: appLogo.file,
-				requestFunction: createAttachment,
+				isAppIcon: true,
+				requestFunction: createImage,
 				title: appLogo.fileName,
 			});
-
-			addExpandoValue({
-				attributeValues: {
-					'App Icon': 'Yes',
-				},
-				className:
-					'com.liferay.commerce.product.model.CPAttachmentFileEntry',
-				classPK: attachmentId as number,
-				companyId: Number(getCompanyId()),
-				tableName: 'CUSTOM_FIELDS',
-			});
 		}
+
+		setLoading(false);
 
 		onClickContinue();
 	};
@@ -252,9 +249,7 @@ export function DefineAppProfilePage({
 	return (
 		<div className="profile-page-container">
 			<Header
-				description="Enter your new app details. 
-                                This information will be used for submission, 
-                                presentation, customer support, and search capabilities."
+				description="Enter your new app details. This information will be used for submission, presentation, customer support, and search capabilities."
 				title="Define the app profile"
 			/>
 
@@ -328,7 +323,6 @@ export function DefineAppProfilePage({
 						<Input
 							component="textarea"
 							label="Description"
-							localized
 							localizedTooltipText="Descriptions can be localized for each language your app supports.  Please choose the appropriate language and enter description in the language selected."
 							onChange={({target}) =>
 								dispatch({
@@ -358,6 +352,7 @@ export function DefineAppProfilePage({
 							placeholder="Select categories"
 							required
 							tooltip="Choose the Marketplace category that most accurately describes what your app does. Users looking for specific types of apps will often browse categories by searching on a specific category name in the main Marketplace home page. Having your app listed under the appropriate category will help them find your app."
+							value={appCategories}
 						/>
 
 						<MultiSelect<VocabDropdownItem>
@@ -374,6 +369,7 @@ export function DefineAppProfilePage({
 							placeholder="Select tags"
 							required
 							tooltip="Tags help to describe your app in the Marketplace. Select the tags most relevant to your app. They can be changed if needed."
+							value={appTags}
 						/>
 					</div>
 				</Section>
@@ -381,10 +377,15 @@ export function DefineAppProfilePage({
 
 			<NewAppPageFooterButtons
 				disableContinueButton={
-					!appCategories || !appDescription || !appName || !appTags
+					isLoading ||
+					!appCategories.length ||
+					!appDescription ||
+					!appName ||
+					!appTags.length
 				}
+				isLoading={isLoading}
 				onClickBack={() => onClickBack()}
-				onClickContinue={async () => await onContinue()}
+				onClickContinue={onContinue}
 				showBackButton
 			/>
 		</div>

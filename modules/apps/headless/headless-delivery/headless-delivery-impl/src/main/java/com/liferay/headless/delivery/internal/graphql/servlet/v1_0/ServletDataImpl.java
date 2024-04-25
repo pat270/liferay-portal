@@ -982,6 +982,11 @@ public class ServletDataImpl implements ServletData {
 							MessageBoardMessageResourceImpl.class,
 							"putMessageBoardMessageBatch"));
 					put(
+						"mutation#updateMessageBoardMessageMarkAsAnswer",
+						new ObjectValuePair<>(
+							MessageBoardMessageResourceImpl.class,
+							"putMessageBoardMessageMarkAsAnswer"));
+					put(
 						"mutation#deleteMessageBoardMessageMyRating",
 						new ObjectValuePair<>(
 							MessageBoardMessageResourceImpl.class,
@@ -1006,6 +1011,11 @@ public class ServletDataImpl implements ServletData {
 						new ObjectValuePair<>(
 							MessageBoardMessageResourceImpl.class,
 							"putMessageBoardMessageSubscribe"));
+					put(
+						"mutation#updateMessageBoardMessageUnmarkAsAnswer",
+						new ObjectValuePair<>(
+							MessageBoardMessageResourceImpl.class,
+							"putMessageBoardMessageUnmarkAsAnswer"));
 					put(
 						"mutation#updateMessageBoardMessageUnsubscribe",
 						new ObjectValuePair<>(
@@ -2104,6 +2114,11 @@ public class ServletDataImpl implements ServletData {
 							MessageBoardMessageResourceImpl.class,
 							"getSiteMessageBoardMessagePermissionsPage"));
 					put(
+						"query#userMessageBoardMessagesActivity",
+						new ObjectValuePair<>(
+							MessageBoardMessageResourceImpl.class,
+							"getSiteUserMessageBoardMessagesActivityPage"));
+					put(
 						"query#messageBoardSection",
 						new ObjectValuePair<>(
 							MessageBoardSectionResourceImpl.class,
@@ -2118,6 +2133,11 @@ public class ServletDataImpl implements ServletData {
 						new ObjectValuePair<>(
 							MessageBoardSectionResourceImpl.class,
 							"getMessageBoardSectionMessageBoardSectionsPage"));
+					put(
+						"query#messageBoardSectionByFriendlyUrlPath",
+						new ObjectValuePair<>(
+							MessageBoardSectionResourceImpl.class,
+							"getSiteMessageBoardSectionByFriendlyUrlPath"));
 					put(
 						"query#messageBoardSections",
 						new ObjectValuePair<>(
@@ -2510,11 +2530,6 @@ public class ServletDataImpl implements ServletData {
 						new ObjectValuePair<>(
 							MessageBoardMessageResourceImpl.class,
 							"getMessageBoardMessagePermissionsPage"));
-					put(
-						"query#StructuredContent.permissions",
-						new ObjectValuePair<>(
-							StructuredContentResourceImpl.class,
-							"getStructuredContentPermissionsPage"));
 					put(
 						"query#KnowledgeBaseArticle.permissions",
 						new ObjectValuePair<>(

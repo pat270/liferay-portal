@@ -1,20 +1,32 @@
 buildscript {
-	repositories {
-		gradlePluginPortal()
-	}
-
 	dependencies {
 		classpath group: "org.jenkins-ci.jpi", name: "org.jenkins-ci.jpi.gradle.plugin", version: "0.48.0-rc.1"
+	}
+
+	repositories {
+		gradlePluginPortal()
 	}
 }
 
 apply plugin: "org.jenkins-ci.jpi"
 
 dependencies {
-	compile group: "org.apache.activemq", name: "activemq-client", version: "5.16.5"
-	compile group: "org.json", name: "json", version: "20230227"
+	api group: "com.liferay", name: "org.jvnet.jenkins.plugins.nodelabelparameter", version: "1.4.1-h-1"
+	api group: "org.apache.activemq", name: "activemq-client", version: "5.16.7"
+	api group: "org.json", name: "json", version: "20231013"
+
+	compileOnly group: "javax.annotation", name: "javax.annotation-api", version: "1.3.2"
+}
+
+generateJenkinsPluginClassManifest {
+	mustRunAfter processResources
+}
+
+generateJenkinsSupportDynamicLoadingManifest {
+	mustRunAfter processResources
 }
 
 jenkinsPlugin {
-	jenkinsVersion = "2.85"
+	configurePublishing = false
+	jenkinsVersion = "2.164.2"
 }

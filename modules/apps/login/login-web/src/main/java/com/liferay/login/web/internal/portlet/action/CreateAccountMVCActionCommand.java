@@ -10,6 +10,7 @@ import com.liferay.captcha.util.CaptchaUtil;
 import com.liferay.login.web.constants.LoginPortletKeys;
 import com.liferay.login.web.internal.portlet.util.LoginUtil;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.captcha.CaptchaConfigurationException;
 import com.liferay.portal.kernel.captcha.CaptchaException;
 import com.liferay.portal.kernel.exception.AddressCityException;
@@ -37,6 +38,7 @@ import com.liferay.portal.kernel.exception.UserPasswordException;
 import com.liferay.portal.kernel.exception.UserScreenNameException;
 import com.liferay.portal.kernel.exception.UserSmsException;
 import com.liferay.portal.kernel.exception.WebsiteURLException;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
@@ -45,13 +47,11 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.ListType;
 import com.liferay.portal.kernel.model.ListTypeConstants;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.portlet.DynamicActionRequest;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
-import com.liferay.portal.kernel.security.auth.session.AuthenticatedSessionManager;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ListTypeLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -72,10 +72,12 @@ import com.liferay.portal.kernel.util.PwdGenerator;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.security.auth.session.AuthenticatedSessionManagerUtil;
 import com.liferay.portal.util.PropsValues;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
+import javax.portlet.PortletPreferences;
 import javax.portlet.PortletRequest;
 
 import javax.servlet.http.HttpServletRequest;
@@ -93,7 +95,9 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	property = {
+		"javax.portlet.name=" + LoginPortletKeys.CREATE_ACCOUNT,
 		"javax.portlet.name=" + LoginPortletKeys.FAST_LOGIN,
+		"javax.portlet.name=" + LoginPortletKeys.FORGOT_PASSWORD,
 		"javax.portlet.name=" + LoginPortletKeys.LOGIN,
 		"mvc.command.name=/login/create_account"
 	},
@@ -220,9 +224,70 @@ public class CreateAccountMVCActionCommand extends BaseMVCActionCommand {
 		}
 		catch (Exception exception) {
 			if (exception instanceof
-					UserEmailAddressException.MustNotBeDuplicate ||
-				exception instanceof
-					UserScreenNameException.MustNotBeDuplicate) {
+					UserEmailAddressException.MustNotBeDuplicate) {
+
+				String emailAddress = ParamUtil.getString(
+					actionRequest, "emailAddress");
+
+				User user = _userLocalService.fetchUserByEmailAddress(
+					themeDisplay.getCompanyId(), emailAddress);
+
+				if (user == null) {
+					SessionErrors.add(
+						actionRequest, exception.getClass(), exception);
+				}
+				else if (user.getStatus() ==
+							WorkflowConstants.STATUS_INCOMPLETE) {
+
+					actionResponse.setRenderParameter(
+						"mvcPath", "/update_account.jsp");
+
+					return;
+				}
+
+				PortletPreferences portletPreferences =
+					actionRequest.getPreferences();
+
+				String emailFromName = portletPreferences.getValue(
+					"emailFromName", null);
+				String emailFromAddress = portletPreferences.getValue(
+					"emailFromAddress", null);
+
+				String emailToAddress = user.getEmailAddress();
+
+				String emailParam = "emailPasswordSent";
+
+				String languageId = _language.getLanguageId(actionRequest);
+
+				String subject = portletPreferences.getValue(
+					emailParam + "Subject_" + languageId, null);
+				String body = portletPreferences.getValue(
+					emailParam + "Body_" + languageId, null);
+
+				LoginUtil.sendEmailUserCreationAttempt(
+					actionRequest, emailFromName, emailFromAddress,
+					emailToAddress, subject, body);
+
+				HttpServletRequest httpServletRequest =
+					_portal.getHttpServletRequest(actionRequest);
+
+				if (user.getStatus() == WorkflowConstants.STATUS_APPROVED) {
+					SessionMessages.add(
+						httpServletRequest, "userAdded",
+						user.getEmailAddress());
+				}
+				else {
+					SessionMessages.add(
+						httpServletRequest, "userPending",
+						user.getEmailAddress());
+				}
+
+				sendRedirect(
+					actionRequest, actionResponse, themeDisplay, user,
+					user.getPasswordUnencrypted());
+			}
+			else if (exception instanceof
+						UserScreenNameException.MustNotBeDuplicate) {
 
 				String emailAddress = ParamUtil.getString(
 					actionRequest, "emailAddress");
@@ -241,31 +306,32 @@ public class CreateAccountMVCActionCommand extends BaseMVCActionCommand {
 						"mvcPath", "/update_account.jsp");
 				}
 			}
-			else if (exception instanceof AddressCityException ||
-					 exception instanceof AddressStreetException ||
-					 exception instanceof AddressZipException ||
-					 exception instanceof CaptchaException ||
-					 exception instanceof CompanyMaxUsersException ||
-					 exception instanceof ContactBirthdayException ||
-					 exception instanceof ContactNameException ||
-					 exception instanceof DuplicateOpenIdException ||
-					 exception instanceof EmailAddressException ||
-					 exception instanceof GroupFriendlyURLException ||
-					 exception instanceof NoSuchCountryException ||
-					 exception instanceof NoSuchListTypeException ||
-					 exception instanceof NoSuchOrganizationException ||
-					 exception instanceof NoSuchRegionException ||
-					 exception instanceof OrganizationParentException ||
-					 exception instanceof PhoneNumberException ||
-					 exception instanceof RequiredFieldException ||
-					 exception instanceof RequiredUserException ||
-					 exception instanceof TermsOfUseException ||
-					 exception instanceof UserEmailAddressException ||
-					 exception instanceof UserIdException ||
-					 exception instanceof UserPasswordException ||
-					 exception instanceof UserScreenNameException ||
-					 exception instanceof UserSmsException ||
-					 exception instanceof WebsiteURLException) {
+
+			if (exception instanceof AddressCityException ||
+				exception instanceof AddressStreetException ||
+				exception instanceof AddressZipException ||
+				exception instanceof CaptchaException ||
+				exception instanceof CompanyMaxUsersException ||
+				exception instanceof ContactBirthdayException ||
+				exception instanceof ContactNameException ||
+				exception instanceof DuplicateOpenIdException ||
+				exception instanceof EmailAddressException ||
+				exception instanceof GroupFriendlyURLException ||
+				exception instanceof NoSuchCountryException ||
+				exception instanceof NoSuchListTypeException ||
+				exception instanceof NoSuchOrganizationException ||
+				exception instanceof NoSuchRegionException ||
+				exception instanceof OrganizationParentException ||
+				exception instanceof PhoneNumberException ||
+				exception instanceof RequiredFieldException ||
+				exception instanceof RequiredUserException ||
+				exception instanceof TermsOfUseException ||
+				exception instanceof UserEmailAddressException ||
+				exception instanceof UserIdException ||
+				exception instanceof UserPasswordException ||
+				exception instanceof UserScreenNameException ||
+				exception instanceof UserSmsException ||
+				exception instanceof WebsiteURLException) {
 
 				SessionErrors.add(
 					actionRequest, exception.getClass(), exception);
@@ -338,7 +404,7 @@ public class CreateAccountMVCActionCommand extends BaseMVCActionCommand {
 			ParamUtil.getString(actionRequest, "redirect"));
 
 		if (Validator.isNotNull(redirect)) {
-			_authenticatedSessionManager.login(
+			AuthenticatedSessionManagerUtil.login(
 				httpServletRequest,
 				_portal.getHttpServletResponse(actionResponse), login, password,
 				false, null);
@@ -464,14 +530,19 @@ public class CreateAccountMVCActionCommand extends BaseMVCActionCommand {
 	}
 
 	private long _getListTypeId(
-			PortletRequest portletRequest, String parameterName, String type)
+			long companyId, PortletRequest portletRequest, String parameterName,
+			String type)
 		throws Exception {
 
 		String parameterValue = ParamUtil.getString(
 			portletRequest, parameterName);
 
+		if (Validator.isNull(parameterValue)) {
+			return 0;
+		}
+
 		ListType listType = _listTypeLocalService.addListType(
-			parameterValue, type);
+			companyId, parameterValue, type);
 
 		return listType.getListTypeId();
 	}
@@ -520,15 +591,17 @@ public class CreateAccountMVCActionCommand extends BaseMVCActionCommand {
 		DynamicActionRequest dynamicActionRequest = new DynamicActionRequest(
 			actionRequest);
 
+		long companyId = _portal.getCompanyId(actionRequest);
+
 		long prefixListTypeId = _getListTypeId(
-			actionRequest, "prefixListTypeValue",
+			companyId, actionRequest, "prefixListTypeValue",
 			ListTypeConstants.CONTACT_PREFIX);
 
 		dynamicActionRequest.setParameter(
 			"prefixListTypeId", String.valueOf(prefixListTypeId));
 
 		long suffixListTypeId = _getListTypeId(
-			actionRequest, "suffixListTypeValue",
+			companyId, actionRequest, "suffixListTypeValue",
 			ListTypeConstants.CONTACT_SUFFIX);
 
 		dynamicActionRequest.setParameter(
@@ -543,10 +616,10 @@ public class CreateAccountMVCActionCommand extends BaseMVCActionCommand {
 		CreateAccountMVCActionCommand.class);
 
 	@Reference
-	private AuthenticatedSessionManager _authenticatedSessionManager;
+	private ConfigurationProvider _configurationProvider;
 
 	@Reference
-	private ConfigurationProvider _configurationProvider;
+	private Language _language;
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;

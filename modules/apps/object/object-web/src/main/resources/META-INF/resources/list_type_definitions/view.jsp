@@ -17,12 +17,13 @@ ViewListTypeDefinitionsDisplayContext viewListTypeDefinitionsDisplayContext = (V
 	fdsActionDropdownItems="<%= viewListTypeDefinitionsDisplayContext.getFDSActionDropdownItems() %>"
 	formName="fm"
 	id="<%= ListTypeFDSNames.LIST_TYPE_DEFINITIONS %>"
+	propsTransformer="{ViewListTypeDefinitionsFDSPropsTransformer} from object-web"
 	style="fluid"
 />
 
 <div id="<portlet:namespace />addListTypeDefinition">
 	<react:component
-		module="js/components/ModalAddListTypeDefinition"
+		module="{ModalAddListTypeDefinition} from object-web"
 		props='<%=
 			HashMapBuilder.<String, Object>put(
 				"apiURL", viewListTypeDefinitionsDisplayContext.getAPIURL()
@@ -33,6 +34,6 @@ ViewListTypeDefinitionsDisplayContext viewListTypeDefinitionsDisplayContext = (V
 
 <div>
 	<react:component
-		module="js/components/ListTypeDefinition/ListTypeEntriesModal"
+		module="{ListTypeEntriesModal} from object-web"
 	/>
 </div>

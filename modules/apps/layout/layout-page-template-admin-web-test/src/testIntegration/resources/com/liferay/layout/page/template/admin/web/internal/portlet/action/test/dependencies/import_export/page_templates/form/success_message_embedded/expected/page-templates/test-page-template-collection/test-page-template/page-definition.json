@@ -1,5 +1,6 @@
 {
 	"pageElement": {
+		"id": "item1",
 		"pageElements": [
 			{
 				"definition": {
@@ -14,14 +15,15 @@
 									"en_US": "Thanks",
 									"es_ES": "Gracias"
 								}
-							}
+							},
+							"messageType": "Embedded"
 						}
 					},
 					"indexed": true,
 					"layout": {
-						"widthType": "Fluid"
 					}
 				},
+				"id": "item2",
 				"type": "Form"
 			}
 		],

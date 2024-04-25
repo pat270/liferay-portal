@@ -86,6 +86,17 @@ components:
             properties:
                 advancedConfiguration:
                     properties:
+                        collapse:
+                            properties:
+                                field:
+                                    type: string
+                                innerHits:
+                                    items:
+                                        $ref: "#/components/schemas/InnerHit"
+                                    type: array
+                                maxConcurrentGroupRequests:
+                                    type: integer
+                            type: object
                         source:
                             properties:
                                 excludes:
@@ -99,6 +110,10 @@ components:
                                         type: string
                                     type: array
                             type: object
+                        stored_fields:
+                            items:
+                                type: string
+                            type: array
                     type: object
                 aggregationConfiguration:
                     properties:
@@ -355,6 +370,21 @@ components:
                     type: integer
                 number_of_fragments:
                     type: integer
+        InnerHit:
+            properties:
+                innerCollapse:
+                    properties:
+                        field:
+                            type: string
+                    type: object
+                name:
+                    type: string
+                size:
+                    type: integer
+                sorts:
+                    items:
+                        type: object
+                    type: array
         KeywordQueryContributor:
             properties:
                 className:
@@ -453,6 +483,10 @@ components:
                     $ref: "#/components/schemas/ElementDefinition"
                 externalReferenceCode:
                     example: AB-34098-789-N
+                    type: string
+                fallbackDescription:
+                    type: string
+                fallbackTitle:
                     type: string
                 hidden:
                     type: boolean
@@ -565,7 +599,7 @@ components:
 info:
     description:
         "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID
-        'com.liferay.search.experiences.rest.client', and version '3.0.18'."
+        'com.liferay.search.experiences.rest.client', and version '3.0.27'."
     license:
         name: "Apache 2.0"
         url: "http://www.apache.org/licenses/LICENSE-2.0.html"
@@ -578,10 +612,6 @@ paths:
             operationId: postSearch
             parameters:
                 - in: query
-                  name: query
-                  schema:
-                      type: string
-                - in: query
                   name: page
                   schema:
                       type: integer
@@ -589,6 +619,10 @@ paths:
                   name: pageSize
                   schema:
                       type: integer
+                - in: query
+                  name: query
+                  schema:
+                      type: string
             requestBody:
                 content:
                     application/json:
@@ -965,6 +999,33 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/SXPBlueprint"
             tags: ["SXPBlueprint"]
+        put:
+            operationId: putSXPBlueprint
+            parameters:
+                - in: path
+                  name: sxpBlueprintId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/SXPBlueprint"
+                    application/xml:
+                        schema:
+                            $ref: "#/components/schemas/SXPBlueprint"
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/SXPBlueprint"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/SXPBlueprint"
+            tags: ["SXPBlueprint"]
     /sxp-blueprints/{sxpBlueprintId}/copy:
         post:
             operationId: postSXPBlueprintCopy
@@ -1193,6 +1254,33 @@ paths:
             tags: ["SXPElement"]
         patch:
             operationId: patchSXPElement
+            parameters:
+                - in: path
+                  name: sxpElementId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/SXPElement"
+                    application/xml:
+                        schema:
+                            $ref: "#/components/schemas/SXPElement"
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/SXPElement"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/SXPElement"
+            tags: ["SXPElement"]
+        put:
+            operationId: putSXPElement
             parameters:
                 - in: path
                   name: sxpElementId

@@ -21,6 +21,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>CLUSTER_MODE</td>
+	<td>//div[contains(@class,'connection-info') and contains(.,'${key_connectionId}')]//span[contains(.,'${key_clusterMode}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>CLUSTER_NAME</td>
 	<td>//div[contains(@class,'connection-info') and contains(.,'${key_connectionId}')]//span[contains(@class,'cluster-name')]</td>
 	<td></td>
@@ -32,7 +37,17 @@
 </tr>
 <tr>
 	<td>EXECUTE_REINDEX_BUTTON</td>
-	<td>//li[contains(.,'${key_action}')]//button[contains(.,'Execute')]</td>
+	<td>//li[contains(.,'${key_action}')]//button[contains(.,'Reindex')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REINDEX_MODE_DROPDOWN</td>
+	<td>//button[@id='executionMode']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REINDEX_MODE_DROPDOWN_ITEM</td>
+	<td>//button[contains(@class,'dropdown-item')]//div[contains(@class,'list-group-title') and contains(.,'${key_reindexMode}')]</td>
 	<td></td>
 </tr>
 <tr>

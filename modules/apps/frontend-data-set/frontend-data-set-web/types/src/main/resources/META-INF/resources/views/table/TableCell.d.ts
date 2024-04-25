@@ -7,14 +7,12 @@
 
 declare function TableCell({
 	actions,
-	inlineEditSettings,
+	field,
 	itemData,
 	itemId,
 	itemInlineChanges,
-	options,
 	rootPropertyName,
 	value,
 	valuePath,
-	view,
-}: any): JSX.Element;
+}: any): JSX.Element | null;
 export default TableCell;

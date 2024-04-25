@@ -51,6 +51,16 @@ public class ReferenceAnnotationCheck extends BaseCheck {
 		}
 	}
 
+	private void _checkCardinality(
+		DetailAST annotationDetailAST, String cardinalityName) {
+
+		if ((cardinalityName != null) &&
+			cardinalityName.endsWith(_CARDINALITY_OPTIONAL)) {
+
+			log(annotationDetailAST, _MSG_USE_SNAPSHOT);
+		}
+	}
+
 	private void _checkDynamicMethod(
 		DetailAST classDefinitionDetailAST, DetailAST methodDefinitionDetailAST,
 		String methodName, String defaultUnbindMethodName) {
@@ -101,16 +111,10 @@ public class ReferenceAnnotationCheck extends BaseCheck {
 	}
 
 	private void _checkDynamicOption(
-		DetailAST annotationDetailAST, String policyName) {
+		DetailAST annotationDetailAST, String cardinalityName,
+		String policyName) {
 
-		if (policyName.endsWith(_POLICY_DYNAMIC)) {
-			return;
-		}
-
-		String cardinalityName = _getAnnotationMemberValue(
-			annotationDetailAST, "cardinality", null);
-
-		if ((cardinalityName == null) ||
+		if (policyName.endsWith(_POLICY_DYNAMIC) || (cardinalityName == null) ||
 			!cardinalityName.endsWith(_CARDINALITY_OPTIONAL)) {
 
 			return;
@@ -136,10 +140,17 @@ public class ReferenceAnnotationCheck extends BaseCheck {
 			return;
 		}
 
+		String cardinalityName = _getAnnotationMemberValue(
+			annotationDetailAST, "cardinality", null);
+
+		if (isAttributeValue(_CHECK_REFERENCE_CARDINALITY_OPTIONAL_KEY)) {
+			_checkCardinality(annotationDetailAST, cardinalityName);
+		}
+
 		String policyName = _getAnnotationMemberValue(
 			annotationDetailAST, "policy", _POLICY_STATIC);
 
-		_checkDynamicOption(annotationDetailAST, policyName);
+		_checkDynamicOption(annotationDetailAST, cardinalityName, policyName);
 
 		_checkTarget(annotationDetailAST);
 
@@ -327,6 +338,9 @@ public class ReferenceAnnotationCheck extends BaseCheck {
 
 	private static final String _CARDINALITY_OPTIONAL = "OPTIONAL";
 
+	private static final String _CHECK_REFERENCE_CARDINALITY_OPTIONAL_KEY =
+		"checkReferenceCardinalityOptional";
+
 	private static final String _FORBIDDEN_REFERENCE_TARGET_VALUES =
 		"forbiddenReferenceTargetValues";
 
@@ -348,6 +362,8 @@ public class ReferenceAnnotationCheck extends BaseCheck {
 
 	private static final String _MSG_REDUNDANT_DEFAULT_UNBIND =
 		"default.unbind.redundant";
+
+	private static final String _MSG_USE_SNAPSHOT = "snapshot.use";
 
 	private static final String _NO_UNBIND = "\"-\"";
 
