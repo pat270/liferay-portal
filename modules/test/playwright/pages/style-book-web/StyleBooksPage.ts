@@ -84,12 +84,27 @@ export class StyleBooksPage {
 		).toBeVisible();
 	}
 
+	async selectFrontendTokenCategory(buttonText: string, category: string) {
+		await this.page.locator('.style-book-editor__sidebar-content');
+
+		await this.page.getByRole('button', {name: buttonText}).click();
+
+		await this.page.getByText(category).click();
+	}
+
 	async updateTokenInputColor(label: string, colorHEX: string) {
+		const labelLocator = '[aria-label="' + label + '"]';
+
 		const colorInput = this.page
-			.getByLabel(label)
-			.getByLabel('Color')
+			.locator(labelLocator)
 			.locator('.layout__color-picker__input');
 
 		await fillAndClickOutside(this.page, colorInput, colorHEX);
+	}
+
+	async waitForAutoSave() {
+		const statusText = this.page.locator('.style-book-editor__status-text');
+
+		await statusText.getByText('Saved').waitFor();
 	}
 }
